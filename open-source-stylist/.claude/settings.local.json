@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Admin\\\\Open Source Stylist\" -Recurse -Force)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "Bash(ls -la \"C:\\\\Users\\\\Admin\\\\Open Source Stylist\\\\\" 2>&1)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Admin\\\\Open Source Stylist\" -Recurse -Force | Where-Object { -not $_.PSIsContainer } | Select-Object FullName | ConvertTo-Csv -NoTypeInformation | Out-String)",
+      "Bash(dir \"C:\\\\Users\\\\Admin\\\\Open Source Stylist\\\\.history\")",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}

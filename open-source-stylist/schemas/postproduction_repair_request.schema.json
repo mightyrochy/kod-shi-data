@@ -1,0 +1,232 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "postproduction_repair_request.schema.json",
+  "title": "Postproduction Repair Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "run_id",
+    "mode",
+    "status",
+    "source",
+    "base_generation",
+    "evaluation",
+    "repair_target",
+    "mask",
+    "protected_regions",
+    "reference_evidence",
+    "executor",
+    "instruction",
+    "verification",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["product", "research"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft_requires_assets", "ready_to_run", "completed", "failed"]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["person_image", "outfit_package", "reference_board"],
+      "properties": {
+        "person_image": { "$ref": "#/$defs/file_ref" },
+        "outfit_package": { "$ref": "#/$defs/file_ref" },
+        "reference_board": { "$ref": "#/$defs/file_ref" }
+      }
+    },
+    "base_generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image", "prompt", "settings"],
+      "properties": {
+        "image": { "$ref": "#/$defs/file_ref" },
+        "prompt": { "$ref": "#/$defs/file_ref" },
+        "settings": { "$ref": "#/$defs/file_ref" }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input", "base_verdict", "selected_failure_class"],
+      "properties": {
+        "input": { "$ref": "#/$defs/file_ref" },
+        "base_verdict": {
+          "type": "string",
+          "enum": [
+            "usable_for_local_repair",
+            "accept_without_repair",
+            "regenerate_base",
+            "reject",
+            "unknown"
+          ]
+        },
+        "selected_failure_class": {
+          "type": "string"
+        }
+      }
+    },
+    "repair_target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_id",
+        "failure_class",
+        "region_label",
+        "priority",
+        "why_repairable"
+      ],
+      "properties": {
+        "target_id": { "type": "string" },
+        "failure_class": {
+          "type": "string",
+          "enum": [
+            "wrong_local_object_detail",
+            "wrong_local_shape",
+            "wrong_layer_boundary",
+            "wrong_material_texture",
+            "wrong_color_tone",
+            "old_source_clothing_remnant",
+            "local_blending_artifact"
+          ]
+        },
+        "region_label": { "type": "string" },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "why_repairable": { "type": "string" }
+      }
+    },
+    "mask": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["edit_mask", "mask_method", "confidence", "notes"],
+      "properties": {
+        "edit_mask": { "$ref": "#/$defs/file_ref" },
+        "mask_method": {
+          "type": "string",
+          "enum": ["manual", "sam", "groundingdino_sam", "fashion_parsing", "unknown"]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "unknown"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "protected_regions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "mask", "rule"],
+        "properties": {
+          "label": { "type": "string" },
+          "mask": { "$ref": "#/$defs/file_ref" },
+          "rule": { "type": "string" }
+        }
+      }
+    },
+    "reference_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "file", "purpose"],
+        "properties": {
+          "label": { "type": "string" },
+          "file": { "$ref": "#/$defs/file_ref" },
+          "purpose": { "type": "string" }
+        }
+      }
+    },
+    "executor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["class", "tool", "workflow", "settings"],
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": ["masked_local_generative_edit", "deterministic_cleanup"]
+        },
+        "tool": {
+          "type": "string",
+          "enum": ["comfyui_qwen_image_edit", "comfyui_flux_fill", "pillow_opencv"]
+        },
+        "workflow": { "$ref": "#/$defs/file_ref" },
+        "settings": { "$ref": "#/$defs/file_ref" }
+      }
+    },
+    "instruction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "summary", "negative_constraints"],
+      "properties": {
+        "file": { "$ref": "#/$defs/file_ref" },
+        "summary": { "type": "string" },
+        "negative_constraints": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "criteria"],
+      "properties": {
+        "method": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "criteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image", "before_after", "verifier_result", "verdict"],
+      "properties": {
+        "image": { "$ref": "#/$defs/file_ref" },
+        "before_after": { "$ref": "#/$defs/file_ref" },
+        "verifier_result": { "$ref": "#/$defs/file_ref" },
+        "verdict": { "$ref": "#/$defs/file_ref" }
+      }
+    }
+  },
+  "$defs": {
+    "file_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "status"],
+      "properties": {
+        "path": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["exists", "planned", "missing", "not_applicable"]
+        }
+      }
+    }
+  }
+}

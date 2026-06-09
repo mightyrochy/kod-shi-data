@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1",
+  "run_id": "000001",
+  "experiment_id": "two_view_prompt_v2",
+  "evaluation_type": "manual_visual_review",
+  "input_change": {
+    "image_1": "two-view person input instead of front-only person input",
+    "image_2": "clean garment reference board",
+    "prompt_style": "short prompt with outfit layout only"
+  },
+  "prompt": "../input/prompt.txt",
+  "evaluated_outputs": [
+    "../output/candidate_01.png",
+    "../output/candidate_02.png",
+    "../output/candidate_03.png",
+    "../output/candidate_04.png",
+    "../output/candidate_05.png"
+  ],
+  "contact_sheet": "../output/contact_sheet_5_candidates.png",
+  "overall_verdict": "useful_two_view_baseline_with_identity_risk",
+  "comparison_to_front_only_run": {
+    "better": [
+      "Side view is generated, so body shape and outfit behavior from the side can be inspected.",
+      "Wedge sandals are more readable from the side view.",
+      "The skirt length and side silhouette are easier to judge.",
+      "The outfit is still semantically stable across candidates."
+    ],
+    "worse_or_riskier": [
+      "Identity preservation is less stable; at least one candidate changes hair color noticeably.",
+      "The belt instruction is inconsistent: 'barely visible' sometimes becomes a strong visible belt.",
+      "The blouse front can become simpler and less detailed when the prompt is very short.",
+      "The two-view output is useful for evaluation but is not the final single-photo product format."
+    ]
+  },
+  "what_worked": [
+    "Old sweater, jeans, and socks are removed.",
+    "Both front and side views follow the outfit concept.",
+    "Blouse hem over skirt is generally respected.",
+    "Brown skirt appears in both views.",
+    "Wedge sandals on bare feet appear in both views.",
+    "Earrings appear on both views/candidates."
+  ],
+  "main_failures": [
+    "Belt is often too visible despite the prompt saying barely visible.",
+    "Exact blouse detail is simplified.",
+    "Exact skirt slit/detail is still generic.",
+    "Shoe material texture and buckles are still simplified.",
+    "Earring shape is present but exact ridged spiral detail is simplified.",
+    "Candidate 03 changes hair color and therefore fails identity preservation."
+  ],
+  "candidate_notes": {
+    "candidate_01": {
+      "verdict": "best_two_view_balance",
+      "notes": [
+        "Best overall two-view balance.",
+        "Identity is broadly preserved.",
+        "Side shoe shape is readable.",
+        "Belt remains relatively subtle compared with candidates 03-05."
+      ]
+    },
+    "candidate_02": {
+      "verdict": "partial",
+      "notes": [
+        "Good body and outfit shape.",
+        "Blouse becomes more generic and tucked-looking.",
+        "Belt is not dominant."
+      ]
+    },
+    "candidate_03": {
+      "verdict": "identity_fail",
+      "notes": [
+        "Hair color changes to dark brunette.",
+        "Belt becomes too dominant.",
+        "Do not use as repair source despite decent outfit structure."
+      ]
+    },
+    "candidate_04": {
+      "verdict": "partial",
+      "notes": [
+        "Belt is too visible.",
+        "Blouse and skirt concept are stable.",
+        "Side view is useful."
+      ]
+    },
+    "candidate_05": {
+      "verdict": "partial",
+      "notes": [
+        "Belt is too visible.",
+        "Blouse is too white/plain compared with ivory reference.",
+        "Side view remains useful for shoe and skirt silhouette."
+      ]
+    }
+  },
+  "recommended_next_action": {
+    "decision": "keep_two_view_as_diagnostic_input_not_main_final_output_yet",
+    "next_test": "Run a stricter identity-preservation prompt on the two-view input, explicitly preserving blonde hair color, glasses, face, body shape, and both poses.",
+    "prompt_adjustment": [
+      "Say: keep both women in image 1 unchanged except clothing and footwear.",
+      "Say: preserve blonde hair color in both views.",
+      "Say: belt is only a very thin partial glimpse under blouse hem, not a full visible belt.",
+      "Say: do not change face, hair, glasses, body proportions, background, or camera."
+    ]
+  }
+}

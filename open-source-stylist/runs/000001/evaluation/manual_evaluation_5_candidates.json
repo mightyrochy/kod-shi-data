@@ -1,0 +1,95 @@
+{
+  "schema_version": "0.1",
+  "run_id": "000001",
+  "evaluation_type": "manual_visual_review",
+  "evaluated_outputs": [
+    "../output/candidate_01.png",
+    "../output/candidate_02.png",
+    "../output/candidate_03.png",
+    "../output/candidate_04.png",
+    "../output/candidate_05.png"
+  ],
+  "contact_sheet": "../output/contact_sheet_5_candidates.png",
+  "overall_verdict": "partial_pass_strong_baseline",
+  "summary": {
+    "what_worked": [
+      "The old gray sweater, blue jeans, and socks are removed in all five outputs.",
+      "The generated person remains broadly recognizable as the source person.",
+      "The room background and front standing composition are mostly preserved.",
+      "The ivory blouse appears in all five outputs.",
+      "The brown long skirt appears in all five outputs.",
+      "The dark green open-toe shoes appear in all five outputs.",
+      "The large gold disc earrings appear in all five outputs.",
+      "The blouse-over-skirt layering is broadly followed."
+    ],
+    "main_failures": [
+      "The belt is mostly missing or only barely implied.",
+      "The skirt front slit is inconsistent and often becomes a generic vertical opening.",
+      "The skirt silhouette/color changes across candidates from warm brown to more saturated reddish brown.",
+      "The green wedge sandals are simplified; ankle strap, buckle, wedge mass, and crocodile-like texture are not preserved reliably.",
+      "The gold earrings are exaggerated and simplified; dark top element and ridged spiral detail are inconsistent.",
+      "The blouse keeps the general shape but loses fine fabric behavior and exact sleeve/cuff detail.",
+      "The face is mildly beautified/smoothed compared with the source.",
+      "The body shape is somewhat compressed/stylized in some candidates."
+    ],
+    "stability_observation": [
+      "The same prompt/reference package produces a very consistent outfit concept.",
+      "Details vary across candidates even when the overall outfit is stable.",
+      "The model is good at semantic outfit transfer, but not yet good at exact garment fidelity."
+    ]
+  },
+  "candidate_notes": {
+    "candidate_01": {
+      "verdict": "best_overall_balance",
+      "notes": [
+        "Good full-body composition and outfit completeness.",
+        "Skirt slit visible.",
+        "Shoes readable, though texture is simplified.",
+        "Earrings present but oversized/simplified."
+      ]
+    },
+    "candidate_02": {
+      "verdict": "partial",
+      "notes": [
+        "Good blouse and skirt presence.",
+        "Skirt color is more saturated than reference.",
+        "Lower body and shoes are less natural."
+      ]
+    },
+    "candidate_03": {
+      "verdict": "partial",
+      "notes": [
+        "Blouse buttons and silhouette are readable.",
+        "Skirt slit is less faithful.",
+        "Shoe/foot detail is weak."
+      ]
+    },
+    "candidate_04": {
+      "verdict": "partial",
+      "notes": [
+        "Cleanest central composition.",
+        "Skirt becomes more generic and saturated.",
+        "Shoe structure is simplified."
+      ]
+    },
+    "candidate_05": {
+      "verdict": "partial",
+      "notes": [
+        "Blouse-over-skirt logic is followed.",
+        "Lower hem and shoe area are weaker.",
+        "Skirt slit and belt are not reliable."
+      ]
+    }
+  },
+  "recommended_next_action": {
+    "priority": "postproduction_or_prompt_control_test",
+    "target": "detail_fidelity",
+    "specific_next_test": "Use candidate_01 as the first repair target and attempt one local repair for either belt visibility or shoe detail. Do not change the whole outfit pipeline yet.",
+    "do_not_do_next": [
+      "Do not add wardrobe/catalog features.",
+      "Do not switch primary model yet.",
+      "Do not redesign the whole adapter based on these five outputs.",
+      "Do not judge the run only by beauty; evaluate against outfit_package.json."
+    ]
+  }
+}
