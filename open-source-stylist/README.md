@@ -1,66 +1,33 @@
 # Open Source Stylist
 
-Open Source Stylist is an open-source automatic stylist and outfit-transfer
-pipeline.
-
-Current working path:
+Automated outfit transfer pipeline, fully local:
 
 ```text
-manual outfit package
--> Qwen-Image-Edit-2511 through ComfyUI
--> evaluator through LM Studio
--> targeted postproduction repair
--> repeatable run folder
+person photo + outfit package
+-> QIE-2511 (Qwen-Image-Edit-2511) through ComfyUI
+-> VLM observations through LM Studio (advisory)
+-> human review and conclusions
+-> numbered run folder with full record
 ```
 
-Primary Try-On/Base Edit Engine for the current phase:
+Stack: Python, ComfyUI (:8000), LM Studio (:1234), Qwen-Image-Edit-2511 +
+Lightning LoRA, FLUX Fill, RTX 4090 Laptop 16GB.
+
+## Where to start
+
+- `CLAUDE.md` — project instructions, SOP, technical context
+- `PLAN.md` — active build roadmap (phases A–F)
+- `FINDINGS.md` — empirical ground truth from testing
+- `DECISIONS.md` — architectural decisions
+- `PROJECT_LEDGER.md` — durable project history
+- `SYSTEM_DESIGN.md` / `SYSTEM_DESIGN_R4.md` — design vision
+
+## Running
 
 ```text
-Qwen-Image-Edit-2511 fp8mixed through ComfyUI
+python -m pipeline.run_v1alpha [source_run_id] [--resolution WxH] [--hypothesis "..."]
 ```
 
-Postproduction tools are downstream repair tools. They do not replace the Qwen
-base engine unless the roadmap is explicitly changed.
-
-## Where To Start
-
-- `PROJECT_STATE.md` - current snapshot.
-- `PROJECT_LEDGER.md` - durable project path and recovered history.
-- `WORKFLOW.md` - how work blocks should be run.
-- `ROADMAP.md` - current milestone order.
-- `DECISIONS.md` - architectural decisions.
-- `SESSION_LOG.md` - chronological work-block notes.
-
-Archived starter material is preserved in:
-
-```text
-docs/archive
-```
-
-## Active Milestone
-
-```text
-M1 - One Controlled Manual Outfit Run
-```
-
-Current run:
-
-```text
-runs/000001
-```
-
-Current best base-generation direction:
-
-```text
-runs/000001/experiments/two_view_prompt_v4
-```
-
-Current postproduction setup:
-
-```text
-runs/000001/repair/masked_local_edit_proof_v1
-schemas/postproduction_repair_request.schema.json
-```
-
-No broad catalog, UI, database, or multi-model benchmark work is active until
-the core run/evaluate/repair loop works.
+Each invocation creates a new numbered run under `runs/experiments/v1alpha/`.
+VLM evaluation output is advisory — conclusions are written only after human
+review of the generated image.

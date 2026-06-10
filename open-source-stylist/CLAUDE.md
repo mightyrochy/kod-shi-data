@@ -80,7 +80,7 @@ Everything else must be built.
   /prompts/       — role prompts (stylist, person_analysis, outfit_adapter, evaluator)
   /schemas/       — JSON schemas for pipeline data
   /tools/         — standalone utility scripts
-  LEDGER.md       — run history and test observations
+  PROJECT_LEDGER.md — run history and test observations
   DECISIONS.md    — architectural decisions and rationale
   WORKFLOW.md     — current pipeline state
   FINDINGS.md     — empirical findings from testing (ground truth)
@@ -120,6 +120,6 @@ A result passes only when all four criteria are met or explicitly accepted by th
 ## Previous work
 Files in this project are from a previous development attempt.
 - Read them to understand context, past decisions, and what was tested
-- LEDGER.md and FINDINGS.md are the ground truth for what was observed empirically
+- PROJECT_LEDGER.md and FINDINGS.md are the ground truth for what was observed empirically
 - Do not treat previous code or architecture as the correct approach
 - Approach each problem fresh based on goals, not on what was previously attempted

@@ -1,152 +1,64 @@
-# Working Protocol
+# WORKFLOW — current pipeline state
 
-This file defines how Codex should work on the project.
+Last updated: 2026-06-10.
 
-## Core Rule
-
-Every work block must have one small target.
-
-Good target:
+## Executable pipeline (V1-alpha)
 
 ```text
-Create a run folder contract and prepare runs/000001.
+python -m pipeline.run_v1alpha [source_run_id] [--resolution WxH] [--hypothesis "..."]
 ```
 
-Bad target:
+Steps performed per invocation:
+
+1. Locate source run (`runs/experiments/v1alpha/NNNNNN` or legacy `runs/NNNNNN`).
+2. Create a new numbered run folder under `runs/experiments/v1alpha/`.
+3. Copy inputs (person image, outfit package, prompt, reference board) into `input/`.
+4. Write `experiment/config.json` (model, LoRA, steps, cfg, sampler, resolution, hypothesis).
+5. Free VRAM (`POST /free`), build the QIE-2511 workflow from
+   `pipeline/workflows/qie2511_vton.json`, submit to ComfyUI.
+6. Download the generated image to `output/output.png`.
+7. Free VRAM, run VLM evaluation (qwen3-vl-8b via LM Studio), save raw result
+   to `conclusion/evaluation.json`, unload the VLM.
+8. Print VLM observations to terminal and stop.
+
+## Evaluation discipline
+
+- `conclusion/evaluation.json` is **raw VLM output** — experiment data, not a verdict.
+- VLM observations are advisory only (documented hallucinations at low resolution).
+- Conclusions are written to `conclusion/notes.md` and FINDINGS.md **only after
+  human review** of the output image. No commit of conclusions before that.
+- Final quality verdict belongs to the owner (CLAUDE.md SOP).
+
+## Run folder layout
 
 ```text
-Build the whole stylist pipeline.
+runs/experiments/v1alpha/NNNNNN/
+  input/        person image, outfit_package.json, prompt.txt, reference board
+  output/       output.png
+  experiment/   config.json, workflow_submitted.json
+  conclusion/   evaluation.json (raw VLM), notes.md (human)
+  run.log       timestamped execution log
 ```
 
-## Session Start Checklist
+## Modules
 
-For a new Codex chat or a resumed long chat:
+| File | Role |
+|---|---|
+| `pipeline/run_v1alpha.py` | orchestrator (closed loop) |
+| `pipeline/outfit_adapter.py` | reference panel, prompt build, workflow fill |
+| `pipeline/comfyui_client.py` | ComfyUI REST client (submit, poll, download, /free) |
+| `pipeline/lmstudio_client.py` | LM Studio REST client (chat, vision, unload) |
+| `pipeline/evaluator.py` | 4-criterion VLM evaluation (advisory) |
+| `pipeline/run_io.py` | numbered run folder creation, logging |
+| `pipeline/confirm_run.py` | append human review notes to a run |
+| `pipeline/smoke_test.py` | environment smoke test (8 checks) |
+| `tools/upscale.py` | standalone AI/LANCZOS upscaler |
+| `tools/postproduction_color_repair.py` | standalone color repair (legacy, working) |
 
-1. Read `AGENTS.md`.
-2. Read `PROJECT_STATE.md`.
-3. Read `PROJECT_LEDGER.md`.
-4. Read this file.
-5. Confirm the active milestone from `ROADMAP.md`.
-6. State the one target for the work block.
+## Known constraints
 
-If the user asks a broad question, answer it, but do not start broad
-implementation without narrowing the next action.
-
-## Session End Checklist
-
-Before finishing after any meaningful work:
-
-1. Update `PROJECT_STATE.md` if the current state changed.
-2. Update `PROJECT_LEDGER.md` if the durable project path changed.
-3. Add one entry to `SESSION_LOG.md`.
-4. Update `DECISIONS.md` if an architectural choice was made.
-5. Record blockers as concrete missing inputs or failed checks.
-6. Name the next smallest task.
-
-## Project Memory Files
-
-Use these files for different jobs:
-
-- `PROJECT_LEDGER.md`: durable path of the project. Append or update carefully
-  when the real project story changes.
-- `PROJECT_STATE.md`: current snapshot only. Keep it short enough to read at the
-  start of every session.
-- `SESSION_LOG.md`: chronological work-block notes. It is useful history, but
-  it is not the only source of the project path.
-- `DECISIONS.md`: architectural decisions that should not be re-litigated.
-
-Research docs in `docs/` are supporting notes unless a conclusion is promoted
-into `PROJECT_LEDGER.md` or `DECISIONS.md`.
-
-## Task Contract
-
-Each task should have:
-
-- purpose;
-- inputs;
-- output files;
-- verification;
-- verdict.
-
-If any of these are unclear, choose the smallest reasonable assumption and
-record it. Ask the user only when the missing answer blocks progress.
-
-## Run Folder Contract
-
-Every generated experiment should live under:
-
-```text
-runs/<run_id>/
-  input/
-  references/
-  outfit/
-  qwen/
-  output/
-  evaluation/
-  repair/
-  notes.md
-```
-
-Minimum useful run files:
-
-```text
-runs/<run_id>/input/person.*
-runs/<run_id>/input/request.txt
-runs/<run_id>/outfit/outfit_package.json
-runs/<run_id>/qwen/prompt.txt
-runs/<run_id>/qwen/settings.json
-runs/<run_id>/output/generated.*
-runs/<run_id>/evaluation/evaluation.json
-runs/<run_id>/notes.md
-```
-
-If generation or evaluation fails, still save:
-
-```text
-runs/<run_id>/notes.md
-runs/<run_id>/qwen/blocker.json
-```
-
-## Definition Of Done
-
-A task is done only when:
-
-- the requested file/code/artifact exists;
-- it was checked in the simplest appropriate way;
-- the result or blocker is recorded;
-- the next step is smaller than a milestone.
-
-## Anti-Drift Rules
-
-Stop expanding and return to the active milestone if:
-
-- a task needs more than one new external tool;
-- a task proposes database + UI + model changes together;
-- the work is mainly a discussion without an artifact;
-- a failure is not tied to a saved run folder;
-- the next step cannot be described in one sentence.
-
-## When To Use Old Project Files
-
-Use old files only for a named purpose:
-
-- inspect a schema;
-- copy a proven prompt idea;
-- compare a run output;
-- recover a ComfyUI API approach;
-- reuse a reference board concept.
-
-Do not import old project structure wholesale.
-
-## When To Use Extra Agents
-
-Use sub-agents only when the user explicitly asks for agent delegation or
-parallel agent work.
-
-Good delegated tasks later:
-
-- inspect old adapter code and summarize reusable parts;
-- research one specific postproduction model;
-- review a schema for contradictions.
-
-Do not delegate the immediate blocking task.
+- Generation: QIE-2511 fp8mixed + Lightning LoRA, 4 steps, cfg 1.0 — do not
+  raise steps with LoRA enabled (40 steps confirmed worse).
+- Colors must come from reference images, never from prompt text.
+- VRAM 16GB: generation and VLM are sequenced via /free + unload, never resident together.
+- Working resolution: under evaluation (Phase A1; 928×1344 tested in run 000003).
