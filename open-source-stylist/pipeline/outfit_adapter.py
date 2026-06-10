@@ -66,6 +66,19 @@ def _detect_image_size(path: Path) -> tuple[int, int]:
     return (w // 16) * 16, (h // 16) * 16
 
 
+def _resize_image_to(path: Path, width: int, height: int) -> Path:
+    """Return path to a LANCZOS-upscaled copy of the image at (width, height).
+
+    Writes to a temp file; caller is responsible for cleanup only if needed
+    (temp files are OS-managed). Original is never modified.
+    """
+    with Image.open(path) as img:
+        resized = img.convert("RGB").resize((width, height), Image.LANCZOS)
+    tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+    resized.save(tmp.name)
+    return Path(tmp.name)
+
+
 def _select_reference_images(outfit_package: dict, max_images: int = 4) -> list[Path]:
     """Pick the most visually important garment images from the outfit package.
 
@@ -128,6 +141,8 @@ class OutfitAdapter:
 
         if resolution is not None:
             w, h = resolution
+            # upscale person image to generation resolution before upload
+            person_image = _resize_image_to(person_image, w, h)
         else:
             w, h = _detect_image_size(person_image)
 
