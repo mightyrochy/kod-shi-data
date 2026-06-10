@@ -32,3 +32,36 @@ VLM ↔ generation model swaps will cost roughly 15-60s per swap depending on th
 generation model's load time (not yet measured — needs a real generation run).
 
 ---
+
+## 2026-06-10 — V1-alpha first automated run (run_000001)
+
+**Pipeline:** `python -m pipeline.run_v1alpha 000001`
+**Model:** QIE-2511 fp8mixed + Lightning LoRA, 4 steps, euler/simple, cfg=1.0
+**Input:** person_front.png (464×672) + qwen/reference_board_clean.png
+**Generation time:** 34.3s on RTX 4090 (16GB)
+**Evaluation model:** qwen3-vl-8b-instruct (Q4_K_M)
+
+**Automated evaluation result:**
+| Criterion | Result | Notes |
+|-----------|--------|-------|
+| Identity preserved | PASS | Face, hair, body shape, pose, background correct |
+| Outfit items present | FAIL | Sandals: black heels instead of dark green wedge; earrings not visible |
+| Outfit logic | FAIL | Skirt mid-calf not ankle-length; belt not visible |
+| Colors/textures match | FAIL | Sandals wrong color/type; belt absent |
+| Overall | FAIL | |
+
+**Pattern confirmed:** Identity is reliably preserved. Accessories (belt, earrings)
+and footwear details (color, type, texture) are the primary failure points.
+Skirt length tends to be shorter than specified.
+
+**Matches prior manual evaluations** from runs/000001/evaluation/ — automated
+evaluator surfaces the same failure modes human review found.
+
+**Generation model load time:** QIE-2511 fp8mixed loads in ~30s (inferred from
+34.3s total for 4-step inference; prior smoke test showed idle load = near-instant,
+so most of that 34s is model load + 4 inference steps).
+
+**Implication:** Evaluation pipeline is working correctly. Generation quality is
+the variable to improve — bench-off (§7 R4) is the next step.
+
+---
