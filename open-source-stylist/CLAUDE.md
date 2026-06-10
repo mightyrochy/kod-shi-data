@@ -83,7 +83,7 @@ Everything else must be built.
 - Prompt influence is weak — model relies primarily on reference images, not text instructions
 - FLUX Fill confirmed for masked inpainting (mask locality: 0.048% outside mask)
 - LM Studio runs local VLM for person analysis and evaluation (localhost:1234)
-- ComfyUI is the execution environment (localhost:8188)
+- ComfyUI is the execution environment (localhost:8000)
 
 **Known problems:**
 - Consistency: same input produces slightly different results each run (expected diffusion behavior)
