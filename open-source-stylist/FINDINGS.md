@@ -64,6 +64,38 @@ so most of that 34s is model load + 4 inference steps).
 **Implication:** Evaluation pipeline is working correctly. Generation quality is
 the variable to improve — bench-off (§7 R4) is the next step.
 
+## 2026-06-10 — V1-alpha run 2: color-free prompts (run_000001, second generation)
+
+**Change from run 1:** All color adjectives removed from outfit_package.json and
+prompt.txt. Added explicit instruction: "Use reference images for exact colors,
+textures, and material finish. Do not use text descriptions for color."
+
+**Automated evaluation:**
+| Criterion | Result | Change vs run 1 |
+|-----------|--------|-----------------|
+| Identity preserved | PASS | same |
+| Outfit items present | FAIL | similar (earrings/belt still missing per VLM) |
+| Outfit logic | PASS | improved (was FAIL run 1) |
+| Colors/textures | FAIL | VLM now correctly says blouse "light yellow" — improved |
+| Overall | FAIL | |
+
+**Visual assessment (human):**
+- Body proportions: significantly improved vs run 1 — closer to original natural figure
+- Blouse color: more yellow-tinted than run 1 (cream → pale yellow), moving toward reference lemon-green
+- Skirt: length correct, front slit visible, color matches
+- Shoes: very dark, hard to confirm color at this resolution
+- Earrings: present but small
+- Skirt pockets: still not visible
+
+**Confirmed finding:** Removing color text from prompts improved both color accuracy
+AND body proportion preservation in the same run. Hypothesis: text color labels caused
+the model to "rebuild" the garments conceptually rather than transfer from reference,
+which also affected body shape in the process.
+
+**VLM evaluator accuracy improving:** Now correctly identifies blouse as "light yellow"
+(was "cream/ivory" and called shoes "black" in run 1). Still struggles with small
+texture details (earring spiral, shoe croco) at 464×672 resolution.
+
 ### Human correction of automated evaluation (same run)
 
 Manual review of runs/000001/v1alpha/output.png against the same criteria:
@@ -103,6 +135,22 @@ Manual review of runs/000001/v1alpha/output.png against the same criteria:
 - False negatives: missed blouse color fail, missed body proportion reduction
 - VLM struggles with low-resolution detail assessment
 
+**Blouse color clarification:** The reference image (blouse_ivory_front.webp) is
+actually a pale lime/chartreuse green, NOT ivory as described in outfit_package.
+The generated blouse is white/cream — a color fail, confirmed visually.
+The package description "pale ivory" does not match the actual reference image color.
+
+**Root cause of body proportion failure — confirmed mechanism:**
+Product reference images (blouse, skirt) feature visibly slimmer models.
+QIE-2511 learns body shape from BOTH input images — person AND garment references.
+Result: model partially transfers the reference model's silhouette onto the
+input person. This is not random drift — it is systematic behavior. The more
+reference images feature slim models, the stronger the pull toward their proportions.
+This will occur on any run using standard product photography as references.
+Mitigation options: (a) crop references to garment-only (no body visible),
+(b) add explicit body preservation prompting, (c) use a dedicated body-lock
+mechanism (pose/silhouette conditioning).
+
 **Action items logged:**
 1. Resolution too low (464×672) — limits both generation quality AND evaluation
    accuracy. Next run should use higher resolution.
@@ -110,5 +158,9 @@ Manual review of runs/000001/v1alpha/output.png against the same criteria:
    or expand identity criterion to cover it explicitly.
 3. VLM evaluator calibration is unreliable at current image size — evaluation
    results must be treated as advisory until resolution is increased.
+4. Crop reference images to garment-only before feeding to QIE-2511 — removes
+   reference model body from conditioning and reduces proportion transfer.
+5. outfit_package visual_description for blouse says "pale ivory" but actual
+   reference is pale lime/chartreuse green — package description needs correction.
 
 ---
