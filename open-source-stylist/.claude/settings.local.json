@@ -8,7 +8,17 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Admin\\\\Open Source Stylist\" -Recurse -Force | Where-Object { -not $_.PSIsContainer } | Select-Object FullName | ConvertTo-Csv -NoTypeInformation | Out-String)",
       "Bash(dir \"C:\\\\Users\\\\Admin\\\\Open Source Stylist\\\\.history\")",
       "Bash(git init *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git config *)",
+      "Bash(git commit -m ' *)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "PowerShell(try { $r = Invoke-RestMethod -Uri \"http://127.0.0.1:8188/system_stats\" -TimeoutSec 5; \"PORT 8188: ComfyUI version $\\($r.system.comfyui_version\\), VRAM total $\\([math]::Round\\($r.devices[0].vram_total/1GB,1\\)\\)GB, free $\\([math]::Round\\($r.devices[0].vram_free/1GB,1\\)\\)GB\" } catch { \"PORT 8188: no response — $\\($_.Exception.Message\\)\" })",
+      "PowerShell(python --version)",
+      "PowerShell(pip --version 2>$null)",
+      "PowerShell(python -c \"import requests, PIL, numpy; print\\('requests', requests.__version__, '| PIL', PIL.__version__, '| numpy', numpy.__version__\\)\")",
+      "PowerShell($data = Invoke-RestMethod -Uri \"http://127.0.0.1:8000/object_info\" -TimeoutSec 30; $node = $data.TextEncodeQwenImageEditPlus; Write-Output \"=== REQUIRED ===\"; $node.input.required | ConvertTo-Json -Depth 5; Write-Output \"`n=== OPTIONAL ===\"; $node.input.optional | ConvertTo-Json -Depth 5; Write-Output \"`n=== OUTPUT ===\"; $node.output; Write-Output \"`n=== OUTPUT_NAME ===\"; $node.output_name)",
+      "Bash(python -c ' *)"
     ]
   }
 }
