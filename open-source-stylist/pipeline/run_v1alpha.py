@@ -198,7 +198,7 @@ def main(source_run_id: str = "000001", hypothesis: str = "", resolution: tuple[
         return 1
 
     eval_time = time.monotonic() - t_eval
-    run.log(f"eval done in {eval_time:.1f}s  pass={result.get('overall_pass')}")
+    run.log(f"eval done in {eval_time:.1f}s  vlm_pass={result.get('overall_pass')}")
 
     run.save_json("conclusion/evaluation.json", result)
 
@@ -208,10 +208,11 @@ def main(source_run_id: str = "000001", hypothesis: str = "", resolution: tuple[
         pass
 
     # -- summary ---------------------------------------------------------------
-    run.log("done")
+    run.log("generation + eval done — awaiting human review before conclusions")
     print()
     print("=" * 60)
-    print(f"EVALUATION — run {run.run_id}  (source: {source_run_id})")
+    print(f"VLM OBSERVATIONS — run {run.run_id}  (source: {source_run_id})")
+    print("Raw VLM output. Review output image before drawing conclusions.")
     print("=" * 60)
     for verdict_key, notes_key in [
         ("identity_preserved",  "identity_notes"),
@@ -221,17 +222,19 @@ def main(source_run_id: str = "000001", hypothesis: str = "", resolution: tuple[
     ]:
         v = result.get(verdict_key)
         n = result.get(notes_key, "")
-        print(f"  [{'PASS' if v else 'FAIL'}] {verdict_key.replace('_',' ').upper()}")
+        print(f"  [{'pass' if v else 'fail'}] {verdict_key.replace('_',' ')}")
         if n:
             print(f"         {n}")
     print()
     overall = result.get("overall_pass", False)
-    print(f"  OVERALL: {'PASS' if overall else 'FAIL'}")
+    print(f"  VLM overall: {'pass' if overall else 'fail'}")
     print(f"  {result.get('summary', '')}")
     print("=" * 60)
-    print(f"\nRun folder: runs/experiments/v1alpha/{run.run_id}/")
+    print(f"\nOutput:     runs/experiments/v1alpha/{run.run_id}/output/output.png")
+    print(f"Evaluation: runs/experiments/v1alpha/{run.run_id}/conclusion/evaluation.json")
+    print("Review the output, then add conclusions to conclusion/notes.md before committing.")
 
-    return 0 if overall else 1
+    return 0
 
 
 if __name__ == "__main__":
