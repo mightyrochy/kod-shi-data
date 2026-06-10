@@ -106,6 +106,7 @@ class OutfitAdapter:
         *,
         seed: int | None = None,
         output_prefix: str = "qie_vton",
+        resolution: tuple[int, int] | None = None,
     ) -> dict:
         """Upload images and return a filled, ready-to-submit workflow dict.
 
@@ -116,6 +117,8 @@ class OutfitAdapter:
             prompt: the text prompt describing the desired outfit transfer.
             seed: random seed (None = random).
             output_prefix: ComfyUI SaveImage filename prefix.
+            resolution: optional (width, height) override. If None, auto-detected
+                        from person_image (rounded to multiple of 16).
 
         Returns:
             A dict in ComfyUI API format, ready for ComfyUIClient.run().
@@ -123,7 +126,10 @@ class OutfitAdapter:
         person_image = Path(person_image)
         reference_image = Path(reference_image)
 
-        w, h = _detect_image_size(person_image)
+        if resolution is not None:
+            w, h = resolution
+        else:
+            w, h = _detect_image_size(person_image)
 
         person_server = self.comfy.upload_image(person_image)
         ref_server = self.comfy.upload_image(reference_image)
@@ -153,6 +159,7 @@ class OutfitAdapter:
         seed: int | None = None,
         output_prefix: str = "qie_vton",
         prompt_path: Path | None = None,
+        resolution: tuple[int, int] | None = None,
     ) -> dict:
         """High-level entry point for automated use.
 
@@ -188,6 +195,7 @@ class OutfitAdapter:
             prompt,
             seed=seed,
             output_prefix=output_prefix,
+            resolution=resolution,
         )
 
 

@@ -85,6 +85,7 @@ Everything else must be built.
   WORKFLOW.md     — current pipeline state
   FINDINGS.md     — empirical findings from testing (ground truth)
   SYSTEM_DESIGN.md — full system design across V1/V2/V3, stage interfaces, open questions
+  PLAN.md          — active build & verification roadmap (phases A–F), living document
   CLAUDE.md       — this file
 ```
 

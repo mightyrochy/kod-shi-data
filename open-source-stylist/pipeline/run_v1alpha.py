@@ -63,7 +63,7 @@ def _find_source(source_id: str) -> Path:
     )
 
 
-def main(source_run_id: str = "000001", hypothesis: str = "") -> int:
+def main(source_run_id: str = "000001", hypothesis: str = "", resolution: tuple[int, int] | None = None) -> int:
     source_path = _find_source(source_run_id)
 
     # -- locate inputs ---------------------------------------------------------
@@ -118,6 +118,7 @@ def main(source_run_id: str = "000001", hypothesis: str = "") -> int:
         "sampler":      EXPERIMENT_SAMPLER,
         "scheduler":    "simple",
         "vlm_eval":     VLM_MODEL,
+        "resolution":   f"{resolution[0]}x{resolution[1]}" if resolution else "auto",
         "hypothesis":   hypothesis,
     })
 
@@ -145,6 +146,7 @@ def main(source_run_id: str = "000001", hypothesis: str = "") -> int:
         reference_board     = ref_board_local if ref_board_local.exists() else None,
         prompt_path         = prompt_local     if prompt_local.exists()     else None,
         output_prefix       = f"run{run.run_id}",
+        resolution          = resolution,
     )
     run.save_json("experiment/workflow_submitted.json", workflow)
     run.log("workflow built")
@@ -234,9 +236,19 @@ def main(source_run_id: str = "000001", hypothesis: str = "") -> int:
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    src  = args[0] if args else "000001"
+    src  = args[0] if args and not args[0].startswith("--") else "000001"
     hyp  = ""
+    res  = None
     if "--hypothesis" in args:
         i   = args.index("--hypothesis")
         hyp = args[i + 1] if i + 1 < len(args) else ""
-    sys.exit(main(src, hyp))
+    if "--resolution" in args:
+        i = args.index("--resolution")
+        val = args[i + 1] if i + 1 < len(args) else ""
+        try:
+            rw, rh = (int(x) for x in val.lower().split("x"))
+            res = (rw, rh)
+        except ValueError:
+            print(f"ERROR: --resolution must be WxH (e.g. 928x1344), got: {val!r}")
+            sys.exit(1)
+    sys.exit(main(src, hyp, res))
