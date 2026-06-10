@@ -64,4 +64,51 @@ so most of that 34s is model load + 4 inference steps).
 **Implication:** Evaluation pipeline is working correctly. Generation quality is
 the variable to improve — bench-off (§7 R4) is the next step.
 
+### Human correction of automated evaluation (same run)
+
+Manual review of runs/000001/v1alpha/output.png against the same criteria:
+
+**Person/identity:**
+- Face: PASS (borderline — slight color cooling)
+- Body proportions: FAIL — chest and waist visibly reduced; chest is the worse
+  failure zone. NOT captured by the evaluator (no criterion for this).
+
+**Earrings:** PASS (present, slightly simplified; resolution prevents detail
+  assessment of texture/hang logic — minor logic issue with hang angle)
+
+**Blouse:**
+- Shape/form: PASS; sleeve volume slightly off, not critical
+- Color: FAIL (definitive) — VLM missed this entirely
+- Buttons: inconclusive (resolution too low), generally PASS
+- Hem/peplum: PASS
+
+**Skirt:**
+- Length: PASS
+- Front slit: FAIL — VLM caught this
+- Pockets: FAIL — VLM caught this
+- Color + texture: FAIL — VLM caught this
+- Belt: absent; user verdict = NOT a fail (outfit logic allows partially hidden
+  belt; model chose to hide it completely which is within the spec)
+
+**Shoes:** Color BARELY PASS (dark green present, slightly darker than ref);
+  texture inconclusive (resolution); shape PASS.
+  VLM incorrectly called this "black heels" — a hallucination.
+
+**Overall impression:** person looks "polished/smoothed"; outfit noticeably
+  simplified vs reference.
+
+**VLM evaluator verdict from human: FAIL**
+- False positives: shoes called black (actually dark green), earrings called
+  missing (they are present)
+- False negatives: missed blouse color fail, missed body proportion reduction
+- VLM struggles with low-resolution detail assessment
+
+**Action items logged:**
+1. Resolution too low (464×672) — limits both generation quality AND evaluation
+   accuracy. Next run should use higher resolution.
+2. Body proportion criterion missing from eval schema — add as 5th criterion
+   or expand identity criterion to cover it explicitly.
+3. VLM evaluator calibration is unreliable at current image size — evaluation
+   results must be treated as advisory until resolution is increased.
+
 ---
