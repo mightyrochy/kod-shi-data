@@ -192,7 +192,11 @@ class OutfitAdapter:
 
 
 def _build_prompt_from_package(pkg: dict) -> str:
-    """Generate a concise outfit transfer prompt from the outfit_package dict."""
+    """Generate a concise outfit transfer prompt from the outfit_package dict.
+
+    Colors are intentionally excluded from the prompt — the model must read
+    colors, textures, and material finish directly from the reference images.
+    """
     items = pkg.get("items", [])
     person_inputs = pkg.get("person_inputs", {})
     preserve = person_inputs.get("preserve", [])
@@ -200,9 +204,12 @@ def _build_prompt_from_package(pkg: dict) -> str:
     logic = pkg.get("outfit_logic", [])
     negatives = pkg.get("negative_constraints", [])
 
+    # Filter out "same person" duplication from preserve list
+    preserve_filtered = [p for p in preserve if p.lower() != "same person"]
+
     lines = [
         "Edit image 1 using image 2 as the garment reference. "
-        "Keep the same person — " + ", ".join(preserve[:6]) + ".",
+        "Keep the same person — " + ", ".join(preserve_filtered[:6]) + ".",
         "",
     ]
     if replace:
@@ -219,6 +226,12 @@ def _build_prompt_from_package(pkg: dict) -> str:
         lines.append("Outfit layout:")
         for rule in logic:
             lines.append(f"- {rule}")
+
+    lines.append("")
+    lines.append(
+        "Use the reference images for exact colors, textures, and material finish "
+        "of every garment. Do not use text descriptions for color."
+    )
 
     if negatives:
         lines.append("")
