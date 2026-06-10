@@ -39,6 +39,21 @@ Everything else must be built.
 - Read-only operations (reading files, checking status, scanning) proceed without confirmation
 - Never delete or overwrite files without explicit permission
 
+### Task sizing
+- Before starting any non-trivial task, the assistant (Claude Code / Claude AI) must soberly assess its scope and complexity
+- Based on that assessment, recommend the execution mode: which model (Opus / Sonnet / Haiku / Fable), what effort level, and whether the task belongs in Claude Code or Claude AI chat
+- If a task is too large for one session or one model tier — say so and propose how to split it
+- Do not inflate small tasks into big ones, and do not start big tasks casually as if they were small
+
+**Effort level reference** (UI scale: low → medium → high → extra → max → ultracode; "extra" is the API level `xhigh`). Effort controls the model's reasoning and token budget — it affects thinking depth, number of tool calls, and thoroughness of verification, not just response length:
+- `low` — short, scoped, mechanical tasks where speed matters and intelligence doesn't: running known scripts, status checks, commits, renames, formatting
+- `medium` — routine engineering inside established patterns: small fixes, adding code by analogy with existing code, doc updates. Good cost/quality balance for ordinary work
+- `high` — the default and the workhorse. New modules, integrations, non-trivial debugging, most pipeline-building work in this project
+- `extra` (`xhigh`) — deep research, architecture design, long agentic sessions, debugging across multiple systems, bench-off analysis. Noticeably higher token spend
+- `max` — frontier-difficulty problems only. No token constraints; documented diminishing returns and overthinking risk on normal tasks. Session-only setting
+- `ultracode` — not a model effort level: a Claude Code mode that pins `extra` and additionally lets Claude orchestrate multi-agent workflows autonomously. For very large multi-part builds; the most expensive option; session-only
+- The effort scale is calibrated per model — the same level name means different depth on different models. Combine with model choice: Haiku/Sonnet + low–medium for routine, Sonnet + high as default, Opus/Fable + extra for design and research
+
 ### Reporting results
 - After each task: short factual summary — what was done, what the result was, what's next
 - Report failures plainly: what failed, why, what the fix is
