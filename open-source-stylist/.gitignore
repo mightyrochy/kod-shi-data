@@ -24,7 +24,7 @@ env/
 *.q4_1
 *.q8_0
 
-# Generated images and video
+# Generated images and video — exclude by default
 runs/*/output/
 runs/*/outputs/
 runs/*/repair/*/outputs/
@@ -35,6 +35,9 @@ runs/*/experiments/*/outputs/
 *.webp
 *.mp4
 *.gif
+
+# Un-ignore intentional tracked images
+# legacy runs: input and reference images
 !runs/*/input/*.png
 !runs/*/input/*.jpg
 !runs/*/input/*.jpeg
@@ -44,15 +47,21 @@ runs/*/experiments/*/outputs/
 !runs/*/references/*.jpeg
 !runs/*/references/*.webp
 
-# experiments folder: reference outputs and v1alpha run inputs/outputs
+# experiments: un-ignore the folders themselves first, then their images
+!runs/experiments/
+!runs/experiments/output/
 !runs/experiments/output/*.png
 !runs/experiments/output/*.jpg
 !runs/experiments/output/*.jpeg
 !runs/experiments/output/*.webp
+!runs/experiments/v1alpha/
+!runs/experiments/v1alpha/*/
+!runs/experiments/v1alpha/*/input/
 !runs/experiments/v1alpha/*/input/*.png
 !runs/experiments/v1alpha/*/input/*.jpg
 !runs/experiments/v1alpha/*/input/*.jpeg
 !runs/experiments/v1alpha/*/input/*.webp
+!runs/experiments/v1alpha/*/output/
 !runs/experiments/v1alpha/*/output/*.png
 !runs/experiments/v1alpha/*/output/*.jpg
 
