@@ -164,3 +164,51 @@ mechanism (pose/silhouette conditioning).
    reference is pale lime/chartreuse green — package description needs correction.
 
 ---
+
+## 2026-06-10 — Phase A1: resolution experiment (run_000003, 928×1344)
+
+**Hypothesis:** generation at 928×1344 (2x baseline) improves garment detail and VLM accuracy.
+**Source:** runs/000001 (same inputs as runs 1–2)
+**Input:** person_front.png **4x AI-upscaled** (469×672 → 1876×2688, RealESRGAN_x4plus, 1.1s GPU)
+**Generation:** QIE-2511 fp8mixed + Lightning LoRA, 4 steps, 928×1344
+**Generation time:** 60.7s (vs 34.3s baseline — +77%, expected for ~4x pixel area)
+**Evaluation model:** qwen3-vl-8b-instruct, resized to 672px long-edge (new: fixed VLM input size)
+
+**Automated evaluation:**
+| Criterion | Result | Change vs run 2 (464×672) |
+|-----------|--------|---------------------------|
+| Identity preserved | PASS | same |
+| Outfit items present | FAIL | similar (shoes type wrong, earring texture) |
+| Outfit logic | FAIL | similar (blouse hem, shoes) |
+| Colors/textures | FAIL* | VLM now reports blouse as "light green" — correct color |
+| Overall | FAIL | |
+
+*Color FAIL is now partly a **VLM evaluation gap**: colors were removed from outfit_package
+(color-free principle), so VLM cannot compare against a known reference — it can only
+report what it sees, not whether it matches. Color appears correct to the VLM but the
+eval logic marks it FAIL by default when no reference exists.
+
+**Key finding — blouse color improved at 2x resolution:**
+Run 2 (464×672): generated blouse was white/cream (wrong).
+Run 000003 (928×1344): VLM reports "light green" — consistent with the lemon-green reference.
+Hypothesis: higher resolution allows the model to read the reference image color more accurately.
+**Human validation required** to confirm (output: runs/experiments/v1alpha/000003/output/output.png).
+
+**Infrastructure fixes discovered during this run:**
+1. VLM context overflow at 928×1344: images sent at full resolution exceeded LM Studio's
+   default 4096-token context. Fixed: evaluator now resizes images to 672px long-edge
+   before VLM (generation resolution decoupled from eval resolution).
+2. _find_source matched empty folder: v1alpha/000001 existed but was empty; matched
+   before legacy runs/000001 which had the actual files. Fixed: validate input presence.
+
+**Evaluation gap identified:**
+Color criterion is VLM-only and can't compare to reference without color in the package.
+This reinforces Phase C priority: deterministic delta-E color check against reference images
+is needed. VLM color verdict is advisory only.
+
+**Action items:**
+1. Human visual validation of 000003 output (identity, proportions, blouse color vs reference).
+2. If blouse color confirms, log resolution effect in DECISIONS.md and proceed A2 (K=5 seeds).
+3. Consider one more run at 1392x2016 (3x) or at native 1876x2688 to find the ceiling.
+
+---
