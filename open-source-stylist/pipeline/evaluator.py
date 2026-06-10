@@ -9,9 +9,17 @@ Four evaluation criteria (from CLAUDE.md):
 A result passes only when all four criteria pass, or the user explicitly accepts.
 """
 
+import io
+import tempfile
 from pathlib import Path
 
+from PIL import Image
+
 from pipeline.lmstudio_client import LMStudioClient
+
+# VLM sees images at this resolution regardless of generation resolution.
+# Keeps token count predictable and within LM Studio's default 4096-token context.
+VLM_MAX_DIM = 672
 
 DEFAULT_VLM_MODEL = "qwen3-vl-8b-instruct"
 
@@ -117,9 +125,13 @@ class Evaluator:
             A dict matching EVAL_SCHEMA.  overall_pass=True only if all 4 criteria pass.
         """
         prompt = _build_eval_prompt(outfit_package)
+        eval_images = [
+            _resize_for_vlm(Path(person_before)),
+            _resize_for_vlm(Path(generated_output)),
+        ]
         return self.lms.vision_chat(
             prompt=prompt,
-            image_paths=[Path(person_before), Path(generated_output)],
+            image_paths=eval_images,
             model=self.model,
             system=SYSTEM_PROMPT,
             json_schema=EVAL_SCHEMA,
@@ -127,3 +139,21 @@ class Evaluator:
             temperature=0.1,
             max_tokens=1500,
         )
+
+
+def _resize_for_vlm(path: Path, max_dim: int = VLM_MAX_DIM) -> Path:
+    """Return path to a temp PNG resized so longest edge <= max_dim.
+
+    If the image already fits, returns the original path unchanged.
+    """
+    with Image.open(path) as img:
+        w, h = img.size
+    if max(w, h) <= max_dim:
+        return path
+    scale = max_dim / max(w, h)
+    new_w, new_h = int(w * scale), int(h * scale)
+    with Image.open(path) as img:
+        resized = img.resize((new_w, new_h), Image.LANCZOS)
+    tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+    resized.save(tmp.name)
+    return Path(tmp.name)

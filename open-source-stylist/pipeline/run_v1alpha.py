@@ -51,15 +51,15 @@ EXPERIMENT_SAMPLER = "euler"
 
 
 def _find_source(source_id: str) -> Path:
-    """Return the path to the source run folder."""
-    candidate_v1alpha = RUNS_DIR / source_id
-    candidate_legacy  = LEGACY_RUNS / source_id
-    if candidate_v1alpha.is_dir():
-        return candidate_v1alpha
-    if candidate_legacy.is_dir():
-        return candidate_legacy
+    """Return the path to the source run folder (must contain input/person_front.png)."""
+    required = Path("input") / "person_front.png"
+    for base in (RUNS_DIR, LEGACY_RUNS):
+        candidate = base / source_id
+        if candidate.is_dir() and (candidate / required).exists():
+            return candidate
     raise FileNotFoundError(
-        f"Source run {source_id} not found in {RUNS_DIR} or {LEGACY_RUNS}"
+        f"Source run {source_id} not found (or missing input/person_front.png) "
+        f"in {RUNS_DIR} or {LEGACY_RUNS}"
     )
 
 
@@ -83,7 +83,7 @@ def main(source_run_id: str = "000001", hypothesis: str = "", resolution: tuple[
     # -- create new run --------------------------------------------------------
     run = run_io.create_run(RUNS_DIR)
     run.log(f"source={source_run_id}")
-    print(f"Source: {source_run_id}  →  New run: {run.run_id}")
+    print(f"Source: {source_run_id}  ->  New run: {run.run_id}")
 
     # -- copy inputs -----------------------------------------------------------
     for sub, src, dst_name in [
