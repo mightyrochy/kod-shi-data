@@ -127,3 +127,28 @@ Note: insightface runs on CPU only (CUDAExecutionProvider unavailable). Accurate
 GPU acceleration to be investigated before Stage 3.
 
 ---
+
+## V-PROP-001 — Proportions gate threshold (2026-06-11, E-004, PASS)
+
+Source: `experiments/004_proportions_threshold/`. Gate: `system/gates/proportions.py`,
+score = max(|shoulder_change_pct|, |waist_change_pct|, |hip_change_pct|).
+Masks: E-001 person_front mask (reused) + person_two_view front-crop (new segmentation).
+
+| Pair | Type | max_abs_pct |
+|------|------|-------------|
+| SAN-00 | sanity | 0.00% |
+| NAT-01 | natural variation | 0.35% |
+| SYN-10 | synthetic +10% | 10.19% |
+| SYN-20 | synthetic +20% | 20.18% |
+| SYN-30 | synthetic +30% | 30.22% |
+
+Gap = 9.84% (natural ceiling 0.35%, synthetic floor 10.19%).
+
+**Provisional threshold: 5.3%**
+- max_abs_change_pct <= 5.3% -> PASS (proportions preserved)
+- max_abs_change_pct > 5.3%  -> FAIL (proportions distorted)
+
+Provisional: calibrated on static photo pairs. Confirmed at E-005 with real
+generated images. The 9.84% gap leaves substantial headroom.
+
+---
