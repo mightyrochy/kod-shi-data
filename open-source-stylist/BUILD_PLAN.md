@@ -1,0 +1,246 @@
+# BUILD_PLAN — V1 assembly plan
+
+Created 2026-06-10 (restart). Replaces archived PLAN.md.
+Governed by METHODOLOGY.md; architecture defined in design/SYSTEM_DESIGN.md.
+
+**The ordering principle (P9):** instruments are built and validated before the
+experiments they judge. The previous attempt closed a loop around measurement that
+didn't work — generation experiments produced noise. This plan builds the measurement
+core first, then lets every generation step be measured from day one.
+
+A stage is complete when its acceptance criteria are met — not when code exists
+(METHODOLOGY §4). Stage boundaries are owner checkpoints: results reviewed, knowledge
+entries written, next stage confirmed.
+
+---
+
+## Stage 0 — Foundations: contracts, clients, environment
+
+**Purpose:** the skeleton everything plugs into. No generation, no experiments.
+
+**Deliverables:**
+1. `system/contracts/` — JSON schemas for all pipeline objects:
+   `person_profile`, `outfit_package`, `generation_request`, `generation_result`,
+   `region_map`, `evaluation_verdict`, `repair_plan`, `final_output`.
+   Contracts first — they are the interfaces every stage depends on.
+2. `system/clients/comfyui.py` — submit workflow / poll / download / free.
+3. `system/clients/lmstudio.py` — chat + vision + schema-enforced JSON + load/unload.
+4. `system/env_check.py` — one command that verifies the whole environment and prints
+   facts: ComfyUI port + version, LM Studio API, required models present, VRAM free,
+   load/unload round-trip timings. Re-runnable any time; its output re-verifies the
+   archived environment hypotheses (ports, timings) cheaply.
+5. `system/exp.py` — experiment folder utilities: create `experiments/NNN_name/` with
+   protocol template, result capture, log.
+
+**Acceptance criteria:**
+- Contracts validate hand-written sample instances of each object.
+- Both clients pass component round-trip tests against live servers
+  (upload→generate-nothing→poll; chat→schema JSON back).
+- `env_check` runs green and its facts are recorded in `knowledge/verified.md`
+  (deterministic, reproducible → Verified by definition on second run).
+
+**No experiments in this stage.**
+**Execution mode:** Sonnet + high, 1 session.
+
+---
+
+## Stage 1 — Measurement core (the instruments)
+
+**Purpose:** the gates that will judge every future generation. Each instrument is
+calibrated on controlled cases where the correct answer is known by construction.
+
+**Deliverables:**
+1. `system/segmentation/` — SAM 3 (text-prompted; low-VRAM ComfyUI nodes preferred;
+   Grounded-SAM-2 fallback) → `RegionMap` for any image given region labels.
+2. `system/gates/color.py` — per-region ΔE (CIELAB), mean + percentiles.
+3. `system/gates/identity.py` — ArcFace embedding cosine between two face crops.
+4. `system/gates/proportions.py` — shoulder/waist/hip widths from person masks,
+   normalized by person height; relative-change score between two images.
+
+**Experiments (each = protocol per METHODOLOGY §2):**
+
+| ID | Question | Decision informed | Method sketch | Acceptance |
+|---|---|---|---|---|
+| E-001 | Does SAM3 produce usable masks for our region types? | segmentation tool choice (SAM3 vs fallback) | masks for person/face/hair/background + 5 garment types on assets photos + 2 archived generated images; owner reviews overlays | owner accepts masks for ≥ the core regions (person, face, background, top, bottom, shoes); misses documented |
+| E-002 | Are ΔE thresholds separable? | color gate thresholds | image pairs: identical (ΔE≈0), synthetically hue-shifted by known amounts, genuinely different garments | monotonic, separable scores; thresholds chosen and written down |
+| E-003 | Does ArcFace separate same/different person on our photos? | identity gate threshold | same-person pairs (owner photos) vs different-person pairs (stock) | clear margin between distributions; threshold documented |
+| E-004 | Does the proportion gate detect known distortion and ignore noise? | proportion gate threshold | same-person photo pairs (natural variation) vs synthetically width-scaled copies (known %) | gate flags ≥X% synthetic change, passes natural pairs |
+
+**Acceptance criteria:** all four instruments give correct verdicts on controlled
+cases; thresholds documented in `knowledge/verified.md`; VRAM behavior of SAM3
+measured (coexistence with QIE-2511 / VLM).
+
+**Execution mode:** Sonnet + high, 1–2 sessions.
+
+---
+
+## Stage 2 — Generation baseline (first generation, fully measured)
+
+**Purpose:** rebuild the generation path and establish Verified facts about engine
+behavior. Several archived hypotheses get their honest re-test here — with
+instruments instead of eyeballs.
+
+**Deliverables:**
+1. `system/workflows/` — QIE-2511 workflow (API format). P8: check for a maintained
+   community workflow first; build from live `/object_info` only if none fits.
+2. `system/adapter/` — outfit adapter v0: reference panel compositing (garment-only
+   crops), prompt builder (structure/layout only — no color words pending E-007),
+   resolution handling.
+
+**Experiments:**
+
+| ID | Question | Decision informed | Method sketch | Acceptance |
+|---|---|---|---|---|
+| E-005 | What is natural run-to-run variance? | the noise floor for ALL future comparisons | K=5 fixed seeds, one frozen config, outfit_001; all gates on every output | variance profile documented (per-gate spread); becomes the Verified noise floor |
+| E-006 | Does generation resolution change measured quality? | working resolution for all later stages | same seeds, 2–3 resolutions; gates compare | resolution chosen on data (gate scores + time + VRAM) |
+| E-007 | Do color words in prompts degrade color fidelity? (H-COLOR) | adapter prompt rule | A/B same seeds: prompt with vs without color adjectives; ΔE per garment | rule confirmed/refuted with ΔE numbers vs E-005 noise floor |
+| E-008 | Do un-cropped product references distort proportions/items? (H-REF-CONTAMINATION) | adapter panel rule | A/B same seeds: raw product refs vs garment-only crops; proportion gate + ΔE + presence | rule confirmed/refuted with gate numbers |
+
+**Acceptance criteria:** generation runs reproducibly through the new path; noise
+floor, working resolution, and the two adapter rules are Verified knowledge with
+numbers behind them.
+
+**Execution mode:** Sonnet + high, 1–2 sessions + GPU time.
+
+---
+
+## Stage 3 — Closed loop V1-alpha (measured loop) + VLM calibration
+
+**Purpose:** one command runs the pipeline end-to-end and produces a per-region
+measured report. The VLM enters only here — and first gets calibrated.
+
+**Deliverables:**
+1. `system/analysis/` — person analysis (Qwen3-VL-8B, `PersonProfile` out).
+2. `system/evaluation/` — evaluation stage: deterministic gates (stage 1) + VLM
+   semantic checks (presence, layering) + report assembly (`EvaluationVerdict`).
+3. `system/orchestrator.py` — runs [1]→[3]→[4]→[5]→[6] with VRAM sequencing,
+   experiment folder per run, full report.
+
+**Experiments:**
+
+| ID | Question | Decision informed | Method sketch | Acceptance |
+|---|---|---|---|---|
+| E-009 | What is the VLM's agreement rate with owner verdicts on presence/layering? | VLM's role in evaluation (advisory vs gating vs dropped); usable resolution | VLM checklist on N≥10 outputs from stage 2 runs; owner gives ground-truth verdicts; agreement matrix | agreement rate documented per check type; role decided on data |
+
+**Acceptance criteria:** one command → final report with per-region measurements;
+owner reviews an end-to-end run; loop reproducible; VLM role decided.
+
+**Execution mode:** Sonnet + high, 1–2 sessions.
+
+---
+
+## Stage 4 — Restoration shell (deterministic part)
+
+**Purpose:** stop trusting the generator with what can be restored deterministically.
+
+**Deliverables:**
+1. `system/shell/face_restore.py` — FaceMesh landmarks → affine warp of original
+   face → Poisson blend; ArcFace gate validates output.
+2. `system/shell/background_restore.py` — composite original background back.
+3. `system/shell/color_match.py` — bounded per-region LAB matching toward reference.
+
+**Experiments:**
+
+| ID | Question | Decision informed | Method sketch | Acceptance |
+|---|---|---|---|---|
+| E-010 | Does the deterministic shell measurably improve identity/color without artifacts? | shell default-on vs per-run flag | apply shell to stage-2/3 outputs; ArcFace + ΔE before/after; owner inspects seams | gates improve, no visible seams (owner), or failure modes documented |
+
+**Acceptance criteria:** shell improves measured identity/color on real outputs;
+owner confirms no artifacts; integrated into the loop behind a flag.
+
+**Execution mode:** Sonnet + high, 1–2 sessions. New deps (mediapipe, insightface,
+opencv) version-pinned.
+
+---
+
+## Stage 5 — Repair executor (adopt, don't build — P8)
+
+**Purpose:** reference-faithful local repair of flagged regions — the capability the
+previous project never achieved.
+
+**Deliverables:**
+1. Imported community crop-and-stitch inpaint workflow for QIE-2511, converted to
+   API format, in `system/workflows/`.
+2. `system/repair/` — executor: flagged region + `RegionMap` mask + single garment
+   reference → repaired image.
+
+**Experiments:**
+
+| ID | Question | Decision informed | Method sketch | Acceptance |
+|---|---|---|---|---|
+| E-011 | Can imported QIE-2511 inpaint do reference-faithful, local repair? | repair architecture for V1-final (repair vs regenerate) | repair a real gate-flagged failure (e.g. wrong shoes); in-region ΔE improvement, outside-mask pixel change, owner verdict | repaired region matches reference (ΔE), locality ≈0 outside mask, owner accepts |
+| E-012 | Does OmniTry run on 16GB (fp8/offload)? | accessory-executor row in bench-off | load + one accessory try-on; timeboxed 1 session | binary yes/no documented |
+
+**Acceptance criteria:** one verified reference-faithful repair, or the documented
+finding that QIE-2511 inpaint cannot do it (which redirects V1-final to
+regenerate-on-fail — a major, legitimate outcome).
+
+**Execution mode:** Sonnet + high, 1–2 sessions.
+
+---
+
+## Stage 6 — Engine bench-off
+
+**Purpose:** the engine/strategy decision, made with instruments.
+Protocol: design/SYSTEM_DESIGN.md §8 (6 rows × 5 seeds, same seeds across rows;
+second harder outfit assembled before start; P5 correlation side-test included).
+
+**Acceptance criteria:** matrix executed; metrics tabulated; engine/strategy decision
+recorded in `knowledge/verified.md` with the data; Lightning question answered with
+same-seed evidence.
+
+**Execution mode:** orchestration Sonnet + high; analysis Opus/Fable + extra.
+1–2 sessions + GPU batch time.
+
+---
+
+## Stage 7 — V1-final
+
+**Purpose:** the closed V1 loop on the winning configuration.
+
+**Deliverables:**
+1. Winning config as default; losers runnable behind config flags.
+2. Retry policy: gate-fail → repair (if repairable per E-011) or new-seed regeneration;
+   retry cap; final report per run (criteria, gate values, repairs, retries).
+3. Acceptance batch: N≥5 fresh runs on both outfits; pass rate measured; owner reviews
+   each.
+4. Docs closeout: design updated to as-built state; contract debt resolved.
+
+**V1 definition of done:**
+- One command: photo + outfit package → final image + measured report, unattended.
+- Pass rate and failure modes documented over the acceptance batch.
+- Owner signs off on the V1 quality bar (explicit, per SOP).
+
+**Execution mode:** Sonnet + high, 1 session + acceptance runs.
+
+---
+
+## Dependency graph
+
+```
+Stage 0 (foundations)
+   └→ Stage 1 (instruments)
+        └→ Stage 2 (generation baseline + adapter rules)
+             ├→ Stage 3 (closed loop + VLM calibration)
+             │     └→ Stage 4 (shell) ──┐
+             └────→ Stage 5 (repair) ───┼→ Stage 6 (bench-off) → Stage 7 (V1-final)
+```
+
+Stages 4 and 5 are parallel-safe after stage 3.
+Estimated total: 8–12 working sessions + GPU batch time.
+
+---
+
+## Out of scope for V1
+- Dual-view (sharpened hypothesis documented in design §9 — after V1)
+- Garment retrieval, wardrobe (V2/V3)
+- LoRA fine-tuning (cloud GPU — deferred)
+- Qwen-Image-2.0 — watch; if weights open, bench row 7
+
+---
+
+## Changelog (append-only)
+
+- **2026-06-10** — initial plan created at restart. Measurement-first ordering (P9)
+  replaces the archived plan's thin-loop-first ordering: the previous loop closed
+  around unreliable evaluation and produced noise instead of knowledge.

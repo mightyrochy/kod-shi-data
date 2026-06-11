@@ -4,30 +4,24 @@ Automated outfit transfer pipeline, fully local:
 
 ```text
 person photo + outfit package
--> QIE-2511 (Qwen-Image-Edit-2511) through ComfyUI
--> VLM observations through LM Studio (advisory)
--> human review and conclusions
--> numbered run folder with full record
+-> try-on generation (QIE-2511 via ComfyUI)
+-> per-region measured evaluation (deterministic gates + advisory VLM)
+-> restoration shell + targeted repair
+-> final image + measured report
 ```
 
-Stack: Python, ComfyUI (:8000), LM Studio (:1234), Qwen-Image-Edit-2511 +
-Lightning LoRA, FLUX Fill, RTX 4090 Laptop 16GB.
+Stack: Python, ComfyUI, LM Studio, Qwen-Image-Edit-2511, SAM 3, RTX 4090 Laptop 16GB.
+
+**Status (2026-06-10):** restarted. Design is canonical; implementation is being
+rebuilt from zero under a measurement-first plan. The previous attempt is preserved
+read-only in `archive/`.
 
 ## Where to start
 
-- `CLAUDE.md` — project instructions, SOP, technical context
-- `PLAN.md` — active build roadmap (phases A–F)
-- `FINDINGS.md` — empirical ground truth from testing
-- `DECISIONS.md` — architectural decisions
-- `PROJECT_LEDGER.md` — durable project history
-- `SYSTEM_DESIGN.md` / `SYSTEM_DESIGN_R4.md` — design vision
-
-## Running
-
-```text
-python -m pipeline.run_v1alpha [source_run_id] [--resolution WxH] [--hypothesis "..."]
-```
-
-Each invocation creates a new numbered run under `runs/experiments/v1alpha/`.
-VLM evaluation output is advisory — conclusions are written only after human
-review of the generated image.
+- `CLAUDE.md` — project instructions and SOP
+- `design/SYSTEM_DESIGN.md` — canonical architecture (V1/V2/V3)
+- `METHODOLOGY.md` — how knowledge is produced and changes accepted
+- `BUILD_PLAN.md` — assembly plan: stages 0–7, contracts, acceptance criteria
+- `knowledge/` — verified facts vs hypotheses
+- `experiments/` — protocolled experiments (protocol → results → conclusion)
+- `assets/` — test inputs (person photos, garment references)

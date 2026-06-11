@@ -24,11 +24,7 @@ env/
 *.q4_1
 *.q8_0
 
-# Generated images and video — exclude by default
-runs/*/output/
-runs/*/outputs/
-runs/*/repair/*/outputs/
-runs/*/experiments/*/outputs/
+# Images: ignored by default, tracked only in intentional locations
 *.png
 *.jpg
 *.jpeg
@@ -36,34 +32,17 @@ runs/*/experiments/*/outputs/
 *.mp4
 *.gif
 
-# Un-ignore intentional tracked images
-# legacy runs: input and reference images
-!runs/*/input/*.png
-!runs/*/input/*.jpg
-!runs/*/input/*.jpeg
-!runs/*/input/*.webp
-!runs/*/references/*.png
-!runs/*/references/*.jpg
-!runs/*/references/*.jpeg
-!runs/*/references/*.webp
+# assets — test inputs, always tracked
+!assets/**/*.png
+!assets/**/*.jpg
+!assets/**/*.jpeg
+!assets/**/*.webp
 
-# experiments: un-ignore the folders themselves first, then their images
-!runs/experiments/
-!runs/experiments/input/
-!runs/experiments/input/*.png
-!runs/experiments/input/*.jpg
-!runs/experiments/input/*.jpeg
-!runs/experiments/input/*.webp
-!runs/experiments/v1alpha/
-!runs/experiments/v1alpha/*/
-!runs/experiments/v1alpha/*/input/
-!runs/experiments/v1alpha/*/input/*.png
-!runs/experiments/v1alpha/*/input/*.jpg
-!runs/experiments/v1alpha/*/input/*.jpeg
-!runs/experiments/v1alpha/*/input/*.webp
-!runs/experiments/v1alpha/*/output/
-!runs/experiments/v1alpha/*/output/*.png
-!runs/experiments/v1alpha/*/output/*.jpg
+# experiments — inputs and outputs are part of the experimental record
+!experiments/**/*.png
+!experiments/**/*.jpg
+!experiments/**/*.jpeg
+!experiments/**/*.webp
 
 # ComfyUI temp
 ComfyUI/temp/
@@ -85,4 +64,3 @@ desktop.ini
 # Secrets / local config
 .env
 *.local
-configs/pipeline.yaml

@@ -17,10 +17,16 @@ All processing is local. No external API calls for generation.
 ---
 
 ## Current state
-Pipeline exists as documentation, schemas, and prompts only.
-The only executable code is `tools/postproduction_color_repair.py` — a standalone color correction tool, not connected to the pipeline.
+**Restart, 2026-06-10.** The first implementation attempt is archived (read-only) in
+`archive/`. The design vision survived the restart; the implementation did not.
 
-Everything else must be built.
+What exists now: canonical design (`design/SYSTEM_DESIGN.md`), engineering discipline
+(`METHODOLOGY.md`), assembly plan (`BUILD_PLAN.md`, stages 0–7), knowledge base
+(`knowledge/`), test assets (`assets/`). No executable code yet — Stage 0 of
+BUILD_PLAN is the next work.
+
+All empirical findings of the previous attempt are **hypotheses**, not facts
+(`knowledge/hypotheses.md`). Decisions rest only on `knowledge/verified.md`.
 
 ---
 
@@ -76,39 +82,34 @@ Everything else must be built.
 ## Project structure
 ```
 /project-root
-  /runs/          — individual test runs (NNNNNN format)
-  /prompts/       — role prompts (stylist, person_analysis, outfit_adapter, evaluator)
-  /schemas/       — JSON schemas for pipeline data
-  /tools/         — standalone utility scripts
-  PROJECT_LEDGER.md — run history and test observations
-  DECISIONS.md    — architectural decisions and rationale
-  WORKFLOW.md     — current pipeline state
-  FINDINGS.md     — empirical findings from testing (ground truth)
-  SYSTEM_DESIGN.md — full system design across V1/V2/V3, stage interfaces, open questions
-  PLAN.md          — active build & verification roadmap (phases A–F), living document
-  CLAUDE.md       — this file
+  /design/         — SYSTEM_DESIGN.md (canonical) + revisions/
+  /system/         — code, one module per architecture stage; contracts/ = JSON schemas
+  /knowledge/      — verified.md (decision-grade facts) + hypotheses.md
+  /experiments/    — NNN_name/ (protocol.md BEFORE running, results/, conclusion.md)
+  /assets/         — test inputs: person photos, garment references per outfit
+  /archive/        — previous attempt, read-only; nothing returns from it
+  METHODOLOGY.md   — knowledge classification, experiment discipline, change acceptance
+  BUILD_PLAN.md    — assembly plan: stages 0–7, contracts, acceptance criteria
+  PROJECT_LEDGER.md — history of the previous attempt
+  CLAUDE.md        — this file
 ```
 
 ---
 
 ## Technical context
 
-**Confirmed:**
-- Qwen-Image-Edit-2511 with Lightning LoRA is the current default try-on engine — best results so far at 4 steps, but only tested against old models (IDM-VTON, CatVTON). Newer VTON models not yet benchmarked. Status: current default, pending bench-off.
-- 40 steps produces worse results than 4 steps with Lightning LoRA — do not increase steps without disabling LoRA
-- Prompt influence is weak — model relies primarily on reference images, not text instructions
-- FLUX Fill confirmed for masked inpainting (mask locality: 0.048% outside mask)
-- LM Studio runs local VLM for person analysis and evaluation (localhost:1234)
-- ComfyUI is the execution environment (localhost:8000)
+**Environment (cheap to re-verify; Stage 0 `env_check` promotes these to Verified):**
+- ComfyUI is the generation server — port :8000 on this machine (docs elsewhere say :8188; trust env_check)
+- LM Studio serves the VLM/LLM (localhost:1234): OpenAI-compatible inference + native REST v1 with explicit model unload
+- Default try-on engine: Qwen-Image-Edit-2511 fp8mixed (16GB VRAM constraint); engine decision finalized by bench-off (BUILD_PLAN Stage 6)
 
-**Known problems:**
-- Consistency: same input produces slightly different results each run (expected diffusion behavior)
-- Consistency breaks further on dual-view images (front+side) — model does not maintain outfit coherence between views
-- Color and texture accuracy: model approximates, does not reproduce exactly — this is why postproduction exists
-- Body proportions: model sometimes alters waist/hip proportions when adding clothing
+**Knowledge discipline (METHODOLOGY.md §1):**
+- `knowledge/verified.md` — decision-grade facts. Decisions rest ONLY on these.
+- `knowledge/hypotheses.md` — everything else, including ALL findings of the previous attempt (H-COLOR, H-REF-CONTAMINATION, H-LIGHTNING, H-VLM-LOWRES, …). Each names the experiment that verifies it.
+- VLM output and AI-assistant visual comparison are never decision-grade — they produce observations only. Deterministic gates and the owner's eyes produce verdicts.
 
 **Evaluation criteria for any generated output:**
-1. Identity preserved (same person, same face, same hair)
+1. Identity preserved (same person, same face, same hair, same body proportions)
 2. All intended outfit items present
 3. Outfit logic followed (layering, visibility, what's over what)
 4. Color and texture match reference images
@@ -118,8 +119,8 @@ A result passes only when all four criteria are met or explicitly accepted by th
 ---
 
 ## Previous work
-Files in this project are from a previous development attempt.
-- Read them to understand context, past decisions, and what was tested
-- PROJECT_LEDGER.md and FINDINGS.md are the ground truth for what was observed empirically
-- Do not treat previous code or architecture as the correct approach
+The previous development attempt lives in `archive/`, read-only.
+- Read it to understand context and what was tried; PROJECT_LEDGER.md is its history
+- Nothing returns from archive into the live tree: ideas may be re-derived, artifacts are rebuilt under current rules
+- None of its empirical findings is decision-grade (see knowledge/hypotheses.md)
 - Approach each problem fresh based on goals, not on what was previously attempted

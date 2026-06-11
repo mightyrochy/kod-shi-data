@@ -1,0 +1,50 @@
+# Hypotheses & observations
+
+Append-only, date-stamped. Rules: METHODOLOGY.md §1.
+Nothing here is decision-grade. Each entry names the experiment that would verify it.
+
+---
+
+## 2026-06-10 — imported from the archived attempt (owner decision: none is hard proof)
+
+Source: archive/FINDINGS.md and archived run records. All produced by single runs,
+VLM judgments, or uninstrumented visual comparison.
+
+- **H-COLOR** — Color words in prompts override visual references and degrade color
+  fidelity (observed once: "pale ivory" text produced cream blouse vs lemon-green
+  reference; removal improved color same-day). → Verify: E-007.
+- **H-REF-CONTAMINATION** — Product reference photos containing model bodies or
+  competing items contaminate conditioning: body proportions pulled toward reference
+  models; black heels from a skirt photo appeared instead of the referenced green
+  wedges (run 000003 observation). → Verify: E-008.
+- **H-PROPORTIONS** — QIE-2511 reduces chest/waist when adding clothing (observed
+  in runs 1–2, possibly a special case of H-REF-CONTAMINATION). → Verify: E-008 +
+  proportion gate on E-005 baseline.
+- **H-PROMPT-WEAK** — Prompt influence is weak; the model follows the reference panel.
+  → Indirectly probed by E-007; full test deferred.
+- **H-40STEPS** — "40 steps is worse than 4" was observed with Lightning LoRA likely
+  still enabled (outside its regime) — confounded. → Verify: bench rows 1–3 (Stage 6).
+- **H-LIGHTNING** — Lightning-4 trades detail for speed. Official sources claim
+  otherwise; no rigorous same-seed comparison exists. → Verify: bench rows 1–3.
+- **H-DUALVIEW** — Dual-view (front+side one canvas) breaks outfit coherence between
+  views. → Deferred to post-V1 (design §9 sharpened hypothesis).
+- **H-VLM-LOWRES** — Qwen3-VL-8B evaluation hallucinates at ~464×672 (called dark
+  green shoes black; missed present earrings) and improves at higher resolution.
+  → Verify: E-009 (calibration with resolution as a variable).
+- **H-FLUX-LOCALITY** — FLUX Fill masked inpaint is local (0.048% change outside
+  mask, archived single run) but text-only conditioning cannot do reference-faithful
+  repair. → Locality re-verified implicitly in E-011 if FLUX Fill is used; the
+  reference-repair claim is design-level (see SYSTEM_DESIGN §6 stage 7).
+- **H-AI-UPSCALE-FACES** — AI upscalers (RealESRGAN x4plus, 4x-UltraSharp) distort
+  faces on this person photo; plain LANCZOS does not (owner confirmed distortion
+  visually, single image). Unknown whether upscaled-input artifacts actually harm
+  generation: run 000003 used a distorted 4x input and produced the best result so far.
+  → Verify: input-preprocessing comparison if input resolution becomes a decision
+  point (fold into E-006).
+- **H-ENV** — Environment facts observed 2026-06-10: ComfyUI on :8000 (not :8188),
+  v0.24.1; LM Studio REST v1 with explicit unload (~1s); Qwen3-VL-8B cold load ~12s,
+  warm call ~0.6s; QIE-2511 fp8 generation 4-step ~34s including load.
+  → Re-verified automatically by `system/env_check.py` at Stage 0 (cheap,
+  deterministic — promotes to Verified on reproduction).
+
+---
