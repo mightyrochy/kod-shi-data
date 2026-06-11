@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "region_map",
+  "title": "RegionMap",
+  "description": "Segmentation masks for an image — one mask path per named region.",
+  "type": "object",
+  "required": ["schema_version", "region_map_id", "source_image_path", "regions", "segmentation_model"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "region_map_id": { "type": "string" },
+    "source_image_path": { "type": "string" },
+    "regions": {
+      "type": "object",
+      "description": "Map of region label to mask file path. Standard keys: person, face, hair, background. Plus one key per item_id from OutfitPackage.",
+      "minProperties": 1,
+      "additionalProperties": { "type": "string" }
+    },
+    "face_landmarks_path": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "segmentation_model": {
+      "type": "string",
+      "enum": ["sam3", "grounded-sam-2"]
+    }
+  }
+}

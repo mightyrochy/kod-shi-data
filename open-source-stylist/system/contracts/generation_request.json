@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "generation_request",
+  "title": "GenerationRequest",
+  "description": "Formatted inputs for the try-on engine — produced by the Outfit Adapter.",
+  "type": "object",
+  "required": ["schema_version", "request_id", "person_image_path", "prompt", "engine", "params"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "request_id": { "type": "string" },
+    "person_profile_id": { "type": "string" },
+    "outfit_id": { "type": "string" },
+    "person_image_path": { "type": "string" },
+    "reference_panel_path": { "type": "string" },
+    "prompt": { "type": "string" },
+    "negative_prompt": { "type": "string" },
+    "engine": {
+      "type": "string",
+      "enum": ["qie-2511", "qie-2511-lightning", "fastfit", "flux-fill", "omnitry"]
+    },
+    "params": {
+      "type": "object",
+      "required": ["steps", "seed", "width", "height"],
+      "additionalProperties": true,
+      "properties": {
+        "steps": { "type": "integer", "minimum": 1 },
+        "seed": { "type": "integer" },
+        "width": { "type": "integer", "minimum": 64 },
+        "height": { "type": "integer", "minimum": 64 },
+        "guidance_scale": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

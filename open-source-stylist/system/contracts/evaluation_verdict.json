@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evaluation_verdict",
+  "title": "EvaluationVerdict",
+  "description": "Per-region gate scores and verdicts for one generation result.",
+  "type": "object",
+  "required": ["schema_version", "verdict_id", "result_id", "region_map_id", "overall_verdict", "regions", "repair_needed"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "verdict_id": { "type": "string" },
+    "result_id": { "type": "string" },
+    "region_map_id": { "type": "string" },
+    "overall_verdict": { "type": "string", "enum": ["pass", "fail"] },
+    "regions": {
+      "type": "object",
+      "properties": {
+        "identity": {
+          "type": "object",
+          "required": ["arcface_cosine", "verdict"],
+          "additionalProperties": false,
+          "properties": {
+            "arcface_cosine": { "type": "number", "minimum": -1, "maximum": 1 },
+            "threshold": { "type": "number" },
+            "verdict": { "type": "string", "enum": ["pass", "fail"] },
+            "notes": { "type": "string" }
+          }
+        },
+        "proportions": {
+          "type": "object",
+          "required": ["verdict"],
+          "additionalProperties": false,
+          "properties": {
+            "shoulder_change_pct": { "type": "number" },
+            "waist_change_pct": { "type": "number" },
+            "hip_change_pct": { "type": "number" },
+            "verdict": { "type": "string", "enum": ["pass", "fail"] },
+            "notes": { "type": "string" }
+          }
+        }
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["verdict"],
+        "additionalProperties": false,
+        "properties": {
+          "color_delta_e_mean": { "type": "number", "minimum": 0 },
+          "color_delta_e_p90": { "type": "number", "minimum": 0 },
+          "color_verdict": { "type": "string", "enum": ["pass", "fail", "skip"] },
+          "vlm_presence": { "type": "string", "enum": ["present", "absent", "unclear", "skip"] },
+          "vlm_layering": { "type": "string", "enum": ["correct", "incorrect", "unclear", "skip"] },
+          "verdict": { "type": "string", "enum": ["pass", "fail"] },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "repair_needed": { "type": "boolean" },
+    "repair_plan_id": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    }
+  }
+}

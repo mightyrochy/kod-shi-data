@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "generation_result",
+  "title": "GenerationResult",
+  "description": "Output of one try-on engine run.",
+  "type": "object",
+  "required": ["schema_version", "result_id", "request_id", "output_image_path", "seed", "engine"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "result_id": { "type": "string" },
+    "request_id": { "type": "string" },
+    "output_image_path": { "type": "string" },
+    "seed": { "type": "integer" },
+    "engine": { "type": "string" },
+    "params": { "type": "object" },
+    "wall_clock_seconds": { "type": "number", "minimum": 0 },
+    "vram_peak_mb": { "type": "number", "minimum": 0 },
+    "comfyui_prompt_id": { "type": "string" }
+  }
+}
