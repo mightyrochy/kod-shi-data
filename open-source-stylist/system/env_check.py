@@ -84,7 +84,7 @@ def check_lmstudio() -> dict:
         facts["lmstudio_url"] = f"http://{LMSTUDIO_HOST}:{LMSTUDIO_PORT}"
         facts["lmstudio_response_ms"] = elapsed_ms
         facts["lmstudio_loaded_models"] = (
-            [m.get("id", m.get("path", "?")) for m in models] if models else []
+            [m.get("key", m.get("id", m.get("path", "?"))) for m in models] if models else []
         )
 
     except Exception as e:

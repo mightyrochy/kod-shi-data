@@ -98,12 +98,16 @@ class LMStudioClient:
     # --- model lifecycle (native REST v1) ---
 
     def list_models(self) -> list[dict]:
-        """GET /api/v1/models — return list of loaded model dicts."""
+        """GET /api/v1/models — return list of model dicts.
+
+        LM Studio native endpoint returns {"models": [...]}.
+        """
         resp = self._s.get(f"{self.base}/api/v1/models", timeout=10)
         resp.raise_for_status()
         data = resp.json()
-        # native endpoint returns {"data": [...]}
-        return data.get("data", data) if isinstance(data, dict) else data
+        if isinstance(data, dict):
+            return data.get("models", data.get("data", []))
+        return data if isinstance(data, list) else []
 
     def unload(self, model_id: str) -> None:
         """POST /api/v1/models/unload — explicitly unload a model from VRAM."""
