@@ -33,3 +33,43 @@ Source: `python system/env_check.py`, both servers live, chat round-trip passed.
 Note: VRAM free measured with Qwen3-VL-8B loaded in LM Studio → ~1302 MB consumed by the VLM at idle. ComfyUI had no model loaded at measurement time.
 
 ---
+
+## V-SEG-001 — Segmentation: person photo regions (2026-06-11, E-001, owner review)
+
+Source: `experiments/001_segmentation_masks/`, GDINO SwinT (0.3 threshold) + SAM1 vit_h
+via `comfyui_segment_anything`. Owner reviewed all overlays and rated each region.
+
+Tool: `system/segmentation/grounded_sam.py`
+Image: `assets/person/person_front.png`
+
+All 8 regions rated **ok** by owner:
+`person`, `face`, `hair`, `background`, `top`, `bottom`, `shoes`, `glasses`
+
+Note on `face`: mask covers face area around glasses frame; lens apertures excluded —
+acceptable, minimal downstream impact.
+
+---
+
+## V-SEG-002 — Segmentation: garment reference images (2026-06-11, E-001, owner review)
+
+Source: same tool as V-SEG-001. Images: `assets/outfits/outfit_001/` (7 product photos).
+
+| Image | Verdict |
+|-------|---------|
+| belt.jpg | ok |
+| blouse_front.webp | partial — blouse isolated, buttons excluded |
+| blouse_back.webp | partial — same |
+| earrings_disc.webp | ok |
+| shoes_wedge.webp | ok |
+| skirt_front.webp | ok |
+| skirt_back.webp | ok |
+
+---
+
+## V-SEG-003 — Button exclusion in blouse masks (2026-06-11, E-001, owner verdict)
+
+Buttons on blouse_front/back excluded from SAM1 masks. Owner verdict: acceptable for V1.
+Rationale: buttons <5% of mask area; color gate mean ΔE impact minor.
+Re-evaluate trigger: high-contrast-button garment fails E-002/E-005 color acceptance.
+
+---

@@ -111,6 +111,33 @@ Defined before running. Evaluated after owner review.
 
 ---
 
+## 3b. Amendment (2026-06-11) — garment reference images
+
+E-001 covers **two image types**, not one:
+
+**Type A — person photo** (`assets/person/person_front.png`):
+Segment body + worn-garment regions. Prompts as in §3 above.
+
+**Type B — garment reference images** (`assets/outfits/outfit_001/`):
+Segment the garment itself from the product-photo background. One label per image:
+```
+belt.jpg          → "belt"
+blouse_front.webp → "blouse . shirt . top"
+blouse_back.webp  → "blouse . shirt . top"
+earrings_disc.webp → "earrings"
+shoes_wedge.webp  → "shoes . heels . wedge"
+skirt_front.webp  → "skirt"
+skirt_back.webp   → "skirt"
+```
+Acceptance for Type B: mask isolates the garment from the white/neutral background.
+Used by the color gate — contamination from background pixels inflates ΔE.
+
+*(Asset structure note: `assets/person/` = photos of the person to re-dress;
+`assets/outfits/outfit_NNN/` = garment reference images for outfit NNN;
+`assets/outfits/pool/` = loose garment pool not yet assigned to an outfit.)*
+
+---
+
 ## 5. Cost estimate
 
 - ComfyUI segmentation runs: ~N_images × 7–11 regions × ~10–15s each ≈ 10–20 min
