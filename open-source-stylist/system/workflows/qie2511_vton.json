@@ -1,0 +1,90 @@
+{
+  "_comment": "QIE-2511 VTON workflow — full 40-step (no Lightning LoRA), 2-image conditioning (person + reference panel). Fill placeholders before submitting. Types: SEED/STEPS/WIDTH/HEIGHT = int; all others = string.",
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "qwen_image_edit_2511_fp8mixed.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "type": "qwen_image"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "__PERSON_IMAGE__"
+    }
+  },
+  "5": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "__REF_IMAGE__"
+    }
+  },
+  "6": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "clip": ["2", 0],
+      "vae": ["3", 0],
+      "prompt": "__POSITIVE_PROMPT__",
+      "image1": ["4", 0],
+      "image2": ["5", 0]
+    }
+  },
+  "7": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "clip": ["2", 0],
+      "prompt": ""
+    }
+  },
+  "8": {
+    "class_type": "EmptyQwenImageLayeredLatentImage",
+    "inputs": {
+      "width": "__WIDTH__",
+      "height": "__HEIGHT__",
+      "layers": 2,
+      "batch_size": 1
+    }
+  },
+  "9": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["1", 0],
+      "seed": "__SEED__",
+      "steps": "__STEPS__",
+      "cfg": 1.0,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["8", 0],
+      "denoise": 1.0
+    }
+  },
+  "10": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["9", 0],
+      "vae": ["3", 0]
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["10", 0],
+      "filename_prefix": "__OUTPUT_PREFIX__"
+    }
+  }
+}

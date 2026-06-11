@@ -146,6 +146,24 @@ it silently would reopen the color-dependence hole the band exists to cover.
 
 **Execution mode:** Sonnet + high, 1–2 sessions + GPU time.
 
+**Execution notes (2026-06-11, Stage 2 start):**
+- Deliverable 1 (`system/workflows/qie2511_vton.json`): workflow template built from
+  live `/object_info` verification. 2-image conditioning (person + reference panel),
+  40 steps (full model, no Lightning LoRA), layers=2. `system/workflows/__init__.py`
+  provides `load_template` + `fill_workflow` type-safe placeholder utilities.
+- Deliverable 2 (`system/adapter/`): adapter v0 complete — `panel.py` (garment-only
+  crop + tiled composite via SAM; 3×N grid, cell=256px), `prompt.py` (structural
+  prompt builder, color-word-blocked via `_COLOR_WORDS` set), `adapter.py`
+  (OutfitPackage → GenerationRequest, auto-resolution from person image).
+- `assets/outfits/outfit_001/outfit_package.json`: outfit package created per current
+  schema. 5 items (blouse, skirt, belt, shoes, earrings). Descriptions free of color
+  words per adapter rule (verified by prompt builder tests).
+- E-005 protocol written (`experiments/005_variance_baseline/protocol.md`) with all
+  three Stage-1 carry-overs embedded. Runner ready at
+  `experiments/005_variance_baseline/run_e005.py`.
+- Next step: run `python -m experiments.005_variance_baseline.run_e005` (GPU required;
+  ComfyUI and LM Studio not needed for E-005 beyond SAM and QIE-2511).
+
 ---
 
 ## Stage 3 — Closed loop V1-alpha (measured loop) + VLM calibration
