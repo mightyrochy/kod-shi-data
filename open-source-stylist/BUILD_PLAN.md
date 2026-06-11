@@ -72,6 +72,20 @@ measured (coexistence with QIE-2511 / VLM).
 
 **Execution mode:** Sonnet + high, 1–2 sessions.
 
+**Execution notes (2026-06-11):**
+- Deliverables 2–4 (color, identity, proportions gates): complete.
+- Deliverable 1 (segmentation): module written (`system/segmentation/grounded_sam.py`),
+  but using **GroundingDINO + SAM1** (`sam_vit_h`, SAM1 architecture), not SAM3 or
+  SAM-2 as specified. This is an intentional, temporary divergence — see rationale below.
+- **SAM1 vs SAM-2 divergence:** design specified Grounded-SAM-2 fallback; deployed
+  fallback uses SAM1 vit_h. For single static images (V1 scope) the practical difference
+  is small: SAM-2's video memory and tracking features are unused. Accepted for E-001.
+- **SAM3 blocked:** `comfyui-easy-sam3` fails with `IMPORT FAILED: No module named
+  'iopath'`; additional deps (`triton`, `open_clip`, `pycocotools`, `einops`, 8+ others)
+  absent from ComfyUI venv. Installing them risks QIE-2511 stability (METHODOLOGY §3:
+  full-picture check). Deferred until E-001 gives a concrete failure to justify the risk.
+- **Stage 1 NOT yet complete:** E-001–E-004 not run; no thresholds in `knowledge/verified.md`.
+
 ---
 
 ## Stage 2 — Generation baseline (first generation, fully measured)
