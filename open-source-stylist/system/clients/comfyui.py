@@ -57,6 +57,24 @@ class ComfyUIClient:
         )
         resp.raise_for_status()
 
+    def upload_image(self, image_path) -> str:
+        """POST /upload/image — upload local file to ComfyUI input dir.
+
+        Returns the filename as registered in ComfyUI (use in LoadImage node).
+        """
+        from pathlib import Path
+
+        image_path = Path(image_path)
+        with image_path.open("rb") as fh:
+            resp = self._s.post(
+                f"{self.base}/upload/image",
+                files={"image": (image_path.name, fh, "image/png")},
+                data={"overwrite": "true"},
+                timeout=30,
+            )
+        resp.raise_for_status()
+        return resp.json()["name"]
+
     # --- diagnostics ---
 
     def system_stats(self) -> dict:
