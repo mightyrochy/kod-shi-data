@@ -236,8 +236,27 @@ Transport:
 
 ### [6] Evaluation — per-region, hybrid (P4)
 - **Deterministic gates (decide):**
-  - *Color:* mean/percentile ΔE (CIELAB) between garment region (output) and reference
-    garment region. Hard thresholds, calibrated on controlled pairs first.
+  - *Color:* per-region comparison between garment region (output) and reference
+    garment region, designed around three findings from gate calibration
+    (experiments/002, 2026-06-11):
+    (a) **Metric: CIEDE2000, not CIE76.** CIE76 mean ΔE compresses differences on
+    dark/desaturated colors — the same perceptual hue shift measured ~2 on navy vs
+    ~5 on brown, so no universal CIE76 threshold exists.
+    (b) **Lightness normalization before comparison** (align region L* means, or
+    compare hue/chroma distributions): most of the photo-pair noise is lighting/
+    shade/drape, not color. Natural variation between two photos of the SAME garment
+    measured ΔE 4.0–5.2 while two different dark items measured 7.5 — the raw signal
+    window is too narrow without normalization.
+    (c) **Two modes, auto-selected by the reference region's own color distribution:**
+    `solid` — unimodal reference → mean ΔE; `palette` — multimodal reference
+    (patterned/multi-color garment) → dominant-color palette extraction (k-means)
+    with weight-aware matching, or histogram EMD. Mean ΔE is blind on patterns: a
+    red/white striped shirt and a pink shirt share the same regional mean.
+    *Thresholds:* three zones PASS/WARN/FAIL; WARN goes to owner review. Per-item
+    adaptive baseline where multi-view reference photos exist (ΔE(front,back) =
+    that item's own noise). All thresholds are **provisional until the generator
+    noise floor exists** (E-005) — the gate's real operating distribution is
+    generated-vs-reference, which product-photo pairs only proxy.
   - *Identity:* ArcFace embedding cosine between input face and output face.
   - *Body proportions:* shoulder/waist/hip pixel widths (from person masks) normalized
     by person height; threshold on relative change, calibrated against natural
@@ -246,8 +265,13 @@ Transport:
   reference), layering vs `layout_logic`. Qwen3-VL-8B, schema JSON. Advisory until the
   VLM's agreement rate with human verdicts is measured (calibration experiment).
 - **Countable details** (buttons, buckles): SAM3 instance counts — advisory in V1.
-- **Texture:** advisory only in V1 (drape vs flat product photo is not reliably
-  measurable).
+- **Texture & pattern spatial structure:** advisory only in V1 (drape vs flat product
+  photo is not reliably measurable). Explicit boundary: the color gate's `palette`
+  mode measures a pattern's **color composition** (which colors, in what proportions);
+  the pattern's **spatial structure** (stripe width, print scale, motif placement)
+  is texture-land — a documented open problem industry-wide (Garments2Look reports
+  stripe-density distortion as an unsolved failure mode). In V1 it is covered by VLM
+  semantics + owner's eyes only. Known limitation; revisit in V2.
 - **Human verdict:** final authority on visual quality (SOP). The system's job is to
   bring the owner a measured, per-region report — not to replace the owner's eyes.
 - **Out:** `EvaluationVerdict` per region + `RepairPlan` (region, defect type, target)
@@ -302,6 +326,9 @@ Runs only after measurement gates are validated (P9) — metrics, not eyeballing
 
 - **Fixed inputs:** assets outfit_001 (person photo, garment references, layout text)
   + one harder outfit (more layers, patterned fabric) — assembled before the bench.
+  Assembling the patterned outfit triggers the color gate's `palette`-mode calibration
+  (E-013): the gate must be able to measure patterned garments before the bench
+  judges them.
 - **Matrix:**
   | Row | Config | Answers |
   |---|---|---|
@@ -419,3 +446,11 @@ V1 unchanged except Stylist:
   transport description adopted; new P9 (measurement before generation experiments)
   added from the evaluation-reliability lesson; all prior-attempt [E] findings
   downgraded to hypotheses per owner decision.
+- **2026-06-11** — color gate redesigned on E-002 calibration data (experiments/002):
+  CIE76 → CIEDE2000; lightness normalization added; two modes (solid/palette)
+  auto-selected by reference distribution — mean ΔE is blind on multi-color patterns;
+  per-item adaptive baseline from multi-view reference photos; PASS/WARN/FAIL zones
+  with WARN → owner; thresholds provisional until E-005 generator noise floor.
+  Texture note sharpened: palette mode measures pattern color composition only;
+  pattern spatial structure stays advisory (known V1 limitation). Bench-off inputs
+  note: patterned-outfit assembly triggers palette-mode calibration (E-013).

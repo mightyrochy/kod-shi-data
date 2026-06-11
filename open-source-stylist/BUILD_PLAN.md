@@ -86,6 +86,30 @@ measured (coexistence with QIE-2511 / VLM).
   full-picture check). Deferred until E-001 gives a concrete failure to justify the risk.
 - **Stage 1 NOT yet complete:** E-001–E-004 not run; no thresholds in `knowledge/verified.md`.
 
+**Execution notes (2026-06-11, E-002 interim — direction agreed with owner):**
+- E-002 series data (experiments/002_delta_e_thresholds) exposed two instrument
+  problems: (1) CIE76 mean ΔE sensitivity depends on the reference color — the same
+  perceptual hue shift measured ~2 (navy) vs ~5 (brown), so no universal threshold
+  exists in that metric; (2) natural photo-pair noise (same garment, front vs back:
+  3.99–5.19) overlaps the chosen FAIL=3.0 and sits close to genuinely-different dark
+  items (7.48) — the signal window is too narrow.
+- **Agreed direction:** switch metric to CIEDE2000 + lightness normalization
+  (`system/gates/color.py`); re-run series A/B/C on the same data (cheap — minutes);
+  re-derive thresholds; record them as **provisional**. Final operational thresholds
+  come from E-005, where the gate's real distribution (generated vs reference) first
+  exists. Per-item adaptive baseline: where front+back reference photos exist,
+  ΔE(front, back) is that item's own noise floor. Verdicts are three-zone
+  PASS/WARN/FAIL; WARN → owner review.
+- **Scope guard:** this closes E-002 as "instrument validated, thresholds
+  provisional". E-003/E-004 do not depend on color thresholds — proceed without
+  waiting.
+- **Pattern blindness documented:** mean ΔE (any metric) cannot judge multi-color/
+  patterned garments — the gate gets a second mode (`palette`: dominant-color
+  matching / histogram EMD), auto-selected by reference-region modality. Calibration
+  of that mode = E-013, tied to patterned-outfit assembly before the bench-off
+  (Stage 6). Pattern *spatial* structure (stripe width, print scale) stays
+  advisory-only in V1 — design §6, known limitation.
+
 ---
 
 ## Stage 2 — Generation baseline (first generation, fully measured)
@@ -105,7 +129,7 @@ instruments instead of eyeballs.
 
 | ID | Question | Decision informed | Method sketch | Acceptance |
 |---|---|---|---|---|
-| E-005 | What is natural run-to-run variance? | the noise floor for ALL future comparisons | K=5 fixed seeds, one frozen config, outfit_001; all gates on every output | variance profile documented (per-gate spread); becomes the Verified noise floor |
+| E-005 | What is natural run-to-run variance? | the noise floor for ALL future comparisons **+ final color-gate thresholds** (replaces E-002 provisional values with the real generated-vs-reference distribution) | K=5 fixed seeds, one frozen config, outfit_001; all gates on every output | variance profile documented (per-gate spread); becomes the Verified noise floor; color-gate PASS/WARN/FAIL finalized |
 | E-006 | Does generation resolution change measured quality? | working resolution for all later stages | same seeds, 2–3 resolutions; gates compare | resolution chosen on data (gate scores + time + VRAM) |
 | E-007 | Do color words in prompts degrade color fidelity? (H-COLOR) | adapter prompt rule | A/B same seeds: prompt with vs without color adjectives; ΔE per garment | rule confirmed/refuted with ΔE numbers vs E-005 noise floor |
 | E-008 | Do un-cropped product references distort proportions/items? (H-REF-CONTAMINATION) | adapter panel rule | A/B same seeds: raw product refs vs garment-only crops; proportion gate + ΔE + presence | rule confirmed/refuted with gate numbers |
@@ -199,9 +223,20 @@ regenerate-on-fail — a major, legitimate outcome).
 Protocol: design/SYSTEM_DESIGN.md §8 (6 rows × 5 seeds, same seeds across rows;
 second harder outfit assembled before start; P5 correlation side-test included).
 
+**Pre-bench work item — palette mode of the color gate (added 2026-06-11):**
+the second outfit contains patterned fabric, and mean ΔE is blind on patterns
+(same regional mean for a red/white stripe and a solid pink). Before the bench can
+judge that outfit, the color gate needs its `palette` mode (dominant-color k-means
+palette with weight-aware matching, or histogram EMD; auto-selected when the
+reference region is multimodal) — and that mode needs its own calibration:
+
+| ID | Question | Decision informed | Method sketch | Acceptance |
+|---|---|---|---|---|
+| E-013 | Can palette-distance separate "same patterned garment, different photo" from "different pattern colors"? | color gate applicability to patterned garments (bench row validity) | same series logic as E-002 on the patterned outfit's references: two photos of same patterned item (noise); synthetic hue shift of ONE palette component (signal); different patterned items (upper bound) | separable scores; palette-mode thresholds documented; pattern *spatial* fidelity explicitly excluded (advisory only, design §6) |
+
 **Acceptance criteria:** matrix executed; metrics tabulated; engine/strategy decision
 recorded in `knowledge/verified.md` with the data; Lightning question answered with
-same-seed evidence.
+same-seed evidence; patterned-outfit rows judged by a calibrated palette mode (E-013).
 
 **Execution mode:** orchestration Sonnet + high; analysis Opus/Fable + extra.
 1–2 sessions + GPU batch time.
@@ -258,3 +293,9 @@ Estimated total: 8–12 working sessions + GPU batch time.
 - **2026-06-10** — initial plan created at restart. Measurement-first ordering (P9)
   replaces the archived plan's thin-loop-first ordering: the previous loop closed
   around unreliable evaluation and produced noise instead of knowledge.
+- **2026-06-11** — E-002 interim findings integrated: color gate metric changes to
+  CIEDE2000 + lightness normalization; thresholds provisional, finalized by E-005
+  (E-005 row updated accordingly); per-item adaptive baseline from multi-view
+  reference photos; PASS/WARN/FAIL zones. New E-013 (palette-mode calibration for
+  patterned garments) added as pre-bench work item in Stage 6. Stage 1 execution
+  notes extended. Design §6 updated in the same change.
