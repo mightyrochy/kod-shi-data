@@ -73,3 +73,30 @@ Rationale: buttons <5% of mask area; color gate mean ΔE impact minor.
 Re-evaluate trigger: high-contrast-button garment fails E-002/E-005 color acceptance.
 
 ---
+
+## V-COLOR-001 -- Color gate thresholds (2026-06-11, E-002, owner confirmed)
+
+Source: `experiments/002_delta_e_thresholds/`. Metric: CIEDE2000 + L* normalization.
+Owner reviewed pool garment images at key hue-shift steps and confirmed verdicts.
+
+| verdict | delta_e_mean    |
+|---------|-----------------|
+| PASS    | <= 3            |
+| WARN    | 3 -- 5          |
+| FAIL    | > 5             |
+
+WARN goes to owner review.
+
+**Thresholds are provisional** -- calibrated on product-photo pairs and synthetic
+shifts. Final thresholds come from E-005 (real generated-vs-reference distribution).
+
+Perceptual anchors (owner-confirmed):
+- navy blouse 10 deg shift: dE=2.57 -- PASS upper limit
+- navy blouse 12.5 deg shift: dE=3.02 -- FAIL
+- dress pink 7.5 deg shift: dE=3.97 -- PASS upper limit
+- dress pink 10 deg shift: dE=6.77 -- FAIL
+
+Natural variation ceiling (Series B): dE=1.04 (same garment, front vs back).
+Per-item baseline: skirt=0.68, blouse=1.04.
+
+---
