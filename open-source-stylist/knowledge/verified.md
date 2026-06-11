@@ -100,3 +100,30 @@ Natural variation ceiling (Series B): dE=1.04 (same garment, front vs back).
 Per-item baseline: skirt=0.68, blouse=1.04.
 
 ---
+
+## V-ID-001 — Identity gate threshold (2026-06-11, E-003, PASS)
+
+Source: `experiments/003_arcface_threshold/`, ArcFace buffalo_l (w600k_r50.onnx),
+CPUExecutionProvider. All pairs detected, no failures.
+
+| Pair | Type | Cosine |
+|------|------|--------|
+| person_front vs person_two_view_front | same | 0.9896 |
+| person_front vs blouse_front (Model A) | different | 0.1188 |
+| person_front vs skirt_front (Model B) | different | 0.1502 |
+| Model A vs Model B | different | 0.0927 |
+
+Gap = 0.8394 (same_min 0.9896 − diff_max 0.1502).
+
+**Provisional threshold: 0.57**
+- cosine >= 0.57 → PASS (same person)
+- cosine < 0.57  → FAIL (different person)
+
+Provisional: gap is large enough to survive moderate generator-induced facial
+degradation, but final threshold is confirmed at E-005 when real generated images
+are available.
+
+Note: insightface runs on CPU only (CUDAExecutionProvider unavailable). Accurate;
+GPU acceleration to be investigated before Stage 3.
+
+---
