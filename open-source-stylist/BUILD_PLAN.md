@@ -129,7 +129,7 @@ instruments instead of eyeballs.
 
 | ID | Question | Decision informed | Method sketch | Acceptance |
 |---|---|---|---|---|
-| E-005 | What is natural run-to-run variance? | the noise floor for ALL future comparisons **+ final color-gate thresholds** (replaces E-002 provisional values with the real generated-vs-reference distribution) | K=5 fixed seeds, one frozen config, outfit_001; all gates on every output | variance profile documented (per-gate spread); becomes the Verified noise floor; color-gate PASS/WARN/FAIL finalized |
+| E-005 | What is natural run-to-run variance? | the noise floor for ALL future comparisons **+ final thresholds for all three gates** (color, identity, proportions — replaces the Stage-1 provisional values, which were calibrated on photo pairs with n=1 natural-variation samples, with the real generated-vs-reference distribution) | K=5 fixed seeds, one frozen config, outfit_001; **before computing gates: owner reviews mask overlays on the first generated outputs** (segmentation was validated on real photos only — E-001 never covered the generator's domain); then all gates on every output | variance profile documented (per-gate spread); becomes the Verified noise floor; color/identity/proportion thresholds finalized; segmentation-on-generated-images verdict recorded |
 | E-006 | Does generation resolution change measured quality? | working resolution for all later stages | same seeds, 2–3 resolutions; gates compare | resolution chosen on data (gate scores + time + VRAM) |
 | E-007 | Do color words in prompts degrade color fidelity? (H-COLOR) | adapter prompt rule | A/B same seeds: prompt with vs without color adjectives; ΔE per garment | rule confirmed/refuted with ΔE numbers vs E-005 noise floor |
 | E-008 | Do un-cropped product references distort proportions/items? (H-REF-CONTAMINATION) | adapter panel rule | A/B same seeds: raw product refs vs garment-only crops; proportion gate + ΔE + presence | rule confirmed/refuted with gate numbers |
@@ -137,6 +137,12 @@ instruments instead of eyeballs.
 **Acceptance criteria:** generation runs reproducibly through the new path; noise
 floor, working resolution, and the two adapter rules are Verified knowledge with
 numbers behind them.
+
+**Reporting discipline (from Stage 1 closure, 2026-06-11):** any WARN from the
+color gate is surfaced to the owner explicitly, never aggregated into a pass/fail
+roll-up. The WARN band (ΔE 3–5) deliberately holds the zone where owner-confirmed
+verdicts overlap across colors (navy fail at 3.02 vs pink pass at 3.97) — collapsing
+it silently would reopen the color-dependence hole the band exists to cover.
 
 **Execution mode:** Sonnet + high, 1–2 sessions + GPU time.
 
@@ -299,3 +305,10 @@ Estimated total: 8–12 working sessions + GPU batch time.
   reference photos; PASS/WARN/FAIL zones. New E-013 (palette-mode calibration for
   patterned garments) added as pre-bench work item in Stage 6. Stage 1 execution
   notes extended. Design §6 updated in the same change.
+- **2026-06-11 (Stage 1 closure)** — three carry-overs into Stage 2: E-005 now
+  finalizes ALL three gate thresholds (Stage-1 calibrations used photo pairs with
+  n=1 natural-variation samples; identity "same" pair was near-duplicate, cosine
+  0.9896); E-005 method gains an owner mask-overlay review on first generated
+  outputs (E-001 validated segmentation on real photos only, not the generator's
+  domain); Stage 2 reporting discipline added — color-gate WARN always surfaced
+  to owner, never aggregated.
