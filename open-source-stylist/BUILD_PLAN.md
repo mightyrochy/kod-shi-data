@@ -194,6 +194,18 @@ silent-mask-corruption incidents inside one experiment (E-005 shoes, top), both
 caught late — by the owner's eye or by an exploding ΔE. Build before E-006 so all
 remaining A/B experiments run guarded. Design §6 [5] updated accordingly.
 
+**Execution notes (2026-06-12, E-006 closed):**
+- **Mask sanity guard** (`system/segmentation/sanity.py`): built before E-006 per plan.
+  5 integration FAIL tests in `system/tests/test_segmentation_fail.py`, all green.
+- **Working resolution confirmed: 720×1024** (max_side=1024). Gate data (K=5 × 3 tiers):
+  baseline 0.830 mean identity 5/5 PASS; Low (576×816) 0/5 PASS; High (896×1280) 1/5
+  PASS; High+ (1120×1600) 0/5 PASS. All non-baseline tiers fail identity criterion.
+  No OOM at any tier — VRAM ceiling not hit up to 1.79MP (V-RES-002).
+- Sanity guard flagged real corruption in 8 instances across the 3 non-baseline tiers
+  (face area too small/large, containment violations). Guard is working.
+- Known gap documented (O-SEG-GAP-001): inter-garment mask overlap not detected.
+  Bottom mask covering belt caught by owner review at High/seed_42.
+
 **Execution mode:** Sonnet + high, 1–2 sessions + GPU time.
 
 **Execution notes (2026-06-11, Stage 2 start):**
