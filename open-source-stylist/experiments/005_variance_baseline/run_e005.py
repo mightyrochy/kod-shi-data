@@ -56,7 +56,7 @@ STATE_FILE  = RESULTS_DIR / "phase1_state.json"
 GENERATED_PROMPTS = {
     "person":   "person",
     "face":     "face",
-    "top":      "top",
+    "top":      "shirt",
     "bottom":   "skirt",
     "shoes":    "footwear",
     "belt":     "belt",

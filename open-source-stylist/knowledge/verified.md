@@ -153,6 +153,88 @@ generated images. The 9.84% gap leaves substantial headroom.
 
 ---
 
+## V-VAR-001 — E-005 variance profile / noise floor (2026-06-12, K=5 seeds)
+
+Source: `experiments/005_variance_baseline/`, Lightning 4-step, outfit_001.
+
+| Gate | Metric | mean | std | range |
+|------|--------|------|-----|-------|
+| Identity (ArcFace cosine) | cosine | 0.830 | 0.040 | 0.776-0.874 |
+| Proportions (max_abs_change_pct) | % | 0.00 | 0.00 | 0.00-0.00 |
+| Color top (CIEDE2000) | dE | 3.52 | 1.32 | 1.17-5.17 |
+| Color bottom | dE | 2.97 | 1.33 | 1.29-5.15 |
+| Color belt | dE | 3.00 | 0.84 | 2.22-4.41 |
+| Color earrings | dE | 3.67 | 1.28 | 2.45-5.65 |
+| Color shoes | dE | 14.03 | 6.04 | 8.19-25.21 |
+
+Noise floor: differences below ~1.3 dE (color) or ~0.04 cosine (identity)
+are within natural generation variance, not signal.
+Shoes show systematic FAIL (not noise) -- cause under investigation.
+
+---
+
+## V-COLOR-002 — Color gate thresholds confirmed on generated-vs-reference distribution (2026-06-12, E-005)
+
+Confirms V-COLOR-001 provisional thresholds. Real generated-vs-reference distribution
+(K=5, outfit_001) is consistent with calibrated thresholds -- no revision required.
+
+| Verdict | dE range | Confirmed |
+|---------|----------|-----------|
+| PASS    | <= 3.0   | yes |
+| WARN    | 3.0-5.0  | yes -- correctly captures perceptual borderline zone |
+| FAIL    | > 5.0    | yes |
+
+Owner observation (2026-06-12): at dE 3-5, color discrepancy is perceptually
+borderline -- visible difference driven more by texture flatness than by color offset.
+WARN zone correctly requires owner review rather than automatic pass or fail.
+
+---
+
+## V-ID-002 — Identity gate threshold confirmed on generated images (2026-06-12, E-005)
+
+Confirms V-ID-001 provisional threshold (0.57). All 5 generated seeds scored
+>= 0.776 (min). Large margin above threshold preserved even with generator-induced
+facial changes. No revision required.
+
+Threshold: cosine >= 0.57 -> PASS.
+
+---
+
+## V-PROP-002 — Proportions gate threshold confirmed on generated images (2026-06-12, E-005)
+
+Confirms V-PROP-001 provisional threshold (5.3%). All 5 seeds scored 0.00%.
+Generator preserves body proportions with no measurable distortion on outfit_001.
+No revision required.
+
+Threshold: max_abs_change_pct <= 5.3% -> PASS.
+
+---
+
+## V-SEG-004 — Segmentation prompts for generated images (2026-06-12, E-005 Checkpoint 2)
+
+GroundingDINO prompts that work correctly on AI-generated full-body images.
+General single-word queries outperform compound queries (owner principle confirmed
+empirically: compound/specific prompts return full-body bounding boxes).
+
+| Region | Working prompt | Verified behavior |
+|--------|---------------|-------------------|
+| top (blouse/shirt) | "shirt" | 11.5% of image, rows 17-56% |
+| bottom (skirt) | "skirt" | correct region |
+| shoes/footwear | "footwear" | 0.4% of image, rows 95-100% |
+| belt | "belt" | correct region |
+| earrings | "earrings" | correct region |
+| face | "face" | correct region |
+| person (silhouette) | "person" | correct region |
+
+Prompts that FAIL on generated images (return full silhouette):
+- "top" -> full body bounding box
+- "shoes . sandals . wedge" -> full body bounding box
+
+Rule: use the simplest recognizable noun. Compound queries with "." separator
+are unreliable on generated images with synthetic textures.
+
+---
+
 ## V-QIE-001 — QIE-2511 output frame count formula (2026-06-12, source code + 2 empirical runs)
 
 Source: `comfy_extras/nodes_qwen.py` line 129 (ComfyUI 0.24.1); confirmed by
