@@ -168,6 +168,23 @@ it silently would reopen the color-dependence hole the band exists to cover.
   selection is understood and stable.
 - Config C (40 steps, layers=3) timed out; result unknown; not blocking.
 
+**Execution notes (2026-06-12, E-005 closed — order change for remaining experiments):**
+- E-005 verdict on the baseline: identity solid (0.776–0.874 vs 0.57); color near-WARN
+  on top/bottom/belt/earrings (~3.0–3.7 mean), shoes systematic FAIL (14.0 ± 6.0);
+  proportions FAIL on all 5 seeds (7–16%, directional: waist −, shoulders/hips +,
+  owner-confirmed on seed_1337).
+- **Order changed: E-006 → E-008 → E-007** (was E-006 → E-007 → E-008). Rationale:
+  E-008 (cropped vs raw references) attacks BOTH dominant failures at once —
+  H-REF-CONTAMINATION is the lead suspect for proportions distortion (model bodies
+  in product photos) and for shoes instability (skirt reference photos show the
+  model in black heels; 1 of 5 generated outputs produced black shoes — same trail
+  as the archived run-000003 observation). E-007 demoted: top nearly passes without
+  color words, so E-007 refines an adapter rule rather than hunts a failure cause.
+- E-008 framing note: the baseline already uses cropped references, so the A/B is
+  "cropped (baseline, data exists) vs raw (5 new generations)". If raw is NOT worse,
+  contamination does not explain the proportions distortion and H-PROPORTIONS needs
+  another suspect (next candidate: Lightning-specific behavior, bench rows 2–3).
+
 **Execution mode:** Sonnet + high, 1–2 sessions + GPU time.
 
 **Execution notes (2026-06-11, Stage 2 start):**
