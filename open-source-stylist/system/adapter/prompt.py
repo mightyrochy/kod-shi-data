@@ -22,14 +22,14 @@ _COLOR_WORDS = frozenset({
 # SAM text prompt template per item type.
 # Values are GroundingDINO multi-label queries (period-separated phrases).
 _ITEM_TYPE_TO_SAM_PROMPT: dict[str, str] = {
-    "top": "shirt . blouse . top . jacket",
-    "bottom": "skirt . trousers . pants . shorts . bottom",
+    "top": "top",
+    "bottom": "bottom",
     "dress": "dress",
-    "jacket": "jacket . coat . blazer",
-    "shoes": "shoes . sandals . boots . footwear",
-    "accessory": "accessory . belt . bag . hat . jewelry . earrings",
-    "bag": "bag . handbag . purse",
-    "hat": "hat . cap",
+    "jacket": "jacket",
+    "shoes": "footwear",
+    "accessory": "accessory",
+    "bag": "bag",
+    "hat": "hat",
     "other": "clothing",
 }
 
