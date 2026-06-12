@@ -116,10 +116,18 @@ def compare(mask_a, mask_b) -> dict:
             return None
         return round((b_val - a_val) / a_val * 100.0, 2)
 
+    shoulder_pct = pct_change(pa["shoulder_width_norm"], pb["shoulder_width_norm"])
+    waist_pct    = pct_change(pa["waist_width_norm"],    pb["waist_width_norm"])
+    hip_pct      = pct_change(pa["hip_width_norm"],      pb["hip_width_norm"])
+
+    individual = [abs(v) for v in [shoulder_pct, waist_pct, hip_pct] if v is not None]
+    max_abs = round(max(individual), 2) if individual else None
+
     return {
-        "shoulder_change_pct": pct_change(pa["shoulder_width_norm"], pb["shoulder_width_norm"]),
-        "waist_change_pct":    pct_change(pa["waist_width_norm"],    pb["waist_width_norm"]),
-        "hip_change_pct":      pct_change(pa["hip_width_norm"],      pb["hip_width_norm"]),
+        "shoulder_change_pct": shoulder_pct,
+        "waist_change_pct":    waist_pct,
+        "hip_change_pct":      hip_pct,
+        "max_abs_change_pct":  max_abs,
         "profile_a": pa,
         "profile_b": pb,
     }

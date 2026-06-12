@@ -163,7 +163,7 @@ def run_phase1(outfit_package: dict) -> None:
     template = load_template(WORKFLOW_NAME)
     generated: dict[str, str] = {}
 
-    print("\n=== Phase 1c: generate (QIE-2511 40-step) ===")
+    print(f"\n=== Phase 1c: generate (QIE-2511 Lightning {STEPS}-step) ===")
     for seed in SEEDS:
         seed_dir = RESULTS_DIR / f"seed_{seed}"
         seed_dir.mkdir(parents=True, exist_ok=True)
@@ -303,7 +303,12 @@ def run_phase2() -> None:
         gen_person_mask = masks.get("person")
         if gen_person_mask and E001_PERSON_MASK.exists():
             prop_result = compare_proportions(E001_PERSON_MASK, gen_person_mask)
-            score = prop_result.get("max_abs_change_pct", 0)
+            score = prop_result["max_abs_change_pct"]
+            if score is None:
+                raise RuntimeError(
+                    f"Proportions gate returned max_abs_change_pct=None for seed={seed}. "
+                    "Person mask may be empty or body not detected."
+                )
             prop_verdict = "PASS" if score <= 5.3 else "FAIL"
             run_result["proportions"] = {**prop_result, "verdict": prop_verdict}
             print(f"    [proportions] max_abs={score:.2f}% -> {prop_verdict}")
@@ -341,7 +346,8 @@ def run_phase2() -> None:
         print(f"  {[round(c,4) for c in valid_c]}")
         print(f"  mean={np.mean(valid_c):.4f}  min={min(valid_c):.4f}  max={max(valid_c):.4f}")
 
-    scores = [measurements[str(s)]["proportions"].get("max_abs_change_pct") for s in SEEDS]
+    scores = [measurements[str(s)]["proportions"]["max_abs_change_pct"] for s in SEEDS
+              if measurements[str(s)]["proportions"].get("verdict") != "MASK_MISSING"]
     valid_p = [p for p in scores if p is not None]
     if valid_p:
         print(f"\nProportions (provisional <=5.3%):")

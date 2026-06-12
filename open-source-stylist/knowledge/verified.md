@@ -235,6 +235,56 @@ are unreliable on generated images with synthetic textures.
 
 ---
 
+## V-VAR-001 correction — proportions row (2026-06-12, instrument bug fix)
+
+Proportions row in V-VAR-001 was wrong: `run_e005.py` used `.get("max_abs_change_pct", 0)`
+on a key absent from `compare()` output → silently scored 0.00% for all seeds.
+
+Corrected proportions data (K=5, same seeds):
+
+| Gate | mean | std | range |
+|------|------|-----|-------|
+| Proportions (max_abs_change_pct) | 11.16% | 3.07% | 7.03–16.0% |
+
+All 5 seeds FAIL (threshold 5.3%). Noise floor for proportions cannot be estimated —
+systematic signal dominates. V-VAR-001 original table should be read with this correction
+applied to the proportions row.
+
+---
+
+## V-PROP-002 reversal — instrument bug corrected (2026-06-12)
+
+Supersedes V-PROP-002 (2026-06-12). The original entry was based on wrong data.
+
+**Bug:** `run_e005.py` used `.get("max_abs_change_pct", 0)` on a key absent from
+`compare()` output. Fix: key added to `proportions.py compare()` return dict;
+runner updated to direct key access with RuntimeError on None. `measurements.json`
+verdicts corrected from existing numeric data (shoulder/waist/hip pcts were accurate).
+
+**Corrected finding:** QIE-2511 Lightning (4-step, layers=2) systematically distorts body
+proportions beyond the 5.3% threshold on outfit_001.
+
+| Seed | shoulder | waist | hip | max_abs | Verdict |
+|------|----------|-------|-----|---------|---------|
+| 42   | +3.64%   | −4.18% | +7.03% | 7.03%  | FAIL |
+| 123  | +12.63%  | −2.11% | +4.61% | 12.63% | FAIL |
+| 456  | +5.69%   | −8.27% | +9.03% | 9.03%  | FAIL |
+| 789  | +7.58%   | −11.09%| +5.77% | 11.09% | FAIL |
+| 1337 | +16.0%   | −9.99% | +6.8%  | 16.0%  | FAIL |
+
+Systematic direction: waist always narrows (−4% to −11%); shoulders always widen
+(+4% to +16%); hips always widen (+5% to +9%).
+
+Owner confirmed (2026-06-12, visual review of seed_1337 vs input): distortion is real.
+Face, chest, hips, and waist all affected; not attributable solely to outfit silhouette
+geometry. Other seeds may have partial silhouette contribution but pattern is consistent.
+
+V-PROP-001 threshold 5.3% is correctly calibrated — it reliably detects real distortion.
+The generator, not the threshold, is the failure. Cause under investigation (candidate:
+H-PROPORTIONS, H-REF-CONTAMINATION).
+
+---
+
 ## V-QIE-001 — QIE-2511 output frame count formula (2026-06-12, source code + 2 empirical runs)
 
 Source: `comfy_extras/nodes_qwen.py` line 129 (ComfyUI 0.24.1); confirmed by

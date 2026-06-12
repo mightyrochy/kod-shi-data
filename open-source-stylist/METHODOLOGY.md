@@ -41,6 +41,10 @@ An experiment exists to inform a decision. No decision at stake — no experimen
 4. **Acceptance criteria** — what result means what, defined BEFORE seeing results.
    Numeric thresholds where possible.
 5. **Cost estimate** — GPU time, sessions.
+6. **Integration FAIL tests** — for any new or modified gate path, one known-FAIL
+   case must be written in `system/tests/` before execution: a fixed input that
+   the gate must score as FAIL. Tests exercise the full measurement path from
+   inputs to verdict. A gate without a FAIL test is not validated.
 
 **After running:**
 - Raw results go to `experiments/NNN_name/results/` unmodified (including failures).
@@ -103,6 +107,9 @@ knowledge entries written. "Code written" is not done.
   see at the given resolution.
 - The owner's verdict is final on visual quality. The system's job is to bring the
   owner a measured per-region report, not to replace the owner's eyes.
+- Measurement code fails loudly: a missing metric is an error, never a default.
+  `.get("metric_key", 0)` is forbidden in gate and runner code — use direct key
+  access. A KeyError is the correct signal that a gate contract was broken.
 
 ## 6. Where things live
 

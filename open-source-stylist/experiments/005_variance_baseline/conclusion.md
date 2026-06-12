@@ -122,3 +122,21 @@ All 5 seeds: 0.00% -> PASS
 - Texture quality gate: owner observation. Not in scope for V1 instruments; document
   as known gap in design §6.
 - layers=0 single-frame generation: parked per owner instruction; test after E-005.
+
+---
+
+## Erratum — proportions verdict corrected (2026-06-12, post-close)
+
+**Third instrument failure found post-close.** `run_e005.py` had `.get("max_abs_change_pct", 0)`
+on a key absent from `proportions.compare()` return dict. All 5 proportions scores silently
+defaulted to 0.00%; verdicts were all "PASS" — wrong.
+
+Corrected values: all 5 seeds FAIL (range 7.03–16.0%, mean 11.16%). Systematic pattern.
+Owner confirmed visual distortion on seed_1337 (2026-06-12). See verified.md for full
+corrected data (V-PROP-002 reversal, V-VAR-001 correction).
+
+Fix applied to: `proportions.py` (added `max_abs_change_pct` to `compare()` return),
+`run_e005.py` (direct key access + RuntimeError on None), `measurements.json` (verdicts
+corrected from accurate numeric data). Integration FAIL tests added in `system/tests/`.
+Rule added to METHODOLOGY §5: measurement code fails loudly — missing metric = error,
+never a default.

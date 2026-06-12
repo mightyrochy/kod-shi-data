@@ -20,6 +20,11 @@ VLM judgments, or uninstrumented visual comparison.
 - **H-PROPORTIONS** — QIE-2511 reduces chest/waist when adding clothing (observed
   in runs 1–2, possibly a special case of H-REF-CONTAMINATION). → Verify: E-008 +
   proportion gate on E-005 baseline.
+  **2026-06-12: measured support on this config.** E-005 (Lightning 4-step) shows
+  systematic distortion on all 5 seeds: waist narrows (−4% to −11%), shoulders widen
+  (+4% to +16%), hips widen (+5% to +9%). Owner confirmed visual distortion on seed_1337.
+  Still a hypothesis — cause unknown (body-type mapping? reference contamination?
+  Lightning-specific?). Remains open until E-008 or a dedicated ablation.
 - **H-PROMPT-WEAK** — Prompt influence is weak; the model follows the reference panel.
   → Indirectly probed by E-007; full test deferred.
 - **H-40STEPS** — "40 steps is worse than 4" was observed with Lightning LoRA likely
