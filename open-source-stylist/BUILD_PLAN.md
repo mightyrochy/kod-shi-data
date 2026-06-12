@@ -185,6 +185,15 @@ it silently would reopen the color-dependence hole the band exists to cover.
   contamination does not explain the proportions distortion and H-PROPORTIONS needs
   another suspect (next candidate: Lightning-specific behavior, bench rows 2–3).
 
+**New work item (2026-06-12, architecture review): mask sanity guard**
+`system/segmentation/sanity.py` — deterministic plausibility checks on every mask
+before any consumer reads it: area fraction bounds per region type, positional
+priors (footwear in the lower band, top in the upper half), garment ⊂ person.
+Violations FLAG for owner review (advisory, not a verdict). Motivation: two
+silent-mask-corruption incidents inside one experiment (E-005 shoes, top), both
+caught late — by the owner's eye or by an exploding ΔE. Build before E-006 so all
+remaining A/B experiments run guarded. Design §6 [5] updated accordingly.
+
 **Execution mode:** Sonnet + high, 1–2 sessions + GPU time.
 
 **Execution notes (2026-06-11, Stage 2 start):**
@@ -214,6 +223,11 @@ measured report. The VLM enters only here — and first gets calibrated.
 
 **Deliverables:**
 1. `system/analysis/` — person analysis (Qwen3-VL-8B, `PersonProfile` out).
+   **Scope note (2026-06-12):** the general-prompts rule shrank PersonProfile's V1
+   role — preserve-attribute text no longer feeds the generation prompt. Build the
+   minimal profile (photo_format, framing, visible constraints) needed by the
+   orchestrator and report; do not build full attribute analysis for prompt text
+   that is now banned. Re-scope at stage entry.
 2. `system/evaluation/` — evaluation stage: deterministic gates (stage 1) + VLM
    semantic checks (presence, layering) + report assembly (`EvaluationVerdict`).
 3. `system/orchestrator.py` — runs [1]→[3]→[4]→[5]→[6] with VRAM sequencing,
@@ -239,8 +253,20 @@ owner reviews an end-to-end run; loop reproducible; VLM role decided.
 **Deliverables:**
 1. `system/shell/face_restore.py` — FaceMesh landmarks → affine warp of original
    face → Poisson blend; ArcFace gate validates output.
+   **Conditional, not default (2026-06-12, from E-005):** identity is the
+   generator's strongest property (cosine 0.776–0.874 vs 0.57 on all seeds);
+   compositing into already-good faces adds Poisson-seam risk for no gain. Face
+   restore triggers only when a run's ArcFace score falls below threshold.
 2. `system/shell/background_restore.py` — composite original background back.
 3. `system/shell/color_match.py` — bounded per-region LAB matching toward reference.
+
+**Known architectural gap (2026-06-12):** the shell has NO deterministic remedy for
+body-proportion distortion — the garment legitimately changes the silhouette, so
+the original body cannot be composited back. Proportion failures are addressed
+generation-side only: E-008 (contamination), bench rows 2–3 (Lightning), and
+strategy C protect-by-construction (design §7). If none of these resolves it, V1
+retry policy has no action for proportion FAIL — escalate to owner as an
+architecture decision before Stage 7.
 
 **Experiments:**
 
@@ -377,3 +403,12 @@ Estimated total: 8–12 working sessions + GPU batch time.
   is a prerequisite for bench rows 2–3); 9-frames explanation downgraded to
   hypothesis; P8 retro-step (official QIE-2511 workflow comparison) made a
   blocking prerequisite for E-005 phase 1.
+- **2026-06-12 (architecture review, owner-approved)** — post-E-005 system review
+  integrated: mask sanity guard added as Stage 2 work item (build before E-006);
+  Stage 4 face restore made conditional (ArcFace-triggered — identity measured as
+  generator's strongest property); shell's proportion gap documented as known
+  architectural limitation with escalation rule before Stage 7; Stage 3 person
+  analysis re-scoped to minimal profile (general-prompts rule shrank its role);
+  design §§5–8 updated in the same change (strategy C measured motivation,
+  proportion gate as primary A-vs-C bench discriminator, advisory texture
+  indicator in bench metrics).

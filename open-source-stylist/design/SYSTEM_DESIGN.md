@@ -231,8 +231,17 @@ Transport:
   hair, background masks + one mask per garment (text prompts from `OutfitPackage`).
 - **Tool:** SAM 3 (text-prompted, ComfyUI nodes, low-VRAM variant preferred);
   MediaPipe FaceMesh for face landmarks; Grounded-SAM-2 as fallback.
+  (V1 as-built: GroundingDINO+SAM1 accepted per E-001; SAM3 deferred behind a
+  dependency blocker — see BUILD_PLAN Stage 1 notes.)
 - **Why a stage, not a utility:** evaluation gates, color correction, face restore, and
   repair masks all consume `RegionMap`. One computation, many consumers.
+- **Mask sanity guard (added 2026-06-12 after two silent-mask-corruption incidents
+  in E-005):** deterministic plausibility checks on every produced mask before any
+  consumer sees it — area fraction within bounds for the region type, positional
+  priors (footwear in the lower band, top in the upper half), garment masks ⊂ person
+  mask. Violations FLAG the mask for owner review; they do not auto-fail. Masks are
+  a single point of failure for every downstream measurement — they must not fail
+  silently.
 
 ### [6] Evaluation — per-region, hybrid (P4)
 - **Deterministic gates (decide):**
@@ -279,9 +288,12 @@ Transport:
 
 ### [7] Restoration Shell
 Ordered sub-steps, deterministic first:
-1. **Face restore:** FaceMesh landmarks on generated image → piecewise affine warp of
-   ORIGINAL face → Poisson blend. ArcFace gate validates the result (catches both
-   generator drift and bad blends).
+1. **Face restore — conditional, not default (revised 2026-06-12):** triggered only
+   when the ArcFace gate scores a run below threshold. E-005 measured identity as
+   the generator's strongest property (cosine 0.776–0.874 vs threshold 0.57, all
+   seeds); compositing into already-good faces adds Poisson-seam risk for no gain.
+   Mechanism unchanged: FaceMesh landmarks → piecewise affine warp of ORIGINAL
+   face → Poisson blend; ArcFace validates the result.
 2. **Background restore:** composite original background back (when unchanged by request).
 3. **Color correction:** per garment region, bounded histogram/LAB matching toward the
    reference (bounded strength — do not flatten shading).
@@ -313,6 +325,14 @@ All share stages [1][2][3][5][6][7]. Decision by bench-off (§8), not assumption
   shoes, earrings) added by separate masked local passes (repair executor, or OmniTry).
   Responds directly to reference-count degradation; drift outside masks is zero by
   construction. Cost: +N generations.
+  **Measured motivation (2026-06-12, E-005):** the holistic baseline systematically
+  distorts body proportions on every seed (waist −4…−11%, shoulders +4…+16%) and
+  fails shoes both in color and stability. Masked passes physically cannot alter
+  pixels outside their masks — protect-by-construction is currently the only
+  architectural answer to proportion distortion, because the shell has no
+  deterministic body-restore step (the garment legitimately changes the silhouette).
+  This makes the proportion gate the primary discriminating metric between A and C
+  in the bench-off.
 - **D — Look compilation (pilot hypothesis).** (1) compile the outfit board into ONE
   coherent worn-look image; (2) transfer that single look onto the person. Compresses
   5 refs → 1. Risk: detail loss compounds across two generations. Cheap pilot only if
@@ -342,8 +362,13 @@ Runs only after measurement gates are validated (P9) — metrics, not eyeballing
   measured first (variance baseline) so differences can be attributed.
 - **P5 correlation side-test:** rank 5 Lightning drafts by gates; regenerate each seed
   full-step; check rank stability.
-- **Metrics:** per-garment ΔE; ArcFace cosine; proportion deltas; VLM presence/layering
-  checklist (advisory); wall-clock; VRAM peak.
+- **Metrics:** per-garment ΔE; ArcFace cosine; proportion deltas (**primary
+  discriminator between strategies A and C** — see §7); advisory texture indicator
+  (high-frequency energy ratio of garment region vs reference — added 2026-06-12:
+  owner observed texture flatness dominates perceived difference at ΔE 3–5, and a
+  ΔE-only bench could pick a flat-texture winner); VLM presence/layering checklist
+  (advisory); wall-clock; VRAM peak. Owner review remains a mandatory bench input —
+  no engine decision on numbers alone.
 - **Output:** knowledge entry + engine/strategy decision recorded with data.
 
 ---
@@ -446,6 +471,13 @@ V1 unchanged except Stylist:
   transport description adopted; new P9 (measurement before generation experiments)
   added from the evaluation-reliability lesson; all prior-attempt [E] findings
   downgraded to hypotheses per owner decision.
+- **2026-06-12** — post-E-005 architecture review (owner-approved): face restore in
+  the shell becomes conditional (ArcFace-triggered) — identity measured as the
+  generator's strongest property; strategy C gains measured motivation (systematic
+  proportion distortion in holistic passes has no shell remedy — protect-by-
+  construction is the only architectural answer); proportion gate named primary
+  A-vs-C bench discriminator; advisory texture indicator added to bench metrics;
+  mask sanity guard added to stage [5] after two silent-mask-corruption incidents.
 - **2026-06-11** — color gate redesigned on E-002 calibration data (experiments/002):
   CIE76 → CIEDE2000; lightness normalization added; two modes (solid/palette)
   auto-selected by reference distribution — mean ΔE is blind on multi-color patterns;
