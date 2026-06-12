@@ -152,3 +152,27 @@ Provisional: calibrated on static photo pairs. Confirmed at E-005 with real
 generated images. The 9.84% gap leaves substantial headroom.
 
 ---
+
+## V-QIE-001 — QIE-2511 output frame count formula (2026-06-12, source code + 2 empirical runs)
+
+Source: `comfy_extras/nodes_qwen.py` line 129 (ComfyUI 0.24.1); confirmed by
+diagnostic runs in `experiments/005_variance_baseline/results/`.
+
+`EmptyQwenImageLayeredLatentImage` creates a 5D latent:
+`[batch_size, 16, layers+1, height//8, width//8]`
+
+Qwen VAE uses causal 4x temporal compression (identical to video VAE convention).
+Decoded output frame count:
+
+**`output_frames = 4 * layers + 1`**
+
+Empirical confirmations:
+- layers=2 -> 9 frames (Config A and B in test_configs.py)
+- layers=1 -> 5 frames (test_layers1.py, 2026-06-12)
+
+**frame01 is always the primary generated output** (temporal position 0).
+Frames 02..N are auxiliary temporal positions; always lower quality / blurry.
+
+E-005 frozen config: layers=2, frame01 saved as output.
+
+---

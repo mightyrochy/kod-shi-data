@@ -42,11 +42,11 @@ from system.gates.proportions import compare as compare_proportions
 # ---------------------------------------------------------------------------
 
 SEEDS = [42, 123, 456, 789, 1337]
-STEPS = 40
+STEPS = 4  # Lightning 4-step (Config B, confirmed for E-005)
 
 PERSON_IMAGE   = ROOT / "assets" / "person" / "person_front.png"
 OUTFIT_PACKAGE = ROOT / "assets" / "outfits" / "outfit_001" / "outfit_package.json"
-WORKFLOW_NAME  = "qie2511_vton"
+WORKFLOW_NAME  = "qie2511_vton_lightning"
 
 RESULTS_DIR = Path(__file__).parent / "results"
 PANELS_DIR  = RESULTS_DIR / "panels"
