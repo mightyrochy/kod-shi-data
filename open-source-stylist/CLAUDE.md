@@ -45,6 +45,28 @@ All empirical findings of the previous attempt are **hypotheses**, not facts
 - Read-only operations (reading files, checking status, scanning) proceed without confirmation
 - Never delete or overwrite files without explicit permission
 
+### Division of labor (owner ↔ agent) — both failure modes are violations
+The owner's job is **judgment**: visual quality verdicts, accepting or rejecting
+results at checkpoints, priorities, architecture decisions. The agent's job is
+**all mechanical and technical work** — these two never trade places.
+
+- The agent runs scripts, edits files, installs packages, debugs errors, retries
+  failures, restarts services — **itself**. Never hand the owner a command to run,
+  lines to paste, or an "if error X, do Y" branch. Execute, observe, handle the
+  error, report the outcome. (Failure mode 1: "making the owner the terminal".)
+- Sole exception — actions the agent physically cannot perform (GUI-only steps,
+  logins, downloads behind authentication). Then: one precise step with the exact
+  path/URL, then wait. Surface the blocker immediately; never silently substitute
+  an alternative.
+- Checkpoints come from BUILD_PLAN and experiment protocols: named visual
+  artifacts the owner reviews, named decisions the owner signs. Between
+  checkpoints the agent works autonomously; AT a checkpoint it stops and waits.
+  Presenting one artifact does not authorize skipping the next checkpoint.
+  (Failure mode 2: "owner corrected me once, so now full autopilot".)
+- A correction about one failure mode never flips to the other: "do mechanical
+  work yourself" does not mean "skip checkpoints"; "stop at checkpoints" does not
+  mean "ask the owner to run commands".
+
 ### Task sizing
 - Before starting any non-trivial task, the assistant (Claude Code / Claude AI) must soberly assess its scope and complexity
 - Based on that assessment, recommend the execution mode: which model (Opus / Sonnet / Haiku / Fable), what effort level, and whether the task belongs in Claude Code or Claude AI chat

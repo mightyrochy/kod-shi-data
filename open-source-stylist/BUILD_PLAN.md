@@ -144,6 +144,30 @@ roll-up. The WARN band (ΔE 3–5) deliberately holds the zone where owner-confi
 verdicts overlap across colors (navy fail at 3.02 vs pink pass at 3.97) — collapsing
 it silently would reopen the color-dependence hole the band exists to cover.
 
+**Execution notes (2026-06-11, owner review of the first-generation diagnostic):**
+- **Config B (Lightning, 4 steps) confirmed as the E-005 configuration** — it is
+  bench row 1 (baseline) anyway; E-005 measures variance of the baseline and does
+  not depend on resolving the Lightning question.
+- **Diagnostic conclusion "full model without Lightning produces invalid output"
+  is REJECTED as confounded.** Config A ran 40 steps at cfg=1.0 with an empty
+  negative prompt — Lightning-regime settings. The full model requires cfg ≈ 4–7
+  with a real negative; blur under cfg=1.0 is the expected symptom of a wrong
+  config, not a property of the model. Do NOT record "Lightning required" in
+  knowledge/. A fair no-Lightning config is a separate work item, required before
+  bench rows 2–3 (otherwise H-LIGHTNING/H-40STEPS gets answered by a confound
+  again — the exact failure mode of the archived attempt).
+- **The 9-frames explanation is downgraded to hypothesis.** "Frames 02–09 are
+  unpacked input images / empty slots" contradicts the observation that they are
+  always blurry — inputs would be recognizable. Mechanism not understood yet.
+- **P8 retro-step required before E-005 phase 1:** the workflow was built from
+  scratch, skipping the plan's "check for a maintained community workflow first".
+  Obtain the official/community QIE-2511 workflow (sources: design §13), compare
+  node-by-node, establish the semantics of `EmptyQwenImageLayeredLatentImage` and
+  `layers`. If doubt remains after comparison: one cheap layers=1 generation as a
+  direct hypothesis test. E-005 measurements are not trustworthy until frame
+  selection is understood and stable.
+- Config C (40 steps, layers=3) timed out; result unknown; not blocking.
+
 **Execution mode:** Sonnet + high, 1–2 sessions + GPU time.
 
 **Execution notes (2026-06-11, Stage 2 start):**
@@ -330,3 +354,9 @@ Estimated total: 8–12 working sessions + GPU batch time.
   outputs (E-001 validated segmentation on real photos only, not the generator's
   domain); Stage 2 reporting discipline added — color-gate WARN always surfaced
   to owner, never aggregated.
+- **2026-06-11 (diagnostic review)** — Config B (Lightning 4-step) confirmed for
+  E-005; "Lightning required" conclusion rejected as confounded (Config A used
+  cfg=1.0 + empty negative — Lightning-regime settings; fair no-Lightning config
+  is a prerequisite for bench rows 2–3); 9-frames explanation downgraded to
+  hypothesis; P8 retro-step (official QIE-2511 workflow comparison) made a
+  blocking prerequisite for E-005 phase 1.
