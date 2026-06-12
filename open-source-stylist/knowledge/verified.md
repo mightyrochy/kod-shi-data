@@ -308,3 +308,46 @@ Frames 02..N are auxiliary temporal positions; always lower quality / blurry.
 E-005 frozen config: layers=2, frame01 saved as output.
 
 ---
+
+## V-RES-001 — Working resolution confirmed (2026-06-12, E-006, K=5 seeds × 3 tiers)
+
+Source: `experiments/006_resolution/`, Lightning 4-step, outfit_001, seeds [42,123,456,789,1337].
+
+**Working resolution: 720x1024 (max_side=1024)** — confirmed as the only valid
+resolution for QIE-2511 Lightning in the current pipeline configuration.
+
+| Tier | Resolution | Identity mean | PASS/5 | Proportions mean |
+|------|-----------|--------------|--------|-----------------|
+| baseline | 720x1024 | 0.830 | 5/5 | 11.16% |
+| low | 576x816 | 0.491 (1 det.) | 0/5 | 24.68% |
+| high | 896x1280 | 0.299 | 1/5 | 15.65% |
+| high_plus | 1120x1600 | — (0 det.) | 0/5 | 32.35% |
+
+Decision rule (protocol §4.2 criterion 1): no tier may drop mean cosine >0.05
+from baseline (0.830). All three new tiers fail this criterion.
+
+Root cause (observation): Low and High+ produce head-cropped outputs on most seeds
+(face not detectable by ArcFace). High produces inconsistent identity (4/5 catastrophic).
+QIE-2511 Lightning appears tuned for ~720-1024px images; significant deviation
+causes compositional failures.
+
+Note: color dE for top/bottom improves at higher resolution (High+ best: 1.54/1.65 dE
+vs baseline 3.52/2.97). This gain cannot be exploited in current config — identity
+failure is disqualifying.
+
+---
+
+## V-RES-002 — VRAM ceiling: no OOM within tested range (2026-06-12, E-006)
+
+Source: same as V-RES-001.
+
+QIE-2511 Lightning (fp8mixed, layers=2) completed all 5 seeds without OOM at
+1120x1600 (1.79MP) on RTX 4090 Laptop (16GB). VRAM ceiling not reached within
+the tested range.
+
+Peak VRAM readings (nvidia-smi, after generation):
+- Low 576x816: ~10.6GB (includes model load on cold start)
+- High 896x1280: ~4.0GB
+- High+ 1120x1600: ~0.35GB (aggressive inter-seed offload at this resolution)
+
+---

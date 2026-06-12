@@ -53,3 +53,29 @@ VLM judgments, or uninstrumented visual comparison.
   deterministic — promotes to Verified on reproduction).
 
 ---
+
+## 2026-06-12 — E-006 observations (single experiment, K=5 per tier)
+
+- **O-RES-001** — Color dE for top/bottom improves monotonically with resolution.
+  High+ (1120x1600) achieved top=1.54, bottom=1.65 dE vs baseline 3.52/2.97.
+  Gain is real but cannot be exploited without solving the identity failure at
+  that resolution. → May revisit if identity at High+ is resolved through other means.
+
+- **O-RES-002** — QIE-2511 Lightning generates head-cropped outputs (face
+  undetectable) at Low (576x816) on 4/5 seeds and at High+ (1120x1600) on 5/5
+  seeds. High (896x1280) avoids head cropping but identity is highly stochastic
+  (1/5 PASS). Interpretation: Lightning LoRA is conditioned near 720-1024px; large
+  deviations cause compositional failures. Single experiment; would require a wider
+  resolution sweep or different LoRA to verify the mechanism.
+
+- **O-RES-003** — High+ (1120x1600) shows consistent 346MB VRAM residual after
+  each generation (vs ~10GB for Low). Possible: ComfyUI aggressively offloads to
+  system RAM under VRAM pressure at this resolution, releasing GPU memory between
+  seeds. Mechanism not confirmed.
+
+- **O-SEG-GAP-001** — Sanity guard does not detect inter-garment mask overlap.
+  Owner observed bottom mask covering belt at High/seed_42 visually; area fraction,
+  position prior, and containment checks all passed. A fourth check (pairwise
+  garment overlap) would catch this. Candidate enhancement before E-008.
+
+---

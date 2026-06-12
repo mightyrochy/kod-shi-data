@@ -474,7 +474,7 @@ def _prop_values(results: dict, tier_key: str) -> list[float]:
 
 def _print_summary(results: dict) -> None:
     print("\n" + "="*70)
-    print("E-006 — Resolution sensitivity summary")
+    print("E-006 -- Resolution sensitivity summary")
     print("="*70)
 
     # Row definitions: (display_name, tier_key, width, height)
@@ -502,7 +502,7 @@ def _print_summary(results: dict) -> None:
 
     # Color per region
     for region in REGION_TO_REF:
-        print(f"\nColor ΔE — {region} (PASS<=3  WARN 3-5  FAIL>5):")
+        print(f"\nColor dE -- {region} (PASS<=3  WARN 3-5  FAIL>5):")
         print(f"  {'Tier':<26} {'mean':>8} {'std':>8} {'P/W/F':>10}")
         for label, tier_key, w, h in rows:
             if _oom(tier_key):
@@ -572,9 +572,21 @@ def _print_summary(results: dict) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="E-006 resolution sensitivity runner")
-    parser.add_argument("--phase", type=int, choices=[1, 2], required=True,
+    parser.add_argument("--phase", type=int, choices=[1, 2],
                         help="1 = generate + first-seed overlays; 2 = gates (after review)")
+    parser.add_argument("--summary", action="store_true",
+                        help="Print summary table from saved measurements.json (no GPU)")
     args = parser.parse_args()
+
+    if args.summary:
+        meas_path = RESULTS_DIR / "measurements.json"
+        if not meas_path.exists():
+            sys.exit(f"measurements.json not found: {meas_path}\nRun phase 2 first.")
+        _print_summary(json.loads(meas_path.read_text(encoding="utf-8")))
+        sys.exit(0)
+
+    if args.phase is None:
+        parser.error("--phase or --summary required")
 
     if not PERSON_IMAGE.exists():
         sys.exit(f"Missing: {PERSON_IMAGE}")
