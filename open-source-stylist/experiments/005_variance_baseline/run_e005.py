@@ -1,17 +1,22 @@
-"""E-005 runner — generation variance baseline.
+"""E-005 runner -- generation variance baseline.
 
 Usage (from project root):
-    python -m experiments.005_variance_baseline.run_e005
+    python -m experiments.005_variance_baseline.run_e005 --phase 1
+    python -m experiments.005_variance_baseline.run_e005 --phase 2
 
-Two-phase execution:
-  Phase 1: build reference panel + generate K=5 images
-  Phase 2: (after owner review pause) segment generated images + compute gates
+Phase 1: build reference panel + generate K=5 images + segment first output + overlays.
+         Saves state to results/phase1_state.json; no interactive pauses.
+Phase 2: segment remaining 4 outputs + compute all gates + save measurements.json.
+         Reads state from results/phase1_state.json.
 
-Configuration is frozen per protocol — do not modify between runs.
+Between phases: review overlays in results/seed_42/ before running phase 2.
+
+Configuration is frozen per protocol -- do not modify between runs.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -23,8 +28,9 @@ import cv2
 import numpy as np
 
 from system.clients.comfyui import ComfyUIClient
-from system.adapter.adapter import build_generation_request, _auto_resolution
+from system.adapter.adapter import _auto_resolution
 from system.adapter.panel import build_panel
+from system.adapter.prompt import build_prompt
 from system.segmentation.grounded_sam import segment
 from system.workflows import load_template, fill_workflow
 from system.gates.color import compare_regions
@@ -32,21 +38,21 @@ from system.gates.identity import compare_faces
 from system.gates.proportions import compare as compare_proportions
 
 # ---------------------------------------------------------------------------
-# Frozen configuration (per protocol — do not change after first run)
+# Frozen configuration (per protocol -- do not change after first run)
 # ---------------------------------------------------------------------------
 
 SEEDS = [42, 123, 456, 789, 1337]
 STEPS = 40
-ENGINE = "qie-2511"
 
-PERSON_IMAGE = ROOT / "assets" / "person" / "person_front.png"
+PERSON_IMAGE   = ROOT / "assets" / "person" / "person_front.png"
 OUTFIT_PACKAGE = ROOT / "assets" / "outfits" / "outfit_001" / "outfit_package.json"
-WORKFLOW_NAME = "qie2511_vton"
+WORKFLOW_NAME  = "qie2511_vton"
 
 RESULTS_DIR = Path(__file__).parent / "results"
-PANELS_DIR = RESULTS_DIR / "panels"
+PANELS_DIR  = RESULTS_DIR / "panels"
+STATE_FILE  = RESULTS_DIR / "phase1_state.json"
 
-# Segmentation prompts for the generated image
+# Segmentation prompts for generated images
 GENERATED_PROMPTS = {
     "person":   "person",
     "face":     "face",
@@ -57,7 +63,7 @@ GENERATED_PROMPTS = {
     "earrings": "earrings",
 }
 
-# E-001 reference masks reused for color comparison (garment images → masks)
+# E-001 reference masks reused for color comparison
 E001 = ROOT / "experiments" / "001_segmentation_masks" / "results"
 REGION_TO_REF = {
     "top":      (ROOT / "assets/outfits/outfit_001/blouse_front.webp",
@@ -72,22 +78,19 @@ REGION_TO_REF = {
                  E001 / "outfit_001_earrings_disc/earrings.png"),
 }
 
-# Person mask from E-001 for proportions baseline
 E001_PERSON_MASK = E001 / "person_front" / "person.png"
 
-# Color gate thresholds (provisional — this experiment finalises them)
 COLOR_PASS = 3.0
 COLOR_FAIL = 5.0
 
-# Overlay colours per region (BGR)
 OVERLAY_COLORS = [
-    (80,  80,  255),   # top — blue
-    (80,  200, 80),    # bottom — green
-    (60,  220, 220),   # shoes — cyan
-    (40,  140, 255),   # belt — orange
-    (200, 80,  200),   # earrings — purple
-    (80,  80,  255),   # person — (fallback)
-    (255, 200, 60),    # face — yellow
+    (80,  80,  255),  # top -- blue
+    (80,  200, 80),   # bottom -- green
+    (60,  220, 220),  # shoes -- cyan
+    (40,  140, 255),  # belt -- orange
+    (200, 80,  200),  # earrings -- purple
+    (255, 80,  80),   # person -- red
+    (255, 200, 60),   # face -- yellow
 ]
 
 CLIENT = ComfyUIClient(host="localhost", port=8000)
@@ -106,7 +109,7 @@ def make_overlay(source_path: Path, masks: dict[str, str], out_path: Path) -> No
     for i, (label, mask_path) in enumerate(masks.items()):
         m = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
         if m is None or m.max() == 0:
-            print(f"  [overlay] {label}: empty or missing mask, skipping")
+            print(f"  [overlay] {label}: empty/missing mask, skipping")
             continue
         m_r = cv2.resize(m, (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
         fg = m_r > 127
@@ -114,7 +117,7 @@ def make_overlay(source_path: Path, masks: dict[str, str], out_path: Path) -> No
         for c in range(3):
             overlay[:, :, c][fg] = overlay[:, :, c][fg] * 0.5 + color[2 - c] * 0.5
     cv2.imwrite(str(out_path), overlay.astype(np.uint8))
-    print(f"  overlay saved → {out_path.relative_to(ROOT)}")
+    print(f"  overlay -> {out_path.relative_to(ROOT)}")
 
 
 def color_verdict(delta_e: float | None) -> str:
@@ -128,137 +131,149 @@ def color_verdict(delta_e: float | None) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Phase 1: build panel + generate all K images
+# Phase 1: panel + generate + segment seed_42 + overlays
 # ---------------------------------------------------------------------------
 
-def phase1_generate(outfit_package: dict) -> dict[int, Path]:
-    """Generate K images.  Returns {seed: path_to_generated_png}."""
+def run_phase1(outfit_package: dict) -> None:
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # --- 1a. build reference panel (SAM active) ---
-    print("\n=== Phase 1a: building reference panel ===")
-    panel_path = build_panel(outfit_package, PANELS_DIR, CLIENT)
-    print(f"  panel saved → {panel_path.relative_to(ROOT)}")
+    # 1a. build reference panel (skip if already exists -- deterministic output)
+    print("\n=== Phase 1a: reference panel (SAM) ===")
+    panel_path = PANELS_DIR / "reference_panel.png"
+    if panel_path.exists():
+        print(f"  panel exists, reusing -> {panel_path.relative_to(ROOT)}")
+    else:
+        panel_path = build_panel(outfit_package, PANELS_DIR, CLIENT)
+        print(f"  panel -> {panel_path.relative_to(ROOT)}")
+        CLIENT.free()
+        print("  /free done")
 
-    print("  POST /free (unload SAM/GDINO)")
-    CLIENT.free()
-
-    # --- 1b. determine resolution from person image ---
+    # 1b. resolution
     width, height = _auto_resolution(PERSON_IMAGE)
-    print(f"  resolution: {width}×{height}")
+    print(f"  resolution: {width}x{height}")
 
-    # --- 1c. upload static inputs once ---
-    print("\n=== Phase 1b: uploading inputs to ComfyUI ===")
+    # 1c. upload inputs
+    print("\n=== Phase 1b: upload inputs ===")
     person_fn = CLIENT.upload_image(PERSON_IMAGE)
     panel_fn  = CLIENT.upload_image(panel_path)
-    print(f"  person: {person_fn}, panel: {panel_fn}")
+    print(f"  person={person_fn}  panel={panel_fn}")
 
-    # --- 1d. generate all K seeds ---
+    # 1d. generate all K seeds
+    prompt = build_prompt(outfit_package)
     template = load_template(WORKFLOW_NAME)
-    generated: dict[int, Path] = {}
+    generated: dict[str, str] = {}
 
-    print("\n=== Phase 1c: generating (QIE-2511 full, 40 steps) ===")
+    print("\n=== Phase 1c: generate (QIE-2511 40-step) ===")
     for seed in SEEDS:
         seed_dir = RESULTS_DIR / f"seed_{seed}"
         seed_dir.mkdir(parents=True, exist_ok=True)
         prefix = f"e005_s{seed}"
-
         wf = fill_workflow(template, {
-            "__PERSON_IMAGE__":   person_fn,
-            "__REF_IMAGE__":      panel_fn,
-            "__POSITIVE_PROMPT__": build_prompt(outfit_package),
+            "__PERSON_IMAGE__":    person_fn,
+            "__REF_IMAGE__":       panel_fn,
+            "__POSITIVE_PROMPT__": prompt,
             "__SEED__":            seed,
             "__STEPS__":           STEPS,
             "__WIDTH__":           width,
             "__HEIGHT__":          height,
             "__OUTPUT_PREFIX__":   prefix,
         })
-
         print(f"  seed={seed} ...", end=" ", flush=True)
-        prompt_id = CLIENT.submit(wf)
-        outputs = CLIENT.poll(prompt_id, timeout=600.0)
+        pid = CLIENT.submit(wf)
+        outputs = CLIENT.poll(pid, timeout=600.0)
 
-        # find output image
         gen_path = None
         for node_out in outputs.values():
             for img_info in node_out.get("images", []):
                 if img_info.get("filename", "").startswith(prefix):
-                    data = CLIENT.download(
-                        img_info["filename"],
-                        img_info.get("subfolder", ""),
-                        img_info.get("type", "output"),
-                    )
+                    data = CLIENT.download(img_info["filename"],
+                                           img_info.get("subfolder", ""),
+                                           img_info.get("type", "output"))
                     gen_path = seed_dir / "generated.png"
                     gen_path.write_bytes(data)
                     break
             if gen_path:
                 break
-
         if gen_path is None:
-            raise RuntimeError(f"No output image for seed={seed}. Check ComfyUI logs.")
-        print(f"saved → {gen_path.relative_to(ROOT)}")
-        generated[seed] = gen_path
+            raise RuntimeError(f"No output for seed={seed}. Check ComfyUI logs.")
+        generated[str(seed)] = str(gen_path)
+        print(f"-> {gen_path.relative_to(ROOT)}")
 
-    print("\n  POST /free (unload QIE-2511)")
     CLIENT.free()
-    return generated
+    print("  /free done")
 
+    # 1e. segment seed_42 + produce overlays for review
+    first_seed = SEEDS[0]
+    first_path = Path(generated[str(first_seed)])
+    print(f"\n=== Phase 1d: segment seed={first_seed} for review ===")
+    masks_dir = first_path.parent / "masks"
+    masks = segment(first_path, GENERATED_PROMPTS, CLIENT, masks_dir)
+    print(f"  masks: {list(masks.keys())}")
 
-def build_prompt(outfit_package: dict) -> str:
-    from system.adapter.prompt import build_prompt as _bp
-    return _bp(outfit_package)
+    make_overlay(first_path, masks, first_path.parent / "_overlay_all.png")
+    for label, mpath in masks.items():
+        make_overlay(first_path, {label: mpath}, first_path.parent / f"_overlay_{label}.png")
+
+    CLIENT.free()
+    print("  /free done")
+
+    # save state for phase 2
+    state = {
+        "generated": generated,
+        "seed_42_masks": {k: str(v) for k, v in masks.items()},
+        "panel_path": str(panel_path),
+        "width": width,
+        "height": height,
+    }
+    STATE_FILE.write_text(json.dumps(state, indent=2), encoding="utf-8")
+    print(f"\n  state saved -> {STATE_FILE.relative_to(ROOT)}")
+
+    print("\n" + "="*60)
+    print("Phase 1 complete. Review overlays before running phase 2:")
+    print(f"  Generated:  {first_path.relative_to(ROOT)}")
+    print(f"  Overlay:    {(first_path.parent / '_overlay_all.png').relative_to(ROOT)}")
+    print(f"  Per-region: {first_path.parent.relative_to(ROOT)}/_overlay_<label>.png")
+    print()
+    print("Core regions: person, face, background, top, bottom, shoes")
+    print("If masks look correct -> run phase 2.")
+    print("If a core region is broken -> investigate before phase 2.")
+    print("="*60)
 
 
 # ---------------------------------------------------------------------------
-# Phase 2: segment + overlay (first image) + owner review pause
+# Phase 2: segment remaining + compute all gates
 # ---------------------------------------------------------------------------
 
-def phase2_review(generated: dict[int, Path]) -> dict[int, dict[str, str]]:
-    """Segment all generated images.  Pauses after first for owner review."""
+def run_phase2() -> None:
+    if not STATE_FILE.exists():
+        sys.exit(f"State file not found: {STATE_FILE}\nRun phase 1 first.")
+
+    state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    generated = {int(k): Path(v) for k, v in state["generated"].items()}
+
+    print("\n=== Phase 2a: segment remaining generated images (SAM) ===")
     all_masks: dict[int, dict[str, str]] = {}
 
-    print("\n=== Phase 2a: segmenting generated outputs (SAM active) ===")
-    for i, seed in enumerate(SEEDS):
+    # restore seed_42 masks from state
+    all_masks[SEEDS[0]] = state["seed_42_masks"]
+    print(f"  seed={SEEDS[0]}: masks loaded from phase 1 state")
+
+    for seed in SEEDS[1:]:
         gen_path = generated[seed]
         masks_dir = gen_path.parent / "masks"
-        print(f"  seed={seed} segmenting ...", end=" ", flush=True)
+        print(f"  seed={seed} ...", end=" ", flush=True)
         masks = segment(gen_path, GENERATED_PROMPTS, CLIENT, masks_dir)
         all_masks[seed] = masks
         print(f"{list(masks.keys())}")
-
-        # produce individual overlays
         make_overlay(gen_path, masks, gen_path.parent / "_overlay_all.png")
         for label, mpath in masks.items():
             make_overlay(gen_path, {label: mpath}, gen_path.parent / f"_overlay_{label}.png")
 
-        if i == 0:
-            print(f"\n{'='*60}")
-            print("OWNER REVIEW REQUIRED (E-005 protocol carry-over from E-001)")
-            print("E-001 validated segmentation on real photos only.")
-            print("Review the generated image and its mask overlays:")
-            print(f"  Image:    {gen_path.relative_to(ROOT)}")
-            print(f"  Overlays: {gen_path.parent.relative_to(ROOT)}/")
-            print()
-            print("Core regions to check: person, face, background, top, bottom, shoes")
-            print("If any core region mask looks wrong, Ctrl+C to stop and investigate.")
-            print()
-            resp = input("Type OK to continue with remaining generations and gate computation: ").strip().upper()
-            if resp != "OK":
-                print("Aborted by user.")
-                sys.exit(0)
-            print(f"{'='*60}\n")
-
-    print("\n  POST /free (unload SAM/GDINO)")
     CLIENT.free()
-    return all_masks
+    print("  /free done")
 
-
-# ---------------------------------------------------------------------------
-# Phase 3: compute gates
-# ---------------------------------------------------------------------------
-
-def compute_all_gates(generated: dict[int, Path], all_masks: dict[int, dict[str, str]]) -> dict:
-    print("\n=== Phase 3: computing gates (CPU) ===")
+    # gates (CPU)
+    print("\n=== Phase 2b: compute gates ===")
     measurements: dict[str, dict] = {}
 
     for seed in SEEDS:
@@ -267,95 +282,73 @@ def compute_all_gates(generated: dict[int, Path], all_masks: dict[int, dict[str,
         print(f"\n  seed={seed}")
         run_result: dict = {"seed": seed, "color": {}, "identity": {}, "proportions": {}}
 
-        # -- color gate per region --
         for region, (ref_img, ref_mask) in REGION_TO_REF.items():
             gen_mask_path = masks.get(region)
             if gen_mask_path is None:
-                print(f"    [color] {region}: no mask produced")
+                print(f"    [color] {region}: no mask")
                 run_result["color"][region] = {"verdict": "MASK_MISSING"}
                 continue
-
             result = compare_regions(gen_path, gen_mask_path, ref_img, ref_mask)
             verdict = color_verdict(result["delta_e_mean"])
             run_result["color"][region] = {**result, "verdict": verdict}
-            marker = "*** WARN ***" if verdict == "WARN" else verdict
-            print(f"    [color] {region}: dE={result['delta_e_mean']} → {marker}")
+            warn_flag = " *** WARN ***" if verdict == "WARN" else ""
+            print(f"    [color] {region}: dE={result['delta_e_mean']} -> {verdict}{warn_flag}")
 
-        # -- identity gate --
         id_result = compare_faces(gen_path, PERSON_IMAGE)
         cosine = id_result.get("cosine")
         id_verdict = "PASS" if (cosine is not None and cosine >= 0.57) else "FAIL"
         run_result["identity"] = {**id_result, "verdict": id_verdict}
-        print(f"    [identity] cosine={cosine} → {id_verdict}")
+        print(f"    [identity] cosine={cosine} -> {id_verdict}")
 
-        # -- proportions gate --
         gen_person_mask = masks.get("person")
         if gen_person_mask and E001_PERSON_MASK.exists():
             prop_result = compare_proportions(E001_PERSON_MASK, gen_person_mask)
             score = prop_result.get("max_abs_change_pct", 0)
             prop_verdict = "PASS" if score <= 5.3 else "FAIL"
             run_result["proportions"] = {**prop_result, "verdict": prop_verdict}
-            print(f"    [proportions] max_abs={score:.2f}% → {prop_verdict}")
+            print(f"    [proportions] max_abs={score:.2f}% -> {prop_verdict}")
         else:
             run_result["proportions"] = {"verdict": "MASK_MISSING"}
             print(f"    [proportions] person mask missing")
 
         measurements[str(seed)] = run_result
 
-    return measurements
-
-
-# ---------------------------------------------------------------------------
-# Phase 4: summarise + save
-# ---------------------------------------------------------------------------
-
-def save_and_report(measurements: dict) -> None:
+    # save + report
     out_path = RESULTS_DIR / "measurements.json"
-    with out_path.open("w", encoding="utf-8") as fh:
-        json.dump(measurements, fh, indent=2)
-    print(f"\n  measurements saved → {out_path.relative_to(ROOT)}")
+    out_path.write_text(json.dumps(measurements, indent=2), encoding="utf-8")
+    print(f"\n  measurements -> {out_path.relative_to(ROOT)}")
 
     print("\n=== E-005 Summary ===\n")
-
-    # Color: per-region variance across seeds
-    print("Color (dE mean ± std per region, provisional thresholds PASS≤3 WARN3-5 FAIL>5):")
-    color_regions = list(REGION_TO_REF.keys())
-    for region in color_regions:
-        vals = [measurements[str(s)]["color"].get(region, {}).get("delta_e_mean")
-                for s in SEEDS]
+    print("Color (CIEDE2000, provisional PASS<=3 WARN3-5 FAIL>5):")
+    for region in REGION_TO_REF:
+        vals = [measurements[str(s)]["color"].get(region, {}).get("delta_e_mean") for s in SEEDS]
         valid = [v for v in vals if v is not None]
         if valid:
-            mu = np.mean(valid)
-            sigma = np.std(valid)
+            mu, sigma = np.mean(valid), np.std(valid)
             verdicts = [color_verdict(v) for v in vals]
             warns = [str(SEEDS[i]) for i, v in enumerate(verdicts) if v == "WARN"]
             fails = [str(SEEDS[i]) for i, v in enumerate(verdicts) if v == "FAIL"]
-            warn_note = f"  *** WARN seeds: {warns}" if warns else ""
-            fail_note = f"  *** FAIL seeds: {fails}" if fails else ""
-            print(f"  {region:<12} dE={mu:.2f}±{sigma:.2f} {warn_note}{fail_note}")
+            extras = ("  *** WARN seeds " + str(warns) if warns else "") + \
+                     ("  *** FAIL seeds " + str(fails) if fails else "")
+            print(f"  {region:<12} dE={mu:.2f}+-{sigma:.2f}{extras}")
         else:
             print(f"  {region:<12} no data")
 
-    # Identity
     cosines = [measurements[str(s)]["identity"].get("cosine") for s in SEEDS]
     valid_c = [c for c in cosines if c is not None]
     if valid_c:
-        print(f"\nIdentity (ArcFace cosine, provisional threshold 0.57):")
-        print(f"  cosine = {[round(c,4) for c in valid_c]}")
+        print(f"\nIdentity (provisional >=0.57):")
+        print(f"  {[round(c,4) for c in valid_c]}")
         print(f"  mean={np.mean(valid_c):.4f}  min={min(valid_c):.4f}  max={max(valid_c):.4f}")
 
-    # Proportions
-    scores = [measurements[str(s)]["proportions"].get("max_abs_change_pct")
-              for s in SEEDS]
+    scores = [measurements[str(s)]["proportions"].get("max_abs_change_pct") for s in SEEDS]
     valid_p = [p for p in scores if p is not None]
     if valid_p:
-        print(f"\nProportions (max_abs_change_pct, provisional threshold 5.3%):")
-        print(f"  scores = {[round(p,2) for p in valid_p]}")
+        print(f"\nProportions (provisional <=5.3%):")
+        print(f"  {[round(p,2) for p in valid_p]}")
         print(f"  mean={np.mean(valid_p):.2f}%  max={max(valid_p):.2f}%")
 
-    print("\n(WARN and FAIL values require owner review before threshold revision.)")
-    print("Write results to experiments/005_variance_baseline/results/segmentation_review.md")
-    print("then document threshold decisions in knowledge/verified.md.\n")
+    print("\nAll WARNs/FAILs require owner review before updating knowledge/verified.md.")
 
 
 # ---------------------------------------------------------------------------
@@ -363,22 +356,19 @@ def save_and_report(measurements: dict) -> None:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    if not PERSON_IMAGE.exists():
-        sys.exit(f"Person image not found: {PERSON_IMAGE}")
-    if not OUTFIT_PACKAGE.exists():
-        sys.exit(f"Outfit package not found: {OUTFIT_PACKAGE}")
+    parser = argparse.ArgumentParser(description="E-005 variance baseline runner")
+    parser.add_argument("--phase", type=int, choices=[1, 2], required=True,
+                        help="1 = generate + first-image overlays; 2 = gates (after review)")
+    args = parser.parse_args()
 
-    # Guard: warn if results already exist
-    existing = list(RESULTS_DIR.glob("seed_*/generated.png"))
-    if existing:
-        print(f"WARNING: {len(existing)} generated images already in {RESULTS_DIR}")
-        resp = input("Results exist. Overwrite? (yes/no): ").strip().lower()
-        if resp != "yes":
-            print("Aborted."); sys.exit(0)
+    if not PERSON_IMAGE.exists():
+        sys.exit(f"Missing: {PERSON_IMAGE}")
+    if not OUTFIT_PACKAGE.exists():
+        sys.exit(f"Missing: {OUTFIT_PACKAGE}")
 
     outfit_package = json.loads(OUTFIT_PACKAGE.read_text(encoding="utf-8"))
 
-    generated   = phase1_generate(outfit_package)
-    all_masks   = phase2_review(generated)
-    measurements = compute_all_gates(generated, all_masks)
-    save_and_report(measurements)
+    if args.phase == 1:
+        run_phase1(outfit_package)
+    else:
+        run_phase2()
