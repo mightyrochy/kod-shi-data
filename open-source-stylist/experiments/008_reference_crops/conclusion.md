@@ -127,6 +127,35 @@ Color measurements for flagged seeds should be read with this caveat.
 
 ---
 
+## Additional owner observations (2026-06-13, post-close visual review of all 5 raw seeds)
+
+Owner reviewed all 5 raw-condition outputs in full, adding:
+
+- **Blouse (top):** only one seed has a blouse color resembling the reference; all
+  others are white. Gate: raw top mean dE = 9.25 vs cropped 3.52. Visual explanation:
+  the model generates a generic white shirt rather than the specific blouse color.
+- **Earrings:** all 5 seeds show grey/silver disc-shaped earrings with arbitrary
+  patterns — not the specific ridged spiral texture of the reference. Gate: raw
+  earrings mean dE = 8.59 vs cropped 3.67. Visual explanation: disc shape is
+  preserved (from reference), but color and texture default to generic silver.
+- **Shoes:** confirmed in prior erratum — all 5 seeds black, one high-heeled.
+
+Collectively these observations describe a **generic-fashion-model effect**: when
+full-body product photos appear in the reference panel, the model generates a
+"standard fashion photo with a generic model in generic clothes" rather than
+"this specific person wearing this specific outfit." Reference-image colors,
+textures, and identity are all overridden by the model's fashion-photo prior.
+
+This is not a collection of independent per-item contamination hits — it is one
+mechanism affecting all items simultaneously. The per-item dE numbers in the table
+above measure the degree of each item's deviation, but the root cause is the same
+for all: full-body reference photos supply too many competing signals (other person's
+body, background, incidental colors) for the model to isolate the individual garments.
+
+The garment-only crop rule (V-REF-001) directly addresses this mechanism.
+
+---
+
 ## Erratum — shoes verdict revised (2026-06-13, owner visual review)
 
 Original shoes verdict ("REFUTED") was wrong. Gate-based comparison (mean dE

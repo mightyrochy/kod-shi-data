@@ -102,6 +102,16 @@ VLM judgments, or uninstrumented visual comparison.
 - Remaining cause still open. Next candidate: Lightning-specific body-type mapping
   (bench rows 2-3 in Stage 6 will test this with same seeds, no-Lightning config).
 
+**O-E008-002** — Raw condition produces a generic-fashion-model effect (2026-06-13,
+owner visual review of all 5 seeds). Full-body product photos in the reference
+panel cause the model to output "a standard fashion photo with a generic model in
+generic clothes" rather than "the input person in the specific outfit." Per-item:
+blouse → white in 4/5 seeds (generic shirt default); earrings → grey/silver disc
+with arbitrary pattern (disc shape preserved, but color and texture default to
+generic jewelry); shoes → all black, one high-heeled (contamination from skirt
+reference model's heels). This is a unified mechanism, not independent per-item
+hits. The garment-only crop rule (V-REF-001) is the direct fix.
+
 **O-E008-001** — Bottom color is better in raw condition than cropped (0.89 vs
 2.97 dE mean). On seeds with clean bottom masks (42/789/1337): 0.30/0.74/1.20 dE.
 The full skirt reference photos give the model a stronger color signal for the skirt
