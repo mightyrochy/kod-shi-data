@@ -383,3 +383,50 @@ only sound conclusion is the binary one: no OOM occurred up to 1.79MP. If VRAM
 headroom ever becomes a decision input, measure with sampling DURING generation.
 
 ---
+
+## V-REF-001 — Adapter panel rule: garment-only crops mandatory (2026-06-13, E-008, K=5)
+
+Source: `experiments/008_reference_crops/`, same config as E-005 (Lightning 4-step,
+720x1024, outfit_001, seeds [42,123,456,789,1337]).
+
+Raw (uncropped) product photos as the reference panel cause complete identity
+collapse: mean cosine 0.008 (0/5 PASS) vs garment-only-crops baseline 0.830
+(5/5 PASS). Gap = 0.822 — the two conditions are qualitatively different regimes,
+not a graded trade-off. Owner confirmed visually: "абсолютно не та людина".
+
+**Rule (decision-grade):** The reference panel MUST use garment-only crops.
+Full product photos are disqualified as conditioning input for QIE-2511 in this
+pipeline. This rule is implemented as the default in `system/adapter/panel.py`.
+
+---
+
+## V-REF-002 — H-REF-CONTAMINATION split verdict (2026-06-13, E-008, K=5)
+
+Source: same as V-REF-001. Conditions: A = cropped (E-005 baseline), B = raw.
+
+**Proportions — CONFIRMED as a contributing factor:**
+
+| Condition | Mean max_abs_pct | vs threshold (17.3%) |
+|-----------|-----------------|----------------------|
+| A cropped | 11.16% | below |
+| B raw | 21.52% | above → confirmed |
+
+Raw is 10.36pp worse. Contamination accounts for ~10pp of the proportions
+distortion. The remaining 11.16% baseline distortion (cropped condition) is
+NOT from reference contamination — a different cause is active even with
+garment-only crops. Next candidate: Lightning-specific behavior (bench rows 2-3).
+
+**Shoes color — REFUTED:**
+
+Raw shoes mean dE = 13.82, cropped = 14.03. Difference 0.21 is within the noise
+floor (std 6.04). The systematic shoes FAIL (14 dE, 5/5 seeds) is not caused by
+contamination from full product photos. Cause remains unknown.
+
+**Identity — CONFIRMED (contamination mechanism):**
+
+Raw panel destroys identity (cosine 0.008 vs 0.830). Mechanism: full-body product
+photos cause the model to generate the product model's face/body instead of the
+input person. This extends the contamination hypothesis beyond the originally stated
+scope (proportions/items) to identity.
+
+---

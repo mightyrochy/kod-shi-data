@@ -1,0 +1,128 @@
+# E-008 — Conclusion: reference panel (cropped vs raw)
+
+**Closed:** 2026-06-13
+**Data:** `results/measurements.json`, `results/phase1_state.json`
+
+---
+
+## Answer to the question
+
+**Yes — un-cropped product references severely degrade measured quality.**
+The effect is largest on identity (complete collapse), substantial on proportions
+(+10pp), and mixed on color (top/belt/earrings worse; bottom better; shoes unchanged).
+
+---
+
+## Decisions unblocked
+
+1. **Adapter panel rule confirmed:** garment-only crops are mandatory for the
+   reference panel. Raw product photos cannot be used as conditioning — the
+   identity failure alone disqualifies them entirely.
+
+2. **H-REF-CONTAMINATION — split verdict:**
+   - Proportions: **CONFIRMED** as a contributing factor (see §§ below).
+   - Shoes color: **REFUTED** — raw panel does NOT worsen shoes ΔE.
+   - Identity: **CONFIRMED** (not in the original hypothesis scope, but same mechanism).
+
+3. **Proportions root cause — open.** Contamination explains ~10pp of the
+   distortion (21.52% raw vs 11.16% cropped); the baseline 11.16% distortion
+   on cropped references remains unexplained. Next suspect: Lightning-specific
+   behavior — bench rows 2-3.
+
+4. **Shoes systematic FAIL cause — open.** H-REF-CONTAMINATION refuted for
+   shoes; another cause drives the 14 dE baseline failure.
+
+---
+
+## Gate results — raw condition B (K=5, seeds [42,123,456,789,1337])
+
+### Owner checkpoint observation (Phase 1, seed_42 visual review)
+
+"Абсолютно не та людина на кожній генерації. Елементи одягу теж багато де далекі від оригіналу."
+
+Gates confirmed this quantitatively (see below).
+
+### Identity
+
+| Condition | Mean cosine | std | PASS/5 |
+|-----------|------------|-----|--------|
+| A cropped (E-005) | 0.830 | 0.040 | 5/5 |
+| B raw | 0.008 | 0.023 | 0/5 |
+
+Raw condition produces near-zero cosine on all seeds — the generated person shares
+essentially no face embedding with the input person. Mechanism: when the reference
+panel contains full-body product photos, the model generates the product model's
+identity rather than the input person's.
+
+### Proportions
+
+| Condition | Mean max_abs_pct | std | FAIL/5 | vs threshold 17.3% |
+|-----------|-----------------|-----|--------|---------------------|
+| A cropped (E-005) | 11.16% | 3.07% | 5/5 | below |
+| B raw | 21.52% | 3.03% | 5/5 | **above → CONFIRMED** |
+
+Raw is 10.36pp worse. Per protocol §4.2, raw mean 21.52% > threshold 17.3%
+→ H-REF-CONTAMINATION confirmed for proportions.
+
+Note: cropped baseline also fails (11.16% > 5.3%). Contamination accounts for
+~10pp of the distortion; the remaining 11.16% baseline distortion is not from
+reference contamination.
+
+### Color ΔE (CIEDE2000)
+
+| Region | A cropped mean ± std | B raw mean ± std | Δ | Verdict |
+|--------|----------------------|------------------|---|---------|
+| top | 3.52 ± 1.32 | 9.25 ± 4.75 | +5.73 | raw worse |
+| bottom | 2.97 ± 1.33 | **0.89 ± 0.44** | −2.08 | raw better* |
+| shoes | 14.03 ± 6.04 | 13.82 ± 0.76 | −0.21 | not worse → REFUTED |
+| belt | 3.00 ± 0.84 | 5.58 ± 2.10 | +2.58 | raw worse |
+| earrings | 3.67 ± 1.28 | 8.59 ± 1.43 | +4.92 | raw worse |
+
+*Bottom "better" in raw: mask corruption on seeds 123/456 may influence this
+(bottom mask ~99% consumed by top → measuring the wrong region). On seeds with
+clean bottom masks (42, 789, 1337): 0.30/0.74/1.20 dE — still better than
+baseline. Interpretation: full skirt reference photos give the model a strong
+skirt-color signal. This finding is moot given identity failure.
+
+Shoes: raw mean 13.82 ≈ cropped 14.03 (within noise floor 6.04) → contamination
+refuted for shoes. The systematic shoes FAIL has a different cause.
+
+### Sanity guard (O-SEG-GAP-001 — first live test)
+
+| Seed | Flags | Detail |
+|------|-------|--------|
+| 42 | clean | — |
+| 123 | garment_overlap | bottom 98.7% inside top; belt 52.2% inside top |
+| 456 | garment_overlap | bottom 99.1% inside top; belt 38.0% inside top |
+| 789 | garment_overlap | belt 99.5% inside top |
+| 1337 | clean | — |
+
+3/5 seeds flagged. The top mask absorbed bottom and/or belt — segmentation
+failure from the model generating an output where garment boundaries are merged
+or indistinct (expected given identity collapse). The new pairwise overlap check
+caught these corruptions that the three prior checks would have missed.
+Color measurements for flagged seeds should be read with this caveat.
+
+---
+
+## Knowledge status changes
+
+### Promoted to Verified
+
+- **V-REF-001**: Adapter panel rule — garment-only crops mandatory (see below).
+- **V-REF-002**: H-REF-CONTAMINATION split verdict — confirmed for proportions
+  and identity; refuted for shoes (see below).
+
+### Hypotheses updated
+
+- **H-REF-CONTAMINATION**: split status — proportions/identity confirmed, shoes
+  refuted (append to hypotheses.md with date).
+- **H-PROPORTIONS**: contamination accounts for ~10pp; residual 11.16%
+  unexplained. Next suspect: Lightning-specific behavior.
+- **O-SEG-GAP-001**: resolved — pairwise garment overlap check implemented
+  (sanity.py, commit 5f8ceda, 2026-06-13); first live detection: 3/5 seeds
+  in this experiment.
+
+---
+
+*Written 2026-06-13. Data in results/measurements.json.*

@@ -73,9 +73,36 @@ VLM judgments, or uninstrumented visual comparison.
   system RAM under VRAM pressure at this resolution, releasing GPU memory between
   seeds. Mechanism not confirmed.
 
-- **O-SEG-GAP-001** — Sanity guard does not detect inter-garment mask overlap.
-  Owner observed bottom mask covering belt at High/seed_42 visually; area fraction,
-  position prior, and containment checks all passed. A fourth check (pairwise
-  garment overlap) would catch this. Candidate enhancement before E-008.
+- **O-SEG-GAP-001** — **RESOLVED 2026-06-13.** Pairwise garment overlap check
+  implemented (`system/segmentation/sanity.py`, commit 5f8ceda). Check fires when
+  overlap_pixels / min(area_a, area_b) > 20%. FAIL test added. First live
+  detection: 3/5 seeds in E-008 (top absorbing bottom/belt on near-zero-identity
+  outputs). No longer an open gap.
+
+---
+
+## 2026-06-13 — E-008 results (H-REF-CONTAMINATION verdict + new observations)
+
+**H-REF-CONTAMINATION — split verdict (see V-REF-002 for numbers):**
+- Proportions: **CONFIRMED** — raw panel adds ~10pp distortion vs cropped.
+  Remaining baseline distortion (11.16% with cropped panel) is not from contamination.
+- Identity: **CONFIRMED** (extended scope) — full product photos cause complete
+  identity collapse (cosine ~0). Mechanism: model generates the product model's
+  face/body instead of the input person's.
+- Shoes dE: **REFUTED** — raw panel does not worsen shoes color. Shoes systematic
+  FAIL (14 dE) has a different cause; still open.
+
+**H-PROPORTIONS — partially explained:**
+- E-008 shows contamination accounts for ~10pp of the proportions distortion.
+- Cropped-panel baseline (11.16%) is not explained by contamination.
+- Remaining cause still open. Next candidate: Lightning-specific body-type mapping
+  (bench rows 2-3 in Stage 6 will test this with same seeds, no-Lightning config).
+
+**O-E008-001** — Bottom color is better in raw condition than cropped (0.89 vs
+2.97 dE mean). On seeds with clean bottom masks (42/789/1337): 0.30/0.74/1.20 dE.
+The full skirt reference photos give the model a stronger color signal for the skirt
+region than garment-only crops. Effect is moot given identity failure. Cause
+unknown — may relate to how QIE-2511 attends to large-area high-color-contrast
+references. Not actionable in V1 given the rule from V-REF-001.
 
 ---

@@ -214,6 +214,23 @@ this exact failure corrupts it. Add a FAIL test (METHODOLOGY §2.6).
 - Known gap documented (O-SEG-GAP-001): inter-garment mask overlap not detected.
   Bottom mask covering belt caught by owner review at High/seed_42.
 
+**Execution notes (2026-06-13, E-008 closed):**
+- **E-008 verdict:** raw panel (full product photos) causes complete identity
+  collapse (cosine 0.008, 0/5 PASS) vs cropped baseline (0.830, 5/5 PASS).
+  Adapter rule confirmed: garment-only crops are mandatory (V-REF-001).
+- **H-REF-CONTAMINATION split:** proportions confirmed (+10pp, raw 21.52% vs
+  cropped 11.16%); shoes refuted (raw 13.82 ≈ cropped 14.03); identity confirmed
+  (extended scope — product model bodies replace input person). (V-REF-002)
+- **Proportions root cause still open:** cropped-panel baseline 11.16% distortion
+  is not from contamination. Next candidate: Lightning-specific behavior —
+  bench rows 2-3 (Stage 6).
+- **Sanity guard (O-SEG-GAP-001) first live detection:** pairwise overlap check
+  fired on 3/5 E-008 seeds (top mask absorbing bottom/belt on identity-collapsed
+  outputs). Guard is working as intended.
+- **Next experiment: E-007** (color words in prompts — do they degrade color
+  fidelity?). Framing: top dE 3.52 in WARN range on E-005; this refines the
+  adapter prompt rule.
+
 **Execution mode:** Sonnet + high, 1–2 sessions + GPU time.
 
 **Execution notes (2026-06-11, Stage 2 start):**

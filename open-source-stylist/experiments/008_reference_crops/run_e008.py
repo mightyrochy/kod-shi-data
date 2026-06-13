@@ -132,7 +132,7 @@ def build_raw_panel(outfit_package: dict, out_path: Path) -> Path:
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     panel.save(out_path)
-    print(f"  raw panel -> {out_path.relative_to(ROOT)}  ({n} cells, {cols}×{rows})")
+    print(f"  raw panel -> {out_path.relative_to(ROOT)}  ({n} cells, {cols}x{rows})")
     return out_path
 
 
