@@ -188,6 +188,15 @@ Owner observation (2026-06-12): at dE 3-5, color discrepancy is perceptually
 borderline -- visible difference driven more by texture flatness than by color offset.
 WARN zone correctly requires owner review rather than automatic pass or fail.
 
+**Scope note added 2026-06-12 (code review):** the color gate runs with
+normalize_l=True, which removes a uniform L* (lightness) offset before measuring.
+It therefore gates HUE and CHROMA fidelity, not absolute lightness — a too-dark or
+washed-out garment of the correct hue can still PASS. This is deliberate (lighting/
+drape differ between flat product photo and worn garment), but it confirms the owner
+observation mechanistically: the "texture flatness" that dominates perception at
+dE 3–5 lives in lightness/texture, which this gate does not cover. The bench-off's
+advisory texture indicator (design §8) is the intended cover for that gap.
+
 ---
 
 ## V-ID-002 — Identity gate threshold confirmed on generated images (2026-06-12, E-005)
@@ -340,6 +349,16 @@ causes compositional failures.
 Note: color dE for top/bottom improves at higher resolution (High+ best: 1.54/1.65 dE
 vs baseline 3.52/2.97). This gain cannot be exploited in current config — identity
 failure is disqualifying.
+
+**Caveat added 2026-06-12 (code review of proportions gate):** the proportions
+column for low/high/high+ (24.68%, 15.65%, 32.35%) is NOT reliable as body
+distortion. Those tiers produced head-cropped outputs, which changes the silhouette
+bbox and therefore the fixed body-fraction zones the gate measures — the number
+reflects framing change, not a 32% body distortion. The proportions gate now
+reports `framing_delta_pct` so this is detectable going forward; the only sound
+proportions reading at non-baseline tiers is "framing differs, comparison invalid".
+The baseline 720×1024 row framed full body consistently (identity PASS, masks landed
+correctly), so its proportions signal stands.
 
 ---
 
