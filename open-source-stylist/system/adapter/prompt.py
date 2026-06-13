@@ -1,22 +1,27 @@
-"""Structural prompt builder for the outfit adapter.
+"""Transfer-task prompt builder for the outfit adapter.
 
-Rule: no color words in the generated prompt (adapter constraint, pending E-007).
-Color and texture come exclusively from reference images.
+Contract (adapter_redesign_2026-06-13 §3 + §9 decision 2):
+  - Frame as an edit of image1 (person photo), not generation of a new person.
+  - State preservation targets explicitly: face, hair, skin tone, body, pose, background.
+  - Reference image2 (the board) by its cell labels — do NOT describe garments as free text.
+  - Wire layering_order from layout_logic (was dead in the pre-2026-06-13 adapter).
+  - No color words — appearance comes from the board references.
+  - Negative prompt: empty (cfg=1.0 → inert under Lightning; channel tested by E-014).
 
-NOTE (deferred): build_prompt() currently emits a verbose descriptive prompt.
-The general-prompts principle (less text → model leans on reference images) argues
-for shortening it; this is intentionally deferred until after E-005/E-006 (config
-frozen) and is tracked in BUILD_PLAN Stage 2 / E-007. Do not "fix" it ad hoc.
+Board labels in the prompt are derived the same way panel.py derives cell labels
+(Path(ref_path).stem.replace("_", " ")), so the prompt and board are consistent.
 
-SAM segmentation prompts moved to system/segmentation/prompts.py (single source of
-truth shared with experiment runners) — import sam_prompt_for_item from there.
+Rules:
+  - No color words in the generated prompt (enforced by _check_no_color).
+  - No SAM/GroundingDINO prompt literals — those live in segmentation/prompts.py only.
 """
 
 from __future__ import annotations
 
+from pathlib import Path
+
 # Words explicitly forbidden in generated prompts.
-# This is enforced at the adapter boundary, not at runtime — callers who
-# bypass build_prompt and write their own prompts must follow the same rule.
+# Color comes from reference images, not from text — adapter rule, verified by E-007.
 _COLOR_WORDS = frozenset({
     "red", "blue", "green", "yellow", "orange", "purple", "pink", "brown",
     "black", "white", "gray", "grey", "navy", "beige", "cream", "tan", "olive",
@@ -29,20 +34,40 @@ _COLOR_WORDS = frozenset({
 
 
 def build_prompt(outfit_package: dict) -> str:
-    """Build a structural generation prompt from an OutfitPackage.
+    """Build a transfer-task generation prompt from an OutfitPackage.
 
-    Describes outfit structure and layering only — no color words.
-    Raises ValueError if any color word is detected in the result.
+    Instructs re-dressing the input person (image1) using the labeled reference
+    board (image2). Preservation of person attributes is stated positively —
+    cfg=1.0 makes the negative channel inert, so this is the only textual channel
+    that can carry preservation under the Lightning config.
+
+    Raises ValueError if any color word appears in the result.
     """
     items = outfit_package["items"]
     layout = outfit_package["layout_logic"]
 
-    item_phrases = [item["description"] for item in items]
-    wearing_clause = ", ".join(item_phrases)
-    visibility = layout.get("visibility_notes", "")
+    # Board labels: one per reference image, in outfit order.
+    # Must match _cell_label() in panel.py — both use stem.replace("_", " ").
+    board_labels = [
+        Path(ref_path).stem.replace("_", " ")
+        for item in items
+        for ref_path in item["reference_image_paths"]
+    ]
 
-    prompt = f"A person wearing {wearing_clause}. {visibility} Full body, standing pose.".strip()
+    # Visibility notes from layout_logic (structural, no color words expected here).
+    visibility = layout.get("visibility_notes", "").strip()
 
+    parts = [
+        "Keep this exact person: face, hair, skin tone, body proportions, pose,"
+        " and background — unchanged.",
+        "Using the reference board (image 2), re-dress them in the outfit shown.",
+        f"The board contains labeled garments: {', '.join(board_labels)}.",
+    ]
+    if visibility:
+        parts.append(visibility)
+    parts.append("Take all garment appearance from the board only.")
+
+    prompt = " ".join(parts)
     _check_no_color(prompt)
     return prompt
 

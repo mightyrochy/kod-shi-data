@@ -66,6 +66,9 @@ def build_generation_request(
         "person_image_path": str(Path(person_image_path).resolve()),
         "reference_panel_path": str(panel_path.resolve()),
         "prompt": prompt,
+        # Empty per E-007 protocol — cfg=1.0 (Lightning) makes negatives inert.
+        # Wire negative_constraints here when testing cfg>1 rows (E-014).
+        "negative_prompt": "",
         "engine": engine,
         "params": {
             "steps": steps,
