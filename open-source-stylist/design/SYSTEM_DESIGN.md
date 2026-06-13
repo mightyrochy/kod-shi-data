@@ -352,12 +352,21 @@ Runs only after measurement gates are validated (P9) — metrics, not eyeballing
 - **Matrix:**
   | Row | Config | Answers |
   |---|---|---|
-  | 1 | QIE-2511 + Lightning, 4 steps | baseline |
-  | 2 | QIE-2511, no Lightning, 20 steps | Lightning-fidelity question |
-  | 3 | QIE-2511, no Lightning, 40 steps | (with row 2) |
+  | 1 | QIE-2511 + Lightning, 4 steps, 720×1024 | baseline |
+  | 2 | QIE-2511, no Lightning, 20 steps, 720×1024 | Lightning-fidelity question |
+  | 3 | QIE-2511, no Lightning, 40 steps, 720×1024 | (with row 2) |
+  | 3b | QIE-2511, no Lightning, 40 steps, **1120×1600 (High+)** | resolution-ceiling question (added 2026-06-12) |
   | 4 | FastFit | strategy B |
   | 5 | Strategy C (holistic + accessory passes) | hybrid sequential |
   | 6 | OmniTry, accessories only, fp8 | accessory executor + VRAM fit |
+
+  **Row 3b rationale (2026-06-12, from E-006):** color ΔE improved monotonically with
+  resolution (High+ best: top 1.54, bottom 1.65 — below the E-005 noise floor), but
+  every non-baseline tier failed *identity* via head-cropping, which O-RES-002
+  attributes to the Lightning LoRA being tuned near 720–1024px. If that interpretation
+  holds, a no-Lightning model at High+ may keep the color gain without the identity
+  failure — potentially the best-color config in the whole matrix. One row settles it.
+  Cost: +5 generations (40 steps, so the slowest row — schedule as a background batch).
 - **K=5 seeds per row, same seeds across rows.** Natural per-seed variance must be
   measured first (variance baseline) so differences can be attributed.
 - **P5 correlation side-test:** rank 5 Lightning drafts by gates; regenerate each seed
@@ -478,6 +487,11 @@ V1 unchanged except Stylist:
   construction is the only architectural answer); proportion gate named primary
   A-vs-C bench discriminator; advisory texture indicator added to bench metrics;
   mask sanity guard added to stage [5] after two silent-mask-corruption incidents.
+- **2026-06-12 (E-006 closed)** — bench matrix gains row 3b (no-Lightning, 40 steps,
+  1120×1600): E-006 found color ΔE best at High+ but Lightning failed identity there
+  via head-cropping (LoRA tuned ~720–1024px), so a full model at High+ may keep the
+  color gain without the identity loss. V-RES-001 (720×1024) is therefore scoped to
+  the Lightning config only, not generalized until row 3b runs.
 - **2026-06-11** — color gate redesigned on E-002 calibration data (experiments/002):
   CIE76 → CIEDE2000; lightness normalization added; two modes (solid/palette)
   auto-selected by reference distribution — mean ΔE is blind on multi-color patterns;

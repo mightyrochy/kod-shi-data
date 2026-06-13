@@ -313,8 +313,14 @@ E-005 frozen config: layers=2, frame01 saved as output.
 
 Source: `experiments/006_resolution/`, Lightning 4-step, outfit_001, seeds [42,123,456,789,1337].
 
-**Working resolution: 720x1024 (max_side=1024)** — confirmed as the only valid
-resolution for QIE-2511 Lightning in the current pipeline configuration.
+**Working resolution: 720x1024 (max_side=1024) — FOR THE LIGHTNING 4-STEP CONFIG.**
+Scope correction (2026-06-12): E-006 varied resolution only on the Lightning-4
+config. This is a fact about the *Lightning + resolution* pairing, not about
+QIE-2511 in general. The head-cropping interpretation (O-RES-002) is that the
+Lightning LoRA is tuned near 720-1024px; a full-model (no-Lightning) config may
+not crop at higher resolutions — and color dE was best at High+ (see note below).
+The bench-off (Stage 6) therefore tests a no-Lightning High+ variant before any
+"720x1024 is the working resolution" claim is generalized beyond Lightning.
 
 | Tier | Resolution | Identity mean | PASS/5 | Proportions mean |
 |------|-----------|--------------|--------|-----------------|
@@ -349,5 +355,12 @@ Peak VRAM readings (nvidia-smi, after generation):
 - Low 576x816: ~10.6GB (includes model load on cold start)
 - High 896x1280: ~4.0GB
 - High+ 1120x1600: ~0.35GB (aggressive inter-seed offload at this resolution)
+
+**Measurement caveat (2026-06-12):** these readings were taken AFTER each generation
+completed, when ComfyUI had already offloaded the model — they are NOT true
+in-generation peaks (a 0.35GB "peak" at the heaviest tier is physically impossible
+for active sampling; same artifact explains the 346MB residual in O-RES-003). The
+only sound conclusion is the binary one: no OOM occurred up to 1.79MP. If VRAM
+headroom ever becomes a decision input, measure with sampling DURING generation.
 
 ---

@@ -185,14 +185,22 @@ it silently would reopen the color-dependence hole the band exists to cover.
   contamination does not explain the proportions distortion and H-PROPORTIONS needs
   another suspect (next candidate: Lightning-specific behavior, bench rows 2–3).
 
-**New work item (2026-06-12, architecture review): mask sanity guard**
+**New work item (2026-06-12, architecture review): mask sanity guard** — DONE
 `system/segmentation/sanity.py` — deterministic plausibility checks on every mask
 before any consumer reads it: area fraction bounds per region type, positional
 priors (footwear in the lower band, top in the upper half), garment ⊂ person.
 Violations FLAG for owner review (advisory, not a verdict). Motivation: two
 silent-mask-corruption incidents inside one experiment (E-005 shoes, top), both
-caught late — by the owner's eye or by an exploding ΔE. Build before E-006 so all
-remaining A/B experiments run guarded. Design §6 [5] updated accordingly.
+caught late — by the owner's eye or by an exploding ΔE. Built before E-006 (commit
+bc88ab7); caught 8 real corruptions across E-006 tiers. Design §6 [5] updated.
+
+**Follow-up work item (2026-06-12, before E-008): pairwise garment overlap check**
+The sanity guard's three checks missed a real corruption in E-006: the bottom mask
+covered the belt (O-SEG-GAP-001) — area, position, and containment all passed
+because the overlap is between two garments, not against the person mask. Add a
+fourth check: pairwise garment-mask overlap above a threshold → FLAG. Required
+before E-008 specifically, because E-008 measures belt ΔE among other regions and
+this exact failure corrupts it. Add a FAIL test (METHODOLOGY §2.6).
 
 **Execution notes (2026-06-12, E-006 closed):**
 - **Mask sanity guard** (`system/segmentation/sanity.py`): built before E-006 per plan.
@@ -323,8 +331,16 @@ regenerate-on-fail — a major, legitimate outcome).
 ## Stage 6 — Engine bench-off
 
 **Purpose:** the engine/strategy decision, made with instruments.
-Protocol: design/SYSTEM_DESIGN.md §8 (6 rows × 5 seeds, same seeds across rows;
-second harder outfit assembled before start; P5 correlation side-test included).
+Protocol: design/SYSTEM_DESIGN.md §8 (matrix incl. row 3b no-Lightning High+,
+5 seeds, same seeds across rows; second harder outfit assembled before start;
+P5 correlation side-test included).
+
+**Resolution-ceiling row (3b, added 2026-06-12 from E-006):** E-006 found color ΔE
+improves with resolution but Lightning fails identity above ~1024px (head-cropping,
+O-RES-002). Row 3b (no-Lightning, 40 steps, 1120×1600) tests whether a full model
+keeps the color gain without the identity failure — potentially the best-color
+config in the matrix. This is why V-RES-001 is scoped to "the Lightning config"
+only: the working-resolution claim is not generalized until this row runs.
 
 **Pre-bench work item — palette mode of the color gate (added 2026-06-11):**
 the second outfit contains patterned fabric, and mean ΔE is blind on patterns
@@ -424,3 +440,10 @@ Estimated total: 8–12 working sessions + GPU batch time.
   design §§5–8 updated in the same change (strategy C measured motivation,
   proportion gate as primary A-vs-C bench discriminator, advisory texture
   indicator in bench metrics).
+- **2026-06-12 (E-006 closed)** — working resolution 720×1024 confirmed FOR THE
+  LIGHTNING CONFIG only (V-RES-001, scope-corrected); other tiers fail identity via
+  head-cropping. Three follow-ups: (a) bench row 3b added — no-Lightning High+
+  1120×1600 — because color ΔE was best at High+ and only Lightning-identity failed
+  there; (b) pairwise garment-overlap check added to the mask sanity guard before
+  E-008 (O-SEG-GAP-001: bottom mask covered belt, undetected); (c) VRAM "peak"
+  readings flagged as post-generation artifacts — only the no-OOM fact is sound.
