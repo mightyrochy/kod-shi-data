@@ -148,18 +148,25 @@ Per METHODOLOGY §3.3 (bug found → stop, fix, restart the affected experiments
 
 ---
 
-## 9. Open decisions for the owner
+## 9. Owner decisions (resolved 2026-06-13)
 
-1. **Prompt wording authority:** the redesign sets the contract; do you want to
-   review/sign the concrete phrasing before the re-baseline run, or let the
-   prompt-strategy experiment choose it from candidate arms?
-2. **Board labels:** test labeled board as a variant, or keep clean grid for V1 and
-   defer labels?
-3. **Mask fix scope:** instance = largest-area or highest-confidence as default?
-   (Both are defensible; largest-area is simpler and robust for single-garment
-   product photos and single-person generated images.)
-4. **Negatives now or at bench:** wire node 8 to a placeholder now (inert, ready)
-   or leave until a cfg>1 bench row needs it?
+1. **Board: labeled crops.** Each cell carries a rendered text label matching the
+   reference role — "blouse front", "blouse back", "belt", "shoes", "earrings", etc.
+   (Labels come from item_id + the reference file role, drawn into each cell.)
+2. **Prompt: board-referencing transfer instruction.** The positive prompt instructs
+   re-dressing the input person USING the board, the layout/layering, and the on-board
+   labels — not describing garments as free text. Preservation stated positively
+   (cfg=1.0 → negatives inert).
+3. **This is E-007**, the re-baseline: build the task-correct adapter (labeled board +
+   board/layout/label-referencing transfer prompt), then test whether it expresses the
+   task vs the confounded baseline. "Combinations of board+prompt" — the two channels
+   working together — are what E-007 measures.
+4. **Negatives:** stay empty for now. cfg=1.0 makes them inert under Lightning. The
+   negative channel is isolated later by E-014 (after the bench Lightning-fidelity
+   rows, at cfg>1, single variable). The Lightning-fidelity rows themselves run with
+   an empty negative so Lightning/steps are the only variables there.
+5. **Mask instance selection** (§6): still to confirm default (largest-area vs
+   highest-confidence) at implementation — largest-area is the proposed default.
 
 ---
 

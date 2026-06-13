@@ -131,8 +131,20 @@ instruments instead of eyeballs.
 |---|---|---|---|---|
 | E-005 | What is natural run-to-run variance? | the noise floor for ALL future comparisons **+ final thresholds for all three gates** (color, identity, proportions — replaces the Stage-1 provisional values, which were calibrated on photo pairs with n=1 natural-variation samples, with the real generated-vs-reference distribution) | K=5 fixed seeds, one frozen config, outfit_001; **before computing gates: owner reviews mask overlays on the first generated outputs** (segmentation was validated on real photos only — E-001 never covered the generator's domain); then all gates on every output | variance profile documented (per-gate spread); becomes the Verified noise floor; color/identity/proportion thresholds finalized; segmentation-on-generated-images verdict recorded |
 | E-006 | Does generation resolution change measured quality? | working resolution for all later stages | same seeds, 2–3 resolutions; gates compare | resolution chosen on data (gate scores + time + VRAM) |
-| E-007 | Do color words in prompts degrade color fidelity? (H-COLOR) | adapter prompt rule | A/B same seeds: prompt with vs without color adjectives; ΔE per garment | rule confirmed/refuted with ΔE numbers vs E-005 noise floor |
+| E-007 | Does task-correct board+prompt conditioning produce the transfer task (preserve person, dress from the board)? | adapter conditioning design (the re-baseline) | corrected adapter: labeled crop board (each cell tagged "blouse front", "belt", …) + transfer prompt that instructs re-dressing the person USING the board, the layout, and the on-board labels. Same K=5 seeds; gates + owner review vs the confounded pre-2026-06-13 baseline. Arms may isolate board-labels vs prompt-framing if attribution is needed. | identity preserved by instruction (not luck), items/color improved vs confounded baseline; new honest baseline established (owner-reviewed) |
 | E-008 | Do un-cropped product references distort proportions/items? (H-REF-CONTAMINATION) | adapter panel rule | A/B same seeds: raw product refs vs garment-only crops; proportion gate + ΔE + presence | rule confirmed/refuted with gate numbers |
+
+**E-007 rescoped (2026-06-13):** the original narrow "color words on/off" framing is
+absorbed — the real defect was that the conditioning never expressed the task at any
+layer (positive prompt, negative, board semantics, layering all wrong; see
+design/adapter_redesign_2026-06-13.md). E-007 is now the re-baseline: build the
+task-correct adapter (owner-specified — labeled board + board/layout/label-referencing
+transfer prompt), then test that it expresses the task. Precondition: adapter redesign
+implemented (labeled-board rendering + transfer prompt builder + layering wired).
+E-005/E-006/E-008 generation conclusions are confounded by the old conditioning and
+are demoted with dated errata; this experiment produces the first honest baseline.
+H-COLOR rides along (the transfer prompt is still color-word-free). Negatives stay
+empty here (cfg=1.0 makes them inert under Lightning — see E-014).
 
 **Acceptance criteria:** generation runs reproducibly through the new path; noise
 floor, working resolution, and the two adapter rules are Verified knowledge with
@@ -359,6 +371,22 @@ keeps the color gain without the identity failure — potentially the best-color
 config in the matrix. This is why V-RES-001 is scoped to "the Lightning config"
 only: the working-resolution claim is not generalized until this row runs.
 
+**cfg / negative-prompt handling in the bench (added 2026-06-13):**
+- Rows 2/3/3b are "no Lightning". The workflow `qie2511_vton.json` currently has
+  cfg=1.0 baked in — WRONG for a no-Lightning row (at cfg=1.0 there is no guidance
+  and the negative is inert). These rows must run at **cfg ≈ 4–7** with a proper
+  KSampler cfg before they are valid; fix the template as bench prep.
+- The Lightning-fidelity question (rows 1 vs 2/3: does Lightning lose detail vs full
+  steps) is tested with an **empty negative prompt** on all those rows, so the only
+  variables are Lightning on/off and step count — negative is held constant (empty).
+- The negative channel is then isolated by E-014 (below), AFTER the Lightning-fidelity
+  rows, as a single-variable test. This keeps Lightning/steps/cfg/negative from being
+  confounded together (the archived attempt's failure mode).
+
+| ID | Question | Decision informed | Method sketch | Acceptance |
+|---|---|---|---|---|
+| E-014 | Does a populated negative prompt improve preservation/quality at cfg>1? | whether the negative channel is worth using in V1-final (and whether `negative_constraints` should be wired) | runs AFTER rows 2/3. Fix everything except the negative: same seeds, same no-Lightning cfg>1 config, same positive prompt, same board. Single variable: empty negative vs `negative_constraints` populated. Gates (identity, proportions, color) + owner review. | effect of the negative channel measured against the E-005 noise floor; decision to use/skip negatives recorded with numbers |
+
 **Pre-bench work item — palette mode of the color gate (added 2026-06-11):**
 the second outfit contains patterned fabric, and mean ΔE is blind on patterns
 (same regional mean for a red/white stripe and a solid pink). Before the bench can
@@ -464,3 +492,13 @@ Estimated total: 8–12 working sessions + GPU batch time.
   there; (b) pairwise garment-overlap check added to the mask sanity guard before
   E-008 (O-SEG-GAP-001: bottom mask covered belt, undetected); (c) VRAM "peak"
   readings flagged as post-generation artifacts — only the no-OOM fact is sound.
+- **2026-06-13 (adapter redesign + conditioning)** — root finding: generation
+  conditioning never expressed the transfer/preserve task (positive prompt was
+  text-to-image, negative empty, layering dead, board unlabeled; cfg=1.0 makes
+  negatives inert). E-005/E-006/E-008 generation conclusions confounded; instruments
+  (E-001..E-004) stand. E-007 rescoped to the re-baseline: task-correct adapter
+  (owner-decided — labeled crop board + board/layout/label-referencing transfer
+  prompt), tested vs the confounded baseline. New E-014 added in Stage 6 (after the
+  Lightning-fidelity rows, which run empty-negative): single-variable cfg>1
+  empty-vs-populated negative test. Bench rows 2/3/3b flagged to need cfg≈4-7 (the
+  no-Lightning workflow is templated at cfg=1.0). Spec: design/adapter_redesign_2026-06-13.md.
