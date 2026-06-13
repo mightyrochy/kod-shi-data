@@ -12,6 +12,16 @@ Zones (fraction of body bounding-box height, measured from the top):
 These zones avoid the head (top ~18%) and feet/legs divergence (bottom ~25%).
 Thresholds are chosen conservatively and validated by E-004.
 
+FRAMING ASSUMPTION (important): widths are normalized by the silhouette bbox
+height, and zones are fixed fractions of that bbox. This is only meaningful when
+both images frame the SAME body span (head-to-feet). If the generated image crops
+the head or feet, or places the body at a different scale/position, the zone
+fractions land on different anatomy and the change% reflects framing, not body
+distortion. compare() therefore also reports each mask's vertical coverage and a
+`framing_delta_pct`; a large delta means the proportion comparison is unreliable
+and must not be read as body distortion (see knowledge/verified.md V-RES-001
+caveat for the head-cropped E-006 tiers).
+
 Dependencies: opencv-python, numpy (both installed).
 """
 
@@ -54,6 +64,7 @@ def measure(mask) -> dict:
         height_px             int — pixel height of the person bounding box
     """
     m = _load_mask(mask)
+    img_h = m.shape[0]
     row_widths = m.sum(axis=1).astype(np.float32)  # shape (H,)
 
     body_rows = np.where(row_widths > 0)[0]
@@ -63,6 +74,9 @@ def measure(mask) -> dict:
             "waist_width_norm": None,
             "hip_width_norm": None,
             "height_px": 0,
+            "coverage_frac": None,
+            "top_frac": None,
+            "bottom_frac": None,
         }
 
     top = int(body_rows[0])
@@ -90,6 +104,9 @@ def measure(mask) -> dict:
         "waist_width_norm":    safe_norm(waist_zone,    np.min),
         "hip_width_norm":      safe_norm(hip_zone,      np.max),
         "height_px":           height_px,
+        "coverage_frac":       round(height_px / img_h, 4),  # body vertical span / image height
+        "top_frac":            round(top / img_h, 4),
+        "bottom_frac":         round(bottom / img_h, 4),
     }
 
 
@@ -103,6 +120,11 @@ def compare(mask_a, mask_b) -> dict:
         shoulder_change_pct   float or None
         waist_change_pct      float or None
         hip_change_pct        float or None
+        max_abs_change_pct    float or None — the gate's score
+        framing_delta_pct     float or None — |coverage_b - coverage_a| / coverage_a.
+                              Large values mean the two images frame different body
+                              spans, so the change% above is unreliable (framing,
+                              not body distortion). Advisory; no threshold applied.
         profile_a             measure() result for mask_a
         profile_b             measure() result for mask_b
 
@@ -123,11 +145,15 @@ def compare(mask_a, mask_b) -> dict:
     individual = [abs(v) for v in [shoulder_pct, waist_pct, hip_pct] if v is not None]
     max_abs = round(max(individual), 2) if individual else None
 
+    framing_delta = pct_change(pa["coverage_frac"], pb["coverage_frac"])
+    framing_delta = abs(framing_delta) if framing_delta is not None else None
+
     return {
         "shoulder_change_pct": shoulder_pct,
         "waist_change_pct":    waist_pct,
         "hip_change_pct":      hip_pct,
         "max_abs_change_pct":  max_abs,
+        "framing_delta_pct":   framing_delta,
         "profile_a": pa,
         "profile_b": pb,
     }

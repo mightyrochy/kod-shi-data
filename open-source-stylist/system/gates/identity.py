@@ -3,7 +3,11 @@
 Uses insightface buffalo_l model (ArcFace R100).
 Model weights are downloaded on first use to ~/.insightface/.
 
-Dependencies: insightface, onnxruntime-gpu (both installed).
+Runtime: CUDAExecutionProvider is requested but was unavailable in this
+environment (E-003); insightface runs on CPU. Accurate but ~CPU-speed — fine
+for per-run gating. GPU acceleration is an open item before Stage 3 (V-ID-001).
+
+Dependencies: insightface, onnxruntime.
 """
 
 from pathlib import Path

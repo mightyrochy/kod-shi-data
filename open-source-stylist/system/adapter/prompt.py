@@ -2,6 +2,14 @@
 
 Rule: no color words in the generated prompt (adapter constraint, pending E-007).
 Color and texture come exclusively from reference images.
+
+NOTE (deferred): build_prompt() currently emits a verbose descriptive prompt.
+The general-prompts principle (less text → model leans on reference images) argues
+for shortening it; this is intentionally deferred until after E-005/E-006 (config
+frozen) and is tracked in BUILD_PLAN Stage 2 / E-007. Do not "fix" it ad hoc.
+
+SAM segmentation prompts moved to system/segmentation/prompts.py (single source of
+truth shared with experiment runners) — import sam_prompt_for_item from there.
 """
 
 from __future__ import annotations
@@ -18,20 +26,6 @@ _COLOR_WORDS = frozenset({
     "champagne", "nude", "khaki", "camel", "burgundy", "mauve", "peach", "lilac",
     "mint", "sage", "mustard", "rust", "terracotta", "blush",
 })
-
-# SAM text prompt template per item type.
-# Values are GroundingDINO multi-label queries (period-separated phrases).
-_ITEM_TYPE_TO_SAM_PROMPT: dict[str, str] = {
-    "top": "top",
-    "bottom": "bottom",
-    "dress": "dress",
-    "jacket": "jacket",
-    "shoes": "footwear",
-    "accessory": "accessory",
-    "bag": "bag",
-    "hat": "hat",
-    "other": "clothing",
-}
 
 
 def build_prompt(outfit_package: dict) -> str:
@@ -51,14 +45,6 @@ def build_prompt(outfit_package: dict) -> str:
 
     _check_no_color(prompt)
     return prompt
-
-
-def item_sam_prompt(item: dict) -> str:
-    """Return a GroundingDINO text prompt appropriate for an item's type.
-
-    Falls back to the item's own description if the type is not in the table.
-    """
-    return _ITEM_TYPE_TO_SAM_PROMPT.get(item["type"], item["description"])
 
 
 def _check_no_color(text: str) -> None:

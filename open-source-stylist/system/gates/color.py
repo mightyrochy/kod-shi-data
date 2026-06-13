@@ -9,6 +9,16 @@ Lightness normalization: before comparison, the mean L* of region A is shifted
 to match region B. This removes lighting/shade/drape offset (photo-pair noise)
 while preserving hue and chroma differences. Can be disabled via normalize_l=False.
 
+SCOPE (what this gate does and does not judge): with normalize_l=True (the E-005
+default), a *uniform* lightness offset is removed by construction — so a garment
+rendered too dark or too washed-out but with the correct hue/chroma will still
+PASS. The gate measures HUE and CHROMA fidelity, not absolute lightness. This is
+deliberate (lighting/drape vary between a flat product photo and a worn garment),
+but it means "color correct per this gate" ≠ "looks identical". Perceived
+flatness/washed-out texture (owner's dominant complaint at ΔE 3–5, V-COLOR-002)
+lives partly in lightness and texture, which this gate does not cover — that is
+the advisory texture indicator's job in the bench-off (design §8).
+
 Dependencies: opencv-python, numpy, scikit-image.
 """
 

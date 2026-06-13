@@ -18,7 +18,7 @@ from PIL import Image
 
 from ..clients.comfyui import ComfyUIClient
 from ..segmentation.grounded_sam import segment
-from .prompt import item_sam_prompt
+from ..segmentation.prompts import sam_prompt_for_item
 
 
 def build_panel(
@@ -43,7 +43,7 @@ def build_panel(
 
     crops: list[Image.Image] = []
     for item in outfit_package["items"]:
-        sam_prompt = item_sam_prompt(item)
+        sam_prompt = sam_prompt_for_item(item)
         for ref_path in item["reference_image_paths"]:
             crop = _crop_garment(ref_path, sam_prompt, item["item_id"], masks_dir, client, cell_size)
             crops.append(crop)
@@ -76,15 +76,18 @@ def _crop_garment(
     img = Image.open(ref_path).convert("RGBA")
     mask = Image.open(mask_path).convert("L")
 
+    bbox = mask.getbbox()
+    if bbox is None:
+        # Segmentation produced no foreground. Fall back to the full, OPAQUE
+        # product image — a single-garment product photo is mostly the garment.
+        # (Do NOT apply the empty mask as alpha: that yields a blank cell, which
+        # silently drops the garment from the panel.)
+        return _fit_to_cell(img, cell_size)
+
     mask_arr = np.array(mask)
     img_arr = np.array(img)
     img_arr[:, :, 3] = mask_arr
-    masked = Image.fromarray(img_arr)
-
-    bbox = mask.getbbox()
-    if bbox is not None:
-        masked = masked.crop(bbox)
-    # else: segmentation produced no foreground — use the full image as fallback
+    masked = Image.fromarray(img_arr).crop(bbox)
 
     return _fit_to_cell(masked, cell_size)
 

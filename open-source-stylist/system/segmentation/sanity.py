@@ -108,11 +108,14 @@ def check(
         SanityResult — .clean is True when no flags were raised.
     """
     m = _load(mask)
+    # Foreground threshold matches the color and proportion gates (>127), so
+    # anti-aliased mask edges are counted identically across all consumers.
+    fgmask = m > 127
     result = SanityResult(region=region)
     label = region.lower()
 
-    total = m.size
-    fg = int(np.count_nonzero(m))
+    total = fgmask.size
+    fg = int(np.count_nonzero(fgmask))
 
     if fg == 0:
         result.flags.append(SanityFlag(
@@ -139,8 +142,8 @@ def check(
 
     # 2. Positional prior (mask centroid y-fraction)
     if label in _POSITION_PRIOR:
-        ys, _ = np.where(m > 0)
-        centroid_y = float(ys.mean()) / m.shape[0]
+        ys, _ = np.where(fgmask)
+        centroid_y = float(ys.mean()) / fgmask.shape[0]
         min_y, max_y = _POSITION_PRIOR[label]
         if not (min_y <= centroid_y <= max_y):
             result.flags.append(SanityFlag(
@@ -154,18 +157,18 @@ def check(
 
     # 3. Garment containment within person mask
     if label in _GARMENT_LABELS and person_mask is not None:
-        pm = _load(person_mask)
-        if pm.shape != m.shape:
+        pm = _load(person_mask) > 127
+        if pm.shape != fgmask.shape:
             result.flags.append(SanityFlag(
                 region=region,
                 check="containment",
                 detail=(
-                    f"person mask shape {pm.shape} != garment mask shape {m.shape}; "
+                    f"person mask shape {pm.shape} != garment mask shape {fgmask.shape}; "
                     "cannot check containment"
                 ),
             ))
         else:
-            overlap = int(np.count_nonzero((m > 0) & (pm > 0)))
+            overlap = int(np.count_nonzero(fgmask & pm))
             frac = overlap / fg
             if frac < containment_threshold:
                 result.flags.append(SanityFlag(

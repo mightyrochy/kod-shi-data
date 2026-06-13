@@ -5,6 +5,18 @@ import time
 import requests
 
 
+def _extract_error(status: dict) -> str:
+    """Pull a human-readable error message out of a ComfyUI history status block."""
+    for entry in status.get("messages", []):
+        # messages are [event_type, data] pairs; execution_error carries details
+        if isinstance(entry, (list, tuple)) and len(entry) == 2 and entry[0] == "execution_error":
+            data = entry[1] or {}
+            node = data.get("node_type", "?")
+            msg = data.get("exception_message", "")
+            return f"{node}: {msg}"
+    return status.get("status_str", "unknown error")
+
+
 class ComfyUIClient:
     def __init__(self, host: str = "localhost", port: int = 8000):
         self.base = f"http://{host}:{port}"
@@ -24,7 +36,12 @@ class ComfyUIClient:
         poll_interval: float = 1.0,
         timeout: float = 300.0,
     ) -> dict:
-        """Block until prompt_id completes in /history; return its outputs dict."""
+        """Block until prompt_id completes in /history; return its outputs dict.
+
+        Raises RuntimeError immediately if ComfyUI reports an execution error,
+        rather than hanging until the timeout (a failed prompt never sets
+        status.completed=True).
+        """
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             resp = self._s.get(f"{self.base}/history/{prompt_id}", timeout=10)
@@ -32,7 +49,13 @@ class ComfyUIClient:
             data = resp.json()
             if prompt_id in data:
                 entry = data[prompt_id]
-                if entry.get("status", {}).get("completed", False):
+                status = entry.get("status", {})
+                if status.get("status_str") == "error":
+                    raise RuntimeError(
+                        f"ComfyUI prompt {prompt_id!r} failed: "
+                        f"{_extract_error(status)}"
+                    )
+                if status.get("completed", False):
                     return entry.get("outputs", {})
             time.sleep(poll_interval)
         raise TimeoutError(
