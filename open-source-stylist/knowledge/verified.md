@@ -384,6 +384,39 @@ headroom ever becomes a decision input, measure with sampling DURING generation.
 
 ---
 
+## V-REF-002 correction — shoes verdict revised (2026-06-13, owner visual review of E-008)
+
+Supersedes the "Shoes — REFUTED" sub-verdict in V-REF-002 (written same date).
+
+**Owner observation on E-008 raw-condition outputs:** all 5 seeds produced black
+shoes; one seed produced high heels instead of wedge sandals. The skirt reference
+product photo (uncropped, in the raw panel) shows a model wearing black high heels —
+which matches the generated output exactly. This is direct visual evidence of
+contamination in the raw condition.
+
+**Gate insensitivity:** mean dE (13.82 raw vs 14.03 cropped) correctly measured
+"not worse by dE." This verdict is technically accurate but misleading: the
+CIEDE2000 gate cannot distinguish "consistently black heels from contamination"
+from "randomly wrong shoes" when both compare against a teal wedge reference
+at ~14 dE. The gate is insensitive in this region because all shoe-color failures
+score similarly high.
+
+**Revised verdict (shoes, H-REF-CONTAMINATION):**
+- Raw condition: contamination CONFIRMED. Full skirt reference photo (black heels
+  visible) drives generated shoes to black; heel type also shifts toward the
+  reference model's heel (high heel instead of wedge). Owner direct visual evidence.
+- Cropped condition (E-005): contamination source removed; shoes still fail
+  (14.03 ± 6.04). Cropped-baseline failure has a DIFFERENT cause — unknown.
+  High variance in cropped condition (3 green, 1 black, 1 brown across seeds)
+  vs low variance in raw (all black) confirms the distinction.
+
+**Gate limitation documented:** color dE gate for shoes cannot resolve type-of-failure
+when reference dE >> 5 for all failure modes. A future shoe-specific check (heel type,
+dominant color, k-means palette) would be needed to distinguish contaminated vs
+uncontaminated failure. Out of scope for V1.
+
+---
+
 ## V-REF-001 — Adapter panel rule: garment-only crops mandatory (2026-06-13, E-008, K=5)
 
 Source: `experiments/008_reference_crops/`, same config as E-005 (Lightning 4-step,

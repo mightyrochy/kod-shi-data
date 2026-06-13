@@ -83,14 +83,18 @@ VLM judgments, or uninstrumented visual comparison.
 
 ## 2026-06-13 — E-008 results (H-REF-CONTAMINATION verdict + new observations)
 
-**H-REF-CONTAMINATION — split verdict (see V-REF-002 for numbers):**
+**H-REF-CONTAMINATION — verdict (see V-REF-002 + correction for numbers):**
 - Proportions: **CONFIRMED** — raw panel adds ~10pp distortion vs cropped.
   Remaining baseline distortion (11.16% with cropped panel) is not from contamination.
 - Identity: **CONFIRMED** (extended scope) — full product photos cause complete
   identity collapse (cosine ~0). Mechanism: model generates the product model's
   face/body instead of the input person's.
-- Shoes dE: **REFUTED** — raw panel does not worsen shoes color. Shoes systematic
-  FAIL (14 dE) has a different cause; still open.
+- Shoes (raw condition): **CONFIRMED** by owner visual review (2026-06-13). All 5
+  raw-condition seeds produced black shoes; one became high heels — matching the
+  black-heeled model in the uncropped skirt reference photo. Gate mean dE (13.82 vs
+  14.03) was insensitive to this shift. See V-REF-002 correction.
+- Shoes (cropped condition / E-005 baseline): contamination source removed; shoes
+  still fail (14 dE, high variance). Cause unknown — different from contamination.
 
 **H-PROPORTIONS — partially explained:**
 - E-008 shows contamination accounts for ~10pp of the proportions distortion.

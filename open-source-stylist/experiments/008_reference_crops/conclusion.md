@@ -125,4 +125,26 @@ Color measurements for flagged seeds should be read with this caveat.
 
 ---
 
+---
+
+## Erratum — shoes verdict revised (2026-06-13, owner visual review)
+
+Original shoes verdict ("REFUTED") was wrong. Gate-based comparison (mean dE
+13.82 vs 14.03) was correct numerically but insensitive to the type-of-failure.
+
+Owner observation after close: all 5 raw-condition seeds produced black shoes;
+one seed produced high heels instead of wedge sandals. The uncropped skirt
+reference photo shows a model wearing black high heels — a direct visual match
+to the output. The gate scored both conditions at ~14 dE against the teal wedge
+reference and reported no difference; it cannot distinguish "consistently black
+heels from contamination" from "randomly wrong shoes."
+
+**Revised verdict:**
+- Shoes, raw condition: H-REF-CONTAMINATION **CONFIRMED** (owner direct visual
+  evidence, 2026-06-13).
+- Shoes, cropped condition (E-005): contamination source removed; shoes still
+  fail (14 dE, high variance: 3 green / 1 black / 1 brown). Different cause.
+
+See V-REF-002 correction in `knowledge/verified.md`.
+
 *Written 2026-06-13. Data in results/measurements.json.*
