@@ -83,6 +83,13 @@ _GARMENT_LABELS: frozenset[str] = frozenset(
 
 _DEFAULT_CONTAINMENT_THRESHOLD = 0.70  # 70% of garment pixels must fall inside person
 
+# O-SEG-GAP-001: pairwise garment-overlap check.
+# Flag when one garment consumes >threshold of another garment's area.
+# Metric: overlap_pixels / min(area_a, area_b) — fraction of the SMALLER garment
+# that is shared with the other. Catches bottom-covers-belt without being
+# triggered by the normal silhouette-edge adjacency between same-size garments.
+_DEFAULT_OVERLAP_THRESHOLD = 0.20  # 20% of the smaller garment consumed → FLAG
+
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -188,8 +195,9 @@ def check_all(
     *,
     person_mask: Union[np.ndarray, str, Path, None] = None,
     containment_threshold: float = _DEFAULT_CONTAINMENT_THRESHOLD,
+    overlap_threshold: float = _DEFAULT_OVERLAP_THRESHOLD,
 ) -> dict[str, SanityResult]:
-    """Run check() on every mask in the dict.
+    """Run check() on every mask in the dict, then pairwise garment-overlap checks.
 
     If "person" is in masks and person_mask is not supplied, the person mask is
     extracted automatically for containment checks.
@@ -198,6 +206,8 @@ def check_all(
         masks: {label: mask_array_or_path}
         person_mask: explicit person silhouette; auto-extracted from masks if absent.
         containment_threshold: passed through to check().
+        overlap_threshold: fraction of the smaller garment that may be consumed
+            by another garment before a "garment_overlap" flag is raised.
 
     Returns:
         {label: SanityResult}
@@ -206,7 +216,7 @@ def check_all(
     if effective_person is None and "person" in masks:
         effective_person = masks["person"]
 
-    return {
+    results = {
         label: check(
             m, label,
             person_mask=effective_person,
@@ -214,6 +224,23 @@ def check_all(
         )
         for label, m in masks.items()
     }
+
+    # O-SEG-GAP-001: pairwise overlap between garment masks.
+    garment_labels = [lbl for lbl in masks if lbl.lower() in _GARMENT_LABELS]
+    loaded = {lbl: _load(masks[lbl]) for lbl in garment_labels}
+
+    for i, lbl_a in enumerate(garment_labels):
+        for lbl_b in garment_labels[i + 1:]:
+            flag_a, flag_b = _garment_overlap_flags(
+                loaded[lbl_a], lbl_a,
+                loaded[lbl_b], lbl_b,
+                overlap_threshold,
+            )
+            if flag_a is not None:
+                results[lbl_a].flags.append(flag_a)
+                results[lbl_b].flags.append(flag_b)  # type: ignore[arg-type]
+
+    return results
 
 
 def format_report(results: dict[str, SanityResult]) -> str:
@@ -235,6 +262,49 @@ def format_report(results: dict[str, SanityResult]) -> str:
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
+def _garment_overlap_flags(
+    mask_a: np.ndarray,
+    region_a: str,
+    mask_b: np.ndarray,
+    region_b: str,
+    threshold: float,
+) -> tuple:
+    """Return (SanityFlag|None, SanityFlag|None) for both regions if overlap exceeds threshold.
+
+    Metric: overlap_pixels / min(area_a, area_b) — fraction of the smaller
+    garment that is consumed by the other.  Shape mismatch and empty masks are
+    skipped silently (those failures surface through the area / containment checks).
+    """
+    if mask_a.shape != mask_b.shape:
+        return None, None
+
+    fg_a = mask_a > 127
+    fg_b = mask_b > 127
+    a_count = int(np.count_nonzero(fg_a))
+    b_count = int(np.count_nonzero(fg_b))
+
+    if a_count == 0 or b_count == 0:
+        return None, None
+
+    overlap = int(np.count_nonzero(fg_a & fg_b))
+    if overlap == 0:
+        return None, None
+
+    frac = overlap / min(a_count, b_count)
+    if frac <= threshold:
+        return None, None
+
+    smaller = region_a if a_count <= b_count else region_b
+    detail = (
+        f"{frac:.1%} of the smaller garment ('{smaller}') "
+        f"overlaps with '{region_b if smaller == region_a else region_a}' "
+        f"(overlap={overlap}px, threshold={threshold:.0%})"
+    )
+    flag_a = SanityFlag(region=region_a, check="garment_overlap", detail=detail)
+    flag_b = SanityFlag(region=region_b, check="garment_overlap", detail=detail)
+    return flag_a, flag_b
+
 
 def _load(mask: Union[np.ndarray, str, Path]) -> np.ndarray:
     if isinstance(mask, np.ndarray):

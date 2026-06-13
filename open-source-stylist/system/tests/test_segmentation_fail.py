@@ -13,7 +13,7 @@ To run from project root:
 import numpy as np
 import pytest
 
-from system.segmentation.sanity import check, SanityResult
+from system.segmentation.sanity import check, check_all, SanityResult
 
 
 def _blank(h: int, w: int) -> np.ndarray:
@@ -122,3 +122,32 @@ def test_sanity_valid_shoes_passes():
     assert result.clean, (
         f"Expected no flags on valid shoes mask; got: {result.flags}"
     )
+
+
+# ---------------------------------------------------------------------------
+# 6. Belt mask fully inside bottom mask → garment_overlap flag (O-SEG-GAP-001)
+# ---------------------------------------------------------------------------
+
+def test_sanity_garment_overlap_belt_inside_bottom_flags():
+    """Belt mask fully consumed by bottom mask must trigger garment_overlap on both.
+
+    Mirrors the real E-006 corruption (High/seed_42): bottom mask covered the belt.
+    area fractions are within bounds so the three existing checks all pass —
+    only the new pairwise check should fire.
+    """
+    H, W = 200, 100
+    # bottom: rows 30–120, full width = 9000px / 20000px = 45% → within [0.02, 0.50]
+    # belt:   rows 50–70, cols 20–80  = 1200px / 20000px = 6%  → within [0.001, 0.10]
+    # belt is fully inside bottom → overlap = 1200px = 100% of belt area > 20% threshold
+    bottom = _rect(H, W, r0=30, r1=120, c0=0,  c1=100)
+    belt   = _rect(H, W, r0=50, r1=70,  c0=20, c1=80)
+
+    results = check_all({"bottom": bottom, "belt": belt})
+
+    for region in ("bottom", "belt"):
+        r = results[region]
+        check_names = {f.check for f in r.flags}
+        assert "garment_overlap" in check_names, (
+            f"Expected 'garment_overlap' flag on '{region}'; "
+            f"got: {check_names}. Flags: {r.flags}"
+        )
