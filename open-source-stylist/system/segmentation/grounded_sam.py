@@ -84,10 +84,6 @@ def _run_label(
                     img_info.get("subfolder", ""),
                     img_info.get("type", "output"),
                 )
-                # ImpactFlattenMask unions all detections; keep only the
-                # largest connected component to avoid absorbing adjacent
-                # garments or background model bodies (redesign §6).
-                data = _largest_area_mask(data)
                 out_path = output_dir / f"{label}.png"
                 out_path.write_bytes(data)
                 return out_path
