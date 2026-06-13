@@ -1,6 +1,6 @@
 # E-007 Protocol — Task-correct adapter re-baseline
 
-Date: 2026-06-13. Status: **pending owner signature — no runs before sign-off.**
+Date: 2026-06-13. Status: **owner signed 2026-06-13 — running.**
 Spec: design/adapter_redesign_2026-06-13.md §3, §5, §6, §9.
 
 ---
@@ -141,4 +141,6 @@ python -m pytest system/tests/test_instance_selection_fail.py -v
 - [ ] (b) Labeled board cell layout — reviewed and accepted
 - [ ] (c) This protocol — signed
 
-Owner sign-off: ________ Date: __________
+Owner sign-off: confirmed verbally. Date: 2026-06-13
+
+**Prompt revision (owner, 2026-06-13):** removed "Layer from inner to outer: ..." sentence (redundant with visibility_notes); simplified visibility_notes: "Blouse is the visible top; peplum hem..." → "Blouse hem sits over..."; removed "if ears are visible" conditional. Final prompt text in system/adapter/prompt.py build_prompt(), verified against outfit_package.json.
