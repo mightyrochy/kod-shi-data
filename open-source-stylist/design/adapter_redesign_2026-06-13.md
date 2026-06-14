@@ -177,3 +177,29 @@ Per METHODOLOGY §3.3 (bug found → stop, fix, restart the affected experiments
 - METHODOLOGY guard to add on approval: any model-facing instruction (prompt,
   negative, board) is reviewed against the system task statement, not only for code
   validity — the gap that let this persist through two code reviews.
+
+---
+
+## 11. UPDATE 2026-06-13 — board/mask sections superseded by §6a of SYSTEM_DESIGN
+
+This proposal's §5 (board) and §6 (masks) are superseded after the E-007 board-
+contamination forensics. The first E-007 attempt ran on a contaminated board and is
+INVALID (hypotheses.md O-BOARD-001…005).
+
+- **§5 board** — the "labeled crop board" still holds (labels approved), but the way
+  crops are produced changes: NOT in-loop GroundingDINO+SAM+union (a verified lottery
+  that put model faces on the E-007 board). Instead, design §6a: V1 tiles frozen,
+  owner-reviewed, clean garment-only references deterministically; production isolates
+  via clothes/human-parsing on the fly. The board build itself becomes trivial tiling.
+- **§6 masks** — the instance-selection idea was the right instinct but the wrong
+  layer: the real fix is to stop doing garment isolation with a general detector in
+  the loop, not to post-process its union. The earlier no-face/size "validator stack"
+  framing is reframed (owner): remove the chaos (deterministic isolation) rather than
+  police it; a no-face/size check belongs on the one-time asset prep, not as an in-loop
+  policeman. The §5 measurement RegionMap (generated images) is a separate matter and
+  may also move to a parser — to be tested, not assumed.
+- Storage: consistency comes from deterministic isolation, not caching; V2 keeps only
+  the retrieval index (no per-product forever-store), V3 wardrobe gets durable refs.
+
+The positive-prompt contract (§3), the cfg=1.0 → preservation-in-positive finding
+(§1, §4), and E-014 (negative channel test) are UNAFFECTED and stand.

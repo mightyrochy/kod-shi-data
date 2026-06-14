@@ -429,7 +429,19 @@ not a graded trade-off. Owner confirmed visually: "абсолютно не та 
 
 **Rule (decision-grade):** The reference panel MUST use garment-only crops.
 Full product photos are disqualified as conditioning input for QIE-2511 in this
-pipeline. This rule is implemented as the default in `system/adapter/panel.py`.
+pipeline.
+
+**Caveat added 2026-06-13 (E-007 board forensics):** the rule stands, but the
+in-loop method that was supposed to produce garment-only crops does NOT reliably do
+so. `system/adapter/panel.py` isolated garments with generic GroundingDINO+SAM+union
+("top"/"bottom"), which is a run-to-run lottery: E-005 produced clean crops, E-007
+rebuilt the board and produced crops containing the product model's face/body
+(insightface: 0 faces on the E-005 board vs 3 on the E-007 board). So "garment-only
+crops" is a satisfied REQUIREMENT only when the isolation actually works — and the
+current method does not guarantee it. Resolution (design §6a): V1 uses frozen,
+owner-reviewed clean references tiled deterministically (no in-loop segmentation);
+production uses category/person-aware clothes-parsing. Until that lands, any board
+must be visually confirmed clean (or face-checked) before a run is trusted.
 
 ---
 

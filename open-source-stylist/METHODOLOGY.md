@@ -81,6 +81,16 @@ For every proposed change (code, prompt, workflow, parameter):
 4. **Generality test for prompt/panel changes:** the change must be expressible as a
    rule for the stage ("never include color words"; "crop references to garment only"),
    not as content for one outfit.
+5. **Right tool for THIS job when reusing a component.** Reusing an existing module
+   for a new job requires re-asking "is this the right tool for the new job", not
+   just "does it run". The board reused the §5 measurement segmenter (GroundingDINO+
+   SAM+union) to isolate garments — a parsing job that segmenter is wrong for — and it
+   passed unnoticed through two reviews. A reuse that silently repurposes a tool is a
+   change and gets the full-picture check.
+6. **View the artifact before diagnosing it.** A claim about a visual artifact (a
+   board, a mask, a generated image) is not made from numbers/filenames alone — open
+   and look. Two diagnoses of the E-007 board were wrong because nobody viewed it; the
+   face detector + the eye settled it in one look. Numbers locate; eyes confirm.
 
 ## 4. Verification ladder
 

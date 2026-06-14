@@ -120,3 +120,57 @@ unknown — may relate to how QIE-2511 attends to large-area high-color-contrast
 references. Not actionable in V1 given the rule from V-REF-001.
 
 ---
+
+## 2026-06-13 — E-007 board-contamination forensics (owner-directed re-verification)
+
+Context: an E-007 session report claimed a "mask regression" and diagnosed it as
+"GroundingDINO non-determinism, raise threshold to 0.5". The owner distrusted the
+report. Ground-truth re-verification from disk (and from VIEWING the images, which
+neither the session nor the first review did) established the following.
+
+**Verified facts (disk + measurement + visual):**
+- **O-BOARD-001** — The E-007 reference panel is contaminated: blouse front/back and
+  skirt front crops include the product model's head, face, and trousers. Face
+  detector (insightface) confirms it deterministically: E-005 panel = **0 faces**,
+  E-007 panel = **3 faces** (det scores 0.73, 0.73, 0.87). The clean/contaminated
+  split is cleanly separable by a no-face check.
+- **O-BOARD-002** — Panel garment-mask coverage doubled in E-007 vs E-005 for the
+  full-body model photos: blouse_front 19.9→39.5%, blouse_back 19.4→39.8%,
+  skirt_front 9.0→16.4%; stable for clean product shots (belt 13.3%, earrings 1.9%,
+  shoes 10.5%, skirt_back ~11%). The doubled masks are the model's body+head pulled
+  into the crop.
+- **O-BOARD-003** — Same prompt ("top"/"bottom"), same threshold (0.3), same image,
+  byte-identical segmentation code (git diff E-005↔E-007 = only the dead, uncalled
+  `_largest_area_mask`); yet masks differ. So the board build is a **run-to-run
+  lottery**: E-005 happened clean, E-006 reused it (skip-if-exists), E-007 rebuilt
+  and lost. Not "fine until now" by design — fine by luck.
+- **O-BOARD-004** — The board NEVER used the prompts the owner validated in E-001.
+  E-001 (V-SEG-002, owner-approved) segmented garments with `"blouse . shirt . top"`
+  and `"skirt"`. The panel builder uses the adapter's generic `"top"`/`"bottom"` —
+  exactly the words V-SEG-004 found grab the full silhouette. The validated masks and
+  the board masks are different code paths.
+
+**Corrections to the session report (it was wrong):**
+- "belt/earrings/shoes masks byte-identical E-005↔E-007" — FALSE. All masks differ by
+  bytes; only coverage% matched on the stable items.
+- "framing regression in E-007" — NOT supported. Person-mask framing is identical
+  E-005↔E-007 seed_42 (coverage 1.0, top_frac 0.0, bottom_frac 0.999 both). Any head
+  crop is not new to E-007.
+- "GroundingDINO non-determinism → raise threshold to 0.5" — a band-aid that never
+  looked at the board. The root is the wrong tool (general detection+union for a
+  parsing job) with no validation, run in the loop.
+
+**O-BOARD-005 (root cause, decision-grade direction not yet a Verified rule):**
+garment isolation for the board is a parsing problem, done with the wrong tool
+(generic GroundingDINO+SAM+union) in the wrong place (the generation loop) with no
+validation. Fix = consistency by construction (design §6a): V1 frozen clean refs;
+production clothes-parsing. → No experiment verifies the *production* parser yet;
+the V1 stand-in is a build decision, not an experiment.
+
+**E-007 STATUS: INVALID.** Phase 1 ran on a contaminated board; phase 2 not run.
+Whatever E-007 would have measured is meaningless until it is redone on a clean
+board (frozen refs). The "masked crops vs garment-on-person" question E-007 exists to
+answer is still OPEN — V-REF-001 was on uncontrolled raw photos; the controlled,
+consistent comparison has not been run.
+
+---

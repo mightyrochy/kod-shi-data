@@ -216,9 +216,15 @@ Transport:
 - **Tool:** deterministic Python (panel compositing); a small LLM only for prompt phrasing.
 - **In:** `OutfitPackage`. **Out:** `GenerationRequest`.
 - Panel construction is a first-class engineering artifact: consistent placement,
-  per-item crops, versioned like code. Garment references should be cropped to the
-  garment itself — bodies/shoes/competing items visible in product photos contaminate
-  conditioning (hypothesis H-REF-CONTAMINATION, from run-000003 observation).
+  versioned like code. **The board MUST tile only clean garment-only crops** — bodies,
+  faces, or competing items visible in product photos contaminate conditioning
+  (V-REF-001 verified: raw photos collapse identity, cosine 0.008 vs 0.830).
+- **Garment isolation is a SEPARATE concern, not done inside the board build** — see
+  §6a. The board build itself is a trivial, deterministic tiling of already-clean
+  garment references (+ labels). Doing isolation in the generation loop with a
+  general detector was the source of the E-007 board-contamination lottery
+  (2026-06-13 forensics): the board must be consistent by construction, not policed
+  after the fact.
 
 ### [4] Try-On Engine
 - **Default engine:** Qwen-Image-Edit-2511 (fp8mixed on 16GB) via ComfyUI; native
@@ -227,12 +233,20 @@ Transport:
 - **In:** `GenerationRequest`. **Out:** K × `GenerationResult` (drafts) or 1 final.
 
 ### [5] Segmentation
-- **Role:** produce `RegionMap` for BOTH input photo and generated image: person, face,
-  hair, background masks + one mask per garment (text prompts from `OutfitPackage`).
+- **Role (scope clarified 2026-06-13):** produce `RegionMap` on the INPUT photo and the
+  GENERATED image for MEASUREMENT — person, face, hair, background masks + one mask per
+  garment so the gates can score per region (color ΔE, proportions, identity face crop).
+  This stage is NOT the garment-isolation-for-the-board tool — that is a different job
+  with a different right tool (§6a). Conflating the two (reusing this general segmenter
+  to isolate garments from product photos for the board) caused the E-007 board
+  contamination; the two jobs are now explicitly separate.
 - **Tool:** SAM 3 (text-prompted, ComfyUI nodes, low-VRAM variant preferred);
   MediaPipe FaceMesh for face landmarks; Grounded-SAM-2 as fallback.
   (V1 as-built: GroundingDINO+SAM1 accepted per E-001; SAM3 deferred behind a
-  dependency blocker — see BUILD_PLAN Stage 1 notes.)
+  dependency blocker — see BUILD_PLAN Stage 1 notes.) Known weakness: GroundingDINO +
+  `ImpactFlattenMask` UNIONS all detections, so a marginal text prompt can merge
+  adjacent regions (E-008: "top" absorbed bottom/belt). A clothes/human-parsing model
+  (see §6a) is likely the better tool here too, not just for the board — to be tested.
 - **Why a stage, not a utility:** evaluation gates, color correction, face restore, and
   repair masks all consume `RegionMap`. One computation, many consumers.
 - **Mask sanity guard (added 2026-06-12 after two silent-mask-corruption incidents
@@ -308,6 +322,65 @@ Ordered sub-steps, deterministic first:
   repair pass → protect-by-construction (mask excludes face/background; no restore).
 - **In:** `GenerationResult` + `RegionMap` + `RepairPlan`. **Out:** `FinalOutput`
   (image + per-criterion report + retry count). Retries capped.
+
+---
+
+## 6a. Garment isolation for the board (board input preparation)
+
+Added 2026-06-13 after the E-007 board-contamination forensics. The board feeds
+generation, so a contaminated board (model bodies/faces in the crops) collapses
+identity (V-REF-001). Producing clean garment-only references is a distinct
+subsystem with its own right tool — NOT the §6 measurement segmenter.
+
+**Core principle (owner, 2026-06-13): consistency by construction, not by policing.**
+The board must be the SAME kind of clean, isolated garment in every cell, always.
+The fix is to remove the in-loop segmentation lottery, not to stack validators on
+top of a chaotic process. Consistency comes from a DETERMINISTIC isolation function
+(same product image → same canonical reference every time), not from caching.
+
+**V1 (testing-phase stand-in):** garment references are prepared into clean,
+garment-only images ONCE, owner-reviewed, and frozen as canonical assets. The board
+build (`system/adapter/panel.py`) becomes a trivial, deterministic tiling of those
+frozen assets (+ labels). No segmentation in the generation loop. This decouples
+board quality from the unsolved isolation problem so generation can be tested
+honestly. (Replaces the prior in-loop GroundingDINO+SAM+union crop, which was a
+lottery: E-005 happened clean, E-007 rebuilt and produced model faces — verified.)
+
+**Finished system (V2+, automatic, on the fly):** isolate the garment from any
+retrieved product photo automatically, per use, with a clothes/human-parsing model
+(SCHP-class) rather than a general text detector:
+1. Detect person/face (insightface + person segmentation, already in the project).
+2. If a model is present → clothes/human-parsing → take the mask for the TARGET
+   category (known from retrieval). Face/skin/background excluded by construction —
+   the parser is trained to separate body from clothes. Model presence is a SIGNAL
+   (locates the garment), not a threat to avoid.
+   If no model (flat/packshot) → background removal (matting); garment = foreground.
+3. Normalize to a canonical cell: crop to garment mask, center, white background,
+   consistent scale. Every cell uniform by construction.
+4. Auto quality gate (deterministic, fail-loud): no detectable face in the cell
+   (insightface: clean board = 0 faces, contaminated E-007 = 3 faces — verified);
+   coverage within a sane band; single coherent region for non-paired items
+   (keep symmetric pairs for shoes/earrings — do not collapse to one). On failure →
+   fallback (alternate product photo / re-retrieve / flag). No human in the loop.
+
+**Why GroundingDINO+union is the wrong tool here:** it is a general text detector
+unioning all detections; it does not know garment-vs-body and competes with the
+model. The category-aware, person-aware parser is the right class. (GroundingDINO+SAM
+keeps value for the §6 measurement RegionMap and as a fallback.)
+
+**Storage (corrects an earlier over-reach):** caching is a SPEED optimization, not
+the source of consistency. Therefore:
+- **V2 internet recommendations** (unbounded product space): NO permanent per-product
+  store of isolated images. Persist only the retrieval index (embeddings + metadata +
+  URL — bounded by catalog, the retrieval layer anyway). Isolate on the fly only for
+  the few products entering a generation; ephemeral / bounded-LRU cache (per session),
+  regenerable from the product image. Never a forever-store.
+- **V3 personal wardrobe** (bounded, owned, reused): durable per-item canonical
+  references are justified and cheap — precompute once, store.
+
+**Status:** V1 stand-in is the decided path (frozen clean refs). The parsing
+subsystem is a V2 design; which parser, 16GB fit, and quality on our images are
+untested (P8: find a maintained ComfyUI human-parsing node, validate, then build).
 
 ---
 
@@ -415,8 +488,10 @@ V1 unchanged except Stylist:
     embedding model → nearest-neighbor → top-K real product candidates.
   - Embedding choice benchmarked on the real target catalogs (SigLIP-class tends to win
     on fine attributes — verify).
-- Retrieved product images become the `OutfitPackage` reference board automatically.
-  Stages [3]–[7] untouched.
+- Retrieved product images do NOT go to the board directly — each passes through the
+  automatic garment-isolation subsystem (§6a: parsing + normalization + quality gate,
+  on the fly, ephemeral cache) to become a clean garment-only reference first. Stages
+  [3]–[7] then untouched.
 
 ---
 
@@ -474,6 +549,18 @@ V1 unchanged except Stylist:
 
 ## Revision notes (append-only)
 
+- **2026-06-13 (board-contamination forensics + garment isolation)** — verified that
+  the board build ran an in-loop garment-segmentation lottery (generic GroundingDINO+
+  SAM+union with prompt "top"/"bottom"); E-005 happened clean, E-007 rebuilt and
+  produced model faces in the crops (insightface: 0 vs 3 faces). New §6a separates
+  garment-isolation-for-the-board from §6 measurement segmentation, both as a job and
+  as a tool: V1 stand-in = frozen owner-reviewed clean refs + trivial deterministic
+  tiling (no in-loop segmentation); production = clothes/human-parsing (category- and
+  person-aware) + normalization + fail-loud quality gate + ephemeral cache. Corrected
+  the storage model: consistency comes from deterministic isolation, not caching; V2
+  keeps only the retrieval index (no per-product forever-store), V3 wardrobe gets
+  durable per-item refs. §3, §5, §10 updated accordingly. The E-007 run is invalid
+  (executed on a contaminated board); it must be redone on a clean board.
 - **2026-06-10** — canonical consolidation of R2 (2026-06-09), R3 (2026-06-10),
   R4 (2026-06-10). Key consolidation decisions: R4's research verification and P8
   adopted; R3's stage descriptions and restoration shell adopted; R2's V2/V3 detail and

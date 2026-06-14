@@ -146,6 +146,22 @@ are demoted with dated errata; this experiment produces the first honest baselin
 H-COLOR rides along (the transfer prompt is still color-word-free). Negatives stay
 empty here (cfg=1.0 makes them inert under Lightning — see E-014).
 
+**E-007 first attempt INVALIDATED (2026-06-13 forensics).** The attempt ran on a
+CONTAMINATED board: the in-loop GroundingDINO+SAM+union crop produced blouse/skirt
+cells containing the product model's face/body (insightface: 3 faces on the board).
+Phase 2 was never run; whatever it would have measured is meaningless. See
+knowledge/hypotheses.md "2026-06-13 — E-007 board-contamination forensics"
+(O-BOARD-001…005). E-007 must be REDONE on a clean board.
+
+**Board-build prerequisite for E-007 (new, 2026-06-13):** garment isolation must be
+removed from the generation loop (it is a lottery). For V1: prepare clean,
+garment-only references ONCE, owner-reviewed, frozen as assets; rewrite
+`system/adapter/panel.py` to tile those frozen assets deterministically (+ labels) —
+no segmentation in the board path. Production (automatic clothes-parsing isolation)
+is a V2 design (SYSTEM_DESIGN §6a), not V1 work. Only after the board is clean and
+consistent does the E-007 conditioning question (and the still-open "masked crops vs
+garment-on-person" comparison) become measurable.
+
 **Acceptance criteria:** generation runs reproducibly through the new path; noise
 floor, working resolution, and the two adapter rules are Verified knowledge with
 numbers behind them.
@@ -502,3 +518,15 @@ Estimated total: 8–12 working sessions + GPU batch time.
   Lightning-fidelity rows, which run empty-negative): single-variable cfg>1
   empty-vs-populated negative test. Bench rows 2/3/3b flagged to need cfg≈4-7 (the
   no-Lightning workflow is templated at cfg=1.0). Spec: design/adapter_redesign_2026-06-13.md.
+- **2026-06-13 (E-007 board-contamination forensics)** — owner-directed
+  re-verification overturned an E-007 session report. Verified from disk + images:
+  the board build runs an in-loop garment-segmentation lottery (generic
+  GroundingDINO+SAM+union, "top"/"bottom"); E-005 was clean by luck, E-007 rebuilt
+  and put model faces in the crops (insightface 0 vs 3 faces). The session's
+  "byte-identical masks", "framing regression", and "non-determinism, raise
+  threshold" claims were all wrong. E-007 first attempt INVALIDATED (contaminated
+  board). Decision: remove garment isolation from the generation loop — V1 uses
+  frozen owner-reviewed clean refs + deterministic tiling; production uses clothes-
+  parsing (SYSTEM_DESIGN §6a). Knowledge: hypotheses.md O-BOARD-001…005; verified.md
+  V-REF-001 caveat. METHODOLOGY §3.5 (right-tool-on-reuse) and §3.6 (view the
+  artifact) added to prevent recurrence.
