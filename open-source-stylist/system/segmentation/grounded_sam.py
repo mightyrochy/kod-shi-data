@@ -16,9 +16,6 @@ from __future__ import annotations
 import uuid
 from pathlib import Path
 
-import cv2
-import numpy as np
-
 from ..clients.comfyui import ComfyUIClient
 
 # Model names as ComfyUI node dropdowns expect them
@@ -92,41 +89,6 @@ def _run_label(
         f"No output image produced for label '{label}' (prompt='{prompt}'). "
         "Check ComfyUI logs for segmentation errors."
     )
-
-
-def _largest_area_mask(mask_data: bytes) -> bytes:
-    """From a union mask PNG, return only its largest connected component.
-
-    ImpactFlattenMask unions ALL GroundingDINO detections, which can absorb
-    adjacent garments or background model bodies into a single merged mask.
-    Keeping only the largest connected component selects the primary detected
-    instance and discards spurious secondary detections.
-
-    If the mask has zero or one component (empty or already single), the input
-    bytes are returned unchanged.
-    """
-    arr = np.frombuffer(mask_data, dtype=np.uint8)
-    img = cv2.imdecode(arr, cv2.IMREAD_GRAYSCALE)
-    if img is None:
-        raise RuntimeError("_largest_area_mask: cv2.imdecode returned None")
-
-    binary = (img > 128).astype(np.uint8)
-    n_labels, labels, stats, _ = cv2.connectedComponentsWithStats(binary, connectivity=8)
-
-    # n_labels includes background (label 0); skip it.
-    if n_labels <= 2:
-        # 1 = only background (empty mask), 2 = one foreground component.
-        return mask_data
-
-    # stats rows: [left, top, width, height, area]; row 0 = background.
-    areas = stats[1:, cv2.CC_STAT_AREA]
-    best_label = int(areas.argmax()) + 1  # +1 to account for skipped background row
-
-    selected = np.where(labels == best_label, np.uint8(255), np.uint8(0))
-    ok, encoded = cv2.imencode(".png", selected)
-    if not ok:
-        raise RuntimeError("_largest_area_mask: cv2.imencode failed")
-    return encoded.tobytes()
 
 
 def _build_workflow(
