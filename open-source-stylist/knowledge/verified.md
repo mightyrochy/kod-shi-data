@@ -475,3 +475,36 @@ input person. This extends the contamination hypothesis beyond the originally st
 scope (proportions/items) to identity.
 
 ---
+
+## ERRATUM 2026-06-13 — generation conclusions confounded by mis-specified conditioning
+
+Applies the demotion that design/adapter_redesign_2026-06-13.md §8 and BUILD_PLAN
+promised but that was never written here (consistency gap found in the 2026-06-13
+error/logic check).
+
+**Finding (owner-confirmed):** every generation run before the adapter redesign used
+a positive prompt that never expressed the task — it said "A person wearing
+{garments}" with NO preserve-this-person and NO transfer-from-board instruction, an
+empty negative, dead layering, and an unlabeled board. So the model was effectively
+asked to "generate a person wearing this kind of outfit", not "keep this person and
+dress them from the board". Identity held only incidentally (QIE is an edit model).
+
+**Therefore the following entries measure the WRONG task and are NOT decision-grade
+until re-baselined (E-007 redo on a clean board + task-correct prompt):**
+- V-VAR-001 (variance baseline on generated outputs)
+- V-COLOR-002 (color thresholds "confirmed on generated distribution")
+- V-ID-002 (identity threshold "confirmed on generated images")
+- V-PROP-002 + its reversal (proportions on generated outputs)
+- V-RES-001 (resolution decision — identity-based, on generated outputs)
+- V-REF-001 / V-REF-002 (E-008): the cropped-vs-raw CONTRAST and the contamination
+  RULE stand (owner-confirmed visually); the absolute magnitudes are on the wrong
+  task and re-open with the re-baseline.
+
+**NOT confounded (stand):** V-ENV-001; V-SEG-001/002/003/004; the Stage-1 gate
+CALIBRATIONS V-COLOR-001, V-ID-001, V-PROP-001 (calibrated on static photos, no
+generation); V-QIE-001 (frame formula); V-RES-002 (no-OOM fact).
+
+Keep the numbers (they are real measurements of the wrong task). Do not build
+decisions on the confounded entries until E-007 re-baseline replaces them.
+
+---
