@@ -134,6 +134,7 @@ def _measure(generated: Path, run_dir: Path, person_image: Path,
     """Segmentation + sanity + the limited honest gates. Imports the heavy deps
     lazily so --no-generate never loads segmentation / insightface."""
     from system.clients.comfyui import ComfyUIClient
+    from system.gates import body_pose
     from system.gates.color import compare_regions
     from system.gates.identity import compare_faces
     from system.gates.proportions import compare as compare_proportions
@@ -180,6 +181,10 @@ def _measure(generated: Path, run_dir: Path, person_image: Path,
             "verdict": ("SKIP_MEASUREMENT" if score is None
                         else "PASS" if score <= PROPORTIONS_THRESHOLD else "FAIL"),
         }
+
+    # Skeletal body-shape (clothing-robust) — the honest body check that the
+    # clothed-silhouette proportions gate above cannot give.
+    result["body"] = body_pose.compare(person_image, generated)
     return result
 
 
@@ -322,9 +327,19 @@ def _write_report(run_dir: Path, manifest: dict) -> None:
         "",
         "## Gates (limited instruments — not a product verdict)",
         f"- identity (face only): cosine={ident.get('cosine')} → **{ident.get('verdict')}**",
-        f"- proportions (diagnostic): max_abs={prop.get('max_abs_change_pct')} "
+        f"- proportions (clothed silhouette — diagnostic): max_abs={prop.get('max_abs_change_pct')} "
         f"framing_delta={prop.get('framing_delta_pct')} → **{prop.get('verdict')}**",
     ]
+    body = m.get("body", {})
+    if body.get("verdict") == "MEASURED":
+        ch = body["change_pct"]
+        lines.append(
+            f"- body (pose joints — clothing-robust): hipΔ={ch['hip_width_norm']}%  "
+            f"shoulderΔ={ch['shoulder_width_norm']}%  ratioΔ={ch['shoulder_hip_ratio']}%  "
+            f"(pose match {body['pose_mismatch_deg']}°, vis {body['min_visibility']})"
+        )
+    elif body:
+        lines.append(f"- body (pose joints): {body.get('verdict')}")
     for region, c in m.get("color", {}).items():
         if "delta_e_mean" not in c:
             lines.append(f"- color[{region}]: {c.get('verdict')}")
