@@ -109,8 +109,11 @@ report`, no retry/repair routing, no VRAM sequencing, no final verdict owner.
    `fill_workflow` fails loud on any residual `__PLACEHOLDER__`.
 3. ✅ One canonical state (this file) + confounded banners + audit docs filed under `audit/`.
 4. ◻ Backup/remote before any git size cleanup; then decide LFS / experiment-image policy.
-5. ◻ One reproducible vertical slice (validated input → exact request → exact filled
-   workflow → output+hashes → segmentation+sanity → honest gates → owner checkpoint),
-   no repair/VLM yet.
+5. ◑ Vertical slice built — `system/run_slice.py` (validated input → exact request →
+   exact filled workflow → output+hashes → segmentation+sanity → honest gates → owner
+   checkpoint; no repair/VLM). Dry-run reproducibility verified on outfit_001 (Lightning
+   cfg=1.0 and full-engine cfg=2.5 both thread through, zero residual placeholders). The
+   live `--generate` run is the next owner checkpoint (needs ComfyUI; produces an image
+   for visual judgment).
 6. ◻ Only after the slice is reproducible: a corrected feasibility bench on ≥2-3 people
    and outfits, with a numeric kill-criterion — before building any catalog/stylist shell.
