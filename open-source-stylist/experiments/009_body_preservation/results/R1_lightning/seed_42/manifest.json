@@ -1,0 +1,217 @@
+{
+  "run_id": "outfit_001_hybrid_mask_crop_s42_294136aed237",
+  "created_utc": "2026-06-15T16:10:56Z",
+  "mode": "generate",
+  "inputs": {
+    "outfit_package": {
+      "path": "C:\\Users\\Admin\\Open Source Stylist\\assets\\outfits\\outfit_001\\outfit_package.json",
+      "sha256": "bcda2cd2fde466f67529b6e597bbe9bfef47b0bd986fd06435ea02118483668c"
+    },
+    "person_image": {
+      "path": "C:\\Users\\Admin\\Open Source Stylist\\assets\\person\\person_front.png",
+      "sha256": "ab61e2bc6728b2345e07570a060f8fe594f373c0ffb03b082114baea774a14eb"
+    },
+    "reference_board": {
+      "variant": "hybrid_mask_crop",
+      "path": "C:\\Users\\Admin\\Open Source Stylist\\assets\\outfits\\outfit_001\\reference_boards\\hybrid_mask_crop.png",
+      "sha256": "542051b334f0b02114093c574ea2e4ae31e137afb368a786ab434e16109aba83"
+    },
+    "layout": {
+      "path": "C:\\Users\\Admin\\Open Source Stylist\\assets\\outfits\\outfit_001\\outfit layout.txt",
+      "sha256": "c06f02b5a20470f0145aee23442baf892e5f640ac53b82f614c1a46470d543e6"
+    },
+    "workflow_template": {
+      "name": "qie2511_vton_lightning",
+      "path": "C:\\Users\\Admin\\Open Source Stylist\\system\\workflows\\qie2511_vton_lightning.json",
+      "sha256": "4f3cf2d37de4d110fa1253822a0e37cbf72992c7dfccd563fabcf057eb365dab"
+    }
+  },
+  "request": {
+    "schema_version": "1.0",
+    "request_id": "294136aed237",
+    "outfit_id": "outfit_001",
+    "person_image_path": "C:\\Users\\Admin\\Open Source Stylist\\assets\\person\\person_front.png",
+    "reference_panel_path": "C:\\Users\\Admin\\Open Source Stylist\\assets\\outfits\\outfit_001\\reference_boards\\hybrid_mask_crop.png",
+    "reference_board_variant": "hybrid_mask_crop",
+    "prompt": "Keep this exact person: face, hair, skin tone, body proportions, pose, and background unchanged.\nUsing the reference board (image 2), re-dress them in the outfit shown.\nThe board contains labeled garments: blouse front mask, blouse front crop, skirt front mask, skirt front crop, belt mask, earrings mask, earrings crop, shoes mask, shoes crop.\noutfit: blouse, skirt, belt, earrings, wedge sandals. blouse goes over skirt. belt goes over blouse. same earrings on both ears.\nTake all garment appearance from the board only.",
+    "negative_prompt": "",
+    "engine": "qie-2511-lightning",
+    "params": {
+      "steps": 4,
+      "seed": 42,
+      "width": 720,
+      "height": 1024,
+      "cfg": 1.0,
+      "sampler": "euler",
+      "scheduler": "simple"
+    }
+  },
+  "gate_thresholds": {
+    "color_pass": 3.0,
+    "color_fail": 5.0,
+    "identity": 0.57,
+    "proportions": 5.3
+  },
+  "filled_workflow": {
+    "path": "C:\\Users\\Admin\\Open Source Stylist\\runs\\outfit_001_hybrid_mask_crop_s42_294136aed237\\filled_workflow.json",
+    "sha256": "a2550c5daab18e0d30a6b7b1010f2085b82aee38fc2e17ebb38b31d181d57a0c"
+  },
+  "generation": {
+    "comfyui_prompt_id": "792bc194-51d7-46e5-9c2f-0ba5240c8bb8",
+    "seconds": 40.44,
+    "uploaded": {
+      "person": "person_front__ab61e2bc6728.png",
+      "board": "hybrid_mask_crop__542051b334f0.png"
+    },
+    "output": {
+      "path": "C:\\Users\\Admin\\Open Source Stylist\\runs\\outfit_001_hybrid_mask_crop_s42_294136aed237\\generated.png",
+      "sha256": "25639962c1c5429baa899122e0570ef274c31afa6f449152b1a02802064fd51a"
+    }
+  },
+  "measurement": {
+    "sanity_flags": {},
+    "gate_caveats": {
+      "identity": "ArcFace cosine \u2014 FACE ONLY. Says nothing about hair, skin, body, pose, background.",
+      "proportions": "Clothed-silhouette row widths \u2014 diagnostic, NOT a body-distortion verdict; volume garments and framing move the number. See framing_delta_pct.",
+      "color": "Mean CIEDE2000 with normalize_l=True \u2014 a HUE/CHROMA indicator, blind to absolute lightness; does not verify 'same garment'."
+    },
+    "color": {
+      "top": {
+        "delta_e_mean": 2.15,
+        "delta_e_p90": 8.97,
+        "n_pixels_a": 59615,
+        "n_pixels_b": 191292,
+        "l_shift": -10.75,
+        "chroma_a": 15.82,
+        "chroma_b": 13.01,
+        "chroma_delta": 2.82,
+        "hue_a_deg": 104.1,
+        "hue_b_deg": 109.4,
+        "hue_delta_deg": 5.3,
+        "hue_reliable": true,
+        "verdict": "PASS"
+      },
+      "bottom": {
+        "delta_e_mean": 3.36,
+        "delta_e_p90": 4.99,
+        "n_pixels_a": 85424,
+        "n_pixels_b": 498217,
+        "l_shift": 5.35,
+        "chroma_a": 19.78,
+        "chroma_b": 15.54,
+        "chroma_delta": 4.23,
+        "hue_a_deg": 50.8,
+        "hue_b_deg": 56.6,
+        "hue_delta_deg": 5.8,
+        "hue_reliable": true,
+        "verdict": "WARN"
+      },
+      "shoes": {
+        "delta_e_mean": 5.4,
+        "delta_e_p90": 17.1,
+        "n_pixels_a": 4775,
+        "n_pixels_b": 255513,
+        "l_shift": 11.56,
+        "chroma_a": 3.78,
+        "chroma_b": 7.84,
+        "chroma_delta": 4.06,
+        "hue_a_deg": 117.1,
+        "hue_b_deg": 143.6,
+        "hue_delta_deg": 26.4,
+        "hue_reliable": false,
+        "verdict": "FAIL"
+      },
+      "belt": {
+        "delta_e_mean": 5.7,
+        "delta_e_p90": 10.87,
+        "n_pixels_a": 3369,
+        "n_pixels_b": 371788,
+        "l_shift": 8.39,
+        "chroma_a": 16.97,
+        "chroma_b": 9.1,
+        "chroma_delta": 7.87,
+        "hue_a_deg": 41.1,
+        "hue_b_deg": 40.0,
+        "hue_delta_deg": 1.1,
+        "hue_reliable": true,
+        "verdict": "FAIL"
+      },
+      "earrings": {
+        "delta_e_mean": 0.83,
+        "delta_e_p90": 38.12,
+        "n_pixels_a": 1363,
+        "n_pixels_b": 18276,
+        "l_shift": -5.36,
+        "chroma_a": 22.74,
+        "chroma_b": 22.54,
+        "chroma_delta": 0.2,
+        "hue_a_deg": 67.4,
+        "hue_b_deg": 67.5,
+        "hue_delta_deg": 0.1,
+        "hue_reliable": true,
+        "verdict": "PASS"
+      }
+    },
+    "identity": {
+      "cosine": 0.8056,
+      "detected_a": true,
+      "detected_b": true,
+      "verdict": "PASS"
+    },
+    "proportions": {
+      "shoulder_change_pct": -3.67,
+      "waist_change_pct": -7.79,
+      "hip_change_pct": -14.31,
+      "max_abs_change_pct": 14.31,
+      "framing_delta_pct": 3.28,
+      "profile_a": {
+        "shoulder_width_norm": 0.2968,
+        "waist_width_norm": 0.2273,
+        "hip_width_norm": 0.3102,
+        "height_px": 1267,
+        "coverage_frac": 0.9427,
+        "top_frac": 0.0513,
+        "bottom_frac": 0.9933
+      },
+      "profile_b": {
+        "shoulder_width_norm": 0.2859,
+        "waist_width_norm": 0.2096,
+        "hip_width_norm": 0.2658,
+        "height_px": 997,
+        "coverage_frac": 0.9736,
+        "top_frac": 0.0186,
+        "bottom_frac": 0.9912
+      },
+      "verdict": "FAIL"
+    },
+    "body": {
+      "verdict": "MEASURED",
+      "source": {
+        "valid": true,
+        "shoulder_width_norm": 0.7184,
+        "hip_width_norm": 0.431,
+        "shoulder_hip_ratio": 1.6667,
+        "shoulder_tilt_deg": 179.3,
+        "hip_tilt_deg": 179.8,
+        "min_visibility": 0.999
+      },
+      "generated": {
+        "valid": true,
+        "shoulder_width_norm": 0.7125,
+        "hip_width_norm": 0.393,
+        "shoulder_hip_ratio": 1.8129,
+        "shoulder_tilt_deg": 176.9,
+        "hip_tilt_deg": 179.2,
+        "min_visibility": 0.999
+      },
+      "change_pct": {
+        "shoulder_width_norm": -0.82,
+        "hip_width_norm": -8.82,
+        "shoulder_hip_ratio": 8.77
+      },
+      "pose_mismatch_deg": 3.0,
+      "min_visibility": 0.999,
+      "note": "skeletal joints, clothing-robust; no calibrated threshold yet \u2014 measurement only"
+    }
+  }
+}
