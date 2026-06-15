@@ -29,6 +29,11 @@ import numpy as np
 from skimage.color import deltaE_ciede2000
 
 
+# Below this LAB chroma (C*ab) the hue angle is numerically unstable (near-grey),
+# so hue_delta must not be trusted. Provisional — calibrate on labelled regions.
+_CHROMA_FLOOR = 8.0
+
+
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
@@ -103,6 +108,13 @@ def compare_regions(image_a, mask_a, image_b, mask_b=None, normalize_l=True) -> 
             "n_pixels_a": int(len(pixels_a)),
             "n_pixels_b": int(len(pixels_b)),
             "l_shift": 0.0,
+            "chroma_a": None,
+            "chroma_b": None,
+            "chroma_delta": None,
+            "hue_a_deg": None,
+            "hue_b_deg": None,
+            "hue_delta_deg": None,
+            "hue_reliable": False,
         }
 
     mean_b = pixels_b.mean(axis=0)
@@ -131,10 +143,30 @@ def compare_regions(image_a, mask_a, image_b, mask_b=None, normalize_l=True) -> 
     )[:, 0]
     delta_e_p90 = float(np.percentile(per_pixel, 90))
 
+    # Hue / chroma split. CIEDE2000 mean compresses hue differences for pale
+    # (low-chroma) colours, so a visible hue shift (e.g. a lime reference rendered
+    # yellow) can pass on dE alone. Report the LAB hue angle (h_ab = atan2(b*, a*))
+    # and chroma (C_ab = hypot(a*, b*)) of each region mean so hue is gated
+    # explicitly — but only trust hue_delta when both regions clear _CHROMA_FLOOR.
+    chroma_a = float(np.hypot(mean_a[1], mean_a[2]))
+    chroma_b = float(np.hypot(mean_b[1], mean_b[2]))
+    hue_a = float(np.degrees(np.arctan2(mean_a[2], mean_a[1])))
+    hue_b = float(np.degrees(np.arctan2(mean_b[2], mean_b[1])))
+    hue_delta = abs(hue_a - hue_b) % 360.0
+    if hue_delta > 180.0:
+        hue_delta = 360.0 - hue_delta
+
     return {
         "delta_e_mean": round(delta_e_mean, 2),
         "delta_e_p90": round(delta_e_p90, 2),
         "n_pixels_a": int(len(pixels_a)),
         "n_pixels_b": int(len(pixels_b)),
         "l_shift": round(l_shift, 2),
+        "chroma_a": round(chroma_a, 2),
+        "chroma_b": round(chroma_b, 2),
+        "chroma_delta": round(abs(chroma_a - chroma_b), 2),
+        "hue_a_deg": round(hue_a, 1),
+        "hue_b_deg": round(hue_b, 1),
+        "hue_delta_deg": round(hue_delta, 1),
+        "hue_reliable": bool(min(chroma_a, chroma_b) >= _CHROMA_FLOOR),
     }

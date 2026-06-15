@@ -326,7 +326,14 @@ def _write_report(run_dir: Path, manifest: dict) -> None:
         f"framing_delta={prop.get('framing_delta_pct')} → **{prop.get('verdict')}**",
     ]
     for region, c in m.get("color", {}).items():
-        lines.append(f"- color[{region}]: dE_mean={c.get('delta_e_mean')} → **{c.get('verdict')}**")
+        if "delta_e_mean" not in c:
+            lines.append(f"- color[{region}]: {c.get('verdict')}")
+            continue
+        rel = "" if c.get("hue_reliable") else "  ⚠hue unreliable (low chroma)"
+        lines.append(
+            f"- color[{region}]: dE={c.get('delta_e_mean')} → **{c.get('verdict')}**  ·  "
+            f"hueΔ={c.get('hue_delta_deg')}°  chromaΔ={c.get('chroma_delta')}  Lshift={c.get('l_shift')}{rel}"
+        )
     if m.get("sanity_flags"):
         lines += ["", f"⚠ sanity flags: {list(m['sanity_flags'])}"]
     lines += [
