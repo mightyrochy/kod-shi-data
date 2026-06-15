@@ -23,6 +23,8 @@ _PLACEHOLDER_TYPES: dict[str, type] = {
     "__CFG__": float,
     "__SAMPLER__": str,
     "__SCHEDULER__": str,
+    "__MASK_IMAGE__": str,
+    "__DENOISE__": float,
 }
 
 # A string that still looks like an unfilled placeholder after a fill is a bug:

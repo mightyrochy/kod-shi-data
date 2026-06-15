@@ -43,6 +43,7 @@ RUNS_DIR = ROOT / "runs"
 ENGINE_WORKFLOW = {
     "qie-2511-lightning": "qie2511_vton_lightning",
     "qie-2511": "qie2511_vton",
+    "flux-fill": "flux_fill_inpaint",
 }
 
 # Gate thresholds — only the static-photo calibrations that survive the 2026-06-13
@@ -75,10 +76,11 @@ def _select_template(engine: str) -> str:
     return ENGINE_WORKFLOW[engine]
 
 
-def _fill(template: dict, request: dict, person_ref: str, board_ref: str) -> dict:
+def _fill(template: dict, request: dict, person_ref: str, board_ref: str,
+          mask_ref: str | None = None) -> dict:
     """Fill a template from a request. Every KSampler/prompt param comes from here."""
     params = request["params"]
-    return fill_workflow(template, {
+    substitutions = {
         "__PERSON_IMAGE__": person_ref,
         "__REF_IMAGE__": board_ref,
         "__POSITIVE_PROMPT__": request["prompt"],
@@ -91,7 +93,11 @@ def _fill(template: dict, request: dict, person_ref: str, board_ref: str) -> dic
         "__WIDTH__": params["width"],
         "__HEIGHT__": params["height"],
         "__OUTPUT_PREFIX__": request["request_id"],
-    })
+        "__DENOISE__": params.get("denoise", 1.0),
+    }
+    if mask_ref is not None:
+        substitutions["__MASK_IMAGE__"] = mask_ref
+    return fill_workflow(template, substitutions)
 
 
 def _load_references(references_path: Path | None) -> dict:
@@ -198,10 +204,17 @@ def run_slice(args: argparse.Namespace) -> Path:
     package = json.loads(outfit_path.read_text(encoding="utf-8"))
     resolution = (args.width, args.height) if args.width and args.height else None
 
+    mask_path = None
+    if getattr(args, "mask", None):
+        mask_path = (ROOT / args.mask).resolve() if not Path(args.mask).is_absolute() else Path(args.mask)
+        if not mask_path.is_file():
+            raise FileNotFoundError(f"Missing --mask: {mask_path}")
+
     request = build_generation_request(
         package, person_path, reference_board_variant=args.board,
         seed=args.seed, steps=args.steps, resolution=resolution,
         engine=args.engine, cfg=args.cfg,
+        denoise=getattr(args, "denoise", 1.0),
     )
 
     board_path = resolve_board(package, args.board)            # verifies frozen SHA-256
@@ -221,11 +234,14 @@ def run_slice(args: argparse.Namespace) -> Path:
             "outfit_package": {"path": str(outfit_path), "sha256": file_sha256(outfit_path)},
             "person_image": {"path": str(person_path), "sha256": file_sha256(person_path)},
             "reference_board": {"variant": args.board, "path": str(board_path),
-                                "sha256": file_sha256(board_path)},
+                                "sha256": file_sha256(board_path),
+                                "note": "SHA-verified; passed to workflow only for QIE engines"},
             "layout": {"path": str(layout_path), "sha256": file_sha256(layout_path)},
             "workflow_template": {"name": template_name,
                                   "path": str(ROOT / "system/workflows" / f"{template_name}.json"),
                                   "sha256": file_sha256(ROOT / "system/workflows" / f"{template_name}.json")},
+            **({"clothing_mask": {"path": str(mask_path), "sha256": file_sha256(mask_path)}}
+               if mask_path else {}),
         },
         "request": request,
         "gate_thresholds": {"color_pass": COLOR_PASS, "color_fail": COLOR_FAIL,
@@ -235,7 +251,8 @@ def run_slice(args: argparse.Namespace) -> Path:
     if not args.generate:
         # Dry run: produce the exact filled workflow with LOCAL image names so the
         # artifact is complete and every parameter is visibly threaded through.
-        filled = _fill(template, request, person_path.name, board_path.name)
+        mask_name = mask_path.name if mask_path else None
+        filled = _fill(template, request, person_path.name, board_path.name, mask_name)
         filled_path = run_dir / "filled_workflow.dryrun.json"
         _write_json(filled_path, filled)
         manifest["filled_workflow"] = {
@@ -251,7 +268,8 @@ def run_slice(args: argparse.Namespace) -> Path:
     client = ComfyUIClient()
     person_ref = client.upload_image(person_path)
     board_ref = client.upload_image(board_path)
-    filled = _fill(template, request, person_ref, board_ref)
+    mask_ref = client.upload_image(mask_path) if mask_path else None
+    filled = _fill(template, request, person_ref, board_ref, mask_ref)
     filled_path = run_dir / "filled_workflow.json"
     _write_json(filled_path, filled)
 
@@ -366,12 +384,15 @@ def main() -> None:
     parser.add_argument("--person", required=True, help="path to person image")
     parser.add_argument("--board", required=True, help="reference board variant name")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--engine", default="qie-2511-lightning", choices=sorted(ENGINE_WORKFLOW))
+    parser.add_argument("--engine", default="qie-2511-lightning", choices=sorted(ENGINE_WORKFLOW),
+                        help="generation engine; flux-fill requires --mask")
     parser.add_argument("--steps", type=int, default=4)
     parser.add_argument("--cfg", type=float, default=1.0)
     parser.add_argument("--width", type=int, default=None)
     parser.add_argument("--height", type=int, default=None)
     parser.add_argument("--person-mask", default=None, help="person silhouette mask for the proportions gate")
+    parser.add_argument("--mask", default=None, help="clothing region mask for inpaint workflows (flux-fill)")
+    parser.add_argument("--denoise", type=float, default=1.0, help="denoise strength (1.0 = full noise, <1 = partial; FLUX Fill uses 1.0 with InpaintModelConditioning)")
     parser.add_argument("--references", default=None, help="JSON region -> [ref_image, ref_mask] for the colour gate")
     parser.add_argument("--generate", action="store_true", help="actually call ComfyUI (owner-checkpoint path)")
     parser.add_argument("--timeout", type=float, default=600.0)

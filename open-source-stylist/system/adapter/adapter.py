@@ -1,7 +1,4 @@
-"""Outfit Adapter v0 — OutfitPackage → GenerationRequest.
-
-Entry point for Stage 2.  Pure formatting: no styling decisions.
-"""
+"""OutfitPackage to GenerationRequest formatting."""
 
 from __future__ import annotations
 
@@ -10,11 +7,10 @@ from pathlib import Path
 
 from PIL import Image
 
-from ..clients.comfyui import ComfyUIClient
-from .panel import build_panel
+from .panel import resolve_board
 from .prompt import build_prompt
 
-# Longest side of the person image is scaled to this value (multiples of 16).
+
 _DEFAULT_MAX_SIDE = 1024
 _RESOLUTION_STEP = 16
 
@@ -22,52 +18,40 @@ _RESOLUTION_STEP = 16
 def build_generation_request(
     outfit_package: dict,
     person_image_path: str | Path,
-    output_dir: str | Path,
-    client: ComfyUIClient,
+    reference_board_variant: str,
     seed: int,
-    steps: int = 40,
+    steps: int = 4,
     resolution: tuple[int, int] | None = None,
-    engine: str = "qie-2511",
+    engine: str = "qie-2511-lightning",
+    cfg: float = 1.0,
+    denoise: float = 1.0,
 ) -> dict:
-    """Build a GenerationRequest from an OutfitPackage.
+    """Build a request that points to an existing, hash-verified board."""
+    person_path = Path(person_image_path).resolve()
+    if not person_path.is_file():
+        raise FileNotFoundError(f"Person image does not exist: {person_path}")
 
-    Builds the reference panel (requires ComfyUI for segmentation), then
-    assembles and validates a GenerationRequest dict.
-
-    Args:
-        outfit_package: validated OutfitPackage dict.
-        person_image_path: path to the person photo.
-        output_dir: directory for panel output and intermediate files.
-        client: live ComfyUIClient (used for panel segmentation).
-        seed: generation seed.
-        steps: sampler steps (40 = full model, no Lightning).
-        resolution: explicit (width, height) or None for auto from person image.
-        engine: engine identifier matching GenerationRequest schema enum.
-
-    Returns:
-        A GenerationRequest dict ready for JSON serialisation.
-    """
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    panels_dir = output_dir / "panels"
-    panel_path = build_panel(outfit_package, panels_dir, client)
-
-    prompt = build_prompt(outfit_package)
+    panel_path = resolve_board(outfit_package, reference_board_variant)
+    prompt = build_prompt(outfit_package, reference_board_variant=reference_board_variant)
 
     if resolution is None:
-        resolution = _auto_resolution(person_image_path)
+        resolution = _auto_resolution(person_path)
     width, height = resolution
+    if steps < 1:
+        raise ValueError("steps must be at least 1")
+    if cfg < 0:
+        raise ValueError("cfg must be non-negative")
+    if width < 64 or height < 64 or width % 16 or height % 16:
+        raise ValueError("resolution must be at least 64x64 and divisible by 16")
 
     return {
         "schema_version": "1.0",
         "request_id": uuid.uuid4().hex[:12],
         "outfit_id": outfit_package["outfit_id"],
-        "person_image_path": str(Path(person_image_path).resolve()),
-        "reference_panel_path": str(panel_path.resolve()),
+        "person_image_path": str(person_path),
+        "reference_panel_path": str(panel_path),
+        "reference_board_variant": reference_board_variant,
         "prompt": prompt,
-        # Empty per E-007 protocol — cfg=1.0 (Lightning) makes negatives inert.
-        # Wire negative_constraints here when testing cfg>1 rows (E-014).
         "negative_prompt": "",
         "engine": engine,
         "params": {
@@ -75,17 +59,18 @@ def build_generation_request(
             "seed": seed,
             "width": width,
             "height": height,
-            "cfg": 1.0,
+            "cfg": cfg,
             "sampler": "euler",
             "scheduler": "simple",
+            "denoise": denoise,
         },
     }
 
 
 def _auto_resolution(person_image_path: str | Path, max_side: int = _DEFAULT_MAX_SIDE) -> tuple[int, int]:
-    img = Image.open(person_image_path)
-    w, h = img.size
-    scale = max_side / max(w, h)
-    w2 = round(w * scale / _RESOLUTION_STEP) * _RESOLUTION_STEP
-    h2 = round(h * scale / _RESOLUTION_STEP) * _RESOLUTION_STEP
-    return w2, h2
+    with Image.open(person_image_path) as image:
+        width, height = image.size
+    scale = max_side / max(width, height)
+    width_out = max(_RESOLUTION_STEP, round(width * scale / _RESOLUTION_STEP) * _RESOLUTION_STEP)
+    height_out = max(_RESOLUTION_STEP, round(height * scale / _RESOLUTION_STEP) * _RESOLUTION_STEP)
+    return width_out, height_out
