@@ -1,3 +1,14 @@
+> **STATUS 2026-06-15 — GENERATED-OUTPUT CLAIMS CONFOUNDED.** The "Promoted to
+> Verified" list and the "thresholds no longer provisional" statements below were
+> later demoted. Every gate result measured on generated images here used a positive
+> prompt that never expressed the transfer task (see the canonical ERRATUM in
+> `knowledge/verified.md`, 2026-06-13). **V-VAR-001, V-COLOR-002, V-ID-002,
+> V-PROP-002 are NOT decision-grade** until E-007 re-baseline replaces them. What
+> still stands: the static-photo gate CALIBRATIONS (V-COLOR-001, V-ID-001,
+> V-PROP-001), the segmentation-prompt rule (V-SEG-004), and the proportions
+> instrument-bug erratum at the bottom of this file. Do not cite this file's
+> generated-output verdicts as current.
+
 # E-005 — Conclusion
 
 **Date:** 2026-06-12

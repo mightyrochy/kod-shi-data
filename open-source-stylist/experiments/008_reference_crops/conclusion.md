@@ -1,3 +1,11 @@
+> **STATUS 2026-06-15 — RULE STANDS, MAGNITUDES CONFOUNDED.** Per the canonical
+> ERRATUM in `knowledge/verified.md` (2026-06-13): the cropped-vs-raw CONTRAST and
+> the garment-only-crop RULE (V-REF-001) stand — they are owner-confirmed on direct
+> visual evidence ("абсолютно не та людина"). But the absolute ΔE / proportion /
+> cosine MAGNITUDES in the tables below were measured with the task-incorrect prompt
+> and reopen with the re-baseline. Cite the rule and the qualitative contrast; do not
+> cite the absolute numbers as decision-grade.
+
 # E-008 — Conclusion: reference panel (cropped vs raw)
 
 **Closed:** 2026-06-13

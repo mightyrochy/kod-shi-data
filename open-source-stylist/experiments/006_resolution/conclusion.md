@@ -1,3 +1,11 @@
+> **STATUS 2026-06-15 — RESOLUTION DECISION CONFOUNDED.** The "720x1024 is the
+> working resolution" conclusion below rests on identity scores of generated images
+> produced with the task-incorrect prompt (see the canonical ERRATUM in
+> `knowledge/verified.md`, 2026-06-13). **V-RES-001 is NOT decision-grade** until
+> re-baselined — the head-crop observation may survive, but the cosine-based tier
+> ranking does not. What still stands: V-RES-002 (no OOM within the tested range).
+> Treat 720x1024 as a working default, not a verified optimum.
+
 # E-006 — Conclusion: Resolution sensitivity
 
 **Closed:** 2026-06-12
