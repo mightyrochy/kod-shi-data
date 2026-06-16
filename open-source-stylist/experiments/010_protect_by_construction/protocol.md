@@ -1,139 +1,130 @@
-# E-010 — Edit-the-photo try-on: preserve the person, change only the garments (reference-conditioned inpaint)
+# E-010 — Reliable try-on = edit-the-photo (inpaint) + body-shape control
 
-**Status:** UPDATED 2026-06-15 (owner-directed re-architecture after the FLUX-Fill Phase-0 build
-exposed a text-only conditioning gap). Approved direction; the **engine is selected in Phase 0**.
-Execute in a separate session — see `STARTER.md`. Not yet run (no generation done).
-**Supersedes** the FLUX-Fill-text framing of the previous draft.
+**Status:** UPDATED 2026-06-15 (owner-directed; corrected an internal inconsistency — body-control
+was wrongly deferred). Approved direction; engine selected in Phase 0. Execute in a separate
+session — see `STARTER.md`. Not yet run.
 **Governed by:** METHODOLOGY.md §2; design §7 (protect-by-construction); follows E-009.
 
 ---
 
-## 1. Question and frame
+## 1. The reliable method is BOTH (this is the whole point)
 
-The current pipeline re-draws the whole person from an empty latent
-(`EmptyQwenImageLayeredLatentImage`, denoise 1.0) → body slims ~9% (E-009, owner-rejected).
-The fix is to **edit the source photo** instead of regenerating the person: keep the person's
-pixels, change only the garments, and take the new garments from the **reference board image**.
+The owner-rejected defect is **body proportions** (E-009: hips ~−9%, overall slimmer figure). Two
+mechanisms are needed, because each fixes a different part and **neither alone is sufficient**:
 
-**Hard requirement that disqualified the first build:** the engine MUST take the garment as an
-**image**. The colour-less, task-correct prompt ("appearance from board only", no colour words)
-means a **text-only** inpaint (`system/workflows/flux_fill_inpaint.json`, person+mask+text, no
-board) invents generic clothes and **fails garment fidelity by construction**. That build is kept
-ONLY as a possible body-only control; it is NOT the product path.
+- **Inpaint (edit only the clothing):** keeps the person's pixels OUTSIDE the clothing mask
+  (face, hair, neck, hands, visible skin, lower legs, background) by construction, and takes the
+  garments from the **board IMAGE** (not text). Fixes identity/face/skin/limbs/background and kills
+  the gross "different person" failure. **Does NOT pin the body width under the clothing** — the
+  model still draws there, and the rejected hip slim sits under the skirt.
+- **Body-shape control:** gives the model an extra input — the source person's **pose/silhouette
+  (skeleton or body outline)** — and forces the generated body to follow it ("draw what you like,
+  but shoulders/waist/hips must match this shape"). This is the **only** mechanism that pins the
+  proportions **under** the clothing — i.e. it fixes the actual rejected defect. It does not pin
+  face/background pixels — that is inpaint's job.
 
-## 2. Honest decomposition of "preserve the body" — do NOT oversell inpaint
+So the target architecture is **inpaint + body-control together**. E-010 builds toward both;
+inpaint alone is a measurement step, **not** the expected end state. (Earlier drafts deferred
+body-control to a hypothetical E-011 — that was wrong: it deferred the one fix for the complaint.)
 
-Editing only the clothing protects, **by construction**, everything OUTSIDE the clothing mask:
-face, hair, neck, hands/forearms, visible skin, lower legs below the skirt, background. That is
-most of "same person", and it removes the gross "different person" failure (E-009 R2 cosine 0.35).
+## 2. Engine selection — Phase 0 must pick a stack that supports ALL THREE
 
-It does **not**, by itself, pin the body width UNDER the clothing. Two facts force honesty:
-- The model still draws inside the mask, so the clothed torso/hips are model-decided.
-- The E-009 hip −9% is measured at hip joints that sit **under the skirt** — `body_pose` infers
-  clothed-region joints from the image, so that number is **part real body slimming, part
-  slim-skirt-vs-jeans silhouette**. The cleaner body signal is the near-zero **shoulder** change
-  (shoulders are higher, less skirt-influenced).
+Requirements for the engine/stack: (a) condition garments on an **image** (board / per-garment
+crops); (b) **masked / source-preserving** edit (keep pixels outside the clothing mask); (c) a
+**body/pose-shape control** (pose, depth, or silhouette) to constrain proportions. Plus local 16 GB.
 
-Therefore E-010 is expected to fix identity/face/skin/limbs/background. If the **clothed-torso
-width** still drifts and the owner rejects it, the next lever is a **body-shape / pose control**
-on the clothing region — scoped as **E-011**, not claimed here. This protocol does not pretend
-inpaint alone closes the body gap.
+This criterion likely **reframes the engine choice**: QIE-2511's masking AND control support are
+both uncertain (special layered latent; no known body ControlNet), whereas the **FLUX ecosystem**
+has mature, composable pieces — FLUX Fill (inpaint) + FLUX Redux / IP-Adapter (garment image) +
+FLUX ControlNet (pose/depth). The text-only FLUX-Fill build already present
+(`flux_fill_inpaint.json`) is **disqualified** (no garment image) and kept only as a body-only control.
 
-## 3. Engine selection — Phase 0 is a feasibility gate (pick the mechanism, don't assume)
+| Capability | QIE-2511 | FLUX ecosystem |
+|---|---|---|
+| garment from image | yes (image2=board) | via Redux / IP-Adapter (verify weights) |
+| masked source-preserving edit | uncertain (layered latent) | FLUX Fill (designed for it) |
+| body/pose-shape control | none known | FLUX ControlNet (pose/depth) |
 
-Requirement: (a) source pixels preserved outside a clothing mask; (b) garment appearance
-conditioned on the board **image**; (c) runs locally on 16 GB.
+**Phase 0 procedure:** query the live ComfyUI `/object_info` for what is actually installed across
+both stacks; pick the one stack that can do all three (verify each missing weight is downloadable —
+that is an owner GUI step, surface it). Produce ONE inpaint test output and review at an owner
+checkpoint before committing. If no stack can do all three, surface the exact gap — do NOT proceed
+with a half-method or text-only conditioning.
 
-Candidates, in priority order, each feasibility-tested before committing:
+## 3. Method — staged, both committed
 
-| # | Mechanism | Garment from image? | Feasibility risk to resolve in Phase 0 |
-|---|-----------|---------------------|----------------------------------------|
-| C1 | QIE-Edit native masked: VAEEncode(source) + clothing mask + denoise<1, **image2=board kept** | yes | QIE-2511 uses a special 5-D *layered* latent; a standard masked latent may not slot in. Test live in ComfyUI; if it errors, drop. |
-| C2 | QIE-Edit full-regen (as now) + **composite source back outside the clothing mask** (feathered) | yes (board conditions the full pass) | no new model, but the clothing was drawn on a *slimmed* body → boundary misalignment with the fuller source at the waist/edges. |
-| C3 | FLUX Fill + a **reference-image** conditioner (FLUX Redux / IP-Adapter on the board or per-garment crops) | yes | availability of Redux/IP-Adapter nodes + weights locally (download = owner GUI step). |
-| C4 | Garment-image VTON model (IDM-VTON / CatVTON / FLUX-VTON) | yes | install/availability + license + VRAM. |
+| Arm | Path | Fixes | Data |
+|-----|------|-------|------|
+| A — full regen (baseline) | QIE Lightning, empty latent (E-009 R1) | nothing by construction | exists; not regenerated |
+| B1 — inpaint only | selected reference-conditioned inpaint | unclothed person + garment | new (measurement step) |
+| B2 — inpaint + body-control | B1 + pose/shape control of the source body | adds: clothed-torso proportions | new (expected end state) |
 
-**Phase 0 procedure:**
-1. Query the live ComfyUI `/object_info`: which of C1–C4 are actually available?
-2. Take the highest-priority AVAILABLE candidate; produce ONE output on one seed.
-3. **Owner checkpoint (single output):** does the garment match the board? are face/skin/background
-   source-clean? any seam/halo? Pick the engine the owner accepts here.
-4. If none qualifies (e.g. only text-only is available) → surface the exact missing model/node to
-   the owner. **Do not fall back to text-only conditioning.**
+Fixed: `person_front.png`; `outfit_001`; board `hybrid_mask_crop` (frozen, SHA-verified); 720×1024;
+seeds [42, 123]; task-correct colour-less prompt. Phases:
+- **Phase 0:** engine/stack selection (§2) + reuse the clothing mask
+  (`masks/clothing_region.png`); owner checkpoint on one test output.
+- **Phase 1 (B1):** inpaint only → measure how much body drift remains (it may help partially; do
+  not assume). Owner checkpoint.
+- **Phase 2 (B2):** add the body-shape control → re-measure. This is the committed completion.
 
-Phase-0 deliverables: the chosen engine, the clothing mask
-(`experiments/010_protect_by_construction/masks/clothing_region.png` already built — re-review it),
-and a content-addressed, hashed inpaint workflow with cfg/sampler/scheduler/negative/denoise/mask
-all threaded. Reuse the mask/param plumbing the FLUX-Fill build already added; verify it reaches
-the selected engine.
-
-## 4. Method (A/B)
-
-| Arm | Path | Data |
-|-----|------|------|
-| A — full regen (baseline) | QIE Lightning, empty latent (E-009 R1) | exists; NOT regenerated |
-| B — edit-the-photo | the Phase-0-selected reference-conditioned inpaint | new |
-
-Fixed: `person_front.png`; `outfit_001`; board `hybrid_mask_crop` (frozen, SHA-verified);
-720×1024; seeds [42, 123]; task-correct colour-less prompt. Only the generation path varies.
-
-## 5. Axes — body AND garment co-primary; garment is a HARD gate
+## 4. Axes — body AND garment co-primary; garment is a HARD gate
 
 | Axis | Metric | Notes |
 |------|--------|-------|
-| Body | `body_pose`: hip/shoulder/ratio Δ%, pose_mismatch, visibility | report **shoulder** (cleaner) prominently; the clothed-hip number carries the §2 caveat |
-| Face | ArcFace cosine vs source | must be ≥0.57 and not below A |
-| Garment colour | per item: ΔE + hue/chroma split + presence (segmentation/sanity) | **hard gate** |
-| Garment detail | owner per-item verdict: cut, closure/buttons, straps, texture, layering | **hard gate**; machine item-identity is a known gap (audit) → owner eye primary |
-| Seam / mask | owner check for halo at the mask boundary | inpaint-specific; needs feathering |
+| Body | `body_pose`: hip/shoulder/ratio Δ%, pose_mismatch, visibility | shoulder is the cleaner signal; clothed-hip carries the §1 caveat |
+| Face | ArcFace cosine | ≥0.57 and not below A |
+| Garment colour | per item: ΔE + hue/chroma + presence | **hard gate** |
+| Garment detail | owner per-item verdict: cut/closure/straps/texture/layering | **hard gate**; machine item-identity is a known gap |
+| Seam / mask | owner check for halo at the boundary | needs feathering |
 
-## 6. Acceptance criteria (fixed before results)
+## 5. Acceptance criteria (fixed before results)
 
-Inpaint is adopted only if it preserves the person **without** regressing the outfit:
-- **Garment (hard gate):** every required item's colour/presence/layering **not worse** than A,
-  and the owner's per-item detail verdict **not worse**. A body win bought by a worse garment fails.
+- **Garment (hard gate):** every item's colour/presence/layering not worse than A AND owner per-item
+  detail not worse. A body win bought by a worse garment fails.
 - **Face:** cosine ≥ 0.57 and not below A.
-- **Body:** the gross different-person/body failure removed and outside-clothing source-clean
-  (owner). If the clothed-torso width still drifts beyond owner tolerance → **trigger E-011
-  (body-shape control)**; do NOT record "inpaint failed" — it did its job for the unclothed person.
+- **Body (the rejected defect):** B1 is judged on whether it removes the gross failure and is
+  source-clean outside the clothing; the **proportions verdict is expected to require B2**
+  (inpaint + body-control). Pass = owner accepts "same body" on B2.
 - **Seam:** no halo the owner rejects.
 
 Owner verdict per axis is the acceptance; gates advisory; no aggregate score.
 
-## 7. Risks / unknowns (stated up front)
+## 6. Risks / unknowns
 
-- QIE layered-latent may not accept masking (C1) — the central Phase-0 unknown.
-- C2 composite: clothing drawn on a slimmed body vs fuller source → boundary mismatch; needs
-  feathering (the `background_restore` audit finding: no hard binary edge).
-- C3/C4: local availability of reference/VTON models is unverified (possible download blocker).
-- The clothed-torso body width is still model-drawn inside the mask → residual drift is expected
-  and is exactly what E-011 (body control) would address.
-- Holistic composition is lost in region editing → large-garment layering may compose less
-  coherently; this is why garment is a hard gate.
+- **Body-control feasibility is the central risk** — a pose/shape control compatible with the chosen
+  garment-image + inpaint engine may not exist locally. If it does not, "reliable body off-the-shelf"
+  is in doubt → either a warp-to-source-body composite, or this becomes a kill-criterion signal
+  (off-the-shelf cannot preserve body morphology; revisit engine/product). Phase 0 must check this.
+- QIE layered-latent may not accept masking; FLUX Redux/IP-Adapter/ControlNet weights may need
+  download (owner GUI step).
+- Mask-boundary seams (feathering required, per the `background_restore` audit finding).
+- Holistic composition lost in region editing → garment layering may be less coherent (hence the
+  hard gate).
 
-## 8. Cost estimate
+## 7. Cost estimate
 
 | Step | Est. |
 |------|------|
-| Phase 0: engine check + 1 test output (per candidate tried) | 1–2 sessions |
-| Phase 1: arm B ×2 seeds + gates | ~10–20 min GPU |
-| Phase 2: collation + conclusion | < 1 session |
+| Phase 0: stack check + 1 test output | 1–2 sessions |
+| Phase 1 (B1) ×2 seeds + gates | ~10–20 min GPU |
+| Phase 2 (B2) ×2 seeds + gates | ~10–20 min GPU + control setup |
+| Collation + conclusion | < 1 session |
 
 ---
 
 *Updated 2026-06-15. One person, one outfit, controlled frontal pose; generalisation NOT claimed.
-Garment accuracy is a co-primary hard gate; the engine must condition garments on the board image,
-never text. Inpaint protects the unclothed person; the clothed-torso body width is a separate
-lever (E-011) if it persists.*
+The reliable method is inpaint + body-control TOGETHER — inpaint protects the unclothed person and
+the garment (from the board image, never text); body-control pins the clothed-torso proportions,
+which is the owner-rejected defect. Neither half alone is the goal.*
 
 ---
 
 ## Owner sign-off
 
-- [x] Re-architecture approved (owner-directed 2026-06-15): edit-the-photo, reference-conditioned
-      inpaint; text-only engines disqualified for garment fidelity.
-- [x] Engine chosen in Phase 0 at the single-output owner checkpoint (not pre-committed).
-- [x] Honest body decomposition accepted: inpaint protects the unclothed person; clothed-torso
-      width may need E-011 (body control).
+- [x] Reliable method = inpaint + body-control together (body-control NOT deferred — it fixes the
+      rejected under-clothing proportions).
+- [x] Engine selected in Phase 0 by support for all three (garment-image, masked edit, body control);
+      text-only disqualified.
+- [x] Body-control feasibility may be a blocker / kill-criterion signal; surface it honestly.
 
-**Signed:** owner, 2026-06-15 (directed this update). Execution delegated to a separate session.
+**Signed:** owner, 2026-06-15 (directed this correction). Execution delegated to a separate session.
