@@ -2,79 +2,95 @@
 
 Paste the block below into a fresh Claude Code session to execute E-010 on its own.
 It is self-contained; it does not depend on the conversation that created it.
+(Updated 2026-06-15: re-architected from text-only FLUX Fill to **reference-conditioned inpaint**.)
 
 ---
 
 You are picking up the **Open Source Stylist** project at `C:\Users\Admin\Open Source Stylist`
 (git branch `foundation-cleanup-2026-06-15`). Your task is to execute **experiment E-010 —
-protect-by-construction (inpaint) try-on**.
+edit-the-photo try-on (reference-conditioned inpaint)**.
 
-**Read first, before acting:** `experiments/010_protect_by_construction/protocol.md` (the signed
-spec — follow it), `CURRENT_STATE.md` (canonical project status), `CLAUDE.md` (SOP). The
-protocol is authoritative for arms, axes, acceptance, and phases.
+**Read first, before acting:** `experiments/010_protect_by_construction/protocol.md` (the signed,
+re-architected spec — follow it), `CURRENT_STATE.md`, `CLAUDE.md` (SOP). The protocol is
+authoritative.
 
 **The idea in one line:** the current pipeline re-draws the whole person from an empty latent
-(`EmptyQwenImageLayeredLatentImage`, denoise 1.0), so the body slims ~9% (owner-rejected in
-E-009). Instead, edit **only the clothing region** of the source photo so face / skin / hands /
-body-outside-clothing / background stay as **source pixels by construction**. Measure whether
-body drift drops **without regressing garment fidelity or face** — garment accuracy is a HARD
-GATE (a body win bought by a blurry or wrong-detail garment does NOT pass).
+(`EmptyQwenImageLayeredLatentImage`, denoise 1.0) → the body slims ~9% (owner-rejected, E-009).
+Instead, **edit only the clothing region of the source photo** so face / skin / hands / body
+outside the clothing / background stay as source pixels by construction, and take the new
+garments from the **reference board IMAGE**.
 
-**Start with Phase 0 (a build; begin read-only):**
-1. Verify an inpaint engine in the local ComfyUI (`:8000`, must be live — check
-   `ComfyUIClient().system_stats()`). Preferred **FLUX Fill** (model + nodes; query
-   `/object_info`). Fallback: **QIE-Edit masked / img2img** (VAE-encode the source as the base
-   latent + a mask + denoise < 1). If NEITHER exists locally, **stop and tell the owner the exact
-   missing model/node** — downloading is a GUI step you cannot do.
-2. Build a **clothing-region mask** on `assets/person/person_front.png` (torso + legs where
-   garments sit; dilate for seams). Reuse `system/segmentation/grounded_sam.py`.
-3. Build an **inpaint workflow** in `system/workflows/` (content-addressed + hashed like the
-   existing templates; thread cfg/sampler/scheduler/negative/denoise/mask — do NOT bake params,
-   that bug was just fixed). Extend `system/run_slice.py` / `system/adapter/adapter.py` to pass
-   the new params (the adapter currently hardcodes `sampler=euler`/`scheduler=simple` at
-   `adapter.py:62-63`, and `run_slice` exposes only cfg/steps/engine).
-   Phase 0 ends at an **owner checkpoint** (one inpaint output reviewed) before the A/B.
+**Hard rule (this disqualified the first build):** the engine MUST condition the garment on an
+**image**, not text. The task-correct prompt is deliberately colour-less ("appearance from board
+only"), so a text-only inpaint (`system/workflows/flux_fill_inpaint.json` — person+mask+text, no
+board) invents generic clothes and fails garment fidelity by construction. That build is kept ONLY
+as a possible body-only control; it is NOT the product path. Do NOT run it as arm B.
+
+**Be honest about what inpaint fixes (do not oversell):** editing only the clothing protects, by
+construction, everything OUTSIDE the clothing mask (face, hair, neck, hands, visible skin, lower
+legs, background). It does NOT pin the body width UNDER the clothing — the model still draws there,
+and the E-009 hip −9% is measured at hip joints under the skirt (part real slimming, part
+slim-skirt-vs-jeans). Report the **shoulder** change as the cleaner body signal. If the clothed-torso
+width still drifts and the owner rejects it, that is the next lever (E-011, body/pose-shape control)
+— NOT a sign that inpaint failed.
+
+**Phase 0 = engine-selection feasibility gate (pick the mechanism; begin read-only):**
+Candidates, priority order — each must keep garment-from-board AND protect outside-clothing pixels:
+1. **C1 QIE-Edit native masked:** VAEEncode(source) + clothing mask + denoise<1, with `image2=board`
+   kept. Risk: QIE-2511 uses a special 5-D *layered* latent; a standard masked latent may not slot
+   in — TEST it live in ComfyUI; if it errors, drop.
+2. **C2 QIE full-regen + composite source back** outside the clothing mask (feathered). No new model;
+   risk = boundary misalignment (clothing drawn on a slimmed body vs the fuller source).
+3. **C3 FLUX Fill + reference conditioner** (FLUX Redux / IP-Adapter on the board / per-garment crops).
+   Risk = local availability of those nodes/weights.
+4. **C4 garment-image VTON** (IDM-VTON / CatVTON / FLUX-VTON). Risk = install/license/VRAM.
+Procedure: query the live ComfyUI (`:8000`) `/object_info` → which of C1–C4 are available? Produce
+ONE output with the highest-priority available candidate → **owner checkpoint on that single output**
+(garment matches board? face/skin/bg source-clean? seams?). Pick the engine the owner accepts. If only
+text-only is available, STOP and name the exact missing model/node to the owner — do NOT use text-only.
 
 **Reuse, do not rebuild:**
-- `system/run_slice.py` — the audited vertical slice (validated input → exact generation request →
-  exact filled workflow → output+hashes → segmentation+sanity → gates → manifest+report). Build the
-  E-010 runner as a thin wrapper over it, like `experiments/009_body_preservation/run_e009.py`.
-- Gates: `system/gates/body_pose.py` (skeletal body via MediaPipe Tasks API; model at
+- `system/run_slice.py` — the audited vertical slice (validated input → exact request → exact filled
+  workflow → output+hashes → segmentation+sanity → gates → manifest+report). The E-010 runner
+  (`experiments/010_protect_by_construction/run_e010.py`, already drafted) wraps it. Reuse the
+  mask/param plumbing the FLUX build added; verify cfg/sampler/scheduler/negative/denoise/mask reach
+  the selected engine (the adapter hardcodes sampler=euler/scheduler=simple at adapter.py:62-63).
+- Gates: `system/gates/body_pose.py` (skeletal; MediaPipe Tasks API; model at
   `system/gates/models/pose_landmarker_full.task`, git-ignored), `color.py` (ΔE + hue/chroma split),
   `identity.py` (ArcFace).
-- **Arm A (baseline) already exists** — E-009 Lightning results in
-  `experiments/009_body_preservation/results/R1_lightning/` (hip ~−9%). Do NOT regenerate A.
-- Color-gate references: `assets/outfits/outfit_001/eval_references.json`. Source person mask:
-  `experiments/001_segmentation_masks/results/person_front/person.png`. Board: `outfit_001`
-  variant `hybrid_mask_crop` (frozen PNG, SHA-verified by `resolve_board`).
+- **Arm A baseline exists** — E-009 Lightning in `experiments/009_body_preservation/results/R1_lightning/`
+  (hip ~−9%). Do NOT regenerate A.
+- Clothing mask already built: `experiments/010_protect_by_construction/masks/clothing_region.png`
+  (+ `_nodilate`). Re-review before use. Board: `outfit_001` `hybrid_mask_crop` (frozen, SHA-verified
+  by `resolve_board`). Color refs: `assets/outfits/outfit_001/eval_references.json`. Source person
+  mask: `experiments/001_segmentation_masks/results/person_front/person.png`.
+
+**Acceptance (garment is a HARD gate):** adopt inpaint only if every item's colour/presence/layering
+is **not worse** than A AND the owner's per-item detail verdict is not worse, AND face cosine ≥0.57
+and not below A, AND the gross different-person/body failure is removed with outside-clothing
+source-clean. If clothed-torso width still drifts → trigger E-011, do not call inpaint a failure.
+Owner verdict per axis is the acceptance; gates advisory; no aggregate score.
 
 **Environment gotchas (these will bite otherwise):**
-- Python 3.10 system interpreter; run with `PYTHONPATH=.`. No project venv is configured.
-- ComfyUI `:8000` must be live for generation/segmentation. LM Studio (`:1234`) is not needed.
-- **Downloads:** system Python's SSL fails on the local TLS-intercept cert
-  (`CERTIFICATE_VERIFY_FAILED`) — download any model via PowerShell `Invoke-WebRequest` (Windows
-  trust store), NOT python `requests`/`urllib`.
+- Python 3.10 system interpreter; run with `PYTHONPATH=.`. No project venv.
+- ComfyUI `:8000` must be live (`ComfyUIClient().system_stats()`); LM Studio not needed.
+- **Downloads:** system Python SSL fails on the local TLS-intercept cert (`CERTIFICATE_VERIFY_FAILED`)
+  → download any model via PowerShell `Invoke-WebRequest` (Windows trust store), NOT python requests.
 - Console is `cp1251`: reconfigure stdout to utf-8 before printing `Δ`/`°` (see `run_e009.py`).
-- A 20-step full / inpaint generation can exceed the 10-minute shell cap — run generation in the
-  background or per-cell, and make the runner **resumable** (skip cells whose
-  `results/.../manifest.json` already exists).
-- Outputs: `experiments/010_protect_by_construction/results/` is the tracked record. `runs/` is
-  throwaway scratch (git-ignored) — never treat it as the record.
-- `mediapipe==0.10.35` is installed (Tasks API only — `mp.solutions` does not exist). Pin it in
-  `requirements.txt` if you touch deps.
-
-**Acceptance (from the protocol — garment is a hard gate):** inpaint wins ONLY if hip |Δ%| is
-materially below A's ~8.85% AND face cosine ≥ 0.57 and not below A AND, for every required item,
-colour/presence/layering are not worse than A AND the owner's per-item detail verdict is not worse.
-Owner verdict is the acceptance; gates are advisory; no aggregate score.
+- A 20-step / inpaint generation can exceed the 10-minute shell cap → run in background or per-cell,
+  and make the runner **resumable** (skip cells whose `results/.../manifest.json` exists).
+- Outputs: `experiments/010_protect_by_construction/results/` is the tracked record; `runs/` is
+  throwaway scratch (git-ignored) — never the record.
+- `mediapipe==0.10.35` is installed (Tasks API only — `mp.solutions` does not exist).
 
 **Discipline (CLAUDE.md):** the owner makes visual quality verdicts at checkpoints; you do all
-mechanical/technical work yourself (never hand the owner commands). Do NOT run generation without
-an owner OK at a checkpoint. Commit per completed step; stage ONLY files you create/change (the
-working tree has ~50 pre-existing dirty files unrelated to this task). The repo has NO git remote —
-do not push or rewrite history without explicit owner approval. End commit messages with:
+mechanical/technical work yourself (never hand the owner commands). Do NOT generate without an owner
+OK at a checkpoint. Commit per step; stage ONLY files you create/change (the working tree has ~50
+pre-existing dirty files unrelated to this task). NO git remote — do not push or rewrite history
+without owner approval. End commit messages with:
 `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
 
-**Your first concrete action:** read the three docs above, then check the inpaint engine in ComfyUI
-and report whether FLUX Fill / QIE-masked is available (or the exact blocker). Generate nothing
-until Phase 0 is built and the owner approves at the checkpoint.
+**Your first concrete action:** read the three docs, then query ComfyUI `/object_info` and report
+which engine candidates (C1–C4) are available, plus your recommended pick — and re-review the
+existing clothing mask. Build/generate nothing until the owner approves the engine at the Phase-0
+single-output checkpoint.
