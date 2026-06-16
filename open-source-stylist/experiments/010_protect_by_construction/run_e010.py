@@ -46,8 +46,8 @@ OUTFIT = ROOT / "assets/outfits/outfit_001/outfit_package.json"
 
 # Garment items: (crop filename, FitDiT category, label)
 GARMENTS = [
-    ("blouse front crop.png", "Upper-body", "blouse"),
-    ("skirt_front crop.png",  "Lower-body", "skirt"),
+    ("blouse_front_fitdit.png", "Upper-body", "blouse"),
+    ("skirt_front_fitdit.png",  "Lower-body", "skirt"),
 ]
 
 # Arm A: QIE Lightning results already in E-009 — do not regenerate
