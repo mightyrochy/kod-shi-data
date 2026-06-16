@@ -45,10 +45,26 @@ def _load_model():
             "or run:  system/gates/download_fashionsiglip.ps1"
         )
 
+    with config_path.open() as fh:
+        cfg = json.load(fh)
+
+    model_cfg     = cfg["model_cfg"]
+    preprocess_cfg = cfg.get("preprocess_cfg", {})
+
     import open_clip
+    # Register the custom architecture from the downloaded config.
+    # marqo-fashionSigLIP uses a timm-based vision encoder with embed_dim=768
+    # (distinct from standard ViT-B-16-SigLIP) — must inject config before loading.
+    _name = "marqo-fashionSigLIP-local"
+    open_clip.factory._MODEL_CONFIGS[_name] = model_cfg
+
     model, _, preprocess = open_clip.create_model_and_transforms(
-        model_name="ViT-B-16-SigLIP",
+        model_name=_name,
         pretrained=str(weights_path),
+        image_mean=preprocess_cfg.get("mean"),
+        image_std=preprocess_cfg.get("std"),
+        image_interpolation=preprocess_cfg.get("interpolation"),
+        image_resize_mode=preprocess_cfg.get("resize_mode"),
     )
     model.eval()
     return model, preprocess
