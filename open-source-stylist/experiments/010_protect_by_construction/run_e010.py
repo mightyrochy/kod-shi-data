@@ -369,22 +369,52 @@ def build_table() -> None:
 
 # ── CLI ───────────────────────────────────────────────────────────────────
 
+def remeasure() -> None:
+    """Patch manifests that have identity verdict=ERROR without re-generating."""
+    arm_b = RESULTS / ARM_B_LABEL
+    if not arm_b.is_dir():
+        print("No arm B results found.")
+        return
+    for run_dir in sorted(arm_b.iterdir()):
+        mf = run_dir / "manifest.json"
+        if not mf.is_file():
+            continue
+        data = json.loads(mf.read_text(encoding="utf-8"))
+        if data.get("measurement", {}).get("identity", {}).get("verdict") != "ERROR":
+            continue
+        generated = run_dir / "generated.png"
+        if not generated.is_file():
+            print(f"  SKIP (no generated.png): {run_dir.name}")
+            continue
+        print(f"  remeasuring: {run_dir.name} ...", end=" ", flush=True)
+        data["measurement"] = _measure(generated, run_dir)
+        mf.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        verdict = data["measurement"]["identity"].get("verdict", "?")
+        cosine  = data["measurement"]["identity"].get("cosine", "--")
+        print(f"identity={cosine} {verdict}")
+    build_table()
+
+
 def main() -> None:
     parser = ArgumentParser(description="E-010 FitDiT garment-faithful try-on runner")
     parser.add_argument("--phase", type=int, choices=(0, 1))
     parser.add_argument("--table", action="store_true")
+    parser.add_argument("--remeasure", action="store_true",
+                        help="patch ERROR identity measurements without re-generating")
     parser.add_argument("--offload", action="store_true",
                         help="enable FitDiT model CPU offload (use if VRAM OOM)")
     args = parser.parse_args()
 
     if args.table:
         build_table()
+    elif args.remeasure:
+        remeasure()
     elif args.phase == 0:
         run_phase0(with_offload=args.offload)
     elif args.phase == 1:
         run_phase1(with_offload=args.offload)
     else:
-        parser.error("choose --phase 0, --phase 1, or --table")
+        parser.error("choose --phase 0, --phase 1, --table, or --remeasure")
 
 
 if __name__ == "__main__":

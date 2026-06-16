@@ -1,27 +1,22 @@
-# E-010 — protect-by-construction comparison (A: QIE Lightning vs B: FLUX Fill inpaint)
+# E-010 comparison: A (QIE Lightning) vs B (FitDiT garment-faithful try-on)
 
-Advisory gates; owner verdict per axis is the acceptance. No aggregate score.
-Garment fidelity is a HARD GATE — body win traded for garment regression does NOT pass.
+Garment fidelity is the HARD gate. Body is secondary. Owner verdict per axis.
 
-## Body (pose joints, clothing-robust) + Face (ArcFace)
-| arm | seed | hipΔ% | shoulderΔ% | ratioΔ% | pose_mism° | face cosine |
-|---|---|---|---|---|---|---|
-| A — QIE Lightning (E-009 R1) | 42 | — | — | — | — | — |
-| A — QIE Lightning (E-009 R1) | 123 | — | — | — | — | — |
-| B — FLUX Fill inpaint | 42 | — | — | — | — | — |
-| B — FLUX Fill inpaint | 123 | — | — | — | — | — |
+## Identity (ArcFace cosine)
+| arm | item | seed | face cosine | verdict |
+|---|---|---|---|---|
+| A_qie_lightning | all | 42 | 0.8056 | PASS |
+| A_qie_lightning | all | 123 | 0.7597 | PASS |
+| B_fitdit | blouse | 42 | 0.9718 | PASS |
+| B_fitdit | blouse | 123 | 0.9689 | PASS |
+| B_fitdit | skirt | 42 | 0.9776 | PASS |
+| B_fitdit | skirt | 123 | 0.9765 | PASS |
 
-## Item colour — ΔE / verdict / hueΔ° / reliable
-| arm | seed | top | bottom | belt | earrings | shoes |
-|---|---|---|---|---|---|---|
-| A — QIE Lightning (E-009 R1) | 42 | — | — | — | — | — |
-| A — QIE Lightning (E-009 R1) | 123 | — | — | — | — | — |
-| B — FLUX Fill inpaint | 42 | — | — | — | — | — |
-| B — FLUX Fill inpaint | 123 | — | — | — | — | — |
+## Garment fidelity
+FashionSigLIP retrieval-rank and DISTS: PENDING_CALIBRATION
+Build calibration set before these numbers are decision-grade.
 
-## Acceptance (from protocol §5)
-- Body better: mean |hipΔ%| materially below arm A ~8.85% (target ≤ ~4.5%)
-- Face not worse: cosine ≥ 0.57 and not below arm A
-- Garment not worse (hard gate): every item ΔE not worse, all items present, layering correct
-- No seam/halo the owner rejects
-- **Owner verdict per item is final; gates are advisory.**
+## Acceptance (STARTER.md)
+- Axis 1 HARD GATE: garment same item (owner per-item verdict)
+- Axis 2: identity cosine >= 0.57 and not below arm A
+- Axis 3: body reported, blocks only if grossly wrong
