@@ -12,6 +12,13 @@ person's pixels; DensePose/pose keeps the body shape; garment enters as an image
 exact detail} today — each family trades something. The choice is a staged bet, possibly an assembly,
 possibly cloud for parts.
 
+**Priority correction (2026-06-16):** garment exact-fidelity is product axis #1 (showing the SPECIFIC
+item); body morphology is secondary. So the families that keep the **real garment pixels** —
+**warping / high-res feature injection** (FitDiT, DiffFit, GP-VTON) and **per-item high-res references +
+single-item local repair** — lead for our goal; pure generative VTON (re-synthesises → detail drift)
+ranks below them on the garment axis. Read this survey through that lens. Chosen generation tools:
+`GEN_INSTRUMENTS.md`; measurement: `EVAL_INSTRUMENTS.md`; experiment spec: `protocol.md`.
+
 ---
 
 ## Family 1 — Single-garment all-in-one VTON (mature, lightest)
