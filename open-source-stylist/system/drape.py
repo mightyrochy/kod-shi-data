@@ -125,11 +125,48 @@ def garment_descriptor(garment_path, continuous_out: Path | None = None) -> dict
     }
 
 
-def skirt_agnostic_mask(auto_mask_path, body: dict, descriptor: dict, out_path: Path):
-    """Truncate the auto lower-body mask at the garment-derived HEM, then row-fill continuous.
+def measure_on_model(model_photo, segment_prompt: str, client, out_dir=None,
+                     anchor: str = "hip", end: str = "ankle") -> dict:
+    """Measure an element's BODY-RELATIVE placement from its on-model photo.
 
-    hem_y = hip_y + length_ratio * hip_width  (skirt length from the garment's own proportions,
-    scaled by the body's hip width — NOT the leg length). Returns (out_path, hem_y).
+    Pose (MediaPipe) + segmentation (GroundingDINO/SAM via ComfyUI) → scale-invariant fractions
+    transferable to any target body. The universal placement primitive (DRAPE_SYNTHESIS.md);
+    works for any element by choosing anchor/end (skirt: hip→ankle; top: shoulder→hip; …).
+
+    Returns: length_fraction (hem along anchor→end span), top_offset_frac (where the element
+    starts vs anchor), width_ratio (element width / body width at anchor).
+    """
+    import tempfile
+
+    from .segmentation.grounded_sam import segment      # lazy: needs a live ComfyUI
+
+    body = body_model(model_photo)
+    out_dir = Path(out_dir) if out_dir else Path(tempfile.mkdtemp())
+    mask_path = segment(model_photo, {"element": segment_prompt}, client, out_dir)["element"]
+    m = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+    fg = m > 127
+    ys = np.where(fg.any(axis=1))[0]
+    if len(ys) == 0:
+        raise RuntimeError(f"on-model segmentation found nothing for prompt {segment_prompt!r}")
+    top_y, hem_y = int(ys.min()), int(ys.max())
+    width = int(fg.sum(axis=1).max())
+    a_y, e_y = body[f"{anchor}_y"], body[f"{end}_y"]
+    span = max(1.0, e_y - a_y)
+    return {
+        "anchor": anchor, "end": end,
+        "length_fraction": (hem_y - a_y) / span,
+        "top_offset_frac": (top_y - a_y) / span,
+        "width_ratio": width / max(1.0, body[f"{anchor}_width"]),
+        "model_mask": str(mask_path),
+    }
+
+
+def agnostic_mask(auto_mask_path, body: dict, length_fraction: float, out_path: Path,
+                  anchor: str = "hip", end: str = "ankle"):
+    """Truncate the auto region at the HEM (from a body-relative fraction) + row-fill continuous.
+
+    hem_y = anchor_y + length_fraction * (end_y - anchor_y)  — length transferred from the
+    on-model measurement, scale-invariant. Returns (out_path, hem_y).
     """
     w, h = body["image_size"]
     m = cv2.imread(str(auto_mask_path), cv2.IMREAD_GRAYSCALE)
@@ -139,13 +176,14 @@ def skirt_agnostic_mask(auto_mask_path, body: dict, descriptor: dict, out_path: 
         m = cv2.resize(m, (w, h), interpolation=cv2.INTER_NEAREST)
     fg = m > 127
 
-    hem_y = int(min(h - 1, body["hip_y"] + descriptor["length_ratio"] * body["hip_width"]))
-    fg[hem_y:] = False                                     # truncate below the garment hem
+    a_y, e_y = body[f"{anchor}_y"], body[f"{end}_y"]
+    hem_y = int(min(h - 1, a_y + length_fraction * (e_y - a_y)))
+    fg[hem_y:] = False                                     # truncate below the measured hem
 
     out = np.zeros((h, w), np.uint8)
     for y in range(h):
         xs = np.where(fg[y])[0]
         if len(xs):
-            out[y, int(xs.min()):int(xs.max()) + 1] = 255  # row-fill → continuous skirt column
+            out[y, int(xs.min()):int(xs.max()) + 1] = 255  # row-fill → continuous column
     cv2.imwrite(str(out_path), out)
     return out_path, hem_y

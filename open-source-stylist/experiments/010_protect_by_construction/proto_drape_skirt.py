@@ -29,6 +29,7 @@ from system.clients.comfyui import ComfyUIClient
 
 PERSON = ROOT / "assets/person/person_front.png"
 SKIRT_REF = ROOT / "assets/outfits/outfit_001/crops/skirt_front_fitdit.png"
+SKIRT_ON_MODEL = ROOT / "assets/outfits/outfit_001/skirt_front.webp"
 OUT = Path(__file__).parent / "results" / "proto_chain"
 RES = "768x1024"
 SEED = 42
@@ -85,6 +86,11 @@ def main():
     print(f"    garment length_ratio={desc['length_ratio']:.2f} top_width={desc['top_width']}")
 
     client = ComfyUIClient()
+
+    print("  measure_on_model (skirt on its on-model photo) ...")
+    meas = drape.measure_on_model(SKIRT_ON_MODEL, "skirt", client, out_dir=OUT)
+    print(f"    length_fraction={meas['length_fraction']:.3f} (of hip->ankle)  width_ratio={meas['width_ratio']:.2f}")
+
     person_ref = client.upload_image(PERSON)
     garm_ref = client.upload_image(OUT / "drape_skirt_crop.png")
 
@@ -93,8 +99,8 @@ def main():
     auto_mask = _download(client, mg_out, "proto_drape_mask", OUT / "drape_skirt_automask.png")
     pose = _download(client, mg_out, "proto_drape_pose", OUT / "drape_skirt_pose.png")
 
-    mask_path, hem_y = drape.skirt_agnostic_mask(auto_mask, body, desc, OUT / "drape_skirt_mask.png")
-    print(f"    HEM at y={hem_y} (ankle was {int(body['ankle_y'])}; {'shorter than maxi' if hem_y < body['ankle_y'] else 'to ankle'})")
+    mask_path, hem_y = drape.agnostic_mask(auto_mask, body, meas["length_fraction"], OUT / "drape_skirt_mask.png")
+    print(f"    HEM at y={hem_y} (measured frac {meas['length_fraction']:.2f}; target ankle={int(body['ankle_y'])})")
 
     mask_ref = client.upload_image(mask_path)
     pose_ref = client.upload_image(pose)
