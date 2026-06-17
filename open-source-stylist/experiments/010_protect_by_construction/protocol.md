@@ -163,3 +163,11 @@ FitDiT bundles much of the needed machinery: garment feature extractor (`transfo
 4. **Build + calibrate the garment-fidelity instrument** (FashionSigLIP retrieval-rank + DISTS + labelled set)
    so axis #1 is measurable, not owner-eye-only.
 5. Accessories via OmniTry (verify release/VRAM).
+
+### Universal placement (2026-06-16) — applies to ALL elements, not just the skirt
+Mask/placement is computed, not hand-tuned: **measure each element's body-relative fraction on its
+on-model photo (MediaPipe pose + GroundingDINO/SAM), transfer to the target's pose** — scale-invariant,
+per-element anchored (waist/shoulders/ears/feet…), occlusion-subtracted by the layer graph. This is the
+universal drape mechanism for every garment AND accessory; full spec + per-element table in
+`DRAPE_SYNTHESIS.md`. It is engine-agnostic (feeds FitDiT / OmniTry / warping). Placement (this) and
+fidelity (engine) are the two separate axes.

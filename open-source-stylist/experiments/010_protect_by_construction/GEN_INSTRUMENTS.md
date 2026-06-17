@@ -74,3 +74,14 @@ occlusion orchestration (chaining), OmniTry (accessories), FashionSigLIP calibra
 detail; but **non-commercial license** (prototype only) and head-to-head vs FitDiT unverified. FitDiT stays the
 detail benchmark; AnyDressing is the multi-item-architecture candidate → decide by head-to-head on our items.
 [AnyDressing](https://crayon-shinchan.github.io/AnyDressing/) · [OmniVTON++](https://arxiv.org/abs/2602.14552) · [MuGa-VTON](https://arxiv.org/pdf/2508.08488)
+
+---
+
+## Update 2026-06-16 — placement is universal (all elements), engine-agnostic
+
+The agnostic mask / worn placement for **every** element (tops, bottoms, dresses, belts, shoes,
+earrings, bags) is produced by the **DrapeSynthesizer** (`DRAPE_SYNTHESIS.md`), NOT hand-tuned per item:
+measure each element's **body-relative fraction on its on-model photo** (MediaPipe pose + GroundingDINO/SAM),
+transfer to the target's pose. Scale-invariant; each element anchored to its own landmarks (ears for
+earrings, feet for shoes, etc.). This feeds whichever engine renders it — **FitDiT** (garments),
+**OmniTry** (accessories), or a **warping** engine — so placement and engine are decoupled.

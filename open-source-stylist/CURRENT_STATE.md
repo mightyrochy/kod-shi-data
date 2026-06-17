@@ -136,5 +136,15 @@ Generation has moved to a garment-first try-on architecture (see
   Accessories via OmniTry. **AnyDressing** (multi-item one-pass, NC) under evaluation as an alternative core.
 - These are single-garment runs — the assembled full outfit is not produced yet. FLUX-Fill text-only build
   disqualified (garment from text ≠ image).
-- **Open:** skirt decision (closed-slit crop vs accept limitation); chained-FitDiT prototype; AnyDressing vs
-  FitDiT head-to-head; build + calibrate the garment-fidelity instrument.
+- **Drape/placement — universal mechanism (ALL elements), see `experiments/010.../DRAPE_SYNTHESIS.md`:**
+  mask/placement is **computed**, not hand-tuned — measure each element's **body-relative fraction on its
+  on-model photo** (MediaPipe pose + GroundingDINO/SAM) and transfer to the target's pose. Scale-invariant;
+  per-element anchored (waist/shoulders/ears/feet…); occlusion-subtracted by the layer graph; engine-agnostic
+  (FitDiT / OmniTry / warping). Placement and fidelity are the two separate axes.
+- **E-010 evidence so far:** skirt topology FIXED via a **continuous silhouette** (slit kept as a line, not a
+  through-gap → was rendering pants). Foundation built (`system/drape.py`: BodyModel + GarmentDescriptor +
+  synthesizer). Length must come from **on-model measurement** (the pixel-ratio placeholder undershot a maxi to
+  mid-calf). Fidelity (<100%) is the engine axis → warping.
+- **Open:** `measure_on_model` per element + generalise the synthesizer; re-run skirt on measured length; chain
+  (skirt→top→belt→accessories via OmniTry); warping (DiffFit/GP-VTON) head-to-head for fidelity; build+calibrate
+  the FashionSigLIP/DISTS garment-fidelity instrument.
