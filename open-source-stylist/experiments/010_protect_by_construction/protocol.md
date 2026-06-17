@@ -101,3 +101,65 @@ DISTS + calibration): ~1 session. Phase 1 A/B + measurement: GPU batches. Local 
 - [x] Garment-fidelity instrument (EVAL_INSTRUMENTS) must be built + calibrated to make axis #1 measurable.
 
 **Signed:** owner, 2026-06-16 (directed this reprioritisation). Execution delegated to a separate session.
+
+---
+
+## Addendum 2026-06-16 — FitDiT execution results + architecture refinement
+
+### Results so far (Arm B = FitDiT, per-garment)
+- **Blouse: PASS** (owner "добре") — lemon colour, buttons, silhouette correct. Identity 0.97.
+- **Skirt: FAIL** (owner "схожа на штани") — the crop's central front **slit** + FitDiT's Upper/Lower-body-only
+  parsing → read as two legs → pants. Deterministic by input, both seeds.
+- **Identity preserved 0.97–0.98** across all FitDiT runs — FitDiT only edits the masked garment region
+  (face/body untouched) → protect-by-construction works for identity.
+- **Garment axis #1 is still owner-eye-only** — FashionSigLIP gate PENDING_CALIBRATION (no labelled set);
+  garment verdict = None in manifests.
+- **These are SINGLE-garment runs, NOT the full outfit** — blouse run keeps the original jeans; skirt run
+  keeps the original sweater. The assembled multi-item outfit is not yet produced.
+
+### Architecture decision: V1 = chained FitDiT on the SOURCE; QIE dropped
+QIE's holistic "composer" is **redundant for V1**: the outfit's **layer order is KNOWN a priori** (it is in the
+outfit definition / layout — "blouse over skirt, belt over blouse"). We do not need a holistic model to
+discover the composition. The V1 garment pipeline is:
+
+```
+canvas = source photo (real body, original clothes)
+for each garment, bottom-up in the KNOWN layer order:
+    M_g = agnostic mask for g  (from FitDiT parsing + the layer graph;
+          a higher layer's mask overlaps the lower garment at the seam)
+    canvas = FitDiT(canvas, M_g, exact_reference_g)   # only the mask changes; the rest is preserved
++ accessories (belt buckle / earrings / shoes) via OmniTry or targeted inpaint
+```
+**Layering emerges from pass order + mask overlap** (a later garment's mask covers the lower garment at the
+seam → it is drawn on top). Body/face stay source by construction. **QIE/holistic is deferred to V2/V3**, where
+the outfit logic is *unknown* (the stylist invents the outfit and how it is worn) and a holistic composer earns
+its place. The real hard parts are therefore **mask construction** (peplum extent, belt band, occlusion seams),
+**seam blending** (feather), and **FitDiT category limits** (Upper/Lower only; slit skirts; no accessories) —
+NOT "obtaining outfit logic".
+
+### What FitDiT already provides (component map)
+FitDiT bundles much of the needed machinery: garment feature extractor (`transformer_garm`), **human parsing**
+(`parsing_*.onnx` → per-garment regions / agnostic maps), **pose** (`dwpose` + `pose_guider`). FashionSigLIP
+(our eval encoder) is also loaded. **Missing / to wire:** the layer-graph + occlusion orchestration (chaining),
+**OmniTry** for accessories, the FashionSigLIP **calibration set** + DISTS, and (secondary) SMPL body-shape control.
+
+### Engine comparison (see ENGINE_LANDSCAPE.md addendum)
+- **Garment detail (axis #1): FitDiT is the strongest open model** (beats IDM-VTON/CatVTON/Leffa on
+  VITON-HD/DressCode) → keep as the per-garment detail core.
+- **Multi-item one-pass (our chaining concern): AnyDressing** — parallel multi-garment + **plug-in composable
+  with ControlNet/IP-Adapter/LoRA** (a slot for body/pose + face-identity control). Strongest architectural fit
+  for our multi-item outfit, but **non-commercial license** (prototype only) and detail-vs-FitDiT unverified.
+  Alternatives: OmniVTON++ (training-free, NC), MuGa-VTON.
+- **Accessories: OmniTry** (mask-free; jewellery/belts/shoes; CC-BY-SA commercial-OK) — complement, release/VRAM
+  unverified. **Skirt slit** is a masking/category issue, not a model choice.
+- Commercial-OK local options remain sparse: **Leffa (MIT)**, **OmniTry (CC-BY-SA)**; FitDiT/AnyDressing/
+  IDM-VTON/CatVTON are prototype-only or unverified license.
+
+### Open decision (skirt) + next steps
+1. **Skirt:** Variant 1 (closed-slit crop → regenerate; loses the slit detail → owner judges) OR Variant 2
+   (accept FitDiT slit-skirt limitation). The skirt is one garment in the chain regardless.
+2. **Build the chained-FitDiT-on-source pipeline** (skirt → blouse) to verify layering emerges from pass order.
+3. **Head-to-head: AnyDressing vs FitDiT** on our items (detail + multi-item) — decides single-model vs chain.
+4. **Build + calibrate the garment-fidelity instrument** (FashionSigLIP retrieval-rank + DISTS + labelled set)
+   so axis #1 is measurable, not owner-eye-only.
+5. Accessories via OmniTry (verify release/VRAM).

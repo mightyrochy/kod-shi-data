@@ -148,3 +148,27 @@ blind.
   [Garments2Look](https://arxiv.org/abs/2603.14153)
 - Family 7: [best VTON tools 2026](https://nightjar.so/blog/best-tools-ai-virtual-try-on) ·
   [Kling/FASHN APIs](https://www.pixazo.ai/blog/best-virtual-try-on-api)
+
+---
+
+## Update 2026-06-16 — FitDiT-vs-alternatives, focused on our refined needs
+
+After running FitDiT (E-010): the decision splits by axis.
+
+- **Garment detail (axis #1): FitDiT is the strongest open model** — quantitatively beats IDM-VTON / CatVTON /
+  Leffa on VITON-HD / DressCode. No analog is clearly better on detail → FitDiT is the per-garment detail core.
+- **Our real pains are NOT detail** — they are multi-item (we are chaining), accessories, and skirt category:
+  - **Multi-item one-pass:** **[AnyDressing](https://crayon-shinchan.github.io/AnyDressing/)** — parallel
+    multi-garment + plug-in composable with ControlNet/IP-Adapter/LoRA (a slot for body/pose + face control).
+    The best architectural fit for our outfit; **NON-commercial** (prototype only); detail-vs-FitDiT unverified.
+    Alternatives: [OmniVTON++](https://arxiv.org/abs/2602.14552) (training-free, NC), [MuGa-VTON](https://arxiv.org/pdf/2508.08488).
+  - **Accessories:** **OmniTry** (mask-free; jewellery/belts/shoes; CC-BY-SA commercial-OK) — complement, not
+    replacement; release/VRAM unverified.
+  - **Skirt slit** = masking/category problem, NOT a model choice (fix via occlusion masks / dress-category /
+    closed-slit crop).
+- **License reality:** commercial-OK local options are sparse — **Leffa (MIT)**, **OmniTry (CC-BY-SA)**;
+  FitDiT / AnyDressing / IDM-VTON / CatVTON / OmniVTON are prototype-only or unverified.
+- **Decision pending:** head-to-head **AnyDressing vs FitDiT** on OUR items (detail + multi-item) → single
+  composable model vs FitDiT-chain. See `GEN_INSTRUMENTS.md` (pipeline) and `protocol.md` addendum.
+- Sources (this update): [FitDiT-superior on benchmarks](https://fashn.ai/blog/comparing-the-top-4-open-source-virtual-try-on-viton-models) ·
+  [AnyDressing](https://crayon-shinchan.github.io/AnyDressing/) · [Rethinking Garment Conditioning](https://arxiv.org/pdf/2511.18775)

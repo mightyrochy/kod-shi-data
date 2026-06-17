@@ -46,3 +46,31 @@ exact VRAM/license before making it the core). Cloud (FASHN/Kling/GPT-4o) is the
 
 **Sources:** [FitDiT](https://github.com/BoyuanJiang/FitDiT) · [FitDiT paper](https://arxiv.org/html/2411.10499v1) ·
 [DiffFit](https://arxiv.org/abs/2506.23295) · [GP-VTON](https://arxiv.org/pdf/2303.13756) · [OmniTry](https://omnitry.github.io/)
+
+---
+
+## Update 2026-06-16 — V1 generation pipeline is chained FitDiT on the SOURCE (QIE dropped)
+
+The V1 garment pipeline does NOT use a holistic composer (QIE). The outfit's **layer order is known a priori**
+(it is in the outfit definition), so layering does not need to be discovered by a model:
+
+```
+canvas = source photo (real body)
+for each garment, bottom-up in the KNOWN layer order:
+    M_g = agnostic mask (FitDiT parsing + layer graph; higher layers overlap lower ones at the seam)
+    canvas = FitDiT(canvas, M_g, exact_reference_g)     # mask changes; rest preserved
++ accessories via OmniTry / targeted inpaint
+```
+**Layering = pass order + mask overlap.** Body/face stay source by construction. QIE/holistic is deferred to
+V2/V3 (unknown outfit logic). Hard parts: mask construction (peplum/belt/occlusion seams), seam feathering,
+FitDiT category limits (Upper/Lower only; slit skirts; no accessories).
+
+**FitDiT already bundles** much of the machinery — garment encoder (`transformer_garm`), human parsing
+(`parsing_*.onnx`), pose (`dwpose` + `pose_guider`); FashionSigLIP (eval) is loaded. **To wire:** layer-graph +
+occlusion orchestration (chaining), OmniTry (accessories), FashionSigLIP calibration + DISTS, (secondary) SMPL body.
+
+**Alternative core — AnyDressing:** multi-garment in ONE pass + plug-in composable with ControlNet/IP-Adapter/LoRA
+(a slot for body/pose + face-identity control). The strongest fit for our multi-item outfit if it matches FitDiT
+detail; but **non-commercial license** (prototype only) and head-to-head vs FitDiT unverified. FitDiT stays the
+detail benchmark; AnyDressing is the multi-item-architecture candidate → decide by head-to-head on our items.
+[AnyDressing](https://crayon-shinchan.github.io/AnyDressing/) · [OmniVTON++](https://arxiv.org/abs/2602.14552) · [MuGa-VTON](https://arxiv.org/pdf/2508.08488)

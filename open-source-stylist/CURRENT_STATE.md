@@ -117,3 +117,24 @@ report`, no retry/repair routing, no VRAM sequencing, no final verdict owner.
    for visual judgment).
 6. ◻ Only after the slice is reproducible: a corrected feasibility bench on ≥2-3 people
    and outfits, with a numeric kill-criterion — before building any catalog/stylist shell.
+
+---
+
+## Active work 2026-06-16 — E-010 garment-faithful try-on (FitDiT)
+
+Generation has moved to a garment-first try-on architecture (see
+`experiments/010_protect_by_construction/`: protocol, ENGINE_LANDSCAPE, GEN_INSTRUMENTS, EVAL_INSTRUMENTS).
+
+- **Priority:** garment fidelity = **axis #1** (showing the SPECIFIC item is the product); identity #2;
+  body morphology #3 (the QIE ~9% hip slim is non-blocking polish).
+- **Engine:** **FitDiT** is the per-garment detail core (strongest open model for detail; ComfyUI; ~16GB).
+  E-010 results: **blouse PASS** (owner), **skirt FAIL** (crop slit → FitDiT renders pants). Identity ~0.97
+  preserved (FitDiT only edits the masked region). Garment instrument (FashionSigLIP retrieval-rank + DISTS)
+  **PENDING_CALIBRATION** → axis #1 is owner-eye-only for now.
+- **V1 pipeline:** chained FitDiT on the **source** in the KNOWN layer order (occlusion masks); layering emerges
+  from pass order. **QIE holistic dropped for V1** (outfit logic is given, not discovered) → deferred to V2+.
+  Accessories via OmniTry. **AnyDressing** (multi-item one-pass, NC) under evaluation as an alternative core.
+- These are single-garment runs — the assembled full outfit is not produced yet. FLUX-Fill text-only build
+  disqualified (garment from text ≠ image).
+- **Open:** skirt decision (closed-slit crop vs accept limitation); chained-FitDiT prototype; AnyDressing vs
+  FitDiT head-to-head; build + calibrate the garment-fidelity instrument.

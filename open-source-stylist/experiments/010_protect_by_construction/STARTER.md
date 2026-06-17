@@ -63,7 +63,24 @@ yourself; do NOT generate without an owner OK at a checkpoint; commit per step, 
 create/change (~50 pre-existing dirty files are unrelated); NO git remote — no push/history-rewrite
 without owner OK. End commit messages with `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
 
-**First action:** read the docs; query ComfyUI `/object_info`; report which garment-fidelity cores
-(FitDiT/DiffFit/IDM-VTON/Leffa) and OmniTry are available locally (or the exact missing piece) + your
-recommended garment-first stack; and scope the EVAL garment-fidelity instrument. Generate nothing until
-the owner approves the engine at the Phase-0 checkpoint.
+**First action (original):** read the docs; query ComfyUI `/object_info`; report available garment-fidelity
+cores + scope the EVAL instrument. Generate nothing until the owner approves the engine at the Phase-0 checkpoint.
+
+---
+
+## Latest (2026-06-16) — supersedes the engine-survey framing above
+
+FitDiT was run (E-010). Current state and the V1 architecture:
+- **FitDiT is the per-garment detail core** (strongest open model for detail). **Blouse PASS** (owner), **skirt
+  FAIL** (crop slit → renders pants; a masking/category issue, not a detail one). Identity ~0.97 (FitDiT edits
+  only the masked region). Garment gate FashionSigLIP **PENDING_CALIBRATION** → axis #1 is owner-eye-only until calibrated.
+- **V1 pipeline = chained FitDiT on the SOURCE** in the KNOWN layer order (from the outfit definition). Each pass
+  edits one garment within its agnostic mask; **layering emerges from pass order + mask overlap**; body/face stay
+  source. **QIE / holistic is NOT used in V1** (outfit logic is given, not discovered). Accessories via OmniTry.
+- **AnyDressing** = the multi-item-one-pass alternative to evaluate head-to-head vs FitDiT (composable with
+  ControlNet/IP-Adapter; **non-commercial** — prototype only).
+- These are single-garment runs; the assembled full outfit is not produced yet.
+
+**Revised first action:** resolve the skirt (closed-slit crop vs accept the FitDiT slit limitation); then build
+the chained-FitDiT-on-source prototype (skirt → blouse, layering from pass order) and the garment-fidelity
+calibration set. See the `protocol.md` addendum + `GEN_INSTRUMENTS.md` + `ENGINE_LANDSCAPE.md` (all dated 2026-06-16).
