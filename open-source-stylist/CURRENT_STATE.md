@@ -162,11 +162,18 @@ Generation has moved to a garment-first try-on architecture (see
   calibration set is still required before these are decision-grade.
 - **2026-06-18 — warping head-to-head for the skirt: CLOSED (negative).** Arm B (geometric pixel warp): exact
   colour but pasted/flat, DISTS 0.41 > FitDiT 0.319 → loses. Arm C (**Leffa**, MIT, installed standalone — torch
-  2.6+cu124 + prebuilt detectron2 + densepose + truststore SSL): renders **trousers, not a skirt**, even fed our
-  continuous drape mask, because its **densepose conditioning** enforces two-leg topology → disqualified. Neither
-  warp beats FitDiT. **FitDiT + drape mask stays the skirt engine** (its custom IMAGE mask dominates; densepose-
-  conditioned VTONs structurally fight skirts-over-legs). FitDiT's only flaw = colour drift → cheapest fix is
-  reference-image colour transfer onto its skirt; ceiling = cloud.
+  2.6+cu124 + prebuilt detectron2 + densepose + truststore SSL): renders **trousers, not a skirt** on our person.
+  Neither warp beats FitDiT. **FitDiT + drape mask stays the skirt engine.**
+- **2026-06-18 — DEEP investigation (owner challenged "VTON can't do skirts" — correctly).** Isolation study
+  (`leffa_skirt_runner.py` + `reframe_person.py`): Leffa **install is correct** (example tee transfers perfectly)
+  and **Leffa CAN render skirts** (clean skirt on a DressCode example person → proper skirt). The failure is
+  **person-distribution + densepose-dominant conditioning**: Leffa conditions topology on the target's **densepose
+  IUV**, which **dominates the inpaint mask** (continuous drape mask → still trousers, narrow). Our in-the-wild
+  person standing legs-together in jeans → conditional favours trousers; reframing to white-bg/tight transferred
+  the colour but NOT the topology. **Why FitDiT wins on the SAME person:** its custom IMAGE mask + garment dominate
+  topology (obeys our continuous mask); Leffa's densepose dominates → legs. NOT a fundamental limit, NOT the
+  install, NOT diffusers (0.31==0.38), NOT the mask alone. Fix order: FitDiT+drape (robust, works) → cloud
+  (FASHN/Kling, robust to in-the-wild) → Leffa only with a fully in-distribution person+garment (brittle).
 - **Open:** skirt colour fix (reference colour-transfer on FitDiT, or cloud) — warping ruled out; labelled
   calibration set for the garment instrument (decision-grade thresholds); accessories (belt/earrings/shoes via
   OmniTry — install/VRAM unverified); jeans-below-hem cleanup (skin-inpaint, the agnostic-canvas axis).

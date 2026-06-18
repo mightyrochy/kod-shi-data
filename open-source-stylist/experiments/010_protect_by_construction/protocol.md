@@ -245,3 +245,33 @@ remains uniquely suited** for the skirt (its custom IMAGE mask dominates; no per
 Neither warp arm beats FitDiT for the skirt. FitDiT stays the skirt engine; its only flaw is colour drift → cheapest
 fix = reference-image colour transfer onto FitDiT's skirt (keeps topology+shading, corrects hue); ceiling = cloud.
 Warping for the skirt is closed as a negative result.
+
+### CORRECTION + deep investigation (2026-06-18) — "Leffa can't do skirts" was WRONG
+Owner challenged the arm-C conclusion. A proper isolation study (one variable at a time) overturns the
+"VTON structurally can't do skirts" claim. Scripts: `leffa_skirt_runner.py` (+ `reframe_person.py` in the
+external Leffa dir). Tests (DressCode model, seed 42, step 30, scale 2.5):
+- **Sanity** (Leffa example tee + example person): PERFECT transfer (colour + print + stripes) → **the install is
+  correct**, Leffa transfers garments faithfully.
+- **T3** (our clean skirt + a DressCode full-body example person): renders a **proper SKIRT** → **Leffa CAN do
+  skirts**. Disproves the "fundamental limitation".
+- **T2** (example tee + OUR person): blue + print transferred (slightly blended) → our person is ~usable for upper.
+- **T1** (our blouse cut-out + example person): correct DESIGN (peplum/buttons) but washed colour → our garment
+  *cut-outs* (styled, not flat-product) degrade fidelity.
+- **T4** (clean skirt + our person reframed to DressCode style: segmented, white bg, tight frame): **trousers**
+  (colour now correctly brown) → reframing transfers colour but NOT topology.
+- **T5** (T4 + our continuous drape mask forcing a skirt silhouette): **trousers** (narrow, matching the mask
+  width) → the inpaint mask constrains the REGION but does NOT dictate topology.
+
+**Real root cause:** Leffa conditions topology on the **densepose IUV of the target body**, and that conditioning
+**dominates the inpaint mask** (T5 proof). For our in-the-wild person standing legs-together in jeans, the
+conditional strongly favours trousers; for an in-distribution DressCode person (studio, dynamic pose, bare legs)
+it drapes a skirt (T3). So the failure is **person-distribution + densepose-dominant conditioning**, NOT a
+fundamental VTON limit, NOT the install, NOT diffusers (0.31 == 0.38), NOT the mask alone. **Why FitDiT succeeds on
+the SAME person:** FitDiT lets the **custom IMAGE mask + garment** dominate topology → it obeys our continuous
+drape mask; Leffa lets densepose dominate → legs. That is the true engine difference.
+
+**Fixes, by robustness:** (1) our pipeline → **FitDiT+drape** (robust skirt on our person; already works) — Leffa
+isn't worth the fight for the skirt; (2) **cloud** (FASHN/Kling, diverse-data, robust to in-the-wild person +
+skirts) = ceiling; (3) Leffa only if the person is brought FULLY in-distribution (studio + skirt-amenable pose +
+clean flat-product skirt image without a slit) — reframing alone is insufficient, costly/brittle. Leffa stays
+installed (a working local VTON for in-distribution cases).
