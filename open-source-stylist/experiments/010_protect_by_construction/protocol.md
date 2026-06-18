@@ -171,3 +171,28 @@ per-element anchored (waist/shoulders/ears/feet…), occlusion-subtracted by the
 universal drape mechanism for every garment AND accessory; full spec + per-element table in
 `DRAPE_SYNTHESIS.md`. It is engine-agnostic (feeds FitDiT / OmniTry / warping). Placement (this) and
 fidelity (engine) are the two separate axes.
+
+## Addendum 2026-06-18 — measure_on_model implemented + chain verified
+
+**Universal measurement built.** `system/drape.py::measure_on_model(model_photo, prompt, client, anchor, end)`
+measures an element's placement on its own on-model photo (MediaPipe pose + GroundingDINO/SAM segmentation)
+as **scale-invariant body-relative fractions** (`length_fraction`, `top_offset_frac`, `width_ratio`),
+transferable to any target body. `skirt_agnostic_mask` generalised to `agnostic_mask(...)`:
+`hem_y = anchor_y + length_fraction·(end_y − anchor_y)`. Skirt measured `length_fraction = 0.917`
+(maxi, hem near ankle) — fixes the pixel-ratio undershoot (mid-calf). Owner accepted the re-run length +
+topology ("більш менш"); colour (olive vs brown) and silhouette stay on the engine fidelity axis.
+
+**Chained FitDiT on the SOURCE verified** (`proto_chain.py`, skirt → blouse, outfit_001 layer order):
+- **Layering emerges from pass order + mask overlap** — the blouse painted last over its native Upper-body
+  mask (which already covers torso→hip and overlaps the skirt waist) sits OVER the skirt. No holistic composer
+  needed (confirms the V1 "QIE dropped" decision).
+- **Identity survives the chain** — ArcFace cosine: skirt-only 0.976, chain final 0.929 (≥ 0.57 threshold).
+  Each pass edits only its mask → face/body preserved by construction; chaining costs a small, non-blocking drop.
+- **Bug + lesson:** the blouse needs NO mask dilation. The first chain run corrupted the face because
+  `_dilate_down` (cv2.dilate, (1,181) kernel, anchor=(0,0)) grew the mask UPWARD into the neck/chin, not
+  downward — FitDiT then re-synthesised the lower face. Removed; blouse uses the native mask.
+- **Still single-source artifacts:** jeans show below the skirt hem (no bottom-layer cleanup yet); accessories
+  (belt/earrings/shoes via OmniTry) not added; garment-fidelity instrument still PENDING_CALIBRATION.
+
+Next (in order): garment-fidelity instrument build+calibration (make axis #1 measurable, not owner-eye-only);
+warping (DiffFit/GP-VTON) head-to-head for fidelity; accessories via OmniTry (install/VRAM/license verify).

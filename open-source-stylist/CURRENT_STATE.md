@@ -145,6 +145,15 @@ Generation has moved to a garment-first try-on architecture (see
   through-gap → was rendering pants). Foundation built (`system/drape.py`: BodyModel + GarmentDescriptor +
   synthesizer). Length must come from **on-model measurement** (the pixel-ratio placeholder undershot a maxi to
   mid-calf). Fidelity (<100%) is the engine axis → warping.
-- **Open:** `measure_on_model` per element + generalise the synthesizer; re-run skirt on measured length; chain
-  (skirt→top→belt→accessories via OmniTry); warping (DiffFit/GP-VTON) head-to-head for fidelity; build+calibrate
-  the FashionSigLIP/DISTS garment-fidelity instrument.
+- **2026-06-18 — measure_on_model + chain verified:** `measure_on_model` implemented + generalised (universal
+  primitive: pose + GDINO/SAM → scale-invariant body-relative fractions, any element via anchor/end);
+  `agnostic_mask` generalised (`hem_y = anchor_y + frac·(end_y−anchor_y)`). Skirt re-run at the measured maxi
+  length (frac 0.917, hem near ankle) — owner: length + topology accepted ("більш менш"). **Chained FitDiT on
+  the source verified** (`proto_chain.py`): skirt→blouse, layering emerges from pass order + native-mask overlap
+  (blouse peplum over skirt waist). Identity cosine skirt-only **0.976**, chain final **0.929** (≥0.57). Lesson:
+  the blouse needs NO mask dilation — FitDiT's native Upper-body mask overlaps the skirt; the earlier
+  `_dilate_down` grew the mask the WRONG direction (upward into the face → identity smear), now removed.
+- **Open:** accessories (belt/earrings/shoes via OmniTry — install/VRAM unverified); warping (DiffFit/GP-VTON)
+  head-to-head for fidelity; build+calibrate the FashionSigLIP/DISTS garment-fidelity instrument (axis #1 is
+  still owner-eye-only); skirt color (olive vs brown reference) + jeans-below-hem are the open fidelity/cleanup
+  items on the chain.
