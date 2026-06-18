@@ -1,15 +1,16 @@
 """E-010 prototype — chained FitDiT on the SOURCE with our own occlusion-aware masks.
 
 Tests two claims at once:
-  1. A continuous skirt-silhouette mask (auto Lower-body mask, row-filled to close the
-     leg gap) makes FitDiT render a SKIRT, not pants — without editing the garment crop.
-  2. Layering emerges from pass order: skirt pass, then blouse pass on that result, with
-     the blouse mask extended down over the skirt waist → blouse over skirt.
+  1. The drape skirt mask (continuous silhouette + ON-MODEL-measured length) makes FitDiT
+     render a SKIRT at the right length, not pants.
+  2. Layering emerges from pass order: skirt pass, then blouse pass on that result; the
+     blouse's native Upper-body mask overlaps the skirt waist → blouse over skirt.
 
-Per garment pass we do TWO ComfyUI calls:
-  a) FitDiTMaskGenerator → save its auto mask + pose; download them;
-  b) modify the mask in numpy (skirt: row-fill; blouse: dilate downward);
-  c) FitDiTTryOn(person, OUR mask, garment, pose) → the garment rendered into OUR mask.
+Per garment pass:
+  a) FitDiTMaskGenerator → auto agnostic mask + pose (downloaded);
+  b) skirt: replace with the drape mask (system/drape.py); blouse: native mask unchanged;
+  c) FitDiTTryOn(canvas, mask, garment, pose) → the garment rendered into the mask.
+Each pass edits only its mask → body/face/identity preserved by construction.
 
 Run (ComfyUI must be live on :8000; FitDiT node installed):
     python experiments/010_protect_by_construction/proto_chain.py            # full chain
@@ -24,9 +25,6 @@ import time
 from argparse import ArgumentParser
 from pathlib import Path
 
-import cv2
-import numpy as np
-
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 try:
@@ -34,11 +32,13 @@ try:
 except Exception:
     pass
 
+from system import drape
 from system.clients.comfyui import ComfyUIClient
 
 PERSON = ROOT / "assets/person/person_front.png"
 CROPS = ROOT / "assets/outfits/outfit_001/crops"
 SKIRT_REF = CROPS / "skirt_front_fitdit.png"
+SKIRT_ON_MODEL = ROOT / "assets/outfits/outfit_001/skirt_front.webp"
 BLOUSE_REF = CROPS / "blouse_front_fitdit.png"
 OUT = Path(__file__).parent / "results" / "proto_chain"
 RES = "768x1024"
@@ -89,31 +89,13 @@ def _download(client: ComfyUIClient, outputs: dict, prefix: str, dst: Path) -> P
     raise RuntimeError(f"no ComfyUI output with prefix {prefix!r}")
 
 
-def _row_fill(mask_path: Path, out_path: Path) -> Path:
-    """Close the leg gap: per row, fill from leftmost to rightmost foreground pixel."""
-    m = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
-    fg = m > 127
-    out = np.zeros_like(m)
-    for y in range(m.shape[0]):
-        xs = np.where(fg[y])[0]
-        if len(xs):
-            out[y, xs.min():xs.max() + 1] = 255
-    cv2.imwrite(str(out_path), out)
-    return out_path
-
-
-def _dilate_down(mask_path: Path, out_path: Path, px: int = 90) -> Path:
-    """Extend the (blouse) mask downward by px so it overlaps the skirt waistband."""
-    m = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
-    fg = (m > 127).astype(np.uint8) * 255
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 2 * px + 1))
-    down = cv2.dilate(fg, kernel, anchor=(0, 0))  # anchor top → grows downward only
-    cv2.imwrite(str(out_path), down)
-    return out_path
-
-
 def _pass(client, label, person_ref, garm_ref, category, mask_fn, person_path, offload):
-    """One garment pass: maskgen → modify mask → tryon. Returns the result image path."""
+    """One garment pass: maskgen → (optionally) modify mask → tryon. Returns the result path.
+
+    mask_fn=None uses FitDiT's native agnostic mask unchanged (correct for the blouse: it already
+    covers torso→hip and naturally overlaps the skirt waist → blouse-over-skirt from pass order).
+    A garment that needs geometric placement (skirt: measured length + continuous) passes a mask_fn.
+    """
     print(f"\n--- pass: {label} ({category}) ---")
     # a) auto mask + pose
     mg = client.submit(_maskgen_wf(person_ref, category, f"proto_{label}", offload))
@@ -121,8 +103,8 @@ def _pass(client, label, person_ref, garm_ref, category, mask_fn, person_path, o
     auto_mask = _download(client, mg_out, f"proto_{label}_mask", OUT / f"{label}_automask.png")
     pose_img = _download(client, mg_out, f"proto_{label}_pose", OUT / f"{label}_pose.png")
     print(f"  auto mask + pose downloaded")
-    # b) our mask
-    our_mask = mask_fn(auto_mask, OUT / f"{label}_ourmask.png")
+    # b) our mask (skirt: drape; blouse: native FitDiT mask unchanged)
+    our_mask = mask_fn(auto_mask, OUT / f"{label}_ourmask.png") if mask_fn else auto_mask
     mask_ref = client.upload_image(our_mask)
     pose_ref = client.upload_image(pose_img)
     # c) try-on with OUR mask
@@ -142,17 +124,31 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
 
     client = ComfyUIClient()
-    source_ref = client.upload_image(PERSON)
-    skirt_ref = client.upload_image(SKIRT_REF)
 
-    # Pass 1 — skirt on the SOURCE, mask = row-filled Lower-body (continuous silhouette)
-    canvas1 = _pass(client, "skirt", source_ref, skirt_ref, "Lower-body", _row_fill, PERSON, args.offload)
+    # Drape (validated): continuous skirt crop (slit kept as a line, not a through-gap) +
+    # ON-MODEL-measured length (fraction of hip->ankle), transferred to the target body.
+    body = drape.body_model(PERSON)
+    drape.garment_descriptor(SKIRT_REF, continuous_out=OUT / "skirt_continuous.png")
+    meas = drape.measure_on_model(SKIRT_ON_MODEL, "skirt", client, out_dir=OUT)
+    frac = meas["length_fraction"]
+    print(f"skirt length_fraction={frac:.3f} (on-model, hip->ankle)")
+
+    def _skirt_mask(auto_mask: Path, out_path: Path) -> Path:
+        mp, hem = drape.agnostic_mask(auto_mask, body, frac, out_path)
+        print(f"  skirt hem y={hem} (measured frac {frac:.2f}; ankle={int(body['ankle_y'])})")
+        return mp
+
+    source_ref = client.upload_image(PERSON)
+    skirt_ref = client.upload_image(OUT / "skirt_continuous.png")
+
+    # Pass 1 — skirt on the SOURCE: continuous crop + drape mask (measured length, no leg split)
+    canvas1 = _pass(client, "skirt", source_ref, skirt_ref, "Lower-body", _skirt_mask, PERSON, args.offload)
 
     if not args.skirt_only:
         # Pass 2 — blouse on canvas1, mask = Upper-body dilated down over the skirt waist
         canvas1_ref = client.upload_image(canvas1)
         blouse_ref = client.upload_image(BLOUSE_REF)
-        canvas2 = _pass(client, "blouse", canvas1_ref, blouse_ref, "Upper-body", _dilate_down, canvas1, args.offload)
+        canvas2 = _pass(client, "blouse", canvas1_ref, blouse_ref, "Upper-body", None, canvas1, args.offload)
         final = canvas2
     else:
         final = canvas1
