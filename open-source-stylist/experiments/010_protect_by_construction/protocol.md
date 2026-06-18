@@ -204,3 +204,18 @@ outfit items as decoys. Both rank **#1/5** (recognisable as their targets). Blou
 "same" 0.21 and "different" 0.37; margin 0.086 over the belt) — the weaker item, matching the olive-vs-brown +
 narrow-silhouette eye verdict → the skirt is the target for warping/fidelity. Still needs a labelled
 calibration set before decision-grade.
+
+**Warping head-to-head — arm B (geometric warp, 2026-06-18, `proto_warp.py`):** the cheapest arm —
+non-parametric silhouette warp of the REAL brown skirt pixels into the drape mask (exact colour by
+construction, pure CPU, no model/ComfyUI). Result: **LOSES to FitDiT.** DISTS 0.41 (FitDiT arm A 0.319),
+sim 0.700 (FitDiT 0.823). The naive per-row stretch looks pasted/flat — a boxy slab with a hard horizontal
+waist seam, no body contour, no pose shading — and the structural distortion costs more than FitDiT's colour
+drift gains. Conclusion: keeping exact pixels via a dumb paste is NOT the win; the "keep pixels" thesis needs
+an INTELLIGENT (flow-field + shading-aware) warp = a model. Survey of model-based warp: "DiffFit" is a
+diffusion fine-tuning method, not a VTON (doc misnomer); **GP-VTON** (Local-Flow, supports skirts/dresses,
+preserves pixels) is NC-licensed + no ComfyUI node + research-grade studio-trained setup (heavy, generalisation
+risk); **SAL-VTON** (ComfyUI, GPL) needs a white background + is upper-only-ish (poor fit); **Leffa** (MIT,
+flow-field, separates top/bottom) is the best LOCAL model fit if a ComfyUI wrapper exists; cloud (FASHN/Kling)
+is the fidelity ceiling. Cheap non-warp alternative for FitDiT's only flaw (colour): reference-image colour
+transfer onto FitDiT's well-integrated skirt (keeps shading, corrects hue). Open: model-warp arm needs
+ComfyUI + an engine/license decision.
