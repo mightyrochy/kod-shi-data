@@ -196,3 +196,11 @@ topology ("більш менш"); colour (olive vs brown) and silhouette stay on
 
 Next (in order): garment-fidelity instrument build+calibration (make axis #1 measurable, not owner-eye-only);
 warping (DiffFit/GP-VTON) head-to-head for fidelity; accessories via OmniTry (install/VRAM/license verify).
+
+**Axis #1 first numbers (2026-06-18, `proto_fidelity.py`, ADVISORY — uncalibrated):** rendered skirt + blouse
+cropped from the chain final via the per-pass region masks (no ComfyUI), scored vs their reference + the other
+outfit items as decoys. Both rank **#1/5** (recognisable as their targets). Blouse DISTS 0.211 / sim 0.925
+(≈ calibrated "same garment, other view" 0.21; margin 0.253) — strong. Skirt DISTS 0.319 / sim 0.823 (between
+"same" 0.21 and "different" 0.37; margin 0.086 over the belt) — the weaker item, matching the olive-vs-brown +
+narrow-silhouette eye verdict → the skirt is the target for warping/fidelity. Still needs a labelled
+calibration set before decision-grade.

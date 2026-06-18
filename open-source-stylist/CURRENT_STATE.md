@@ -153,7 +153,13 @@ Generation has moved to a garment-first try-on architecture (see
   (blouse peplum over skirt waist). Identity cosine skirt-only **0.976**, chain final **0.929** (≥0.57). Lesson:
   the blouse needs NO mask dilation — FitDiT's native Upper-body mask overlaps the skirt; the earlier
   `_dilate_down` grew the mask the WRONG direction (upward into the face → identity smear), now removed.
-- **Open:** accessories (belt/earrings/shoes via OmniTry — install/VRAM unverified); warping (DiffFit/GP-VTON)
-  head-to-head for fidelity; build+calibrate the FashionSigLIP/DISTS garment-fidelity instrument (axis #1 is
-  still owner-eye-only); skirt color (olive vs brown reference) + jeans-below-hem are the open fidelity/cleanup
-  items on the chain.
+- **2026-06-18 — axis #1 now measured (advisory):** the FashionSigLIP/DISTS instrument runs end-to-end on the
+  chain result (`proto_fidelity.py`, reusing the per-pass region masks — no ComfyUI). First numbers: both
+  rendered items rank **#1/5** vs the outfit decoys (recognisable as their targets). Blouse DISTS **0.211** /
+  sim **0.925** (≈ the calibrated "same garment, other view" level 0.21; margin 0.253) — strong. Skirt DISTS
+  **0.319** / sim **0.823** (between "same" 0.21 and "different" 0.37; margin only 0.086 over the belt) — the
+  weaker item, matching the olive-vs-brown + narrow-silhouette eye verdict. ADVISORY only: a labelled
+  calibration set is still required before these are decision-grade.
+- **Open:** labelled calibration set for the garment instrument (decision-grade thresholds); warping
+  (DiffFit/GP-VTON) head-to-head for skirt fidelity; accessories (belt/earrings/shoes via OmniTry —
+  install/VRAM unverified); skirt color (olive vs brown) + jeans-below-hem are the open fidelity/cleanup items.
