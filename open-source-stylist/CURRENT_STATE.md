@@ -160,6 +160,13 @@ Generation has moved to a garment-first try-on architecture (see
   **0.319** / sim **0.823** (between "same" 0.21 and "different" 0.37; margin only 0.086 over the belt) — the
   weaker item, matching the olive-vs-brown + narrow-silhouette eye verdict. ADVISORY only: a labelled
   calibration set is still required before these are decision-grade.
-- **Open:** labelled calibration set for the garment instrument (decision-grade thresholds); warping
-  (DiffFit/GP-VTON) head-to-head for skirt fidelity; accessories (belt/earrings/shoes via OmniTry —
-  install/VRAM unverified); skirt color (olive vs brown) + jeans-below-hem are the open fidelity/cleanup items.
+- **2026-06-18 — warping head-to-head for the skirt: CLOSED (negative).** Arm B (geometric pixel warp): exact
+  colour but pasted/flat, DISTS 0.41 > FitDiT 0.319 → loses. Arm C (**Leffa**, MIT, installed standalone — torch
+  2.6+cu124 + prebuilt detectron2 + densepose + truststore SSL): renders **trousers, not a skirt**, even fed our
+  continuous drape mask, because its **densepose conditioning** enforces two-leg topology → disqualified. Neither
+  warp beats FitDiT. **FitDiT + drape mask stays the skirt engine** (its custom IMAGE mask dominates; densepose-
+  conditioned VTONs structurally fight skirts-over-legs). FitDiT's only flaw = colour drift → cheapest fix is
+  reference-image colour transfer onto its skirt; ceiling = cloud.
+- **Open:** skirt colour fix (reference colour-transfer on FitDiT, or cloud) — warping ruled out; labelled
+  calibration set for the garment instrument (decision-grade thresholds); accessories (belt/earrings/shoes via
+  OmniTry — install/VRAM unverified); jeans-below-hem cleanup (skin-inpaint, the agnostic-canvas axis).

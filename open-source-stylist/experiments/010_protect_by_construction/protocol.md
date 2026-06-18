@@ -219,3 +219,29 @@ flow-field, separates top/bottom) is the best LOCAL model fit if a ComfyUI wrapp
 is the fidelity ceiling. Cheap non-warp alternative for FitDiT's only flaw (colour): reference-image colour
 transfer onto FitDiT's well-integrated skirt (keeps shading, corrects hue). Open: model-warp arm needs
 ComfyUI + an engine/license decision.
+
+**Warping head-to-head — arm C (Leffa, model-based flow-field, 2026-06-18):** owner chose Leffa (MIT). Installed
+official `franciszzj/Leffa` standalone (external dir `C:\Users\Admin\Leffa`, NOT in this repo; runner copied here as
+`leffa_skirt_runner.py` for provenance). Install recipe that worked on this Windows box (no MSVC/CUDA toolkit):
+dedicated py3.10 venv → torch 2.6.0+cu124 → **prebuilt detectron2** `0.6+fd27788 pt2.6.0cu124 cp310 win` (miropsota
+index, no source build) → densepose from `facebookresearch/detectron2` source on PYTHONPATH → diffusers/transformers
+(latest, imports OK) → `truststore.inject_into_ssl()` for HF downloads (venv certifi can't verify the chain here) →
+trimmed ckpts (DressCode branch only, ~8 GB, skipped the SDXL pose-transfer). Result: **Leffa renders TROUSERS, not
+a skirt** — both with its own DressCode `lower_body` agnostic mask AND with our continuous drape mask fed in (the
+saved mask confirmed continuous). Cause: Leffa conditions on **densepose IUV**, which encodes the two legs as
+separate parts; the flow-field reconstructs the garment along that leg structure → leg-split trousers regardless of
+the mask. Colour is browner than FitDiT, but **topology is a hard fail for a skirt** → **disqualified**. General
+insight: VTON models hard-conditioned on densepose/parsing (Leffa; likely GP-VTON too) enforce leg topology for the
+lower body → a skirt that bridges the legs is structurally hard for them. **FitDiT + our continuous drape mask
+remains uniquely suited** for the skirt (its custom IMAGE mask dominates; no per-leg densepose prior).
+
+### Head-to-head verdict (skirt, axis #1)
+| Arm | Topology | Colour | DISTS | Verdict |
+|-----|----------|--------|-------|---------|
+| A — FitDiT (+drape mask) | skirt ✓ | olive drift | 0.319 | **best** |
+| B — geometric warp | flat/pasted slab | exact | 0.41 | loses (pasted) |
+| C — Leffa (DressCode) | trousers ✗ | browner | n/a | disqualified (topology) |
+
+Neither warp arm beats FitDiT for the skirt. FitDiT stays the skirt engine; its only flaw is colour drift → cheapest
+fix = reference-image colour transfer onto FitDiT's skirt (keeps topology+shading, corrects hue); ceiling = cloud.
+Warping for the skirt is closed as a negative result.
