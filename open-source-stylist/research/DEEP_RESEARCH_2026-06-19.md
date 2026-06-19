@@ -494,3 +494,50 @@ https://github.com/modelscope/DiffSynth-Studio (Qwen-Image-Edit-2511 LoRA traini
 FASHN https://fashn.ai/products/api · fal.ai https://fal.ai/models/fal-ai/fashn/tryon/v1.5/api ·
 Kling https://app.klingai.com/global/try-on · Google Vertex VTON
 https://cloud.google.com/vertex-ai/generative-ai/docs/image/generate-virtual-try-on-images
+
+---
+
+## 14. Why the VTON detour happened, and the consistent failure pattern (BUILD_PLAN + archive)
+
+### 14.1 The Phase-0 engine gate is what pushed us to dedicated VTON — and it's in tension with the design
+`BUILD_PLAN.md` **Phase 0 (2026-06-16)** requires the product engine to expose **three channels in one
+local workflow**: (1) garment-image conditioning, (2) masked edit/inpaint, (3) **body/pose control**.
+Result (`ENGINE_CAPABILITY_PHASE0_2026-06-16.md`): **no local candidate passes** — QIE-2511's
+control/model-patch weights aren't visible (`ModelPatchLoader` 0 options); FLUX-Fill lacks ControlNet/
+CLIPVision; BFL FLUX is paid API. **This is the documented reason E-010 went to FitDiT/Leffa** — those
+bundle garment-encoder + parsing + pose, i.e. they *do* pass the 3-channel gate.
+
+**The tension:** the gate's **"explicit body/pose control"** requirement biases the choice toward
+**dedicated VTON** (explicit densepose/pose) and *against* the **editing-model** spine the design (§3, §7)
+actually chose — editing models (QIE board + try-on LoRA) handle pose **implicitly** and have no
+ControlNet channel, so they "fail" Phase 0 by construction. So Phase 0, as written, quietly steers away
+from the design's own editing-first decision. That is the structural reason the project oscillated.
+
+**Resolution (for the owner):** EITHER (a) **relax Phase-0's explicit-control clause for editing-model
+engines** — body/pose is carried implicitly by the person image, *measured* by `body_pose.py`, and
+protected by P1 (compose body/face pixels back where possible); the QIE board+LoRA path (`run_slice.py`)
+can be tried today without a control channel. OR (b) **add a pose/depth ControlNet** to QIE/FLUX (the
+Family-5 assembly; cheap depth-conditioning from FIELD_SURVEY §5.3) so the editing spine *also* passes the
+gate. Path (a) is the immediate, lowest-cost move; (b) is the body-shape upgrade if (a)'s body drift is
+rejected. Either way the gate must stop disqualifying the design's own spine.
+
+### 14.2 The failure pattern is constant since the first run (archive) — and the body mechanism is understood
+`archive/FINDINGS.md` (2026-06-10, run_000001, QIE-2511+Lightning): identity **PASS**; the failures were
+**accessories (belt/earrings), footwear (colour+type), skirt length, body slim, blouse colour** — the
+*identical* set we still hit. So this is a **stable, structural** problem, not a new regression.
+- **Body-slim mechanism (confirmed in the archive):** QIE-2511 learns body shape from **both** input
+  images — the person **and** the garment references; product photos feature slimmer models, so their
+  silhouette is **systematically** transferred onto the person (stronger the more slim-model refs). This
+  is the same defect as the E-005 ~9–16 % proportion distortion, and it compounds with the PROMO/DensePose
+  long-skirt distortion (DEEP_RESEARCH §12.1). Mitigations (garment-only crops — done; body-preservation
+  prompt; **body-lock conditioning** — depth/pose ControlNet, §14.1b) are known; none fully closes it
+  locally off-the-shelf → the body axis remains the standing kill-criterion risk (CONCEPT_REVIEW §5.4).
+- **Colour + small-detail** improve with **resolution** (archive: blouse white→"light green" from 464→928
+  px) and with **garment-only crops + no colour words** (H-COLOR, enforced in `prompt.py`). The board
+  pixel-bottleneck (§12.4) is the remaining detail cap → high-res single-item repair is the answer.
+
+**Net of §14:** the editing-first recommendation stands, but two project-internal facts must be acted on:
+**unblock the editing spine from its own Phase-0 gate** (§14.1), and treat **body-shape preservation** as a
+named, mechanistically-understood, still-open axis with a concrete lever to test (depth/pose conditioning),
+not a mystery. Sources: `BUILD_PLAN.md` Phase 0, `ENGINE_CAPABILITY_PHASE0_2026-06-16.md`,
+`archive/FINDINGS.md`.
