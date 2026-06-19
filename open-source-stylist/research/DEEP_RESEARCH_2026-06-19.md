@@ -173,7 +173,7 @@ VTON, warping, and OmniTry are **supporting tools for specific sub-problems**, n
 | **OOTDiffusion** | VTON | CC-BY-NC | fits | no | no | weak | outfitting UNet |
 | **FastFit** | multi-ref VTON | open | ? | partial | no | weak | worst-in-class layering (Garments2Look) |
 | **AnyDressing** | multi-garment | non-commercial | ? | **yes** | partial | weak | parallel multi-garment, ControlNet-composable; NC |
-| **OmniTry** | mask-free anything | CC-BY-SA | LoRA on FLUX-Fill (~fits w/ offload) | per-item | **yes (jewellery/belts/shoes)** | better | accessory executor candidate; commercial-OK |
+| **OmniTry** | mask-free anything | CC-BY-SA | **official min 28 GB** (NOT local without heavy quant) | per-item | **yes (jewellery/belts/shoes)** | better | accessory candidate but VRAM-blocked locally (IMPLEMENTATION_BLUEPRINT §3.3); cloud/quant only |
 | **GP-VTON / warping** | warp | NC, no ComfyUI | heavy | no | no | weak | exact pixels but pasted; studio-trained |
 
 **Reading:** the only **commercial-OK + local** garment engines are **Leffa (MIT)** and **OmniTry
@@ -353,3 +353,94 @@ architecture search.
 Marqo-FashionCLIP/SigLIP https://github.com/marqo-ai/marqo-FashionCLIP · LookBench https://arxiv.org/abs/2601.14706 ·
 DeepFashion2 https://github.com/switchablenorms/DeepFashion2 · Fashionpedia https://fashionpedia.github.io ·
 InstantID https://github.com/InstantID/InstantID · PuLID / IP-Adapter (repos).
+
+---
+
+## 12. Integration with the project's existing analysis + corrections (after reading the whole repo)
+
+A full read of `audit/` (AUDIT_REPORT, CONCEPT_ARCHITECTURE_REVIEW, IMPLEMENTATION_BLUEPRINT, all
+2026-06-15) and `experiments/010/ENGINE_LANDSCAPE.md` (2026-06-16) changes the emphasis of §1–§11 and
+corrects two of my own errors. The project's prior analysis is **more complete than my §1–§11 on the
+product side** — this section integrates it; it does not duplicate it.
+
+### 12.1 The skirt failure was already explained in the repo (process lesson)
+`ENGINE_LANDSCAPE.md` Family 4 already cites **PROMO (CVPR 2026, arXiv 2603.11675)**, which states
+outright: *"DensePose produces distorted results on loose-fitting garments like long skirts."* Since
+DensePose is the **hard structural channel** (§1.1), a distorted DensePose on a long skirt is the
+*authoritative, pre-documented* root cause of our skirt→trousers/morph — it was in the project's own
+research before the 2026-06-18 session. My day of mask-tweaking re-derived (worse) what was already
+written. **Lesson reinforced:** read the repo's own research before generating. PROMO also confirms the
+right *fix class* — a clothing-occlusion-robust pose/shape estimator (PROMO; or SMPL-shape conditioning),
+not hand-built masks. PROMO has **no code** (16×H800 training) → it is a direction, not a local tool.
+
+### 12.2 Corrections to my §1–§11
+- **OmniTry is NOT a local executor.** Official minimum **28 GB** (IMPLEMENTATION_BLUEPRINT §3.3;
+  ENGINE_LANDSCAPE Family 2). My §4 table said "~fits w/ offload" — wrong; corrected. Accessories
+  locally are therefore an **open problem** (inpaint/detail passes or cloud), not a solved OmniTry pass.
+- **License reality (for launch, not just prototype):** of local garment engines only **Leffa (MIT)**
+  and **OmniTry (CC-BY-SA)** are commercial-OK; CatVTON/IDM-VTON/FitDiT/AnyDressing/OmniVTON are
+  NC/prototype-only. **FastFit NC; Sapiens2 forbids biometric/deepfake; 4DHumans/SMPL monocular shape is
+  ill-posed (HumanGPS).** These gate any *product*, not the research.
+
+### 12.3 The bigger picture I under-weighted: this is a 3-subsystem product, not a try-on engine
+CONCEPT_ARCHITECTURE_REVIEW is decisive: the project is currently **Try-On V1, not Stylist V1**. The
+product is three independently-testable systems with contracts between them
+(IMPLEMENTATION_BLUEPRINT §2):
+1. **Style Decision** — `StyleIntent` → 3–5 `OutfitBlueprint` (LLM plans; code validates hard
+   constraints). 2. **Concrete Outfit Retrieval** — per-slot **FashionSigLIP→Qdrant** search + beam-search
+   assembly + deterministic constraint solver → `OutfitCandidate[]`. 3. **Identity-Preserving Exact
+   Visualization** — the try-on/generation problem of §1–§11.
+My §1–§11 only addressed subsystem 3. The product also needs subsystems 1–2 (designed in detail in the
+blueprint: domain contracts, person-evidence extractor split into `IdentityProfile`+`StyleEvidence`,
+curated 120–200-item catalog, per-slot retrieval, beam assembly, the WP0–WP7 plan).
+
+### 12.4 Two product truths that constrain the generation problem
+- **The reference board is an information bottleneck.** 768×768 / 9 cells → each reference survives at
+  **1.3–25 % of its pixels** (CONCEPT_REVIEW §5.1: skirt 1.78 %, belt 1.31 %, buttons lost). The fix is
+  **role separation**: board = *outfit composition/layering evidence*; a **full-resolution per-item
+  `GarmentEvidencePack`** = *item identity/detail evidence*, consumed by **single-item high-res local
+  repair**. This is exactly where dedicated VTON / FitDiT (high-fidelity single garment) has a *real,
+  scoped role* — not as the spine (§7) but as the **repair executor for one garment at full resolution**.
+- **Success is whole-outfit, multiplicative.** 0.9⁵ = 59 %; 80 % outfit needs ≈95.6 % per-item, 97.2 %
+  for 8 items (CONCEPT_REVIEW §5.3). This is *why* per-item evaluation (retrieval-rank vs decoys, not
+  mean colour) + per-item repair + a strict AND verdict are structural, not cosmetic — and why the
+  garment-fidelity instrument calibration (the §6b gap) is on the critical path.
+
+### 12.5 Reconciled recommendation (supersedes my §7 where they differ)
+My §7 ("editing-model-first spine") is correct **for subsystem 3's holistic pass**, and it matches the
+design (Strategy A/C) and the blueprint. But the blueprint already specifies the precise next experiment
+and the role of dedicated VTON, more completely than my §7:
+- **Spine = QIE-2511 holistic** edit (board = composition) + **full-resolution single-item local repair**
+  (crop-and-stitch) for the items the board can't carry (buttons, shoes, accessories, patterns).
+- **Dedicated VTON (Leffa MIT / FitDiT) = the single-garment high-res *repair* executor**, evaluated
+  against QIE-repair — and *only with a correct SCHP/DensePose agnostic*, never hand-built masks, and
+  knowing DensePose distorts on long skirts (use dress-category / shape-robust conditioning there).
+- **Accessories:** not OmniTry-local (28 GB); inpaint/detail passes locally, or cloud.
+- **Body shape:** unsolved locally off-the-shelf (PROMO no-code; SMPL ill-posed) → a real kill-criterion
+  risk; report it, don't pretend a 2D-silhouette gate covers it.
+- **Cloud (FASHN $0.075/img, Kling, Gemini/Imagen VTON):** the immediate full-outfit fallback and the
+  fidelity ceiling; legitimate V1 path with a stated privacy/cost tradeoff.
+
+**The single decisive next experiment (blueprint WP2, my §8.1):**
+> Can QIE-2511, as *holistic board + high-resolution single-item repair*, pass a **whole-outfit fidelity
+> gate** (item retrieval-rank vs decoys + identity + the AND verdict) on a **small multi-person /
+> multi-outfit benchmark** — not one person, one outfit?
+
+Architecture kill-criteria are pre-stated (blueprint §12): `<40 %` whole-outfit acceptance ⇒ off-the-shelf
+local stack insufficient → fine-tune (Garments2Look LoRA on rented GPU) or cloud, **not** prompt/mask
+tuning; `40–70 %` ⇒ fine-tune likely; `≥70 %` ⇒ integrate alpha.
+
+### 12.6 Net
+The project already holds the right architecture (3 subsystems), the right next experiment (corrected
+try-on feasibility gate), the right tools (QIE spine, FashionSigLIP/Qdrant retrieval, SCHP parsing,
+DISTS+retrieval-rank evaluation, owner's eye), and even the right *explanation* of the skirt failure
+(PROMO/DensePose). The 2026-06-18 detour added no knowledge the repo didn't already contain — it added
+debt. My deep-research contribution that is genuinely *new* on top of the existing docs: the **mechanism
+from source** (densepose = hard 12-channel input dominating topology; incorrect agnostic → hallucination;
+dual-UNet "functional mismatch" fidelity ceiling, Re-CatVTON) and the **current field delta**
+(editing-models maturing, single-UNet CatVTON-class > dual-UNet Leffa, OpenVTON-Bench/VTONQA, Marqo-
+FashionSigLIP confirmed SOTA for our retrieval+gate). Everything else, the project already knew.
+
+**Added sources (this section):** PROMO https://arxiv.org/abs/2603.11675 · HumanGPS
+https://arxiv.org/html/2405.00627v1 · project docs `audit/*_2026-06-15.md`,
+`experiments/010_protect_by_construction/ENGINE_LANDSCAPE.md`.
