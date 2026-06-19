@@ -122,7 +122,8 @@ def repair(base_path, mask_path, garment_ref_path, instruction: str, out_path,
     crop_ref = client.upload_image(crop_w_path)
     garm_ref = client.upload_image(Path(garment_ref_path))
 
-    template = load_template("qie2511_vton")
+    template = load_template("qie2511_edit")  # standard QIE edit (EmptySD3LatentImage),
+    #   NOT the layered try-on latent (EmptyQwenImageLayeredLatentImage) which under-generates.
     filled = fill_workflow(template, {
         "__PERSON_IMAGE__": crop_ref, "__REF_IMAGE__": garm_ref,
         "__POSITIVE_PROMPT__": instruction, "__NEGATIVE_PROMPT__": "",
