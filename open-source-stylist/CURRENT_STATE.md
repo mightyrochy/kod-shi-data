@@ -122,6 +122,15 @@ report`, no retry/repair routing, no VRAM sequencing, no final verdict owner.
 
 ## Active work 2026-06-16 — E-010 garment-faithful try-on (FitDiT)
 
+> **SUPERSEDED for "what is true" by `experiments/010_protect_by_construction/RECONCILIATION_2026-06-19.md`.**
+> The 2026-06-18 Leffa/FitDiT/warping/bare-legs results below and in the protocol addenda are
+> **Observations** (single runs + AI-assistant eye), NOT decision-grade (METHODOLOGY §1). No
+> verified VTON-engine fact exists. They remain as a dated historical record. Also note: this
+> whole dedicated-VTON detour diverged from the canonical design (SYSTEM_DESIGN §3 item 2 / §7:
+> editing models beat dedicated VTON on layered outfits; QIE-2511 holistic + shell is default) —
+> that divergence is unreconciled and is a subject of the deep-research dossier
+> (`research/DEEP_RESEARCH_2026-06-19.md`).
+
 Generation has moved to a garment-first try-on architecture (see
 `experiments/010_protect_by_construction/`: protocol, ENGINE_LANDSCAPE, GEN_INSTRUMENTS, EVAL_INSTRUMENTS).
 
