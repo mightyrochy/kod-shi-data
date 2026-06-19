@@ -444,3 +444,53 @@ FashionSigLIP confirmed SOTA for our retrieval+gate). Everything else, the proje
 **Added sources (this section):** PROMO https://arxiv.org/abs/2603.11675 · HumanGPS
 https://arxiv.org/html/2405.00627v1 · project docs `audit/*_2026-06-15.md`,
 `experiments/010_protect_by_construction/ENGINE_LANDSCAPE.md`.
+
+---
+
+## 13. System-code reality + spine/fine-tune/cloud (code read + online, 2026-06-19)
+
+### 13.1 The editing-model spine is ALREADY partly built — `system/run_slice.py`
+Reading the code: `run_slice.py` is a working, honest **vertical-slice orchestrator** that already does
+exactly the recommended spine. It maps `engine → workflow` (`qie-2511`, `qie-2511-lightning`,
+`flux-fill`), builds the `GenerationRequest`, resolves the **frozen board by SHA-256**, fills the
+workflow so **every param threads through** (cfg/sampler/scheduler/negative/seed/steps/size — the P0-2
+fix), runs ComfyUI, then segments + sanity-checks + runs the honest gates (`color`, `identity`,
+`proportions`, `body_pose`) and writes a hashed manifest + an owner-checkpoint report. `body_pose.py`
+is a clean clothing-robust skeletal body gate (MediaPipe pose, torso-normalised, measurement-only).
+**Implication:** the QIE-2511 outfit experiment (§8.1) can run largely through THIS existing slice
+(`--engine qie-2511 --board hybrid_mask_crop --generate`), not a new FitDiT/Leffa path. The 2026-06-18
+detour bypassed and duplicated working infrastructure — more debt confirmed.
+
+### 13.2 How the QIE-2511 try-on actually works (online) — it IS the board approach
+The mature ComfyUI QIE-2511 try-on workflow composes inputs into a **single panel** (person on top,
+garments below), encodes the panel, and runs QIE with a lightweight **Virtual-Try-On LoRA** (biases the
+edit toward apparel transfer while preserving the subject). The model fuses **panel/prompt semantics +
+encoded-image-latent appearance**. This is *exactly* the project's "reference board" design (§6a/P2) —
+so the spine's mechanism matches what is already built; the open work is fidelity (board bottleneck →
+high-res single-item repair, §12.4) and colour-shift (deterministic LAB correction).
+
+### 13.3 Local QIE-2511 LoRA fine-tune is feasible (updates blueprint WP7)
+**Major update.** **DiffSynth-Studio** supports LoRA *and* full fine-tune of Qwen-Image-Edit-2511, and
+its low-VRAM path (CPU offload/quant) is reported to train **from ~6 GB VRAM on Windows** — i.e. the
+outfit-LoRA fidelity lever (Garments2Look-style triplets → QIE edit format) is plausibly **achievable
+locally on the 16 GB 4090**, not only on a rented 48–80 GB GPU as IMPLEMENTATION_BLUEPRINT WP7 assumed.
+This materially lowers the cost of the `40–70 %` kill-criterion branch (fine-tune likely needed):
+fine-tuning becomes a local experiment, not a cloud-rental commitment. Verify the real throughput/quality
+at 16 GB before relying on it, but it reopens local fine-tune as a first-class lever.
+
+### 13.4 Cloud fallback specifics (the ceiling / immediate full-outfit path)
+- **FASHN.ai:** proprietary fashion model, up to **4K** (Reframe, Dec 2025); **one product/request** but
+  multiple products per image or **sequential calls for a full outfit**; on `fal.ai` (~$0.075/img earlier).
+- **Kling (Kolors):** person + garment ref, single/multiple items, **360° video** try-on.
+- **Google Vertex AI Virtual Try-On:** person + clothing-product image, studio-quality.
+All three do full-outfit-capable try-on at high quality — the legitimate V1 fallback if the local spine
+misses the owner bar (privacy/cost tradeoff stated). GPT-image / Gemini "Nano Banana" remain the
+instruction-edit ceiling (closed).
+
+**Sources (this section):** code `system/run_slice.py`, `system/gates/body_pose.py` · QIE-2511 try-on
+https://www.nextdiffusion.ai/tutorials/consistent-outfit-changes-with-multi-qwen-image-edit-2511-in-comfyui ·
+https://myaiforce.com/qwen-image-edit-clothes-swap/ · DiffSynth-Studio
+https://github.com/modelscope/DiffSynth-Studio (Qwen-Image-Edit-2511 LoRA training) ·
+FASHN https://fashn.ai/products/api · fal.ai https://fal.ai/models/fal-ai/fashn/tryon/v1.5/api ·
+Kling https://app.klingai.com/global/try-on · Google Vertex VTON
+https://cloud.google.com/vertex-ai/generative-ai/docs/image/generate-virtual-try-on-images
