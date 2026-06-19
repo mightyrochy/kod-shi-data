@@ -89,7 +89,8 @@ def _download_frame01(client, outputs: dict, prefix: str, dst: Path) -> Path:
 
 def repair(base_path, mask_path, garment_ref_path, instruction: str, out_path,
            seed: int = 42, steps: int = 20, cfg: float = 2.5, pad_frac: float = 0.2,
-           feather: float = 9.0, change_thresh: int = 12, client=None) -> dict:
+           feather: float = 9.0, change_thresh: int = 12, working_max: int = WORKING_MAX,
+           client=None) -> dict:
     """Crop-and-stitch QIE repair of one garment region. Returns a manifest incl. the locality %."""
     _check_no_color(instruction)
     base_path, mask_path, out_path = Path(base_path), Path(mask_path), Path(out_path)
@@ -108,7 +109,7 @@ def repair(base_path, mask_path, garment_ref_path, instruction: str, out_path,
     crop = base[y0:y1, x0:x1]
     crop_fg = fg[y0:y1, x0:x1]
     ch, cw = crop.shape[:2]
-    scale = WORKING_MAX / max(ch, cw)
+    scale = working_max / max(ch, cw)
     ww, wh = _round16(cw * scale), _round16(ch * scale)
 
     out_dir = out_path.parent
@@ -157,10 +158,12 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--steps", type=int, default=20)
     ap.add_argument("--cfg", type=float, default=2.5)
+    ap.add_argument("--working-max", type=int, default=WORKING_MAX)
     args = ap.parse_args()
     import json
     print(json.dumps(repair(args.base, args.mask, args.ref, args.instruction, args.out,
-                            seed=args.seed, steps=args.steps, cfg=args.cfg), indent=2))
+                            seed=args.seed, steps=args.steps, cfg=args.cfg,
+                            working_max=args.working_max), indent=2))
 
 
 if __name__ == "__main__":
