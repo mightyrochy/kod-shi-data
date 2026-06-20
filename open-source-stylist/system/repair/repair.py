@@ -88,7 +88,7 @@ def _download_frame01(client, outputs: dict, prefix: str, dst: Path) -> Path:
 
 
 def repair(base_path, mask_path, garment_ref_path, instruction: str, out_path,
-           seed: int = 42, steps: int = 20, cfg: float = 2.5, pad_frac: float = 0.2,
+           seed: int = 42, steps: int = 20, cfg: float = 4.0, pad_frac: float = 0.2,
            feather: float = 9.0, change_thresh: int = 12, working_max: int = WORKING_MAX,
            client=None) -> dict:
     """Crop-and-stitch QIE repair of one garment region. Returns a manifest incl. the locality %."""
@@ -109,13 +109,16 @@ def repair(base_path, mask_path, garment_ref_path, instruction: str, out_path,
     crop = base[y0:y1, x0:x1]
     crop_fg = fg[y0:y1, x0:x1]
     ch, cw = crop.shape[:2]
-    scale = working_max / max(ch, cw)
+    # Cap the upload size; final generation resolution is set inside the workflow by
+    # FluxKontextImageScale (QIE's preferred-resolution scaler). Downscale only, never upscale
+    # (upscaling a small crop then re-scaling in the graph would only add blur).
+    scale = min(1.0, working_max / max(ch, cw))
     ww, wh = _round16(cw * scale), _round16(ch * scale)
 
     out_dir = out_path.parent
     out_dir.mkdir(parents=True, exist_ok=True)
     crop_w_path = out_dir / "repair_crop.png"
-    cv2.imwrite(str(crop_w_path), cv2.resize(crop, (ww, wh), interpolation=cv2.INTER_CUBIC))
+    cv2.imwrite(str(crop_w_path), cv2.resize(crop, (ww, wh), interpolation=cv2.INTER_AREA))
 
     if client is None:
         from system.clients.comfyui import ComfyUIClient
@@ -123,12 +126,14 @@ def repair(base_path, mask_path, garment_ref_path, instruction: str, out_path,
     crop_ref = client.upload_image(crop_w_path)
     garm_ref = client.upload_image(Path(garment_ref_path))
 
-    template = load_template("qie2511_edit")  # standard QIE edit (EmptySD3LatentImage),
-    #   NOT the layered try-on latent (EmptyQwenImageLayeredLatentImage) which under-generates.
+    # Official ComfyUI QIE-Image-Edit-2511 graph: the KSampler latent is VAEEncode(input) — the edit
+    # denoises FROM the input's latent (not an empty latent), with ModelSamplingAuraFlow(3.1)+CFGNorm
+    # model patches. This is the structure that preserves the crop and edits only what the prompt asks.
+    template = load_template("qie2511_edit")
     filled = fill_workflow(template, {
         "__PERSON_IMAGE__": crop_ref, "__REF_IMAGE__": garm_ref,
         "__POSITIVE_PROMPT__": instruction, "__NEGATIVE_PROMPT__": "",
-        "__WIDTH__": ww, "__HEIGHT__": wh, "__CFG__": cfg, "__SAMPLER__": "euler",
+        "__CFG__": cfg, "__SAMPLER__": "euler",
         "__SCHEDULER__": "simple", "__SEED__": seed, "__STEPS__": steps,
         "__OUTPUT_PREFIX__": "repair_edit", "__DENOISE__": 1.0,
     })
@@ -157,7 +162,7 @@ def main() -> None:
     ap.add_argument("--out", required=True)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--steps", type=int, default=20)
-    ap.add_argument("--cfg", type=float, default=2.5)
+    ap.add_argument("--cfg", type=float, default=4.0)
     ap.add_argument("--working-max", type=int, default=WORKING_MAX)
     args = ap.parse_args()
     import json
