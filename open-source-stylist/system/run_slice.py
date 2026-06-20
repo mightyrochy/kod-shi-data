@@ -223,7 +223,12 @@ def run_slice(args: argparse.Namespace) -> Path:
     layout_path = (ROOT / package["layout_path"]).resolve()
 
     run_id = f"{package['outfit_id']}_{args.board}_s{args.seed}_{request['request_id']}"
-    run_dir = RUNS_DIR / run_id
+    # Default scratch dir is runs/; experiments pass --out-dir <experiments/NNN/results> so the
+    # run lands inside the experiment folder (project structure: results live under the experiment).
+    out_root = (Path(args.out_dir) if getattr(args, "out_dir", None) else RUNS_DIR)
+    if not out_root.is_absolute():
+        out_root = ROOT / out_root
+    run_dir = out_root / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
     manifest: dict = {
@@ -394,6 +399,9 @@ def main() -> None:
     parser.add_argument("--mask", default=None, help="clothing region mask for inpaint workflows (flux-fill)")
     parser.add_argument("--denoise", type=float, default=1.0, help="denoise strength (1.0 = full noise, <1 = partial; FLUX Fill uses 1.0 with InpaintModelConditioning)")
     parser.add_argument("--references", default=None, help="JSON region -> [ref_image, ref_mask] for the colour gate")
+    parser.add_argument("--out-dir", default=None,
+                        help="parent dir for the run folder (default: runs/); "
+                             "experiments pass experiments/NNN_name/results to keep outputs in the experiment")
     parser.add_argument("--generate", action="store_true", help="actually call ComfyUI (owner-checkpoint path)")
     parser.add_argument("--timeout", type=float, default=600.0)
     args = parser.parse_args()
