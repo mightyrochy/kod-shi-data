@@ -23,7 +23,8 @@ import cv2
 import numpy as np
 
 MODEL_DIR = Path(__file__).parent / "models" / "dinov2-small"
-LOWER_CENTRE_OK = 0.55  # provisional (2 anchors); structural-correspondence floor
+# provisional (2 anchors, narrow margin): no-slit worst_window 0.375 (FAIL) vs slit 0.406 (PASS).
+WORST_WINDOW_OK = 0.39
 
 _MODEL = None
 _PROC = None
@@ -67,21 +68,28 @@ def _grid(bgr: np.ndarray):
 def structure_score(out_image, region_mask, ref_image, ref_mask=None) -> dict:
     """Aligned DINOv2 patch-correspondence between the output garment region and its reference.
 
-    Returns mean / lower_centre / worst_20pct correspondence and an ADVISORY verdict. Higher = the
-    output reproduces the reference structure; a low `lower_centre` flags a missing lower-centre feature
-    (e.g. a front slit). Thresholds are provisional (2 anchors) — owner verdict decides.
+    The verdict uses `worst_window` — the worst contiguous 3x3 patch region, AUTO-LOCALISED (the defect
+    may be anywhere; no garment- or defect-specific region is hard-coded). A missing/wrong structural
+    feature shows up as a low-correspondence blob wherever it sits. `lower_centre` is kept only as a
+    diagnostic, not the gate.
+
+    HONEST LIMITS: catches INTRA-garment structural defects (e.g. a missing slit) but NOT layering
+    defects (e.g. a half-tucked blouse — that is a between-garment boundary problem, needs a separate
+    check). The general signal is weaker than a region-tuned one (the slit margin shrinks ~0.03), and
+    the threshold is provisional (2 anchors) — owner verdict decides. ADVISORY until broadly calibrated.
     """
     import torch
     ga = _grid(_bbox_crop(out_image, region_mask))
     gb = _grid(_bbox_crop(ref_image, ref_mask))
     cos = (ga * gb).sum(-1)
     n = cos.shape[0]
+    worst_window = torch.nn.functional.avg_pool2d(cos[None, None], 3, stride=1).min()
     lc = cos[n // 2:, n // 4:(3 * n) // 4]
-    worst = torch.sort(cos.flatten())[0][:n * n // 5].mean()
-    mean, lower_centre, worst20 = round(cos.mean().item(), 3), round(lc.mean().item(), 3), round(worst.item(), 3)
+    mean, ww, lower_centre = round(cos.mean().item(), 3), round(worst_window.item(), 3), round(lc.mean().item(), 3)
     return {
-        "mean": mean, "lower_centre": lower_centre, "worst_20pct": worst20,
-        "verdict": "OK" if lower_centre >= LOWER_CENTRE_OK else "STRUCTURE_OFF",
-        "note": "ADVISORY (provisional, 2 anchors). lower_centre < 0.55 flags a missing structural "
-                "feature (e.g. skirt slit). DINOv2 patch-correspondence; owner verdict decides.",
+        "mean": mean, "worst_window": ww, "lower_centre": lower_centre,
+        "verdict": "OK" if ww >= WORST_WINDOW_OK else "STRUCTURE_OFF",
+        "note": "ADVISORY (provisional, 2 anchors; weak general margin). worst_window = auto-localised "
+                "worst 3x3 patch region vs reference; < threshold flags an intra-garment structural "
+                "defect anywhere. Does NOT catch layering/tuck. DINOv2; owner verdict decides.",
     }
