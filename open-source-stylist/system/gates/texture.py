@@ -52,11 +52,40 @@ def _region(img: np.ndarray, mask: np.ndarray | None) -> np.ndarray:
     return cv2.resize(img, (_WORK, _WORK), interpolation=cv2.INTER_AREA)
 
 
-def _texture_energy(region_bgr: np.ndarray) -> float:
-    """High-frequency luminance energy via difference-of-Gaussian (fine + medium bands)."""
+def _finedetail_energy(region_bgr: np.ndarray) -> float:
+    """Finest-band energy via difference-of-Gaussian (sigma 1-2). Captures the pixel-scale band where
+    photographic NOISE / JPEG grain lives as well as the finest detail — kept as a diagnostic, NOT the
+    weave measure (a noisy reference inflates it; see CALIBRATION/owner_crops _hp_check)."""
     g = cv2.cvtColor(region_bgr, cv2.COLOR_BGR2GRAY).astype(np.float32)
     hp = (g - cv2.GaussianBlur(g, (0, 0), 1.0)) + (g - cv2.GaussianBlur(g, (0, 0), 2.0))
     return float(np.mean(hp * hp))
+
+
+_GABOR_BANK: list[np.ndarray] | None = None
+
+
+def _gabor_bank() -> list[np.ndarray]:
+    """Zero-mean Gabor kernels at 4 orientations x weave-scale wavelengths (4,6,8 px) x 2 phases.
+    Wavelengths >=4 deliberately SKIP the lambda<=2 band where pixel noise dominates."""
+    global _GABOR_BANK
+    if _GABOR_BANK is None:
+        bank = []
+        for theta in (0.0, np.pi / 4, np.pi / 2, 3 * np.pi / 4):
+            for lam in (4.0, 6.0, 8.0):
+                ks = int(3 * lam) | 1
+                for psi in (0.0, np.pi / 2):
+                    k = cv2.getGaborKernel((ks, ks), lam * 0.56, theta, lam, 0.5, psi, ktype=cv2.CV_32F)
+                    bank.append(k - k.mean())
+        _GABOR_BANK = bank
+    return _GABOR_BANK
+
+
+def _weave_energy(region_bgr: np.ndarray) -> float:
+    """Oriented mid-frequency (weave-scale) texture energy via the Gabor bank. Reflects STRUCTURED weave
+    rather than photographic noise — the fix for the difference-of-Gaussian measure, which conflated weave
+    with the reference photo's pixel grain (verified on owner_crops/_hp_check.png)."""
+    g = cv2.cvtColor(region_bgr, cv2.COLOR_BGR2GRAY).astype(np.float32)
+    return float(np.mean([np.mean(cv2.filter2D(g, cv2.CV_32F, k) ** 2) for k in _gabor_bank()]))
 
 
 def _colour_spread(region_bgr: np.ndarray) -> tuple[float, float]:
@@ -81,11 +110,13 @@ def compare_texture(out_image, ref_image, out_mask=None, ref_mask=None) -> dict:
     out_r = _region(_load(out_image), out_mask)
     ref_r = _region(_load(ref_image), ref_mask)
 
-    out_t, ref_t = _texture_energy(out_r), _texture_energy(ref_r)
+    out_t, ref_t = _weave_energy(out_r), _weave_energy(ref_r)          # PRIMARY: weave (Gabor)
+    out_fd, ref_fd = _finedetail_energy(out_r), _finedetail_energy(ref_r)  # diagnostic: finest band (noise)
     out_c, out_l = _colour_spread(out_r)
     ref_c, ref_l = _colour_spread(ref_r)
 
-    texture_ratio = _ratio(out_t, ref_t)
+    texture_ratio = _ratio(out_t, ref_t)            # weave-structure ratio (noise-robust)
+    finedetail_ratio = _ratio(out_fd, ref_fd)       # finest-band ratio (noise-inflated; diagnostic only)
     chroma_ratio = _ratio(out_c, ref_c)
     lum_ratio = _ratio(out_l, ref_l)
 
@@ -97,12 +128,14 @@ def compare_texture(out_image, ref_image, out_mask=None, ref_mask=None) -> dict:
         flags.append("FLAT_COLOUR")
 
     return {
-        "texture_ratio": texture_ratio, "chroma_ratio": chroma_ratio, "lum_ratio": lum_ratio,
-        "texture_out_energy": round(out_t, 2), "texture_ref_energy": round(ref_t, 2),
+        "texture_ratio": texture_ratio, "finedetail_ratio": finedetail_ratio,
+        "chroma_ratio": chroma_ratio, "lum_ratio": lum_ratio,
+        "texture_out_energy": round(out_t, 4), "texture_ref_energy": round(ref_t, 4),
+        "finedetail_out": round(out_fd, 2), "finedetail_ref": round(ref_fd, 2),
         "chroma_std_out": round(out_c, 2), "chroma_std_ref": round(ref_c, 2),
         "lum_std_out": round(out_l, 2), "lum_std_ref": round(ref_l, 2),
         "verdict": "FLAT" if flags else "OK",
         "flags": flags,
-        "note": "ADVISORY — thresholds uncalibrated; ratios are the owner-verifiable signal. "
-                "Check texture_ref_energy is not near 0 before trusting texture_ratio.",
+        "note": "ADVISORY. texture_ratio = WEAVE structure (Gabor, noise-robust); finedetail_ratio = "
+                "finest band (noise-inflated, diagnostic). Check texture_ref_energy is not ~0 first.",
     }

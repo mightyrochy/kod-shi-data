@@ -44,3 +44,25 @@ on the **interior fabric only** (skirt mask eroded 35 px → no edges/slit), eac
 If real fabric **weave** is wanted (beyond the 0.30 ceiling), neither QIE nor FitDiT delivers it at
 full-frame; the lever is a per-item repair where the garment fills the frame (more pixels-on-weave), or a
 dedicated texture-transfer step — a separate experiment, not the current spine.
+
+## UPDATE — texture gate upgraded to WEAVE (Gabor), the DoG measure was noise-contaminated
+Owner challenged the HF measure (rightly). Verified on `owner_crops/_hp_check.png`: the difference-of-
+Gaussian (sigma 1-2) measured the finest band where the reference photo's **grain/noise** lives, not
+structured weave. Worse, it **mis-ranked**: by finedetail_ratio QIE (0.095) > FitDiT (0.059-0.067) because
+QIE had more pixel noise, not more weave.
+
+`texture.py` now uses a **Gabor bank (wavelengths 4-8 px, 4 orientations, 2 phases)** as the primary
+`texture_ratio` — it skips the lambda<=2 noise band and measures oriented weave structure. The old DoG is
+kept as `finedetail_ratio` (diagnostic only).
+
+New numbers on the owner's fabric crops (vs reference weave energy 4112):
+| crop | weave_ratio | finedetail_ratio (noise) |
+|------|-------------|--------------------------|
+| QIE (flat) | 0.116 | 0.095 |
+| FitDiT pre 832 | 0.136 | 0.059 |
+| FitDiT post 1088 | 0.137 | 0.067 |
+
+Findings: (1) weave now ranks correctly FitDiT > QIE (0.116 -> 0.137); (2) the reference deficit is real
+but ~12-14% (weave), not the misleading ~5% the noise-contaminated DoG gave; (3) weave still only modestly
+separates QIE/FitDiT — FashionSigLIP **sim remains the stronger flat/good discriminator**. The `texture.py`
+threshold (0.6) still needs recalibration to the weave scale on a labelled set.
