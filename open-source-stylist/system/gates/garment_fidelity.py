@@ -300,17 +300,21 @@ def measure_garment_correspondence(out_image, region_mask, reference_image,
         "texture": texture_gate.compare_texture(out_image, reference_image, region_mask, reference_mask),
     }
 
+    # The texture sub-report is kept for DATA COLLECTION only — it is NOT counted in the verdict
+    # (owner decision 2026-06-21: the texture measure is too weak/noisy to gate on; let it run quietly
+    # and accumulate numbers, but the system ignores it). Identity (sim) + colour (CIEDE2000) gate.
     flags = []
     if sim is not None and sim < 0.85:   # calibrated 2026-06-21 (was 0.80)
         flags.append("IDENTITY_LOW")
     if report["colour"]["verdict"] == "FAIL":
         flags.append("COLOUR_OFF")
-    flags += [f for f in report["texture"].get("flags", []) if f in ("LOW_TEXTURE", "FLAT_COLOUR")]
+    report["texture"]["gating"] = False  # informational only; excluded from overall
     report["overall"] = {
         "flags": flags,
         "verdict": "REVIEW" if flags else "OK",
         "note": "ADVISORY — thresholds uncalibrated (no labelled set). FashionSigLIP sim is the primary "
-                "deformation-robust 'same item' signal; owner verdict is the decider (METHODOLOGY §1).",
+                "deformation-robust 'same item' signal; owner verdict is the decider (METHODOLOGY §1). "
+                "TEXTURE is recorded but NOT gated on (owner 2026-06-21).",
     }
     return report
 
