@@ -211,6 +211,107 @@ def measure_garment_fidelity(
     return result
 
 
+# ── One-to-one garment correspondence (deformation-aware, all axes) ───────
+
+def siglip_similarity(crop_a, crop_b) -> float | None:
+    """FashionSigLIP cosine similarity between two garment crops (no decoys needed).
+    Deformation-robust: the learned fashion embedding compares garment IDENTITY, not pixels.
+    Returns None if the model is unavailable."""
+    try:
+        model, preprocess = _load_model()
+        embs = _embed_images([crop_a, crop_b], model, preprocess)
+    except Exception:
+        return None
+    return round(float(embs[0] @ embs[1]), 4)
+
+
+def _region_to_temp(image, mask, dst: Path) -> Path:
+    """Bounding-box crop of the masked garment -> dst. image/mask = path or array (BGR / gray)."""
+    import cv2
+    img = cv2.imread(str(image)) if isinstance(image, (str, Path)) else image
+    if mask is None:
+        cv2.imwrite(str(dst), img)
+        return dst
+    m = cv2.imread(str(mask), cv2.IMREAD_GRAYSCALE) if isinstance(mask, (str, Path)) else mask
+    if (m.shape[1], m.shape[0]) != (img.shape[1], img.shape[0]):
+        m = cv2.resize(m, (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
+    ys, xs = np.where(m > 127)
+    if ys.size == 0:
+        raise ValueError("empty region mask")
+    cv2.imwrite(str(dst), img[ys.min():ys.max() + 1, xs.min():xs.max() + 1])
+    return dst
+
+
+def measure_garment_correspondence(out_image, region_mask, reference_image,
+                                   reference_mask=None, decoys=(), workdir=None) -> dict:
+    """One-to-one garment correspondence (deformation-AWARE): is the worn garment region the SAME
+    item as the reference, allowing for shape change from how it drapes on the body?
+
+    Four deformation-ROBUST axes (pixel-aligned metrics — SSIM/PSNR/MSE — are deliberately excluded;
+    they break under draping/occlusion):
+      - identity  : FashionSigLIP cosine sim (+ retrieval-rank if decoys) — learned fashion embedding,
+                    pose/drape-invariant; the PRIMARY "same item?" signal.
+      - structure : DISTS — texture+structure statistics, robust to legitimate spatial variation.
+      - colour    : CIEDE2000 hue/chroma (system.gates.color) — spatial-agnostic.
+      - texture   : HF energy + chroma/lum spread ratio (system.gates.texture), scale-normalised.
+
+    out_image / reference_image : path or BGR array.  region_mask : the garment's mask in the OUTPUT.
+    reference_mask : the garment's mask in the reference (None = reference is already a garment crop).
+    decoys : other-SKU garment crops to enable retrieval-rank (rank 1 = reference ranks first).
+    Returns a per-axis report + an ADVISORY overall (calibration pending → owner verdict decides).
+    """
+    import tempfile
+    from system.gates import color as color_gate
+    from system.gates import texture as texture_gate
+
+    import cv2
+
+    def _full_mask(image):
+        img = cv2.imread(str(image)) if isinstance(image, (str, Path)) else image
+        return np.full(img.shape[:2], 255, np.uint8)
+
+    tmp = Path(workdir) if workdir else Path(tempfile.mkdtemp(prefix="garm_corr_"))
+    tmp.mkdir(parents=True, exist_ok=True)
+    out_crop = _region_to_temp(out_image, region_mask, tmp / "out_crop.png")
+    ref_crop = _region_to_temp(reference_image, reference_mask, tmp / "ref_crop.png")
+
+    sim = siglip_similarity(out_crop, ref_crop)
+    identity = {"siglip_sim": sim}
+    if decoys:
+        identity["retrieval"] = retrieval_rank(out_crop, ref_crop, decoys)
+
+    # The colour gate needs an explicit region mask; when none is given the (already-cropped) image
+    # IS the garment, so use a full-frame mask.
+    eff_region = region_mask if region_mask is not None else _full_mask(out_image)
+    eff_ref = reference_mask if reference_mask is not None else _full_mask(reference_image)
+
+    colour = color_gate.compare_regions(out_image, eff_region, reference_image, eff_ref)
+    # compare_regions reports delta_e; derive the verdict here (run_slice thresholds: PASS<=3, FAIL>5).
+    de = colour.get("delta_e_mean")
+    colour["verdict"] = "INVALID" if de is None else ("PASS" if de <= 3.0 else "WARN" if de <= 5.0 else "FAIL")
+
+    report = {
+        "identity": identity,
+        "structure": dists_score(out_crop, ref_crop),
+        "colour": colour,
+        "texture": texture_gate.compare_texture(out_image, reference_image, region_mask, reference_mask),
+    }
+
+    flags = []
+    if sim is not None and sim < 0.80:
+        flags.append("IDENTITY_LOW")
+    if report["colour"]["verdict"] == "FAIL":
+        flags.append("COLOUR_OFF")
+    flags += [f for f in report["texture"].get("flags", []) if f in ("LOW_TEXTURE", "FLAT_COLOUR")]
+    report["overall"] = {
+        "flags": flags,
+        "verdict": "REVIEW" if flags else "OK",
+        "note": "ADVISORY — thresholds uncalibrated (no labelled set). FashionSigLIP sim is the primary "
+                "deformation-robust 'same item' signal; owner verdict is the decider (METHODOLOGY §1).",
+    }
+    return report
+
+
 # ── Model download helper ─────────────────────────────────────────────────
 
 def download_model() -> None:
