@@ -276,7 +276,10 @@ def measure_garment_correspondence(out_image, region_mask, reference_image,
     ref_crop = _region_to_temp(reference_image, reference_mask, tmp / "ref_crop.png")
 
     sim = siglip_similarity(out_crop, ref_crop)
-    identity = {"siglip_sim": sim}
+    # Match-strength bands calibrated on the 2026-06-21 skirt triplet (CALIBRATION_2026-06-21.md):
+    # good (owner-accepted) sim 0.922, flat 0.845 -> >=0.90 strong, 0.85-0.90 acceptable, <0.85 low.
+    match = None if sim is None else ("strong" if sim >= 0.90 else "acceptable" if sim >= 0.85 else "low")
+    identity = {"siglip_sim": sim, "match": match}
     if decoys:
         identity["retrieval"] = retrieval_rank(out_crop, ref_crop, decoys)
 
@@ -298,7 +301,7 @@ def measure_garment_correspondence(out_image, region_mask, reference_image,
     }
 
     flags = []
-    if sim is not None and sim < 0.80:
+    if sim is not None and sim < 0.85:   # calibrated 2026-06-21 (was 0.80)
         flags.append("IDENTITY_LOW")
     if report["colour"]["verdict"] == "FAIL":
         flags.append("COLOUR_OFF")
