@@ -23,18 +23,30 @@ try:
 except TypeError:
     FONT = ImageFont.load_default()
 
-# (label, source webp, mask png, crop png) — hybrid mask+crop, 3 items only.
+# (label, source webp, mask png, crop png, mode) — hybrid mask+crop, 3 items only.
+# Skirt uses the CONTINUOUS-silhouette crop (slit as an internal line, NOT a through-gap) — the
+# through-slit crop causes the bifurcation->pants failure (FITDIT_AUDIT) and is wrong as worn.
 CELLS = [
     ("blouse front mask", "blouse_front.webp", OUTFIT_DIR / "reference_masks/blouse_front_buttons.png",
      "crops/blouse front crop.png", "mask"),
     ("blouse front crop", None, None, "crops/blouse front crop.png", "crop"),
-    ("skirt front mask", "skirt_front.webp", E001 / "outfit_001_skirt_front/skirt.png",
-     "crops/skirt_front crop.png", "mask"),
-    ("skirt front crop", None, None, "crops/skirt_front crop.png", "crop"),
+    ("skirt front mask", None, None, "crops/skirt_front_continuous.png", "cont_mask"),
+    ("skirt front crop", None, None, "crops/skirt_front_continuous.png", "crop"),
     ("shoes mask", "shoes_wedge.webp", E001 / "outfit_001_shoes_wedge/shoes.png",
      "crops/shoes crop.png", "mask"),
     ("shoes crop", None, None, "crops/shoes crop.png", "crop"),
 ]
+
+
+def _isolate_white(crop_path: Path) -> Image.Image:
+    """Isolate a garment from its near-white background -> RGBA, bbox-cropped (for a continuous crop)."""
+    img = Image.open(crop_path).convert("RGB")
+    arr = np.array(img)
+    fg = (arr.min(axis=2) < 245).astype(np.uint8) * 255  # non-white
+    rgba = np.dstack([arr, fg])
+    out = Image.fromarray(rgba, "RGBA")
+    bbox = Image.fromarray(fg, "L").getbbox()
+    return out.crop(bbox) if bbox else out
 
 
 def _masked(source: Path, mask_path: Path) -> Image.Image:
@@ -67,6 +79,8 @@ def main() -> None:
     for label, src, mask, crop, mode in CELLS:
         if mode == "mask":
             image = _masked(OUTFIT_DIR / src, Path(mask))
+        elif mode == "cont_mask":
+            image = _isolate_white(OUTFIT_DIR / crop)
         else:
             image = Image.open(OUTFIT_DIR / crop).convert("RGBA")
         rendered.append(_cell(image, label))
