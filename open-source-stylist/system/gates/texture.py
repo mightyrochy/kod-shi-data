@@ -43,6 +43,8 @@ def _load(img) -> np.ndarray:
 def _region(img: np.ndarray, mask: np.ndarray | None) -> np.ndarray:
     """Bounding-box crop of the masked garment (or the whole image if no mask), resized to _WORK²."""
     if mask is not None:
+        if isinstance(mask, (str, Path)):
+            mask = cv2.imread(str(mask), cv2.IMREAD_GRAYSCALE)
         if (mask.shape[1], mask.shape[0]) != (img.shape[1], img.shape[0]):
             mask = cv2.resize(mask, (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
         ys, xs = np.where(mask > 127)
