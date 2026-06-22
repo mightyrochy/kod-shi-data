@@ -62,3 +62,45 @@ Pursue BOTH, complementary:
    used as a flagger (routes repair/owner), per METHODOLOGY's observation role.
 Both are local-runnable. Pass 2 (after the search limit resets) should mine: PatchCore-for-fashion specifics,
 AnomalyGPT/AnomalyCLIP details, the exact VTON VLM-eval prompts, and dense-correspondence (DIFT/SD-DINO/CORAL).
+
+## PASS 2 (limits reset) — the CV answer is named, and the VLM criteria are concrete
+
+### CV: **AnomalyDINO** (WACV 2025, arXiv 2405.14529) — exactly the right tool, training-free
+This is the principled, validated form of what we hand-rolled:
+- **Patch-level deep nearest-neighbour** with **DINOv2** patch features (we already have DINOv2 loaded).
+- **Memory bank** of the reference garment's patches + **nearest-neighbour distance via Faiss** — NO grid
+  alignment (this fixes the framing/alignment confound that broke our aligned-grid version).
+- Gives BOTH an image-level score (anomaly = "mean of top 1%" of patch distances) AND **pixel-level
+  localisation** (bilinear-Gaussian upsampling) → a heat-map of WHERE the output garment diverges (the
+  missing slit lights up wherever it is).
+- **Training-free, few-shot** (a single reference garment is enough). Directly implementable locally.
+This replaces our brittle `structure.py` with the established method. Related: AnomalyCLIP (ICLR 2024,
+object-agnostic zero-shot prompts), CLIP-DINOv2 fusion, "Foundation-Model-Based Industrial Defect
+Detection" survey (arXiv 2502.19106).
+
+### Dense correspondence (alternative / complement)
+DIFT (emergent diffusion-feature correspondence, training-free) and **SD-DINO** ("A Tale of Two Features",
+NeurIPS 23): DINOv2 gives sparse accurate matches, Stable-Diffusion features add spatial density; fused +
+nearest-neighbour for zero-shot part matching. Heavier than AnomalyDINO; keep as a fallback.
+
+### VLM-as-judge — concrete criteria that catch OUR defects (incl. the tuck)
+The field's VTON VLM rubrics name exactly our blind spots:
+- GTC / TAC / FPC (Garment-Transfer / Textual-Attribute / Fit-Pose Consistency).
+- A 5-dim set: Background Consistency, Person Identity & Body Consistency, **Texture Fidelity**, **Shape
+  Preservation (geometric correctness)**, Overall Realism.
+- Garment-transfer priorities: correct placement, **sleeve & hem length**, collar/neckline, pattern
+  orientation; drape/physical realism; lighting; source integrity.
+**"hem length / placement"** is the half-tuck; **"shape preservation / geometric correctness"** is the
+missing slit — both are standard VLM-judge criteria. Field impls use GPT-4o; we use the local LM Studio
+VLM as a **flagger**. Note "When Rubrics Fail: Error Enumeration as Reward" (arXiv 2603.05659): for VTON,
+asking the model to ENUMERATE errors beats fixed rubrics — a good local-VLM prompt pattern.
+
+## Sharpened recommendation
+1. **Replace `structure.py` with an AnomalyDINO-style check** — DINOv2 patch features + NN memory bank of
+   the reference garment + top-1% anomaly score + localisation map. Universal, training-free, no alignment.
+   Validate on the slit case (no-slit should anomaly-score high, slit low).
+2. **Add a local VLM-as-judge flagger** — error-enumeration prompt against the reference + layout
+   ("list anything wrong: hem/tuck, missing slit, wrong placement, …"). Routes repair/owner (observation
+   role, METHODOLOGY-compatible). Catches layering the metric can't.
+Both local. Together: AnomalyDINO localises structural/appearance anomalies; the VLM reasons about layering
+and arbitrary defects. That is the breadth we were missing.
