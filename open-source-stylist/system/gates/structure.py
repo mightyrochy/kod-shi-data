@@ -12,7 +12,7 @@ framing confound; no garment/defect-specific region is hard-coded):
 Each direction aggregates the top-5% worst (1 - best cosine). `anomaly` = max(forward, reverse); lower is
 better. Reference garment = the "normal" memory bank (few-shot: one reference is enough).
 
-Validated 2026-06-21 on owner-labelled skirt cases (correct direction, wider margin than the old
+Validated 2026-06-22 on owner-labelled skirt cases (correct direction, wider margin than the old
 aligned-grid):
     no-slit QIE skirt (owner FAIL): forward 0.555, reverse 0.515  -> anomaly 0.555 STRUCTURE_OFF
     slit  FitDiT skirt (owner PASS): forward 0.433, reverse 0.434  -> anomaly 0.434 OK

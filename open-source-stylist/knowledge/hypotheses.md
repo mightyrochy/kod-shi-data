@@ -206,7 +206,7 @@ E-011 (V-REPAIR-001) is owner-accepted for ONE garment/person/seed. Open, unveri
   than a model limit.
 
 ## H-PIPELINE-2026-06-21 — universal pipeline state, open items
-(`system/pipeline.py`, research/QUALITY_CHECK_SURVEY_2026-06-21.md, experiments/015_isolation_compare/.)
+(`system/pipeline.py`, research/QUALITY_CHECK_SURVEY_2026-06-22.md, experiments/015_isolation_compare/.)
 - **Identity collapse in the universal pipeline (BLOCKING, not fully isolated).** The single-tile board
   gave identity 0.40 vs the combined (mask+crop) board 0.945 — same QIE workflow. The combined board is
   proven (QIE context/logic + good identity); single tiles were the regression. Likely cause = board

@@ -1,4 +1,4 @@
-# How the field checks generated-image fidelity / defects — broad survey (2026-06-21, pass 1)
+# How the field checks generated-image fidelity / defects — broad survey (2026-06-22, pass 1)
 
 Owner-directed: we were looking too narrowly (bespoke metrics per defect). Survey how the broader field
 detects whether a generated image faithfully matches a reference and where it is defective — CV and

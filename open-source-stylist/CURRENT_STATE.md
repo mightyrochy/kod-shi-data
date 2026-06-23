@@ -187,7 +187,7 @@ Generation has moved to a garment-first try-on architecture (see
   calibration set for the garment instrument (decision-grade thresholds); accessories (belt/earrings/shoes via
   OmniTry — install/VRAM unverified); jeans-below-hem cleanup (skin-inpaint, the agnostic-canvas axis).
 
-## Active work 2026-06-19 → 2026-06-21 — editing-first spine fixed, instruments + universal pipeline
+## Active work 2026-06-19 → 2026-06-23 — editing-first spine fixed, instruments + universal pipeline
 
 **2026-06-19 — deep research (sources, not trial-and-error).** `research/DEEP_RESEARCH_2026-06-19.md` +
 `research/FIELD_SURVEY_2026-06-19.md`: VTON mechanism from papers (densepose = hard channel; incorrect
@@ -202,7 +202,7 @@ layered latent, no `ModelSamplingAuraFlow`/`CFGNorm`). Rebuilt to the official C
 negative. Repair v5 owner-ACCEPTED (faithful blouse, locality 0.232%, identity 0.9984). The holistic
 `qie2511_vton.json` + `qie2511_vton_lightning.json` had the SAME bug → fixed.
 
-**2026-06-21 — pipeline works, instruments broadened, universal orchestrator built.**
+**2026-06-21 — pipeline works, universal orchestrator built.**
 - **E-012** (`experiments/012_holistic_workflow_fix/`): the fixed holistic QIE produces the whole outfit in
   one pass, **owner-accepted** ("дуже добре"); identity 0.92. Confirms the spine + that the softness was the bug.
 - **E-013** (`experiments/013_fitdit_skirt_texture_repair/`): FitDiT per-item skirt repair owner-accepted.
@@ -216,18 +216,22 @@ negative. Repair v5 owner-ACCEPTED (faithful blouse, locality 0.232%, identity 0
   continuous garment+mask). FLUX Fill — had real bugs (guidance, DifferentialDiffusion) FIXED, but it is
   TEXT-only (no garment-image input) → not a try-on engine. OmniTry URL in the blueprint was wrong
   (`Kunbyte-AI/OmniTry`, Apache-2.0, a FLUX-Fill LoRA → 16 GB plausible via fp8; research/ACCESSORY_TRYON_SURVEY).
-- **Checking instruments** (`research/QUALITY_CHECK_SURVEY_2026-06-21.md`): sim/DISTS/colour MISS structural
-  defects. Added, validated on owner cases: `system/gates/structure.py` = **AnomalyDINO** (DINOv2
-  bidirectional patch-NN — catches a missing slit; no alignment confound); a **VLM-judge** = Qwen3-VL-8B in
-  LM Studio (multi-image, error-enumeration; catches the slit, MISSES the half-tuck, confabulates). `texture.py`
-  upgraded to Gabor weave and made **record-only / non-gating** (owner decision). Calibration finding: the
-  flat→good discriminator is FashionSigLIP **sim** + structure, NOT weave (weave a shared ~13% ceiling).
 - **Universal pipeline** `system/pipeline.py`: input = person + layout + original garment images with TYPES;
   `GARMENT_VOCAB` routes each (holistic → board+QIE+check+repair; accessory → deferred to OmniTry). Runs
   autonomously to OmniTry, all artifacts saved. **BLOCKING BUG: identity collapse** — the single-tile board
   gave identity 0.40 vs the combined (mask+crop) board 0.945. The combined board is proven (context + good
   identity); single tiles were the regression. Cause not fully isolated (board-structure vs prompt), but the
   combined board is the fix direction.
+
+**2026-06-22 — checking instruments broadened.**
+- **Checking instruments** (`research/QUALITY_CHECK_SURVEY_2026-06-22.md`): sim/DISTS/colour MISS structural
+  defects. Added, validated on owner cases: `system/gates/structure.py` = **AnomalyDINO** (DINOv2
+  bidirectional patch-NN — catches a missing slit; no alignment confound); a **VLM-judge** = Qwen3-VL-8B in
+  LM Studio (multi-image, error-enumeration; catches the slit, MISSES the half-tuck, confabulates). `texture.py`
+  upgraded to Gabor weave and made **record-only / non-gating** (owner decision). Calibration finding: the
+  flat→good discriminator is FashionSigLIP **sim** + structure, NOT weave (weave a shared ~13% ceiling).
+
+**2026-06-23 — board-building research + docs consolidation.**
 - **Board-building research** (`experiments/015_isolation_compare/`): **ATR human-parsing** isolates on-model
   garments cleanest (blouse BUTTONS preserved, model excluded — no per-feature repair needed); grounded_sam
   better for shoes (ATR fragments them); matting (rembg/BiRefNet) is WRONG for on-model photos (it removes
@@ -235,6 +239,9 @@ negative. Repair v5 owner-ACCEPTED (faithful blouse, locality 0.232%, identity 0
   should be GENERAL (not skirt-only); and the next idea — an **"intelligent board analyzer"**: run multiple
   isolators per element, auto-select the best, and that selection IS the board verification (no per-type
   hardcoding). NOT built yet.
+- **Docs consolidation + date correction** (this session): canonical files brought up to date; misdated
+  06-22/06-23 artifacts corrected — the QUALITY_CHECK survey is 06-22; AnomalyDINO validation is 06-22; E-015
+  + this consolidation are 06-23 (I had stamped them all 06-21; git commit dates are the ground truth).
 
 **Methodology corrections logged this session (owner):** (1) propose options → the OWNER decides; do not
 decide-and-execute. (2) Isolate one variable before any capability/cause claim. (3) Do not self-declare

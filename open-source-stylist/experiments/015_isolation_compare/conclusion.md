@@ -1,4 +1,4 @@
-# E-015 — garment-isolation method comparison (board-building) (2026-06-21)
+# E-015 — garment-isolation method comparison (board-building) (2026-06-23)
 
 Owner-directed: the universal pipeline auto-builds the board by isolating each garment from its ORIGINAL
 image; grounded_sam (binary object mask) dropped pale buttons → gaps, and I was stacking repairs
