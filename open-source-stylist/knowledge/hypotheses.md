@@ -167,10 +167,61 @@ validation. Fix = consistency by construction (design §6a): V1 frozen clean ref
 production clothes-parsing. → No experiment verifies the *production* parser yet;
 the V1 stand-in is a build decision, not an experiment.
 
-**E-007 STATUS: INVALID.** Phase 1 ran on a contaminated board; phase 2 not run.
-Whatever E-007 would have measured is meaningless until it is redone on a clean
-board (frozen refs). The "masked crops vs garment-on-person" question E-007 exists to
-answer is still OPEN — V-REF-001 was on uncontrolled raw photos; the controlled,
-consistent comparison has not been run.
+**E-007 attempt 1 STATUS: INVALID.** Its protocol and results are preserved under
+dated `*_invalid_2026-06-13` paths. E-007 v2 (prepared 2026-06-14) is the controlled
+comparison that was actually needed: frozen masked-crop board versus frozen simple
+rectangular-crop board.
+
+**E-007 v2 result (2026-06-14): MIXED A/B; HYBRID SUPPLEMENT MEASURED.** The owner
+found advantages and disadvantages in both original arms and a visibly incorrect
+blouse shade in both. The masked blouse-front input omitted its buttons, and that
+defect propagated into the outputs. The corrected nine-cell hybrid produces visible
+buttons, V necklines, and wedge sandals in 5/5 outputs with 5/5 usable measurement
+mask sets. Identity remains stable (mean 0.787), but blouse shade still looks wrong
+and the silhouette diagnostic remains poor (12.644%). Because the edited layout and
+board changed together, the supplement ranks the complete input candidate rather
+than proving which individual change caused the improvement.
 
 ---
+
+## H-REPAIR-GEN — repair generalisation & the cuff lever (2026-06-20)
+
+E-011 (V-REPAIR-001) is owner-accepted for ONE garment/person/seed. Open, unverified:
+- **Cross-garment / cross-person:** whether QIE-2511 crop-and-stitch stays reference-faithful + local on
+  other items (skirt, structured garments) and other people. → needs more cases, single-variable.
+- **Peripheral fine detail (cuffs):** soft on v5; NOT fixed by steps or global resolution. Hypothesis: a
+  **tighter per-detail crop** (cuff occupies ~6× more of the frame) sharpens it. Untested — the next
+  single-variable move if a cuff-grade result is required.
+- **Holistic try-on workflows — bug CONFIRMED and FIXED (2026-06-20), test PENDING.** Both
+  `system/workflows/qie2511_vton.json` and `qie2511_vton_lightning.json` carried the SAME bug as the old
+  edit graph: `EmptyQwenImageLayeredLatentImage` (a node misappropriated from the SEPARATE "Qwen Image
+  Layered" feature — different model `qwen_image_layered_bf16` + VAE + plain `CLIPTextEncode`) instead of
+  `VAEEncode`-of-input; AND no `ModelSamplingAuraFlow`/`CFGNorm` (the AuraFlow patch is in BOTH official
+  templates). Origin: introduced 2026-06-10 (V1-alpha 7fe3dbf); `V-QIE-001` "Verified" only the output
+  FRAME FORMAT of that latent, not its correctness, which froze the wrong choice into E-005/007/009;
+  E-009 even named it "the root cause of the drift" but mis-prescribed the fix (→ E-010 VTON detour).
+  Both files are now rebuilt on the corrected edit graph (V-QIE-EDIT-001), structurally validated. **Still
+  a hypothesis until a protocolled whole-outfit run shows the holistic softness is gone** —
+  fixed-but-untested, not Verified. Re-opens whether the E-009/E-010 conclusions stood on this bug rather
+  than a model limit.
+
+## H-PIPELINE-2026-06-21 — universal pipeline state, open items
+(`system/pipeline.py`, research/QUALITY_CHECK_SURVEY_2026-06-21.md, experiments/015_isolation_compare/.)
+- **Identity collapse in the universal pipeline (BLOCKING, not fully isolated).** The single-tile board
+  gave identity 0.40 vs the combined (mask+crop) board 0.945 — same QIE workflow. The combined board is
+  proven (QIE context/logic + good identity); single tiles were the regression. Likely cause = board
+  structure (single-tile vs combined), but prompt was not separately isolated. Fix direction: combined board.
+- **Checking instruments are provisional.** AnomalyDINO structure gate (`structure.py`) + VLM-judge
+  (Qwen3-VL) catch the missing slit on the 2 owner-labelled anchors, but thresholds are 2-anchor provisional
+  and need a labelled set. VLM-judge MISSES the half-tuck and CONFABULATES (reports absent items) → flagger
+  + owner backstop, not decision-grade.
+- **No instrument catches the layering/half-tuck defect** — between-garment problem; needs a layering
+  detector or stays owner-eye.
+- **Board isolation (single outfit, owner-shown — not generalised).** ATR human-parsing isolates on-model
+  garments cleanest (buttons preserved, model excluded); grounded_sam better for shoes (ATR fragments them);
+  matting (rembg/BiRefNet) keeps the MODEL on on-model photos → wrong tool there. Owner-shown on outfit_001
+  only.
+- **Proposed (not built): "intelligent board analyzer"** — per element run multiple isolators, auto-select
+  the best (signals: face/skin leak, completeness/connectedness, garment-identity, optional VLM), and that
+  selection IS the board verification. Must itself be validated against owner judgment.
+- **OmniTry accessory stage** not stood up (16 GB-via-fp8 test pending).

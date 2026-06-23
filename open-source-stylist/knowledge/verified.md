@@ -126,6 +126,13 @@ are available.
 Note: insightface runs on CPU only (CUDAExecutionProvider unavailable). Accurate;
 GPU acceleration to be investigated before Stage 3.
 
+**Runtime correction (2026-06-14):** this was an environment configuration issue,
+not an ArcFace limitation. The CPU and GPU ONNX Runtime distributions were both
+installed and the CPU files took precedence. CUDA 12/cuDNN 9 wheel libraries are
+now installed and explicitly preloaded; detection and recognition sessions use
+`CUDAExecutionProvider` with CPU retained only as fallback. E-003 measurements and
+thresholds are unchanged because the model and inference math are unchanged.
+
 ---
 
 ## V-PROP-001 — Proportions gate threshold (2026-06-11, E-004, PASS)
@@ -434,14 +441,21 @@ pipeline.
 **Caveat added 2026-06-13 (E-007 board forensics):** the rule stands, but the
 in-loop method that was supposed to produce garment-only crops does NOT reliably do
 so. `system/adapter/panel.py` isolated garments with generic GroundingDINO+SAM+union
-("top"/"bottom"), which is a run-to-run lottery: E-005 produced clean crops, E-007
+("top"/"bottom"), which is a run-to-run lottery: E-005 produced usable isolated
+crops, while E-007
 rebuilt the board and produced crops containing the product model's face/body
 (insightface: 0 faces on the E-005 board vs 3 on the E-007 board). So "garment-only
 crops" is a satisfied REQUIREMENT only when the isolation actually works — and the
 current method does not guarantee it. Resolution (design §6a): V1 uses frozen,
-owner-reviewed clean references tiled deterministically (no in-loop segmentation);
+owner-reviewed reference assets tiled deterministically (no in-loop segmentation);
 production uses category/person-aware clothes-parsing. Until that lands, any board
-must be visually confirmed clean (or face-checked) before a run is trusted.
+must be visually reviewed for target isolation (and face-checked where relevant)
+before a run is trusted.
+
+**Clarification 2026-06-14:** E-008 disqualified full product photos. It did not
+choose between masked crops and owner-prepared rectangular crops. Those are now two
+frozen board files and remain experimental until E-007 v2. Runtime reuses the selected
+PNG byte-for-byte and verifies its SHA-256; it does not rebuild the board.
 
 ---
 
@@ -490,7 +504,7 @@ asked to "generate a person wearing this kind of outfit", not "keep this person 
 dress them from the board". Identity held only incidentally (QIE is an edit model).
 
 **Therefore the following entries measure the WRONG task and are NOT decision-grade
-until re-baselined (E-007 redo on a clean board + task-correct prompt):**
+until re-baselined (E-007 v2 with frozen boards + task-correct prompt):**
 - V-VAR-001 (variance baseline on generated outputs)
 - V-COLOR-002 (color thresholds "confirmed on generated distribution")
 - V-ID-002 (identity threshold "confirmed on generated images")
@@ -508,3 +522,92 @@ Keep the numbers (they are real measurements of the wrong task). Do not build
 decisions on the confounded entries until E-007 re-baseline replaces them.
 
 ---
+
+## V-REF-003 — Board construction by element class (2026-06-14, owner-confirmed across E-007 v2 boards)
+
+Source: owner review across the three frozen E-007 v2 boards (masked_crops,
+rectangular_crops, hybrid_mask_crop). Owner direct visual evidence
+(METHODOLOGY §1: confirmation on direct evidence).
+
+Quality garment masks give the best overall garment correspondence. But small/
+detailed items reproduce better from a context crop (garment + immediate
+surroundings) than from a bare mask — a bare mask strips the spatial context a
+small object needs for correct scale and placement.
+
+**Rule (decision-grade, by element class — not outfit-specific):**
+- Large garments (blouse, skirt, …): quality isolation mask.
+- Small/detailed items (earrings; likely belt buckle, shoe straps): mask + context crop.
+
+The hybrid_mask_crop board already pairs mask+crop for earrings/shoes/blouse,
+consistent with this rule.
+
+**Bounded by V-REF-001:** a "context crop" is still garment-level — it must not
+reintroduce a product model's face/body. Context = the garment's immediate
+surroundings for scale, never the model. This narrows how much to crop; it does
+NOT reopen the no-model-body rule.
+
+**Basis caveat:** confirmed by owner review ACROSS boards, not by an isolated A/B on
+one small item (the hybrid changed board AND layout together, so it ranks the whole
+input). A clean confirmation — one small item, mask-only vs mask+context-crop,
+board/layout otherwise fixed — remains the way to isolate the factor; the rule
+stands on owner direct evidence until then.
+
+---
+
+## V-REPAIR-001 — QIE-2511 crop-and-stitch does reference-faithful LOCAL single-garment repair (2026-06-20)
+
+E-011, owner-accepted (`results/repaired_blouse_v5_official.png`). Replacing one garment region (gray
+sweater → lemon blouse from its reference) on the source photo:
+- **Quality:** owner ACCEPTED — blouse fully formed (V-neck, button placket, pleated peplum, dolman
+  sleeves, matching colour); identity/jeans/pose/background untouched.
+- **Locality (deterministic, HARD):** 0.232 % outside-mask change (<1 % target). Mechanism = crop (QIE
+  only sees the region) + feathered mask-limited paste-back; unit-tested in `test_repair_locality.py`.
+- **Identity (deterministic):** ArcFace cosine(base, repaired) = 0.9984.
+
+**Scope caveat:** one garment / person / seed (42). Cross-garment and cross-person generalisation is NOT
+yet established (→ hypotheses H-REPAIR-GEN). Peripheral fine detail (sleeve cuffs) is approximated, not
+crisp — a known QIE limit, see V-QIE-EDIT-001.
+
+## V-QIE-EDIT-001 — the correct QIE-Image-Edit-2511 ComfyUI edit graph (2026-06-20)
+
+The chronic "watercolour / under-formed" QIE edits (E-011 v1–v4, and likely earlier softness) were a
+**workflow bug**, not a model ceiling. The official template
+(`comfyui_workflow_templates_media_image/templates/image_qwen_image_edit_2511.json`) requires, and the
+project's `system/workflows/qie2511_edit.json` now matches:
+- **KSampler latent = `VAEEncode` of the input image** (scaled by `FluxKontextImageScale`) — denoise FROM
+  the input latent. NOT `EmptySD3LatentImage` and NOT the layered latent (those generate from scratch →
+  under-generation).
+- Model patches before the sampler: **`ModelSamplingAuraFlow` (shift 3.1) → `CFGNorm`**.
+- Negative conditioning is image-encoded; both conditionings via `FluxKontextMultiReferenceLatentMethod`.
+- Reference (Comfy): **20 steps, cfg 4.0, euler, simple, denoise 1.0** (Qwen ref: 40 steps — measured to
+  add no visible fidelity on the cuff, E-011 v6). Node field names verified via `/object_info`.
+
+**Falsified levers for peripheral fine-detail softness (cuffs):** global resolution (1536px, 2026-06-19)
+and sampling steps (20→40, 2026-06-20) — neither helps. The mechanistically-distinct untested lever is a
+tighter per-detail crop (more pixels-on-detail).
+
+## V-HOLISTIC-001 — the fixed QIE holistic produces an owner-accepted whole outfit (2026-06-21)
+E-012: with the corrected edit graph (V-QIE-EDIT-001), the QIE holistic pass (person + board → re-dressed
+person, one pass) is owner-ACCEPTED for the whole outfit ("дуже добре"); identity 0.92, body/pose preserved.
+The chronic "softness/under-generation" was the workflow bug, NOT a model limit. Editing-first spine
+(SYSTEM_DESIGN §3) confirmed as viable.
+
+## V-ENGINES-AUDIT-001 — four generation engines audited against canonical sources (2026-06-21)
+(`experiments/010/{FITDIT,LEFFA,FLUXFILL}_AUDIT_2026-06-21.md`, research/ACCESSORY_TRYON_SURVEY.)
+- **QIE**: had a real hand-built-workflow bug (V-QIE-EDIT-001); fixed.
+- **FitDiT**: node + invocation are CANONICAL — no wiring bug. The skirt→pants was an INPUT-topology
+  problem (flat-lay through-slit garment); a continuous silhouette fixes it (verified by ground truth).
+- **Leffa**: wiring CANONICAL (densepose byte-identical to canonical dress_code); but a genuine
+  ARCHITECTURAL limit — densepose IUV is a hard channel that forces leg geometry, so it CANNOT render a
+  free-hanging skirt even with a continuous garment + continuous mask (verified ground truth).
+- **FLUX Fill**: had real workflow bugs (guidance must be 30 not __CFG__; DifferentialDiffusion not
+  ModelSamplingFlux; ConditioningZeroOut) — fixed; BUT flux1-fill-dev is TEXT-prompted (no garment-image
+  input) → cannot reproduce a specific garment → NOT a try-on engine.
+- **OmniTry** (accessories) = a LoRA on FLUX.1-Fill-dev, Apache-2.0; the blueprint URL was wrong (correct:
+  github.com/Kunbyte-AI/OmniTry); the 28 GB figure is bf16 → 16 GB plausible via fp8 (untested).
+
+## Gating rule — TEXTURE is record-only / non-gating (owner decision 2026-06-21)
+The texture (weave) measure is too weak/noisy to gate on; fabric weave is a shared generator ceiling
+(~13% of reference, both QIE and FitDiT). `system/gates/texture.py` records numbers (`gating:False`) but
+the system IGNORES its verdict. Gating axes = identity (ArcFace) + colour (CIEDE2000); structure
+(AnomalyDINO) + VLM-judge are the structural checks. The flat→good discriminator is sim + structure, not weave.

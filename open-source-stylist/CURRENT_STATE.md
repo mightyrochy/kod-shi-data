@@ -186,3 +186,61 @@ Generation has moved to a garment-first try-on architecture (see
 - **Open:** skirt colour fix (reference colour-transfer on FitDiT, or cloud) — warping ruled out; labelled
   calibration set for the garment instrument (decision-grade thresholds); accessories (belt/earrings/shoes via
   OmniTry — install/VRAM unverified); jeans-below-hem cleanup (skin-inpaint, the agnostic-canvas axis).
+
+## Active work 2026-06-19 → 2026-06-21 — editing-first spine fixed, instruments + universal pipeline
+
+**2026-06-19 — deep research (sources, not trial-and-error).** `research/DEEP_RESEARCH_2026-06-19.md` +
+`research/FIELD_SURVEY_2026-06-19.md`: VTON mechanism from papers (densepose = hard channel; incorrect
+agnostic → hallucination; dual-UNet fidelity ceiling). Confirms the canonical **editing-model-first spine**
+(QIE-2511 holistic + per-item repair) over dedicated VTON. The 2026-06-18 Leffa/FitDiT detour reclassified
+as Observations (`experiments/010/RECONCILIATION_2026-06-19.md`).
+
+**2026-06-20 — E-011: the chronic QIE "softness" was a WORKFLOW BUG, not a model limit.**
+`knowledge/verified.md` V-QIE-EDIT-001 + V-REPAIR-001. The QIE edit graph was hand-built wrong (empty/
+layered latent, no `ModelSamplingAuraFlow`/`CFGNorm`). Rebuilt to the official ComfyUI template
+(`image_qwen_image_edit_2511.json`): VAEEncode-of-input latent + AuraFlow(3.1) + CFGNorm + image-encoded
+negative. Repair v5 owner-ACCEPTED (faithful blouse, locality 0.232%, identity 0.9984). The holistic
+`qie2511_vton.json` + `qie2511_vton_lightning.json` had the SAME bug → fixed.
+
+**2026-06-21 — pipeline works, instruments broadened, universal orchestrator built.**
+- **E-012** (`experiments/012_holistic_workflow_fix/`): the fixed holistic QIE produces the whole outfit in
+  one pass, **owner-accepted** ("дуже добре"); identity 0.92. Confirms the spine + that the softness was the bug.
+- **E-013** (`experiments/013_fitdit_skirt_texture_repair/`): FitDiT per-item skirt repair owner-accepted.
+  Two rules: continuous-silhouette garment (slit as a line, not a through-gap) + **local composite** (paste
+  only the skirt mask MINUS the belt → neighbours preserved). **Resolution strategy: canonical 1.77 MP**
+  (`design/RESOLUTION_STRATEGY_2026-06-21.md`) — upscale the ~1 MP QIE base once; repairs at canonical res
+  (feed FitDiT a hi-res base or it downscales its own output); hi-res per-item refs; local composite.
+- **Engine audits** (`experiments/010/{FITDIT,LEFFA,FLUXFILL}_AUDIT_2026-06-21.md`): FitDiT — canonical, no
+  wiring bug (skirt→pants was the flat-lay through-slit INPUT; continuous silhouette fixes it). Leffa —
+  canonical, but a genuine **densepose-hard-channel** limit on free-hanging skirts (can't, even with
+  continuous garment+mask). FLUX Fill — had real bugs (guidance, DifferentialDiffusion) FIXED, but it is
+  TEXT-only (no garment-image input) → not a try-on engine. OmniTry URL in the blueprint was wrong
+  (`Kunbyte-AI/OmniTry`, Apache-2.0, a FLUX-Fill LoRA → 16 GB plausible via fp8; research/ACCESSORY_TRYON_SURVEY).
+- **Checking instruments** (`research/QUALITY_CHECK_SURVEY_2026-06-21.md`): sim/DISTS/colour MISS structural
+  defects. Added, validated on owner cases: `system/gates/structure.py` = **AnomalyDINO** (DINOv2
+  bidirectional patch-NN — catches a missing slit; no alignment confound); a **VLM-judge** = Qwen3-VL-8B in
+  LM Studio (multi-image, error-enumeration; catches the slit, MISSES the half-tuck, confabulates). `texture.py`
+  upgraded to Gabor weave and made **record-only / non-gating** (owner decision). Calibration finding: the
+  flat→good discriminator is FashionSigLIP **sim** + structure, NOT weave (weave a shared ~13% ceiling).
+- **Universal pipeline** `system/pipeline.py`: input = person + layout + original garment images with TYPES;
+  `GARMENT_VOCAB` routes each (holistic → board+QIE+check+repair; accessory → deferred to OmniTry). Runs
+  autonomously to OmniTry, all artifacts saved. **BLOCKING BUG: identity collapse** — the single-tile board
+  gave identity 0.40 vs the combined (mask+crop) board 0.945. The combined board is proven (context + good
+  identity); single tiles were the regression. Cause not fully isolated (board-structure vs prompt), but the
+  combined board is the fix direction.
+- **Board-building research** (`experiments/015_isolation_compare/`): **ATR human-parsing** isolates on-model
+  garments cleanest (blouse BUTTONS preserved, model excluded — no per-feature repair needed); grounded_sam
+  better for shoes (ATR fragments them); matting (rembg/BiRefNet) is WRONG for on-model photos (it removes
+  background, keeps the MODEL). Owner direction: keep the **combined board**; a `_make_continuous` gap-fill
+  should be GENERAL (not skirt-only); and the next idea — an **"intelligent board analyzer"**: run multiple
+  isolators per element, auto-select the best, and that selection IS the board verification (no per-type
+  hardcoding). NOT built yet.
+
+**Methodology corrections logged this session (owner):** (1) propose options → the OWNER decides; do not
+decide-and-execute. (2) Isolate one variable before any capability/cause claim. (3) Do not self-declare
+"worked/failed" — show the artifact, the owner judges. (4) The combined board is proven; do not regress to
+single tiles. (5) Layers must be specified LITERALLY (what is over what).
+
+**Open / next (owner-gated):** fix identity via the combined board (ATR-mask + crop); build the board
+analyzer (multi-isolator + auto-select + verify); a layering/tuck detector (no instrument catches it);
+stand up OmniTry (accessories); calibrate instrument thresholds on a labelled set.
