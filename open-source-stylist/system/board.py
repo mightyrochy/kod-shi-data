@@ -28,7 +28,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from system.garment import GarmentSpec
 from system.segmentation.grounded_sam import segment
-from system.segmentation.parsing import garment_masks
+from system.segmentation.parsing import garment_mask
 
 # gross-error thresholds — coarse bounds, not tuning knobs: an isolate this far gone is plainly broken.
 _MIN_AREA_FRAC = 0.004   # < 0.4% of the image -> empty / failed isolation
@@ -36,6 +36,8 @@ _KEEP_FRAC = 0.06        # drop components smaller than 6% of the largest (speck
 _MIN_PX = 300            # ...but always keep components of at least this many pixels
 _DOMINANT_FRAC = 0.55    # a single-piece garment's main blob must hold most of the foreground
 _MAX_PARTS = 4           # a clean isolate is one blob or a few (a pair); dozens of parts = shattered
+_ATR_DOMINANCE = 0.18    # accept human-parsing only if the garment dominates the parse; below this the
+                         # parser mis-read a close-up (target is a sliver of a garbage body parse) -> SAM
 _CROP_PAD = 0.12         # context padding around the garment for the crop cell
 _CELL = 256              # board cell size (px)
 
@@ -138,13 +140,16 @@ def isolate(spec: GarmentSpec, original: Path, client, outdir: Path) -> dict:
         raise FileNotFoundError(original)
     slug = _slug(spec.label)
 
-    # 1. try human-parsing first; accept it only if the region is clean (excludes the model, keeps detail)
+    # 1. try human-parsing first; accept it only if the garment DOMINATES the parse (a real on-model /
+    #    product shot) and the region is clean. A low-dominance parse = ATR mis-read a close-up -> SAM.
     method, raw = None, None
     if spec.atr_region:
         try:
-            atr = garment_masks(str(original), [spec.atr_region], out_size=(im.shape[1], im.shape[0]))[spec.atr_region]
-            if _analyze(atr)[2]["ok"]:
+            atr, dom = garment_mask(str(original), spec.atr_region, out_size=(im.shape[1], im.shape[0]))
+            if dom >= _ATR_DOMINANCE and _analyze(atr)[2]["ok"]:
                 raw, method = atr, "atr"
+            else:
+                print(f"    [{spec.label}] ATR weak (dominance {dom}) -> GroundingDINO+SAM")
         except Exception as exc:  # parser unavailable / off-photo -> just fall through to open-vocabulary
             print(f"    [{spec.label}] ATR unavailable ({exc}); using GroundingDINO+SAM")
     # 2. open-vocabulary fallback (product / close-up shots, or labels ATR does not model)

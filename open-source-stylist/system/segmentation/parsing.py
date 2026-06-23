@@ -56,3 +56,21 @@ def garment_masks(image_path, regions, out_size=None) -> dict[str, np.ndarray]:
         m = np.isin(arr, ATR_REGIONS[r]).astype(np.uint8) * 255
         out[r] = cv2.resize(m, out_size, interpolation=cv2.INTER_NEAREST)
     return out
+
+
+def garment_mask(image_path, region, out_size=None) -> tuple[np.ndarray, float]:
+    """One region's mask plus its DOMINANCE = region pixels / all parsed-foreground pixels.
+
+    Dominance says whether the region is the SUBJECT of the image (a product/on-model photo of that
+    garment -> high) or whether ATR, a full-body parser, mis-parsed a close-up and the target is a sliver
+    of a garbage body parse (-> low). It is scale-free, so it discriminates without a tuned area threshold.
+    """
+    arr = parse_label_map(image_path)
+    fg = int((arr > 0).sum())
+    region_lab = np.isin(arr, ATR_REGIONS[region])
+    dominance = (int(region_lab.sum()) / fg) if fg else 0.0
+    if out_size is None:
+        im = cv2.imread(str(image_path))
+        out_size = (im.shape[1], im.shape[0])
+    mask = cv2.resize(region_lab.astype(np.uint8) * 255, out_size, interpolation=cv2.INTER_NEAREST)
+    return mask, round(dominance, 3)
