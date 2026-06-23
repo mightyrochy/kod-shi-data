@@ -3,6 +3,7 @@ Shows the raw generation so the owner can judge identity + outfit before any rep
 from pathlib import Path
 
 from system.clients.comfyui import ComfyUIClient
+from system.pipeline import build_prompt
 from system.workflows import fill_workflow, load_template
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -11,13 +12,7 @@ OUT = Path(__file__).resolve().parent / "results"
 PERSON = ROOT / "assets/person/person_front.png"
 BOARD = OUT / "board.png"
 LABELS = ["blouse front", "skirt front", "shoes"]
-
-
-def build_prompt(layout_text: str, items: list[str]) -> str:
-    return ("Keep this exact person: face, hair, skin tone, body proportions, pose, and background "
-            "unchanged. Using the reference board (image 2), re-dress them in the outfit shown. "
-            f"Items worn at this stage: {', '.join(items)}. Take all garment appearance from the board only.\n"
-            "Layering / what is visible where:\n" + layout_text)
+DEFERRED = ("belt", "earrings")
 
 
 def _download(client, outputs, prefix, dst):
@@ -30,7 +25,7 @@ def _download(client, outputs, prefix, dst):
 
 
 if __name__ == "__main__":
-    prompt = build_prompt((A / "outfit layout.txt").read_text(encoding="utf-8"), LABELS)
+    prompt = build_prompt((A / "outfit layout.txt").read_text(encoding="utf-8"), LABELS, DEFERRED)
     (OUT / "prompt.txt").write_text(prompt, encoding="utf-8")
     client = ComfyUIClient()
     wf = fill_workflow(load_template("qie2511_vton"), {

@@ -65,12 +65,21 @@ def _download(client, outputs, prefix, dst):
     raise RuntimeError(f"no output with prefix {prefix!r}")
 
 
-def build_prompt(layout_text: str, holistic_types: list[str]) -> str:
-    items = ", ".join(holistic_types)
-    return ("Keep this exact person: face, hair, skin tone, body proportions, pose, and background "
-            "unchanged. Using the reference board (image 2), re-dress them in the outfit shown. "
-            f"Items worn at this stage: {items}. Take all garment appearance from the board only.\n"
-            "Layering / what is visible where:\n" + layout_text)
+def build_prompt(layout_text: str, holistic_labels: list[str], deferred_labels: tuple[str, ...] = ()) -> str:
+    """A concrete instruction for THIS pass only — render exactly the holistic items, with just the layout
+    lines that concern them. QIE does not need the system plan: lines mentioning a deferred accessory (and
+    the build-order line that names them) are dropped, so QIE is not told to render belt/earrings/etc. it
+    must not add yet."""
+    stems = {w[:-1] if w.endswith("s") else w
+             for lbl in deferred_labels for w in re.findall(r"[a-z]+", lbl.lower()) if len(w) >= 3}
+    layering = "\n".join(ln for ln in layout_text.splitlines()
+                         if not (stems and any(re.search(r"\b" + s, ln.lower()) for s in stems))).strip()
+    items = ", ".join(holistic_labels)
+    return (f"Keep this exact person (face, hair, skin tone, body proportions, pose, and background) "
+            f"unchanged. Using only the reference board (image 2), dress them in exactly these items: {items}. "
+            "Render only the items listed above and nothing else: no other garments or accessories. Take all "
+            "colour and texture from the board.\n"
+            "How these items are worn:\n" + layering)
 
 
 def vlm_judge(out_img: Path, refs: list[tuple[str, Path]], holistic_types: list[str]) -> dict:
@@ -172,7 +181,7 @@ def run_pipeline(person: Path, layout_path: Path, garments: list[dict], outdir: 
     board, mask_cells = bd["board"], bd["mask_cells"]
 
     print("[3] prompt + [4] QIE ...")
-    prompt = build_prompt(layout, holistic_labels); (outdir / "prompt.txt").write_text(prompt, encoding="utf-8")
+    prompt = build_prompt(layout, holistic_labels, tuple(accessory)); (outdir / "prompt.txt").write_text(prompt, encoding="utf-8")
     client = ComfyUIClient()
     wf = fill_workflow(load_template("qie2511_vton"), {
         "__PERSON_IMAGE__": client.upload_image(person), "__REF_IMAGE__": client.upload_image(board),
