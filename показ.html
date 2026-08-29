@@ -1,0 +1,441 @@
+<!doctype html>
+<!--
+  показ.html · v1.1 — код+ші
+  Показ-бік поза пісочницею артефакта (github.io або локальний файл).
+  Приймає пакет ПОКАЗ-V1 у фрагменті URL (gzip+base64url, доведено зондом),
+  рендерить картки образів з реальними фото SKU (доведено 3/3 CDN),
+  приймає згенеровані картинки локально (файл/посилання — нікуди не вантажаться),
+  тримає фото-профіль (портрет + повний зріст) у IndexedDB пристрою,
+  пише вердикти за схемою вердикти.tsv v25 у IndexedDB (переживає перевидання
+  артефакта) і віддає їх одним копійованим пакетом ВЕРДИКТИ-ПОКАЗ-V1.
+  Кнопка «Демо» несе 4 картки: 2 з реальними SKU стенд-каталогу, 2 текстові.
+  Записи з демо позначені збірка=демо і фільтруються.
+-->
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>показ образів — код+ші</title>
+<style>
+  :root{--фон:#151412;--картка:#1f1d1a;--край:#3a362f;--текст:#e8e2d6;
+        --тьм:#a89f8d;--акц:#c9a86a;--ок:#7da87a;--ні:#b06c5c}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--фон);color:var(--текст);
+    font:15.5px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:18px 14px 40px;max-width:720px;margin-inline:auto}
+  h1{font-size:20px;margin:0 0 4px;font-weight:650;letter-spacing:.01em}
+  .тьм{color:var(--тьм);font-size:13.5px}
+  .картка{background:var(--картка);border:1px solid var(--край);border-radius:12px;
+    padding:14px;margin:12px 0}
+  .мітка{font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--акц);margin:10px 0 6px}
+  .ряд{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+  .текст-образу{white-space:pre-wrap;margin:8px 0}
+  .речі{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+  .річ{width:31%;min-width:104px}
+  .річ a{display:block}
+  .річ img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:9px;
+    background:#141310;border:1px solid var(--край)}
+  .річ .н{font-size:12px;color:var(--тьм);margin-top:4px;line-height:1.3}
+  .річ .н a{color:var(--акц);text-decoration:none}
+  .полотно{border:1px dashed var(--край);border-radius:9px;padding:14px;
+    color:var(--тьм);font-size:13.5px}
+  img.образ{max-width:100%;border-radius:9px;border:1px solid var(--край)}
+  .чип{border:1px solid var(--край);border-radius:16px;padding:5px 12px;
+    font-size:13.5px;cursor:pointer;user-select:none}
+  .чип.вибр{border-color:var(--акц);background:rgba(201,168,106,.14)}
+  .чип.ок.вибр{border-color:var(--ок);background:rgba(125,168,122,.16)}
+  .чип.ні.вибр{border-color:var(--ні);background:rgba(176,108,92,.16)}
+  button{background:var(--акц);border:0;color:#191713;font-weight:650;
+    padding:9px 16px;border-radius:9px;cursor:pointer;font-size:14px}
+  button.мал{padding:7px 12px;font-size:13.5px}
+  button.друг{background:#2b2823;color:var(--текст)}
+  button:disabled{opacity:.5;cursor:default}
+  input[type=text],textarea{width:100%;background:#141310;color:var(--текст);
+    border:1px solid var(--край);border-radius:8px;padding:8px;font:inherit}
+  textarea{min-height:64px}
+  input[type=file]{color:var(--тьм);font-size:13px;max-width:100%}
+  .статус{font-size:13px;color:var(--тьм)}
+  pre{background:#141310;border:1px solid var(--край);border-radius:9px;padding:10px;
+    font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;
+    word-break:break-all;max-height:200px;overflow:auto}
+  details summary{cursor:pointer;color:var(--акц);font-size:14px}
+  a{color:var(--акц)}
+  hr{border:0;border-top:1px solid var(--край);margin:12px 0}
+</style>
+</head>
+<body>
+<h1>Показ образів</h1>
+<div class="тьм" id="ш-рядок">Пакет ще не отримано.</div>
+
+<div class="картка" id="привіт">
+  <p style="margin:4px 0">Сюди приходять зібрані образи: відкрийте цю сторінку
+  кнопкою «Показ» зі стенда — або натисніть «Демо», щоб побачити, як це виглядає.</p>
+  <div class="ряд"><button id="демо" class="друг">Демо</button></div>
+</div>
+
+<div class="картка">
+  <details>
+    <summary>Мої фото — портрет і повний зріст</summary>
+    <p class="тьм" style="margin:8px 0 6px">Зберігаються лише на цьому пристрої,
+    у пам'яті браузера, і нікуди не вантажаться. Переживають перезавантаження
+    сторінки й будь-які оновлення стенда. На іншому пристрої їх треба додати ще раз.</p>
+    <div class="ряд" style="align-items:flex-start">
+      <div style="flex:1;min-width:140px">
+        <div class="мітка">Портрет</div>
+        <div id="ф-портрет"></div>
+      </div>
+      <div style="flex:1;min-width:140px">
+        <div class="мітка">Повний зріст</div>
+        <div id="ф-зріст"></div>
+      </div>
+    </div>
+  </details>
+</div>
+
+<div id="картки"></div>
+
+<div class="картка" id="журнал">
+  <div class="мітка">Вердикти на цьому пристрої</div>
+  <div class="тьм" id="ж-ліч">—</div>
+  <div id="ж-список" class="тьм" style="font-size:12.5px;margin:6px 0"></div>
+  <div class="ряд">
+    <button id="ж-копія" class="мал">Скопіювати всі вердикти</button>
+    <span class="статус" id="ж-стан"></span>
+  </div>
+  <pre id="ж-пакет" style="display:none"></pre>
+</div>
+
+<script>
+'use strict';
+
+/* ── пакет із фрагмента ─────────────────────────────────────────────────── */
+const ДЕМО_ФРАГМЕНТ = 'H4sIAHTXkmoC_6VWTW8aVxT9KyNWtcR8MxjsRaWo2XXVSt1UljXAAGM-BjHgGEeWwDhxFlacShZVqyppu-oSU2NjDPgvvPkL-SU99z3AA4y9aaxg877uueede959G2OD2E6MfWGf2e_sE_tV_kmPxWPsjl0HvaDNxqxP0zdsyCZsRjMYCU5Znz2wGfuX5lYG9oMOvgzZlN0oR5UybXjEMbPgLOixh-ACG75ZnCavTm1hMX1H7DEO67ObiMhtnD5mo9jOz2-xOOiuAZQJPAcwJiDhaFsS-wOHA2VwDnh9iV0jahfR8OedFHzgp59hyUTCnhnND9kt_g_YKHiHBTzLKcAO-IYzbOgsYtG2OIZx8ojdBV3pa_tKorAcdQeDmFAk9jdGpkRWcMFB8P2PlK6EX0AggA0pQBuhiAseHZEwOcLcmCPAmQPc0ClP6JSNdpcZEIo-VtHqAYauaABRAQq_kDQOPMfPJfB9bf8WXFIISpo2vae7w3lIRxH3McTSHufbzRHTt7JmmhYXCSVyRzFo_Jfn2ZyEeB-xeylbdOr6Nh1_xsHPsL_YaNT8HVUVc0q-butKNldVcm7BbdhlL-vYVb9mZx1fyXoVtdbMlN2sWqt7uWa24asVJ-faqqlphqkasiGbVlK2TF1542RqFKgjeCKgA6TUDt7RaBf5PWwG5wHEyWqm3Dy25WPZL9r1vFeRKx6wFKvuAe1_j6uY8vTNZDodO4mHSEqY24kNkv4RGmKjsLpQNiS3MbEEWcxI19EKi6bMqzqZFj6Upq26FbvgqFkbmeCTiCuoGv-XSBqmifmaV2_sp-x0OmfmsolcIpU0zWw-baUTCStj5q2coScy-7qsW9qRYVi6clArrDHINR7FXxiJX2zYVVfOOMdF59AreHIJzNWboDJv-w2n5HuVVQqNdFpbpdC0Uto6hd87r17_8N3rH0U1h4ormpu8fejV3YbjFz2hHILWrJU9O7fkx0gkNA2fpq6Dn8K-ZkEDm1kPqK5RhafBZVTukZH0tAEhlp2MU885PsRTsn236qpr4kkjz5M9ZDrhJS0MLsbLcGkWmCEPuBCowrXfF4Y9E662UuKxPSI0yiiNl4zyT5witNkn56HNU-4X3CM6QQ_yxMfclIbsPjiXaVhgh5MhtRsytBk5KY655U8C1X7YVekrN3WsGqEIUBkyuSAlTMnDLz_zqencUNaKJC7xAKH5JzvdlZahR6LgpmxIrvlI5U-uhg0fiVAAv3ze6zSNO9VqGf9ffu7IbAeUItLoIJ25Az9y0577b7SgIVCl4NSa9bBL-aplAalqAayh-ijysqNa5rYY2Nf3eRV_q2-nkloqraeSq9J-SiFK2BvR1FrZbjgyzk5Z6yWcXHNB1JK5Qd-XKF2sCUEKC0F65ZTL9pp2ovkxrGbV9aqLAizNa7xmlxveiju-qamFA7XhHdp1FTXazJXdqlOttg7kkl3Hq2NXVS1pIEvzKJl66SHhLcH9XIFRBL4EST4u2iWn0VIRvxWK30J8WawQDto6WDONhGZFmcaq6mmLeIq7vBc4XbrIs8ZgPmsM8UVnstryBV04xl9PjiSUzhuZAccCXYleZykzmTCzG6oTSB7Tk-UjyDvCj3FhHnOGRTM1pmrh9z2mSj7nX6mow0rZpQle4FwkY1H4fWnel11wA5ngfcW9QYTkIYBFndY13SMZhNh9S3tljqdPjhL0FPJF7hBkO4-w2I7oByUhCiIYiYw42oUy57YD1qkBC67WjObZW0i8dAtk7x-4m4l-jV8wNLhF_eWynaSeizrAsYC2alSLxk_Qzt9Qat-G0EZ33v4Kq-2RufbWbXvua9PgfFcKP4w8XdjdKadNNLnDeKgjpZwUksu8xefwZ8uWd8HaIiK0NuFiwlO_Qd3eyX8xCEEWvgwAAA';
+let П = null;                 // поточний пакет ПОКАЗ-V1
+const В = {};                 // відповіді за позицією: {річ,верд,коментар,ок,ні,записано}
+let пристрій = 'невідомо';
+const $ = id => document.getElementById(id);
+
+function б64урлВБайти(s){
+  s = s.replace(/-/g,'+').replace(/_/g,'/');
+  while (s.length % 4) s += '=';
+  const бін = atob(s), м = new Uint8Array(бін.length);
+  for (let i=0;i<бін.length;i++) м[i]=бін.charCodeAt(i);
+  return м;
+}
+async function розпакувати(х){
+  const байти = б64урлВБайти(х);
+  const текст = await new Response(
+    new Blob([байти]).stream().pipeThrough(new DecompressionStream('gzip'))
+  ).text();
+  return JSON.parse(текст);
+}
+
+/* ── IndexedDB: вердикти + пристрій-id ──────────────────────────────────── */
+function дб(){
+  return new Promise((рез, від)=>{
+    const з = indexedDB.open('показ', 1);
+    з.onupgradeneeded = е=>{
+      const d = е.target.result;
+      if (!d.objectStoreNames.contains('вердикти')) d.createObjectStore('вердикти',{autoIncrement:true});
+      if (!d.objectStoreNames.contains('кв')) d.createObjectStore('кв');
+    };
+    з.onsuccess = ()=>рез(з.result);
+    з.onerror = ()=>від(з.error);
+  });
+}
+function тx(d, ім, режим, дія){
+  return new Promise((рез, від)=>{
+    const t = d.transaction(ім, режим), s = t.objectStore(ім);
+    const r = дія(s);
+    t.oncomplete = ()=>рез(r && r.result);
+    t.onerror = ()=>від(t.error);
+  });
+}
+async function пристрійId(){
+  const d = await дб();
+  try{
+    const v = await new Promise((рез,від)=>{ const r=d.transaction('кв').objectStore('кв').get('пристрій');
+      r.onsuccess=()=>рез(r.result); r.onerror=()=>від(r.error); });
+    if (v) return v;
+  }catch(e){}
+  const нов = 'п-'+Math.random().toString(36).slice(2,8);
+  await тx(d,'кв','readwrite', s=>s.put(нов,'пристрій'));
+  return нов;
+}
+async function усіВердикти(){
+  const d = await дб();
+  return new Promise((рез,від)=>{
+    const r = d.transaction('вердикти').objectStore('вердикти').getAll();
+    r.onsuccess=()=>рез(r.result||[]); r.onerror=()=>від(r.error);
+  });
+}
+
+/* ── рендер ─────────────────────────────────────────────────────────────── */
+function відповідь(поз){
+  if (!В[поз]) В[поз] = {річ:null, верд:null, коментар:'', ок:[], ні:[], записано:false};
+  return В[поз];
+}
+function чипРяд(конт, поле, поз, варіанти, класи){
+  const ряд = document.createElement('div'); ряд.className='ряд';
+  варіанти.forEach((я,і)=>{
+    const с = document.createElement('span');
+    с.className = 'чип'+(класи&&класи[і]?(' '+класи[і]):'');
+    с.textContent = (typeof я==='object') ? (я.ярлик||'') : я;
+    с.dataset.з = (typeof я==='object') ? (я.ярлик||'') : я;
+    if (typeof я==='object' && я.код) с.dataset.код = я.код;
+    с.onclick = ()=>{
+      const в = відповідь(поз);
+      if (поле==='ок' || поле==='ні'){
+        с.classList.toggle('вибр');
+        в[поле] = [...ряд.querySelectorAll('.чип.вибр')].map(x=>({ярлик:x.dataset.з, код:x.dataset.код||null}));
+      } else {
+        [...ряд.children].forEach(x=>x.classList.remove('вибр'));
+        с.classList.add('вибр');
+        в[поле] = с.dataset.з;
+      }
+    };
+    ряд.appendChild(с);
+  });
+  конт.appendChild(ряд);
+}
+function полотно(поз){
+  const к = П.картки[поз], п = $('пол-'+поз); if (!п) return;
+  п.innerHTML = '';
+  if (!к.картинка){
+    const d = document.createElement('div'); d.className='полотно';
+    d.textContent = 'Картинки цього образу ще нема. Додайте її файлом чи посиланням — або судіть за описом і фото речей і позначте «судила без картинки».';
+    п.appendChild(d); return;
+  }
+  const і = document.createElement('img'); і.className='образ'; і.src = к.картинка;
+  і.onerror = ()=>{ к.картинка = null; полотно(поз);
+    $('кст-'+поз).textContent = 'Цю картинку показати не вдалось. Спробуйте інший шлях.'; };
+  п.appendChild(і);
+}
+function рендер(){
+  $('привіт').style.display = 'none';
+  $('ш-рядок').textContent = 'збірка '+(П.збірка||'?')+' · '+(П.каталог||'?')+' · '+(П.профіль||'');
+  const кк = $('картки'); кк.innerHTML = '';
+  П.картки.forEach((к, поз)=>{
+    const д = document.createElement('div'); д.className='картка'; д.id='к-'+поз;
+    const шапка = document.createElement('div'); шапка.className='мітка';
+    шапка.textContent = 'Варіант '+(поз+1);
+    д.appendChild(шапка);
+
+    const речі = к.речі || [];
+    if (речі.length){
+      const р = document.createElement('div'); р.className='речі';
+      речі.forEach(x=>{
+        const о = document.createElement('div'); о.className='річ';
+        if (x.фото){
+          const а = document.createElement('a'); а.href = x.фото; а.target='_blank'; а.rel='noopener';
+          const і = document.createElement('img'); і.loading='lazy'; і.src = x.фото;
+          і.onerror = ()=>{ і.style.display='none'; };
+          а.appendChild(і); о.appendChild(а);
+        }
+        const н = document.createElement('div'); н.className='н';
+        н.textContent = (x.назва||x.id||'') + (x.ціна?(' · '+x.ціна+' грн'):'');
+        if (x.урл){
+          const л = document.createElement('a'); л.href=x.урл; л.target='_blank'; л.rel='noopener';
+          л.textContent = ' магазин ↗'; н.appendChild(л);
+        }
+        о.appendChild(н);
+        р.appendChild(о);
+      });
+      д.appendChild(р);
+    }
+
+    const т = document.createElement('div'); т.className='текст-образу';
+    т.textContent = к.текст || '';
+    д.appendChild(т);
+
+    const дет = document.createElement('details');
+    дет.innerHTML = '<summary>Додати згенеровану картинку цього образу</summary>';
+    const вн = document.createElement('div');
+    вн.innerHTML = '<div class="ряд"><input type="file" accept="image/*" id="кф-'+поз+'"></div>'
+      + '<div class="ряд"><input type="text" id="ку-'+поз+'" placeholder="або посилання на картинку">'
+      + '<button class="мал друг" id="куо-'+поз+'">Показати</button></div>'
+      + '<div class="статус" id="кст-'+поз+'"></div>';
+    дет.appendChild(вн); д.appendChild(дет);
+    const пол = document.createElement('div'); пол.id='пол-'+поз; пол.style.margin='8px 0';
+    д.appendChild(пол);
+
+    const м1 = document.createElement('div'); м1.className='мітка';
+    м1.textContent = 'Це та сама річ, що на фото товару?'; д.appendChild(м1);
+    чипРяд(д,'річ',поз,['так','ні, намальовано інше','судила без картинки'],['','ні','']);
+
+    const м2 = document.createElement('div'); м2.className='мітка';
+    м2.textContent = 'Вдягнете?'; д.appendChild(м2);
+    чипРяд(д,'верд',поз,['вдягну як є','вдягну, якщо змінити одну річ','не вдягну'],['ок','','ні']);
+
+    const мітки = к.мітки || [];
+    if (мітки.length){
+      const м3 = document.createElement('div'); м3.className='мітка';
+      м3.textContent='Що спрацювало'; д.appendChild(м3);
+      чипРяд(д,'ок',поз,мітки,мітки.map(()=> 'ок'));
+      const м4 = document.createElement('div'); м4.className='мітка';
+      м4.textContent='Що не спрацювало'; д.appendChild(м4);
+      чипРяд(д,'ні',поз,мітки,мітки.map(()=> 'ні'));
+    }
+
+    const л = document.createElement('label'); л.textContent='Своїми словами';
+    л.style.display='block'; л.className='тьм'; д.appendChild(л);
+    const та = document.createElement('textarea'); та.id='ком-'+поз;
+    та.oninput = e=>{ відповідь(поз).коментар = e.target.value; };
+    д.appendChild(та);
+
+    const ряд = document.createElement('div'); ряд.className='ряд';
+    ряд.innerHTML = '<button class="мал" id="зап-'+поз+'">Записати вердикт</button>'
+      + '<span class="статус" id="вст-'+поз+'"></span>';
+    д.appendChild(ряд);
+    кк.appendChild(д);
+
+    $('кф-'+поз).onchange = e=>{
+      const ф = e.target.files && e.target.files[0]; if (!ф) return;
+      к.картинка = URL.createObjectURL(ф);
+      $('кст-'+поз).textContent = ф.name+' · показано локально, нікуди не вантажиться';
+      полотно(поз);
+    };
+    $('куо-'+поз).onclick = ()=>{
+      const у = $('ку-'+поз).value.trim(); if (!у) return;
+      к.картинка = у; полотно(поз);
+    };
+    $('зап-'+поз).onclick = ()=>записати(поз);
+    полотно(поз);
+  });
+  оновитиЖурнал();
+}
+
+/* ── запис вердикту: схема вердикти.tsv v25 + поля показу ───────────────── */
+async function записати(поз){
+  const к = П.картки[поз], в = відповідь(поз), ст = $('вст-'+поз);
+  if (!в.верд){ ст.textContent = 'Оберіть «Вдягнете?»'; return; }
+  const запис = {
+    дата: new Date().toISOString().slice(0,10),
+    профіль: П.профіль || '(без профілю)',
+    рука: к.рука || ('поз'+(поз+1)),
+    склад: (к.речі||[]).map(r=>r.id).join('+') || '—',
+    текст: (к.текст||'').slice(0,1500),
+    вердикт_людини: в.верд,
+    коментар: (в.коментар||'').trim(),
+    та_сама_річ: в.річ,
+    забруднений: в.річ === 'ні, намальовано інше',
+    з_картинкою: !!к.картинка,
+    фото_речей: (к.речі||[]).filter(r=>r.фото).length,
+    спрацювало: в.ок, не_спрацювало: в.ні,
+    позиція: поз+1, розклад: П.розклад || null,
+    знахідки_коду: (к.знахідки||[]).slice(0,12),
+    збірка: П.збірка || '?', каталог: П.каталог || '?',
+    джерело: 'показ-v1', пристрій,
+    час: new Date().toISOString()
+  };
+  try{
+    const d = await дб();
+    await тx(d,'вердикти','readwrite', s=>s.add(запис));
+    в.записано = true;
+    $('зап-'+поз).disabled = true;
+    ст.textContent = 'Записано. Дякуємо!';
+    оновитиЖурнал();
+  }catch(e){ ст.textContent = 'Не записалось: '+String(e).slice(0,140); }
+}
+
+/* ── журнал і пакет ─────────────────────────────────────────────────────── */
+const ШАПКА = ['дата','профіль','рука','склад','текст','вердикт_людини','коментар',
+  'та_сама_річ','з_картинкою','фото_речей','спрацювало','не_спрацювало',
+  'позиція','збірка','каталог','пристрій','джерело'];
+function чисто(x){
+  if (x === null || x === undefined) return '';
+  if (Array.isArray(x)) return x.map(i=>(typeof i==='object'?(i.ярлик||''):i)).join('; ');
+  return String(x).replace(/[\t\n\r]+/g,' ').trim();
+}
+async function оновитиЖурнал(){
+  try{
+    const вс = await усіВердикти();
+    $('ж-ліч').textContent = вс.length
+      ? ('записів: '+вс.length+' · з них демо: '+вс.filter(з=>з.збірка==='демо').length)
+      : 'ще порожньо';
+    $('ж-список').textContent = вс.slice(-6).map(з=>
+      з.дата+' · '+(з.збірка||'?')+' · варіант '+з.позиція+' · '+з.вердикт_людини).join('\n');
+  }catch(e){ $('ж-ліч').textContent = 'журнал не читається: '+String(e).slice(0,100); }
+}
+$('ж-копія').onclick = async ()=>{
+  const вс = await усіВердикти();
+  const рядки = ['ВЕРДИКТИ-ПОКАЗ-V1 · пристрій='+пристрій+' · дата='+new Date().toISOString(),
+    ШАПКА.join('\t')];
+  for (const з of вс) рядки.push(ШАПКА.map(к=>чисто(з[к])).join('\t'));
+  const т = рядки.join('\n');
+  const п = $('ж-пакет'); п.style.display='block'; п.textContent = т;
+  try{
+    await navigator.clipboard.writeText(т);
+    $('ж-стан').textContent = 'скопійовано — вставте у чат чи повідомлення власнику';
+  }catch(e){
+    const д = document.createRange(); д.selectNodeContents(п);
+    const s = window.getSelection(); s.removeAllRanges(); s.addRange(д);
+    $('ж-стан').textContent = 'виділено — натисніть Ctrl/Cmd+C';
+  }
+};
+
+/* ── фото-профіль: портрет + повний зріст, живуть у IndexedDB пристрою ──── */
+function читатиКв(ключ){
+  return дб().then(d=>new Promise((рез,від)=>{
+    const r = d.transaction('кв').objectStore('кв').get(ключ);
+    r.onsuccess=()=>рез(r.result); r.onerror=()=>від(r.error);
+  }));
+}
+async function малюватиСлот(конт, ключ){
+  const к = $(конт); к.innerHTML = '';
+  let блоб = null;
+  try{ блоб = await читатиКв(ключ); }catch(e){}
+  if (блоб){
+    const і = document.createElement('img'); і.className='образ';
+    і.src = URL.createObjectURL(блоб);
+    к.appendChild(і);
+    const ряд = document.createElement('div'); ряд.className='ряд';
+    const заміна = document.createElement('input');
+    заміна.type='file'; заміна.accept='image/*';
+    заміна.onchange = е=>зберегтиФото(е, конт, ключ);
+    const геть = document.createElement('button');
+    геть.className='мал друг'; геть.textContent='Прибрати';
+    геть.onclick = async ()=>{
+      const d = await дб();
+      await тx(d,'кв','readwrite', s=>s.delete(ключ));
+      малюватиСлот(конт, ключ);
+    };
+    ряд.appendChild(заміна); ряд.appendChild(геть);
+    к.appendChild(ряд);
+  } else {
+    const вх = document.createElement('input');
+    вх.type='file'; вх.accept='image/*';
+    вх.onchange = е=>зберегтиФото(е, конт, ключ);
+    к.appendChild(вх);
+  }
+}
+async function зберегтиФото(е, конт, ключ){
+  const ф = е.target.files && е.target.files[0]; if (!ф) return;
+  try{
+    const d = await дб();
+    await тx(d,'кв','readwrite', s=>s.put(ф, ключ));
+  }catch(err){ console.error('фото не збереглось', err); }
+  малюватиСлот(конт, ключ);
+}
+function фотоПрофіль(){
+  малюватиСлот('ф-портрет','фото-портрет');
+  малюватиСлот('ф-зріст','фото-зріст');
+}
+
+/* ── старт ──────────────────────────────────────────────────────────────── */
+async function старт(){
+  пристрій = await пристрійId().catch(()=> 'невідомо');
+  фотоПрофіль();
+  const х = location.hash.slice(1);
+  if (х){
+    try{ П = await розпакувати(х); рендер(); }
+    catch(e){ $('ш-рядок').textContent = 'Пакет не розпакувався: '+String(e).slice(0,120); }
+  } else оновитиЖурнал();
+}
+$('демо').onclick = ()=>{ location.hash = ДЕМО_ФРАГМЕНТ; };
+window.addEventListener('hashchange', старт);
+старт();
+</script>
+</body>
+</html>
