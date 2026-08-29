@@ -1,0 +1,291 @@
+<!doctype html>
+<!--
+  показ_зонд.html — код+ші
+  Проба стін ПОКАЗ-боку (поза пісочницею артефакта).
+  Запуск: подвійним кліком локально АБО з github.io (репо kod-shi-data).
+  Міряє: рендер фото з магазинних CDN, розпакування payload-фрагмента,
+  персистентність IndexedDB, локальне фото людини, доставку повного каталогу.
+  Правило 0: результати вирішують, чи будується показ-архітектура v26.
+-->
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>показ-зонд — код+ші</title>
+<style>
+  :root{
+    --фон:#101318; --панель:#181c24; --лінія:#252b37;
+    --текст:#d8dce3; --тьмяний:#8b93a3;
+    --ок:#62c46a; --стіна:#e05b5b; --част:#d9a441; --акцент:#82aaff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--фон);color:var(--текст);
+    font:15px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:22px 18px;max-width:780px;margin-inline:auto}
+  h1{font:600 19px/1.2 ui-monospace,Menlo,Consolas,monospace;margin:0 0 6px;letter-spacing:.02em}
+  .під{color:var(--тьмяний);margin:0 0 18px;font-size:13.5px}
+  button{background:var(--акцент);border:0;color:#0d1017;font-weight:600;
+    padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px}
+  button.друг{background:#2a3040;color:var(--текст)}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+  td{padding:8px 8px;border-top:1px solid var(--лінія);vertical-align:top}
+  td.с{width:28px;text-align:center;font:600 15px ui-monospace,monospace}
+  .дет{color:var(--тьмяний);font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;word-break:break-word}
+  .ок{color:var(--ок)} .стіна{color:var(--стіна)} .част{color:var(--част)}
+  .блок{background:var(--панель);border:1px solid var(--лінія);border-radius:10px;padding:14px 16px;margin:16px 0}
+  .блок b{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--тьмяний)}
+  pre{background:#0c0f14;border:1px solid var(--лінія);padding:12px;border-radius:8px;
+    font:12.5px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all;margin:10px 0}
+  .речі{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+  .річ{width:150px}
+  .річ img{width:150px;height:200px;object-fit:cover;border-radius:8px;background:#0c0f14;border:1px solid var(--лінія)}
+  .річ div{font-size:12px;color:var(--тьмяний);margin-top:4px;line-height:1.35}
+  input[type=file]{color:var(--тьмяний);font-size:13px}
+  p{margin:8px 0}
+</style>
+</head>
+<body>
+<h1>показ-зонд</h1>
+<p class="під">Проба стін показ-боку. Відкрий подвійним кліком локально або з github.io —
+проби п1–п5 стартують самі. Після прогону скопіюй пакет і вклади в сесію.</p>
+
+<table id="таб"></table>
+
+<div class="блок">
+  <b>п3-б · проба фрагмента</b>
+  <p>Натисни — сторінка отримає #payload (три реальні SKU зі стенд-каталогу, gzip+base64url)
+  і спробує розпакувати й показати.</p>
+  <button id="фраг">Проба фрагмента</button>
+  <div class="речі" id="з_фрагмента"></div>
+</div>
+
+<div class="блок">
+  <b>п5 · фото людини (локально)</b>
+  <p>Підкинь будь-яке фото — воно рендериться зі свого пристрою і нікуди не вантажиться.</p>
+  <input type="file" id="фото_вхід" accept="image/*">
+  <div class="речі" id="з_фото"></div>
+</div>
+
+<div class="блок">
+  <b>п6 · повний каталог</b>
+  <p>Тягне каталог_повний.xml з raw.githubusercontent (~10 МБ) і звіряє з 10 009 898 Б.</p>
+  <button id="катал" class="друг">Тягнути повний каталог</button>
+</div>
+
+<div class="блок">
+  <b>Пакет для наступної сесії</b>
+  <pre id="пакет"></pre>
+  <button class="друг" id="копія">Скопіювати пакет</button>
+  <span id="копстан" class="дет"></span>
+</div>
+
+<script>
+'use strict';
+
+const ПРОБИ = [
+  {id:'п1_адреса',        назва:'Звідки запущено (origin)'},
+  {id:'п2_фото_магазинів',назва:'Рендер фото з магазинних CDN (3 домени, реальні SKU)'},
+  {id:'п3_фрагмент',      назва:'Розпакування payload-фрагмента (gzip+base64url → картки)'},
+  {id:'п4_сховище',       назва:'IndexedDB: лічильник відкриттів (персистентність origin)'},
+  {id:'п5_фото_людини',   назва:'Фото людини через file input (локальний рендер)'},
+  {id:'п6_каталог',       назва:'Доставка каталог_повний.xml (10 009 898 Б)'},
+];
+
+// Реальні SKU зі стенд-каталогу, три різні магазини.
+const ЗРАЗКИ = [
+  {назва:'Рожева сукня максі зі стрейч-сітки з авторським принтом',
+   фото:'https://img.gepur.com/products/55000/50172/simple/537/50172_1_1.jpg?1786089186'},
+  {назва:'Блуза з шарфом молочний cher17',
+   фото:'https://cher17.fra1.cdn.digitaloceanspaces.com/public/products/media/30023/2-2-356-531.webp'},
+  {назва:'LeBERDES Мокасини',
+   фото:'https://favoriteshoes.com.ua/upload/catalog/24400/24311/img_0517.jpg'},
+];
+
+// Той самий payload, стиснутий заздалегідь (json 582 Б → 555 Б).
+const ФРАГМЕНТ_ЗРАЗОК = 'H4sIAKHBkmoC_22RzUrDQBSFXyXM2mRmkqat3QiiO1cKbkTKmIxppG1CfnQhhVaFuhDUTQUR9RG0WPtfX-HOG3mHLAR1M8w958zMd--cExiSGoEXeIZHuIMHc5-RNQJjeFcD1YUZvGn7C1Z6C2MTnRUs4QNDaI9UXw1I7eCcoIY2DIv8K4Y-YaRLQ_XUJR5eqlsDFhiaoTAwYIwL7i70LTBVfVPL6gKTEzQNDA6xWqku6jdahYUBX5ie4FVowEIjXGECC3yzkWVxWqM0bAVWIOM8sbyoReMk8nMvS6nrMsaoy3jFpmnYipuSuk6lEOq8zq2TONjglWqZVdd5tUw6a797uoc5NjLGjhBPXcMbol1pDt3WCuZI0scTE5gaXkMmvPI_X-FZx4nglue3LT8Mwkw0I0-KdhoLT6YFeH7UDL0f_pb0Q0EdxmyH2qZtOm7ZdB1uncmj-C_sjtzc3t3a3jPgqfg51dNzg8n_TMfiNErCTKaNqHjeygXN42YkfOoJTRdQu1TCAdolh3M94zpzsQscGukcdr4B6yLpj0YCAAA';
+
+const КАТАЛОГ_БАЙТ = 10009898;
+const КАТАЛОГ_URL = 'https://raw.githubusercontent.com/mightyrochy/kod-shi-data/main/' +
+                    encodeURIComponent('каталог_повний.xml');
+
+const стан = {};
+const таб = document.getElementById('таб');
+for (const п of ПРОБИ) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td class="с" id="с_'+п.id+'">·</td>' +
+    '<td>'+п.назва+'<div class="дет" id="д_'+п.id+'"></div></td>';
+  таб.appendChild(tr);
+}
+function звіт(id, знак, клас, деталь){
+  стан[id] = {знак, деталь};
+  const с = document.getElementById('с_'+id);
+  с.textContent = знак; с.className = 'с '+(клас||'');
+  document.getElementById('д_'+id).textContent = деталь || '';
+  пакетОновити();
+}
+function чекаю(id){ звіт(id,'⏳','', 'вимірюю…'); }
+
+/* п1 — звідки запущено */
+function п1(){
+  const о = location.origin === 'null' ? 'file:// (локально)' : location.origin;
+  звіт('п1_адреса','✓','ок', о + ' · ' + location.protocol);
+}
+
+/* п2 — фото магазинів */
+function п2(){
+  чекаю('п2_фото_магазинів');
+  let готово = 0, ок = 0; const рядки = [];
+  const кінець = () => {
+    готово++;
+    if (готово < ЗРАЗКИ.length) return;
+    if (ок === ЗРАЗКИ.length) звіт('п2_фото_магазинів','✓','ок', ок+'/'+ЗРАЗКИ.length+' · '+рядки.join(' · '));
+    else if (ок > 0) звіт('п2_фото_магазинів','◐','част', ок+'/'+ЗРАЗКИ.length+' · '+рядки.join(' · '));
+    else звіт('п2_фото_магазинів','✗','стіна','0/'+ЗРАЗКИ.length+' · '+рядки.join(' · '));
+  };
+  ЗРАЗКИ.forEach(з => {
+    const домен = new URL(з.фото).hostname;
+    const і = new Image();
+    const т = setTimeout(()=>{ і.src=''; рядки.push(домен+': таймаут'); кінець(); }, 20000);
+    і.onload = ()=>{ clearTimeout(т);
+      if (і.naturalWidth > 0){ ок++; рядки.push(домен+': '+і.naturalWidth+'×'+і.naturalHeight); }
+      else рядки.push(домен+': порожнє'); кінець(); };
+    і.onerror = ()=>{ clearTimeout(т); рядки.push(домен+': помилка'); кінець(); };
+    і.src = з.фото;
+  });
+}
+
+/* п3 — фрагмент */
+function б64урлВБайти(s){
+  s = s.replace(/-/g,'+').replace(/_/g,'/');
+  while (s.length % 4) s += '=';
+  const бін = atob(s), м = new Uint8Array(бін.length);
+  for (let i=0;i<бін.length;i++) м[i]=бін.charCodeAt(i);
+  return м;
+}
+async function п3(){
+  const х = location.hash.slice(1);
+  if (!х){ звіт('п3_фрагмент','·','', 'фрагмента нема — натисни «Проба фрагмента»'); return; }
+  чекаю('п3_фрагмент');
+  try{
+    if (typeof DecompressionStream === 'undefined')
+      throw new Error('DecompressionStream відсутній у цьому браузері');
+    const байти = б64урлВБайти(х);
+    const текст = await new Response(
+      new Blob([байти]).stream().pipeThrough(new DecompressionStream('gzip'))
+    ).text();
+    const п = JSON.parse(текст);
+    const речі = п.речі || [];
+    const к = document.getElementById('з_фрагмента');
+    к.innerHTML = '';
+    for (const р of речі){
+      const д = document.createElement('div'); д.className='річ';
+      д.innerHTML = '<img alt=""><div></div>';
+      д.querySelector('img').src = р.фото;
+      д.querySelector('div').textContent = р.назва;
+      к.appendChild(д);
+    }
+    звіт('п3_фрагмент','✓','ок',
+      'фрагмент '+х.length+' Б → '+текст.length+' Б json · версія '+(п.в||'?')+' · речей: '+речі.length);
+  }catch(e){ звіт('п3_фрагмент','✗','стіна', String(e).slice(0,140)); }
+}
+document.getElementById('фраг').addEventListener('click', ()=>{
+  location.hash = ФРАГМЕНТ_ЗРАЗОК; п3();
+});
+window.addEventListener('hashchange', п3);
+
+/* п4 — IndexedDB лічильник */
+function п4(){
+  чекаю('п4_сховище');
+  try{
+    const з = indexedDB.open('показ-зонд', 1);
+    з.onupgradeneeded = е => е.target.result.createObjectStore('кв');
+    з.onerror = ()=> звіт('п4_сховище','✗','стіна','indexedDB.open: '+з.error);
+    з.onsuccess = ()=>{
+      const дб = з.result;
+      const т1 = дб.transaction('кв','readwrite').objectStore('кв');
+      const ч = т1.get('відкриттів');
+      ч.onsuccess = ()=>{
+        const н = (ч.result||0)+1;
+        const з2 = т1.put(н,'відкриттів');
+        з2.onsuccess = ()=> звіт('п4_сховище','✓','ок',
+          'відкриття № '+н+' — число росте між перезавантаженнями і не залежить від перевидань артефакта');
+        з2.onerror = ()=> звіт('п4_сховище','✗','стіна','put: '+з2.error);
+      };
+      ч.onerror = ()=> звіт('п4_сховище','✗','стіна','get: '+ч.error);
+    };
+  }catch(e){ звіт('п4_сховище','✗','стіна', String(e).slice(0,140)); }
+}
+
+/* п5 — фото людини локально */
+звіт('п5_фото_людини','·','','підкинь файл нижче — вимір ручний');
+document.getElementById('фото_вхід').addEventListener('change', е=>{
+  const ф = е.target.files && е.target.files[0];
+  if (!ф) return;
+  const к = document.getElementById('з_фото');
+  к.innerHTML = '';
+  const д = document.createElement('div'); д.className='річ';
+  д.innerHTML = '<img alt=""><div></div>';
+  const і = д.querySelector('img');
+  і.onload = ()=> звіт('п5_фото_людини','✓','ок',
+    ф.name+' · '+Math.round(ф.size/1024)+' КБ · '+і.naturalWidth+'×'+і.naturalHeight+' · файл не покинув пристрій');
+  і.onerror = ()=> звіт('п5_фото_людини','✗','стіна','файл не рендериться: '+ф.type);
+  і.src = URL.createObjectURL(ф);
+  д.querySelector('div').textContent = ф.name;
+  к.appendChild(д);
+});
+
+/* п6 — повний каталог */
+звіт('п6_каталог','·','','натисни кнопку — тягне ~10 МБ');
+document.getElementById('катал').addEventListener('click', async ()=>{
+  чекаю('п6_каталог');
+  const к = new AbortController();
+  const т = setTimeout(()=>к.abort(), 180000);
+  try{
+    const п0 = performance.now();
+    const r = await fetch(КАТАЛОГ_URL, {signal:к.signal});
+    const б = (await r.arrayBuffer()).byteLength;
+    clearTimeout(т);
+    const с = ((performance.now()-п0)/1000).toFixed(1);
+    const звірка = б === КАТАЛОГ_БАЙТ ? 'ЗБІГ зі звіркою' : 'РОЗБІЖНІСТЬ проти 10 009 898 Б';
+    if (r.ok) звіт('п6_каталог','✓','ок','HTTP '+r.status+' · '+б+' Б за '+с+' с · '+звірка);
+    else звіт('п6_каталог','◐','част','HTTP '+r.status+' · '+б+' Б');
+  }catch(e){ clearTimeout(т); звіт('п6_каталог','✗','стіна', String(e).slice(0,140)); }
+});
+
+/* пакет */
+function пакетТекст(){
+  const р = ['ЗОНД-ПОКАЗ-V1',
+    'дата='+new Date().toISOString(),
+    'адреса='+(location.origin==='null'?'file://':location.origin),
+    'ua='+navigator.userAgent.slice(0,110)];
+  for (const п of ПРОБИ){
+    const s = стан[п.id] || {знак:'·', деталь:'не запускалась'};
+    const код = s.знак==='✓' ? 'ok' : s.знак==='✗' ? 'wall' : s.знак==='◐' ? 'part' : 'none';
+    р.push(п.id+'='+код+';'+(s.деталь||'').replace(/\n/g,' '));
+  }
+  return р.join('\n');
+}
+function пакетОновити(){
+  document.getElementById('пакет').textContent = пакетТекст();
+}
+document.getElementById('копія').addEventListener('click', async ()=>{
+  const т = пакетТекст();
+  const с = document.getElementById('копстан');
+  try{
+    await navigator.clipboard.writeText(т + '\nкопіювання=api');
+    с.textContent = 'скопійовано';
+  }catch(e){
+    const пре = document.getElementById('пакет');
+    const діапазон = document.createRange();
+    діапазон.selectNodeContents(пре);
+    const виб = window.getSelection();
+    виб.removeAllRanges(); виб.addRange(діапазон);
+    с.textContent = 'clipboard закритий — текст виділено, натисни Ctrl/Cmd+C';
+  }
+});
+
+/* пуск */
+п1(); п2(); п3(); п4(); пакетОновити();
+</script>
+</body>
+</html>
