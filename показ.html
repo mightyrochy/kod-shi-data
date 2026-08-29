@@ -124,11 +124,17 @@ function б64урлВБайти(s){
   return м;
 }
 async function розпакувати(х){
+  // Артефакт пакує gzip, ЯКЩО в його webview є CompressionStream; це не було
+  // виміряно, тому там стоїть фолбек на сирий base64url. Розрізняємо за магією
+  // gzip (1f 8b) — версія контракту ПОКАЗ-V1 від цього не змінюється.
   const байти = б64урлВБайти(х);
-  const текст = await new Response(
-    new Blob([байти]).stream().pipeThrough(new DecompressionStream('gzip'))
-  ).text();
-  return JSON.parse(текст);
+  const gzip = байти.length > 2 && байти[0] === 0x1f && байти[1] === 0x8b;
+  const текст = gzip
+    ? await new Response(new Blob([байти]).stream().pipeThrough(new DecompressionStream('gzip'))).text()
+    : new TextDecoder().decode(байти);
+  const п = JSON.parse(текст);
+  п._кодування = gzip ? 'gzip' : 'без стиснення';
+  return п;
 }
 
 /* ── IndexedDB: вердикти + пристрій-id ──────────────────────────────────── */
@@ -341,12 +347,23 @@ async function записати(поз){
 
 /* ── журнал і пакет ─────────────────────────────────────────────────────── */
 const ШАПКА = ['дата','профіль','рука','склад','текст','вердикт_людини','коментар',
-  'та_сама_річ','з_картинкою','фото_речей','спрацювало','не_спрацювало',
-  'позиція','збірка','каталог','пристрій','джерело'];
+  'та_сама_річ','забруднений','з_картинкою','спрацювало','не_спрацювало',
+  'позиція','розклад','знахідки_коду','збірка',
+  'фото_речей','каталог','джерело','пристрій','час'];
 function чисто(x){
   if (x === null || x === undefined) return '';
-  if (Array.isArray(x)) return x.map(i=>(typeof i==='object'?(i.ярлик||''):i)).join('; ');
-  return String(x).replace(/[\t\n\r]+/g,' ').trim();
+  let т;
+  if (Array.isArray(x)){
+    т = x.map(о=>{
+      if (о === null || о === undefined) return '';
+      if (typeof о !== 'object') return String(о);
+      if (о.ярлик) return String(о.ярлик);
+      if (о.правило) return String(о.правило) + (о.сила != null ? ':'+о.сила : '');
+      return JSON.stringify(о);
+    }).filter(Boolean).join('; ');
+  } else if (typeof x === 'object'){ т = JSON.stringify(x); }
+  else { т = String(x); }
+  return т.replace(/[\t\n\r]+/g,' ').trim();
 }
 async function оновитиЖурнал(){
   try{
