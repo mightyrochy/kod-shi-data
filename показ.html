@@ -17,226 +17,346 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>показ образів — код+ші</title>
 <style>
-  :root{--фон:#151412;--картка:#1f1d1a;--край:#3a362f;--текст:#e8e2d6;
-        --тьм:#a89f8d;--акц:#c9a86a;--ок:#7da87a;--ні:#b06c5c}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--фон);color:var(--текст);
-    font:15.5px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
-    padding:18px 14px 40px;max-width:720px;margin-inline:auto}
-  h1{font-size:20px;margin:0 0 4px;font-weight:650;letter-spacing:.01em}
-  .тьм{color:var(--тьм);font-size:13.5px}
-  .картка{background:var(--картка);border:1px solid var(--край);border-radius:12px;
-    padding:14px;margin:12px 0}
-  .мітка{font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;
-    color:var(--акц);margin:10px 0 6px}
-  .ряд{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
-  .текст-образу{white-space:pre-wrap;margin:8px 0}
-  .речі{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
-  .річ{width:31%;min-width:104px}
-  .річ a{display:block}
-  .річ img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:9px;
-    background:#141310;border:1px solid var(--край)}
-  .річ .н{font-size:12px;color:var(--тьм);margin-top:4px;line-height:1.3}
-  .річ .н a{color:var(--акц);text-decoration:none}
-  .полотно{border:1px dashed var(--край);border-radius:9px;padding:14px;
-    color:var(--тьм);font-size:13.5px}
-  img.образ{max-width:100%;border-radius:9px;border:1px solid var(--край)}
-  .чип{border:1px solid var(--край);border-radius:16px;padding:5px 12px;
-    font-size:13.5px;cursor:pointer;user-select:none}
-  .чип.вибр{border-color:var(--акц);background:rgba(201,168,106,.14)}
-  .чип.ок.вибр{border-color:var(--ок);background:rgba(125,168,122,.16)}
-  .чип.ні.вибр{border-color:var(--ні);background:rgba(176,108,92,.16)}
-  button{background:var(--акц);border:0;color:#191713;font-weight:650;
-    padding:9px 16px;border-radius:9px;cursor:pointer;font-size:14px}
-  button.мал{padding:7px 12px;font-size:13.5px}
-  button.друг{background:#2b2823;color:var(--текст)}
-  button:disabled{opacity:.5;cursor:default}
-  input[type=text],textarea{width:100%;background:#141310;color:var(--текст);
-    border:1px solid var(--край);border-radius:8px;padding:8px;font:inherit}
-  textarea{min-height:64px}
-  input[type=file]{color:var(--тьм);font-size:13px;max-width:100%}
-  .статус{font-size:13px;color:var(--тьм)}
-  pre{background:#141310;border:1px solid var(--край);border-radius:9px;padding:10px;
-    font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;
-    word-break:break-all;max-height:200px;overflow:auto}
-  details summary{cursor:pointer;color:var(--акц);font-size:14px}
-  a{color:var(--акц)}
-  hr{border:0;border-top:1px solid var(--край);margin:12px 0}
-.др-ряд{display:flex;gap:8px;flex-wrap:wrap}
-.др-в{flex:1;min-width:120px;border:2px solid transparent;border-radius:12px;padding:6px;cursor:pointer;background:#0f0f0f}
-.др-в.обрано{border-color:#d4b06a}
-.др-поле{height:74px;border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.др-обличчя{width:56px;height:56px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px rgba(0,0,0,.25)}
-.др-п{font-size:12px;text-align:center;margin-top:6px;color:#bbb}
+/* ─────────────────────────────────────────────────────────────────────────
+   «код + ші» · показ. Мова форми взята з примірочної, не з панелі приладів:
+   папір викрійки, білі картки на ньому, засічка в заголовках, дрібний
+   моноширинний лише там, де справді число.
+
+   ЧОМУ СВІТЛЕ ТЛО. Не смак: людина судить колір НА ВЛАСНОМУ ОБЛИЧЧІ, а темне
+   оточення зсуває сприйняття світлоти й насиченості сусіднього поля
+   (симультанний контраст). Темна сторінка псувала б головний вимір.
+
+   ЧОМУ АКЦЕНТ СИНІЙ. Золотий акцент конкурував із золотою пробою драпіровки —
+   інтерактивний колір мусить бути таким, який неможливо сплутати з відповіддю.
+   Крейдяно-синій до жодної проби не подібний.
+   ───────────────────────────────────────────────────────────────────────── */
+:root{
+  --папір:#EFEDE7;      /* нефарбований папір викрійки */
+  --картон:#FFFFFF;     /* картка на столі розкрою */
+  --чорнило:#1E2430;    /* текст */
+  --олівець:#77746C;    /* другорядне */
+  --межа:#DFDBD2;
+  --крейда:#2F4A6B;     /* дія: кравецька крейда */
+  --крейда-тло:#EAEFF5;
+  --нитка:#A8443A;      /* лише попередження й скидання */
+  --тінь:0 1px 2px rgba(30,36,48,.05), 0 8px 24px -12px rgba(30,36,48,.14);
+  --радіус:16px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--папір);color:var(--чорнило);
+  font:16px/1.55 -apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  padding:0 0 132px;
+  -webkit-font-smoothing:antialiased;
+}
+.колонка{max-width:560px;margin-inline:auto;padding:0 18px}
+
+/* ── ШАПКА. Заголовок засічкою — єдине місце, де вона є, тому й помітна. ── */
+.шапка{padding:26px 0 10px}
+.знак{font:600 15px/1 -apple-system,"Segoe UI",Roboto,sans-serif;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--олівець)}
+.шапка h1{
+  font:400 30px/1.15 "Noto Serif","Times New Roman",Georgia,serif;
+  letter-spacing:-.015em;margin:10px 0 4px}
+.шапка p{color:var(--олівець);font-size:14.5px;margin:0}
+
+/* ── НИТКА ПОСТУПУ. Три відрізки — бо кроків справді три, і порядок несе
+      зміст: без кольорів немає чого міряти, без мірок немає що складати. ── */
+.нитка{display:flex;gap:6px;margin:18px 0 4px}
+.нитка div{flex:1;height:3px;border-radius:2px;background:var(--межа);
+  transition:background .35s ease}
+.нитка div.є{background:var(--крейда)}
+.нитка-п{display:flex;justify-content:space-between;font-size:12px;
+  color:var(--олівець);margin-bottom:18px}
+.нитка-п span.є{color:var(--чорнило);font-weight:600}
+
+/* ── КАРТКИ ─────────────────────────────────────────────────────────────── */
+.картка{background:var(--картон);border:1px solid var(--межа);
+  border-radius:var(--радіус);padding:20px;margin:14px 0;box-shadow:var(--тінь)}
+.картка h2{font:400 21px/1.25 "Noto Serif","Times New Roman",Georgia,serif;
+  margin:0 0 4px;letter-spacing:-.01em}
+.підказка{color:var(--олівець);font-size:14px;margin:4px 0 0}
+.тьм{color:var(--олівець);font-size:14px}
+.ряд{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.пара{display:flex;gap:12px}
+.пара>div{flex:1;min-width:0}
+
+/* ── ПОЛЯ ───────────────────────────────────────────────────────────────── */
+label{display:block;font-size:13.5px;font-weight:600;color:var(--чорнило);
+  margin:14px 0 6px}
+label:first-child{margin-top:0}
+select,input[type=text],input[type=number],textarea{
+  width:100%;background:#FBFAF8;color:var(--чорнило);
+  border:1px solid var(--межа);border-radius:11px;padding:13px 14px;
+  font:inherit;-webkit-appearance:none;appearance:none;transition:border-color .15s,box-shadow .15s}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--крейда);
+  box-shadow:0 0 0 3px var(--крейда-тло)}
+select{background-image:
+    linear-gradient(45deg,transparent 50%,var(--олівець) 50%),
+    linear-gradient(135deg,var(--олівець) 50%,transparent 50%);
+  background-position:calc(100% - 19px) 55%,calc(100% - 14px) 55%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px}
+textarea{min-height:76px;resize:vertical}
+input[type=file]{font-size:13.5px;color:var(--олівець)}
+.згода{display:flex;gap:10px;align-items:flex-start;margin-top:16px;
+  font-size:14.5px;font-weight:400}
+.згода input{width:20px;height:20px;flex:0 0 auto;margin-top:1px;accent-color:var(--крейда)}
+
+/* ── КНОПКИ ─────────────────────────────────────────────────────────────── */
+button{font:600 15px/1 inherit;border:0;border-radius:11px;padding:14px 20px;
+  background:var(--крейда);color:#fff;cursor:pointer;
+  transition:transform .12s ease,opacity .15s}
+button:active{transform:scale(.985)}
+button.тихо{background:transparent;color:var(--крейда);
+  border:1px solid var(--межа);padding:11px 16px;font-size:14px}
+button.текст{background:none;border:0;color:var(--крейда);padding:8px 2px;
+  font-size:14px;font-weight:600}
+button.небезпека{background:none;border:0;color:var(--нитка);
+  padding:8px 2px;font-size:14px;font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+
+/* ── ДИПТИХ ДРАПІРОВКИ — ПІДПИС СТОРІНКИ ─────────────────────────────────
+   Не дві кнопки, а один інструмент: два поля стуляються без проміжка, і
+   обличчя стоїть у них поруч — як дві тканини, піднесені до лиця. Так
+   порівнюють насправді, і так це має виглядати. ───────────────────────── */
+.диптих{display:flex;border-radius:14px;overflow:hidden;border:1px solid var(--межа)}
+.стулка{flex:1;position:relative;cursor:pointer;padding:0;background:none;
+  border:0;border-radius:0;display:block}
+.стулка .поле{height:210px;display:flex;align-items:center;justify-content:center}
+.стулка .вікно{width:142px;height:142px;border-radius:50%;overflow:hidden;
+  box-shadow:0 2px 14px rgba(0,0,0,.16)}
+.стулка .вікно img{width:100%;height:100%;object-fit:cover;display:block}
+.стулка .назва{display:block;text-align:center;padding:11px 6px;
+  font-size:14.5px;font-weight:600;color:var(--чорнило);background:var(--картон);
+  border-top:1px solid var(--межа)}
+.стулка[aria-pressed="true"] .назва{background:var(--крейда);color:#fff}
+.стулка[aria-pressed="true"] .назва::before{content:"✓  ";font-weight:700}
+.диптих .стулка + .стулка{border-left:1px solid var(--межа)}
+.однаково{display:block;width:100%;text-align:center;margin-top:2px}
+
+/* ── КАДР ───────────────────────────────────────────────────────────────── */
+.кадр{display:flex;gap:12px;align-items:center;margin:9px 0}
+.кадр span{font-size:12.5px;color:var(--олівець);min-width:76px}
+.кадр input[type=range]{flex:1;accent-color:var(--крейда);height:22px}
+
+/* ── СВОТЧІ. Hex дрібний і сірий: людина судить квадратик, число тут лише
+      щоб було що виправити. ─────────────────────────────────────────────── */
+.св-група{margin:16px 0 0}
+.св-назва{font-size:13.5px;font-weight:600;margin-bottom:8px}
+.св-ряд{display:flex;gap:8px}
+.св{flex:1;min-width:0}
+.св i{display:block;height:64px;border-radius:11px;border:1px solid var(--межа)}
+.св b{display:block;font:400 10.5px/1.4 ui-monospace,Menlo,Consolas,monospace;
+  color:var(--олівець);margin-top:5px;text-align:center;letter-spacing:.02em}
+
+/* ── ФОТО ───────────────────────────────────────────────────────────────── */
+.фото-пара{display:flex;gap:12px;align-items:flex-start}
+.фото-пара>div{flex:1;min-width:0}
+.фото-назва{font-size:13.5px;font-weight:600;margin-bottom:8px}
+img.образ{max-width:100%;border-radius:11px;border:1px solid var(--межа);display:block}
+
+/* ── НИЖНЯ ПАНЕЛЬ ДІЇ. Одна дія, завжди в одному місці. ──────────────────── */
+.панель{position:fixed;left:0;right:0;bottom:0;background:rgba(239,237,231,.92);
+  backdrop-filter:blur(12px);border-top:1px solid var(--межа);z-index:20}
+.панель .колонка{display:flex;align-items:center;gap:12px;padding-top:12px;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.панель button.далі{flex:1}
+
+/* ── КАРТКИ ОБРАЗІВ (повернення зі стенда) ──────────────────────────────── */
+.речі{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.річ{width:calc(33.333% - 7px);min-width:96px}
+.річ img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:11px;
+  background:#F3F1EC;border:1px solid var(--межа)}
+.річ .н{font-size:12px;color:var(--олівець);margin-top:5px;line-height:1.35}
+.річ .н a{color:var(--крейда);text-decoration:none}
+.текст-образу{white-space:pre-wrap;margin:10px 0;font-size:15.5px}
+.чип{border:1px solid var(--межа);border-radius:22px;padding:9px 15px;
+  font-size:14px;cursor:pointer;user-select:none;background:#FBFAF8}
+.чип.вибр{border-color:var(--крейда);background:var(--крейда-тло);font-weight:600}
+.чип.ок.вибр{border-color:#4B7A55;background:#EAF2EB}
+.чип.ні.вибр{border-color:var(--нитка);background:#F7EBE9}
+.полотно{border:1px dashed var(--межа);border-radius:11px;padding:16px;
+  color:var(--олівець);font-size:14px}
+.статус{font-size:13.5px;color:var(--олівець)}
+.мітка{font-size:13.5px;font-weight:600;color:var(--чорнило);margin:18px 0 8px}
+details summary{cursor:pointer;font-size:14.5px;font-weight:600;
+  color:var(--крейда);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:" ▾";color:var(--олівець)}
+details[open] summary::after{content:" ▴"}
+a{color:var(--крейда)}
+pre{background:#FBFAF8;border:1px solid var(--межа);border-radius:11px;padding:12px;
+  font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;
+  word-break:break-all;max-height:200px;overflow:auto}
+
+.екран{animation:зʼява .28s ease both}
+@keyframes зʼява{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
 </style>
 </head>
 <body>
-<h1>Показ образів</h1>
-<div class="тьм" id="ш-рядок">Пакет ще не отримано.</div>
+<div class="колонка">
+
+<header class="шапка">
+  <div class="знак">люстерко</div>
+  <h1>Люстерко</h1>
+  <p>Три кроки — і система збере чотири образи на ваш випадок.</p>
+  <div class="нитка" id="нитка"><div></div><div></div><div></div></div>
+  <div class="нитка-п" id="нитка-п">
+    <span>Профіль</span><span>Мірки</span><span>Випадок</span>
+  </div>
+  <div class="тьм" id="ш-рядок"></div>
+</header>
 
 <div class="картка" id="смуга-профілів">
-  <div class="ряд" style="align-items:flex-end">
-    <div style="flex:1"><label class="тьм">Профіль</label>
-      <select id="пф-вибір"></select></div>
-    <button class="мал друг" id="пф-новий">Новий</button>
+  <div class="пара" style="align-items:flex-end">
+    <div><label>Чий це профіль</label><select id="пф-вибір"></select></div>
+    <div style="flex:0 0 auto"><button class="тихо" id="пф-новий">Новий</button></div>
   </div>
-  <div class="ряд"><span class="статус" id="пф-стан"></span></div>
-</div>
-
-<div class="картка" id="привіт">
-  <p style="margin:4px 0">Сюди приходять зібрані образи: відкрийте цю сторінку
-  кнопкою «Показ» зі стенда — або натисніть «Демо», щоб побачити, як це виглядає.</p>
-  <div class="ряд"><button id="демо" class="друг">Демо</button></div>
+  <div class="статус" id="пф-стан" style="margin-top:10px"></div>
 </div>
 
 <section id="е-профіль" class="екран">
+
 <div class="картка">
-  <details>
-    <summary>Мої фото — портрет і повний зріст</summary>
-    <p class="тьм" style="margin:8px 0 6px">Зберігаються лише на цьому пристрої,
-    у пам'яті браузера, і нікуди не вантажаться. Переживають перезавантаження
-    сторінки й будь-які оновлення стенда. На іншому пристрої їх треба додати ще раз.</p>
-    <div class="ряд" style="align-items:flex-start">
-      <div style="flex:1;min-width:140px">
-        <div class="мітка">Портрет</div>
-        <div id="ф-портрет"></div>
-      </div>
-      <div style="flex:1;min-width:140px">
-        <div class="мітка">Повний зріст</div>
-        <div id="ф-зріст"></div>
-      </div>
-    </div>
-  </details>
+  <h2>Ваші фото</h2>
+  <p class="підказка">Лишаються на цьому пристрої. Портрет потрібен, щоб приміряти кольори.</p>
+  <div class="фото-пара" style="margin-top:16px">
+    <div><div class="фото-назва">Портрет</div><div id="ф-портрет"></div></div>
+    <div><div class="фото-назва">Повний зріст</div><div id="ф-зріст"></div></div>
+  </div>
 </div>
 
 <div class="картка" id="проф-блок">
-  <div class="мітка">Хто ви</div>
-  <label>Як вас записати (псевдонім достатньо)</label>
+  <h2>Як вас записати</h2>
+  <label>Ім'я або псевдонім</label>
   <input type="text" id="пр-імʼя" placeholder="напр., Оля К.">
-  <label style="margin-top:10px"><input type="checkbox" id="пр-згода">
-  Дозволяю записати мій колірний профіль — hex-и шкіри, волосся, очей
-  <b>текстом, жодних фото</b> — разом із вердиктами</label>
+  <label class="згода">
+    <input type="checkbox" id="пр-згода">
+    <span>Дозволяю зберегти мої відтінки текстом разом із вердиктами</span></label>
+  <p class="підказка">Без цього вердикт запишеться, але без кольорів.</p>
 </div>
 
 <div class="картка" id="кол-блок">
-  <div class="мітка">Ваші кольори</div>
-  <p class="тьм" style="margin:6px 0 8px">Портрет вище лишається на цьому пристрої.
-  Щоб дістати з нього числа: скопіюйте запит → відкрийте будь-який чат зі ші, що
-  бачить зображення → надішліть туди своє фото обличчя разом із запитом →
-  скопіюйте відповідь цілком і вставте сюди.</p>
+  <h2>Ваші кольори</h2>
+  <p class="підказка">Скопіюйте запит, надішліть його з фото обличчя в будь-який
+  чат зі ші — і поверніть відповідь сюди цілком.</p>
+  <label>Запит для чату</label>
   <textarea id="кол-запит" rows="3" readonly></textarea>
-  <div class="ряд"><button class="мал друг" id="кол-копія">Скопіювати запит</button></div>
-  <label style="margin-top:10px">Відповідь ші — вставте сюди</label>
+  <div class="ряд"><button class="тихо" id="кол-копія">Скопіювати запит</button></div>
+  <label>Відповідь ші</label>
   <textarea id="кол-відповідь" rows="3" placeholder="шкіра 1 #f2d6c4 шкіра 2 #efd0bc …"></textarea>
-  <div class="ряд"><button class="мал" id="кол-читати">Застосувати кольори</button>
+  <div class="ряд"><button id="кол-читати">Застосувати кольори</button>
     <span class="статус" id="кол-стан"></span></div>
-  <div id="кол-свотчі" class="др-ряд" style="margin-top:10px"></div>
-  <p class="тьм" style="margin-top:8px">Дивіться на квадратики, а не на коди: якщо
-  квадратик не схожий на вас — виправляйте, поки не схожий. Слово проти числа
-  звірить код у стенді, перед збиранням.</p>
+  <div id="кол-свотчі"></div>
 </div>
 
 </section>
 
 <section id="е-мірки" class="екран" style="display:none">
+
 <div class="картка" id="мір-блок">
-  <div class="мітка">Мірки, см</div>
-  <div class="ряд">
-    <div style="flex:1"><label class="тьм">Зріст</label><input type="number" id="мр-зріст" value="167"></div>
-    <div style="flex:1"><label class="тьм">Плечі</label><input type="number" id="мр-плечі"></div>
+  <h2>Мірки</h2>
+  <p class="підказка">У сантиметрах, по найширшому місцю, поверх білизни.
+  Усі чотири обхвати обов'язкові.</p>
+  <div class="пара">
+    <div><label>Зріст</label><input type="number" id="мр-зріст" value="167" inputmode="numeric"></div>
+    <div><label>Плечі</label><input type="number" id="мр-плечі" inputmode="numeric" placeholder="напр., 96"></div>
   </div>
-  <div class="ряд">
-    <div style="flex:1"><label class="тьм">Груди</label><input type="number" id="мр-груди"></div>
-    <div style="flex:1"><label class="тьм">Талія</label><input type="number" id="мр-талія"></div>
+  <div class="пара">
+    <div><label>Груди</label><input type="number" id="мр-груди" inputmode="numeric" placeholder="напр., 94"></div>
+    <div><label>Талія</label><input type="number" id="мр-талія" inputmode="numeric" placeholder="напр., 76"></div>
   </div>
-  <div class="ряд">
-    <div style="flex:1"><label class="тьм">Стегна</label><input type="number" id="мр-стегна"></div>
+  <div class="пара">
+    <div><label>Стегна</label><input type="number" id="мр-стегна" inputmode="numeric" placeholder="напр., 100"></div>
+    <div></div>
   </div>
-  <p class="тьм" style="margin-top:6px">Обхвати можна не заповнювати — тоді код
-  судитиме силует без них і скаже про це.</p>
 </div>
 
 <div class="картка" id="др-блок">
-  <div class="мітка">Драпіровка — два питання, на які відповідає око</div>
-  <p class="тьм" style="margin:6px 0 10px">R-PC-04: колорит визначає <b>стимульна</b>
-  елісітація, а не фото й не здогад моделі. Тому питання без стимулу не рахується:
-  спершу поставте портрет вище, потім дивіться на своє обличчя між двома полями
-  й кажіть, з яким воно живіше. Якщо різниці не бачите — так і скажіть, код
-  тоді мовчить, а не вгадує.</p>
-  <div id="др-нема" class="тьм">Спершу додайте портрет у блоці вище.</div>
+  <h2>Що вам до лиця</h2>
+  <p class="підказка">Дивіться, з яким полем обличчя живіше. Правильної відповіді нема — є ваша.</p>
+  <div id="др-нема" class="полотно" style="margin-top:14px">
+    Спершу додайте портрет — він на першому кроці.</div>
   <div id="др-тіло" style="display:none"></div>
 </div>
 
 </section>
 
 <section id="е-випадок" class="екран" style="display:none">
+
 <div class="картка" id="сц-блок">
-  <div class="мітка">Ваш випадок</div>
-  <p class="тьм" style="margin:6px 0 10px">Три списки задають шкалу, якою міряє код.
-  Якщо вашого випадку в списках нема — пишіть унизу вільними словами: ші зведе їх
-  у ту саму шкалу й покаже, що зрозуміло, ще до збирання.</p>
-  <label>Нагода</label><select id="сц-нагода"></select>
-  <label style="margin-top:8px">Місце</label><select id="сц-місце"></select>
-  <label style="margin-top:8px">Формальність</label><select id="сц-дрес"></select>
-  <div id="сц-діапазон" class="тьм" style="margin-top:6px"></div>
-  <div class="ряд" style="margin-top:10px">
-    <div style="flex:1"><label class="тьм">Година</label>
-      <input type="number" id="сц-година" value="11" min="0" max="23"></div>
-    <div style="flex:1"><label class="тьм">Температура, °C</label>
-      <input type="number" id="сц-темп" value="18"></div>
+  <h2>Ваш випадок</h2>
+  <p class="підказка">Середовище — не рівень ошатності, а що під ногами й чи є дах:
+  від нього залежать підбори й тканина. Решту пишіть своїми словами.</p>
+  <label>Що у вас</label><select id="сц-нагода"></select>
+  <label>У яке середовище</label><select id="сц-місце"></select>
+  <label>Наскільки ошатно</label><select id="сц-дрес"></select>
+  <div id="сц-діапазон" class="підказка" style="margin-top:8px"></div>
+  <div class="пара">
+    <div><label>Година</label><input type="number" id="сц-година" value="11" min="0" max="23" inputmode="numeric"></div>
+    <div><label>Температура, °C</label><input type="number" id="сц-темп" value="18" inputmode="numeric"></div>
   </div>
-  <div class="ряд">
-    <div style="flex:1"><label class="тьм">Вітер</label><select id="сц-вітер">
+  <div class="пара">
+    <div><label>Вітер</label><select id="сц-вітер">
       <option value="">не знаю</option><option value="0">безвітря</option>
       <option value="1">помірний</option><option value="2">сильний</option></select></div>
-    <div style="flex:1"><label class="тьм">Опади</label><select id="сц-опади">
+    <div><label>Опади</label><select id="сц-опади">
       <option value="">не знаю</option><option value="нема">нема</option>
       <option value="дощ">дощ</option><option value="сніг">сніг</option></select></div>
   </div>
-  <div class="ряд">
-    <div style="flex:1"><label class="тьм">Реагенти на дорогах</label><select id="сц-реагенти">
+  <div class="пара">
+    <div><label>Реагенти на дорогах</label><select id="сц-реагенти">
       <option value="">не знаю</option><option value="0">нема</option>
-      <option value="1">є (сіль узимку)</option></select></div>
+      <option value="1">є, сіль узимку</option></select></div>
+    <div></div>
   </div>
-  <label style="margin-top:10px">Своїми словами — усе, що важливо</label>
-  <textarea id="сц-слова" rows="3" placeholder="напр.: випускний доньки, тераса кафе біля річки, не хочу відкритий живіт, хочу тонкі підбори"></textarea>
-  <p class="тьм" style="margin:6px 0 0">Сюди ж пишіть вимоги, які мають виконатись обов'язково.</p>
+  <label>Своїми словами</label>
+  <textarea id="сц-слова" rows="3" placeholder="випускний доньки, тераса кафе біля річки, взуття на тонких підборах"></textarea>
+  <p class="підказка">Сюди ж пишіть те, що має виконатись обов'язково.</p>
 </div>
 
 <div class="картка" id="перехід">
-  <button id="п-далі">Зібрати образи →</button>
-  <div id="п-стан" class="статус"></div>
-  <textarea id="п-пакет" rows="3" style="display:none"></textarea>
-  <div id="п-руками" class="тьм" style="display:none">Якщо нова вкладка не відкрилась —
-  скопіюйте пакет вище й відкрийте стенд самі.</div>
+  <h2>Збирання</h2>
+  <p class="підказка">Образи складаються на окремій сторінці — вона відкриється
+  сама. Адреса підставляється автоматично.</p>
+  <label>Адреса сторінки збирання</label>
+  <input type="text" id="п-адреса" placeholder="claude.ai/public/artifacts/…">
+  <div id="п-стан" class="статус" style="margin-top:12px"></div>
+  <textarea id="п-пакет" rows="2" style="display:none;margin-top:10px"></textarea>
 </div>
 
 </section>
 
-<div class="ряд" id="ніг" style="justify-content:space-between;margin:14px 0">
-  <button class="мал друг" id="н-назад">← Назад</button>
-  <span class="тьм" id="н-лічильник"></span>
-  <button class="мал" id="н-далі">Далі →</button>
-</div>
-
 <div id="картки"></div>
 
-<div class="картка" id="журнал">
-  <div class="мітка">Вердикти на цьому пристрої</div>
-  <div class="тьм" id="ж-ліч">—</div>
-  <div id="ж-список" class="тьм" style="font-size:12.5px;margin:6px 0"></div>
+<details class="картка" id="журнал">
+  <summary>Вердикти на цьому пристрої</summary>
+  <div class="тьм" id="ж-ліч" style="margin-top:10px">—</div>
+  <div id="ж-список" class="тьм" style="font-size:13px;margin:8px 0"></div>
   <div class="ряд">
-    <button id="ж-копія" class="мал">Скопіювати всі вердикти</button>
+    <button class="тихо" id="ж-копія">Скопіювати всі вердикти</button>
     <span class="статус" id="ж-стан"></span>
   </div>
   <pre id="ж-пакет" style="display:none"></pre>
+</details>
+
+</div>
+
+<div class="панель" id="ніг">
+  <div class="колонка">
+    <button class="тихо" id="н-назад">Назад</button>
+    <button class="далі" id="н-далі">Далі</button>
+  </div>
 </div>
 
 <script>
 'use strict';
 
 /* ── пакет із фрагмента ─────────────────────────────────────────────────── */
-const ДЕМО_ФРАГМЕНТ = 'H4sIAHTXkmoC_6VWTW8aVxT9KyNWtcR8MxjsRaWo2XXVSt1UljXAAGM-BjHgGEeWwDhxFlacShZVqyppu-oSU2NjDPgvvPkL-SU99z3AA4y9aaxg877uueede959G2OD2E6MfWGf2e_sE_tV_kmPxWPsjl0HvaDNxqxP0zdsyCZsRjMYCU5Znz2wGfuX5lYG9oMOvgzZlN0oR5UybXjEMbPgLOixh-ACG75ZnCavTm1hMX1H7DEO67ObiMhtnD5mo9jOz2-xOOiuAZQJPAcwJiDhaFsS-wOHA2VwDnh9iV0jahfR8OedFHzgp59hyUTCnhnND9kt_g_YKHiHBTzLKcAO-IYzbOgsYtG2OIZx8ojdBV3pa_tKorAcdQeDmFAk9jdGpkRWcMFB8P2PlK6EX0AggA0pQBuhiAseHZEwOcLcmCPAmQPc0ClP6JSNdpcZEIo-VtHqAYauaABRAQq_kDQOPMfPJfB9bf8WXFIISpo2vae7w3lIRxH3McTSHufbzRHTt7JmmhYXCSVyRzFo_Jfn2ZyEeB-xeylbdOr6Nh1_xsHPsL_YaNT8HVUVc0q-butKNldVcm7BbdhlL-vYVb9mZx1fyXoVtdbMlN2sWqt7uWa24asVJ-faqqlphqkasiGbVlK2TF1542RqFKgjeCKgA6TUDt7RaBf5PWwG5wHEyWqm3Dy25WPZL9r1vFeRKx6wFKvuAe1_j6uY8vTNZDodO4mHSEqY24kNkv4RGmKjsLpQNiS3MbEEWcxI19EKi6bMqzqZFj6Upq26FbvgqFkbmeCTiCuoGv-XSBqmifmaV2_sp-x0OmfmsolcIpU0zWw-baUTCStj5q2coScy-7qsW9qRYVi6clArrDHINR7FXxiJX2zYVVfOOMdF59AreHIJzNWboDJv-w2n5HuVVQqNdFpbpdC0Uto6hd87r17_8N3rH0U1h4ormpu8fejV3YbjFz2hHILWrJU9O7fkx0gkNA2fpq6Dn8K-ZkEDm1kPqK5RhafBZVTukZH0tAEhlp2MU885PsRTsn236qpr4kkjz5M9ZDrhJS0MLsbLcGkWmCEPuBCowrXfF4Y9E662UuKxPSI0yiiNl4zyT5witNkn56HNU-4X3CM6QQ_yxMfclIbsPjiXaVhgh5MhtRsytBk5KY655U8C1X7YVekrN3WsGqEIUBkyuSAlTMnDLz_zqencUNaKJC7xAKH5JzvdlZahR6LgpmxIrvlI5U-uhg0fiVAAv3ze6zSNO9VqGf9ffu7IbAeUItLoIJ25Az9y0577b7SgIVCl4NSa9bBL-aplAalqAayh-ijysqNa5rYY2Nf3eRV_q2-nkloqraeSq9J-SiFK2BvR1FrZbjgyzk5Z6yWcXHNB1JK5Qd-XKF2sCUEKC0F65ZTL9pp2ovkxrGbV9aqLAizNa7xmlxveiju-qamFA7XhHdp1FTXazJXdqlOttg7kkl3Hq2NXVS1pIEvzKJl66SHhLcH9XIFRBL4EST4u2iWn0VIRvxWK30J8WawQDto6WDONhGZFmcaq6mmLeIq7vBc4XbrIs8ZgPmsM8UVnstryBV04xl9PjiSUzhuZAccCXYleZykzmTCzG6oTSB7Tk-UjyDvCj3FhHnOGRTM1pmrh9z2mSj7nX6mow0rZpQle4FwkY1H4fWnel11wA5ngfcW9QYTkIYBFndY13SMZhNh9S3tljqdPjhL0FPJF7hBkO4-w2I7oByUhCiIYiYw42oUy57YD1qkBC67WjObZW0i8dAtk7x-4m4l-jV8wNLhF_eWynaSeizrAsYC2alSLxk_Qzt9Qat-G0EZ33v4Kq-2RufbWbXvua9PgfFcKP4w8XdjdKadNNLnDeKgjpZwUksu8xefwZ8uWd8HaIiK0NuFiwlO_Qd3eyX8xCEEWvgwAAA';
 let П = null;                 // поточний пакет ПОКАЗ-V1
 const В = {};                 // відповіді за позицією: {річ,верд,коментар,ок,ні,записано}
 let пристрій = 'невідомо';
@@ -345,7 +465,6 @@ function полотно(поз){
   п.appendChild(і);
 }
 function рендер(){
-  $('привіт').style.display = 'none';
   $('ш-рядок').textContent = 'збірка '+(П.збірка||'?')+' · '+(П.каталог||'?')+' · '+(П.профіль||'');
   const кк = $('картки'); кк.innerHTML = '';
   П.картки.forEach((к, поз)=>{
@@ -617,15 +736,24 @@ function малюватиСмугу(){
   const в = $('пф-вибір'); в.innerHTML = '';
   ПРОФІЛІ.forEach(п=>{
     const о = document.createElement('option');
-    о.value = п.ід; о.textContent = п.назва || '(без назви)';
+    о.value = п.ід; о.textContent = п.назва || 'Без назви';
     if (п.ід === АКТИВНИЙ) о.selected = true;
     в.appendChild(о);
   });
-  const п = ПРОФІЛІ.find(x=>x.ід === АКТИВНИЙ) || {};
+  /* Стан профілю словами, а не дробом: людині треба знати, чого бракує, а не
+     скільки полів заповнено з чотирьох. */
   const г = ['метал','білий','нейтралі','барви'].filter(к=>ДРАП[к]).length;
-  $('пф-стан').textContent = 'профілів: ' + ПРОФІЛІ.length
-    + ' · кольори: ' + (КОЛІР.шкіра ? 'є' : 'нема')
-    + ' · драпіровка: ' + г + '/4';
+  const бракує = [];
+  if (!КОЛІР.шкіра) бракує.push('кольори');
+  if (g_нема_мірок()) бракує.push('мірки');
+  if (!г) бракує.push('драпіровку');
+  $('пф-стан').textContent = бракує.length
+    ? 'Лишилось додати ' + бракує.join(', ') + '.'
+    : (г < 4 ? 'Усе на місці. Драпіровку заповнено на ' + г + ' з 4.' : 'Профіль готовий.');
+}
+function g_нема_мірок(){
+  return [['мр-зріст'],['мр-плечі'],['мр-груди'],['мр-талія'],['мр-стегна']]
+    .some(([і])=>!parseFloat(($(і)||{}).value));
 }
 
 async function перемкнути(ід){
@@ -657,11 +785,21 @@ let ЕКРАН = 0;
 function екран(i){
   ЕКРАН = Math.max(0, Math.min(ЕКРАНИ.length - 1, i));
   ЕКРАНИ.forEach((ід, n)=>{ const е = $(ід); if (е) е.style.display = (n === ЕКРАН ? 'block' : 'none'); });
+  /* Нитка, а не «1/3»: три відрізки читаються без читання, і порядок тут несе
+     зміст — без кольорів немає чого міряти, без мірок немає що складати. */
+  [...$('нитка').children].forEach((д, n)=>д.classList.toggle('є', n <= ЕКРАН));
+  [...$('нитка-п').children].forEach((с, n)=>с.classList.toggle('є', n === ЕКРАН));
   $('н-назад').style.visibility = ЕКРАН === 0 ? 'hidden' : 'visible';
-  $('н-далі').style.visibility = ЕКРАН === ЕКРАНИ.length - 1 ? 'hidden' : 'visible';
-  $('н-лічильник').textContent = ІМЕНА_ЕКРАНІВ[ЕКРАН] + ' · ' + (ЕКРАН + 1) + '/' + ЕКРАНИ.length;
+  $('н-далі').textContent = ЕКРАН === ЕКРАНИ.length - 1 ? 'Зібрати образи' : 'Далі';
+  const заг = ['Люстерко','Мірки й кольори','Куди ви йдете'];
+  const під = ['Три кроки — і система збере чотири образи на ваш випадок.',
+               'Мірки задають силует, а драпіровка — колорит.',
+               'Останній крок: опишіть випадок — і збираємо.'];
+  document.querySelector('.шапка h1').textContent = заг[ЕКРАН];
+  document.querySelector('.шапка p').textContent = під[ЕКРАН];
   window.scrollTo(0, 0);
 }
+
 
 /* ── КОЛЬОРИ ЛЮДИНИ ───────────────────────────────────────────────────────
    Запит і розбір відповіді ПЕРЕНЕСЕНО ЗІ СТЕНДА ДОСЛІВНО. Не переказано: обидва
@@ -789,14 +927,31 @@ function щабель(слово){
 let КОЛІР = {шкіра:null, волосся:null, очі:null, кільце:null, точки:null};
 
 function малюватиСвотчі(){
+  /* СПІЙМАНО ПРОГОНОМ 29.08. Показувалась ПЕРША точка кожної риси — у людини з
+     трьома тонами волосся це одне усереднене чуже значення. І навпаки: обідок
+     райдужки стояв поруч з оком без підпису, тобто читався як другий колір очей.
+     Тепер кожна риса — свій ряд з усіма точками, а обідок названо. */
   const к = $('кол-свотчі'); к.innerHTML = '';
-  const пари = [['шкіра',КОЛІР.шкіра],['волосся',КОЛІР.волосся],['очі',КОЛІР.очі],['кільце',КОЛІР.кільце]];
-  for (const [ім, hex] of пари){
-    if (!hex) continue;
-    const д = document.createElement('div'); д.className = 'др-в';
-    const п = document.createElement('div'); п.className = 'др-поле'; п.style.background = hex;
-    const пд = document.createElement('div'); пд.className = 'др-п'; пд.textContent = ім + ' ' + hex;
-    д.appendChild(п); д.appendChild(пд); к.appendChild(д);
+  const груп = [
+    ['Шкіра', (КОЛІР.точки||{}).шкіра || (КОЛІР.шкіра ? [КОЛІР.шкіра] : [])],
+    ['Волосся', (КОЛІР.точки||{}).волосся || (КОЛІР.волосся ? [КОЛІР.волосся] : [])],
+    ['Очі', КОЛІР.очі ? [КОЛІР.очі] : []],
+    ['Обідок райдужки', КОЛІР.кільце ? [КОЛІР.кільце] : []]
+  ];
+  for (const [назва, точки] of груп){
+    if (!точки.length) continue;
+    const г = document.createElement('div'); г.className = 'св-група';
+    const н = document.createElement('div'); н.className = 'св-назва';
+    н.textContent = назва + (точки.length > 1 ? ' — ' + точки.length + ' тони' : '');
+    г.appendChild(н);
+    const р = document.createElement('div'); р.className = 'св-ряд';
+    точки.forEach(hex=>{
+      const д = document.createElement('div'); д.className = 'св';
+      const i = document.createElement('i'); i.style.background = hex;
+      const b = document.createElement('b'); b.textContent = hex;
+      д.appendChild(i); д.appendChild(b); р.appendChild(д);
+    });
+    г.appendChild(р); к.appendChild(г);
   }
 }
 async function писатиКолір(){
@@ -807,17 +962,19 @@ async function застосуватиКольори(){
   const из = розібратиКолір($('кол-відповідь').value || '');
   if (из.відмова){ ст.textContent = 'Ші відмовилась читати: ' + из.відмова; return; }
   if (!из.шкіра.length || !из.волосся.length || !из.очі){
-    ст.textContent = 'Не знайшлось: '
-      + [!из.шкіра.length && 'шкіра', !из.волосся.length && 'волосся', !из.очі && 'очі']
-        .filter(Boolean).join(', ') + '. Вставте відповідь цілком, як є.';
+    ст.textContent = 'У відповіді немає: '
+      + [!из.шкіра.length && 'шкіри', !из.волосся.length && 'волосся', !из.очі && 'очей']
+        .filter(Boolean).join(', ') + '. Вставте відповідь чату цілком, як є.';
     return;
   }
   КОЛІР = {шкіра:из.шкіра[0], волосся:из.волосся[0], очі:из.очі, кільце:из.кільце,
            точки:{шкіра:из.шкіра, волосся:из.волосся}, слова:из.слова, освітлення:из.освітлення};
   await писатиКолір(); малюватиСвотчі();
-  ст.textContent = 'Прочитано: шкіра ' + из.шкіра.length + ' точк(и), волосся '
-    + из.волосся.length + ' тон(и)' + (из.кільце ? ', кільце є' : '')
-    + (из.безмітки ? ' · без мітки лишилось ' + из.безмітки : '');
+  const ч = n=> n === 1 ? 'точка' : (n < 5 ? 'точки' : 'точок');
+  const т = n=> n === 1 ? 'тон' : (n < 5 ? 'тони' : 'тонів');
+  ст.textContent = 'Прочитано: ' + из.шкіра.length + ' ' + ч(из.шкіра.length)
+    + ' шкіри, ' + из.волосся.length + ' ' + т(из.волосся.length) + ' волосся'
+    + (из.кільце ? ', обідок райдужки' : '') + '.';
 }
 
 /* ── ЕКРАН ВИПАДКУ Й ПАКЕТ ВХІД-V1 ────────────────────────────────────────
@@ -829,35 +986,86 @@ async function застосуватиКольори(){
    ВІЛЬНІ СЛОВА НЕ ТЛУМАЧАТЬСЯ ТУТ. Показ моделі не має. Слова їдуть у пакет
    як є, а зводить їх у ключі ші вже в стенді — і показує, що зрозуміла, ДО
    збирання. Так контур підтвердження лишається живим. */
-const ДОВІДНИК = {"нагоди":[{"ключ":"весілля_гість","діапазон":[7,9]},{"ключ":"весілля_денне","діапазон":[6,8]},{"ключ":"дім","діапазон":[1,2]},{"ключ":"музей","діапазон":[3,5]},{"ключ":"побачення","діапазон":[4,5]},{"ключ":"подорож","діапазон":[2,4]},{"ключ":"прогулянка","діапазон":[2,4]},{"ключ":"робота","діапазон":[6,8]},{"ключ":"свято","діапазон":[5,7]},{"ключ":"спорт","діапазон":[1,2]},{"ключ":"співбесіда","діапазон":[6,8]},{"ключ":"театр","діапазон":[4,6]},{"ключ":"траур","діапазон":[5,7]},{"ключ":"формал_вечір","діапазон":[6,8]},{"ключ":"формал_день","діапазон":[5,7]},{"ключ":"церква","діапазон":[4,6]},{"ключ":"школа","діапазон":[4,5]},{"ключ":"щоденне","діапазон":[3,4]}],"місця":[{"ключ":"fine_dining","діапазон":[7,8]},{"ключ":"бар","діапазон":[3,5]},{"ключ":"вернісаж","діапазон":[5,7]},{"ключ":"весілля_вечірнє","діапазон":[7,9]},{"ключ":"весілля_денне","діапазон":[6,8]},{"ключ":"дитячий_майданчик","діапазон":[2,3]},{"ключ":"домашня_вечірка","діапазон":[3,5]},{"ключ":"дім","діапазон":[1,2]},{"ключ":"кафе","діапазон":[3,4]},{"ключ":"клуб","діапазон":[4,6]},{"ключ":"конференція","діапазон":[5,7]},{"ключ":"лікарня_візит","діапазон":[3,5]},{"ключ":"музей","діапазон":[3,5]},{"ключ":"опера_прем'єра","діапазон":[6,8]},{"ключ":"офіс_корпоративний","діапазон":[6,8]},{"ключ":"офіс_креативний","діапазон":[3,5]},{"ключ":"парк","діапазон":[2,3]},{"ключ":"подорож_переліт","діапазон":[2,4]},{"ключ":"похорон","діапазон":[5,7]},{"ключ":"презентація","діапазон":[6,8]},{"ключ":"прогулянка","діапазон":[2,4]},{"ключ":"ресторан_високий","діапазон":[6,8]},{"ключ":"ресторан_районний","діапазон":[4,5]},{"ключ":"святкова_вечеря","діапазон":[5,7]},{"ключ":"спорт","діапазон":[1,2]},{"ключ":"співбесіда","діапазон":[6,8]},{"ключ":"театр","діапазон":[4,6]},{"ключ":"транспорт_довгий","діапазон":[2,4]},{"ключ":"церква_служба","діапазон":[4,6]},{"ключ":"школа_батьківські","діапазон":[4,5]}],"коди":[{"ключ":"black_tie","діапазон":[9,9]},{"ключ":"business_casual","діапазон":[5,6]},{"ключ":"business_formal","діапазон":[7,8]},{"ключ":"casual","діапазон":[3,4]},{"ключ":"cocktail","діапазон":[7,8]},{"ключ":"smart_casual","діапазон":[4,6]},{"ключ":"white_tie","діапазон":[10,10]}],"дефолт_діапазон":[3,6]};
+const ДОВІДНИК = {"нагоди":[{"ключ":"щоденне","підпис":"Звичайний день","нота":"","діапазон":[1,3],"типове_місце":"кафе"},{"ключ":"робота","підпис":"Робота","нота":"зустріч, презентація, співбесіда","діапазон":[6,8],"типове_місце":"офіс_корпоративний"},{"ключ":"побачення","підпис":"Побачення","нота":"","діапазон":[4,5],"типове_місце":"ресторан_районний"},{"ключ":"свято","підпис":"Свято","нота":"день народження, Новий рік, весілля","діапазон":[5,7],"типове_місце":"святкова_вечеря"},{"ключ":"весілля_гість","підпис":"Весілля, я гостя","нота":"код сам не дасть майже-білого","діапазон":[7,9],"типове_місце":"весілля_вечірнє"},{"ключ":"траур","підпис":"Траур","нота":"код сам прибере яскраве й світле","діапазон":[5,7],"типове_місце":"похорон"},{"ключ":"спорт","підпис":"Спорт, активність","нота":"","діапазон":[1,2],"типове_місце":"спорт"},{"ключ":"подорож","підпис":"Подорож","нота":"дорога, переліт","діапазон":[2,4],"типове_місце":"подорож_переліт"}],"місця":[{"ключ":"дім","підпис":"Вдома","нота":"","діапазон":[1,2]},{"ключ":"парк","підпис":"Надворі","нота":"вулиця, парк, набережна","діапазон":[2,3]},{"ключ":"транспорт_довгий","підпис":"У дорозі","нота":"транспорт, переліт","діапазон":[2,4]},{"ключ":"ресторан_районний","підпис":"Заклад","нота":"кафе, ресторан, бар","діапазон":[4,5]},{"ключ":"офіс_креативний","підпис":"Офіс","нота":"","діапазон":[3,5]},{"ключ":"театр","підпис":"Зал","нота":"театр, кіно, концерт, музей, конференція","діапазон":[4,6]},{"ключ":"святкова_вечеря","підпис":"Урочистий зал","нота":"банкет, весілля, вечірка","діапазон":[5,7]}],"коди":[{"ключ":"casual","підпис":"Буденно","діапазон":[1,3]},{"ключ":"smart_casual","підпис":"Охайно буденно","діапазон":[3,5]},{"ключ":"business_casual","підпис":"Ділово, м'яко","діапазон":[4,6]},{"ключ":"business_formal","підпис":"Ділово, строго","діапазон":[6,8]},{"ключ":"cocktail","підпис":"Коктейльне","діапазон":[7,8]},{"ключ":"black_tie","підпис":"Чорна краватка","діапазон":[9,10]},{"ключ":"white_tie","підпис":"Біла краватка","діапазон":[10,10]}],"дефолт_діапазон":[3,6]};
 
 function людяно(к){ return String(к||'').replace(/_/g,' '); }
 
+/* СПИСКИ ЗГРУПОВАНО ЗА СМУГОЮ ОШАТНОСТІ (29.08). Пласкі 18 нагод і 30 місць
+   читались як звалище: людина шукала своє серед однаково виглядних рядків.
+   Ключі ТІ САМІ — групування лише в очах, бо код рахує по ключу, і підміняти
+   його «спрощеною» таксономією означало б розійтися з таблицею формальності. */
+/* КОРОТКІ СПИСКИ — І ЧОМУ САМЕ ТАКІ (30.08).
+
+   ПЕРШИЙ ВИМІР: при сталому місці й ошатності 13 із 18 нагод не міняють НІЧОГО.
+   Своє несуть лише дві — `весілля_гість` (K-KOH-08: не майже-біле, гучність ≤ 45)
+   і `траур` (K-OCC-01: не яскраве й світле). Решта була синонімами формальності,
+   яку вже несуть місце й ошатність. Весілля, день народження і Новий рік справді
+   не різняться самі собою — їх різнить контекст.
+
+   ДРУГИЙ ВИМІР: 30 місць несуть лише 11 різних смуг ошатності. Шість місць
+   ділять смугу 6–8, п'ять — смугу 3–5. Тобто список був переліком синонімів
+   однієї шкали.
+
+   ЗВІДСИ: у списках лишається по одному представнику кожного окремого сенсу —
+   8 нагод і 12 місць, які разом покривають ВСІ 11 смуг. Повна таблиця ключів
+   нікуди не поділась і лишається досяжною вільними словами: стенд зводить їх у
+   ті самі ключі тим самим довідником, і рідкісний випадок («вернісаж»,
+   «лікарня») туди доходить.
+
+   ЧОМУ ДВІ ОСІ ВСЕ Ж ЛИШИЛИСЬ. Прогін: «весілля гість × парк» зберігає K-KOH-08,
+   а ошатність бере з парку. Нагода й місце множаться, а не заміняють одне одного. */
+function простийСписок(в, пункти, порожній){
+  в.innerHTML = '';
+  const п = document.createElement('option'); п.value = ''; п.textContent = порожній;
+  в.appendChild(п);
+  (пункти||[]).forEach(о=>{
+    const т = document.createElement('option'); т.value = о.ключ;
+    т.textContent = о.підпис + (о.нота ? ' — ' + о.нота : '');
+    в.appendChild(т);
+  });
+}
+function знайти(пункти, к){ return (пункти||[]).find(о=>о.ключ === к) || null; }
+
 function заповнитиСписки(){
-  const пари = [['сц-нагода','нагоди'],['сц-місце','місця'],['сц-дрес','коди']];
-  for (const [ід, кл] of пари){
-    const в = $(ід); в.innerHTML = '';
-    const п = document.createElement('option'); п.value=''; п.textContent='—'; в.appendChild(п);
-    (ДОВІДНИК[кл]||[]).forEach(о=>{
-      const т = document.createElement('option'); т.value = о.ключ;
-      т.textContent = людяно(о.ключ) + (о.діапазон ? ' ('+о.діапазон[0]+'–'+о.діапазон[1]+')' : '');
-      в.appendChild(т);
-    });
-    в.onchange = оновитиДіапазон;
-  }
+  простийСписок($('сц-нагода'), ДОВІДНИК.нагоди, '—');
+  простийСписок($('сц-місце'), ДОВІДНИК.місця, 'типове для нагоди');
+  const д = $('сц-дрес'); д.innerHTML = '';
+  const п = document.createElement('option'); п.value = ''; п.textContent = 'за місцем';
+  д.appendChild(п);
+  (ДОВІДНИК.коди||[]).slice().sort((a,b)=>a.діапазон[0]-b.діапазон[0]).forEach(о=>{
+    const т = document.createElement('option'); т.value = о.ключ;
+    т.textContent = о.підпис + ' (' + о.діапазон[0] + '–' + о.діапазон[1] + ')';
+    д.appendChild(т);
+  });
+  ['сц-нагода','сц-місце','сц-дрес'].forEach(і=>{ $(і).onchange = оновитиДіапазон; });
   оновитиДіапазон();
 }
+
+function чиннеМісце(){
+  const обране = $('сц-місце').value;
+  if (обране) return обране;
+  const н = знайти(ДОВІДНИК.нагоди, $('сц-нагода').value);
+  return (н && н.типове_місце) || null;
+}
+
 function оновитиДіапазон(){
-  const кл = $('сц-дрес').value, м = $('сц-місце').value, н = $('сц-нагода').value;
-  const знайти = (сп, к)=> (ДОВІДНИК[сп]||[]).find(о=>о.ключ===к);
-  const д = (знайти('коди',кл)||{}).діапазон || (знайти('місця',м)||{}).діапазон
-          || (знайти('нагоди',н)||{}).діапазон || ДОВІДНИК.дефолт_діапазон;
-  $('сц-діапазон').textContent = д ? ('цільова формальність '+д[0]+'–'+д[1]+' зі шкали 1–10')
-                                   : 'формальність візьме код за замовчуванням';
+  const н = знайти(ДОВІДНИК.нагоди, $('сц-нагода').value);
+  const м = знайти(ДОВІДНИК.місця, чиннеМісце());
+  const кл = знайти(ДОВІДНИК.коди, $('сц-дрес').value);
+  /* Порядок джерел той самий, що в коді: ошатність важить над місцем, місце над
+     нагодою. Кажемо, звідки взялося число, — інакше воно магічне. */
+  const д = (кл && кл.діапазон) || (м && м.діапазон) || (н && н.діапазон)
+            || ДОВІДНИК.дефолт_діапазон;
+  const звідки = кл ? 'з ошатності' : м ? 'з місця' : н ? 'з нагоди' : 'за замовчуванням';
+  const рядки = [];
+  if (д) рядки.push('Ошатність ' + д[0] + '–' + д[1] + ' (' + звідки + ')');
+  if (н && н.нота) рядки.push(н.нота);
+  if (!$('сц-місце').value && м) рядки.push('середовище: ' + м.підпис.toLowerCase());
+  $('сц-діапазон').textContent = рядки.join(' · ');
 }
 
 function зібратиВхід(){
-  const сц = {нагода:$('сц-нагода').value||null, місце:$('сц-місце').value||null,
+  const сц = {нагода:$('сц-нагода').value||null, місце:чиннеМісце(),
               дрес_код:$('сц-дрес').value||null,
               година:parseInt($('сц-година').value)||11,
               темп_c:parseFloat($('сц-темп').value)};
@@ -977,30 +1185,29 @@ async function зберегтиФото(е, конт, ключ){
    на порожньому вході віддає w=None і впевненість 0: мовчання лишається
    мовчанням, а не нулем, який виглядає як вимір. */
 const ДРАП_ПОЛЯ = {
-  метал: {питання:'Метал біля обличчя', стимул:true, в:[
-    {ключ:'золото', hex:'#C9A227', підпис:'золото'},
-    {ключ:'срібло', hex:'#B8BDC2', підпис:'срібло'},
-    {ключ:'обидва', hex:null, підпис:'обидва однаково'}]},
-  білий: {питання:'Який білий ваш', стимул:true, в:[
-    {ключ:'оптичний', hex:'#FFFFFF', підпис:'оптичний білий'},
-    {ключ:'вершковий', hex:'#F4E9D2', підпис:'молочний / айворі'},
-    {ключ:'не бачу різниці', hex:null, підпис:'не бачу різниці'}]},
-  /* ТРЕТІЙ СТИМУЛ. Той самий теплохолод, але на приглушених нейтралях: для
-     тих, хто не носить прикрас, метал німий, і два канали ставали одним.
-     До 29.08.2026 це питання споживача не мало — тепер його бере
-     `palette.тепло_з_елісітації` третім каналом. */
-  нейтралі: {питання:'Які нейтралі ваші', стимул:true, в:[
-    {ключ:'теплі', hex:'#C8B49D', підпис:'теплі нейтралі'},
-    {ключ:'холодні', hex:'#A9B0BA', підпис:'холодні нейтралі'},
-    {ключ:'не бачу різниці', hex:null, підпис:'не бачу різниці'}]},
-  /* ЧЕТВЕРТЕ — НЕ ПРО КОЛІР БІЛЯ ОБЛИЧЧЯ, А ПРО САМУ ЛЮДИНУ, тому без стимулу.
+  метал: {питання:'Золото чи срібло біля обличчя', стимул:true, в:[
+    {ключ:'золото', hex:'#C9A227', підпис:'Золото'},
+    {ключ:'срібло', hex:'#B8BDC2', підпис:'Срібло'},
+    {ключ:'обидва', hex:null, підпис:'Обидва однаково'}]},
+  білий: {питання:'Білий чи молочний', стимул:true, в:[
+    {ключ:'оптичний', hex:'#FFFFFF', підпис:'Чистий білий'},
+    {ключ:'вершковий', hex:'#F4E9D2', підпис:'Молочний'},
+    {ключ:'не бачу різниці', hex:null, підпис:'Не бачу різниці'}]},
+  /* ТРЕТІЙ СТИМУЛ. Той самий теплохолод, але на приглушених нейтралях замість
+     металу: для тих, хто не носить прикрас, метал німий, і два канали ставали
+     одним. Споживач — `palette.тепло_з_елісітації`, третій канал. */
+  нейтралі: {питання:'Теплі чи холодні нейтралі', стимул:true, в:[
+    {ключ:'теплі', hex:'#C8B49D', підпис:'Теплі'},
+    {ключ:'холодні', hex:'#A9B0BA', підпис:'Холодні'},
+    {ключ:'не бачу різниці', hex:null, підпис:'Не бачу різниці'}]},
+  /* ЧЕТВЕРТЕ — не про колір біля обличчя, а про саму людину, тому без стимулу.
      K-PC-01: вісь колірного контрасту рахується з хроми волосся й очей, а з
      телефонного фото хрома має надійність 0.35 при порозі 0.5 — тут канон
      приписує питати. Йде в `самозвіт.барви` → `bridge._основи`. */
   барви: {питання:'Ваші власні барви — очі, волосся, губи', стимул:false, в:[
-    {ключ:'яскраві', підпис:'яскраві, помітні'},
-    {ключ:'приглушені', підпис:'приглушені, м\'які'},
-    {ключ:'не знаю', підпис:'не знаю'}]}
+    {ключ:'яскраві', підпис:'Яскраві, помітні'},
+    {ключ:'приглушені', підпис:'Приглушені, м\'які'},
+    {ключ:'не знаю', підпис:'Не знаю'}]}
 };
 let ДРАП = {білий:null, метал:null, нейтралі:null, барви:null};
 
@@ -1012,6 +1219,12 @@ async function писатиДрап(){
   /* статус малює `малюватиДрап` разом із тілом — тут лише запис */
 }
 
+let КАДР = {масштаб:100, x:50, y:35};
+async function читатиКадр(){
+  const з = await читатиКв_('кадр'); if (з) КАДР = Object.assign(КАДР, з);
+}
+async function писатиКадр(){ try{ await писатиКв('кадр', {...КАДР}); }catch(e){} }
+
 async function малюватиДрап(){
   let портрет = null;
   try{ портрет = await читатиКв(ключФото('портрет')); }catch(e){}
@@ -1020,43 +1233,89 @@ async function малюватиДрап(){
   if (!портрет) return;
   const урл = URL.createObjectURL(портрет);
   const тіло = $('др-тіло'); тіло.innerHTML = '';
+
+  /* ПІДГОНКА КАДРУ. Портрет у кожної свій: обличчя буває збоку, здалеку, з
+     полями. Без масштабу й зсуву кружок показував вухо — тобто стимул був не
+     той, а відповідь усе одно писалась як елісітація. */
+  const пк = document.createElement('div');
+  пк.innerHTML = '<div class="фото-назва" style="margin-top:14px">Підженіть обличчя в кружок</div>'
+    + '<div class="кадр"><span>Масштаб</span><input type="range" id="кд-м" min="100" max="320" value="' + КАДР.масштаб + '"></div>'
+    + '<div class="кадр"><span>Ліво-право</span><input type="range" id="кд-x" min="0" max="100" value="' + КАДР.x + '"></div>'
+    + '<div class="кадр"><span>Вгору-вниз</span><input type="range" id="кд-y" min="0" max="100" value="' + КАДР.y + '"></div>';
+  тіло.appendChild(пк);
+
+  const стиль = і=>{
+    і.style.width = КАДР.масштаб + '%';
+    і.style.height = КАДР.масштаб + '%';
+    і.style.objectPosition = КАДР.x + '% ' + КАДР.y + '%';
+  };
+  const усі = [];
+
   for (const поле of ['метал','білий','нейтралі','барви']){
     const оп = ДРАП_ПОЛЯ[поле];
-    const м = document.createElement('div'); м.className = 'мітка';
-    м.style.marginTop = '12px'; м.textContent = оп.питання;
-    тіло.appendChild(м);
-    const к = document.createElement('div'); к.className = 'др-ряд';
-    оп.в.forEach(в=>{
-      const д = document.createElement('div');
-      д.className = 'др-в' + (ДРАП[поле] === в.ключ ? ' обрано' : '');
-      if (оп.стимул){
-        const п = document.createElement('div'); п.className = 'др-поле';
-        if (в.hex){
-          п.style.background = в.hex;
-          const і = document.createElement('img'); і.className = 'др-обличчя'; і.src = урл;
-          п.appendChild(і);
-        } else {
-          п.style.background = 'repeating-linear-gradient(45deg,#1b1b1b,#1b1b1b 8px,#222 8px,#222 16px)';
-          п.textContent = '—';
-        }
-        д.appendChild(п);
+    const н = document.createElement('div');
+    н.className = 'фото-назва'; н.style.margin = '22px 0 8px';
+    н.textContent = оп.питання;
+    тіло.appendChild(н);
+
+    const проби = оп.в.filter(в=>в.hex || !оп.стимул);
+    const нуль = оп.в.find(в=>!в.hex && оп.стимул);
+
+    if (оп.стимул){
+      /* ДИПТИХ. Дві стулки стуляються без проміжка: обличчя стоїть у них поруч,
+         як дві тканини, піднесені до лиця. Так порівнюють насправді. */
+      const д = document.createElement('div'); д.className = 'диптих';
+      проби.forEach(в=>{
+        const б = document.createElement('button');
+        б.className = 'стулка'; б.type = 'button';
+        б.setAttribute('aria-pressed', ДРАП[поле] === в.ключ ? 'true' : 'false');
+        const п = document.createElement('span'); п.className = 'поле';
+        п.style.background = в.hex;
+        const вк = document.createElement('span'); вк.className = 'вікно';
+        const і = document.createElement('img'); і.src = урл; і.alt = ''; стиль(і); усі.push(і);
+        вк.appendChild(і); п.appendChild(вк);
+        const наз = document.createElement('span'); наз.className = 'назва'; наз.textContent = в.підпис;
+        б.appendChild(п); б.appendChild(наз);
+        б.onclick = async ()=>{ ДРАП[поле] = в.ключ; await писатиДрап(); малюватиДрап(); };
+        д.appendChild(б);
+      });
+      тіло.appendChild(д);
+      if (нуль){
+        const т = document.createElement('button');
+        т.className = 'текст однаково'; т.type = 'button';
+        т.textContent = (ДРАП[поле] === нуль.ключ ? '✓ ' : '') + нуль.підпис;
+        т.onclick = async ()=>{ ДРАП[поле] = нуль.ключ; await писатиДрап(); малюватиДрап(); };
+        тіло.appendChild(т);
       }
-      const пд = document.createElement('div'); пд.className = 'др-п'; пд.textContent = в.підпис;
-      д.appendChild(пд);
-      д.onclick = async ()=>{ ДРАП[поле] = в.ключ; await писатиДрап(); малюватиДрап(); };
-      к.appendChild(д);
-    });
-    тіло.appendChild(к);
+    } else {
+      /* Барви — не про колір біля обличчя, а про саму людину: без стимулу, тому
+         й вигляд інший — чипи, а не проби. Форма має казати, чим питання є. */
+      const р = document.createElement('div'); р.className = 'ряд';
+      оп.в.forEach(в=>{
+        const ч = document.createElement('span');
+        ч.className = 'чип' + (ДРАП[поле] === в.ключ ? ' вибр' : '');
+        ч.textContent = в.підпис;
+        ч.onclick = async ()=>{ ДРАП[поле] = в.ключ; await писатиДрап(); малюватиДрап(); };
+        р.appendChild(ч);
+      });
+      тіло.appendChild(р);
+    }
   }
-  const ряд = document.createElement('div'); ряд.className = 'ряд'; ряд.style.marginTop = '14px';
+
+  for (const [ід, кл] of [['кд-м','масштаб'],['кд-x','x'],['кд-y','y']]){
+    $(ід).oninput = е=>{ КАДР[кл] = parseInt(е.target.value); усі.forEach(стиль); };
+    $(ід).onchange = писатиКадр;
+  }
+  const ст = document.createElement('div'); ст.className = 'статус'; ст.id = 'др-стан';
+  ст.style.marginTop = '20px';
+  const г = ['метал','білий','нейтралі','барви'].filter(к=>ДРАП[к]).length;
+  ст.textContent = 'Відповіли на ' + г + ' з 4.';
+  тіло.appendChild(ст);
   const скид = document.createElement('button');
-  скид.className = 'мал друг'; скид.textContent = 'Скинути відповіді';
+  скид.className = 'небезпека'; скид.textContent = 'Скинути відповіді';
   скид.onclick = async ()=>{ ДРАП = {білий:null,метал:null,нейтралі:null,барви:null};
                              await писатиДрап(); малюватиДрап(); };
-  const ст = document.createElement('span'); ст.className = 'статус'; ст.id = 'др-стан';
-  ряд.appendChild(скид); ряд.appendChild(ст); тіло.appendChild(ряд);
-  const г = ['метал','білий','нейтралі','барви'].filter(к=>ДРАП[к]).length;
-  ст.textContent = 'відповіді: ' + г + ' з 4' + (г ? ' · збережено на пристрої' : '');
+  тіло.appendChild(скид);
 }
 
 function фотоПрофіль(){
@@ -1078,46 +1337,39 @@ async function записатиУрлСтенда(у){
 async function перейтиДоСтенда(){
   const ст = $('п-стан');
   const бракує = [];
-  /* Без кольорів код рахувати нічого не може — це не побажання, а вхід. */
-  if (!КОЛІР.шкіра || !КОЛІР.волосся || !КОЛІР.очі) бракує.push('кольори (блок «Ваші кольори»)');
-  if (!$('сц-нагода').value && !$('сц-слова').value.trim()) бракує.push('нагоду або опис словами');
-  if (бракує.length){ ст.textContent = 'Заповніть ' + бракує.join(', ') + '.'; return; }
-  ст.textContent = 'Пакую…';
+  if (!КОЛІР.шкіра || !КОЛІР.волосся || !КОЛІР.очі) бракує.push('свої кольори');
+  /* ВИМІРЯНО 30.08: `bridge.запити` кидає ValueError на будь-якому відсутньому
+     обхваті — «площа рахується на реальному тілі». Доти показ обіцяв, що їх
+     можна лишити порожніми, і стенд мовчки падав би вже після переходу. */
+  const нм = [['мр-плечі','плечі'],['мр-груди','груди'],['мр-талія','талія'],['мр-стегна','стегна']]
+    .filter(([і])=>!parseFloat($(і).value)).map(([,н])=>н);
+  if (нм.length) бракує.push('обхвати: ' + нм.join(', '));
+  if (!$('сц-нагода').value && !$('сц-слова').value.trim()) бракує.push('нагоду або опис своїми словами');
+  if (бракує.length){ ст.textContent = 'Спершу додайте ' + бракує.join(' і ') + '.'; return; }
+  const у = ($('п-адреса').value || '').trim();
+  if (!у){ ст.textContent = 'Адреса сторінки збирання не підставилась — впишіть її в поле вище.'; $('п-адреса').focus(); return; }
+  try{ await писатиКв('урл-стенда', у); }catch(e){}
+
+  ст.textContent = 'Збираю пакет…';
   const об = зібратиВхід();
   const фр = await запакувати(об);
-  const п = $('п-пакет'); п.value = фр; п.style.display='block';
-
-  /* ПРЯМИЙ ШЛЯХ. Якщо показ відкрив САМ стенд (анкор без rel="noopener"), у нас є
-     `window.opener` — і пакет летить у ту вкладку без буфера й без пасти.
-     Чи доживе opener до цього моменту, наперед не відомо: сюди приходять і
-     прямим відкриттям показу, де опенера нема за визначенням. Тому не зондуємо,
-     а пробуємо і чесно кажемо, що вийшло. Буфер наповнюємо ЗАВЖДИ — навіть коли
-     прямий шлях спрацював, бо ціна нуль, а без нього збій нікуди не відкотити. */
+  const п = $('п-пакет'); п.value = фр; п.style.display = 'block';
   const скопійовано = копіювати(фр);
+
+  /* Якщо показ відкрив сам стенд — пакет летить прямо в ту вкладку, без буфера.
+     Буфер наповнюємо однаково: ціна нуль, а без нього збій нікуди відкотити. */
   if (window.opener){
     try{
       window.opener.postMessage(об, '*');
-      ст.textContent = 'Надіслано у вкладку стенда — поверніться туди.'
-        + (скопійовано ? ' (пакет також у буфері, про запас)' : '');
-      $('п-руками').style.display = 'none';
+      ст.textContent = 'Надіслано. Поверніться у вкладку збирання.';
       return;
-    }catch(e){ ст.textContent = 'Пряма передача не вийшла (' + String(e).slice(0,60) + ') — далі через буфер.'; }
+    }catch(e){}
   }
-  let у = await урлСтенда();
-  if (!у){
-    у = prompt('Один раз: вставте адресу опублікованого стенда (claude.ai/public/artifacts/…)') || '';
-    у = у.trim();
-    if (у) { try{ await записатиУрлСтенда(у); }catch(e){} }
-  }
-  ст.textContent = (скопійовано ? 'Пакет скопійовано. ' : 'Скопіюйте пакет нижче. ')
-    + (у ? 'Відкриваю стенд — там довге натискання у полі → Вставити.'
-         : 'Адреси стенда нема — відкрийте його самі й вставте пакет.');
-  $('п-руками').style.display = скопійовано ? 'none' : 'block';
-  if (у){
-    const a = document.createElement('a');
-    a.href = у; a.target = '_blank'; a.rel = 'noopener';
-    document.body.appendChild(a); a.click(); a.remove();
-  }
+  ст.textContent = (скопійовано ? 'Скопійовано. Відкриваю збирання — там довге натискання в полі, далі «Вставити».'
+                              : 'Скопіюйте пакет нижче, відкрийте сторінку збирання і вставте його там.');
+  const a = document.createElement('a');
+  a.href = у; a.target = '_blank'; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
 }
 
 async function старт(){
@@ -1130,8 +1382,39 @@ async function старт(){
   екран(0);
   $('пф-вибір').onchange = е=>перемкнути(е.target.value);
   $('пф-новий').onclick = створитиПрофіль;
+  /* АДРЕСА ЗБИРАННЯ ЖИВЕ У ФАЙЛІ ПОРУЧ, А НЕ В ПОСИЛАННІ.
+     Опублікована сторінка збирання отримує НОВУ адресу з кожним перевиданням —
+     отже посилання з адресою всередині протухає щоразу, і роздавати його заново
+     довелося б після кожної правки. Тому адреса лежить у `збирання.txt` у тому
+     ж репо: посилання, яке отримали тестувальниці, не міняється ніколи, а ти
+     після публікації правиш один рядок на GitHub.
+     Порядок джерел: параметр посилання → файл поруч → збережене на пристрої. */
+  let _адр = new URLSearchParams(location.search).get('збирання')
+          || new URLSearchParams(location.search).get('майстерня');
+  if (!_адр){
+    try{
+      const в = await Promise.race([
+        fetch('збирання.txt?_=' + Date.now()),
+        new Promise((_, зле)=>setTimeout(()=>зле(new Error('тиша')), 8000))]);
+      if (в.ok){
+        const т = (await в.text()).split('\n').map(x=>x.trim())
+                  .find(x=>x && !x.startsWith('#'));
+        if (т) _адр = т;
+      }
+    }catch(e){}
+  }
+  if (_адр){ try{ await писатиКв('урл-стенда', _адр.trim()); }catch(e){} }
+  $('п-адреса').value = _адр ? _адр.trim() : ((await читатиКв_('урл-стенда')) || '');
+  $('п-адреса').onchange = е=>писатиКв('урл-стенда', (е.target.value||'').trim());
   $('н-назад').onclick = ()=>екран(ЕКРАН - 1);
-  $('н-далі').onclick = async ()=>{ await писатиАктивний(); малюватиСмугу(); екран(ЕКРАН + 1); };
+  $('н-далі').onclick = async ()=>{
+    await писатиАктивний(); малюватиСмугу();
+    /* На останньому екрані та сама кнопка збирає — окремої не треба, і людина
+       не шукає, чим завершити: дія завжди в одному місці внизу. */
+    if (ЕКРАН === ЕКРАНИ.length - 1){ await перейтиДоСтенда(); return; }
+    екран(ЕКРАН + 1);
+  };
+  await читатиКадр();
   ['пр-імʼя','пр-згода','мр-зріст','мр-плечі','мр-груди','мр-талія','мр-стегна']
     .forEach(і=>{ const е = $(і); if (е) е.onchange = ()=>писатиАктивний(); });
   ['сц-нагода','сц-місце','сц-дрес','сц-година','сц-темп','сц-вітер','сц-опади',
@@ -1140,7 +1423,6 @@ async function старт(){
   $('кол-копія').onclick = ()=>{ $('кол-стан').textContent =
     копіювати(ПРОМПТ_КОЛІР) ? 'Запит скопійовано.' : 'Виділіть текст запиту руками.'; };
   $('кол-читати').onclick = застосуватиКольори;
-  $('п-далі').onclick = перейтиДоСтенда;
 
   let х = location.hash.slice(1);
   /* СПІЙМАНО ДО ПРОГОНУ. Мітку я зробив кирилицею, а браузер відсоткує кирилицю
@@ -1151,12 +1433,11 @@ async function старт(){
   if (х){
     /* Прийшли образи зі стенда — вхідна частина відпрацювала, ховаємо її,
        щоб людина бачила рівно те, заради чого повернулась. */
-    ['е-профіль','е-мірки','е-випадок','ніг','смуга-профілів','привіт'].forEach(і=>{ const е=$(і); if(е) е.style.display='none'; });
+    ['е-профіль','е-мірки','е-випадок','ніг','смуга-профілів'].forEach(і=>{ const е=$(і); if(е) е.style.display='none'; });
     try{ П = await розпакувати(х); рендер(); }
     catch(e){ $('ш-рядок').textContent = 'Пакет не розпакувався: '+String(e).slice(0,120); }
   } else оновитиЖурнал();
 }
-$('демо').onclick = ()=>{ location.hash = ДЕМО_ФРАГМЕНТ; };
 window.addEventListener('hashchange', старт);
 старт();
 </script>
