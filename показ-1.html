@@ -1,0 +1,2319 @@
+<!doctype html>
+<!--
+  показ.html · v1.1 — код+ші
+  Показ-бік поза пісочницею артефакта (github.io або локальний файл).
+  Приймає пакет ПОКАЗ-V1 у фрагменті URL (gzip+base64url, доведено зондом),
+  рендерить картки образів з реальними фото SKU (доведено 3/3 CDN),
+  приймає згенеровані картинки локально (файл/посилання — нікуди не вантажаться),
+  тримає фото-профіль (портрет + повний зріст) у IndexedDB пристрою,
+  пише вердикти за схемою вердикти.tsv v25 у IndexedDB (переживає перевидання
+  артефакта) і віддає їх одним копійованим пакетом ВЕРДИКТИ-ПОКАЗ-V1.
+  Кнопка «Демо» несе 4 картки: 2 з реальними SKU стенд-каталогу, 2 текстові.
+  Записи з демо позначені збірка=демо і фільтруються.
+-->
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>показ образів — код+ші</title>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<style>
+/* ─────────────────────────────────────────────────────────────────────────
+   «код + ші» · показ. Мова форми взята з примірочної, не з панелі приладів:
+   папір викрійки, білі картки на ньому, засічка в заголовках, дрібний
+   моноширинний лише там, де справді число.
+
+   ЧОМУ СВІТЛЕ ТЛО. Не смак: людина судить колір НА ВЛАСНОМУ ОБЛИЧЧІ, а темне
+   оточення зсуває сприйняття світлоти й насиченості сусіднього поля
+   (симультанний контраст). Темна сторінка псувала б головний вимір.
+
+   ЧОМУ АКЦЕНТ СИНІЙ. Золотий акцент конкурував із золотою пробою драпіровки —
+   інтерактивний колір мусить бути таким, який неможливо сплутати з відповіддю.
+   Крейдяно-синій до жодної проби не подібний.
+   ───────────────────────────────────────────────────────────────────────── */
+:root{
+  --папір:#EFEDE7;      /* нефарбований папір викрійки */
+  --картон:#FFFFFF;     /* картка на столі розкрою */
+  --чорнило:#1E2430;    /* текст */
+  --олівець:#77746C;    /* другорядне */
+  --межа:#DFDBD2;
+  --крейда:#2F4A6B;     /* дія: кравецька крейда */
+  --крейда-тло:#EAEFF5;
+  --нитка:#A8443A;      /* лише попередження й скидання */
+  --тінь:0 1px 2px rgba(30,36,48,.05), 0 8px 24px -12px rgba(30,36,48,.14);
+  --радіус:16px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--папір);color:var(--чорнило);
+  font:16px/1.55 -apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  padding:0 0 132px;
+  -webkit-font-smoothing:antialiased;
+}
+.колонка{max-width:560px;margin-inline:auto;padding:0 18px}
+
+/* ── ШАПКА. Заголовок засічкою — єдине місце, де вона є, тому й помітна. ── */
+.шапка{padding:26px 0 10px}
+.знак{font:600 15px/1 -apple-system,"Segoe UI",Roboto,sans-serif;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--олівець)}
+.шапка h1{
+  font:400 30px/1.15 "Noto Serif","Times New Roman",Georgia,serif;
+  letter-spacing:-.015em;margin:10px 0 4px}
+.шапка p{color:var(--олівець);font-size:14.5px;margin:0}
+
+/* ── НИТКА ПОСТУПУ. Три відрізки — бо кроків справді три, і порядок несе
+      зміст: без кольорів немає чого міряти, без мірок немає що складати. ── */
+.нитка{display:flex;gap:6px;margin:18px 0 4px}
+.нитка div{flex:1;height:3px;border-radius:2px;background:var(--межа);
+  transition:background .35s ease}
+.нитка div.є{background:var(--крейда)}
+.нитка-п{display:flex;justify-content:space-between;font-size:12px;
+  color:var(--олівець);margin-bottom:18px}
+.нитка-п span.є{color:var(--чорнило);font-weight:600}
+
+/* ── КАРТКИ ─────────────────────────────────────────────────────────────── */
+.картка{background:var(--картон);border:1px solid var(--межа);
+  border-radius:var(--радіус);padding:20px;margin:14px 0;box-shadow:var(--тінь)}
+.картка h2{font:400 21px/1.25 "Noto Serif","Times New Roman",Georgia,serif;
+  margin:0 0 4px;letter-spacing:-.01em}
+.підказка{color:var(--олівець);font-size:14px;margin:4px 0 0}
+.тьм{color:var(--олівець);font-size:14px}
+.ряд{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.пара{display:flex;gap:12px}
+.пара>div{flex:1;min-width:0}
+
+/* ── ПОЛЯ ───────────────────────────────────────────────────────────────── */
+label{display:block;font-size:13.5px;font-weight:600;color:var(--чорнило);
+  margin:14px 0 6px}
+label:first-child{margin-top:0}
+select,input[type=text],input[type=number],textarea{
+  width:100%;background:#FBFAF8;color:var(--чорнило);
+  border:1px solid var(--межа);border-radius:11px;padding:13px 14px;
+  font:inherit;-webkit-appearance:none;appearance:none;transition:border-color .15s,box-shadow .15s}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--крейда);
+  box-shadow:0 0 0 3px var(--крейда-тло)}
+select{background-image:
+    linear-gradient(45deg,transparent 50%,var(--олівець) 50%),
+    linear-gradient(135deg,var(--олівець) 50%,transparent 50%);
+  background-position:calc(100% - 19px) 55%,calc(100% - 14px) 55%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px}
+textarea{min-height:76px;resize:vertical}
+input[type=file]{font-size:13.5px;color:var(--олівець)}
+.згода{display:flex;gap:10px;align-items:flex-start;margin-top:16px;
+  font-size:14.5px;font-weight:400}
+.згода input{width:20px;height:20px;flex:0 0 auto;margin-top:1px;accent-color:var(--крейда)}
+
+/* ── КНОПКИ ─────────────────────────────────────────────────────────────── */
+button{font:600 15px/1 inherit;border:0;border-radius:11px;padding:14px 20px;
+  background:var(--крейда);color:#fff;cursor:pointer;
+  transition:transform .12s ease,opacity .15s}
+button:active{transform:scale(.985)}
+button.тихо{background:transparent;color:var(--крейда);
+  border:1px solid var(--межа);padding:11px 16px;font-size:14px}
+button.текст{background:none;border:0;color:var(--крейда);padding:8px 2px;
+  font-size:14px;font-weight:600}
+button.небезпека{background:none;border:0;color:var(--нитка);
+  padding:8px 2px;font-size:14px;font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+
+/* ── ДИПТИХ ДРАПІРОВКИ — ПІДПИС СТОРІНКИ ─────────────────────────────────
+   Не дві кнопки, а один інструмент: два поля стуляються без проміжка, і
+   обличчя стоїть у них поруч — як дві тканини, піднесені до лиця. Так
+   порівнюють насправді, і так це має виглядати. ───────────────────────── */
+.диптих{display:flex;border-radius:14px;overflow:hidden;border:1px solid var(--межа)}
+.стулка{flex:1;position:relative;cursor:pointer;padding:0;background:none;
+  border:0;border-radius:0;display:block}
+.стулка .поле{height:210px;display:flex;align-items:center;justify-content:center}
+.стулка .вікно{width:142px;height:142px;border-radius:50%;overflow:hidden;
+  box-shadow:0 2px 14px rgba(0,0,0,.16)}
+.стулка .вікно img{width:100%;height:100%;object-fit:cover;display:block}
+.стулка .назва{display:block;text-align:center;padding:11px 6px;
+  font-size:14.5px;font-weight:600;color:var(--чорнило);background:var(--картон);
+  border-top:1px solid var(--межа)}
+.стулка[aria-pressed="true"] .назва{background:var(--крейда);color:#fff}
+.стулка[aria-pressed="true"] .назва::before{content:"✓  ";font-weight:700}
+.диптих .стулка + .стулка{border-left:1px solid var(--межа)}
+.однаково{display:block;width:100%;text-align:center;margin-top:2px}
+
+/* ── КАДР ───────────────────────────────────────────────────────────────── */
+.кадр{display:flex;gap:12px;align-items:center;margin:9px 0}
+.кадр span{font-size:12.5px;color:var(--олівець);min-width:76px}
+.кадр input[type=range]{flex:1;accent-color:var(--крейда);height:22px}
+
+/* ── СВОТЧІ. Hex дрібний і сірий: людина судить квадратик, число тут лише
+      щоб було що виправити. ─────────────────────────────────────────────── */
+.св-група{margin:16px 0 0}
+.св-назва{font-size:13.5px;font-weight:600;margin-bottom:8px}
+.св-ряд{display:flex;gap:8px}
+.св{flex:1;min-width:0}
+.св i{display:block;height:64px;border-radius:11px;border:1px solid var(--межа)}
+.св b{display:block;font:400 10.5px/1.4 ui-monospace,Menlo,Consolas,monospace;
+  color:var(--олівець);margin-top:5px;text-align:center;letter-spacing:.02em}
+
+/* ── ФОТО ───────────────────────────────────────────────────────────────── */
+.фото-пара{display:flex;gap:12px;align-items:flex-start}
+.фото-пара>div{flex:1;min-width:0}
+.фото-назва{font-size:13.5px;font-weight:600;margin-bottom:8px}
+img.образ{max-width:100%;border-radius:11px;border:1px solid var(--межа);display:block}
+
+/* ── НИЖНЯ ПАНЕЛЬ ДІЇ. Одна дія, завжди в одному місці. ──────────────────── */
+.панель{position:fixed;left:0;right:0;bottom:0;background:rgba(239,237,231,.92);
+  backdrop-filter:blur(12px);border-top:1px solid var(--межа);z-index:20}
+.панель .колонка{display:flex;align-items:center;gap:12px;padding-top:12px;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.панель button.далі{flex:1}
+
+/* ── КАРТКИ ОБРАЗІВ (повернення зі стенда) ──────────────────────────────── */
+.речі{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.задум{margin:12px 0;padding:10px 12px;border-left:3px solid #c9b8a0;background:#faf7f2;
+  border-radius:0 6px 6px 0;font-size:14px;line-height:1.5}
+.річ{width:calc(33.333% - 7px);min-width:96px}
+.річ img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:11px;
+  background:#F3F1EC;border:1px solid var(--межа)}
+.річ .н{font-size:12px;color:var(--олівець);margin-top:5px;line-height:1.35}
+.річ .н a{color:var(--крейда);text-decoration:none}
+.текст-образу{white-space:pre-wrap;margin:10px 0;font-size:15.5px}
+.чип{border:1px solid var(--межа);border-radius:22px;padding:9px 15px;
+  font-size:14px;cursor:pointer;user-select:none;background:#FBFAF8}
+.чип.вибр{border-color:var(--крейда);background:var(--крейда-тло);font-weight:600}
+.чип.ок.вибр{border-color:#4B7A55;background:#EAF2EB}
+.чип.ні.вибр{border-color:var(--нитка);background:#F7EBE9}
+.полотно{border:1px dashed var(--межа);border-radius:11px;padding:16px;
+  color:var(--олівець);font-size:14px}
+.статус{font-size:13.5px;color:var(--олівець)}
+.мітка{font-size:13.5px;font-weight:600;color:var(--чорнило);margin:18px 0 8px}
+details summary{cursor:pointer;font-size:14.5px;font-weight:600;
+  color:var(--крейда);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:" ▾";color:var(--олівець)}
+details[open] summary::after{content:" ▴"}
+a{color:var(--крейда)}
+pre{background:#FBFAF8;border:1px solid var(--межа);border-radius:11px;padding:12px;
+  font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;
+  word-break:break-all;max-height:200px;overflow:auto}
+
+.екран{animation:зʼява .28s ease both}
+@keyframes зʼява{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+</style>
+</head>
+<body>
+<div class="колонка">
+
+<header class="шапка">
+  <div class="знак">люстерко</div>
+  <h1>Люстерко</h1>
+  <p>Три кроки — і система збере чотири образи на ваш випадок.</p>
+  <div class="нитка" id="нитка"><div></div><div></div><div></div><div></div></div>
+  <div class="нитка-п" id="нитка-п">
+    <span>Профіль</span><span>Мірки</span><span>Випадок</span><span>Палітра</span>
+  </div>
+  <div class="тьм" id="ш-рядок"></div>
+</header>
+
+<div class="картка" id="смуга-профілів">
+  <div class="пара" style="align-items:flex-end">
+    <div><label>Чий це профіль</label><select id="пф-вибір"></select></div>
+    <div style="flex:0 0 auto"><button class="тихо" id="пф-новий">Новий</button></div>
+  </div>
+  <div class="статус" id="пф-стан" style="margin-top:10px"></div>
+</div>
+
+<section id="е-профіль" class="екран">
+
+<div class="картка">
+  <h2>Ваші фото</h2>
+  <p class="підказка">Лишаються на цьому пристрої. Портрет потрібен, щоб приміряти кольори.</p>
+  <div class="фото-пара" style="margin-top:16px">
+    <div><div class="фото-назва">Портрет</div><div id="ф-портрет"></div></div>
+    <div><div class="фото-назва">Повний зріст</div><div id="ф-зріст"></div></div>
+  </div>
+</div>
+
+<div class="картка" id="проф-блок">
+  <h2>Як вас записати</h2>
+  <label>Ім'я або псевдонім</label>
+  <input type="text" id="пр-імʼя" placeholder="напр., Оля К.">
+  <label class="згода">
+    <input type="checkbox" id="пр-згода">
+    <span>Дозволяю зберегти мої відтінки текстом разом із вердиктами</span></label>
+  <p class="підказка">Без цього вердикт запишеться, але без кольорів.</p>
+</div>
+
+<div class="картка" id="кол-блок">
+  <h2>Ваші кольори</h2>
+  <p class="підказка">Скопіюйте запит, надішліть його з фото обличчя в будь-який
+  чат зі ші — і поверніть відповідь сюди цілком.</p>
+  <label>Запит для чату</label>
+  <textarea id="кол-запит" rows="3" readonly></textarea>
+  <div class="ряд"><button class="тихо" id="кол-копія">Скопіювати запит</button></div>
+  <label>Відповідь ші</label>
+  <textarea id="кол-відповідь" rows="3" placeholder="шкіра 1 #f2d6c4 шкіра 2 #efd0bc …"></textarea>
+  <div class="ряд"><button id="кол-читати">Застосувати кольори</button>
+    <span class="статус" id="кол-стан"></span></div>
+  <div id="кол-свотчі"></div>
+</div>
+
+</section>
+
+<section id="е-мірки" class="екран" style="display:none">
+
+<div class="картка" id="мір-блок">
+  <h2>Мірки</h2>
+  <p class="підказка">У сантиметрах, по найширшому місцю, поверх білизни.
+  Усі чотири обхвати обов'язкові.</p>
+  <div class="пара">
+    <div><label>Зріст</label><input type="number" id="мр-зріст" value="167" inputmode="numeric"></div>
+    <div><label>Плечі</label><input type="number" id="мр-плечі" inputmode="numeric" placeholder="напр., 96"></div>
+  </div>
+  <div class="пара">
+    <div><label>Груди</label><input type="number" id="мр-груди" inputmode="numeric" placeholder="напр., 94"></div>
+    <div><label>Талія</label><input type="number" id="мр-талія" inputmode="numeric" placeholder="напр., 76"></div>
+  </div>
+  <div class="пара">
+    <div><label>Стегна</label><input type="number" id="мр-стегна" inputmode="numeric" placeholder="напр., 100"></div>
+    <div></div>
+  </div>
+</div>
+
+<div class="картка" id="др-блок">
+  <h2>Що вам до лиця</h2>
+  <p class="підказка">Дивіться, з яким полем обличчя живіше. Правильної відповіді нема — є ваша.</p>
+  <div id="др-нема" class="полотно" style="margin-top:14px">
+    Спершу додайте портрет — він на першому кроці.</div>
+  <div id="др-тіло" style="display:none"></div>
+</div>
+
+</section>
+
+<!-- ── ЧЕТВЕРТИЙ КРОК: ПАЛІТРА ─────────────────────────────────────────────
+     Розвилку рахує ТОЙ САМИЙ Python, що й стенд: вантаж 16 модулів піднімається
+     тут через Pyodide. Другої реалізації кольорової математики не заводимо —
+     вона розійшлася б із першою на першій же правці.
+     ЧОМУ НЕ У СТЕНДІ. Виміряно на телефоні 01.09.2026: артефакт має
+     `origin:null`, `opener:нема`, `hash:порожній`, `referrer:нема` — каналу
+     назад у показ не існує, тож вибір, зроблений у стенді, лишається у стенді,
+     а людина мусить його там шукати. Тепер потік один.
+     PYODIDE ПІДНІМАЄТЬСЯ ЛИШЕ НА ШЛЯХУ ВВЕДЕННЯ. Тестувальниця, яка відкриває
+     посилання з фрагментом і тільки судить, його не вантажить взагалі. -->
+<section id="е-палітра" class="екран" style="display:none">
+<div class="картка" id="пал-картка">
+  <h2>Ваша палітра</h2>
+  <p class="підказка">Це три різні речі. <b>Основа</b> — головний колір, на якому
+  стоїть образ. <b>Схема</b> — як решта кольорів навколо нього розкладаються.
+  <b>Гама</b> — наскільки кольори гучні. Не знаєте — лишіть «хай вирішує ші»:
+  тоді код віддасть моделі всі законні схеми, і вона обере сама.</p>
+  <div id="пал-стан" class="підказка" style="margin:8px 0"></div>
+  <label>Основа</label>
+  <div class="ряд" id="пал-основа"></div>
+  <label style="margin-top:12px">Схема</label>
+  <div class="ряд" id="пал-схема"></div>
+  <label style="margin-top:12px">Гама</label>
+  <div class="ряд" id="пал-гама"></div>
+  <div id="пал-нота" class="підказка" style="margin-top:10px"></div>
+</div>
+
+<!-- ── ЗБИРАННЯ ЖИВЕ ТУТ, А НЕ В ІНШОМУ ВІКНІ (01.09.2026) ──────────────────
+     Доти показ доводив людину до палітри й віддавав пакет, який вона мусила
+     нести в стенд руками. Розносило їх не рішення, а пісочниця артефакта:
+     звідти не було каналу назад. На Pages обидві половини одного походження,
+     і носити нема чого. -->
+<div class="картка" id="зб-картка">
+  <h2>Зібрати образи</h2>
+  <p class="підказка">Код добере кандидатів у слоти, модель складе чотири
+  варіанти, код їх перевірить, модель обере й опише. Це кілька хвилин.</p>
+  <p class="підказка">Тисніть <b>«Зібрати»</b> внизу екрана — дія завжди в одному місці.</p>
+  <div id="зб-статус" class="підказка" style="margin-top:10px"></div>
+  <div id="зб-поступ" class="підказка" style="margin-top:6px;white-space:pre-line"></div>
+  <div id="зб-токени" class="підказка" style="margin-top:6px"></div>
+</div>
+</section>
+
+<section id="е-випадок" class="екран" style="display:none">
+
+<div class="картка" id="сц-блок">
+  <h2>Ваш випадок</h2>
+  <p class="підказка">Середовище — не рівень ошатності, а що під ногами й чи є дах:
+  від нього залежать підбори й тканина. Решту пишіть своїми словами.</p>
+  <label>Що у вас</label><select id="сц-нагода"></select>
+  <label>У яке середовище</label><select id="сц-місце"></select>
+  <label>Наскільки ошатно</label><select id="сц-дрес"></select>
+  <div id="сц-діапазон" class="підказка" style="margin-top:8px"></div>
+  <div class="пара">
+    <div><label>Година</label><input type="number" id="сц-година" value="11" min="0" max="23" inputmode="numeric"></div>
+    <div><label>Температура, °C</label><input type="number" id="сц-темп" value="18" inputmode="numeric"></div>
+  </div>
+  <div class="пара">
+    <div><label>Вітер</label><select id="сц-вітер">
+      <option value="">не знаю</option><option value="0">безвітря</option>
+      <option value="1">помірний</option><option value="2">сильний</option></select></div>
+    <div><label>Опади</label><select id="сц-опади">
+      <option value="">не знаю</option><option value="нема">нема</option>
+      <option value="дощ">дощ</option><option value="сніг">сніг</option></select></div>
+  </div>
+  <div class="пара">
+    <div><label>Реагенти на дорогах</label><select id="сц-реагенти">
+      <option value="">не знаю</option><option value="0">нема</option>
+      <option value="1">є, сіль узимку</option></select></div>
+    <div></div>
+  </div>
+  <label>Своїми словами</label>
+  <textarea id="сц-слова" rows="3" placeholder="випускний доньки, тераса кафе біля річки, взуття на тонких підборах"></textarea>
+  <p class="підказка">Сюди ж пишіть те, що має виконатись обов'язково.</p>
+</div>
+
+<!-- ПЕРЕХІД ЛИШЕНО ПРИХОВАНИМ, А НЕ ВИРІЗАНО. Він тримає запасний шлях: якщо
+     збирання в показі впаде на пристрої, пакет ще можна віднести в стенд
+     руками, як робили доти. Прибрати, коли показ пройде живий прогін. -->
+<div class="картка" id="перехід" style="display:none">
+  <h2>Збирання в іншому вікні (запасний шлях)</h2>
+  <p class="підказка">Потрібне лише тоді, коли збирання тут не спрацювало.</p>
+  <label>Адреса сторінки збирання</label>
+  <input type="text" id="п-адреса" placeholder="claude.ai/public/artifacts/…">
+  <div id="п-стан" class="статус" style="margin-top:12px"></div>
+  <textarea id="п-пакет" rows="2" style="display:none;margin-top:10px"></textarea>
+</div>
+
+</section>
+
+<div id="картки"></div>
+
+<details class="картка" id="журнал">
+  <summary>Вердикти на цьому пристрої</summary>
+  <div class="тьм" id="ж-ліч" style="margin-top:10px">—</div>
+  <div id="ж-список" class="тьм" style="font-size:13px;margin:8px 0"></div>
+  <div class="ряд">
+    <button class="тихо" id="ж-копія">Скопіювати всі вердикти</button>
+    <span class="статус" id="ж-стан"></span>
+  </div>
+  <pre id="ж-пакет" style="display:none"></pre>
+</details>
+
+</div>
+
+<div class="панель" id="ніг">
+  <div class="колонка">
+    <button class="тихо" id="н-назад">Назад</button>
+    <button class="далі" id="н-далі">Далі</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ── пакет із фрагмента ─────────────────────────────────────────────────── */
+let П = null;                 // поточний пакет ПОКАЗ-V1
+const В = {};                 // відповіді за позицією: {річ,верд,коментар,ок,ні,записано}
+let пристрій = 'невідомо';
+const $ = id => document.getElementById(id);
+
+function б64урлВБайти(s){
+  s = s.replace(/-/g,'+').replace(/_/g,'/');
+  while (s.length % 4) s += '=';
+  const бін = atob(s), м = new Uint8Array(бін.length);
+  for (let i=0;i<бін.length;i++) м[i]=бін.charCodeAt(i);
+  return м;
+}
+async function розпакувати(х){
+  // Артефакт пакує gzip, ЯКЩО в його webview є CompressionStream; це не було
+  // виміряно, тому там стоїть фолбек на сирий base64url. Розрізняємо за магією
+  // gzip (1f 8b) — версія контракту ПОКАЗ-V1 від цього не змінюється.
+  const байти = б64урлВБайти(х);
+  const gzip = байти.length > 2 && байти[0] === 0x1f && байти[1] === 0x8b;
+  const текст = gzip
+    ? await new Response(new Blob([байти]).stream().pipeThrough(new DecompressionStream('gzip'))).text()
+    : new TextDecoder().decode(байти);
+  const п = JSON.parse(текст);
+  п._кодування = gzip ? 'gzip' : 'без стиснення';
+  return п;
+}
+
+/* ── IndexedDB: вердикти + пристрій-id ──────────────────────────────────── */
+function дб(){
+  return new Promise((рез, від)=>{
+    const з = indexedDB.open('показ', 1);
+    з.onupgradeneeded = е=>{
+      const d = е.target.result;
+      if (!d.objectStoreNames.contains('вердикти')) d.createObjectStore('вердикти',{autoIncrement:true});
+      if (!d.objectStoreNames.contains('кв')) d.createObjectStore('кв');
+    };
+    з.onsuccess = ()=>рез(з.result);
+    з.onerror = ()=>від(з.error);
+  });
+}
+function тx(d, ім, режим, дія){
+  return new Promise((рез, від)=>{
+    const t = d.transaction(ім, режим), s = t.objectStore(ім);
+    const r = дія(s);
+    t.oncomplete = ()=>рез(r && r.result);
+    t.onerror = ()=>від(t.error);
+  });
+}
+async function пристрійId(){
+  const d = await дб();
+  try{
+    const v = await new Promise((рез,від)=>{ const r=d.transaction('кв').objectStore('кв').get('пристрій');
+      r.onsuccess=()=>рез(r.result); r.onerror=()=>від(r.error); });
+    if (v) return v;
+  }catch(e){}
+  const нов = 'п-'+Math.random().toString(36).slice(2,8);
+  await тx(d,'кв','readwrite', s=>s.put(нов,'пристрій'));
+  return нов;
+}
+async function усіВердикти(){
+  const d = await дб();
+  return new Promise((рез,від)=>{
+    const r = d.transaction('вердикти').objectStore('вердикти').getAll();
+    r.onsuccess=()=>рез(r.result||[]); r.onerror=()=>від(r.error);
+  });
+}
+
+/* Прибирає машинні сліди з тексту, який читає людина, і виймає оголошені
+   ходи ші («СВІДОМО: …») окремо — саме вони пояснюють нестандартне.
+   Повертає [опис, [задуми]].
+   НА ВЕРХНЬОМУ РІВНІ, А НЕ ВСЕРЕДИНІ `рендер`: той самий розбір потрібен
+   приміряннню. Дві копії розійшлися б на першій правці, і картинка перестала
+   б відповідати блокові «Як це носити», не сказавши цього. */
+function людською(сирий){
+  const задум = [];
+  const рядки = String(сирий||'').split('\n').filter(л=>{
+    const t = л.trim();
+    if (/^(ОБРАЗ|ПІДПИС)\s*[:：]/i.test(t)) return false;
+    const c = t.match(/^(?:СВІДОМО|Свідомо|свідомо|НАВМИСНО|Навмисно)\s*[:—–-]\s*(.+)$/);
+    if (c){ задум.push(c[1].trim()); return false; }
+    return true;
+});
+  const чисто = рядки.join('\n')
+    .replace(/[A-Za-zА-Яа-яІіЇїЄєҐґ]{1,3}-\d{2,}@[\w\-]+(?:\.[\w\-]+)*/g, '')
+    .replace(/#\d+\s*[·.\-]\s*\d{2}/g, '')
+    .replace(/#[0-9a-fA-F]{6}\b/g, '')
+    .replace(/[ \t]*[—–-]\s*(?=\n|$)/g, '')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\(\s*\)/g, '')
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .replace(/([,;:])\s*(?=[,.;:])/g, '')
+    .replace(/(^|\n)\s*[,.;:]\s*/g, '$1')
+    .trim();
+  return [чисто, задум];
+}
+
+/* ── рендер ─────────────────────────────────────────────────────────────── */
+function відповідь(поз){
+  if (!В[поз]) В[поз] = {річ:null, верд:null, коментар:'', ок:[], ні:[], записано:false};
+  return В[поз];
+}
+function чипРяд(конт, поле, поз, варіанти, класи){
+  const ряд = document.createElement('div'); ряд.className='ряд';
+  варіанти.forEach((я,і)=>{
+    const с = document.createElement('span');
+    с.className = 'чип'+(класи&&класи[і]?(' '+класи[і]):'');
+    с.textContent = (typeof я==='object') ? (я.ярлик||'') : я;
+    с.dataset.з = (typeof я==='object') ? (я.ярлик||'') : я;
+    if (typeof я==='object' && я.код) с.dataset.код = я.код;
+    с.onclick = ()=>{
+      const в = відповідь(поз);
+      if (поле==='ок' || поле==='ні'){
+        с.classList.toggle('вибр');
+        в[поле] = [...ряд.querySelectorAll('.чип.вибр')].map(x=>({ярлик:x.dataset.з, код:x.dataset.код||null}));
+      } else {
+        [...ряд.children].forEach(x=>x.classList.remove('вибр'));
+        с.classList.add('вибр');
+        в[поле] = с.dataset.з;
+      }
+    };
+    ряд.appendChild(с);
+  });
+  конт.appendChild(ряд);
+}
+function полотно(поз){
+  const к = П.картки[поз], п = $('пол-'+поз); if (!п) return;
+  п.innerHTML = '';
+  if (!к.картинка){
+    const d = document.createElement('div'); d.className='полотно';
+    d.textContent = 'Картинки цього образу ще нема. Додайте її файлом чи посиланням — або судіть за описом і фото речей і позначте «судила без картинки».';
+    п.appendChild(d); return;
+  }
+  const і = document.createElement('img'); і.className='образ'; і.src = к.картинка;
+  і.onerror = ()=>{ к.картинка = null; полотно(поз);
+    $('кст-'+поз).textContent = 'Цю картинку показати не вдалось. Спробуйте інший шлях.'; };
+  п.appendChild(і);
+}
+function рендер(){
+  $('ш-рядок').textContent = 'збірка '+(П.збірка||'?')+' · '+(П.каталог||'?')+' · '+(П.профіль||'');
+  const кк = $('картки'); кк.innerHTML = '';  П.картки.forEach((к, поз)=>{
+    const д = document.createElement('div'); д.className='картка'; д.id='к-'+поз;
+    const шапка = document.createElement('div'); шапка.className='мітка';
+    шапка.textContent = 'Варіант '+(поз+1);
+    д.appendChild(шапка);
+
+    const речі = к.речі || [];
+    if (речі.length){
+      const р = document.createElement('div'); р.className='речі';
+      речі.forEach(x=>{
+        const о = document.createElement('div'); о.className='річ';
+        if (x.фото){
+          const а = document.createElement('a'); а.href = x.фото; а.target='_blank'; а.rel='noopener';
+          const і = document.createElement('img'); і.loading='lazy'; і.src = x.фото;
+          і.onerror = ()=>{ і.style.display='none'; };
+          а.appendChild(і); о.appendChild(а);
+        }
+        const н = document.createElement('div'); н.className='н';
+        н.textContent = (x.назва||x.id||'') + (x.ціна?(' · '+x.ціна+' грн'):'');
+        if (x.урл){
+          const л = document.createElement('a'); л.href=x.урл; л.target='_blank'; л.rel='noopener';
+          л.textContent = ' магазин ↗'; н.appendChild(л);
+        }
+        о.appendChild(н);
+        р.appendChild(о);
+      });
+      д.appendChild(р);
+    }
+
+    /* ── ТЕКСТ ДЛЯ ЛЮДИНИ, НЕ ДЛЯ МАШИНИ ──────────────────────────────────
+       Сюди їхав СИРИЙ вихід моделі: рядок «ПІДПИС: …», машинний хвіст
+       «ОБРАЗ: ж-07826@dolcedonna.com.ua, …», id усередині прози й hex-коди,
+       які промпт прямо просить писати. Тестувальниця судить, чи вона це
+       вдягне, — їй потрібні опис, фото й причина, а не адреси в каталозі.
+       Сирий текст ЛИШАЄТЬСЯ в записі вердикту (колонка `текст`): чистимо
+       показ, не дані. */
+    const [опис, задум] = людською(к.текст || '');
+    if (задум.length){
+      const з = document.createElement('div'); з.className='задум';
+      з.appendChild(Object.assign(document.createElement('div'),
+        {className:'фото-назва', textContent:'Як це носити'}));
+      задум.forEach(р=>з.appendChild(Object.assign(document.createElement('div'),
+        {textContent:'· '+р})));
+      д.appendChild(з);
+    }
+    const т = document.createElement('div'); т.className='текст-образу';
+    т.textContent = опис;
+    д.appendChild(т);
+
+    /* ПРИМІРЯННЯ — ГОЛОВНИЙ ШЛЯХ, файл і посилання лишаються запасними.
+       Кнопка окремо від збирання навмисно: примірка коштує грошей, потребує
+       фото в повний зріст і може не вийти. Всередині циклу її провал валив би
+       весь образ, хоч образ без картинки цілком судимий. */
+    const прм = document.createElement('div'); прм.className='ряд';
+    прм.innerHTML = '<button class="мал" id="прмк-'+поз+'">Приміряти на себе</button>';
+    д.appendChild(прм);
+    const прмс = document.createElement('div'); прмс.className='статус';
+    прмс.id = 'прм-'+поз; д.appendChild(прмс);
+
+    const дет = document.createElement('details');
+    дет.innerHTML = '<summary>Або додати картинку вручну</summary>';
+    const вн = document.createElement('div');
+    вн.innerHTML = '<div class="ряд"><input type="file" accept="image/*" id="кф-'+поз+'"></div>'
+      + '<div class="ряд"><input type="text" id="ку-'+поз+'" placeholder="або посилання на картинку">'
+      + '<button class="мал друг" id="куо-'+поз+'">Показати</button></div>'
+      + '<div class="статус" id="кст-'+поз+'"></div>';
+    дет.appendChild(вн); д.appendChild(дет);
+    const пол = document.createElement('div'); пол.id='пол-'+поз; пол.style.margin='8px 0';
+    д.appendChild(пол);
+
+    const м1 = document.createElement('div'); м1.className='мітка';
+    м1.textContent = 'Це та сама річ, що на фото товару?'; д.appendChild(м1);
+    чипРяд(д,'річ',поз,['так','ні, намальовано інше','судила без картинки'],['','ні','']);
+
+    const м2 = document.createElement('div'); м2.className='мітка';
+    м2.textContent = 'Вдягнете?'; д.appendChild(м2);
+    чипРяд(д,'верд',поз,['вдягну як є','вдягну, якщо змінити одну річ','не вдягну'],['ок','','ні']);
+
+    const мітки = к.мітки || [];
+    if (мітки.length){
+      const м3 = document.createElement('div'); м3.className='мітка';
+      м3.textContent='Що спрацювало'; д.appendChild(м3);
+      чипРяд(д,'ок',поз,мітки,мітки.map(()=> 'ок'));
+      const м4 = document.createElement('div'); м4.className='мітка';
+      м4.textContent='Що не спрацювало'; д.appendChild(м4);
+      чипРяд(д,'ні',поз,мітки,мітки.map(()=> 'ні'));
+    }
+
+    const л = document.createElement('label'); л.textContent='Своїми словами';
+    л.style.display='block'; л.className='тьм'; д.appendChild(л);
+    const та = document.createElement('textarea'); та.id='ком-'+поз;
+    та.oninput = e=>{ відповідь(поз).коментар = e.target.value; };
+    д.appendChild(та);
+
+    const ряд = document.createElement('div'); ряд.className='ряд';
+    ряд.innerHTML = '<button class="мал" id="зап-'+поз+'">Записати вердикт</button>'
+      + '<span class="статус" id="вст-'+поз+'"></span>';
+    д.appendChild(ряд);
+    кк.appendChild(д);
+
+    $('кф-'+поз).onchange = e=>{
+      const ф = e.target.files && e.target.files[0]; if (!ф) return;
+      к.картинка = URL.createObjectURL(ф);
+      $('кст-'+поз).textContent = ф.name+' · показано локально, нікуди не вантажиться';
+      полотно(поз);
+    };
+    $('куо-'+поз).onclick = ()=>{
+      const у = $('ку-'+поз).value.trim(); if (!у) return;
+      к.картинка = у; полотно(поз);
+    };
+    $('прмк-'+поз).onclick = ()=>приміряти(поз);
+    $('зап-'+поз).onclick = ()=>записати(поз);
+    полотно(поз);
+  });
+  оновитиЖурнал();
+}
+
+/* ── запис вердикту: схема вердикти.tsv v25 + поля показу ───────────────── */
+async function записати(поз){
+  const к = П.картки[поз], в = відповідь(поз), ст = $('вст-'+поз);
+  if (!в.верд){ ст.textContent = 'Оберіть «Вдягнете?»'; return; }
+  const запис = {
+    дата: new Date().toISOString().slice(0,10),
+    профіль: П.профіль || '(без профілю)',
+    рука: к.рука || ('поз'+(поз+1)),
+    /* ІТЕРАЦІЙ І ПУЛ ПИШУТЬСЯ В РЯДОК, А НЕ ЛИШЕ СТОЯТЬ У ШАПЦІ. Обидва були
+       оголошені й обидва не доїжджали: `ітерацій` не клався в пакет стендом,
+       `пул` не існував узагалі. Порожня колонка гірша за відсутню — вона
+       виглядає як зібрані дані. */
+    ітерацій: (к.ітерацій ?? null),
+    пул: П.пул || '?',
+    /* ── ПАЛІТРА: ДІЯ ЛЮДИНИ І ФАКТ РУКИ — ДВА РІЗНІ РЯДКИ (01.09.2026) ──────
+       Доти вибору палітри не існувало взагалі: стенд слав сталу `гілка: 0`, і
+       вердикт не міг відрізнити «обрала цю схему» від «їй було байдуже».
+       ЧОМУ ДВА ПОЛЯ, А НЕ ОДНЕ. `пал_*` без суфікса — дія ЛЮДИНИ, спільна на
+       прогін. `пал_схема_руки` — те, з чим працювала САМЕ ця рука: індекс гілки
+       це РАНГ у розвилці, а розвилка рахується з колориту, тож на ранзі 0 рука 1
+       дістає «нейтрали+акцент», а рука 2 (донор) — «тональна». Одне поле
+       злило б ці два твердження, і рука 2 перестала б бути вимірюваною. */
+    пал_база: (П.палітра||{}).база || '—',
+    пал_база_обрана: ((П.палітра||{}).база_обрана ? 'так' : 'ні'),
+    пал_схема_обрана: ((П.палітра||{}).схема_обрана ? 'так' : 'ні'),
+    пал_гілка: ((П.палітра||{}).гілка ?? 'ші'),
+    пал_гама: (П.палітра||{}).насиченість || '—',
+    пал_схема_руки: ((к.палітра||{}).схема || '—'),
+    пал_донор: ((к.палітра||{}).донор ? 'так' : 'ні'),
+    /* ── ЯКА МОДЕЛЬ ЗРОБИЛА ОБРАЗ (01.09.2026) ─────────────────────────────
+       Власник ганяє систему на Gemini, тестувальниці судитимуть Claude. Без
+       цієї колонки два набори вердиктів зіллються в одну купу, і розділити їх
+       заднім числом буде нічим — та сама хвороба, від якої вже стоять окремі
+       колонки `пул` і `пал_гілка`. */
+    модель: (к.модель || П.модель || МОДЕЛЬ_П || '?'),
+    склад: (к.речі||[]).map(r=>r.id).join('+') || '—',
+    текст: (к.текст||'').slice(0,1500),
+    вердикт_людини: в.верд,
+    коментар: (в.коментар||'').trim(),
+    та_сама_річ: в.річ,
+    забруднений: в.річ === 'ні, намальовано інше',
+    з_картинкою: !!к.картинка,
+    /* СКІЛЬКИ РЕЧЕЙ НА КАРТИНЦІ СПРАВЖНІ. «Намальовано інше» має ступінь:
+       4 з 4 і 1 з 4 — різні вердикти, і без цього числа вони злились би. */
+    примірка_речей: ((к.примірка||{}).речей ?? null),
+    примірка_з: ((к.примірка||{}).з ?? null),
+    примірка_режим: ((к.примірка||{}).режим || null),
+    фото_речей: (к.речі||[]).filter(r=>r.фото).length,
+    спрацювало: в.ок, не_спрацювало: в.ні,
+    позиція: поз+1, розклад: П.розклад || null,
+    знахідки_коду: (к.знахідки||[]).slice(0,12),
+    збірка: П.збірка || '?', каталог: П.каталог || '?',
+    драп_білий: ДРАП.білий, драп_метал: ДРАП.метал,
+    драп_нейтралі: ДРАП.нейтралі, самозвіт_барви: ДРАП.барви,
+    джерело: 'показ-v1', пристрій,
+    час: new Date().toISOString()
+  };
+  try{
+    const d = await дб();
+    await тx(d,'вердикти','readwrite', s=>s.add(запис));
+    в.записано = true;
+    $('зап-'+поз).disabled = true;
+    ст.textContent = 'Записано. Дякуємо!';
+    оновитиЖурнал();
+  }catch(e){ ст.textContent = 'Не записалось: '+String(e).slice(0,140); }
+}
+
+/* ── журнал і пакет ─────────────────────────────────────────────────────── */
+/* `ітерацій` — глибина циклу, що зробив цей образ (0 / 1 / 2). Колонка мусить
+   стояти і тут: шапка показу — це те, що реально виїжджає власнику TSV-пакетом,
+   і поле, записане в стенді, але не назване тут, зникло б мовчки. */
+/* Нові колонки палітри стоять ОДРАЗУ ПІСЛЯ `пул`, бо це такий самий параметр
+   прогону, і при читанні очима вони мусять бути поруч, а не в хвості. */
+const ШАПКА = ['дата','профіль','рука','ітерацій','пул',
+  'пал_база','пал_база_обрана','пал_схема_обрана','пал_гілка','пал_гама',
+  'пал_схема_руки','пал_донор',
+  'модель',
+  'склад','текст','вердикт_людини','коментар',
+  'та_сама_річ','забруднений','з_картинкою','примірка_речей','примірка_з','примірка_режим',
+  'спрацювало','не_спрацювало',
+  'позиція','розклад','знахідки_коду','збірка',
+  'фото_речей','драп_білий','драп_метал','драп_нейтралі','самозвіт_барви',
+  'каталог','джерело','пристрій','час'];
+function чисто(x){
+  if (x === null || x === undefined) return '';
+  let т;
+  if (Array.isArray(x)){
+    т = x.map(о=>{
+      if (о === null || о === undefined) return '';
+      if (typeof о !== 'object') return String(о);
+      if (о.ярлик) return String(о.ярлик);
+      if (о.правило) return String(о.правило) + (о.сила != null ? ':'+о.сила : '');
+      return JSON.stringify(о);
+    }).filter(Boolean).join('; ');
+  } else if (typeof x === 'object'){ т = JSON.stringify(x); }
+  else { т = String(x); }
+  return т.replace(/[\t\n\r]+/g,' ').trim();
+}
+async function оновитиЖурнал(){
+  try{
+    const вс = await усіВердикти();
+    $('ж-ліч').textContent = вс.length
+      ? ('записів: '+вс.length+' · з них демо: '+вс.filter(з=>з.збірка==='демо').length)
+      : 'ще порожньо';
+    $('ж-список').textContent = вс.slice(-6).map(з=>
+      з.дата+' · '+(з.збірка||'?')+' · варіант '+з.позиція+' · '+з.вердикт_людини).join('\n');
+  }catch(e){ $('ж-ліч').textContent = 'журнал не читається: '+String(e).slice(0,100); }
+}
+$('ж-копія').onclick = async ()=>{
+  const вс = await усіВердикти();
+  const рядки = ['ВЕРДИКТИ-ПОКАЗ-V1 · пристрій='+пристрій+' · дата='+new Date().toISOString(),
+    ШАПКА.join('\t')];
+  for (const з of вс) рядки.push(ШАПКА.map(к=>чисто(з[к])).join('\t'));
+  const т = рядки.join('\n');
+  const п = $('ж-пакет'); п.style.display='block'; п.textContent = т;
+  try{
+    await navigator.clipboard.writeText(т);
+    $('ж-стан').textContent = 'скопійовано — вставте у чат чи повідомлення власнику';
+  }catch(e){
+    const д = document.createRange(); д.selectNodeContents(п);
+    const s = window.getSelection(); s.removeAllRanges(); s.addRange(д);
+    $('ж-стан').textContent = 'виділено — натисніть Ctrl/Cmd+C';
+  }
+};
+
+/* Випадок теж лежить: людина повертається по другий сценарій на ту саму
+   людину, і починати з порожньої форми — та сама вартість входу, тільки менша. */
+const ПОЛЯ_ВИПАДКУ = ['сц-нагода','сц-місце','сц-дрес','сц-година','сц-темп',
+                      'сц-вітер','сц-опади','сц-реагенти','сц-слова'];
+async function зберегтиВипадок(){
+  const з = {}; ПОЛЯ_ВИПАДКУ.forEach(і=>{ const е = $(і); if (е) з[і] = е.value; });
+  try{ await писатиКв('випадок', з); }catch(e){}
+  оновитиДіапазон();
+}
+async function відновитиВипадок(){
+  const з = await читатиКв_('випадок'); if (!з) return;
+  ПОЛЯ_ВИПАДКУ.forEach(і=>{ const е = $(і); if (е && з[і] != null) е.value = з[і]; });
+  оновитиДіапазон();
+}
+
+/* ── ПРОФІЛІ Й ЕКРАНИ ─────────────────────────────────────────────────────
+   ЩО ЦЕ МІНЯЄ. Доти показ був анкетою: одне довге прокручування, один профіль,
+   і другий сценарій на ту саму людину означав заповнити все згори донизу ще раз.
+   Для стенда, куди тестувальниця повертається по кілька разів, це і є головна
+   вартість входу.
+
+   Тепер профіль — річ, яка ЛЕЖИТЬ. Кольори, драпіровка, мірки й фото живуть під
+   ключем профілю в IndexedDB; профілів може бути кілька, між ними перемикаються
+   списком. Змінний за сценарій лишається один екран — випадок.
+
+   ФОТО ТЕЖ ПРИВ'ЯЗАНІ ДО ПРОФІЛЮ. Інакше друга людина на тому самому пристрої
+   судила б драпіровку по чужому обличчю — тиха підміна стимулу, і вердикт після
+   неї нічого не означає. */
+let ПРОФІЛІ = [];
+let АКТИВНИЙ = null;
+
+function новийІд(){ return 'пф-' + Math.random().toString(36).slice(2, 8); }
+function ключФото(вид){ return 'фото-' + вид + ':' + (АКТИВНИЙ || 'без'); }
+
+async function читатиКв_(к){ try{ return await читатиКв(к); }catch(e){ return null; } }
+async function писатиКв(к, з){
+  const d = await дб(); await тx(d, 'кв', 'readwrite', s=>s.put(з, к));
+}
+
+async function завантажитиПрофілі(){
+  ПРОФІЛІ = (await читатиКв_('профілі')) || [];
+  АКТИВНИЙ = (await читатиКв_('активний')) || null;
+  /* ПЕРЕНОС СТАРИХ ДАНИХ. До профілів кольори, драпіровка й фото лежали під
+     сталими ключами. Викидати їх не можна — це чиєсь уже зроблене фото. */
+  if (!ПРОФІЛІ.length){
+    const старий_к = await читатиКв_('колір'), старий_д = await читатиКв_('драп');
+    const ід = новийІд();
+    ПРОФІЛІ = [{ід, назва: 'мій профіль'}];
+    АКТИВНИЙ = ід;
+    await писатиКв('профіль:' + ід, {колір: старий_к || null, драп: старий_д || null,
+                                     мірки: null, імʼя: null, згода: false});
+    for (const вид of ['портрет','зріст']){
+      const б = await читатиКв_('фото-' + вид);
+      if (б) await писатиКв('фото-' + вид + ':' + ід, б);
+    }
+    await писатиКв('профілі', ПРОФІЛІ);
+    await писатиКв('активний', АКТИВНИЙ);
+  }
+  if (!ПРОФІЛІ.some(п=>п.ід === АКТИВНИЙ)) АКТИВНИЙ = (ПРОФІЛІ[0]||{}).ід || null;
+}
+
+async function читатиАктивний(){
+  if (!АКТИВНИЙ) return;
+  const з = (await читатиКв_('профіль:' + АКТИВНИЙ)) || {};
+  КОЛІР = Object.assign({шкіра:null,волосся:null,очі:null,кільце:null,точки:null}, з.колір||{});
+  ДРАП  = Object.assign({білий:null,метал:null,нейтралі:null,барви:null}, з.драп||{});
+  $('пр-імʼя').value = з.імʼя || '';
+  $('пр-згода').checked = !!з.згода;
+  const м = з.мірки || {};
+  $('мр-зріст').value = м.зріст || 167;
+  for (const [ід, к] of [['мр-плечі','плечі'],['мр-груди','груди'],
+                         ['мр-талія','талія'],['мр-стегна','стегна']])
+    $(ід).value = (м.обхвати||{})[к] || '';
+}
+
+async function писатиАктивний(){
+  if (!АКТИВНИЙ) return;
+  const об = {};
+  for (const [ід, к] of [['мр-плечі','плечі'],['мр-груди','груди'],
+                         ['мр-талія','талія'],['мр-стегна','стегна']]){
+    const v = parseFloat($(ід).value); if (v) об[к] = v;
+  }
+  await писатиКв('профіль:' + АКТИВНИЙ, {
+    колір: КОЛІР, драп: ДРАП,
+    імʼя: ($('пр-імʼя').value||'').trim() || null,
+    згода: !!$('пр-згода').checked,
+    мірки: {зріст: parseFloat($('мр-зріст').value)||167, обхвати: об}});
+  const п = ПРОФІЛІ.find(x=>x.ід === АКТИВНИЙ);
+  const нова = ($('пр-імʼя').value||'').trim();
+  if (п && нова && п.назва !== нова){ п.назва = нова; await писатиКв('профілі', ПРОФІЛІ); малюватиСмугу(); }
+}
+
+function малюватиСмугу(){
+  const в = $('пф-вибір'); в.innerHTML = '';
+  ПРОФІЛІ.forEach(п=>{
+    const о = document.createElement('option');
+    о.value = п.ід; о.textContent = п.назва || 'Без назви';
+    if (п.ід === АКТИВНИЙ) о.selected = true;
+    в.appendChild(о);
+  });
+  /* Стан профілю словами, а не дробом: людині треба знати, чого бракує, а не
+     скільки полів заповнено з чотирьох. */
+  const г = ['метал','білий','нейтралі','барви'].filter(к=>ДРАП[к]).length;
+  const бракує = [];
+  if (!КОЛІР.шкіра) бракує.push('кольори');
+  if (g_нема_мірок()) бракує.push('мірки');
+  if (!г) бракує.push('драпіровку');
+  $('пф-стан').textContent = бракує.length
+    ? 'Лишилось додати ' + бракує.join(', ') + '.'
+    : (г < 4 ? 'Усе на місці. Драпіровку заповнено на ' + г + ' з 4.' : 'Профіль готовий.');
+}
+function g_нема_мірок(){
+  return [['мр-зріст'],['мр-плечі'],['мр-груди'],['мр-талія'],['мр-стегна']]
+    .some(([і])=>!parseFloat(($(і)||{}).value));
+}
+
+async function перемкнути(ід){
+  await писатиАктивний();
+  АКТИВНИЙ = ід; await писатиКв('активний', ід);
+  await читатиАктивний();
+  фотоПрофіль(); малюватиДрап(); малюватиСвотчі(); малюватиСмугу();
+}
+
+async function створитиПрофіль(){
+  await писатиАктивний();
+  const ід = новийІд();
+  ПРОФІЛІ.push({ід, назва: 'профіль ' + (ПРОФІЛІ.length + 1)});
+  АКТИВНИЙ = ід;
+  КОЛІР = {шкіра:null,волосся:null,очі:null,кільце:null,точки:null};
+  ДРАП = {білий:null,метал:null,нейтралі:null,барви:null};
+  await писатиКв('профілі', ПРОФІЛІ);
+  await писатиКв('активний', ід);
+  await писатиАктивний();
+  await читатиАктивний();
+  фотоПрофіль(); малюватиДрап(); малюватиСвотчі(); малюватиСмугу();
+  екран(0);
+}
+
+/* ── ЕКРАНИ ──────────────────────────────────────────────────────────────── */
+/* ПАЛІТРА — ЧЕТВЕРТИЙ КРОК, А НЕ ОКРЕМЕ ВІКНО. Порядок несе зміст: без кольорів
+   немає чого міряти, без мірок немає що складати, без випадку немає під що
+   добирати — і лише тоді палітра, бо розвилка рахується з усього попереднього. */
+const ЕКРАНИ = ['е-профіль','е-мірки','е-випадок','е-палітра'];
+const ІМЕНА_ЕКРАНІВ = ['профіль','мірки','випадок'];
+let ЕКРАН = 0;
+function екран(i){
+  ЕКРАН = Math.max(0, Math.min(ЕКРАНИ.length - 1, i));
+  ЕКРАНИ.forEach((ід, n)=>{ const е = $(ід); if (е) е.style.display = (n === ЕКРАН ? 'block' : 'none'); });
+  /* Нитка, а не «1/3»: три відрізки читаються без читання, і порядок тут несе
+     зміст — без кольорів немає чого міряти, без мірок немає що складати. */
+  [...$('нитка').children].forEach((д, n)=>д.classList.toggle('є', n <= ЕКРАН));
+  [...$('нитка-п').children].forEach((с, n)=>с.classList.toggle('є', n === ЕКРАН));
+  $('н-назад').style.visibility = ЕКРАН === 0 ? 'hidden' : 'visible';
+  $('н-далі').textContent = ЕКРАН === ЕКРАНИ.length - 1 ? 'Зібрати образи' : 'Далі';
+  /* Підйом починається САМЕ ТУТ і жодного разу раніше: до цього кроку кольорова
+     математика не потрібна, а тестувальниця сюди не заходить узагалі. */
+  if (ЕКРАНИ[ЕКРАН] === 'е-палітра' && !ПАЛІТРА) оновитиПалітруП();
+  const заг = ['Люстерко','Мірки й кольори','Куди ви йдете','Ваша палітра'];
+  const під = ['Чотири кроки — і система збере чотири образи на ваш випадок.',
+               'Мірки задають силует, а драпіровка — колорит.',
+               'Опишіть випадок — під нього добиратимемо.',
+               'Останній крок: колір. Не знаєте — лишіть «хай вирішує ші».'];
+  document.querySelector('.шапка h1').textContent = заг[ЕКРАН];
+  document.querySelector('.шапка p').textContent = під[ЕКРАН];
+  window.scrollTo(0, 0);
+}
+
+
+/* ── КОЛЬОРИ ЛЮДИНИ ───────────────────────────────────────────────────────
+   Запит і розбір відповіді ПЕРЕНЕСЕНО ЗІ СТЕНДА ДОСЛІВНО. Не переказано: обидва
+   несуть свою історію спійманих помилок (мітка як найближче слово перед hex, «#»
+   не є розміткою, кирилиця поза `\w`), і переписування їх іншими словами відновило б
+   ті самі баги. Якщо стенд свій парсер змінить — цей треба перегенерувати, і це
+   навмисно видно.
+
+   ЗВІРКА СЛОВА З ЧИСЛОМ ЛИШАЄТЬСЯ В СТЕНДІ. Тут її нема свідомо: пороги світлоти
+   живуть у Python (`bridge._МЕЖІ_L`), і другий їх примірник на JS — це та сама
+   розбіжність словників між модулями, яку ми вже ловили. Людина тут судить оком
+   по квадратиках; число проти слова звіряє код перед збиранням. */
+const ПРОМПТ_КОЛІР = `Подивись на це фото людини і назви ЇЇ ВЛАСНІ кольори у форматі hex.
+
+СПЕРШУ ВИРІШИ, ЧИ ФОТО ПРИДАТНЕ. Якщо ні — поверни ЄДИНИЙ рядок
+«не читається: причина» і більше нічого. Непридатне: чорно-біле або з важким
+фільтром; обличчя дрібніше за чверть кадру; очі закриті окулярами, волоссям
+чи примружені; кольорове сценічне або неонове світло; пересвітлення, де шкіра
+вибита в білий. Відмова краща за здогад: далі ці числа йдуть у детермінований
+розрахунок, який не вміє сумніватись і побудує на них увесь образ.
+
+Як зчитувати:
+— шкіра: ТРИ точки — щока, лоб і щелепа. Кожна без тіні, без відблиску,
+  без рум'ян і тонального. Три, бо одна точка на щоці помиляється на 8–14
+  одиниць світлоти залежно від того, куди впало світло, і цієї похибки досить,
+  щоб перекинути рівень контрасту;
+— волосся: ПЕРШИМ рядком дай тон, що займає НАЙБІЛЬШУ ПЛОЩУ голови — навіть
+  якщо він не найсвітліший і не найтемніший. Саме перший рядок код бере як
+  «її волосся»: від нього рахується світлота, «її чорний» і ручка корекції.
+  Далі — решта видимих тонів, у будь-якому порядку. Рівне однотонне волосся —
+  один рядок. Мелірування, балаяж, відрослі корені, сивина — окремими рядками.
+  Не вигадуй відтінків, яких не видно, і не зводь різні до одного;
+— очі: тіло райдужки — один рядок; якщо по краю райдужки є помітно темніше
+  кільце (лімбальне), дай його окремим рядком «кільце #xxxxxx»; якщо не видно — не вигадуй;
+— бери колір із людини, не з фону й не з одягу;
+— якщо фото жовтить або синить від освітлення, перерахуй на нейтральне денне
+  світло і скажи окремим рядком, у який бік і наскільки правив.
+
+Наприкінці — ті самі три речі СЛОВАМИ. Суди оком, як людина з відстані двох
+кроків, а не піпеткою. Це незалежна перевірка hex: якщо слово розійдеться з
+числом, стенд відкине зчитування, тож не підганяй слово під свій же hex.
+Слово волосся — про ПЕРШИЙ рядок волосся.
+
+Відповідь — тільки ці рядки, без пояснень:
+шкіра 1 #xxxxxx
+шкіра 2 #xxxxxx
+шкіра 3 #xxxxxx
+волосся 1 #xxxxxx
+волосся 2 #xxxxxx
+очі #xxxxxx
+кільце #xxxxxx (лише якщо є)
+освітлення: одним реченням, як виправляв
+слово шкіра: дуже темна | темна | середня | світла | дуже світла
+слово волосся: дуже темне | темне | середнє | світле | дуже світле
+слово очі: дуже темні | темні | середні | світлі | дуже світлі`;
+
+const _КОРЕНІ = [["шкір","шкіра"],["skin","шкіра"],["волос","волосся"],["hair","волосся"],
+                 ["кільц","кільце"],["лімбальн","кільце"],["limbal","кільце"],
+                 ["райдуж","очі"],["очі","очі"],["очей","очі"],["око","очі"],["iris","очі"],["eye","очі"]];
+function _міткаПеред(фрагмент){
+  let ім = null, поз = -1;
+  for (const [корінь, назва] of _КОРЕНІ){
+    const i = фрагмент.lastIndexOf(корінь);
+    if (i > поз){ поз = i; ім = назва; }
+  }
+  return ім;
+}
+function розібратиКолір(текст){
+  const из = {шкіра:[], волосся:[], очі:null, кільце:null, освітлення:null,
+              слова:{}, відмова:null, безмітки:0};
+  /* Розмітку прибираємо ОБЕРЕЖНО: у першій редакції клас містив «#», і рядок
+     «**шкіра 1** — `#F2D6C4`» втрачав ґратку разом із зірочками — усі точки шкіри
+     зникали. Ґратка тут — не розмітка, а початок кольору. (Спіймано тестом.) */
+  const т = String(текст || "").replace(/\r/g, " ").replace(/[*_`>]/g, " ");
+  const К = "а-яіїєґА-ЯІЇЄҐ'ʼ";
+  const низ = т.toLowerCase();
+  const від = низ.indexOf("не читається");
+  if (від >= 0){
+    из.відмова = т.slice(від + 12).replace(/^[\s:.,—–-]+/, "").split(/[\n;]|(?:\.\s)/)[0].trim() || "фото непридатне";
+    return из;
+  }
+  /* `\w` у JS — це [A-Za-z0-9_]; кирилиці в ньому НЕМА. Перша редакція цих виразів
+     стояла на `\w*` і не бачила жодного «слово шкіра: середня» взагалі — звірка
+     слова з числом мовчала, хоч дані були. (Спіймано тестом, не оглядом коду.) */
+  const рс = new RegExp("слово\\s+(шкір[" + К + "]*|волос[" + К + "]*|оч[" + К + "]*)\\s*[:—–-]*\\s*"
+    + "(дуже\\s+світл[" + К + "]*|дуже\\s+темн[" + К + "]*|світл[" + К + "]*|темн[" + К + "]*|середн[" + К + "]*)", "gi");
+  let м;
+  while ((м = рс.exec(т)) !== null){
+    const к = /^шкір/i.test(м[1]) ? "шкіра" : (/^волос/i.test(м[1]) ? "волосся" : "очі");
+    из.слова[к] = м[2].toLowerCase().replace(/\s+/g, " ").trim();
+  }
+  /* Роздільник обов'язковий: без «+» вираз чіплявся за «освітленн» і залишав
+     хвіст «я:» на початку тексту освітлення. */
+  const мо = т.match(new RegExp("освітленн[" + К + "]*\\s*[:—–-]+\\s*([\\s\\S]*?)"
+    + "(?=\\s*(?:слово\\s+(?:шкір|волос|оч)|шкір[" + К + "]*\\s*\\d*\\s*#|волос[" + К + "]*\\s*\\d*\\s*#|$))", "i"));
+  if (мо && мо[1].trim()) из.освітлення = мо[1].replace(/\s+/g, " ").trim().replace(/[;,]$/, "");
+  const рг = /#([0-9a-fA-F]{6})\b/g;
+  let край = 0, збіг, остання = null;
+  while ((збіг = рг.exec(т)) !== null){
+    const мітка = _міткаПеред(т.slice(край, збіг.index).toLowerCase()) || остання;
+    край = рг.lastIndex;
+    const hex = "#" + збіг[1].toLowerCase();
+    if (!мітка){ из.безмітки++; continue; }
+    остання = мітка;
+    if (мітка === "шкіра") из.шкіра.push(hex);
+    else if (мітка === "волосся") из.волосся.push(hex);
+    else if (мітка === "кільце"){ if (!из.кільце) из.кільце = hex; }
+    else if (!из.очі) из.очі = hex;
+  }
+  return из;
+}
+/* Щабель світлоти зі СЛОВА — щоб міряти РОЗБІЖНІСТЬ, а не лише її наявність.
+   Шкала й порядок — ті самі, що в bridge._СЛОВА. */
+function щабель(слово){
+  const с = String(слово || "").toLowerCase().trim();
+  if (/^дуже\s+темн/.test(с)) return 0;
+  if (/^дуже\s+світл/.test(с)) return 4;
+  if (/^темн/.test(с)) return 1;
+  if (/^середн/.test(с)) return 2;
+  if (/^світл/.test(с)) return 3;
+  return null;
+}
+
+
+let КОЛІР = {шкіра:null, волосся:null, очі:null, кільце:null, точки:null};
+
+function малюватиСвотчі(){
+  /* СПІЙМАНО ПРОГОНОМ 29.08. Показувалась ПЕРША точка кожної риси — у людини з
+     трьома тонами волосся це одне усереднене чуже значення. І навпаки: обідок
+     райдужки стояв поруч з оком без підпису, тобто читався як другий колір очей.
+     Тепер кожна риса — свій ряд з усіма точками, а обідок названо. */
+  const к = $('кол-свотчі'); к.innerHTML = '';
+  const груп = [
+    ['Шкіра', (КОЛІР.точки||{}).шкіра || (КОЛІР.шкіра ? [КОЛІР.шкіра] : [])],
+    ['Волосся', (КОЛІР.точки||{}).волосся || (КОЛІР.волосся ? [КОЛІР.волосся] : [])],
+    ['Очі', КОЛІР.очі ? [КОЛІР.очі] : []],
+    ['Обідок райдужки', КОЛІР.кільце ? [КОЛІР.кільце] : []]
+  ];
+  for (const [назва, точки] of груп){
+    if (!точки.length) continue;
+    const г = document.createElement('div'); г.className = 'св-група';
+    const н = document.createElement('div'); н.className = 'св-назва';
+    н.textContent = назва + (точки.length > 1 ? ' — ' + точки.length + ' тони' : '');
+    г.appendChild(н);
+    const р = document.createElement('div'); р.className = 'св-ряд';
+    точки.forEach(hex=>{
+      const д = document.createElement('div'); д.className = 'св';
+      const i = document.createElement('i'); i.style.background = hex;
+      const b = document.createElement('b'); b.textContent = hex;
+      д.appendChild(i); д.appendChild(b); р.appendChild(д);
+    });
+    г.appendChild(р); к.appendChild(г);
+  }
+}
+async function писатиКолір(){
+  try{ await писатиАктивний(); малюватиСмугу(); }catch(e){}
+}
+async function застосуватиКольори(){
+  const ст = $('кол-стан');
+  const из = розібратиКолір($('кол-відповідь').value || '');
+  if (из.відмова){ ст.textContent = 'Ші відмовилась читати: ' + из.відмова; return; }
+  if (!из.шкіра.length || !из.волосся.length || !из.очі){
+    ст.textContent = 'У відповіді немає: '
+      + [!из.шкіра.length && 'шкіри', !из.волосся.length && 'волосся', !из.очі && 'очей']
+        .filter(Boolean).join(', ') + '. Вставте відповідь чату цілком, як є.';
+    return;
+  }
+  КОЛІР = {шкіра:из.шкіра[0], волосся:из.волосся[0], очі:из.очі, кільце:из.кільце,
+           точки:{шкіра:из.шкіра, волосся:из.волосся}, слова:из.слова, освітлення:из.освітлення};
+  await писатиКолір(); малюватиСвотчі();
+  const ч = n=> n === 1 ? 'точка' : (n < 5 ? 'точки' : 'точок');
+  const т = n=> n === 1 ? 'тон' : (n < 5 ? 'тони' : 'тонів');
+  ст.textContent = 'Прочитано: ' + из.шкіра.length + ' ' + ч(из.шкіра.length)
+    + ' шкіри, ' + из.волосся.length + ' ' + т(из.волосся.length) + ' волосся'
+    + (из.кільце ? ', обідок райдужки' : '') + '.';
+}
+
+/* ── ЕКРАН ВИПАДКУ Й ПАКЕТ ВХІД-V1 ────────────────────────────────────────
+   Показ Python не має, тож таблиці нагод/місць/кодів вбудовані зрізом із
+   `bridge.довідник` — той самий, за яким код рахує діапазон формальності.
+   Зріз, а не переказ: якщо таблиця в коді зміниться, цей рядок треба
+   перегенерувати, і це навмисно видно.
+
+   ВІЛЬНІ СЛОВА НЕ ТЛУМАЧАТЬСЯ ТУТ. Показ моделі не має. Слова їдуть у пакет
+   як є, а зводить їх у ключі ші вже в стенді — і показує, що зрозуміла, ДО
+   збирання. Так контур підтвердження лишається живим. */
+const ДОВІДНИК = {"нагоди":[{"ключ":"щоденне","підпис":"Звичайний день","нота":"","діапазон":[1,3],"типове_місце":"кафе"},{"ключ":"робота","підпис":"Робота","нота":"зустріч, презентація, співбесіда","діапазон":[6,8],"типове_місце":"офіс_корпоративний"},{"ключ":"побачення","підпис":"Побачення","нота":"","діапазон":[4,5],"типове_місце":"ресторан_районний"},{"ключ":"свято","підпис":"Свято","нота":"день народження, Новий рік, весілля","діапазон":[5,7],"типове_місце":"святкова_вечеря"},{"ключ":"весілля_гість","підпис":"Весілля, я гостя","нота":"код сам не дасть майже-білого","діапазон":[7,9],"типове_місце":"весілля_вечірнє"},{"ключ":"траур","підпис":"Траур","нота":"код сам прибере яскраве й світле","діапазон":[5,7],"типове_місце":"похорон"},{"ключ":"спорт","підпис":"Спорт, активність","нота":"","діапазон":[1,2],"типове_місце":"спорт"},{"ключ":"подорож","підпис":"Подорож","нота":"дорога, переліт","діапазон":[2,4],"типове_місце":"подорож_переліт"}],"місця":[{"ключ":"дім","підпис":"Вдома","нота":"","діапазон":[1,2]},{"ключ":"парк","підпис":"Надворі","нота":"вулиця, парк, набережна","діапазон":[2,3]},{"ключ":"транспорт_довгий","підпис":"У дорозі","нота":"транспорт, переліт","діапазон":[2,4]},{"ключ":"ресторан_районний","підпис":"Заклад","нота":"кафе, ресторан, бар","діапазон":[4,5]},{"ключ":"офіс_креативний","підпис":"Офіс","нота":"","діапазон":[3,5]},{"ключ":"театр","підпис":"Зал","нота":"театр, кіно, концерт, музей, конференція","діапазон":[4,6]},{"ключ":"святкова_вечеря","підпис":"Урочистий зал","нота":"банкет, весілля, вечірка","діапазон":[5,7]}],"коди":[{"ключ":"casual","підпис":"Буденно","діапазон":[1,3]},{"ключ":"smart_casual","підпис":"Охайно буденно","діапазон":[3,5]},{"ключ":"business_casual","підпис":"Ділово, м'яко","діапазон":[4,6]},{"ключ":"business_formal","підпис":"Ділово, строго","діапазон":[6,8]},{"ключ":"cocktail","підпис":"Коктейльне","діапазон":[7,8]},{"ключ":"black_tie","підпис":"Чорна краватка","діапазон":[9,10]},{"ключ":"white_tie","підпис":"Біла краватка","діапазон":[10,10]}],"дефолт_діапазон":[3,6]};
+
+function людяно(к){ return String(к||'').replace(/_/g,' '); }
+
+/* СПИСКИ ЗГРУПОВАНО ЗА СМУГОЮ ОШАТНОСТІ (29.08). Пласкі 18 нагод і 30 місць
+   читались як звалище: людина шукала своє серед однаково виглядних рядків.
+   Ключі ТІ САМІ — групування лише в очах, бо код рахує по ключу, і підміняти
+   його «спрощеною» таксономією означало б розійтися з таблицею формальності. */
+/* КОРОТКІ СПИСКИ — І ЧОМУ САМЕ ТАКІ (30.08).
+
+   ПЕРШИЙ ВИМІР: при сталому місці й ошатності 13 із 18 нагод не міняють НІЧОГО.
+   Своє несуть лише дві — `весілля_гість` (K-KOH-08: не майже-біле, гучність ≤ 45)
+   і `траур` (K-OCC-01: не яскраве й світле). Решта була синонімами формальності,
+   яку вже несуть місце й ошатність. Весілля, день народження і Новий рік справді
+   не різняться самі собою — їх різнить контекст.
+
+   ДРУГИЙ ВИМІР: 30 місць несуть лише 11 різних смуг ошатності. Шість місць
+   ділять смугу 6–8, п'ять — смугу 3–5. Тобто список був переліком синонімів
+   однієї шкали.
+
+   ЗВІДСИ: у списках лишається по одному представнику кожного окремого сенсу —
+   8 нагод і 12 місць, які разом покривають ВСІ 11 смуг. Повна таблиця ключів
+   нікуди не поділась і лишається досяжною вільними словами: стенд зводить їх у
+   ті самі ключі тим самим довідником, і рідкісний випадок («вернісаж»,
+   «лікарня») туди доходить.
+
+   ЧОМУ ДВІ ОСІ ВСЕ Ж ЛИШИЛИСЬ. Прогін: «весілля гість × парк» зберігає K-KOH-08,
+   а ошатність бере з парку. Нагода й місце множаться, а не заміняють одне одного. */
+function простийСписок(в, пункти, порожній){
+  в.innerHTML = '';
+  const п = document.createElement('option'); п.value = ''; п.textContent = порожній;
+  в.appendChild(п);
+  (пункти||[]).forEach(о=>{
+    const т = document.createElement('option'); т.value = о.ключ;
+    т.textContent = о.підпис + (о.нота ? ' — ' + о.нота : '');
+    в.appendChild(т);
+  });
+}
+function знайти(пункти, к){ return (пункти||[]).find(о=>о.ключ === к) || null; }
+
+function заповнитиСписки(){
+  простийСписок($('сц-нагода'), ДОВІДНИК.нагоди, '—');
+  простийСписок($('сц-місце'), ДОВІДНИК.місця, 'типове для нагоди');
+  const д = $('сц-дрес'); д.innerHTML = '';
+  const п = document.createElement('option'); п.value = ''; п.textContent = 'за місцем';
+  д.appendChild(п);
+  (ДОВІДНИК.коди||[]).slice().sort((a,b)=>a.діапазон[0]-b.діапазон[0]).forEach(о=>{
+    const т = document.createElement('option'); т.value = о.ключ;
+    т.textContent = о.підпис + ' (' + о.діапазон[0] + '–' + о.діапазон[1] + ')';
+    д.appendChild(т);
+  });
+  ['сц-нагода','сц-місце','сц-дрес'].forEach(і=>{ $(і).onchange = оновитиДіапазон; });
+  оновитиДіапазон();
+}
+
+function чиннеМісце(){
+  const обране = $('сц-місце').value;
+  if (обране) return обране;
+  const н = знайти(ДОВІДНИК.нагоди, $('сц-нагода').value);
+  return (н && н.типове_місце) || null;
+}
+
+function оновитиДіапазон(){
+  const н = знайти(ДОВІДНИК.нагоди, $('сц-нагода').value);
+  const м = знайти(ДОВІДНИК.місця, чиннеМісце());
+  const кл = знайти(ДОВІДНИК.коди, $('сц-дрес').value);
+  /* Порядок джерел той самий, що в коді: ошатність важить над місцем, місце над
+     нагодою. Кажемо, звідки взялося число, — інакше воно магічне. */
+  const д = (кл && кл.діапазон) || (м && м.діапазон) || (н && н.діапазон)
+            || ДОВІДНИК.дефолт_діапазон;
+  const звідки = кл ? 'з ошатності' : м ? 'з місця' : н ? 'з нагоди' : 'за замовчуванням';
+  const рядки = [];
+  if (д) рядки.push('Ошатність ' + д[0] + '–' + д[1] + ' (' + звідки + ')');
+  if (н && н.нота) рядки.push(н.нота);
+  if (!$('сц-місце').value && м) рядки.push('середовище: ' + м.підпис.toLowerCase());
+  $('сц-діапазон').textContent = рядки.join(' · ');
+}
+
+function зібратиВхід(){
+  const сц = {нагода:$('сц-нагода').value||null, місце:чиннеМісце(),
+              дрес_код:$('сц-дрес').value||null,
+              година:parseInt($('сц-година').value)||11,
+              темп_c:parseFloat($('сц-темп').value)};
+  /* «не знаю» → поля НЕМА. Нуль вітру — твердження «безвітря», незнання — ні. */
+  const пв=$('сц-вітер').value, по=$('сц-опади').value, пр=$('сц-реагенти').value;
+  if (пв!=='') сц.вітер = parseFloat(пв);
+  if (по!=='') сц.опади = по;
+  if (пр!=='') сц.реагенти = parseFloat(пр);
+  const об = {};
+  for (const [ід, к] of [['мр-плечі','плечі'],['мр-груди','груди'],
+                         ['мр-талія','талія'],['мр-стегна','стегна']]){
+    const v = parseFloat($(ід).value); if (v) об[к] = v;
+  }
+  return {в:'ВХІД-V1', джерело:'показ', пристрій,
+          імʼя: ($('пр-імʼя').value||'').trim() || null,
+          згода: !!$('пр-згода').checked,
+          /* Точки, а не єдиний hex: стенд міряє РОЗБІЖНІСТЬ точок шкіри
+             (ΔE00) і без них ця перевірка мовчить. */
+          колір: {шкіра:(КОЛІР.точки||{}).шкіра || [КОЛІР.шкіра],
+                  волосся:(КОЛІР.точки||{}).волосся || [КОЛІР.волосся],
+                  очі:КОЛІР.очі, кільце:КОЛІР.кільце,
+                  слова:КОЛІР.слова||null, освітлення:КОЛІР.освітлення||null},
+          мірки: {зріст: parseFloat($('мр-зріст').value)||167, обхвати: об},
+          /* ПАЛІТРА ЇДЕ В ПАКЕТІ, А НЕ ЛИШИТЬСЯ НА ЕКРАНІ. `null` тут — не
+             «нема даних», а ЗАЯВА «людині байдуже»: стенд читає це як режим
+             «модель обирає з усіх законних схем», не як гілку 0.
+             ВІДБИТОК — зміст 16 спільних модулів. Стенд звіряє його зі своїм і
+             кричить при розбіжності: інакше старіший `palette.py` у показі дав
+             би чипи однієї розвилки й збирання за іншою, мовчки. */
+          палітра: {гілка: ВИБІР.гілка, вибір_кольору: ВИБІР.вибір_кольору,
+                    збірка_показу: ЗБІРКА_ПОКАЗУ, відбиток: ВІДБИТОК_ПОКАЗУ},
+          драп:{білий:ДРАП.білий, метал:ДРАП.метал, нейтралі:ДРАП.нейтралі, барви:ДРАП.барви},
+          сценарій:сц, слова:($('сц-слова').value||'').trim()};
+}
+
+function байтиВБ64урл(м){
+  let б=''; const шм=0x8000;
+  for (let i=0;i<м.length;i+=шм) б += String.fromCharCode.apply(null, м.subarray(i,i+шм));
+  return btoa(б).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+async function запакувати(об){
+  const байти = new TextEncoder().encode(JSON.stringify(об));
+  if (typeof CompressionStream === 'function'){
+    try{
+      const ст = new Uint8Array(await new Response(
+        new Blob([байти]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+      return байтиВБ64урл(ст);
+    }catch(e){}
+  }
+  return байтиВБ64урл(байти);
+}
+
+/* ЄДИНИЙ ШОВ УСЬОГО ПРОХОДУ. Стенд живе в `about:srcdoc` без власного URL —
+   виміряно зондом: фрагмент туди не заходить у принципі. Тому пакет мусить
+   переїхати буфером. Робимо це одним рухом: копія + відкриття вкладки в
+   одному кліку, щоб людина не збирала посилання руками. */
+function копіювати(текст){
+  try{
+    const т=document.createElement('textarea'); т.value=текст; т.setAttribute('readonly','');
+    т.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+    document.body.appendChild(т); т.focus(); т.select();
+    try{ т.setSelectionRange(0,текст.length); }catch(_){}
+    const ок=document.execCommand('copy'); document.body.removeChild(т);
+    return ок;
+  }catch(e){ return false; }
+}
+
+/* ── фото-профіль: портрет + повний зріст, живуть у IndexedDB пристрою ──── */
+function читатиКв(ключ){
+  return дб().then(d=>new Promise((рез,від)=>{
+    const r = d.transaction('кв').objectStore('кв').get(ключ);
+    r.onsuccess=()=>рез(r.result); r.onerror=()=>від(r.error);
+  }));
+}
+async function малюватиСлот(конт, ключ){
+  const к = $(конт); к.innerHTML = '';
+  let блоб = null;
+  try{ блоб = await читатиКв(ключ); }catch(e){}
+  if (блоб){
+    const і = document.createElement('img'); і.className='образ';
+    і.src = URL.createObjectURL(блоб);
+    к.appendChild(і);
+    const ряд = document.createElement('div'); ряд.className='ряд';
+    const заміна = document.createElement('input');
+    заміна.type='file'; заміна.accept='image/*';
+    заміна.onchange = е=>зберегтиФото(е, конт, ключ);
+    const геть = document.createElement('button');
+    геть.className='мал друг'; геть.textContent='Прибрати';
+    геть.onclick = async ()=>{
+      const d = await дб();
+      await тx(d,'кв','readwrite', s=>s.delete(ключ));
+      малюватиСлот(конт, ключ);
+      if (ключ === ключФото('портрет')) малюватиДрап();
+    };
+    ряд.appendChild(заміна); ряд.appendChild(геть);
+    к.appendChild(ряд);
+  } else {
+    const вх = document.createElement('input');
+    вх.type='file'; вх.accept='image/*';
+    вх.onchange = е=>зберегтиФото(е, конт, ключ);
+    к.appendChild(вх);
+  }
+}
+async function зберегтиФото(е, конт, ключ){
+  const ф = е.target.files && е.target.files[0]; if (!ф) return;
+  try{
+    const d = await дб();
+    await тx(d,'кв','readwrite', s=>s.put(ф, ключ));
+  }catch(err){ console.error('фото не збереглось', err); }
+  малюватиСлот(конт, ключ);
+  if (ключ === ключФото('портрет')) малюватиДрап();
+}
+/* ── ДРАПІРОВКА: стимульна елісітація, не опитування пам'яті ──────────────
+   ЧОМУ ЦЕ НА ПОКАЗІ, А НЕ В АРТЕФАКТІ. Правило R-PC-04 (`palette.тепло_з_елісітації`)
+   вимагає СТИМУЛУ: людина має бачити своє обличчя між двома полями. У пісочницю
+   артефакта зображення не заходить — виміряно шістьма шляхами. Тут заходить.
+   Питання словами без стимулу — не елісітація: жінка, яка ніколи про це не
+   думала, відповідає навмання, і некалібрована відповідь іде в жорсткий вхід.
+
+   ПЕТЛЯ, ЯКУ ЦЕ ЗАКРИВАЄ. `outfit.метали()` і `outfit.температура_нейтралі()`
+   беруть `драп={'білий','метал'}`. У мості цього аргументу нема; у формі стенда
+   слова «метал» нема жодного. Правило виконувалось і не міняло нічого.
+
+   «НЕ БАЧУ РІЗНИЦІ» — повноцінна відповідь, а не пропуск. `тепло_з_елісітації`
+   на порожньому вході віддає w=None і впевненість 0: мовчання лишається
+   мовчанням, а не нулем, який виглядає як вимір. */
+const ДРАП_ПОЛЯ = {
+  метал: {питання:'Золото чи срібло біля обличчя', стимул:true, в:[
+    {ключ:'золото', hex:'#C9A227', підпис:'Золото'},
+    {ключ:'срібло', hex:'#B8BDC2', підпис:'Срібло'},
+    {ключ:'обидва', hex:null, підпис:'Обидва однаково'}]},
+  білий: {питання:'Білий чи молочний', стимул:true, в:[
+    {ключ:'оптичний', hex:'#FFFFFF', підпис:'Чистий білий'},
+    {ключ:'вершковий', hex:'#F4E9D2', підпис:'Молочний'},
+    {ключ:'не бачу різниці', hex:null, підпис:'Не бачу різниці'}]},
+  /* ТРЕТІЙ СТИМУЛ. Той самий теплохолод, але на приглушених нейтралях замість
+     металу: для тих, хто не носить прикрас, метал німий, і два канали ставали
+     одним. Споживач — `palette.тепло_з_елісітації`, третій канал. */
+  нейтралі: {питання:'Теплі чи холодні нейтралі', стимул:true, в:[
+    {ключ:'теплі', hex:'#C8B49D', підпис:'Теплі'},
+    {ключ:'холодні', hex:'#A9B0BA', підпис:'Холодні'},
+    {ключ:'не бачу різниці', hex:null, підпис:'Не бачу різниці'}]},
+  /* ЧЕТВЕРТЕ — не про колір біля обличчя, а про саму людину, тому без стимулу.
+     K-PC-01: вісь колірного контрасту рахується з хроми волосся й очей, а з
+     телефонного фото хрома має надійність 0.35 при порозі 0.5 — тут канон
+     приписує питати. Йде в `самозвіт.барви` → `bridge._основи`. */
+  барви: {питання:'Ваші власні барви — очі, волосся, губи', стимул:false, в:[
+    {ключ:'яскраві', підпис:'Яскраві, помітні'},
+    {ключ:'приглушені', підпис:'Приглушені, м\'які'},
+    {ключ:'не знаю', підпис:'Не знаю'}]}
+};
+let ДРАП = {білий:null, метал:null, нейтралі:null, барви:null};
+
+
+async function писатиДрап(){
+  try{ await писатиАктивний(); }
+  catch(e){ const ст=$('др-стан'); if(ст) ст.textContent = 'не збереглось: '+String(e).slice(0,80); return; }
+  малюватиСмугу();
+  /* статус малює `малюватиДрап` разом із тілом — тут лише запис */
+}
+
+let КАДР = {масштаб:100, x:50, y:35};
+async function читатиКадр(){
+  const з = await читатиКв_('кадр'); if (з) КАДР = Object.assign(КАДР, з);
+}
+async function писатиКадр(){ try{ await писатиКв('кадр', {...КАДР}); }catch(e){} }
+
+async function малюватиДрап(){
+  let портрет = null;
+  try{ портрет = await читатиКв(ключФото('портрет')); }catch(e){}
+  $('др-нема').style.display = портрет ? 'none' : 'block';
+  $('др-тіло').style.display = портрет ? 'block' : 'none';
+  if (!портрет) return;
+  const урл = URL.createObjectURL(портрет);
+  const тіло = $('др-тіло'); тіло.innerHTML = '';
+
+  /* ПІДГОНКА КАДРУ. Портрет у кожної свій: обличчя буває збоку, здалеку, з
+     полями. Без масштабу й зсуву кружок показував вухо — тобто стимул був не
+     той, а відповідь усе одно писалась як елісітація. */
+  const пк = document.createElement('div');
+  пк.innerHTML = '<div class="фото-назва" style="margin-top:14px">Підженіть обличчя в кружок</div>'
+    + '<div class="кадр"><span>Масштаб</span><input type="range" id="кд-м" min="100" max="320" value="' + КАДР.масштаб + '"></div>'
+    + '<div class="кадр"><span>Ліво-право</span><input type="range" id="кд-x" min="0" max="100" value="' + КАДР.x + '"></div>'
+    + '<div class="кадр"><span>Вгору-вниз</span><input type="range" id="кд-y" min="0" max="100" value="' + КАДР.y + '"></div>';
+  тіло.appendChild(пк);
+
+  const стиль = і=>{
+    const м = КАДР.масштаб / 100;
+    і.style.width = '100%'; і.style.height = '100%';
+    і.style.transformOrigin = 'center';
+    і.style.transform = 'scale(' + м + ') translate('
+      + ((50 - КАДР.x) / м).toFixed(2) + '%,' + ((50 - КАДР.y) / м).toFixed(2) + '%)';
+  };
+  const усі = [];
+
+  for (const поле of ['метал','білий','нейтралі','барви']){
+    const оп = ДРАП_ПОЛЯ[поле];
+    const н = document.createElement('div');
+    н.className = 'фото-назва'; н.style.margin = '22px 0 8px';
+    н.textContent = оп.питання;
+    тіло.appendChild(н);
+
+    const проби = оп.в.filter(в=>в.hex || !оп.стимул);
+    const нуль = оп.в.find(в=>!в.hex && оп.стимул);
+
+    if (оп.стимул){
+      /* ДИПТИХ. Дві стулки стуляються без проміжка: обличчя стоїть у них поруч,
+         як дві тканини, піднесені до лиця. Так порівнюють насправді. */
+      const д = document.createElement('div'); д.className = 'диптих';
+      проби.forEach(в=>{
+        const б = document.createElement('button');
+        б.className = 'стулка'; б.type = 'button';
+        б.setAttribute('aria-pressed', ДРАП[поле] === в.ключ ? 'true' : 'false');
+        const п = document.createElement('span'); п.className = 'поле';
+        п.style.background = в.hex;
+        const вк = document.createElement('span'); вк.className = 'вікно';
+        const і = document.createElement('img'); і.src = урл; і.alt = ''; стиль(і); усі.push(і);
+        вк.appendChild(і); п.appendChild(вк);
+        const наз = document.createElement('span'); наз.className = 'назва'; наз.textContent = в.підпис;
+        б.appendChild(п); б.appendChild(наз);
+        б.onclick = async ()=>{ ДРАП[поле] = в.ключ; await писатиДрап(); малюватиДрап(); };
+        д.appendChild(б);
+      });
+      тіло.appendChild(д);
+      if (нуль){
+        const т = document.createElement('button');
+        т.className = 'текст однаково'; т.type = 'button';
+        т.textContent = (ДРАП[поле] === нуль.ключ ? '✓ ' : '') + нуль.підпис;
+        т.onclick = async ()=>{ ДРАП[поле] = нуль.ключ; await писатиДрап(); малюватиДрап(); };
+        тіло.appendChild(т);
+      }
+    } else {
+      /* Барви — не про колір біля обличчя, а про саму людину: без стимулу, тому
+         й вигляд інший — чипи, а не проби. Форма має казати, чим питання є. */
+      const р = document.createElement('div'); р.className = 'ряд';
+      оп.в.forEach(в=>{
+        const ч = document.createElement('span');
+        ч.className = 'чип' + (ДРАП[поле] === в.ключ ? ' вибр' : '');
+        ч.textContent = в.підпис;
+        ч.onclick = async ()=>{ ДРАП[поле] = в.ключ; await писатиДрап(); малюватиДрап(); };
+        р.appendChild(ч);
+      });
+      тіло.appendChild(р);
+    }
+  }
+
+  for (const [ід, кл] of [['кд-м','масштаб'],['кд-x','x'],['кд-y','y']]){
+    $(ід).oninput = е=>{ КАДР[кл] = parseInt(е.target.value); усі.forEach(стиль); };
+    $(ід).onchange = писатиКадр;
+  }
+  const ст = document.createElement('div'); ст.className = 'статус'; ст.id = 'др-стан';
+  ст.style.marginTop = '20px';
+  const г = ['метал','білий','нейтралі','барви'].filter(к=>ДРАП[к]).length;
+  ст.textContent = 'Відповіли на ' + г + ' з 4.';
+  тіло.appendChild(ст);
+  const скид = document.createElement('button');
+  скид.className = 'небезпека'; скид.textContent = 'Скинути відповіді';
+  скид.onclick = async ()=>{ ДРАП = {білий:null,метал:null,нейтралі:null,барви:null};
+                             await писатиДрап(); малюватиДрап(); };
+  тіло.appendChild(скид);
+}
+
+function фотоПрофіль(){
+  малюватиСлот('ф-портрет', ключФото('портрет'));
+  малюватиСлот('ф-зріст', ключФото('зріст'));
+}
+
+/* ── старт ──────────────────────────────────────────────────────────────── */
+/* Адреса опублікованого стенда. Живе в IndexedDB, бо міняється з кожним
+   перевиданням артефакта, а людині не має бути діла до цього. */
+async function урлСтенда(){
+  try{ const у = await читатиКв('урл-стенда'); if (у) return у; }catch(e){}
+  return null;
+}
+async function записатиУрлСтенда(у){
+  const d = await дб(); await тx(d,'кв','readwrite', s=>s.put(у,'урл-стенда'));
+}
+
+async function перейтиДоСтенда(){
+  const ст = $('п-стан');
+  const бракує = [];
+  if (!КОЛІР.шкіра || !КОЛІР.волосся || !КОЛІР.очі) бракує.push('свої кольори');
+  /* ВИМІРЯНО 30.08: `bridge.запити` кидає ValueError на будь-якому відсутньому
+     обхваті — «площа рахується на реальному тілі». Доти показ обіцяв, що їх
+     можна лишити порожніми, і стенд мовчки падав би вже після переходу. */
+  const нм = [['мр-плечі','плечі'],['мр-груди','груди'],['мр-талія','талія'],['мр-стегна','стегна']]
+    .filter(([і])=>!parseFloat($(і).value)).map(([,н])=>н);
+  if (нм.length) бракує.push('обхвати: ' + нм.join(', '));
+  if (!$('сц-нагода').value && !$('сц-слова').value.trim()) бракує.push('нагоду або опис своїми словами');
+  if (бракує.length){ ст.textContent = 'Спершу додайте ' + бракує.join(' і ') + '.'; return; }
+  const у = ($('п-адреса').value || '').trim();
+  if (!у){ ст.textContent = 'Адреса сторінки збирання не підставилась — впишіть її в поле вище.'; $('п-адреса').focus(); return; }
+  try{ await писатиКв('урл-стенда', у); }catch(e){}
+
+  ст.textContent = 'Збираю пакет…';
+  const об = зібратиВхід();
+  const фр = await запакувати(об);
+  const п = $('п-пакет'); п.value = фр; п.style.display = 'block';
+  const скопійовано = копіювати(фр);
+
+  /* Якщо показ відкрив сам стенд — пакет летить прямо в ту вкладку, без буфера.
+     Буфер наповнюємо однаково: ціна нуль, а без нього збій нікуди відкотити. */
+  if (window.opener){
+    try{
+      window.opener.postMessage(об, '*');
+      ст.textContent = 'Надіслано. Поверніться у вкладку збирання.';
+      return;
+    }catch(e){}
+  }
+  ст.textContent = (скопійовано ? 'Скопійовано. Відкриваю збирання — там довге натискання в полі, далі «Вставити».'
+                              : 'Скопіюйте пакет нижче, відкрийте сторінку збирання і вставте його там.');
+  const a = document.createElement('a');
+  a.href = у; a.target = '_blank'; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+async function старт(){
+  пристрій = await пристрійId().catch(()=> 'невідомо');
+  await завантажитиПрофілі();
+  await читатиАктивний();
+  заповнитиСписки();
+  await відновитиВипадок();
+  фотоПрофіль(); малюватиДрап(); малюватиСвотчі(); малюватиСмугу();
+  екран(0);
+  $('пф-вибір').onchange = е=>перемкнути(е.target.value);
+  $('пф-новий').onclick = створитиПрофіль;
+  /* АДРЕСА ЗБИРАННЯ ЖИВЕ У ФАЙЛІ ПОРУЧ, А НЕ В ПОСИЛАННІ.
+     Опублікована сторінка збирання отримує НОВУ адресу з кожним перевиданням —
+     отже посилання з адресою всередині протухає щоразу, і роздавати його заново
+     довелося б після кожної правки. Тому адреса лежить у `збирання.txt` у тому
+     ж репо: посилання, яке отримали тестувальниці, не міняється ніколи, а ти
+     після публікації правиш один рядок на GitHub.
+     Порядок джерел: параметр посилання → файл поруч → збережене на пристрої. */
+  let _адр = new URLSearchParams(location.search).get('збирання')
+          || new URLSearchParams(location.search).get('майстерня');
+  if (!_адр){
+    try{
+      const в = await Promise.race([
+        fetch('збирання.txt?_=' + Date.now()),
+        new Promise((_, зле)=>setTimeout(()=>зле(new Error('тиша')), 8000))]);
+      if (в.ok){
+        const т = (await в.text()).split('\n').map(x=>x.trim())
+                  .find(x=>x && !x.startsWith('#'));
+        if (т) _адр = т;
+      }
+    }catch(e){}
+  }
+  if (_адр){ try{ await писатиКв('урл-стенда', _адр.trim()); }catch(e){} }
+  $('п-адреса').value = _адр ? _адр.trim() : ((await читатиКв_('урл-стенда')) || '');
+  $('п-адреса').onchange = е=>писатиКв('урл-стенда', (е.target.value||'').trim());
+  $('н-назад').onclick = ()=>екран(ЕКРАН - 1);
+  $('н-далі').onclick = async ()=>{
+    await писатиАктивний(); малюватиСмугу();
+    /* На останньому екрані та сама кнопка збирає — окремої не треба, і людина
+       не шукає, чим завершити: дія завжди в одному місці внизу. */
+    /* ── ОСТАННЯ КНОПКА ЗБИРАЄ, А НЕ ВЕДЕ (01.09.2026) ────────────────────
+       Доти тут стояв `перейтиДоСтенда()` — спадок доби, коли образи складались
+       у ІНШОМУ вікні, бо з пісочниці артефакта не було каналу назад. Показ
+       тепер несе всі 33 модулі й збирає сам; лишити перехід означало б
+       відправляти людину зі щойно зібраної системи в стару. */
+    if (ЕКРАН === ЕКРАНИ.length - 1){ await зібратиОбразиП(); return; }
+    екран(ЕКРАН + 1);
+  };
+  await читатиКадр();
+  ['пр-імʼя','пр-згода','мр-зріст','мр-плечі','мр-груди','мр-талія','мр-стегна']
+    .forEach(і=>{ const е = $(і); if (е) е.onchange = ()=>писатиАктивний(); });
+  ['сц-нагода','сц-місце','сц-дрес','сц-година','сц-темп','сц-вітер','сц-опади',
+   'сц-реагенти','сц-слова'].forEach(і=>{ const е = $(і); if (е) е.onchange = зберегтиВипадок; });
+  $('кол-запит').value = ПРОМПТ_КОЛІР;
+  $('кол-копія').onclick = ()=>{ $('кол-стан').textContent =
+    копіювати(ПРОМПТ_КОЛІР) ? 'Запит скопійовано.' : 'Виділіть текст запиту руками.'; };
+  $('кол-читати').onclick = застосуватиКольори;
+
+  let х = location.hash.slice(1);
+  /* СПІЙМАНО ДО ПРОГОНУ. Мітку я зробив кирилицею, а браузер відсоткує кирилицю
+     в URL: `location.hash` віддав би %D0%97%D0%9E…, порівняння не збіглося б, і
+     зонд мовчав би — що прочиталось би як «канал мертвий». Тому мітка ASCII, а
+     хвіст декодується перед будь-яким порівнянням. */
+  try{ х = decodeURIComponent(х); }catch(e){}
+  if (х){
+    /* Прийшли образи зі стенда — вхідна частина відпрацювала, ховаємо її,
+       щоб людина бачила рівно те, заради чого повернулась. */
+    ['е-профіль','е-мірки','е-випадок','ніг','смуга-профілів'].forEach(і=>{ const е=$(і); if(е) е.style.display='none'; });
+    try{ П = await розпакувати(х); рендер(); }
+    catch(e){ $('ш-рядок').textContent = 'Пакет не розпакувався: '+String(e).slice(0,120); }
+  } else оновитиЖурнал();
+}
+
+/* ── PYODIDE У ПОКАЗІ: ТОЙ САМИЙ PYTHON, ЩО В СТЕНДІ ───────────────────────
+   ЧОМУ ВІН ТУТ. Вибір палітри мусив стояти в одному потоці з профілем, мірками
+   й випадком. У стенді він жив окремим вікном, куди людина потрапляє після
+   копіювання пакета, — і саме тому власник його не знайшов. Двобічний обмін
+   неможливий: виміряно на телефоні 01.09.2026, артефакт має `origin:null`,
+   `opener:нема`, `hash:порожній`, `referrer:нема`.
+   ЩО САМЕ ТУТ КРУТИТЬСЯ. 16 модулів із 33 — рівно ті, які `палітри` реально
+   торкається (збирач міряє це живим викликом, не списком руками). Каталогу
+   нема: `палітри` без нього працює повністю. Вантаж 229 КБ zip проти 466 КБ
+   у стенді.
+   ПІДНІМАЄТЬСЯ ПІД УМОВОЮ. Тестувальниця відкриває показ із фрагментом і лише
+   судить — їй Pyodide не потрібен, і вона його не вантажить. Підйом починається
+   тільки на шляху введення, і тільки коли людина дійшла до кроку палітри. */
+/* ── ШАР ШІ У ПОКАЗІ: МОДЕЛЬ ДОСТУПНА ЗВІДСИ, А НЕ З ІНШОГО ВІКНА ──────────
+   ЧОМУ ПЕРЕЇХАЛО. Виклик моделі жив у стенді, а стенд — у пісочниці артефакта,
+   де fetch без ключа підставляє облік ГЛЯДАЧА: кожен прогін тестувальниці
+   з'їдав ЇЇ п'ятигодинний ліміт. Роздати систему так неможливо. На звичайній
+   сторінці виклик іде на МІСТ — свій сервер, який тримає ключ у секреті.
+
+   РОЗВИЛКА НА ХЕШІ, А НЕ В ЗБІРЦІ. Той самий файл мусить працювати і без
+   мосту (прямий виклик, як доти), і з ним. Адреса й токен приходять хешем
+   посилання й зберігаються: тестувальниця відкриє його раз, а перезавантажить
+   десять. Порядок: хеш > збережене > прямий виклик. */
+/* ── ЯКА МОДЕЛЬ ─────────────────────────────────────────────────────────────
+   Міст маршрутизує ЗА ПРЕФІКСОМ імені: `gemini-` → Google, `claude-` →
+   Anthropic. Переклад формату живе в мості, тож перемикання — це правка цього
+   одного рядка, і жодного іншого: розбір відповіді, лічба токенів і читання
+   `stop_reason` для обох провайдерів той самий код.
+   ЗАРАЗ Gemini — дармова квота, поки власник ганяє систему на помилки.
+   Перед роздачею тестувальницям сюди стає `claude-…`.
+   ⚠ ІМ'Я ЗВІРИТИ В КОНСОЛІ ПЕРЕД ПРОГОНОМ: каталог Google рухається швидко,
+   лінія 2.5 гаситься восени 2026, а невірне ім'я дає 404, а не відповідь.
+   Хеш посилання переважує: `#модель=…` пробує іншу, не чіпаючи збірки. */
+const МОДЕЛЬ_П = (function(){
+  try{
+    const h = new URLSearchParams((location.hash || "").replace(/^#/, ""));
+    const м = h.get("модель");
+    if (м) localStorage.setItem("міст:модель", м);
+    return м || localStorage.getItem("міст:модель") || "gemini-flash-latest";
+  }catch(_){ return "gemini-flash-latest"; }
+})();
+const МАКС_ТОКЕНІВ_П = 4000;
+const МІСТ_П = (function(){
+  let а = "", т = "";
+  try{
+    const h = new URLSearchParams((location.hash || "").replace(/^#/, ""));
+    а = h.get("міст") || ""; т = h.get("т") || "";
+    if (а) localStorage.setItem("міст:адреса", а);
+    if (т) localStorage.setItem("міст:токен", т);
+    а = а || localStorage.getItem("міст:адреса") || "";
+    т = т || localStorage.getItem("міст:токен") || "";
+  }catch(_){ }
+  return {адреса: а, токен: т};
+})();
+/* Лічба токенів — від токенізатора, не з символів: `usage` несе точні числа
+   тим самим лічильником, яким міряється ліміт. Скидається на кожне збирання. */
+let ТОКЕНИ_П = {вхід:0, вихід:0, викликів:0};
+
+async function _дзвінокП(повідомлення, модель){
+  const тіло = JSON.stringify({model:модель || МОДЕЛЬ_П, max_tokens:МАКС_ТОКЕНІВ_П,
+                               messages:повідомлення});
+  if (!МІСТ_П.адреса)
+    return fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST", headers:{"Content-Type":"application/json"}, body:тіло});
+  if (!МІСТ_П.токен)
+    throw new Error("міст заданий (" + МІСТ_П.адреса + "), а токена нема — "
+                  + "посилання мусить нести #міст=…&т=ТОКЕН");
+  return fetch(МІСТ_П.адреса, {
+    method:"POST",
+    headers:{"Content-Type":"application/json", "x-lyusterko-token":МІСТ_П.токен},
+    body:тіло});
+}
+
+/* Межі читаються З ЗАГОЛОВКІВ. Через проксі пісочниці їх не було взагалі, і
+   429 на четвертій руці лишився без причини — два пояснення були вигадані.
+   Міст віддає `anthropic-ratelimit-*` як є, тож наступний 429 назве себе. */
+function _межіП(о){
+  const р = [];
+  о.headers.forEach((з, і) => { if (/^anthropic-ratelimit/i.test(і)) р.push(і + "=" + з); });
+  const rt = о.headers.get("retry-after"); if (rt) р.push("retry-after=" + rt);
+  const лиш = о.headers.get("x-runs-left"); if (лиш) р.push("прогонів лишилось=" + лиш);
+  return р.join(" · ") || "заголовків лімітів нема";
+}
+
+/* ── ДВІ ФУНКЦІЇ, БО ДВА РІЗНІ ВИХОДИ ─────────────────────────────────────
+   `модельП` віддає ТЕКСТ і потрібна збиранню образів. `модельП_блоки` віддає
+   блоки як є — інакше картинка приміряння зникла б у склеюванні тексту, тобто
+   рівно там, де міст щойно навчився її проводити. Спільна частина — виклик,
+   лічба токенів і читання `stop_reason`; дублювати її не можна, бо тоді одна
+   з двох тихо відстане від іншої на першій правці. */
+async function модельП_блоки(зміст, модель, історія){
+  const повідомлення = [...(історія || []), {role:'user', content:зміст}];
+  let відп = await _дзвінокП(повідомлення, модель);
+  const пауза = мс => new Promise(р=>setTimeout(р, мс));
+  for (const затримка of [20000, 60000]){
+    if (відп.status !== 429) break;
+    console.warn('429 назвав межу: ' + _межіП(відп));
+    await пауза(затримка + Math.random()*4000);
+    відп = await _дзвінокП(повідомлення, модель);
+  }
+  if (!відп.ok)
+    throw new Error('модель: HTTP ' + відп.status + ' · ' + _межіП(відп) + ' · '
+                    + (await відп.text()).replace(/\s+/g,' ').slice(0, 1200));
+  const дані = await відп.json(), u = дані.usage || {};
+  ТОКЕНИ_П.вхід += (u.input_tokens || 0) + (u.cache_read_input_tokens || 0);
+  ТОКЕНИ_П.вихід += (u.output_tokens || 0);
+  ТОКЕНИ_П.викликів += 1;
+  if (дані.stop_reason === 'max_tokens')
+    throw new Error('відповідь обрізано об стелю виводу (' + МАКС_ТОКЕНІВ_П + ' токенів)');
+  return дані.content || [];
+}
+
+async function модельП(промпт, фото, історія){
+  const зміст = [];
+  if (фото && фото.дані)
+    зміст.push({type:"image", source:{type:"base64", media_type:фото.тип, data:фото.дані}});
+  зміст.push({type:"text", text:промпт});
+  const повідомлення = [...(історія || []), {role:"user", content:зміст}];
+  let відп = await _дзвінокП(повідомлення);
+  /* Витримка платиться ЛИШЕ коли 429 стався; на чистому прогоні коштує нуль. */
+  const пауза = мс => new Promise(р=>setTimeout(р, мс));
+  for (const затримка of [20000, 60000]){
+    if (відп.status !== 429) break;
+    console.warn("429 назвав межу: " + _межіП(відп) + " · тіло: "
+                 + (await відп.clone().text()).replace(/\s+/g," ").slice(0, 1200));
+    await пауза(затримка + Math.random()*4000);
+    відп = await _дзвінокП(повідомлення);
+  }
+  if (!відп.ok)
+    throw new Error("модель: HTTP " + відп.status + " · " + _межіП(відп) + " · "
+                    + (await відп.text()).replace(/\s+/g," ").slice(0, 1200));
+  const дані = await відп.json(), u = дані.usage || {};
+  ТОКЕНИ_П.вхід += (u.input_tokens || 0) + (u.cache_read_input_tokens || 0);
+  ТОКЕНИ_П.вихід += (u.output_tokens || 0);
+  ТОКЕНИ_П.викликів += 1;
+  /* Обрізання об стелю МОВЧАЗНЕ: текст виглядає закінченим, а вердикт міряв би
+     стелю замість образу. Тому `stop_reason` читається, а не ігнорується. */
+  if (дані.stop_reason === "max_tokens")
+    throw new Error("відповідь обрізано об стелю виводу (" + МАКС_ТОКЕНІВ_П
+                    + " токенів) — судити такий образ не можна");
+  return (дані.content||[]).map(б=>б.type==="text"?б.text:"").filter(Boolean).join("\n");
+}
+
+/* ── ПРИМІРЯННЯ: ВОНА В ЦЬОМУ ОБРАЗІ (01.09.2026) ──────────────────────────
+   ТРИ РЕЧІ НА ОБРАЗ, і це третя: повний текст із поясненнями (пише модель на
+   кроці вибору), фото й посилання РЕАЛЬНИХ товарів (з каталогу), і вона сама
+   в цьому образі — на основі фото в повний зріст із профілю.
+
+   ЧОМУ ЦЕ НЕ ОТРУЮЄ ВЕРДИКТ, А ГЕНЕРАЦІЯ ОДЯГУ ОТРУЮВАЛА Б. Судять і далі
+   реальні товарні фото; примірка лише допомагає уявити. Схема вердикта вже
+   несе `та_сама_річ` і `забруднений` — тобто провал «намальовано інше» вже
+   передбачений власником. Тому речі йдуть у модель СВОЇМИ ФОТО, а не описом:
+   опис дав би приблизний одяг, тобто рівно те, що ця колонка ловить.
+
+   ЩО РОБИТЬ, КОЛИ ФОТО ТОВАРУ НЕ ДІСТАЄТЬСЯ. Рендер малює їх через `<img src>`,
+   і це CORS не потребує; читання БАЙТІВ потребує. 46 магазинів — 46 політик.
+   Недоступні речі не мовчать: скільки саме дійшло, пишеться поруч із
+   картинкою, щоб «схоже, але не те» мало пояснення, а не лишалось загадкою. */
+const МОДЕЛЬ_КАРТИНКИ = (function(){
+  try{
+    const h = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+    const м = h.get('модель_картинки');
+    if (м) localStorage.setItem('міст:модель_картинки', м);
+    return м || localStorage.getItem('міст:модель_картинки') || 'gemini-3-pro-image';
+  }catch(_){ return 'gemini-3-pro-image'; }
+})();
+
+function блобВБазу(блоб){
+  return new Promise((рез, від)=>{
+    const ч = new FileReader();
+    ч.onload = ()=>{ const s = String(ч.result); const к = s.indexOf(',');
+      рез({тип: (s.slice(5, s.indexOf(';')) || 'image/jpeg'), дані: s.slice(к+1)}); };
+    ч.onerror = ()=>від(ч.error);
+    ч.readAsDataURL(блоб);
+  });
+}
+
+/* Товарне фото в байти. Провал тут очікуваний і НЕ фатальний: повертаємо null,
+   а лічбу веде той, хто кликав. */
+async function фотоРечіВБазу(url){
+  try{
+    const в = await fetch(url, {mode:'cors'});
+    if (!в.ok) return null;
+    const б = await в.blob();
+    if (!б.type.startsWith('image/')) return null;
+    return await блобВБазу(б);
+  }catch(_){ return null; }
+}
+
+/* ── ДВА РЕЖИМИ, БО ДВА РІЗНІ ОБРАЗИ ──────────────────────────────────────
+   Руки 1 і 2 складають образ із РЕЧЕЙ КАТАЛОГУ — там є чому суперечити, тож
+   малювати з опису означало б показати не ту річ, і колонка `забруднений`
+   ловила б саме це. Руки 3 і 4 каталогу не мають ЗА ПОБУДОВОЮ: їхній образ і
+   Є опис, суперечити нема чому, і приміряння з опису — єдиний можливий та
+   цілком законний шлях. Різниця не в суворості, а в тому, ЩО судять. */
+const ПРИМІРКА_СПІЛЬНЕ = `Зроби ОДНЕ фотореалістичне зображення: ця сама жінка у цьому образі.
+
+Обов'язково:
+— обличчя, статура, зріст і пропорції — ЇЇ, без змін і без «покращення»;
+— рівне денне світло, нейтральне тло, вся постать у кадрі, без обрізання ніг;
+— поза спокійна, фронтальна, руки вільно.`;
+
+const ПРИМІРКА_ЗА_ФОТО = `На першому фото — жінка. Далі — фото речей з магазину.
+` + ПРИМІРКА_СПІЛЬНЕ + `
+— речі — саме ті, що на фото: колір, крій, довжина, фактура, деталі.
+
+ФОТО РЕЧЕЙ ЧАСТО ЗНЯТІ НА МОДЕЛЯХ У ПОВНОМУ ОБРАЗІ. Бери з кожного фото
+ЛИШЕ названу нижче річ; решту одягу, взуття й аксесуарів на тих фото
+ігноруй — вони не належать цьому образу.
+
+Не додавай речей, яких немає у списку. Не міняй колір одягу.
+Якщо якоїсь речі образу серед фото немає — вдягни нейтральне й непомітне
+на її місце, а не вигадуй яскраве.`;
+
+const ПРИМІРКА_ЗА_ОПИСОМ = `На фото — жінка. Нижче — опис образу словами.
+` + ПРИМІРКА_СПІЛЬНЕ + `
+— речі малюй за описом; де опис мовчить, обирай найпростіше й непомітне,
+  а не вигадуй помітне.`;
+
+async function приміряти(поз){
+  const к = П.картки[поз], ст = $('прм-'+поз);
+  if (!к) return;
+  const кн = $('прмк-'+поз); if (кн) кн.disabled = true;
+  ст.textContent = 'Читаю ваше фото…';
+  try{
+    let блоб = null;
+    try{ блоб = await читатиКв(ключФото('зріст')); }catch(_){}
+    if (!блоб){
+      ст.textContent = 'Немає фото в повний зріст — додайте його у профілі.';
+      return;
+    }
+    const її = await блобВБазу(блоб);
+    /* ЯК НОСИТИ — ЧАСТИНА ОБРАЗУ, А НЕ ПРИКРАСА ТЕКСТУ. Рядки «СВІДОМО: …»
+       кажуть, що заправлено, що поверх чого, де закочено. Без них картинка
+       показала б ті самі речі в іншому вигляді — і блок «Як це носити» під
+       нею суперечив би тому, що на ній намальовано. Розбір той самий, що в
+       рендері: одна функція `людською`, не копія. */
+    const [опис, задум] = людською(к.текст || '');
+    const якНосити = задум.length
+      ? '\n\nЯК ЦЕ НОСИТИ — ОБОВ\'ЯЗКОВО ВІДТВОРИ:\n· ' + задум.join('\n· ') : '';
+
+    const зФото = (к.речі || []).filter(р=>р.фото).slice(0, 8);
+    const урли = зФото;                     // лічба спроб — по тих самих речах
+    let зміст, режим;
+    if (!урли.length){
+      /* РУКА БЕЗ КАТАЛОГУ (3 і 4). Речей не існує за побудовою, суперечити
+         нема чому — малюємо за описом, і це чесно. */
+      режим = 'за описом';
+      зміст = [{type:'image', source:{type:'base64', media_type:її.тип, data:її.дані}},
+               {type:'text', text: ПРИМІРКА_ЗА_ОПИСОМ + '\n\nОпис образу:\n' + опис + якНосити}];
+      к.примірка = {речей:0, з:0, режим, модель:МОДЕЛЬ_КАРТИНКИ};
+      ст.textContent = 'Образ без речей каталогу — малюю за описом…';
+    } else {
+      ст.textContent = 'Беру фото речей…';
+      /* ПАРА, А НЕ ДВА СПИСКИ. Нумерація в промпті мусить збігатися з порядком
+         фото до одиниці; два окремі масиви розійшлися б на першому ж
+         недоступному фото, і ші взяла б із фото не ту річ — мовчки. */
+      const речі = [];
+      for (const р of зФото){
+        const ф = await фотоРечіВБазу(р.фото);
+        if (ф) речі.push({ф, р});
+      }
+      if (!речі.length){
+        /* НАЗВАТИ, А НЕ ЗАМОВЧАТИ. Речі Є, але їхніх фото нема: намальоване
+           буде НЕ ними, і вердикт стане про вигадку. Тут малювати з опису —
+           не те саме, що для рук без каталогу: там суперечити нема чому, а
+           тут є, і суперечність буде мовчазною. */
+        ст.textContent = 'Магазини не віддали жодного фото речей (' + урли.length
+          + ' спроб). Намальоване було б НЕ цими речами, а вердикт — про вигадку. '
+          + 'Приміряння скасовано.';
+        return;
+      }
+      режим = 'за фото';
+      /* Список короткий і рівно про те, чого фото не каже: яку саме річ із
+         кадру брати. Решта — крій, посадка, поєднання — уже в описі образу. */
+      const список = речі.map((пара, i) =>
+        'Фото ' + (i+2) + ' — ' + (пара.р.слот || 'річ') + ': '
+        + (пара.р.назва || 'без назви')).join('\n');
+      зміст = [{type:'image', source:{type:'base64', media_type:її.тип, data:її.дані}},
+               ...речі.map(п=>({type:'image', source:{type:'base64', media_type:п.ф.тип, data:п.ф.дані}})),
+               {type:'text', text: ПРИМІРКА_ЗА_ФОТО + '\n\nЩО БРАТИ З КОЖНОГО ФОТО:\n'
+                                 + список + '\n\nОпис образу:\n' + опис + якНосити}];
+      к.примірка = {речей:речі.length, з:урли.length, режим, модель:МОДЕЛЬ_КАРТИНКИ};
+      ст.textContent = 'Модель одягає вас (' + речі.length + ' з ' + урли.length + ' речей)…';
+    }
+
+    const блоки = await модельП_блоки(зміст, МОДЕЛЬ_КАРТИНКИ);
+    малюватиТокениП();
+    const кар = блоки.find(б=>б.type === 'image');
+    if (!кар){
+      const т = (блоки.find(б=>б.type==='text')||{}).text || '';
+      ст.textContent = 'Модель не віддала картинку' + (т ? ': ' + т.slice(0,160) : '.');
+      к.примірка = null;
+      return;
+    }
+    к.картинка = 'data:' + кар.source.media_type + ';base64,' + кар.source.data;
+    полотно(поз);
+    ст.textContent = (режим === 'за описом'
+        ? 'Готово · намальовано за описом: речей каталогу в цьому образі нема'
+        : ('Готово · речей на картинці: ' + к.примірка.речей + ' з ' + к.примірка.з
+           + (к.примірка.речей < к.примірка.з
+              ? ' — решту магазини не віддали, їх домальовано приблизно' : '')))
+      + (задум.length ? ' · «як носити» враховано' : '');
+  }catch(e){
+    ст.textContent = 'Приміряння впало: ' + String(e).slice(0,200);
+  }finally{ if (кн) кн.disabled = false; }
+}
+
+
+const МОДУЛІ_ПОКАЗУ = "__МОДУЛІ_ПОКАЗУ__";
+const ЗБІРКА_ПОКАЗУ = "__ЗБІРКА_ПОКАЗУ__";
+const ВІДБИТОК_ПОКАЗУ = "__ВІДБИТОК__";
+const ГАМИ = ['приглушені', 'середні', 'насичені'];
+const ДЗЕРКАЛА_П = [['jsdelivr', 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/']];
+const СТОРОЖ_П = 150000;
+let pyodideП = null, ПАЛІТРА = null;
+/* `смуга` — ЩО ПОКАЗАНО, `вибір_кольору.насиченість` — ЩО ОБРАНО. Ґратка основ
+   має 120 клітинок у трьох смугах хроми; показати всі три одночасно означає
+   стіну чипів. Ряд «Гама» став перемикачем смуги: видно ~40 замість 120. */
+let ВИБІР = { гілка: null, вибір_кольору: null, смуга: 'середні' };
+
+/* Сторож міряє ТИШУ, не стіну часу — 12 МБ комплекту на повільній мережі
+   легально йдуть довше за будь-який плаский тайм-аут. Правило й числа взяті
+   зі стенда, де вони вже виміряні (зонд 28.08.2026). */
+window.ОСТАННІЙ_РУХ_П = Date.now();
+(function(){
+  const _f = window.fetch;
+  window.fetch = function(){ window.ОСТАННІЙ_РУХ_П = Date.now();
+    return _f.apply(this, arguments).finally(()=>{ window.ОСТАННІЙ_РУХ_П = Date.now(); }); };
+})();
+
+async function підняти_pyodide_показу(){
+  if (typeof loadPyodide !== 'function')
+    throw new Error('завантажувач pyodide.js не піднявся');
+  const біди = [];
+  for (const [ім, база] of ДЗЕРКАЛА_П){
+    $('пал-стан').textContent = 'Завантажую кольорову математику з ' + ім
+      + '… разово, до хвилини (зрив лише після ' + (СТОРОЖ_П/1000) + ' с тиші).';
+    let крок = 0;
+    try{
+      return await Promise.race([
+        loadPyodide({indexURL: база}),
+        new Promise((_, від)=>{
+          window.ОСТАННІЙ_РУХ_П = Date.now();
+          крок = setInterval(()=>{
+            const тиша = Date.now() - window.ОСТАННІЙ_РУХ_П;
+            if (тиша > СТОРОЖ_П) від(new Error('тиша ' + Math.round(тиша/1000) + ' с — проміс завис'));
+          }, 5000);
+        })
+      ]);
+    }catch(e){ біди.push(ім + ' → ' + String(e).slice(0,140)); }
+    finally{ if (крок) clearInterval(крок); }
+  }
+  throw new Error('дзеркало не піднялось: ' + біди.join(' ;; '));
+}
+
+async function підняти_міст_показу(){
+  if (pyodideП) return pyodideП;
+  pyodideП = await підняти_pyodide_показу();
+  $('пал-стан').textContent = 'Розпаковую модулі (' + ЗБІРКА_ПОКАЗУ + ')…';
+  const бін = Uint8Array.from(atob(МОДУЛІ_ПОКАЗУ), c=>c.charCodeAt(0));
+  pyodideП.unpackArchive(бін.buffer, 'zip', {extractDir: '/показ'});
+  /* `feed` у вантаж не входить — його тут і не патчимо, на відміну від стенда:
+     палітра речей не торкається, тож мережі їй не треба в принципі. */
+  await pyodideП.runPythonAsync(
+    'import sys, os\n' +
+    'sys.path.insert(0, "/показ"); os.chdir("/показ")\n' +
+    'import bridge\n');
+  return pyodideП;
+}
+
+async function містП(ім, дані){
+  await підняти_міст_показу();
+  const вих = await pyodideП.runPythonAsync(
+    'import json, bridge\n' +
+    'bridge.виклик(' + JSON.stringify(ім) + ', json.loads(' + JSON.stringify(JSON.stringify(дані)) + '))');
+  return typeof вих === 'string' ? JSON.parse(вих) : вих;
+}
+
+/* ── ОРКЕСТРУВАННЯ: ПОКАЗ ЗБИРАЄ ОБРАЗИ САМ (01.09.2026) ───────────────────
+   Перенесено зі стенда. Цикл, а не один виклик: код добирає кандидатів у
+   слоти → модель складає ОБРАЗІВ_ПЕРШОЇ різних образів → код судить кожен і
+   віддає слабкі місця → модель допрацьовує найперспективніші → код судить ще
+   раз → модель обирає один і описує його для людини.
+
+   JS ТУТ НІЧОГО НЕ РОЗБИРАЄ. Ні id, ні hex, ні пар «#412·29» — усе це робить
+   Python через `містП("від_моделі")`. Ця функція лише веде чергу викликів і
+   складає картки. Саме тому перенос виявився можливим: переносилась петля, а
+   не знання про формат.
+
+   ЧОМУ ЧИСЛА ТАКІ. ОБРАЗІВ_ПЕРШОЇ = 10: п'ять образів беруть задум зі словника
+   полюсів, п'ять вигадує модель сама й підписує. РЕМОНТ_ДРУГОЇ = 5: друга
+   ітерація вужча, але не обрив — 2 з 10 відкидали б 80 % на підставі першого
+   проходу коду. Обидва числа фольклорні: лійка 10 → 5 → 1 не калібрована. */
+const БЮДЖЕТ_СИМВОЛІВ_П = 120000;
+const ОБРАЗІВ_ПЕРШОЇ_П  = 10;
+const РЕМОНТ_ДРУГОЇ_П   = 5;
+const КАТАЛОГ_П = "каталог_повний.xml";   // ім'я, під яким вантаж несе фід
+
+function перемішатиП(а, сід){ let s=сід; const б=[...а];
+  for(let i=б.length-1;i>0;i--){ s=(s*9301+49297)%233280; const j=(s/233280*(i+1))|0; [б[i],б[j]]=[б[j],б[i]]; } return б; }
+
+let ЗБ = null;   // стан збирання: {картки, стадії, діагноз, ключ, готово}
+
+function малюватиПоступП(){
+  const e = $('зб-поступ'); if (!e || !ЗБ) return;
+  e.textContent = ЗБ.стадії.map((с,i)=>{
+    const к = ЗБ.картки[i];
+    return 'варіант ' + (i+1) + ': ' + (к ? '✓ готово' : (с || 'чекає…'));
+  }).join('\n');
+}
+function малюватиТокениП(){
+  const e = $('зб-токени'); if (!e) return;
+  const т = ТОКЕНИ_П;
+  e.textContent = т.викликів
+    ? ('цей прогін: ' + т.викликів + ' виклик(ів) моделі · вхід '
+       + т.вхід.toLocaleString('uk') + ' · вихід ' + т.вихід.toLocaleString('uk')
+       + ' · разом ' + (т.вхід+т.вихід).toLocaleString('uk') + ' токенів')
+    : '';
+}
+
+/* Переклад пакета ВХІД-V1 у плаский вхід моста. Той самий контракт, що в
+   стенді: поля мусять збігатись до літери, бо їх читає той самий Python. */
+function вхідМостаП(){
+  const п = зібратиВхід();
+  const с = п.сценарій || {}, м = п.мірки || {}, к = п.колір || {};
+  const слова = (п.слова || '').trim();
+  const пал = п.палітра || {};
+  return {шкіра: к.шкіра, волосся: к.волосся, очі: к.очі,
+          очі_кільце: к.кільце || null,
+          зріст: м.зріст || 167, обхвати: м.обхвати || {},
+          вимоги: '', намір: 'conventional',
+          /* НЕ ОБРАНЕ НЕ ШЛЕТЬСЯ: `гілка` і `вибір_кольору` їдуть у міст лише
+             після дотику. Інакше журнал не відрізнив би «не обирала» від
+             «обрала те саме, що радив код» — це різні твердження. */
+          ...(пал.гілка == null ? {} : {гілка: пал.гілка}),
+          ...(пал.вибір_кольору ? {вибір_кольору: пал.вибір_кольору} : {}),
+          бюджет_символів: БЮДЖЕТ_СИМВОЛІВ_П,
+          ...(п.драп ? {драп_сирий: п.драп} : {}),
+          без_фото: 1,
+          сценарій: с, сід: (Math.random()*1e6)|0,
+          випадок: [слова || людяно(с.нагода), с.місце ? людяно(с.місце) : null,
+                    с.дрес_код ? людяно(с.дрес_код) : null,
+                    (с.година != null ? String(с.година).padStart(2,'0')+':00' : null),
+                    (с.темп_c != null ? с.темп_c+' °C' : null)].filter(Boolean).join(', '),
+          варіантів: ОБРАЗІВ_ПЕРШОЇ_П, ремонт_варіантів: РЕМОНТ_ДРУГОЇ_П,
+          каталог: КАТАЛОГ_П, кеш_кольорів: 'кеш.json'};
+}
+
+async function зібратиОбразиП(){
+  const ст = $('зб-статус'), кн = $('н-далі');
+  const почато = Date.now();
+  кн.disabled = true;
+  ЗБ = {картки:[null,null,null,null], стадії:['','','',''], діагноз:[], ключ:null};
+  ТОКЕНИ_П = {вхід:0, вихід:0, викликів:0}; малюватиТокениП();
+  try{
+    ст.textContent = 'Піднімаю Python і збираю кандидатів…';
+    const вх = вхідМостаП();
+    const r = await містП('запити', вх);
+    if (r.помилка) throw new Error(r.помилка);
+    ЗБ.ключ = перемішатиП(['1','2','3','4'], вх.сід);
+    const мітки = r.правила_рук || {};
+    const мапаМіток = {'1': мітки.B||[], '2': мітки.C||[], '3': [], '4': []};
+    const пул = (r.стеля ? ('K='+r.стеля.K) : 'повний') + ':' + (r.пул_речей ?? '?')
+              + '/бюджет' + БЮДЖЕТ_СИМВОЛІВ_П;
+    /* ЧИ ПРОМПТ ВЗАГАЛІ ПРОСИТЬ ФОРМАТ. Умова N-блочного формату одна:
+       `варіантів > 1 AND каталог`. Коли вона не виконана, модель дістає прозовий
+       промпт і чесно пише прозу — а виглядає це як «модель не слухається».
+       Питаємо промпт ДО того, як витрачати виклик. */
+    if (!String((r.руки||{})['1']||'').includes('ОБРАЗ:'))
+      ЗБ.діагноз.push('промпт руки 1 НЕ просить формат «ОБРАЗ:» — варіантів='
+        + JSON.stringify(вх.варіантів) + ' каталог=' + JSON.stringify(вх.каталог)
+        + ' довжина=' + String((r.руки||{})['1']||'').length);
+    if (r.пул_чому) ЗБ.діагноз.push('ПУЛ НЕ ЗІБРАВСЯ: ' + r.пул_чому);
+
+    ст.textContent = 'Збираю чотири варіанти одночасно…';
+    малюватиПоступП();
+    const однаРука = async (поз) => {
+      const рука = ЗБ.ключ[поз], донор = (рука === '2');
+      let текст, в, ітерацій = 0, викликів = 0;
+      const мітка = т => { ЗБ.стадії[поз] = т; малюватиПоступП(); };
+      try{
+        мітка('модель складає ' + ОБРАЗІВ_ПЕРШОЇ_П + ' образів…');
+        викликів += 1;
+        текст = await модельП(r.руки[рука], null);
+        малюватиТокениП();
+        в = await містП('від_моделі', {...вх, донор, текст_моделі:текст});
+        if ((рука === '1' || рука === '2') && !((в.образи||[]).length))
+          ЗБ.діагноз.push('рука ' + рука + ': «ОБРАЗ:» не знайдено. Модель відповіла: «'
+            + String(текст||'').replace(/\s+/g,' ').slice(0,220) + '…»');
+        /* ІТЕРАЦІЯ 2. Умова `образи.length > 1` не косметична: на одному образі
+           промпт ремонту виродився б у «обери з одного» — зайвий виклик у чергу
+           тестувальниці. Руки 3 і 4 сюди не заходять: id у них нема. */
+        if (в.промпт_ремонту && (в.образи||[]).length > 1){
+          мітка('код перевірив; модель допрацьовує найкращі…');
+          викликів += 1;
+          const т2 = await модельП(в.промпт_ремонту, null); малюватиТокениП();
+          const в2 = await містП('від_моделі', {...вх, донор, текст_моделі:т2});
+          if ((в2.образи||[]).length){ текст = т2; в = в2; ітерацій = 1; }
+        }
+        /* ВИБІР І ОПИС. Перші дві ітерації просять «без будь-якої іншої прози» —
+           на екрані це були б голі рядки «ОБРАЗ: id, id». Опис для людини
+           пишеться лише тут, тому крок робиться навіть коли ремонт не вийшов. */
+        if (в.промпт_вибору && (в.образи||[]).length){
+          мітка('модель обирає один образ і описує його…');
+          викликів += 1;
+          const т3 = await модельП(в.промпт_вибору, null); малюватиТокениП();
+          const в3 = await містП('від_моделі', {...вх, донор, текст_моделі:т3});
+          if (в3.перевірено !== false){ текст = т3; в = в3; ітерацій += 1; }
+        }
+        /* СТАРИЙ ШЛЯХ ДЛЯ РУК БЕЗ КАТАЛОГУ. `ітерацій === 0` означає, що циклу
+           не було. Викидати його не можна: він єдиний тримає руки 3 і 4. */
+        if (!ітерацій){
+          const зауваження = [...(в.блокує||[]),
+            ...((((в.мова||{}).порушення)||[]).map(п=>п.суть||п.фрагмент||''))].filter(Boolean);
+          if (зауваження.length){
+            мітка('код знайшов зауваження, модель переписує…');
+            викликів += 1;
+            текст = await модельП(r.руки[рука]
+              + '\n\nЗАУВАЖЕННЯ до твоєї попередньої відповіді — перепиши образ, виправивши КОЖНЕ:\n· '
+              + зауваження.join('\n· ') + '\n\nПопередня відповідь:\n' + текст, null);
+            малюватиТокениП();
+            в = await містП('від_моделі', {...вх, донор, текст_моделі:текст});
+          }
+        }
+      }catch(e){ текст = '⚠ збій цього варіанта: ' + String(e).slice(0,220);
+                 в = {перевірено:false}; }
+      /* КАРТКА В ТОМУ САМОМУ КОНТРАКТІ, ЯКИЙ ЧИТАЄ `рендер`: дев'ять полів.
+         Речі беруться з моста тим самим викликом, що й у стенді, — інакше
+         тестувальниця побачила б id замість фото. */
+      let речі = [];
+      try{
+        const сирі = (в.образ_ші || в.речі || []).map(x=>x.id||x).filter(Boolean);
+        if (сирі.length) речі = await містП('показ', {...вх, речі:сирі});
+      }catch(_){}
+      ЗБ.картки[поз] = {
+        рука, текст: текст || '', речі, ітерацій,
+        мітки: мапаМіток[рука] || [],
+        палітра: в.палітра || null,
+        модель: МОДЕЛЬ_П,
+        знахідки: (в.знахідки || []).slice(0,12).map(з=>({правило:з.правило, сила:з.сила_нп})),
+      };
+      ЗБ.стадії[поз] = ''; малюватиПоступП();
+    };
+    /* СТАРТИ РОЗНЕСЕНО НА 1.5 с. Паралельність лишається, але чотири однакові
+       запити в ту саму мілісекунду — це те, що ліміт частоти бачить як сплеск.
+       4.5 с витрати проти ~25 с економії від самої паралельності. */
+    await Promise.all([0,1,2,3].map(async поз => {
+      if (поз) await new Promise(р=>setTimeout(р, поз*1500));
+      return однаРука(поз);
+    }));
+
+    /* ── ШОВ. Тут збирання закінчується тим самим об'єктом, який показ доти
+       діставав фрагментом із чужого вікна. Далі — той самий `рендер`. */
+    П = {в:'ПОКАЗ-V1', збірка:ЗБІРКА_ПОКАЗУ, каталог:КАТАЛОГ_П,
+         профіль:((вх.імʼя||'безіменна')),
+         розклад:(ЗБ.ключ||[]).join(''),
+         токени:ТОКЕНИ_П, пул, модель:МОДЕЛЬ_П,
+         палітра:{база:(вх.вибір_кольору||{}).база||null,
+                  база_обрана:!!((вх.вибір_кольору||{}).база),
+                  насиченість:(вх.вибір_кольору||{}).насиченість||null,
+                  гілка:(вх.гілка == null ? null : вх.гілка),
+                  схема_обрана:(вх.гілка != null)},
+         картки: ЗБ.картки.filter(Boolean)};
+    const секунд = Math.round((Date.now()-почато)/1000);
+    ст.textContent = 'Готово за ' + секунд + ' с. Прогорніть до образів.'
+      + (ЗБ.діагноз.length ? '\n⚠ ' + ЗБ.діагноз.join('\n⚠ ') : '');
+    ЗБ.готово = true;
+    рендер();
+    const кк = $('картки'); if (кк) кк.scrollIntoView({behavior:'smooth'});
+  }catch(e){
+    ст.textContent = 'Збирання впало: ' + String(e).slice(0,300);
+    console.error(e);
+  }finally{ кн.disabled = false; }
+}
+
+
+/* ── ВХІД РОЗВИЛКИ: ТЕ САМЕ, ЩО ПОКАЗ УЖЕ ЗІБРАВ ─────────────────────────── */
+function вхідПалітри(){
+  const об = {};
+  for (const [ід, к] of [['мр-плечі','плечі'],['мр-груди','груди'],
+                         ['мр-талія','талія'],['мр-стегна','стегна']]){
+    const v = parseFloat($(ід).value); if (v) об[к] = v;
+  }
+  return {
+    шкіра: (КОЛІР.точки||{}).шкіра || [КОЛІР.шкіра], волосся: (КОЛІР.точки||{}).волосся || [КОЛІР.волосся],
+    очі: КОЛІР.очі, очі_кільце: КОЛІР.кільце || null,
+    зріст: parseFloat($('мр-зріст').value) || 167, обхвати: об,
+    намір: 'conventional', без_фото: 1,
+    драп_сирий: {білий: ДРАП.білий, метал: ДРАП.метал, нейтралі: ДРАП.нейтралі, барви: ДРАП.барви},
+    ...(ВИБІР.гілка == null ? {} : {гілка: ВИБІР.гілка}),
+    ...(ВИБІР.вибір_кольору ? {вибір_кольору: ВИБІР.вибір_кольору} : {})
+  };
+}
+
+const ch_L = x => parseInt(x, 10) || 50;
+function чипП(текст, обрано, дія, зразки){
+  const ч = document.createElement('span');
+  ч.className = 'чип' + (обрано ? ' вибр' : '');
+  const сп = (Array.isArray(зразки) ? зразки : (зразки ? [зразки] : [])).filter(Boolean);
+  сп.forEach((з, i)=>{
+    const к = document.createElement('span');
+    к.style.cssText = 'display:inline-block;width:11px;height:11px;'
+      + 'border-radius:' + (сп.length === 1 ? '3px' : (i === 0 ? '3px 0 0 3px'
+          : (i === сп.length - 1 ? '0 3px 3px 0' : '0')))
+      + ';vertical-align:-1px;border:1px solid rgba(0,0,0,.25);'
+      + (i ? 'border-left:none;' : '')
+      + (i === сп.length - 1 ? 'margin-right:6px;' : '')
+      + 'background:' + з;
+    ч.appendChild(к);
+  });
+  ч.appendChild(document.createTextNode(текст));
+  ч.onclick = дія;
+  return ч;
+}
+
+async function оновитиПалітруП(){
+  const ст = $('пал-стан');
+  try{
+    const р = await містП('палітри', вхідПалітри());
+    if (р.помилка){ ст.textContent = 'розвилка не порахувалась: ' + р.помилка; return; }
+    ПАЛІТРА = р;
+    const вк = ВИБІР.вибір_кольору || р.вибір_кольору || {};
+    const об = !!(ВИБІР.вибір_кольору && ВИБІР.вибір_кольору.база);
+    const ог = ВИБІР.гілка != null;
+    const он = !!(ВИБІР.вибір_кольору && ВИБІР.вибір_кольору.насиченість);
+    const зняти = к => {
+      const в = Object.assign({}, ВИБІР.вибір_кольору); delete в[к];
+      delete в.база_hex; delete в.база_тип;
+      ВИБІР.вибір_кольору = Object.keys(в).length ? в : null;
+    };
+    const го = $('пал-основа'); го.innerHTML = '';
+    го.appendChild(чипП('хай вирішує ші', !об, ()=>{ зняти('база'); оновитиПалітруП(); }));
+    const дод = о => {
+      const деф = !об && вк.база === о.ключ;
+      const ч = String(о.ключ||'').split('\u00b7');
+      const мітка = (о.назва || ч[0]) + (ч[2] ? (+ch_L(ч[2]) >= 68 ? ' світлий' : +ch_L(ч[2]) <= 32 ? ' темний' : '') : '');
+      го.appendChild(чипП(мітка + (деф ? ' ← радить код' : ''), об && вк.база === о.ключ, ()=>{
+        ВИБІР.вибір_кольору = Object.assign({}, ВИБІР.вибір_кольору, {
+          база: о.ключ, база_hex: о.hex,
+          база_тип: (о.осі && о.осі.Cstar < 8) ? 'нейтраль' : 'колір'});
+        оновитиПалітруП();
+      }, о.hex));
+    };
+    /* ── ДВІ ГРУПИ, А НЕ ОДИН РЯД (01.09.2026, друга редакція) ──────────────
+       Перша редакція малювала `рекомендовані` пласким рядом — і структура, яку
+       код будує навмисне, зникала. Виміряно: бали в тому ряду НЕ спадають
+       (0.707 0.704 0.636 0.626 0.623 0.620 │ 0.647 0.644 …), бо ряд це
+       `нейтралі[:N] + кольори[:M]`: дві групи, кожна відсортована окремо.
+       `за_родом` пояснює чому — нейтраль іде в найбільшу річ, колір стає
+       акцентом, і ранжувати їх в одному списку означає порівнювати те, що не
+       конкурує. Плаский ряд показував стрибок балу без жодної позначки.
+       ЩЕ ОДНА ОМАНА ЗВІДТИ Ж. Відсічка робиться ВСЕРЕДИНІ групи, тож найнижчий
+       рекомендований (0.620) стоїть НИЖЧЕ за найвищий нерекомендований (0.630).
+       Підпис «рекомендовані / не радить» читався як «усе вище лінії краще» — а
+       це неправда, і тепер це сказано словами під рядами. */
+    const підп = текст => {
+      const м = document.createElement('div');
+      м.className = 'підказка'; м.style.cssText = 'width:100%;margin:8px 0 2px';
+      м.textContent = текст; го.appendChild(м);
+    };
+    /* ФІЛЬТР ЗА СМУГОЮ ХРОМИ. Ключ клітинки — «назва·температура·світлота·смуга»,
+       тож перемикач ряду «Гама» відсікає інші смуги. Нейтраль присутня в кожній
+       смузі за побудовою, тож чорний і білий не зникають на «насичених». */
+    const у_смузі = сп => (сп||[]).filter(о => String(о.ключ||'').endsWith('\u00b7' + ВИБІР.смуга));
+    const нейтр = у_смузі((р.основи||{}).нейтралі);
+    const кольор = у_смузі((р.основи||{}).кольори);
+    if (нейтр.length){ підп('нейтралі — під найбільшу річ образу:'); нейтр.forEach(дод); }
+    if (кольор.length){ підп('кольори — під акцент:'); кольор.forEach(дод); }
+    /* «Інші» НІКОЛИ не ховаються — записане рішення `bases.py`: ранг основ це
+       T3-конвенція, а не вимір, бо золотого набору «людина × колір» не існує. */
+    const інші = у_смузі((р.основи||{}).інші);
+    if (інші.length){
+      підп('код їх не радить — але вони законні. Відсічка рахується окремо '
+           + 'серед нейтралей і окремо серед кольорів, тож тут може стояти '
+           + 'колір із вищим балом, ніж у рекомендованої нейтралі:');
+      інші.forEach(дод);
+    }
+    const гс = $('пал-схема'); гс.innerHTML = '';
+    гс.appendChild(чипП('хай вирішує ші', !ог, ()=>{ ВИБІР.гілка = null; оновитиПалітруП(); }));
+    (р.гілки||[]).forEach(г=>{
+      const зр = ['низ','взуття','сумка']
+        .map(с=>((г.ролі||[]).find(х=>х.слот===с)||{}).зразок).filter(Boolean);
+      гс.appendChild(чипП(String(г.схема).replace(/_/g,' ') + ' · ' + String(г.вага||'').replace(/_/g,' '),
+        ог && ВИБІР.гілка === г.і, ()=>{ ВИБІР.гілка = г.і; оновитиПалітруП(); }, зр));
+    });
+    const гг = $('пал-гама'); гг.innerHTML = '';
+    гг.appendChild(чипП('хай вирішує ші', !он, ()=>{ зняти('насиченість'); оновитиПалітруП(); }));
+    ГАМИ.forEach(г=>гг.appendChild(чипП(г, ВИБІР.смуга === г, ()=>{
+      ВИБІР.смуга = г;                                   // що показано
+      ВИБІР.вибір_кольору = Object.assign({}, ВИБІР.вибір_кольору, {насиченість: г});
+      оновитиПалітруП();
+    })));
+    const _г = (р.гілки||[]).find(г=>г.і === (ВИБІР.гілка||0)) || {};
+    ст.textContent = 'Палітра: ' + (об ? вк.база : (вк.база||'?') + ' (код)')
+      + ' · ' + (ог ? String(_г.схема).replace(/_/g,' ') : 'обирає ші')
+      + ' · ' + (он ? вк.насиченість : 'середні (код)');
+    $('пал-нота').textContent = !ог
+      ? ('схему обирає ші з усіх ' + (р.гілки||[]).length + ' законних для вашого колориту')
+      : ((_г.застереження && _г.застереження !== '—') ? ('⚠ ' + _г.застереження) : (_г.коли || ''));
+  }catch(e){
+    ст.textContent = 'розвилка не порахувалась: ' + String(e).slice(0,200);
+  }
+}
+
+window.addEventListener('hashchange', старт);
+старт();
+</script>
+</body>
+</html>
