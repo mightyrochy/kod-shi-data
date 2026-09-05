@@ -1,0 +1,121 @@
+# Жниварка на серверах GitHub — без ноутбука. Запуск із телефона: репозиторій → Actions → «жниварка»
+# → Run workflow → режим → Run. Результат комітиться в zhnyvarka/жнива_проба/ (проба) або zhnyvarka/жнива/ (повний).
+# Джерела беруться з zhnyvarka/ (та сама тека, з якої оновлюється ноутбук). Кореневий каталог_повний.xml не чіпається.
+name: жниварка
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "проба (3 картки з магазину, ~10 хв) чи повний (до 6 год, 6 паралельних завдань)"
+        type: choice
+        options: [проба, повний]
+        default: проба
+      shops:
+        description: "усі — або домени через кому, напр. gepur.com,vovk.com"
+        type: string
+        default: усі
+      cap:
+        description: "стеля карток на магазин (повний)"
+        type: string
+        default: "2500"
+      groups:
+        description: "паралельних завдань 1–8"
+        type: string
+        default: "6"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: zhnyvarka
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      groups: ${{ steps.g.outputs.groups }}
+    steps:
+      - id: g
+        run: |
+          n="${{ inputs.groups }}"; case "$n" in ''|*[!0-9]*) n=6;; esac
+          if [ "${{ inputs.mode }}" = "проба" ]; then n=1; fi
+          echo "groups=$(python3 -c "import json,sys;n=int(sys.argv[1]);print(json.dumps(['%d/%d'%(i,n) for i in range(1,n+1)]))" "$n")" >> "$GITHUB_OUTPUT"
+
+  harvest:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        group: ${{ fromJSON(needs.plan.outputs.groups) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet requests beautifulsoup4 lxml
+      - name: жнива
+        working-directory: zhnyvarka
+        run: |
+          set -o pipefail
+          if [ "${{ inputs.mode }}" = "повний" ]; then
+            python3 жниварка.py --режим повний --магазини "${{ inputs.shops }}" --група "${{ matrix.group }}" \
+              --стеля "${{ inputs.cap }}" --потоки 4 --фото-кожен 5 --дедлайн-хвилин 320 --вихід жнива_тимч 2>&1 | tee лог_жнив.txt
+          else
+            python3 жниварка.py --режим проба --стеля 3 --магазини "${{ inputs.shops }}" --група "${{ matrix.group }}" \
+              --потоки 4 --вихід жнива_проба 2>&1 | tee лог_жнив.txt
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zhnyva-${{ strategy.job-index }}
+          path: |
+            zhnyvarka/жнива_сирі/
+            zhnyvarka/лог_жнив.txt
+          if-no-files-found: warn
+          retention-days: 30
+
+  assemble:
+    needs: harvest
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: zhnyva-*
+          path: зібране
+          merge-multiple: true
+      - name: злиття
+        working-directory: zhnyvarka
+        run: |
+          set -e
+          mkdir -p жнива_сирі
+          ls -R ../зібране | head -50 || true
+          if [ "${{ inputs.mode }}" = "повний" ]; then
+            cp -f ../зібране/zhnyvarka/жнива_сирі/*.json.gz жнива_сирі/ 2>/dev/null || true
+            OUT=жнива; SRC=жнива_сирі
+          else
+            OUT=жнива_проба; SRC=../зібране/zhnyvarka/жнива_сирі
+          fi
+          cp -f ../зібране/zhnyvarka/лог_жнив.txt лог_жнив.txt 2>/dev/null || true
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+          python3 жниварка.py --зібрати --сирі "$SRC" --вихід "$OUT"
+          cp -f лог_жнив.txt "$OUT/лог_жнив.txt" 2>/dev/null || true
+          echo "=== $OUT/звіт_жнив.md ==="; head -80 "$OUT/звіт_жнив.md"
+      - name: коміт результату
+        run: |
+          set -e
+          git config user.name "жниварка"
+          git config user.email "zhnyvarka@users.noreply.github.com"
+          git add "zhnyvarka/$OUT"
+          if [ "${{ inputs.mode }}" = "повний" ]; then git add zhnyvarka/жнива_сирі; fi
+          git commit -m "жнива: ${{ inputs.mode }} · ${{ inputs.shops }} · $(date -u +%Y-%m-%d\ %H:%M)" || echo "нема що комітити"
+          git pull --rebase origin HEAD || true
+          git push
+          
