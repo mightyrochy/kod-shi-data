@@ -111,7 +111,7 @@ try:
 except ImportError:                                   # noqa
     ПАРСЕР_HTML = "html.parser"                        # повільніше, але картки читаються; звіт це назве
 
-ВЕРСІЯ = "жниварка v3.2 · 2026-09-06"
+ВЕРСІЯ = "жниварка v3.8 · 2026-09-06"
 # ЛИШЕ ASCII: HTTP-заголовки кодуються latin-1; кирилиця тут поклала 62/62 магазини 05.09
 # (UnicodeEncodeError до першого байта в мережу). Гейт: assert нижче + мережевий тест.
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -302,7 +302,7 @@ class Транспорт:
             self.статистика[домен]["браузер:помилка"] += 1
             return None
 
-    def get(self, url, тип="text", ліміт=6_000_000, повтори=3, заголовки=None, _вже_браузером=False):
+    def get(self, url, тип="text", ліміт=6_000_000, повтори=2, заголовки=None, _вже_браузером=False, секунд=25):
         """→ dict(код, тіло, url, ctype, заслон, помилка). Тіло — str для text, bytes для bytes."""
         домен = urlparse(url).netloc
         if self.підміна is not None:
@@ -322,23 +322,26 @@ class Транспорт:
         for спроба in range(повтори):
             self._зачекати(домен)
             try:
-                r = self.сесія.get(url, timeout=(10, 30), stream=True, allow_redirects=True,
+                початок = time.time()
+                r = self.сесія.get(url, timeout=(6, 15), stream=True, allow_redirects=True,
                                    headers=заголовки or {})
                 код = r.status_code
                 ctype = (r.headers.get("Content-Type") or "").lower()
-                шматки, обсяг = [], 0
+                шматки, обсяг, обірвано = [], 0, False
                 for ш in r.iter_content(65536):
                     шматки.append(ш); обсяг += len(ш)
                     if обсяг > ліміт:
                         break
+                    if time.time() - початок > секунд:   # таймаут читання рахує ЧАНКИ, не весь файл:
+                        обірвано = True; break           # повільний потік на 30 МБ ішов ~50 хв (06.09)
                 r.close()
                 тіло = b"".join(шматки)
                 self.статистика[домен][код] += 1
                 if код in (429, 503, 502, 520, 521, 522, 524):
                     self.поспіль_помилок[домен] += 1
-                    if спроба < повтори - 1 and self.поспіль_помилок[домен] < 6:
-                        self.лог("  ⏸ %s → %s, відпочинок %d с" % (url[:70], код, 15 * (спроба + 1)))
-                        time.sleep(15 * (спроба + 1)); continue
+                    if спроба < повтори - 1 and self.поспіль_помилок[домен] < 4:
+                        self.лог("  ⏸ %s → %s, відпочинок %d с" % (url[:70], код, 4 * (спроба + 1)))
+                        time.sleep(4 * (спроба + 1)); continue
                     return dict(код=код, тіло=None, url=r.url, ctype=ctype, заслон=False, помилка="HTTP %s" % код)
                 if код < 400:
                     self.поспіль_помилок[домен] = 0
@@ -361,6 +364,8 @@ class Транспорт:
                             continue
                     if текст is None:
                         текст = тіло.decode("utf-8", "replace")
+                if обірвано:
+                    self.статистика[домен]["обірвано за часом"] += 1
                 заслон = код in (403, 503, 429) and bool(_ЗАСЛОН.search((текст or тіло.decode("utf-8", "replace"))[:5000]))
                 if (заслон or код == 403) and self.браузер is not None and not _вже_браузером:
                     друга = self._браузером(url, тип, ліміт, заголовки)
@@ -371,9 +376,9 @@ class Транспорт:
             except Exception as e:                                 # noqa
                 помилка = "%s: %s" % (type(e).__name__, str(e)[:120])
                 self.статистика[домен]["помилка"] += 1; self.поспіль_помилок[домен] += 1
-                if self.поспіль_помилок[домен] >= 6:
+                if self.поспіль_помилок[домен] >= 4:
                     break                                          # сервер/мережа мовчать підряд — не чекати далі
-                time.sleep(2 * (спроба + 1))
+                time.sleep(1.5 * (спроба + 1))
         return dict(код=0, тіло=None, url=url, ctype="", заслон=False, помилка=помилка)
 
     def head_фото(self, url, referer=None):
@@ -606,8 +611,12 @@ _НЕ_КАРТКА = re.compile(r"/(blog|news|novyny|article|articles|stat|statt
                         r"delivery-and-payment|dostavka-i-oplata|help|support|shipping|"
                         r"public-offer|publichna|oferta|look-?book|black-friday|chorna-pjatnycia|"
                         r"cdn-cgi|email-protection|loyal|cashback|keshbek|sertifikat|podarunk|"
-                        r"garanti|harant|policy|polityk|otzyv|vidhuk|feedback|poshuk|porivn)(/|$)", re.I)
+                        r"garanti|harant|policy|polityk|otzyv|vidhuk|feedback|poshuk|porivn|"
+                        r"look-?details|look-?book|obrazy|idei|blog-?post|f)(/|$)", re.I)
 # службові файли й порожні шляхи, що трапилися в мапах 06.09 (devari .css, vmma .png, morandi %-URL)
+# Фасетна адреса лістингу (favoriteshoes: /tufli/f/material-leather-and-type-loafers) — це фільтр,
+# а не річ: у ній два+ ознаки, зшиті «-and-», або сегмент /f/ чи /filter/.
+_ФАСЕТНА_АДРЕСА = re.compile(r"/f/|/filter/|/filters/|-and-type-|-and-color-|-and-material-|-and-size-", re.I)
 _СЛУЖБОВЕ = re.compile(r"\.(css|js|png|jpe?g|webp|gif|svg|pdf|ico|xml|json|zip|mp4|woff2?|ttf)(\?|$)|"
                        r"/catalog/view/|/image/(cache|catalog)/|/wp-content/|/wp-json/|/assets?/|/static/", re.I)
 
@@ -617,18 +626,21 @@ def _не_наша_мова(url):
     return any(шлях.startswith(п) for п in _МОВНІ_ПРЕФІКСИ) or "/ru/" in шлях
 
 
-def мапа_сайту(транспорт, база, robots, лог, стеля_файлів=40):
+def мапа_сайту(транспорт, база, robots, лог, стеля_файлів=8, треба_карток=1500, секунд=90):
     """П11: URL карток із карт сайту. Повертає (список url, дiагностика)."""
     старт = list(dict.fromkeys(robots.get("sitemaps") or [])) or \
             [urljoin(база, p) for p in ("/sitemap.xml", "/sitemap_index.xml", "/sitemap-index.xml", "/sitemap.xml.gz", "/sitemaps.xml")]
     черга, бачено, картки, файлів = list(старт), set(), [], 0
     інші = 0
-    while черга and файлів < стеля_файлів:
+    кінець = time.time() + секунд
+    while черга and файлів < стеля_файлів and time.time() < кінець:
+        if len(картки) >= треба_карток:      # 06.09: md-fashion 19 файлів і 64 524 адрес заради 3 карток
+            break
         u = черга.pop(0)
         if u in бачено:
             continue
         бачено.add(u); файлів += 1
-        r = транспорт.get(u, тип="bytes", ліміт=30_000_000)
+        r = транспорт.get(u, тип="bytes", ліміт=8_000_000, секунд=25)
         if r["код"] != 200 or not r["тіло"]:
             continue
         тіло = r["тіло"]
@@ -1106,6 +1118,11 @@ def факти_з_картки(html_текст, url):
         ф["available"] = _наявність_ld(meta("product:availability") or meta("og:availability"))
     if not ф["є_товар"]:
         ф["є_товар"] = (meta("og:type") or "").startswith("product") and not ф.get("є_список")
+    if not ф["є_товар"] and _ЯВНО_КАРТКА.search(url) and not ф.get("є_список"):
+        # адреса виду /product/<slug>, /tovar/<id>, «…-1234» — найсильніший сигнал; далі досить ціни
+        # (06.09: cher17 /product/shtani-z-skladkami-molochnij рахувався «не карткою» через блок
+        # «схожі товари» — там більше 6 цін, і суворе DOM-правило його вбивало)
+        ф["є_товар"] = bool(ф["ціна"]) or bool(re.search(r"\d[\d\s]{2,}\s*(?:грн|₴|UAH)", т, re.I))
     _шлях = urlparse(url).path
     if _шлях in ("", "/") or re.fullmatch(r"/(ua|uk|en|ru)/?", _шлях, re.I) or _НЕ_КАРТКА.search(_шлях):
         ф["є_товар"] = False; ф["є_список"] = True
@@ -1260,6 +1277,8 @@ def факти_з_картки(html_текст, url):
         ел = суп.select_one('[itemprop="price"], [class*="price"] , [id*="price"]')
         if ел and суп.find("h1") and not ф["є_товар"] and not ф.get("є_список"):
             цін = len(суп.select('[itemprop="price"], [class*="price"]'))
+            if _ЯВНО_КАРТКА.search(url):
+                цін = min(цін, 6)                    # явна товарна адреса: блок «схожі» не рахуємо
             є_кнопка = bool(re.search(r"кошик|корзин|купити|купить|add to cart|add to bag|\bbuy\b|замовити|заказать", суп.get_text(" ")[:200000], re.I))
             ф["є_товар"] = 1 <= цін <= 6 and є_кнопка      # лістинг: десятки цін; картка: одна-дві
         if ел:
@@ -1767,7 +1786,7 @@ def схожість_на_картку(url):
     /uk/catalog/platya/plate-midi-bezhevoe (картка). Порядок вибірки, не гейт (гейт — є_товар)."""
     шлях = urlparse(url or "").path
     сегменти = [x for x in шлях.split("/") if x]
-    if not сегменти or _СЛУЖБОВЕ.search(url or "") or _НЕ_КАРТКА.search(шлях):
+    if not сегменти or _СЛУЖБОВЕ.search(url or "") or _НЕ_КАРТКА.search(шлях) or _ФАСЕТНА_АДРЕСА.search(шлях):
         return 3
     останній = сегменти[-1]
     if _ЯВНО_КАРТКА.search(url or ""):
@@ -1793,9 +1812,15 @@ def розподілити(кандидати, стеля, лічба=None):
     import random
     for г in групи.values():          # проба 05.09: перші адреси мапи = розділи; беремо рівномірно, схожі на картку першими
         random.Random(0).shuffle(г)
-        г.sort(key=lambda к: схожість_на_картку(к.get("url") or ""))
     # групи теж упорядковуємо: інакше перші 3 адреси мапи (головна, /about, /oplata) з'їдають усю пробу
     лічба = лічба if лічба is not None else collections.Counter()
+
+    def наявна(к):
+        ф_ = (к.get("факти") or [{}])[0]
+        return 0 if ф_.get("available") is not False else 1     # канал уже знає наявність — беремо живі
+
+    for г in групи.values():
+        г.sort(key=lambda к: (наявна(к), схожість_на_картку(к.get("url") or "")))
 
     def ключ_групи(г):
         схожість = min(схожість_на_картку(к.get("url") or "") for к in г)
@@ -1911,9 +1936,10 @@ def _одна_річ(к, маг, транспорт, діаг, прийняті,
 
 
 def зібрати_магазин(маг, транспорт, стеля, лог, перевіряти_фото=True, стеля_розділів=12, дедлайн=None,
-                    фото_кожен=1, фасетів=3, лічба=None):
+                    фото_кожен=1, фасетів=3, лічба=None, хвилин_на_магазин=20):
     домен, база = маг["домен"], маг["база"].rstrip("/")
     лічба = лічба if лічба is not None else collections.Counter()   # слот → скільки вже зібрано в прогоні
+    кінець_магазину = time.time() + (хвилин_на_магазин * 60)        # 06.09: gepur 3 396 с на 3 картки
     ua = маг.get("ua") or ""
     діаг = dict(лічба=лічба, домен=домен, база=база, платформа="невідомо", канали=[], запитів=0, знайдено=0,
                 прийнято=0, відхилено=collections.Counter(), стан="", фіди=[], мапа=None, час=time.time(), фото_кожен=фото_кожен,
@@ -2004,7 +2030,10 @@ def зібрати_магазин(маг, транспорт, стеля, лог
         elif not кандидати:
             розділи = розділи_зі_сторінки(головна, база)[:стеля_розділів]
             лог("  розділів на головній: %d" % len(розділи))
+            кінець_розділів = time.time() + 180
             for рз in розділи:
+                if time.time() > кінець_розділів:
+                    break
                 for стор in range(1, 4):
                     u = рз if стор == 1 else "%s%spage=%d" % (рз, "&" if "?" in рз else "?", стор)
                     с = транспорт.get(u)
@@ -2032,11 +2061,12 @@ def зібрати_магазин(маг, транспорт, стеля, лог
                 if с["код"] == 200 and с["тіло"]:
                     знайдені += фасети_сторінки(с["тіло"], база)
         по_полях = collections.Counter()
+        кінець_фасетів = time.time() + (60 if фасетів <= 1 else 180)
         # v2, вимір: усі чотири фасетні запити пішли в один розділ («сукні»), бо бралися в порядку
         # знаходження. Черга — за слотом, якого в прогоні найменше: це і є широта покриття.
         знайдені.sort(key=lambda ф_: (лічба[слот_речі([], "", ф_[0])[0] or "?"], ф_[1] != "колір"))
         for u, поле, значення in знайдені:
-            if по_полях[поле] >= фасетів:
+            if по_полях[поле] >= фасетів or time.time() > кінець_фасетів:
                 continue
             по_полях[поле] += 1
             с = транспорт.get(u)
@@ -2114,6 +2144,9 @@ def зібрати_магазин(маг, транспорт, стеля, лог
             діаг["відхилено"]["картка: виняток %s" % type(e).__name__] += 1
             if діаг["відхилено"]["картка: виняток %s" % type(e).__name__] <= 3:
                 лог("  ! %s: виняток на картці %s — %s: %s" % (домен, (к.get("url") or "")[:60], type(e).__name__, str(e)[:100]))
+        if time.time() > кінець_магазину:
+            діаг["стан"] = "СТЕЛЯ ЧАСУ МАГАЗИНУ: %d речей за %d хв" % (len(прийняті), хвилин_на_магазин)
+            лог("  ⏱ %s: %s" % (домен, діаг["стан"])); break
         if дедлайн and time.time() > дедлайн:
             діаг["стан"] = "СТЕЛЯ ЧАСУ: зупинено на %d із %d кандидатів (П15: збережено те, що є)" % (len(прийняті) + len(відхилені), len(кандидати))
             лог("  ⏱ %s: %s" % (домен, діаг["стан"])); break
@@ -2303,6 +2336,15 @@ def зібрати(тека=ТЕКА_ЖНИВ, вихід=".", підпис_пр
         ряд = [sum(1 for з in прийняті if з["слот"] == сл and з["стать"] == ст) for ст in ("жіноче", "чоловіче", "унісекс", "невідомо")]
         if any(ряд):
             р.append("| %s | %d | %d | %d | %d |" % ((сл,) + tuple(ряд)))
+    р += ["", "## Час і обриви", ""]
+    часи = sorted(((д.get("час", 0), д["домен"]) for д in діаги), reverse=True)[:8]
+    р.append("- найдовші магазини, с: " + ", ".join("%s %d" % (д, ч) for ч, д in часи))
+    обірв = [(д["домен"], (д.get("коди") or {}).get("обірвано за часом")) for д in діаги if (д.get("коди") or {}).get("обірвано за часом")]
+    if обірв:
+        р.append("- обірвано завантажень за часом: " + ", ".join("%s×%d" % x for x in обірв))
+    стелі = [д["домен"] for д in діаги if "СТЕЛЯ ЧАСУ" in д["стан"]]
+    if стелі:
+        р.append("- уперлись у стелю часу: " + ", ".join(стелі))
     р += ["", "## Українська версія сайту", ""]
     з_преф = [д for д in діаги if д.get("ua_префікс")]
     р.append("- магазинів з окремою UA-версією: %d із %d (%s)" % (len(з_преф), len(діаги),
@@ -2403,6 +2445,7 @@ def main(argv=None):
     ап.add_argument("--список", default="магазини.tsv")
     ап.add_argument("--вихід", default=".")
     ап.add_argument("--без-фотоперевірки", action="store_true")
+    ап.add_argument("--хвилин-на-магазин", type=int, default=0, help="стеля часу на магазин (0 = 3 у пробі, 20 у повному)")
     ап.add_argument("--фото-кожен", type=int, default=1, help="перевіряти фото запитом у кожної N-ї речі (повний прогін: 5 — удвічі швидше, відсоток у звіті той самий)")
     ап.add_argument("--ігнорувати-robots", action="store_true")
     ап.add_argument("--без-маскування", action="store_true", help="не підробляти відбиток Chrome навіть якщо curl_cffi є")
@@ -2438,9 +2481,10 @@ def main(argv=None):
         магазини = [м for м in магазини if not os.path.exists(os.path.join(сирі, "%s.json.gz" % м["домен"]))]
         print("продовження: пропущено %d магазинів, що вже зібрані" % (було - len(магазини)), flush=True)
     лог = lambda *x: print(*x, flush=True)
-    лог("%s · Python %s · парсер HTML: %s · відбиток Chrome: %s · режим %s · магазинів %d · стеля %d · словники: %s"
+    хв_магазин = a.хвилин_на_магазин or (3 if a.режим == "проба" else 20)
+    лог("%s · Python %s · парсер HTML: %s · відбиток Chrome: %s · режим %s · магазинів %d · стеля %d речей, %d хв/магазин · словники: %s"
         % (ВЕРСІЯ, sys.version.split()[0], ПАРСЕР_HTML, "curl_cffi" if (_curl and not a.без_маскування) else "нема",
-           a.режим, len(магазини), стеля, СЛОВНИКИ_ЗВІДКИ))
+           a.режим, len(магазини), стеля, хв_магазин, СЛОВНИКИ_ЗВІДКИ))
     if BeautifulSoup is None:
         лог("!! beautifulsoup4 не встановлено — картки читатимуться лише з JSON-LD/meta (без характеристик, розмірів, галереї)")
     транспорт = Транспорт(пауза=a.пауза, ігнорувати_robots=a.ігнорувати_robots, лог=лог, не_маскуватись=a.без_маскування)
@@ -2452,7 +2496,9 @@ def main(argv=None):
         if дедлайн and time.time() > дедлайн:
             лог("  ⏱ %s: не почато — стеля часу; добере «продовжити» наступного разу" % м["домен"]); return м["домен"]
         try:
-            прийн, відх, діаг = зібрати_магазин(м, транспорт, стеля, лог, перевіряти_фото=not a.без_фотоперевірки, дедлайн=дедлайн, фото_кожен=a.фото_кожен, лічба=лічба_слотів)
+            прийн, відх, діаг = зібрати_магазин(м, транспорт, стеля, лог, перевіряти_фото=not a.без_фотоперевірки, дедлайн=дедлайн, фото_кожен=a.фото_кожен, лічба=лічба_слотів,
+                                                хвилин_на_магазин=хв_магазин,
+                                                фасетів=(1 if a.режим == "проба" else 3))
         except Exception as e:                                       # noqa
             import traceback; traceback.print_exc()
             прийн, відх, діаг = [], [], dict(домен=м["домен"], база=м["база"], платформа=м.get("платформа"), канали=[],
