@@ -55,10 +55,10 @@ def pip(*пакети):
 
 def бібліотеки():
     бракує = [пакет for модуль, пакет in (("requests", "requests"), ("bs4", "beautifulsoup4")) if not є(модуль)]
-    if бракує or not є("lxml") or not є("curl_cffi"):
+    if бракує or not є("lxml") or not є("curl_cffi") or not є("brotli"):
         if subprocess.run([sys.executable, "-m", "pip", "--version"], **ТИХО).returncode != 0:
             subprocess.run([sys.executable, "-m", "ensurepip", "--user"], **ТИХО)
-        лог("Ставлю бібліотеки:", ", ".join(бракує + ([] if є("lxml") else ["lxml"]) + ([] if є("curl_cffi") else ["curl_cffi"])), "…")
+        лог("Ставлю бібліотеки:", ", ".join(бракує + ([] if є("lxml") else ["lxml"]) + ([] if є("curl_cffi") else ["curl_cffi"]) + ([] if є("brotli") else ["brotli"])), "…")
     if бракує and not pip(*бракує):
         лог("!! Не вдалося поставити %s — перевірте інтернет і запустіть ще раз." % ", ".join(бракує))
         input("Enter для виходу"); sys.exit(1)
@@ -66,6 +66,8 @@ def бібліотеки():
         лог("lxml не став — жниварка піде на вбудованому парсері: повільніше, але працює.")
     if not є("curl_cffi") and not pip("curl_cffi"):
         лог("curl_cffi не став — магазини з ботозаслоном (Cloudflare) можуть не пустити.")
+    if not є("brotli"):
+        pip("brotli")                                    # br-стиснення: без нього — зайвий повтор запиту
 
 
 # ── 1. оновлення з GitHub ────────────────────────────────────────────────────────

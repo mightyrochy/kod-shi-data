@@ -122,7 +122,8 @@ assert UA.isascii(), "User-Agent має бути ASCII"
     "User-Agent": UA,
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "Accept-Language": "uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Accept-Encoding": "gzip, deflate, br",
+    # Accept-Encoding НЕ задаємо: requests сам оголошує те, що вміє розпакувати. Ручний «br» 06.09
+    # зробив вміст усіх 63 магазинів нечитабельним (платформа «невідомо», 0 карток у мапі).
     "Sec-Fetch-Dest": "document", "Sec-Fetch-Mode": "navigate", "Sec-Fetch-Site": "none", "Sec-Fetch-User": "?1",
     "Upgrade-Insecure-Requests": "1", "Cache-Control": "max-age=0",
     "sec-ch-ua": '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
@@ -340,6 +341,13 @@ class Транспорт:
                     return dict(код=код, тіло=None, url=r.url, ctype=ctype, заслон=False, помилка="HTTP %s" % код)
                 if код < 400:
                     self.поспіль_помилок[домен] = 0
+                кодування_відп = (r.headers.get("Content-Encoding") or "").lower()
+                if кодування_відп in ("br", "zstd") and not _вміємо(кодування_відп) and not _вже_браузером:
+                    # requests оголошує лише те, що вміє; але сервер (або проксі) може віддати br усе одно.
+                    # 06.09: ручний «br» без пакета brotli зробив вміст 63 магазинів нечитабельним.
+                    self.лог("  ⚠ %s віддав %s — повтор без стиснення" % (домен, кодування_відп))
+                    return self.get(url, тип, ліміт, повтори=1, заголовки=dict(заголовки or {}, **{"Accept-Encoding": "gzip, deflate"}),
+                                    _вже_браузером=True)
                 текст = None
                 if тип == "text":
                     кодування = r.encoding if r.encoding and r.encoding.lower() != "iso-8859-1" else None
@@ -391,6 +399,16 @@ class Транспорт:
         except Exception:                                          # noqa
             return False
         return False
+
+
+def _вміємо(кодування):
+    """Чи розпакує requests це кодування (br — лише з пакетом brotli/brotlicffi, zstd — із zstandard)."""
+    import importlib.util
+    if кодування == "br":
+        return bool(importlib.util.find_spec("brotli") or importlib.util.find_spec("brotlicffi"))
+    if кодування == "zstd":
+        return bool(importlib.util.find_spec("zstandard"))
+    return True
 
 
 def _магія_картинки(б):
@@ -491,6 +509,41 @@ def відбиток_платформи(html_текст, заголовки=None
     return "+".join(dict.fromkeys(знайдено)) or "невідомо"
 
 
+_UA_ПРЕФІКСИ = ("/ua", "/uk", "/ua-ua", "/uk-ua")
+
+
+def виявити_ua_префікс(html_текст, база, з_tsv=""):
+    """Український префікс шляху для ЦЬОГО магазину: `магазини.tsv` → hreflang → перемикач мов.
+    Потрібен, бо (а) без нього беремо російську версію, (б) gepur 05.09: 905 речей зібрано двічі —
+    той самий шлях із /uk/ і без. → «/uk» | «/ua» | «» ."""
+    з_tsv = (з_tsv or "").strip().rstrip("/")
+    if з_tsv:
+        return з_tsv if з_tsv.startswith("/") else "/" + з_tsv
+    т = html_текст or ""
+    for м in re.finditer(r'<link[^>]+rel=["\']alternate["\'][^>]*>', т, re.I):
+        тег = м.group(0)
+        if re.search(r'hreflang=["\']uk(?:-ua)?["\']', тег, re.I):
+            hr = re.search(r'href=["\']([^"\']+)["\']', тег, re.I)
+            if hr:
+                шлях = urlparse(канонічна(hr.group(1), база)).path.rstrip("/")
+                if шлях.lower() in _UA_ПРЕФІКСИ:
+                    return шлях
+    for м in re.finditer(r'href=["\'](/(?:ua|uk)(?:-ua)?)/?["\']', т, re.I):   # перемикач мов на головній
+        return м.group(1)
+    return ""
+
+
+def з_префіксом(url, префікс):
+    """/catalog/platya → /uk/catalog/platya. Якщо префікс уже є або його нема — без змін."""
+    if not префікс:
+        return url
+    u = urlparse(url)
+    шлях = u.path or "/"
+    if re.match(r"^/(ua|uk)(-ua)?(/|$)", шлях, re.I):
+        return url
+    return urlunparse((u.scheme, u.netloc, префікс.rstrip("/") + шлях, "", u.query, ""))
+
+
 def адреси_фідів_у_html(html_текст, база):
     """П12: адреса YML часто лежить у самій сторінці (Хорошоп ставить хеш — вгадати не можна)."""
     вих = []
@@ -588,6 +641,8 @@ def мапа_сайту(транспорт, база, robots, лог, стеля
                 черга.append(loc); continue
             if домен_із(loc) != домен_із(база) or _не_наша_мова(loc):
                 continue
+            if re.search(r"\.(jpe?g|png|webp|avif|gif|svg|pdf|zip|mp4|css|js)(\?|$)", urlparse(loc).path, re.I):
+                інші += 1; continue                      # мапа зображень (likeangel 06.09) — не картки
             if _НЕ_КАРТКА.search(urlparse(loc).path) and not re.search(r"product_id=|/product/", loc):
                 інші += 1; continue
             картки.append(loc)
@@ -1547,6 +1602,25 @@ def канонічний_запис(ф, маг, канал):
         знято=СЬОГОДНІ, мова="укр")
 
 
+_СХОЖА_НА_КАРТКУ = re.compile(r"(-.*-|\d)", re.I)          # останній сегмент із двома дефісами або цифрою
+
+
+def схожість_на_картку(url):
+    """0 — найімовірніше картка, 2 — найімовірніше розділ. gepur: /uk/catalog/platya (розділ) проти
+    /uk/catalog/platya/plate-midi-bezhevoe (картка). Порядок вибірки, не гейт (гейт — є_товар)."""
+    сегменти = [x for x in urlparse(url or "").path.split("/") if x]
+    if not сегменти:
+        return 3
+    останній = сегменти[-1]
+    if _ЯВНО_КАРТКА.search(url or ""):
+        return 0
+    if len(сегменти) >= 3 and _СХОЖА_НА_КАРТКУ.search(останній) and len(останній) > 8:
+        return 0
+    if _СХОЖА_НА_КАРТКУ.search(останній) and len(останній) > 12:
+        return 1
+    return 2
+
+
 def розподілити(кандидати, стеля):
     """Стеля ріже НЕ хвіст списку, а порівну з кожної групи (категорія для bulk, префікс шляху для
     мапи): інакше 2 500 перших url ager — це самі сукні, і «широта покриття» на цьому магазині нуль."""
@@ -1559,9 +1633,9 @@ def розподілити(кандидати, стеля):
         ключ = " / ".join((ф.get("крихти") or [])[:2]) if ф.get("крихти") else "/".join(сегм[:-1][:2])   # без слага речі
         групи.setdefault(ключ, []).append(к)
     import random
-    for г in групи.values():          # проба 05.09: перші 3 адреси мапи = статичні сторінки; беремо рівномірно, явні картки першими
+    for г in групи.values():          # проба 05.09: перші адреси мапи = розділи; беремо рівномірно, схожі на картку першими
         random.Random(0).shuffle(г)
-        г.sort(key=lambda к: not _ЯВНО_КАРТКА.search(к.get("url") or ""))
+        г.sort(key=lambda к: схожість_на_картку(к.get("url") or ""))
     вих, i = [], 0
     while len(вих) < стеля:
         взято = False
@@ -1690,6 +1764,9 @@ def зібрати_магазин(маг, транспорт, стеля, лог
         транспорт.robots[кінцевий.netloc] = robots
     діаг["платформа"] = маг["платформа"] = відбиток_платформи(головна)
     діаг["фіди"] = адреси_фідів_у_html(головна, база)
+    діаг["ua_префікс"] = виявити_ua_префікс(головна, база, маг.get("ua"))
+    if діаг["ua_префікс"]:
+        лог("  українська версія: %s" % діаг["ua_префікс"])
     if robots.get("заборона_всього"):
         діаг["robots"] = "robots.txt забороняє все (проігноровано, як і попередні жнива)"
     лог("  платформа: %s · фідів у HTML: %d · мапа у robots: %d" % (діаг["платформа"], len(діаг["фіди"]), len(robots["sitemaps"])))
@@ -1760,6 +1837,33 @@ def зібрати_магазин(маг, транспорт, стеля, лог
                 діаг["канали"].append("розділи")
         if url_карток:
             кандидати = [dict(канал="картка", url=u, факти=None) for u in url_карток[:стеля]]
+    # UA-версія для всього магазину: переписати адреси й прибрати дублі «той самий шлях з /uk/ і без»
+    преф = діаг.get("ua_префікс")
+    if преф and кандидати:
+        зразок = next((к for к in кандидати if к.get("url") and not re.match(r"^/(ua|uk)", urlparse(к["url"]).path, re.I)), None)
+        if зразок is None:
+            діаг["ua_переписано"] = "не треба (усі вже з префіксом)"
+        else:
+            новий = з_префіксом(зразок["url"], преф)
+            проба_ = транспорт.get(новий)
+            працює = проба_["код"] == 200 and проба_["тіло"] and факти_з_картки(проба_["тіло"], новий).get("є_товар")
+            if працює:
+                було = len(кандидати)
+                бачені_шляхи = set()
+                нові = []
+                for к in кандидати:
+                    if к.get("url"):
+                        к = dict(к, url=з_префіксом(к["url"], преф))
+                        if к["url"] in бачені_шляхи:
+                            continue
+                        бачені_шляхи.add(к["url"])
+                    нові.append(к)
+                кандидати = нові
+                діаг["ua_переписано"] = "%d адрес → %s, дублів прибрано %d" % (len(кандидати), преф, було - len(кандидати))
+                лог("  → %s" % діаг["ua_переписано"])
+            else:
+                діаг["ua_переписано"] = "префікс %s не працює (HTTP %s) — лишаю як є" % (преф, проба_["код"])
+                лог("  ! %s" % діаг["ua_переписано"])
     діаг["знайдено"] = len(кандидати)
     кандидати = розподілити(кандидати, стеля)
     # ── картка для кожної речі (П7) ──────────────────────────────────────────
@@ -1960,6 +2064,16 @@ def зібрати(тека=ТЕКА_ЖНИВ, вихід=".", підпис_пр
         ряд = [sum(1 for з in прийняті if з["слот"] == сл and з["стать"] == ст) for ст in ("жіноче", "чоловіче", "унісекс", "невідомо")]
         if any(ряд):
             р.append("| %s | %d | %d | %d | %d |" % ((сл,) + tuple(ряд)))
+    р += ["", "## Українська версія сайту", ""]
+    з_преф = [д for д in діаги if д.get("ua_префікс")]
+    р.append("- магазинів з окремою UA-версією: %d із %d (%s)" % (len(з_преф), len(діаги),
+             ", ".join("%s%s" % (д["домен"], д["ua_префікс"]) for д in з_преф[:12]) or "—"))
+    перепис = [д for д in діаги if д.get("ua_переписано", "").startswith(("не треба", "префікс")) is False and д.get("ua_переписано")]
+    for д in перепис[:10]:
+        р.append("  - %s: %s" % (д["домен"], д["ua_переписано"]))
+    не_вийшло = [д["домен"] + ": " + д["ua_переписано"] for д in діаги if str(д.get("ua_переписано", "")).startswith("префікс")]
+    if не_вийшло:
+        р.append("- НЕ переписано (перевірка не пройшла): " + "; ".join(не_вийшло[:6]))
     р += ["", "## Джерела кольору / слота / статі (прийняті)", ""]
     for поле in ("колір_джерело", "слот_джерело", "стать_джерело", "розміри_джерело", "наявність", "канал"):
         c = collections.Counter(re.sub(r"«.*?»", "«…»", str(з.get(поле) or "—")) for з in прийняті)
