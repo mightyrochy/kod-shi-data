@@ -55,15 +55,17 @@ def pip(*пакети):
 
 def бібліотеки():
     бракує = [пакет for модуль, пакет in (("requests", "requests"), ("bs4", "beautifulsoup4")) if not є(модуль)]
-    if бракує or not є("lxml"):
+    if бракує or not є("lxml") or not є("curl_cffi"):
         if subprocess.run([sys.executable, "-m", "pip", "--version"], **ТИХО).returncode != 0:
             subprocess.run([sys.executable, "-m", "ensurepip", "--user"], **ТИХО)
-        лог("Ставлю бібліотеки:", ", ".join(бракує + ([] if є("lxml") else ["lxml"])), "…")
+        лог("Ставлю бібліотеки:", ", ".join(бракує + ([] if є("lxml") else ["lxml"]) + ([] if є("curl_cffi") else ["curl_cffi"])), "…")
     if бракує and not pip(*бракує):
         лог("!! Не вдалося поставити %s — перевірте інтернет і запустіть ще раз." % ", ".join(бракує))
         input("Enter для виходу"); sys.exit(1)
     if not є("lxml") and not pip("lxml"):
         лог("lxml не став — жниварка піде на вбудованому парсері: повільніше, але працює.")
+    if not є("curl_cffi") and not pip("curl_cffi"):
+        лог("curl_cffi не став — магазини з ботозаслоном (Cloudflare) можуть не пустити.")
 
 
 # ── 1. оновлення з GitHub ────────────────────────────────────────────────────────
@@ -264,6 +266,17 @@ def main(без_мережі=False):
         except KeyboardInterrupt:
             лог("\nЗупинено вручну — пакую те, що є.")
             subprocess.run([sys.executable, "жниварка.py", "--зібрати", "--вихід", "жнива"]); код = 4
+    # Магазини, які не пустили сервери GitHub, добираємо з ДОМАШНЬОГО IP (вимір 06.09: skripka 403 з Azure,
+    # 200 з дому). Список кладе сюди або наш же прогін, або GitHub — файл заблоковані.txt.
+    for звідки in (os.path.join(ТУТ, "жнива", "заблоковані.txt"), os.path.join(ТУТ, "заблоковані.txt")):
+        if код in (0, 4) and os.path.exists(звідки):
+            домени = [x.strip() for x in io.open(звідки, encoding="utf-8") if x.strip() and not x.startswith("#")]
+            if домени:
+                лог("\n=== Добираю %d магазинів, які не пустили дата-центр: %s ===" % (len(домени), ", ".join(домени)))
+                subprocess.run([sys.executable, "жниварка.py", "--режим", "повний", "--магазини", ",".join(домени),
+                                "--вихід", "жнива", "--потоки", "2", "--фото-кожен", "5", "--дедлайн-хвилин", "120",
+                                "--лог", "лог_жнив.txt"])
+            break
     if os.path.exists(os.path.join(ТУТ, МАРКЕР)):
         os.remove(os.path.join(ТУТ, МАРКЕР))
     назва_zip = "жнива_%s.zip" % дата

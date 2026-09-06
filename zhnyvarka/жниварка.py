@@ -88,6 +88,13 @@ try:
 except ImportError:                                   # noqa
     requests = None
 try:
+    # curl_cffi відтворює TLS/HTTP2-рукостискання Chrome. Cloudflare оцінює запит за трьома речами:
+    # репутація IP (дата-центр гірша за домашній), відбиток TLS, заголовки. Це закриває другу й третю;
+    # першу не закриває нічим, окрім домашнього IP (вимір 06.09: skripka 403 з Azure, 200 з дому).
+    from curl_cffi import requests as _curl                     # noqa
+except ImportError:                                              # noqa
+    _curl = None
+try:
     from bs4 import BeautifulSoup
     import warnings
     try:
@@ -108,8 +115,20 @@ except ImportError:                                   # noqa
 # ЛИШЕ ASCII: HTTP-заголовки кодуються latin-1; кирилиця тут поклала 62/62 магазини 05.09
 # (UnicodeEncodeError до першого байта в мережу). Гейт: assert нижче + мережевий тест.
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-      "Chrome/128.0 Safari/537.36 Lyusterko-zhnyvarka/3.0 (+catalog for a styling test stand)")
+      "Chrome/128.0.0.0 Safari/537.36 Lyusterko-zhnyvarka/3.0 (+catalog for a styling test stand)")
 assert UA.isascii(), "User-Agent має бути ASCII"
+# Заголовки як у справжнього Chrome: частина магазинів ріже за самим лише набором (порожній Sec-Fetch тощо)
+ЗАГОЛОВКИ = {
+    "User-Agent": UA,
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Sec-Fetch-Dest": "document", "Sec-Fetch-Mode": "navigate", "Sec-Fetch-Site": "none", "Sec-Fetch-User": "?1",
+    "Upgrade-Insecure-Requests": "1", "Cache-Control": "max-age=0",
+    "sec-ch-ua": '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+    "sec-ch-ua-mobile": "?0", "sec-ch-ua-platform": '"Windows"',
+}
+assert all((k + str(v)).isascii() for k, v in ЗАГОЛОВКИ.items()), "заголовки мають бути ASCII (latin-1)"
 СЬОГОДНІ = datetime.date.today().isoformat()
 ТЕКА_ЖНИВ = "жнива_сирі"          # <домен>.json.gz — сире, щоб перезбирати один магазин і зливати з рештою
 
@@ -224,17 +243,23 @@ _ЗАСЛОН = re.compile(r"just a moment|attention required|cf-browser-verific
 class Транспорт:
     """Пряме HTTP. Темп — на домен, не глобальний; 429/503 — відпочинок, не смерть черги (П1)."""
 
-    def __init__(self, пауза=0.8, ігнорувати_robots=False, лог=None):
+    def __init__(self, пауза=0.8, ігнорувати_robots=False, лог=None, не_маскуватись=False):
         self.пауза, self.ігнорувати_robots, self.лог = пауза, ігнорувати_robots, лог or (lambda *a: None)
         self._останній = {}; self._замок = threading.Lock()
         self.статистика = collections.defaultdict(collections.Counter)   # домен → код → n
         self.поспіль_помилок = collections.Counter()                     # домен → невдач підряд (429/5xx/мережа)
+        self.браузером_вдалось = set()                                   # домени, які пустили лише з відбитком Chrome
         self.robots = {}                                                  # домен → dict(disallow, sitemaps, delay)
         self.сесія = requests.Session() if requests else None
         if self.сесія:
-            self.сесія.headers.update({"User-Agent": UA, "Accept-Language": "uk-UA,uk;q=0.9,en;q=0.5",
-                                       "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,"
-                                                 "application/json;q=0.9,*/*;q=0.8"})
+            self.сесія.headers.update(ЗАГОЛОВКИ)
+        self.браузер = None
+        if _curl is not None and не_маскуватись is not True:
+            try:
+                self.браузер = _curl.Session(impersonate="chrome")
+                self.браузер.headers.update({k: v for k, v in ЗАГОЛОВКИ.items() if k != "User-Agent"})
+            except Exception:                                    # noqa
+                self.браузер = None
         self.підміна = None   # для тестів: url → (код, тіло, content-type)
 
     def _зачекати(self, домен):
@@ -255,7 +280,27 @@ class Транспорт:
         шлях = urlparse(url).path or "/"
         return not any(шлях.startswith(x) for x in р["disallow"] if x)
 
-    def get(self, url, тип="text", ліміт=6_000_000, повтори=3, заголовки=None):
+    def _браузером(self, url, тип, ліміт, заголовки):
+        """Повтор із TLS-відбитком Chrome. → dict або None, якщо теж не вийшло."""
+        домен = urlparse(url).netloc
+        try:
+            self._зачекати(домен)
+            r = self.браузер.get(url, timeout=40, headers=заголовки or {}, allow_redirects=True)
+            self.статистика[домен]["браузер:%s" % r.status_code] += 1
+            if r.status_code >= 400:
+                return None
+            тіло = r.content[:ліміт]
+            заслон = bool(_ЗАСЛОН.search(r.text[:5000]))
+            if заслон:
+                return None
+            self.браузером_вдалось.add(домен)
+            return dict(код=r.status_code, тіло=(r.text if тип == "text" else тіло), url=str(r.url),
+                        ctype=(r.headers.get("Content-Type") or "").lower(), заслон=False, помилка=None)
+        except Exception:                                        # noqa
+            self.статистика[домен]["браузер:помилка"] += 1
+            return None
+
+    def get(self, url, тип="text", ліміт=6_000_000, повтори=3, заголовки=None, _вже_браузером=False):
         """→ dict(код, тіло, url, ctype, заслон, помилка). Тіло — str для text, bytes для bytes."""
         домен = urlparse(url).netloc
         if self.підміна is not None:
@@ -308,6 +353,10 @@ class Транспорт:
                     if текст is None:
                         текст = тіло.decode("utf-8", "replace")
                 заслон = код in (403, 503, 429) and bool(_ЗАСЛОН.search((текст or тіло.decode("utf-8", "replace"))[:5000]))
+                if (заслон or код == 403) and self.браузер is not None and not _вже_браузером:
+                    друга = self._браузером(url, тип, ліміт, заголовки)
+                    if друга is not None:
+                        return друга
                 return dict(код=код, тіло=(текст if тип == "text" else тіло), url=r.url, ctype=ctype,
                             заслон=заслон, помилка=None)
             except Exception as e:                                 # noqa
@@ -1622,8 +1671,13 @@ def зібрати_магазин(маг, транспорт, стеля, лог
         діаг["запитів"] = sum(транспорт.статистика[urlparse(база).netloc].values())
         діаг["коди"] = dict(транспорт.статистика[urlparse(база).netloc])
         лог("  ✗ %s: %s" % (домен, стан)); return [], [], діаг
-    if г["заслон"]:
-        return _вихід("ЗАБЛОКОВАНО ботозаслоном (HTTP %s) — П16" % г["код"])
+    if г["заслон"] or (г["код"] == 403 and not г["тіло"]):
+        причина = "ЗАБЛОКОВАНО ботозаслоном (HTTP %s)" % г["код"]
+        if _curl is None:
+            причина += " — curl_cffi не встановлено (відбиток Chrome не пробувався)"
+        else:
+            причина += " — не пустив навіть з відбитком Chrome; потрібен домашній IP (не дата-центр)"
+        return _вихід(причина)
     if г["код"] == 0:
         return _вихід("головна не відкрилась: %s" % г["помилка"])
     if г["код"] >= 400:
@@ -1744,6 +1798,8 @@ def зібрати_магазин(маг, транспорт, стеля, лог
     діаг["прийнято"] = len(прийняті); діаг["запитів"] = sum(транспорт.статистика[urlparse(база).netloc].values())
     діаг["коди"] = dict(транспорт.статистика[urlparse(база).netloc])
     діаг["час"] = round(time.time() - діаг["час"])
+    if urlparse(база).netloc in транспорт.браузером_вдалось:
+        діаг["канали"].append("через відбиток Chrome")
     діаг["стан"] = діаг["стан"] or ("ок" if прийняті else "нуль прийнятих")
     лог("  ✓ %s: знайдено %d · прийнято %d · відхилено %d · запитів %d · %d с" %
         (домен, діаг["знайдено"], len(прийняті), len(відхилені), діаг["запитів"], діаг["час"]))
@@ -1924,6 +1980,14 @@ def зібрати(тека=ТЕКА_ЖНИВ, вихід=".", підпис_пр
         р.append("- поля з покриттям < 50 %%: %s — це діра ДАНИХ, не знання; закривається лише кращим розбором карток або запитом магазину" % ", ".join(слабкі))
     р.append("- колір із фото НЕ міряно (це feed.колір_з_фото, окремий прогін)")
     р.append("- вердиктів «носитиму / ні» на цьому каталозі нуль — якість образів не відома")
+    заблоковані = [д["домен"] for д in діаги if "ЗАБЛОКОВАНО" in д["стан"]]
+    if заблоковані:
+        with io.open(п("заблоковані.txt"), "w", encoding="utf-8") as f:
+            f.write("# домени, які не пустили з цього IP. Прогнати з домашнього інтернету:\n"
+                    "#   python3 жниварка.py --режим повний --магазини @заблоковані.txt\n")
+            f.write("\n".join(заблоковані) + "\n")
+        р.insert(5, "**Заблоковано %d магазинів** (список у `заблоковані.txt`): %s — потрібен домашній IP."
+                 % (len(заблоковані), ", ".join(заблоковані)))
     with io.open(п("звіт_жнив.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(р) + "\n")
     return dict(прийнято=len(прийняті), відхилено=len(відхилені), жіночий=len(жін), чоловічий=len(чол), магазинів=len(діаги))
@@ -1975,7 +2039,7 @@ def main(argv=None):
             потік.reconfigure(encoding="utf-8", errors="replace")     # cp1251/cp437 у консолі не має ронити print
         except Exception:                                              # noqa
             pass
-    if requests is None:
+    if requests is None and "--зібрати" not in (argv if argv is not None else sys.argv[1:]):
         print("!! бібліотеки requests нема: python -m pip install requests beautifulsoup4 lxml"); return 2
     ап = argparse.ArgumentParser(description=ВЕРСІЯ)
     ап.add_argument("--режим", choices=("проба", "повний"), default="проба")
@@ -1988,6 +2052,7 @@ def main(argv=None):
     ап.add_argument("--без-фотоперевірки", action="store_true")
     ап.add_argument("--фото-кожен", type=int, default=1, help="перевіряти фото запитом у кожної N-ї речі (повний прогін: 5 — удвічі швидше, відсоток у звіті той самий)")
     ап.add_argument("--ігнорувати-robots", action="store_true")
+    ап.add_argument("--без-маскування", action="store_true", help="не підробляти відбиток Chrome навіть якщо curl_cffi є")
     ап.add_argument("--зібрати", action="store_true", help="лише злити %s/*.json(.gz) у каталоги" % ТЕКА_ЖНИВ)
     ап.add_argument("--потоки", type=int, default=3, help="магазинів одночасно (темп на домен лишається)")
     ап.add_argument("--сирі", default=ТЕКА_ЖНИВ, help="тека сирих жнив <домен>.json.gz")
@@ -2006,6 +2071,9 @@ def main(argv=None):
         print(зібрати(сирі, a.вихід)); return 0
     стеля = a.стеля or (25 if a.режим == "проба" else 2500)
     магазини = [м for м in читати_магазини(a.список) if м["стан"] == "увімкнено"]
+    if a.магазини.startswith("@"):                              # @файл — по домену на рядок (список заблокованих)
+        with io.open(a.магазини[1:], encoding="utf-8") as f:
+            a.магазини = ",".join(x.strip() for x in f if x.strip() and not x.startswith("#"))
     if a.магазини != "усі":
         обрані = {x.strip().lower() for x in a.магазини.split(",") if x.strip()}
         магазини = [м for м in читати_магазини(a.список) if м["домен"].lower() in обрані]
@@ -2017,11 +2085,12 @@ def main(argv=None):
         магазини = [м for м in магазини if not os.path.exists(os.path.join(сирі, "%s.json.gz" % м["домен"]))]
         print("продовження: пропущено %d магазинів, що вже зібрані" % (було - len(магазини)), flush=True)
     лог = lambda *x: print(*x, flush=True)
-    лог("%s · Python %s · парсер HTML: %s · режим %s · магазинів %d · стеля %d · словники: %s"
-        % (ВЕРСІЯ, sys.version.split()[0], ПАРСЕР_HTML, a.режим, len(магазини), стеля, СЛОВНИКИ_ЗВІДКИ))
+    лог("%s · Python %s · парсер HTML: %s · відбиток Chrome: %s · режим %s · магазинів %d · стеля %d · словники: %s"
+        % (ВЕРСІЯ, sys.version.split()[0], ПАРСЕР_HTML, "curl_cffi" if (_curl and not a.без_маскування) else "нема",
+           a.режим, len(магазини), стеля, СЛОВНИКИ_ЗВІДКИ))
     if BeautifulSoup is None:
         лог("!! beautifulsoup4 не встановлено — картки читатимуться лише з JSON-LD/meta (без характеристик, розмірів, галереї)")
-    транспорт = Транспорт(пауза=a.пауза, ігнорувати_robots=a.ігнорувати_robots, лог=лог)
+    транспорт = Транспорт(пауза=a.пауза, ігнорувати_robots=a.ігнорувати_robots, лог=лог, не_маскуватись=a.без_маскування)
     хв = a.дедлайн_хвилин or (None if a.режим == "повний" else 40)
     дедлайн = (time.time() + 60 * хв) if хв else None
 
