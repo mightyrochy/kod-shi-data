@@ -63,10 +63,10 @@ jobs:
           set -o pipefail
           if [ "${{ inputs.mode }}" = "повний" ]; then
             python3 жниварка.py --режим повний --магазини "${{ inputs.shops }}" --група "${{ matrix.group }}" \
-              --стеля "${{ inputs.cap }}" --потоки 4 --фото-кожен 5 --дедлайн-хвилин 320 --вихід жнива_тимч 2>&1 | tee лог_жнив.txt
+              --стеля "${{ inputs.cap }}" --потоки 4 --фото-кожен 5 --дедлайн-хвилин 320 --хвилин-на-магазин 20 --вихід жнива_тимч 2>&1 | tee лог_жнив.txt
           else
             python3 жниварка.py --режим проба --стеля 3 --магазини "${{ inputs.shops }}" --група "${{ matrix.group }}" \
-              --потоки 4 --вихід жнива_проба 2>&1 | tee лог_жнив.txt
+              --потоки 4 --хвилин-на-магазин 3 --вихід жнива_проба 2>&1 | tee лог_жнив.txt
           fi
       - name: підготувати артефакт
         run: |
@@ -82,6 +82,7 @@ jobs:
           path: артефакт/
           if-no-files-found: warn
           retention-days: 30
+          compression-level: 9
 
   assemble:
     needs: harvest
@@ -108,21 +109,22 @@ jobs:
           find зібране -name "*.json.gz" -exec cp -f {} zhnyvarka/вхід_сирі/ \; 2>/dev/null || true
           n=$(ls zhnyvarka/вхід_сирі/*.json.gz 2>/dev/null | wc -l); echo "сирих файлів: $n"
           if [ "$n" -eq 0 ]; then echo "!! артефакт порожній — дивіться лог кроку «жнива»"; exit 1; fi
-          if [ "${{ inputs.mode }}" = "повний" ]; then
-            mkdir -p zhnyvarka/жнива_сирі
-            cp -f zhnyvarka/вхід_сирі/*.json.gz zhnyvarka/жнива_сирі/
-          fi
+          # сирі не копіюємо в репозиторій — вони вже в артефакті кроку «жнива»
           cd zhnyvarka
           python3 жниварка.py --зібрати --сирі вхід_сирі --вихід "$OUT"
           cat ../зібране/лог_*.txt > "$OUT/лог_жнив.txt" 2>/dev/null || true
           find ../зібране -name "лог_*.txt" -exec cat {} \; >> "$OUT/лог_жнив.txt" 2>/dev/null || true
           rm -rf вхід_сирі
           echo "=== $OUT/звіт_жнив.md ==="; head -60 "$OUT/звіт_жнив.md"
+          echo "=== розміри ==="; ls -lh "$OUT" | tail -n +2
+          echo "Сирі жнива — в артефактах цього запуску (Actions → run → Artifacts), у repo не комітяться."
           cd ..
           git config user.name "жниварка"
           git config user.email "zhnyvarka@users.noreply.github.com"
+          # У repo — лише звіт, journal і каталоги. Сирі жнива (десятки МБ) лишаються артефактом
+          # запуску: Actions → цей запуск → Artifacts → zhnyva-*. Так гілка не засмічується.
+          rm -rf zhnyvarka/жнива_сирі
           git add "zhnyvarka/$OUT"
-          if [ "${{ inputs.mode }}" = "повний" ]; then git add zhnyvarka/жнива_сирі; fi
           git commit -m "жнива: ${{ inputs.mode }} · ${{ inputs.shops }} · $(date -u +%Y-%m-%d\ %H:%M)" || echo "нема що комітити"
           git pull --rebase origin HEAD || true
           git push
