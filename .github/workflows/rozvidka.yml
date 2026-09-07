@@ -1,0 +1,87 @@
+# Розвідка магазинів справжнім браузером (Playwright/Chromium) із серверів GitHub — запуск із телефона:
+# репозиторій → Actions → «розвідка» → Run workflow. Речей не збирає; результат — що реально віддав браузер.
+# Легке (зведення.tsv, зведення.json, проби.json) комітиться в zhnyvarka/розвідка/ — читається з телефона.
+# Важке (HTML gzip, скриншоти, тіла JSON-відповідей) — в артефакті запуску І в гілці rozvidka-data (перезаписується
+# щоразу): звідти сесія Claude читає через raw.githubusercontent.com — артефакти з її пісочниці недосяжні.
+# Дата-центр GitHub частина магазинів блокує (skripka, md-fashion, theoriginals — вимір 27.08/06.09): для них
+# той самий скрипт запускається з ноутбука: python3 розвідка.py --магазини skripka.com.ua,md-fashion.ua,theoriginals.com.ua
+name: розвідка
+
+on:
+  workflow_dispatch:
+    inputs:
+      shops:
+        description: "усі — або домени через кому, напр. vilni.store,25union.com.ua"
+        type: string
+        default: усі
+      seconds:
+        description: "бюджет секунд на магазин"
+        type: string
+        default: "150"
+      parallel:
+        description: "магазинів одночасно (1–4)"
+        type: string
+        default: "3"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rozvidka
+  cancel-in-progress: false
+
+jobs:
+  recon:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet playwright
+      - run: python3 -m playwright install --with-deps chromium
+      - name: розвідка
+        working-directory: zhnyvarka
+        run: |
+          mkdir -p розвідка
+          python3 розвідка.py --без-підготовки --магазини "${{ inputs.shops }}" \
+            --секунд-на-магазин "${{ inputs.seconds }}" --паралельно "${{ inputs.parallel }}" \
+            --вихід розвідка 2>&1 | tee розвідка/лог.txt
+          echo "=== зведення.tsv ==="; cat розвідка/зведення.tsv
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rozvidka
+          path: zhnyvarka/розвідка/
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+      - name: важке → гілка rozvidka-data (HTML gzip, скриншоти, JSON)
+        if: always()
+        run: |
+          set -e
+          tmp=$(mktemp -d)
+          cp -r zhnyvarka/розвідка/. "$tmp/"
+          find "$tmp" -name "*.html" -exec gzip -9f {} +
+          find "$tmp" -path "*/мережа/*.json" -size +64k -exec gzip -9f {} +
+          cd "$tmp"
+          git init -q -b rozvidka-data
+          git config user.name "rozvidka-bot"
+          git config user.email "rozvidka-bot@users.noreply.github.com"
+          git add -A
+          git commit -qm "розвідка: ${{ inputs.shops }} · $(date -u +%Y-%m-%d\ %H:%M) UTC"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" HEAD:rozvidka-data
+          du -sh "$tmp"
+      - name: коміт легкого (зведення, проби, лог) у main
+        if: always()
+        run: |
+          set -e
+          git config user.name "rozvidka-bot"
+          git config user.email "rozvidka-bot@users.noreply.github.com"
+          git add -f zhnyvarka/розвідка/зведення.tsv zhnyvarka/розвідка/лог.txt 2>/dev/null || true
+          find zhnyvarka/розвідка -maxdepth 2 \( -name "зведення.json" -o -name "проби.json" \) -exec git add -f {} +
+          git diff --cached --quiet && { echo "нема що комітити"; exit 0; }
+          git commit -m "розвідка: ${{ inputs.shops }} · $(date -u +%Y-%m-%d\ %H:%M) UTC"
+          git pull --rebase origin main || true
+          git push
