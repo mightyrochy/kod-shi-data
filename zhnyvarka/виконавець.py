@@ -388,7 +388,7 @@ class Виконавець:
         адреси = await (self._horoshop_адреси(контекст, р, л, корінь) if сім == "horoshop" else self._список_адреси(контекст, р, л, корінь))
         л["адрес"] = len(адреси)
         сторінка = await контекст.new_page()
-        await сторінка.route("**/*", lambda route: route.abort() if route.request.resource_type in ("media", "font") else route.continue_())
+        await сторінка.route("**/*", lambda route: route.abort() if route.request.resource_type in ("image", "media", "font") else route.continue_())
         n = 0
         for url in адреси:
             if url in взято and взято[url] != "збій":
@@ -471,8 +471,12 @@ class Виконавець:
                 розділи = [u for u in розділи if р["мова"].strip("/") in urlparse(u).path.split("/")] or розділи
             рх = re.compile(р["річ_regex"]) if р.get("річ_regex") else None
             for роз in розділи:
-                if стан["розділи"].get(роз) == "готово":
+                було = стан["розділи"].get(роз)
+                if isinstance(було, dict) and було.get("стан") == "готово" and було.get("адреси") is not None \
+                   and (datetime.date.today() - datetime.date.fromisoformat(було.get("дата", "2000-01-01"))).days < 7:
+                    адреси += було["адреси"]                    # обхід свіжий — беремо збережені адреси, картки добере журнал
                     continue
+                адреси_розділу = []
                 сторінок = 0
                 url = роз
                 бач = set()
@@ -480,7 +484,7 @@ class Виконавець:
                     сторінок += 1
                     try:
                         await сторінка.goto(url, wait_until="domcontentloaded", timeout=40_000)
-                        try: await сторінка.wait_for_load_state("networkidle", timeout=8_000)
+                        try: await сторінка.wait_for_load_state("networkidle", timeout=6_000)
                         except Exception: pass  # noqa
                         пос = await сторінка.evaluate(ВИТЯГ_ПОСИЛАНЬ)
                     except Exception as e:  # noqa
@@ -492,7 +496,7 @@ class Виконавець:
                             continue
                         схоже = (п["img"] and _ЦІНА.search(п["near"] or "")) or (рх and рх.search(urlparse(u).path + ("?" + urlparse(u).query if urlparse(u).query else "")))
                         if схоже and not (рх and not рх.search(urlparse(u).path + ("?" + urlparse(u).query if urlparse(u).query else ""))):
-                            бач.add(u); адреси.append(u); нові += 1
+                            бач.add(u); адреси.append(u); адреси_розділу.append(u); нові += 1
                     # наступна сторінка: посилання з пагінацією, номер більший за поточний
                     наст = None
                     for п in пос:
@@ -501,7 +505,8 @@ class Виконавець:
                             num = int(re.findall(r"\d+", m.group(0))[-1])
                             if num == сторінок + 1: наст = п["href"]; break
                     url = наст if нові else None
-                стан["розділи"][роз] = "готово" if not url else f"стор.{сторінок}"
+                стан["розділи"][роз] = {"стан": "готово" if not url else f"стор.{сторінок}", "адреси": адреси_розділу,
+                                        "дата": datetime.date.today().isoformat()}
         except Exception as e:  # noqa
             л["нотатка"] += "пошук: " + str(e).splitlines()[0][:80] + "; "
         finally:
@@ -514,7 +519,7 @@ class Виконавець:
         зап = {"url": url, "дата": datetime.date.today().isoformat()}
         try:
             r = await сторінка.goto(url, wait_until="domcontentloaded", timeout=35_000)
-            try: await сторінка.wait_for_load_state("networkidle", timeout=8_000)
+            try: await сторінка.wait_for_load_state("networkidle", timeout=4_000)
             except Exception: pass  # noqa
             html = await сторінка.content()
             л["відкрито"] += 1
