@@ -52,11 +52,13 @@ assert UA.isascii()
     "артикул":        (0, "ідентифікація (рішень не змінює)"),
     "догляд":         (0, "рішень не змінює — береться, бо є на картці"),
 }
-ПОРІГ = {"мін_бал": 8, "обовʼязково": ["назва", "фото"], "одне_з": [["колір", "склад"], ["розміри", "опис_200", "характеристик_5"]]}
+ПОРІГ = {"мін_бал": 8, "обовʼязково": ["назва", "фото"], "одне_з": [["колір", "склад"], ["розміри", "опис_200", "характеристик_5"]],
+         "без_розмірів": re.compile(r"сумк|bag|аксесуар|ремін|belt|хустк|шарф|шапк|рукавич|прикрас|сережк|кольє|браслет|каблучк|окуляр|гаманц|клатч|рюкзак", re.I),
+         "характеристик_мін_без_розмірів": 3}
 # ↑ фольклорні константи: поріг 8 з максимуму 24; калібрувати на вердиктах стенду.
 
-_ЦІНА = re.compile(r"(?<![\d.,])(?:₴|грн\.?|uah)\s?\d{1,3}(?:[ \u00a0,]?\d{3})*(?:[.,]\d{2})?(?![\d])|"
-                   r"(?<![\d.,])\d{1,3}(?:[ \u00a0]\d{3})*(?:[.,]\d{2})?\s?(?:₴|грн\.?|uah)(?![\w])", re.I)
+_ЧИСЛО = r"(?:\d{1,3}(?:[ \u00a0,]?\d{3})+|\d{3})(?:[.,]\d{2})?"
+_ЦІНА = re.compile(r"(?<![\d.,])(?:₴|грн\.?|uah)\s?" + _ЧИСЛО + r"(?![\d])|(?<![\d.,])" + _ЧИСЛО + r"\s?(?:₴|грн\.?|uah)(?![\w])", re.I)
 _ШУМ_РЯДКА = re.compile(r"режим роботи|кошик|пн[-–\s]|вт[-–\s]|сб[-–\s]|нд[-–\s]|тел|viber|telegram|instagram|facebook|"
                         r"\{|\}|fill|css|http|@|підпис|розсилк|знижк|акці|доставк|оплат|самовивіз|повернен|гарант|"
                         r"відповімо|працюємо|графік|адрес|e-?mail|пошт", re.I)
@@ -64,7 +66,18 @@ _КОЛІР_СЛОВО = re.compile(r"\b(чорн\w*|біл\w*|сір\w*|беж�
                           r"коричнев\w*|молочн\w*|пісочн\w*|хакі|оливков\w*|гірчичн\w*|фіолетов\w*|бузков\w*|лавандов\w*|жовт\w*|"
                           r"помаранчев\w*|м'ятн\w*|бірюзов\w*|золот\w*|срібн\w*|кремов\w*|графіт\w*|кемел|карамел\w*|шоколадн\w*|"
                           r"пудров\w*|смарагдов\w*|теракот\w*|корал\w*|фуксі\w*|індиго|деним|електрик|марсала|айворі|екрю|"
-                          r"мультиколор|принт|леопард|клітин\w*|смужк\w*|темн\w*|світл\w*)\b", re.I)
+                          r"мультиколор|принт|леопард|клітин\w*|смужк\w*|(?:темно|світло|ніжно|яскраво)-[а-яіїє]+|"
+                          r"black|white|gr[ae]y|beige|blue|navy|red|green|pink|brown|milk|sand|khaki|olive|mustard|purple|"
+                          r"lilac|lavender|yellow|orange|mint|turquoise|gold|silver|cream|graphite|camel|caramel|chocolate|"
+                          r"powder|emerald|terracotta|coral|fuchsia|indigo|burgundy|ivory|ecru|coffee|nude|taupe)\b", re.I)
+_SLUG_КОЛІР = {"chorn": "чорний", "bil": "білий", "sir": "сірий", "ser": "сірий", "bezh": "бежевий", "syn": "синій", "sin": "синій",
+               "blakyt": "блакитний", "chervon": "червоний", "zelen": "зелений", "rozhev": "рожевий", "bordo": "бордовий",
+               "korychn": "коричневий", "korichn": "коричневий", "moloch": "молочний", "pisoch": "пісочний", "khaki": "хакі",
+               "olyvk": "оливковий", "girchych": "гірчичний", "fiolet": "фіолетовий", "buzk": "бузковий", "zhovt": "жовтий",
+               "pomaranch": "помаранчевий", "biruz": "бірюзовий", "zolot": "золотий", "sribn": "срібний", "krem": "кремовий",
+               "grafit": "графітовий", "kemel": "кемел", "karamel": "карамельний", "shokolad": "шоколадний", "pudr": "пудровий",
+               "smaragd": "смарагдовий", "terakot": "теракотовий", "koral": "кораловий", "fuksi": "фуксія", "indigo": "індиго",
+               "denim": "деним", "marsala": "марсала", "ivory": "айворі", "ekru": "екрю", "temno": "темно-", "svitlo": "світло-"}
 _ВОЛОКНО = (r"(?:бавовн\w*|льон\w*|лляна|віскоз\w*|шовк\w*|вовн\w*|шерст\w*|кашемір\w*|поліестер\w*|поліест\w*|еластан\w*|"
             r"ліоцел\w*|модал\w*|тенсел\w*|поліамід\w*|нейлон\w*|акрил\w*|спандекс\w*|лайкр\w*|альпак\w*|мохер\w*|ангор\w*|"
             r"рамі|конопл\w*|купро|ацетат\w*|шкір\w*|замш\w*|гум\w*|поліуретан\w*|каучук\w*|текстил\w*|cotton|linen|"
@@ -83,7 +96,7 @@ _СЛУЖБОВЕ = re.compile(r"\.(css|js|svg|pdf|ico|xml|json|zip|mp4|woff2?|t
 _ПАГІНАЦІЯ = re.compile(r"[?&]page=\d+|/page/\d+|/page-\d+|PAGEN_\d+=|[?&]p=\d+|[?&]start=\d+|[?&]offset=\d+", re.I)
 _РОЗДІЛ_НЕ = re.compile(r"blog|news|novyn|about|pro-nas|o-nas|contact|kontakt|deliver|dostavk|oplat|payment|cart|checkout|"
                         r"login|account|wishlist|compare|lookbook|sertif|certif|gift|podarun|vakans|career|privacy|terms|"
-                        r"offer|return|obmin|povern|faq|review|vidguk|brand|tel:|mailto:|javascript:|"
+                        r"offer|return|obmin|povern|faq|review|vidguk|brand|tel:|mailto:|javascript:|uhod|dogliad|kosmet|"
                         r"(?:^|[/-])(?:kids|dyt\w*|dit[iy]|child\w*|detsk\w*|men|man|cholov\w*|muzh\w*)(?:$|[/-])|"
                         r"про нас|контакт|доставк|оплат|блог|новин|відгук|вакансі|дитяч|чолові|подарунк|сертифікат|кошик|увійти|вхід", re.I)
 _РОЗДІЛ_ТАК = re.compile(r"sukn|platt|plat[iy]|dress|bluz|blous|sorochk|shirt|spidn|yubk|skirt|shtan|bryuk|pants|trous|jeans|"
@@ -107,14 +120,18 @@ _РОЗДІЛ_ТАК = re.compile(r"sukn|platt|plat[iy]|dress|bluz|blous|sorochk
     if (t.length > 4 && t.length < 160) { const m = t.match(/^([^:]{2,40}):\\s*(.{1,120})$/); if (m) rows.push([m[1].trim(), m[2].trim()]); } } });
   const imgs = [...document.querySelectorAll('img, source')].flatMap(i => [i.currentSrc, i.src, i.dataset && i.dataset.src, i.srcset, i.dataset && i.dataset.srcset])
     .filter(Boolean).flatMap(s => s.split(',').map(x => x.trim().split(' ')[0])).filter(s => /\\.(jpe?g|webp|png)/i.test(s) && !/logo|icon|sprite|payment|visa|master|flag|banner|placeholder|pixel|1x1/i.test(s));
-  const main = document.querySelector('main, [role=main], #content, .product-page, .product, .card-product, #product') || document.body;
+  let main0 = document.body, best = 0;
+  document.querySelectorAll('main, [role=main], #content, .product-page, .product, .card-product, #product, .product-detail, .product__info, [itemtype*=Product]').forEach(e => {
+    const n = (e.textContent || '').length; if (n > best) { best = n; main0 = e; } });
+  if (best < 500) main0 = document.body;
+  const main = main0.cloneNode(true); main.querySelectorAll('script, style, noscript, header, footer, nav').forEach(e => e.remove());
   const sizeRe = /^(XXS|XS|S|M|L|XL|XXL|XXXL|3XL|4XL|5XL|\\d{2}([-\\/]\\d{2})?|ONE ?SIZE|UNI|універсальн\\w*|один розмір)$/i;
   const sizes = [];
   document.querySelectorAll('select option, button, label, a, span, li, div').forEach(e => { if (e.children.length <= 1) { const t = T(e);
     if (sizeRe.test(t)) sizes.push({р: t.toUpperCase(), нема: !!(e.disabled || /disabled|out-of-stock|outofstock|sold|nostock|unavailable|not-available|нема|немає/i.test(e.className + ' ' + (e.title || '')))}); } });
   const crumbs = [...document.querySelectorAll('[class*=breadcrumb] a, [class*=breadcrumb] span, nav[aria-label*=read] a, [itemtype*=BreadcrumbList] [itemprop=name]')].map(T).filter(Boolean);
   const opts = [...document.querySelectorAll('[class*=color] [title], [class*=colour] [title], [data-color], [class*=color] option')].map(e => e.title || e.dataset.color || T(e)).filter(Boolean);
-  return {h1: T(document.querySelector('h1')), title: document.title, rows, imgs: [...new Set(imgs)], text: T(main).slice(0, 30000),
+  return {h1: T(document.querySelector('h1')), title: document.title, rows, imgs: [...new Set(imgs)], text: (main.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 30000),
           sizes, crumbs, opts: [...new Set(opts)].slice(0, 30), has_table: !!document.querySelector('table, dl, [class*=characteristic], [class*=attribute], [class*=params], [class*=specif]')};
 }"""
 
@@ -175,6 +192,8 @@ def бал_інформації(к):
     if any("нема" in р for р in к.get("розміри") or []) or к.get("наявність") is not None: є.append("наявність")
     if len(к.get("опис") or "") >= 200: є.append("опис_200")
     if len(к.get("характеристики") or []) >= 5: є.append("характеристик_5")
+    elif len(к.get("характеристики") or []) >= ПОРІГ["характеристик_мін_без_розмірів"] and ПОРІГ["без_розмірів"].search((к.get("назва") or "") + " " + (к.get("слот_шлях") or "")):
+        є.append("характеристик_5")                   # сумки/аксесуари: розмірів нема за природою, 3 рядки — достатньо
     if sum(1 for м in рядки if _КРІЙ.search(м)) >= 2: є.append("крій_ключі")
     if _МОДЕЛЬ.search(текст): є.append("заміри_модель")
     if _СЕЗОН.search(" ".join(рядки.keys()) + " " + " ".join(рядки.values())): є.append("сезон")
@@ -199,6 +218,14 @@ def _колір_із(рядки, назва, opts):
         if _КОЛІР_СЛОВО.search(o):
             return o[:60], hex_
     return "", hex_
+
+
+def _колір_зі_slug(url):
+    """Останній засіб: колір із транслітерованого slug магазину (напр. …_vrokhutro_chorniy.html → чорний)."""
+    шлях = urlparse(url).path.lower()
+    знайдені = [укр for lat, укр in _SLUG_КОЛІР.items() if re.search(r"(?:^|[-_/])" + lat, шлях)]
+    знайдені = [x for x in знайдені if not x.endswith("-")] or []
+    return знайдені[0] if знайдені else ""
 
 
 def картка_з_dom(url, html, dom):
@@ -230,15 +257,22 @@ def картка_з_dom(url, html, dom):
     ціна = (_ЦІНА.search(текст) or [None])
     ціна = ціна.group(0) if hasattr(ціна, "group") else ""
     склад = [x for x in склад if not re.search(r"від вартості|від ціни|від суми|знижк", x, re.I)]
+    for м, з in рядки2:                               # взуття/сумки: «Матеріал верху: шкіра» — це склад без відсотків
+        if re.search(r"матеріал|склад|тканин|верх|підкладк|підошв|устілк", м, re.I) and _ТКАНИНА.search(з) and len(з) < 80:
+            склад.append(f"{м.strip(': ')}: {з.strip()}")
+    склад = list(dict.fromkeys(склад))[:14]
     колір, колір_hex = _колір_із(рядки2, назва, dom.get("opts"))
+    колір_джерело = "картка" if колір else ""
     if isinstance(ld.get("color"), str) and not колір:
-        колір = ld["color"][:60]
+        колір, колір_джерело = ld["color"][:60], "ld"
+    if not колір:
+        колір = _колір_зі_slug(url); колір_джерело = "slug" if колір else ""
     if ld.get("offers"):
         of0 = ld["offers"] if isinstance(ld["offers"], dict) else (ld["offers"] or [{}])[0]
         if isinstance(of0, dict) and of0.get("price"):
             ціна = f"{of0['price']} {of0.get('priceCurrency', '')}".strip()
     к = {"url": url, "назва": назва[:200], "слот_шлях": " > ".join(dict.fromkeys(dom.get("crumbs") or []))[:200] or (ld.get("category") or "")[:200],
-         "колір": колір, "колір_hex": колір_hex, "склад": склад, "розміри": розміри, "наявність": None,
+         "колір": колір, "колір_hex": колір_hex, "колір_джерело": колір_джерело, "склад": склад, "розміри": розміри, "наявність": None,
          "ціна": ціна, "опис": опис[:4000], "характеристики": рядки2[:120], "фото": фото[:24],
          "артикул": (ld.get("sku") or ld.get("mpn") or next((з for м, з in рядки2 if re.search(r"артикул|код товару|sku|модель", м, re.I)), ""))[:60],
          "бренд": (ld.get("brand", {}) or {}).get("name", "") if isinstance(ld.get("brand"), dict) else str(ld.get("brand") or "")[:60],
@@ -363,14 +397,15 @@ class Виконавець:
                     pass
                 сер = round(sum(л["бали"]) / len(л["бали"]), 1) if л["бали"] else ""
                 with self.замок, open(self.зведення, "a", encoding="utf-8") as f:
+                    л["нотатка"] = re.sub(r"[\t\r\n]+", " ", л["нотатка"])
                     f.write("\t".join(str(x) for x in [datetime.date.today(), домен, р["сімейство"], р["транспорт"], л["адрес"], л["відкрито"], л["картка"],
                                                        л["нижче_порогу"], л["неповна_розбірка"], л["російська_назва"], л["не_картка"], л["збій"], сер,
                                                        round(time.time() - t0), л["нотатка"]]) + "\n")
                 лог(f"{домен:<24} карток {л['картка']} · нижче порогу {л['нижче_порогу']} · неповна розбірка {л['неповна_розбірка']} · "
                     f"рос. {л['російська_назва']} · не картка {л['не_картка']} · збоїв {л['збій']} · бал {сер} · {round(time.time() - t0)} с {л['нотатка']}")
 
-    async def _get(self, контекст, url):
-        r = await контекст.request.get(url, timeout=30_000, max_redirects=4)
+    async def _get(self, контекст, url, тайм=30_000):
+        r = await контекст.request.get(url, timeout=тайм, max_redirects=4, headers={"Accept": "application/json, text/xml, text/html;q=0.8"})
         return r.status, await r.text()
 
     # ── сімейства ──
@@ -386,6 +421,10 @@ class Виконавець:
             лог(f"{р['домен']}: API з рецепта ({р['пошук'][:60]}) ще не підключено — йду списками")
             л["нотатка"] = "api→список; "
         адреси = await (self._horoshop_адреси(контекст, р, л, корінь) if сім == "horoshop" else self._список_адреси(контекст, р, л, корінь))
+        if сім != "horoshop" and (len(адреси) < 30 or "sitemap" in (р.get("пошук") or "")):
+            з_мапи = await self._sitemap_адреси(контекст, р, л, корінь)
+            л["нотатка"] += f"sitemap +{len(з_мапи)}; "
+            адреси = list(dict.fromkeys(адреси + з_мапи))
         л["адрес"] = len(адреси)
         сторінка = await контекст.new_page()
         await сторінка.route("**/*", lambda route: route.abort() if route.request.resource_type in ("image", "media", "font") else route.continue_())
@@ -402,13 +441,21 @@ class Виконавець:
 
     async def _json_сімейство(self, контекст, р, л, ш, взято, корінь):
         n = 1
-        while n <= 60:
-            url = корінь + р["пошук"].replace("{n}", str(n))
-            try:
-                код, т = await self._get(контекст, url)
-                j = json.loads(т)
-            except Exception as e:  # noqa
-                л["збій"] += 1; л["нотатка"] += f"стор. {n}: {str(e)[:60]}; "; break
+        шаблон = р["пошук"].replace("per_page=100", "per_page=50")
+        префікси = [""] + ([р["мова"].rstrip("/")] if р.get("мова") and р["мова"] != "/" else []) + ["/uk", "/ua"]
+        while n <= 120:
+            j = None
+            for пр in префікси:
+                url = корінь + пр + шаблон.replace("{n}", str(n))
+                try:
+                    код, т = await self._get(контекст, url, тайм=90_000)
+                    j = json.loads(т); break
+                except Exception as e:  # noqa
+                    останнє = f"{url[:70]} → {str(e)[:50]} | тіло: {(т if 'т' in dir() else '')[:60]!r}"
+                    if n > 1: break                        # далі першої сторінки префікси не перебираємо
+            if j is None:
+                л["збій"] += 1; л["нотатка"] += f"стор. {n}: {останнє}; "; break
+            префікси = [url.replace(корінь, "", 1).replace(шаблон.replace("{n}", str(n)), "")]
             речі = j.get("products") if isinstance(j, dict) else j
             if not речі:
                 if код != 200 and n == 1:
@@ -444,6 +491,39 @@ class Виконавець:
         адреси = [a for a in dict.fromkeys(адреси) if not _СЛУЖБОВЕ.search(a) and (not рх or рх.search(urlparse(a).path))]
         json.dump(стан, open(f"сирі/{р['домен']}.стан.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         return адреси
+
+    async def _sitemap_адреси(self, контекст, р, л, корінь):
+        """Усі loc із sitemap (індекс → до 12 підмап); з regex речі — лише збіги, без нього — все, крім явного сміття (картку відсіє гейт)."""
+        рх = re.compile(р["річ_regex"]) if р.get("річ_regex") else None
+        адреси = []
+        try:
+            код, т = await self._get(контекст, корінь + "/robots.txt")
+            мапи = re.findall(r"(?im)^sitemap:\s*(\S+)", т) if код == 200 else []
+            мапи = мапи or [корінь + "/sitemap.xml"]
+            черга, бачені = list(мапи), set()
+            while черга and len(бачені) < 12:
+                м = черга.pop(0)
+                if м in бачені: continue
+                бачені.add(м)
+                код, т = await self._get(контекст, м)
+                if код != 200: continue
+                loc = re.findall(r"<loc>\s*([^<\s]+)", т)
+                if "<sitemapindex" in т:
+                    черга += [x for x in loc if not re.search(r"image|news|blog|video", x, re.I)]
+                else:
+                    адреси += loc
+        except Exception as e:  # noqa
+            л["нотатка"] += "sitemap: " + str(e)[:60] + "; "
+        вих = []
+        for a in dict.fromkeys(адреси):
+            if домен_із(a) != р["домен"] or _СЛУЖБОВЕ.search(a) or _РОЗДІЛ_НЕ.search(a) or _ПАГІНАЦІЯ.search(a) or "/filter" in a:
+                continue
+            if рх and not рх.search(urlparse(a).path + ("?" + urlparse(a).query if urlparse(a).query else "")):
+                continue
+            if р.get("мова") and р["мова"] != "/" and р["мова"].strip("/") not in urlparse(a).path.split("/"):
+                continue
+            вих.append(a)
+        return вих[:3000]
 
     async def _список_адреси(self, контекст, р, л, корінь):
         """Розділи з меню стартової → сторінки з пагінацією → посилання з картинкою і ціною поруч."""
@@ -523,6 +603,14 @@ class Виконавець:
             except Exception: pass  # noqa
             html = await сторінка.content()
             л["відкрито"] += 1
+            if re.search(r"cf-chl|challenge-platform|Just a moment|Attention Required|перевірка браузера", html[:8000], re.I) or (r and r.status in (403, 429, 503)):
+                л["заслон"] = л.get("заслон", 0) + 1
+                зап["стан"], зап["код"] = "заслон", (r.status if r else None); self._пиши(ш, зап)
+                await сторінка.wait_for_timeout(15_000)
+                if л["заслон"] >= 3:
+                    raise RuntimeError("заслон Cloudflare тричі поспіль → транспорт «дім»")
+                return
+            л["заслон"] = 0
             if (r and r.status >= 400) or len(html) < 1500:
                 зап["стан"], зап["код"] = "збій", (r.status if r else None); л["збій"] += 1
                 self._пиши(ш, зап); return
