@@ -99,15 +99,6 @@ def ід(шлях=None):
     return з
 
 
-def ід_за_темою(шлях=None):
-    """{ID: {імена тем}} — щоб було видно, коли правило живе у двох темах."""
-    out = {}
-    for ім, т in текст(шлях).items():
-        for i in set(ID_ПРАВИЛА.findall(т)):
-            out.setdefault(i, set()).add(ім)
-    return out
-
-
 if __name__ == "__main__":
     т = тека()
     print("тека корпусу: %s" % (т or "НЕ ЗНАЙДЕНО — перевірте %s" % ЗМІННА))
