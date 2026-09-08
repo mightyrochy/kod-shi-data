@@ -818,6 +818,44 @@ def підтон_риси(a, b, h):
             "жовтий/теплий" if h < 70 else "нейтральний")
 
 
+def поля_риси(lab, kind=None, lex=None):
+    """ВСІ похідні поля однієї риси з (L,a,b). ОДНЕ тіло на всі точки, що рису будують.
+
+    ЧОМУ ЦЕ ОКРЕМА ФУНКЦІЯ (клас дефекту, третій екземпляр).
+    Рису будували ДВА місця — `features()` і `перерахувати_рису()` — двома
+    незалежними наборами полів. Розбіжність між ними вже коштувала продукту
+    двічі, і обидва рази однаково: людина з НЕОДНОТОННИМ волоссям не діставала
+    палітри взагалі, бо друга риса приходила з іншим набором ключів.
+
+      · перший раз бракувало `undertone` -> KeyError у feature_spectrum
+        (полагоджено винесенням `підтон_риси` в одне тіло);
+      · другий раз розійшовся `warmth`: `features` рахує cos(h−60) БЕЗУМОВНО,
+        `перерахувати_рису` — тільки коли тон визначений, інакше None. Виміряно
+        08.09.2026 наскрізним прогоном:
+
+            bridge.палітри({волосся: ["#6b4b2e", "#b4b4b4"], ...})
+            -> palette.специфікація -> palette.тон_від_рис -> cs.resonance
+            -> TypeError: unsupported operand type(s) for -: 'float' and 'NoneType'
+
+        Тобто **жінка з сивиною або попелястим пасмом не діставала палітри** —
+        рівно той самий продуктовий наслідок, що й першого разу.
+
+    Полагодження екземпляра лишало клас. Тому тепер точка одна.
+
+    `warmth` для риси без тону — None, а не число: cos(h−60) на ахроматичній рисі
+    рахує кут, який сам модуль оголосив шумом округлення (ACHROMATIC_C). Нуль там
+    був би твердженням «рівно нейтральна», якого ніхто не міряв.
+    """
+    L, C, h = lch(lab)
+    a, b = lab[1], lab[2]
+    поля = dict(describe(lab, kind, lex))
+    тон_є = поля.get("h") is not None
+    поля.update(a=a, b=b, a_star=a,
+                undertone=підтон_риси(a, b, h),
+                warmth=(math.cos(math.radians(h - 60)) if тон_є else None))
+    return поля
+
+
 def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
              from_photo=False, protocol="uncontrolled", lex=None):
     """from_photo=True: волосся корегується виміряним зсувом (Grimes'09), шкіра —
@@ -870,13 +908,9 @@ def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
     F={}
     for nm,lab in hair_parts.items():
         if lab is None: continue
-        L,C,h = lch(lab); a,b = lab[1], lab[2]
-        cm = c_max(L,h); rel = C/cm if cm>1e-6 else 0
-        F[nm]=dict(**describe(lab, "волосся" if nm.startswith("волосся") else "очі" if nm.startswith("очі") else nm, lex), a=a, b=b,
-                   # ПІДТОН окремою віссю — одне тіло на всі точки, що будують рису
-                   undertone=підтон_риси(a, b, h),
-                   warmth=math.cos(math.radians(h-60)),      # +1 тепло .. -1 холод
-                   a_star=a)
+        kind = ("волосся" if nm.startswith("волосся")
+                else "очі" if nm.startswith("очі") else nm)
+        F[nm] = поля_риси(lab, kind, lex)
     # ШКІРА: ITA підключено до рекомендацій (раніше було мертвим кодом)
     if "шкіра" in F:
         sp = skin_pos(hair_parts.get("шкіра", lab_skin),
@@ -1027,15 +1061,8 @@ def перерахувати_рису(F, риса, lab, kind=None, lex=None):
     F = dict(F)
     старий = dict(F.get(риса) or {})
     kind = kind or ("волосся" if риса.startswith("волосся") else риса)
-    L, C, h = lch(lab); cm = c_max(L, h)
     нове = dict(старий)
-    нове.update(describe(lab, kind, lex))
-    нове.update(a=lab[1], b=lab[2], a_star=lab[1],
-                rel_C=round(C/cm, 2) if cm > 1e-6 else 0.0,
-                warmth=math.cos(math.radians(h - 60)) if нове.get("h") is not None else None,
-                # `undertone` тут бракувало, і кожна риса, додана цією функцією,
-                # валила feature_spectrum. Тепер обидві точки читають одне тіло.
-                undertone=підтон_риси(lab[1], lab[2], h))
+    нове.update(поля_риси(lab, kind, lex))
     if kind == "шкіра":
         sp = skin_pos(lab)
         нове.update(ITA=sp["ITA"], depth_band=list(sp["band_p"])[0],
@@ -1170,18 +1197,34 @@ def _arc_overlap(a,b,step=2):
     return (pts[0], pts[-1])
 
 def resonance(F, intent):
-    """Де спектри РІЗНИХ рис перегукуються — і де розходяться. Без злиття в бал."""
+    """Де спектри РІЗНИХ рис перегукуються — і де розходяться. Без злиття в бал.
+
+    ВІСЬ ТЕМПЕРАТУРИ ПРОПУСКАЄТЬСЯ, КОЛИ ХОЧ ОДНА РИСА БЕЗ ТОНУ. Ахроматична
+    риса (сиве пасмо, попелясте волосся, C* нижче ACHROMATIC_C) не має кута тону,
+    отже не має й температури. Раніше тут стояло беззастережне віднімання, і
+    сива риса валила весь виклик TypeError — а з ним `palette.тон_від_рис`,
+    `palette.специфікація` й `bridge.палітри`, тобто ВЕСЬ палітрний вихід для
+    людини з сивиною. Пара без спільної осі не мовчить: вона їде в
+    `без_температури` з причиною, бо «не порівнювали» і «порівняли й однаково» —
+    різні відповіді."""
     SP=spectra_by_feature(F,intent); names=list(SP)
-    echoes=[]; tensions=[]
+    echoes=[]; tensions=[]; без_т=[]
     for i in range(len(names)):
         for k in range(i+1,len(names)):
             n1,n2=names[i],names[k]
             ov=[o for a in SP[n1]["тон"] for b in SP[n2]["тон"] if (o:=_arc_overlap(a,b))]
-            dT=abs(SP[n1]["температура"]-SP[n2]["температура"])
-            if ov: echoes.append(dict(риси=(n1,n2), спільні_дуги=ov, Δтемпература=round(dT,2)))
-            if dT>0.6: tensions.append(dict(риси=(n1,n2), Δтемпература=round(dT,2),
-                                           суть="різні температури — не усереднювати",
-                                           вісь="undertone"))
+            t1, t2 = SP[n1]["температура"], SP[n2]["температура"]
+            dT = None if (t1 is None or t2 is None) else abs(t1-t2)
+            if dT is None:
+                без_т.append(dict(риси=(n1,n2),
+                                  чому="одна з рис ахроматична: тону нема, отже нема й "
+                                       "температури. Вісь не порівнюється — це не «однакові»"))
+            if ov: echoes.append(dict(риси=(n1,n2), спільні_дуги=ov,
+                                      Δтемпература=(round(dT,2) if dT is not None else None)))
+            if dT is not None and dT>0.6:
+                tensions.append(dict(риси=(n1,n2), Δтемпература=round(dT,2),
+                                     суть="різні температури — не усереднювати",
+                                     вісь="undertone"))
             dC=abs(SP[n1]["хрома"][0]-SP[n2]["хрома"][0])
             if dC>0.25: tensions.append(dict(риси=(n1,n2), Δхрома=round(dC,2),
                                            суть="різні рівні чистоти"))
@@ -1191,7 +1234,7 @@ def resonance(F, intent):
         who=[nm for nm,sp in SP.items() if any(_in_arc(h,a) for a in sp["тон"])]
         base=sorted({nm.split("_")[0] for nm in who})      # фракції -> одна риса
         if len(base)>=3: conf.setdefault(tuple(base),[]).append(h)
-    return dict(перегуки=echoes, напруги=tensions,
+    return dict(перегуки=echoes, напруги=tensions, без_температури=без_т,
                 зони_збігу={",".join(k):(v[0],v[-1]) for k,v in conf.items()})
 
 def same_colour(lab1, lab2, tol=3.0):
