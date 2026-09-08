@@ -12,6 +12,7 @@
 магазин у власній сліпоті.
 """
 import re, collections, feed
+import sys
 
 РОДИНА = {"сережки": "прикраси", "кольє": "прикраси", "намисто": "прикраси",
           "браслет": "прикраси", "каблучка": "прикраси", "брошка": "прикраси",
@@ -62,7 +63,7 @@ def аудит(offers):
 
 
 if __name__ == "__main__":
-    offers, _ = feed.читати_yml(sys.argv[1] if len(sys.argv) > 1 else "каталог_жіночий.xml")
+    offers, _ = feed.читати_yml(sys.argv[1] if len(sys.argv) > 1 else feed.каталог_на_диску())
     р = аудит(offers)
     зі_слотом = sum(1 for o in offers if feed.слот(o))
     print("речей зі слотом: %d · розбіжностей: %d (%.1f%%)"

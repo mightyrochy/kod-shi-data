@@ -18,7 +18,8 @@ from collections import Counter, defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) or ".")
 import verify as V, outfit as O, palette as P, colorspace as cs, feed as F, trace as TR
 
-ФІД = os.path.join(os.path.dirname(os.path.abspath(__file__)) or ".", "каталог_жіночий.xml")
+import feed as _Ф0
+ФІД = _Ф0.каталог_на_диску()   # 08.09.2026: було зашите «каталог_жіночий.xml», якого нема
 СЛОТИ = ("верх", "низ", "сукня", "верхній_шар", "взуття", "сумка")
 СХЕМИ = ("нейтрали+акцент", "тональна", "аналогова", "приглушена_комплементарна")
 
