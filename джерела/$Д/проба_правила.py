@@ -1,0 +1,1 @@
+/home/user/kod-shi-data/джерела/проба_правила.py

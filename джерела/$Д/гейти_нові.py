@@ -1,0 +1,1 @@
+/home/user/kod-shi-data/джерела/гейти_нові.py

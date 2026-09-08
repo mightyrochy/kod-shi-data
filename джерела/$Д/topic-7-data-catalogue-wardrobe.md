@@ -1,0 +1,1 @@
+/home/user/kod-shi-data/джерела/topic-7-data-catalogue-wardrobe.md

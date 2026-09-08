@@ -1,0 +1,1 @@
+/home/user/kod-shi-data/джерела/gate_e2e.py

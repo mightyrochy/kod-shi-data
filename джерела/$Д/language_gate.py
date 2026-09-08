@@ -1,0 +1,1 @@
+/home/user/kod-shi-data/джерела/language_gate.py
