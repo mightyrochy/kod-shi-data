@@ -1,1 +1,0 @@
-/home/user/kod-shi-data/джерела/audit_feed.py

@@ -1,1 +1,0 @@
-/home/user/kod-shi-data/джерела/міст_http.py
