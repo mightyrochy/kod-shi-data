@@ -5,7 +5,16 @@ import sys, os, json, random, re, collections, time
 sys.path.insert(0, ".")
 import bridge as B, pipeline as PL, composer as КМ
 os.makedirs("траса", exist_ok=True)
-вх = json.load(open("вх.json")); вх["сід"] = 4242
+# ВХІД — ТОЙ, ЩО Є (08.09.2026, крок A7). Тут стояло «вх.json», якого в
+# репозиторії нема; у ньому лежить `стенд_вх.json` — той самий профіль, яким
+# ходить стенд. Прилад падав FileNotFoundError на першому ж рядку.
+_ВХ = next((і for і in (sys.argv[1] if len(sys.argv) > 1 else None,
+                        "вх.json", "стенд_вх.json") if і and os.path.exists(і)), None)
+if _ВХ is None:
+    raise SystemExit("нема входу: покладіть стенд_вх.json поруч або дайте шлях аргументом")
+вх = json.load(open(_ВХ, encoding="utf-8")); вх["сід"] = 4242
+вх.setdefault("каталог", __import__("feed").каталог_на_диску())
+print("вхід: %s · каталог: %s" % (_ВХ, os.path.basename(вх["каталог"])))
 t = time.time()
 r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 print("запити: %.0f с · пул %d · стеля K=%s" % (time.time() - t, r["пул_речей"], (r.get("стеля") or {}).get("K")))
