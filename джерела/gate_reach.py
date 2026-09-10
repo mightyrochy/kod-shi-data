@@ -153,18 +153,31 @@ def з_коду(шлях="."):
         if not f.endswith(".py") or _прилад(f):
             continue
         s = open(os.path.join(шлях, f), encoding="utf-8").read()
-        у_док = set()
-        for блок in re.findall(r'"""(.*?)"""', s, re.S):
-            у_док |= set(ID.findall(блок))
-        for рядок in s.splitlines():
+        # НОМЕРИ РЯДКІВ, ЗАЙНЯТИХ ДОКСТРІНГАМИ, А НЕ МНОЖИНА ID З НИХ.
+        # Тут стояло `re.findall` + множина `у_док`, яка ЗБИРАЛАСЬ перед циклом,
+        # а застосовувалась ПІСЛЯ нього через `setdefault` — тобто рядок
+        # докстрінга вже записав `out[r][f] = "код"`, і прохід по `у_док` не
+        # робив нічого. Гейт, написаний відрізняти виконання правила від
+        # РОЗПОВІДІ про нього, зараховував розповідь за виконання: K-PAL-02 і
+        # K-PAL-13 мали «код» ЛИШЕ з рядка `palettes.py` всередині докстрінга,
+        # K-PAL-16 — «код» в `outfit.py` лише з docstring-рядка.
+        # `finditer` замість `findall`: із offset збігу виводиться номер рядка,
+        # і статус вирішується для РЯДКА, а не для тексту.
+        рядки_док = set()
+        for м in re.finditer(r'"""(?:.*?)"""', s, re.S):
+            перший = s.count("\n", 0, м.start()) + 1
+            рядки_док.update(range(перший, перший + м.group(0).count("\n") + 1))
+        for н, рядок in enumerate(s.splitlines(), 1):
             гол = рядок.split("#")[0]
             хвіст = рядок[len(гол):]
+            у_докстрінгу = н in рядки_док
             for r in ID.findall(гол):
-                out.setdefault(r, {})[f] = "код"
+                if у_докстрінгу:
+                    out.setdefault(r, {}).setdefault(f, "коментар")
+                else:
+                    out.setdefault(r, {})[f] = "код"
             for r in ID.findall(хвіст):
                 out.setdefault(r, {}).setdefault(f, "коментар")
-        for r in у_док:
-            out.setdefault(r, {}).setdefault(f, "коментар")
     return out
 
 
