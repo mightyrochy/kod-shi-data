@@ -56,7 +56,7 @@ def тема_за_ід():
     """{ID: [файли тем, де він названий]}. Правило живе в кількох темах законно."""
     out = collections.defaultdict(list)
     for імя, текст in sorted(КР.текст().items()):
-        for ід in set(КР.ID_ПРАВИЛА.findall(текст)):
+        for ід in КР.бази_в_тексті(текст):
             out[ід].append(імя)
     return out
 
