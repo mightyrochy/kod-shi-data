@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Проба мосту · Люстерко</title>
+<!--
+  НАВІЩО ЦЯ СТОРІНКА, А НЕ curl.
+  curl НЕ ПЕРЕВІРЯЄ CORS. Він шле запит і читає відповідь незалежно від того,
+  що сказав «Access-Control-Allow-Origin», — бо CORS накладає БРАУЗЕР, а не
+  сервер. Тобто зелений curl нічого не доводить про те, чи запрацює показ.
+  Ця сторінка ходить тим самим шляхом, що й показ: із того самого походження,
+  тим самим заголовком токена, тим самим тілом. Що спрацювало тут — спрацює там.
+
+  ДРУГЕ: вона на телефоні. curl на Android — це Termux і півгодини; ця
+  сторінка — посилання й одна кнопка.
+
+  ТРЕТЄ: вона окремо називає ТРИ різні поломки, які інакше зливаються в одне
+  «не працює»: міст не піднявся · міст живий, але не пускає · міст пускає,
+  а провайдер відмовляє (найчастіше — невірне ім'я моделі, 404).
+-->
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 0; padding: 18px;
+         max-width: 720px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p.тьм { color: #6b6b6b; margin: 4px 0 16px; font-size: 14px; }
+  label { display: block; font-size: 13px; color: #6b6b6b; margin: 12px 0 3px; }
+  input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 15px;
+          border: 1px solid #bbb; border-radius: 8px; font-family: ui-monospace, monospace; }
+  button { margin-top: 16px; padding: 12px 18px; font-size: 16px; border: 0;
+           border-radius: 8px; background: #1a1a1a; color: #fff; width: 100%; }
+  button:disabled { opacity: .5; }
+  pre { white-space: pre-wrap; word-break: break-word; background: #f4f4f4;
+        padding: 12px; border-radius: 8px; font-size: 13px; margin-top: 16px;
+        font-family: ui-monospace, monospace; }
+  @media (prefers-color-scheme: dark) { pre { background: #1e1e1e; } }
+  .добре { color: #0a7d32; } .зле { color: #b00020; }
+</style>
+</head>
+<body>
+<h1>Проба мосту</h1>
+<p class="тьм">Три невідомих одразу: чи піднявся міст, чи пускає він це
+походження й токен, чи існує така модель. Кожне називається окремо.</p>
+
+<label>Адреса мосту</label>
+<input id="адреса" placeholder="https://lyusterko-mist.ТВІЙ.workers.dev" autocapitalize="off" spellcheck="false">
+<label>Токен (латиницею — кирилиця в заголовку HTTP не проходить)</label>
+<input id="токен" placeholder="tok-a1" autocapitalize="off" spellcheck="false">
+<label>Ім'я моделі</label>
+<input id="модель" value="gemini-3.5-flash-lite" autocapitalize="off" spellcheck="false">
+
+<button id="пуск">Перевірити міст</button>
+<pre id="вивід">Заповніть поля або відкрийте цю сторінку з хешем:
+#міст=АДРЕСА&amp;т=ТОКЕН&amp;модель=ІМ'Я</pre>
+
+<script>
+"use strict";
+const $ = і => document.getElementById(і);
+const в = $("вивід");
+
+/* Ті самі ключі, що читає показ, — щоб заповнене тут працювало і там. */
+(function(){
+  try{
+    const h = new URLSearchParams((location.hash || "").replace(/^#/, ""));
+    $("адреса").value = h.get("міст")   || localStorage.getItem("міст:адреса") || "";
+    $("токен").value  = h.get("т")      || localStorage.getItem("міст:токен")  || "";
+    $("модель").value = h.get("модель") || localStorage.getItem("міст:модель") || "gemini-3.5-flash-lite";
+  }catch(_){}
+})();
+
+function рядок(о){ return Object.entries(о).map(([к,з])=>к+"="+з).join("\n"); }
+
+$("пуск").onclick = async () => {
+  const адреса = $("адреса").value.trim();
+  const токен  = $("токен").value.trim();
+  const модель = $("модель").value.trim();
+  if (!адреса || !токен){ в.textContent = "Потрібні адреса й токен."; return; }
+  /* Не-ASCII тут падає ще до мережі — краще сказати це словами, ніж дати
+     людині дивитись на TypeError у консолі, якої на телефоні нема. */
+  if (/[^\x00-\x7F]/.test(токен)){
+    в.textContent = "✗ Токен має не-ASCII символ. Заголовки HTTP приймають лише "
+                  + "латиницю й цифри — кириличний токен не пройде навіть до мосту.";
+    return;
+  }
+  try{
+    localStorage.setItem("міст:адреса", адреса);
+    localStorage.setItem("міст:токен", токен);
+    localStorage.setItem("міст:модель", модель);
+  }catch(_){}
+
+  $("пуск").disabled = true;
+  в.textContent = "Стукаю…\nпоходження: " + location.origin;
+  const почато = Date.now();
+  let відп;
+  try{
+    відп = await fetch(адреса, {
+      method: "POST",
+      headers: {"Content-Type":"application/json", "x-lyusterko-token": токен},
+      /* Найдешевший можливий запит: одне слово, стеля 16 токенів. Мета —
+         перевірити ШЛЯХ, а не якість моделі. Стеля 256, а не 16: Flash мислить
+         за замовчуванням, і думки рахуються ПРОТИ неї — на 16 весь бюджет
+         з'їдали думки, текст був порожній, а виглядало це як «модель мовчить». */
+      body: JSON.stringify({model: модель, max_tokens: 256,
+        messages: [{role:"user", content:[{type:"text",
+          text:"Відповідай одним словом українською: яка зараз пора року в Україні у вересні?"}]}]}),
+    });
+  }catch(e){
+    в.innerHTML = '<span class="зле">✗ Не достукався взагалі.</span>\n\n'
+      + String(e) + "\n\n"
+      + "Найчастіші причини, у порядку ймовірності:\n"
+      + "· адреса з друкарською помилкою або воркер не задеплоєний\n"
+      + "· у ДОЗВОЛЕНІ_ПОХОДЖЕННЯ немає «" + location.origin + "»\n"
+      + "  (саме це походження треба вписати у worker.js і передеплоїти)\n"
+      + "· браузер зарізав змішаний вміст: сторінка http, міст https";
+    $("пуск").disabled = false; return;
+  }
+
+  const заг = {};
+  відп.headers.forEach((з,і)=>{ заг[і] = з; });
+  const сире = await відп.text();
+  const час = ((Date.now()-почато)/1000).toFixed(1);
+
+  if (!відп.ok){
+    let підказка = "";
+    if (відп.status === 403) підказка = "Міст ЖИВИЙ, але не пускає це походження.\n"
+      + "Впиши «" + location.origin + "» у ДОЗВОЛЕНІ_ПОХОДЖЕННЯ й передеплой.";
+    else if (відп.status === 401 && /ACCESS_TOKEN_TYPE_UNSUPPORTED|invalid authentication/i.test(сире))
+      підказка = "МІСТ ПРАЦЮЄ. Відмовив САМ GOOGLE: ключ формату AQ. його\n"
+      + "Generative Language API не приймає для цього проєкту.\n"
+      + "Це відома біда переходу AIza → AQ, і вона не в твоєму коді.\n"
+      + "Що робити: натисни «Copy cURL quickstart» на сторінці ключа —\n"
+      + "там Google сам пише, як зараз кликати. Якщо там інший заголовок\n"
+      + "або інша адреса — покажи мені, і я поправлю міст за десять хвилин.";
+    else if (відп.status === 401 && /"м/.test(сире)) підказка = "Міст живий і пускає "
+      + "походження, але ТОКЕН невідомий.\nПеревір секрет TESTER_TOKENS — через кому, без пробілів.";
+    else if (відп.status === 401) підказка = "401 прийшов від провайдера, не від мосту:\n"
+      + "ключ не підійшов. Дивись тіло нижче — воно від Google.";
+    else if (відп.status === 400) підказка = "Міст живий, але не впізнав модель.\n"
+      + "Ім'я має починатись на gemini- або claude-.";
+    else if (відп.status === 404) підказка = "МОДЕЛІ З ТАКИМ ІМЕНЕМ НЕМА.\n"
+      + "Це найчастіша поломка: каталог Google рухається, і ім'я треба звірити\n"
+      + "в AI Studio. Пробуй інші, міняючи лише поле «модель».";
+    else if (відп.status === 429) підказка = "Квота вичерпана або запити занадто часті.\n"
+      + "На дармовому тарифі Gemini це 10–15 запитів на хвилину.";
+    else if (відп.status === 503) підказка =
+      "МОДЕЛЬ ПЕРЕВАНТАЖЕНА (сплеск попиту в Google, тимчасово). Міст уже спробував\n"
+      + "двічі. Що робити: повторити за хвилину, або задати на воркері\n"
+      + "GEMINI_FALLBACK=gemini-3.5-flash-lite — тоді міст сам перейде на неї,\n"
+      + "а яка модель відповіла, покаже рядок «відповіла».";
+    else if (відп.status === 504 || відп.status === 524) підказка =
+      "МІСТ ПРАЦЮЄ — МОВЧИТЬ МОДЕЛЬ. Спроби й секунди — у тілі нижче.\n"
+      + "Це латентність провайдера, не міст. Що робити: інше ім'я моделі в полі\n"
+      + "«модель» (напр. gemini-2.5-flash-lite), змінна GEMINI_THINKING=off,\n"
+      + "і GEMINI_FALLBACK=gemini-2.5-flash-lite,gemini-2.5-flash на воркері —\n"
+      + "тоді міст сам перейде на наступну, коли основна мовчить.";
+    else if (відп.status === 500 && /секрета/.test(сире)) підказка =
+      "Міст живий, але секрета з ключем на ньому нема.\n"
+      + "Додай GEMINI_API_KEY (або ANTHROPIC_API_KEY) у Variables and Secrets.";
+    в.innerHTML = '<span class="зле">✗ HTTP ' + відп.status + '</span>  ·  ' + час + " с\n\n"
+      + (підказка ? підказка + "\n\n" : "")
+      + "тіло відповіді:\n" + сире.slice(0, 900) + "\n\nзаголовки:\n" + рядок(заг);
+    $("пуск").disabled = false; return;
+  }
+
+  let д; try{ д = JSON.parse(сире); }catch{ д = null; }
+  const текст = д && (д.content||[]).map(б=>б.text||"").join(" ").trim();
+  const u = (д && д.usage) || {};
+  в.innerHTML = '<span class="добре">✓ Міст працює.</span>  ·  ' + час + " с\n\n"
+    + "провайдер   : " + (заг["x-provider"] || "?") + "\n"
+    + "відповіла   : " + (заг["x-model"] || "?") + (заг["x-attempts"] ? "  (спроби: " + заг["x-attempts"] + ")" : "") + "\n"
+    + "модель      : " + модель + "\n"
+    + "відповідь   : " + (текст || "(порожньо)") + "\n"
+    + "токени      : вхід " + (u.input_tokens ?? "?") + " · вихід " + (u.output_tokens ?? "?")
+    + (u.thinking_tokens ? " (з них думок " + u.thinking_tokens + ")" : "") + "\n"
+    + "мислення    : " + ({"thinkingLevel":"обмежене (рівень)",
+                          "thinkingBudget":"обмежене (бюджет)",
+                          "as-is":"як у моделі за замовчуванням",
+                          "dropped-after-400":"⚠ модель не приймає це поле — знято"}
+                         [заг["x-thinking"]] || заг["x-thinking"] || "?") + "\n"
+    + "stop_reason : " + (д && д.stop_reason) + "\n"
+    + "прогонів    : " + (заг["x-runs-left"] || "n/a") + "\n\n"
+    + "Тепер це саме ім'я моделі можна ставити в МОДЕЛЬ_П у показі,\n"
+    + "а показ відкривати з #міст=" + адреса + "&т=" + токен;
+  $("пуск").disabled = false;
+};
+</script>
+</body>
+</html>
