@@ -21,6 +21,13 @@ REGISTRY = {
                     val=(54.0,77.8), де_в_коді="довідково: вужчий діапазон, у коді не вживається"),
  "ita_bands":  dict(t="T1", src="Chardon 1991 / Del Bino & Bernerd 2013",
                     val="6 смуг", де_в_коді="ITA_BANDS + ita_band()"),
+ "ita_domain": dict(t="T1", src="означення ITA° = atan2(L*−50, b*) (Chardon 1991): при b*>0 "
+                              "арктангенс лежить у (−90°, +90°), і це не оцінка, а область "
+                              "значень самої формули. Потрібна тому, що крайні кошики "
+                              "ITA_BANDS писані як ±1e9 — «нескінченність» замість межі: "
+                              "поки смуга лічилась часткою кидків, це не боліло, а маса "
+                              "розподілу на нескінченному кошику не визначена",
+                    val=(-90.0, 90.0), де_в_коді="ITA_DOMAIN у ita_band_mass()"),
  "img_bias":   dict(t="T1", src="Grimes 2009, n=134: фото завищує L*,a*,b*; r=.63/.59/.51",
                     val=(33.42,3.38,8.00),
                     де_в_коді="НЕ ЗАСТОСОВУЄТЬСЯ: середня різниця по вибірці не "
@@ -424,20 +431,61 @@ def ita_band(i):
     return next(n for lo,hi,n in ITA_BANDS if lo<=i<hi)
 ITA_BANDS=[(55,1e9,"very light"),(41,55,"light"),(28,41,"intermediate"),
            (10,28,"tan"),(-30,10,"brown"),(-1e9,-30,"dark")]
+ITA_DOMAIN = REGISTRY["ita_domain"]["val"]   # область значень atan2(L*-50, b*) при b*>0
+
+def _норм_cdf(x): return 0.5*(1.0+math.erf(x/math.sqrt(2.0)))
+
+def _σ_lab_з_σ_ita(lab, σ_ita):
+    """ЯКОБІАН ita(): переводить σ по ITA° в σ по (L*, b*).
+    ITA = atan2(L*−50, b*); при r = |(L*−50, b*)| похідна кута по будь-якому
+    напрямку в площині (L*, b*) дорівнює 1/r рад на одиницю Lab, тож
+    σ_Lab = σ_ITA[рад]·r. Без цього переходу число з протоколу зйомки
+    (градуси) клалося просто на координати Lab (одиниці Lab) — різні одиниці."""
+    r = math.hypot(lab[0]-50.0, lab[2])
+    return math.radians(σ_ita)*r if σ_ita>0 and r>0 else 0.0
+
+def ita_band_mass(μ, σ):
+    """Маса нормального розподілу ITA° у кожному кошику ITA_BANDS.
+    σ — у ГРАДУСАХ ITA. Кошики обрізано областю ITA_DOMAIN: крайні писані як
+    ±1e9, а маса на нескінченному кошику не визначена; після обрізання розподіл
+    нормується на область, тож сума мас дорівнює 1 і смуга не залежить від сіду."""
+    if μ != μ: return {ita_band(float("nan")): 1.0}
+    if σ <= 0:  return {ita_band(μ): 1.0}
+    низ, верх = ITA_DOMAIN
+    Z = _норм_cdf((верх-μ)/σ) - _норм_cdf((низ-μ)/σ)
+    if Z <= 0: return {ita_band(μ): 1.0}
+    маси = {}
+    for lo,hi,name in ITA_BANDS:
+        a, b = max(lo, низ), min(hi, верх)
+        if b <= a: continue
+        маси[name] = (_норм_cdf((b-μ)/σ) - _норм_cdf((a-μ)/σ)) / Z
+    return маси
+
 def skin_pos(lab, sigma=0.0, protocol=None):
+    """`sigma` — невизначеність у ГРАДУСАХ ITA (як її й подає протокол зйомки:
+    skin_photo_uncertainty повертає `ita_sigma`), а НЕ шум по координатах Lab.
+    Раніше це число сипалось гаусом просто на (L*,a*,b*): на #deb295 радіус
+    (L*−50, b*) = 33.2, тож обіцяні 8° давали ≈15° по ITA. Тепер σ переходить у
+    Lab через якобіан ita() — і лише по (L*, b*), бо ITA від a* не залежить, а
+    a* лицьової шкіри інваріантне по популяціях (див. REGISTRY['olive']).
+    ITA і band_p рахуються аналітично з (μ, σ), тому не тремтять від сіду;
+    кидки лишаються тільки там, де форма локусу нелінійна — p_in_locus/p_olive."""
     if protocol: sigma = max(sigma, skin_photo_uncertainty(protocol)["ita_sigma"])
-    n = 200 if sigma>0 else 1; itas=[]; bands={}; loc=0.; olv=0.
+    μ_ita = ita(lab[0], lab[2])
+    σ_lab = _σ_lab_з_σ_ita(lab, sigma)
+    n = 200 if σ_lab>0 else 1; loc=0.; olv=0.
     for _ in range(n):
-        L,a,b = [v+random.gauss(0,sigma) for v in lab] if sigma>0 else lab
-        i = math.degrees(math.atan2(L-50,b)) if b else float('nan')
-        _,C,h = lch((L,a,b)); itas.append(i)
-        bd = ita_band(i); bands[bd]=bands.get(bd,0)+1/n
+        if σ_lab>0:
+            L,a,b = lab[0]+random.gauss(0,σ_lab), lab[1], lab[2]+random.gauss(0,σ_lab)
+        else:
+            L,a,b = lab
+        _,C,h = lch((L,a,b))
         loc += soft(h,*CONST["skin_h"][0],WIDTHS["h"])*soft(C,*CONST["skin_C"][0],WIDTHS["C"])/n
         olv += soft(h,CONST["olive"][0][0],120,WIDTHS["b"])*(1-soft(a,-50,CONST["olive"][0][1],2.))/n
-    _iσ, _iμ = _розсіяння([x for x in itas if x == x])   # (σ, μ); ігнорувати nan; center+σ, НЕ min/max
-    return dict(ITA=round(_iμ, 1) if _iμ is not None else float('nan'),
-        ITA_σ=round(_iσ, 1) if _iσ is not None else 0.0,   # неперервна невизначеність (не діапазон)
-        band_p={k:round(v,2) for k,v in sorted(bands.items(),key=lambda x:-x[1])},
+    bands = ita_band_mass(μ_ita, sigma)
+    return dict(ITA=round(μ_ita, 1) if μ_ita == μ_ita else float('nan'),
+        ITA_σ=round(sigma, 1) if μ_ita == μ_ita else 0.0,   # неперервна невизначеність, ГРАДУСИ ITA
+        band_p={k:round(v,2) for k,v in sorted(bands.items(),key=lambda x:-x[1]) if round(v,2)>0},
         p_in_locus=round(loc,2), p_olive=round(olv,2),
         photo_note=(skin_photo_uncertainty(protocol)["note"] if protocol else None),
         tier=tier("skin_h","olive"))
