@@ -597,8 +597,8 @@ def _пари_не_зібрані():
     "feed", "fit", "gate_reach", "graph", "hypergraph", "language_gate",
     "outer", "outfit", "pair_test", "palette", "palettes", "personal_palette",
     "pipeline", "profile", "rule_genus", "run_outfit", "silhouette", "status",
-    "trace", "verify", "знахідка", "каблук", "корпус", "реєстри", "семплер",
-    "сценарій",
+    "trace", "verify", "знахідка", "каблук", "корпус", "прилади", "реєстри",
+    "семплер", "сценарій",
 )
 
 
