@@ -133,6 +133,18 @@ def to_rgb(L,a,b,space="sRGB"):
     fy=(L+16)/116; X,Y,Z=.95047*_fi(fy+a/500), _fi(fy), 1.08883*_fi(fy-b/200)
     M=_inv(space); lin=[M[i][0]*X+M[i][1]*Y+M[i][2]*Z for i in range(3)]
     return [1.055*c**(1/2.4)-.055 if c>.0031308 else 12.92*c for c in lin]
+
+def hex_з_lab(lab, space="sRGB"):
+    """`#rrggbb` з Lab — ОДНА точка перетворення для рис, смуг і дуг.
+
+    Поза гамутом простору канал обрізається до [0,1]: це ЗОБРАЖЕННЯ кольору для
+    екрана, а не твердження, що колір відтворюваний. Стеля реальної поверхні —
+    окреме питання і живе в `c_max_поверхня` (R-COL-12); змішувати їх не можна:
+    перше каже «як це показати», друге — «чи буває така тканина».
+    """
+    return "#%02x%02x%02x" % tuple(
+        int(round(max(0.0, min(1.0, c)) * 255)) for c in to_rgb(*lab, space=space))
+
 def to_xyz(lab):
     L,a,b = lab; fy=(L+16)/116
     return (.95047*_fi(fy+a/500), _fi(fy), 1.08883*_fi(fy-b/200))
@@ -566,9 +578,14 @@ def describe(lab, kind=None, lex=None):
     """Чисті координати. Тон None, якщо колір ахроматичний."""
     L,C,h=lch(lab); cm=c_max(L,h); rel=C/cm if cm>1e-6 else 0
     is_ach, d_neutral = achromatic(lab); hue_defined = not is_ach
+    # hex СТАВИТЬСЯ ТУТ, БО ЧИТАЄТЬСЯ СКРІЗЬ (P29). До 11.09.2026 `hex` мав лише
+    # макіяж — єдина риса, якій його клали руками з входу. `personal_palette`
+    # читав `f.get("hex")` у п'яти місцях («її чорний», «її білий», нейтралі,
+    # родини, макіяж) і на ДАНИХ рисах отримував None: читання виглядали живими,
+    # а віддавали порожнечу. Риса завжди має lab — отже завжди може мати hex.
     d=dict(L=round(L,1), C=round(C,1), h=(round(h,1) if hue_defined else None),
            rel_C=round(rel,2), тон_визначений=hue_defined,
-           відстань_до_нейтралі=round(d_neutral,1))
+           відстань_до_нейтралі=round(d_neutral,1), hex=hex_з_lab(lab))
     if lex: d["назва"]=lex.describe(L,rel,h) if hue_defined else "нейтральний (без тону)"
     if kind=="волосся":
         d["HT"]=ht_from_L(L); d.update(hair_cast(lab))
