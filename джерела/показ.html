@@ -751,6 +751,7 @@ body[data-жест="хата"] .знак::after{background:var(--марена)}
       <label class="ан" style="top:17.5%"><span>Плечі</span><input type="number" id="мр-плечі" inputmode="numeric" placeholder="96"><b>см</b></label>
       <label class="ан" style="top:28%"><span>Груди</span><input type="number" id="мр-груди" inputmode="numeric" placeholder="94"><b>см</b></label>
       <label class="ан" style="top:41%"><span>Талія</span><input type="number" id="мр-талія" inputmode="numeric" placeholder="76"><b>см</b></label>
+      <label class="ан дод" style="top:48%"><span>Високе стегно</span><input type="number" id="мр-високе-стегно" inputmode="numeric" placeholder="88"><b>см</b></label>
       <label class="ан" style="top:55%"><span>Стегна</span><input type="number" id="мр-стегна" inputmode="numeric" placeholder="100"><b>см</b></label>
       <label class="ан дод" style="top:70%"><span>Коліно</span><input type="number" id="мр-коліно" inputmode="numeric" placeholder="37"><b>см</b></label>
       <label class="ан дод" style="top:79%"><span>Литка</span><input type="number" id="мр-литка" inputmode="numeric" placeholder="36"><b>см</b></label>
@@ -1562,11 +1563,12 @@ let АКТИВНИЙ = null;
    рівня з `areas.РІВНІ`: `fit.тіло` приймає обхват відомого рівня як ВИМІРЯНУ
    ширину, а на невідомому імені кидає ValueError — тобто одрук кладе живий
    шлях усіх чотирьох рук, не одне правило.
-   НЕОБОВʼЯЗКОВІ (коліно, литка, щиколотка) стоять у тому самому списку: для
-   передавання вони нічим не відрізняються, а обовʼязковість живе окремо —
-   в `немаМірок` і `чогоБракує`, які перелічують рівно чотири обхвати. */
+   НЕОБОВʼЯЗКОВІ (високе стегно, коліно, литка, щиколотка) стоять у тому самому
+   списку: для передавання вони нічим не відрізняються, а обовʼязковість живе
+   окремо — в `немаМірок` і `чогоБракує`, які перелічують рівно чотири обхвати. */
 const ПОЛЯ_ОБХВАТІВ = [['мр-плечі','плечі'],['мр-груди','груди'],
-                       ['мр-талія','талія'],['мр-стегна','стегна'],
+                       ['мр-талія','талія'],['мр-високе-стегно','високе_стегно'],
+                       ['мр-стегна','стегна'],
                        ['мр-коліно','коліно'],['мр-литка','литка'],
                        ['мр-щиколотка','щиколотка']];
 
