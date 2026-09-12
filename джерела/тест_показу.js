@@ -61,6 +61,16 @@ if (ЗІБРАНИЙ) {
   }
 }
 
+/* Довідник нагод/місць/кодів — вивід `pipeline.довідник()`, як і в збірці
+   (Т-08 крок 3): шаблон без нього не стартує, бо плейсхолдер — не JS. Без
+   python поруч таблиці лишаються порожніми, і батарея міряє решту. */
+let ДОВІДНИК_JSON = '{"нагоди":[],"місця":[],"коди":[],"дефолт_діапазон":[3,6]}';
+try {
+  ДОВІДНИК_JSON = require("child_process").execSync(
+    'python3 -c "import json, pipeline; print(json.dumps(pipeline.довідник(), ensure_ascii=False))"',
+    {cwd: __dirname, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"]}).trim().split("\n").pop();
+} catch (e) { console.log("  (довідник не зібрався з python — таблиці порожні: " + String(e).slice(0, 80) + ")"); }
+
 function підставити(html, фід, підпис) {
   if (ЗІБРАНИЙ) {
     return html
@@ -70,7 +80,8 @@ function підставити(html, фід, підпис) {
   }
   return html
     .replace("__МОДУЛІ_ПОКАЗУ__", "ЗАГЛУШКА").replace(/__ЗБІРКА_ПОКАЗУ__/g, "тест")
-    .replace("__ВІДБИТОК__", "abc").replace("__ФІД_ПОКАЗУ__", фід).replace("__КАТАЛОГ_ПОКАЗУ__", підпис);
+    .replace("__ВІДБИТОК__", "abc").replace("__ФІД_ПОКАЗУ__", фід).replace("__КАТАЛОГ_ПОКАЗУ__", підпис)
+    .replace("__ДОВІДНИК_ПОКАЗУ__", ДОВІДНИК_JSON);
 }
 
 function сторінка({url, фід = "каталог_brief.xml", підпис = "каталог_стенд.xml · 639 речей"} = {}) {
