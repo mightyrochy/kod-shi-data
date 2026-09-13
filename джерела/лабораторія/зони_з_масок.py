@@ -32,6 +32,9 @@ _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)
 import math
 import colorspace as cs
 from colorspace import to_lab
+# Для `features_from_zones` (дописана нижче, Н-small-data-107): вона будує риси
+# простим шляхом і лише ДОДАЄ до них зонні числа, тож кличе ядро, а не дублює.
+from colorspace import КАСТ_ББ, de00, describe, features, lch
 from extract import reject_specular, reject_shadow, zone_stats
 
 # ── 1. ЕРОЗІЯ: крайові пікселі змішані з сусіднім матеріалом ──────────────────
@@ -176,3 +179,71 @@ def build_zones(px, masks, erode_k=2):
     out["_пікселі"]={nm: n for nm, n in сирі.items()}
     out["_втрачені"]=втрати
     return out
+
+
+# ── СПОЖИВАЧ ЦЬОГО ФОРМАТУ: ЗОНИ → РИСИ (Н-small-data-107 крок 1, Н-02-03) ───
+# Було в `colorspace.py` (:1426–:1487 до 13.09.2026). Переїхало сюди без зміни
+# логіки: `build_zones` — єдиний постачальник формату, `features_from_zones` —
+# єдиний споживач, і в жодного нема викликача. Доки канал без входу, обидва його
+# кінці лежать в одному файлі лабораторії, а не по різних берегах межі ядра:
+# інакше ядро возить у вантаж функцію, яку нема кому покликати, і читач щоразу
+# наново з'ясовує, що «другий вхід» — не вхід.
+# Простий шлях (три Lab від звичайної VLM) лишився в ядрі — `colorspace.features`.
+# Багатий шлях додає: приобличчеву смугу волосся, внутрішній контраст зон і
+# ВИВЕДЕННЯ надійності джерела з виміряного касту замість ручного прапорця.
+
+ZONE_MAP = {"шкіра_щоки":"шкіра", "волосся_обрамлення":"волосся_біля_обличчя",
+            "волосся_маса":"волосся", "райдужка":"очі", "оправа":"оправа"}
+
+def infer_source(zones):
+    """Надійність джерела — з виміряного касту, а не з ручного прапорця."""
+    c = zones.get("_каст", {})
+    if not c.get("available"):
+        return "uncontrolled", f"каст не оцінено: {c.get('причина','нема даних')}"
+    mag = c.get("magnitude", 99)
+    if "шум" in c.get("verdict",""):
+        return "uncontrolled", "сигнал склери слабший за шум"
+    if mag < КАСТ_ББ[0]:  return "protocolized", f"каст {mag} — близько до нейтрального"
+    if mag < КАСТ_ББ[1]: return "uncontrolled", f"каст {mag} — помірний"
+    return "uncontrolled", f"каст {mag} — сильний, абсолютний колір ненадійний"
+
+def features_from_zones(zones, lex=None):
+    """Приймає вихід `build_zones` (вище в цьому ж файлі). Той самий формат рис, що й features(),
+    плюс внутрішній контраст зони і приобличчева смуга як окремий голос."""
+    labs, extra = {}, {}
+    for zname, fname in ZONE_MAP.items():
+        z = zones.get(zname)
+        if not z: continue
+        labs[fname] = z["dominant"]
+        extra[fname] = dict(внутрішній_контраст=z.get("spread"),
+                            p10=z.get("p10"), p90=z.get("p90"), n=z.get("n"),
+                            середнє_vs_медоїд=z.get("mean_vs_medoid"))
+    if "шкіра" not in labs:
+        втрата = (zones.get("_втрачені") or {}).get("шкіра_щоки")
+        raise ValueError("зона шкіри обов'язкова" + (
+            f": маска була, але {втрата}" if втрата else
+            ": маски щік не подано або вона порожня"))
+    F = features(labs["шкіра"], labs.get("волосся", labs["шкіра"]),
+                 labs.get("очі", labs["шкіра"]), labs.get("оправа"), lex=lex)
+    # приобличчева смуга — окремий голос, якщо вона є і відрізняється від маси
+    band = labs.get("волосся_біля_обличчя")
+    if band and "волосся" in labs:
+        d = de00(band, labs["волосся"])
+        if d >= 3.0:
+            F["волосся_біля_обличчя"] = dict(**describe(band,"волосся",lex),
+                                             a=band[1], b=band[2],
+                                             undertone="—", warmth=math.cos(math.radians(lch(band)[2]-60)))
+            extra.setdefault("волосся_біля_обличчя",{})["відмінність_від_маси"]=round(d,1)
+    for k,v in extra.items():
+        if k in F: F[k].update(v)
+    src, why = infer_source(zones)
+    # Площі зон особи їдуть далі: колір_образу.бюджет_хроми рахує фарбоване волосся
+    # (K-PC-04) в бюджет хром, і без цієї частки він утримує тест конфлікту.
+    пкс = zones.get("_пікселі") or {}
+    F["_пікселі"] = {"волосся": (пкс.get("волосся_маса", 0) + пкс.get("волосся_обрамлення", 0)) or None,
+                     "шкіра": пкс.get("шкіра_щоки"), "оправа": пкс.get("оправа")}
+    F["_meta"] = dict(**F.get("_meta",{}), джерело=src, чому=why,
+                      каст=zones.get("_каст"), вхід="zones",
+                      втрачені_зони=zones.get("_втрачені") or None)
+    return F, src
+
