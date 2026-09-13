@@ -102,7 +102,11 @@ def прогнати(від=0, до=None):
             if було not in s:
                 print("  ⚠ мутант не наклався:", файл, "|", гейт); провал += 1; continue
             open(ш, "w", encoding="utf-8").write(s.replace(було, стало, 1))
-            r = subprocess.run([sys.executable, "гейти_нові.py"], cwd=тека,
+            # Батарея переїхала в `прилади/` (Н-02-03, 13.09.2026): `гейти_нові.py`
+            # тепер лише димовий прогін і проби протоколу, і жоден мутант у ньому
+            # не червонів би — прилад міряв би власну сліпоту як «мутант вижив».
+            r = subprocess.run([sys.executable, os.path.join("прилади", "розділи_гейтів.py")],
+                               cwd=тека,
                                capture_output=True, text=True, timeout=900)
             червоні = [l for l in r.stdout.splitlines() if "✗" in l]
             влучив = any(гейт[:40] in l for l in червоні)
