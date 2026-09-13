@@ -16,7 +16,8 @@
 import sys, os, math
 from collections import Counter, defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) or ".")
-import verify as V, outfit as O, palette as P, colorspace as cs, feed as F, trace as TR
+import verify as V, palette as P, colorspace as cs, feed as F, trace as TR
+import колір_образу as _КОЛІР   # Н-02-01, сесія 4
 
 import feed as _Ф0
 СЛОТИ = ("верх", "низ", "сукня", "верхній_шар", "взуття", "сумка")
@@ -64,7 +65,7 @@ def main():
     одно = [s for s in sku if s["lab"]]
     print("SKU %d · розв'язка кольору %s · з Lab-точкою %d (%.0f%%)" %
           (len(sku), dict(статус), len(одно), 100*len(одно)/len(sku)))
-    верд = Counter(("нейтраль" if O.нейтраль(s["lab"]) is not None else "колір") for s in одно)
+    верд = Counter(("нейтраль" if _КОЛІР.нейтраль(s["lab"]) is not None else "колір") for s in одно)
     print("ярус 2 (нейтраль/колір за центром вікна):", dict(верд))
 
     # ── людина → рядки запиту ──
