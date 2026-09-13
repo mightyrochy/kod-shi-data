@@ -338,13 +338,14 @@ def _тонова_вісь_без_каталогу():
     вище порогу нейтралі). Доки таких мало, «вісь нічого не змінила» — це факт
     про каталог, а не про вісь, і плутати їх не можна."""
     try:
-        import colorspace as cs, outfit as O, run_outfit as RO
+        import colorspace as cs, run_outfit as RO
+        import колір_образу as _КОЛІР   # Н-02-01, сесія 4
     except Exception as e:
         return True, "не вдалось порахувати: %s" % e
     кольорових, усього = 0, 0
     for _арт, _н, _к, _ц, _кол, hexx, _р, _с in RO.МОДЕЛІ:
         усього += 1
-        if O.нейтраль(cs.hx(hexx)) is None:
+        if _КОЛІР.нейтраль(cs.hx(hexx)) is None:
             кольорових += 1
     частка = кольорових / max(1, усього)
     return (частка < 0.5,
