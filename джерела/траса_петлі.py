@@ -98,8 +98,8 @@ def main():
     print("  %-12s %6s %6s %6s %6s  %s" % ("правило", "образів", "мін", "медіана", "макс", "оцінка"))
     import statistics as st
     for пр_, n in всі.most_common():
-        v = сили_в[пр_]; oц = "СТАЛА — мертве за критерієм 3" if len(set(round(x, 3) for x in v)) == 1 and n >= N * 0.9 else ""
-        print("  %-12s %6d %6.2f %6.2f %6.2f  %s" % (пр_, n, min(v), st.median(v), max(v), oц))
+        v = сили_в[пр_]; оц = "СТАЛА — мертве за критерієм 3" if len(set(round(x, 3) for x in v)) == 1 and n >= N * 0.9 else ""
+        print("  %-12s %6d %6.2f %6.2f %6.2f  %s" % (пр_, n, min(v), st.median(v), max(v), оц))
     json.dump(dict(правила_брифа=[p.get("правило") for p in пр], активація={k: dict(n=n, мін=min(сили_в[k]), макс=max(сили_в[k])) for k, n in всі.items()}),
               open("траса/5_активація.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     return 0
