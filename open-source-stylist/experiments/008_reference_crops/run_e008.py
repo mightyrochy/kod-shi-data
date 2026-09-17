@@ -1,4 +1,4 @@
-"""E-008 runner — reference panel: cropped vs raw product photos.
+"""Historical E-008 runner - full product photos vs the old masked baseline.
 
 Usage (from project root):
     python -m experiments.008_reference_crops.run_e008 --phase 1
@@ -10,7 +10,9 @@ Phase 1: build raw panel → generate 5 seeds → segment seed_42 + overlays.
 Phase 2: segment remaining seeds → compute all gates → print comparison table
          (raw condition B vs E-005 cropped baseline condition A).
 
-Configuration is frozen per protocol — do not modify between phases.
+The saved summary remains readable. Generation phases are closed because the
+active prompt and outfit package have changed since this experiment was run;
+rerunning them would no longer reproduce the recorded comparison.
 """
 
 from __future__ import annotations
@@ -504,6 +506,12 @@ if __name__ == "__main__":
         baseline_raw = json.loads(E005_MEASUREMENTS.read_text(encoding="utf-8"))
         _print_comparison(raw_results, baseline_raw)
         sys.exit(0)
+
+    if args.phase is not None:
+        parser.error(
+            "E-008 generation is closed and historical. Use --summary for its "
+            "saved results; use E-007 v2 for masked vs rectangular crops."
+        )
 
     if args.phase is None:
         parser.error("--phase or --summary required")

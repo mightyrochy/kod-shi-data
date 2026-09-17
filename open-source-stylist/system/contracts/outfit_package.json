@@ -2,13 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "outfit_package",
   "title": "OutfitPackage",
-  "description": "Outfit to dress the person in — items, reference images, and layering logic.",
+  "description": "Outfit items, frozen reference boards, and an external layout instruction.",
   "type": "object",
-  "required": ["schema_version", "outfit_id", "items", "layout_logic"],
+  "required": ["schema_version", "outfit_id", "items", "layout_path", "reference_board"],
   "additionalProperties": false,
   "properties": {
     "schema_version": { "type": "string", "const": "1.0" },
-    "outfit_id": { "type": "string" },
+    "outfit_id": { "type": "string", "minLength": 1 },
     "items": {
       "type": "array",
       "minItems": 1,
@@ -17,36 +17,52 @@
         "required": ["item_id", "type", "description", "reference_image_paths", "visibility_priority"],
         "additionalProperties": false,
         "properties": {
-          "item_id": { "type": "string" },
+          "item_id": { "type": "string", "minLength": 1 },
           "type": {
             "type": "string",
             "enum": ["top", "bottom", "shoes", "jacket", "dress", "accessory", "bag", "hat", "other"]
           },
-          "description": { "type": "string" },
+          "description": { "type": "string", "minLength": 1 },
           "reference_image_paths": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "type": "string", "minLength": 1 },
             "minItems": 1
           },
-          "visibility_priority": {
-            "type": "integer",
-            "minimum": 1,
-            "description": "1 = highest priority (must be fully visible)"
-          }
+          "visibility_priority": { "type": "integer", "minimum": 1 }
         }
       }
     },
-    "layout_logic": {
+    "layout_path": { "type": "string", "minLength": 1 },
+    "reference_board": {
       "type": "object",
-      "required": ["layering_order"],
+      "required": ["labels", "variants"],
       "additionalProperties": false,
       "properties": {
-        "layering_order": {
+        "labels": {
           "type": "array",
-          "items": { "type": "string" },
-          "description": "item_ids from outermost to innermost"
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
         },
-        "visibility_notes": { "type": "string" }
+        "variants": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "required": ["path", "sha256"],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "labels": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
       }
     },
     "negative_constraints": {

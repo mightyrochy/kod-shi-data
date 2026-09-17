@@ -1,15 +1,19 @@
-"""Identity gate — ArcFace cosine similarity between two face images.
+"""Identity gate - ArcFace cosine similarity between two face images.
 
 Uses insightface buffalo_l model (ArcFace R100).
 Model weights are downloaded on first use to ~/.insightface/.
 
-Runtime: CUDAExecutionProvider is requested but was unavailable in this
-environment (E-003); insightface runs on CPU. Accurate but ~CPU-speed — fine
-for per-run gating. GPU acceleration is an open item before Stage 3 (V-ID-001).
+The CUDA provider is preferred. On Windows, NVIDIA wheel DLL directories and
+cuDNN sub-libraries are loaded explicitly before InsightFace creates sessions.
+CPU remains a functional fallback when CUDA is not installed.
 
-Dependencies: insightface, onnxruntime.
+Dependencies: insightface, onnxruntime-gpu (or onnxruntime for CPU-only use).
 """
 
+import ctypes
+import os
+import site
+import sys
 from pathlib import Path
 
 import cv2
@@ -20,6 +24,39 @@ import numpy as np
 # ---------------------------------------------------------------------------
 
 _analyser = None
+_cuda_dll_handles = []
+
+
+def _preload_cuda_runtime() -> list[str]:
+    """Return provider preference after making pip-installed CUDA DLLs visible."""
+    try:
+        import onnxruntime as ort
+    except ImportError:
+        return ["CPUExecutionProvider"]
+
+    available = ort.get_available_providers()
+    if "CUDAExecutionProvider" not in available:
+        return ["CPUExecutionProvider"]
+
+    if sys.platform == "win32":
+        roots = [*site.getsitepackages(), site.getusersitepackages()]
+        dll_dirs = []
+        for root in dict.fromkeys(roots):
+            nvidia_root = Path(root) / "nvidia"
+            if not nvidia_root.is_dir():
+                continue
+            dll_dirs.extend(sorted(path for path in nvidia_root.glob("*/bin") if path.is_dir()))
+
+        for dll_dir in dll_dirs:
+            _cuda_dll_handles.append(os.add_dll_directory(str(dll_dir)))
+        for dll_dir in dll_dirs:
+            for dll_path in sorted(dll_dir.glob("*.dll")):
+                _cuda_dll_handles.append(ctypes.WinDLL(str(dll_path)))
+
+    preload = getattr(ort, "preload_dlls", None)
+    if preload is not None:
+        preload(directory="")
+    return ["CUDAExecutionProvider", "CPUExecutionProvider"]
 
 
 def _get_analyser():
@@ -32,7 +69,8 @@ def _get_analyser():
         raise ImportError("insightface is required: pip install insightface")
     app = FaceAnalysis(
         name="buffalo_l",
-        providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
+        allowed_modules=["detection", "recognition"],
+        providers=_preload_cuda_runtime(),
     )
     app.prepare(ctx_id=0, det_size=(640, 640))
     _analyser = app

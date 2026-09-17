@@ -1,6 +1,6 @@
 # E-008 — Reference panel: cropped vs raw product photos
 
-**Status:** DRAFT — awaiting owner sign-off before execution
+**Status:** CLOSED — executed 2026-06-13; see `conclusion.md` and `results/`
 **Created:** 2026-06-13
 **Governed by:** METHODOLOGY.md §2; BUILD_PLAN Stage 2
 
@@ -165,5 +165,6 @@ E-006 corruption that motivated O-SEG-GAP-001.
 
 ---
 
-*Protocol written 2026-06-13. No results exist yet. Do not modify this file
-after the first generation run — append a conclusion.md instead.*
+*Protocol written 2026-06-13. Historical comparison only: full product photos
+versus the then-current masked board. It does not answer masked versus rectangular
+crops; that question belongs to E-007 v2.*

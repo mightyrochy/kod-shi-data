@@ -14,6 +14,49 @@ entries written, next stage confirmed.
 
 ---
 
+## Phase 0 — Engine capability gate (added 2026-06-16)
+
+**Purpose:** choose candidate generation engines by architecture before any prompt,
+sampler, cfg, or quality benchmark work.
+
+The product try-on engine must expose all three channels in the same local workflow:
+
+1. **garment/reference image conditioning** — the engine must consume concrete garment
+   image evidence, not only text;
+2. **masked edit / inpaint** — the engine must edit the intended region without
+   regenerating the whole person by default;
+3. **body/pose control** — the engine must accept a body/pose/depth/control signal so
+   body geometry is not left only to prompt wording.
+
+Text-only Fill/Inpaint is disqualified as product evidence. API-only partner nodes may
+be recorded as reference points, but they do not satisfy the local-open constraint unless
+that constraint is explicitly changed by the owner.
+
+**Verifier:** `system/engine_capability_phase0.py` queries ComfyUI `/object_info` and
+checks node signatures plus local dropdown-visible weights. It does not submit prompts
+and never runs generation.
+
+```text
+python system/engine_capability_phase0.py --comfyui http://127.0.0.1:8000
+```
+
+**Current result (2026-06-16):** no local candidate passes. See
+`ENGINE_CAPABILITY_PHASE0_2026-06-16.md`.
+
+- Qwen Image Edit 2511: garment-image conditioning is present; Qwen control/model patch
+  weights are not visible (`ModelPatchLoader.name` has 0 options), so the full
+  image+mask+control path is unproven.
+- Local FLUX Fill: `flux1-fill-dev.safetensors` and inpaint primitives are present;
+  ControlNet weights and CLIPVision/image-adapter weights are not visible, so the full
+  image+mask+pose path is unproven.
+- BFL FLUX API nodes: VTO and Fill API nodes are present, but they are paid/partner API
+  nodes and no current API node exposes body/pose control.
+
+**Acceptance criteria:** at least one local candidate passes all three channels before
+Stage 2 generation experiments or Stage 6 bench-off are promoted as product-relevant.
+
+---
+
 ## Stage 0 — Foundations: contracts, clients, environment
 
 **Purpose:** the skeleton everything plugs into. No generation, no experiments.
@@ -121,9 +164,9 @@ instruments instead of eyeballs.
 **Deliverables:**
 1. `system/workflows/` — QIE-2511 workflow (API format). P8: check for a maintained
    community workflow first; build from live `/object_info` only if none fits.
-2. `system/adapter/` — outfit adapter v0: reference panel compositing (garment-only
-   crops), prompt builder (structure/layout only — no color words pending E-007),
-   resolution handling.
+2. `system/adapter/` — outfit adapter v0: select and hash-check an already-built
+   reference-board PNG, read the outfit layout file, build the transfer prompt,
+   and format generation parameters. Board preparation is not a runtime step.
 
 **Experiments:**
 
@@ -131,36 +174,26 @@ instruments instead of eyeballs.
 |---|---|---|---|---|
 | E-005 | What is natural run-to-run variance? | the noise floor for ALL future comparisons **+ final thresholds for all three gates** (color, identity, proportions — replaces the Stage-1 provisional values, which were calibrated on photo pairs with n=1 natural-variation samples, with the real generated-vs-reference distribution) | K=5 fixed seeds, one frozen config, outfit_001; **before computing gates: owner reviews mask overlays on the first generated outputs** (segmentation was validated on real photos only — E-001 never covered the generator's domain); then all gates on every output | variance profile documented (per-gate spread); becomes the Verified noise floor; color/identity/proportion thresholds finalized; segmentation-on-generated-images verdict recorded |
 | E-006 | Does generation resolution change measured quality? | working resolution for all later stages | same seeds, 2–3 resolutions; gates compare | resolution chosen on data (gate scores + time + VRAM) |
-| E-007 | Does task-correct board+prompt conditioning produce the transfer task (preserve person, dress from the board)? | adapter conditioning design (the re-baseline) | corrected adapter: labeled crop board (each cell tagged "blouse front", "belt", …) + transfer prompt that instructs re-dressing the person USING the board, the layout, and the on-board labels. Same K=5 seeds; gates + owner review vs the confounded pre-2026-06-13 baseline. Arms may isolate board-labels vs prompt-framing if attribution is needed. | identity preserved by instruction (not luck), items/color improved vs confounded baseline; new honest baseline established (owner-reviewed) |
-| E-008 | Do un-cropped product references distort proportions/items? (H-REF-CONTAMINATION) | adapter panel rule | A/B same seeds: raw product refs vs garment-only crops; proportion gate + ΔE + presence | rule confirmed/refuted with gate numbers |
+| E-007 v2 | Masked crops or owner-prepared rectangular crops? | which frozen board becomes the next adapter baseline | paired A/B plus a separately recorded hybrid supplement | **supplement measured:** hybrid is next candidate for completeness; color and silhouette remain open |
+| E-008 | Do full product photos containing models distort the task? | whether raw product photos may be used directly | historical A/B: full product photos vs the then-current masked board | closed: full photos are disqualified; this did not decide masked vs rectangular crops |
 
-**E-007 rescoped (2026-06-13):** the original narrow "color words on/off" framing is
-absorbed — the real defect was that the conditioning never expressed the task at any
-layer (positive prompt, negative, board semantics, layering all wrong; see
-design/adapter_redesign_2026-06-13.md). E-007 is now the re-baseline: build the
-task-correct adapter (owner-specified — labeled board + board/layout/label-referencing
-transfer prompt), then test that it expresses the task. Precondition: adapter redesign
-implemented (labeled-board rendering + transfer prompt builder + layering wired).
-E-005/E-006/E-008 generation conclusions are confounded by the old conditioning and
-are demoted with dated errata; this experiment produces the first honest baseline.
-H-COLOR rides along (the transfer prompt is still color-word-free). Negatives stay
-empty here (cfg=1.0 makes them inert under Lightning — see E-014).
+**E-007 v2 (2026-06-14):** the original A/B closed with no winner. Both arms had
+strengths and weaknesses; both shifted the blouse shade, and the masked blouse-front
+reference omitted buttons. The separately recorded nine-cell `hybrid_mask_crop`
+supplement restores buttons and wedge sandals in 5/5 outputs and is the next input
+candidate. It does not yet solve blouse color or silhouette fidelity.
 
 **E-007 first attempt INVALIDATED (2026-06-13 forensics).** The attempt ran on a
 CONTAMINATED board: the in-loop GroundingDINO+SAM+union crop produced blouse/skirt
 cells containing the product model's face/body (insightface: 3 faces on the board).
 Phase 2 was never run; whatever it would have measured is meaningless. See
 knowledge/hypotheses.md "2026-06-13 — E-007 board-contamination forensics"
-(O-BOARD-001…005). E-007 must be REDONE on a clean board.
+(O-BOARD-001…005). That attempt is preserved as invalid; E-007 v2 uses two
+explicitly named, frozen reference boards.
 
-**Board-build prerequisite for E-007 (new, 2026-06-13):** garment isolation must be
-removed from the generation loop (it is a lottery). For V1: prepare clean,
-garment-only references ONCE, owner-reviewed, frozen as assets; rewrite
-`system/adapter/panel.py` to tile those frozen assets deterministically (+ labels) —
-no segmentation in the board path. Production (automatic clothes-parsing isolation)
-is a V2 design (SYSTEM_DESIGN §6a), not V1 work. Only after the board is clean and
-consistent does the E-007 conditioning question (and the still-open "masked crops vs
-garment-on-person" comparison) become measurable.
+**Board prerequisite completed (2026-06-14):** runtime uses the same frozen PNG on
+every generation. The offline preparation script exists only to reproduce assets
+after an intentional source change. No board variant is currently canonical.
 
 **Acceptance criteria:** generation runs reproducibly through the new path; noise
 floor, working resolution, and the two adapter rules are Verified knowledge with
@@ -439,6 +472,11 @@ same-seed evidence; patterned-outfit rows judged by a calibrated palette mode (E
 - One command: photo + outfit package → final image + measured report, unattended.
 - Pass rate and failure modes documented over the acceptance batch.
 - Owner signs off on the V1 quality bar (explicit, per SOP).
+- **Instrument-coverage gate (added 2026-06-14):** no promotion to unattended operation
+  while any owner-rejected defect class is an open gap in the instrument-coverage ledger
+  (design §6b) — each such axis is closed by a covering instrument or explicitly accepted
+  as residual risk. Enforces the eye↔instrument boundary (METHODOLOGY §5): unattended =
+  instruments only, so the instruments must cover what the eye rejects.
 
 **Execution mode:** Sonnet + high, 1 session + acceptance runs.
 
@@ -465,6 +503,26 @@ Estimated total: 8–12 working sessions + GPU batch time.
 - Garment retrieval, wardrobe (V2/V3)
 - LoRA fine-tuning (cloud GPU — deferred)
 - Qwen-Image-2.0 — watch; if weights open, bench row 7
+
+---
+
+## Terminal condition (engine kill-criterion) — added 2026-06-14
+
+The measurement-first loop needs an explicit end, or it can iterate indefinitely.
+
+**Stop condition (owner-stated):** when the planned strategy/experiment matrix is
+exhausted — bench-off rows including strategy C (design §8), repair executor
+(E-011) — the system is debugged, AND the owner still rejects the result on the
+dominant quality axes, conclude that the local open-source configuration
+(QIE-2511 fp8 + deterministic shell, 16GB) cannot clear the V1 quality bar.
+
+**Decision it triggers:** escalate beyond the local-open constraint — editor
+fine-tune on outfit data (design §3 item 5; cloud GPU) or a different engine —
+rather than keep tuning within the current configuration.
+
+Deliberately coarse: no pre-registered numeric threshold yet (owner could not
+specify one; forcing premature numbers would be false precision). Its purpose is
+to name the terminal state so "keep iterating" is a deliberate choice, not a default.
 
 ---
 
@@ -521,12 +579,19 @@ Estimated total: 8–12 working sessions + GPU batch time.
 - **2026-06-13 (E-007 board-contamination forensics)** — owner-directed
   re-verification overturned an E-007 session report. Verified from disk + images:
   the board build runs an in-loop garment-segmentation lottery (generic
-  GroundingDINO+SAM+union, "top"/"bottom"); E-005 was clean by luck, E-007 rebuilt
+  GroundingDINO+SAM+union, "top"/"bottom"); E-005 isolated the target garments by
+  luck, while E-007 rebuilt
   and put model faces in the crops (insightface 0 vs 3 faces). The session's
   "byte-identical masks", "framing regression", and "non-determinism, raise
   threshold" claims were all wrong. E-007 first attempt INVALIDATED (contaminated
   board). Decision: remove garment isolation from the generation loop — V1 uses
-  frozen owner-reviewed clean refs + deterministic tiling; production uses clothes-
+  frozen owner-reviewed reference assets + deterministic tiling; production uses clothes-
   parsing (SYSTEM_DESIGN §6a). Knowledge: hypotheses.md O-BOARD-001…005; verified.md
   V-REF-001 caveat. METHODOLOGY §3.5 (right-tool-on-reuse) and §3.6 (view the
   artifact) added to prevent recurrence.
+- **2026-06-14** — terminal condition (engine kill-criterion) recorded as a body
+  section above: exhausted strategy matrix + debugged + owner still rejects on the
+  dominant axes → local-open config cannot clear the V1 bar → escalate (fine-tune/
+  cloud or engine change); coarse by design (no numeric threshold yet). Also
+  V-REF-003 added to verified.md — board construction by element class (quality mask
+  for large garments; mask + context crop for small/detailed items; owner-confirmed).

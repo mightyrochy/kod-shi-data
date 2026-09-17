@@ -1,6 +1,6 @@
 # E-006 — Resolution sensitivity (does generation resolution change measured quality?)
 
-**Status:** DRAFT — awaiting owner sign-off before execution
+**Status:** CLOSED — executed 2026-06-12; see `conclusion.md` and `results/`
 **Created:** 2026-06-12
 **Governed by:** METHODOLOGY.md §2; BUILD_PLAN Stage 2
 
@@ -180,5 +180,5 @@ bad masks before guarding any real experimental data.
 
 ---
 
-*Protocol written 2026-06-12.  No results exist yet.  Do not modify this file
-after the first generation run — append a conclusion.md instead.*
+*Protocol written 2026-06-12. Historical experiment; see `conclusion.md` for the
+recorded result and later task-conditioning errata.*

@@ -1,5 +1,13 @@
 # Project Ledger
 
+> **STATUS NOTE (2026-06-14): HISTORICAL / PRE-RESTART RECORD — read for context, not current truth.**
+> This ledger predates the 2026-06-10 restart and documents the previous attempt
+> (now under `archive/`). It names the prior assistant ("Codex") and references
+> files/dirs that do not exist in the live tree (`PROJECT_STATE.md`, `SESSION_LOG.md`,
+> `runs/`, `docs/`, `schemas/`, `prompts/`, `tools/`). For the current project state
+> see `BUILD_PLAN.md`, `design/SYSTEM_DESIGN.md`, and `knowledge/verified.md`.
+> Preserved unedited below as recovered project memory.
+
 Last updated: 2026-06-09
 
 Purpose:

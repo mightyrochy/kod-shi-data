@@ -1,6 +1,6 @@
 # E-005 — Variance baseline (generation noise floor + final gate thresholds)
 
-**Status:** DRAFT — not yet run  
+**Status:** CLOSED — executed 2026-06-12; see `conclusion.md` and `results/`
 **Created:** 2026-06-11  
 **Governed by:** METHODOLOGY.md §2; BUILD_PLAN Stage 2
 
@@ -188,5 +188,5 @@ Sequence (respects VRAM budget):
 
 ---
 
-*Protocol written 2026-06-11.  No results exist yet.  Do not modify this file
-after the first run — append a conclusion.md instead.*
+*Protocol written 2026-06-11. Historical experiment; see `conclusion.md` for the
+recorded interpretation and later errata in `knowledge/verified.md`.*

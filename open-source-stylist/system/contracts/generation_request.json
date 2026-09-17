@@ -2,18 +2,22 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "generation_request",
   "title": "GenerationRequest",
-  "description": "Formatted inputs for the try-on engine — produced by the Outfit Adapter.",
+  "description": "Formatted inputs for one try-on generation.",
   "type": "object",
-  "required": ["schema_version", "request_id", "person_image_path", "prompt", "engine", "params"],
+  "required": [
+    "schema_version", "request_id", "outfit_id", "person_image_path",
+    "reference_panel_path", "reference_board_variant", "prompt", "engine", "params"
+  ],
   "additionalProperties": false,
   "properties": {
     "schema_version": { "type": "string", "const": "1.0" },
-    "request_id": { "type": "string" },
+    "request_id": { "type": "string", "minLength": 1 },
     "person_profile_id": { "type": "string" },
-    "outfit_id": { "type": "string" },
-    "person_image_path": { "type": "string" },
-    "reference_panel_path": { "type": "string" },
-    "prompt": { "type": "string" },
+    "outfit_id": { "type": "string", "minLength": 1 },
+    "person_image_path": { "type": "string", "minLength": 1 },
+    "reference_panel_path": { "type": "string", "minLength": 1 },
+    "reference_board_variant": { "type": "string", "minLength": 1 },
+    "prompt": { "type": "string", "minLength": 1 },
     "negative_prompt": { "type": "string" },
     "engine": {
       "type": "string",
@@ -21,14 +25,16 @@
     },
     "params": {
       "type": "object",
-      "required": ["steps", "seed", "width", "height"],
-      "additionalProperties": true,
+      "required": ["steps", "seed", "width", "height", "cfg", "sampler", "scheduler"],
+      "additionalProperties": false,
       "properties": {
         "steps": { "type": "integer", "minimum": 1 },
         "seed": { "type": "integer" },
         "width": { "type": "integer", "minimum": 64 },
         "height": { "type": "integer", "minimum": 64 },
-        "guidance_scale": { "type": "number", "minimum": 0 }
+        "cfg": { "type": "number", "minimum": 0 },
+        "sampler": { "type": "string", "minLength": 1 },
+        "scheduler": { "type": "string", "minLength": 1 }
       }
     }
   }

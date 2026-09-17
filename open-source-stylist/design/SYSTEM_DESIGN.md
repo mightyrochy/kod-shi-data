@@ -204,24 +204,25 @@ Transport:
 - **V1:** manual — owner assembles reference images + layout text (an LLM may help
   structure the text, no retrieval). **V2:** LLM reasoning + retrieval (§10).
   **V3:** + wardrobe (§11).
-- **Out:** `OutfitPackage` = items (type, description, reference image paths,
-  visibility priority) + `layout_logic` (layering order, what stays visible)
-  + negative constraints.
+- **Out:** `OutfitPackage` = items, a path to the owner-authored layout text,
+  frozen reference-board variants with SHA-256, and negative constraints.
 
 ### [3] Outfit Adapter
-- **Role:** pure formatting — build the composite reference panel + prompt + params for
-  the chosen engine. **No styling decisions.** Prompt carries structure and layout;
+- **Role:** pure formatting — select a frozen reference-board file, verify its hash,
+  read the layout text, and build prompt + params for the chosen engine. **No styling
+  decisions.** Prompt carries structure and layout;
   color/texture/material come exclusively from reference images
   (text color labels are forbidden — hypothesis H-COLOR, treat as rule until re-tested).
-- **Tool:** deterministic Python (panel compositing); a small LLM only for prompt phrasing.
+- **Tool:** deterministic Python. No LLM and no image segmentation are required in
+  the generation-request path.
 - **In:** `OutfitPackage`. **Out:** `GenerationRequest`.
-- Panel construction is a first-class engineering artifact: consistent placement,
-  versioned like code. **The board MUST tile only clean garment-only crops** — bodies,
-  faces, or competing items visible in product photos contaminate conditioning
-  (V-REF-001 verified: raw photos collapse identity, cosine 0.008 vs 0.830).
+- A board is a first-class, versioned asset. Full product photos are disqualified
+  (V-REF-001: identity collapsed). E-007 v2 found no winner between masked and
+  rectangular crops; the measured `hybrid_mask_crop` supplement is the next
+  candidate for garment completeness, with color and silhouette still unresolved.
 - **Garment isolation is a SEPARATE concern, not done inside the board build** — see
-  §6a. The board build itself is a trivial, deterministic tiling of already-clean
-  garment references (+ labels). Doing isolation in the generation loop with a
+  §6a. Generation receives the already-built PNG and never recreates it. Doing
+  isolation in the generation loop with a
   general detector was the source of the E-007 board-contamination lottery
   (2026-06-13 forensics): the board must be consistent by construction, not policed
   after the fact.
@@ -285,9 +286,11 @@ Transport:
     by person height; threshold on relative change, calibrated against natural
     run-to-run variance so noise is not flagged.
 - **VLM checks (advise):** per-garment presence and structure (cropped region vs
-  reference), layering vs `layout_logic`. Qwen3-VL-8B, schema JSON. Advisory until the
+  reference), layering vs the exact `outfit layout.txt` instruction. Qwen3-VL-8B,
+  schema JSON. Advisory until the
   VLM's agreement rate with human verdicts is measured (calibration experiment).
-- **Countable details** (buttons, buckles): SAM3 instance counts — advisory in V1.
+- **Countable details** (buttons, buckles): not implemented. The current
+  GroundingDINO + SAM1 path produces union masks and cannot reliably count instances.
 - **Texture & pattern spatial structure:** advisory only in V1 (drape vs flat product
   photo is not reliably measurable). Explicit boundary: the color gate's `palette`
   mode measures a pattern's **color composition** (which colors, in what proportions);
@@ -332,19 +335,17 @@ generation, so a contaminated board (model bodies/faces in the crops) collapses
 identity (V-REF-001). Producing clean garment-only references is a distinct
 subsystem with its own right tool — NOT the §6 measurement segmenter.
 
-**Core principle (owner, 2026-06-13): consistency by construction, not by policing.**
-The board must be the SAME kind of clean, isolated garment in every cell, always.
-The fix is to remove the in-loop segmentation lottery, not to stack validators on
-top of a chaotic process. Consistency comes from a DETERMINISTIC isolation function
-(same product image → same canonical reference every time), not from caching.
+**Core principle (owner clarification, 2026-06-14): reuse the exact same file.**
+An experiment references a frozen board PNG by path and SHA-256. It does not rebuild
+the board before each generation. Reproducible preparation code is useful only when
+the source assets intentionally change.
 
-**V1 (testing-phase stand-in):** garment references are prepared into clean,
-garment-only images ONCE, owner-reviewed, and frozen as canonical assets. The board
-build (`system/adapter/panel.py`) becomes a trivial, deterministic tiling of those
-frozen assets (+ labels). No segmentation in the generation loop. This decouples
-board quality from the unsolved isolation problem so generation can be tested
-honestly. (Replaces the prior in-loop GroundingDINO+SAM+union crop, which was a
-lottery: E-005 happened clean, E-007 rebuilt and produced model faces — verified.)
+**Current testing stand-in:** three board PNGs are frozen. E-007 v2 compared masked
+and rectangular boards and ended with no winner. The third `hybrid_mask_crop` board
+contains nine explicitly labeled cells and a corrected blouse-front mask with visible
+buttons. Its supplement produced buttons and wedge sandals in 5/5 outputs, but did
+not resolve blouse color or silhouette fidelity. No variant is canonical. This
+replaces the in-loop GroundingDINO+SAM+union path.
 
 **Finished system (V2+, automatic, on the fly):** isolate the garment from any
 retrieved product photo automatically, per use, with a clothes/human-parsing model
@@ -358,7 +359,7 @@ retrieved product photo automatically, per use, with a clothes/human-parsing mod
 3. Normalize to a canonical cell: crop to garment mask, center, white background,
    consistent scale. Every cell uniform by construction.
 4. Auto quality gate (deterministic, fail-loud): no detectable face in the cell
-   (insightface: clean board = 0 faces, contaminated E-007 = 3 faces — verified);
+   (insightface: valid masked board = 0 faces, invalid E-007 board = 3 faces — verified);
    coverage within a sane band; single coherent region for non-paired items
    (keep symmetric pairs for shoes/earrings — do not collapse to one). On failure →
    fallback (alternate product photo / re-retrieve / flag). No human in the loop.
@@ -368,8 +369,8 @@ unioning all detections; it does not know garment-vs-body and competes with the
 model. The category-aware, person-aware parser is the right class. (GroundingDINO+SAM
 keeps value for the §6 measurement RegionMap and as a fallback.)
 
-**Storage (corrects an earlier over-reach):** caching is a SPEED optimization, not
-the source of consistency. Therefore:
+**Storage:** the current board PNGs are durable experimental inputs, not runtime
+caches. For later automatic retrieval:
 - **V2 internet recommendations** (unbounded product space): NO permanent per-product
   store of isolated images. Persist only the retrieval index (embeddings + metadata +
   URL — bounded by catalog, the retrieval layer anyway). Isolate on the fly only for
@@ -378,9 +379,36 @@ the source of consistency. Therefore:
 - **V3 personal wardrobe** (bounded, owned, reused): durable per-item canonical
   references are justified and cheap — precompute once, store.
 
-**Status:** V1 stand-in is the decided path (frozen clean refs). The parsing
-subsystem is a V2 design; which parser, 16GB fit, and quality on our images are
-untested (P8: find a maintained ComfyUI human-parsing node, validate, then build).
+**Status:** frozen-board reuse is implemented. Masked versus rectangular ended
+without a winner; hybrid is the next measured candidate, not a canonical board.
+Automatic parsing remains a later, untested design question.
+
+---
+
+## 6b. Instrument coverage ledger (added 2026-06-14)
+
+Operationalizes the eye↔instrument promotion gate (METHODOLOGY §5): every quality axis
+the owner judges is listed here against the instrument that covers it. **The loop may
+not go unattended (Stage 7) while a row is an open gap not explicitly accepted as
+residual risk.** Owner review at any checkpoint may add a row. Status: `covered` (a
+calibrated gate decides it) / `gap` (only the eye catches it today) / `residual` (gap,
+consciously accepted for V1).
+
+| Quality axis (owner-judged) | Covering instrument | Status |
+|---|---|---|
+| Identity (same person) | ArcFace cosine, V-ID-001 | covered |
+| Garment hue/chroma per region | CIEDE2000 gate, V-COLOR-001/002 | covered |
+| Body proportions (valid framing only) | proportions gate, V-PROP-001 (framing_delta caveat) | covered |
+| Mask plausibility (internal) | sanity guard (area/position/containment/overlap) | covered |
+| Garment **absolute shade / lightness** ("blouse too pale/yellow") | none — color gate normalizes L* (V-COLOR-002 scope note) | gap |
+| **Texture flatness / washed-out** (owner's dominant complaint at ΔE 3–5) | none — advisory high-freq texture indicator planned (§8), not built | gap |
+| **Silhouette / garment-shape fidelity** | none — proportions gate is body-bbox, diagnostic only | gap |
+| Shoe type-of-failure (wedge vs heel; contaminated vs random) | none — dE insensitive when all failures >5 (V-REF-002) | residual (out of V1 scope) |
+| Item presence / layering | VLM (advisory, uncalibrated) — E-009 | gap (advisory until calibrated) |
+| Countable details (buttons, buckles) | none — union masks cannot count (§6) | residual (V1 limitation) |
+
+The point of the ledger: the gaps are now a *visible, checked list*, not scattered
+caveats — so "go unattended" is a decision made against it, not by forgetting it.
 
 ---
 
@@ -549,18 +577,29 @@ V1 unchanged except Stylist:
 
 ## Revision notes (append-only)
 
+- **2026-06-14 (instrument coverage ledger + evaluation principles)** — added §6b
+  instrument-coverage ledger consolidating previously-scattered measurement gaps (texture
+  flatness, absolute shade, silhouette, countable details, shoe type-of-failure, VLM
+  presence/layering) into one checked list. Wired to the new eye↔instrument promotion gate
+  (METHODOLOGY §5) and Stage 7 definition of done (BUILD_PLAN): no unattended operation
+  while an owner-rejected axis is an unaccepted gap. Companion METHODOLOGY changes: §3
+  rule 7 (prevent by construction before detection); §5 success-metric clause (useful
+  output, never clean rejection). Also verified.md V-REF-003 (board construction by
+  element class).
 - **2026-06-13 (board-contamination forensics + garment isolation)** — verified that
   the board build ran an in-loop garment-segmentation lottery (generic GroundingDINO+
-  SAM+union with prompt "top"/"bottom"); E-005 happened clean, E-007 rebuilt and
+  SAM+union with prompt "top"/"bottom"); E-005 happened to isolate the garments,
+  while E-007 rebuilt the board and
   produced model faces in the crops (insightface: 0 vs 3 faces). New §6a separates
   garment-isolation-for-the-board from §6 measurement segmentation, both as a job and
-  as a tool: V1 stand-in = frozen owner-reviewed clean refs + trivial deterministic
+  as a tool: V1 stand-in = frozen owner-reviewed reference assets + trivial deterministic
   tiling (no in-loop segmentation); production = clothes/human-parsing (category- and
   person-aware) + normalization + fail-loud quality gate + ephemeral cache. Corrected
   the storage model: consistency comes from deterministic isolation, not caching; V2
   keeps only the retrieval index (no per-product forever-store), V3 wardrobe gets
   durable per-item refs. §3, §5, §10 updated accordingly. The E-007 run is invalid
-  (executed on a contaminated board); it must be redone on a clean board.
+  (executed on an invalid three-face board); E-007 v2 replaces it with the frozen
+  masked-versus-rectangular comparison.
 - **2026-06-10** — canonical consolidation of R2 (2026-06-09), R3 (2026-06-10),
   R4 (2026-06-10). Key consolidation decisions: R4's research verification and P8
   adopted; R3's stage descriptions and restoration shell adopted; R2's V2/V3 detail and

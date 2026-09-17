@@ -1,6 +1,7 @@
-# Adapter redesign — task-correct conditioning (PROPOSAL, pending owner approval)
+# Adapter redesign — task-correct conditioning (historical proposal)
 
-Date: 2026-06-13. Status: **proposal for review — not implemented, no runs.**
+Date: 2026-06-13. Status: **partly implemented, then superseded where noted.**
+Current behavior is defined by `SYSTEM_DESIGN.md` and E-007 v2 (2026-06-14).
 Author context: written after discovering that the generation conditioning never
 expressed the system's task (see "Problem" below). On approval, the contract here
 folds into design/SYSTEM_DESIGN.md §6 [3] and the adapter code; the exact prompt
@@ -187,10 +188,9 @@ contamination forensics. The first E-007 attempt ran on a contaminated board and
 INVALID (hypotheses.md O-BOARD-001…005).
 
 - **§5 board** — the "labeled crop board" still holds (labels approved), but the way
-  crops are produced changes: NOT in-loop GroundingDINO+SAM+union (a verified lottery
-  that put model faces on the E-007 board). Instead, design §6a: V1 tiles frozen,
-  owner-reviewed, clean garment-only references deterministically; production isolates
-  via clothes/human-parsing on the fly. The board build itself becomes trivial tiling.
+  crops are produced changes: NOT in-loop GroundingDINO+SAM+union. E-007 v2 selects
+  one of two already-built, hash-verified PNGs (masked or rectangular). It does not
+  tile or isolate anything at generation time.
 - **§6 masks** — the instance-selection idea was the right instinct but the wrong
   layer: the real fix is to stop doing garment isolation with a general detector in
   the loop, not to post-process its union. The earlier no-face/size "validator stack"
@@ -198,8 +198,7 @@ INVALID (hypotheses.md O-BOARD-001…005).
   police it; a no-face/size check belongs on the one-time asset prep, not as an in-loop
   policeman. The §5 measurement RegionMap (generated images) is a separate matter and
   may also move to a parser — to be tested, not assumed.
-- Storage: consistency comes from deterministic isolation, not caching; V2 keeps only
-  the retrieval index (no per-product forever-store), V3 wardrobe gets durable refs.
+- Storage: current experiment boards are durable inputs and are reused byte-for-byte.
 
 The positive-prompt contract (§3), the cfg=1.0 → preservation-in-positive finding
 (§1, §4), and E-014 (negative channel test) are UNAFFECTED and stand.

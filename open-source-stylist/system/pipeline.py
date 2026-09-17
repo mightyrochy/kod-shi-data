@@ -74,12 +74,13 @@ def build_prompt(layout_text: str, holistic_labels: list[str], deferred_labels: 
              for lbl in deferred_labels for w in re.findall(r"[a-z]+", lbl.lower()) if len(w) >= 3}
     layering = "\n".join(ln for ln in layout_text.splitlines()
                          if not (stems and any(re.search(r"\b" + s, ln.lower()) for s in stems))).strip()
-    items = ", ".join(holistic_labels)
-    return (f"Keep this exact person (face, hair, skin tone, body proportions, pose, and background) "
-            f"unchanged. Using only the reference board (image 2), dress them in exactly these items: {items}. "
-            "Render only the items listed above and nothing else: no other garments or accessories. Take all "
-            "colour and texture from the board.\n"
-            "How these items are worn:\n" + layering)
+    # Minimal by design: only what matters AND is not visible from the references. The board shows the
+    # garments (so they are not named), the photo shows skin/background (so they are not described), and
+    # body proportions are handled by pose-control, not words. What remains: keep person+pose, dress from
+    # the board, nothing else, and the inter-garment layering (the one thing per-garment refs cannot show).
+    return ("Keep the same person and pose. Using the reference board, dress them in the garments shown "
+            "there and nothing else. Take all appearance from the board.\n"
+            "How they are worn:\n" + layering)
 
 
 def vlm_judge(out_img: Path, refs: list[tuple[str, Path]], holistic_types: list[str]) -> dict:

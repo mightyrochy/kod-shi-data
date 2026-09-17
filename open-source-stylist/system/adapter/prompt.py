@@ -1,27 +1,13 @@
-"""Transfer-task prompt builder for the outfit adapter.
-
-Contract (adapter_redesign_2026-06-13 §3 + §9 decision 2):
-  - Frame as an edit of image1 (person photo), not generation of a new person.
-  - State preservation targets explicitly: face, hair, skin tone, body, pose, background.
-  - Reference image2 (the board) by its cell labels — do NOT describe garments as free text.
-  - Wire layering_order from layout_logic (was dead in the pre-2026-06-13 adapter).
-  - No color words — appearance comes from the board references.
-  - Negative prompt: empty (cfg=1.0 → inert under Lightning; channel tested by E-014).
-
-Board labels in the prompt are derived the same way panel.py derives cell labels
-(Path(ref_path).stem.replace("_", " ")), so the prompt and board are consistent.
-
-Rules:
-  - No color words in the generated prompt (enforced by _check_no_color).
-  - No SAM/GroundingDINO prompt literals — those live in segmentation/prompts.py only.
-"""
+"""Build the task-correct transfer prompt from frozen outfit inputs."""
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
-# Words explicitly forbidden in generated prompts.
-# Color comes from reference images, not from text — adapter rule, verified by E-007.
+from .panel import PROJECT_ROOT, board_labels
+
+
 _COLOR_WORDS = frozenset({
     "red", "blue", "green", "yellow", "orange", "purple", "pink", "brown",
     "black", "white", "gray", "grey", "navy", "beige", "cream", "tan", "olive",
@@ -33,49 +19,38 @@ _COLOR_WORDS = frozenset({
 })
 
 
-def build_prompt(outfit_package: dict) -> str:
-    """Build a transfer-task generation prompt from an OutfitPackage.
+def build_prompt(
+    outfit_package: dict,
+    project_root: str | Path = PROJECT_ROOT,
+    reference_board_variant: str | None = None,
+) -> str:
+    """Build a transfer prompt using board labels and the outfit layout file."""
+    labels = board_labels(outfit_package, reference_board_variant)
+    layout_path = Path(outfit_package["layout_path"])
+    if not layout_path.is_absolute():
+        layout_path = Path(project_root) / layout_path
+    if not layout_path.is_file():
+        raise FileNotFoundError(f"Outfit layout file does not exist: {layout_path}")
 
-    Instructs re-dressing the input person (image1) using the labeled reference
-    board (image2). Preservation of person attributes is stated positively —
-    cfg=1.0 makes the negative channel inert, so this is the only textual channel
-    that can carry preservation under the Lightning config.
+    layout_text = layout_path.read_text(encoding="utf-8").strip()
+    if not layout_text:
+        raise ValueError(f"Outfit layout file is empty: {layout_path}")
 
-    Raises ValueError if any color word appears in the result.
-    """
-    items = outfit_package["items"]
-    layout = outfit_package["layout_logic"]
-
-    # Board labels: one per reference image, in outfit order.
-    # Must match _cell_label() in panel.py — both use stem.replace("_", " ").
-    board_labels = [
-        Path(ref_path).stem.replace("_", " ")
-        for item in items
-        for ref_path in item["reference_image_paths"]
-    ]
-
-    # Visibility notes from layout_logic (structural, no color words expected here).
-    visibility = layout.get("visibility_notes", "").strip()
-
-    parts = [
-        "Keep this exact person: face, hair, skin tone, body proportions, pose,"
-        " and background — unchanged.",
+    prompt = "\n".join([
+        "Keep this exact person: face, hair, skin tone, body proportions, pose, and background unchanged.",
         "Using the reference board (image 2), re-dress them in the outfit shown.",
-        f"The board contains labeled garments: {', '.join(board_labels)}.",
-    ]
-    if visibility:
-        parts.append(visibility)
-    parts.append("Take all garment appearance from the board only.")
-
-    prompt = " ".join(parts)
+        f"The board contains labeled garments: {', '.join(labels)}.",
+        layout_text,
+        "Take all garment appearance from the board only.",
+    ])
     _check_no_color(prompt)
     return prompt
 
 
 def _check_no_color(text: str) -> None:
-    found = _COLOR_WORDS.intersection(text.lower().split())
+    found = _COLOR_WORDS.intersection(re.findall(r"[a-z]+", text.lower()))
     if found:
         raise ValueError(
-            f"Color words found in prompt (forbidden per adapter rule): {sorted(found)}. "
-            "Remove them — color comes from reference images."
+            f"Color words found in prompt: {sorted(found)}. "
+            "Color must come from the reference board."
         )

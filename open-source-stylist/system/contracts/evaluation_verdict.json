@@ -11,7 +11,7 @@
     "verdict_id": { "type": "string" },
     "result_id": { "type": "string" },
     "region_map_id": { "type": "string" },
-    "overall_verdict": { "type": "string", "enum": ["pass", "fail"] },
+    "overall_verdict": { "type": "string", "enum": ["pass", "fail", "skip"] },
     "regions": {
       "type": "object",
       "properties": {
@@ -22,7 +22,7 @@
           "properties": {
             "arcface_cosine": { "type": "number", "minimum": -1, "maximum": 1 },
             "threshold": { "type": "number" },
-            "verdict": { "type": "string", "enum": ["pass", "fail"] },
+            "verdict": { "type": "string", "enum": ["pass", "fail", "skip"] },
             "notes": { "type": "string" }
           }
         },
@@ -34,7 +34,7 @@
             "shoulder_change_pct": { "type": "number" },
             "waist_change_pct": { "type": "number" },
             "hip_change_pct": { "type": "number" },
-            "verdict": { "type": "string", "enum": ["pass", "fail"] },
+            "verdict": { "type": "string", "enum": ["pass", "fail", "skip"] },
             "notes": { "type": "string" }
           }
         }
@@ -49,7 +49,7 @@
           "color_verdict": { "type": "string", "enum": ["pass", "fail", "skip"] },
           "vlm_presence": { "type": "string", "enum": ["present", "absent", "unclear", "skip"] },
           "vlm_layering": { "type": "string", "enum": ["correct", "incorrect", "unclear", "skip"] },
-          "verdict": { "type": "string", "enum": ["pass", "fail"] },
+          "verdict": { "type": "string", "enum": ["pass", "fail", "skip"] },
           "notes": { "type": "string" }
         }
       }

@@ -91,6 +91,14 @@ For every proposed change (code, prompt, workflow, parameter):
    board, a mask, a generated image) is not made from numbers/filenames alone — open
    and look. Two diagnoses of the E-007 board were wrong because nobody viewed it; the
    face detector + the eye settled it in one look. Numbers locate; eyes confirm.
+7. **Prevent by construction before adding detection (added 2026-06-14).** For any
+   proposed safeguard, first answer: can this error class be designed out (consistency
+   by construction — frozen clean assets, deterministic steps, structural impossibility)?
+   A new in-loop check / fail-loud guard is accepted ONLY as a residual net for an error
+   that construction cannot eliminate, and the change must state why it cannot. Detection
+   added without that justification is rejected. Rationale: a system that cleanly blocks
+   its own errors but yields no accepted output is a failure, not a safe one — the success
+   metric is a useful result (§5), never a clean rejection.
 
 ## 4. Verification ladder
 
@@ -120,6 +128,19 @@ knowledge entries written. "Code written" is not done.
 - Measurement code fails loudly: a missing metric is an error, never a default.
   `.get("metric_key", 0)` is forbidden in gate and runner code — use direct key
   access. A KeyError is the correct signal that a gate contract was broken.
+- **Success metric = useful output, not clean rejection (added 2026-06-14).** A
+  configuration is judged by whether it produces owner-accepted results on the four
+  criteria, not by how cleanly it blocks its own bad outputs. Rejection / FLAG rate is
+  reported but is never reported as success. "Blocks everything, produces nothing" is a
+  FAIL, not a partial pass.
+- **Eye↔instrument boundary + promotion gate (added 2026-06-14).** During development/
+  testing the owner's eye verifies everything the instruments report and catches what
+  they miss. In the finished, unattended system only the instruments run. Therefore the
+  loop may NOT be promoted to unattended operation while any owner-rejected defect class
+  lacks a covering instrument. Each defect the owner catches that no gate measures is
+  logged in the instrument-coverage ledger (design §6b) and must be either closed by a
+  new instrument or explicitly accepted as residual risk before unattended promotion.
+  This is a hard clause in Stage 7's definition of done (BUILD_PLAN).
 
 ## 6. Where things live
 

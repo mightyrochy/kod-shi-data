@@ -1,16 +1,18 @@
-"""E-007 runner — task-correct adapter re-baseline.
+"""E-007 v2: frozen masked-crop board vs frozen rectangular-crop board.
 
-Usage (from project root):
+Phase 1 generates paired outputs. Phase 2 segments and measures them. Board
+files are never rebuilt here; their SHA-256 values are checked by the adapter.
+
+The hybrid supplement is stored separately because both its board and layout
+text differ from the original A/B. It can be compared as a complete input
+candidate, but it does not isolate which of those two changes caused a result.
+
     python -m experiments.007_task_correct_adapter.run_e007 --phase 1
     python -m experiments.007_task_correct_adapter.run_e007 --phase 2
-
-Phase 1: build labeled reference panel → generate 5 seeds → segment seed_42
-         + overlays. Checkpoint: owner reviews seed_42 overlays and generated
-         image before phase 2.
-Phase 2: segment remaining seeds → compute all gates → print comparison table
-         (arm B new adapter vs arm A E-005 confounded baseline).
-
-Configuration frozen per protocol. Do not modify between phases.
+    python -m experiments.007_task_correct_adapter.run_e007 --summary
+    python -m experiments.007_task_correct_adapter.run_e007 --hybrid-phase 1
+    python -m experiments.007_task_correct_adapter.run_e007 --hybrid-phase 2
+    python -m experiments.007_task_correct_adapter.run_e007 --hybrid-summary
 """
 
 from __future__ import annotations
@@ -21,13 +23,15 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(ROOT))
-
 import cv2
 import numpy as np
 
-from system.adapter.panel import build_panel
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
+from system.adapter.adapter import build_generation_request
+from system.adapter.panel import file_sha256
 from system.adapter.prompt import build_prompt
 from system.clients.comfyui import ComfyUIClient
 from system.gates.color import compare_regions
@@ -35,433 +39,619 @@ from system.gates.identity import compare_faces
 from system.gates.proportions import compare as compare_proportions
 from system.segmentation.grounded_sam import segment
 from system.segmentation.prompts import generated_prompts
-from system.segmentation.sanity import check_all, format_report
+from system.segmentation.sanity import check_all
 from system.workflows import fill_workflow, load_template
 
-# ---------------------------------------------------------------------------
-# Frozen configuration (per protocol — do not change after first run)
-# ---------------------------------------------------------------------------
 
-SEEDS  = [42, 123, 456, 789, 1337]
-STEPS  = 4      # Lightning 4-step
-WIDTH  = 720
+ARMS = ("masked_crops", "rectangular_crops")
+HYBRID_ARM = "hybrid_mask_crop"
+COMPARISON_ARMS = (*ARMS, HYBRID_ARM)
+SEEDS = (42, 123, 456, 789, 1337)
+STEPS = 4
+WIDTH = 720
 HEIGHT = 1024
+WORKFLOW_NAME = "qie2511_vton_lightning"
 
-PERSON_IMAGE   = ROOT / "assets/person/person_front.png"
+PERSON_IMAGE = ROOT / "assets/person/person_front.png"
 OUTFIT_PACKAGE = ROOT / "assets/outfits/outfit_001/outfit_package.json"
-WORKFLOW_NAME  = "qie2511_vton_lightning"
-
-E005_MEASUREMENTS = ROOT / "experiments/005_variance_baseline/results/measurements.json"
-
-RESULTS_DIR = Path(__file__).parent / "results"
-STATE_FILE  = RESULTS_DIR / "phase1_state.json"
-
 E001 = ROOT / "experiments/001_segmentation_masks/results"
-REGION_TO_REF: dict[str, tuple[Path, Path]] = {
-    "top":      (ROOT / "assets/outfits/outfit_001/blouse_front.webp",
-                 E001 / "outfit_001_blouse_front/blouse.png"),
-    "bottom":   (ROOT / "assets/outfits/outfit_001/skirt_front.webp",
-                 E001 / "outfit_001_skirt_front/skirt.png"),
-    "shoes":    (ROOT / "assets/outfits/outfit_001/shoes_wedge.webp",
-                 E001 / "outfit_001_shoes_wedge/shoes.png"),
-    "belt":     (ROOT / "assets/outfits/outfit_001/belt.jpg",
-                 E001 / "outfit_001_belt/belt.png"),
-    "earrings": (ROOT / "assets/outfits/outfit_001/earrings_disc.webp",
-                 E001 / "outfit_001_earrings_disc/earrings.png"),
+SOURCE_PERSON_MASK = E001 / "person_front/person.png"
+RESULTS_DIR = Path(__file__).parent / "results"
+STATE_FILE = RESULTS_DIR / "phase1_state.json"
+MEASUREMENTS_FILE = RESULTS_DIR / "measurements.json"
+HYBRID_STATE_FILE = RESULTS_DIR / "hybrid_phase1_state.json"
+HYBRID_MEASUREMENTS_FILE = RESULTS_DIR / "hybrid_measurements.json"
+THREE_WAY_SHEET = RESULTS_DIR / "three_way_contact_sheet.png"
+THREE_WAY_OVERLAYS = RESULTS_DIR / "three_way_mask_overlays.png"
+
+REGION_TO_REFERENCE = {
+    "top": (ROOT / "assets/outfits/outfit_001/blouse_front.webp", E001 / "outfit_001_blouse_front/blouse.png"),
+    "bottom": (ROOT / "assets/outfits/outfit_001/skirt_front.webp", E001 / "outfit_001_skirt_front/skirt.png"),
+    "shoes": (ROOT / "assets/outfits/outfit_001/shoes_wedge.webp", E001 / "outfit_001_shoes_wedge/shoes.png"),
+    "belt": (ROOT / "assets/outfits/outfit_001/belt.jpg", E001 / "outfit_001_belt/belt.png"),
+    "earrings": (ROOT / "assets/outfits/outfit_001/earrings_disc.webp", E001 / "outfit_001_earrings_disc/earrings.png"),
 }
-E001_PERSON_MASK = E001 / "person_front/person.png"
+GENERATED_PROMPTS = generated_prompts("person", "face", "top", "bottom", "shoes", "belt", "earrings")
 
-GENERATED_PROMPTS = generated_prompts(
-    "person", "face", "top", "bottom", "shoes", "belt", "earrings"
-)
+COLOR_PASS = 3.0
+COLOR_FAIL = 5.0
+IDENTITY_THRESHOLD = 0.57
+PROPORTIONS_THRESHOLD = 5.3
 
-COLOR_PASS     = 3.0
-COLOR_FAIL     = 5.0
-PROP_THRESHOLD = 5.3
-ID_THRESHOLD   = 0.57
-
-OVERLAY_COLORS = [
-    (80,  80,  255),   # top
-    (80,  200, 80),    # bottom
-    (60,  220, 220),   # shoes
-    (40,  140, 255),   # belt
-    (200, 80,  200),   # earrings
-    (255, 80,  80),    # person
-    (255, 200, 60),    # face
-]
-
-CLIENT = ComfyUIClient(host="localhost", port=8000)
+CLIENT = ComfyUIClient("localhost", 8000)
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def make_overlay(source: Path, masks: dict[str, str], out: Path) -> None:
-    img = cv2.imread(str(source))
-    if img is None:
-        return
-    overlay = img.copy().astype(np.float32)
-    for i, (label, mask_path) in enumerate(masks.items()):
-        m = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
-        if m is None or m.max() == 0:
-            continue
-        m_r = cv2.resize(m, (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
-        fg = m_r > 127
-        color = OVERLAY_COLORS[i % len(OVERLAY_COLORS)]
-        for c in range(3):
-            overlay[:, :, c][fg] = overlay[:, :, c][fg] * 0.5 + color[2 - c] * 0.5
-    cv2.imwrite(str(out), overlay.astype(np.uint8))
-    print(f"  overlay -> {out.relative_to(ROOT)}")
+def _load_package() -> dict:
+    return json.loads(OUTFIT_PACKAGE.read_text(encoding="utf-8"))
 
 
-def save_overlays(gen_path: Path, masks: dict[str, str]) -> None:
-    make_overlay(gen_path, masks, gen_path.parent / "_overlay_all.png")
-    for label, mpath in masks.items():
-        make_overlay(gen_path, {label: mpath}, gen_path.parent / f"_overlay_{label}.png")
+def _download_output(outputs: dict, prefix: str, destination: Path) -> None:
+    for node_output in outputs.values():
+        for image_info in node_output.get("images", []):
+            if image_info.get("filename", "").startswith(prefix):
+                data = CLIENT.download(
+                    image_info["filename"],
+                    image_info.get("subfolder", ""),
+                    image_info.get("type", "output"),
+                )
+                destination.write_bytes(data)
+                return
+    raise RuntimeError(f"ComfyUI produced no image with prefix {prefix!r}")
 
 
-def segment_and_guard(gen_path: Path, label: str) -> dict[str, str]:
-    masks_dir = gen_path.parent / "masks"
-    masks = segment(gen_path, GENERATED_PROMPTS, CLIENT, masks_dir)
-    sanity = check_all(masks)
-    flagged = {k: v for k, v in sanity.items() if not v.clean}
-    if flagged:
-        print(f"\n  *** SANITY FLAGS on {label} ***")
-        print(f"  {format_report(sanity)}")
-    else:
-        print(f"  sanity guard {label}: all clean")
-    return masks
+def _fixed_record() -> dict:
+    return {
+        "seeds": list(SEEDS),
+        "steps": STEPS,
+        "width": WIDTH,
+        "height": HEIGHT,
+        "workflow": WORKFLOW_NAME,
+        "workflow_sha256": file_sha256(ROOT / "system/workflows" / f"{WORKFLOW_NAME}.json"),
+        "person_sha256": file_sha256(PERSON_IMAGE),
+    }
 
 
-def color_verdict(de: float | None) -> str:
-    if de is None:
-        return "MASK_EMPTY"
-    return "PASS" if de <= COLOR_PASS else ("WARN" if de <= COLOR_FAIL else "FAIL")
+def _measurement_input_record() -> dict:
+    return {
+        "source_person_mask": file_sha256(SOURCE_PERSON_MASK),
+        "regions": {
+            region: {
+                "image_sha256": file_sha256(image_path),
+                "mask_sha256": file_sha256(mask_path),
+            }
+            for region, (image_path, mask_path) in REGION_TO_REFERENCE.items()
+        },
+    }
 
 
-# ---------------------------------------------------------------------------
-# Phase 1: build labeled panel, generate, segment first seed
-# ---------------------------------------------------------------------------
+def run_phase1() -> None:
+    if STATE_FILE.exists():
+        raise FileExistsError(
+            f"E-007 phase 1 state already exists: {STATE_FILE}. "
+            "Refusing to overwrite an experimental record."
+        )
 
-def run_phase1(outfit_package: dict, prompt: str) -> None:
+    package = _load_package()
+    prompt = build_prompt(package)
+    template = load_template(WORKFLOW_NAME)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    print("\n=== Build labeled reference panel (arm B — task-correct adapter) ===")
-    print(f"  Prompt: {prompt[:120]}...")
-    panels_dir = RESULTS_DIR / "panel"
-    panel_path = build_panel(outfit_package, panels_dir, CLIENT)
-    print(f"  panel -> {panel_path.relative_to(ROOT)}")
+    state = {
+        "protocol": "protocol.md",
+        "prompt": prompt,
+        "layout_path": package["layout_path"],
+        "layout_sha256": file_sha256(ROOT / package["layout_path"]),
+        "fixed": _fixed_record(),
+        "measurement_inputs": _measurement_input_record(),
+        "arms": {},
+    }
 
-    template = load_template(WORKFLOW_NAME)
-
-    print("\n=== Upload inputs ===")
-    person_fn = CLIENT.upload_image(PERSON_IMAGE)
-    panel_fn  = CLIENT.upload_image(panel_path)
-    print(f"  person={person_fn}  panel={panel_fn}")
-
-    state: dict = {"seeds": {}, "prompt": prompt, "panel_path": str(panel_path)}
-
-    for seed in SEEDS:
-        seed_dir = RESULTS_DIR / f"seed_{seed}"
-        seed_dir.mkdir(parents=True, exist_ok=True)
-        prefix = f"e007_s{seed}"
-
-        wf = fill_workflow(template, {
-            "__PERSON_IMAGE__":    person_fn,
-            "__REF_IMAGE__":       panel_fn,
-            "__POSITIVE_PROMPT__": prompt,
-            "__SEED__":            seed,
-            "__STEPS__":           STEPS,
-            "__WIDTH__":           WIDTH,
-            "__HEIGHT__":          HEIGHT,
-            "__OUTPUT_PREFIX__":   prefix,
-        })
-
-        print(f"  seed={seed} ...", end=" ", flush=True)
-        t0 = time.time()
-
-        try:
-            pid     = CLIENT.submit(wf)
-            outputs = CLIENT.poll(pid, timeout=600.0)
-        except Exception as exc:
-            print(f"FAILED: {exc}")
-            continue
-
-        elapsed  = time.time() - t0
-        gen_path = None
-        for node_out in outputs.values():
-            for img_info in node_out.get("images", []):
-                if img_info.get("filename", "").startswith(prefix):
-                    data = CLIENT.download(
-                        img_info["filename"],
-                        img_info.get("subfolder", ""),
-                        img_info.get("type", "output"),
-                    )
-                    gen_path = seed_dir / "generated.png"
-                    gen_path.write_bytes(data)
-                    break
-            if gen_path:
-                break
-
-        if gen_path is None:
-            print(f"  no output for seed={seed}")
-            continue
-
-        state["seeds"][str(seed)] = str(gen_path)
-        print(f"done  {elapsed:.1f}s")
-
-    CLIENT.free()
-    print("  /free")
-
-    if not state["seeds"]:
-        sys.exit("Phase 1 produced no outputs — check ComfyUI.")
-
-    # Segment first seed for checkpoint review
-    first_seed = str(SEEDS[0])
-    if first_seed in state["seeds"]:
-        first_path = Path(state["seeds"][first_seed])
-        print(f"\n=== Segment seed={first_seed} for checkpoint review ===")
-        masks = segment_and_guard(first_path, f"seed_{first_seed}")
-        save_overlays(first_path, masks)
-        CLIENT.free()
-        print("  /free")
-
-        sanity = check_all(masks)
-        flagged = {k: v for k, v in sanity.items() if not v.clean}
-        state["first_seed"] = first_seed
-        state["first_seed_masks"] = masks
-        state["first_seed_sanity_flags"] = {
-            k: [{"check": f.check, "detail": f.detail} for f in r.flags]
-            for k, r in flagged.items()
+    person_name = CLIENT.upload_image(PERSON_IMAGE)
+    STATE_FILE.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+    for arm in ARMS:
+        first_request = build_generation_request(
+            package,
+            PERSON_IMAGE,
+            reference_board_variant=arm,
+            seed=SEEDS[0],
+            steps=STEPS,
+            resolution=(WIDTH, HEIGHT),
+        )
+        board_path = Path(first_request["reference_panel_path"])
+        board_name = CLIENT.upload_image(board_path)
+        arm_state = {
+            "board_path": str(board_path),
+            "board_sha256": file_sha256(board_path),
+            "outputs": {},
         }
+        state["arms"][arm] = arm_state
+        STATE_FILE.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
 
-    STATE_FILE.write_text(json.dumps(state, indent=2), encoding="utf-8")
-    print(f"\n  state -> {STATE_FILE.relative_to(ROOT)}")
+        for seed in SEEDS:
+            output_dir = RESULTS_DIR / arm / f"seed_{seed}"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            output_path = output_dir / "generated.png"
+            if output_path.exists():
+                raise FileExistsError(f"Refusing to overwrite experimental output: {output_path}")
+            prefix = f"e007_{arm}_s{seed}"
 
-    print("\n" + "="*60)
-    print("Phase 1 complete.")
-    print(f"  Generated: {len(state['seeds'])}/5 seeds")
-    print(f"  Panel: {RESULTS_DIR / 'panel' / 'reference_panel.png'}")
-    print(f"  Review: experiments/007_task_correct_adapter/results/seed_{SEEDS[0]}/")
-    flags = state.get("first_seed_sanity_flags", {})
-    if flags:
-        print(f"  *** {len(flags)} SANITY FLAG(S) on seed_{SEEDS[0]} — review before phase 2 ***")
-        for region, fs in flags.items():
-            for f in fs:
-                print(f"    [{region}] {f['check']}: {f['detail']}")
+            request = build_generation_request(
+                package,
+                PERSON_IMAGE,
+                reference_board_variant=arm,
+                seed=seed,
+                steps=STEPS,
+                resolution=(WIDTH, HEIGHT),
+            )
+            params = request["params"]
+
+            workflow = fill_workflow(template, {
+                "__PERSON_IMAGE__": person_name,
+                "__REF_IMAGE__": board_name,
+                "__POSITIVE_PROMPT__": request["prompt"],
+                "__NEGATIVE_PROMPT__": request["negative_prompt"],
+                "__CFG__": params["cfg"],
+                "__SAMPLER__": params["sampler"],
+                "__SCHEDULER__": params["scheduler"],
+                "__SEED__": params["seed"],
+                "__STEPS__": params["steps"],
+                "__WIDTH__": params["width"],
+                "__HEIGHT__": params["height"],
+                "__OUTPUT_PREFIX__": prefix,
+            })
+
+            started = time.monotonic()
+            prompt_id = CLIENT.submit(workflow)
+            outputs = CLIENT.poll(prompt_id, timeout=600)
+            _download_output(outputs, prefix, output_path)
+            arm_state["outputs"][str(seed)] = {
+                "path": str(output_path),
+                "seconds": round(time.monotonic() - started, 2),
+                "comfyui_prompt_id": prompt_id,
+                "generation_request_id": request["request_id"],
+            }
+            STATE_FILE.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+            print(f"{arm} seed={seed}: {output_path.relative_to(ROOT)}")
+
+        CLIENT.free()
+
+    print(f"state: {STATE_FILE.relative_to(ROOT)}")
+    print("Phase 1 complete. Review all paired outputs before phase 2.")
+
+
+def _write_json(path: Path, value: dict) -> None:
+    path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+
+
+def _validate_hybrid_state(state: dict, require_outputs: bool) -> None:
+    package = _load_package()
+    expected_prompt = build_prompt(package, reference_board_variant=HYBRID_ARM)
+    if state.get("prompt") != expected_prompt:
+        raise RuntimeError("The hybrid prompt changed after its run started")
+    if state.get("layout_sha256") != file_sha256(ROOT / package["layout_path"]):
+        raise RuntimeError("outfit layout.txt changed after the hybrid run started")
+    if state.get("fixed") != _fixed_record():
+        raise RuntimeError("A fixed hybrid generation input changed")
+    if state.get("measurement_inputs") != _measurement_input_record():
+        raise RuntimeError("A hybrid measurement input changed")
+
+    request = build_generation_request(
+        package,
+        PERSON_IMAGE,
+        reference_board_variant=HYBRID_ARM,
+        seed=SEEDS[0],
+        steps=STEPS,
+        resolution=(WIDTH, HEIGHT),
+    )
+    board_path = Path(request["reference_panel_path"])
+    arm_state = state.get("arm", {})
+    if arm_state.get("board_sha256") != file_sha256(board_path):
+        raise RuntimeError("The frozen hybrid board changed")
+    if require_outputs:
+        for seed in SEEDS:
+            output = arm_state.get("outputs", {}).get(str(seed), {}).get("path")
+            if not output or not Path(output).is_file():
+                raise RuntimeError(f"Hybrid generation is incomplete: seed {seed}")
+
+
+def run_hybrid_phase1() -> None:
+    package = _load_package()
+    prompt = build_prompt(package, reference_board_variant=HYBRID_ARM)
+    template = load_template(WORKFLOW_NAME)
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    request = build_generation_request(
+        package,
+        PERSON_IMAGE,
+        reference_board_variant=HYBRID_ARM,
+        seed=SEEDS[0],
+        steps=STEPS,
+        resolution=(WIDTH, HEIGHT),
+    )
+    board_path = Path(request["reference_panel_path"])
+
+    if HYBRID_STATE_FILE.exists():
+        state = json.loads(HYBRID_STATE_FILE.read_text(encoding="utf-8"))
+        _validate_hybrid_state(state, require_outputs=False)
     else:
-        print(f"  sanity guard seed_{SEEDS[0]}: all clean")
-    print("\nOwner reviews generated.png + overlays in seed_42/.")
-    print("If accepted — run phase 2.")
-    print("="*60)
-
-
-# ---------------------------------------------------------------------------
-# Phase 2: segment remaining seeds, compute gates, compare vs E-005 baseline
-# ---------------------------------------------------------------------------
-
-def run_phase2() -> None:
-    if not STATE_FILE.exists():
-        sys.exit(f"State not found: {STATE_FILE}\nRun phase 1 first.")
-
-    state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
-
-    if not E005_MEASUREMENTS.exists():
-        sys.exit(f"E-005 measurements not found: {E005_MEASUREMENTS}")
-    baseline_raw = json.loads(E005_MEASUREMENTS.read_text(encoding="utf-8"))
-    print(f"E-005 baseline loaded ({len(baseline_raw)} seeds)")
-
-    all_masks: dict[str, dict[str, str]] = {}
-    first_seed = state.get("first_seed")
-    if first_seed and "first_seed_masks" in state:
-        all_masks[first_seed] = state["first_seed_masks"]
-
-    remaining = [str(s) for s in SEEDS if str(s) != first_seed]
-    print(f"\n=== Segment {len(remaining)} remaining seeds ===")
-    for seed_str in remaining:
-        if seed_str not in state["seeds"]:
-            print(f"  seed={seed_str}: no output (skipping)")
-            continue
-        gen_path = Path(state["seeds"][seed_str])
-        print(f"  seed={seed_str} ...", end=" ", flush=True)
-        masks = segment_and_guard(gen_path, f"seed_{seed_str}")
-        save_overlays(gen_path, masks)
-        all_masks[seed_str] = masks
-        print()
-
-    CLIENT.free()
-    print("  /free")
-
-    # Compute gates for arm B
-    results_b: dict[str, dict] = {}
-
-    print("\n=== Gates ===")
-    for seed_str, masks in all_masks.items():
-        gen_path = Path(state["seeds"][seed_str])
-        sr: dict = {"color": {}, "identity": {}, "proportions": {}}
-        print(f"\n  seed={seed_str}")
-
-        for region, (ref_img, ref_mask) in REGION_TO_REF.items():
-            gen_mask = masks.get(region)
-            if gen_mask is None:
-                sr["color"][region] = {"delta_e_mean": None, "verdict": "MASK_MISSING"}
-                print(f"    [color] {region}: MASK_MISSING")
-                continue
-            result  = compare_regions(gen_path, gen_mask, ref_img, ref_mask)
-            verdict = color_verdict(result["delta_e_mean"])
-            sr["color"][region] = {**result, "verdict": verdict}
-            warn_tag = "  *** WARN ***" if verdict == "WARN" else ""
-            print(f"    [color] {region}: dE={result['delta_e_mean']} -> {verdict}{warn_tag}")
-
-        id_result  = compare_faces(gen_path, PERSON_IMAGE)
-        cosine     = id_result.get("cosine")
-        id_verdict = "PASS" if (cosine is not None and cosine >= ID_THRESHOLD) else "FAIL"
-        sr["identity"] = {**id_result, "verdict": id_verdict}
-        print(f"    [identity] cosine={cosine} -> {id_verdict}")
-
-        person_mask = masks.get("person")
-        if person_mask and E001_PERSON_MASK.exists():
-            prop  = compare_proportions(E001_PERSON_MASK, person_mask)
-            score = prop["max_abs_change_pct"]
-            if score is None:
-                raise RuntimeError(
-                    f"Proportions gate returned max_abs_change_pct=None for "
-                    f"seed={seed_str} — person mask may be empty."
-                )
-            prop_verdict = "PASS" if score <= PROP_THRESHOLD else "FAIL"
-            sr["proportions"] = {**prop, "verdict": prop_verdict}
-            print(f"    [proportions] max_abs={score:.2f}% -> {prop_verdict}")
-        else:
-            sr["proportions"] = {"verdict": "MASK_MISSING"}
-            print("    [proportions]: MASK_MISSING")
-
-        results_b[seed_str] = sr
-
-    out_path = RESULTS_DIR / "measurements.json"
-    out_path.write_text(json.dumps(results_b, indent=2), encoding="utf-8")
-    print(f"\n  measurements -> {out_path.relative_to(ROOT)}")
-
-    _print_comparison(results_b, baseline_raw)
-
-
-# ---------------------------------------------------------------------------
-# Comparison table
-# ---------------------------------------------------------------------------
-
-def _stats(vals: list) -> tuple[float, float]:
-    v = [x for x in vals if x is not None]
-    if not v:
-        return float("nan"), float("nan")
-    return float(np.mean(v)), float(np.std(v))
-
-
-def _print_comparison(results_b: dict, baseline_raw: dict) -> None:
-    # Flatten baseline to {seed: {identity_cosine, proportions_max_abs, color: {region: dE}}}
-    baseline: dict[str, dict] = {}
-    for seed_str, meas in baseline_raw.items():
-        baseline[seed_str] = {
-            "identity_cosine":     meas.get("identity", {}).get("cosine"),
-            "proportions_max_abs": meas.get("proportions", {}).get("max_abs_change_pct"),
-            "color": {
-                r: meas.get("color", {}).get(r, {}).get("delta_e_mean")
-                for r in REGION_TO_REF
+        original_state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+        state = {
+            "protocol": "protocol.md#hybrid-supplement",
+            "supplement_to": str(STATE_FILE),
+            "comparison_limitations": {
+                "board_changed": True,
+                "layout_changed": True,
+                "original_layout_sha256": original_state["layout_sha256"],
+                "interpretation": (
+                    "Compare the complete hybrid input candidate; do not attribute "
+                    "differences to the board alone."
+                ),
+            },
+            "prompt": prompt,
+            "layout_path": package["layout_path"],
+            "layout_sha256": file_sha256(ROOT / package["layout_path"]),
+            "fixed": _fixed_record(),
+            "measurement_inputs": _measurement_input_record(),
+            "arm": {
+                "name": HYBRID_ARM,
+                "board_path": str(board_path),
+                "board_sha256": file_sha256(board_path),
+                "outputs": {},
             },
         }
+        _write_json(HYBRID_STATE_FILE, state)
 
-    print("\n" + "="*72)
-    print("E-007 — Arm B (task-correct adapter) vs Arm A (E-005 confounded baseline)")
-    print("="*72)
+    person_name = CLIENT.upload_image(PERSON_IMAGE)
+    board_name = CLIENT.upload_image(board_path)
+    outputs_record = state["arm"]["outputs"]
+    for seed in SEEDS:
+        recorded = outputs_record.get(str(seed), {})
+        if recorded.get("path") and Path(recorded["path"]).is_file():
+            print(f"{HYBRID_ARM} seed={seed}: already complete")
+            continue
 
-    # Identity
-    a_cos = [v["identity_cosine"] for v in baseline.values()]
-    b_cos = [v.get("identity", {}).get("cosine") for v in results_b.values()]
-    am, as_ = _stats(a_cos)
-    bm, bs  = _stats(b_cos)
-    a_pass  = sum(1 for x in a_cos if x is not None and x >= ID_THRESHOLD)
-    b_pass  = sum(1 for x in b_cos if x is not None and x >= ID_THRESHOLD)
-    print(f"\nIdentity (ArcFace cosine, >={ID_THRESHOLD:.2f} PASS, criteria: mean >={0.776:.3f}):")
-    print(f"  {'Condition':<35} {'mean':>8} {'std':>8} {'PASS/5':>8}")
-    print(f"  {'A confounded baseline (E-005)':<35} {am:>8.4f} {as_:>8.4f} {a_pass:>8}")
-    print(f"  {'B task-correct adapter':<35} {bm:>8.4f} {bs:>8.4f} {b_pass:>8}")
-    if not np.isnan(bm):
-        print(f"  -> criterion (mean >=0.776): {'MET' if bm >= 0.776 else 'NOT MET'}")
+        output_dir = RESULTS_DIR / HYBRID_ARM / f"seed_{seed}"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_path = output_dir / "generated.png"
+        if output_path.exists():
+            raise FileExistsError(f"Unrecorded hybrid output exists: {output_path}")
+        prefix = f"e007_{HYBRID_ARM}_s{seed}"
 
-    # Proportions
-    a_prop = [v["proportions_max_abs"] for v in baseline.values()]
-    b_prop = [v.get("proportions", {}).get("max_abs_change_pct") for v in results_b.values()]
-    am, as_ = _stats(a_prop)
-    bm, bs  = _stats(b_prop)
-    a_fail  = sum(1 for x in a_prop if x is not None and x > PROP_THRESHOLD)
-    b_fail  = sum(1 for x in b_prop if x is not None and x > PROP_THRESHOLD)
-    print(f"\nProportions max_abs_change_pct (<={PROP_THRESHOLD}% PASS):")
-    print(f"  {'Condition':<35} {'mean':>8} {'std':>8} {'FAIL/5':>8}")
-    print(f"  {'A confounded baseline (E-005)':<35} {am:>8.2f} {as_:>8.2f} {a_fail:>8}")
-    print(f"  {'B task-correct adapter':<35} {bm:>8.2f} {bs:>8.2f} {b_fail:>8}")
+        request = build_generation_request(
+            package,
+            PERSON_IMAGE,
+            reference_board_variant=HYBRID_ARM,
+            seed=seed,
+            steps=STEPS,
+            resolution=(WIDTH, HEIGHT),
+        )
+        params = request["params"]
+        workflow = fill_workflow(template, {
+            "__PERSON_IMAGE__": person_name,
+            "__REF_IMAGE__": board_name,
+            "__POSITIVE_PROMPT__": request["prompt"],
+            "__NEGATIVE_PROMPT__": request["negative_prompt"],
+            "__CFG__": params["cfg"],
+            "__SAMPLER__": params["sampler"],
+            "__SCHEDULER__": params["scheduler"],
+            "__SEED__": params["seed"],
+            "__STEPS__": params["steps"],
+            "__WIDTH__": params["width"],
+            "__HEIGHT__": params["height"],
+            "__OUTPUT_PREFIX__": prefix,
+        })
 
-    # Color per region
-    print(f"\nColor dE CIEDE2000 (PASS<={COLOR_PASS}  WARN {COLOR_PASS}–{COLOR_FAIL}  FAIL>{COLOR_FAIL}):")
-    print(f"  {'Region':<12} {'A mean':>8} {'A std':>8} {'B mean':>8} {'B std':>8}  verdict")
-    for region in REGION_TO_REF:
-        a_vals = [v["color"].get(region) for v in baseline.values()]
-        b_vals = [
-            v.get("color", {}).get(region, {}).get("delta_e_mean")
-            if isinstance(v.get("color", {}).get(region), dict)
-            else v.get("color", {}).get(region)
-            for v in results_b.values()
-        ]
-        am, as_ = _stats(a_vals)
-        bm, bs  = _stats(b_vals)
-        if not np.isnan(bm) and not np.isnan(am) and not np.isnan(as_):
-            if bm > am + as_:
-                verdict = "B worse (flag)"
-            elif bm < am - as_:
-                verdict = "B better"
-            else:
-                verdict = "within noise"
-        else:
-            verdict = "no data"
-        print(f"  {region:<12} {am:>8.2f} {as_:>8.2f} {bm:>8.2f} {bs:>8.2f}  {verdict}")
+        started = time.monotonic()
+        prompt_id = CLIENT.submit(workflow)
+        outputs = CLIENT.poll(prompt_id, timeout=600)
+        _download_output(outputs, prefix, output_path)
+        outputs_record[str(seed)] = {
+            "path": str(output_path),
+            "sha256": file_sha256(output_path),
+            "seconds": round(time.monotonic() - started, 2),
+            "comfyui_prompt_id": prompt_id,
+            "generation_request_id": request["request_id"],
+        }
+        _write_json(HYBRID_STATE_FILE, state)
+        print(f"{HYBRID_ARM} seed={seed}: {output_path.relative_to(ROOT)}")
 
-    print("\n*** Owner visual review of all 5 arm-B outputs required before conclusion. ***")
-    print("Criteria C (task expression): >=3/5 outputs show garments from board.")
-    print("Decision rule: experiments/007_task_correct_adapter/protocol.md §4.")
-    print("="*72)
+    CLIENT.free()
+    _validate_hybrid_state(state, require_outputs=True)
+    make_three_way_sheet("generated.png", THREE_WAY_SHEET)
+    print(f"hybrid state: {HYBRID_STATE_FILE.relative_to(ROOT)}")
+    print(f"comparison: {THREE_WAY_SHEET.relative_to(ROOT)}")
 
 
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
+def _make_overlay(source: Path, masks: dict[str, str], output: Path) -> None:
+    image = cv2.imread(str(source))
+    if image is None:
+        raise FileNotFoundError(source)
+    overlay = image.astype(np.float32)
+    colors = [(80, 80, 255), (80, 200, 80), (60, 220, 220), (40, 140, 255), (200, 80, 200)]
+    for index, (label, mask_path) in enumerate(masks.items()):
+        if label in ("person", "face"):
+            continue
+        mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+        if mask is None:
+            continue
+        foreground = mask > 127
+        color = colors[index % len(colors)]
+        for channel in range(3):
+            overlay[:, :, channel][foreground] = overlay[:, :, channel][foreground] * 0.5 + color[channel] * 0.5
+    cv2.imwrite(str(output), overlay.astype(np.uint8))
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="E-007 task-correct adapter re-baseline")
-    parser.add_argument("--phase", type=int, choices=[1, 2],
-                        help="1 = build panel + generate + first-seed overlays; "
-                             "2 = gates + comparison table")
-    parser.add_argument("--summary", action="store_true",
-                        help="Print comparison from saved measurements.json (no GPU)")
+
+def make_three_way_sheet(filename: str, destination: Path) -> None:
+    cell_width = 360
+    cell_height = 512
+    label_height = 34
+    header_height = 44
+    sheet = np.full(
+        (header_height + len(SEEDS) * (cell_height + label_height), cell_width * 3, 3),
+        245,
+        dtype=np.uint8,
+    )
+    for column, arm in enumerate(COMPARISON_ARMS):
+        cv2.putText(
+            sheet,
+            arm,
+            (column * cell_width + 12, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.7,
+            (20, 20, 20),
+            2,
+            cv2.LINE_AA,
+        )
+        for row, seed in enumerate(SEEDS):
+            source = RESULTS_DIR / arm / f"seed_{seed}" / filename
+            image = cv2.imread(str(source))
+            if image is None:
+                raise FileNotFoundError(source)
+            resized = cv2.resize(image, (cell_width, cell_height), interpolation=cv2.INTER_AREA)
+            y = header_height + row * (cell_height + label_height)
+            x = column * cell_width
+            sheet[y:y + cell_height, x:x + cell_width] = resized
+            cv2.putText(
+                sheet,
+                f"seed {seed}",
+                (x + 12, y + cell_height + 24),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.65,
+                (20, 20, 20),
+                2,
+                cv2.LINE_AA,
+            )
+    if not cv2.imwrite(str(destination), sheet):
+        raise RuntimeError(f"Failed to write comparison sheet: {destination}")
+
+
+def _flags_to_json(sanity: dict) -> dict:
+    return {
+        region: [{"check": flag.check, "detail": flag.detail} for flag in result.flags]
+        for region, result in sanity.items()
+        if not result.clean
+    }
+
+
+def _color_verdict(value: float | None) -> str:
+    if value is None:
+        return "INVALID"
+    if value <= COLOR_PASS:
+        return "PASS"
+    if value <= COLOR_FAIL:
+        return "WARN"
+    return "FAIL"
+
+
+def _measure_output(generated: Path, output_dir: Path) -> dict:
+    masks_dir = output_dir / "masks"
+    masks = segment(generated, GENERATED_PROMPTS, CLIENT, masks_dir)
+    sanity = check_all(masks)
+    flags = _flags_to_json(sanity)
+    _make_overlay(generated, masks, output_dir / "_overlay_all.png")
+
+    result = {"sanity_flags": flags, "color": {}}
+    for region, (reference_image, reference_mask) in REGION_TO_REFERENCE.items():
+        if region in flags:
+            result["color"][region] = {"verdict": "SKIP_SANITY", "flags": flags[region]}
+            continue
+        measurement = compare_regions(generated, masks[region], reference_image, reference_mask)
+        result["color"][region] = {**measurement, "verdict": _color_verdict(measurement["delta_e_mean"])}
+
+    identity = compare_faces(generated, PERSON_IMAGE)
+    cosine = identity["cosine"]
+    result["identity"] = {
+        **identity,
+        "verdict": (
+            "SKIP_DETECTION" if cosine is None
+            else "PASS" if cosine >= IDENTITY_THRESHOLD
+            else "FAIL"
+        ),
+    }
+
+    if "person" in flags:
+        result["proportions"] = {"verdict": "SKIP_SANITY", "flags": flags["person"]}
+    else:
+        proportions = compare_proportions(SOURCE_PERSON_MASK, masks["person"])
+        score = proportions["max_abs_change_pct"]
+        result["proportions"] = {
+            **proportions,
+            "verdict": (
+                "SKIP_MEASUREMENT" if score is None
+                else "PASS" if score <= PROPORTIONS_THRESHOLD
+                else "FAIL"
+            ),
+            "interpretation": "diagnostic; silhouette includes clothing and depends on framing",
+        }
+    return result
+
+
+def run_phase2() -> None:
+    if not STATE_FILE.is_file():
+        raise FileNotFoundError(f"Run phase 1 first: {STATE_FILE}")
+    if MEASUREMENTS_FILE.exists():
+        raise FileExistsError(
+            f"E-007 measurements already exist: {MEASUREMENTS_FILE}. "
+            "Refusing to overwrite an experimental record."
+        )
+    state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    _validate_phase2_state(state)
+    measurements = {"arms": {}}
+
+    for arm in ARMS:
+        arm_results = {}
+        measurements["arms"][arm] = arm_results
+        for seed in SEEDS:
+            output = Path(state["arms"][arm]["outputs"][str(seed)]["path"])
+            print(f"measure {arm} seed={seed}")
+            arm_results[str(seed)] = _measure_output(output, output.parent)
+            MEASUREMENTS_FILE.write_text(
+                json.dumps(measurements, indent=2) + "\n", encoding="utf-8"
+            )
+        CLIENT.free()
+
+    print(f"measurements: {MEASUREMENTS_FILE.relative_to(ROOT)}")
+    print_summary(measurements)
+
+
+def run_hybrid_phase2() -> None:
+    if not HYBRID_STATE_FILE.is_file():
+        raise FileNotFoundError(f"Run hybrid phase 1 first: {HYBRID_STATE_FILE}")
+    if HYBRID_MEASUREMENTS_FILE.exists():
+        raise FileExistsError(
+            f"Hybrid measurements already exist: {HYBRID_MEASUREMENTS_FILE}. "
+            "Refusing to overwrite an experimental record."
+        )
+    state = json.loads(HYBRID_STATE_FILE.read_text(encoding="utf-8"))
+    _validate_hybrid_state(state, require_outputs=True)
+    measurements = {"arm": HYBRID_ARM, "results": {}}
+
+    for seed in SEEDS:
+        output = Path(state["arm"]["outputs"][str(seed)]["path"])
+        print(f"measure {HYBRID_ARM} seed={seed}")
+        measurements["results"][str(seed)] = _measure_output(output, output.parent)
+        _write_json(HYBRID_MEASUREMENTS_FILE, measurements)
+    CLIENT.free()
+
+    make_three_way_sheet("_overlay_all.png", THREE_WAY_OVERLAYS)
+    print(f"hybrid measurements: {HYBRID_MEASUREMENTS_FILE.relative_to(ROOT)}")
+    print(f"overlay comparison: {THREE_WAY_OVERLAYS.relative_to(ROOT)}")
+    print_hybrid_summary(measurements)
+
+
+def _validate_phase2_state(state: dict) -> None:
+    package = _load_package()
+    if state.get("prompt") != build_prompt(package):
+        raise RuntimeError("The active prompt changed after phase 1; phase 2 is not comparable")
+    if state.get("layout_sha256") != file_sha256(ROOT / package["layout_path"]):
+        raise RuntimeError("outfit layout.txt changed after phase 1")
+
+    fixed = state.get("fixed", {})
+    expected_fixed_hashes = {
+        "workflow_sha256": file_sha256(ROOT / "system/workflows" / f"{WORKFLOW_NAME}.json"),
+        "person_sha256": file_sha256(PERSON_IMAGE),
+    }
+    for key, expected in expected_fixed_hashes.items():
+        if fixed.get(key) != expected:
+            raise RuntimeError(f"E-007 fixed input changed after phase 1: {key}")
+
+    measurement_inputs = state.get("measurement_inputs", {})
+    if measurement_inputs.get("source_person_mask") != file_sha256(SOURCE_PERSON_MASK):
+        raise RuntimeError("E-007 source person mask changed after phase 1")
+    recorded_regions = measurement_inputs.get("regions", {})
+    for region, (image_path, mask_path) in REGION_TO_REFERENCE.items():
+        recorded = recorded_regions.get(region, {})
+        if recorded.get("image_sha256") != file_sha256(image_path):
+            raise RuntimeError(f"E-007 reference image changed after phase 1: {region}")
+        if recorded.get("mask_sha256") != file_sha256(mask_path):
+            raise RuntimeError(f"E-007 reference mask changed after phase 1: {region}")
+
+    for arm in ARMS:
+        request = build_generation_request(
+            package,
+            PERSON_IMAGE,
+            reference_board_variant=arm,
+            seed=SEEDS[0],
+            steps=STEPS,
+            resolution=(WIDTH, HEIGHT),
+        )
+        arm_state = state.get("arms", {}).get(arm)
+        if not arm_state:
+            raise RuntimeError(f"E-007 phase 1 is incomplete: missing arm {arm}")
+        board_path = Path(request["reference_panel_path"])
+        if arm_state.get("board_sha256") != file_sha256(board_path):
+            raise RuntimeError(f"E-007 board changed after phase 1: {arm}")
+        for seed in SEEDS:
+            output = arm_state.get("outputs", {}).get(str(seed), {}).get("path")
+            if not output or not Path(output).is_file():
+                raise RuntimeError(f"E-007 phase 1 is incomplete: {arm} seed {seed}")
+
+
+def _mean(values: list[float | None]) -> float | None:
+    valid = [value for value in values if value is not None]
+    return round(float(np.mean(valid)), 4) if valid else None
+
+
+def print_summary(measurements: dict) -> None:
+    print("\nE-007 v2 paired summary")
+    for arm in ARMS:
+        rows = measurements["arms"][arm].values()
+        identity = _mean([row.get("identity", {}).get("cosine") for row in rows])
+        proportions = _mean([row.get("proportions", {}).get("max_abs_change_pct") for row in rows])
+        print(f"\n{arm}: identity_mean={identity} proportions_mean={proportions}")
+        for region in REGION_TO_REFERENCE:
+            values = [row.get("color", {}).get(region, {}).get("delta_e_mean") for row in rows]
+            print(f"  {region}: dE_mean={_mean(values)}")
+    print("\nNo automatic winner. Owner review of each same-seed pair is required.")
+
+
+def print_hybrid_summary(measurements: dict) -> None:
+    rows = measurements["results"].values()
+    identity = _mean([row.get("identity", {}).get("cosine") for row in rows])
+    proportions = _mean([row.get("proportions", {}).get("max_abs_change_pct") for row in rows])
+    print(f"\n{HYBRID_ARM}: identity_mean={identity} proportions_mean={proportions}")
+    for region in REGION_TO_REFERENCE:
+        values = [row.get("color", {}).get(region, {}).get("delta_e_mean") for row in rows]
+        print(f"  {region}: dE_mean={_mean(values)}")
+    print("\nCompare as a complete input candidate; board and layout both changed.")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="E-007 v2 frozen-board A/B")
+    parser.add_argument("--phase", type=int, choices=(1, 2))
+    parser.add_argument("--summary", action="store_true")
+    parser.add_argument("--hybrid-phase", type=int, choices=(1, 2))
+    parser.add_argument("--hybrid-summary", action="store_true")
     args = parser.parse_args()
 
+    selected = sum(bool(value) for value in (
+        args.phase,
+        args.summary,
+        args.hybrid_phase,
+        args.hybrid_summary,
+    ))
+    if selected != 1:
+        parser.error("choose exactly one phase or summary action")
+
     if args.summary:
-        meas_path = RESULTS_DIR / "measurements.json"
-        if not meas_path.exists():
-            sys.exit(f"measurements.json not found: {meas_path}\nRun phase 2 first.")
-        results_b    = json.loads(meas_path.read_text(encoding="utf-8"))
-        baseline_raw = json.loads(E005_MEASUREMENTS.read_text(encoding="utf-8"))
-        _print_comparison(results_b, baseline_raw)
-        sys.exit(0)
-
-    if args.phase is None:
-        parser.error("--phase or --summary required")
-
-    for p in (PERSON_IMAGE, OUTFIT_PACKAGE, E001_PERSON_MASK):
-        if not p.exists():
-            sys.exit(f"Missing required file: {p}")
-
-    outfit_package = json.loads(OUTFIT_PACKAGE.read_text(encoding="utf-8"))
-    prompt         = build_prompt(outfit_package)
-
-    if args.phase == 1:
-        run_phase1(outfit_package, prompt)
-    else:
+        if not MEASUREMENTS_FILE.is_file():
+            raise FileNotFoundError(MEASUREMENTS_FILE)
+        print_summary(json.loads(MEASUREMENTS_FILE.read_text(encoding="utf-8")))
+    elif args.hybrid_summary:
+        if not HYBRID_MEASUREMENTS_FILE.is_file():
+            raise FileNotFoundError(HYBRID_MEASUREMENTS_FILE)
+        print_hybrid_summary(json.loads(HYBRID_MEASUREMENTS_FILE.read_text(encoding="utf-8")))
+    elif args.phase == 1:
+        run_phase1()
+    elif args.phase == 2:
         run_phase2()
+    elif args.hybrid_phase == 1:
+        run_hybrid_phase1()
+    elif args.hybrid_phase == 2:
+        run_hybrid_phase2()
+    else:
+        parser.error("choose a phase or summary action")
+
+
+if __name__ == "__main__":
+    main()

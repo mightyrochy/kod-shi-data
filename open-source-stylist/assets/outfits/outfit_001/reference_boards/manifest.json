@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0",
+  "frozen": true,
+  "cell_size": 256,
+  "columns": 3,
+  "labels": [
+    "blouse front",
+    "blouse back",
+    "skirt front",
+    "skirt back",
+    "belt",
+    "shoes",
+    "earrings"
+  ],
+  "boards": {
+    "masked_crops": {
+      "path": "assets/outfits/outfit_001/reference_boards/masked_crops.png",
+      "sha256": "1b5229c6f2c5f5d7ca00488228a69d0a358c67829934432285a2ee091aaed832",
+      "labels": [
+        "blouse front",
+        "blouse back",
+        "skirt front",
+        "skirt back",
+        "belt",
+        "shoes",
+        "earrings"
+      ]
+    },
+    "rectangular_crops": {
+      "path": "assets/outfits/outfit_001/reference_boards/rectangular_crops.png",
+      "sha256": "41d510468934664afc763bd235c076cc194c50d00dee7c3764ced77b0c7b510d",
+      "labels": [
+        "blouse front",
+        "blouse back",
+        "skirt front",
+        "skirt back",
+        "belt",
+        "shoes",
+        "earrings"
+      ]
+    },
+    "hybrid_mask_crop": {
+      "path": "assets/outfits/outfit_001/reference_boards/hybrid_mask_crop.png",
+      "sha256": "542051b334f0b02114093c574ea2e4ae31e137afb368a786ab434e16109aba83",
+      "labels": [
+        "blouse front mask",
+        "blouse front crop",
+        "skirt front mask",
+        "skirt front crop",
+        "belt mask",
+        "earrings mask",
+        "earrings crop",
+        "shoes mask",
+        "shoes crop"
+      ]
+    }
+  },
+  "corrected_masks": {
+    "blouse_front_buttons": {
+      "path": "assets/outfits/outfit_001/reference_masks/blouse_front_buttons.png",
+      "sha256": "24c6e20892552556d7875725040968a6853b5e152cfbc571b86c72fd32ff7084",
+      "base_mask": "experiments/001_segmentation_masks/results/outfit_001_blouse_front/blouse.png",
+      "repair_roi": [
+        398,
+        590,
+        438,
+        795
+      ],
+      "minimum_gray": 185
+    }
+  },
+  "inputs": [
+    {
+      "label": "blouse front",
+      "source": "assets/outfits/outfit_001/blouse_front.webp",
+      "mask": "experiments/001_segmentation_masks/results/outfit_001_blouse_front/blouse.png",
+      "rectangular_crop": "assets/outfits/outfit_001/crops/blouse front crop.png"
+    },
+    {
+      "label": "blouse back",
+      "source": "assets/outfits/outfit_001/blouse_back.webp",
+      "mask": "experiments/001_segmentation_masks/results/outfit_001_blouse_back/blouse.png",
+      "rectangular_crop": "assets/outfits/outfit_001/crops/blouse back crop.png"
+    },
+    {
+      "label": "skirt front",
+      "source": "assets/outfits/outfit_001/skirt_front.webp",
+      "mask": "experiments/001_segmentation_masks/results/outfit_001_skirt_front/skirt.png",
+      "rectangular_crop": "assets/outfits/outfit_001/crops/skirt_front crop.png"
+    },
+    {
+      "label": "skirt back",
+      "source": "assets/outfits/outfit_001/skirt_back.webp",
+      "mask": "experiments/001_segmentation_masks/results/outfit_001_skirt_back/skirt.png",
+      "rectangular_crop": "assets/outfits/outfit_001/crops/skirt_back crop.png"
+    },
+    {
+      "label": "belt",
+      "source": "assets/outfits/outfit_001/belt.jpg",
+      "mask": "experiments/001_segmentation_masks/results/outfit_001_belt/belt.png",
+      "rectangular_crop": "assets/outfits/outfit_001/crops/belt crop.png"
+    },
+    {
+      "label": "shoes",
+      "source": "assets/outfits/outfit_001/shoes_wedge.webp",
+      "mask": "experiments/001_segmentation_masks/results/outfit_001_shoes_wedge/shoes.png",
+      "rectangular_crop": "assets/outfits/outfit_001/crops/shoes crop.png"
+    },
+    {
+      "label": "earrings",
+      "source": "assets/outfits/outfit_001/earrings_disc.webp",
+      "mask": "experiments/001_segmentation_masks/results/outfit_001_earrings_disc/earrings.png",
+      "rectangular_crop": "assets/outfits/outfit_001/crops/earings crop.png"
+    }
+  ]
+}

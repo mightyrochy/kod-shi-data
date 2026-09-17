@@ -17,16 +17,20 @@ All processing is local. No external API calls for generation.
 ---
 
 ## Current state
-**Restart, 2026-06-10.** The first implementation attempt is archived (read-only) in
-`archive/`. The design vision survived the restart; the implementation did not.
+**Component testing, 2026-06-14.** The first implementation attempt is archived
+(read-only) in `archive/`. Active code contains ComfyUI clients, frozen-board
+selection, prompt construction, segmentation, three measurement instruments,
+workflow templates, and experiment runners.
 
-What exists now: canonical design (`design/SYSTEM_DESIGN.md`), engineering discipline
-(`METHODOLOGY.md`), assembly plan (`BUILD_PLAN.md`, stages 0–7), knowledge base
-(`knowledge/`), test assets (`assets/`). No executable code yet — Stage 0 of
-BUILD_PLAN is the next work.
+E-007 v2's original A/B is closed with a mixed owner verdict and no winning board.
+The measured `hybrid_mask_crop` supplement is the next input candidate: it restores
+buttons and footwear consistently, while blouse color and silhouette remain open.
+Generation code must reuse the selected frozen PNG and verify its SHA-256; it must
+not rebuild boards.
 
-All empirical findings of the previous attempt are **hypotheses**, not facts
-(`knowledge/hypotheses.md`). Decisions rest only on `knowledge/verified.md`.
+Decisions rest on the effective status recorded in `knowledge/verified.md`, including
+dated reversals and caveats, plus direct owner review where the instruments do not
+measure the relevant quality.
 
 ---
 

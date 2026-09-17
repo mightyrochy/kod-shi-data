@@ -1,0 +1,18 @@
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1781712195.246698   31244 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1781712195.260073   29496 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1781712195.283839   31244 landmark_projection_calculator.cc:81] Using NORM_RECT without IMAGE_DIMENSIONS is only supported for the square ROI. Provide IMAGE_DIMENSIONS or use PROJECTION_MATRIX.
+W0000 00:00:1781712195.764635   14868 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1781712195.777826   24448 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+  body_model + garment_descriptor ...
+    hip_y=688 ankle_y=1225 hip_w=148
+    garment length_ratio=2.98 top_width=422
+  measure_on_model (skirt on its on-model photo) ...
+    length_fraction=0.917 (of hip->ankle)  width_ratio=2.35
+  auto mask + pose ...
+    HEM at y=1181 (measured frac 0.92; target ankle=1225)
+  try-on (continuous crop + length-correct drape mask) ...
+  done 7.2s -> experiments\010_protect_by_construction\results\proto_chain\drape_skirt_result.png
+
+OWNER CHECKPOINT: drape_skirt_result.png — length correct now? still a skirt with slit?
+  mask: drape_skirt_mask.png (hem from garment proportions) · crop: drape_skirt_crop.png

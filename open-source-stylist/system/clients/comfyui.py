@@ -1,8 +1,19 @@
-"""ComfyUI HTTP client — submit workflow, poll, download, free."""
+"""ComfyUI HTTP client - submit workflow, poll, download, and free."""
 
+import hashlib
+import mimetypes
 import time
+from pathlib import Path
 
 import requests
+
+
+def _content_digest(path: Path, length: int = 12) -> str:
+    hasher = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()[:length]
 
 
 def _extract_error(status: dict) -> str:
@@ -81,17 +92,23 @@ class ComfyUIClient:
         resp.raise_for_status()
 
     def upload_image(self, image_path) -> str:
-        """POST /upload/image — upload local file to ComfyUI input dir.
+        """Upload an image under a content-qualified filename.
 
-        Returns the filename as registered in ComfyUI (use in LoadImage node).
+        Two different local files with the same basename must not overwrite each
+        other in ComfyUI's shared input directory. Re-uploading identical bytes
+        intentionally produces the same filename.
         """
-        from pathlib import Path
-
         image_path = Path(image_path)
+        if not image_path.is_file():
+            raise FileNotFoundError(f"Cannot upload missing image: {image_path}")
+
+        digest = _content_digest(image_path)
+        upload_name = f"{image_path.stem}__{digest}{image_path.suffix.lower()}"
+        mime_type = mimetypes.guess_type(upload_name)[0] or "application/octet-stream"
         with image_path.open("rb") as fh:
             resp = self._s.post(
                 f"{self.base}/upload/image",
-                files={"image": (image_path.name, fh, "image/png")},
+                files={"image": (upload_name, fh, mime_type)},
                 data={"overwrite": "true"},
                 timeout=30,
             )
