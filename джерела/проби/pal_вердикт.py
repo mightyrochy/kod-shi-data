@@ -1,0 +1,48 @@
+# -*- coding: utf-8 -*-
+"""Спільне для проб вердикту K-PAL: зібрати образ зі стендового пулу й узяти знахідки.
+
+Окремим файлом з тієї самої причини, що `pal_вимір`: один шлях «запити → образ →
+від_моделі» ставлять чотири проби, і чотири копії розійшлись би.
+"""
+import json, pathlib, sys
+_КОРІНЬ = pathlib.Path(__file__).resolve().parent.parent
+if str(_КОРІНЬ) not in sys.path: sys.path.insert(0, str(_КОРІНЬ))
+import bridge as B, colorspace as cs, pipeline as PL
+
+
+def стенд(гілка=0, **зміни):
+    вх = json.load(open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8"))
+    вх["гілка"] = гілка
+    вх.update(зміни)
+    r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
+    спец, _ = B.спец_останнього_пакета()
+    кат = {c["id"]: c for c in B.каталог_останнього_пакета()}
+    return вх, r, кат, спец
+
+
+def знахідки(вх, ід):
+    """Вердикт коду на образ зі списку id — тим самим ендпойнтом, що й продукт."""
+    вм = json.loads(B.виклик("від_моделі", json.dumps(dict(вх, ід=list(ід)), ensure_ascii=False)))
+    образи = ((вм.get("вердикт") or {}).get("образи") or [{}])
+    return образи[0].get("знахідки") or [], вм
+
+
+def рядок(зн, правило):
+    z = next((x for x in зн if x.get("правило") == правило), None)
+    return ("НЕМА" if not z else "%s %.2f · %s · %s"
+            % (z.get("сила"), z.get("сила_нп") or 0.0, z.get("регістр"), str(z.get("суть"))[:96]))
+
+
+def lch(кат, ід):
+    lab = (кат.get(ід) or {}).get("lab")
+    return cs.lch(lab) if lab else (None, None, None)
+
+
+def взяти(r, кат, слот, умова):
+    """Перша річ слота, що вдовольняє умову(L, C, h, запис) — або None."""
+    for x in (r["кандидати"].get(слот) or []):
+        L, C, h = lch(кат, x["id"])
+        if L is None: continue
+        if умова(L, C, h, кат[x["id"]]):
+            return x
+    return None
