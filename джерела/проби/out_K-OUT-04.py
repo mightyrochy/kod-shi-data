@@ -26,8 +26,13 @@ print("каскад на виміряних довжинах:", OU._каскад
 з = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = {c["id"]: c for c in B.каталог_останнього_пакета()}
 к = з["кандидати"]
-взяти = lambda сл, ум: next((кат[r["id"]] for r in (к.get(сл) or [])
-                             if r["id"] in кат and ум(кат[r["id"]])), None)
+вибрано = set()   # одна річ може стояти кандидатом у двох слотах — id не дублювати
+def взяти(сл, ум):
+    for r in (к.get(сл) or []):
+        c = кат.get(r["id"])
+        if c and r["id"] not in вибрано and ум(c):
+            вибрано.add(r["id"]); return c
+    return None
 ід = [r["id"] for r in (взяти("верхній_шар", lambda c: c.get("довжина_рівень")),
                         взяти("верх", lambda c: c.get("довжина_рівень")),
                         взяти("низ", lambda c: c.get("довжина_рівень")),
