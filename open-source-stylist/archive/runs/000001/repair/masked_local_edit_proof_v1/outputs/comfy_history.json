@@ -1,0 +1,204 @@
+{
+  "prompt": [
+    0,
+    "47a847e6-442c-47d8-928b-28b76f668cf4",
+    {
+      "1": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": "oss_masked_local_edit_proof_v1_rgba.png"
+        }
+      },
+      "2": {
+        "class_type": "UNETLoader",
+        "inputs": {
+          "unet_name": "flux1-fill-dev.safetensors",
+          "weight_dtype": "default"
+        }
+      },
+      "3": {
+        "class_type": "DualCLIPLoader",
+        "inputs": {
+          "clip_name1": "clip_l.safetensors",
+          "clip_name2": "t5xxl_fp16.safetensors",
+          "type": "flux",
+          "device": "default"
+        }
+      },
+      "4": {
+        "class_type": "VAELoader",
+        "inputs": {
+          "vae_name": "ae.safetensors"
+        }
+      },
+      "5": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "3",
+            0
+          ],
+          "text": "Photorealistic local inpainting. Repair only the masked front-view waist and top-hem layer boundary.  Goal: Make the blouse hem and waist layering look more like the outfit references: the ivory blouse should sit over the skirt with a soft shaped hem/peplum effect. The brown belt should not dominate the front view. It may remain only as a subtle partial waist detail if needed for natural structure.  Preserve: - face, hair, glasses, skin tone, body shape, body pose, and hands; - skirt length, skirt silhouette, and front slit; - footwear and earrings; - side-view figure; - background, floor, door, wall, and camera framing; - all unmasked regions except natural edge blending at the mask boundary.  Do not: - redesign the outfit; - change the person; - change the body outline; - change the blouse sleeves, neckline, or buttons outside the mask; - invent a new belt, buckle, bag, jewelry, or extra garment; - edit outside the mask.  Pass condition: The masked waist/layer boundary is improved and the rest of the image remains visually unchanged. "
+        }
+      },
+      "6": {
+        "class_type": "FluxGuidance",
+        "inputs": {
+          "conditioning": [
+            "5",
+            0
+          ],
+          "guidance": 30.0
+        }
+      },
+      "7": {
+        "class_type": "ConditioningZeroOut",
+        "inputs": {
+          "conditioning": [
+            "5",
+            0
+          ]
+        }
+      },
+      "8": {
+        "class_type": "DifferentialDiffusion",
+        "inputs": {
+          "model": [
+            "2",
+            0
+          ]
+        }
+      },
+      "9": {
+        "class_type": "InpaintModelConditioning",
+        "inputs": {
+          "positive": [
+            "6",
+            0
+          ],
+          "negative": [
+            "7",
+            0
+          ],
+          "vae": [
+            "4",
+            0
+          ],
+          "pixels": [
+            "1",
+            0
+          ],
+          "mask": [
+            "1",
+            1
+          ],
+          "noise_mask": true
+        }
+      },
+      "10": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "8",
+            0
+          ],
+          "seed": 25110001,
+          "steps": 20,
+          "cfg": 1.0,
+          "sampler_name": "euler",
+          "scheduler": "normal",
+          "positive": [
+            "9",
+            0
+          ],
+          "negative": [
+            "9",
+            1
+          ],
+          "latent_image": [
+            "9",
+            2
+          ],
+          "denoise": 1.0
+        }
+      },
+      "11": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "10",
+            0
+          ],
+          "vae": [
+            "4",
+            0
+          ]
+        }
+      },
+      "12": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "11",
+            0
+          ],
+          "filename_prefix": "oss_masked_local_edit_proof_v1"
+        }
+      }
+    },
+    {
+      "client_id": "f4c82b5f-33ac-4ad7-b907-fa6b08ddb854",
+      "create_time": 1781020182985
+    },
+    [
+      "12"
+    ]
+  ],
+  "outputs": {
+    "12": {
+      "images": [
+        {
+          "filename": "oss_masked_local_edit_proof_v1_00001_.png",
+          "subfolder": "",
+          "type": "output"
+        }
+      ]
+    }
+  },
+  "status": {
+    "status_str": "success",
+    "completed": true,
+    "messages": [
+      [
+        "execution_start",
+        {
+          "prompt_id": "47a847e6-442c-47d8-928b-28b76f668cf4",
+          "timestamp": 1781020182985
+        }
+      ],
+      [
+        "execution_cached",
+        {
+          "nodes": [],
+          "prompt_id": "47a847e6-442c-47d8-928b-28b76f668cf4",
+          "timestamp": 1781020183035
+        }
+      ],
+      [
+        "execution_success",
+        {
+          "prompt_id": "47a847e6-442c-47d8-928b-28b76f668cf4",
+          "timestamp": 1781020236321
+        }
+      ]
+    ]
+  },
+  "meta": {
+    "12": {
+      "node_id": "12",
+      "display_node": "12",
+      "parent_node": null,
+      "real_node_id": "12"
+    }
+  }
+}

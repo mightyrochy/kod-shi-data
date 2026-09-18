@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "outfit_package",
+  "title": "OutfitPackage",
+  "description": "Outfit items, frozen reference boards, and an external layout instruction.",
+  "type": "object",
+  "required": ["schema_version", "outfit_id", "items", "layout_path", "reference_board"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "outfit_id": { "type": "string", "minLength": 1 },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["item_id", "type", "description", "reference_image_paths", "visibility_priority"],
+        "additionalProperties": false,
+        "properties": {
+          "item_id": { "type": "string", "minLength": 1 },
+          "type": {
+            "type": "string",
+            "enum": ["top", "bottom", "shoes", "jacket", "dress", "accessory", "bag", "hat", "other"]
+          },
+          "description": { "type": "string", "minLength": 1 },
+          "reference_image_paths": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "minItems": 1
+          },
+          "visibility_priority": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "layout_path": { "type": "string", "minLength": 1 },
+    "reference_board": {
+      "type": "object",
+      "required": ["labels", "variants"],
+      "additionalProperties": false,
+      "properties": {
+        "labels": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "variants": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "required": ["path", "sha256"],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "labels": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "negative_constraints": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

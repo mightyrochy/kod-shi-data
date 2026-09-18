@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evaluation_and_repair_plan.schema.json",
+  "title": "Evaluation And Repair Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "mode",
+    "candidate_id",
+    "runtime_budget",
+    "base_verdict",
+    "hard_checks",
+    "repair_candidates",
+    "selected_next_action",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["product_single_candidate", "research_multi_candidate"]
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "runtime_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base_generations_used",
+        "base_generations_allowed",
+        "repair_passes_used",
+        "repair_passes_allowed"
+      ],
+      "properties": {
+        "base_generations_used": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "base_generations_allowed": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "repair_passes_used": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "repair_passes_allowed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2,
+          "default": 2
+        }
+      }
+    },
+    "base_verdict": {
+      "type": "string",
+      "enum": [
+        "accept_without_repair",
+        "usable_for_local_repair",
+        "reject_regenerate",
+        "needs_human_review"
+      ]
+    },
+    "hard_checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity",
+        "face_hair_glasses",
+        "body_shape",
+        "anatomy",
+        "main_garments",
+        "outfit_structure",
+        "layering_logic",
+        "background_camera",
+        "large_old_clothing_remnants"
+      ],
+      "properties": {
+        "identity": { "$ref": "#/$defs/check" },
+        "face_hair_glasses": { "$ref": "#/$defs/check" },
+        "body_shape": { "$ref": "#/$defs/check" },
+        "anatomy": { "$ref": "#/$defs/check" },
+        "main_garments": { "$ref": "#/$defs/check" },
+        "outfit_structure": { "$ref": "#/$defs/check" },
+        "layering_logic": { "$ref": "#/$defs/check" },
+        "background_camera": { "$ref": "#/$defs/check" },
+        "large_old_clothing_remnants": { "$ref": "#/$defs/check" }
+      }
+    },
+    "repair_candidates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/repair_candidate"
+      }
+    },
+    "selected_next_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "reason"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "accept",
+            "run_color_repair",
+            "run_local_inpaint",
+            "run_reference_detail_repair",
+            "regenerate_once",
+            "human_review"
+          ]
+        },
+        "target_id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "severity", "reason"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pass", "minor_issue", "fail", "uncertain"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["none", "low", "medium", "high"]
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "repair_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_id",
+        "failure_type",
+        "region",
+        "severity",
+        "repair_method",
+        "risk",
+        "priority",
+        "mask_instruction",
+        "repair_instruction",
+        "do_not_change"
+      ],
+      "properties": {
+        "target_id": {
+          "type": "string"
+        },
+        "failure_type": {
+          "type": "string",
+          "enum": [
+            "color_tone_mismatch",
+            "texture_detail_loss",
+            "accessory_scale_or_placement",
+            "local_layer_boundary_error",
+            "small_old_clothing_remnant",
+            "minor_shape_error"
+          ]
+        },
+        "region": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        },
+        "repair_method": {
+          "type": "string",
+          "enum": [
+            "deterministic_color_repair",
+            "local_inpaint",
+            "reference_guided_detail_repair",
+            "no_safe_local_repair"
+          ]
+        },
+        "risk": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "mask_instruction": {
+          "type": "string"
+        },
+        "repair_instruction": {
+          "type": "string"
+        },
+        "do_not_change": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

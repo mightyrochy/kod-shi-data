@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Models (large binary files)
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.gguf
+*.ggml
+*.fp8
+*.q4_0
+*.q4_1
+*.q8_0
+
+# Images: ignored by default, tracked only in intentional locations
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.mp4
+*.gif
+
+# assets — test inputs, always tracked
+!assets/**/*.png
+!assets/**/*.jpg
+!assets/**/*.jpeg
+!assets/**/*.webp
+
+# experiments — inputs and outputs are part of the experimental record
+!experiments/**/*.png
+!experiments/**/*.jpg
+!experiments/**/*.jpeg
+!experiments/**/*.webp
+
+# ComfyUI temp
+ComfyUI/temp/
+ComfyUI/output/
+ComfyUI/input/
+*.comfy_temp
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets / local config
+.env
+*.local
+system/gates/models/

@@ -1,0 +1,141 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "qwen_image_edit_2511_fp8mixed.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "type": "qwen_image"
+    }
+  },
+  "3": {
+    "class_type": "LoraLoader",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "clip": [
+        "2",
+        0
+      ],
+      "lora_name": "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "tmp6vti18zq.png"
+    }
+  },
+  "6": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "reference_board_clean.png"
+    }
+  },
+  "7": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "clip": [
+        "3",
+        1
+      ],
+      "vae": [
+        "4",
+        0
+      ],
+      "prompt": "Edit image 1 using image 2 as the clean garment reference board. Keep the same person, same face, same blonde hair, same glasses, same body shape, same front standing pose, same camera framing, and same room background.\n\nReplace the current gray sweater, blue jeans, and gray socks completely with the outfit shown in image 2.\n\nOutfit to create:\n- Blouse with voluminous sleeves, V neckline, front button closure, shaped waist, and peplum hem.\n- Long straight high-waisted skirt, straight column silhouette, below-knee to ankle length, with front slit and welt pockets.\n- Wide leather belt with metal buckle and panel details, only partly visible at the waist if natural.\n- Wedge sandals with open toe, ankle strap, buckle closure, and crocodile-like texture.\n- Large disc earrings with ridged spiral texture and dark top element, only if visible without changing the face.\n\nOutfit layout:\n- The blouse is the visible top.\n- The blouse hem remains visible over the upper skirt.\n- The skirt starts underneath the blouse hem.\n- The belt is secondary and must not become the dominant waist feature.\n- The sandals replace the socks; show bare feet in the wedge sandals.\n\nUse the reference images for exact colors, textures, and material finish of every garment. Do not use text descriptions for color.\n\nDo not copy the faces, bodies, poses, or backgrounds from the reference images. Do not leave the old sweater, jeans, or socks visible. Do not turn the outfit into a dress. Do not simplify the blouse sleeves, front buttons, skirt slit, shoe straps, wedge shape, or earring texture.",
+      "image1": [
+        "5",
+        0
+      ],
+      "image2": [
+        "6",
+        0
+      ]
+    }
+  },
+  "8": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "clip": [
+        "3",
+        1
+      ],
+      "prompt": ""
+    }
+  },
+  "9": {
+    "class_type": "EmptyQwenImageLayeredLatentImage",
+    "inputs": {
+      "width": 928,
+      "height": 1344,
+      "layers": 2,
+      "batch_size": 1
+    }
+  },
+  "10": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "3",
+        0
+      ],
+      "seed": 1543199253,
+      "steps": 4,
+      "cfg": 1.0,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "positive": [
+        "7",
+        0
+      ],
+      "negative": [
+        "8",
+        0
+      ],
+      "latent_image": [
+        "9",
+        0
+      ],
+      "denoise": 1.0
+    }
+  },
+  "11": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "11",
+        0
+      ],
+      "filename_prefix": "run000003"
+    }
+  }
+}

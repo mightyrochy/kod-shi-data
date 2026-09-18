@@ -1,0 +1,103 @@
+{
+  "final": "experiments\\014_full_pipeline_3item\\pipeline_run\\ready_for_omnitry.png",
+  "holistic": [
+    "blouse",
+    "skirt",
+    "shoes"
+  ],
+  "deferred_to_omnitry": [
+    "belt",
+    "earrings"
+  ],
+  "report": {
+    "identity_cosine": 0.4013,
+    "blouse": {
+      "verdict": "CHECK",
+      "structure": {
+        "forward": 0.597,
+        "reverse": 0.821,
+        "anomaly": 0.821,
+        "verdict": "STRUCTURE_OFF",
+        "note": "ADVISORY (provisional, 2 anchors). AnomalyDINO bidirectional patch-NN; high reverse = missing reference feature (e.g. slit), high forward = wrong/extra content. Catches intra-garment structure, NOT layering/tuck. owner verdict decides."
+      },
+      "colour_verdict": "WARN",
+      "dE": 3.68,
+      "texture_recorded": 0.803
+    },
+    "skirt": {
+      "verdict": "CHECK",
+      "structure": {
+        "forward": 0.498,
+        "reverse": 0.594,
+        "anomaly": 0.594,
+        "verdict": "STRUCTURE_OFF",
+        "note": "ADVISORY (provisional, 2 anchors). AnomalyDINO bidirectional patch-NN; high reverse = missing reference feature (e.g. slit), high forward = wrong/extra content. Catches intra-garment structure, NOT layering/tuck. owner verdict decides."
+      },
+      "colour_verdict": "WARN",
+      "dE": 3.46,
+      "texture_recorded": 0.251
+    },
+    "shoes": {
+      "verdict": "CHECK",
+      "structure": {
+        "forward": 0.817,
+        "reverse": 0.908,
+        "anomaly": 0.908,
+        "verdict": "STRUCTURE_OFF",
+        "note": "ADVISORY (provisional, 2 anchors). AnomalyDINO bidirectional patch-NN; high reverse = missing reference feature (e.g. slit), high forward = wrong/extra content. Catches intra-garment structure, NOT layering/tuck. owner verdict decides."
+      },
+      "colour_verdict": "FAIL",
+      "dE": 5.38,
+      "texture_recorded": 0.043
+    },
+    "vlm": {
+      "ok": true,
+      "defects": [
+        {
+          "item": "blouse",
+          "defect": "The blouse in the image has a visible seam or stitching line down the center front, which is not present in the reference garment.",
+          "severity": "med"
+        },
+        {
+          "item": "skirt",
+          "defect": "The skirt in the image appears to have a slightly different cut and drape compared to the reference. The reference skirt has a more structured, straight silhouette with visible front seams, while the generated skirt seems softer and less defined.",
+          "severity": "low"
+        },
+        {
+          "item": "shoes",
+          "defect": "The shoes in the image are not fully visible; only the heel and part of the sole are shown. The reference shows full wedge sandals with straps, which are not completely matched.",
+          "severity": "high"
+        }
+      ],
+      "all_present": true,
+      "extra_items": true
+    },
+    "blouse_after_repair": {
+      "verdict": "CHECK",
+      "structure": {
+        "forward": 0.462,
+        "reverse": 0.766,
+        "anomaly": 0.766,
+        "verdict": "STRUCTURE_OFF",
+        "note": "ADVISORY (provisional, 2 anchors). AnomalyDINO bidirectional patch-NN; high reverse = missing reference feature (e.g. slit), high forward = wrong/extra content. Catches intra-garment structure, NOT layering/tuck. owner verdict decides."
+      },
+      "colour_verdict": "WARN",
+      "dE": 4.28,
+      "texture_recorded": 0.928
+    },
+    "skirt_after_repair": {
+      "verdict": "CHECK",
+      "structure": {
+        "forward": 0.483,
+        "reverse": 0.566,
+        "anomaly": 0.566,
+        "verdict": "STRUCTURE_OFF",
+        "note": "ADVISORY (provisional, 2 anchors). AnomalyDINO bidirectional patch-NN; high reverse = missing reference feature (e.g. slit), high forward = wrong/extra content. Catches intra-garment structure, NOT layering/tuck. owner verdict decides."
+      },
+      "colour_verdict": "WARN",
+      "dE": 3.6,
+      "texture_recorded": 0.407
+    }
+  },
+  "seconds": 375.4
+}
