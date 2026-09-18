@@ -10,7 +10,10 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 os.chdir(str(pathlib.Path(__file__).resolve().parent.parent))
 import feed as F
 
-НОВІ = ("md-fashion.ua", "skripka.com.ua", "theoriginals.com.ua", "staff-clothes.com")
+# welfare.ua тут нема навмисно: він був у каталозі й до жнив (214 оферів), тож
+# його 25 нових речей у «нові» не рахуються — рахуються лише нові МАГАЗИНИ.
+НОВІ = ("md-fashion.ua", "skripka.com.ua", "theoriginals.com.ua", "staff-clothes.com",
+        "musthave.ua", "intimo.com.ua")
 офери = F.читати_yml(F.каталог_на_диску("каталог_повний.xml"))
 офери = офери[0] if isinstance(офери, tuple) else офери
 по_магазину = collections.defaultdict(list)
