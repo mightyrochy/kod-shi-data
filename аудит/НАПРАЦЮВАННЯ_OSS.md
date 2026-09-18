@@ -259,3 +259,7 @@ lab = _load_lab("фото.jpg")
 
 Плюс один документ, не код: **`experiments/015_isolation_compare/conclusion.md`**
 — чому ATR, а не SAM і не матування.
+
+---
+
+*Дописано 18.09.2026.* Тека, описана вище, перенесена в цей репозиторій як `open-source-stylist/` (історія збережена; файли зображень і ваги моделей у git не входять — лише на диску). Шляхи `C:\Users\Admin\Open Source Stylist\…` у тексті читати як `open-source-stylist\…`; ваги ATR і далі в `C:\Users\Admin\Leffa\`. Розділ 6 працює і з нової теки: `sys.path.insert(0, r"C:\Users\Admin\kod-shi-data\open-source-stylist")`.

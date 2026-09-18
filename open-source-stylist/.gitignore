@@ -25,25 +25,21 @@ env/
 *.q4_1
 *.q8_0
 
-# Images: ignored by default, tracked only in intentional locations
+# Images: never tracked here. 2026-09-18 this project moved into the PUBLIC
+# repository kod-shi-data (GitHub Pages). assets/person/ holds photos of a real
+# person and experiments/, runs/ hold hundreds of generated images of her, so
+# the old negations that tracked assets/** and experiments/** images were
+# removed and every image file was dropped from history on import
+# (git filter-repo). The full record with images stays in the original
+# repository C:\Users\Admin\Open Source Stylist (its .git, ~405 MB, commit
+# 3d51e6d) and, as ignored files, on disk in this folder. Publishing them is
+# the owner's decision; then `git add -f` the chosen paths.
 *.png
 *.jpg
 *.jpeg
 *.webp
 *.mp4
 *.gif
-
-# assets — test inputs, always tracked
-!assets/**/*.png
-!assets/**/*.jpg
-!assets/**/*.jpeg
-!assets/**/*.webp
-
-# experiments — inputs and outputs are part of the experimental record
-!experiments/**/*.png
-!experiments/**/*.jpg
-!experiments/**/*.jpeg
-!experiments/**/*.webp
 
 # ComfyUI temp
 ComfyUI/temp/

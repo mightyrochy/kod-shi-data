@@ -1,5 +1,13 @@
 # Open Source Stylist
 
+> **Moved 2026-09-18.** This folder is the former standalone repository
+> `C:\Users\Admin\Open Source Stylist`, imported into `kod-shi-data` with its history
+> (git filter-repo: paths under `open-source-stylist/`, image files dropped from every
+> commit; see `.gitignore` for why). Images and model weights (`system/gates/models/`,
+> ~870 MB) exist here only on disk, never in git. Code in `джерела/` reaches this folder
+> through the `OSS_PATH` environment variable (`джерела/жнива_v2.py`); its default still
+> names the old folder until that folder is retired.
+
 Local outfit-transfer research project.
 
 Python dependencies are pinned in `requirements.txt` (current runtime: Python 3.10).
