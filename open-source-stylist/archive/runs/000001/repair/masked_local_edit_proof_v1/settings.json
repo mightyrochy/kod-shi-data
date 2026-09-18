@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "request_id": "000001_masked_local_edit_proof_v1",
+  "executor_goal": "strict_masked_locality_preservation_proof",
+  "preferred_executor": {
+    "class": "masked_local_generative_edit",
+    "tool": "comfyui_flux_fill",
+    "workflow_path": "C:/Users/Admin/ComfyUI/user/default/workflows/flux_fill_inpaint_cots.json"
+  },
+  "inputs": {
+    "base_image": "runs/000001/repair/masked_local_edit_proof_v1/input_base.png",
+    "edit_mask": "runs/000001/repair/masked_local_edit_proof_v1/edit_mask.png",
+    "mask_preview": "runs/000001/repair/masked_local_edit_proof_v1/edit_mask_preview.png",
+    "instruction": "runs/000001/repair/masked_local_edit_proof_v1/repair_instruction.txt"
+  },
+  "mask": {
+    "method": "manual_rectangular_test_mask",
+    "image_size": [1504, 688],
+    "box_xyxy": [455, 245, 625, 340],
+    "target": "front_view_waist_belt_and_blouse_hem_boundary",
+    "reason": "bounded non-face region; tests local layer-boundary edit and mask preservation"
+  },
+  "verification": {
+    "primary_question": "Can the executor alter only the masked region and preserve the rest of the image?",
+    "must_preserve": [
+      "identity",
+      "face_hair_glasses",
+      "body_outline",
+      "hands",
+      "skirt_silhouette_and_length",
+      "side_view_figure",
+      "footwear",
+      "earrings",
+      "background_and_camera"
+    ],
+    "fail_if": [
+      "visible change outside mask beyond natural edge blending",
+      "face/body/background drift",
+      "global outfit redesign",
+      "worse waist/layer boundary",
+      "new artifacts"
+    ]
+  },
+  "status": "inputs_prepared_no_image_edit_run"
+}

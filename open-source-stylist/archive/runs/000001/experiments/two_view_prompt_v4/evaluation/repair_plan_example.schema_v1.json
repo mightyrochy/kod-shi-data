@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "mode": "product_single_candidate",
+  "candidate_id": "runs/000001/experiments/two_view_prompt_v4/output/candidate_01.png",
+  "runtime_budget": {
+    "base_generations_used": 1,
+    "base_generations_allowed": 1,
+    "repair_passes_used": 0,
+    "repair_passes_allowed": 2
+  },
+  "base_verdict": "usable_for_local_repair",
+  "hard_checks": {
+    "identity": {
+      "status": "pass",
+      "severity": "none",
+      "reason": "The generated person remains close enough to the source for a usable base."
+    },
+    "face_hair_glasses": {
+      "status": "minor_issue",
+      "severity": "low",
+      "reason": "Face is slightly smoothed, but hair color and glasses are preserved enough for this stage."
+    },
+    "body_shape": {
+      "status": "pass",
+      "severity": "none",
+      "reason": "Body proportions and side-view volume remain plausible."
+    },
+    "anatomy": {
+      "status": "pass",
+      "severity": "none",
+      "reason": "No major hand, foot, leg, or torso break is visible."
+    },
+    "main_garments": {
+      "status": "pass",
+      "severity": "none",
+      "reason": "Blouse, skirt, earrings, and wedge sandals are present."
+    },
+    "outfit_structure": {
+      "status": "pass",
+      "severity": "none",
+      "reason": "The outfit reads as a blouse over a long skirt with sandals and earrings."
+    },
+    "layering_logic": {
+      "status": "minor_issue",
+      "severity": "medium",
+      "reason": "The waist belt is more dominant than requested, but the blouse-over-skirt structure is still usable."
+    },
+    "background_camera": {
+      "status": "pass",
+      "severity": "none",
+      "reason": "Room, wall, door, floor, and camera setup are stable."
+    },
+    "large_old_clothing_remnants": {
+      "status": "pass",
+      "severity": "none",
+      "reason": "Original sweater, jeans, and socks are removed."
+    }
+  },
+  "repair_candidates": [
+    {
+      "target_id": "waist_layer_boundary_01",
+      "failure_type": "local_layer_boundary_error",
+      "region": "waist area where blouse hem, belt, and upper skirt overlap",
+      "severity": "medium",
+      "repair_method": "local_inpaint",
+      "risk": "medium",
+      "priority": 1,
+      "mask_instruction": "Mask only the waist overlap region: visible belt, blouse lower hem, and top edge of skirt. Do not include face, hair, hands, shoes, earrings, lower skirt, or background.",
+      "repair_instruction": "Make the belt less dominant and partially hidden by the blouse hem while preserving the blouse-over-skirt structure.",
+      "do_not_change": [
+        "identity",
+        "face",
+        "hair",
+        "glasses",
+        "body shape",
+        "pose",
+        "background",
+        "skirt length",
+        "skirt slit",
+        "sandals",
+        "earrings"
+      ]
+    },
+    {
+      "target_id": "outfit_tone_01",
+      "failure_type": "color_tone_mismatch",
+      "region": "garment-only masks",
+      "severity": "low",
+      "repair_method": "deterministic_color_repair",
+      "risk": "low",
+      "priority": 4,
+      "mask_instruction": "Use separate garment masks only if structure has already passed.",
+      "repair_instruction": "Adjust garment colors toward the visual references without changing garment shape or person identity.",
+      "do_not_change": [
+        "identity",
+        "body shape",
+        "garment structure",
+        "layering"
+      ]
+    }
+  ],
+  "selected_next_action": {
+    "action": "run_local_inpaint",
+    "target_id": "waist_layer_boundary_01",
+    "reason": "The base is structurally strong. The most visible remaining issue is local and cheaper to test with one masked repair than with another full Qwen generation."
+  },
+  "notes": [
+    "This is an example of the automatic evaluator output format, not a permanent manual workflow.",
+    "The product path should start from one base generation. Multi-candidate output remains research mode.",
+    "Color and fine detail issues are lower priority than identity, anatomy, fit, structure, and layering."
+  ]
+}

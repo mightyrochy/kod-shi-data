@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "request_id": "000001_masked_local_edit_proof_v1",
+  "verification_type": "manual_visual_review_plus_pixel_leakage_check",
+  "base_image": "runs/000001/repair/masked_local_edit_proof_v1/input_base.png",
+  "output_image": "runs/000001/repair/masked_local_edit_proof_v1/outputs/output.png",
+  "mask": "runs/000001/repair/masked_local_edit_proof_v1/edit_mask.png",
+  "verdict": "partial_pass_for_locality_fail_as_semantic_repair",
+  "locality": {
+    "status": "pass",
+    "notes": "The edit stayed visually local. Face, hair, glasses, body outside the masked area, side view, footwear, earrings, and background appear preserved.",
+    "pixel_check": {
+      "source": "runs/000001/repair/masked_local_edit_proof_v1/outputs/leakage_stats.json",
+      "outside_changed_ratio": 0.00048431261146094723,
+      "outside_mean_abs_rgb_diff": 1.0751181025731
+    }
+  },
+  "target_repair": {
+    "status": "weak_partial",
+    "notes": "The blouse hem became more regular and locally coherent, but the belt remains a dominant wide belt. The run did not solve the intended belt/layering problem."
+  },
+  "preservation": {
+    "identity": "pass_visual",
+    "body": "pass_visual",
+    "background": "pass_visual",
+    "side_view": "pass_visual",
+    "footwear": "pass_visual",
+    "earrings": "pass_visual"
+  },
+  "failure_notes": [
+    "The simple rectangular mask was enough for locality proof but too crude for a high-quality clothing-boundary repair.",
+    "FLUX Fill did not use outfit references directly; this limits semantic correctness for fashion-detail repair.",
+    "The prompt did not reduce belt dominance enough.",
+    "This result supports using FLUX Fill as a locality/preservation candidate, not as the final reference-aware postproduction executor."
+  ],
+  "recommended_next_action": "Keep this run as strict locality evidence. Next proof should test Qwen semantic/reference local repair with a stronger locality mechanism, or rerun FLUX Fill only with a more precise mask and narrower prompt if strict locality needs one more confirmation."
+}

@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-source-stylist.local/schemas/outfit_layout.schema.json",
+  "title": "OutfitLayout",
+  "type": "object",
+  "required": [
+    "style_intent",
+    "items",
+    "layering_rules",
+    "preserve_person",
+    "negative_constraints"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "style_intent": {
+      "type": "object",
+      "required": ["scenario", "style_keywords", "season", "mood"],
+      "additionalProperties": false,
+      "properties": {
+        "scenario": { "type": "string" },
+        "style_keywords": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "season": { "type": "string" },
+        "mood": { "type": "string" }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "category",
+          "reference_image_id",
+          "visual_description",
+          "must_preserve",
+          "placement"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "category": {
+            "type": "string",
+            "examples": ["top", "jacket", "skirt", "pants", "shoes", "bag", "accessory"]
+          },
+          "reference_image_id": { "type": "string" },
+          "visual_description": { "type": "string" },
+          "must_preserve": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "placement": { "type": "string" },
+          "visibility_priority": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "default": 3
+          }
+        }
+      }
+    },
+    "layering_rules": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "preserve_person": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [
+        "identity",
+        "face",
+        "body shape",
+        "hair color",
+        "skin tone",
+        "pose"
+      ]
+    },
+    "negative_constraints": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "stylist_notes": {
+      "type": "string"
+    }
+  }
+}
+

@@ -1,0 +1,24 @@
+=== E-003: ArcFace threshold calibration ===
+
+--- Extracting embeddings ---
+  P0  person_front.png                ok (norm=1.0000)
+  D1  blouse_front.webp               ok (norm=1.0000)
+  D2  skirt_front.webp                ok (norm=1.0000)
+  P1  person_two_view.png (left crop)     ok (norm=1.0000)
+
+--- Pair scores ---
+  SP-01     P0 vs P1  type=same        cosine=0.9896  
+  DP-01     P0 vs D1  type=different   cosine=0.1188  
+  DP-02     P0 vs D2  type=different   cosine=0.1502  
+  DP-03     D1 vs D2  type=different   cosine=0.0927  
+
+--- Threshold analysis ---
+  Same-person scores : [0.9896]
+  Diff-person scores : [0.1188, 0.1502, 0.0927]
+  same_min           : 0.9896
+  diff_max           : 0.1502
+  gap                : 0.8394
+  proposed threshold : 0.57
+  VERDICT: PASS — clear separation (gap=0.8394 >= 0.15)
+
+Results written: C:\Users\Admin\Open Source Stylist\experiments\003_arcface_threshold\results\scores.csv
