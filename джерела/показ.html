@@ -1,13 +1,14 @@
 <!doctype html>
 <!--
-  показ.html · v4 — люстерко
+  показ.html · v4.1 — люстерко
   Візуальна система v3 «Полотно й нитка» (уночі «Музейне золото») за посібником
   української айдентики; токени й правила — джерела/ІНТЕРФЕЙС.md.
-  Логіка v4 (18.09.2026): профіль створюється раз (два кроки знайомства) і далі
-  правиться з аватара; головний екран — сценарій (розмова зі ші → паспорт,
-  плитки як його стан, палітра під розкривачем, бібліотека сценаріїв); ші — у
-  панелі внизу на кожному екрані; чотири образи через міст → вердикти в
-  IndexedDB (пакет ВЕРДИКТИ-ПОКАЗ-V3).
+  Логіка v4.1 (18.09.2026): профіль створюється раз — три кроки знайомства
+  (про тебе з ім'ям → що тобі до лиця → фігура) — і далі правиться з намистини
+  «Профіль»; розділи названі намистинами під шапкою; головний екран — сценарій,
+  і головна річ на ньому одна: розмова (форма схована в «Уточнити рукою»);
+  палітра — власний екран; ші — у панелі внизу на кожному екрані; чотири образи
+  через міст → вердикти в IndexedDB (пакет ВЕРДИКТИ-ПОКАЗ-V3).
   Приймає пакет ПОКАЗ-V1 у фрагменті адреси (лише base64url); параметри мосту
   й моделі — тим самим фрагментом (#міст=…&т=…&модель=…). Службові дані
   (збірка, каталог, токени, діагноз) видно лише під #службове=1.
@@ -22,7 +23,7 @@
 <title>люстерко</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cpath%20d='M14%204h36l10%2010v46H4V14z'%20fill='%231B1A17'/%3E%3Cpath%20d='M14%2052h36'%20stroke='%23D6B45C'%20stroke-width='3'/%3E%3Ctext%20x='32'%20y='44'%20text-anchor='middle'%20font-family='Georgia,serif'%20font-size='32'%20fill='%23FBF9F4'%3E%D0%BB%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
 <style>
 /* ═══════════════════════════════════════════════════════════════════════════
    люстерко · інтерфейс v3 — «Полотно й нитка»; уночі — «Музейне золото».
@@ -117,22 +118,22 @@
    clip-path ріже й межу, тож кайма малюється окремо — кільцем (evenodd), яке
    лягає над вмістом і не ловить дотиків. Без підтримки evenodd кільце просто
    не малюється (@supports), а форма лишається. */
-.картка,.плитка,.заява,.біб-образ,.рамка,#пал-основа .чип:has(.зразки),button.тихо,.сцн-відкрити,.репліка.ші{
+.картка,.плитка,.заява,.біб-образ,.рамка,#пал-основа .чип:has(.зразки),button.тихо,.сцн-відкрити,.рядок-кнопка,.репліка.ші{
   --вікно:polygon(var(--ск) 0,calc(100% - var(--ск)) 0,100% var(--ск),100% 100%,0 100%,0 var(--ск));
   --кайма:polygon(evenodd,var(--ск) 0,calc(100% - var(--ск)) 0,100% var(--ск),100% 100%,0 100%,0 var(--ск),
     1px calc(var(--ск) + .4px),1px calc(100% - 1px),calc(100% - 1px) calc(100% - 1px),calc(100% - 1px) calc(var(--ск) + .4px),
     calc(100% - var(--ск) - .4px) 1px,calc(var(--ск) + .4px) 1px);
   position:relative;isolation:isolate;clip-path:var(--вікно)}
 .картка::after,.плитка::after,.заява::after,.біб-образ::after,.рамка::before,#пал-основа .чип:has(.зразки)::after,
-button.тихо::after,.сцн-відкрити::after,.репліка.ші::after{
+button.тихо::after,.сцн-відкрити::after,.рядок-кнопка::after,.репліка.ші::after{
   content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--кайма-колір,var(--межа))}
 @supports (clip-path:polygon(evenodd,0 0,1px 0,1px 1px)){
   .картка::after,.плитка::after,.заява::after,.біб-образ::after,.рамка::before,#пал-основа .чип:has(.зразки)::after,
-  button.тихо::after,.сцн-відкрити::after,.репліка.ші::after{clip-path:var(--кайма)}
+  button.тихо::after,.сцн-відкрити::after,.рядок-кнопка::after,.репліка.ші::after{clip-path:var(--кайма)}
 }
 @supports not (clip-path:polygon(evenodd,0 0,1px 0,1px 1px)){
   .картка::after,.плитка::after,.заява::after,.біб-образ::after,.рамка::before,#пал-основа .чип:has(.зразки)::after,
-  button.тихо::after,.сцн-відкрити::after,.репліка.ші::after{display:none}
+  button.тихо::after,.сцн-відкрити::after,.рядок-кнопка::after,.репліка.ші::after{display:none}
 }
 
 /* ── БАЗА ───────────────────────────────────────────────────────────────── */
@@ -160,23 +161,73 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .знак::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--золото);
   transform-origin:left;animation:нитка .9s cubic-bezier(.2,.7,.2,1) .15s both}
 @keyframes нитка{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-.до-образів{display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid var(--межа-темна);color:var(--чорнило);
-  padding:8px 12px 8px 10px;font:500 12.5px/1 var(--текст);border-radius:999px;margin:0 0 5px auto;cursor:pointer}
-.до-образів i{display:block;width:10px;height:12px;background:var(--чорнило);
-  clip-path:polygon(28% 0,72% 0,100% 30%,100% 100%,0 100%,0 30%)}
 .тема{width:36px;height:36px;border-radius:50%;padding:0;background:none;border:1px solid var(--межа-темна);color:var(--чорнило);
   display:inline-flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:4px}
 .тема svg.і{width:18px;height:18px}
-.профіль{position:relative;margin-bottom:4px}
-.аватар{width:36px;height:36px;border-radius:50%;background:var(--чорнило);color:var(--полотно);
-  border:0;padding:0;font:600 12px/36px var(--текст);letter-spacing:.06em;text-align:center;cursor:pointer;text-transform:uppercase}
+/* ── НАВІГАЦІЯ: намистини розділів під шапкою. Поточна — чорна. ──────────── */
+.навігація{display:flex;gap:6px;margin:2px 0 2px;padding-bottom:2px;overflow-x:auto;scrollbar-width:none}
+.навігація::-webkit-scrollbar{display:none}
+.нв{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid var(--межа-темна);
+  border-radius:999px;color:var(--олівець);padding:9px 14px;font:500 13px/1 var(--текст);clip-path:none}
+.нв.тут{background:var(--чорнило);border-color:var(--чорнило);color:var(--полотно)}
+.нв-профіль i{width:20px;height:20px;border-radius:50%;background:var(--чорнило);color:var(--полотно);
+  font:600 9px/20px var(--текст);font-style:normal;letter-spacing:.04em;text-align:center;text-transform:uppercase}
+.нв-профіль.тут i{background:var(--полотно);color:var(--чорнило)}
+.профіль{margin:0 0 4px auto}
+.нв-профіль{padding:8px 12px}
+
+/* ── РОЗМОВА НА ЕКРАНІ СЦЕНАРІЮ: головний елемент, а не рядок унизу. ─────── */
+.розмова{margin-top:16px}
+.розмова:empty{display:none}
+.розмова #чат-стрічка{gap:10px}
+#сц-приклади{margin-top:16px}
+#сц-приклади .чип{font-size:13.5px}
+#сц-приклади:empty{display:none}
+/* «Уточнити рукою»: у згорнутому стані рядок каже, що код уже зрозумів */
+details.розкривач.рукою{margin-top:22px;padding-top:20px;position:relative}
+details.розкривач.рукою::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--мережка);opacity:.9}
+details.розкривач.рукою>summary{display:block;text-decoration:none}
+.рукою-назва{font:500 15px/1.3 var(--текст);text-decoration:underline;text-decoration-color:var(--золото);text-underline-offset:4px}
+.рукою-стан{display:block;margin-top:4px;font:400 13.5px/1.45 var(--текст);color:var(--олівець)}
+.рукою-стан:empty{display:none}
+details.розкривач.рукою>summary::after{content:none}
+.рукою-назва::after{content:" ▾";color:var(--олівець);text-decoration:none}
+details.розкривач.рукою[open] .рукою-назва::after{content:" ▴"}
+/* рядок-кнопка: назва зверху, стан під нею — те саме, що summary розкривача */
+.рядок-кнопка{--ск:12px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;text-align:left;
+  background:var(--аркуш);border:0;padding:14px 16px;margin-top:18px;color:var(--чорнило)}
+.рк-назва{font:500 20px/1.25 var(--дисплей);font-variation-settings:"CONT" 260}
+.рк-стан{font:400 13px/1.45 var(--текст);color:var(--олівець)}
+
+/* ── ТКАННЯ: смуга, що завжди в русі, поки збираються образи. ──────────────
+      ЧОМУ HTML, А НЕ SVG. Доти нитка йшла `stroke-dashoffset`-анімацією, яку
+      браузер рахує на ГОЛОВНОМУ потоці, — а той на цьому екрані зайнятий
+      Pyodide (пул на 12 тисяч речей). Виміряно на телефоні власника: анімація
+      «зависає, перестає рухатися». Тут рухається лише `transform`, і Chrome
+      веде таку анімацію на композиторі: вона не спиняється, хай що рахує JS. */
+.ткання{position:relative;height:119px;margin:16px 0 6px;overflow:hidden;
+  background:repeating-linear-gradient(90deg,var(--межа) 0 1px,transparent 1px 9px)}
+.ткання .ряд{display:flex;width:200%;height:6px;margin-bottom:1px;opacity:0;
+  animation-name:ткати;animation-timing-function:linear;animation-iteration-count:infinite;
+  transition:opacity .8s ease-out;will-change:transform}
+.ткання .ряд i{flex:0 0 50%;height:100%;
+  background:repeating-linear-gradient(90deg,currentColor 0 7px,transparent 7px 16px)}
+.ткання .т0,.ткання .т2,.ткання .т4{color:var(--чорнило)}
+.ткання .т1{color:var(--золото)}
+.ткання .т3{color:var(--межа-темна)}
+.ткання[data-щабель="0"] .у0,
+.ткання[data-щабель="1"] .у0,.ткання[data-щабель="1"] .у1,
+.ткання[data-щабель="2"] .у0,.ткання[data-щабель="2"] .у1,.ткання[data-щабель="2"] .у2,
+.ткання[data-щабель="3"] .ряд,.ткання.тихо .ряд{opacity:1}
+@keyframes ткати{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ткання.тихо .ряд{animation:none}
 
 
 /* ── НИТКА ПОСТУПУ: намисто. Пройдене — чорна намистина, поточне — золота. ─ */
 .поступ{margin:8px 0 2px}
 .лічба{font:500 12px/1 var(--текст);font-variant-numeric:tabular-nums;color:var(--олівець);letter-spacing:.04em;margin-bottom:12px}
-.нитка{display:grid;grid-template-columns:repeat(2,1fr);position:relative}
-.нитка::before{content:"";position:absolute;left:5px;right:calc(50% - 5px);top:5px;height:1px;background:var(--межа-темна)}
+.нитка{display:grid;grid-template-columns:repeat(3,1fr);position:relative}
+.нитка::before{content:"";position:absolute;left:5px;right:calc(33.4% - 5px);top:5px;height:1px;background:var(--межа-темна)}
 .нитка button{background:none;border:0;padding:0;text-align:left;cursor:pointer;color:var(--олівець);
   font:400 12.5px/1.3 var(--текст);position:relative;clip-path:none}
 .нитка button i{display:block;width:11px;height:11px;border-radius:50%;border:1px solid var(--межа-темна);
@@ -208,6 +259,7 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 #ші-стрічка{max-height:46vh;overflow:auto;margin:0 0 8px;padding:2px 0;overscroll-behavior:contain}
 #ші-стрічка[hidden]{display:none}
 #чат-стрічка{display:flex;flex-direction:column;gap:8px}
+#чат-стрічка:empty{display:none}
 .репліка{max-width:88%;padding:10px 13px;font-size:14px;line-height:1.5;white-space:pre-line}
 .репліка.вона{align-self:flex-end;background:var(--чорнило);color:var(--полотно);
   clip-path:polygon(0 0,100% 0,100% 100%,10px 100%,0 calc(100% - 10px))}
@@ -217,7 +269,8 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 #ші-останнє[hidden]{display:none}
 /* дві лінії, далі три крапки: обрізає span, бо на самій кнопці line-clamp не діє */
 #ші-останнє-текст{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-#ші-останнє-текст::before{content:"ші · ";color:var(--золото);font-weight:500}
+#ші-останнє-текст::before{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;
+  background:var(--золото);box-shadow:6px 0 0 var(--золото);margin:0 14px 3px 0;vertical-align:middle}
 #ші-згорнути{display:block;margin:0 0 6px auto;padding:6px 10px;font-size:12px}
 #ші-згорнути[hidden]{display:none}
 .чат-ввід{display:flex;gap:8px;align-items:flex-end}
@@ -236,11 +289,10 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .чип.знімний.вибр::after{color:inherit}
 
 /* ── СЦЕНАРІЙ ЯК ДОКУМЕНТ: назва, стан збереження, дії бібліотеки ─────────── */
-.сц-шапка{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;
-  margin-top:6px;padding:14px 0 4px;position:relative}
+.сц-шапка{display:block;margin-top:6px;padding:16px 0 4px;position:relative}
 .сц-шапка::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--мережка);opacity:.9}
-.сц-шапка .ряд{margin:0}
-.сц-ім{display:flex;flex-direction:column;min-width:0;flex:1 1 150px}
+.сц-шапка .ряд{gap:18px;margin:2px 0 0}
+.сц-ім{display:flex;flex-direction:column;min-width:0}
 .сц-ім b{font:500 19px/1.25 var(--дисплей);font-variation-settings:"CONT" 260;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .сц-ім small{font-size:12px;color:var(--олівець);min-height:1em}
 .сц-збер{background:var(--папір);padding:12px 16px 14px;margin-top:10px;
@@ -255,14 +307,7 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .сцн-відкрити.тут{--кайма-колір:var(--золото)}
 .сцн-геть{padding:8px 0;font-size:12.5px;color:var(--олівець);text-decoration-color:var(--межа-темна);white-space:nowrap}
 
-/* ── ПАЛІТРА — РОЗКРИВАЧ УСЕРЕДИНІ СЦЕНАРІЮ, НЕ ОКРЕМИЙ КРОК ─────────────── */
-.палітра-розкривач{margin-top:22px;padding-top:22px;position:relative}
-.палітра-розкривач::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--мережка);opacity:.9}
-details.розкривач.палітра-розкривач>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;
-  font:500 22px/1.2 var(--дисплей);font-variation-settings:"CONT" 360;text-decoration:none}
-details.розкривач.палітра-розкривач>summary::after{font-family:var(--текст);font-size:14px;margin-left:auto}
-.пал-коротко{font:400 13.5px/1.4 var(--текст);color:var(--олівець)}
-.палітра-розкривач>.підказка{margin-top:8px}
+
 
 /* ── РОЗШИРЕНІ НАЛАШТУВАННЯ ПРОФІЛЮ: сітка необовʼязкових вимірів ──────────── */
 .розширені{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;margin-top:14px}
@@ -493,19 +538,7 @@ details.розкривач[open] summary::after{content:" ▴"}
 #рамки[data-щабель="1"] .рамка::after{--чисто:34%;opacity:.9}
 #рамки[data-щабель="2"] .рамка::after{--чисто:72%;opacity:.8}
 #рамки[data-щабель="3"] .рамка::after{--чисто:120%;opacity:0}
-.конус{display:block;width:100%;height:auto;margin:16px 0 6px}
-.конус .основа{stroke:var(--межа);stroke-width:1}
-.конус .уток{stroke-width:2.5;stroke-dasharray:6 6;opacity:0;transition:opacity .8s ease-out}
-.конус .уток.т0,.конус .уток.т2,.конус .уток.т4{stroke:var(--чорнило)}
-.конус .уток.т1{stroke:var(--золото)}
-.конус .уток.т3{stroke:var(--межа-темна)}
-.конус[data-щабель="0"] .у0,
-.конус[data-щабель="1"] .у0,.конус[data-щабель="1"] .у1,
-.конус[data-щабель="2"] .у0,.конус[data-щабель="2"] .у1,.конус[data-щабель="2"] .у2,
-.конус[data-щабель="3"] .уток,.конус.тихо .уток{opacity:1}
-@keyframes човник{to{stroke-dashoffset:-12}}
-.конус[data-щабель="0"] .у0,.конус[data-щабель="1"] .у1,.конус[data-щабель="2"] .у2{animation:човник 1.2s linear infinite}
-.конус.тихо .уток{animation:none}
+
 .стани{display:grid;grid-template-columns:auto 1fr;gap:9px 18px;align-items:center;margin:6px 0 16px}
 .стани i{width:11px;height:11px;border-radius:50%;border:1px solid var(--межа-темна);background:var(--полотно)}
 .стани span{font-size:13px;color:var(--олівець)}
@@ -697,28 +730,35 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
 
 <header class="шапка">
   <button class="знак" id="знак" type="button" aria-label="люстерко — на головний екран">люстерко</button>
-  <button class="до-образів" id="до-бібліотеки" type="button" aria-label="Усі образи"><i></i>образи</button>
+  <span class="профіль" id="смуга-профілів"><button type="button" class="нв нв-профіль" id="пф-кнопка"><i id="пф-ініціали">·</i>Профіль</button></span>
   <button type="button" class="тема" id="тема-кнопка" aria-label="Темна тема"><svg class="і"><use href="#і-тема"/></svg></button>
-  <div class="профіль" id="смуга-профілів">
-    <button type="button" class="аватар" id="пф-кнопка" aria-label="Профіль">·</button>
-  </div>
 </header>
 
-<!-- НИТКА ПОСТУПУ — лише для першого знайомства (режим «старт»): два кроки, після
-     яких профіль створено. Далі профіль правиться з аватара, а не проходиться знову. -->
+<!-- НАВІГАЦІЯ НАМИСТИНАМИ (v4.1). Доти єдиним шляхом до профілю був кружок з
+     ініціалами, а назад — слово «люстерко»: обидва нічого не обіцяли словами, і
+     власник на телефоні їх не прочитав. Тепер розділи названі, поточний —
+     чорна намистина. Профіль несе ініціали: на телефоні кілька профілів. -->
+<nav class="навігація" id="навігація" aria-label="Розділи">
+  <button type="button" class="нв" id="нв-сценарій">Сценарій</button>
+  <button type="button" class="нв" id="нв-збережені">Збережені</button>
+  <button type="button" class="нв" id="до-бібліотеки">Образи</button>
+</nav>
+
+<!-- НИТКА ПОСТУПУ — лише для першого знайомства (режим «старт»): три кроки, після
+     яких профіль створено. Далі профіль правиться з намистини «Профіль». -->
 <div class="поступ" id="поступ">
-  <div class="лічба" id="нитка-лічба">1 / 2</div>
+  <div class="лічба" id="нитка-лічба">1 / 3</div>
   <nav class="нитка" id="нитка" aria-label="Кроки">
-    <button type="button"><i></i>Про тебе</button><button type="button"><i></i>Фігура</button>
+    <button type="button"><i></i>Про тебе</button><button type="button"><i></i>До лиця</button><button type="button"><i></i>Фігура</button>
   </nav>
 </div>
 
-<!-- ── ПРО ТЕБЕ: фото й кольори. Крок 1 знайомства і верх екрана профілю. ────── -->
+<!-- ── ПРО ТЕБЕ: фото, кольори, ім'я. Крок 1 знайомства і верх екрана профілю. ── -->
 <section id="е-профіль" class="екран">
   <div class="вступ">
     <h1 class="лише-старт">Люстерко покаже те, що тобі <em>пасує.</em></h1>
     <h1 class="лише-профіль">Твій профіль.</h1>
-    <p class="лише-старт">Два кроки — і далі ти лише кажеш, куди йдеш.</p>
+    <p class="лише-старт">Три кроки — і далі ти лише кажеш, куди йдеш.</p>
   </div>
   <div class="розділ лише-профіль" id="пф-блок">
     <label class="поле" for="пф-вибір"><span>Чий це профіль</span><select id="пф-вибір"></select></label>
@@ -750,11 +790,36 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
       <div class="ряд"><button class="тихо" id="кол-читати" type="button">Застосувати кольори</button></div>
     </details>
   </div>
+
+  <!-- ІМ'Я — ЧАСТИНА ПРОФІЛЮ, А НЕ РОЗШИРЕНЕ НАЛАШТУВАННЯ (рішення власника,
+       18.09.2026): ним профіль зветься в перемикачі й у журналі вердиктів. -->
+  <div class="розділ" id="проф-блок">
+    <h2>Як тебе звати</h2>
+    <label class="поле" for="пр-імʼя"><span>Ім'я або псевдонім</span></label>
+    <input type="text" id="пр-імʼя" placeholder="напр., Оля К." autocomplete="nickname">
+    <p class="підказка">Так профіль зветься в перемикачі й у записі вердикту.</p>
+    <label class="згода"><input type="checkbox" id="пр-згода">
+      <span>Дозволяю записати мої відтінки разом із вердиктами</span></label>
+    <p class="підказка">Без згоди вердикт запишеться без кольорів.</p>
+  </div>
 </section>
 
+<!-- ── ЩО ТОБІ ДО ЛИЦЯ: метали й тони. Крок 2 знайомства (рішення власника:
+     це важлива частина профілю, а не розширене налаштування) і середина екрана
+     профілю. Відповіді звужують тонове вікно, коли фото температури не дає. ── -->
+<section id="е-лице" class="екран">
+  <div class="вступ">
+    <h1>Що тобі <em>до лиця.</em></h1>
+    <p>З яким полем обличчя живіше? Правильної відповіді нема — є твоя. Можна пропустити й повернутись пізніше.</p>
+  </div>
+  <div id="др-блок">
+    <div id="др-нема" class="порожньо-текст">Спершу додай портрет: ці поля показують твоє обличчя між двома кольорами, і без знімка порівнювати нема чого.</div>
+    <div id="др-тіло" style="display:none"></div>
+  </div>
+</section>
 <!-- ── ФІГУРА: чотири обхвати і зріст — рівно те, без чого код не виводить тип
-     фігури (`areas.ПОТРІБНІ_ОБХВАТИ`). Решта — розширені налаштування, які
-     відкриваються на екрані профілю, коли профіль уже створено. ───────────── -->
+     фігури (`areas.ПОТРІБНІ_ОБХВАТИ`). Крок 3 знайомства. Решта вимірів —
+     розширені налаштування, видимі лише на екрані профілю. ───────────────── -->
 <section id="е-мірки" class="екран">
   <div class="вступ">
     <h1>Твоя фігура.</h1>
@@ -772,7 +837,7 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
   </div>
 
   <details class="розкривач лише-профіль" id="мр-розширені">
-    <summary>Розширені налаштування профілю</summary>
+    <summary>Розширені виміри</summary>
     <p class="підказка">Необов'язково. Що більше виміряно, то точніше код судить посадку; чого нема — код так і каже: «не міряла».</p>
     <div class="розширені">
       <label><span>Високе стегно</span><input type="number" id="мр-високе-стегно" inputmode="numeric" placeholder="88"><b>см</b></label>
@@ -784,39 +849,81 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
       <label><span>Обхват голови</span><input type="number" id="мр-голова" inputmode="numeric" placeholder="56"><b>см</b>
         <i>приблизно на дюйм вище брів, через потиличну кістку</i></label>
     </div>
-
-    <div class="розділ" id="проф-блок">
-      <h2>Як тебе записати</h2>
-      <label class="поле" for="пр-імʼя"><span>Ім'я або псевдонім</span></label>
-      <input type="text" id="пр-імʼя" placeholder="напр., Оля К." autocomplete="nickname">
-      <label class="згода"><input type="checkbox" id="пр-згода">
-        <span>Дозволяю записати мої відтінки разом із вердиктами</span></label>
-      <p class="підказка">Без згоди вердикт запишеться без кольорів.</p>
-    </div>
-
-    <div class="розділ" id="др-блок">
-      <h2>Що тобі до лиця</h2>
-      <p class="підказка">З яким полем обличчя живіше? Правильної відповіді нема — є твоя. Відповіді звужують температуру палітри, коли фото її не дає стверджувати.</p>
-      <div id="др-нема" class="порожньо-текст">Спершу додай портрет — він вище на цьому екрані.</div>
-      <div id="др-тіло" style="display:none"></div>
-    </div>
   </details>
 </section>
-
-<!-- ── СЦЕНАРІЙ — головний екран. Розмова зі ші (панель унизу) заповнює паспорт;
-     плитки й списки показують його стан і правляться рукою. Палітра — частина
-     сценарію, під розкривачем. ───────────────────────────────────────────── -->
+<!-- ── СЦЕНАРІЙ — головний екран, і на ньому головна річ ОДНА: розмова (v4.1).
+     Доти екран був формою: плитки, два списки, погода, вето й палітра стояли
+     стіною полів, а розмова була рядком унизу — тобто головний вхід виглядав
+     як додаток до форми. Тепер угорі стрічка розмови (поле вводу — у панелі під
+     великим пальцем), а вся форма згорнута в один розкривач «Уточнити рукою»,
+     чий підсумок словами показує, що код уже зрозумів. Палітра — окремий
+     екран. ─────────────────────────────────────────────────────────────── -->
 <section id="е-випадок" class="екран">
   <div class="вступ">
-    <h1>Куди ти <em>збираєшся?</em></h1>
-    <p>Скажи ші внизу словами — стиліст заповнить сценарій сам. Або познач плитками.</p>
+    <h1 id="сц-заголовок">Куди ти <em>збираєшся?</em></h1>
+    <p id="сц-вступ-текст">Напиши внизу словами — куди, коли, яка погода. Решту стилістка заповнить сама.</p>
   </div>
+
+  <!-- Сюди `розмістити_стрічку()` переносить ЄДИНУ стрічку реплік: на решті
+       екранів вона живе в панелі й згортається, тут — завжди розгорнута. -->
+  <div class="розмова" id="сц-розмова"></div>
+  <div id="сц-приклади"></div>
+  <div id="сц-зрозуміла" class="візьмемо" style="display:none"></div>
+
+  <details class="розкривач рукою" id="сц-рукою">
+    <summary><span class="рукою-назва">Уточнити рукою</span><span class="рукою-стан" id="сц-стан-рядок"></span></summary>
+    <div id="сц-блок">
+      <input type="hidden" id="сц-нагода">
+      <div class="плитки" id="сц-нагода-плитки"></div>
+    </div>
+    <div class="розділ">
+      <label class="поле" for="сц-місце"><span>Де це буде</span><select id="сц-місце"></select></label>
+      <label class="поле" for="сц-дрес"><span>Наскільки ошатно</span><select id="сц-дрес"></select></label>
+      <div id="сц-діапазон" class="візьмемо"></div>
+    </div>
+    <div class="розділ">
+      <h2>Погода</h2>
+      <div class="умови">
+        <div class="пілюля"><svg class="і"><use href="#і-година"/></svg><label for="сц-година">Година</label>
+          <input type="number" id="сц-година" value="11" min="0" max="23" inputmode="numeric"></div>
+        <div class="пілюля"><svg class="і"><use href="#і-темп"/></svg><label for="сц-темп">Надворі</label>
+          <input type="number" id="сц-темп" value="18" inputmode="numeric"><b>°C</b></div>
+      </div>
+      <input type="hidden" id="сц-опади">
+      <div class="плитки" id="сц-опади-плитки"></div>
+      <details class="розкривач" id="сц-погода-ще">
+        <summary>Вітер і реагенти на дорогах</summary>
+        <div class="дрібні">
+          <label class="поле" for="сц-вітер"><span>Вітер</span><select id="сц-вітер">
+            <option value="">не знаю</option><option value="0">безвітря</option>
+            <option value="1">помірний</option><option value="2">сильний</option></select></label>
+          <label class="поле" for="сц-реагенти"><span>Реагенти на дорогах</span><select id="сц-реагенти">
+            <option value="">не знаю</option><option value="0">нема</option>
+            <option value="1">є, сіль узимку</option></select></label>
+        </div>
+      </details>
+    </div>
+    <div class="розділ">
+      <h2>Чого не відкривати</h2>
+      <input type="hidden" id="сц-вето-зони">
+      <div class="ряд" id="сц-вето-чипи"></div>
+      <p class="підказка">Тверда межа, а не побажання: обране тут код прибирає з добору сам.</p>
+      <div id="сц-вето-інші"></div>
+    </div>
+  </details>
+
+  <!-- ПАЛІТРА — ОКРЕМИЙ ЕКРАН (рішення власника). Тут лише рядок стану: що код
+       візьме, якщо не чіпати. Pyodide піднімається аж на тому екрані. -->
+  <button type="button" class="рядок-кнопка" id="пал-кнопка">
+    <span class="рк-назва">Палітра образу</span>
+    <span class="рк-стан" id="пал-коротко">основа — хай вирішує ші · схема — код бере першу · гама — хай вирішує ші</span>
+  </button>
 
   <div class="сц-шапка">
     <div class="сц-ім"><b id="сц-назва">Новий сценарій</b><small id="сц-назва-стан"></small></div>
     <div class="ряд">
-      <button class="тихо мал" id="сц-зберегти" type="button">Зберегти</button>
-      <button class="тихо мал" id="сц-відкрити" type="button">Сценарії</button>
+      <button class="текст" id="сц-зберегти" type="button">Зберегти</button>
+      <button class="текст" id="сц-відкрити" type="button">Збережені</button>
       <button class="текст" id="сц-новий" type="button">Новий</button>
     </div>
   </div>
@@ -831,63 +938,6 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
     <div class="статус" id="сц-збер-стан"></div>
   </div>
 
-  <div id="сц-зрозуміла" class="візьмемо" style="display:none"></div>
-
-  <div id="сц-блок">
-    <input type="hidden" id="сц-нагода">
-    <div class="плитки" id="сц-нагода-плитки"></div>
-  </div>
-  <div class="розділ">
-    <label class="поле" for="сц-місце"><span>Де це буде</span><select id="сц-місце"></select></label>
-    <label class="поле" for="сц-дрес"><span>Наскільки ошатно</span><select id="сц-дрес"></select></label>
-    <div id="сц-діапазон" class="візьмемо"></div>
-  </div>
-  <div class="розділ">
-    <h2>Погода</h2>
-    <div class="умови">
-      <div class="пілюля"><svg class="і"><use href="#і-година"/></svg><label for="сц-година">Година</label>
-        <input type="number" id="сц-година" value="11" min="0" max="23" inputmode="numeric"></div>
-      <div class="пілюля"><svg class="і"><use href="#і-темп"/></svg><label for="сц-темп">Надворі</label>
-        <input type="number" id="сц-темп" value="18" inputmode="numeric"><b>°C</b></div>
-    </div>
-    <input type="hidden" id="сц-опади">
-    <div class="плитки" id="сц-опади-плитки"></div>
-    <details class="розкривач" id="сц-погода-ще">
-      <summary>Вітер і реагенти на дорогах</summary>
-      <div class="дрібні">
-        <label class="поле" for="сц-вітер"><span>Вітер</span><select id="сц-вітер">
-          <option value="">не знаю</option><option value="0">безвітря</option>
-          <option value="1">помірний</option><option value="2">сильний</option></select></label>
-        <label class="поле" for="сц-реагенти"><span>Реагенти на дорогах</span><select id="сц-реагенти">
-          <option value="">не знаю</option><option value="0">нема</option>
-          <option value="1">є, сіль узимку</option></select></label>
-      </div>
-    </details>
-  </div>
-  <div class="розділ">
-    <h2>Чого не відкривати</h2>
-    <input type="hidden" id="сц-вето-зони">
-    <div class="ряд" id="сц-вето-чипи"></div>
-    <p class="підказка">Тверда межа, а не побажання: обране тут код прибирає з добору сам.</p>
-    <div id="сц-вето-інші"></div>
-  </div>
-
-  <!-- ПАЛІТРА — частина сценарію, не окремий крок. Розкривач піднімає Pyodide
-       лише коли його відкрито: без твого вибору код бере рекомендоване. -->
-  <details class="розкривач палітра-розкривач" id="пал-розкривач">
-    <summary><span>Палітра образу</span><span class="пал-коротко" id="пал-коротко">основа — хай вирішує ші · схема — код бере першу · гама — хай вирішує ші</span></summary>
-    <p class="підказка">Основа — головний колір, на якому стоїть образ. Не знаєш — лиши «хай вирішує ші».</p>
-    <div id="пал-картка">
-      <div class="статус" id="пал-стан"></div>
-      <div class="розділ"><div class="поле-назва">Гама</div><div class="ряд" id="пал-гама"></div></div>
-      <div class="розділ"><div class="поле-назва">Основа</div><div class="ряд" id="пал-основа"></div></div>
-      <div class="розділ"><div class="поле-назва">Схема</div><div class="ряд" id="пал-схема"></div>
-        <div id="пал-нота" class="підказка"></div></div>
-      <div id="пал-стрічка"></div>
-      <div id="пал-підтон" class="візьмемо" style="display:none"></div>
-    </div>
-  </details>
-
   <div class="розділ" id="зб-картка">
     <div class="статус" id="зб-статус"></div>
   </div>
@@ -901,6 +951,24 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
   </div>
 </section>
 
+<!-- ── ПАЛІТРА — ОКРЕМИЙ ЕКРАН (v4.1). Кольорова математика (Pyodide) підіймається
+     лише тут: доти вона стояла розкривачем усередині сценарію й тягла середовище
+     посеред заповнення випадку. ─────────────────────────────────────────── -->
+<section id="е-палітра" class="екран">
+  <div class="вступ">
+    <h1>Палітра образу.</h1>
+    <p>Основа — головний колір, на якому стоїть образ. Не знаєш — лиши «хай вирішує ші»: код обере сам.</p>
+  </div>
+  <div id="пал-картка">
+    <div class="статус" id="пал-стан"></div>
+    <div class="розділ"><div class="поле-назва">Гама</div><div class="ряд" id="пал-гама"></div></div>
+    <div class="розділ"><div class="поле-назва">Основа</div><div class="ряд" id="пал-основа"></div></div>
+    <div class="розділ"><div class="поле-назва">Схема</div><div class="ряд" id="пал-схема"></div>
+      <div id="пал-нота" class="підказка"></div></div>
+    <div id="пал-стрічка"></div>
+    <div id="пал-підтон" class="візьмемо" style="display:none"></div>
+  </div>
+</section>
 <!-- ── СЦЕНАРІЇ — бібліотека збережених випадків цього профілю. ─────────────── -->
 <section id="е-сценарії" class="екран">
   <div class="вступ">
@@ -918,7 +986,7 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
     <h1>Вимальовується<br>твій образ.</h1>
     <p id="оч-текст">Перебираємо тисячі речей з українських крамниць. Дві-три хвилини, перший раз — довше.</p>
   </div>
-  <svg class="конус" id="конус" viewBox="0 0 320 130" aria-hidden="true"></svg>
+  <div class="ткання" id="ткання" aria-hidden="true"></div>
   <div class="стани" id="стани">
     <i></i><span>Ще туманно</span>
     <i></i><span>Проступають обриси</span>
@@ -928,7 +996,6 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
   <div class="мета" id="оч-мета"></div>
   <div id="рамки"></div>
 </section>
-
 <!-- ── ОБРАЗИ ───────────────────────────────────────────────────────────── -->
 <section id="е-образи" class="екран">
   <div class="вступ">
@@ -1797,7 +1864,7 @@ function застосуватиСценарій(з){
   ВИПАДОК_ЗМІНЕНО_П = ('змінено_після_паспорта' in з) ? !!з.змінено_після_паспорта
                      : !(ПАСПОРТ_П && ПАСПОРТ_П.джерело === 'модель');
   малюватиПлитки(); оновитиДіапазон(); малюватиМежіП(); малюватиПалітруКоротко();
-  const пал = $('пал-розкривач'); if (пал && пал.open && !ПАЛІТРА && КОЛІР.шкіра) оновитиПалітруП();
+  if (РЕЖИМ === 'палітра' && КОЛІР.шкіра) оновитиПалітруП();
   ШІ_РОЗГОРНУТО = false; малюватиЧатП();
 }
 
@@ -2061,7 +2128,7 @@ function малюватиСмугу(){
     в.appendChild(о);
   });
   const акт = ПРОФІЛІ.find(п=>п.ід === АКТИВНИЙ);
-  $('пф-кнопка').textContent = ініціали(акт && акт.назва);
+  $('пф-ініціали').textContent = ініціали(акт && акт.назва);
   $('пф-кнопка').title = (акт && акт.назва) || 'Профіль';
   /* стан профілю словами: людині треба знати, чого бракує, а не дріб */
   const г = ['метал','білий','нейтралі','барви'].filter(к=>ДРАП[к]).length;
@@ -2105,26 +2172,34 @@ async function створитиПрофіль(){
   СЦН_ЛІЧБА = 0;
   режим('старт'); екран(0);
 }
-/* ── РЕЖИМИ Й ЕКРАНИ (інтерфейс v4) ────────────────────────────────────────
-   ЛОГІКА. Профіль створюється РАЗ — два кроки знайомства («старт»: фото й
-   кольори, фігура). Далі головний екран — сценарій: розмова зі ші, плитки як
-   стан паспорта, палітра під розкривачем, кнопка «Зібрати образи». Профіль
-   правиться з аватара («профіль»: ті самі два екрани одним аркушем плюс
-   розширені налаштування). Сценарії зберігаються в бібліотеку («сценарії»).
+/* ── РЕЖИМИ Й ЕКРАНИ (інтерфейс v4.1) ──────────────────────────────────────
+   ЛОГІКА. Профіль створюється РАЗ — три кроки знайомства («старт»): про тебе
+   (фото, кольори, ім'я), що тобі до лиця (метали й тони), фігура (чотири
+   обхвати і зріст). Далі головний екран — сценарій: розмова, а форма під
+   розкривачем. Профіль правиться з намистини «Профіль» («профіль»: ті самі три
+   екрани одним аркушем плюс розширені виміри). Палітра — власний екран
+   («палітра»), бо саме там підіймається кольорова математика. Сценарії
+   зберігаються в бібліотеку («збережені» — режим `сценарії`).
    Ші — панель унизу на КОЖНОМУ екрані (див. `слатиЧатП`).
    Доти чотири кроки (профіль, обміри, випадок, палітра) стояли рівнозначними, і
    людина з готовим профілем щоразу починала з фото. */
-const ЕКРАНИ = ['е-профіль','е-мірки'];          // кроки знайомства
-const УСІ_ЕКРАНИ = ['е-профіль','е-мірки','е-випадок','е-сценарії','е-очікування','е-образи','е-бібліотека'];
+const ЕКРАНИ = ['е-профіль','е-лице','е-мірки'];          // кроки знайомства
+const УСІ_ЕКРАНИ = ['е-профіль','е-лице','е-мірки','е-випадок','е-палітра','е-сценарії',
+                    'е-очікування','е-образи','е-бібліотека'];
 const ЕКРАНИ_РЕЖИМІВ = {
-  'профіль':    ['е-профіль','е-мірки'],
+  'профіль':    ['е-профіль','е-лице','е-мірки'],
   'сценарій':   ['е-випадок'],
+  'палітра':    ['е-палітра'],
   'сценарії':   ['е-сценарії'],
   'очікування': ['е-очікування'],
   'образи':     ['е-образи'],
   'бібліотека': ['е-бібліотека']};
+/* Яку намистину навігації підсвітити: палітра належить сценарію, бібліотека образів — образам. */
+const НАВ_РЕЖИМУ = {'сценарій':'нв-сценарій', 'палітра':'нв-сценарій', 'сценарії':'нв-збережені',
+                    'образи':'до-бібліотеки', 'бібліотека':'до-бібліотеки', 'профіль':'пф-кнопка'};
 let ЕКРАН = 0;
 let РЕЖИМ = 'старт';
+let ПАКЕТ_З_ХЕША = false;   // образи прийшли посиланням: розділів у цієї сторінки нема
 let ПРОФІЛЬ_СТВОРЕНО = false;
 function профільГотовий(){ return !!(КОЛІР.шкіра && КОЛІР.волосся && КОЛІР.очі) && !немаМірок(); }
 /* Куди відкриватись і куди веде знак: створений профіль — сценарій, інакше знайомство. */
@@ -2135,12 +2210,19 @@ function режим(р){
   const видимі = р === 'старт' ? [ЕКРАНИ[ЕКРАН]] : (ЕКРАНИ_РЕЖИМІВ[р] || []);
   УСІ_ЕКРАНИ.forEach(ід=>{ const е = $(ід); if (е) е.style.display = видимі.indexOf(ід) >= 0 ? 'block' : 'none'; });
   $('поступ').style.display = р === 'старт' ? '' : 'none';
-  /* розширені налаштування профілю — лише коли профіль уже створено */
+  /* Навігації нема там, де нікуди йти (знайомство) і звідки не можна піти, не
+     обірвавши прогін (очікування). */
+  { const ховати = (р === 'старт' || р === 'очікування' || ПАКЕТ_З_ХЕША);
+    [$('навігація'), $('смуга-профілів')].forEach(е=>{ if (е) е.style.display = ховати ? 'none' : ''; }); }
+  [...document.querySelectorAll('.нв')].forEach(б=>б.classList.toggle('тут', б.id === НАВ_РЕЖИМУ[р]));
+  /* розширені виміри й перемикач профілів — лише коли профіль уже створено */
   const рз = $('мр-розширені'); if (рз) рз.hidden = (р === 'старт');
   const пб = $('пф-блок'); if (пб) пб.hidden = (р === 'старт');
   if (р === 'старт') екран(ЕКРАН);
-  if (р === 'профіль') малюватиВирізку();
+  if (р === 'профіль'){ малюватиВирізку(); малюватиДрап(); }
   if (р === 'сценарії') оновитиСценарії();
+  /* Pyodide підіймається рівно тут і жодного разу раніше */
+  if (р === 'палітра' && !ПАЛІТРА) оновитиПалітруП();
   оновитиДії(); малюватиЧатП();
   window.scrollTo(0, 0);
 }
@@ -2151,12 +2233,13 @@ function екран(i){
   [...$('нитка').children].forEach((б, n)=>{ б.classList.toggle('є', n < ЕКРАН); б.classList.toggle('тут', n === ЕКРАН); });
   $('нитка-лічба').textContent = (ЕКРАН + 1) + ' / ' + ЕКРАНИ.length;
   if (ЕКРАНИ[ЕКРАН] === 'е-мірки') малюватиВирізку();
-  оновитиДії();
+  if (ЕКРАНИ[ЕКРАН] === 'е-лице') малюватиДрап();
+  оновитиДії(); малюватиЧатП();
   window.scrollTo(0, 0);
 }
 async function перейти(i){ await писатиАктивний(); малюватиСмугу(); екран(i); }
 /* Дії панелі — за режимом: кроки знайомства, «Зібрати образи» на сценарії,
-   «До сценарію» з профілю; на решті екранів ряду дій нема — лише ші. */
+   «До сценарію» з профілю й палітри; на решті екранів ряду дій нема — лише ші. */
 function оновитиДії(){
   const дії = $('ніг-дії'), назад = $('н-назад'), т = $('н-далі-текст'); if (!дії) return;
   let є = true;
@@ -2164,7 +2247,7 @@ function оновитиДії(){
     назад.style.visibility = ЕКРАН === 0 ? 'hidden' : 'visible';
     т.textContent = ЕКРАН === ЕКРАНИ.length - 1 ? 'Готово' : 'Далі';
   } else if (РЕЖИМ === 'сценарій'){ назад.style.visibility = 'hidden'; т.textContent = 'Зібрати образи'; }
-  else if (РЕЖИМ === 'профіль'){ назад.style.visibility = 'hidden'; т.textContent = 'До сценарію'; }
+  else if (РЕЖИМ === 'профіль' || РЕЖИМ === 'палітра'){ назад.style.visibility = 'hidden'; т.textContent = 'До сценарію'; }
   else є = false;
   дії.style.display = є ? '' : 'none';
 }
@@ -2173,12 +2256,14 @@ async function завершитиОнбординг(){
   await писатиАктивний(); малюватиСмугу();
   режим('сценарій');
 }
-/* Розширені налаштування профілю з будь-якого місця (напр., «Відповісти на три
-   питання» з палітри): відкрити профіль, розгорнути розкривач, підвести до блоку. */
-function відкритиРозширені(ід){
+/* Профіль із будь-якого місця (напр., «Відповісти на три питання» з палітри):
+   відкрити екран профілю, розгорнути розкривач, якщо ціль усередині нього, і
+   підвести до блоку. */
+function відкритиПрофіль(ід){
   режим('профіль');
-  const д = $('мр-розширені'); if (д) д.open = true;
-  const б = ід ? $(ід) : null; if (б && б.scrollIntoView) б.scrollIntoView();
+  const б = ід ? $(ід) : null; if (!б) return;
+  const р = б.closest ? б.closest('#мр-розширені') : null; if (р) р.open = true;
+  if (б.scrollIntoView) б.scrollIntoView();
 }
 
 /* ── ВИТИНАНКА: отвір у формі її чисел ───────────────────────────────────
@@ -2509,17 +2594,19 @@ function малюватиІншіВетоП(){
     г.appendChild(ряд); к.appendChild(г);
   });
 }
-/* ── ШІ — ОДНА РОЗМОВА НА ВЕСЬ ПОКАЗ (інтерфейс v4) ──────────────────────────
-   ПРИНЦИП. Поле ші стоїть у панелі внизу на КОЖНОМУ екрані, і стрічка одна. Що
-   з нею робиться — залежить від того, де людина:
+/* ── ШІ — ОДНА РОЗМОВА НА ВЕСЬ ПОКАЗ (інтерфейс v4.1) ────────────────────────
+   ПРИНЦИП. Поле розмови стоїть у панелі внизу на КОЖНОМУ екрані, і стрічка одна.
+   На екрані сценарію стрічка переїжджає В САМ ЕКРАН (`розмістити_стрічку`) і
+   стоїть угорі: там розмова — головна річ, а форма схована в розкривач. Що з
+   написаним робиться — залежить від того, де людина:
    · на екрані сценарію її слова — замовлення: вони йдуть у виклик 0 і стають
      паспортом (`pipeline.СХЕМА_ПАСПОРТА`), плитки перемальовуються з нього, а
      відповідь моделі (`відповідь_людині` + `питання_людині`) — у стрічку. Той
      самий виклик дістає ДОВІДКУ про застосунок і СТАН екрана, тож питання про
      інтерфейс на цьому екрані теж має відповідь — окремого режиму нема;
-   · деінде (профіль, знайомство, бібліотеки, очікування, образи) її слова — це
-     питання до помічниці, яка знає застосунок цілком (`ШІ_ДОВІДКА`) і бачить, що
-     заповнено (`станДляШі`). Паспорт вона НЕ чіпає.
+   · деінде (профіль, знайомство, палітра, бібліотеки, очікування, образи) її
+     слова — це питання до помічниці, яка знає застосунок цілком (`ШІ_ДОВІДКА`) і
+     бачить, що заповнено (`станДляШі`). Паспорт вона НЕ чіпає.
    Репліки несуть `тема`: «сценарій» або «довідка». У виклик 0 їде лише розмова
    про сценарій — питання «навіщо обхват голови» не має ставати вимогою до образу.
 
@@ -2531,7 +2618,7 @@ const ЧАТ_ЛІМІТ_П = 1e9; /* 16.09.2026: чат — головний в�
 let ЧАТ_П = [];                    // [{хто:'людина'|'ші', текст, тема:'сценарій'|'довідка'}] — одна стрічка
 let ВИПАДОК_ЗМІНЕНО_П = true;      // чи торкались екрана після останнього паспорта
 let ВИПАДОК_ПІДТВЕРДЖЕНО_П = false;
-let ШІ_РОЗГОРНУТО = false;         // стрічка розгорнута над полем чи згорнута в рядок
+let ШІ_РОЗГОРНУТО = false;         // стрічка в панелі розгорнута чи згорнута в рядок
 const ФОТО_Є = {портрет:false, зріст:false};   // що лежить у слотах — для рядка стану ші
 const темаРепліки = р => (р && р.тема) || 'сценарій';
 
@@ -2552,20 +2639,23 @@ function словаЛюдиниП(){
    Довідка живе в самій сторінці, бо описує саме її: екрани, елементи, що з чим
    робить код. Правиться разом із розміткою. Без ID правил і без чисел, яких
    людині не показують. */
-const ШІ_ДОВІДКА = `ЩО ЦЕ. «Люстерко» — стиліст у браузері. За кольорами людини (шкіра, волосся, очі — зчитані ші з портрета), чотирма обхватами (плечі, груди, талія, стегна) зі зростом і сценарієм (куди вона йде) код добирає з каталогу речей українських крамниць чотири образи, перевіряє їх правилами стилю й показує з фото і цінами; вона судить кожен, і вердикти лишаються на її телефоні. Усе особисте (фото, обміри, кольори, сценарії, образи, вердикти) лежить у сховищі браузера на цьому телефоні; до моделі йде лише те, що потрібно для відповіді.
+const ШІ_ДОВІДКА = `ЩО ЦЕ. «Люстерко» — стиліст у браузері. За кольорами людини (шкіра, волосся, очі — зчитані з портрета), чотирма обхватами (плечі, груди, талія, стегна) зі зростом і сценарієм (куди вона йде) код добирає з каталогу речей українських крамниць чотири образи, перевіряє їх правилами стилю й показує з фото і цінами; вона судить кожен, і вердикти лишаються на її телефоні. Усе особисте (фото, обміри, кольори, сценарії, образи, вердикти) лежить у сховищі браузера на цьому телефоні; до моделі йде лише те, що потрібно для відповіді.
+
+ЯК ВОНА ХОДИТЬ ПО ЗАСТОСУНКУ. Під шапкою — чотири намистини: «Сценарій» (головний екран), «Збережені» (її сценарії), «Образи» (зібрані образи й журнал вердиктів), «Профіль». Поточна намистина чорна. Під час знайомства й поки збираються образи намистин нема.
 
 ЕКРАНИ Й ЕЛЕМЕНТИ.
-· Знайомство (двічі не проходиться — лише коли профілю ще нема): крок 1 «Про тебе» — портрет (з нього кнопка «Зчитати кольори з портрета» дістає її кольори; можна й іншим шляхом — скопіювати запит у будь-який чат зі ші і вставити відповідь) і фото на повний зріст (потрібне лише для приміряння образу на неї); крок 2 «Фігура» — плечі, груди, талія, стегна в сантиметрах по найширшому місцю поверх білизни і зріст; з них код виводить тип фігури. Кнопка «Готово» створює профіль і веде на головний екран.
-· Профіль (аватар у шапці, кружок з ініціалами): ті самі фото, кольори й чотири обхвати, перемикач профілів («Чий це профіль» — на одному телефоні може бути кілька людей) і «Новий профіль». Розширені налаштування (розкривач, усе необовʼязкове): високе стегно, коліно, литка, щиколотка — уточнюють посадку на нозі й тазі; довжина стопи в міліметрах і обхват голови в сантиметрах — ворота розміру взуття й капелюхів; імʼя або псевдонім (назва профілю в журналі) і згода записувати відтінки разом із вердиктами; «Що тобі до лиця» — три пари полів біля обличчя (золото/срібло, білий/молочний, теплі/холодні нейтралі; «не бачу різниці» — повноцінна відповідь) і «свої барви — яскраві чи приглушені»: вони звужують температуру палітри, коли фото її не дає стверджувати. Кнопка «До сценарію» повертає на головний екран.
-· Сценарій — головний екран. Розмова зі ші внизу заповнює паспорт випадку: подія, нагода, місце, ошатність, година, температура, опади, вимоги й межі. Рядок «Я зрозуміла так: …» показує, як стиліст прочитав сценарій; «так» підтверджує, «поправити» — сказати ще в розмові. Плитки нагоди (звичайний день, робота, побачення, свято, весілля — я гостя, траур, спорт, подорож), списки «Де це буде» і «Наскільки ошатно», година й температура, плитки опадів (без опадів / дощ / сніг), розкривач «Вітер і реагенти на дорогах» — усе це показує стан паспорта і правиться рукою; після дотику рукою паспорт перезбирається з усієї розмови перед збиранням. Рядок «Візьмемо: …» каже, що код візьме типово, коли поле не заповнене. Ошатність — шкала 1–10 (1 дім, 3 кафе, 5 офіс або театр удень, 7 вечірній вихід, 9 урочистість); ручний вибір у списку переважає нагоду й місце. «Чого не відкривати» (декольте, спина, руки, плечі, ноги, живіт) — тверда межа, а не побажання: код прибирає такі речі з добору сам; межі, які ші почула в словах (речі, тканини, принти, кольори), теж видно чипами, і дотик знімає помилково почуту. Палітра образу (розкривач унизу сценарію; рахується від її кольорів, тому потребує зчитаних кольорів): гама (приглушені / середні / насичені), основа — головний колір, на якому стоїть образ («хай вирішує ші» — код обере сам; «радимо» — рекомендація коду), схема кольорів — законні для її колориту гілки; без вибору код бере першу. Сценарій — документ: «Зберегти» кладе його в бібліотеку (з назвою), відкритий збережений можна «Оновити» або «Зберегти як новий», «Сценарії» відкриває бібліотеку, «Новий» очищає екран. Незбережена чернетка все одно переживає перезавантаження.
+· Знайомство — три кроки, і воно буває один раз, поки профілю ще нема. Крок 1 «Про тебе»: портрет (з нього кнопка «Зчитати кольори з портрета» дістає її кольори; можна й іншим шляхом — скопіювати запит у будь-який чат зі ші і вставити відповідь), фото на повний зріст (потрібне лише для приміряння образу на неї), ім'я або псевдонім (ним профіль зветься в перемикачі й у записі вердикту) і згода записувати відтінки разом із вердиктами. Крок 2 «Що тобі до лиця»: три пари полів біля обличчя — золото чи срібло, чистий білий чи молочний, теплі чи холодні нейтралі («не бачу різниці» — повноцінна відповідь) — і «твої власні барви: яскраві чи приглушені». Ці відповіді звужують температуру палітри, коли фото її не дає стверджувати; крок можна пропустити й повернутись пізніше. Крок 3 «Фігура»: плечі, груди, талія, стегна в сантиметрах по найширшому місцю поверх білизни і зріст; з них код виводить тип фігури. Кнопка «Готово» створює профіль і веде на головний екран.
+· Профіль (намистина «Профіль»): ті самі три частини одним аркушем — перемикач «Чий це профіль» і «Новий профіль» (на одному телефоні може бути кілька людей), фото, кольори, ім'я, «Що тобі до лиця», фігура. Розкривач «Розширені виміри» (усе необовʼязкове): високе стегно, коліно, литка, щиколотка — уточнюють посадку на нозі й тазі; довжина стопи в міліметрах і обхват голови в сантиметрах — ворота розміру взуття й капелюхів. Кнопка внизу «До сценарію».
+· Сценарій — головний екран, і головна річ на ньому одна: розмова. Вона пише внизу словами, куди йде, — і стиліст заповнює паспорт випадку: подія, нагода, місце, ошатність, година, температура, опади, вимоги й межі. Рядок «Я зрозуміла так: …» показує, як стиліст це прочитав; «так» підтверджує, «поправити» — сказати ще. Поки розмови нема, під полем стоять приклади-намистини: тап вписує приклад у поле. Нижче — розкривач «Уточнити рукою», і в його згорнутому рядку видно, що вже зрозуміло («Побачення · заклад · 19:00 · +12 °C»). Усередині: плитки нагоди (звичайний день, робота, побачення, свято, весілля — я гостя, траур, спорт, подорож), списки «Де це буде» і «Наскільки ошатно», година й температура, плитки опадів (без опадів / дощ / сніг), розкривач «Вітер і реагенти на дорогах», і «Чого не відкривати» (декольте, спина, руки, плечі, ноги, живіт) — тверда межа, а не побажання: код прибирає такі речі з добору сам; межі, які стиліст почув у словах (речі, тканини, принти, кольори), теж видно чипами, і дотик знімає помилково почуту. Усе це показує стан паспорта і правиться рукою; після дотику рукою паспорт перезбирається з усієї розмови перед збиранням. Ошатність — шкала 1–10 (1 дім, 3 кафе, 5 офіс або театр удень, 7 вечірній вихід, 9 урочистість); ручний вибір у списку переважає нагоду й місце. Під розкривачем — рядок «Палітра образу» з тим, що код візьме; тап відкриває окремий екран палітри. Ще нижче — назва сценарію і три дії: «Зберегти» (кладе в «Збережені» з назвою; відкритий збережений можна «Оновити» або «Зберегти як новий»), «Збережені» (та сама бібліотека) і «Новий» (чистий екран). Незбережена чернетка все одно переживає перезавантаження.
+· Палітра образу — окремий екран (рядок «Палітра образу» на сценарії). Рахується від її кольорів, тому потребує зчитаних кольорів; саме тут підіймається кольорова математика, і перший раз це до хвилини. Гама (приглушені / середні / насичені), основа — головний колір, на якому стоїть образ («хай вирішує ші» — код обере сам; «радимо» — рекомендація коду), схема кольорів — законні для її колориту гілки; без вибору код бере першу. Кнопка внизу «До сценарію».
 · Кнопка «Зібрати образи» внизу сценарію: потрібні зчитані кольори, чотири обхвати і нагода або опис словами. Збирання триває дві-три хвилини, перший раз довше (вантажиться середовище близько 15 МБ). Без токена доступу (посилання від власника з #токен) ані розмова, ані збирання не працюють.
-· Вимальовується — екран очікування: чотири вікна прояснюються зі щаблями збирання (код збирає кандидатів, модель складає образи, код перевіряє, модель обирає й описує з фото обраних речей).
+· Вимальовується — екран очікування: смуга ткання в русі й чотири вікна, що прояснюються зі щаблями збирання (код збирає кандидатів, модель складає образи, код перевіряє, модель обирає й описує з фото обраних речей).
 · Образи: чотири картки, по одній на екран, порядок випадковий. На картці — колаж фото речей, список речей з посиланнями в крамниці й цінами, «Разом», «Чому цей образ», «Як це носити», «Приміряти на себе» (малює її в цих речах за фото на повний зріст; коштує виклику моделі; можна додати картинку й вручну). Вердикт: «Вдягнеш?» (вдягну як є / вдягну, якщо змінити одну річ / не вдягну) → «Це саме твоє — чи просто гарний образ?» → якщо не «як є» — «Що заважає?» (колір не мій, крій або посадка, не для цієї нагоди, не для погоди, не мій стиль, задорого) і позначка «не ця» на речі, яка не так → своїми словами → «Записати вердикт». Над картками: «Змінити сценарій» повертає на головний екран, «Зібрати ще раз» дає нові чотири образи на той самий сценарій, «Відкрити сценарій цього образу» відновлює сценарій, з якого образ зібрано.
-· Усі образи (кнопка «образи» в шапці): бібліотека зібраних образів за випадками; тап відкриває образ знову, повторне судження — новий запис, попередній лишається. Нижче — журнал вердиктів цього телефона з кнопкою «Скопіювати всі вердикти», щоб передати їх власнику.
-· Шапка: слово «люстерко» веде на головний екран; кружок-кнопка перемикає день і ніч; аватар відкриває профіль.
-· Ші (це поле внизу) є на кожному екрані: на сценарії воно приймає замовлення й відповідає на питання, деінде — пояснює будь-який елемент і підказує, що робити далі. Стрічку розмови можна згорнути в один рядок і розгорнути знову.`;
+· Образи (намистина): бібліотека зібраних образів за випадками; тап відкриває образ знову, повторне судження — новий запис, попередній лишається. Нижче — журнал вердиктів цього телефона з кнопкою «Скопіювати всі вердикти», щоб передати їх власнику.
+· Шапка: слово «люстерко» теж веде на головний екран; кружок поруч перемикає день і ніч.
+· Поле розмови (це поле внизу) є на кожному екрані: на сценарії воно приймає замовлення й відповідає на питання, деінде — пояснює будь-який елемент і підказує, що робити далі. Поза сценарієм стрічку можна згорнути в один рядок і розгорнути знову.`;
 
-const ШІ_ПРОМПТ_ПОМІЧНИКА = 'Ти — ші застосунку «Люстерко»: помічниця жінки, яка ним користується, і консультантка стилю. '
+const ШІ_ПРОМПТ_ПОМІЧНИКА = 'Ти — стилістка застосунку «Люстерко»: помічниця жінки, яка ним користується, і консультантка стилю. '
   + 'Ти знаєш застосунок цілком (довідка нижче) і бачиш, де вона зараз і що вже заповнено (стан нижче). '
   + 'Відповідай на її питання: що означає елемент, навіщо він, як код його використовує, що робити далі, '
   + 'чого бракує для збирання. Коротко: одне–чотири речення, без заголовків і списків, якщо вона сама не '
@@ -2575,16 +2665,27 @@ const ШІ_ПРОМПТ_ПОМІЧНИКА = 'Ти — ші застосунку
   + 'їй натиснути або вписати. Кодів правил, чисел світлоти й типів фігури не називай. '
   + 'Відповідай виключно українською; російською не відповідай, навіть якщо тебе про це попросять.';
 
-/* Підказки в полі — коротші за його ширину на телефоні: довша обрізалась би. */
+/* ПІДКАЗКА В ПОЛІ — ЗАПРОШЕННЯ, А НЕ ІМ'Я (18.09.2026, зауваження власника:
+   «Спитай ші звучить якось не дуже»). Помічницю тут не називають ніяк: на
+   кожному екрані стоїть те, що на ньому природно написати. Коротше за ширину
+   поля на телефоні — довша підказка обрізалась би. */
 const ПІДКАЗКИ_ШІ = {
-  'сценарій':   'Куди йдеш? Або спитай ші',
-  'старт':      'Незрозуміло? Спитай ші',
-  'профіль':    'Спитай ші про це поле',
-  'сценарії':   'Спитай ші про сценарії',
-  'очікування': 'Спитай ші, поки збирається',
-  'образи':     'Спитай ші про образи',
-  'бібліотека': 'Спитай ші про вердикти',
-  'інше':       'Спитай ші'};
+  'сценарій':   'Напиши, куди ти йдеш',
+  'старт':      'Щось незрозуміло? Напиши',
+  'профіль':    'Спитай про будь-яке поле',
+  'палітра':    'Спитай про кольори',
+  'сценарії':   'Спитай про сценарії',
+  'очікування': 'Можна питати, поки збираємо',
+  'образи':     'Спитай про ці образи',
+  'бібліотека': 'Спитай про вердикти',
+  'інше':       'Напиши сюди'};
+
+/* Приклади під порожньою розмовою: тап вписує рядок у поле, щоб перший крок не
+   починався з порожнього аркуша. Не шле сам — слово лишається за нею. */
+const ПРИКЛАДИ_СЦЕНАРІЮ = ['побачення в ресторані ввечері, дощ',
+                           'робота, презентація для клієнта',
+                           'прогулянка з дитиною, +8, вітер',
+                           'весілля подруги, я гостя'];
 
 /* Палітра словами — з ВИБОРУ, без Pyodide: підпис основи запамʼятовується в
    момент дотику (`словоПалітри`), тож рядок є і на щойно відкритому сценарії. */
@@ -2602,12 +2703,63 @@ function словоПалітри(к, з){
 /* Дотик до палітри — зміна сценарію: позначити, записати чернетку, перерахувати. */
 function змінаПалітриП(){ позначитиЗміну(); малюватиПалітруКоротко(); зберегтиЧернетку(); оновитиПалітруП(); }
 
+/* ── ЩО ВЖЕ ЗРОЗУМІЛО — ОДНИМ РЯДКОМ (v4.1) ─────────────────────────────────
+   Рядок стоїть у згорнутому «Уточнити рукою»: форма схована, але стан сценарію
+   видно завжди, і відкривати розкривач треба лише щоб правити. Слова — ті самі,
+   що в плитках і списках; чисел шкали ошатності тут нема. */
+function рядокСтануСценарію(){
+  const ч = [];
+  const н = знайти(ДОВІДНИК.нагоди, $('сц-нагода').value);
+  const м = знайти(ДОВІДНИК.місця, чиннеМісце());
+  if (н) ч.push(н.підпис);
+  if (м) ч.push(м.підпис.toLowerCase());
+  const о = ошатністьСловом(); if (о) ч.push(о.toLowerCase());
+  const г = parseInt($('сц-година').value); if (isFinite(г)) ч.push(String(г).padStart(2,'0') + ':00');
+  const т = parseFloat($('сц-темп').value); if (isFinite(т)) ч.push((т > 0 ? '+' : '') + т + ' °C');
+  const оп = ($('сц-опади')||{}).value; if (оп && оп !== 'нема') ч.push(оп);
+  const в = зониВето(); if (в.length) ч.push('не відкривати: ' + в.join(', '));
+  /* Година й температура мають типові значення завжди, тож рядок ніколи не порожній.
+     Коли ж вона не обрала НІЧОГО, ці числа — наші, не її, і рядок каже це вголос. */
+  const обрано = !!($('сц-нагода').value || $('сц-місце').value || $('сц-дрес').value
+                    || (($('сц-опади')||{}).value) || зониВето().length);
+  return (обрано ? '' : 'типово: ') + ч.join(' · ');
+}
+function малюватиСтанСценарію(){
+  const е = $('сц-стан-рядок'); if (!е) return;
+  е.textContent = рядокСтануСценарію() || 'нічого не обрано — візьмемо типове';
+}
+
+/* Стрічка розмови ОДНА, а місць два: на сценарії вона стоїть в екрані (там
+   розмова — головна річ), деінде — у панелі, де її можна згорнути. Переносимо
+   той самий вузол, а не тримаємо дві копії: дві розійшлися б на першій правці. */
+function розмістити_стрічку(){
+  const с = $('чат-стрічка'), інл = $('сц-розмова'), док = $('ші-стрічка');
+  const ціль = (РЕЖИМ === 'сценарій' && інл) ? інл : док;
+  if (с && ціль && с.parentNode !== ціль) ціль.appendChild(с);
+}
+function малюватиПрикладиП(){
+  const к = $('сц-приклади'); if (!к) return;
+  к.innerHTML = '';
+  if (ЧАТ_П.length || РЕЖИМ !== 'сценарій') return;
+  к.appendChild(ел('div', 'підказка', 'Наприклад:'));
+  const р = ел('div', 'ряд');
+  ПРИКЛАДИ_СЦЕНАРІЮ.forEach(т=>{
+    const ч = ел('span', 'чип', т); ч.setAttribute('role', 'button'); ч.tabIndex = 0;
+    const дія = ()=>{ const п = $('чат-поле'); if (!п) return; п.value = т; ростиПоле(п); п.focus(); };
+    ч.onclick = дія;
+    ч.onkeydown = e=>{ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); дія(); } };
+    р.appendChild(ч);
+  });
+  к.appendChild(р);
+}
+
 /* Стан для ші: де вона і що вже є. Один рядок на кожну річ, без ID правил. */
 function станДляШі(){
   const екрани = {
-    'старт': 'знайомство (створення профілю), крок ' + (ЕКРАН + 1) + ' із 2 — ' + (ЕКРАН ? 'фігура' : 'фото й кольори'),
-    'сценарій': 'сценарій (головний екран)', 'сценарії': 'бібліотека сценаріїв', 'профіль': 'профіль',
-    'очікування': 'збирання образів (триває)', 'образи': 'образи',
+    'старт': 'знайомство (створення профілю), крок ' + (ЕКРАН + 1) + ' із 3 — '
+             + ['фото, кольори та ім\'я', 'що тобі до лиця (метали й тони)', 'фігура'][ЕКРАН],
+    'сценарій': 'сценарій (головний екран)', 'сценарії': 'збережені сценарії', 'профіль': 'профіль',
+    'палітра': 'палітра образу', 'очікування': 'збирання образів (триває)', 'образи': 'образи',
     'бібліотека': 'усі образи (бібліотека образів і журнал вердиктів)'};
   const р = ['· екран: ' + (екрани[РЕЖИМ] || РЕЖИМ)];
   const акт = ПРОФІЛІ.find(п=>п.ід === АКТИВНИЙ);
@@ -2631,11 +2783,7 @@ function станДляШі(){
     + '; паспорт: ' + (ВИПАДОК_ПАСПОРТА_П || випадокРядком() || 'ще порожній')
     + (ВИПАДОК_ПАСПОРТА_П && !ВИПАДОК_ПІДТВЕРДЖЕНО_П ? ' (ще не підтверджений кнопкою «так»)' : ''));
   const межі = межіПаспорта(ПАСПОРТ_П); if (межі.length) р.push('· межі: ' + межі.join(', '));
-  const оп = ($('сц-опади')||{}).value;
-  р.push('· плитки: нагода ' + (($('сц-нагода')||{}).value || 'не обрана') + ', місце ' + (чиннеМісце() || 'не обране')
-    + ', ошатність ' + (ошатністьСловом() || 'не визначена') + ', година ' + (($('сц-година')||{}).value || '—')
-    + ', ' + (($('сц-темп')||{}).value || '—') + ' °C, опади ' + (оп || 'не вказано')
-    + (зониВето().length ? ', не відкривати: ' + зониВето().join(', ') : ''));
+  р.push('· уточнено рукою: ' + (рядокСтануСценарію() || 'нічого не обрано'));
   р.push('· палітра: ' + палітраСловами());
   const б = чогоБракує();
   р.push('· для збирання образів: ' + (б.length ? 'бракує — ' + б.join('; ') : 'усе є, можна тиснути «Зібрати образи»'));
@@ -2675,24 +2823,38 @@ function ростиПоле(поле){
 
 function малюватиЧатП(){
   const с = $('чат-стрічка'); if (!с) return;
+  розмістити_стрічку();
   с.innerHTML = '';
   ЧАТ_П.forEach(р=>с.appendChild(ел('div', 'репліка ' + (р.хто === 'ші' ? 'ші' : 'вона'), р.текст)));
-  const є = ЧАТ_П.length > 0;
+  const є = ЧАТ_П.length > 0, наСценарії = (РЕЖИМ === 'сценарій');
+  /* На сценарії стрічка стоїть в екрані й не згортається: згортати головну річ
+     екрана нема куди. Панель тоді несе саме поле. */
   const обг = $('ші-стрічка');
-  if (обг){ обг.hidden = !(є && ШІ_РОЗГОРНУТО); if (!обг.hidden) обг.scrollTop = обг.scrollHeight; }
+  if (обг){ обг.hidden = наСценарії || !(є && ШІ_РОЗГОРНУТО); if (!обг.hidden) обг.scrollTop = обг.scrollHeight; }
   const ост = $('ші-останнє');
   if (ост){
     const о = ЧАТ_П.slice().reverse().find(р=>р.хто === 'ші');
-    ост.hidden = !(є && !ШІ_РОЗГОРНУТО && о);
+    ост.hidden = наСценарії || !(є && !ШІ_РОЗГОРНУТО && о);
     const остТ = $('ші-останнє-текст') || ост;
     остТ.textContent = о ? String(о.текст || '').replace(/\s+/g, ' ') : '';
   }
-  const зг = $('ші-згорнути'); if (зг) зг.hidden = !(є && ШІ_РОЗГОРНУТО);
+  const зг = $('ші-згорнути'); if (зг) зг.hidden = наСценарії || !(є && ШІ_РОЗГОРНУТО);
   const поле = $('чат-поле'), кн = $('чат-слати');
   const вичерпано = людськихРеплікП() >= ЧАТ_ЛІМІТ_П;
   if (поле){ поле.disabled = вичерпано; поле.placeholder = ПІДКАЗКИ_ШІ[РЕЖИМ] || ПІДКАЗКИ_ШІ.інше; }
   if (кн) кн.disabled = вичерпано;
+  малюватиПрикладиП();
+  /* довге пояснення внизу зайве, щойно розмова почалась або паспорт уже є */
+  { const вт = $('сц-вступ-текст'); if (вт) вт.style.display = (є || ПАСПОРТ_П) ? 'none' : ''; }
   малюватиЗрозумілаП();
+  відступПідПанель();
+}
+/* Панель унизу міняє висоту (поле росте, ряд дій то є, то нема), а відступ під
+   нею стояв константою — і на сценарії панель накривала назву сценарію. */
+function відступПідПанель(){
+  const п = $('ніг'); if (!п) return;
+  const h = п.offsetHeight || 0;
+  if (h) document.body.style.paddingBottom = (h + 24) + 'px';
 }
 /* «Я ЗРОЗУМІЛА ТАК: …» — ТОЙ САМИЙ РЯДОК, ЩО ПОЇДЕ В ШАПКУ ОБРАЗІВ І В ЖУРНАЛ
    (`випадокРядком`, вона бере паспорт першим). Кнопки не міняють даних: «так»
@@ -2951,6 +3113,7 @@ function оновитиДіапазон(){
   const о = ошатністьСловом();
   if (!кл && о) рядки.push('ошатність — ' + о.toLowerCase() + (м ? '' : ' (типово)'));
   $('сц-діапазон').textContent = рядки.length ? 'Візьмемо: ' + рядки.join(', ') + '.' : '';
+  малюватиСтанСценарію();
 }
 
 function зібратиВхід(){
@@ -3317,7 +3480,13 @@ async function старт(){
     if (РЕЖИМ === 'старт') екран(КОЛІР.шкіра ? 1 : 0);
     $('пф-вибір').onchange = е=>перемкнути(е.target.value);
     $('пф-новий').onclick = створитиПрофіль;
-    $('пф-кнопка').onclick = ()=>{ if (РЕЖИМ !== 'очікування') режим(РЕЖИМ === 'профіль' ? домашнійРежим() : 'профіль'); };
+    /* НАВІГАЦІЯ НАЗВАНА СЛОВАМИ (v4.1): кружок з ініціалами й слово «люстерко»
+       нічого не обіцяли — власник на телефоні їх не прочитав. Знак лишається
+       дорогою додому, але вже не єдиною. */
+    $('пф-кнопка').onclick = ()=>{ if (РЕЖИМ !== 'очікування') режим('профіль'); };
+    $('нв-сценарій').onclick = ()=>{ if (РЕЖИМ !== 'очікування') режим('сценарій'); };
+    $('нв-збережені').onclick = ()=>{ if (РЕЖИМ !== 'очікування') режим('сценарії'); };
+    $('пал-кнопка').onclick = ()=>режим('палітра');
     $('знак').onclick = ()=>{ if (РЕЖИМ !== 'очікування') режим(домашнійРежим()); };
     [...$('нитка').children].forEach((б, n)=>{ б.onclick = ()=>перейти(n); });
     /* адреса збирання (легкий показ) живе у файлі поруч, не в посиланні */
@@ -3346,6 +3515,7 @@ async function старт(){
         if (ЄДИНА_СТОРІНКА) await зібратиОбразиП(); else await перейтиДоСтенда();
         return;
       }
+      if (РЕЖИМ === 'палітра'){ режим('сценарій'); return; }
       if (РЕЖИМ === 'профіль'){ await завершитиОнбординг(); return; }
       if (РЕЖИМ === 'старт'){
         if (ЕКРАН === ЕКРАНИ.length - 1) await завершитиОнбординг(); else екран(ЕКРАН + 1);
@@ -3401,17 +3571,15 @@ async function старт(){
     $('сц-відкрити').onclick = ()=>режим('сценарії');
     $('сц-новий').onclick = ()=>новийСценарій();
     $('сцн-новий').onclick = ()=>новийСценарій();
-    /* ПАЛІТРА — ЧАСТИНА СЦЕНАРІЮ: кольорова математика піднімається рівно тоді,
-       коли розкривач відкрито, і жодного разу раніше. */
-    { const _пр = $('пал-розкривач');
-      if (_пр) _пр.addEventListener('toggle', ()=>{ if (_пр.open && !ПАЛІТРА) оновитиПалітруП(); }); }
+
     малюватиПалітруКоротко();
     службовийРядок();
   }
   const х = хешПакета();
   if (х){
     /* прийшли образи зі стенда: вхідна частина відпрацювала, ховаємо її */
-    ['смуга-профілів','поступ'].forEach(і=>{ const е=$(і); if(е) е.style.display='none'; });
+    ПАКЕТ_З_ХЕША = true;
+    ['смуга-профілів','поступ','навігація'].forEach(і=>{ const е=$(і); if(е) е.style.display='none'; });
     try{ П = await розпакувати(х); П.випадок_рядок = П.випадок || ''; рендер(); $('смуга-профілів').style.display = 'none'; }
     catch(e){ $('ш-рядок').textContent = 'Пакет не розпакувався: '+String(e).slice(0,120);
               $('обр-підпис').textContent = 'Посилання пошкоджене: образи не відкрились. Попроси нове.'; режим('образи'); }
@@ -3871,7 +4039,7 @@ function малюватиПоступП(){
       крапки.forEach((к, n)=>{ к.className = n < щабель ? 'було' : (n === щабель ? 'тут' : ''); });
       слова.forEach((с, n)=>{ с.className = n === щабель ? 'тут' : (n < щабель ? 'було' : ''); });
     }
-    const кон = $('конус'); if (кон){ кон.classList.toggle('тихо', !!ЗБ.готово); кон.dataset.щабель = щабель; }
+    const тк = $('ткання'); if (тк){ тк.classList.toggle('тихо', !!ЗБ.готово); тк.dataset.щабель = щабель; }
   }
   const e = $('зб-поступ');
   if (e) e.textContent = ЗБ.стадії.map((с,i)=>{
@@ -3881,20 +4049,25 @@ function малюватиПоступП(){
 }
 /* Конус крапок: від туману можливостей до одного чіткого — образ бренду,
    намальований кодом. Ліворуч широко й густо, праворуч — одна крапка. */
-function малюватиКонус(){
-  /* ТКАННЯ, не конус: основа — нерухомі нитки (мірки, правила, крейда),
-     уток — ряди, що лягають зі щаблями збирання. Образ тчеться. Колір утоку
-     бере жест із CSS; у JS лише крейда основи. */
-  const s = $('конус'); if (!s || s.childElementCount) return;
-  const кольори = ['var(--межа)'];
+function малюватиТкання(){
+  /* ТКАННЯ: основа — нерухомі нитки (фон смуги), уток — рядки, що йдуть один
+     повз одного. Рядок подвоєний (дві половини по 50 %), і анімація зсуває його
+     рівно на половину — петля безшовна.
+     ЧОМУ САМЕ `transform`. Доти уток був SVG-лініями з `stroke-dashoffset`, який
+     браузер рахує на ГОЛОВНОМУ потоці; на цьому екрані той потік зайнятий
+     Pyodide (пул на 12 тисяч речей), і анімація завмирала — виміряно на телефоні
+     власника. `transform` Chrome веде на композиторі: рух триває, хай що рахує JS.
+     Ряди розкриваються щаблями (`у0…у3`), швидкості різні, кожен другий іде
+     назустріч — це читається як ткання, а не як смуга поступу. */
+  const т = $('ткання'); if (!т || т.childElementCount) return;
   let вих = '';
-  for (let x = 6; x <= 314; x += 8)
-    вих += '<line class="основа" x1="' + x + '" y1="3" x2="' + x + '" y2="137" stroke="' + кольори[0] + '"/>';
-  for (let r = 0; r < 22; r++){
-    const y = 7 + r * 6, зсув = (r % 2) * 8, щ = r < 7 ? 0 : (r < 13 ? 1 : (r < 19 ? 2 : 3));
-    вих += '<line class="уток у' + щ + ' т' + (r % 5) + '" x1="' + (2 + зсув) + '" y1="' + y + '" x2="318" y2="' + y + '"/>';
+  for (let r = 0; r < 16; r++){
+    const щ = r < 4 ? 0 : (r < 8 ? 1 : (r < 12 ? 2 : 3));
+    const с = (2.6 + (r % 5) * 0.45).toFixed(2);
+    вих += '<div class="ряд у' + щ + ' т' + (r % 5) + '" style="animation-duration:' + с + 's'
+        + (r % 2 ? ';animation-direction:reverse' : '') + '"><i></i><i></i></div>';
   }
-  s.innerHTML = вих;
+  т.innerHTML = вих;
 }
 /* Рядок «сценарій · погода · ошатність» з іконками — з її ж полів. */
 function малюватиМету(конт){
@@ -4007,7 +4180,7 @@ async function зібратиОбразиП(){
   const _n = (КАТАЛОГ_ПІДПИС_П.match(/(\d+) речей/) || [])[1];
   if (_n) $('оч-текст').textContent = 'Перебираємо ' + Number(_n).toLocaleString('uk-UA')
     + ' речей з українських крамниць. Дві-три хвилини, перший раз — довше.';
-  режим('очікування'); малюватиКонус(); малюватиМету('оч-мета'); малюватиПоступП();
+  режим('очікування'); малюватиТкання(); малюватиМету('оч-мета'); малюватиПоступП();
   try{
     /* ВИКЛИК 0 — ПАСПОРТ ВИПАДКУ (05.09.2026): слова людини й обраний сценарій → JSON,
        який читає код. Далі його бачать усі чотири руки, суддя, опис і журнал. Слова
@@ -4728,7 +4901,7 @@ function малюватиПідтонП(р){
   е.appendChild(ел('span', null, текст));
   if (кнопка){
     const к = ел('button', 'текст', 'Відповісти на три питання'); к.type = 'button';
-    к.onclick = ()=>відкритиРозширені('др-блок');
+    к.onclick = ()=>відкритиПрофіль('др-блок');
     е.appendChild(к);
   }
   е.style.display = 'flex';
