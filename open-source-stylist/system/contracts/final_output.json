@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "final_output",
+  "title": "FinalOutput",
+  "description": "Pipeline end product — final image with per-criterion report and owner verdict slot.",
+  "type": "object",
+  "required": ["schema_version", "output_id", "request_id", "final_image_path", "retry_count", "per_criterion_report"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "output_id": { "type": "string" },
+    "request_id": { "type": "string" },
+    "final_image_path": { "type": "string" },
+    "retry_count": { "type": "integer", "minimum": 0 },
+    "per_criterion_report": {
+      "type": "object",
+      "required": ["identity", "outfit_completeness", "outfit_logic", "color_texture"],
+      "additionalProperties": false,
+      "properties": {
+        "identity": {
+          "type": "object",
+          "required": ["verdict"],
+          "additionalProperties": false,
+          "properties": {
+            "arcface_cosine": { "type": "number" },
+            "verdict": { "type": "string", "enum": ["pass", "fail", "skip"] }
+          }
+        },
+        "outfit_completeness": {
+          "type": "object",
+          "required": ["verdict"],
+          "additionalProperties": false,
+          "properties": {
+            "verdict": { "type": "string", "enum": ["pass", "fail", "skip"] },
+            "missing_items": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "outfit_logic": {
+          "type": "object",
+          "required": ["verdict"],
+          "additionalProperties": false,
+          "properties": {
+            "verdict": { "type": "string", "enum": ["pass", "fail", "skip"] },
+            "notes": { "type": "string" }
+          }
+        },
+        "color_texture": {
+          "type": "object",
+          "required": ["verdict"],
+          "additionalProperties": false,
+          "properties": {
+            "verdict": { "type": "string", "enum": ["pass", "fail", "skip"] },
+            "per_region": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "required": ["verdict"],
+                "additionalProperties": false,
+                "properties": {
+                  "delta_e_mean": { "type": "number" },
+                  "verdict": { "type": "string", "enum": ["pass", "fail", "skip"] }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shell_steps_applied": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["face_restore", "background_restore", "color_match"]
+      }
+    },
+    "repairs_applied": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "owner_verdict": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["result", "date"],
+          "additionalProperties": false,
+          "properties": {
+            "result": { "type": "string", "enum": ["accepted", "rejected"] },
+            "notes": { "type": "string" },
+            "date": { "type": "string" }
+          }
+        },
+        { "type": "null" }
+      ]
+    }
+  }
+}

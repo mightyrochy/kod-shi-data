@@ -1,0 +1,985 @@
+{
+  "arms": {
+    "masked_crops": {
+      "42": {
+        "sanity_flags": {},
+        "color": {
+          "top": {
+            "delta_e_mean": 4.71,
+            "delta_e_p90": 8.22,
+            "n_pixels_a": 84202,
+            "n_pixels_b": 191292,
+            "l_shift": -11.32,
+            "verdict": "WARN"
+          },
+          "bottom": {
+            "delta_e_mean": 2.86,
+            "delta_e_p90": 4.81,
+            "n_pixels_a": 100454,
+            "n_pixels_b": 498217,
+            "l_shift": 4.65,
+            "verdict": "PASS"
+          },
+          "shoes": {
+            "delta_e_mean": 29.56,
+            "delta_e_p90": 31.39,
+            "n_pixels_a": 5773,
+            "n_pixels_b": 255513,
+            "l_shift": -29.62,
+            "verdict": "FAIL"
+          },
+          "belt": {
+            "delta_e_mean": 5.2,
+            "delta_e_p90": 9.67,
+            "n_pixels_a": 4864,
+            "n_pixels_b": 371788,
+            "l_shift": 8.11,
+            "verdict": "FAIL"
+          },
+          "earrings": {
+            "delta_e_mean": 6.12,
+            "delta_e_p90": 24.05,
+            "n_pixels_a": 1344,
+            "n_pixels_b": 18276,
+            "l_shift": -19.26,
+            "verdict": "FAIL"
+          }
+        },
+        "identity": {
+          "cosine": 0.7717,
+          "detected_a": true,
+          "detected_b": true,
+          "verdict": "PASS"
+        },
+        "proportions": {
+          "shoulder_change_pct": 4.04,
+          "waist_change_pct": 2.68,
+          "hip_change_pct": 9.8,
+          "max_abs_change_pct": 9.8,
+          "framing_delta_pct": 4.32,
+          "profile_a": {
+            "shoulder_width_norm": 0.2968,
+            "waist_width_norm": 0.2273,
+            "hip_width_norm": 0.3102,
+            "height_px": 1267,
+            "coverage_frac": 0.9427,
+            "top_frac": 0.0513,
+            "bottom_frac": 0.9933
+          },
+          "profile_b": {
+            "shoulder_width_norm": 0.3088,
+            "waist_width_norm": 0.2334,
+            "hip_width_norm": 0.3406,
+            "height_px": 1007,
+            "coverage_frac": 0.9834,
+            "top_frac": 0.0166,
+            "bottom_frac": 0.999
+          },
+          "verdict": "FAIL",
+          "interpretation": "diagnostic; silhouette includes clothing and depends on framing"
+        }
+      },
+      "123": {
+        "sanity_flags": {
+          "top": [
+            {
+              "check": "garment_overlap",
+              "detail": "99.4% of the smaller garment ('top') overlaps with 'shoes' (overlap=74063px, threshold=20%)"
+            }
+          ],
+          "bottom": [
+            {
+              "check": "garment_overlap",
+              "detail": "99.8% of the smaller garment ('bottom') overlaps with 'shoes' (overlap=90269px, threshold=20%)"
+            }
+          ],
+          "shoes": [
+            {
+              "check": "area_fraction",
+              "detail": "area fraction 0.2950 outside expected [0.0010, 0.1500] for 'shoes'"
+            },
+            {
+              "check": "position_prior",
+              "detail": "centroid y=0.491 outside expected [0.550, 1.000] for 'shoes'"
+            },
+            {
+              "check": "garment_overlap",
+              "detail": "99.4% of the smaller garment ('top') overlaps with 'shoes' (overlap=74063px, threshold=20%)"
+            },
+            {
+              "check": "garment_overlap",
+              "detail": "99.8% of the smaller garment ('bottom') overlaps with 'shoes' (overlap=90269px, threshold=20%)"
+            },
+            {
+              "check": "garment_overlap",
+              "detail": "100.0% of the smaller garment ('belt') overlaps with 'shoes' (overlap=4724px, threshold=20%)"
+            },
+            {
+              "check": "garment_overlap",
+              "detail": "100.0% of the smaller garment ('earrings') overlaps with 'shoes' (overlap=632px, threshold=20%)"
+            }
+          ],
+          "belt": [
+            {
+              "check": "garment_overlap",
+              "detail": "100.0% of the smaller garment ('belt') overlaps with 'shoes' (overlap=4724px, threshold=20%)"
+            }
+          ],
+          "earrings": [
+            {
+              "check": "garment_overlap",
+              "detail": "100.0% of the smaller garment ('earrings') overlaps with 'shoes' (overlap=632px, threshold=20%)"
+            }
+          ]
+        },
+        "color": {
+          "top": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "99.4% of the smaller garment ('top') overlaps with 'shoes' (overlap=74063px, threshold=20%)"
+              }
+            ]
+          },
+          "bottom": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "99.8% of the smaller garment ('bottom') overlaps with 'shoes' (overlap=90269px, threshold=20%)"
+              }
+            ]
+          },
+          "shoes": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "area_fraction",
+                "detail": "area fraction 0.2950 outside expected [0.0010, 0.1500] for 'shoes'"
+              },
+              {
+                "check": "position_prior",
+                "detail": "centroid y=0.491 outside expected [0.550, 1.000] for 'shoes'"
+              },
+              {
+                "check": "garment_overlap",
+                "detail": "99.4% of the smaller garment ('top') overlaps with 'shoes' (overlap=74063px, threshold=20%)"
+              },
+              {
+                "check": "garment_overlap",
+                "detail": "99.8% of the smaller garment ('bottom') overlaps with 'shoes' (overlap=90269px, threshold=20%)"
+              },
+              {
+                "check": "garment_overlap",
+                "detail": "100.0% of the smaller garment ('belt') overlaps with 'shoes' (overlap=4724px, threshold=20%)"
+              },
+              {
+                "check": "garment_overlap",
+                "detail": "100.0% of the smaller garment ('earrings') overlaps with 'shoes' (overlap=632px, threshold=20%)"
+              }
+            ]
+          },
+          "belt": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "100.0% of the smaller garment ('belt') overlaps with 'shoes' (overlap=4724px, threshold=20%)"
+              }
+            ]
+          },
+          "earrings": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "100.0% of the smaller garment ('earrings') overlaps with 'shoes' (overlap=632px, threshold=20%)"
+              }
+            ]
+          }
+        },
+        "identity": {
+          "cosine": 0.7625,
+          "detected_a": true,
+          "detected_b": true,
+          "verdict": "PASS"
+        },
+        "proportions": {
+          "shoulder_change_pct": 3.44,
+          "waist_change_pct": -3.21,
+          "hip_change_pct": -3.61,
+          "max_abs_change_pct": 3.61,
+          "framing_delta_pct": 3.6,
+          "profile_a": {
+            "shoulder_width_norm": 0.2968,
+            "waist_width_norm": 0.2273,
+            "hip_width_norm": 0.3102,
+            "height_px": 1267,
+            "coverage_frac": 0.9427,
+            "top_frac": 0.0513,
+            "bottom_frac": 0.9933
+          },
+          "profile_b": {
+            "shoulder_width_norm": 0.307,
+            "waist_width_norm": 0.22,
+            "hip_width_norm": 0.299,
+            "height_px": 1000,
+            "coverage_frac": 0.9766,
+            "top_frac": 0.0205,
+            "bottom_frac": 0.9961
+          },
+          "verdict": "PASS",
+          "interpretation": "diagnostic; silhouette includes clothing and depends on framing"
+        }
+      },
+      "456": {
+        "sanity_flags": {
+          "top": [
+            {
+              "check": "garment_overlap",
+              "detail": "99.4% of the smaller garment ('top') overlaps with 'shoes' (overlap=81943px, threshold=20%)"
+            }
+          ],
+          "bottom": [
+            {
+              "check": "garment_overlap",
+              "detail": "99.8% of the smaller garment ('bottom') overlaps with 'shoes' (overlap=116684px, threshold=20%)"
+            }
+          ],
+          "shoes": [
+            {
+              "check": "area_fraction",
+              "detail": "area fraction 0.3477 outside expected [0.0010, 0.1500] for 'shoes'"
+            },
+            {
+              "check": "position_prior",
+              "detail": "centroid y=0.505 outside expected [0.550, 1.000] for 'shoes'"
+            },
+            {
+              "check": "garment_overlap",
+              "detail": "99.4% of the smaller garment ('top') overlaps with 'shoes' (overlap=81943px, threshold=20%)"
+            },
+            {
+              "check": "garment_overlap",
+              "detail": "99.8% of the smaller garment ('bottom') overlaps with 'shoes' (overlap=116684px, threshold=20%)"
+            },
+            {
+              "check": "garment_overlap",
+              "detail": "100.0% of the smaller garment ('belt') overlaps with 'shoes' (overlap=6128px, threshold=20%)"
+            },
+            {
+              "check": "garment_overlap",
+              "detail": "100.0% of the smaller garment ('earrings') overlaps with 'shoes' (overlap=1102px, threshold=20%)"
+            }
+          ],
+          "belt": [
+            {
+              "check": "garment_overlap",
+              "detail": "100.0% of the smaller garment ('belt') overlaps with 'shoes' (overlap=6128px, threshold=20%)"
+            }
+          ],
+          "earrings": [
+            {
+              "check": "garment_overlap",
+              "detail": "100.0% of the smaller garment ('earrings') overlaps with 'shoes' (overlap=1102px, threshold=20%)"
+            }
+          ]
+        },
+        "color": {
+          "top": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "99.4% of the smaller garment ('top') overlaps with 'shoes' (overlap=81943px, threshold=20%)"
+              }
+            ]
+          },
+          "bottom": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "99.8% of the smaller garment ('bottom') overlaps with 'shoes' (overlap=116684px, threshold=20%)"
+              }
+            ]
+          },
+          "shoes": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "area_fraction",
+                "detail": "area fraction 0.3477 outside expected [0.0010, 0.1500] for 'shoes'"
+              },
+              {
+                "check": "position_prior",
+                "detail": "centroid y=0.505 outside expected [0.550, 1.000] for 'shoes'"
+              },
+              {
+                "check": "garment_overlap",
+                "detail": "99.4% of the smaller garment ('top') overlaps with 'shoes' (overlap=81943px, threshold=20%)"
+              },
+              {
+                "check": "garment_overlap",
+                "detail": "99.8% of the smaller garment ('bottom') overlaps with 'shoes' (overlap=116684px, threshold=20%)"
+              },
+              {
+                "check": "garment_overlap",
+                "detail": "100.0% of the smaller garment ('belt') overlaps with 'shoes' (overlap=6128px, threshold=20%)"
+              },
+              {
+                "check": "garment_overlap",
+                "detail": "100.0% of the smaller garment ('earrings') overlaps with 'shoes' (overlap=1102px, threshold=20%)"
+              }
+            ]
+          },
+          "belt": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "100.0% of the smaller garment ('belt') overlaps with 'shoes' (overlap=6128px, threshold=20%)"
+              }
+            ]
+          },
+          "earrings": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "100.0% of the smaller garment ('earrings') overlaps with 'shoes' (overlap=1102px, threshold=20%)"
+              }
+            ]
+          }
+        },
+        "identity": {
+          "cosine": 0.7982,
+          "detected_a": true,
+          "detected_b": true,
+          "verdict": "PASS"
+        },
+        "proportions": {
+          "shoulder_change_pct": 7.92,
+          "waist_change_pct": 33.17,
+          "hip_change_pct": 13.96,
+          "max_abs_change_pct": 33.17,
+          "framing_delta_pct": 6.08,
+          "profile_a": {
+            "shoulder_width_norm": 0.2968,
+            "waist_width_norm": 0.2273,
+            "hip_width_norm": 0.3102,
+            "height_px": 1267,
+            "coverage_frac": 0.9427,
+            "top_frac": 0.0513,
+            "bottom_frac": 0.9933
+          },
+          "profile_b": {
+            "shoulder_width_norm": 0.3203,
+            "waist_width_norm": 0.3027,
+            "hip_width_norm": 0.3535,
+            "height_px": 1024,
+            "coverage_frac": 1.0,
+            "top_frac": 0.0,
+            "bottom_frac": 0.999
+          },
+          "verdict": "FAIL",
+          "interpretation": "diagnostic; silhouette includes clothing and depends on framing"
+        }
+      },
+      "789": {
+        "sanity_flags": {
+          "top": [
+            {
+              "check": "garment_overlap",
+              "detail": "20.4% of the smaller garment ('top') overlaps with 'bottom' (overlap=18598px, threshold=20%)"
+            }
+          ],
+          "bottom": [
+            {
+              "check": "garment_overlap",
+              "detail": "20.4% of the smaller garment ('top') overlaps with 'bottom' (overlap=18598px, threshold=20%)"
+            },
+            {
+              "check": "garment_overlap",
+              "detail": "40.2% of the smaller garment ('belt') overlaps with 'bottom' (overlap=2209px, threshold=20%)"
+            }
+          ],
+          "belt": [
+            {
+              "check": "garment_overlap",
+              "detail": "40.2% of the smaller garment ('belt') overlaps with 'bottom' (overlap=2209px, threshold=20%)"
+            }
+          ]
+        },
+        "color": {
+          "top": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "20.4% of the smaller garment ('top') overlaps with 'bottom' (overlap=18598px, threshold=20%)"
+              }
+            ]
+          },
+          "bottom": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "20.4% of the smaller garment ('top') overlaps with 'bottom' (overlap=18598px, threshold=20%)"
+              },
+              {
+                "check": "garment_overlap",
+                "detail": "40.2% of the smaller garment ('belt') overlaps with 'bottom' (overlap=2209px, threshold=20%)"
+              }
+            ]
+          },
+          "shoes": {
+            "delta_e_mean": 30.06,
+            "delta_e_p90": 31.45,
+            "n_pixels_a": 5537,
+            "n_pixels_b": 255513,
+            "l_shift": -30.63,
+            "verdict": "FAIL"
+          },
+          "belt": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "40.2% of the smaller garment ('belt') overlaps with 'bottom' (overlap=2209px, threshold=20%)"
+              }
+            ]
+          },
+          "earrings": {
+            "delta_e_mean": 3.02,
+            "delta_e_p90": 31.76,
+            "n_pixels_a": 1439,
+            "n_pixels_b": 18276,
+            "l_shift": -14.19,
+            "verdict": "WARN"
+          }
+        },
+        "identity": {
+          "cosine": 0.8422,
+          "detected_a": true,
+          "detected_b": true,
+          "verdict": "PASS"
+        },
+        "proportions": {
+          "shoulder_change_pct": 3.0,
+          "waist_change_pct": 20.72,
+          "hip_change_pct": 13.02,
+          "max_abs_change_pct": 20.72,
+          "framing_delta_pct": 6.08,
+          "profile_a": {
+            "shoulder_width_norm": 0.2968,
+            "waist_width_norm": 0.2273,
+            "hip_width_norm": 0.3102,
+            "height_px": 1267,
+            "coverage_frac": 0.9427,
+            "top_frac": 0.0513,
+            "bottom_frac": 0.9933
+          },
+          "profile_b": {
+            "shoulder_width_norm": 0.3057,
+            "waist_width_norm": 0.2744,
+            "hip_width_norm": 0.3506,
+            "height_px": 1024,
+            "coverage_frac": 1.0,
+            "top_frac": 0.0,
+            "bottom_frac": 0.999
+          },
+          "verdict": "FAIL",
+          "interpretation": "diagnostic; silhouette includes clothing and depends on framing"
+        }
+      },
+      "1337": {
+        "sanity_flags": {
+          "top": [
+            {
+              "check": "garment_overlap",
+              "detail": "21.6% of the smaller garment ('top') overlaps with 'bottom' (overlap=19435px, threshold=20%)"
+            }
+          ],
+          "bottom": [
+            {
+              "check": "garment_overlap",
+              "detail": "21.6% of the smaller garment ('top') overlaps with 'bottom' (overlap=19435px, threshold=20%)"
+            }
+          ]
+        },
+        "color": {
+          "top": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "21.6% of the smaller garment ('top') overlaps with 'bottom' (overlap=19435px, threshold=20%)"
+              }
+            ]
+          },
+          "bottom": {
+            "verdict": "SKIP_SANITY",
+            "flags": [
+              {
+                "check": "garment_overlap",
+                "detail": "21.6% of the smaller garment ('top') overlaps with 'bottom' (overlap=19435px, threshold=20%)"
+              }
+            ]
+          },
+          "shoes": {
+            "delta_e_mean": 29.38,
+            "delta_e_p90": 31.21,
+            "n_pixels_a": 3115,
+            "n_pixels_b": 255513,
+            "l_shift": -28.2,
+            "verdict": "FAIL"
+          },
+          "belt": {
+            "delta_e_mean": 5.03,
+            "delta_e_p90": 9.85,
+            "n_pixels_a": 5686,
+            "n_pixels_b": 371788,
+            "l_shift": 5.2,
+            "verdict": "FAIL"
+          },
+          "earrings": {
+            "delta_e_mean": 2.82,
+            "delta_e_p90": 33.29,
+            "n_pixels_a": 1043,
+            "n_pixels_b": 18276,
+            "l_shift": -7.13,
+            "verdict": "PASS"
+          }
+        },
+        "identity": {
+          "cosine": 0.8091,
+          "detected_a": true,
+          "detected_b": true,
+          "verdict": "PASS"
+        },
+        "proportions": {
+          "shoulder_change_pct": 6.2,
+          "waist_change_pct": 10.29,
+          "hip_change_pct": 10.86,
+          "max_abs_change_pct": 10.86,
+          "framing_delta_pct": 4.53,
+          "profile_a": {
+            "shoulder_width_norm": 0.2968,
+            "waist_width_norm": 0.2273,
+            "hip_width_norm": 0.3102,
+            "height_px": 1267,
+            "coverage_frac": 0.9427,
+            "top_frac": 0.0513,
+            "bottom_frac": 0.9933
+          },
+          "profile_b": {
+            "shoulder_width_norm": 0.3152,
+            "waist_width_norm": 0.2507,
+            "hip_width_norm": 0.3439,
+            "height_px": 1009,
+            "coverage_frac": 0.9854,
+            "top_frac": 0.0146,
+            "bottom_frac": 0.999
+          },
+          "verdict": "FAIL",
+          "interpretation": "diagnostic; silhouette includes clothing and depends on framing"
+        }
+      }
+    },
+    "rectangular_crops": {
+      "42": {
+        "sanity_flags": {},
+        "color": {
+          "top": {
+            "delta_e_mean": 3.2,
+            "delta_e_p90": 9.34,
+            "n_pixels_a": 64409,
+            "n_pixels_b": 191292,
+            "l_shift": -11.95,
+            "verdict": "WARN"
+          },
+          "bottom": {
+            "delta_e_mean": 3.24,
+            "delta_e_p90": 4.71,
+            "n_pixels_a": 92640,
+            "n_pixels_b": 498217,
+            "l_shift": 12.14,
+            "verdict": "WARN"
+          },
+          "shoes": {
+            "delta_e_mean": 29.46,
+            "delta_e_p90": 31.24,
+            "n_pixels_a": 5946,
+            "n_pixels_b": 255513,
+            "l_shift": -35.63,
+            "verdict": "FAIL"
+          },
+          "belt": {
+            "delta_e_mean": 8.68,
+            "delta_e_p90": 13.15,
+            "n_pixels_a": 4095,
+            "n_pixels_b": 371788,
+            "l_shift": 5.75,
+            "verdict": "FAIL"
+          },
+          "earrings": {
+            "delta_e_mean": 8.44,
+            "delta_e_p90": 25.26,
+            "n_pixels_a": 947,
+            "n_pixels_b": 18276,
+            "l_shift": -17.55,
+            "verdict": "FAIL"
+          }
+        },
+        "identity": {
+          "cosine": 0.8036,
+          "detected_a": true,
+          "detected_b": true,
+          "verdict": "PASS"
+        },
+        "proportions": {
+          "shoulder_change_pct": -2.43,
+          "waist_change_pct": 0.09,
+          "hip_change_pct": -5.67,
+          "max_abs_change_pct": 5.67,
+          "framing_delta_pct": 3.38,
+          "profile_a": {
+            "shoulder_width_norm": 0.2968,
+            "waist_width_norm": 0.2273,
+            "hip_width_norm": 0.3102,
+            "height_px": 1267,
+            "coverage_frac": 0.9427,
+            "top_frac": 0.0513,
+            "bottom_frac": 0.9933
+          },
+          "profile_b": {
+            "shoulder_width_norm": 0.2896,
+            "waist_width_norm": 0.2275,
+            "hip_width_norm": 0.2926,
+            "height_px": 998,
+            "coverage_frac": 0.9746,
+            "top_frac": 0.0225,
+            "bottom_frac": 0.9961
+          },
+          "verdict": "FAIL",
+          "interpretation": "diagnostic; silhouette includes clothing and depends on framing"
+        }
+      },
+      "123": {
+        "sanity_flags": {},
+        "color": {
+          "top": {
+            "delta_e_mean": 1.93,
+            "delta_e_p90": 7.57,
+            "n_pixels_a": 64290,
+            "n_pixels_b": 191292,
+            "l_shift": -8.55,
+            "verdict": "PASS"
+          },
+          "bottom": {
+            "delta_e_mean": 3.04,
+            "delta_e_p90": 4.23,
+            "n_pixels_a": 89802,
+            "n_pixels_b": 498217,
+            "l_shift": 7.52,
+            "verdict": "WARN"
+          },
+          "shoes": {
+            "delta_e_mean": 28.6,
+            "delta_e_p90": 30.61,
+            "n_pixels_a": 5178,
+            "n_pixels_b": 255513,
+            "l_shift": -38.73,
+            "verdict": "FAIL"
+          },
+          "belt": {
+            "delta_e_mean": 8.35,
+            "delta_e_p90": 12.46,
+            "n_pixels_a": 4707,
+            "n_pixels_b": 371788,
+            "l_shift": 6.97,
+            "verdict": "FAIL"
+          },
+          "earrings": {
+            "delta_e_mean": 6.4,
+            "delta_e_p90": 28.86,
+            "n_pixels_a": 878,
+            "n_pixels_b": 18276,
+            "l_shift": -7.42,
+            "verdict": "FAIL"
+          }
+        },
+        "identity": {
+          "cosine": 0.6978,
+          "detected_a": true,
+          "detected_b": true,
+          "verdict": "PASS"
+        },
+        "proportions": {
+          "shoulder_change_pct": -1.42,
+          "waist_change_pct": 2.73,
+          "hip_change_pct": -6.0,
+          "max_abs_change_pct": 6.0,
+          "framing_delta_pct": 3.38,
+          "profile_a": {
+            "shoulder_width_norm": 0.2968,
+            "waist_width_norm": 0.2273,
+            "hip_width_norm": 0.3102,
+            "height_px": 1267,
+            "coverage_frac": 0.9427,
+            "top_frac": 0.0513,
+            "bottom_frac": 0.9933
+          },
+          "profile_b": {
+            "shoulder_width_norm": 0.2926,
+            "waist_width_norm": 0.2335,
+            "hip_width_norm": 0.2916,
+            "height_px": 998,
+            "coverage_frac": 0.9746,
+            "top_frac": 0.0225,
+            "bottom_frac": 0.9961
+          },
+          "verdict": "FAIL",
+          "interpretation": "diagnostic; silhouette includes clothing and depends on framing"
+        }
+      },
+      "456": {
+        "sanity_flags": {},
+        "color": {
+          "top": {
+            "delta_e_mean": 3.29,
+            "delta_e_p90": 8.57,
+            "n_pixels_a": 64211,
+            "n_pixels_b": 191292,
+            "l_shift": -13.37,
+            "verdict": "WARN"
+          },
+          "bottom": {
+            "delta_e_mean": 5.86,
+            "delta_e_p90": 6.96,
+            "n_pixels_a": 91568,
+            "n_pixels_b": 498217,
+            "l_shift": 11.34,
+            "verdict": "FAIL"
+          },
+          "shoes": {
+            "delta_e_mean": 30.0,
+            "delta_e_p90": 31.77,
+            "n_pixels_a": 5397,
+            "n_pixels_b": 255513,
+            "l_shift": -39.54,
+            "verdict": "FAIL"
+          },
+          "belt": {
+            "delta_e_mean": 7.06,
+            "delta_e_p90": 17.16,
+            "n_pixels_a": 4356,
+            "n_pixels_b": 371788,
+            "l_shift": 6.33,
+            "verdict": "FAIL"
+          },
+          "earrings": {
+            "delta_e_mean": 5.68,
+            "delta_e_p90": 31.12,
+            "n_pixels_a": 740,
+            "n_pixels_b": 18276,
+            "l_shift": -10.98,
+            "verdict": "FAIL"
+          }
+        },
+        "identity": {
+          "cosine": 0.7966,
+          "detected_a": true,
+          "detected_b": true,
+          "verdict": "PASS"
+        },
+        "proportions": {
+          "shoulder_change_pct": -2.06,
+          "waist_change_pct": -0.22,
+          "hip_change_pct": -6.29,
+          "max_abs_change_pct": 6.29,
+          "framing_delta_pct": 3.69,
+          "profile_a": {
+            "shoulder_width_norm": 0.2968,
+            "waist_width_norm": 0.2273,
+            "hip_width_norm": 0.3102,
+            "height_px": 1267,
+            "coverage_frac": 0.9427,
+            "top_frac": 0.0513,
+            "bottom_frac": 0.9933
+          },
+          "profile_b": {
+            "shoulder_width_norm": 0.2907,
+            "waist_width_norm": 0.2268,
+            "hip_width_norm": 0.2907,
+            "height_px": 1001,
+            "coverage_frac": 0.9775,
+            "top_frac": 0.0205,
+            "bottom_frac": 0.9971
+          },
+          "verdict": "FAIL",
+          "interpretation": "diagnostic; silhouette includes clothing and depends on framing"
+        }
+      },
+      "789": {
+        "sanity_flags": {},
+        "color": {
+          "top": {
+            "delta_e_mean": 4.55,
+            "delta_e_p90": 9.21,
+            "n_pixels_a": 72544,
+            "n_pixels_b": 191292,
+            "l_shift": -13.96,
+            "verdict": "WARN"
+          },
+          "bottom": {
+            "delta_e_mean": 2.21,
+            "delta_e_p90": 4.67,
+            "n_pixels_a": 92921,
+            "n_pixels_b": 498217,
+            "l_shift": 12.87,
+            "verdict": "PASS"
+          },
+          "shoes": {
+            "delta_e_mean": 30.53,
+            "delta_e_p90": 32.22,
+            "n_pixels_a": 5311,
+            "n_pixels_b": 255513,
+            "l_shift": -37.19,
+            "verdict": "FAIL"
+          },
+          "belt": {
+            "delta_e_mean": 7.34,
+            "delta_e_p90": 17.37,
+            "n_pixels_a": 4559,
+            "n_pixels_b": 371788,
+            "l_shift": 5.06,
+            "verdict": "FAIL"
+          },
+          "earrings": {
+            "delta_e_mean": 5.0,
+            "delta_e_p90": 29.35,
+            "n_pixels_a": 1452,
+            "n_pixels_b": 18276,
+            "l_shift": -15.75,
+            "verdict": "WARN"
+          }
+        },
+        "identity": {
+          "cosine": 0.84,
+          "detected_a": true,
+          "detected_b": true,
+          "verdict": "PASS"
+        },
+        "proportions": {
+          "shoulder_change_pct": -1.31,
+          "waist_change_pct": -4.44,
+          "hip_change_pct": -1.0,
+          "max_abs_change_pct": 4.44,
+          "framing_delta_pct": 2.56,
+          "profile_a": {
+            "shoulder_width_norm": 0.2968,
+            "waist_width_norm": 0.2273,
+            "hip_width_norm": 0.3102,
+            "height_px": 1267,
+            "coverage_frac": 0.9427,
+            "top_frac": 0.0513,
+            "bottom_frac": 0.9933
+          },
+          "profile_b": {
+            "shoulder_width_norm": 0.2929,
+            "waist_width_norm": 0.2172,
+            "hip_width_norm": 0.3071,
+            "height_px": 990,
+            "coverage_frac": 0.9668,
+            "top_frac": 0.0303,
+            "bottom_frac": 0.9961
+          },
+          "verdict": "PASS",
+          "interpretation": "diagnostic; silhouette includes clothing and depends on framing"
+        }
+      },
+      "1337": {
+        "sanity_flags": {},
+        "color": {
+          "top": {
+            "delta_e_mean": 2.27,
+            "delta_e_p90": 7.33,
+            "n_pixels_a": 69907,
+            "n_pixels_b": 191292,
+            "l_shift": -12.03,
+            "verdict": "PASS"
+          },
+          "bottom": {
+            "delta_e_mean": 5.65,
+            "delta_e_p90": 6.76,
+            "n_pixels_a": 91083,
+            "n_pixels_b": 498217,
+            "l_shift": 10.77,
+            "verdict": "FAIL"
+          },
+          "shoes": {
+            "delta_e_mean": 29.87,
+            "delta_e_p90": 31.59,
+            "n_pixels_a": 4426,
+            "n_pixels_b": 255513,
+            "l_shift": -36.41,
+            "verdict": "FAIL"
+          },
+          "belt": {
+            "delta_e_mean": 9.84,
+            "delta_e_p90": 14.75,
+            "n_pixels_a": 4213,
+            "n_pixels_b": 371788,
+            "l_shift": 5.5,
+            "verdict": "FAIL"
+          },
+          "earrings": {
+            "delta_e_mean": 5.68,
+            "delta_e_p90": 30.21,
+            "n_pixels_a": 1444,
+            "n_pixels_b": 18276,
+            "l_shift": -14.18,
+            "verdict": "FAIL"
+          }
+        },
+        "identity": {
+          "cosine": 0.7061,
+          "detected_a": true,
+          "detected_b": true,
+          "verdict": "PASS"
+        },
+        "proportions": {
+          "shoulder_change_pct": -1.85,
+          "waist_change_pct": -3.74,
+          "hip_change_pct": -6.74,
+          "max_abs_change_pct": 6.74,
+          "framing_delta_pct": 2.77,
+          "profile_a": {
+            "shoulder_width_norm": 0.2968,
+            "waist_width_norm": 0.2273,
+            "hip_width_norm": 0.3102,
+            "height_px": 1267,
+            "coverage_frac": 0.9427,
+            "top_frac": 0.0513,
+            "bottom_frac": 0.9933
+          },
+          "profile_b": {
+            "shoulder_width_norm": 0.2913,
+            "waist_width_norm": 0.2188,
+            "hip_width_norm": 0.2893,
+            "height_px": 992,
+            "coverage_frac": 0.9688,
+            "top_frac": 0.0293,
+            "bottom_frac": 0.9971
+          },
+          "verdict": "FAIL",
+          "interpretation": "diagnostic; silhouette includes clothing and depends on framing"
+        }
+      }
+    }
+  }
+}
