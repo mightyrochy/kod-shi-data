@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+"""R-PC-10: контраст особи виживає спільний зсув експозиції/ББ (0 %), але не регіональний
+шум (4 L*/зона → 127 % міжособового розкиду). Друкує gate_conclusions і силу K-CLR-02 на
+hex-вводі (se_L=None) та на «профілі з фото» (se_L = похибка центральної оцінки зони, як її
+рахує extract.zone_stats) — ДО (стеля 0.85 без родів шуму; max(se)) і ПІСЛЯ."""
+import sys, pathlib, random
+_К = pathlib.Path(__file__).resolve().parent.parent; sys.path.insert(0, str(_К))
+import colorspace as cs, extract as X, pipeline as PL, fit as ПС
+from стенд_знімок import _знахідки_рекурсивно
+T = ПС.тіло(168, dict(плечі=98, груди=92, талія=74, стегна=99, високе_стегно=88))
+РЕЧІ = [dict(id="a", слот="верх", hex="#1c1a1a", назва="Гольф чорний", тип="гольф", верх_см=140, низ_см=95),
+        dict(id="b", слот="низ", hex="#5b4e4d", назва="Штани", тип="штани", верх_см=100, низ_см=5),
+        dict(id="c", слот="взуття", hex="#22201e", назва="Черевики", тип="черевики", верх_см=10, низ_см=0)]
+def _px(lab, σ, n=360, seed=1):
+    r = random.Random(seed)
+    return [(lab[0] + r.gauss(0, σ), lab[1] + r.gauss(0, 1), lab[2] + r.gauss(0, 1.5)) for _ in range(n)]
+def _профіль(σ=None):
+    F = cs.features(cs.hx("#deb295"), cs.hx("#f1dbaa"), cs.hx("#759087"))
+    if σ:
+        for k, hx in (("шкіра", "#deb295"), ("волосся", "#f1dbaa")):
+            F[k]["se_L"] = X.zone_stats(_px(cs.hx(hx), σ))["se_L"]
+    return F
+def _kclr02(F):
+    в = PL.перевірити_образ(F, РЕЧІ, тіло=T, нагода="робота", темп_c=18)
+    z = next((z for _, z in _знахідки_рекурсивно(в) if z.get("правило") == "K-CLR-02"), None)
+    г = cs.gate_conclusions("uncontrolled", se_L=в["особа"].get("розкид"))   # як pipeline.підготувати → гейт_джерела
+    return ((z["сила"], z.get("сила_нп")) if z else ("нема", None), г["надійність"]["contrast"], г["утримано"])
+_НАД, _ПОХ = cs.надійність_контрасту, cs.похибка_контрасту
+def _до():                                   # стан до правки: одна стеля, max(se)
+    cs.надійність_контрасту = lambda source="uncontrolled", se_L=None: dict(надійність=cs.AXIS_RELIABILITY[source]["contrast"], регіональний_шум=None, чому="—")
+    cs.похибка_контрасту = lambda *se: max([float(s) for s in se if s], default=None)
+def _після(): cs.надійність_контрасту, cs.похибка_контрасту = _НАД, _ПОХ
+rc = 0
+for назва, F in (("hex-ввід", _профіль()), ("фото σ=4", _профіль(4.0)), ("фото σ=10", _профіль(10.0))):
+    se = F["шкіра"].get("se_L"), F["волосся"].get("se_L")
+    _до(); д = _kclr02(F); _після(); п = _kclr02(F)
+    rc |= int(назва == "hex-ввід" and д != п)          # на hex-вводі ні сила, ні гейт не рухаються
+    print(f"{назва:10s} se_L шкіра/волосся={se}  K-CLR-02 сила/вага до: {д[0][0]}/{д[0][1]}  після: {п[0][0]}/{п[0][1]}")
+    print(f"           гейт contrast до: {д[1]} → після: {п[1]}; утримано після: {п[2]}")
+print("hex-ввід без змін:", "так" if rc == 0 else "НІ"); sys.exit(rc)
