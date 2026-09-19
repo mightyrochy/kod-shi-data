@@ -122,22 +122,22 @@
    clip-path ріже й межу, тож кайма малюється окремо — кільцем (evenodd), яке
    лягає над вмістом і не ловить дотиків. Без підтримки evenodd кільце просто
    не малюється (@supports), а форма лишається. */
-.картка,.плитка,.заява,.біб-образ,.рамка,#пал-основа .чип:has(.зразки),button.тихо,.сцн-відкрити,.паспорт,.репліка.ші{
+.картка,.плитка,.заява,.біб-образ,.рамка,#пал-основа .чип:has(.зразки),button.тихо,.сцн-відкрити,.паспорт,.приклад,.репліка.ші{
   --вікно:polygon(var(--ск) 0,calc(100% - var(--ск)) 0,100% var(--ск),100% 100%,0 100%,0 var(--ск));
   --кайма:polygon(evenodd,var(--ск) 0,calc(100% - var(--ск)) 0,100% var(--ск),100% 100%,0 100%,0 var(--ск),
     1px calc(var(--ск) + .4px),1px calc(100% - 1px),calc(100% - 1px) calc(100% - 1px),calc(100% - 1px) calc(var(--ск) + .4px),
     calc(100% - var(--ск) - .4px) 1px,calc(var(--ск) + .4px) 1px);
   position:relative;isolation:isolate;clip-path:var(--вікно)}
 .картка::after,.плитка::after,.заява::after,.біб-образ::after,.рамка::before,#пал-основа .чип:has(.зразки)::after,
-button.тихо::after,.сцн-відкрити::after,.паспорт::after,.репліка.ші::after{
+button.тихо::after,.сцн-відкрити::after,.паспорт::after,.приклад::after,.репліка.ші::after{
   content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--кайма-колір,var(--межа))}
 @supports (clip-path:polygon(evenodd,0 0,1px 0,1px 1px)){
   .картка::after,.плитка::after,.заява::after,.біб-образ::after,.рамка::before,#пал-основа .чип:has(.зразки)::after,
-  button.тихо::after,.сцн-відкрити::after,.паспорт::after,.репліка.ші::after{clip-path:var(--кайма)}
+  button.тихо::after,.сцн-відкрити::after,.паспорт::after,.приклад::after,.репліка.ші::after{clip-path:var(--кайма)}
 }
 @supports not (clip-path:polygon(evenodd,0 0,1px 0,1px 1px)){
   .картка::after,.плитка::after,.заява::after,.біб-образ::after,.рамка::before,#пал-основа .чип:has(.зразки)::after,
-  button.тихо::after,.сцн-відкрити::after,.паспорт::after,.репліка.ші::after{display:none}
+  button.тихо::after,.сцн-відкрити::after,.паспорт::after,.приклад::after,.репліка.ші::after{display:none}
 }
 
 /* ── БАЗА ───────────────────────────────────────────────────────────────── */
@@ -216,7 +216,7 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 
 /* ── НИТКА ПОСТУПУ: намисто. Пройдене — чорна намистина, поточне — золота. ─ */
 .поступ{margin:8px 0 2px}
-.лічба{font:500 12px/1 var(--текст);font-variant-numeric:tabular-nums;color:var(--олівець);letter-spacing:.04em;margin-bottom:12px}
+.лічба{font:400 13px/1 var(--текст);font-variant-numeric:tabular-nums;color:var(--олівець);margin-bottom:12px}
 .нитка{display:grid;grid-template-columns:repeat(3,1fr);position:relative}
 .нитка::before{content:"";position:absolute;left:5px;right:calc(33.4% - 5px);top:5px;height:1px;background:var(--межа-темна)}
 .нитка button{background:none;border:0;padding:0;text-align:left;cursor:pointer;color:var(--олівець);
@@ -247,7 +247,7 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .вкладки{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px;padding:8px 0 10px;position:relative}
 .вкладки::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--межа)}
 .вкладки button{background:none;border:0;clip-path:none;padding:6px 4px 2px;color:var(--олівець);
-  display:flex;flex-direction:column;align-items:center;gap:4px;font:500 11.5px/1.2 var(--текст);letter-spacing:.02em;position:relative}
+  display:flex;flex-direction:column;align-items:center;gap:4px;font:500 11.5px/1.2 var(--текст);position:relative}
 .вкладки button svg.і{width:22px;height:22px;stroke-width:1.4}
 .вкладки button i{width:22px;height:22px;border-radius:50%;background:var(--олівець);color:var(--полотно);
   font:600 9px/22px var(--текст);font-style:normal;letter-spacing:.04em;text-align:center;text-transform:uppercase}
@@ -301,7 +301,6 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .чат-ввід textarea:focus{border:0;box-shadow:none}
 .чат-ввід textarea::placeholder{color:var(--олівець);opacity:.85;font-size:17px}
 .чат-низ{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex:0 0 auto}
-#чат-нота{display:none;font-size:12.5px;line-height:1.35;color:var(--олівець)}
 .слати{width:48px;height:48px;padding:0;border-radius:50%;clip-path:none;display:inline-flex;align-items:center;justify-content:center;
   background:var(--чорнило);color:var(--полотно);flex:0 0 auto;border:1px solid var(--чорнило)}
 .слати svg.і{width:22px;height:22px;stroke-width:1.8}
@@ -315,8 +314,7 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .аркуш-письма .чат-ввід{flex-direction:column;align-items:stretch;flex:1;gap:8px}
 .аркуш-письма .чат-ввід textarea{font-size:18px;line-height:1.5;min-height:160px;max-height:none;padding:0}
 .аркуш-письма .чат-ввід textarea::placeholder{font-size:18px}
-.аркуш-письма .чат-низ{justify-content:space-between}
-.аркуш-письма #чат-нота{display:block}
+.аркуш-письма .чат-низ{justify-content:flex-end}
 .аркуш-письма .слати{width:54px;height:54px}
 .аркуш-письма .слати svg.і{width:24px;height:24px}
 #чат-стан{margin:6px 0 0}
@@ -341,9 +339,10 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .розмова #чат-стрічка{gap:10px}
 .розмова:empty{display:none}
 /* приклади — живі речення, якими вона б і написала; без напису над ними */
-#сц-приклади{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:22px}
+#сц-приклади{display:flex;flex-direction:column;gap:8px;margin-top:20px}
 #сц-приклади:empty{display:none}
-#сц-приклади .чип{font-size:14.5px;padding:10px 16px;background:var(--полотно);text-align:left}
+.приклад{--ск:10px;display:block;width:100%;text-align:left;background:var(--аркуш);color:var(--чорнило);border:0;
+  padding:13px 16px;font:400 15px/1.4 var(--текст);cursor:pointer}
 .увага{display:flex;gap:12px;align-items:flex-start;background:var(--папір);padding:14px 16px;margin-top:14px;font-size:14px;line-height:1.5;
   clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%,0 12px)}
 .увага[hidden]{display:none}
@@ -353,10 +352,10 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .паспорт[hidden]{display:none}
 .пс-шапка{display:flex;flex-direction:column;gap:3px;padding:14px 16px 10px;background:var(--мережка);background-position:0 100%,0 100%,0 calc(100% - 2px)}
 .пс-шапка b{font:500 19px/1.25 var(--дисплей);font-variation-settings:"CONT" 260}
-.пс-шапка small{font-size:12px;color:var(--олівець);min-height:1em}
+.пс-шапка small{font-size:13px;color:var(--олівець);min-height:1em}
 .ряд-паспорта{display:grid;grid-template-columns:104px 1fr auto;gap:10px;align-items:baseline;width:100%;text-align:left;
   background:none;border:0;border-top:1px solid var(--межа);clip-path:none;padding:11px 16px;color:var(--чорнило);font:400 15px/1.4 var(--текст)}
-.ряд-паспорта>span{font-size:12px;color:var(--олівець);letter-spacing:.02em}
+.ряд-паспорта>span{font-size:13px;color:var(--олівець)}
 .ряд-паспорта>b{font-weight:500;min-width:0;overflow-wrap:anywhere}
 .ряд-паспорта>b.типово{font-weight:400;color:var(--олівець)}
 .ряд-паспорта::after{content:"›";color:var(--олівець);font-size:18px;line-height:1;justify-self:end}
@@ -453,7 +452,7 @@ html.аркуш-відкрито{overflow:hidden}
 /* ── РОЗШИРЕНІ НАЛАШТУВАННЯ ПРОФІЛЮ: сітка необовʼязкових вимірів ──────────── */
 .розширені{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;margin-top:14px}
 .розширені label{display:grid;grid-template-columns:auto auto 1fr;align-items:baseline;gap:0 8px}
-.розширені span{font:400 12px var(--текст);color:var(--олівець)}
+.розширені span{font:400 13px var(--текст);color:var(--олівець)}
 .розширені input{width:60px;padding:3px 0;font:500 17px/1.2 var(--текст);font-variant-numeric:tabular-nums;text-align:right;
   border-bottom:1px solid var(--межа-темна)}
 .розширені b{font:400 11px var(--текст);color:var(--олівець)}
@@ -501,11 +500,12 @@ html:not([data-режим="старт"]) .лише-старт{display:none}
   background:var(--аркуш);border:1px solid var(--межа-темна);color:var(--олівець);display:flex;align-items:center;justify-content:center;z-index:2}
 .слот.полароїд .геть{right:auto;left:8px;bottom:8px;width:24px;height:24px}
 .слот .геть svg{width:14px;height:14px}
-.підпис-фото{display:flex;justify-content:space-between;font:500 12px/1.3 var(--текст);letter-spacing:.03em;color:var(--олівець);margin-top:10px}
+.підпис-фото{display:flex;justify-content:space-between;font:400 13px/1.35 var(--текст);color:var(--олівець);margin-top:10px}
 
 /* ── ПОЛЯ: рядок на полотні — підкреслені. Фокус — золота нитка. ───────── */
 .поле{display:block;margin:16px 0 0}
-.поле>span,.поле-назва{display:block;font:500 12px/1.3 var(--текст);letter-spacing:.03em;color:var(--олівець);margin:0 0 4px}
+.поле>span{display:block;font:400 13px/1.35 var(--текст);color:var(--олівець);margin:0 0 4px}
+.поле-назва{display:block;font:500 18px/1.25 var(--дисплей);font-variation-settings:"CONT" 260;color:var(--чорнило);margin:0 0 8px}
 input[type=text],input[type=number],select,textarea{
   width:100%;background:transparent;color:var(--чорнило);border:0;border-bottom:1px solid var(--межа-темна);
   border-radius:0;padding:10px 0;font:17px/1.4 var(--текст);-webkit-appearance:none;appearance:none}
@@ -580,7 +580,7 @@ details.розкривач[open] summary::after{content:" ▴"}
 .умови{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .пілюля{display:flex;align-items:center;gap:10px;background:var(--аркуш);border:1px solid var(--межа);padding:10px 12px}
 .пілюля svg.і{color:var(--олівець)}
-.пілюля label{flex:1;font:400 12px var(--текст);color:var(--олівець)}
+.пілюля label{flex:1;font:400 13px var(--текст);color:var(--олівець)}
 .пілюля input{width:58px;border:0;padding:2px 0;font:500 19px/1.2 var(--текст);font-variant-numeric:tabular-nums;text-align:right;background:none}
 .пілюля b{font:400 13px var(--текст);color:var(--олівець)}
 .дрібні{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
@@ -590,7 +590,7 @@ details.розкривач[open] summary::after{content:" ▴"}
 
 /* ── СВОТЧІ ───────────────────────────────────────────────────────────── */
 .св-група{display:grid;grid-template-columns:104px 1fr;gap:12px;align-items:center;margin-top:10px}
-.св-назва{font-size:12.5px;color:var(--олівець);line-height:1.3}
+.св-назва{font-size:13px;color:var(--олівець);line-height:1.3}
 .св-ряд{display:flex;gap:5px}
 .св{flex:1;min-width:0}
 .св i{display:block;height:42px;border:1px solid rgba(0,0,0,.1)}
@@ -602,7 +602,7 @@ details.розкривач[open] summary::after{content:" ▴"}
 /* анотації лягають лише на висоту витинанки (360×380), а не на блок стопи й голови під нею */
 .анотації{position:absolute;left:56%;top:0;width:44%;aspect-ratio:.44/1.0556}
 .ан{position:absolute;left:0;right:14px;display:flex;align-items:baseline;gap:8px;transform:translateY(-50%)}
-.ан span{font:400 12px var(--текст);color:var(--олівець);width:50px;flex:0 0 auto}
+.ан span{font:400 13px var(--текст);color:var(--олівець);width:52px;flex:0 0 auto}
 .ан input{width:66px;flex:0 0 auto;padding:3px 0;font:500 19px/1.2 var(--текст);font-variant-numeric:tabular-nums;text-align:right;
   border-bottom:1px solid var(--межа-темна)}
 .ан b{font:400 11px var(--текст);color:var(--олівець)}
@@ -635,7 +635,7 @@ details.розкривач[open] summary::after{content:" ▴"}
 .стрічка i{flex:1;border:1px solid rgba(0,0,0,.08)}
 .стрічка i.база{flex:2.4}
 .стрічка i.порожня{border:1px dashed var(--межа-темна);background:none}
-.стрічка-підпис{font-size:12px;color:var(--олівець)}
+.стрічка-підпис{font-size:13px;color:var(--олівець)}
 /* основа — віяло вікон: зразок великий, назва під ним */
 #пал-основа,#пал-основа details>.ряд{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 0}
 #пал-основа details{grid-column:1/-1;width:100%;margin-top:6px}
@@ -689,7 +689,7 @@ details.розкривач[open] summary::after{content:" ▴"}
 .мета{display:flex;gap:6px;justify-content:space-between;padding:14px 0;position:relative}
 .мета::before,.мета::after{content:"";position:absolute;left:0;right:0;height:5px;background:var(--мережка);opacity:.9}
 .мета::before{top:0}.мета::after{bottom:0}
-.мета div{display:flex;flex-direction:column;align-items:center;gap:6px;font:400 11.5px/1.3 var(--текст);color:var(--олівець);text-align:center;flex:1;min-width:0}
+.мета div{display:flex;flex-direction:column;align-items:center;gap:6px;font:400 12.5px/1.3 var(--текст);color:var(--олівець);text-align:center;flex:1;min-width:0}
 .мета b{font-weight:500;color:var(--чорнило);font-size:12.5px}
 .мета svg.і{color:var(--чорнило)}
 
@@ -1413,8 +1413,7 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
       <div id="ші-поле-місце">
         <div class="чат-ввід" id="чат-ввід">
           <textarea id="чат-поле" rows="1" placeholder="Куди ти збираєшся?"></textarea>
-          <div class="чат-низ"><small id="чат-нота">Усе лишається на цьому телефоні.</small>
-            <button type="button" id="чат-слати" class="слати" aria-label="Надіслати"><svg class="і"><use href="#і-стрілка"/></svg></button></div>
+          <div class="чат-низ"><button type="button" id="чат-слати" class="слати" aria-label="Надіслати"><svg class="і"><use href="#і-стрілка"/></svg></button></div>
         </div>
       </div>
       <div id="чат-стан" class="статус"></div>
@@ -2500,7 +2499,7 @@ function екран(i){
   if (РЕЖИМ === 'старт')
     ЕКРАНИ.forEach((ід, n)=>{ const е = $(ід); if (е) е.style.display = (n === ЕКРАН ? 'block' : 'none'); });
   [...$('нитка').children].forEach((б, n)=>{ б.classList.toggle('є', n < ЕКРАН); б.classList.toggle('тут', n === ЕКРАН); });
-  $('нитка-лічба').textContent = (ЕКРАН + 1) + ' / ' + ЕКРАНИ.length;
+  $('нитка-лічба').textContent = 'Крок ' + (ЕКРАН + 1) + ' з ' + ЕКРАНИ.length;
   if (ЕКРАНИ[ЕКРАН] === 'е-мірки') малюватиВирізку();
   if (ЕКРАНИ[ЕКРАН] === 'е-лице') малюватиДрап();
   оновитиДії(); малюватиЧатП();
@@ -3214,10 +3213,8 @@ function малюватиПрикладиП(){
   к.innerHTML = '';
   if (ЧАТ_П.length || ПАСПОРТ_П || КАРТКА_РУКОЮ || РЕЖИМ !== 'сценарій') return;
   ПРИКЛАДИ_СЦЕНАРІЮ.forEach(т=>{
-    const ч = ел('span', 'чип', т); ч.setAttribute('role', 'button'); ч.tabIndex = 0;
-    const дія = ()=>{ const п = $('чат-поле'); if (!п) return; п.value = т; ростиПоле(п); п.focus(); };
-    ч.onclick = дія;
-    ч.onkeydown = e=>{ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); дія(); } };
+    const ч = ел('button', 'приклад', т); ч.type = 'button';
+    ч.onclick = ()=>{ const п = $('чат-поле'); if (!п) return; п.value = т; ростиПоле(п); п.focus(); if (window.малюватиЧатП) малюватиЧатП(); };
     к.appendChild(ч);
   });
 }
