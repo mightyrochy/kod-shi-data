@@ -10,9 +10,12 @@
 Запуск із теки `джерела`: PYTHONPATH=. python3 проби/виконання_v1.py
 """
 import json
+import sys, pathlib
+_ТУТ = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(_ТУТ.parent))
 import pipeline as PL, протокол as P
 
-_ч = lambda ім: json.load(open("проби/виконання/%s.json" % ім, encoding="utf-8"))
+_ч = lambda ім: json.load(open(_ТУТ / "виконання" / ("%s.json" % ім), encoding="utf-8"))
 до, відп, після = _ч("ВЕРДИКТ_до"), _ч("ОБРАЗИ_відповідь"), _ч("ВЕРДИКТ_після")
 записи = [dict(номер=о["ід"], речі_н=о["речі"], підпис=о.get("підпис"), знахідки=о["знахідки"],
                блокери=(о.get("структура") or {}).get("блокери") or [],

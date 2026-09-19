@@ -14,12 +14,16 @@ fashion_forward, statement} на `каталог_brief.xml` (фід, що їде
 Запуск: PYTHONPATH=. python3 проби/shvydkist_квоти.py
 """
 import json
+import sys, pathlib
+_ДЖЕРЕЛА = pathlib.Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ДЖЕРЕЛА))
 import bridge as B
 import composer as КМ
+import feed as F
 
 ДО = {"низ": 2, "верх": 7, "взуття": 22, "сумка": 20}   # гілка None, conventional
-вх0 = json.load(open("стенд_вх.json"))
-вх0["каталог"] = "каталог_brief.xml"
+вх0 = json.load(open(_ДЖЕРЕЛА / "стенд_вх.json", encoding="utf-8"))
+вх0["каталог"] = F.каталог_на_диску("каталог_brief.xml")
 бід = 0
 for гілка in (None, 0):
     for намір in ("conventional", "fashion_forward", "statement"):
