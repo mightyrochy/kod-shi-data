@@ -291,8 +291,8 @@ def чисті_фото(фото, url=""):
     # виміряно: 86 із 100 порівнянних розходяться. Порівнюються лише СЛОВА
     # КОЛЬОРУ (транслітеровані основи); «shkarpetky/karpetky» — не колір, не рахуємо.
     if вих and "md-fashion" in (url or ""):
-        мu = re.search(r"/store/[a-z]+-([a-z]+)-", url or "")
-        ку = _колір_слаг(мu.group(1)) if мu else None
+        м_u = re.search(r"/store/[a-z]+-([a-z]+)-", url or "")
+        ку = _колір_слаг(м_u.group(1)) if м_u else None
         if ку:
             вих = [ф for ф in вих if not (_колір_слаг((re.search(r"\.jpg/[a-z]+-([a-z]+)-", ф) or [None, None])[1])
                                           and _колір_слаг(re.search(r"\.jpg/[a-z]+-([a-z]+)-", ф).group(1)) != ку)]
@@ -2340,20 +2340,20 @@ def відстань_до_центру(lab, q):
 
     Міряється в ΔE00 (kL=1): річ↔точка-мішень, а не річ↔річ, тож текстильний kL=2
     з R-COL-11 тут НЕ застосовується — мішень не є тканиною."""
-    Lц = (q["L_min"] + q["L_max"]) / 2.0
+    L_ц = (q["L_min"] + q["L_max"]) / 2.0
     if q.get("нейтраль"):
-        bц = ((q.get("b_min") if q.get("b_min") is not None else -2.0)
+        b_ц = ((q.get("b_min") if q.get("b_min") is not None else -2.0)
               + (q.get("b_max") if q.get("b_max") is not None else 2.0)) / 2.0
-        мішень = (Lц, 0.0, bц)
+        мішень = (L_ц, 0.0, b_ц)
     else:
-        Cц = (q["C_min"] + q["C_max"]) / 2.0
+        C_ц = (q["C_min"] + q["C_max"]) / 2.0
         a, b = q.get("h_from"), q.get("h_to")
         if a is None:
-            hц = lch(lab)[2]                    # тону не просили — він не штрафується
+            h_ц = lch(lab)[2]                    # тону не просили — він не штрафується
         else:
             дуга = (b - a) % 360 or 360
-            hц = (a + дуга / 2.0) % 360
-        мішень = (Lц, Cц*math.cos(math.radians(hц)), Cц*math.sin(math.radians(hц)))
+            h_ц = (a + дуга / 2.0) % 360
+        мішень = (L_ц, C_ц*math.cos(math.radians(h_ц)), C_ц*math.sin(math.radians(h_ц)))
     return round(de00(tuple(lab), мішень), 2)
 
 def відстань_до_вікна(lab, q):

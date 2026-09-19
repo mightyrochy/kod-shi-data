@@ -1152,18 +1152,18 @@ def специфікація(F, схема, слоти, якір_тон=None, so
     обрана_основа = None
     if isinstance(основа, dict) and основа.get("база_hex") and основа.get("база_тип") == "колір":
         try:
-            _Lо, _Cо, _hо = lch(hx(основа["база_hex"]))
+            _L_о, _C_о, _h_о = lch(hx(основа["база_hex"]))
         except Exception:
-            _Lо = None
-        if _Lо is not None:
-            import palettes as _PLо
-            _сім = _PLо.сім_я_тону(_hо)
+            _L_о = None
+        if _L_о is not None:
+            import palettes as _PL_о
+            _сім = _PL_о.сім_я_тону(_h_о)
             обрана_основа = dict(
                 база=основа.get("база"), hex=основа["база_hex"],
                 насиченість=основа.get("насиченість"),
-                L=round(_Lо, 1), C=round(_Cо, 1), h=round(_hо, 1),
+                L=round(_L_о, 1), C=round(_C_о, 1), h=round(_h_о, 1),
                 сім_я=(_сім[0] if _сім else None), версія=(_сім[1] if _сім else None),
-                дуга=(_сім[2] if _сім else _дуга(_hо, 20)),
+                дуга=(_сім[2] if _сім else _дуга(_h_о, 20)),
                 джерело=("сім'я «%s» (%s) за `palettes.СІМ_Ї`" % (_сім[0], _сім[1])
                          if _сім else "дуга ±20° навколо обраного тону: кут поза дугами сімей"))
     return dict(обрана_основа=обрана_основа,
@@ -1780,12 +1780,12 @@ def запит_у_фід(спец):
         for с, v in (спец.get("слоти") or {}).items():
             if not isinstance(v, dict) or v.get("роль") != "акцент": continue
             if v.get("попередження") or "сім_я" in v or not v.get("L"): continue
-            _Cв = v.get("C") or (28.0, 70.0)
-            _пів = max(8.0, (float(_Cв[1]) - float(_Cв[0])) / 2.0)
-            _Cоc = float(_осн["C"])
+            _C_в = v.get("C") or (28.0, 70.0)
+            _пів = max(8.0, (float(_C_в[1]) - float(_C_в[0])) / 2.0)
+            _C_о_c = float(_осн["C"])
             _пор = поріг_кольору(_осн["h"], _осн["L"])
-            _Cmin = max(_пор, _Cоc - _пів)
-            _Cmax = max(_Cmin + 1.0, _Cоc + _пів)
+            _Cmin = max(_пор, _C_о_c - _пів)
+            _Cmax = max(_Cmin + 1.0, _C_о_c + _пів)
             запити.append(dict(
                 слот=с, L_min=float(v["L"][0]), L_max=float(v["L"][1]),
                 C_min=round(_Cmin, 1), C_max=round(_Cmax, 1),

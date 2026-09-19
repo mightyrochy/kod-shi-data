@@ -29,8 +29,8 @@ def бал(lab, ключ="х"):
     out, _ = ОС.ранг(F, {ключ: (cs.hex_з_lab(lab), ключ)}, [ключ],
                      контраст=КОНТР, надійність=НАДІЙ, intent="conventional")
     return out[0]["бал"]
-б0 = бал((L0, a0, b0)); бL = бал(_L); бC = бал(_C); бH = бал(_H)
-d = dict(контраст=abs(бL - б0), chroma=abs(бC - б0), hue=abs(бH - б0))
+б0 = бал((L0, a0, b0)); б_L = бал(_L); б_C = бал(_C); б_H = бал(_H)
+d = dict(контраст=abs(б_L - б0), chroma=abs(б_C - б0), hue=abs(б_H - б0))
 print("ΔE00 кроку ≈%.2f, бал база=%.3f" % (cs.de00((L0, a0, b0), _L), б0))
 print("Δбал: контраст(L)=%.4f  chroma(C)=%.4f  hue(H)=%.4f" % (d["контраст"], d["chroma"], d["hue"]))
 база_c = d["chroma"] or 1e-9

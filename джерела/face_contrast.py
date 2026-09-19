@@ -84,10 +84,10 @@ def value_обличчя(F):
         return None
     if not вол:
         return float(шк)
-    Lв = sum(вол) / len(вол)
+    L_в = sum(вол) / len(вол)
     if шк is None:
-        return float(Lв)
-    return ВАГА_ВОЛОССЯ * Lв + (1.0 - ВАГА_ВОЛОССЯ) * float(шк)
+        return float(L_в)
+    return ВАГА_ВОЛОССЯ * L_в + (1.0 - ВАГА_ВОЛОССЯ) * float(шк)
 
 
 # ── ОДНЕ ЧИТАННЯ СЛОВА ПРО МАКІЯЖ (19.09.2026) ──────────────────────────────

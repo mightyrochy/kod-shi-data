@@ -69,8 +69,8 @@ def main():
     print("ярус 2 (нейтраль/колір за центром вікна):", dict(верд))
 
     # ── людина → рядки запиту ──
-    def рядки(hexи, схема, source):
-        Fp = cs.features(*[cs.hx(x) for x in hexи])
+    def рядки(гекси, схема, source):
+        Fp = cs.features(*[cs.hx(x) for x in гекси])
         спец = P.специфікація(Fp, схема, СЛОТИ, source=source)
         return Fp, P.запит_у_фід(спец)
 
@@ -89,8 +89,8 @@ def main():
         print("\n══════ source = %s ══════" % source)
         for схема in СХЕМИ:
             мн = {}; осі = {}
-            for кого, hexи in ЛЮДИ.items():
-                Fp, з = рядки(hexи, схема, source)
+            for кого, гекси in ЛЮДИ.items():
+                Fp, з = рядки(гекси, схема, source)
                 тон_рядків = sum(1 for q in з if isinstance(q, dict) and q.get("h_from") is not None)
                 b_рядків = sum(1 for q in з if isinstance(q, dict) and q.get("b_min") is not None)
                 ok, за_сл = пройшло(з)
@@ -129,8 +129,8 @@ def main():
     for схема in СХЕМИ[:2]:
         print("\n  схема %s" % схема)
         пули = {}
-        for кого, hexи in ЛЮДИ.items():
-            _, з = рядки(hexи, схема, "uncontrolled")
+        for кого, гекси in ЛЮДИ.items():
+            _, з = рядки(гекси, схема, "uncontrolled")
             пули[кого] = {сл: топ_слота(з, сл) for сл in ("верх", "низ", "взуття", "сумка")}
         ключі = list(ЛЮДИ)
         for i in range(len(ключі)):
@@ -146,8 +146,8 @@ def main():
     # ── що саме різнить: по іменах кольорів, перша схема, protocolized ──
     print("\n══════ де саме розходяться (protocolized, нейтрали+акцент) ══════")
     мн = {}
-    for кого, hexи in ЛЮДИ.items():
-        _, з = рядки(hexи, "нейтрали+акцент", "protocolized"); мн[кого], _ = пройшло(з)
+    for кого, гекси in ЛЮДИ.items():
+        _, з = рядки(гекси, "нейтрали+акцент", "protocolized"); мн[кого], _ = пройшло(з)
     ім_за_id = {s["id"]: s["ім"] for s in одно}
     for a, b in (("тепла-світла", "холодна-темна"), ("тепла-світла", "холодна-світла"), ("холодна-темна", "тепла-темна")):
         лише_a = Counter(ім_за_id[i] for i in мн[a] - мн[b]); лише_b = Counter(ім_за_id[i] for i in мн[b] - мн[a])

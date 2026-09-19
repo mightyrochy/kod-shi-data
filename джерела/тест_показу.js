@@ -406,10 +406,10 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
     /* заглушка Pyodide: пам'ятає КОД кожного виклику; «виконує» його з
        затримкою, щоб виклики перекривались, як у чотирьох рук */
     const коди = [];
-    /* `pyodideП` — `let` у скрипті, не властивість window: підставляємо через eval */
-    w._заглушкаPy = { runPythonAsync: async (код) => { коди.push(код); await new Promise(р=>setTimeout(р, 50));
+    /* `pyodide_показу` — `let` у скрипті, не властивість window: підставляємо через eval */
+    w._заглушка_Py = { runPythonAsync: async (код) => { коди.push(код); await new Promise(р=>setTimeout(р, 50));
       return JSON.stringify({луна: код.length}); } };
-    w.eval("pyodideП = window._заглушкаPy; підняти_міст_показу = async () => pyodideП;");
+    w.eval("pyodide_показу = window._заглушка_Py; підняти_міст_показу = async () => pyodide_показу;");
     const дані = ["A","B","C","D"].map(х => ({хто: х, вага: "я".repeat(50000 + х.charCodeAt(0))}));
     await w.eval("Promise.all(" + JSON.stringify(дані) + ".map(д => містП('запити', д)))");
     тест("чотири паралельні виклики — чотири різні коди, кожен із СВОЇМИ даними всередині (літерал, не глобальна)",
