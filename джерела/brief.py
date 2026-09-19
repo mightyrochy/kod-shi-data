@@ -1127,7 +1127,10 @@ def факти_людини(шкіра_hex, волосся_hex, очі_hex, зр
     if обхвати:
         р.append("· обхвати: " + ", ".join("%s %.0f см" % (k, float(v)) for k, v in обхвати.items() if v not in (None, "")))
     if намір and намір != "conventional":
-        р.append("· намір: %s" % {"fashion_forward": "сміливо", "statement": "statement"}.get(намір, намір))
+        р.append("· намір: %s" % {"fashion_forward": "сміливо", "statement": "statement",
+                                  # K-PER-00 (19.09.2026): комфорт і доречність — теж намір, не мовчання
+                                  "comfort_first": "комфорт передусім (зручність і свобода руху — тверді умови)",
+                                  "context_optimal": "доречність передусім (рівень місця й події)"}.get(намір, намір))
     return "\n".join(р)
 
 
