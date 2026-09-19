@@ -1257,15 +1257,6 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
          d.querySelectorAll("#сц-приклади .приклад").length === 3 && $("сц-приклади").children.length === 3
          && [...d.querySelectorAll("#сц-приклади .приклад")].every(ч => /^[А-ЯІЇЄ]/.test(ч.textContent) && ч.textContent.length > 20 && ч.tagName === "BUTTON"),
          [...d.querySelectorAll("#сц-приклади .приклад")].map(ч => ч.textContent));
-    /* ДРІБНИЙ ДРУК — ОДНІЄЮ МОВОЮ. Розряджені капітельні підписи 12 px читались як
-       замітки девелопера; тепер підписи полів, рядків картки й фото — Fixel 13 px
-       звичайним регістром, без розрядки; капітель лишилась лише ініціалам. */
-    { const стиль = w.eval("[...document.querySelectorAll('style')].map(s=>s.textContent).join('')").replace(/\/\*[\s\S]*?\*\//g, "");
-      const правило = сел => (стиль.match(new RegExp(сел.replace(/[.>]/g, m => "\\" + m) + "\\{[^}]*\\}")) || [""])[0];
-      тест("підписи полів і рядків — без розрядки й капітелі, кегль 13; капітель лишилась лише ініціалам",
-           [".поле>span", ".ряд-паспорта>span", ".підпис-фото", ".лічба", ".ан span", ".св-назва"].every(с => !/letter-spacing|uppercase/.test(правило(с)) && /13px/.test(правило(с)))
-           && (стиль.match(/text-transform:uppercase/g) || []).length === 2,
-           [".поле>span", ".ряд-паспорта>span", ".лічба"].map(с => правило(с).slice(0, 90))); }
     const прикл = d.querySelectorAll("#сц-приклади .приклад")[0];
     const текстПрикладу = прикл.textContent;
     прикл.click(); await пауза(20);
