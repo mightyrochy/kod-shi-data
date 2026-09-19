@@ -6,7 +6,10 @@ import sys, os, ast
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import outfit as O, суд_образу as С
 
-ФАЙЛИ = ("реєстр_правил.py", "колір_образу.py", "формальність.py", "суд_образу.py")
+ФАЙЛИ = ("реєстр_правил.py", "колір_образу.py", "формальність.py", "суд_образу.py",
+         # поділ суд_образу.py (19.09.2026): імена суду стоять у дев'яти модулях за фасадом
+         "суд_погода.py", "суд_блиск.py", "суд_інтерес.py", "суд_ремесло.py", "суд_чеклісти.py",
+         "суд_силует.py", "суд_річ.py", "суд_намір.py", "суд_огляд.py")
 def визначені(ф):
     т = ast.parse(open(os.path.join(os.path.dirname(O.__file__), ф), encoding="utf-8").read())
     return {n.name for n in т.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))} | {
