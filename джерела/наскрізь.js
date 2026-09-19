@@ -1,8 +1,16 @@
 /* НАСКРІЗНИЙ ПРОГІН: реальний JS показу (jsdom) + реальний Python-міст (HTTP) + сценарна модель. */
 const fs = require("fs"), path = require("path"), http = require("http");
 const { JSDOM } = require("jsdom"); const { IDBFactory, IDBKeyRange } = require("fake-indexeddb");
-const html = fs.readFileSync(process.env.POKAZ || path.join(__dirname, "показ.html"), "utf8")
-  .replace("__МОДУЛІ_ПОКАЗУ__", "").replace("__ЗБІРКА_ПОКАЗУ__", "тест").replace("__ВІДБИТОК__", "0").replace("__ФІД_ПОКАЗУ__", "каталог_жіночий.xml").replace("__КАТАЛОГ_ПОКАЗУ__", "каталог_жіночий.xml · 8666 оферів");
+/* Плейсхолдери й довідник — спільні з тест_показу.js, див. показ_шаблон.js
+   (рядок 69 дошки: окремий список тут відстав від сторінки й не підставляв
+   __ДОВІДНИК_ПОКАЗУ__ — SyntaxError на старті, батарея нічого не міряла). */
+const { прочитатиДовідникJSON, підставитиШаблон } = require("./показ_шаблон.js");
+const шаблон = fs.readFileSync(process.env.POKAZ || path.join(__dirname, "показ.html"), "utf8");
+const html = підставитиШаблон(шаблон, {
+  __МОДУЛІ_ПОКАЗУ__: "", __ЗБІРКА_ПОКАЗУ__: "тест", __ВІДБИТОК__: "0",
+  __ФІД_ПОКАЗУ__: "каталог_жіночий.xml", __КАТАЛОГ_ПОКАЗУ__: "каталог_жіночий.xml · 8666 оферів",
+  __ДОВІДНИК_ПОКАЗУ__: прочитатиДовідникJSON(__dirname),
+});
 const дом = new JSDOM(html, {runScripts: "dangerously", pretendToBeVisual: true, url: "https://x.test/", beforeParse(w){ w.indexedDB = new IDBFactory(); w.IDBKeyRange = IDBKeyRange; w.fetch = async () => ({ok:false, status:0, text: async()=>""}); w.scrollTo = () => {}; }});
 const w = дом.window; const пауза = мс => new Promise(р=>setTimeout(р, мс));
 const винятки = []; w.addEventListener("error", e => винятки.push(String(e.error || e.message)));
@@ -30,7 +38,10 @@ w.модельП = async (промпт, фото) => { n++; виклики.push(
   await пауза(300);
   w.eval("МІСТ_П.адреса='https://x.test/міст'; МІСТ_П.токен='tok-test';");
   w.eval("КОЛІР = {шкіра:'#e9c6aa', волосся:'#7d5330', очі:'#7a8a99', кільце:null, точки:null}");
-  for (const [ід, v] of [["мр-плечі",40],["мр-груди",92],["мр-талія",74],["мр-стегна",98],["мр-зріст",168],["сц-нагода","щоденне"],["сц-місце","театр"],["сц-година","13"],["сц-темп","26"],["сц-слова","літературний фестиваль просто неба, потім денний театр; хочу лляну сорочку, не хочу чорного"]]) { const е = w.document.getElementById(ід); if (е) е.value = v; else винятки.push("нема поля "+ід); }
+  for (const [ід, v] of [["мр-плечі",40],["мр-груди",92],["мр-талія",74],["мр-стегна",98],["мр-зріст",168],["сц-нагода","щоденне"],["сц-місце","театр"],["сц-година","13"],["сц-темп","26"]]) { const е = w.document.getElementById(ід); if (е) е.value = v; else винятки.push("нема поля "+ід); }
+  /* v5: окремого поля «своїми словами» нема (показ.html:3128) — слова людини
+     живуть у розмові (ЧАТ_П), звідти їх бере й словаЛюдиниП(), і паспорт. */
+  w.eval("ЧАТ_П.push({хто:'людина', текст:" + JSON.stringify("літературний фестиваль просто неба, потім денний театр; хочу лляну сорочку, не хочу чорного") + ", тема:'сценарій'})");
   const вх = w.eval("JSON.stringify(зібратиВхід())"); console.log("зібратиВхід:", вх.slice(0,300));
   const t = Date.now(); w.eval("зібратиОбразиП().catch(e=>console.error('зібратиОбразиП: '+e.message))");
   await пауза(500);
