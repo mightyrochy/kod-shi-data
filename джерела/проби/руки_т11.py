@@ -15,7 +15,7 @@ import bridge as B
 r = json.loads(B.виклик("запити", open("стенд_вх.json").read()))
 вх = json.load(open("стенд_вх.json"))
 # сід 2 — прогін, де жереб дає саме «доречність» (нагода робота → траур)
-rд = json.loads(B.виклик("запити", json.dumps(dict(вх, сід=2), ensure_ascii=False)))
+r_д = json.loads(B.виклик("запити", json.dumps(dict(вх, сід=2), ensure_ascii=False)))
 п, м = (r.get("поломка") or {}), (r.get("мета") or {})
 пр = [("мертвої руки A у виході нема", "A" not in r),
       ("мертвого поля `розходження` у виході нема", "розходження" not in r),
@@ -25,11 +25,11 @@ rд = json.loads(B.виклик("запити", json.dumps(dict(вх, сід=2),
       ("`мета.контроль` є", bool(м.get("контроль"))),
       ("`довжини` міряють чотири живі руки", set(м.get("довжини") or {}) == {"B", "C", "В", "Г"}),
       ("«доречність» видно в ТЕКСТІ випадку, а не лише в даних",
-       (rд.get("поломка") or {}).get("нагода_у_тексті") is True)]
+       (r_д.get("поломка") or {}).get("нагода_у_тексті") is True)]
 for і, (н, ок) in enumerate(пр, 1):
     print("%s %d. %s" % ("ок     " if ок else "ПОЛОМКА", і, н))
 print("поломка: %s" % json.dumps(п, ensure_ascii=False))
 print("контроль: %s" % json.dumps(м.get("контроль"), ensure_ascii=False))
 print("довжини: %s" % json.dumps(м.get("довжини"), ensure_ascii=False))
-print("сід 2: %s" % json.dumps(rд.get("поломка"), ensure_ascii=False))
+print("сід 2: %s" % json.dumps(r_д.get("поломка"), ensure_ascii=False))
 raise SystemExit(0 if all(ок for _, ок in пр) else 1)

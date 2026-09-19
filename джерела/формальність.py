@@ -200,7 +200,7 @@ def інтервал_формальності(e):
         # фолбек на явно заявлену формальність речі, якщо вона є
         f = e.get("формальність")
         return (float(f), float(f)) if f is not None else (None, None)
-    dлоу = dхай = 0
+    d_лоу = d_хай = 0
     # перша форма осі тканини, що дала збіг, — єдина, що вносить внесок
     _вісь = next((п for п in _ВІСЬ_ТКАНИНИ
                   if str(e.get(п) or "").strip().lower() in ПОЛЯРНОСТІ_ФОРМАЛЬНОСТІ[п]), None)
@@ -209,11 +209,11 @@ def інтервал_формальності(e):
             continue
         v = str(e.get(поле) or "").strip().lower()
         if v in мапа:
-            a, b = мапа[v]; dлоу += a; dхай += b
+            a, b = мапа[v]; d_лоу += a; d_хай += b
     текст = str(e.get("річ") or "").lower()
     for ключ, (a, b) in _НАЗВА_ПОЛЯРНІСТЬ.items():
-        if ключ in текст: dлоу += a; dхай += b; break
-    return (float(max(1, лоу + dлоу)), float(min(10, хай + dхай)))
+        if ключ in текст: d_лоу += a; d_хай += b; break
+    return (float(max(1, лоу + d_лоу)), float(min(10, хай + d_хай)))
 
 # K-KOH-05 (корпус): код — це ДІАПАЗОН, не точка.
 #

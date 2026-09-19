@@ -1376,7 +1376,7 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
       if (typeof П === 'undefined' || !П || !П.картки || !П.картки.length) return;
       const d = await дб();
       const запис = {ключ: ключ(П), час: new Date().toISOString(), випадок: П.випадок_рядок || П.випадок || '', П: JSON.parse(JSON.stringify(П))};
-      await тx(d, 'образи', 'readwrite', s => s.put(запис, запис.ключ));
+      await tx(d, 'образи', 'readwrite', s => s.put(запис, запис.ключ));
     }catch(e){ console.warn('образи не збереглись', e); }
   };
   async function усіОбрази(){
@@ -1586,7 +1586,7 @@ function дб(){
     з.onerror = ()=>від(з.error);
   });
 }
-function тx(d, ім, режим, дія){
+function tx(d, ім, режим, дія){
   return new Promise((рез, від)=>{
     const t = d.transaction(ім, режим), s = t.objectStore(ім);
     const r = дія(s);
@@ -1594,7 +1594,7 @@ function тx(d, ім, режим, дія){
     t.onerror = ()=>від(t.error);
   });
 }
-async function пристрійId(){
+async function пристрій_Id(){
   const d = await дб();
   try{
     const v = await new Promise((рез,від)=>{ const r=d.transaction('кв').objectStore('кв').get('пристрій');
@@ -1602,7 +1602,7 @@ async function пристрійId(){
     if (v) return v;
   }catch(e){}
   const нов = 'п-'+Math.random().toString(36).slice(2,8);
-  await тx(d,'кв','readwrite', s=>s.put(нов,'пристрій'));
+  await tx(d,'кв','readwrite', s=>s.put(нов,'пристрій'));
   return нов;
 }
 async function усіВердикти(){
@@ -2083,7 +2083,7 @@ async function записати(поз){
   }catch(e){ запис.ребра = []; ЗБ && ЗБ.діагноз.push('ребра вердикту не пораховані: ' + String(e).slice(0,140)); }
   try{
     const d = await дб();
-    await тx(d,'вердикти','readwrite', s=>s.add(запис));
+    await tx(d,'вердикти','readwrite', s=>s.add(запис));
     в.записано = true;
     $('зап-'+поз).disabled = true;
     ст.textContent = 'Записано.';
@@ -2290,7 +2290,7 @@ async function зберегтиСценарій(назва, якНовий){
   const запис = Object.assign(стан, {ід, назва: String(назва || '').trim() || типоваНазваСценарію(),
     профіль: АКТИВНИЙ, час: new Date().toISOString()});
   const d = await дб();
-  await тx(d, 'сценарії', 'readwrite', s=>s.put(запис, ід));
+  await tx(d, 'сценарії', 'readwrite', s=>s.put(запис, ід));
   СЦ = {ід, назва: запис.назва, змінено:false};
   малюватиНазвуСценарію(); await зберегтиЧернетку();
   try{ await усіСценарії(); }catch(e){}
@@ -2312,7 +2312,7 @@ async function відкритиСценарій(ід){
 }
 async function видалитиСценарій(ід){
   const d = await дб();
-  await тx(d, 'сценарії', 'readwrite', s=>s.delete(ід));
+  await tx(d, 'сценарії', 'readwrite', s=>s.delete(ід));
   if (СЦ.ід === ід){ СЦ = {ід:null, назва: СЦ.назва, змінено:true}; малюватиНазвуСценарію(); await зберегтиЧернетку(); }
   try{ await усіСценарії(); }catch(e){}
   малюватиБічніСценарії();
@@ -2413,7 +2413,7 @@ function ключФото(вид){ return 'фото-' + вид + ':' + (АКТИ
 
 async function читатиКв_(к){ try{ return await читатиКв(к); }catch(e){ return null; } }
 async function писатиКв(к, з){
-  const d = await дб(); await тx(d, 'кв', 'readwrite', s=>s.put(з, к));
+  const d = await дб(); await tx(d, 'кв', 'readwrite', s=>s.put(з, к));
 }
 
 async function завантажитиПрофілі(){
@@ -2755,9 +2755,9 @@ function малюватиВирізку(){
   const пів = о => Math.max(16, Math.min(62, о * 0.40));
   const cx = 96, H = 380;
   const y = t => Math.round(H * t);
-  const yПл = y(.19), yГр = y(.29), yТл = y(.415), yСт = y(.555), yЗр = y(.88);
+  const y_Пл = y(.19), y_Гр = y(.29), y_Тл = y(.415), y_Ст = y(.555), y_Зр = y(.88);
   const шПл = пів(пл), шГр = пів(гр), шТл = пів(тл), шСт = пів(ст);
-  const л = [[cx - 9, y(.12)], [cx - шПл, yПл], [cx - шГр, yГр], [cx - шТл, yТл], [cx - шСт, yСт],
+  const л = [[cx - 9, y(.12)], [cx - шПл, y_Пл], [cx - шГр, y_Гр], [cx - шТл, y_Тл], [cx - шСт, y_Ст],
              [cx - шСт * .78, y(.68)], [cx - шСт * .5, y(.79)], [cx - шСт * .42, y(.94)], [cx - шСт * .48, y(.965)]];
   const п = [...л, ...л.map(([x, yy])=>[2*cx - x, yy]).reverse()];
   let d = 'M' + п[0][0] + ',' + п[0][1];
@@ -2766,8 +2766,8 @@ function малюватиВирізку(){
     d += ' C' + m + ',' + y0 + ' ' + m + ',' + y1 + ' ' + x1 + ',' + y1;
   }
   d += ' Z';
-  const рука = зн => 'M' + (cx + зн * (шПл - 2)) + ',' + (yПл + 4)
-    + ' C' + (cx + зн * (шПл + 10)) + ',' + (yПл + 40) + ' ' + (cx + зн * (шПл + 12)) + ',' + (yТл - 10) + ' ' + (cx + зн * (шСт + 8)) + ',' + (yСт + 10);
+  const рука = зн => 'M' + (cx + зн * (шПл - 2)) + ',' + (y_Пл + 4)
+    + ' C' + (cx + зн * (шПл + 10)) + ',' + (y_Пл + 40) + ' ' + (cx + зн * (шПл + 12)) + ',' + (y_Тл - 10) + ' ' + (cx + зн * (шСт + 8)) + ',' + (y_Ст + 10);
   const синь = 'var(--чорнило)', межа = 'var(--межа-темна)', аркуш = 'var(--аркуш)', лінія = 'var(--межа)';
   const винос = (yy, x0) => '<path d="M' + (x0 + 6) + ',' + yy + 'H196" stroke="' + межа + '" stroke-dasharray="2 3"/>'
     + '<circle cx="' + (x0 + 6) + '" cy="' + yy + '" r="2" fill="' + синь + '"/>';
@@ -2780,10 +2780,10 @@ function малюватиВирізку(){
     + '<path d="' + d + '" fill="none" stroke="' + синь + '" stroke-linejoin="round" opacity="' + (є ? '.4' : '.2') + '"/>'
     + '<path d="M' + (cx - 6) + ',' + y(.113) + 'V' + y(.135) + 'M' + (cx + 6) + ',' + y(.113) + 'V' + y(.135) + '" stroke="' + синь + '" opacity=".5"/>'
     + '<path d="' + рука(-1) + ' ' + рука(1) + '" fill="none" stroke="' + синь + '" opacity="' + (є ? '.45' : '.25') + '"/>'
-    + '<path d="M' + cx + ',' + (yСт + 24) + ' V' + y(.955) + '" stroke="' + синь + '" opacity=".3"/>'
-    + винос(yПл, cx + шПл) + винос(yГр, cx + шГр) + винос(yТл, cx + шТл) + винос(yСт, cx + шСт)
+    + '<path d="M' + cx + ',' + (y_Ст + 24) + ' V' + y(.955) + '" stroke="' + синь + '" opacity=".3"/>'
+    + винос(y_Пл, cx + шПл) + винос(y_Гр, cx + шГр) + винос(y_Тл, cx + шТл) + винос(y_Ст, cx + шСт)
     + '<path d="M' + (cx + шСт + 22) + ',' + y(.03) + 'V' + y(.975) + '" stroke="' + межа + '" stroke-dasharray="2 3"/>'
-    + '<path d="M' + (cx + шСт + 22) + ',' + yЗр + 'H196" stroke="' + межа + '" stroke-dasharray="2 3"/>';
+    + '<path d="M' + (cx + шСт + 22) + ',' + y_Зр + 'H196" stroke="' + межа + '" stroke-dasharray="2 3"/>';
 }
 
 /* ── КОЛЬОРИ ЛЮДИНИ ───────────────────────────────────────────────────────
@@ -3819,7 +3819,7 @@ async function малюватиСлот(конт, ключ){
     геть.onclick = async е=>{
       е.preventDefault(); е.stopPropagation();
       const d = await дб();
-      await тx(d,'кв','readwrite', s=>s.delete(ключ));
+      await tx(d,'кв','readwrite', s=>s.delete(ключ));
       малюватиСлот(конт, ключ);
       if (ключ === ключФото('портрет')) малюватиДрап();
     };
@@ -3832,7 +3832,7 @@ async function зберегтиФото(е, конт, ключ){
   const ф = е.target.files && е.target.files[0]; if (!ф) return;
   try{
     const d = await дб();
-    await тx(d,'кв','readwrite', s=>s.put(ф, ключ));
+    await tx(d,'кв','readwrite', s=>s.put(ф, ключ));
   }catch(err){ console.error('фото не збереслось', err); }
   малюватиСлот(конт, ключ);
   if (ключ === ключФото('портрет')){
@@ -3983,7 +3983,7 @@ async function урлСтенда(){
   return null;
 }
 async function записатиУрлСтенда(у){
-  const d = await дб(); await тx(d,'кв','readwrite', s=>s.put(у,'урл-стенда'));
+  const d = await дб(); await tx(d,'кв','readwrite', s=>s.put(у,'урл-стенда'));
 }
 
 /* ЧОГО БРАКУЄ ДЛЯ ЗБИРАННЯ — одна функція на обидва шляхи. `bridge.запити`
@@ -4060,7 +4060,7 @@ async function старт(){
   читатиХеш();
   if (!ЗАПУЩЕНО){
     ЗАПУЩЕНО = true;
-    пристрій = await пристрійId().catch(()=> 'невідомо');
+    пристрій = await пристрій_Id().catch(()=> 'невідомо');
     await завантажитиПрофілі();
     await читатиАктивний();
     заповнитиСписки();
@@ -4238,8 +4238,8 @@ const МІСТ_П = (function(){
     if (т) localStorage.setItem("міст:токен", т);
     /* типовий міст — лише на http(s)-походженні: у пісочниці (origin «null») прямий
        виклик без мосту законний і мусить лишитись */
-    const наPages = /^https?:$/.test(location.protocol) && location.origin !== "null";
-    а = а || localStorage.getItem("міст:адреса") || (наPages ? ТИПОВИЙ_МІСТ_П : "");
+    const на_Pages = /^https?:$/.test(location.protocol) && location.origin !== "null";
+    а = а || localStorage.getItem("міст:адреса") || (на_Pages ? ТИПОВИЙ_МІСТ_П : "");
     т = т || localStorage.getItem("міст:токен") || "";
   }catch(_){ }
   return {адреса: а, токен: т};
@@ -4521,7 +4521,7 @@ const ВІДБИТОК_ПОКАЗУ = "__ВІДБИТОК__";
 const ГАМИ = ['приглушені', 'середні', 'насичені'];
 const ДЗЕРКАЛА_П = [['jsdelivr', 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/']];
 const СТОРОЖ_П = 150000;
-let pyodideП = null, ПАЛІТРА = null;
+let pyodide_показу = null, ПАЛІТРА = null;
 /* `смуга` — що показано, `вибір_кольору.насиченість` — що обрано */
 let ВИБІР = { гілка: null, вибір_кольору: null, смуга: 'середні', слова: null };
 
@@ -4574,23 +4574,23 @@ async function підняти_pyodide_показу(){
 }
 
 async function підняти_міст_показу(){
-  if (pyodideП) return pyodideП;
-  pyodideП = await підняти_pyodide_показу();
+  if (pyodide_показу) return pyodide_показу;
+  pyodide_показу = await підняти_pyodide_показу();
   $('пал-стан').textContent = 'Ще мить…';
   const бін = Uint8Array.from(atob(МОДУЛІ_ПОКАЗУ), c=>c.charCodeAt(0));
-  pyodideП.unpackArchive(бін.buffer, 'zip', {extractDir: '/показ'});
-  await pyodideП.runPythonAsync(
+  pyodide_показу.unpackArchive(бін.buffer, 'zip', {extractDir: '/показ'});
+  await pyodide_показу.runPythonAsync(
     'import sys, os\n' +
     'sys.path.insert(0, "/показ"); os.chdir("/показ")\n' +
     'import bridge\n');
-  return pyodideП;
+  return pyodide_показу;
 }
 
 /* Дані йдуть літералом у коді, без спільної глобальної: чотири руки
    паралельні, і глобальна віддавала чужий вхід (виміряно в Pyodide). */
 async function містП(ім, дані){
   await підняти_міст_показу();
-  const вих = await pyodideП.runPythonAsync(
+  const вих = await pyodide_показу.runPythonAsync(
     'import json, bridge\n' +
     'bridge.виклик(' + JSON.stringify(ім) + ', json.loads(' + JSON.stringify(JSON.stringify(дані)) + '))');
   return typeof вих === 'string' ? JSON.parse(вих) : вих;
