@@ -409,7 +409,10 @@ def _край(р):
     return min(р["верх_см"], р["низ_см"])
 
 
-ФЛЕТЕРИНГ = ("conventional", "conventional-flattering", None)
+# K-PER-00 (19.09.2026): лестити конвенцією просять ТРИ члени лексикону наміру
+# (conventional, comfort_first, context_optimal) — перелік читається з реєстру,
+# а не тримається тут окремо; дефісна форма корпусу й None лишаються, як були.
+ФЛЕТЕРИНГ = tuple(k for k, v in _РЕЄСТР.INTENT.items() if v["стриманий"]) + ("conventional-flattering", None)
 
 
 # ── K-SHO-02: константи смуги шкіри ────────────────────────────────────────
