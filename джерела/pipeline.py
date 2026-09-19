@@ -402,7 +402,8 @@ def підготувати(F, слоти=("верх", "низ", "взуття", 
         готово=True,
         особа=dict(**особа, температура=P.температура(F, source, intent),
                    масштаб=PR.масштаб(зріст_см) if зріст_см else None,
-                   гейт_джерела=__import__("colorspace").gate_conclusions(source)),
+                   гейт_джерела=__import__("colorspace").gate_conclusions(
+                       source, se_L=особа.get("розкид"))),     # R-PC-10: регіональний шум профілю
         сценарій=сцен,
         палітри=розв,
         форма=форма or dict(проганялось=False,
