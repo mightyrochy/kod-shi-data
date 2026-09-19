@@ -111,7 +111,10 @@ def верхні_атрибути(offer, тип=None):
     пар = offer.get("параметри") or {}
     if isinstance(пар, str):
         try: пар = __import__("ast").literal_eval(пар)
-        except Exception: пар = {}
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
+            пар = {}
     текст_пар = " ".join("%s %s" % (k, v) for k, v in пар.items()).lower()
     повний = текст + " " + текст_пар
     a = {}

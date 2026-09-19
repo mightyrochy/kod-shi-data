@@ -196,6 +196,8 @@ _СМІТТЯ_НАЗВИ = re.compile(r"^\s*(?:!\[\s*image\s*\d*\s*:?\s*|кар�
 ЦІНА_СТЕЛЯ = 1_000_000.0   # грн; вище — склейка полів жниварки, не ціна
 
 def _чиста_ціна(текст):
+    """Ціна з рядка фіду як число; нечислове — 0.0, а вище `ЦІНА_СТЕЛЯ` — теж 0.0,
+    бо це склейка полів жниварки, не ціна (нуль тут читається як «ціни нема»)."""
     try:
         v = float(str(текст or "0").replace(",", ".").strip() or 0)
     except ValueError:
@@ -324,6 +326,7 @@ def читати_yml(шлях):
     кат = {c.get("id"): dict(назва=(c.text or "").strip(), батько=c.get("parentId"))
            for c in root.iter("category")}
     def шлях_кат(cid):
+        """Повний шлях категорії «батько / … / лист» за id, із захистом від кола."""
         імена, seen = [], set()
         while cid and cid in кат and cid not in seen:
             seen.add(cid); імена.append(кат[cid]["назва"]); cid = кат[cid]["батько"]
@@ -444,7 +447,9 @@ def читати_yml(шлях):
                                                            key=lambda x: -x[1])[:4])
                               + " · покриття %.0f%%" % (100 * _покр),
                      сила=None, напрям="інгест, не вирок")
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         pass
     діаг = dict(
         офферів=len(offers),
@@ -480,6 +485,8 @@ def читати_yml(шлях):
                   сила=round(_покр, 3),
                   напрям=("моделей=лічба моделей" if _інтерпр else
                           "моделей=лічба ГРУП, число завищене"))
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         pass
     return offers, діаг
