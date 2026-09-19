@@ -152,6 +152,8 @@ def _деталі_речі(r):
 
 
 def _поля_групи(r, _мітка):
+    """Поля шапки групи для рядка пулу `r` (мітка гілки, каблук, матеріал, довжина, крій,
+    тканина, зона, реєстр…) — dict рядків, порожній рядок там, де поля нема."""
     м = _мітка.get(r.get("гілка") or "ядро", "")
     if "%s" in м:
         м = м % ((" (%s)" % r["схема"]) if r.get("схема") else "")
@@ -352,7 +354,9 @@ def _РЕ_кандидата(r):
         # вирізано з ярусу «пакет» у гейті (статичний список `обмеження`,
         # побайтово однаковий для будь-якого профілю).
         return _РЕ.РЕЄСТРИ[ранг[0][0]]["назва"].split(" / ")[0]
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return None
 
 
@@ -493,7 +497,7 @@ def _сім_я_тону(hex_):
     try:
         import colorspace as _КС
         L, C, h = _КС.lch(_КС.hx(hex_))
-    except Exception:
+    except (TypeError, ValueError, AttributeError):
         return None
     if C is None or C < 10:
         return None
@@ -512,7 +516,7 @@ def _у_дузі_вікон(hex_, слот, вікна):
     try:
         import colorspace as _КС
         L, C, h = _КС.lch(_КС.hx(hex_))
-    except Exception:
+    except (TypeError, ValueError, AttributeError):
         return None
     if _нейтральний_тон(h, C, L):
         return True
@@ -678,8 +682,9 @@ def людина_для_пакета(F, тіло, палітри, гілка=Non
     try:
         import palettes as _ПЛ
         пал.update(_ПЛ.для_пакета((сп.get("палітра_практична") or {})))
-    except Exception:
-        pass
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
     # КОЛІР, ЯКИЙ ОБРАЛА ЛЮДИНА, СТОЇТЬ У ПАЛІТРІ, А НЕ В ІНСТРУКЦІЇ. Реченням
     # («ОСНОВНИЙ КОЛІР ОБРАЗУ: … вона обрала сама») воно їде в руки 3–4, де іншого
     # каналу нема; тут канал є, і «за замовчуванням ≠ вибір» лишається видимим
@@ -705,7 +710,9 @@ def людина_для_пакета(F, тіло, палітри, гілка=Non
         _з = _ПС.зони(тіло)
         тл["ярлик"] = _з.get("ярлик")
         тл["зони"] = _з.get("вектор") or {}
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         # Обхватів менше, ніж треба для ярлика, — це стан входу, не збій пакета:
         # `зріст` уже є, а ярлик тут не обов'язковий (див. `протокол.ЛЮДИНА`).
         pass
@@ -882,7 +889,9 @@ def пакет_для_моделі(F, каталог, тіло, слоти=("в�
             _н = _д["назва"].split(" / ")[0]
             if _н in _у_пулі and _д.get("ід"):
                 _легенда[_н] = _д["ід"]
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         _легенда = {}
     вимоги = list(ВИМОГИ_ПАКЕТА)
     # СХЕМА — ВИМОГА, А НЕ ДОВІДКА (16.09.2026): доти модель бачила ролі зі зразками,
@@ -941,8 +950,9 @@ def пакет_для_моделі(F, каталог, тіло, слоти=("в�
                          % (len(полюси), len(ПОЛЮСИ_ОБРАЗУ)), "пакет_для_моделі",
                          значення="; ".join("%s — %s" % (і, ч) for і, ч in _нема_полюсів) or "усі спроможні",
                          сила=None, напрям="полюс без речі не замовляється")
-    except Exception:
-        pass
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
     # ВІЛЬНІ СЛОТИ НАЗВАНІ ВГОЛОС, А НЕ ЛИШЕНІ МОВЧКИ (те саме рішення, що стояло
     # у знесеному `_формат_відповіді`). На запиті 10 образів словник дає п'ять
     # задумів, і без цього рядка половина замовлення йшла без завдання — а
@@ -1101,15 +1111,16 @@ def _жорстке_відсічення(r, темп_c=None, вето=None, ош
                     своя = _A._смуга_типу(тип)
                     if своя is not None and _A._відстань_смуг(своя, float(темп_c)) > ДОПУСК_ВЗУТТЯ_C:
                         return "взуття не для цієї температури"
-                except Exception:
-                    pass
+                except Exception as _e:
+                    import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                    if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         см = r.get("сезон_тканини")
         if см and len(см) == 2:
             try:
                 lo, hi = float(см[0]), float(см[1])
                 if max(0.0, float(темп_c) - hi, lo - float(темп_c)) > ДОПУСК_ТКАНИНИ_C:
                     return "тканина не для цієї температури"
-            except Exception:
+            except (TypeError, ValueError, IndexError):
                 pass
     if вето:
         текст = " ".join(str(r.get(k) or "") for k in ("назва", "тип", "тканина", "візерунок", "колір_назва")).lower()
@@ -1148,6 +1159,7 @@ _СТОП = {"для", "або", "щоб", "які", "яка", "яке", "без
          "хочу", "хочеться", "треба", "потрібно", "бажано", "краще", "щось", "будь", "ласка"}
 
 def _токени(т):
+    """Слова фрази (≥ 3 знаків, у нижньому регістрі) без стоп-слів — список для пошуку словами."""
     return [w for w in re.findall(r"[a-zа-яіїєґ0-9]{3,}", str(т or "").lower()) if w not in _СТОП]
 
 def шукати_словами(каталог, фраза, n=5, темп_c=None, вето=None):

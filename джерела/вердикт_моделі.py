@@ -866,7 +866,9 @@ def риси_образу(речі, тіло=None, ном=None):
     # по речах означало б завести другу колірну арифметику поруч із наявною.
     try:
         вих["схема"] = sorted({к["сім_я"] for к in _КОЛІР.кластери(_O.елементи(речі))})
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         вих["схема"] = None
     вих["крої"] = sum(1 for r in речі if _O.крій_речі(r))
     if тіло and вих["крої"] >= _РЕЄСТР.C["крою_для_літери"]:
@@ -874,7 +876,9 @@ def риси_образу(речі, тіло=None, ном=None):
             import silhouette as _СЛ
             л = _СЛ.літера(_СЛ.обгортка(тіло, речі))
             вих["літера"] = л.get("літера") if л.get("доступно") else None
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             вих["літера"] = None
     # ГЕРОЙ — НАЙВИРАЗНІША РІЧ ПОНАД ПОРОГОМ; `виразні` — УСІ понад порогом.
     # «Два герої» рахується саме по цьому списку, а не по відриву першої від
@@ -884,7 +888,9 @@ def риси_образу(речі, тіло=None, ном=None):
         try:
             оцінки.append((_КМ._виразність(r),
                            номер_речі(r.get("id"), ном, r.get("частина_комплекту"))))
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             continue
     вих["виразні"] = [і for в, і in sorted(оцінки, key=lambda т: -т[0])
                       if в >= _РЕЄСТР.C["виразність_героя"]]
@@ -1112,7 +1118,7 @@ def координація_набору(образи):
         return []
     try:
         import coordination as _КО
-    except Exception:
+    except ImportError:
         return []
     числа = [б for _, б in пари]
     if not (_КО.розкид_набору(числа) or {}).get("можна"):

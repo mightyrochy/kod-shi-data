@@ -113,12 +113,12 @@ def схема_образу(речі, спец_слоти, за_ід=None):
         lab = повна.get("lab")
         if not lab and повна.get("hex"):
             try: lab = _КС.hx(повна["hex"])
-            except Exception: lab = None
+            except (TypeError, ValueError, AttributeError): lab = None
         if not lab or len(lab) < 3:
             continue
         try:
             L, C, h = _КС.lch(lab)
-        except Exception:
+        except (TypeError, ValueError, AttributeError):
             continue
         if _нейтральний_тон(h, C, L):
             continue                                   # нейтраль законна під будь-яку схему
@@ -197,11 +197,11 @@ def _кольори_образу(речі, за_ід=None):
         lab = повна.get("lab")
         if not lab and повна.get("hex"):
             try: lab = _КС.hx(повна["hex"])
-            except Exception: lab = None
+            except (TypeError, ValueError, AttributeError): lab = None
         if not lab or len(lab) < 3:
             continue
         try: L, C, h = _КС.lch(lab)
-        except Exception: continue
+        except (TypeError, ValueError, AttributeError): continue
         слот = r.get("слот")
         out.append((r, слот, L, C, h, _КО.SLOT_NEAR_FALLBACK.get(слот, 0.3)))
     return out
@@ -695,7 +695,7 @@ def _хрома(r):
         try:
             import colorspace as _КС
             lab = _КС.hx(r["hex"])
-        except Exception:
+        except (TypeError, ValueError, AttributeError):
             lab = None
     if not lab or len(lab) < 3:
         return None
@@ -833,7 +833,9 @@ def близькість_образу(речі):
         import outfit as _O, coordination as _КО
         import колір_образу as _КОЛІР, реєстр_правил as _РЕЄСТР, формальність as _ФОРМ   # Н-02-01, сесія 4
         return _КО.середня_близькість(_O.елементи(list(речі or [])))
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return None
 
 
@@ -1155,8 +1157,9 @@ def перевірити_від_моделі(ід, F, каталог, тіло, 
             зн = list(зн) + _РЕЄСТР.обмежити_вагу(
                 _КО2.координація(_O2.елементи(речі),
                                  набір_кандидатів=[v for v in набір_близькостей if v is not None]))
-        except Exception:
-            pass
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
     зн = [z for z in зн if not _вимкнене(z)]
     # ДОПОВНЕННЯ СУДДІ ЗА НАЗВАМИ (05.09.2026, проби правил): базові правила читають поля
     # (виріз, візерунок, метал), яких у каталозі майже нема, — і мовчали на міні+декольте,

@@ -771,7 +771,9 @@ def перевірити_образ_моделі(текст, F, тіло, сце
         # записана в `language_gate` біля `ЯРУС_УКРАЇНСЬКОЇ` і в показі.
         вих["мова"] = (_LG.перевірити(текст, режим="блокувати")
                        if hasattr(_LG, "перевірити") else None)
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         вих["мова"] = None
     return вих
 
