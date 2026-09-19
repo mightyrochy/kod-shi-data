@@ -50,7 +50,9 @@ def у_пакеті():
                 зн |= ІП.бази_в_тексті(json.dumps(п_без, ensure_ascii=False, default=str))
                 стат |= ІП.бази_в_тексті(json.dumps(п.get("обмеження"),
                                                      ensure_ascii=False, default=str))
-            except Exception:
+            except Exception as _e:
+                import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                 pass
     return зн, стат
 
@@ -175,7 +177,9 @@ def прогін():
                             спільні |= _сп
                             for _r, _ст in чеклістні_дерева(_j).items():
                                 чек.setdefault(_r, set()).update(_ст)
-                        except Exception:
+                        except Exception as _e:
+                            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                             pass
                     except Exception as e:
                         збої.append(dict(виклик=ім, намір=намір,
@@ -274,6 +278,8 @@ def прогін_від_моделі(скільки_профілів=2, скіл
                 спільні |= _сп
                 for _r, _ст in чеклістні_дерева(в).items():
                     чек.setdefault(_r, set()).update(_ст)
-            except Exception:
+            except Exception as _e:
+                import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                 continue
     return dict(слід=сл | зн, знахідки=зн, спільні=спільні - зн, чекліст=чек)

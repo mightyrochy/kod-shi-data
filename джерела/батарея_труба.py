@@ -32,7 +32,9 @@ def прогін_зібраного():
     try:
         F = cs.риси_з_hex(dict(шкіра=["#deb295"], волосся=["#f1dbaa", "#dabf89", "#b09362"],
                                очі="#759087")) if hasattr(cs, "риси_з_hex") else None
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         F = None
     if F is None:
         import bridge
@@ -59,7 +61,9 @@ def прогін_зібраного():
     for нагода, темп in (("робота", 5.0), ("побачення", 19.0)):
         try:
             _в = pipeline.перевірити_образ(F, речі, нагода=нагода, темп_c=темп, тіло=тіло)
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             continue
         _вл, _сп = знахідки_дерева(_в)
         зн |= _вл
@@ -112,7 +116,9 @@ def _перевірка_гілок(F, тіло, H):
         for с in сцен:
             try:
                 pipeline.перевірити_образ(F, [dict(r) for r in речі], тіло=тіло, **с)
-            except Exception:
+            except Exception as _e:
+                import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                 pass
         if ціль is None:
             # образ заради ВХОДУ, а не заради названої цілі: перевіряти його
@@ -169,7 +175,9 @@ def _прогін_фіду():
                                 впевненість=0.8, колір_назва=o["колір_назва"],
                                 фото_ключ=(o["фото"] or [None])[0]))
         feed.лексикон(каталог, мін_n=2)
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         pass
 
 
@@ -229,7 +237,9 @@ def _навмисні_образи(F, тіло, H, зн=None, спільні=Non
                                      коліно=35.0, литка=36.0, щиколотка=22.0),
                            рівні_см={"пах": 71.1})
         _другі = [(F2, тіло158, СЦЕНИ_ОБРАЗУ[:3])]
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         pass
     for _чому, речі in НАВМИСНІ(H):
         речі = з_геометрією(речі, _проф)   # ворота площі, обґрунтування там
@@ -238,7 +248,9 @@ def _навмисні_образи(F, тіло, H, зн=None, спільні=Non
                 try:
                     _в = pipeline.перевірити_образ(_F, [dict(r) for r in речі],
                                                    тіло=_тіло, **с)
-                except Exception:
+                except Exception as _e:
+                    import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                    if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                     continue
                 _вл, _сп = знахідки_дерева(_в)
                 if зн is not None:
@@ -283,7 +295,9 @@ def _навмисні_від_моделі(F, тіло, H, зн, спільні, 
                    for r in речі]
             _в = pipeline.перевірити_від_моделі([r["id"] for r in речі], F, кат, тіло,
                                                 сценарій=dict(нагода="свято", темп_c=22.0))
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             continue
         _вл, _сп = знахідки_дерева(_в)
         зн |= _вл
@@ -322,5 +336,7 @@ def _прогін_композитора(F, тіло):
                             available=True))
     try:
         КМ.зібрати(F, каталог, вікна=None, тіло=тіло, нагода="робота")   # K-IO-01: без нагоди композитор відмовляє
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         pass

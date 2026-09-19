@@ -385,6 +385,7 @@ def ЦІЛЬ_ОБРАЗУ(чому):
 
 
 def цілі_образів(H=None):
+    """Ціль кожного навмисного образу в порядку `НАВМИСНІ`: виводиться з опису, не ведеться руками (`None` — образ заради входу)."""
     return [ЦІЛЬ_ОБРАЗУ(ч) for ч, _ in НАВМИСНІ(H or {})]
 
 
@@ -423,7 +424,9 @@ def з_геометрією(речі, профіль):
         return [dict(r) for r in речі]      # не всі речі оголосили край — не брешемо
     try:
         гео = {g["id"]: g for g in areas.образ_з_геометрії(профіль, сирі)}
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return [dict(r) for r in речі]
     вих = []
     for r in речі:

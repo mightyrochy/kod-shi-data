@@ -67,6 +67,7 @@ def виконані_рядки(рядки_ID=None):
     бачені = set()
 
     def tracer(frame, подія, arg):
+        """Трасувальник `sys.settrace`: на `call` вмикає порядкове трасування лише файлам із рядками правил, на `line` записує (файл, рядок) із `цікаві`."""
         # ФІЛЬТР НА `call`, А НЕ НА `line`: відкидати на `line` означало б
         # платити виклик Python-функції за кожен рядок бібліотек. Кадр, чий файл
         # рядків правил не має, не трасується зовсім.
@@ -86,6 +87,7 @@ def виконані_рядки(рядки_ID=None):
     п0, риси0 = БАТАРЕЯ[0]
 
     def _виклик(нагода, гілка, намір):
+        """JSON входу моста: перший профіль батареї з нагодою, гілкою й наміром (каталог — коли він є на диску)."""
         d = dict(зріст=168, вік=32,
                  обхвати=dict(плечі=98, груди=92, талія=72, стегна=100),
                  самозвіт=dict(метал="золото", барви="приглушені",
@@ -134,7 +136,9 @@ def виконані_рядки(рядки_ID=None):
                                    коліно=35.0, литка=36.0, щиколотка=22.0),
                          рівні_см={"пах": 75.6})
         образи = НАВМИСНІ(H)
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         pass
 
     sys.settrace(tracer)
@@ -144,14 +148,18 @@ def виконані_рядки(рядки_ID=None):
             for ім in ("чипи", "палітри", "запити"):
                 try:
                     bridge.виклик(ім, s)
-                except Exception:
+                except Exception as _e:
+                    import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                    if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                     pass
         for _чому, речі in образи:
             for с in СЦЕНИ_ОБРАЗУ:
                 try:
                     pipeline.перевірити_образ(F2, [dict(r) for r in речі],
                                               тіло=тіло2, **с)
-                except Exception:
+                except Exception as _e:
+                    import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                    if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                     pass
         if F2 is not None and тіло2 is not None:
             _прогін_композитора(F2, тіло2)
