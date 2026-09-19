@@ -101,16 +101,18 @@ def _поля_без_постачальника():
             return s
         return "\n".join("" if н in мертві else р.split("#")[0]
                           for н, р in enumerate(рядки, 1))
-    # ── ПОДІЛ accessory (19.09.2026, хвиля стандарту, п.16) ─────────────────
-    # Писачі аксесуарної гілки стоять тепер у `аксесуари_*.py`, а `accessory` —
-    # фасад із реекспортом; сканувати сам фасад означало б загубити цілу гілку —
-    # ту саму сліпу пляму, що вище. Модулі беруться З САМОГО ФАСАДУ (його
-    # `from … import`), а не переліком імен тут, — наступний модуль поділу не
-    # випаде мовчки. Виміряно до/після поділу: список сиріт той самий.
-    аксесуарні = [__import__(в.module) for в in ast.parse(inspect.getsource(accessory)).body
-                  if isinstance(в, ast.ImportFrom) and в.level == 0 and в.module]
+    # ── ПОДІЛ accessory І outer (19.09.2026, хвиля стандарту, п.16) ─────────
+    # Писачі аксесуарної гілки стоять тепер у `аксесуари_*.py`, верхнього шару —
+    # у `верхнє_*.py`, а `accessory`/`outer` — фасади з реекспортом; сканувати сам
+    # фасад означало б загубити цілу гілку — ту саму сліпу пляму, що вище. Модулі
+    # беруться З САМОГО ФАСАДУ (його `from … import`), а не переліком імен тут, —
+    # наступний модуль поділу не випаде мовчки. Виміряно до/після кожного поділу:
+    # список сиріт той самий.
+    реекспортовані = [__import__(в.module) for ф in (accessory, outer)
+                      for в in ast.parse(inspect.getsource(ф)).body
+                      if isinstance(в, ast.ImportFrom) and в.level == 0 and в.module]
     виробляє = set()
-    for м in (areas, feed, composer, pipeline, accessory, outer, *аксесуарні):
+    for м in (areas, feed, composer, pipeline, accessory, outer, *реекспортовані):
         s = _лише_виконуване(inspect.getsource(м))
         виробляє |= set(re.findall(r'(\w+)\s*=', s))                  # поле=значення
         виробляє |= set(re.findall(r'\[\s*"([^"]+)"\s*\]\s*=', s))     # r["поле"] =
