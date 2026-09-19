@@ -606,7 +606,10 @@ def _пакет_у_бюджет(_PL, F, каталог, T, слоти, вікн�
             lab = r.get("lab")
             if not lab: return False
             try: _L, _C, _h = _КС_.lch(lab)
-            except Exception: return False
+            except Exception as _e:
+                import os as _os, traceback as _tb   # п.14: не мовчати
+                if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
+                return False
             lo, hi = _дуга_осн
             return _C >= _Cmin_осн and ((lo <= hi and lo <= _h <= hi) or (lo > hi and (_h >= lo or _h <= hi)))
         _є_осн = sum(1 for с in _акц_слоти for r in (_рез["_кандидати"].get(с) or []) if _у_дузі_осн(r))

@@ -94,7 +94,10 @@ def _вердикти_образів(d, F, T, сцен, пак, _PL, основ�
         try:
             _повні.append([_КМ0._у_річ(dict(_за_ід[i]), _за_ід[i]["слот"], T)
                            for i in н if i in _за_ід])
-        except Exception:
+        except Exception as _e:
+            # речі поза каталогом пакета не мають права зронити вердикт
+            import os as _os, traceback as _tb   # п.14: не мовчати
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             _повні.append([])
 
     def _запис(н, о, і, підпис=None, перевірено=True, близькість=None):
