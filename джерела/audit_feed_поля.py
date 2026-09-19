@@ -30,7 +30,7 @@
   · Лічба «на скількох речах вийшло» — це ДОСЯЖНІСТЬ, не якість: правило може
     виходити на 600 речах і бути хибним на всіх шістьохстах.
 """
-import collections, os, re, sys
+import ast, collections, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import feed as Ф
@@ -125,18 +125,34 @@ _ВЗУТТЯ = dict(id="_взуття", слот="взуття", назва="ч
 }
 
 
+def тексти_фасаду(файл):
+    """Текст модуля разом із текстами модулів, які він реекспортує (`from X import …`
+    на верхньому рівні, `X.py` поруч). ПОДІЛ accessory.py (19.09.2026, хвиля
+    стандарту): літерали ID стоять тепер у `аксесуари_*.py`, а ім'я лишилось у
+    фасаді — читати сам фасад означало б порахувати гілку порожньою. Для `outer.py`
+    реекспортів нема, і текст той самий, що й доти."""
+    with open(os.path.join(КОРІНЬ, файл), encoding="utf-8") as ф:
+        текст = ф.read()
+    тексти = [текст]
+    for в in ast.parse(текст).body:
+        if isinstance(в, ast.ImportFrom) and в.level == 0 and в.module:
+            шлях = os.path.join(КОРІНЬ, в.module + ".py")
+            if os.path.exists(шлях):
+                with open(шлях, encoding="utf-8") as ф:
+                    тексти.append(ф.read())
+    return "\n".join(тексти)
+
+
 def емітовані(файл):
     """ID, які модуль узагалі вміє видати (standalone-літерал у його коді)."""
-    with open(os.path.join(КОРІНЬ, файл), encoding="utf-8") as ф:
-        return sorted(set(_ІД.findall(ф.read())))
+    return sorted(set(_ІД.findall(тексти_фасаду(файл))))
 
 
 def без_емітента(файл, модуль):
     """ID модуля, яких жодна функція не видає ЛІТЕРАЛОМ і яких нема в реєстрах, що
     підставляють ID змінною (`БЕЗ_ВХОДУ`, таблиці з ключем «правило»). Евристика —
     див. коментар до `ДІАГНОЗ`."""
-    with open(os.path.join(КОРІНЬ, файл), encoding="utf-8") as ф:
-        текст = ф.read()
+    текст = тексти_фасаду(файл)
     літерали = set(re.findall(r'_зн\(\s*"(K-[A-Z]{2,5}-\d{2}[a-z]?)"', текст))
     змінні = set(getattr(модуль, "БЕЗ_ВХОДУ", {}))
     for ім in dir(модуль):

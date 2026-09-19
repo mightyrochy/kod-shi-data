@@ -5478,7 +5478,9 @@ def ф():
          sorted(set(_AF146.СЛОТИ_10) ^ _слоти146))
     _джр146 = _os.path.dirname(_os.path.abspath(_Ф.__file__))
     _тексти146 = {"K-OUT": open(_os.path.join(_джр146, "outer.py"), encoding="utf-8").read(),
-                  "": open(_os.path.join(_джр146, "accessory.py"), encoding="utf-8").read()}
+                  # поділ accessory.py (19.09.2026): літерали ID — у аксесуари_*.py,
+                  # які фасад реекспортує; читає їх той самий помічник, що й прилад
+                  "": _AF146.тексти_фасаду("accessory.py")}
     _чужі146 = [i for i in _AF146.ДІАГНОЗ
                 if '"%s"' % i not in _тексти146["K-OUT" if i.startswith("K-OUT") else ""]]
     тест("кожен ID у таблиці діагнозів — справжнє правило свого модуля: діагноз "
