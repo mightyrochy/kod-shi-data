@@ -47,7 +47,9 @@ def _C_речі(р):
     try:
         import колір_образу as _КОЛІР
         return float(_КОЛІР.гучність(tuple(lab)).get("C") or 0.0)
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return None
 
 
@@ -130,7 +132,9 @@ def передумови_пояса(t, речі):
         return []
     try:
         вект = ПС.зони(t)["вектор"]
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return []
     висоти = t.get("висоти") or {}
     корпус_см = ((висоти.get("плечі") or 0) - (висоти.get("талія") or 0)) or None
@@ -403,6 +407,7 @@ def носій_приобличчевого_поля(речі, стан_шару
     ПРИОБЛИЧЧЯ = ("шия", "волосся", "плечі")
 
     def _займає(р):
+        """Чи річ стоїть у приобличчевому полі: обране місце з ПРИОБЛИЧЧЯ або ВСІ її можливі місця там."""
         м = р.get("місце")
         if м in ПРИОБЛИЧЧЯ:
             return True
@@ -492,7 +497,9 @@ def надточний_збіг(E, заявлена_колона=False):
                 continue
             try:
                 dE = _cs.de00(tuple(a["lab"]), tuple(b["lab"]))
-            except Exception:
+            except Exception as _e:
+                import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                 continue
             if dE > C["ΔE_точний_збіг"]:
                 continue
@@ -592,6 +599,9 @@ def віднімання(E):
 
 
 def _рід_елемента(e):
+    """Рід елемента для проходу на віднімання (K-ACC-13): метал · джерело принта · джерело
+    блиску · приобличчевий акцент · гучний колірний акцент · інше. Два елементи одного
+    роду витрачають ОДИН бюджет — саме дубль роду й дає знахідку."""
     м = (e.get("метал") or "").lower()
     if м:
         return "метал «%s» біля обличчя" % м if (e.get("near") or 0) >= 0.3 else "метал «%s»" % м
