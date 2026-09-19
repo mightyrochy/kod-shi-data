@@ -2303,7 +2303,10 @@ def намір_комфорту(речі, intent="conventional"):
         if р.get("слот") != "взуття":
             continue
         назва = р.get("назва") or р.get("id")
-        h = р.get("каблук_см")
+        try:
+            h = None if р.get("каблук_см") is None else float(р["каблук_см"])
+        except (TypeError, ValueError):
+            h = None
         if h is None:
             if р.get("каблук") is True:
                 зн.append(dict(_зн("K-PER-00", "питання", "каблук є, висоти нема — під наміром "
@@ -2313,7 +2316,6 @@ def намір_комфорту(речі, intent="conventional"):
                     ремонт=["висота каблука зі специфікації товару"]),
                     сила_нп=0.0, сила_нп_джерело="входу нема (висота каблука)"))
             continue
-        h = float(h)
         if h < стеля:
             continue
         зн.append(dict(_зн("K-PER-00", "hard",
