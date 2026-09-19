@@ -189,7 +189,9 @@ def ремонтопридатність(речі, тіло=None):
     if тіло:
         try:
             _w_тіла = next(w for nm, _, w in тіло["профіль"] if nm == "плечі")
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             _w_тіла = None
     _чому_41 = ("плече — та єдина частина, яку зазвичай НЕ МОЖНА переробити після пошиття: "
                 "перебудова плеча означає перешити всю річ (Westwood Hart); плече це вішак "
