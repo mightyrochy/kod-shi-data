@@ -21,10 +21,11 @@ _споживає |= {с["поле"] for с in accessory.НОСІЇ_КРАЮ.val
 
 def _сироти(як):
     вир = set()
-    # поділ accessory (19.09.2026): писачі гілки — у модулях, які фасад реекспортує
-    аксесуарні = [__import__(в.module) for в in ast.parse(inspect.getsource(accessory)).body
-                  if isinstance(в, ast.ImportFrom) and в.level == 0 and в.module]
-    for м in (areas, feed, composer, pipeline, accessory, outer, *аксесуарні):
+    # поділ accessory і outer (19.09.2026): писачі гілок — у модулях, які фасади реекспортують
+    реекспортовані = [__import__(в.module) for ф in (accessory, outer)
+                      for в in ast.parse(inspect.getsource(ф)).body
+                      if isinstance(в, ast.ImportFrom) and в.level == 0 and в.module]
+    for м in (areas, feed, composer, pipeline, accessory, outer, *реекспортовані):
         s = як(inspect.getsource(м))
         вир |= set(re.findall(r"(\w+)\s*=", s))
         вир |= set(re.findall(r'\[\s*"([^"]+)"\s*\]\s*=', s))
