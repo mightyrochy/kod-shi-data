@@ -271,11 +271,11 @@ const пнг = байтів => {
     відповідач = () => { n2++;
       if (n2 === 1) return new Promise(() => {});                      // висить назавжди
       return new Response(JSON.stringify({candidates:[{content:{parts:[{text:"є"}]}, finishReason:"STOP"}], usageMetadata:{}}), {status:200}); };
-    const envД = {...env, PROVIDER_TIMEOUT_S:"5", GEMINI_FALLBACK:"gemini-2.5-flash-lite", GEMINI_THINKING:"як є"};
+    const env_Д = {...env, PROVIDER_TIMEOUT_S:"5", GEMINI_FALLBACK:"gemini-2.5-flash-lite", GEMINI_THINKING:"як є"};
     const почато = Date.now();
     в = await М.fetch(new Request("https://w.workers.dev/", {method:"POST",
         headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
-        body:JSON.stringify({model:"gemini-flash-latest", messages:[{role:"user", content:"x"}]})}), envД);
+        body:JSON.stringify({model:"gemini-flash-latest", messages:[{role:"user", content:"x"}]})}), env_Д);
     const с = (Date.now() - почато) / 1000;
     тест("основна модель мовчить → після стелі (5 с) береться gemini-2.5-flash-lite → 200; x-model називає її; спроби в x-attempts",
          в.status === 200 && в.headers.get("x-model") === "gemini-2.5-flash-lite" && с >= 4.5 && с < 8
@@ -285,10 +285,10 @@ const пнг = байтів => {
     /* без драбини — 504 після стелі, а не 125 с чужого 524 */
     вихідні.length = 0;
     відповідач = () => new Promise(() => {});
-    const envБ = {...env, PROVIDER_TIMEOUT_S:"5", GEMINI_THINKING:"як є"};
+    const env_Б = {...env, PROVIDER_TIMEOUT_S:"5", GEMINI_THINKING:"як є"};
     в = await М.fetch(new Request("https://w.workers.dev/", {method:"POST",
         headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
-        body:JSON.stringify({model:"gemini-flash-latest", messages:[{role:"user", content:"x"}]})}), envБ);
+        body:JSON.stringify({model:"gemini-flash-latest", messages:[{role:"user", content:"x"}]})}), env_Б);
     тест("без драбини: 504 після стелі, повідомлення радить інше ім'я моделі або GEMINI_FALLBACK",
          в.status === 504 && /GEMINI_FALLBACK/.test((await в.json()).error.message), в.status);
     /* стеля не заважає швидкій відповіді; claude- драбини не має */
@@ -308,10 +308,10 @@ const пнг = байтів => {
     відповідач = () => { n3++;
       if (n3 === 1) return new Response(JSON.stringify({error:{code:503, message:"high demand", status:"UNAVAILABLE"}}), {status:503});
       return new Response(JSON.stringify({candidates:[{content:{parts:[{text:"є"}]}, finishReason:"STOP"}], usageMetadata:{}}), {status:200}); };
-    const envГ = {...env, GEMINI_THINKING:"як є", GEMINI_FALLBACK:"gemini-3.5-flash-lite"};
+    const env_Г = {...env, GEMINI_THINKING:"як є", GEMINI_FALLBACK:"gemini-3.5-flash-lite"};
     в = await М.fetch(new Request("https://w.workers.dev/", {method:"POST",
         headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
-        body:JSON.stringify({model:"gemini-3.6-flash", messages:[{role:"user", content:"x"}]})}), envГ);
+        body:JSON.stringify({model:"gemini-3.6-flash", messages:[{role:"user", content:"x"}]})}), env_Г);
     тест("503 → через 2.5 с та сама модель → 200; драбина не чіпалась; x-attempts показує обидві спроби",
          в.status === 200 && в.headers.get("x-model") === "gemini-3.6-flash" && n3 === 2
          && в.headers.get("x-attempts") === "gemini-3.6-flash:as-is=503 gemini-3.6-flash:as-is=200",
@@ -322,7 +322,7 @@ const пнг = байтів => {
       return new Response(JSON.stringify({candidates:[{content:{parts:[{text:"є"}]}, finishReason:"STOP"}], usageMetadata:{}}), {status:200}); };
     в = await М.fetch(new Request("https://w.workers.dev/", {method:"POST",
         headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
-        body:JSON.stringify({model:"gemini-3.6-flash", messages:[{role:"user", content:"x"}]})}), envГ);
+        body:JSON.stringify({model:"gemini-3.6-flash", messages:[{role:"user", content:"x"}]})}), env_Г);
     тест("503 двічі поспіль → драбина: gemini-3.5-flash-lite відповідає, x-model називає її",
          в.status === 200 && в.headers.get("x-model") === "gemini-3.5-flash-lite" && n3 === 3
          && /gemini-3\.6-flash:as-is=503 gemini-3\.6-flash:as-is=503 gemini-3\.5-flash-lite:as-is=200/.test(в.headers.get("x-attempts")),
