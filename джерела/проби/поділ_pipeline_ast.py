@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Проба поділу pipeline.py (19.09.2026): кожна функція й константа, що переїхала в
-новий модуль, має ТОЙ САМИЙ AST, що й у pipeline.py до поділу (коміт ac8c2ca), і
-`pipeline.ім'я` — це той самий об'єкт, що й у модулі. Друкує факт, падає на розбіжності.
+"""Проба поділу pipeline.py: кожна функція/константа, що переїхала в новий модуль,
+має ТОЙ САМИЙ AST, що й у pipeline.py до поділу (коміт ac8c2ca) — ОКРІМ пар
+«модуль::ім'я» з `поділ_очікувані.json`, свідомо змінених комітами докстрінгів
+й наступними правилами (sha там-таки). Будь-яка ІНША розбіжність — падіння з іменем.
 Запуск: cd джерела && python3 проби/поділ_pipeline_ast.py [БАЗОВИЙ_КОМІТ]"""
 import ast, os, subprocess, sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ДЖЕРЕЛА = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ДЖЕРЕЛА)
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "ac8c2ca"
 МОДУЛІ = ("паспорт_нагоди", "пакет_моделі", "розбір_відповідей", "суд_від_моделі",
           "повнота_образу", "вердикт_моделі", "pipeline")
@@ -23,8 +25,8 @@ def вузли(текст):
 до = вузли(було)
 де, розбіжні, зайві = {}, [], []
 for м in МОДУЛІ:
-    if not os.path.exists(м + ".py"): continue
-    for ім, д in вузли(open(м + ".py", encoding="utf-8").read()).items():
+    if not os.path.exists(os.path.join(ДЖЕРЕЛА, м + ".py")): continue
+    for ім, д in вузли(open(os.path.join(ДЖЕРЕЛА, м + ".py"), encoding="utf-8").read()).items():
         if ім not in до: зайві.append((м, ім)); continue
         де.setdefault(ім, м)
         if до[ім] != д: розбіжні.append((м, ім))
@@ -32,9 +34,13 @@ for м in МОДУЛІ:
 import pipeline
 не_ті_самі = [ім for ім, м in де.items() if м != "pipeline"
               and getattr(pipeline, ім, None) is not getattr(__import__(м), ім)]
-print("вузлів у pipeline.py@%s: %d · знайдено після поділу: %d · AST розбіжні: %d · "
+import json
+ОЧІК = set(json.load(open(os.path.join(ДЖЕРЕЛА, "проби", "поділ_очікувані.json"), encoding="utf-8"))["pipeline"])
+спост = {"%s::%s" % п for п in розбіжні}
+поза_списком, не_справдилось = sorted(спост - ОЧІК), sorted(ОЧІК - спост)
+print("вузлів у pipeline.py@%s: %d · знайдено: %d · AST розбіжні: %d (очікувані: %d) · "
       "загублені: %d · нові імена: %d · pipeline.ім'я ≠ модуль.ім'я: %d"
-      % (БАЗА, len(до), len(де), len(розбіжні), len(загублені), len(зайві), len(не_ті_самі)))
-for х in (розбіжні, загублені, зайві, не_ті_самі):
+      % (БАЗА, len(до), len(де), len(розбіжні), len(ОЧІК), len(загублені), len(зайві), len(не_ті_самі)))
+for х in (поза_списком, не_справдилось, загублені, зайві, не_ті_самі):
     if х: print("  ", х)
-sys.exit(1 if (розбіжні or загублені or не_ті_самі) else 0)
+sys.exit(1 if (поза_списком or не_справдилось or загублені or не_ті_самі) else 0)

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Проба поділу accessory.py (19.09.2026, третя сесія хвилі стандарту): кожна функція й
-константа, що переїхала в новий модуль, має ТОЙ САМИЙ AST, що й у accessory.py до поділу
-(коміт b993a38), і `accessory.ім'я` — це той самий об'єкт, що й у модулі. Друкує факт,
-падає на розбіжності. Запуск: cd джерела && python3 проби/поділ_accessory_ast.py [БАЗОВИЙ_КОМІТ]"""
+"""Проба поділу accessory.py: кожна функція/константа, що переїхала в новий модуль,
+має ТОЙ САМИЙ AST, що й у accessory.py до поділу (коміт b993a38) — ОКРІМ пар
+«модуль::ім'я» з `поділ_очікувані.json`, свідомо змінених комітом докстрінгів
+(sha там-таки). Будь-яка ІНША розбіжність — падіння з іменем.
+Запуск: cd джерела && python3 проби/поділ_accessory_ast.py [БАЗОВИЙ_КОМІТ]"""
 import ast, os, subprocess, sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ДЖЕРЕЛА = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ДЖЕРЕЛА)
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "b993a38"
 МОДУЛІ = ("аксесуари_реєстр", "аксесуари_погода", "аксесуари_розмір", "аксесуари_край",
           "аксесуари_взуття", "аксесуари_носіння", "аксесуари_структура", "аксесуари_ціна",
@@ -24,8 +26,8 @@ def вузли(текст):
 до = вузли(було)
 де, розбіжні, зайві = {}, [], []
 for м in МОДУЛІ:
-    if not os.path.exists(м + ".py"): continue
-    for ім, д in вузли(open(м + ".py", encoding="utf-8").read()).items():
+    if not os.path.exists(os.path.join(ДЖЕРЕЛА, м + ".py")): continue
+    for ім, д in вузли(open(os.path.join(ДЖЕРЕЛА, м + ".py"), encoding="utf-8").read()).items():
         if ім not in до: зайві.append((м, ім)); continue
         де.setdefault(ім, м)
         if до[ім] != д: розбіжні.append((м, ім))
@@ -33,9 +35,13 @@ for м in МОДУЛІ:
 import accessory
 не_ті_самі = [ім for ім, м in де.items() if м != "accessory"
               and getattr(accessory, ім, None) is not getattr(__import__(м), ім)]
-print("вузлів у accessory.py@%s: %d · знайдено після поділу: %d · AST розбіжні: %d · "
+import json
+ОЧІК = set(json.load(open(os.path.join(ДЖЕРЕЛА, "проби", "поділ_очікувані.json"), encoding="utf-8"))["accessory"])
+спост = {"%s::%s" % п for п in розбіжні}
+поза_списком, не_справдилось = sorted(спост - ОЧІК), sorted(ОЧІК - спост)
+print("вузлів у accessory.py@%s: %d · знайдено: %d · AST розбіжні: %d (очікувані: %d) · "
       "загублені: %d · нові імена: %d · accessory.ім'я ≠ модуль.ім'я: %d"
-      % (БАЗА, len(до), len(де), len(розбіжні), len(загублені), len(зайві), len(не_ті_самі)))
-for х in (розбіжні, загублені, зайві, не_ті_самі):
+      % (БАЗА, len(до), len(де), len(розбіжні), len(ОЧІК), len(загублені), len(зайві), len(не_ті_самі)))
+for х in (поза_списком, не_справдилось, загублені, зайві, не_ті_самі):
     if х: print("  ", х)
-sys.exit(1 if (розбіжні or загублені or не_ті_самі) else 0)
+sys.exit(1 if (поза_списком or не_справдилось or загублені or не_ті_самі) else 0)
