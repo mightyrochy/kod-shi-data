@@ -13,6 +13,20 @@ let провалів = 0;
 const тест = (н, у, що) => { if (у) console.log("  ✓ " + н);
   else { провалів++; console.log("  ✗ " + н + "  →  " + JSON.stringify(що)); } };
 
+/* ── ФІКСТУРА ФОТО: СПРАВЖНЯ СИГНАТУРА І НЕ МЕНША ЗА 1 КБ ───────────────────
+   Тут довго лежали «фото» на 8 і 4 байти й буфер із самих нулів. Воркер 04.09
+   навчився відсівати заглушки крамниць саме за цими двома ознаками
+   (`сигнатура_картинки` + `байти.length < 1024` у `підготувати`), і відтоді ВСІ
+   п'ять звірок про фото були червоні — не тому, що міст їх не тягне, а тому,
+   що фікстура подавала йому рівно те, що він зобов'язаний викидати. Звірки
+   описували продукт вірно, брехала фікстура. Тепер вона віддає те, що віддала
+   б крамниця: PNG-сигнатура попереду, вага понад кілобайт. */
+const пнг = байтів => {
+  const б = new Uint8Array(Math.max(1024, байтів));
+  б.set([137, 80, 78, 71, 13, 10, 26, 10]);   // \x89PNG\r\n\x1a\n
+  return б;
+};
+
 (async () => {
   const тут = __dirname;
   const сир = fs.readFileSync(path.join(тут, "worker.js"), "utf-8")
@@ -34,7 +48,7 @@ const тест = (н, у, що) => { if (у) console.log("  ✓ " + н);
     if (/img\.example|dead\.example/.test(u)) {
       фотоЗапити.push(u);
       if (/dead/.test(u)) return new Response("нема", {status:404});
-      return new Response(new Uint8Array([137,80,78,71,13,10,26,10]), {status:200, headers:{"content-type":"image/png"}});
+      return new Response(пнг(2048), {status:200, headers:{"content-type":"image/png"}});
     }
     вихідні.push({url:u, headers:opts.headers, body:JSON.parse(opts.body)});
     /* як справжній fetch: abort через signal → відхилення, навіть якщо провайдер висить */
@@ -178,7 +192,7 @@ const тест = (н, у, що) => { if (у) console.log("  ✓ " + н);
   {
     вихідні.length = 0; фотоЗапити.length = 0;
     /* важкі фото: кожне 5 МБ, у стелю 14 МБ влізе лише два з чотирьох */
-    const важке = new Uint8Array(3.5 * 1024 * 1024);
+    const важке = пнг(3.5 * 1024 * 1024);
     const старий = globalThis.fetch;
     globalThis.fetch = async (url, opts) => {
       const u = String(url);
@@ -210,7 +224,7 @@ const тест = (н, у, що) => { if (у) console.log("  ✓ " + н);
     globalThis.fetch = async (url, opts) => {
       const u = String(url);
       if (/dead\.example/.test(u)) return new Response("нема", {status:404});
-      if (/img\.example/.test(u)) return new Response(new Uint8Array([137,80,78,71]), {status:200, headers:{"content-type":"image/png"}});
+      if (/img\.example/.test(u)) return new Response(пнг(2048), {status:200, headers:{"content-type":"image/png"}});
       return старий(url, opts);
     };
     в = await зап({model:"gemini-3.6-flash", messages:[{role:"user", content:[

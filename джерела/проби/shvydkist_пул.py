@@ -13,7 +13,9 @@
 import json, time, hashlib, gzip, os, shutil, tempfile
 import bridge as B
 
-ДО = {None: ("d372eda83c2b4dae", 337, 23.5), 0: ("24f8af5830418127", 345, 18.2)}
+# База ПЕРЕЗНЯТА на origin/main 65ce695 (18.09.2026): хеш і лічба — звідти,
+# часи лишаються ті, що були до правок швидкості, бо ×N міряє саме їх.
+ДО = {None: ("1b076c40b316bf35", 370, 23.5), 0: ("723a40c200c3b59f", 377, 18.2)}
 шлях = os.path.join(tempfile.gettempdir(), "shvydkist_каталог.xml")
 with gzip.open("../каталог_повний.xml.gz", "rb") as г, open(шлях, "wb") as в:
     shutil.copyfileobj(г, в)

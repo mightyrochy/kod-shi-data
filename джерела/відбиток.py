@@ -376,10 +376,36 @@ def _звідки_ід(d, вузол, вираз_вузол):
     return "; ".join(dict.fromkeys(джерела)) or імя_зм
 
 
+def _ід_констант(d):
+    """{імʼя модульної константи: ID}, якщо вона присвоєна ЦІЛИМ ID.
+
+    ЩО ЦЕ МІНЯЄ В РІШЕННІ (Н-00-04 §74, 19.09.2026). `правила` бачила лише
+    ID-літерал у самому виклику, а `language_gate` навмисно тримає свій ID
+    константою (`ЯРУС_УКРАЇНСЬКОЇ = "R-LNG-UA"`, коментар на language_gate.py:428:
+    «ід живе тут, бо тут він і породжується… перше перейменування розвело б їх
+    мовчки»). Наслідок: єдине місце емісії R-LNG-UA падало в `__непрямі__`, і в
+    розділі 3 відбитка правило виглядало як «правило без емітента» — відбиток
+    карав саме ту форму запису, яку стандарт вимагає. Константа модуля відома
+    статично, тож тут вона розвʼязується, а табличні ID (словник, параметр,
+    цикл) і далі йдуть у `__непрямі__`: там ID справді не відомий із тексту.
+    """
+    out = {}
+    for вузол in d.дерево.body:
+        if not isinstance(вузол, ast.Assign) or not isinstance(вузол.value, ast.Constant):
+            continue
+        if not isinstance(вузол.value.value, str) or not _ЦІЛИЙ_ІД(вузол.value.value):
+            continue
+        for ц in вузол.targets:
+            if isinstance(ц, ast.Name):
+                out[ц.id] = вузол.value.value
+    return out
+
+
 def правила(дерева):
     """Кожне місце, де код НАРОДЖУЄ знахідку правила."""
     out = collections.defaultdict(list)
     for імя, d in дерева.items():
+        _конст = _ід_констант(d)
         for вузол in ast.walk(d.дерево):
             if not isinstance(вузол, ast.Call):
                 continue
@@ -399,6 +425,8 @@ def правила(дерева):
                 if поз and isinstance(поз[0], ast.Constant) and isinstance(поз[0].value, str) \
                         and _ЦІЛИЙ_ІД(поз[0].value):
                     ід = поз[0].value
+                elif поз and isinstance(поз[0], ast.Name) and поз[0].id in _конст:
+                    ід = _конст[поз[0].id]
                     # ДВІ РІЗНІ СИГНАТУРИ, І ПЛУТАТИ ЇХ НЕ МОЖНА (перевірено в trace.py):
                     #   реєстр_правил._зн(правило, СИЛА, СУТЬ, речі, чому, …)
                     #   trace.запис(правило, ЯРЛИК, ВУЗОЛ, значення=, сила=, напрям=)
@@ -416,6 +444,8 @@ def правила(дерева):
             else:
                 кв = {k.arg: k.value for k in вузол.keywords if k.arg}
                 п = кв.get("правило")
+                if isinstance(п, ast.Name) and п.id in _конст:
+                    п = ast.Constant(value=_конст[п.id])
                 if isinstance(п, ast.Constant) and isinstance(п.value, str) \
                         and _ЦІЛИЙ_ІД(п.value):
                     ід = п.value
