@@ -5,7 +5,7 @@ hex-вводі (se_L=None) та на «профілі з фото» (se_L = по
 рахує extract.zone_stats) — ДО (стеля 0.85 без родів шуму; max(se)) і ПІСЛЯ."""
 import sys, pathlib, random
 _К = pathlib.Path(__file__).resolve().parent.parent; sys.path.insert(0, str(_К))
-import colorspace as cs, extract as X, pipeline as PL, fit as ПС
+import colorspace as cs, extract as X, pipeline as PL, fit as ПС, колір_простір_надійність as _Н  # поділ 20.09.2026: `gate_conclusions` читає сусідів зі СВОГО модуля — «до» патчить і фасад (через нього йдуть `outfit`, `колір_образу`), і модуль
 from стенд_знімок import _знахідки_рекурсивно
 T = ПС.тіло(168, dict(плечі=98, груди=92, талія=74, стегна=99, високе_стегно=88))
 РЕЧІ = [dict(id="a", слот="верх", hex="#1c1a1a", назва="Гольф чорний", тип="гольф", верх_см=140, низ_см=95),
@@ -27,9 +27,9 @@ def _kclr02(F):
     return ((z["сила"], z.get("сила_нп")) if z else ("нема", None), г["надійність"]["contrast"], г["утримано"])
 _НАД, _ПОХ = cs.надійність_контрасту, cs.похибка_контрасту
 def _до():                                   # стан до правки: одна стеля, max(se)
-    cs.надійність_контрасту = lambda source="uncontrolled", se_L=None: dict(надійність=cs.AXIS_RELIABILITY[source]["contrast"], регіональний_шум=None, чому="—")
-    cs.похибка_контрасту = lambda *se: max([float(s) for s in se if s], default=None)
-def _після(): cs.надійність_контрасту, cs.похибка_контрасту = _НАД, _ПОХ
+    cs.надійність_контрасту = _Н.надійність_контрасту = lambda source="uncontrolled", se_L=None: dict(надійність=cs.AXIS_RELIABILITY[source]["contrast"], регіональний_шум=None, чому="—")
+    cs.похибка_контрасту = _Н.похибка_контрасту = lambda *se: max([float(s) for s in se if s], default=None)
+def _після(): cs.надійність_контрасту = _Н.надійність_контрасту = _НАД; cs.похибка_контрасту = _Н.похибка_контрасту = _ПОХ
 rc = 0
 for назва, F in (("hex-ввід", _профіль()), ("фото σ=4", _профіль(4.0)), ("фото σ=10", _профіль(10.0))):
     se = F["шкіра"].get("se_L"), F["волосся"].get("se_L")
