@@ -663,11 +663,16 @@ def паспорт_з_json(текст, сценарій, слова, вето_ч
     if т:
         м = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", т, re.S)
         сир = м.group(1) if м else т[т.find("{"):т.rfind("}") + 1]
+        # П.14 (СТАНДАРТ §4): вхід тут — СИРИЙ ТЕКСТ МОДЕЛІ, і «це не JSON» —
+        # його нормальний стан, а не поломка коду; споживач бачить його полем
+        # `помилка_формату`, яке показ друкує жінці (`показ.html:4962`). Тому
+        # тип вузький і названий: `json.JSONDecodeError` — підклас ValueError,
+        # TypeError — коли зрізу взагалі не вийшло рядка. Решта летить далі.
         try:
             об = _json_.loads(сир)
             помилка = None if isinstance(об, dict) else ("JSON, але не об'єкт (%s)"
                                                          % type(об).__name__)
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             об, помилка = None, "не JSON (%s)" % str(e)[:60]
     if not isinstance(об, dict):
         п["помилка_формату"] = помилка
