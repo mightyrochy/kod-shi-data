@@ -57,7 +57,7 @@ def знахідки(x, акум):
 відбитки = {}
 for нап in ("ВІДСУТНЄ", None, False, "синтепон", "пух"):
     з = sorted(set(знахідки(O.перевірити(речі(нап), тіло=T, темп_c=-5.0), [])), key=str)
-    тф = json.dumps(O.теплова_функція(речі(нап), -5.0), ensure_ascii=False, sort_keys=True, default=str)
+    тф = json.dumps(O.теплова_функція(речі(нап)), ensure_ascii=False, sort_keys=True, default=str)
     відбитки[нап] = (з, тф)
     print("наповнювач=%-10r → знахідок %d · теплова_функція %s" % (нап, len(з), тф[:90]))
 однакові = len({json.dumps(v, ensure_ascii=False, default=str) for v in відбитки.values()}) == 1
