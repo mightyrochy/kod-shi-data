@@ -90,7 +90,9 @@ def джерела_інтересу(E):
                 _СЛ.запис("R-PRN-07", "розміщений мотив = створений фокус", "джерела_інтересу",
                           значення="%s → зона «%s»" % (_рм.get("за_чим"), _рм.get("зона")),
                           сила=None, напрям="джерело інтересу +1")
-            except Exception:
+            except Exception as _e:
+                import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                 pass
         if чому:
             дж.append(dict(річ=e.get("річ") or e.get("id"), слот=e.get("слот"),

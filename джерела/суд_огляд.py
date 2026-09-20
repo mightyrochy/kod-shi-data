@@ -105,7 +105,9 @@ def review(F, речі, source="uncontrolled", фокус=None, intent="conventi
             _м = _pr.масштаб(зріст_см)
             масштаб_особи = _м.get("масштаб_особи")
             рез_надійність = _м.get("надійність")
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             масштаб_особи, рез_надійність = None, None
     else:
         рез_надійність = None

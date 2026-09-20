@@ -380,7 +380,9 @@ def _придатність_принтів(F, речі, E, source, масшта�
     зн = []
     try:
         import palette as _P
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return зн
     for r in речі:
         пал = r.get("принт")

@@ -232,18 +232,24 @@ def входи_палітри(F, source="uncontrolled", самозвіт=None):
     """
     try:
         import palettes as _ПЛ, personal_palette as _PP, colorspace as _КС
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return {}
     try:
         ос = _ПЛ.осі(F or {}, source, самозвіт)
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return {}
     сивина = any((f.get("C", 99) or 0) < _КС.ACHROMATIC_C
                  for ім, f in (_PP._дані(F or {}) or {}).items() if str(ім).startswith("волосся"))
     try:
         import palette as _ПАЛ
         бік_b_очей = bool((_ПАЛ.бік_b_проти_людини(F or {}) or {}).get("вхід"))
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         бік_b_очей = False
     return dict(вікна=dict(L=_ПЛ._вікно_L(ос), C=_ПЛ._вікно_C(ос), сім_ї=_ПЛ._дуги_сімей(ос)),
                 бік_температури=abs(ос["позиція"]["hue"]) >= _ПЛ._ДОМІНАНТА_МІН / 2,
@@ -484,13 +490,17 @@ def чеклісти(знахідки, E, intent="conventional", палітра=
                   % підсумок["надлишок"], "чеклісти", значення=str(підсумок["надлишок"]), сила=None, напрям="чекліст")
         _СЛ.запис("K-SYS-09", "підлога прісності: %(провал)d провал / %(пройдено)d пройдено / %(без входу)d без входу"
                   % підсумок["прісність"], "чеклісти", значення=str(підсумок["прісність"]), сила=None, напрям="чекліст")
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         pass
     try:
         import trace as _СЛ2
         _СЛ2.запис("K-PAL-01", "чекліст палітри: %(провал)d провал / %(пройдено)d пройдено / %(без входу)d без входу"
                    % підсумок["палітра"], "чеклісти", значення=str(підсумок["палітра"]), сила=None, напрям="чекліст")
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         pass
     return dict(надлишок=над, прісність=прс, палітра=пал, аксесуари=акс, підсумок=підсумок,
                 знахідки=_знахідки_чекліста(над, прс, підсумок),

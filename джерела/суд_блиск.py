@@ -271,7 +271,9 @@ def метали(E, F, source="uncontrolled", драп=None, intent="conventiona
                                       контакт=_к_в)
                 w = як.get("тепло_особи") or 0.0
                 впев = як.get("впевненість") or 0.0
-            except Exception:
+            except Exception as _e:
+                import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                 w, впев = 0.0, 0.0
             проти = (w > 0 and к_вед == "холодний") or (w < 0 and к_вед == "теплий")
             # ── ПІДЛОГА МІРЯЄТЬСЯ ДО ОКРУГЛЕННЯ, А НЕ ПІСЛЯ (17.09.2026) ─────
