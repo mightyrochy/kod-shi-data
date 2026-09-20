@@ -158,6 +158,8 @@ must be keyed to a distance scenario (selfie/conversation vs full length/stage)�
 
 
 def _канон(v):
+    """Значення сценарію → канонічний ключ таблиць цього модуля (нижній регістр,
+    пробіли на підкреслення, країв нема)."""
     return (str(v or "")).strip().lower().replace(" ", "_")
 
 
