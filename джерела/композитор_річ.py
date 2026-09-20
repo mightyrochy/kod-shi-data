@@ -33,7 +33,10 @@ def _виразність(r):
     if r.get("візерунок") not in (None, "", "solid", "однотон"): в += 1.0
     if r.get("lab"):
         try: в += min(1.0, _cs.lch(tuple(r["lab"]))[1] / 60.0)
-        except Exception: pass
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
+            pass
     if str(r.get("текстура") or "") in ("satin", "patent", "smooth-shine", "knit-chunky", "tweed-boucle", "leather"): в += 0.5
     return в
 
@@ -73,11 +76,14 @@ def _near_слота(слот, дистанція=None):
     try:
         import колір_образу as _КО
         return _КО.near_слота(слот, дистанція)
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return 0.9 if слот in ("верх", "сукня", "комплект") else 0.1
 
 
 def _hex_від_lab(lab):
+    """hex з lab речі; сірий #808080 лише коли lab нема (тоді це видно)."""
     if not lab: return "#808080"
     import colorspace as _cs
     r, g, b = (max(0.0, min(1.0, x)) for x in _cs.to_rgb(*lab))
@@ -136,7 +142,9 @@ def _у_річ(r, слот, тіло, дистанція=None):
             import feed as _Ф
             _м = _Ф.метал(r, слот)
             if _м: r = dict(r, метал=_м)
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             pass
     H = (тіло or {}).get("висоти") or {}
     гео = {"верх": (H.get("плечі"), H.get("стегна")),
@@ -192,5 +200,6 @@ def _у_річ(r, слот, тіло, дистанція=None):
 
 
 def _середня_відстань(комбо):
+    """Середня `_відстань` до центрів вікон по речах комбінації; None без відстаней."""
     д = [r.get("_відстань") for r in комбо if r.get("_відстань") is not None]
     return round(sum(д) / len(д), 2) if д else None

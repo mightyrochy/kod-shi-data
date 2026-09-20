@@ -44,7 +44,9 @@ def _поза_сценою(речі, сцен):
     try:
         д = _ФОРМ.сценарій(місце=сцен.get("місце"), нагода=сцен.get("нагода"),
                            година=сцен.get("година"), темп_c=сцен.get("темп_c"))["діапазон"]
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return речі, [], None
     # ОШАТНІСТЬ ІЗ ПАСПОРТА ВИПАДКУ ПЕРЕВАЖУЄ ТАБЛИЦЮ (05.09.2026): слова людини — перші
     _о = сцен.get("_ошатність")
@@ -95,7 +97,9 @@ def _придатні(каталог, жорстке_ні, вето, тіло, �
     _код = None
     try:
         _код = _ФОРМ.код_дрес((сцен or {}).get("дрес_код")) if (сцен or {}).get("дрес_код") else None
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         _код = None
     _забор = set(_ФОРМ.КОДИ_ТИП_ЗАБОРОНА.get(_код) or ()) if _код else set()
     if _код == "casual":
@@ -124,6 +128,7 @@ def _придатні(каталог, жорстке_ні, вето, тіло, �
         import аксесуари_реєстр as _АР
         _стеля = float(_АР.C[_стеля_кл])
         def _см(r):
+            """Висота каблука в см або None, коли поле відсутнє чи не число."""
             try: return float(r["каблук_см"])
             except (TypeError, ValueError, KeyError): return None
         _високі = [r for r in речі if r.get("слот") == "взуття"

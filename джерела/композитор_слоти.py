@@ -33,7 +33,9 @@ def _вікна_на_межі(F, слоти, intent, вікна_ядра, source
     import palette as P
     try:
         р = P.розвилка(O.контраст_особи(F), intent)
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return []
     ключ = lambda q: (q.get("слот"), q.get("L_min"), q.get("L_max"), q.get("C_min"), q.get("C_max"), q.get("h_from"), q.get("h_to"))
     ядро = {ключ(q) for q in (вікна_ядра or []) if isinstance(q, dict)}
@@ -44,7 +46,9 @@ def _вікна_на_межі(F, слоти, intent, вікна_ядра, source
             вікна = [q for q in P.запит_у_фід(P.специфікація(F, g["схема"], слоти, source=source,
                                                               дистанція=дистанція))
                      if isinstance(q, dict) and q.get("L_min") is not None]
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             continue
         if вікна and all(ключ(q) in ядро for q in вікна): continue      # це і є ядро
         out += [dict(q, _схема=g["схема"], _вага=g.get("вага")) for q in вікна if ключ(q) not in ядро]
@@ -58,7 +62,9 @@ def _влучає(r, q):
         if r.get("вікно"):
             return feed.частка_вікна(r["вікно"], q)
         return 1.0 if feed.підходить(r["lab"], q) else 0.0
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return None
 
 
@@ -73,6 +79,7 @@ def _кандидати_гілки(речі, вікна, слот, ядро_ід
     # принт-ехо) не додає кандидатів, поки є хоч один із основного. Те саме
     # правило, що в `feed.покриття`, і той самий поділ — `feed.хвилі`.
     def _збір(вік):
+        """(відстань, річ, вікно) для кожної речі слота, що влучає в одне з вікон `вік`."""
         out = []
         for q in вік:
             if q.get("слот") and q["слот"] != слот: continue
@@ -110,7 +117,9 @@ def _поза_палітрою(речі, вікна_усі, слот, зайня
         if any((_влучає(r, q) or 0) > 0 for q in центри): continue
         try:
             d = min(feed.відстань_до_центру(r["lab"], q) for q in центри) if центри else 0.0
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             continue
         бачені.add(к)
         out.append(dict(r, _відстань=d, _вікно=None, _гілка=ГІЛКА_РОЗРИВ))
@@ -136,7 +145,9 @@ def _своя_мова(r, реєстр_людини):
     try:
         import реєстри as _РЕ
         return bool(set(_РЕ.реєстр_речі(r).get("бали") or {}) & set(реєстр_людини))
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return False
 
 
@@ -191,6 +202,8 @@ def _кандидати_на_слот(речі, вікна, слот, тіло, 
     # «підходить», і колірний шар на «взуття»/«сумці» лишався б порожнім
     # твердженням — рівно те, що наряд і міряє.
     def _збір_слота(вік):
+        """(відстань, річ, вікно) для речей слота у вікнах `вік`: зона слова через
+        `описує_річ`/`частка_вікна`, точка з фото через `підходить`/`відстань_до_центру`."""
         out = []
         for q in (вік or []):
             if q.get("слот") and q["слот"] != слот: continue
@@ -214,7 +227,9 @@ def _кандидати_на_слот(речі, вікна, слот, тіло, 
                     else:
                         if not feed.підходить(r["lab"], q): continue
                         d = feed.відстань_до_центру(r["lab"], q)
-                except Exception:
+                except Exception as _e:
+                    import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                    if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                     continue
                 out.append((d, r, q))
         return out
@@ -288,10 +303,14 @@ def _кандидати_на_слот(речі, вікна, слот, тіло, 
     # `palette.бік_b_речі`. Після рангу риси, бо те — порядок рядків тієї самої
     # лабораторії (R-COL-17, T2), і перед реєстром людини (T3 конвенція).
     def _проти_боку_b(r, q):
+        """1, коли річ на протилежному боці b* від рядка (R-COL-16); інакше 0."""
         бік = int((q or {}).get("b_бік") or 0)
         if not бік or not r.get("lab"): return 0
         try: return 1 if _P_бік.бік_b_речі(r["lab"]) == -бік else 0
-        except Exception: return 0
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
+            return 0
     import palette as _P_бік
     підходящі.sort(key=lambda x: (x[0], int((x[2] or {}).get("ранг_риси") or 9),
                                   _проти_боку_b(x[1], x[2]),
@@ -409,7 +428,10 @@ def добір_дуги(каталог, слот, дуга, C_min=0.0, наяв�
     for r in (каталог or []):
         if r.get("слот") != слот or not r.get("lab"): continue
         try: L, C, h = _КС.lch(r["lab"])
-        except Exception: continue
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
+            continue
         if C < float(C_min): continue
         if not ((lo <= hi and lo <= h <= hi) or (lo > hi and (h >= lo or h <= hi))): continue
         у_слоті.append(r)
