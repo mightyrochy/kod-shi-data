@@ -88,6 +88,13 @@ def _se_медоїда(labs, n_boot=12, seed=3):
     return round((sum((x-сер)**2 for x in оцінки)/max(1,len(оцінки)-1))**0.5, 2)
 
 def zone_stats(labs, sample=4000):
+    """Статистика однієї зони з її пікселів у Lab: домінанта, середнє, перцентилі,
+    розкид і `se_L` виміру. None — коли пікселів нема.
+
+    Домінанта — МЕДОЇД, а не середнє: середнє двох пасом L*85 і L*18 дало б колір,
+    якого на голові нема. `spread` рахується як p90−p10, а не max−min — робастно до
+    одиничних викидів (блік, тінь). Вибірка обмежена 4 000 пікселів із фіксованим
+    сідом, тож два прогони на тому самому фото дають те саме число."""
     if not labs: return None
     if len(labs) > sample: labs = random.Random(СІД).sample(labs, sample)
     Ls = sorted(l[0] for l in labs); n=len(Ls); p=lambda q: Ls[min(n-1,int(q*n))]
