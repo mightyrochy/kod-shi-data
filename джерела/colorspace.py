@@ -167,7 +167,9 @@ from колір_простір_риси import (ЗОВНІШНІ_ВХОДИ, VAL
 
 if __name__=="__main__":
     import random
-    def px(L,a,b,n,sd=2.0): return [(L+random.gauss(0,sd), a+random.gauss(0,1), b+random.gauss(0,1.5)) for _ in range(n)]
+    def px(L,a,b,n,sd=2.0):
+        """Синтетичні пікселі для самоперевірки `density`: n точок навколо (L, a, b) з гаусовим шумом."""
+        return [(L+random.gauss(0,sd), a+random.gauss(0,1), b+random.gauss(0,1.5)) for _ in range(n)]
 
     print("1) РІВНОМІРНЕ ВОЛОССЯ")
     d=density(px(45,10,18,300)); print(f"   мод={len(d['моди'])} вкраплень={len(d['вкраплення'])} розкид={d['розкид']}")
