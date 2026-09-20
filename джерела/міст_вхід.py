@@ -322,7 +322,8 @@ def паспорт(вхід):
         # розмови, програвала здогаду моделі. Обидва рішення — в одному парсері.
         п = _PL.паспорт_з_json(d.get("json_моделі"), d.get("сценарій") or {}, d.get("вимоги") or "",
                                d.get("вето"),
-                               паспорт_досі=(d.get("паспорт") if isinstance(d.get("паспорт"), dict) else None))
+                               паспорт_досі=(d.get("паспорт") if isinstance(d.get("паспорт"), dict) else None),
+                               драп=(d.get("драп_сирий") or d.get("драп") or None))
         return _json.dumps(dict(паспорт=п, випадок=_PL.паспорт_рядком(п),
                                 помилка_формату=(п.get("помилка_формату") or "")),
                            ensure_ascii=False, default=str)
