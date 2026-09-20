@@ -43,7 +43,9 @@ def вибірка(offers, на_слот=6, сід=17, крім=ЗАГЛУШКО
             continue
         try:
             с = F.слоти(o).get("слот")
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             с = None
         if not с:
             continue
@@ -67,7 +69,9 @@ def _не_спати(вимкнути=False):
         import ctypes
         ctypes.windll.kernel32.SetThreadExecutionState(0x80000000 if вимкнути else 0x80000001)
         return True
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         return False
 
 
@@ -97,6 +101,7 @@ def повний(offers, а):
     лог = open(а.лог, "a", encoding="utf-8") if а.лог else None
 
     def каж(текст):
+        """Рядок у лог (або на екран) з часом."""
         рядок = "%s  %s" % (time.strftime("%H:%M:%S"), текст)
         print(рядок, file=лог or sys.stdout, flush=True)
 
@@ -122,6 +127,8 @@ def повний(offers, а):
         вхід.put(o)
 
     def качальник():
+        """Потік-качалка: офер із черги → фото в кеш → відсів заглушок (з підстраховкою
+        сторінкою товару) → черга міряльників; повна черга — це і є стеля диска."""
         while True:
             try:
                 o = вхід.get_nowait()
@@ -134,6 +141,7 @@ def повний(offers, а):
             м = o.get("магазин") or ""
 
             def відсіяти(фото):
+                """Заглушки цієї речі під замком: повтори за хешем і за адресою з каталогу."""
                 with зам:
                     for ф in фото:
                         if ф.get("хеш"):
@@ -150,6 +158,8 @@ def повний(offers, а):
             фото_q.put((o, фото))          # черга повна → качалка чекає: це і є стеля диска
 
     def міряльник():
+        """Потік-міряльник: `обробити` на готових фото, кеш речі геть, запис у вихідну чергу;
+        збій — запис із `помилка`, щоб `--продовжити` перепробував."""
         while True:
             п = фото_q.get()
             if п is None:
@@ -169,6 +179,7 @@ def повний(offers, а):
         т.start()
 
     def сторож():
+        """Дочекатись качалок і покласти міряльникам стоп-сигнали."""
         for т in качалки:
             т.join()
         for _ in міряльники:
@@ -254,6 +265,7 @@ def проба_реферера(offers, на_крамницю=3):
 
 # ── ГОЛОВНЕ ─────────────────────────────────────────────────────────────────
 def main():
+    """Аргументи командного рядка → один із прогонів: --вибірка, --повний, --злити, --реферер."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--вибірка", action="store_true", help="прогнати вибірку 60 речей")
     ap.add_argument("--повний", action="store_true", help="усі офери каталогу → каталог_збагачення_v2.json")

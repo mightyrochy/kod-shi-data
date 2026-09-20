@@ -191,7 +191,9 @@ def _comfy():
                 from system.clients.comfyui import ComfyUIClient
                 ComfyUIClient(COMFY_ХОСТ, COMFY_ПОРТ).system_stats()
                 _SAM_ЖИВИЙ = True
-            except Exception:
+            except Exception as _e:
+                import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+                if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                 _SAM_ЖИВИЙ = False
     if not _SAM_ЖИВИЙ:
         return None
