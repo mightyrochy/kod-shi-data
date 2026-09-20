@@ -343,7 +343,9 @@ def специфікація(F, схема, слоти, якір_тон=None, so
     import palettes as _PL
     try:
         _рівень = O.контраст_особи(F, source=source).get("рівень")
-    except Exception:
+    except Exception as _e:
+        import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+        if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
         _рівень = None
     # ── САМОЗВІТ У ПРАКТИКОВУ ПАЛІТРУ (Н-V03-007) ────────────────────────────
     # Параметр `самозвіт` у `palettes.палітра_практична` стояв від початку, і жоден
@@ -389,7 +391,9 @@ def специфікація(F, схема, слоти, якір_тон=None, so
     if isinstance(основа, dict) and основа.get("база_hex") and основа.get("база_тип") == "колір":
         try:
             _L_о, _C_о, _h_о = lch(hx(основа["база_hex"]))
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             _L_о = None
         if _L_о is not None:
             import palettes as _PL_о
