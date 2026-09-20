@@ -94,6 +94,30 @@ const ПРОФІЛІ = {
     await стор.waitForTimeout(400);
     const файл = path.join(ТЕКА, 'плашки_59_' + МІТКА + '_сід' + сід + '.png');
     await стор.locator('#е-палітра').screenshot({ path: файл });
+    /* КОНТРАСТ ПІДПИСУ НА ГРАДІЄНТІ. Питання власника — чи не з'їдає градієнт
+       підпис на світлому й темному краях. Міряємо ГЕОМЕТРІЄЮ, а не оком: підпис
+       плашки — текстовий вузол ПІД смугою зразків (`#пал-основа .чип:has(.зразки)`
+       — колонка), і якщо його прямокутник не перетинає прямокутник смуги, то
+       підпис лежить не на градієнті, а на тлі картки, і контраст той самий, що
+       був до правки. Друкуємо і колір тексту, і тло картки, і найсвітліший та
+       найтемніший зразки крайніх плашок. */
+    const підпис = await стор.evaluate(() => {
+      const ч = [...document.getElementById('пал-основа').children].filter(е => е.dataset && е.dataset.сімя);
+      const перетин = [];
+      for (const х of ч) {
+        const см = х.querySelector('.зразки'), рд = document.createRange();
+        рд.selectNodeContents(х);
+        const т = [...х.childNodes].filter(н => н.nodeType === 3 && н.textContent.trim());
+        if (!см || !т.length) continue;
+        рд.selectNode(т[0]);
+        const a = см.getBoundingClientRect(), b = рд.getBoundingClientRect();
+        if (!(b.top >= a.bottom - 0.5 || b.bottom <= a.top + 0.5)) перетин.push(х.textContent.trim().slice(0, 40));
+      }
+      const ст = getComputedStyle(ч[0]);
+      return {плашок: ч.length, підпис_на_градієнті: перетин,
+              колір_тексту: ст.color, тло_чипа: ст.backgroundColor};
+    });
+    console.log('   підпис: ' + JSON.stringify(підпис));
     /* ФАКТ ПРО ВИБІР: дотик до першої плашки-основи (не до «хай обере стилістка»). */
     const вибір = await стор.evaluate(() => {
       const ч = [...document.getElementById('пал-основа').children].filter(е => е.dataset && е.dataset.сімя);
