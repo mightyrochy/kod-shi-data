@@ -21,10 +21,9 @@ _споживає |= {с["поле"] for с in accessory.НОСІЇ_КРАЮ.val
 
 def _сироти(як):
     вир = set()
-    # поділ accessory і outer (19.09.2026): писачі гілок — у модулях, які фасади реекспортують
-    реекспортовані = [__import__(в.module) for ф in (accessory, outer)
-                      for в in ast.parse(inspect.getsource(ф)).body
-                      if isinstance(в, ast.ImportFrom) and в.level == 0 and в.module]
+    # поділ accessory, outer і feed (19.09.2026): писачі гілок — у модулях, які фасади
+    # реекспортують ЦІЛКОМ (не залежності фасаду) — той самий помічник, що в перевірці
+    реекспортовані = SP._реекспортовані((accessory, outer, feed))
     for м in (areas, feed, composer, pipeline, accessory, outer, *реекспортовані):
         s = як(inspect.getsource(м))
         вир |= set(re.findall(r"(\w+)\s*=", s))
@@ -36,8 +35,10 @@ def _сироти(як):
 
 _до = _сироти(lambda s: s)
 print("ФАКТ · сирий текст (як було): %d сиріт — %s" % (len(_до), ", ".join(_до)))
-print("ФАКТ · рядок feed.py:2987 — коментар: %r"
-      % open(_КОРІНЬ / "feed.py", encoding="utf-8").read().split("\n")[2986].strip()[:72])
+# поділ feed (19.09.2026): рядок переїхав у фід_збагачення.py (накласти_збагачення); шукається словом
+print("ФАКТ · рядок фід_збагачення.py (було feed.py:2987) — коментар: %r"
+      % next(р for р in open(_КОРІНЬ / "фід_збагачення.py", encoding="utf-8").read().split("\n")
+             if "Доти тут стояло" in р).strip()[:72])
 _зараз = SP._поля_без_постачальника()[1]
 print("ФАКТ · перевірка зараз: %s" % _зараз)
 print("ФАКТ · «формальність» повернулась у сироти: %s"
