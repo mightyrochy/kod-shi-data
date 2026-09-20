@@ -40,6 +40,11 @@ AXIS_RELIABILITY = {
 MIN_TO_EMIT = 0.5     # T3: нижче цього вісь не несе висновків, лише повідомляється
 
 def reliability(source="uncontrolled"):
+    """Надійність осей (value, contrast, chroma, hue, undertone) для джерела даних `source` з
+    `AXIS_RELIABILITY`; невідоме джерело — KeyError (помилка викликача, не «нема даних»).
+
+    Чому так: K-PC-05 — висновки гейтуються умовами зйомки (R-COL-06/09, K-COND-03);
+    числа — T3."""
     return AXIS_RELIABILITY[source]
 
 # ── R-PC-10: ДВА РОДИ ПОХИБКИ ФОТО — КОНТРАСТ ВИЖИВАЄ ЛИШЕ ОДИН ──────────────

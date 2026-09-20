@@ -419,8 +419,11 @@ def перерахувати_рису(F, риса, lab, kind=None, lex=None):
 RELATIONS = {"analogous":(0,30), "complementary":(180,30), "split":(150,22),
              "triadic":(120,25), "tonal":(0,12)}
 
-def _arc(c,half): return ((c-half)%360, (c+half)%360)
+def _arc(c,half):
+    """Дуга (c − half, c + half) по модулю 360."""
+    return ((c-half)%360, (c+half)%360)
 def _in_arc(h,a):
+    """Чи кут h лежить у дузі a, з переходом через 0°."""
     lo,hi=a; return (lo<=h<=hi) if lo<=hi else (h>=lo or h<=hi)
 
 # R-MUN-03 — дубль `colorspace.feature_spectrum`: хрома — самостійна вісь, не похідна value.
@@ -439,6 +442,8 @@ def feature_spectrum(f, intent):
                 температура=f["warmth"], підтон=f["undertone"])
 
 def spectra_by_feature(F, intent):
+    """Спектр дозволеного (`feature_spectrum`) для кожної риси профілю, крім службових з `_`; поле
+    `риса` — ім'я."""
     out={}
     for nm,f in F.items():
         if nm.startswith('_'): continue
@@ -477,7 +482,9 @@ def регіони(F, source="uncontrolled"):
     рел = reliability(source)
     розп = F.get("_розподіли", {}) or {}
     пікс = F.get("_пікселі", {}) or {}
-    def _C(f): a, b = f.get("a", 0.0), f.get("b", 0.0); return (a*a + b*b) ** 0.5
+    def _C(f):
+        """Хрома риси з полів a, b (0, коли їх нема)."""
+        a, b = f.get("a", 0.0), f.get("b", 0.0); return (a*a + b*b) ** 0.5
     риси, хмара = {}, []
     for nm in ("шкіра", "волосся", "волосся_біля_обличчя", "очі"):
         f = F.get(nm)
@@ -532,7 +539,10 @@ def регіони(F, source="uncontrolled"):
     # «ВПЕВНЕНІСТЬ» тут = СИЛА властивості (репрезентація для стиліста: НАСКІЛЬКИ тепла/контрастна
     # людина), НЕ надійність виміру. Неперервно, сигмоїдою (soft), 0..1; тепло — знакове.
     # Центри/ширини сигмоїд — T3 (орієнтир, де «слабко/помірно/сильно»), не калібровані.
-    def _sig(x, c, w): return round(1/(1+math.exp(-(x-c)/w)), 2)
+    def _sig(x, c, w):
+        """Логістична сила властивості 0..1 з центром c і шириною w, округлена до сотих; центри й
+        ширини — T3."""
+        return round(1/(1+math.exp(-(x-c)/w)), 2)
     тепло_особи = (F.get("шкіра") or {}).get("тепло_сила")   # −1.5..+1.5 знакова сила warm/cool
     сила = dict(
         тепло=тепло_особи,                                              # знакова: −холод .. +тепло

@@ -74,7 +74,10 @@ def skin_photo_uncertainty(protocol="uncontrolled"):
            }[protocol]
 
 # ─────────────────────────── ШКІРА ────────────────────────────────────────
-def ita(L,b): return math.degrees(math.atan2(L-50,b)) if b else float("nan")
+def ita(L,b):
+    """ITA° = atan2(L* − 50, b*) у градусах (Chardon 1991, REGISTRY «ita_domain»); при b* = 0 — nan, не
+    краш."""
+    return math.degrees(math.atan2(L-50,b)) if b else float("nan")
 def ita_band(i):
     """Єдиний шлях смуги ITA. nan (b*≈0) -> явна невизначеність, не краш."""
     if i!=i: return "невизначена (b*≈0)"
@@ -83,7 +86,9 @@ ITA_BANDS=[(55,1e9,"very light"),(41,55,"light"),(28,41,"intermediate"),
            (10,28,"tan"),(-30,10,"brown"),(-1e9,-30,"dark")]
 ITA_DOMAIN = REGISTRY["ita_domain"]["val"]   # область значень atan2(L*-50, b*) при b*>0
 
-def _норм_cdf(x): return 0.5*(1.0+math.erf(x/math.sqrt(2.0)))
+def _норм_cdf(x):
+    """Функція розподілу стандартної нормальної через erf."""
+    return 0.5*(1.0+math.erf(x/math.sqrt(2.0)))
 
 def _σ_lab_з_σ_ita(lab, σ_ita):
     """ЯКОБІАН ita(): переводить σ по ITA° в σ по (L*, b*).
@@ -144,9 +149,15 @@ def skin_pos(lab, sigma=0.0, protocol=None):
 
 # Словники ВИНЕСЕНО у lexicons/*.json (дані, не код). Геометрія від них не залежить.
 def L_from_ht(ht):
+    """L* волосся з рівня HT 1–10: степенева інтерполяція між якорями `CONST["ht_anchors"]` з
+    показником `CONST["ht_power"]`.
+
+    Чому так: рівень ∝ L*^0.766 — Lee 2024 (T1, N=47, 246 зразків); якорі L* для
+    HT1/HT10 — T3 (реєстр)."""
     lo,hi=CONST["ht_anchors"][0]
     return lo+(hi-lo)*((max(1,min(10,ht))-1)/9)**(1/CONST["ht_power"][0][0])
 def ht_from_L(L):
+    """Рівень HT 1–10 з L* волосся — обернена до `L_from_ht`, обрізана до шкали й округлена до 0.1."""
     lo,hi=CONST["ht_anchors"][0]
     return round(1+9*max(0.,min(1.,(L-lo)/(hi-lo)))**CONST["ht_power"][0][0],1)
 ACHROMATIC_C = 2.0        # T3: нижче цього C* тон — шум округлення, не колір
@@ -195,6 +206,11 @@ def achromatic(lab):
     return C < ACHROMATIC_C, C
 
 def hair_cast(lab):
+    """Каст волосся проти типового коричневого: відхилення (a, b) від `HAIR_NEUTRAL_AB` і слово —
+    типове, попелясте, рудувате, золотисте; ахроматичне волосся температури не несе (K-TIME-01).
+
+    Чому так: нуль-точка волосся коричнева, не сіра (Lee 2024, T3-якір); пороги
+    4/−3/6/6 — T3, не калібровані. Це опис, а не підстава прибирати тоновий голос."""
     # K-TIME-01 (24.08.2026): ахроматичне (сиве/біле) волосся температури НЕ несе —
     # якір нейтралі коричневий (Lee 2024) стосується лише пігментованого волосся.
     if lch(lab)[1] < ACHROMATIC_C:
