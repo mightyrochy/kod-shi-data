@@ -497,15 +497,22 @@ function відповісти(текст) {
      замовчуванням і як — після дотику по рядку «код не знає · N». */
   if (process.env.ZNIMKY){
     const тека = process.env.ZNIMKY; fs.mkdirSync(тека, {recursive: true});
+    /* Знімаємо руку з НАЙДОВШИМ переліком (руки 1–2 з каталогом): саме на ній
+       видно, що п'ятірки більше нема. Пейджер ховає решту карток, тому картку
+       спершу показуємо ним — знімок схованого елемента не вийшов би. */
+    let поз = 0; for (let i = 1; i < с2.картки.length; i++) if (с2.картки[i].питань > с2.картки[поз].питань) поз = i;
+    await стор.evaluate(п => показатиОбраз(п), поз);
+    await с(300);
     const кадр = async (мітка) => {
       const ш = path.join(тека, 'kartka_87_seed' + СІД + '_' + мітка + '.png');
-      await (await стор.$('#к-0')).screenshot({path: ш});
+      await (await стор.$('#к-' + поз)).screenshot({path: ш});
       console.log('   знімок:', ш, fs.statSync(ш).size, 'Б');
     };
     await кадр('zgornuto');
-    await стор.evaluate(() => { const д = document.querySelector('#к-0 .питання-коду'); if (д) д.open = true; });
+    await стор.evaluate(п => { document.querySelector('#к-' + п + ' .питання-коду').open = true; }, поз);
     await с(300); await кадр('rozgornuto');
-    await стор.evaluate(() => { const д = document.querySelector('#к-0 .питання-коду'); if (д) д.open = false; });
+    await стор.evaluate(п => { document.querySelector('#к-' + п + ' .питання-коду').open = false; }, поз);
+    await стор.evaluate(() => показатиОбраз(0)); await с(200);
   }
 
   /* 3. промпти між ітераціями — JSON, а не проза */
