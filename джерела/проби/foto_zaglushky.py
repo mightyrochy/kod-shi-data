@@ -5,16 +5,16 @@
 import collections, gzip, os, re, statistics, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ТУТ)
-import feed as F, жнива_v2 as Ж
+import feed as F, жнива_v2 as Ж, жнива_фото as ЖФ   # _OPENCART читає `збільшити_url` зі СВОГО модуля — підміна там
 КРАМНИЦІ = ("vilni.store", "ricamare.com.ua", "sezone.ua", "25union.com.ua", "emmeliedelage.com")
 шлях = sys.argv[1] if len(sys.argv) > 1 else Ж.КАТАЛОГ
 with (gzip.open if шлях.endswith(".gz") else open)(шлях, "rb") as f:
     offers, _ = F.читати_yml(f)
-новий_opencart = Ж._OPENCART
+новий_opencart = ЖФ._OPENCART
 
 
 def добір(o, новий):
-    Ж._OPENCART = новий_opencart if новий else re.compile(r"(?!)")
+    ЖФ._OPENCART = новий_opencart if новий else re.compile(r"(?!)")
     url_л, стелі = Ж._url_крамниць([x for x in offers if x.get("магазин") == o["магазин"]])
     відсів = lambda фф: Ж.позначити_одну(фф, lambda ф: url_л[o["магазин"]][Ж.збільшити_url(ф["url"])],
                                          стеля=стелі[o["магазин"]])
