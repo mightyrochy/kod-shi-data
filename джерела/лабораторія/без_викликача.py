@@ -125,7 +125,7 @@ def з_тілом(г, T, intent="conventional"):
     try:
         import hypergraph as ГГ
         пр = ГГ.простір(T, intent=intent, сітка="крої")
-        тіл = ГГ.ребра(T, пр, intent=intent)
+        тіл = ГГ.ребра(T, пр, intent)
     except Exception:
         return г
     ребра = list(г["ребра"])
