@@ -244,7 +244,9 @@ def принт_придатність(палітра, F=None, source="protocoliz
         try:
             import profile as _pr
             ко = _pr.контраст(F, source=source).get("value_gap")
-        except Exception:
+        except Exception as _e:
+            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
+            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
             ко = None
     if чк is None or ко is None:
         нема_виміру.append(dict(правило="P-PRT-02",
