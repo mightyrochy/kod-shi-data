@@ -150,4 +150,6 @@ CONST = {k: (REGISTRY[k]["val"], REGISTRY[k]["t"], REGISTRY[k]["src"])
 
 WIDTHS = {"b":4.0,"L":5.0,"C":6.0,"h":3.0,"grey":3.0,"hue_band":12.0}   # усі T3
 def tier(*keys):
+    """Тір набору констант: «T3», якщо хоч одна з них T3, інакше «T1» — найслабший доказ визначає тір
+    (сила ≤ верифікація)."""
     return "T3" if any(REGISTRY[k]["t"]=="T3" for k in keys) else "T1"

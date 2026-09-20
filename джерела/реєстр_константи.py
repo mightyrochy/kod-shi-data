@@ -361,6 +361,8 @@ def правила_без_константи(reg=None, карта=None):
     return sorted(п for п in карта if п not in голосують)
 
 def registry_report():
+    """Зведення реєстру констант: скільки всього, скільки T3, службових, правил без константи; поле
+    `чесно` — жодна не калібрована."""
     return dict(всього=len(REGISTRY),
                 за_тірами={"T3": sum(1 for v in REGISTRY.values() if v["t"]=="T3")},
                 службових_констант=sum(1 for v in REGISTRY.values() if v.get("службова")),
