@@ -66,11 +66,11 @@ def розрив_осей(source="uncontrolled"):
     """(розрив, контраст, підтон). Наскільки вісь контрасту надійніша за вісь
     підтону НА ЦЬОМУ ДЖЕРЕЛІ. Вимір із `colorspace.AXIS_RELIABILITY`, а не
     твердження з літератури."""
-    try:
-        R = reliability(source)
-        к, п = float(R["contrast"]), float(R["undertone"])
-    except Exception:
-        return None, None, None
+    # п.14 (20.09.2026): `source` — одне з трьох імен `AXIS_RELIABILITY`, і кожен
+    # запис має обидві осі; невідоме ім'я — помилка викликача, яка має впасти в
+    # `bridge.виклик`, а не тихо вимикати обмеження слабшої осі (`розрив=None`).
+    R = reliability(source)
+    к, п = float(R["contrast"]), float(R["undertone"])
     return round(к - п, 3), к, п
 
 
@@ -136,10 +136,7 @@ def _слід_rpc03(source, розрив, к, п, діє, обмежено, є_�
     різницю між «температуру не дивились» і «температуру подивились і не мали чого
     сказати при цій якості входу».
     """
-    try:
-        import trace as _СЛ
-    except Exception:
-        return
+    import trace as _СЛ       # п.14: модуль продукту; збій імпорту — зламана збірка, не «сліду нема»
     if розрив is None:
         return
     if not діє:
