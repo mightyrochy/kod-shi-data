@@ -26,20 +26,29 @@ from колір_простір_реєстр import REGISTRY
 # ─────────────────────────── Lab ↔ RGB (робочий простір) ───────────────────
 SPACES = {"sRGB":((.4124,.3576,.1805,.2126,.7152,.0722,.0193,.1192,.9505),),
           "P3":  ((.4866,.2657,.1982,.2290,.6917,.0793,.0000,.0451,1.0439),)}
-def _f(t):  return t**(1/3) if t > 216/24389 else (841/108)*t + 4/29
-def _fi(t): return t**3 if t**3 > 216/24389 else (t-4/29)*108/841
+def _f(t):
+    """Компандинг CIE Lab: кубічний корінь над (6/29)³ = 216/24389, лінійна ділянка нижче."""
+    return t**(1/3) if t > 216/24389 else (841/108)*t + 4/29
+def _fi(t):
+    """Обернена до `_f`."""
+    return t**3 if t**3 > 216/24389 else (t-4/29)*108/841
 def to_lab(rgb, space="sRGB"):
+    """Lab (D65) із RGB 0–255 простору `space`: зняття гамми sRGB (поріг 0.04045), матриця простору →
+    XYZ, нормування на білий D65 (0.95047, 1, 1.08883)."""
     m=SPACES[space][0]; r,g,b=[c/255 for c in rgb]
     r,g,b=[((c+.055)/1.055)**2.4 if c>.04045 else c/12.92 for c in (r,g,b)]
     X,Y,Z=(r*m[0]+g*m[1]+b*m[2], r*m[3]+g*m[4]+b*m[5], r*m[6]+g*m[7]+b*m[8])
     fx,fy,fz=_f(X/.95047),_f(Y),_f(Z/1.08883)
     return (116*fy-16, 500*(fx-fy), 200*(fy-fz))
 def _inv(space):
+    """Обернена 3×3 матриця простору (XYZ → лінійний RGB) за Крамером."""
     a,b,c,d,e,f,g,h,i=SPACES[space][0]; det=a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g)
     return [[(e*i-f*h)/det,(c*h-b*i)/det,(b*f-c*e)/det],
             [(f*g-d*i)/det,(a*i-c*g)/det,(c*d-a*f)/det],
             [(d*h-e*g)/det,(b*g-a*h)/det,(a*e-b*d)/det]]
 def to_rgb(L,a,b,space="sRGB"):
+    """RGB 0–1 із Lab: XYZ → лінійний RGB (`_inv`) → гамма sRGB (поріг 0.0031308); поза гамутом канали
+    виходять за [0, 1] — обрізає викликач, а `c_max` цим і міряє стелю."""
     fy=(L+16)/116; X,Y,Z=.95047*_fi(fy+a/500), _fi(fy), 1.08883*_fi(fy-b/200)
     M=_inv(space); lin=[M[i][0]*X+M[i][1]*Y+M[i][2]*Z for i in range(3)]
     return [1.055*c**(1/2.4)-.055 if c>.0031308 else 12.92*c for c in lin]
@@ -56,10 +65,12 @@ def hex_з_lab(lab, space="sRGB"):
         int(round(max(0.0, min(1.0, c)) * 255)) for c in to_rgb(*lab, space=space))
 
 def to_xyz(lab):
+    """XYZ (D65) із Lab."""
     L,a,b = lab; fy=(L+16)/116
     return (.95047*_fi(fy+a/500), _fi(fy), 1.08883*_fi(fy-b/200))
 
 def from_xyz(X,Y,Z):
+    """Lab (D65) із XYZ."""
     fx,fy,fz=_f(X/.95047),_f(Y),_f(Z/1.08883)
     return (116*fy-16, 500*(fx-fy), 200*(fy-fz))
 
@@ -130,6 +141,8 @@ def адаптувати(еталон_до, еталон_після):
     Xa,Ya,Za = to_xyz(еталон_до); Xb,Yb,Zb = to_xyz(еталон_після)
     k = (Xa/Xb if Xb > 1e-9 else 1.0, Ya/Yb if Yb > 1e-9 else 1.0, Za/Zb if Zb > 1e-9 else 1.0)
     def адаптер(lab):
+        """Переводить Lab кадру «до» у світло кадру «після»: діагональне масштабування XYZ (фон Кріс)
+        коефіцієнтами k еталонної поверхні."""
         X,Y,Z = to_xyz(lab)
         return from_xyz(X*k[0], Y*k[1], Z*k[2])
     return адаптер, dict(коефіцієнти=[round(x,3) for x in k],
@@ -157,8 +170,10 @@ _BRADFORD = (( 0.8951,  0.2664, -0.1614),
              (-0.7502,  1.7135,  0.0367),
              ( 0.0389, -0.0685,  1.0296))
 def _множ(m, v):
+    """Добуток 3×3 матриці на вектор."""
     return tuple(m[r][0]*v[0] + m[r][1]*v[1] + m[r][2]*v[2] for r in range(3))
 def _обернена_3x3(m):
+    """Обернена 3×3 матриця (Крамер) — для матриці Bradford в `адаптувати_освітлювач`."""
     (a,b,c),(d,e,f),(g,h,i) = m
     det = a*(e*i-f*h) - b*(d*i-f*g) + c*(d*h-e*g)
     return (((e*i-f*h)/det, (c*h-b*i)/det, (b*f-c*e)/det),
@@ -186,12 +201,20 @@ def адаптувати_освітлювач(lab, від="C", до="D65", ме�
 
 # R-COL-03 — дубль `colorspace.lch`: L*C*h як інтерпретована трійка над Lab.
 def lch(lab):
+    """(L*, C*, h°) із Lab: C* — модуль (a, b), h — кут atan2 у градусах [0, 360)."""
     L,a,b=lab; return L, math.hypot(a,b), math.degrees(math.atan2(b,a))%360
-def hx(s): return to_lab(tuple(int(s.lstrip('#')[i:i+2],16) for i in (0,2,4)))
+def hx(s):
+    """Lab із «#rrggbb» (sRGB); рядок не з шести шістнадцяткових цифр — ValueError."""
+    return to_lab(tuple(int(s.lstrip('#')[i:i+2],16) for i in (0,2,4)))
 
 # ─────────────────────────── ΔE00 (звірено з Sharma 2005) ──────────────────
 # R-COL-01 — дубль `colorspace.de00`: перцептивний простір замість sRGB (реєстр `rule_genus`).
 def de00(lab1, lab2, kL=1, kC=1, kH=1):
+    """ΔE00 (CIEDE2000) між двома Lab, звірено з Sharma 2005; kL/kC/kH — параметричні ваги (kL = 2 для
+    пари тканин — `тканинна_пара`, R-COL-11).
+
+    Чому так: R-COL-01 — різниця кольорів рахується в перцептивному просторі, не в
+    sRGB."""
     L1,a1,b1=lab1; L2,a2,b2=lab2
     C1,C2=math.hypot(a1,b1),math.hypot(a2,b2); Cb=(C1+C2)/2
     G=.5*(1-math.sqrt(Cb**7/(Cb**7+25**7))) if Cb>0 else .5
@@ -215,4 +238,6 @@ def de00(lab1, lab2, kL=1, kC=1, kH=1):
                      +RT*(dCp/(kC*SC))*(dHp/(kH*SH)))
 
 def soft(x, lo, hi, w):
+    """М'яке вікно [lo, hi] з плечима ширини w: добуток двох логістичних кривих — 1 усередині, 0 далеко
+    зовні. Ним рахуються локус шкіри, олива й приналежність тону без різкого порога."""
     return 1/(1+math.exp(-(x-lo)/w)) * 1/(1+math.exp((x-hi)/w))

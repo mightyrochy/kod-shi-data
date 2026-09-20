@@ -7,6 +7,7 @@
 import ast, os, subprocess, sys
 ДЖЕРЕЛА = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ДЖЕРЕЛА)
+from поділ_спільне import dump_без_докстрінгів
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "13b8533"
 МОДУЛІ = ("фід_розбір", "фід_слот", "фід_розміри", "фід_взуття", "фід_верхнє", "фід_атрибути",
           "фід_колір", "фід_добір", "фід_збагачення", "фід_каталог", "feed")
@@ -17,9 +18,9 @@ def вузли(текст):
     в = {}
     for n in ast.parse(текст).body:
         if isinstance(n, (ast.FunctionDef, ast.ClassDef)):
-            в[n.name] = ast.dump(n)
+            в[n.name] = dump_без_докстрінгів(n)
         elif isinstance(n, ast.Assign) and isinstance(n.targets[0], ast.Name):
-            в[n.targets[0].id] = ast.dump(n)
+            в[n.targets[0].id] = dump_без_докстрінгів(n)
     return в
 
 до = вузли(було)
