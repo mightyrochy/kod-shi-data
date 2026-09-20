@@ -33,7 +33,7 @@ for i, (слова, оч) in enumerate(ТЕКСТИ, 1):
     п = П.паспорт_з_json(json.load(urllib.request.urlopen(зап, timeout=300))["choices"][0]["message"]["content"], {}, слова)
     порада = п.get("порада_людині") or ""; речень = len(re.findall(r"[.!?…]+", порада))
     є = (п["намір"], п["мета"], (п.get("макіяж") or {}).get("рівень"), п["прикраси"])
-    збіг = (є[0] == оч) if isinstance(оч, str) else (є[1:] == оч and речень <= 1)
+    збіг = (є[0] == оч) if isinstance(оч, str) else (є[1:] == оч and речень <= 2)   # ≤ 2, не ≤ 1: порада охоплює РАЗОМ до 3 тем (рядок 114)
     влучень += збіг and i <= 12; чисто += збіг and i > 12
     print("| %d | %s | %s | %s | %s | %s | %s | %s (%d) | %s%s |" % ((i, слова, оч if isinstance(оч, str) else "/".join(map(str, оч)))
           + є + (порада, речень, "так" if збіг else "НІ", " · JSON не розібрано" if п.get("помилка_формату") else "")))
