@@ -2117,7 +2117,7 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
       const зап = записи.find(з => з.час === (кл.час));
       if (!зап){ втрачені.push("запис не знайдено: " + кл.час); return; }
       for (const к of w.eval("JSON.stringify(ШАПКА)") ? JSON.parse(w.eval("JSON.stringify(ШАПКА)")) : []){
-        const уTSV = w.eval("тsvЗначення(" + JSON.stringify(зап) + ", " + JSON.stringify(к) + ")");
+        const уTSV = w.eval("значенняКолонки(" + JSON.stringify(зап) + ", " + JSON.stringify(к) + ")");
         if (уTSV === "") continue;          /* порожнє в TSV — порожнє і тут */
         звірених++;
         const очікуване = ПОЛЯ_JSON.indexOf(к) >= 0 ? JSON.parse(зап[к]) : зап[к];
