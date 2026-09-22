@@ -897,6 +897,143 @@ _НЕ_ФОТО = re.compile(r"\.svg(?:$|\?)|/loader|lazy\.|placeholder|no[-_]?im
 _СУСІДИ = re.compile(r"related|similar|recommend|also|recent|upsell|cross|viewed|carousel-products|"
                      r"product-list|products-list|catalog|listing|footer|header|menu|nav|review|коментар|"
                      r"схож|рекоменд|також|переглянут", re.I)
+# Рядок 126 дошки (21.09.2026): де крамниці РЕАЛЬНО тримають знімки речі. Перелік
+# зроблено з живих сторінок, а не з гадання — виміряно на картках brenda.ua,
+# alot.com.ua і miraton.ua, знятих 21.09 (числа — скільки атрибутів з адресою
+# картинки на сторінці): brenda `a href` 5 і `style` background 10 (уся галерея
+# лежить ТІЛЬКИ там, жодного `img src` галереї на сторінці нема), miraton
+# `img data-src` 32 проти `img src` 11 (ліниве вантаження), alot `a href` 4.
+_АТРИБУТИ_ФОТО = ("data-src", "data-lazy", "data-original", "data-zoom", "data-zoom-image",
+                  "data-large", "data-large_image", "data-full", "data-image", "data-srcset",
+                  "srcset", "src", "href")
+_ФАЙЛ_КАРТИНКИ = re.compile(r"\.(jpe?g|png|webp|avif)(\?|$)", re.I)
+_ФОН_КАРТИНКА = re.compile(r"background(?:-image)?\s*:[^;]*url\(\s*[\'\"]?([^\'\")]+)", re.I)
+_НЕ_АДРЕСА = re.compile(r"^\s*(#|javascript:|mailto:|tel:|data:)", re.I)
+
+
+def _під_чужою_карткою(ел, url):
+    """Чи лежить цей знімок під посиланням на ІНШУ картку крамниці.
+
+    ВИМІР, А НЕ СМАК (рядок 126 дошки, 21.09.2026). Тайл блоку «схожі товари» —
+    це фото чужої речі, і відрізняє його не клас контейнера (у brenda блок
+    зветься `product-layout`, і жодне слово з `_СУСІДИ` в нього не потрапляє) і
+    не розмір тайла, а те, ЩО СТАНЕТЬСЯ ПО КЛІКУ: тайл рекомендації завжди
+    загорнутий у посилання на СТОРІНКУ того іншого товару — інакше він не
+    виконував би своєї роботи. Знімок власної галереї так не загортають: він або
+    взагалі без посилання, або під посиланням на САМ ФАЙЛ картинки (lightbox:
+    `<a class="thumbnail" href="…/19-1200x1800.jpg">` — brenda), або під
+    посиланням на цю ж адресу.
+
+    Виміряно на `https://brenda.ua/self-portrait-2` 21.09: 16 знімків під
+    посиланнями на 8 інших карток (`/aninadin-1189`, `/roberto-cavalli-12`, …)
+    і 5 знімків під посиланнями на файли `.jpg` — це і є власна галерея речі,
+    яка доти в каталог не потрапляла жодного разу.
+
+    Порогу тут нема й не треба: рішення приймається з однієї сторінки, офлайн і
+    детерміновано. Незалежний детектор повторів (`джерела/фід_фото._спільні_фото`)
+    лишається окремим шаром і цю роботу ПЕРЕВІРЯЄ, а не робить.
+    """
+    а = ел if getattr(ел, "name", None) == "a" and ел.get("href") else ел.find_parent("a")
+    if а is None:
+        return False
+    h = (а.get("href") or "").strip()
+    if not h or _НЕ_АДРЕСА.match(h):
+        return False
+    ціль = urlparse(канонічна(h, url))
+    якщо_файл = _ФАЙЛ_КАРТИНКИ.search(ціль.path or "")
+    if якщо_файл:
+        return False                                  # lightbox на сам файл — це і є галерея
+    свій = urlparse(url)
+    return (ціль.netloc.lower(), (ціль.path or "/").rstrip("/")) != (свій.netloc.lower(), (свій.path or "/").rstrip("/"))
+
+
+_РОЗМІР_СЕГМЕНТ_ФОТО = re.compile(r"^(\d{2,4})x(\d{2,4})(?![0-9x])", re.I)
+_РОЗМІР_ХВІСТ_ФОТО = re.compile(r"[.\-_](\d{2,4})x(\d{2,4})(?=\.(?:webp|jpe?g|png|avif))", re.I)
+_РОЗМІР_ПОЧАТОК_ФОТО = re.compile(r"^(\d{2,4})x(\d{2,4})(?![0-9x])", re.I)
+
+
+def _кадр_і_площа(url):
+    """(ім'я кадра без сегмента розміру, площа в пікселях або 0).
+
+    Той самий кадр крамниця віддає в кількох розмірах, і галерея часто несе
+    ОБИДВА поруч: у brenda мініатюра стоїть у `style` (`19-586x880.jpg`), а
+    повний кадр — у `href` того ж посилання (`19-1200x1800.jpg`). Без згортання
+    п'ять знімків речі займали б десять місць зі стелі `чисті_фото` у 8, і в
+    каталог ішло б чотири кадри замість п'яти. Форми розміру — ті самі дві, що
+    їх читає `джерела/фід_фото._файл_фото` (сегмент шляху і хвіст імені): там,
+    де продукт каже «це той самий знімок», жнива мають казати те саме.
+    """
+    u = str(url or "").split("?")[0]
+    ч = u.split("/")
+    if u.lower().startswith(("http://", "https://")) and len(ч) > 3:
+        ч = ч[3:]
+    if not ч:
+        return "", 0
+    площа, тека = 0, []
+    for c in ч[:-1]:                                  # ТЕКИ: `/23/400x600l95nn0/…` — сегмент-розмір
+        м = _РОЗМІР_СЕГМЕНТ_ФОТО.match(c)
+        if м:
+            площа = max(площа, int(м.group(1)) * int(м.group(2)))
+        else:
+            тека.append(c)
+    файл = ч[-1]
+    # ІМ'Я ФАЙЛА — ОКРЕМО ВІД ТЕК (виміряно на miraton.ua 21.09). Якщо правило
+    # сегмента пустити й на ім'я, то `1740x2280q90-000211588_1_.webp` зникає
+    # цілком, і ключем кадра лишається сама тека `upload/webp_cache/` — тобто
+    # УСІ знімки крамниці стають «одним кадром», і галерея з чотирьох ракурсів
+    # згортається в один. Тому в імені розмір лише ЗРІЗАЄТЬСЯ: з початку
+    # (`1740x2280q90-…`, miraton) або перед розширенням (`19-1200x1800.jpg`,
+    # brenda), а решта імені лишається ключем.
+    м = _РОЗМІР_ПОЧАТОК_ФОТО.match(файл)
+    if м:
+        площа = max(площа, int(м.group(1)) * int(м.group(2)))
+        файл = файл[м.end():]
+    м = _РОЗМІР_ХВІСТ_ФОТО.search(файл)
+    if м:
+        площа = max(площа, int(м.group(1)) * int(м.group(2)))
+        файл = _РОЗМІР_ХВІСТ_ФОТО.sub("", файл)
+    return "/".join(тека + [файл]).lower(), площа
+
+
+def _найбільший_на_кадр(адреси):
+    """Один — найбільший — знімок на кадр, у порядку першої появи кадра."""
+    кращі, порядок = {}, []
+    for a in адреси:
+        к, площа = _кадр_і_площа(a)
+        if к not in кращі:
+            порядок.append(к); кращі[к] = (площа, a)
+        elif площа > кращі[к][0]:
+            кращі[к] = (площа, a)
+    return [кращі[к][1] for к in порядок]
+
+
+def _адреси_картинок(ел):
+    """Усі адреси картинок, оголошені атрибутами цього елемента, у порядку `_АТРИБУТИ_ФОТО`.
+
+    `srcset`/`data-srcset` згортаються до найширшого кандидата; `style` дає
+    `background-image:url(...)` — саме там brenda тримає мініатюри галереї.
+    """
+    вих = []
+    for атр in _АТРИБУТИ_ФОТО:
+        v = ел.get(атр)
+        if not v:
+            continue
+        if атр in ("srcset", "data-srcset"):
+            кандидати_ = []
+            for частина in str(v).split(","):
+                ч = частина.strip().split()
+                if ч:
+                    шир = int(re.sub(r"\D", "", ч[1]) or 0) if len(ч) > 1 else 0
+                    кандидати_.append((шир, ч[0]))
+            v = max(кандидати_)[1] if кандидати_ else ""
+        if атр == "href" and not _ФАЙЛ_КАРТИНКИ.search(str(v).split("?")[0]):
+            continue                                  # посилання на сторінку — не картинка
+        if v:
+            вих.append(str(v))
+    м = _ФОН_КАРТИНКА.search(ел.get("style") or "")
+    if м:
+        вих.append(м.group(1).strip())
+    return вих
 _РОЗМІР = re.compile(r"^(xxs|xs|s|m|l|xl|xxl|xxxl|3xl|4xl|5xl|6xl|one\s*size|os|onesize|універсальн\w*|"
                      r"\d{2}(?:[.,]5)?(?:\s*[-/–]\s*\d{2})?|\d{2}\s*[-/]\s*\d{2}\s*[-/]\s*\d{2}|"
                      r"\d{2,3}\s*(?:см)?(?:\s*\(\w+\))?|s/m|m/l|l/xl|xs/s|xl/xxl)$", re.I)
@@ -1262,33 +1399,28 @@ def факти_з_картки(html_текст, url):
         галерея = суп.select_one('[class*="gallery"], [class*="product-image"], [class*="product__media"], '
                                  '[class*="swiper"], [class*="slider"], [class*="fotorama"], [class*="carousel"], '
                                  '[class*="photos"], [class*="images"], [class*="product-photo"]') or суп
-        картинки = []
-        for img in галерея.find_all(["img", "source", "a"]):
-            for атр in ("data-src", "data-lazy", "data-original", "data-zoom-image", "data-large", "data-full",
-                        "data-srcset", "srcset", "src", "href"):
-                v = img.get(атр)
-                if not v:
-                    continue
-                if атр in ("srcset", "data-srcset"):
-                    кандидати_ = []
-                    for частина in v.split(","):
-                        ч = частина.strip().split()
-                        if ч:
-                            шир = int(re.sub(r"\D", "", ч[1]) or 0) if len(ч) > 1 else 0
-                            кандидати_.append((шир, ч[0]))
-                    v = max(кандидати_)[1] if кандидати_ else ""
-                if not v:
-                    continue
-                if img.name == "a" and not re.search(r"\.(jpe?g|png|webp|avif)(\?|$)", v, re.I):
-                    continue
-                w = img.get("width")
-                if w and str(w).isdigit() and int(w) <= 300:
-                    continue
-                картинки.append(оригінал_фото(канонічна(v, url)))
-                break
+        картинки, чужих = [], 0
+        # 21.09 (рядок 126): шукаємо по ВСІХ вузлах, а не лише по `img/source/a`, бо
+        # brenda тримає мініатюри в `style="background-image:url(…)"` на `a`, а
+        # повний кадр — у `href` того ж `a`; `img src` на її картці — самі тайли
+        # блоку рекомендацій.
+        for ел in галерея.find_all(True):
+            if _під_чужою_карткою(ел, url):
+                чужих += 1
+                continue                              # тайл «схожих товарів» — фото чужої речі
+            адреси = _адреси_картинок(ел)
+            if not адреси:
+                continue
+            w = ел.get("width")
+            if w and str(w).isdigit() and int(w) <= 300:
+                continue
+            картинки.extend(оригінал_фото(канонічна(v, url)) for v in адреси)
         для = [x for x in dict.fromkeys(картинки) if re.search(r"\.(jpe?g|png|webp|avif)(\?|$)|/image|/photo|/img|/media|/upload", x, re.I)]
+        для = _найбільший_на_кадр(для)
         if для:
             ф["фото"] = list(dict.fromkeys(ф["фото"] + для)); ф["фото_джерело"] = (ф["фото_джерело"] or "") + "+галерея"
+        if чужих:
+            ф["чужих_тайлів"] = чужих                 # не мовчати, скільки знімків відсічено як чужі
     # ціна з розмітки, якщо структурні джерела мовчали
     if ф["ціна"] is None:
         ел = суп.select_one('[itemprop="price"], [class*="price"] , [id*="price"]')
