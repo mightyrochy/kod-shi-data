@@ -173,15 +173,21 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
       ЧОМУ ЛИШЕ transform. Головний потік на цьому екрані зайнятий Pyodide,
       і все, що рахує він, завмирає (виміряно на телефоні власника). Chrome веде
       transform-анімації на композиторі: човник, уток, бердо й полотно рухаються
-      transform-ом, кольори й довжина полотна міняються не частіше, ніж щаблі. */
+      transform-ом, кольори й довжина полотна міняються не частіше, ніж щаблі.
+      ЧВЕРТЬ НА ЩАБЕЛЬ (власник, 21.09.2026): смуга полотна — 96 % поля, зсув
+      падає на 25 % за щабель, тож «Ще туманно» тче чверть, «Проступають
+      обриси» — половину, «Вимальовується» — три чверті, готово — усе поле.
+      Доти смуга була 64 % і на «Вимальовується» уток ледь доходив до
+      половини, хоч образи вже майже зібрані. Верхні 4 % лишаються під навій
+      і човник: інакше `overflow:hidden` зрізав би їх на останньому щаблі. */
 .верстат{--нитка:var(--олівець);--акцент:var(--золото);position:relative;height:236px;margin:14px 0 4px;overflow:hidden;
   background:repeating-linear-gradient(90deg,var(--межа-темна) 0 1px,transparent 1px 8px)}
 .верстат::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:var(--чорнило);opacity:.9}
-.верстат .полотно{position:absolute;left:0;right:0;bottom:0;height:64%;transform:translateY(var(--зсув,78%));
+.верстат .полотно{position:absolute;left:0;right:0;bottom:0;height:96%;transform:translateY(var(--зсув,75%));
   transition:transform 1.6s cubic-bezier(.2,.7,.2,1);will-change:transform}
-.верстат[data-щабель="0"] .полотно{--зсув:78%}
-.верстат[data-щабель="1"] .полотно{--зсув:52%}
-.верстат[data-щабель="2"] .полотно{--зсув:26%}
+.верстат[data-щабель="0"] .полотно{--зсув:75%}
+.верстат[data-щабель="1"] .полотно{--зсув:50%}
+.верстат[data-щабель="2"] .полотно{--зсув:25%}
 .верстат[data-щабель="3"] .полотно{--зсув:0%}
 .верстат .бердо{position:absolute;left:-4px;right:-4px;top:-3px;height:3px;background:var(--чорнило);
   animation:бити 1.15s ease-in-out infinite;will-change:transform}
