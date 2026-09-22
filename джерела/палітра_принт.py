@@ -245,13 +245,13 @@ def принт_придатність(палітра, F=None, source="protocoliz
     # ── P-PRT-02: чіткість краю ↔ контраст особи (ЖИВЕ) ────────────────────────
     ко = None
     if F is not None:
-        try:
-            import profile as _pr
-            ко = _pr.контраст(F, source=source).get("value_gap")
-        except Exception as _e:
-            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
-            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
-            ко = None
+        # п.14 (20.09.2026): без шкіри чи волосся `profile.контраст` повертає
+        # `доступно=False` без винятку → `value_gap` нема → «бракує контраст_особи»
+        # нижче. Виняток звідти — зіпсований профіль або збій `face_contrast`
+        # (саме такий KeyError цей `except` колись ковтав — коментар у `profile.контраст`),
+        # і він має летіти в `bridge.виклик`, а не читатись як «контраст не виміряно».
+        import profile as _pr
+        ко = _pr.контраст(F, source=source).get("value_gap")
     if чк is None or ко is None:
         нема_виміру.append(dict(правило="P-PRT-02",
                                 бракує="чіткість_краю" if чк is None else "контраст_особи"))

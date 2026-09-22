@@ -273,6 +273,7 @@ def ранг(F, ОСНОВИ, порядок, самозвіт=None, контр�
     """
     from colorspace import to_lab
     def лаб(hx):
+        """Lab із «#rrggbb» чипа основи."""
         hx = hx.lstrip("#")
         return to_lab(tuple(int(hx[i:i + 2], 16) for i in (0, 2, 4)))
 

@@ -118,8 +118,42 @@ _РОЗДІЛ_ТАК = re.compile(r"sukn|platt|plat[iy]|dress|bluz|blous|sorochk
     for (let i = 0; i < Math.min(dt.length, dd.length); i++) rows.push([T(dt[i]), T(dd[i])]); });
   document.querySelectorAll('li, p, div, span').forEach(el => { if (el.children.length <= 3) { const t = T(el);
     if (t.length > 4 && t.length < 160) { const m = t.match(/^([^:]{2,40}):\\s*(.{1,120})$/); if (m) rows.push([m[1].trim(), m[2].trim()]); } } });
-  const imgs = [...document.querySelectorAll('img, source')].flatMap(i => [i.currentSrc, i.src, i.dataset && i.dataset.src, i.srcset, i.dataset && i.dataset.srcset])
-    .filter(Boolean).flatMap(s => s.split(',').map(x => x.trim().split(' ')[0])).filter(s => /\\.(jpe?g|webp|png)/i.test(s) && !/logo|icon|sprite|payment|visa|master|flag|banner|placeholder|pixel|1x1/i.test(s));
+  // ── ЧИЙ ЦЕ ЗНІМОК (рядок 126 дошки, 21.09.2026) ────────────────────────────
+  // Доти `imgs` брався з УСІХ `img, source` сторінки. На brenda.ua це означало
+  // рівно протилежне задуманому: власна галерея речі там лежить у `href` і
+  // `style="background-image:url(…)"` посилань-мініатюр, а єдині `img src` на
+  // картці — тайли блоку «СХОЖІ ТОВАРИ». Тому в каталог і йшли 12 знімків
+  // чужих суконь (`ж-01583@brenda.ua`, скарга власника 21.09).
+  // Відрізняємо тайл рекомендації ВИМІРОМ, а не списком класів: він завжди
+  // загорнутий у посилання на СТОРІНКУ іншого товару, бо інакше не виконував би
+  // своєї роботи; знімок власної галереї або без посилання, або під посиланням
+  // на сам файл картинки (lightbox), або під посиланням на цю ж адресу.
+  const ФАЙЛ_КАРТИНКИ = /\\.(jpe?g|png|webp|avif)(\\?|$)/i;
+  const тут = location.pathname.replace(/\\/+$/, '');
+  const чужа_картка = el => {
+    const a = el.closest && el.closest('a[href]');
+    if (!a) return false;
+    const h = a.getAttribute('href') || '';
+    if (!h || /^\\s*(#|javascript:|mailto:|tel:|data:)/i.test(h)) return false;
+    let u; try { u = new URL(a.href, location.href); } catch (e) { return false; }
+    if (ФАЙЛ_КАРТИНКИ.test(u.pathname)) return false;
+    return u.host !== location.host || u.pathname.replace(/\\/+$/, '') !== тут;
+  };
+  const сире = [];
+  document.querySelectorAll('img, source, a[href], [style*="background"]').forEach(el => {
+    if (чужа_картка(el)) return;
+    сире.push(el.currentSrc, el.src, el.dataset && el.dataset.src, el.dataset && el.dataset.lazy,
+              el.dataset && el.dataset.original, el.dataset && el.dataset.zoom,
+              el.dataset && el.dataset.zoomImage, el.dataset && el.dataset.large,
+              el.dataset && el.dataset.full, el.dataset && el.dataset.image,
+              el.srcset, el.dataset && el.dataset.srcset);
+    if (el.tagName === 'A' && ФАЙЛ_КАРТИНКИ.test((el.getAttribute('href') || '').split('?')[0])) сире.push(el.href);
+    const ст = el.getAttribute && el.getAttribute('style');
+    const ф = ст && ст.match(/background(?:-image)?\\s*:[^;]*url\\(\\s*['"]?([^'")]+)/i);
+    if (ф) сире.push(new URL(ф[1], location.href).href);
+  });
+  const imgs = сире
+    .filter(Boolean).flatMap(s => String(s).split(',').map(x => x.trim().split(' ')[0])).filter(s => /\\.(jpe?g|webp|png)/i.test(s) && !/logo|icon|sprite|payment|visa|master|flag|banner|placeholder|pixel|1x1|sizes?\\.(jpe?g|png|webp)|size[-_]?(chart|table|guide)/i.test(s));
   let main0 = document.body, best = 0;
   document.querySelectorAll('main, [role=main], #content, .product-page, .product, .card-product, #product, .product-detail, .product__info, [itemtype*=Product]').forEach(e => {
     const n = (e.textContent || '').length; if (n > best) { best = n; main0 = e; } });

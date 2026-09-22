@@ -172,19 +172,15 @@ def полюси_пулу(по_слотах, базові=("верх", "низ",
         if с not in базові:
             continue
         for r in (по_слотах[с] or ()):
+            # П.14 (СТАНДАРТ §4): обидва `except Exception` викидали світлоту
+            # речі зі списку мовчки, а колона світлоти (K-COL-01) міряється саме
+            # повнотою цього списку: річ, що випала, зсувала вирок «колона є».
+            # hex і lab речі народжує `фід_каталог`, це не невідомий вхід.
             lab = r.get("lab")
             if lab is None and r.get("hex"):
-                try: lab = _cs.hx(r["hex"])
-                except Exception as _e:
-                    import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
-                    if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
-                    lab = None
+                lab = _cs.hx(r["hex"])
             if lab:
-                try: L_за_слотом.setdefault(с, []).append(float(_cs.lch(tuple(lab))[0]))
-                except Exception as _e:
-                    import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
-                    if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
-                    pass
+                L_за_слотом.setdefault(с, []).append(float(_cs.lch(tuple(lab))[0]))
     колона = False
     слоти_L = [с for с in L_за_слотом if L_за_слотом[с]]
     for i in range(len(слоти_L)):
