@@ -42,7 +42,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 ДЖЕРЕЛА = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "джерела")
 sys.path.insert(0, ДЖЕРЕЛА)
 os.chdir(ДЖЕРЕЛА)
-os.environ.setdefault("COMFY_PORT", "8188")          # ComfyUI Desktop на ноутбуці слухає 8188
+# SAM — лише в ComfyUI з `--base-directory C:/Users/Admin/ComfyUI --port 8000`. Comfy Desktop
+# на 8188 відповідає на system_stats, але вузлів segment_anything не має: маска мовчки йде на
+# «запасну» (виміряно в цьому рядку: перший прогін на 8188 дав SAM 0 з 363, запасна 118).
+os.environ.setdefault("COMFY_PORT", "8000")
 import feed as F                                     # noqa: E402
 import міст_опис as МО                               # noqa: E402
 import жнива_запис as ЖЗ                             # noqa: E402
