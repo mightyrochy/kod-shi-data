@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+"""Рядок 141: знахідки правил, що порівнюють колір ДВОХ речей, на парі з центром вікна слова, а не виміром
+(«на вікні» — без позначки «на рівні вікон»; «вікна» — рішення на межах вікон; «без входу» — «код не знає» чи
+пункт чекліста з полем колір_не_вимір). Провенанс рахує сама проба, тож однаково читає обидва дерева.
+cd джерела && python3 проби/delta_e_vikna_141.py [--дерево ДЖЕРЕЛА_main] [--n 20] [ТЕКА_ВЕРДИКТІВ_СТЕНДА …]"""
+import sys, os, json, gzip, glob, collections as К
+а = sys.argv[1:]; оп = lambda к, д: а[а.index(к) + 1] if к in а else д
+Д, N = оп("--дерево", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), int(оп("--n", 20))
+теки = [x for i, x in enumerate(а) if not x.startswith("--") and (i == 0 or а[i - 1] not in ("--дерево", "--n"))]
+os.chdir(Д); sys.path.insert(0, Д)
+import feed as Ф, bridge as B, стенд_знімок as СЗ
+ПР = ("K-ACC-10", "K-COL-05", "K-COL-06", "K-COL-02", "K-COL-01", "K-PAL-15", "K-PAL-05", "K-PAL-08", "K-PAL-12", "K-COMP-01", "K-COMP-04")
+зб = json.load(gzip.open("каталог_збагачення.json.gz", "rt", encoding="utf-8"))
+кат = {r["id"]: r for r in Ф._база_прогону(Ф.каталог_на_диску("каталог_повний.xml"), 0, "стенд_кеш_кольорів.json")["каталог"]}
+зч = lambda і: str((кат.get(і) or {}).get("колір_за_чим") or "")
+вікно = lambda і: (кат.get(і) or {}).get("колір_джерело") == "назва_вікно" or зч(і).startswith("фото: слово") or (
+    зч(і).startswith("фото: hex") and ((зб.get(і) or {}).get("версія") or 1) < 2)
+def лічити(р, знахідки, питання, пункти, н2і={}):
+    for z in (z for z in знахідки if z.get("правило") in ПР and any(вікно(н2і.get(x, x)) for x in z.get("речі") or [])):
+        р[z["правило"], "вікна" if "на рівні вікон" in str(z.get("суть")) else "на вікні"] += 1
+    for z in (z for z in питання if z.get("правило") in ПР and "код не знає" in str(z.get("суть"))): р[z["правило"], "без входу"] += 1
+    for пр in (пр for п in пункти if "колір_не_вимір" in str(п.get("бракує")) for пр in п.get("правила") or []): р[пр, "без входу"] += 1
+Т3, сцени = ('верхній_шар', 'прикраси', 'пояс', 'шарф', 'головний_убір', 'сережки', 'намисто', 'кольє', 'браслет', 'брошка'), К.Counter()
+for назва, сцен in СЗ.СЦЕНАРІЇ.items():                    # ті самі образи, що складає сценарна модель стенда
+    вх = dict(json.load(open("стенд_вх.json")), сценарій=сцен, випадок=назва)
+    пул = json.loads(json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["руки"]["1"])["пул"]
+    т = [с for с in Т3 if пул.get(с)]; в_ = lambda с, k: пул[с][k % len(пул[с])]["н"] if пул.get(с) else None
+    об = [dict(ід="о%d" % i, підпис="о%d" % i, полюс="вільний", речі=[x for x in ([в_("сукня", i)] if пул.get("сукня") and i % 2 else [в_("верх", i), в_("низ", i)]) + [в_("взуття", i), в_("сумка", i)] + ([в_(т[i % len(т)], i)] if т else []) if x]) for i in range(1, N + 1)]
+    в = json.loads(B.виклик("від_моделі", json.dumps(dict(вх, текст_моделі=json.dumps(dict(версія="1", образи=об), ensure_ascii=False)), ensure_ascii=False)))
+    for о in в.get("образи") or []:
+        лічити(сцени, о.get("знахідки") or [], [], [п for б in (о.get("чекліст") or {}).values() if isinstance(б, dict) for п in б.get("вимкнено") or []], dict(zip(о.get("речі_н") or [], о.get("ід") or [])))
+    лічити(сцени, [], в.get("питання") or [], [])
+print("дерево %s · 6 сцен × %d образів живим шляхом:" % (Д, N), dict(sorted(сцени.items())) or "нуль")
+for т in теки:
+    р, рук = К.Counter(), 0
+    for в in (в for ф in glob.glob(os.path.join(т, "вердикти_сід*.txt")) for п in json.load(open(ф, encoding="utf-8"))["прогони"] for в in п["вердикти"] if в.get("рука") in ("1", "2")):
+        с = (в.get("етапи") or {}).get("суд") or {}; ч = с.get("чеклісти") or {}; рук += 1
+        лічити(р, с.get("знахідки") or [], с.get("питання") or [], [п for б in ("надлишок", "прісність", "палітра", "аксесуари") for п in ч.get(б) or [] if п.get("стан") == "без входу"])
+    print("стенд %s · суджених рук 1–2: %d ·" % (т, рук), dict(sorted(р.items())) or "нуль")
