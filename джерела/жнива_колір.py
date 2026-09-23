@@ -35,6 +35,8 @@ def слово_з_lab(lab):
     L, C_, h = CS.lch(lab)
     вміщають, поруч = [], []
     for сл, (Lmin, Lmax, Cmin, Cmax, дуга) in V.ЛЕКСИКОН.items():
+        if сл in V.ВІКНА_КРАМНИЦЬ:
+            continue            # слово поля кольору крамниці, не слово виміру (рядок 137)
         тісно = (Lmax - Lmin) * (Cmax - Cmin)
         у_L = Lmin <= L <= Lmax
         у_C = Cmin <= C_ <= Cmax
