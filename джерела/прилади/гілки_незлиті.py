@@ -73,6 +73,16 @@ def спільний_предок(гілка):
     return п.stdout.strip() or None
 
 
+def є_предком_main(гілка):
+    """True — усі коміти гілки вже досяжні з `main` (`git merge-base --is-ancestor`);
+    для такої гілки прилад мусить дати «без_вмісту» (cherry на ній завжди порожній)."""
+    п = subprocess.run(["git", "-c", "core.quotepath=false", "merge-base", "--is-ancestor", гілка, ГОЛОВНА],
+                        cwd=_КОРІНЬ, capture_output=True, text=True, encoding="utf-8")
+    if п.returncode not in (0, 1):
+        raise RuntimeError("git merge-base --is-ancestor %s: %s" % (гілка, п.stderr.strip()))
+    return п.returncode == 0
+
+
 def власні_коміти(гілка):
     """`+`-рядки `git cherry` — коміти гілки, яких main не має і не поглинув еквівалентом."""
     return [р.split()[1] for р in git("cherry", ГОЛОВНА, гілка).splitlines() if р.startswith("+")]
