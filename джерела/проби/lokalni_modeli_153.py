@@ -6,11 +6,11 @@
 import json, os, urllib.request
 КАНДИДАТИ = {
  "1 жнива v2: плитка, ознаки, колір": [["qwen/qwen3-vl-8b", "lms", "поточна"], ["qwen/qwen3.5-9b", "lms"], ["google/gemma-4-12b", "lms"], ["qwen/qwen3.6-35b-a3b", "lms"]],
- "2 маска речі": [["ckpts/humanparsing/parsing_atr.onnx", "файл", "поточна"], ["sam_vit_h", "comfy:GroundingDinoSAMSegment (segment anything)",
-                  "поточна"], ["sam3.1_multiplex_fp16", "comfy:SAM3_Detect"], ["birefnet", "comfy:RemoveBackground"]],
+ "2 маска речі": [["ckpts/humanparsing/parsing_atr.onnx", "файл", "поточна"], ["sam_vit_h", "comfy:GroundingDinoSAMSegment (segment anything)"],
+                  ["sam3.1_multiplex_fp16", "comfy:SAM3_Detect", "поточна"], ["birefnet", "comfy:RemoveBackground"]],
  "3 паспорт з тексту": [["qwen/qwen3-vl-8b", "lms", "поточна"], ["INSAIT-Institute/MamayLM-Gemma-3-12B-IT-v2.0-GGUF", "lms"], ["google/gemma-4-26b-a4b", "lms"], ["qwen/qwen3.8-27b", "lms"]],
  "4 приміряння": [["qwen_image_edit_2511_fp8mixed", "comfy:TextEncodeQwenImageEditPlus", "поточна"], ["Qwen-Image-Edit-2511-Lightning-4steps",
-                  "comfy:LoraLoaderModelOnly"], ["qwen_image_2.1_int8_convrot", "comfy:TextEncodeQwenImage21"], ["tryon-klein-4b", "comfy:LoraLoaderModelOnly"]],
+                  "comfy:LoraLoaderModelOnly", "поточна"], ["qwen_image_2.1_int8_convrot", "comfy:TextEncodeQwenImage21"], ["tryon-klein-4b", "comfy:LoraLoaderModelOnly"]],
  "5 фото речі: рід, рамка": [["qwen/qwen3-vl-8b", "lms", "поточна"], ["qwen/qwen3.5-9b", "lms"], ["qwen/qwen3.6-35b-a3b", "lms"], ["google/gemma-4-12b", "lms"]]}
 ЧОМУ_НІ = {}
 def взяти(url):

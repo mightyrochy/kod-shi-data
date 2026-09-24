@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """МАСКИ ЖНИВ V2 — маска речі на фото: ATR (`_мітки_atr` під замком ONNX-сесії з
-`_підперти_stdlib`, `_шкіра_atr`, `маска_atr` з `dominance`), GroundingDINO+SAM у
+`_підперти_stdlib`, `_шкіра_atr`, `маска_atr` з `dominance`), SAM 3.1 у
 ComfyUI (`_comfy`, `_sam_слово`, `маска_sam`), запасна від країв кадру
 (`маска_без_людини`) і порядок їх спроб — `маска_речі` (ATR → SAM → запасна) з
 порогами `ПОРІГ_DOMINANCE`/`ПОРІГ_DOMINANCE_ДРІБНИХ`.
@@ -20,7 +20,7 @@ ComfyUI (`_comfy`, `_sam_слово`, `маска_sam`), запасна від �
 РЕБРА. Імпортує `жнива_реєстр` (OSS, ATR, ШКІРА, СЛОТ_РЕГІОНИ, `група_слота`,
 `_замок_парсера`); чужий `Open Source Stylist` — ліниво з `sys.path`, як і було;
 cv2/numpy/PIL — ліниво всередині функцій; фасад не імпортує."""
-import os, shutil, sys, tempfile, threading
+import json, os, sys, threading
 from жнива_реєстр import OSS, ATR, ШКІРА, СЛОТ_РЕГІОНИ, група_слота, _замок_парсера
 
 # ── МАСКА ───────────────────────────────────────────────────────────────────
@@ -151,14 +151,28 @@ def маска_без_людини(шлях, арр=None):
         ", шкіра з ATR" if шкіра is not None else "", частка)
 
 
-# ── МАСКА ЧЕРЕЗ SAM (GroundingDINO + SAM у ComfyUI) ─────────────────────────
+# ── МАСКА ЧЕРЕЗ SAM (SAM 3.1 у ComfyUI) ─────────────────────────────────────
 # ЧОМУ (18.09.2026). Запасна маска бере ВСЕ, що не схоже на краї кадру: на
 # прикрасі це рука й шия, на поясі — уся сукня, на крупному плані — половина
-# кадру. GroundingDINO називає річ словом і SAM вирізає саме її. Ставиться перед
+# кадру. Модель називає річ словом і вирізає саме її. Ставиться перед
 # запасною, а не замість: ComfyUI може бути не піднятий, і тоді конвеєр іде далі.
 # ПРОМПТ — ОДНЕ АНГЛІЙСЬКЕ СЛОВО (урок OSS, `system/segmentation/prompts.py`,
 # V-SEG-004): «shirt», «belt», «footwear» працюють, а складене
 # «shoes . sandals . wedge» повертає увесь силует.
+# SAM 3.1 ЗАМІСТЬ GroundingDINO+SAM (24.09.2026, рядок 153). Виміряно ланцюгом
+# цілком на 58 кадрах вибірки v2, двічі, числа збіглися: сама річ 33/58 проти
+# 30/58 і 2.93 с/кадр проти 3.48. На 31 кадрі, де ATR не впорався, GroundingDINO
+# давав 15, SAM 3.1 дає 18, а сама запасна — 17, тобто стара ланка програвала
+# навіть запасній. Програвала адресно: капелюх, кольє, сережки — щоразу тлом у
+# масці (0.242, 0.171, 0.317), бо на дрібній речі GroundingDINO віддає рамку
+# разом із фоном, а МІН_ЧАСТКА_SAM ловить лише ПОРОЖНЮ маску, не завелику.
+ГРАФ_SAM3 = ('{"1":{"class_type":"CheckpointLoaderSimple","inputs":{"ckpt_name":"sam3.1_multiplex_fp16.safetensors"}},'
+             '"2":{"class_type":"CLIPTextEncode","inputs":{"text":"СЛОВО","clip":["1",1]}},'
+             '"3":{"class_type":"LoadImage","inputs":{"image":"ІМЯ"}},'
+             '"4":{"class_type":"SAM3_Detect","inputs":{"model":["1",0],"image":["3",0],"threshold":0.5,'
+             '"refine_iterations":2,"individual_masks":false,"conditioning":["2",0]}},'
+             '"5":{"class_type":"MaskToImage","inputs":{"mask":["4",0]}},'
+             '"6":{"class_type":"SaveImage","inputs":{"images":["5",0],"filename_prefix":"жнива_маска"}}}')
 COMFY_ХОСТ = os.environ.get("COMFY_HOST", "127.0.0.1")
 COMFY_ПОРТ = int(os.environ.get("COMFY_PORT", "8000"))
 SAM_СЛОВО = {"сережки": "earrings", "намисто": "necklace", "кольє": "necklace",
@@ -214,33 +228,33 @@ def _sam_слово(слот, арр):
 
 
 def маска_sam(шлях, слово, арр=None):
-    """(маска, частка кадру, чому) від GroundingDINO+SAM; шкіра й волосся — геть.
+    """(маска, частка кадру, чому) від SAM 3.1; шкіра й волосся — геть.
 
     SAM вирізає РІЧ РАЗОМ із тим, що на ній лежить: намисто на шиї приходить із
     шматком шиї, пояс — зі складкою сукні під пальцями. Карта ATR знає шкіру й
     волосся семантично (мітки 2, 11–15), і `маска_без_людини` віднімає їх так
     само — тут той самий відрахунок, щоб колір міряли пікселі речі, а не тіла.
     """
-    import cv2
+    import cv2, numpy as np
     from PIL import Image
     к = _comfy()
     if not слово:
         return None, 0.0, "SAM не питали: слова для слота нема"
     if к is None:
         return None, 0.0, "SAM не питали: ComfyUI на %s:%d не піднятий" % (COMFY_ХОСТ, COMFY_ПОРТ)
-    тека = tempfile.mkdtemp(prefix="sam_", dir=tempfile.gettempdir())
     try:
-        from system.segmentation.grounded_sam import segment
-        # Мітка ЛАТИНИЦЕЮ: вона стає ім'ям файлу маски, а cv2.imread не читає
-        # шляхів поза ANSI-кодуванням (виміряно 18.09: «річ.png» не відкрився).
-        м = cv2.imread(segment(шлях, {"item": слово}, к, тека)["item"], cv2.IMREAD_GRAYSCALE)
+        # Маска приходить БАЙТАМИ і декодується в пам'яті. Стара ланка писала її
+        # файлом і читала `cv2.imread`, через що мітку доводилось тримати
+        # латиницею (18.09: «річ.png» не відкрився) — тепер шляху взагалі нема.
+        г = ГРАФ_SAM3.replace("ІМЯ", к.upload_image(шлях)).replace("СЛОВО", слово)
+        в = к.poll(к.submit(json.loads(г)), timeout=300)["6"]["images"][0]
+        байти = к.download(в["filename"], в.get("subfolder", ""), в.get("type", "output"))
+        м = cv2.imdecode(np.frombuffer(байти, np.uint8), cv2.IMREAD_GRAYSCALE)
     except Exception as e:
         return None, 0.0, "SAM «%s» не дав маски: %s" % (слово, str(e)[:90])
-    finally:
-        shutil.rmtree(тека, ignore_errors=True)
     w, h = Image.open(шлях).size
     if м is None:
-        return None, 0.0, "SAM «%s»: файл маски не прочитався" % слово
+        return None, 0.0, "SAM «%s»: маска не прочиталась" % слово
     if м.shape[:2] != (h, w):
         м = cv2.resize(м, (w, h), interpolation=cv2.INTER_NEAREST)
     б = м > 127
