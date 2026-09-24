@@ -190,6 +190,11 @@ def run_pipeline(person: Path, layout_path: Path, garments: list[dict], outdir: 
     # both carry all 3 of 3 board items (dE00 blouse 1.9 / skirt 7.4 / shoes 7.8 vs 2.8 / 7.4 / 8.6),
     # ArcFace 0.9201 and 0.9208 vs 0.950 and 0.8814 — Lightning is the steadier of the two and both
     # sit far above the 0.57 threshold (V-ID-001) — at 35.5 s instead of 255.6 s per image.
+    # Looked at both outputs side by side afterwards, and the eye adds what dE00 cannot say:
+    # the board shoe is an OPEN-TOE ankle-strap wedge sandal. Lightning renders an open-toe
+    # ankle-strap sandal (toes visible, strap across them); the 20-step run renders a CLOSED
+    # pump — same colour, wrong shoe. Neither reproduces the wedge sole: both give a block
+    # heel. So the sole is a known gap of the QIE family here, but the shoe TYPE is not.
     wf = fill_workflow(load_template("qie2511_vton_lightning"), {
         "__PERSON_IMAGE__": client.upload_image(person), "__REF_IMAGE__": client.upload_image(board),
         "__POSITIVE_PROMPT__": prompt, "__NEGATIVE_PROMPT__": "", "__CFG__": 1.0, "__SAMPLER__": "euler",
