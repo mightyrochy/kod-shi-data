@@ -371,16 +371,60 @@ function постЖСОН(адреса, тіло){
     зап.end(дані);
   });
 }
+/* ФОТО РЕЧЕЙ ПРИХОДЯТЬ АДРЕСОЮ, А LM STUDIO БЕРЕ ЛИШЕ BASE64 (виміряно 24.09.2026).
+   Показ шле в опис `{type:'image', source:{type:'url', url:'https://крамниця…'}}` —
+   справжній воркер сам іде по фото й ставить заголовок `x-images-dropped` на ті,
+   яких не дістав. Перший прогін без цього давав `HTTP 400 'url' field must be a
+   base64 encoded image` на КОЖНОМУ виклику опису, тобто модель не бачила жодного
+   фото речі — а саме на них вона й судить «фото_не_те». Тепер адаптер робить те
+   саме, що воркер: тягне кадр і кладе його base64, а скільки не дістав — віддає
+   тим самим заголовком. */
+let фотоНеДійшло = 0;
+/* WEBP ЛОКАЛЬНИЙ РАНТАЙМ НЕ БЕРЕ (виміряно 24.09.2026): той самий кадр у jpeg
+   дає HTTP 200 і опис речі, у webp — `HTTP 400 'url' field must be a base64
+   encoded image` і на qwen3.5-9b, і на qwen3-vl-8b. А webp у каталозі багато
+   (rito, emmeliedelage, miraton). Постачальники справжнього мосту webp беруть,
+   тож це межа рантайму, а не продукту, — і адаптер її знімає перекодуванням у
+   jpeg. Нема `sharp` — кадр просто не доїде, як і доти, і його порахує
+   `x-images-dropped`. */
+let _sharp = null; try { _sharp = require('sharp'); } catch (_) {}
+const ЖИВІ_ТИПИ = new Set(['image/jpeg', 'image/png']);
+async function кадрБазою(url){
+  try {
+    const в = await fetch(url, {redirect: 'follow'});
+    if (!в.ok) return null;
+    let тип = (в.headers.get('content-type') || 'image/jpeg').split(';')[0].trim();
+    let байти = Buffer.from(await в.arrayBuffer());
+    if (!байти.length) return null;
+    if (!ЖИВІ_ТИПИ.has(тип)){
+      if (!_sharp) return null;
+      байти = await _sharp(байти).jpeg({quality: 88}).toBuffer();
+      тип = 'image/jpeg';
+    }
+    return 'data:' + тип + ';base64,' + байти.toString('base64');
+  } catch (_) { return null; }
+}
 async function живоюМоделлю(тіло, тип){
-  const повідомлення = (тіло.messages || []).map(м => ({
-    role: м.role === 'assistant' ? 'assistant' : 'user',
-    content: Array.isArray(м.content)
-      ? м.content.map(б => б.type === 'image'
-          ? {type: 'image_url', image_url: {url: ((б.source || {}).type === 'base64')
-              ? 'data:' + ((б.source || {}).media_type || 'image/jpeg') + ';base64,' + б.source.data
-              : (б.source || {}).url || ''}}
-          : {type: 'text', text: б.text || ''})
-      : String(м.content == null ? '' : м.content)}));
+  фотоНеДійшло = 0;
+  const повідомлення = [];
+  for (const м of (тіло.messages || [])){
+    if (!Array.isArray(м.content)){
+      повідомлення.push({role: м.role === 'assistant' ? 'assistant' : 'user',
+                         content: String(м.content == null ? '' : м.content)});
+      continue;
+    }
+    const зміст = [];
+    for (const б of м.content){
+      if (б.type !== 'image'){ зміст.push({type: 'text', text: б.text || ''}); continue; }
+      const дж = б.source || {};
+      const url = дж.type === 'base64'
+        ? 'data:' + (дж.media_type || 'image/jpeg') + ';base64,' + дж.data
+        : await кадрБазою(дж.url || '');
+      if (url) зміст.push({type: 'image_url', image_url: {url}});
+      else фотоНеДійшло++;
+    }
+    повідомлення.push({role: м.role === 'assistant' ? 'assistant' : 'user', content: зміст});
+  }
   const запит = {model: МОДЕЛЬ_ЖИВА, messages: повідомлення,
                  max_tokens: тіло.max_tokens || 4000, stream: false};
   if (ТЕМПЕРАТУРА !== null && !Number.isNaN(ТЕМПЕРАТУРА)) запит.temperature = ТЕМПЕРАТУРА;
@@ -406,8 +450,8 @@ async function живоюМоделлю(тіло, тип){
   } catch (e) { статус = 599; помилка = String(e).slice(0, 600); }
   const с_ = (Date.now() - почато) / 1000;
   ЖУРНАЛ_МОДЕЛІ.push({тип, статус, с: +с_.toFixed(1), вхід, вихід, стоп,
-                      думка: думка.length, симв: текст.length, помилка});
-  return {статус, текст, думка, вхід, вихід, стоп, помилка, с: с_};
+                      думка: думка.length, симв: текст.length, фото_не_дійшло: фотоНеДійшло, помилка});
+  return {статус, текст, думка, вхід, вихід, стоп, помилка, с: с_, дропи: фотоНеДійшло};
 }
 function записатиВиклик(н, тип, промпт, р){
   if (!ТЕКА_ВІДПОВІДЕЙ) return;
@@ -681,7 +725,8 @@ function відповісти(текст) {
       const р = await живоюМоделлю(тіло, тип);
       записатиВиклик(промпти.length, тип, текст, р);
       console.log('   ↔ модель #' + промпти.length + ' ' + тип + ' (' + текст.length + ' симв.'
-        + (фото ? ', фото ' + фото : '') + ') → ' + р.с.toFixed(1) + ' с · HTTP ' + р.статус
+        + (фото ? ', фото ' + фото + (р.дропи ? ' (не дійшло ' + р.дропи + ')' : '') : '')
+        + ') → ' + р.с.toFixed(1) + ' с · HTTP ' + р.статус
         + ' · ' + (р.текст || '').length + ' симв.' + (р.думка ? ' · ДУМКА ' + р.думка.length + ' симв.' : '')
         + (р.стоп === 'max_tokens' ? ' · УПЕРЛОСЬ У СТЕЛЮ ВИВОДУ' : '')
         + (р.помилка ? ' · ' + р.помилка.slice(0, 200) : ''));
@@ -690,7 +735,7 @@ function відповісти(текст) {
           headers: {'x-model': МОДЕЛЬ_ЖИВА},
           body: JSON.stringify({error: {message: р.помилка || 'модель не відповіла'}})});
       return route.fulfill({status: 200, contentType: 'application/json',
-        headers: {'x-model': МОДЕЛЬ_ЖИВА},
+        headers: {'x-model': МОДЕЛЬ_ЖИВА, ...(фото ? {'x-images-dropped': String(р.дропи || 0)} : {})},
         body: JSON.stringify({content: [{type: 'text', text: р.текст}],
                               usage: {input_tokens: р.вхід, output_tokens: р.вихід},
                               stop_reason: р.стоп})});
@@ -2107,6 +2152,13 @@ function відповісти(текст) {
          не потрапляв ЖОДНОГО разу. Розгортається рівно один редактор і рівно на
          екрані сценарію; жодна звірка вище на нього не дивиться. */
       await знімок('ekran_' + ім, сел);
+      /* ЕКРАН, ЯКИЙ ДОВШИЙ ЗА ЕКРАН (тестувальниця, 24.09). Знімок ЕЛЕМЕНТА бере
+         рівно ту частину, що зараз у вікні: на екрані сценарію рядки «Прикраси»,
+         «Не відкривати», «Палітра» й «Усе правильно?» лишались нижче краю, і в
+         `текст_екранів.txt` вони були, а на знімку — ні. Тобто дивитись очима
+         (CLAUDE.md п.10) було нічого. Другий кадр — усієї сторінки: нижні рядки
+         видно, і видно, що саме стоїть у рядку «Не відкривати». */
+      await знімок('ekran_' + ім + '_povnyi', null);
       await зібратиТекст('екран «' + р + '»', сел);
       /* ── АРКУШ «НЕ ВІДКРИВАТИ» — ОКРЕМИМ КАДРОМ (24.09.2026, рядок 166) ──────
          Підказка про межі, почуті в словах («А це стилістка почула у твоїх
