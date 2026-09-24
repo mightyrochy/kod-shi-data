@@ -14,9 +14,9 @@ import json, os, urllib.request
  "5 фото речі: рід, рамка": [["qwen/qwen3-vl-8b", "lms", "поточна"], ["qwen/qwen3.5-9b", "lms"], ["qwen/qwen3.6-35b-a3b", "lms"], ["google/gemma-4-12b", "lms"]]}
 ЧОМУ_НІ = {}
 def взяти(url):
-    """JSON з локального сервера; коли сервер не відповідає — None, а причина лягає в ЧОМУ_НІ (друкується вгорі)."""
+    """JSON з локального сервера; не відповідає — None, а причина в ЧОМУ_НІ (друкується вгорі). Таймаут 90 с, а не 10: `/object_info` з усіма вузлами — 1223 записи, і за 10 с на зайнятому ноутбуці проба писала «не піднято» на ваги, які є."""
     try:
-        with urllib.request.urlopen(url, timeout=10) as в: return json.load(в)
+        with urllib.request.urlopen(url, timeout=90) as в: return json.load(в)
     except Exception as e: ЧОМУ_НІ[url.split("/", 3)[2]] = type(e).__name__
 лмс = (взяти("http://127.0.0.1:1234/api/v1/models") or {}).get("models") or [
     dict(key=м["id"], старий=1) for м in (взяти("http://127.0.0.1:1234/v1/models") or {}).get("data", [])]
