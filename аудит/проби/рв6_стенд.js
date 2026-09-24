@@ -352,6 +352,25 @@ function типПромпту(текст){
   return 'інший промпт';
 }
 const ЧЕКАЄ_JSON = т => /ОБРАЗИ_V1|ВИБІР_V1|ОПИС_ВІДПОВІДЬ_V1|повтор формату|повтор мови/.test(т);
+/* ВЛАСНИЙ POST, А НЕ `fetch`, І ЦЕ НЕ СМАК (виміряно 24.09.2026). `fetch` у Node
+   стоїть на undici, у якого `headersTimeout` типово 300 с; виклик ВИБІР_V1 на
+   локальній моделі йшов 303 с і діставав `TypeError: fetch failed` — сторінка
+   бачила HTTP 599 і чесно писала «рука 2: збій», тобто ПРИЛАД відрізав руку, а
+   звіт списав би це на продукт. Тут таймаута нема взагалі: скільки модель
+   рахує, стільки й чекаємо (сторінка сама має свої межі). */
+const http_ = require('http');
+function постЖСОН(адреса, тіло){
+  return new Promise(рез => {
+    const у = new URL(адреса), дані = Buffer.from(JSON.stringify(тіло), 'utf8');
+    const зап = http_.request({hostname: у.hostname, port: у.port, path: у.pathname + у.search,
+      method: 'POST', headers: {'Content-Type': 'application/json', 'Content-Length': дані.length}},
+      від => { const шм = []; від.on('data', д => шм.push(д));
+               від.on('end', () => рез({статус: від.statusCode, сире: Buffer.concat(шм).toString('utf8')})); });
+    зап.setTimeout(0);
+    зап.on('error', е => рез({статус: 599, сире: JSON.stringify({error: {message: String(е)}})}));
+    зап.end(дані);
+  });
+}
 async function живоюМоделлю(тіло, тип){
   const повідомлення = (тіло.messages || []).map(м => ({
     role: м.role === 'assistant' ? 'assistant' : 'user',
@@ -370,11 +389,10 @@ async function живоюМоделлю(тіло, тип){
   const почато = Date.now();
   let статус = 200, текст = '', думка = '', вхід = 0, вихід = 0, стоп = 'end_turn', помилка = null;
   try {
-    const відп = await fetch(АДРЕСА_МОДЕЛІ + '/chat/completions', {
-      method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(запит)});
-    const сире = await відп.text();
+    const відп = await постЖСОН(АДРЕСА_МОДЕЛІ + '/chat/completions', запит);
+    const сире = відп.сире;
     let дані = null; try { дані = JSON.parse(сире); } catch (_) {}
-    if (!відп.ok){ статус = відп.status; помилка = сире.replace(/\s+/g, ' ').slice(0, 600); }
+    if (відп.статус !== 200){ статус = відп.статус; помилка = сире.replace(/\s+/g, ' ').slice(0, 600); }
     else {
       const в = ((дані || {}).choices || [{}])[0] || {};
       текст = (в.message || {}).content || '';
@@ -1484,9 +1502,19 @@ function відповісти(текст) {
       console.log('   знімок:', ш, fs.statSync(ш).size, 'Б');
     };
     await кадр('zgornuto');
-    await стор.evaluate(п => { document.querySelector('#к-' + п + ' .питання-коду').open = true; }, поз);
+    /* `.питання-коду` НА КАРТЦІ МОЖЕ Й НЕ БУТИ, і це не привід валити прохід
+       (тестувальниця, 24.09): коли рука впала (на локальній моделі — стеля
+       виводу або HTTP від моста), картка чесно лишається без переліку, і
+       `document.querySelector(...).open = true` кидав `Cannot set properties of
+       null`. Прохід тоді вмирав ПІСЛЯ карток — без знімків екранів §5, без
+       звіту вердиктів, тобто саме там, де ручний огляд і починається. */
+    const відкрити = async (п, як) => стор.evaluate(([п_, як_]) => {
+      const д = document.querySelector('#к-' + п_ + ' .питання-коду'); if (д) д.open = як_; return !!д;
+    }, [п, як]);
+    const єПерелік = await відкрити(поз, true);
     await с(300); await кадр('rozgornuto');
-    await стор.evaluate(п => { document.querySelector('#к-' + п + ' .питання-коду').open = false; }, поз);
+    if (!єПерелік) console.log('   (на цій картці переліку «код не знає» нема — рука впала)');
+    await відкрити(поз, false);
 
     /* ДОДАТКОВИЙ КАДР — РУКА БЕЗ КАТАЛОГУ («м-001», спостереження #173): руки
        1–2 (знімок вище) взагалі не несуть цього id — вигадані речі й самé поле
