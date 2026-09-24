@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Проба поділу pipeline.py: кожна функція/константа, що переїхала в новий модуль,
 має ТОЙ САМИЙ AST, що й у pipeline.py до поділу (коміт ac8c2ca) — ОКРІМ пар
-«модуль::ім'я» з `поділ_очікувані.json`, свідомо змінених комітами докстрінгів
+«модуль::ім'я» з `поділ_очікувані.txt`, свідомо змінених комітами докстрінгів
 й наступними правилами (sha там-таки). Будь-яка ІНША розбіжність — падіння з іменем.
 Запуск: cd джерела && python3 проби/поділ_pipeline_ast.py [БАЗОВИЙ_КОМІТ]"""
 import ast, os, subprocess, sys
 ДЖЕРЕЛА = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ДЖЕРЕЛА)
-from поділ_спільне import dump_без_докстрінгів
+from поділ_спільне import dump_без_докстрінгів, очікувані
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "ac8c2ca"
 МОДУЛІ = ("паспорт_нагоди", "пакет_моделі", "розбір_відповідей", "суд_від_моделі",
           "повнота_образу", "вердикт_моделі", "pipeline")
@@ -35,8 +35,7 @@ for м in МОДУЛІ:
 import pipeline
 не_ті_самі = [ім for ім, м in де.items() if м != "pipeline"
               and getattr(pipeline, ім, None) is not getattr(__import__(м), ім)]
-import json
-ОЧІК = set(json.load(open(os.path.join(ДЖЕРЕЛА, "проби", "поділ_очікувані.json"), encoding="utf-8"))["pipeline"])
+ОЧІК = очікувані("pipeline")
 спост = {"%s::%s" % п for п in розбіжні}
 поза_списком, не_справдилось = sorted(спост - ОЧІК), sorted(ОЧІК - спост)
 print("вузлів у pipeline.py@%s: %d · знайдено: %d · AST розбіжні: %d (очікувані: %d) · "
