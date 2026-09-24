@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Рядок 145: речення про схему правдиві очима. Стенд_вх, офіс 18 °C, каталог_повний. ДО — модулі
-main dcf2549 (git show у тимчасову теку, перша на sys.path), ПІСЛЯ — чинні. Друкує: зразки тріади й
+main e6cfc54 (git show у тимчасову теку, перша на sys.path), ПІСЛЯ — чинні. Друкує: зразки тріади й
 приглушеної комплементарної на «оливі»; рядок картки на образах із небесно-блакитною сукнею
 ж-01466 (тріада) і барвінковою ж-01603 (комплементарна) — слово сім'ї й ремонт; рядок типового
 шляху (тональна) і лічбу каталогу в акцентних слотах: за дугою ±12° від якоря і за названими
@@ -9,7 +9,7 @@ import json, subprocess, sys, tempfile, os
 if len(sys.argv) == 1:
     тека = tempfile.mkdtemp()
     for ф in ("палітра_схеми.py", "palette.py", "palettes.py", "міст_пакет.py", "міст_основи.py"):
-        open(os.path.join(тека, ф), "wb").write(subprocess.check_output(["git", "show", "dcf2549:джерела/" + ф]))
+        open(os.path.join(тека, ф), "wb").write(subprocess.check_output(["git", "show", "e6cfc54:джерела/" + ф]))
     subprocess.run([sys.executable, __file__, тека], check=True)
     sys.argv.append("")
 sys.path.insert(0, sys.argv[1] or "."); МІТКА = "ДО   " if sys.argv[1] else "ПІСЛЯ"
