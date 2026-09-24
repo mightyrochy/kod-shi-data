@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Рядок 193: (1) одна відповідь про сіль — верхній шар (`верхнє_догляд._сльота`, K-OUT-44) і аксесуари
 (`сценарій.сіль_на_дорозі`, K-WEA-05) при −2 / +3 °C × сніг / мокрий сніг / дощ і з ручним «нема»; ДО —
-модулі main 664b31d (git show у тимчасову теку), ПІСЛЯ — чинні. (2) Рядок жінці на картці з замшевими
+модулі main 08ea31d (git show у тимчасову теку), ПІСЛЯ — чинні. (2) Рядок жінці на картці з замшевими
 уггами ж-10655 і сумкою ж-07782: −8 °C сніг, +16 °C дощ, +16 °C сухо; і без замші (контроль).
 Запуск із `джерела`: PYTHONPATH=. python3 проби/zamsha_kartka_193.py"""
 import json, subprocess, sys, tempfile, os
 if len(sys.argv) == 1:
     тека = tempfile.mkdtemp()
     for ф in ("верхнє_догляд.py", "верхнє_реєстр.py", "міст_відповіді.py"):
-        open(os.path.join(тека, ф), "wb").write(subprocess.check_output(["git", "show", "664b31d:джерела/" + ф]))
+        open(os.path.join(тека, ф), "wb").write(subprocess.check_output(["git", "show", "08ea31d:джерела/" + ф]))
     subprocess.run([sys.executable, __file__, тека], check=True)
     sys.argv.append("")
 sys.path.insert(0, sys.argv[1] or "."); М = "ДО   " if sys.argv[1] else "ПІСЛЯ"
