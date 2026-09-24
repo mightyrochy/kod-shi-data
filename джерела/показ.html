@@ -792,6 +792,11 @@ button.як-слово{background:none;border:0;padding:0;font:inherit;color:var
 .річ.замінити{box-shadow:inset 3px 0 0 var(--чорнило);padding-left:10px}
 .разом{display:flex;justify-content:flex-end;align-items:baseline;gap:10px;padding:12px 18px 0;font-size:13px;color:var(--олівець)}
 .разом b{font:500 16px var(--текст);font-variant-numeric:tabular-nums;color:var(--чорнило)}
+/* рядок «Позначено речей…» стоїть у ТІЙ САМІЙ колонці, що список речей і «Разом»
+   (18 px): ручний огляд куратора 24.09 на знімку 390×844 показав, що без цього він
+   прилипає до лівого краю екрана, поки вся картка має відступ. Ні кольору, ні
+   елемента це не додає — лише відступ сусіда. */
+.не-ця-рядок{padding:0 18px}
 .к-текст{padding:4px 18px 0}
 .к-текст h3{margin:20px 0 6px;font-size:20px}
 /* голос стиліста — Kyiv*Type Serif; текст, не інтерфейс */
