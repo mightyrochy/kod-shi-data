@@ -6,7 +6,8 @@
 людського рядка падає тут, а не мовчить на екрані.
 Запуск: cd джерела && python3 проби/palitra_nota_164.py"""
 import os, re, sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ДЖЕРЕЛА = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ДЖЕРЕЛА)
 import палітра_розвилка as Р
 
 МАШИННЕ = re.compile(r"[A-Za-z]{3,}|\b[A-ZА-ЯІЇЄҐ]{1,2}-[A-ZА-ЯІЇЄҐ]{2,6}-\d{2}\b|ПРОВЕНАНС")
