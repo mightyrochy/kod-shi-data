@@ -4,7 +4,7 @@
 і не гниє разом з адресами крамниць. Промпт і розбір — самих жнив (`ПРОМПТ_НАБОРУ`, `_запит`, `нормалізувати`), один запит
 полів на тому самому кадрі, що в записі v2 (запиту аркуша тут нема): ознаки — проти полів запису, колір — сім'я тону слова
 моделі проти виміру v2 і проти слів крамниці. `--сам`: замість моделі — самі записи (мусить вийти 100 %, інакше rc 1).
-`cd джерела && python проби/vymir_modelei_153.py <модель>`; (5) — vymir_foto_rechi_153.py, (3) — vymir_namiru_153.py."""
+`cd джерела && python проби/vymir_modelei_153.py <модель>`; (5) — vymir_foto_rechi_153.py, (3) — vymir_namiru_153.py. ТОЧКА ВІДЛІКУ 24.09: qwen3-vl-8b-instruct — ознаки 188/232 (колір: вимір v2 31/40) за 1.8 с/річ; два прогони збіглися до знака, бо жнива шлють `temperature: 0`. Кандидата міряти проти ЦИХ чисел, не проти 100 %."""
 import collections, json, os, random, subprocess, sys, time, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import жнива_v2 as Ж, verify as V
