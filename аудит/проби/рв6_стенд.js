@@ -509,12 +509,15 @@ const kadrivKolonky = н => н <= 4 ? 2 : (н <= 9 ? 3 : 4);
    7.3 ГБ, і на Qwen-Image-Edit лишається менше двох. Вивантажую ЛИШЕ свою, за
    ключем; чужої не чіпаю. Приміряння в стенді йде після карток і звіту, тож
    мовна модель далі в цьому прогоні не потрібна. */
+   LMS_BIN — шлях до lms.exe; типово там, де його кладе інсталятор LM Studio на
+   цьому ноутбуці. Винесено змінною, щоб стенд не був прибитий до однієї машини. */
+const LMS_BIN = process.env.LMS_BIN || 'C:/Users/Admin/.lmstudio/bin/lms.exe';
 let _llmЗнято = false;
 function звільнитиМовнуМодель(){
   if (_llmЗнято || process.env.COMFY_FREE_LLM !== '1' || !МОДЕЛЬ_ЖИВА) return;
   _llmЗнято = true;
   try {
-    require('child_process').execFileSync('C:/Users/Admin/.lmstudio/bin/lms.exe',
+    require('child_process').execFileSync(LMS_BIN,
       ['unload', МОДЕЛЬ_ЖИВА], {stdio: 'ignore', timeout: 60000});
     console.log('   (вивантажила свою мовну модель ' + МОДЕЛЬ_ЖИВА + ' — звільняю VRAM для ComfyUI)');
   } catch (e) { console.log('   (не вдалось вивантажити мовну модель: ' + String(e).slice(0, 120) + ')'); }
