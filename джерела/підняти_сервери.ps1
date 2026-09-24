@@ -29,8 +29,25 @@ function Listening($port) {
 #    So the model is loaded here with the context the harvest actually needs. It costs
 #    6.19 GB of VRAM standing by; that is the state the laptop was already in and the
 #    state in which the try-on measured 35.5 s per image, so ComfyUI has room.
+#    VERIFIED COLD 2026-09-24, twice: with every "LM Studio" process killed and :1234 silent,
+#    this file alone brought the app up and left the model loaded at 16384 / 3 slots, 6.19 GB
+#    -- about 80 s the first time, 9.5 s the second (same cold app, warm file cache).
+#    So the one line really is all it takes, and the caller gets the prompt back.
+#    Start-Process, not "&": the app `lms server start` spawns outlives lms.exe and INHERITS
+#    stdout, so `powershell -File this.ps1 | ...` never saw end-of-stream and looked hung
+#    (it was not -- the script had finished). A human at a console got the prompt back
+#    either way; anything that CAPTURED the output did not. Measured the same day.
+#    AND NOT -Wait, measured too: -Wait puts the target in a job object and waits for the
+#    whole TREE, i.e. for the LM Studio app, which never exits -- with it the script itself
+#    hung for 7 min instead of just the pipe. We wait for the PORT, which is the thing we
+#    actually need, and say so plainly when it never answers.
 if (-not (Listening 1234)) {
-    & "$env:USERPROFILE\.lmstudio\bin\lms.exe" server start
+    Start-Process -FilePath "$env:USERPROFILE\.lmstudio\bin\lms.exe" `
+        -ArgumentList 'server', 'start' -WindowStyle Hidden
+    for ($i = 0; $i -lt 120 -and -not (Listening 1234); $i++) { Start-Sleep -Seconds 1 }
+    if (-not (Listening 1234)) {
+        Write-Host 'LM Studio is still silent on :1234 after 120 s -- open the app by hand, then run this file again.'
+    }
 }
 $loaded = & "$env:USERPROFILE\.lmstudio\bin\lms.exe" ps 2>$null | Out-String
 if ($loaded -notmatch '16384') {
