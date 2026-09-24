@@ -184,10 +184,16 @@ def run_pipeline(person: Path, layout_path: Path, garments: list[dict], outdir: 
     print("[3] prompt + [4] QIE ...")
     prompt = build_prompt(layout, holistic_labels, tuple(accessory)); (outdir / "prompt.txt").write_text(prompt, encoding="utf-8")
     client = ComfyUIClient()
-    wf = fill_workflow(load_template("qie2511_vton"), {
+    # Lightning 4 steps is the default engine everywhere else (adapter.build_generation_request,
+    # run_slice --engine); this call was the last one pinned to 20 steps. Measured 2026-09-24 on
+    # the laptop with the frozen E-017 input (probe vymir_prymiryannya_153.py, two runs each):
+    # both carry all 3 of 3 board items (dE00 blouse 1.9 / skirt 7.4 / shoes 7.8 vs 2.8 / 7.4 / 8.6),
+    # ArcFace 0.9201 and 0.9208 vs 0.950 and 0.8814 — Lightning is the steadier of the two and both
+    # sit far above the 0.57 threshold (V-ID-001) — at 35.5 s instead of 255.6 s per image.
+    wf = fill_workflow(load_template("qie2511_vton_lightning"), {
         "__PERSON_IMAGE__": client.upload_image(person), "__REF_IMAGE__": client.upload_image(board),
-        "__POSITIVE_PROMPT__": prompt, "__NEGATIVE_PROMPT__": "", "__CFG__": 4.0, "__SAMPLER__": "euler",
-        "__SCHEDULER__": "simple", "__SEED__": 42, "__STEPS__": 20, "__OUTPUT_PREFIX__": "pl_qie", "__DENOISE__": 1.0})
+        "__POSITIVE_PROMPT__": prompt, "__NEGATIVE_PROMPT__": "", "__CFG__": 1.0, "__SAMPLER__": "euler",
+        "__SCHEDULER__": "simple", "__SEED__": 42, "__STEPS__": 4, "__OUTPUT_PREFIX__": "pl_qie", "__DENOISE__": 1.0})
     image = _download(client, client.poll(client.submit(wf), timeout=600), "pl_qie", outdir / "qie.png")
     client.free()
 
