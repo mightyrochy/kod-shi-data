@@ -1,24 +1,23 @@
-# Autostart for the three local services Lusterko needs. Comments are ASCII on purpose:
-# powershell.exe 5.1 reads a .ps1 without BOM as ANSI.
+# Brings up the two local servers Lusterko needs. BY HAND, when you sit down to work.
+# Comments are ASCII on purpose: powershell.exe 5.1 reads a .ps1 without BOM as ANSI.
 #
-# Checked 2026-09-24: NOTHING started these at login -- HKCU/HKLM Run keys, both Startup
-# folders and Task Scheduler had no LM Studio, no Comfy Desktop, no :8000. The laptop
-# booted 23.09 20:01 and the apps were opened by hand at 07:56/07:57 on 24.09. So this is
-# the FIRST autostart, not a second one: the hook is a single shortcut in
-#   %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\kod-shi-autostart.lnk
-# which does nothing but run this file. Delete it to turn the whole thing off.
-# A .lnk rather than a .cmd because this file's own path is Cyrillic: .lnk stores it in
-# UTF-16, while cmd.exe would read a .cmd in the OEM codepage and mangle it.
+# NOTHING HERE IS HOOKED TO THE WINDOWS LOGIN (owner's word 2026-09-24: "I will start
+# things myself"). Checked the same day: HKCU/HKLM Run and RunOnce keys, both Startup
+# folders and Task Scheduler hold nothing of this project.
 #
-# Each service is started only if its port is silent, so running this by hand at any time
-# is safe and repeatable.
+# ORDER OF THINGS: this file first, the harvest second. Forgetting this file is not
+# fatal -- the harvest checks the loaded model itself at startup and reloads it when the
+# context is too small (see zhnyva_prompty.zviryty_model), and stops with a plain line
+# when it cannot. This file is simply the faster way, and it also brings up :8000.
+#
+# Each server is started only if its port is silent, so running this twice is safe.
 
 function Listening($port) {
     [bool](Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue)
 }
 
 # 1. LM Studio :1234 -- the VLM/LLM for the harvest. `lms server start` also brings up the
-#    app itself (minimised) when it is not running, so this is all the login needs.
+#    app itself (minimised) when it is not running, so this one line is all it takes.
 #
 #    THE EXPLICIT LOAD IS NOT OPTIONAL. Just-in-time loading is on in
 #    http-server-config.json, and it loads the model with n_ctx 4096 shared across 4 slots.
@@ -43,7 +42,7 @@ if ($loaded -notmatch '16384') {
 # Launching Comfy Desktop.exe does NOT bring up a server: v1.1.2 opens an instance PICKER
 # ("New Instance / ComfyUI / Comfy Cloud") and waits for a click -- verified by screenshot
 # after 7 minutes of the app sitting idle with nothing past "[core-beta] init" in its log.
-# So it could never have worked at login either. And it is not needed: :8000 is a superset
+# So no script can raise it without a human at the mouse. And it is not needed: :8000 is a superset
 # -- 1223 nodes against 958, every try-on node (TextEncodeQwenImageEditPlus,
 # LoraLoaderModelOnly, ReferenceLatent) and every weight (qwen_image_edit_2511_fp8mixed,
 # the Lightning 4-step LoRA, flux-2-klein, tryon-klein-4b) is there, because both read the
