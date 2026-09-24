@@ -1,4 +1,4 @@
-# ComfyUI :8000 -- GroundingDINO + SAM for the harvest masks (zhnyva_masky.маска_sam).
+# ComfyUI :8000 -- SAM 3.1 for the harvest masks (the maska_sam link of maska_rechi).
 # Comments are ASCII on purpose: powershell.exe 5.1 reads a .ps1 without BOM as ANSI.
 #
 # The SSLKEYLOGFILE line below is the whole reason this file exists. Avast injects
