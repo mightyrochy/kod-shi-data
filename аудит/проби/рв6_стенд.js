@@ -538,8 +538,15 @@ async function примірятиComfy(тіло, текст){
   const ім1 = await завантажитиВComfy(людина, 'lyusterko_persona_' + Date.now() + '.jpg');
   const ім2 = await завантажитиВComfy(аркуш, 'lyusterko_rechi_' + Date.now() + '.jpg');
   const шаблон = JSON.parse(fs.readFileSync(ВОРКФЛОУ_ПРИМІРКИ, 'utf8'));
+  /* ПРОМПТ ЙДЕ ТОЙ, ЩО ШЛЕ ПОКАЗ, із ОДНІЄЮ названою поправкою: перший рядок
+     показу каже «Фото 1 — людина. Далі — фото речей з магазину», а сюди їде не
+     «далі», а ОДИН аркуш. Лишити рядок як є означало б збрехати моделі про те,
+     що вона бачить; переписати весь промпт — міряти мій переказ. Тому міняється
+     рівно цей рядок, решта — слово в слово. */
+    const текстАркуша = текст.replace(/^Фото 1 — людина\. Далі — фото речей з магазину\./,
+      'Фото 1 — людина. Фото 2 — один аркуш, на якому фото речей стоять сіткою (кожна клітина — одна річ).');
   const заміна = {'__PERSON_IMAGE__': ім1, '__REF_IMAGE__': ім2,
-    '__POSITIVE_PROMPT__': текст, '__NEGATIVE_PROMPT__': '',
+    '__POSITIVE_PROMPT__': текстАркуша, '__NEGATIVE_PROMPT__': '',
     '__CFG__': Number(process.env.COMFY_CFG || 1.0), '__SAMPLER__': 'euler',
     '__SCHEDULER__': 'simple', '__SEED__': Number(process.env.COMFY_SEED || СІД),
     '__STEPS__': Number(process.env.COMFY_STEPS || 4), '__OUTPUT_PREFIX__': 'lyusterko_prymirka',
