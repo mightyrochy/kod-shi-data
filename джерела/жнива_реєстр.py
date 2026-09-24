@@ -33,6 +33,8 @@ import silhouette as S
  "choices": "відповідь OpenAI-сумісного API (LM Studio): список варіантів.\n            Беремо [0] — n>1 не просимо ніколи",
  "message": "`choices[0].message` тієї ж відповіді; `content` усередині — текст моделі.\n            Контракт чужий: міняється версією сервера, не нашим кодом",
  "stdlib": "ключ `sysconfig.get_paths()` — тека стандартної бібліотеки Python.\n           Пише інтерпретатор, не проєкт",
+ "filename": "відповідь ComfyUI `/history`: імʼя файлу, який дав вузол SaveImage.\n             Читає `жнива_маски.маска_sam`, щоб забрати маску байтами (24.09)",
+ "subfolder": "тека того ж файлу в тій самій відповіді ComfyUI; типово порожня.\n              Пише сервер ComfyUI, не наш код — як і `type` поруч",
 }
 
 OSS = os.environ.get("OSS_PATH", r"C:\Users\Admin\Open Source Stylist")
