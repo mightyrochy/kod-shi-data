@@ -26,7 +26,11 @@ import назва_речі as НР
             "honchstudio.com", "solmar.com.ua", "stolyarchuk.com.ua", "vovk.com",
             "emmeliedelage.com", "ricamare.com.ua", "kasandra.ua", "nyni.shop",
             "sezone.ua", "fromus.ua", "vittorossi.ua", "attico.ua", "giardini-shoes.com",
-            "alot.com.ua", "welfare.ua", "miraton.ua", "25union.com.ua", "bella-bicchi.com")
+            "alot.com.ua", "welfare.ua", "miraton.ua", "25union.com.ua", "bella-bicchi.com",
+            # Додано за доповненням куратора 23.09 (записи без ціни й мовні двійники)
+            # та за крамницями, де назва змінилась найчастіше.
+            "vilni.store", "twice.com.ua", "cooshwear.com", "cultboutique.com.ua",
+            "diadia.ua", "wearme.ua")
 
 _СТИЛЬ = """body{font:15px/1.45 system-ui,sans-serif;margin:0;padding:24px;background:#faf8f5;color:#1a1714}
 h1{font-size:22px;margin:0 0 4px}h2{font-size:17px;margin:32px 0 8px;padding-top:12px;border-top:2px solid #e2ddd6}
