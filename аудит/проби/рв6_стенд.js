@@ -33,6 +33,8 @@
    адреса, за якою сторінка бачить сама себе й міст. */
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
+/* SLABKA=<форма,…> — слабка модель поверх заглушки (рядок 208, `слабка_модель.js`) */
+const СЛАБКА = require(path.join(__dirname, 'слабка_модель.js'));
 const БАЗА = process.argv[2] || 'http://127.0.0.1:8765', КОРІНЬ = process.argv[3] || process.cwd();
 const ТЕКА_PYODIDE = process.argv[4] || '/tmp/pyodide';
 /* СІД — пʼятим аргументом (або env `SEED`, латиницею: кириличних імен env
@@ -897,7 +899,7 @@ function відповісти(текст) {
                               usage: {input_tokens: р.вхід, output_tokens: р.вихід},
                               stop_reason: р.стоп})});
     }
-    const в = відповісти(текст);
+    const в = СЛАБКА.зіпсувати(відповісти, відповісти(текст), текст);
     промпти.push({тип: в.тип, довжина: текст.length, фото, json: (() => { try { JSON.parse(текст); return true; } catch (_) { return false; } })()});
     /* VIDPOVIDI працює й на заглушці: промпт, який бачить модель, читається ОЧИМА
        так само, як і її відповідь (CLAUDE.md п.10), і саме звідси беруться числа
@@ -926,7 +928,7 @@ function відповісти(текст) {
     }
     await route.fulfill({ status: 200, contentType: 'application/json',
       headers: {'x-model': 'заглушка-рв6', ...(урлФото ? {'x-images-dropped': String(дроп)} : {})},
-      body: JSON.stringify({ content: вміст, usage: {input_tokens: 1, output_tokens: 1}, stop_reason: 'end_turn' }) });
+      body: JSON.stringify({ content: вміст, usage: {input_tokens: 1, output_tokens: 1}, stop_reason: в.стоп || 'end_turn' }) });
   });
 
   await стор.goto(БАЗА + '/index.html#міст=' + БАЗА + '/міст&т=tok-rv6', { waitUntil: 'load', timeout: 180000 });
@@ -1550,6 +1552,7 @@ function відповісти(текст) {
       + ВИРАЗ_ЗБОЮ, null, { timeout: 1500000 });
   clearInterval(поступ);
   await с(1500);
+  await СЛАБКА.підсумок(стор);
   /* `П` МОЖЕ БУТИ null, І ЦЕ ЗАКОННИЙ КІНЕЦЬ ШЛЯХУ (тестувальниця, 24.09):
      коли збирання впало до першого образу (на локальній моделі — «сценарію
      нема», бо модель назвала нагоду поза довідником), пакета нема зовсім, і
