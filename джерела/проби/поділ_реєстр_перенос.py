@@ -6,7 +6,7 @@
 import json, os, subprocess, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from поділ_спільне import очікувані, РЕЄСТР
-БАЗА = sys.argv[1] if len(sys.argv) > 1 else "bb69756"
+БАЗА = sys.argv[1] if len(sys.argv) > 1 else "de0d834"
 було_текст = subprocess.run(["git", "show", "%s:джерела/проби/поділ_очікувані.json" % БАЗА],
                             capture_output=True, text=True, check=True).stdout
 було_json = json.loads(було_текст)
