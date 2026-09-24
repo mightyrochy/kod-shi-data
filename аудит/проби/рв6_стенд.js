@@ -504,7 +504,23 @@ async function аркушРечей(кадри){
     .composite(плитки).jpeg({quality: 92}).toBuffer();
 }
 const kadrivKolonky = н => н <= 4 ? 2 : (н <= 9 ? 3 : 4);
+/* COMFY_FREE_LLM=1 — вивантажити СВОЮ мовну модель перед першим кадром.
+   Картка 16 ГБ: мовна модель тримає ~7.4 ГБ, сусідня сесія (рядок 153) — ще
+   7.3 ГБ, і на Qwen-Image-Edit лишається менше двох. Вивантажую ЛИШЕ свою, за
+   ключем; чужої не чіпаю. Приміряння в стенді йде після карток і звіту, тож
+   мовна модель далі в цьому прогоні не потрібна. */
+let _llmЗнято = false;
+function звільнитиМовнуМодель(){
+  if (_llmЗнято || process.env.COMFY_FREE_LLM !== '1' || !МОДЕЛЬ_ЖИВА) return;
+  _llmЗнято = true;
+  try {
+    require('child_process').execFileSync('C:/Users/Admin/.lmstudio/bin/lms.exe',
+      ['unload', МОДЕЛЬ_ЖИВА], {stdio: 'ignore', timeout: 60000});
+    console.log('   (вивантажила свою мовну модель ' + МОДЕЛЬ_ЖИВА + ' — звільняю VRAM для ComfyUI)');
+  } catch (e) { console.log('   (не вдалось вивантажити мовну модель: ' + String(e).slice(0, 120) + ')'); }
+}
 async function примірятиComfy(тіло, текст){
+  звільнитиМовнуМодель();
   const ост = (тіло.messages || []).slice(-1)[0] || {};
   const блоки = (ост.content || []).filter(б => б.type === 'image');
   if (!блоки.length) throw new Error('у виклику приміряння нема жодного зображення');
