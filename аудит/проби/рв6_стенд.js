@@ -272,13 +272,17 @@ function відповісти(текст) {
       start(){
         window.__ГОЛОС_ПУСКІВ++;
         window.__ГОЛОС_МОВА = this.lang;
-        /* проміжний текст спершу, остаточний потім — рівно так, як віддає служба:
-           поле мусить показати неготове слово й перезаписати його готовим */
+        /* Проміжний текст спершу, остаточний — ЛИШЕ НА ЗАПИТ СТЕНДА, а не через
+           N мілісекунд: із таймером звірка «проміжне видно одразу» ловила то
+           неготове слово, то вже готове (виміряно двома прогонами поспіль на
+           тому самому сіді). Служба теж тягне паузу між кадрами; тут її роль
+           грає виклик `__ГОЛОС_ДОКАЗАТИ()`, і прогін перестає залежати від
+           швидкості машини. */
         const пів = String(window.__ГОЛОС_ТЕКСТ || '').split(' ').slice(0, 3).join(' ');
         setTimeout(()=>{ if (this.onresult) this.onresult({resultIndex: 0,
-          results: [Object.assign([{transcript: пів}], {isFinal: false})]}); }, 10);
-        setTimeout(()=>{ if (this.onresult) this.onresult({resultIndex: 0,
-          results: [Object.assign([{transcript: String(window.__ГОЛОС_ТЕКСТ || '')}], {isFinal: true})]}); }, 30);
+          results: [Object.assign([{transcript: пів}], {isFinal: false})]}); }, 0);
+        window.__ГОЛОС_ДОКАЗАТИ = ()=>{ if (this.onresult) this.onresult({resultIndex: 0,
+          results: [Object.assign([{transcript: String(window.__ГОЛОС_ТЕКСТ || '')}], {isFinal: true})]}); };
       }
       stop(){ if (this.onend) this.onend({}); }
       abort(){ if (this.onend) this.onend({}); }
@@ -519,6 +523,7 @@ function відповісти(текст) {
        називало його результатом (спіймано першим прогоном: «робочий день в»). */
     await стор.waitForFunction(() => (document.getElementById('чат-поле').value || '').length > 3, null, {timeout: 15000});
     const проміжне = await стор.evaluate(() => document.getElementById('чат-поле').value);
+    await стор.evaluate(() => window.__ГОЛОС_ДОКАЗАТИ());
     await стор.waitForFunction(т => document.getElementById('чат-поле').value === т, ЧАТ_ТЕКСТ, {timeout: 15000});
     const г1 = await стор.evaluate(() => ({
       поле: document.getElementById('чат-поле').value,
@@ -1121,7 +1126,9 @@ function відповісти(текст) {
     await стор.evaluate(т => { window.__ГОЛОС_ТЕКСТ = т; показатиОбраз(0); }, ГОЛОС_ВЕРДИКТУ);
     await с(300);
     await стор.click('#мік-ком-0');
-    await стор.waitForFunction(() => (document.getElementById('ком-0').value || '').length > 5, null, {timeout: 15000});
+    await стор.waitForFunction(() => (document.getElementById('ком-0').value || '').length > 3, null, {timeout: 15000});
+    await стор.evaluate(() => window.__ГОЛОС_ДОКАЗАТИ());
+    await стор.waitForFunction(т => document.getElementById('ком-0').value === т, ГОЛОС_ВЕРДИКТУ, {timeout: 15000});
     await стор.click('#мік-ком-0');              // дотик — стоп
     const г4 = await стор.evaluate(() => ({
       поле: document.getElementById('ком-0').value,
