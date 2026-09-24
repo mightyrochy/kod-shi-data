@@ -458,6 +458,104 @@ async function живоюМоделлю(тіло, тип){
                       думка: думка.length, симв: текст.length, фото_не_дійшло: фотоНеДійшло, помилка});
   return {статус, текст, думка, вхід, вихід, стоп, помилка, с: с_, дропи: фотоНеДійшло};
 }
+/* ── ПРИМІРЯННЯ ЧЕРЕЗ ComfyUI (доповнення власника 24.09.2026) ───────────────
+   «Малювати приміряння локальна текстова модель не вміє — але це вміють моделі
+   в ComfyUI». Тож виклик приміряння з показу (той самий шов мосту) іде не в
+   LM Studio, а в ComfyUI :8000 — воркфлоу `qie2511_vton_lightning` (Qwen-Image-
+   Edit 2511 + Lightning 4 кроки), той самий, який сесія рядка 153 виміряла як
+   «3 з 3 речей за 35 с замість 255» (коміт 0193b6e).
+   ЩО РОБИТЬ АДАПТЕР І ЧОГО НЕ РОБИТЬ. Сторінка шле в один виклик фото ЖІНКИ і
+   до дев'яти фото речей; воркфлоу бере рівно два зображення (людина + одна
+   референсна). Тому фото речей складаються в один аркуш-референс — так само, як
+   це робить `adapter.resolve_board` у напрацюваннях (`reference_board`): це не
+   вигадка стенда, а той самий прийом. Промпт іде ТОЙ, ЩО ШЛЕ ПОКАЗ, слово в
+   слово — інакше міряли б мій переказ, а не продукт.
+   ЗМІННІ: COMFY=1 вмикає; COMFY_URL (типово http://127.0.0.1:8000);
+   COMFY_STEPS / COMFY_CFG (типово 4 і 1.0 — Lightning); COMFY_SEED.
+   Без COMFY приміряння як доти дістає 501 і рядок у звіті. */
+const COMFY = process.env.COMFY === '1';
+const COMFY_URL = (process.env.COMFY_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
+const ВОРКФЛОУ_ПРИМІРКИ = path.join(__dirname, '..', '..',
+  'open-source-stylist', 'system', 'workflows', 'qie2511_vton_lightning.json');
+async function завантажитиВComfy(байти, ім){
+  const ф = new FormData();
+  ф.append('image', new Blob([байти]), ім);
+  ф.append('overwrite', 'true');
+  const в = await fetch(COMFY_URL + '/upload/image', {method: 'POST', body: ф});
+  if (!в.ok) throw new Error('upload ' + в.status + ' ' + (await в.text()).slice(0, 200));
+  const д = await в.json();
+  return д.subfolder ? (д.subfolder + '/' + д.name) : д.name;
+}
+/* Аркуш-референс: сітка з фото речей, довга сторона 1024. Порожніх клітин не
+   лишаємо — скільки фото, стільки й клітин. */
+async function аркушРечей(кадри){
+  if (!_sharp) throw new Error('нема sharp — аркуш речей скласти нічим');
+  const колонок = кадри.length <= 2 ? кадри.length : (kadrivKolonky(кадри.length));
+  const рядків = Math.ceil(кадри.length / колонок);
+  const клітина = 512;
+  const плитки = [];
+  for (let i = 0; i < кадри.length; i++){
+    const б = await _sharp(кадри[i]).resize({width: клітина, height: клітина, fit: 'contain',
+      background: {r: 255, g: 255, b: 255}}).jpeg({quality: 92}).toBuffer();
+    плитки.push({input: б, left: (i % колонок) * клітина, top: Math.floor(i / колонок) * клітина});
+  }
+  return _sharp({create: {width: колонок * клітина, height: рядків * клітина, channels: 3,
+                          background: {r: 255, g: 255, b: 255}}})
+    .composite(плитки).jpeg({quality: 92}).toBuffer();
+}
+const kadrivKolonky = н => н <= 4 ? 2 : (н <= 9 ? 3 : 4);
+async function примірятиComfy(тіло, текст){
+  const ост = (тіло.messages || []).slice(-1)[0] || {};
+  const блоки = (ост.content || []).filter(б => б.type === 'image');
+  if (!блоки.length) throw new Error('у виклику приміряння нема жодного зображення');
+  const кадри = [], немаєКадру = [];
+  for (const б of блоки){
+    const дж = б.source || {};
+    if (дж.type === 'base64'){ кадри.push(Buffer.from(дж.data, 'base64')); continue; }
+    const url = await кадрБазою(дж.url || '');
+    if (!url){ немаєКадру.push(дж.url); continue; }
+    кадри.push(Buffer.from(url.split(',')[1], 'base64'));
+  }
+  const людина = кадри[0], речі = кадри.slice(1);
+  if (!речі.length) throw new Error('жодне фото речі не дійшло — малювати нема що');
+  const аркуш = await аркушРечей(речі);
+  const ім1 = await завантажитиВComfy(людина, 'lyusterko_persona_' + Date.now() + '.jpg');
+  const ім2 = await завантажитиВComfy(аркуш, 'lyusterko_rechi_' + Date.now() + '.jpg');
+  const шаблон = JSON.parse(fs.readFileSync(ВОРКФЛОУ_ПРИМІРКИ, 'utf8'));
+  const заміна = {'__PERSON_IMAGE__': ім1, '__REF_IMAGE__': ім2,
+    '__POSITIVE_PROMPT__': текст, '__NEGATIVE_PROMPT__': '',
+    '__CFG__': Number(process.env.COMFY_CFG || 1.0), '__SAMPLER__': 'euler',
+    '__SCHEDULER__': 'simple', '__SEED__': Number(process.env.COMFY_SEED || СІД),
+    '__STEPS__': Number(process.env.COMFY_STEPS || 4), '__OUTPUT_PREFIX__': 'lyusterko_prymirka',
+    '__DENOISE__': 1.0};
+  const воркфлоу = JSON.parse(JSON.stringify(шаблон), (_к, з) =>
+    (typeof з === 'string' && з in заміна) ? заміна[з] : з);
+  const пуск = await fetch(COMFY_URL + '/prompt', {method: 'POST',
+    headers: {'Content-Type': 'application/json'}, body: JSON.stringify({prompt: воркфлоу})});
+  if (!пуск.ok) throw new Error('prompt ' + пуск.status + ' ' + (await пуск.text()).slice(0, 300));
+  const ід = (await пуск.json()).prompt_id;
+  const доки = Date.now() + 900000;
+  while (Date.now() < доки){
+    await с(2000);
+    const і = await fetch(COMFY_URL + '/history/' + ід);
+    if (!і.ok) continue;
+    const д = await і.json();
+    const запис = д[ід];
+    if (!запис) continue;
+    const ст = запис.status || {};
+    if (ст.status_str === 'error') throw new Error('ComfyUI: ' + JSON.stringify(ст.messages || '').slice(0, 300));
+    if (!ст.completed) continue;
+    const вих = Object.values(запис.outputs || {}).flatMap(о => о.images || []);
+    if (!вих.length) throw new Error('ComfyUI завершив без картинки');
+    const к = вих[0];
+    const кадр = await fetch(COMFY_URL + '/view?filename=' + encodeURIComponent(к.filename)
+      + '&subfolder=' + encodeURIComponent(к.subfolder || '') + '&type=' + (к.type || 'output'));
+    const байти = Buffer.from(await кадр.arrayBuffer());
+    return {дані: байти.toString('base64'), тип: 'image/png', дропи: немаєКадру.length,
+            речей: речі.length, байтів: байти.length};
+  }
+  throw new Error('ComfyUI не завершив за 900 с');
+}
 function записатиВиклик(н, тип, промпт, р){
   if (!ТЕКА_ВІДПОВІДЕЙ) return;
   const ім = path.join(ТЕКА_ВІДПОВІДЕЙ, 'seed' + СІД + '_' + String(н).padStart(2, '0') + '_'
@@ -721,11 +819,39 @@ function відповісти(текст) {
       const тип = типПромпту(текст);
       промпти.push({тип, довжина: текст.length, фото, json: (() => { try { JSON.parse(текст); return true; } catch (_) { return false; } })()});
       if (тип === 'ПРИМІРЯННЯ'){
-        console.log('   ↔ модель #' + промпти.length + ' ПРИМІРЯННЯ — локальна текстова модель кадру не малює, віддаю 501');
-        ЖУРНАЛ_МОДЕЛІ.push({тип, статус: 501, с: 0, вхід: 0, вихід: 0, стоп: 'нема',
-                            думка: 0, симв: 0, помилка: 'приміряння не перевіряється на локальній моделі'});
-        return route.fulfill({status: 501, contentType: 'application/json',
-          body: JSON.stringify({error: {message: 'приміряння не перевіряється: локальна текстова модель картинок не малює'}})});
+        if (!COMFY){
+          console.log('   ↔ модель #' + промпти.length + ' ПРИМІРЯННЯ — локальна текстова модель кадру не малює, віддаю 501');
+          ЖУРНАЛ_МОДЕЛІ.push({тип, статус: 501, с: 0, вхід: 0, вихід: 0, стоп: 'нема',
+                              думка: 0, симв: 0, помилка: 'приміряння не перевіряється на локальній моделі'});
+          return route.fulfill({status: 501, contentType: 'application/json',
+            body: JSON.stringify({error: {message: 'приміряння не перевіряється: локальна текстова модель картинок не малює'}})});
+        }
+        const т0 = Date.now();
+        try {
+          const к = await примірятиComfy(тіло, текст);
+          const с_ = (Date.now() - т0) / 1000;
+          ЖУРНАЛ_МОДЕЛІ.push({тип: тип + ' (ComfyUI)', статус: 200, с: +с_.toFixed(1), вхід: 0,
+            вихід: 0, стоп: 'end_turn', думка: 0, симв: к.байтів, фото_не_дійшло: к.дропи, помилка: null});
+          console.log('   ↔ ComfyUI #' + промпти.length + ' ПРИМІРЯННЯ (речей ' + к.речей
+            + (к.дропи ? ', не дійшло ' + к.дропи : '') + ') → ' + с_.toFixed(1) + ' с · кадр '
+            + Math.round(к.байтів / 1024) + ' КБ');
+          if (ТЕКА_ВІДПОВІДЕЙ) fs.writeFileSync(path.join(ТЕКА_ВІДПОВІДЕЙ,
+            'seed' + СІД + '_' + String(промпти.length).padStart(2, '0') + '_ПРИМІРЯННЯ.png'),
+            Buffer.from(к.дані, 'base64'));
+          return route.fulfill({status: 200, contentType: 'application/json',
+            headers: {'x-model': 'comfyui:qie2511_vton_lightning', 'x-images-dropped': String(к.дропи)},
+            body: JSON.stringify({content: [{type: 'image', source: {type: 'base64',
+              media_type: к.тип, data: к.дані}}], usage: {input_tokens: 0, output_tokens: 0},
+              stop_reason: 'end_turn'})});
+        } catch (e) {
+          const с_ = (Date.now() - т0) / 1000;
+          ЖУРНАЛ_МОДЕЛІ.push({тип: тип + ' (ComfyUI)', статус: 599, с: +с_.toFixed(1), вхід: 0,
+            вихід: 0, стоп: 'нема', думка: 0, симв: 0, помилка: String(e).slice(0, 300)});
+          console.log('   ↔ ComfyUI #' + промпти.length + ' ПРИМІРЯННЯ впало за ' + с_.toFixed(1)
+            + ' с: ' + String(e).slice(0, 220));
+          return route.fulfill({status: 599, contentType: 'application/json',
+            body: JSON.stringify({error: {message: String(e).slice(0, 300)}})});
+        }
       }
       const р = await живоюМоделлю(тіло, тип);
       записатиВиклик(промпти.length, тип, текст, р);
@@ -2009,12 +2135,24 @@ function відповісти(текст) {
      кладемо синтетичний блоб — приміряння без нього чесно відмовляється. */
   if (ПРИМІРКА){
     await стор.evaluate(() => режим('образи')); await с(300);
-    await стор.evaluate(async () => {
+    /* FOTO_ZRIST=<шлях> — СПРАВЖНЄ фото на повний зріст (доповнення власника
+       24.09: приміряння через ComfyUI). Із синтетичного блоба нижче намалювати
+       нікого не можна: ComfyUI дістав би чотири байти замість людини. Коли
+       змінної нема — усе як доти, блоб-заглушка (заглушці картинки байти людини
+       не потрібні, і прогін лишається байт-у-байт тим самим). */
+    const _фотоЗріст = process.env.FOTO_ZRIST || null;
+    const _байтиЗріст = _фотоЗріст ? fs.readFileSync(_фотоЗріст).toString('base64') : null;
+    await стор.evaluate(async ([б64, тип]) => {
       /* 3×4 — щоб пропорції надісланого були відомі й сторож триптиха мав із чим
          міряти; декодувати браузер цей блоб не зможе, і це не заважає: показ
          міряє пропорції через `блобВБазу`, а та на невдачі йде фолбеком. */
-      await писатиКв(ключФото('зріст'), new Blob([new Uint8Array([255,216,255,217])], {type:'image/jpeg'}));
-    });
+      const блоб = б64
+        ? await (await fetch('data:' + тип + ';base64,' + б64)).blob()
+        : new Blob([new Uint8Array([255,216,255,217])], {type: 'image/jpeg'});
+      await писатиКв(ключФото('зріст'), блоб);
+    }, [_байтиЗріст, /\.png$/i.test(_фотоЗріст || '') ? 'image/png' : 'image/jpeg']);
+    if (_фотоЗріст) console.log('   фото на повний зріст: ' + _фотоЗріст
+      + ' (' + Math.round(fs.statSync(_фотоЗріст).size / 1024) + ' КБ)');
     const кадр = async поз => {
       await стор.evaluate(п => показатиОбраз(п), поз); await с(300);
       await стор.click('#прмк-' + поз);
