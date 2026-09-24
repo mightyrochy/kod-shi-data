@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """Рядок 88: чи ЖИВА модель ставить `намір` із вільного тексту (заглушка стенда завжди пише conventional) і чи не вигадує
 мету/макіяж/прикраси (K-IO-02): текст → справжній `промпт_паспорта({}, слова)` → LM Studio → `паспорт_з_json`. Тіло виклику як у
-показі (`_дзвінокП`: без temperature); `--t0` — temperature 0, як у жнивах. Лише ноутбук: `cd джерела && python проби/namir_zhyva_88.py`."""
+показі (`_дзвінокП`: без temperature); `--t0` — temperature 0, як у жнивах. Лише ноутбук: `cd джерела && python проби/namir_zhyva_88.py`.
+ЧОМУ ТУТ gemma-4-12b-it-qat, А НЕ qwen3-vl-8b: розмову в показі веде ХМАРНА модель (`const МОДЕЛЬ`, api.anthropic.com), тож локальна тут — лише підміна, і її діло не вигадувати за жінку; qwen вигадувала шестеро (мета «лестити» на 1 і 2, макіяж на 4, 6, 10, прикраси на 6) і списувала приклад поради з промпта, gemma — жодного разу, намір 11/12 проти 9/12. Числа й решта побаченого оком — у докстрінгу `vymir_namiru_153.py` (рядок 153, виміряно 24.09)."""
 import sys, pathlib, json, re, urllib.request
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import паспорт_нагоди as П
@@ -27,7 +28,7 @@ import паспорт_нагоди as П
 влучень = чисто = 0
 print("| № | текст | очікувано | намір | мета | макіяж | прикраси | порада (речень) | збіг |" + chr(10) + "|---" * 9 + "|")
 for i, (слова, оч) in enumerate(ТЕКСТИ, 1):
-    тіло = dict(model="qwen3-vl-8b-instruct", max_tokens=1500, messages=[dict(role="user", content=П.промпт_паспорта({}, слова))],
+    тіло = dict(model="gemma-4-12b-it-qat", max_tokens=1500, messages=[dict(role="user", content=П.промпт_паспорта({}, слова))],
                 **({"temperature": 0} if "--t0" in sys.argv else {}))
     зап = urllib.request.Request("http://127.0.0.1:1234/v1/chat/completions", json.dumps(тіло).encode("utf-8"), {"Content-Type": "application/json"})
     п = П.паспорт_з_json(json.load(urllib.request.urlopen(зап, timeout=300))["choices"][0]["message"]["content"], {}, слова)
