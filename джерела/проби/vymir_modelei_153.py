@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+"""Рядок 153 (1): модель LM Studio на жнивах — ознаки й слово кольору 40 речей. Набір — вибірка жнив v2 з фото в git
+(`аудит/збагачення_v2_вибірка.json`, `аудит/фото_v2/`), сід 153: перші 4 речі кожної групи слота; той самий для всіх моделей
+і не гниє разом з адресами крамниць. Промпт і розбір — самих жнив (`ПРОМПТ_НАБОРУ`, `_запит`, `нормалізувати`), один запит
+полів на тому самому кадрі, що в записі v2 (запиту аркуша тут нема): ознаки — проти полів запису, колір — сім'я тону слова
+моделі проти виміру v2 і проти слів крамниці. `--сам`: замість моделі — самі записи (мусить вийти 100 %, інакше rc 1).
+`cd джерела && python проби/vymir_modelei_153.py <модель>`; (5) — vymir_foto_rechi_153.py, (3) — vymir_namiru_153.py."""
+import collections, json, os, random, subprocess, sys, time, urllib.request
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import жнива_v2 as Ж, verify as V
+мод, сам = next((a for a in sys.argv[1:] if not a.startswith("--")), "qwen3-vl-8b-instruct"), "--сам" in sys.argv
+if not сам:
+    try: urllib.request.urlopen("http://127.0.0.1:1234/v1/models", timeout=10)
+    except Exception as e: sys.exit("LM Studio не відповідає (%s) — модель «%s» не виміряти" % (type(e).__name__, мод))
+ТЕКА, гр, лік, збої = os.path.join(Ж.ТУТ, "аудит"), collections.defaultdict(list), collections.defaultdict(lambda: [0, 0]), collections.Counter()
+for з in sorted(json.load(open(os.path.join(ТЕКА, "збагачення_v2_вибірка.json"), encoding="utf-8"))["речі"], key=lambda з: з["id"]):
+    if з.get("поля") and os.path.exists(os.path.join(ТЕКА, з.get("фото_показу") or "-")): гр[Ж.група_слота(з["слот"])].append(з)
+for г in гр: random.Random(153).shuffle(гр[г])
+def рах(поле, так):
+    """Лічильник «так / усього» на поле."""
+    лік[поле][0] += bool(так); лік[поле][1] += 1
+ЗВОРОТ, сім, нрм, т0 = {в: к for к, в in Ж.ДОВЖИНА_В_РІВЕНЬ.items()}, V.сім_я_слова, lambda v: sorted(v) if isinstance(v, list) else v, time.time()
+речі = [з for г in sorted(гр) for з in гр[г][:4]]
+for з in речі:
+    п0, кр, вим = з["поля"], Ж.слова_крамниці(з.get("колір_крамниці") or ""), ((з.get("запис") or {}).get("колір_основний") or {}).get("слово")
+    try: сире = dict(п0, колір_слово=п0.get("слово_моделі"), довжина=ЗВОРОТ.get(п0.get("довжина"), п0.get("довжина"))) if сам else Ж._запит(
+            мод, Ж._підставити(Ж.ПРОМПТ_НАБОРУ[з["набір"]], з["тип"]), [Ж._b64(Ж._фото_1024(os.path.join(ТЕКА, з["фото_показу"])), сторона=1024)], токенів=600)
+    except Exception as e: сире = {}; збої[type(e).__name__] += 1
+    п = Ж.нормалізувати(сире, з["набір"])
+    for к in п0:
+        if к != "слово_моделі": рах(к, bool(сире) and нрм(п.get(к)) == нрм(п0[к]))   # збій — хибно на кожному полі, і на None теж
+    if вим: рах("колір: вимір v2", сім(вим if сам else п.get("слово_моделі")) == сім(вим))
+    if кр: рах("колір: крамниця", сім(кр[0] if сам else п.get("слово_моделі")) in {сім(с) for с in кр})
+try: vram = subprocess.run(["nvidia-smi", "--query-gpu=memory.used,memory.total", "--format=csv,noheader"], capture_output=True, text=True, timeout=20).stdout.strip()
+except Exception as e: vram = "nvidia-smi: " + type(e).__name__
+озн = [в for к, в in лік.items() if not к.startswith("колір")]
+print("(1) %d речей · модель %s%s · %.1f с/річ · збоїв %d%s · ознаки разом %d/%d · VRAM %s" % (len(речі), мод, " --сам (записи замість моделі)" if сам else "",
+      (time.time() - т0) / len(речі), sum(збої.values()), " %s" % dict(збої) if збої else "", sum(в[0] for в in озн), sum(в[1] for в in озн), vram))
+print("    " + " · ".join("%s %d/%d" % (к, *лік[к]) for к in sorted(лік)))
+sys.exit(1 if сам and any(в[0] != в[1] for в in лік.values()) else 0)

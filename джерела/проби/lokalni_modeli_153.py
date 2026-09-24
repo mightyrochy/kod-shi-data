@@ -37,4 +37,4 @@ for задача, список in КАНДИДАТИ.items():
             де_є = [":%d" % п for п, і in комфі.items() if і and вузол in і and ід.lower() in json.dumps(і, ensure_ascii=False).lower()]
             стан = "ПІДНЯТО на " + ", ".join(де_є) if де_є else "вузол є, ваги нема" if any(і and вузол in і for і in комфі.values()) else \
                 "вузла нема" if any(комфі.values()) else "не піднято"
-        print("%-34s %-50s %-6s %s%s" % (задача if н == 0 else "", ід, де.split(":")[0], стан, " ← поточна" if поточна else ""))
+        print("%-34s %-50s %-6s %s%s" % (задача if н == 0 else "", ід, де.split(":")[0], стан, " — поточна" if поточна else ""))

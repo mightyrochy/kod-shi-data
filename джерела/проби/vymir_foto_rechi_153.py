@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+"""Рядок 153 (5): модель LM Studio на «фото речі від жінки» (рядок 152) — рід і рамка речі на 20 фото. Набір — вибірка жнив v2 з фото
+в git, сід 153: останні 2 речі кожної групи слота (перші 4 міряє vymir_modelei_153.py), той самий для всіх моделей. Рід — проти групи
+слота каталогу; рамка — IoU ≥ 0.5 з рамкою маски жнив (`маска_речі`: ATR → SAM → запасна; без ATR — `маска_без_людини`), xyxy або yxyx
+(Gemini й Gemma пишуть y першим). Фото — у %TEMP% латиницею: cv2 на Windows не читає кирилиці в шляху (урок `маска_sam`). Промпт
+мінімальний — свого рядок 152 ще не дав; с/фото — лише модель. `--сам`: еталон замість моделі, мусить бути 100 % (інакше rc 1)."""
+import collections, json, os, random, shutil, sys, tempfile, time, urllib.request
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import numpy as np, жнива_v2 as Ж
+мод, сам = next((a for a in sys.argv[1:] if not a.startswith("--")), "qwen3-vl-8b-instruct"), "--сам" in sys.argv
+if not сам:
+    try: urllib.request.urlopen("http://127.0.0.1:1234/v1/models", timeout=10)
+    except Exception as e: sys.exit("LM Studio не відповідає (%s) — модель «%s» не виміряти" % (type(e).__name__, мод))
+ТЕКА, гр, лік, збої = os.path.join(Ж.ТУТ, "аудит"), collections.defaultdict(list), collections.defaultdict(lambda: [0, 0]), collections.Counter()
+for з in sorted(json.load(open(os.path.join(ТЕКА, "збагачення_v2_вибірка.json"), encoding="utf-8"))["речі"], key=lambda з: з["id"]):
+    if з.get("поля") and os.path.exists(os.path.join(ТЕКА, з.get("фото_показу") or "-")): гр[Ж.група_слота(з["слот"])].append(з)
+for г in гр: random.Random(153).shuffle(гр[г])
+def iou(а, б):
+    """IoU двох рамок xyxy у тисячних частках кадру; рамки без спільної площі або криві — 0."""
+    ш, в = max(0, min(а[2], б[2]) - max(а[0], б[0])), max(0, min(а[3], б[3]) - max(а[1], б[1])); с = (а[2] - а[0]) * (а[3] - а[1]) + (б[2] - б[0]) * (б[3] - б[1]) - ш * в
+    return ш * в / с if с > 0 else 0.0
+РОДИ, т = sorted(гр), 0.0
+ПРОМПТ = ('На фото — одна річ, яку жінка сфотографувала сама. Відповідай ЛИШЕ JSON без markdown: {"рід": "<одне з: %s>", "рамка": [x0, y0, x1, y1]} '
+          '— рамка довкола самої речі в тисячних частках ширини й висоти кадру (0–1000).' % ", ".join(РОДИ))
+речі = [з for г in РОДИ for з in гр[г][-2:]]
+for н, з in enumerate(речі):
+    шлях, г = os.path.join(tempfile.gettempdir(), "vymir153_%02d.jpg" % н), Ж.група_слота(з["слот"]); shutil.copyfile(os.path.join(ТЕКА, з["фото_показу"]), шлях)
+    try: м, _, _, дж = Ж.маска_речі(шлях, з["слот"])
+    except Exception as e: (м, _, _), дж = Ж.маска_без_людини(шлях), "запасна (ATR: %s)" % type(e).__name__
+    ys, xs = np.nonzero(м) if м is not None else ([], []); лік["еталон рамки: " + дж.split(" (")[0]][1] += 1
+    ет = [xs.min() * 1000 / м.shape[1], ys.min() * 1000 / м.shape[0], (xs.max() + 1) * 1000 / м.shape[1], (ys.max() + 1) * 1000 / м.shape[0]] if len(xs) else None
+    try: т1 = time.time(); від = {"рід": г, "рамка": ет} if сам else Ж._запит(мод, ПРОМПТ, [Ж._b64(Ж._фото_1024(шлях), сторона=1024)], токенів=300)
+    except Exception as e: від = {}; збої[type(e).__name__] += 1
+    т += time.time() - т1; р = від.get("рамка") if isinstance(від.get("рамка"), list) and len(від["рамка"]) == 4 and all(isinstance(x, (int, float)) for x in від["рамка"]) else [0] * 4
+    лік["рід"][0] += str(від.get("рід") or "").strip().lower() == г; лік["рід"][1] += 1
+    if ет: лік["рамка IoU>=0.5"][0] += max(iou(р, ет), iou([р[1], р[0], р[3], р[2]], ет)) >= 0.5; лік["рамка IoU>=0.5"][1] += 1
+print("(5) %d фото · модель %s%s · %.1f с/фото · збоїв %d%s" % (len(речі), мод, " --сам (еталон замість моделі)" if сам else "", т / len(речі),
+      sum(збої.values()), " %s" % dict(збої) if збої else ""))
+print("    " + " · ".join(("%s %d/%d" % (к, *в)) if not к.startswith("еталон") else "%s %d" % (к, в[1]) for к, в in sorted(лік.items())))
+sys.exit(1 if сам and any(в[0] != в[1] for к, в in лік.items() if not к.startswith("еталон")) else 0)
