@@ -1078,6 +1078,31 @@ function відповісти(текст) {
      `Math.random` проба не відтворювана. Сід приходить аргументом (`СІД`), щоб
      12 прогонів РВ-6 §3 різнились рівно ним. */
   await стор.evaluate(з => { Math.random = () => з / 1e6; }, СІД);
+  /* ── ЧИ ГОЛОВНА КНОПКА НАД ПАНЕЛЛЮ (рядок 183) ───────────────────────────────
+     ЩО ЦЕ ЛОВИТЬ. `#ніг` — `position:fixed; bottom:0` зі ЗМІННОЮ висотою, а місце
+     під нею дає `body.paddingBottom`. Розійдуться — «Зібрати образи» лишиться ПІД
+     панеллю, і жінка на телефоні до неї не долистає: сторінка вже на дні. Куратор
+     зловив це тричі з десяти (`subtree intercepts pointer events`, Playwright
+     гортав 30 с). Звірка МІРЯЄ ЗАПАС: скільки пікселів між низом кнопки й верхом
+     панелі, коли сторінку прокручено до самого низу — саме там, де жінка й тисне.
+     Друк іде ЗАВЖДИ, навіть коли зелено: запас у 2 px — це та сама вада, яка
+     наступного разу випаде в мінус. */
+  const запас = await стор.evaluate(async () => {
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    await new Promise(р => requestAnimationFrame(() => requestAnimationFrame(р)));
+    const к = document.getElementById('зб-зібрати'), п = document.getElementById('ніг');
+    if (!к || !п) return null;
+    const рк = к.getBoundingClientRect(), рп = п.getBoundingClientRect();
+    return {запас_px: Math.round(рп.top - рк.bottom), широко: широко(), кнопка_низ: Math.round(рк.bottom),
+            панель_верх: Math.round(рп.top), панель_висота: Math.round(рп.height),
+            відступ_body: document.body.style.paddingBottom || '(нема)',
+            вікно: window.innerHeight, прокрутка: Math.round(window.scrollY),
+            з_елемента: (document.elementFromPoint(Math.round(рк.left + рк.width / 2),
+                                                  Math.round(рк.bottom - 4)) || {}).id || '(порожньо)'};
+  });
+  console.log('\n1е. запас під «Зібрати образи» (рядок 183):', JSON.stringify(запас));
+  ф('«Зібрати образи» стоїть НАД панеллю, коли сторінку прокручено до низу (рядок 183)',
+    !!запас && запас.запас_px >= 0, запас);
   const тЗапити = Date.now();
   await стор.click('#зб-зібрати');
   /* РЯДОК 90(2): час РУКИ 1 ОКРЕМО від суми всіх чотирьох (§6, «межа +20% із
