@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Проба поділу colorspace.py: кожна функція/константа, що переїхала в новий модуль
 `колір_простір_*`, має ТОЙ САМИЙ AST, що й у colorspace.py до поділу (коміт d1dbd9a) — ОКРІМ
-пар «модуль::ім'я» з `поділ_очікувані.json` (ключ «colorspace»), свідомо змінених комітом
+пар «модуль::ім'я» з `поділ_очікувані.txt` (ключ «colorspace»), свідомо змінених комітом
 пізніших правил (sha там-таки). Будь-яка ІНША розбіжність — падіння з іменем.
 Запуск: cd джерела && python3 проби/поділ_colorspace_ast.py [БАЗОВИЙ_КОМІТ]"""
 import ast, os, subprocess, sys
 ДЖЕРЕЛА = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ДЖЕРЕЛА)
-from поділ_спільне import dump_без_докстрінгів
+from поділ_спільне import dump_без_докстрінгів, очікувані
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "d1dbd9a"
 МОДУЛІ = ("колір_простір_реєстр", "колір_простір_перетворення", "колір_простір_стеля",
           "колір_простір_шкіра", "колір_простір_індукція", "колір_простір_надійність",
@@ -36,8 +36,7 @@ for м in МОДУЛІ:
 import colorspace as фасад
 не_ті_самі = [ім for ім, м in де.items() if м != "colorspace"
               and getattr(фасад, ім, None) is not getattr(__import__(м), ім)]
-import json
-ОЧІК = set(json.load(open(os.path.join(ДЖЕРЕЛА, "проби", "поділ_очікувані.json"), encoding="utf-8"))["colorspace"])
+ОЧІК = очікувані("colorspace")
 спост = {"%s::%s" % п for п in розбіжні}
 поза_списком, не_справдилось = sorted(спост - ОЧІК), sorted(ОЧІК - спост)
 print("вузлів у colorspace.py@%s: %d · знайдено: %d · AST розбіжні: %d (очікувані: %d) · "
