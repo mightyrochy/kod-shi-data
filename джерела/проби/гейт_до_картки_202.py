@@ -24,7 +24,7 @@ for назва, сц in СЦЕНИ.items():
             тр = [с for с in ТРЕТІ if к.get(с)]
             о = [[x for x in ([в_("сукня", i)] if (к.get("сукня") and i % 2) else [в_("верх", i), в_("низ", i)])
                   + [в_("взуття", i), в_("сумка", i), в_(тр[i % len(тр)], i) if тр else None] if x] for i in range(1, 11)]
-            о += [[x for x in (в_("верх", i), в_("верхній_шар", i), в_("низ", i), в_("взуття", i), в_("сумка", i), в_("прикраси", i)) if x] for i in range(1, 11)]
+            о += [list(dict.fromkeys(x for x in (в_("верх", i), в_("верхній_шар", i), в_("низ", i), в_("взуття", i), в_("сумка", i), в_("прикраси", i)) if x)) for i in range(1, 11)]
             for n, об in enumerate((виклик(dict(вх, ід=о)).get("вердикт") or {}).get("образи") or []):
                 if not вада(об):
                     continue
