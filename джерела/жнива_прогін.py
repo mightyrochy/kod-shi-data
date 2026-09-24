@@ -298,6 +298,12 @@ def main():
         print(рядок, flush=True)
         if not гаразд:
             raise SystemExit(1)
+        # Друга залежність того ж роду: без ComfyUI маска мовчки йде запасною
+        # ланкою і прогін виглядає здоровим. Не спиняємось — запасна законна, —
+        # але кажемо вголос, бо різниця виміряна (сама річ 33/58 проти 32/58).
+        from жнива_маски import _comfy, COMFY_ХОСТ, COMFY_ПОРТ
+        print("ComfyUI %s:%d %s" % (COMFY_ХОСТ, COMFY_ПОРТ, "піднятий — маски через SAM 3.1"
+              if _comfy() else "НЕ піднятий — маски підуть без SAM, самою ATR і запасною"), flush=True)
 
     import gzip
     відкр = gzip.open if а.каталог.endswith(".gz") else open
