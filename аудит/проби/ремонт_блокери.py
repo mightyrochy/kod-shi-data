@@ -12,8 +12,9 @@ def ч(ф):
     except Exception: return {}
 фф = sorted((x for x in os.listdir(тека) if x.startswith("seed" + сід + "_")), key=lambda x: int(x.split("_")[1]))
 пули = [{р["н"] for рр in (ч(x).get("пул") or {}).values() for р in рр} for x in фф if "ПАКЕТ_V1" in x]
+нр = lambda р: р.get("н") if isinstance(р, dict) else р   # #329: річ — номер або обʼєкт {н, опис}
 def образи(д):
-    return [(set((с.get("твій_образ") or {}).get("речі") or []), sorted({б.get("код") for б in (с.get("структура") or {}).get("блокери") or []}))
+    return [(set(нр(р) for р in (с.get("твій_образ") or {}).get("речі") or []), sorted({б.get("код") for б in (с.get("структура") or {}).get("блокери") or []}))
             for с in д.get("вердикт") or [] if isinstance(с, dict)]
 def рука(оо): return 1 + max(range(len(пули)), key=lambda і: len(set().union(*[о[0] for о in оо]) & пули[і]))
 до, піс = {}, {}

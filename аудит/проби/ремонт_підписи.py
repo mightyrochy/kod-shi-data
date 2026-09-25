@@ -11,19 +11,20 @@ def дж(т):
     м = re.search(r"```(?:json)?\s*([\s\S]*?)```", т or ""); т = (м.group(1) if м else т or "").strip()
     try: return json.loads(т[т.find("{"):т.rfind("}") + 1])
     except Exception: return {}
+нр = lambda р: р.get("н") if isinstance(р, dict) else р   # #329: річ — номер або обʼєкт {н, опис}
 фф = sorted((x for x in os.listdir(тека) if x.startswith("seed" + сід + "_")), key=lambda x: int(x.split("_")[1]))
 пули = [{р["н"]: с for с, рр in (дж(ч(x)[0]).get("пул") or {}).items() for р in рр} for x in фф if "ПАКЕТ_V1" in x]
 for x in фф:
     if "ВЕРДИКТ_V1_ОБРАЗИ_V1" not in x: continue
     п, в = ч(x); вп, вв = дж(п), дж(в)
     if len(вп.get("вердикт") or []) < 2: continue
-    н = {р for с in вп["вердикт"] for р in (с.get("твій_образ") or {}).get("речі") or []}
+    н = {нр(р) for с in вп["вердикт"] for р in (с.get("твій_образ") or {}).get("речі") or []}
     р = max(range(len(пули)), key=lambda і: len(н & set(пули[і])))
     слот = dict(пули[р]); слот.update({рр["н"]: с for с, ррр in (вп.get("вітрина") or {}).items() for рр in ррр})
     усі = пп = неспів = 0; прик = []
     for о in вв.get("образи") or []:
         for р_ in о.get("речі") or []:
-            м = re.match(r"\s*(#\s*\d+\s*·\s*\d+)\s*/\s*(\S+)", str(р_)); усі += 1
+            м = re.match(r"\s*(#\s*\d+\s*·\s*\d+)\s*/\s*(\S+)", str(нр(р_))); усі += 1
             if not м: continue
             пп += 1; нн = re.sub(r"\s", "", м.group(1))
             if слот.get(нн) and слот.get(нн) != м.group(2): неспів += 1; прик.append("%s/%s (у пулі: %s)" % (нн, м.group(2), слот.get(нн)))
