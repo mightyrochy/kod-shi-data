@@ -2,7 +2,7 @@
 `паспорт_нагоди.промпт_паспорта` з типовою формою сторінки (11:00, 18 °C, решта порожня), розбір — `паспорт_з_json`.
 Друкує на кожну фразу: що дала модель (сире) і що з цього взяв код; оцінку «правильно / вигадала / пропустила» ставить
 людина очима. Відповіді цілком — у теку ВИХІД. Запуск (з теки джерела):
-MODEL_URL=http://127.0.0.1:1234/v1 MODELS=м1,м2 [PROMPT=короткий] python ../аудит/проби/мова_вхід.py <тека ВИХІД>
+MODEL_URL=http://127.0.0.1:1234/v1 MODELS=м1,м2 [PROMPT=короткий] [TEMPERATURA=0.2] python ../аудит/проби/мова_вхід.py <тека ВИХІД>
 PROMPT=короткий — не промпт продукту, а стислий (поля без переліку ключів і правил): відділяє модель від промпта."""
 import json, os, re, sys, time, urllib.request
 sys.path.insert(0, os.getcwd()); sys.stdout.reconfigure(encoding="utf-8")
@@ -28,7 +28,8 @@ for м in [x for x in os.environ.get("MODELS", "").split(",") if x]:
     for і, ф in enumerate(ФРАЗИ, 1):
         п = КОРОТКИЙ % ф if os.environ.get("PROMPT") == "короткий" else ПН.промпт_паспорта(dict(СЦ), ф); т0 = time.time()
         з = urllib.request.Request(os.environ["MODEL_URL"].rstrip("/") + "/chat/completions", json.dumps(dict(model=м,
-            max_tokens=1500, stream=False, reasoning_effort="none", messages=[dict(role="user", content=п)])).encode(),
+            max_tokens=1500, stream=False, reasoning_effort="none", messages=[dict(role="user", content=п)],
+            **({"temperature": float(os.environ["TEMPERATURA"])} if os.environ.get("TEMPERATURA") else {}))).encode(),
             {"Content-Type": "application/json"})
         т = json.load(urllib.request.urlopen(з, timeout=1800))["choices"][0]["message"].get("content") or ""
         с = time.time() - т0; об = сире(т)
