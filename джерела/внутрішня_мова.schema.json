@@ -1,0 +1,1878 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "lyusterko-internal-v1",
+ "title": "Внутрішня мова Люстерка",
+ "description": "Мова, якою говорять код і функціональні моделі. Коди — із закритих переліків; кожне поле має значення \"unknown\" (опори в словах людини нема — вигадувати не можна); null і рядки з x-форми-unknown (без регістру) — те саме значення, крім дослівного коду поля; вільний текст — лише позначений free_text. Таблиця «код → ключ ядра» — `внутрішня_мова.ТАБЛИЦЯ`.",
+ "$defs": {
+  "free_text": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "free_text",
+    "lang"
+   ],
+   "description": "вільний текст — лише там, де без нього ніяк; мова названа",
+   "properties": {
+    "free_text": {
+     "type": "string"
+    },
+    "lang": {
+     "type": "string",
+     "description": "мова тексту, BCP 47"
+    }
+   }
+  },
+  "thing": {
+   "type": "object",
+   "description": "річ чи ознака, про яку вона говорить",
+   "additionalProperties": false,
+   "properties": {
+    "slot": {
+     "description": "частина образу",
+     "enum": [
+      "top",
+      "bottom",
+      "dress",
+      "set",
+      "outerwear",
+      "shoes",
+      "bag",
+      "scarf",
+      "headwear",
+      "belt",
+      "tights",
+      "socks",
+      "jewelry",
+      "earrings",
+      "collar_necklace",
+      "necklace",
+      "brooch",
+      "bracelet",
+      "ring",
+      "glasses",
+      "unknown"
+     ]
+    },
+    "item_type": {
+     "description": "тип речі",
+     "enum": [
+      "evening_dress",
+      "cocktail_dress",
+      "suit",
+      "sheath_dress",
+      "sundress",
+      "blazer",
+      "over_knee_boots",
+      "chelsea_boots",
+      "ugg_boots",
+      "ballet_flats",
+      "mules",
+      "espadrilles",
+      "pumps",
+      "dress_shoes",
+      "moccasins",
+      "loafers",
+      "sneakers",
+      "plimsolls",
+      "ankle_boots",
+      "boots",
+      "heeled_sandals",
+      "sandals",
+      "clutch",
+      "backpack",
+      "tote",
+      "baguette_bag",
+      "hobo_bag",
+      "crossbody_bag",
+      "bucket_bag",
+      "belt_bag",
+      "briefcase",
+      "saddle_bag",
+      "hoodie",
+      "sportswear",
+      "loungewear",
+      "leggings",
+      "jeans",
+      "t_shirt",
+      "shirt",
+      "blouse",
+      "knitwear",
+      "cardigan",
+      "sweater",
+      "shorts",
+      "jumpsuit",
+      "skirt",
+      "trousers",
+      "coat",
+      "trench_coat",
+      "jacket",
+      "vest",
+      "top_garment",
+      "stole",
+      "kerchief",
+      "twilly",
+      "snood",
+      "shawl",
+      "bactus_scarf",
+      "ring",
+      "headband",
+      "bow",
+      "hair_clip",
+      "hair_tie",
+      "scarf_generic",
+      "jewelry_generic",
+      "bag_generic",
+      "unknown"
+     ]
+    },
+    "fabric": {
+     "description": "тканина",
+     "enum": [
+      "wool",
+      "cashmere",
+      "mohair",
+      "angora",
+      "alpaca",
+      "cotton",
+      "viscose",
+      "tencel",
+      "lyocell",
+      "modal",
+      "linen",
+      "silk",
+      "polyester",
+      "polyamide",
+      "nylon",
+      "acrylic",
+      "elastane",
+      "stretch",
+      "denim",
+      "satin",
+      "atlas",
+      "chiffon",
+      "muslin",
+      "batiste",
+      "tweed",
+      "boucle",
+      "corduroy",
+      "velvet",
+      "jersey",
+      "knitted",
+      "suede",
+      "faux_leather",
+      "leather",
+      "patent_leather",
+      "nubuck",
+      "velour",
+      "lace",
+      "guipure",
+      "openwork",
+      "unknown"
+     ]
+    },
+    "pattern": {
+     "description": "візерунок",
+     "enum": [
+      "solid",
+      "polka_dot",
+      "floral",
+      "stripes",
+      "check",
+      "animal_print",
+      "camouflage",
+      "geometric",
+      "abstract",
+      "lace_motif",
+      "embroidery",
+      "print_generic",
+      "unknown"
+     ]
+    },
+    "color_class": {
+     "description": "клас кольору",
+     "enum": [
+      "dark",
+      "light",
+      "bright",
+      "pastel",
+      "muted",
+      "unknown"
+     ]
+    },
+    "color_name": {
+     "description": "назва кольору",
+     "enum": [
+      "black",
+      "white",
+      "grey",
+      "graphite",
+      "beige",
+      "cream",
+      "milky",
+      "sand",
+      "taupe",
+      "camel",
+      "latte",
+      "cocoa",
+      "brown",
+      "chocolate",
+      "red",
+      "burgundy",
+      "cherry",
+      "raspberry",
+      "brick",
+      "terracotta",
+      "ginger",
+      "coral",
+      "orange",
+      "peach",
+      "yellow",
+      "lemon",
+      "mustard",
+      "golden",
+      "khaki",
+      "olive",
+      "green",
+      "pine_green",
+      "mint",
+      "turquoise",
+      "petrol",
+      "light_blue",
+      "denim_blue",
+      "blue",
+      "navy",
+      "lilac",
+      "purple",
+      "plum",
+      "magenta",
+      "fuchsia",
+      "pink",
+      "rose",
+      "powder_pink",
+      "silvery",
+      "pearly",
+      "unknown"
+     ]
+    },
+    "zone": {
+     "description": "зона тіла, яку не відкривати",
+     "enum": [
+      "neckline",
+      "back",
+      "arms",
+      "shoulders",
+      "legs",
+      "belly",
+      "unknown"
+     ]
+    },
+    "feature": {
+     "description": "ознака речі",
+     "enum": [
+      "heels",
+      "unknown"
+     ]
+    }
+   }
+  },
+  "own_item": {
+   "type": "object",
+   "description": "її власна річ",
+   "additionalProperties": false,
+   "properties": {
+    "name": {
+     "$ref": "#/$defs/free_text",
+     "description": "річ її словами"
+    },
+    "status": {
+     "description": "has — ця річ буде в образі; maybe — не певна; not_wanted — цієї своєї речі не хоче",
+     "enum": [
+      "has",
+      "maybe",
+      "not_wanted",
+      "unknown"
+     ]
+    },
+    "slot": {
+     "description": "частина образу",
+     "enum": [
+      "top",
+      "bottom",
+      "dress",
+      "set",
+      "outerwear",
+      "shoes",
+      "bag",
+      "scarf",
+      "headwear",
+      "belt",
+      "tights",
+      "socks",
+      "jewelry",
+      "earrings",
+      "collar_necklace",
+      "necklace",
+      "brooch",
+      "bracelet",
+      "ring",
+      "glasses",
+      "unknown"
+     ]
+    },
+    "item_type": {
+     "description": "тип речі",
+     "enum": [
+      "evening_dress",
+      "cocktail_dress",
+      "suit",
+      "sheath_dress",
+      "sundress",
+      "blazer",
+      "over_knee_boots",
+      "chelsea_boots",
+      "ugg_boots",
+      "ballet_flats",
+      "mules",
+      "espadrilles",
+      "pumps",
+      "dress_shoes",
+      "moccasins",
+      "loafers",
+      "sneakers",
+      "plimsolls",
+      "ankle_boots",
+      "boots",
+      "heeled_sandals",
+      "sandals",
+      "clutch",
+      "backpack",
+      "tote",
+      "baguette_bag",
+      "hobo_bag",
+      "crossbody_bag",
+      "bucket_bag",
+      "belt_bag",
+      "briefcase",
+      "saddle_bag",
+      "hoodie",
+      "sportswear",
+      "loungewear",
+      "leggings",
+      "jeans",
+      "t_shirt",
+      "shirt",
+      "blouse",
+      "knitwear",
+      "cardigan",
+      "sweater",
+      "shorts",
+      "jumpsuit",
+      "skirt",
+      "trousers",
+      "coat",
+      "trench_coat",
+      "jacket",
+      "vest",
+      "top_garment",
+      "stole",
+      "kerchief",
+      "twilly",
+      "snood",
+      "shawl",
+      "bactus_scarf",
+      "ring",
+      "headband",
+      "bow",
+      "hair_clip",
+      "hair_tie",
+      "scarf_generic",
+      "jewelry_generic",
+      "bag_generic",
+      "unknown"
+     ]
+    },
+    "fabric": {
+     "description": "тканина",
+     "enum": [
+      "wool",
+      "cashmere",
+      "mohair",
+      "angora",
+      "alpaca",
+      "cotton",
+      "viscose",
+      "tencel",
+      "lyocell",
+      "modal",
+      "linen",
+      "silk",
+      "polyester",
+      "polyamide",
+      "nylon",
+      "acrylic",
+      "elastane",
+      "stretch",
+      "denim",
+      "satin",
+      "atlas",
+      "chiffon",
+      "muslin",
+      "batiste",
+      "tweed",
+      "boucle",
+      "corduroy",
+      "velvet",
+      "jersey",
+      "knitted",
+      "suede",
+      "faux_leather",
+      "leather",
+      "patent_leather",
+      "nubuck",
+      "velour",
+      "lace",
+      "guipure",
+      "openwork",
+      "unknown"
+     ]
+    },
+    "pattern": {
+     "description": "візерунок",
+     "enum": [
+      "solid",
+      "polka_dot",
+      "floral",
+      "stripes",
+      "check",
+      "animal_print",
+      "camouflage",
+      "geometric",
+      "abstract",
+      "lace_motif",
+      "embroidery",
+      "print_generic",
+      "unknown"
+     ]
+    },
+    "color_class": {
+     "description": "клас кольору",
+     "enum": [
+      "dark",
+      "light",
+      "bright",
+      "pastel",
+      "muted",
+      "unknown"
+     ]
+    },
+    "color_name": {
+     "description": "назва кольору",
+     "enum": [
+      "black",
+      "white",
+      "grey",
+      "graphite",
+      "beige",
+      "cream",
+      "milky",
+      "sand",
+      "taupe",
+      "camel",
+      "latte",
+      "cocoa",
+      "brown",
+      "chocolate",
+      "red",
+      "burgundy",
+      "cherry",
+      "raspberry",
+      "brick",
+      "terracotta",
+      "ginger",
+      "coral",
+      "orange",
+      "peach",
+      "yellow",
+      "lemon",
+      "mustard",
+      "golden",
+      "khaki",
+      "olive",
+      "green",
+      "pine_green",
+      "mint",
+      "turquoise",
+      "petrol",
+      "light_blue",
+      "denim_blue",
+      "blue",
+      "navy",
+      "lilac",
+      "purple",
+      "plum",
+      "magenta",
+      "fuchsia",
+      "pink",
+      "rose",
+      "powder_pink",
+      "silvery",
+      "pearly",
+      "unknown"
+     ]
+    }
+   },
+   "required": [
+    "name",
+    "status"
+   ]
+  },
+  "scenario": {
+   "type": "object",
+   "description": "сценарій виходу з її слів цього ходу",
+   "additionalProperties": false,
+   "properties": {
+    "occasion": {
+     "description": "нагода — що це за подія",
+     "enum": [
+      "everyday",
+      "work",
+      "date",
+      "celebration",
+      "wedding_guest",
+      "wedding_day",
+      "mourning",
+      "formal_evening",
+      "formal_day",
+      "walk",
+      "theatre",
+      "job_interview",
+      "sport",
+      "home",
+      "travel",
+      "church",
+      "school",
+      "museum",
+      "unknown"
+     ]
+    },
+    "place": {
+     "description": "місце — де вона буде",
+     "enum": [
+      "home",
+      "park",
+      "walk",
+      "playground",
+      "cafe",
+      "bar",
+      "restaurant_casual",
+      "restaurant_upscale",
+      "fine_dining",
+      "club",
+      "house_party",
+      "festive_dinner",
+      "office_corporate",
+      "office_creative",
+      "job_interview",
+      "conference",
+      "presentation",
+      "theatre",
+      "opera_premiere",
+      "museum",
+      "vernissage",
+      "school_parents_meeting",
+      "hospital_visit",
+      "long_transit",
+      "flight",
+      "sport",
+      "church_service",
+      "wedding_day",
+      "wedding_evening",
+      "funeral",
+      "unknown"
+     ]
+    },
+    "dress_code": {
+     "description": "дрес-код, коли його названо",
+     "enum": [
+      "casual",
+      "smart_casual",
+      "dressy_casual",
+      "business_casual",
+      "semi_formal",
+      "festive",
+      "business_formal",
+      "cocktail",
+      "black_tie_optional",
+      "black_tie",
+      "creative_black_tie",
+      "white_tie",
+      "unknown"
+     ]
+    },
+    "event": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/free_text"
+      },
+      {
+       "const": "unknown"
+      }
+     ],
+     "description": "подія коротко, її мовою"
+    },
+    "setting": {
+     "description": "у приміщенні, просто неба чи змішано",
+     "enum": [
+      "indoor",
+      "outdoor",
+      "mixed",
+      "unknown"
+     ]
+    },
+    "duration_h": {
+     "description": "скільки годин триває подія",
+     "oneOf": [
+      {
+       "type": "number",
+       "minimum": 0
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
+    "movement": {
+     "description": "сидітиме, ходитиме чи багато ходитиме",
+     "enum": [
+      "sit",
+      "walk",
+      "walk_a_lot",
+      "unknown"
+     ]
+    },
+    "activity": {
+     "description": "що робитиме: з дітьми, по нерівному ґрунту, прогулянка, багато пішки",
+     "enum": [
+      "children",
+      "rough_ground",
+      "stroll",
+      "walking",
+      "unknown"
+     ]
+    },
+    "surface": {
+     "description": "що під ногами",
+     "enum": [
+      "cobblestones",
+      "asphalt",
+      "parquet",
+      "carpet",
+      "grass",
+      "stairs",
+      "unknown"
+     ]
+    },
+    "hour": {
+     "description": "година початку за 24-годинним годинником",
+     "oneOf": [
+      {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 23
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
+    "part_of_day": {
+     "description": "частина доби, коли години не названо",
+     "enum": [
+      "morning",
+      "day",
+      "evening",
+      "night",
+      "unknown"
+     ]
+    },
+    "temperature_c": {
+     "description": "температура повітря, °C",
+     "oneOf": [
+      {
+       "type": "number"
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
+    "weather_feel": {
+     "description": "погода без числа градусів",
+     "enum": [
+      "frost",
+      "cold",
+      "cool",
+      "warm",
+      "hot",
+      "unknown"
+     ]
+    },
+    "precipitation": {
+     "description": "опади",
+     "enum": [
+      "none",
+      "rain",
+      "sleet",
+      "downpour",
+      "snow",
+      "unknown"
+     ]
+    },
+    "formality": {
+     "oneOf": [
+      {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "from",
+        "to"
+       ],
+       "properties": {
+        "from": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 10
+        },
+        "to": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 10
+        }
+       }
+      },
+      {
+       "const": "unknown"
+      }
+     ],
+     "description": "наскільки ошатно, коли вона сама це сказала: шкала 1–10 (1 дім, 3 кафе, 5 офіс чи театр удень, 7 вечірній вихід, 9 урочистість)"
+    },
+    "intent": {
+     "description": "намір: comfort_first — зручність і свобода руху понад усе; context_optimal — доречність і рівень події понад усе; statement — хоче вразити, заявити про себе; conventional — нічого з цього",
+     "enum": [
+      "conventional",
+      "statement",
+      "comfort_first",
+      "context_optimal",
+      "unknown"
+     ]
+    },
+    "goal": {
+     "description": "мета на цей вихід: flatter — щоб личило; conceal — не привертати уваги чи щось сховати; express — щоб на неї дивились",
+     "enum": [
+      "flatter",
+      "conceal",
+      "express",
+      "unknown"
+     ]
+    },
+    "makeup": {
+     "description": "макіяж на цей вихід",
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "level": {
+       "description": "рівень макіяжу",
+       "enum": [
+        "nude",
+        "noticeable",
+        "bold",
+        "unknown"
+       ]
+      },
+      "lips_hex": {
+       "oneOf": [
+        {
+         "type": "string",
+         "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        {
+         "const": "unknown"
+        }
+       ],
+       "description": "колір губ #rrggbb, коли вона його назвала"
+      }
+     }
+    },
+    "jewelry": {
+     "description": "прикраси, які вона хоче з цим образом; ethnic — дерево, кістка, бісер; other — без металу",
+     "enum": [
+      "gold",
+      "silver",
+      "pearls",
+      "ethnic",
+      "other",
+      "none",
+      "unknown"
+     ]
+    },
+    "registers": {
+     "description": "реєстри стилю, якими вона сама себе описала",
+     "type": "array",
+     "items": {
+      "description": "реєстр стилю",
+      "enum": [
+       "classic",
+       "minimalism",
+       "preppy",
+       "streetwear",
+       "workwear",
+       "sport_chic",
+       "romantic",
+       "boho",
+       "rock",
+       "quiet_luxury",
+       "gorpcore",
+       "dramatic",
+       "ukrainian_ethnic",
+       "unknown"
+      ]
+     },
+     "maxItems": 2
+    },
+    "wants": {
+     "description": "чого вона хоче в образі",
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/thing"
+     }
+    },
+    "vetoes": {
+     "description": "чого вона не хоче: межі",
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/thing"
+     }
+    },
+    "retract": {
+     "description": "межі чи бажання, від яких вона в цих словах відмовилась",
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/thing"
+     }
+    },
+    "legs_above_cm": {
+     "description": "вище скількох см від підлоги не відкривати ноги",
+     "oneOf": [
+      {
+       "type": "number",
+       "minimum": 0
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
+    "mood": {
+     "description": "настрій образу її словами",
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/free_text"
+     },
+     "maxItems": 3
+    },
+    "own_items": {
+     "description": "її власні речі, описані словами",
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/own_item"
+     }
+    },
+    "question": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/free_text"
+      },
+      {
+       "const": "unknown"
+      }
+     ],
+     "description": "питання, яке вона ставить стилістці"
+    }
+   }
+  },
+  "verdict_comment": {
+   "type": "object",
+   "description": "її коментар до образу",
+   "additionalProperties": false,
+   "properties": {
+    "reasons": {
+     "description": "що їй заважає в образі",
+     "type": "array",
+     "items": {
+      "description": "причина",
+      "enum": [
+       "color_not_mine",
+       "cut_or_fit",
+       "wrong_occasion",
+       "wrong_weather",
+       "not_my_style",
+       "too_expensive",
+       "unknown"
+      ]
+     }
+    },
+    "about_items": {
+     "description": "речі образу, про які вона сказала",
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "id"
+      ],
+      "properties": {
+       "id": {
+        "type": "string",
+        "description": "id речі з переліку речей образу"
+       },
+       "opinion": {
+        "description": "як вона про цю річ",
+        "enum": [
+         "like",
+         "dislike",
+         "unknown"
+        ]
+       },
+       "reasons": {
+        "description": "чому",
+        "type": "array",
+        "items": {
+         "description": "причина",
+         "enum": [
+          "color_not_mine",
+          "cut_or_fit",
+          "wrong_occasion",
+          "wrong_weather",
+          "not_my_style",
+          "too_expensive",
+          "unknown"
+         ]
+        }
+       }
+      }
+     }
+    },
+    "wants": {
+     "description": "чого вона хотіла б натомість",
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/thing"
+     }
+    },
+    "vetoes": {
+     "description": "чого вона не хоче",
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/thing"
+     }
+    },
+    "note": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/free_text"
+      },
+      {
+       "const": "unknown"
+      }
+     ],
+     "description": "решта сказаного, що не лягає в поля вище"
+    }
+   }
+  },
+  "catalog_item": {
+   "type": "object",
+   "description": "річ каталогу",
+   "additionalProperties": false,
+   "properties": {
+    "id": {
+     "type": "string",
+     "description": "id речі в каталозі"
+    },
+    "name": {
+     "$ref": "#/$defs/free_text",
+     "description": "назва з крамниці"
+    },
+    "price": {
+     "type": "number",
+     "description": "ціна, грн"
+    },
+    "type": {
+     "description": "тип",
+     "enum": [
+      "evening_dress",
+      "cocktail_dress",
+      "suit",
+      "sheath_dress",
+      "sundress",
+      "blazer",
+      "over_knee_boots",
+      "chelsea_boots",
+      "ugg_boots",
+      "ballet_flats",
+      "mules",
+      "espadrilles",
+      "pumps",
+      "dress_shoes",
+      "moccasins",
+      "loafers",
+      "sneakers",
+      "plimsolls",
+      "ankle_boots",
+      "boots",
+      "heeled_sandals",
+      "sandals",
+      "clutch",
+      "backpack",
+      "tote",
+      "baguette_bag",
+      "hobo_bag",
+      "crossbody_bag",
+      "bucket_bag",
+      "belt_bag",
+      "briefcase",
+      "saddle_bag",
+      "hoodie",
+      "sportswear",
+      "loungewear",
+      "leggings",
+      "jeans",
+      "t_shirt",
+      "shirt",
+      "blouse",
+      "knitwear",
+      "cardigan",
+      "sweater",
+      "shorts",
+      "jumpsuit",
+      "skirt",
+      "trousers",
+      "coat",
+      "trench_coat",
+      "jacket",
+      "vest",
+      "top_garment",
+      "stole",
+      "kerchief",
+      "twilly",
+      "snood",
+      "shawl",
+      "bactus_scarf",
+      "ring",
+      "headband",
+      "bow",
+      "hair_clip",
+      "hair_tie",
+      "scarf_generic",
+      "jewelry_generic",
+      "bag_generic",
+      "unknown"
+     ]
+    },
+    "cut": {
+     "type": "string",
+     "description": "крій",
+     "x-ядро": "ядро досі пише українським словом без закритого переліку — наступний крок"
+    },
+    "branch": {
+     "description": "гілка пулу",
+     "enum": [
+      "core",
+      "edge",
+      "break",
+      "unknown"
+     ]
+    },
+    "fabric": {
+     "description": "тканина",
+     "enum": [
+      "wool",
+      "cashmere",
+      "mohair",
+      "angora",
+      "alpaca",
+      "cotton",
+      "viscose",
+      "tencel",
+      "lyocell",
+      "modal",
+      "linen",
+      "silk",
+      "polyester",
+      "polyamide",
+      "nylon",
+      "acrylic",
+      "elastane",
+      "stretch",
+      "denim",
+      "satin",
+      "atlas",
+      "chiffon",
+      "muslin",
+      "batiste",
+      "tweed",
+      "boucle",
+      "corduroy",
+      "velvet",
+      "jersey",
+      "knitted",
+      "suede",
+      "faux_leather",
+      "leather",
+      "patent_leather",
+      "nubuck",
+      "velour",
+      "lace",
+      "guipure",
+      "openwork",
+      "unknown"
+     ]
+    },
+    "material": {
+     "description": "матеріал",
+     "enum": [
+      "leather",
+      "suede",
+      "faux_leather",
+      "patent_leather",
+      "velour",
+      "nubuck",
+      "unknown"
+     ]
+    },
+    "length": {
+     "description": "довжина",
+     "enum": [
+      "mini",
+      "mid_thigh",
+      "knee",
+      "midi",
+      "maxi",
+      "waist",
+      "unknown"
+     ]
+    },
+    "sleeve": {
+     "type": "string",
+     "description": "рукав",
+     "x-ядро": "ядро досі пише українським словом без закритого переліку — наступний крок"
+    },
+    "heel": {
+     "type": "string",
+     "description": "каблук",
+     "x-ядро": "ядро досі пише українським словом без закритого переліку — наступний крок"
+    },
+    "shaft": {
+     "description": "висота халяви",
+     "enum": [
+      "ankle",
+      "calf",
+      "knee",
+      "thigh",
+      "unknown"
+     ]
+    },
+    "pattern": {
+     "description": "візерунок",
+     "enum": [
+      "solid",
+      "polka_dot",
+      "floral",
+      "stripes",
+      "check",
+      "animal_print",
+      "camouflage",
+      "geometric",
+      "abstract",
+      "lace_motif",
+      "embroidery",
+      "print_generic",
+      "unknown"
+     ]
+    },
+    "shine": {
+     "type": "boolean",
+     "description": "блиск"
+    },
+    "zone": {
+     "type": "string",
+     "description": "зона",
+     "x-ядро": "ядро досі пише українським словом без закритого переліку — наступний крок"
+    },
+    "color": {
+     "description": "колір",
+     "enum": [
+      "black",
+      "white",
+      "grey",
+      "graphite",
+      "beige",
+      "cream",
+      "milky",
+      "sand",
+      "taupe",
+      "camel",
+      "latte",
+      "cocoa",
+      "brown",
+      "chocolate",
+      "red",
+      "burgundy",
+      "cherry",
+      "raspberry",
+      "brick",
+      "terracotta",
+      "ginger",
+      "coral",
+      "orange",
+      "peach",
+      "yellow",
+      "lemon",
+      "mustard",
+      "golden",
+      "khaki",
+      "olive",
+      "green",
+      "pine_green",
+      "mint",
+      "turquoise",
+      "petrol",
+      "light_blue",
+      "denim_blue",
+      "blue",
+      "navy",
+      "lilac",
+      "purple",
+      "plum",
+      "magenta",
+      "fuchsia",
+      "pink",
+      "rose",
+      "powder_pink",
+      "silvery",
+      "pearly",
+      "unknown"
+     ]
+    },
+    "hex": {
+     "type": "string",
+     "pattern": "^#[0-9a-fA-F]{6}$",
+     "description": "колір, виміряний"
+    },
+    "family": {
+     "type": "string",
+     "description": "сім'я кольору",
+     "x-ядро": "ядро досі пише українським словом без закритого переліку — наступний крок"
+    },
+    "register": {
+     "description": "реєстр стилю",
+     "enum": [
+      "classic",
+      "minimalism",
+      "preppy",
+      "streetwear",
+      "workwear",
+      "sport_chic",
+      "romantic",
+      "boho",
+      "rock",
+      "quiet_luxury",
+      "gorpcore",
+      "dramatic",
+      "ukrainian_ethnic",
+      "unknown"
+     ]
+    },
+    "scheme": {
+     "type": "string",
+     "description": "роль у схемі палітри",
+     "x-ядро": "ядро досі пише українським словом без закритого переліку — наступний крок"
+    },
+    "details": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "description": "деталі",
+     "x-ядро": "ядро досі пише українським словом без закритого переліку — наступний крок"
+    },
+    "can_become": {
+     "description": "у які слоти річ може стати",
+     "type": "array",
+     "items": {
+      "description": "слот",
+      "enum": [
+       "top",
+       "bottom",
+       "dress",
+       "set",
+       "outerwear",
+       "shoes",
+       "bag",
+       "scarf",
+       "headwear",
+       "belt",
+       "tights",
+       "socks",
+       "jewelry",
+       "earrings",
+       "collar_necklace",
+       "necklace",
+       "brooch",
+       "bracelet",
+       "ring",
+       "glasses",
+       "unknown"
+      ]
+     }
+    },
+    "also_in": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/free_text"
+     },
+     "description": "є також у кольорах (слова крамниці)"
+    },
+    "in_arc": {
+     "type": "boolean",
+     "description": "у дузі схеми палітри"
+    },
+    "on_request": {
+     "description": "яке її бажання ця річ виконує",
+     "x-ядро": "ядро досі несе фразою бажання — наступний крок: посилання на елемент `wants`"
+    },
+    "already_was": {
+     "type": "boolean",
+     "description": "уже стояла в її образах цього сценарію"
+    }
+   },
+   "required": [
+    "id",
+    "name"
+   ]
+  },
+  "stylist_reply": {
+   "type": "object",
+   "description": "що стилістка каже їй цього ходу, внутрішньою мовою",
+   "additionalProperties": false,
+   "properties": {
+    "recorded": {
+     "description": "що код записав із її слів цього ходу (поля сценарію кодами)",
+     "type": "object"
+    },
+    "code_lines": {
+     "description": "рядки коду для неї: про її річ, про додане до сценарію",
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/free_text"
+     }
+    },
+    "answer": {
+     "$ref": "#/$defs/free_text",
+     "description": "відповідь стилістки на її питання"
+    },
+    "advice_topics": {
+     "description": "теми, про які можна м'яко запросити її розповісти: відповідати вона не мусить, образи збираються й так",
+     "type": "array",
+     "items": {
+      "oneOf": [
+       {
+        "const": "occasion",
+        "description": "куди вона збирається"
+       },
+       {
+        "const": "goal",
+        "description": "чи хоче вона сьогодні привертати увагу чи лишитись непомітною"
+       },
+       {
+        "const": "makeup",
+        "description": "який макіяж і яку помаду вона планує"
+       },
+       {
+        "const": "movement",
+        "description": "чи багато вона ходитиме і як довго"
+       },
+       {
+        "const": "temperature",
+        "description": "скільки буде градусів"
+       },
+       {
+        "const": "jewelry",
+        "description": "які прикраси вона хоче з цим образом"
+       },
+       {
+        "const": "register",
+        "description": "якою мовою стилю вона одягається"
+       }
+      ]
+     },
+     "maxItems": 3,
+     "uniqueItems": true
+    },
+    "required": {
+     "description": "без чого образ не збирається: про це спитати прямо",
+     "type": "array",
+     "items": {
+      "oneOf": [
+       {
+        "const": "occasion",
+        "description": "куди вона йде — нагода або місце"
+       }
+      ]
+     },
+     "uniqueItems": true
+    }
+   }
+  },
+  "reply_text": {
+   "type": "object",
+   "description": "вихід перекладача репліки: один текст",
+   "additionalProperties": false,
+   "properties": {
+    "text": {
+     "type": "string",
+     "description": "текст для неї її мовою"
+    }
+   },
+   "required": [
+    "text"
+   ]
+  }
+ },
+ "x-форми-unknown": [
+  "unknown",
+  "null",
+  "none",
+  "невідомо"
+ ],
+ "x-таблиця": {
+  "occasion": {
+   "everyday": "щоденне",
+   "work": "робота",
+   "date": "побачення",
+   "celebration": "свято",
+   "wedding_guest": "весілля_гість",
+   "wedding_day": "весілля_денне",
+   "mourning": "траур",
+   "formal_evening": "формал_вечір",
+   "formal_day": "формал_день",
+   "walk": "прогулянка",
+   "theatre": "театр",
+   "job_interview": "співбесіда",
+   "sport": "спорт",
+   "home": "дім",
+   "travel": "подорож",
+   "church": "церква",
+   "school": "школа",
+   "museum": "музей"
+  },
+  "place": {
+   "home": "дім",
+   "park": "парк",
+   "walk": "прогулянка",
+   "playground": "дитячий_майданчик",
+   "cafe": "кафе",
+   "bar": "бар",
+   "restaurant_casual": "ресторан_районний",
+   "restaurant_upscale": "ресторан_високий",
+   "fine_dining": "fine_dining",
+   "club": "клуб",
+   "house_party": "домашня_вечірка",
+   "festive_dinner": "святкова_вечеря",
+   "office_corporate": "офіс_корпоративний",
+   "office_creative": "офіс_креативний",
+   "job_interview": "співбесіда",
+   "conference": "конференція",
+   "presentation": "презентація",
+   "theatre": "театр",
+   "opera_premiere": "опера_прем'єра",
+   "museum": "музей",
+   "vernissage": "вернісаж",
+   "school_parents_meeting": "школа_батьківські",
+   "hospital_visit": "лікарня_візит",
+   "long_transit": "транспорт_довгий",
+   "flight": "подорож_переліт",
+   "sport": "спорт",
+   "church_service": "церква_служба",
+   "wedding_day": "весілля_денне",
+   "wedding_evening": "весілля_вечірнє",
+   "funeral": "похорон"
+  },
+  "dress_code": {
+   "casual": "casual",
+   "smart_casual": "smart_casual",
+   "dressy_casual": "dressy_casual",
+   "business_casual": "business_casual",
+   "semi_formal": "semi_formal",
+   "festive": "festive",
+   "business_formal": "business_formal",
+   "cocktail": "cocktail",
+   "black_tie_optional": "black_tie_optional",
+   "black_tie": "black_tie",
+   "creative_black_tie": "creative_black_tie",
+   "white_tie": "white_tie"
+  },
+  "setting": {
+   "indoor": "приміщення",
+   "outdoor": "просто неба",
+   "mixed": "змішано"
+  },
+  "movement": {
+   "sit": "сидіти",
+   "walk": "ходити",
+   "walk_a_lot": "багато ходити"
+  },
+  "activity": {
+   "children": "діти",
+   "rough_ground": "нерівний_ґрунт",
+   "stroll": "прогулянка",
+   "walking": "ходьба"
+  },
+  "surface": {
+   "cobblestones": "бруківка",
+   "asphalt": "асфальт",
+   "parquet": "паркет",
+   "carpet": "килим",
+   "grass": "трава",
+   "stairs": "сходи"
+  },
+  "precipitation": {
+   "none": "ні",
+   "rain": "дощ",
+   "sleet": "мокрий_сніг",
+   "downpour": "злива",
+   "snow": "сніг"
+  },
+  "part_of_day": {
+   "morning": 9,
+   "day": 13,
+   "evening": 20,
+   "night": 23
+  },
+  "weather_feel": {
+   "frost": -8.0,
+   "cold": 2.0,
+   "cool": 10.0,
+   "warm": 20.0,
+   "hot": 28.0
+  },
+  "intent": {
+   "conventional": "conventional",
+   "statement": "statement",
+   "comfort_first": "comfort_first",
+   "context_optimal": "context_optimal"
+  },
+  "goal": {
+   "flatter": "лестити",
+   "conceal": "приховати",
+   "express": "експресія"
+  },
+  "makeup_level": {
+   "nude": "нюд",
+   "noticeable": "помітний",
+   "bold": "яскравий"
+  },
+  "jewelry": {
+   "gold": "золото",
+   "silver": "срібло",
+   "pearls": "перли",
+   "ethnic": "етно",
+   "other": "інші",
+   "none": "без прикрас"
+  },
+  "register": {
+   "classic": "класика",
+   "minimalism": "мінімалізм",
+   "preppy": "преппі",
+   "streetwear": "стритвер",
+   "workwear": "воркер",
+   "sport_chic": "спорт_шик",
+   "romantic": "романтичний",
+   "boho": "бохо",
+   "rock": "рок",
+   "quiet_luxury": "тиха_розкіш",
+   "gorpcore": "gorpcore",
+   "dramatic": "драматичний",
+   "ukrainian_ethnic": "етно_укр"
+  },
+  "zone": {
+   "neckline": "декольте",
+   "back": "спина",
+   "arms": "руки",
+   "shoulders": "плечі",
+   "legs": "ноги",
+   "belly": "живіт"
+  },
+  "slot": {
+   "top": "верх",
+   "bottom": "низ",
+   "dress": "сукня",
+   "set": "комплект",
+   "outerwear": "верхній_шар",
+   "shoes": "взуття",
+   "bag": "сумка",
+   "scarf": "шарф",
+   "headwear": "головний_убір",
+   "belt": "пояс",
+   "tights": "колготи",
+   "socks": "шкарпетки",
+   "jewelry": "прикраси",
+   "earrings": "сережки",
+   "collar_necklace": "кольє",
+   "necklace": "намисто",
+   "brooch": "брошка",
+   "bracelet": "браслет",
+   "ring": "каблучка",
+   "glasses": "окуляри"
+  },
+  "item_type": {
+   "evening_dress": "вечірня_сукня",
+   "cocktail_dress": "коктейльна_сукня",
+   "suit": "костюм",
+   "sheath_dress": "футляр",
+   "sundress": "сарафан",
+   "blazer": "блейзер",
+   "over_knee_boots": "ботфорти",
+   "chelsea_boots": "челсі",
+   "ugg_boots": "уггі",
+   "ballet_flats": "балетки",
+   "mules": "мюлі",
+   "espadrilles": "еспадрильї",
+   "pumps": "човники",
+   "dress_shoes": "туфлі",
+   "moccasins": "мокасини",
+   "loafers": "лофери",
+   "sneakers": "кросівки",
+   "plimsolls": "кеди",
+   "ankle_boots": "черевики",
+   "boots": "чоботи",
+   "heeled_sandals": "босоніжки",
+   "sandals": "сандалі",
+   "clutch": "клатч",
+   "backpack": "рюкзак",
+   "tote": "шопер",
+   "baguette_bag": "багет",
+   "hobo_bag": "хобо",
+   "crossbody_bag": "кросбоді",
+   "bucket_bag": "бакет",
+   "belt_bag": "поясна",
+   "briefcase": "портфель",
+   "saddle_bag": "сідло",
+   "hoodie": "худі",
+   "sportswear": "спортивний",
+   "loungewear": "домашнє",
+   "leggings": "легінси",
+   "jeans": "джинси",
+   "t_shirt": "футболка",
+   "shirt": "сорочка",
+   "blouse": "блуза",
+   "knitwear": "трикотаж",
+   "cardigan": "кардиган",
+   "sweater": "светр",
+   "shorts": "шорти",
+   "jumpsuit": "комбінезон",
+   "skirt": "спідниця",
+   "trousers": "штани",
+   "coat": "пальто",
+   "trench_coat": "тренч",
+   "jacket": "куртка",
+   "vest": "жилет",
+   "top_garment": "топ",
+   "stole": "палантин",
+   "kerchief": "хустка",
+   "twilly": "твіллі",
+   "snood": "снуд",
+   "shawl": "шаль",
+   "bactus_scarf": "бактус",
+   "ring": "каблучка",
+   "headband": "обруч",
+   "bow": "бант",
+   "hair_clip": "заколка",
+   "hair_tie": "резинка",
+   "scarf_generic": "шарф_без_уточнення",
+   "jewelry_generic": "прикраса_без_уточнення",
+   "bag_generic": "сумка_без_уточнення"
+  },
+  "fabric": {
+   "wool": "вовна",
+   "cashmere": "кашемір",
+   "mohair": "мохер",
+   "angora": "ангора",
+   "alpaca": "альпака",
+   "cotton": "бавовна",
+   "viscose": "віскоза",
+   "tencel": "тенсел",
+   "lyocell": "ліоцел",
+   "modal": "модал",
+   "linen": "льон",
+   "silk": "шовк",
+   "polyester": "поліестер",
+   "polyamide": "поліамід",
+   "nylon": "нейлон",
+   "acrylic": "акрил",
+   "elastane": "еластан",
+   "stretch": "стрейч",
+   "denim": "денім",
+   "satin": "сатин",
+   "atlas": "атлас",
+   "chiffon": "шифон",
+   "muslin": "муслін",
+   "batiste": "батист",
+   "tweed": "твід",
+   "boucle": "букле",
+   "corduroy": "вельвет",
+   "velvet": "оксамит",
+   "jersey": "трикотаж",
+   "knitted": "вʼязане",
+   "suede": "замша",
+   "faux_leather": "екошкіра",
+   "leather": "шкіра",
+   "patent_leather": "лак",
+   "nubuck": "нубук",
+   "velour": "велюр",
+   "lace": "мереживо",
+   "guipure": "гіпюр",
+   "openwork": "ажур"
+  },
+  "pattern": {
+   "solid": "solid",
+   "polka_dot": "горох",
+   "floral": "квітковий",
+   "stripes": "смужка",
+   "check": "клітинка",
+   "animal_print": "анімалістичний",
+   "camouflage": "камуфляж",
+   "geometric": "геометричний",
+   "abstract": "абстрактний",
+   "lace_motif": "мереживо",
+   "embroidery": "вишивка",
+   "print_generic": "принт"
+  },
+  "color_class": {
+   "dark": "темні",
+   "light": "світлі",
+   "bright": "яскраві",
+   "pastel": "пастельні",
+   "muted": "приглушені"
+  },
+  "color_name": {
+   "black": "чорний",
+   "white": "білий",
+   "grey": "сірий",
+   "graphite": "графіт",
+   "beige": "бежевий",
+   "cream": "вершковий",
+   "milky": "молочний",
+   "sand": "пісочний",
+   "taupe": "тауп",
+   "camel": "кемел",
+   "latte": "лате",
+   "cocoa": "какао",
+   "brown": "коричневий",
+   "chocolate": "шоколадний",
+   "red": "червоний",
+   "burgundy": "бордовий",
+   "cherry": "вишневий",
+   "raspberry": "малиновий",
+   "brick": "цегляний",
+   "terracotta": "теракотовий",
+   "ginger": "рудий",
+   "coral": "кораловий",
+   "orange": "помаранчевий",
+   "peach": "персиковий",
+   "yellow": "жовтий",
+   "lemon": "лимонний",
+   "mustard": "гірчичний",
+   "golden": "золотий",
+   "khaki": "хакі",
+   "olive": "оливковий",
+   "green": "зелений",
+   "pine_green": "хвойний",
+   "mint": "м'ятний",
+   "turquoise": "бірюзовий",
+   "petrol": "петроль",
+   "light_blue": "блакитний",
+   "denim_blue": "джинсовий",
+   "blue": "синій",
+   "navy": "темно-синій",
+   "lilac": "бузковий",
+   "purple": "фіолетовий",
+   "plum": "сливовий",
+   "magenta": "маджента",
+   "fuchsia": "фуксія",
+   "pink": "рожевий",
+   "rose": "трояндовий",
+   "powder_pink": "пудровий",
+   "silvery": "срібний",
+   "pearly": "перлинний"
+  },
+  "feature": {
+   "heels": "підбори"
+  },
+  "own_item_status": {
+   "has": "певна",
+   "maybe": "непевна",
+   "not_wanted": "відмова"
+  },
+  "advice_topic": {
+   "occasion": "нагода",
+   "goal": "мета",
+   "makeup": "макіяж",
+   "movement": "рух",
+   "temperature": "температура",
+   "jewelry": "прикраси",
+   "register": "реєстр"
+  },
+  "required": {
+   "occasion": "нагода"
+  },
+  "verdict_reason": {
+   "color_not_mine": "колір не мій",
+   "cut_or_fit": "крій або посадка",
+   "wrong_occasion": "не для цієї нагоди",
+   "wrong_weather": "не для погоди",
+   "not_my_style": "не мій стиль",
+   "too_expensive": "задорого"
+  },
+  "opinion": {
+   "like": "подобається",
+   "dislike": "не подобається"
+  },
+  "material": {
+   "leather": "шкіра",
+   "suede": "замша",
+   "faux_leather": "екошкіра",
+   "patent_leather": "лак",
+   "velour": "велюр",
+   "nubuck": "нубук"
+  },
+  "length": {
+   "mini": "міні",
+   "mid_thigh": "до середини стегна",
+   "knee": "до коліна",
+   "midi": "міді",
+   "maxi": "максі",
+   "waist": "до талії"
+  },
+  "shaft": {
+   "ankle": "щиколотки",
+   "calf": "литки",
+   "knee": "коліна",
+   "thigh": "стегна"
+  },
+  "branch": {
+   "core": "ядро",
+   "edge": "межа",
+   "break": "розрив"
+  }
+ }
+}
