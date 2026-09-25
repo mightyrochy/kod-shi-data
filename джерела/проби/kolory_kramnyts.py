@@ -6,13 +6,18 @@
 Запуск: cd джерела && python3 проби/kolory_kramnyts.py"""
 import collections as К, math, statistics as st, sys
 sys.path.insert(0, ".")
-import feed, фід_каталог as FK, фід_розбір as FR, verify as V, colorspace as cs
+import feed, фід_збагачення as FZ, фід_каталог as FK, фід_розбір as FR, verify as V, colorspace as cs
 МІН = 10   # той самий поріг дизайнів, що в рядку 137
 зб, н = feed.читати_збагачення(), lambda s: " ".join(str(s or "").lower().split())
 гр, сім, таб, центри = К.defaultdict(dict), К.defaultdict(К.Counter), {}, {}
 for o in FR.читати_yml("каталог_повний.xml")[0]:
     п = н(o.get("колір_сирий")); z = зб.get(o["id"]) or {}; к = z.get("колір_основний") or {}
     if not п or len(FK._СЕП_КОЛЬОРУ.split(п)) > 1 or not к.get("hex") or (z.get("версія") or 1) < 2: continue
+    # ЛИШЕ ВИМІРЯНЕ З ФОТО (25.09.2026): hex жнив v2 береться, тільки коли його ПІДТВЕРДИВ
+    # свідок — слово моделі або опис кадру (`колір_збагачення` → «hex+слово»/«hex+опис»).
+    # Гілка «слово (hex суперечить)» — не вимір, а центр вікна слова моделі (рядок 141,
+    # `колір_не_вимір`); рахувати з неї вікно означало б, що вікно підтверджує саме себе.
+    if not FZ.колір_збагачення(z)[2].startswith("hex"): continue
     гр[п].setdefault(z.get("фото") or o.get("group_id") or o["id"], []).append(cs.hx(к["hex"])); сім[п][V.сім_я_слова(к["слово"])] += 1
 пц = lambda xs, p: (lambda s, k: s[int(k)] + (s[min(int(k) + 1, len(s) - 1)] - s[int(k)]) * (k - int(k)))(sorted(xs), (len(xs) - 1) * p)
 ц = lambda w: (lambda L, C, h: (L, C*math.cos(math.radians(h)), C*math.sin(math.radians(h))))((w[0]+w[1])/2, (w[2]+w[3])/2, 0.0 if w[4] is None else (w[4][0] + ((w[4][1]-w[4][0]) % 360)/2) % 360)
