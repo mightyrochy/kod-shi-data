@@ -227,7 +227,17 @@ def _норм(с, v, шлях, незнайомі):
             return {"free_text": str(v["free_text"]).strip(), "lang": str(v.get("lang") or "uk")}
         return {"free_text": v.strip(), "lang": "uk"} if isinstance(v, str) else None
     if _ref(с) in _ОБʼЄКТИ:
-        return _норм({"type": "object", "properties": _ОБʼЄКТИ[_ref(с)][1]}, v, шлях, незнайомі)
+        було = len(незнайомі)
+        н = _норм({"type": "object", "properties": _ОБʼЄКТИ[_ref(с)][1]}, v, шлях, незнайомі)
+        # РІЧ НЕ СТАЄ ІНШОЮ РІЧЧЮ (вимір MamayLM-12B 25.09, рядок 156: «не темного кольору» →
+        # {slot: top, color_name: dark}; `dark` — не назва кольору, і без неї межа ставала
+        # «жодного верху»). Ознаки речі — одне ціле: не прочиталась одна — річ не береться, у
+        # `незнайомі` названо і ознаку, і річ. «Невідомо» в ознаці — не збій: її просто нема.
+        # Її власна річ (`own_item`) тримається назвою — там губиться лише нечитана ознака.
+        if _ref(с) == "thing" and н is not None and len(незнайомі) > було:
+            незнайомі.append("%s — річ не взято: ознака не прочиталась" % шлях)
+            return None
+        return н
     if "enum" in с:
         if _код(v) in с["enum"]:
             return _код(v)
