@@ -6,15 +6,29 @@
 Запуск: cd джерела && python3 проби/khvylia2_do_pislia.py [база, типово origin/main]"""
 import collections as К, subprocess, statistics as st, sys, types
 sys.path.insert(0, ".")
-import bridge, feed, фід_каталог as FK, фід_збагачення as FZ, verify as V, colorspace as cs
+import feed, міст_основи as МО, palettes as PS, фід_каталог as FK, фід_збагачення as FZ, verify as V, colorspace as cs
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "origin/main"
 ДЖ = subprocess.run(["git", "show", "%s:джерела/verify.py" % БАЗА], capture_output=True, text=True, check=True).stdout
 def прочитати(модуль):
     FK.V = FZ.V = модуль
     return {r["id"]: r for r in FK._прочитати_каталог("каталог_повний.xml", 0)["каталог"]}
+def ґратка(модуль):
+    """Ґратка НА ЦЬОМУ verify. Двох пасток тут: `_ґратка_основ` кешує результат у
+    `_ҐРАТКА_КЕШ` (другий виклик повертав би перший), а `verify` вона бере через
+    `import` УСЕРЕДИНІ функції й через `palettes.V` — підміни `FK.V` мало. Без
+    цього перевірка порівнювала новий стан сам із собою й завжди казала «та сама»."""
+    МО._ҐРАТКА_КЕШ.clear()
+    був_модуль, був_PS = sys.modules.get("verify"), PS.V
+    sys.modules["verify"], PS.V = модуль, модуль
+    try:
+        осн, порядок = МО._ґратка_основ()
+        return {к: repr(осн[к]) for к in осн}, list(порядок)
+    finally:
+        sys.modules["verify"], PS.V = був_модуль, був_PS
+        МО._ҐРАТКА_КЕШ.clear()
 до_V = types.ModuleType("verify"); до_V.__file__ = V.__file__; exec(ДЖ, до_V.__dict__)
-до = прочитати(до_V); ґр_до = bridge._ґратка_основ()[0]
-FK.V = FZ.V = V; після = прочитати(V); ґр_після = bridge._ґратка_основ()[0]
+до = прочитати(до_V); ґр_до, пор_до = ґратка(до_V)
+FK.V = FZ.V = V; після = прочитати(V); ґр_після, пор_після = ґратка(V)
 зб = feed.читати_збагачення()
 # вимір з фото беремо тим самим правилом, що вікна: hex жнив v2, ПІДТВЕРДЖЕНИЙ свідком (#314)
 не_вимір = lambda z, k: not k.get("hex") or (z.get("версія") or 1) < 2 or not FZ.колір_збагачення(z)[2].startswith("hex")
@@ -35,6 +49,12 @@ for с in sorted(змін, key=lambda с: сл_після[с] - сл_до[с], r
     д = [cs.de00(tuple(a), h) for a, _, h in пари]; п = [cs.de00(tuple(b), h) for _, b, h in пари]
     print("  %-14s речей %3d → %3d · ΔE00 точки до виміру на %d речах: медіана %.1f → %.1f, ближче стало %d" % (
           с, сл_до[с], сл_після[с], len(пари), st.median(д), st.median(п), sum(1 for x, y in zip(д, п) if y < x - 0.1)))
-print("ФАКТ · ґратка основ: %s (%d чипів до, %d після)" % (
-      "ПОБАЙТОВО ТА САМА" if ґр_до == ґр_після else "ЗМІНИЛАСЬ: " + str([a for a, b in zip(ґр_до, ґр_після) if a != b][:6]),
-      len(ґр_до), len(ґр_після)))
+зникли = [к for к in ґр_до if к not in ґр_після]
+зʼявились = [к for к in ґр_після if к not in ґр_до]
+інші = [к for к in ґр_до if к in ґр_після and ґр_до[к] != ґр_після[к]]
+print("ФАКТ · ґратка основ: %d чипів до, %d після — %s" % (len(ґр_до), len(ґр_після),
+      "ПОБАЙТОВО ТА САМА" if (ґр_до == ґр_після and пор_до == пор_після) else "ЗМІНИЛАСЬ"))
+if ґр_до != ґр_після:
+    print("        зникли %d: %s" % (len(зникли), зникли[:8]))
+    print("        зʼявились %d: %s" % (len(зʼявились), зʼявились[:8]))
+    print("        змінили вміст %d: %s" % (len(інші), [(к, ґр_до[к][:60], ґр_після[к][:60]) for к in інші[:4]]))
