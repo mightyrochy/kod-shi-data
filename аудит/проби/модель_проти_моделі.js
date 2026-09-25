@@ -58,6 +58,12 @@ function назвиПулу(промпт){
       if (в.статус !== 200 || !д){ console.log('  ' + модель + ' · HTTP ' + в.статус + ' · ' + с + ' с · ' + в.сире.slice(0, 160)); continue; }
       const пов = ((д.choices || [{}])[0] || {}), текст = (пов.message || {}).content || '';
       const стеля = пов.finish_reason === 'length';
+      /* VIDPOVIDI=<тека> — відповідь цілком у файл, щоб читати її очима, а не лише лічбу */
+      if (process.env.VIDPOVIDI){
+        fs.mkdirSync(process.env.VIDPOVIDI, {recursive: true});
+        fs.writeFileSync(path.join(process.env.VIDPOVIDI, модель.replace(/[^\w.-]+/g, '_') + '__'
+          + path.basename(ф)), текст, 'utf8');
+      }
       const чистий = текст.replace(/^[\s\S]*?```(?:json)?/, '').replace(/```[\s\S]*$/, '').trim() || текст.trim();
       let об = null; try { об = JSON.parse(чистий); } catch (_) {}
       const образи = (об && (об.образи || об['обрazi'] || (Array.isArray(об) ? об : null))) || null;
@@ -68,7 +74,10 @@ function назвиПулу(промпт){
         && відомі[і].some(н => слоти[н] === 'взуття') && відомі[і].some(н => слоти[н] === 'сумка')).length;
       const усі = речі.flat(), повтори = усі.length - new Set(усі).size;
       const чужих = усі.filter(н => !слоти[н]).length;
-      console.log('  ' + модель + ' · ' + с + ' с · вихід ' + ((д.usage || {}).completion_tokens || 0) + ' т.'
+      /* вхід у токенах — ЦІЄЇ моделі: той самий пакет у 120 000 символів qwen3.5-9b рахує як ~55 тис.,
+         а qwen3-vl-8b — як 63.8–64.1 тис. (25.09), тож потрібний контекст залежить від токенізатора */
+      console.log('  ' + модель + ' · ' + с + ' с · вхід ' + ((д.usage || {}).prompt_tokens || 0)
+        + ' т. · вихід ' + ((д.usage || {}).completion_tokens || 0) + ' т.'
         + (стеля ? ' · СТЕЛЯ' : '') + ' · JSON ' + (об ? 'так' : 'НІ')
         + ' · образів ' + сп.length + ' · повних (взуття+сумка, ≥5) ' + повних
         + ' · речей поза пулом ' + чужих + ' · повторів між образами ' + повтори);
