@@ -25,9 +25,11 @@ def json_з(т):
         try: return json.loads(с)
         except Exception: pass
     return None
+def норм(р):   # «#34·40/низ», «#237 · 12/верх» — модель дописує слот; код їх читає, проба теж
+    м = re.match(r'\s*#\s*(\d+)\s*·\s*(\d+)', str(р)); return '#%s·%s' % м.groups() if м else str(р)
 def образи(д):
     о = (д or {}).get('образи') if isinstance(д, dict) else None
-    return [[str(р) for р in (x.get('речі') or [])] for x in (о or []) if isinstance(x, dict)]
+    return [[норм(р) for р in (x.get('речі') or [])] for x in (о or []) if isinstance(x, dict)]
 файли = sorted(ф for ф in os.listdir(тека) if ф.endswith('.txt') and ф.startswith('seed' + сід))
 def речі_пулу(д, ключ):
     return {р['н']: (с, (р.get('назва') or '')[:34]) for с, рр in ((д or {}).get(ключ) or {}).items() for р in рр}
