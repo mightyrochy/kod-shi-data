@@ -511,6 +511,12 @@ try:
 except ValueError as e:
     звірка("невідомий тип у схемі валить ValueError", "мапа" in str(e), str(e))
 
+print("── внутрішня мова (мовний шар, 25.09.2026): файл схеми — з тієї самої таблиці")
+import внутрішня_мова as _ВМ
+with open(_ВМ.ФАЙЛ_СХЕМИ, encoding="utf-8") as _ф:
+    звірка("внутрішня_мова.schema.json = внутрішня_мова.схема() (перегенерувати: python3 внутрішня_мова.py)",
+           json.load(_ф) == json.loads(json.dumps(_ВМ.схема(), ensure_ascii=False)))
+
 print()
 if провали:
     print("ВПАЛО %d: %s" % (len(провали), "; ".join(провали)))
