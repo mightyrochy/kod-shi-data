@@ -3,10 +3,9 @@
 (`протокол.вердикт_на_дріт` + вимоги цієї гілки): що з кожним робить розбір ОБРАЗИ_V1. Без MODEL_URL —
 лише ЗБЕРЕЖЕНА відповідь із файла; з MODEL_URL і MODELS=м1,м2 — ще й обидва промпти живій моделі (стеля
 4 000 т., reasoning_effort none — як `рв6_стенд.js`). Друкує факт: символи, обрив, образи за схемою, ехо, «виконано».
-Запуск: cd джерела && [MODEL_URL=http://127.0.0.1:1234/v1 MODELS=…] python проби/ремонт_ехо_т7_живо.py <файл ВЕРДИКТ_V1_ОБРАЗИ_V1> …"""
-import json, os, sys, time, urllib.request
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.stdout.reconfigure(encoding="utf-8")
+Запуск: cd джерела && [MODEL_URL=http://127.0.0.1:1234/v1 MODELS=…] python проби/ремонт_ехо_т7_живо.py <тека VIDPOVIDI або файл> [сід]"""
+import glob, json, os, sys, time, urllib.request
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); sys.stdout.reconfigure(encoding="utf-8")
 import протокол as P, вердикт_моделі as ВМ, міст_відповіді as МВ
 def частини(ф):
     т = open(ф, encoding="utf-8").read(); п, _, в = т.partition("\n\n── ВІДПОВІДЬ")
@@ -29,7 +28,10 @@ def модель(м, промпт):
                                {"Content-Type": "application/json"})
     в = json.load(urllib.request.urlopen(з, timeout=3600))["choices"][0]
     return (в["message"].get("content") or ""), в.get("finish_reason") == "length", time.time() - т0
-for ф in sys.argv[1:]:
+а = sys.argv[1:] or ["."]; сід = а[1] if len(а) > 1 else ""
+файли = sorted(ф for ф in ([os.path.join(а[0], х) for х in os.listdir(а[0])] if os.path.isdir(а[0]) else glob.glob(а[0]))
+               if "ВЕРДИКТ_V1_ОБРАЗИ_V1" in os.path.basename(ф) and os.path.basename(ф).startswith("seed" + сід))
+for ф in файли:
     старий, відп = частини(ф); н = новий(старий); ім = os.path.basename(ф)[:9]
     print("%s · промпт: старий %d симв., новий %d · збережена відповідь: %s" % (ім, len(старий), len(н), факт(відп, False)))
     for м in [x for x in os.environ.get("MODELS", "").split(",") if x] if os.environ.get("MODEL_URL") else []:
