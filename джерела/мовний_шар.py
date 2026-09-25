@@ -124,7 +124,7 @@ def прийняти(розмітка, відповідь):
         вих = об.get(str(р["н"])) if isinstance(об, dict) else None
         if isinstance(вих, (list, tuple)):
             вих = " ".join(str(x) for x in вих)
-        if isinstance(вих, str) and вих.strip():
+        if isinstance(вих, str) and not _ВМ.невідомо(вих):   # "null" / "None" — не текст для неї
             тексти[р["ключ"]] = _без_обгортки(вих, р["текст"])
         else:
             тексти[р["ключ"]] = р["текст"]
@@ -217,8 +217,10 @@ def _норм(с, v, шлях, незнайомі):
 
     ФОРМА НЕ ВБИВАЄ ЗМІСТ (Т-13): рядок там, де схема чекає список, стає списком з одного;
     рядок там, де чекає вільний текст, — текстом її мови. Код поза переліком не
-    підставляється сусіднім — стає None, і шлях до нього йде в `незнайомі` (звіт власника)."""
-    if v is None or (isinstance(v, str) and (not v.strip() or _код(v) == U)):
+    підставляється сусіднім — стає None, і шлях до нього йде в `незнайомі` (звіт власника).
+    «Невідомо» в будь-якій формі (null, "null", "None", "невідомо") — None, а не її текст
+    чи незнайомий код (`внутрішня_мова.невідомо`)."""
+    if _ВМ.невідомо(v, с.get("enum") or ()):
         return None
     if _ref(с) == "free_text":
         if isinstance(v, dict) and str(v.get("free_text") or "").strip():
@@ -489,10 +491,11 @@ def прийняти_репліку(відповідь):
     (урок #310: чужий текст приносить у чат примітки й міркування моделі)."""
     об, чому_не = _обʼєкт(відповідь)
     т = об.get("text") if isinstance(об, dict) else None
-    if isinstance(т, str) and т.strip():
+    if isinstance(т, str) and not _ВМ.невідомо(т):
         return dict(текст=т.strip(), причина=None)
-    return dict(текст="", причина=("нема поля text" if isinstance(об, dict)
-                                   else "відповідь не JSON-об'єкт (%s)" % (чому_не or type(об).__name__)))
+    return dict(текст="", причина=("text — «невідомо» (%s)" % _json_.dumps(т, ensure_ascii=False)
+                                   if isinstance(т, str) and т.strip() else "нема поля text") if isinstance(об, dict)
+                else "відповідь не JSON-об'єкт (%s)" % (чому_не or type(об).__name__))
 
 
 def текст_кодом(репліка, випадок_людині=""):
