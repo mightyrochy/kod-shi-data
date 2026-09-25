@@ -6,7 +6,8 @@ llama.cpp `llama-server`), міст до справжньої моделі не 
 Змінні оточення (латиницею: оболонка кириличних імен не має):
   MODEL      — ід моделі шару (`mamaylm-gemma-3-12b-it-v2.0`, Lapa…); без неї модель не кличеться;
   MODEL_URL  — адреса сервера, типово http://127.0.0.1:1234/v1;
-  MODEL_TEMP — температура; без неї — та, що стоїть на сервері.
+  MODEL_TEMP — температура; без неї — та, що стоїть на сервері;
+  MODEL_MAX_TOKENS — стеля відповіді (типово 4000, як у стелі мосту).
 """
 import json
 import os
@@ -67,7 +68,8 @@ def модель(промпт):
     """(текст відповіді моделі шару, секунд) або (None, 0) без MODEL."""
     if not МОДЕЛЬ:
         return None, 0.0
-    тіло = dict(model=МОДЕЛЬ, messages=[dict(role="user", content=промпт)], max_tokens=4000, stream=False)
+    тіло = dict(model=МОДЕЛЬ, messages=[dict(role="user", content=промпт)],
+                max_tokens=int(os.environ.get("MODEL_MAX_TOKENS") or 4000), stream=False)
     if os.environ.get("MODEL_TEMP"):
         тіло["temperature"] = float(os.environ["MODEL_TEMP"])
     запит = urllib.request.Request(АДРЕСА + "/chat/completions", data=json.dumps(тіло).encode("utf-8"),

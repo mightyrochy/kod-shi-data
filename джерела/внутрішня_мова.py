@@ -184,9 +184,9 @@ def _перелік(поле, опис):
     return {"description": опис, "enum": list(ТАБЛИЦЯ[поле]) + [UNKNOWN]}
 
 
-def _число(опис, **межі):
-    """Поле-число або "unknown"."""
-    return {"description": опис, "oneOf": [dict({"type": "number"}, **межі), {"const": UNKNOWN}]}
+def _число(опис, тип="number", **межі):
+    """Поле-число (`тип` — number або integer) або "unknown"."""
+    return {"description": опис, "oneOf": [dict({"type": тип}, **межі), {"const": UNKNOWN}]}
 
 
 def _список(елемент, опис, **ще):
@@ -221,7 +221,7 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     "activity": _перелік("activity", "що робитиме: з дітьми, по нерівному ґрунту, прогулянка, "
                                      "багато пішки"),
     "surface": _перелік("surface", "що під ногами"),
-    "hour": _число("година початку за 24-годинним годинником", minimum=0, maximum=23),
+    "hour": _число("година початку за 24-годинним годинником", тип="integer", minimum=0, maximum=23),
     "part_of_day": _перелік("part_of_day", "частина доби, коли години не названо"),
     "temperature_c": _число("температура повітря, °C"),
     "weather_feel": _перелік("weather_feel", "погода без числа градусів"),
