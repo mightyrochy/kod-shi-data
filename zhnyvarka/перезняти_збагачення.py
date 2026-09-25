@@ -152,4 +152,11 @@ if __name__ == "__main__":
     ap.add_argument("--продовжити", action="store_true")
     ap.add_argument("--злити", action="store_true")
     а = ap.parse_args()
+    if not а.злити:                                  # злиття моделі не питає
+        # JIT-контекст 4096 валить ці потоки на HTTP 400 (виміряно 24.09).
+        from жнива_промпти import звірити_модель     # noqa: E402
+        гаразд, рядок = звірити_модель(а.модель, а.потоки)
+        print(рядок, flush=True)
+        if not гаразд:
+            raise SystemExit(1)
     злити(а) if а.злити else прогін(а)
