@@ -75,6 +75,27 @@ const чекатиНа = async (умова, опис, ліміт = 8000, кро�
   return true;
 };
 
+/* ── ПАКЕТ ІЗ ХЕША: ЧЕКАТИ НА КАРТКИ, А НЕ НА ГОДИННИК (Т-21, 25.09.2026) ────
+   Сім розділів після `сторінка({url: …#пакет})` стояли на `пауза(500)`. 500 мс —
+   це здогад про чужу машину, а не факт: розбір хеша йде через `gunzip`
+   (`DecompressionStream`), IndexedDB і малювання карток, і на завантаженому
+   runner'і він у цей час не вкладався. Тоді `П` ще `null`, а розділ уже кликав
+   `приміряти(0)` — і батарея падала `TypeError: Cannot read properties of null
+   (reading 'картки')`. Червоне без жодної вади продукту, тобто рівно той шум,
+   через який гейтам перестають вірити.
+   Чекаємо на ТЕ САМЕ, що розділ читає далі, — намальовані картки (вираз уже
+   стояв у розділі 17 і працював), — а не дочекавшись, кажемо це словами й
+   червоним, замість TypeError через рядок. Скільки карток чекати, знає сам
+   пакет розділу, тож число тут не дублюється й не протухає. */
+const чекатиНаКартки = async (w, d, скільки) => {
+  const скільки_є = () => d.querySelectorAll("#картки .картка").length;
+  const ок = await чекатиНа(() => скільки_є() === скільки,
+                            "карток пакета намальовано не " + скільки);
+  let уП; try { уП = w.eval("П ? П.картки.length : null"); } catch(e){ уП = String(e); }
+  тест("пакет із хеша розібрано, карток намальовано " + скільки, ок, [скільки_є(), уП]);
+  return ок;
+};
+
 /* Аргумент — шлях до ЗІБРАНОГО html; без нього беремо шаблон поруч із тестом. */
 const ЗІБРАНИЙ = process.argv[2] ? path.resolve(process.argv[2]) : null;
 const шаблон = fs.readFileSync(ЗІБРАНИЙ || path.join(__dirname, "показ.html"), "utf8");
@@ -516,7 +537,7 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
     const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
     const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
-    await пауза(500);
+    await чекатиНаКартки(w, d, пакет.картки.length);
     w.eval("читатиКв = async () => new Blob(['ф'], {type:'image/jpeg'});");
     w.createImageBitmap = async () => ({width: 1000, height: 1500, close(){}});
     w.HTMLCanvasElement.prototype.getContext = function(){ return {drawImage(){}}; };
@@ -564,7 +585,7 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
     const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
     const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
-    await пауза(500);
+    await чекатиНаКартки(w, d, пакет.картки.length);
     w.eval("читатиКв = async () => new Blob(['ф'], {type:'image/jpeg'});");
     w.eval("П.сценарій_знімок = {чат: [{фото: [{ід: 'ф1', тип: 'image/jpeg', дані: 'AAAA'}]}]};");
     w.createImageBitmap = async () => ({width: 1000, height: 1500, close(){}});
@@ -606,7 +627,7 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
     const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
     const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
-    await пауза(500);
+    await чекатиНаКартки(w, d, пакет.картки.length);
     const $ = id => d.getElementById(id);
     const стан = () => $("прм-0").textContent;
 
@@ -721,7 +742,7 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
     const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
     const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
-    await пауза(500);
+    await чекатиНаКартки(w, d, пакет.картки.length);
     w.eval("читатиКв = async () => new Blob(['ф'], {type:'image/jpeg'});");
     w.createImageBitmap = async () => ({width: 1000, height: 1500, close(){}});
     w.HTMLCanvasElement.prototype.getContext = function(){ return {drawImage(){}}; };
@@ -781,7 +802,7 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
     const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
     const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
-    await пауза(500);
+    await чекатиНаКартки(w, d, пакет.картки.length);
     const $ = id => d.getElementById(id);
     const стан = п => $("прм-" + п).textContent;
     const текстЗапиту = з => (з.find(б => б.type === "text") || {}).text || "";
@@ -906,7 +927,7 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
     const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
     const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
-    await пауза(500);
+    await чекатиНаКартки(w, d, пакет.картки.length);
     const $ = id => d.getElementById(id);
     тест("без винятків", помилки.length === 0, помилки);
     тест("три картки", d.querySelectorAll("#картки .картка").length === 3, d.querySelectorAll("#картки .картка").length);
@@ -1788,7 +1809,7 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
     const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
     const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
-    await пауза(500);
+    await чекатиНаКартки(w, d, пакет.картки.length);
     const $ = id => d.getElementById(id);
     тест("без винятків", помилки.length === 0, помилки);
     тест("жінка читає, чого образу бракує, словами коду",
