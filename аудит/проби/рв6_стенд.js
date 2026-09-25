@@ -396,6 +396,16 @@ let фотоНеДійшло = 0;
    `x-images-dropped`. */
 let _sharp = null; try { _sharp = require('sharp'); } catch (_) {}
 const ЖИВІ_ТИПИ = new Set(['image/jpeg', 'image/png']);
+/* ВЕЛИКИЙ КАДР ВАЛИТЬ РУШІЙ (виміряно 25.09.2026, LM Studio llama.cpp cuda12 2.45.0,
+   gemma-4-12b-it-qat): фото речі 1200×1800 — «The model has crashed without
+   additional information» на будь-якому контексті (8 192 … 65 536), без Exif
+   теж; те саме фото 768×1152 і фото 720×1080 — відповідь за 1–9 с; 896×1344 —
+   знову крах. У живому прогоні «Ір, собаки» це зрізало опис обох рук, а LM
+   Studio після падіння сам піднімав модель JIT-ом з n_ctx 4096. Постачальники
+   справжнього мосту кадр зменшують самі, тож і адаптер вписує його в
+   FOTO_MAX×FOTO_MAX (типово 1024; FOTO_MAX=0 — слати як є). Лише для живої
+   моделі: заглушка кадрів не бачить. */
+const ФОТО_МАКС = ('FOTO_MAX' in process.env) ? Number(process.env.FOTO_MAX) : 1024;
 async function кадрБазою(url){
   try {
     const в = await fetch(url, {redirect: 'follow'});
@@ -403,9 +413,12 @@ async function кадрБазою(url){
     let тип = (в.headers.get('content-type') || 'image/jpeg').split(';')[0].trim();
     let байти = Buffer.from(await в.arrayBuffer());
     if (!байти.length) return null;
-    if (!ЖИВІ_ТИПИ.has(тип)){
+    const великий = _sharp && ФОТО_МАКС > 0 && await _sharp(байти).metadata()
+      .then(м => Math.max(м.width || 0, м.height || 0) > ФОТО_МАКС, () => false);
+    if (!ЖИВІ_ТИПИ.has(тип) || великий){
       if (!_sharp) return null;
-      байти = await _sharp(байти).jpeg({quality: 88}).toBuffer();
+      байти = await (великий ? _sharp(байти).resize({width: ФОТО_МАКС, height: ФОТО_МАКС, fit: 'inside'}) : _sharp(байти))
+        .jpeg({quality: 88}).toBuffer();
       тип = 'image/jpeg';
     }
     return 'data:' + тип + ';base64,' + байти.toString('base64');
