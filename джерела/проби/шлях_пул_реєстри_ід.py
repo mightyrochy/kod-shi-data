@@ -12,7 +12,7 @@ import json, os, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ТУТ)
 os.chdir(ТУТ)
-import реєстри as Р
+import реєстри as Р, пакет_моделі as ПМ
 from міст_вхід import _без_ід_глибоко
 ФАЙЛ = os.path.join(os.path.dirname(ТУТ), "аудит", "тести", "власник_2026-09-25",
                     "verdykty-0phxvk-2026-09-25-2012.json")
@@ -34,3 +34,9 @@ print("порожніх значень: %d із %d" % (sum(1 for v in ід.value
 print("що кладе код до чистки: %s" % json.dumps(мало_б, ensure_ascii=False))
 print("після _без_ід_глибоко:  %s" % json.dumps(_без_ід_глибоко(мало_б), ensure_ascii=False))
 print("символів пакета на цю легенду: %d" % len(json.dumps(ід, ensure_ascii=False)))
+# ПІСЛЯ ПРАВКИ: той самий пакет крізь теперішній `пакет_моделі._без_порожньої_легенди`
+_після = getattr(ПМ, "_без_порожньої_легенди", lambda п: п)({"пул": {}, "реєстри_ід": _без_ід_глибоко(мало_б)})
+print("у пакеті ПІСЛЯ правки: %s (символів %d)"
+      % ("реєстри_ід = " + json.dumps(_після["реєстри_ід"], ensure_ascii=False)
+         if "реєстри_ід" in _після else "ключа «реєстри_ід» нема",
+         len(json.dumps(_після.get("реєстри_ід") or "", ensure_ascii=False)) if "реєстри_ід" in _після else 0))
