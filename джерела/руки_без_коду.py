@@ -109,7 +109,9 @@ def її_речі(речі_паспорта):
 #   · «requirements» — її вимоги «виконати обов'язково» в УСІ руки однаково (`brief._вимоги`):
 #     інакше суддя відрізняв би руки за слухняністю, а не за правилами;
 #   · «her_items» — рядок 152/157: її річ стоїть в образі, решту модель вигадує навколо;
-#     «own line» — щоб перелік бачив її річ окремим рядком і позначив її id;
+#     «own line» — щоб перелік бачив її річ окремим рядком і позначив її id; hex — лише її
+#     `color_hex` (вимір коду): hex рядка розбір бере кольором речі, і вигаданий моделлю сірий
+#     ставав кольором її речі з невідомим кольором (розбір 4/8: «#808080»);
 #   · верхній шар від +20 °C — той самий рядок, що в `brief.ФОРМАТ_ЛИШЕ_ТЕКСТ` (погода);
 #   · три частини й «колір із hex» — формат, який читає перелік і запасний розбір прози
 #     (`розбір_відповідей._кандидати_з_прози` бере річчю рядок із hex);
@@ -138,7 +140,8 @@ def її_речі(речі_паспорта):
                  як="build the outfit around it"),
         _ЗП.Поле("her_items", "her own items; \"photo\": true — also on the attached photos",
                  як="they stay in the outfit as they are: build the rest around them, add nothing that "
-                    "takes the place of one of them, give each its own line"),
+                    "takes the place of one of them, give each its own line with its \"color_hex\" "
+                    "or, when it has none, with no hex"),
         _ЗП.Поле("requirements", "what she asked for", як="meet every point"),
         _ЗП.Поле("previous_answer", "your previous answer to this case",
                  як="write the outfit again, fixing every point of \"remarks\""),
