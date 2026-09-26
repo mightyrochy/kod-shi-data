@@ -751,6 +751,15 @@ function відповісти(текст) {
     if (/коментар жінки до образу/.test(текст)) return {тип: 'мовний шар: вхід', текст: JSON.stringify({note: {free_text: текст.split('\nСЛОВА:\n')[1].split('\n\nКОНТЕКСТ:')[0], lang: 'uk'}})};
     const слова = (текст.split('\nСЛОВА:\n')[1] || '').split('\n\nКОНТЕКСТ:')[0];
     const в = внутрішняЗПаспорта(сумлінний(JSON.parse(паспортМоделі('')), слова));
+    /* М-1 (В-1): сумлінний перекладач читає визначення кодів місця в самому промпті
+       («theatre (Зал: театр, кіно, концерт, …)») — слово ноти в її репліці дає код і уривок */
+    const рядМісця = (текст.split('\n').find(р => р.startsWith('- place —')) || '');
+    for (const [, код, нота] of рядМісця.matchAll(/(\w+) \([^:()]*: ([^()]*)\)/g)){
+      const збіг = !в.place && нота.split(/,\s*/).map(с => с.trim()).filter(с => с.length >= 4)
+        .map(с => new RegExp(с.slice(0, Math.max(4, с.length - 1)) + '\\S*', 'i').exec(слова)).find(Boolean);
+      if (збіг) Object.assign(в, {place: код, event: {free_text: слова.trim().replace(/[?.!]+$/, ''), lang: 'uk'},
+                                  quotes: Object.assign({}, в.quotes, {place: збіг[0]})});
+    }
     /* М-1 (8/8): питальна репліка — питання про образ (`question_about: look`) */
     if (/\?\s*$/.test(слова.trim())) Object.assign(в, {question: {free_text: слова.trim(), lang: 'uk'}, question_about: 'look'});
     return {тип: 'мовний шар: вхід', текст: JSON.stringify(в)};
