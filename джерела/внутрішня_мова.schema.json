@@ -1432,10 +1432,32 @@
      "type": "object"
     },
     "code_lines": {
-     "description": "рядки коду для неї: про її річ, про додане до сценарію",
+     "description": "рядки коду для неї про її річ з фото (вердикт коду)",
      "type": "array",
      "items": {
       "$ref": "#/$defs/free_text"
+     }
+    },
+    "added": {
+     "description": "що код додав до сценарію з її слів, сказаних поза екраном сценарію: own_items — її речі (її словами), які стоять у кожному образі; wish — сказане стало побажанням до образів; build_on: scenario_screen — образи з цим збираються кнопкою «Зібрати образи» на екрані «Сценарій»",
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "own_items": {
+       "description": "її речі її словами",
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/free_text"
+       }
+      },
+      "wish": {
+       "type": "boolean"
+      },
+      "build_on": {
+       "enum": [
+        "scenario_screen"
+       ]
+      }
      }
     },
     "answer": {

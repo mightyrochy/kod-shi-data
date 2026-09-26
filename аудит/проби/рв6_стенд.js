@@ -729,7 +729,10 @@ function відповісти(текст) {
   }
   if (/\nРЕПЛІКА:\n/.test(текст || '') && /^Ти — перекладачка в застосунку-стилістці/.test(текст)) {
     const р = JSON.parse(текст.slice(текст.lastIndexOf('РЕПЛІКА:') + 'РЕПЛІКА:'.length));
-    const рядки = ['Записала.'].concat((р.code_lines || []).map(x => x.free_text), р.answer ? [р.answer.free_text] : [],
+    /* М-1: додане до сценарію приходить кодами (`added`) — заглушка каже це так, як сказав би перекладач */
+    const додано = р.added ? ['Додала до сценарію' + ((р.added.own_items || []).length
+      ? ': ' + р.added.own_items.map(x => '«' + x.free_text + '»').join(', ') : ' як побажання') + '.'] : [];
+    const рядки = ['Записала.'].concat(додано, (р.code_lines || []).map(x => x.free_text), р.answer ? [р.answer.free_text] : [],
       (р.required || []).length ? ['Скажи, куди ти йдеш: без цього образи не зберуться.'] : [],
       (р.advice_topics || []).length ? ['Якщо хочеш, розкажи ще трохи про цей вихід — а можна й ні, образи зберу й так.'] : []);
     return {тип: 'мовний шар: репліка', текст: JSON.stringify({text: рядки.join(' ')})};
