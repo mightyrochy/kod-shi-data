@@ -491,6 +491,117 @@ def речі_з_json(сирі, фото=None, досі=None, словами=None
     return закріпити(вих)
 
 
+# ── ОПИС РЕЧЕЙ ІЗ ФОТО — ОКРЕМОЮ ЗАДАЧЕЮ, АНГЛІЙСЬКОЮ (П-1, 26.09.2026) ──────────
+# ЩО БУЛО. Річ на фото називав ВИКЛИК 0 — повний промпт паспорта (з мовним шаром ~22 тис.
+# символів, з них довідка показу ~11 тис.), з якого показ брав ЛИШЕ `речі_з_фото`: решту
+# паспорта з мовним шаром дає перекладач (`мовний_шар.паспорт_з_шару`). Тепер цей крок —
+# своя задача збирача англійською (CLAUDE.md п.12), значення полів — кодами внутрішньої
+# мови (`коди_полів`), а розбір зводить їх до тих самих слів словника й кладе тим самим
+# `речі_з_json` (злиття з паспортом досі, ід «ф1·2», закріплення). Виклик 0 без шару
+# лишається, як є (Л-3/М-1): там фото описує він сам.
+# ЧОМУ ЦІ РЯДКИ (для людей; моделі це не потрібно):
+#   · модель НАЗИВАЄ, код МІРЯЄ (шапка модуля): колір — одним кодом «основний колір самої
+#     речі», вимір пікселями в рамці — код; чи личить річ, модель не каже — це вердикт коду;
+#   · «frame» — колір код міряє лише в межах рамки (`виміряти`), тож рамка тісно по речі;
+#   · одна річ на кількох фото — один запис: інакше образ мав би дві однакові речі;
+#   · «owner» — з її слів цього ходу, які переклав шар (`own_items` внутрішньою мовою —
+#     сирих слів функціональна модель не бачить, п.12): її річ зі статусом «has» — «mine»;
+#     «want_to_buy» внутрішня мова ходу поки не несе — тоді «unknown» (названо в PR);
+#   · шкала ошатності — та сама, що в `СХЕМА_РЕЧІ`.
+ФОТО_РЕЧЕЙ = None      # оголошення будується ліниво (`_фото_речей`): збирач імпортує протокол
+
+
+def _фото_речей():
+    """Оголошення задачі «речі з фото» (ліниво — `збирач_промптів` тягне `протокол`)."""
+    global ФОТО_РЕЧЕЙ
+    if ФОТО_РЕЧЕЙ is None:
+        import збирач_промптів as _ЗП
+        ФОТО_РЕЧЕЙ = _ЗП.Оголошення(
+            задача="речі_з_фото",
+            роль="You see photos of clothing items that a woman sent. Describe each item on them.",
+            вхід=(
+                _ЗП.Поле("photos", "her photos in the order they are attached: id, width, height", треба=True),
+                _ЗП.Поле("her_items_in_words", "her own items as she described them in words",
+                         як="an item on a photo that is one of those with status \"has\" has owner \"mine\""),
+                _ЗП.Поле("codes", "allowed codes of the item fields", треба=True),
+                # повтор після нечитаної відповіді (як у виклику 0 — один): причину називає розбір
+                _ЗП.Поле("format_error", "why your previous answer could not be read",
+                         як="answer again, following \"answer_schema\""),
+            ),
+            правила=(
+                "One object per item on the photos — garment, shoes, bag, accessory, jewelry; an item seen "
+                "on several photos is listed once, with the photo where it is seen best.",
+                "\"frame\" is the item's box on its photo in thousandths of the width and height (0–1000), "
+                "tight around the item itself, without background, skin or other items.",
+                "Field values are codes from \"codes\"; what the photo does not show is null.",
+            ),
+            вихід="PHOTO_ITEMS",
+            скелет={"items": [{
+                "photo": "<photo id>",
+                "name": "<short name, as a shop would call the item>",
+                "slot": "<code from codes.slot>",
+                "color": "<code from codes.color: the main color of the item itself>",
+                "fabric": "<code from codes.fabric when the texture is visible, else null>",
+                "cut": "<code from codes.cut or null>",
+                "length": "<code from codes.length or null>",
+                "pattern": "<code from codes.pattern>",
+                "formality": "<integer 1–10: 1 home, 3 cafe, 5 office, 7 evening out, 9 ceremony>",
+                "owner": "<code from codes.owner>",
+                "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
+            }]},
+            межі=("лише_вхід",),
+            мова_промпту="en",
+        )
+    return ФОТО_РЕЧЕЙ
+
+
+def промпт_фото(фото, власні=None, помилка=None):
+    """Промпт задачі «речі з фото» рядком JSON. `фото` — [{ід, ширина, висота}] у порядку
+    зображень; `власні` — `own_items` внутрішньої мови цього ходу (перекладач шару);
+    `помилка` — причина, з якої попередню відповідь не прочитано (повтор, один)."""
+    import json as _json
+    import збирач_промптів as _ЗП
+    ф = [dict(id=str(х.get("ід")), width=х.get("ширина"), height=х.get("висота"))
+         for х in (фото or []) if isinstance(х, dict) and х.get("ід")]
+    дані = {"photos": ф, "her_items_in_words": [в for в in (власні or []) if isinstance(в, dict)],
+            "codes": коди_полів(), "format_error": помилка}
+    return _json.dumps(_ЗП.зібрати(_фото_речей(), дані), ensure_ascii=False)
+
+
+_ПОЛЯ_ФОТО = (("slot", "слот"), ("color", "колір"), ("fabric", "матеріал"), ("cut", "крій"),
+              ("length", "довжина"), ("pattern", "принт"))
+
+
+def речі_з_відповіді_фото(відповідь, фото, досі=None):
+    """Відповідь задачі «речі з фото» → {речі_з_фото, незнайомі, причина}.
+
+    Коди → слова словника (`ключ_поля`); код поза переліком — None і рядок у `незнайомі`, не
+    здогад. Далі — той самий `речі_з_json`, що й для виклику 0: ід ставить код, злиття з
+    паспортом досі поключове, нове фото без опису не губиться, закріплення — `закріпити`."""
+    import протокол as _ПР
+    об, причина = _ПР.розбір(відповідь)
+    сирі, незнайомі = [], []
+    for н, о in enumerate((об or {}).get("items") or [] if isinstance(об, dict) else []):
+        if not isinstance(о, dict):
+            незнайомі.append("items[%d]: не обʼєкт" % н)
+            continue
+        р = {"фото": о.get("photo"), "назва": о.get("name"), "ошатність": о.get("formality"),
+             "чия": ключ_поля("owner", о.get("owner")) or "невідомо"}
+        for поле, ключ in _ПОЛЯ_ФОТО:
+            р[ключ] = ключ_поля(поле, о.get(поле))
+            if р[ключ] is None and not __import__("внутрішня_мова").невідомо(о.get(поле)):
+                незнайомі.append("items[%d].%s: код «%s» поза переліком" % (н, поле, о.get(поле)))
+        рамка = о.get("frame")
+        if isinstance(рамка, dict):
+            рамка = {"ліво": рамка.get("left"), "верх": рамка.get("top"),
+                     "право": рамка.get("right"), "низ": рамка.get("bottom")}
+        р["рамка"] = рамка
+        сирі.append(р)
+    return dict(речі_з_фото=речі_з_json(сирі, фото, досі), незнайомі=незнайомі,
+                причина=(None if isinstance(об, dict) and isinstance(об.get("items"), list)
+                         else (причина or "відповідь без списку «items»")))
+
+
 # ═══════════ 3. ЗАКРІПЛЕННЯ: ЯКА РІЧ СТОЇТЬ У КОЖНОМУ ОБРАЗІ ═══════════════════════
 # Слоти, що займають одне й те саме місце в структурі образу: сукня й комплект замінюють
 # пару верх+низ (`outfit.елементи`, `pipeline._ТРЕТЯ`), тож дві закріплені речі з таких
