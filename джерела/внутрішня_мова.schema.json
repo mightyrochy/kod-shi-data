@@ -1530,6 +1530,254 @@
    "required": [
     "text"
    ]
+  },
+  "screen_message": {
+   "type": "object",
+   "description": "рядок, який жінка прочитає на екрані, внутрішньою мовою: вид рядка й заяви кодами",
+   "additionalProperties": false,
+   "properties": {
+    "kind": {
+     "oneOf": [
+      {
+       "const": "palette_scheme_note",
+       "description": "рядок про ОБРАНУ схему на екрані «Палітра»: що це за хід і коли він менш ходовий"
+      },
+      {
+       "const": "palette_default_scheme",
+       "description": "рядок на екрані «Палітра», поки вона схему не обрала: за чим збирається образ без її вибору і скільки схем код радить"
+      },
+      {
+       "const": "palette_rarer_scheme",
+       "description": "рядок біля плитки однієї схеми: чому цей хід рідший і чого код про нього ще не вміє. Починається назвою схеми"
+      },
+      {
+       "const": "card_scheme",
+       "description": "рядок на картці образу про обіцянку схеми палітри"
+      },
+      {
+       "const": "card_occasion",
+       "description": "рядок на картці образу про те, що код зробив для цієї нагоди"
+      },
+      {
+       "const": "card_wear_cost",
+       "description": "рядок на картці образу про ціну носіння за цей вихід"
+      },
+      {
+       "const": "card_swap_pair",
+       "description": "рядок на картці образу перед змінною парою взуття"
+      },
+      {
+       "const": "card_material",
+       "description": "рядок на картці образу про матеріал речі в погоду цього дня"
+      },
+      {
+       "const": "her_item_verdict",
+       "description": "вердикт коду про її власну річ: чи підійде вона під цей вихід"
+      },
+      {
+       "const": "her_item_softening",
+       "description": "рядок під її річчю на картці: річ стоїть у кожному образі, і чим решта образу її пом'якшує"
+      }
+     ]
+    },
+    "statements": {
+     "description": "що саме код каже, у порядку, в якому це має звучати",
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "code": {
+        "oneOf": [
+         {
+          "const": "scheme_tonal",
+          "description": "один тон на всіх речах, кроки світлоти маленькі"
+         },
+         {
+          "const": "scheme_analogous",
+          "description": "сусідні тони кольорового кола"
+         },
+         {
+          "const": "scheme_neutrals_accent",
+          "description": "нейтральна база і один кольоровий спалах"
+         },
+         {
+          "const": "scheme_muted_complementary",
+          "description": "два протилежні кольори"
+         },
+         {
+          "const": "scheme_triad",
+          "description": "три кольори на великих речах, приблизно порівну"
+         },
+         {
+          "const": "same_calm_contrast",
+          "description": "контраст лишається таким самим спокійним, як її власний"
+         },
+         {
+          "const": "native_to_her_soft_contrast",
+          "description": "це рідний дім її м'якого контрасту"
+         },
+         {
+          "const": "both_sides_muted",
+          "description": "обидві сторони притишені"
+         },
+         {
+          "const": "cleaner_side_against_base",
+          "description": "чистіший колір проти темної або світлої бази"
+         },
+         {
+          "const": "same_fabric_reads_flat",
+          "description": "менш вдало виходить, коли всі речі однієї тканини: без різниці фактур образ читається площинним"
+         },
+         {
+          "const": "analogous_close_to_tonal",
+          "description": "від тональної відрізняється ледь-ледь: на око різниця тонка, тож брати ту, чия назва їй ближча"
+         },
+         {
+          "const": "tonal_needs_wide_range",
+          "description": "брати ширший розбіг світлоти, від темного до світлого"
+         },
+         {
+          "const": "tonal_narrow_one_blot",
+          "description": "надто вузька тональна на її контрасті виглядає однією плямою"
+         },
+         {
+          "const": "tonal_only_wide_works",
+          "description": "на її контрасті працює лише широка тональна, від темного до світлого"
+         },
+         {
+          "const": "tonal_narrow_flattens",
+          "description": "вузька робить виразне обличчя пласким"
+         },
+         {
+          "const": "analogous_needs_step",
+          "description": "лишити між сусідніми тонами помітний крок світлоти"
+         },
+         {
+          "const": "analogous_same_light_merges",
+          "description": "на однаковій світлоті сусідні тони зливаються"
+         },
+         {
+          "const": "analogous_needs_jump",
+          "description": "закладати всередину стрибок світлоти"
+         },
+         {
+          "const": "analogous_flat_on_vivid",
+          "description": "без цього стрибка сусідні тони на виразному обличчі виглядають пласко"
+         },
+         {
+          "const": "accent_keep_muted",
+          "description": "акцент тримати приглушеним"
+         },
+         {
+          "const": "loud_accent_pulls_from_face",
+          "description": "гучний колір повертає різкий контраст і починає перетягувати увагу з обличчя"
+         },
+         {
+          "const": "contrast_holds_stronger_accent",
+          "description": "її контраст тримає і помітніший акцент — головне не робити його гучним"
+         },
+         {
+          "const": "light_dark_plus_accent_natural",
+          "description": "світла й темна нейтраль плюс акцент — природна пара для її виразного контрасту: образ повторює те, що вже є в обличчі"
+         },
+         {
+          "const": "boldest_everyday_move",
+          "description": "на її м'якому контрасті це найсміливіший із буденних ходів"
+         },
+         {
+          "const": "second_side_small_patch",
+          "description": "другу сторону брати малою плямою"
+         },
+         {
+          "const": "pair_pulls_look_on_itself",
+          "description": "інакше пара перетягне образ на себе"
+         },
+         {
+          "const": "keep_one_side_muted",
+          "description": "хоч одну зі сторін тримати приглушеною"
+         },
+         {
+          "const": "two_clean_sides_argue",
+          "description": "дві чисті сторони сперечаються між собою"
+         },
+         {
+          "const": "contrast_takes_more_colour",
+          "description": "її контраст витримує більше кольору, ніж інші рівні"
+         },
+         {
+          "const": "cleaner_side_needs_photo",
+          "description": "чистішу сторону беремо лише тоді, коли знімок дав надійну відповідь про яскравість її рис; інакше тримаємо приглушено"
+         },
+         {
+          "const": "triad_three_families_limit",
+          "description": "разом із металом прикрас виходить межа в три кольорові сім'ї, тож аксесуарам лишається повторити одну з них"
+         },
+         {
+          "const": "contrast_mismatch",
+          "description": "контраст образу свідомо не під її власний: обличчя лишається у своєму вікні, зсувається решта драбини світлоти. Це хід «одяг у фокусі», а не «лестити обличчю», тому й рідший"
+         },
+         {
+          "const": "contrast_mismatch_levels",
+          "description": "рівні цього зсуву (значення: look_level — контраст образу, own_level — її власний; коди low, medium, high)"
+         },
+         {
+          "const": "bright_makeup_keeps_accent_muted",
+          "description": "яскравий макіяж уже тримає увагу на обличчі — тоді акцент в одязі лишаємо приглушеним"
+         },
+         {
+          "const": "rarer_move",
+          "description": "цей хід рідший"
+         },
+         {
+          "const": "rarer_than_everyday",
+          "description": "ця схема рідше щоденна"
+         },
+         {
+          "const": "colour_families_at_once",
+          "description": "скільки кольорових сімей схема тримає одночасно (значення: families — число)"
+         },
+         {
+          "const": "code_does_not_advise_here",
+          "description": "під цим виходом код сам його не радить"
+         },
+         {
+          "const": "no_catalogue_filter_yet",
+          "description": "каталожного фільтра під цю схему код поки не вміє: обере її — речі не доберуться, і код скаже це рядком, а не мовчанням"
+         },
+         {
+          "const": "default_scheme_until_chosen",
+          "description": "поки вона не обрала, образ збирається за цією схемою: під неї підбираються речі, по ній же перевіряється акцент (значення: scheme — назва схеми)"
+         },
+         {
+          "const": "schemes_advised_count",
+          "description": "скільки схем код радить до цього образу (значення: count — число)"
+         },
+         {
+          "const": "rarer_schemes_count",
+          "description": "скільки схем рідші — їх теж можна обрати (значення: count — число)"
+         },
+         {
+          "const": "choose_another_if_wants",
+          "description": "іншу можна обрати самій, якщо хочеться"
+         }
+        ]
+       },
+       "values": {
+        "type": "object"
+       }
+      },
+      "required": [
+       "code"
+      ]
+     },
+     "minItems": 1
+    }
+   },
+   "required": [
+    "kind",
+    "statements"
+   ]
   }
  },
  "x-форми-unknown": [
@@ -1539,6 +1787,11 @@
   "невідомо"
  ],
  "x-таблиця": {
+  "contrast_level": {
+   "low": "низький",
+   "medium": "середній",
+   "high": "високий"
+  },
   "occasion": {
    "everyday": "щоденне",
    "work": "робота",
