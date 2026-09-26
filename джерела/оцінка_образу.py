@@ -407,6 +407,26 @@ def _пункти(о):
     return вих
 
 
+def _контраст_обличчя(F, T, записи, source):
+    """K-CLR-02 над ОБРАЗОМ ЦІЛИМ — стрибок світлоти біля обличчя проти її власного контрасту
+    (`колір_світлота.біля_обличчя`, той самий вимір, що в суді образу). Суд образу віддає лише
+    порушення, а «в межах» губить; тут воно стає пунктом «пройдено» — доказом, на який може
+    спертись твердження «контраст біля обличчя вдалий» (сторож без нього його не пропускає)."""
+    import outfit as _O, колір_світлота as _КС, composer as _КМ
+    особа = _O.контраст_особи(F, source)
+    if not особа.get("доступно"):
+        return dict(без_входу=dict(rule=["K-CLR-02"], check="обличчя",
+                                   what={"free_text": "контраст біля обличчя", "lang": "uk"},
+                                   missing={"free_text": str(особа.get("чому") or "нема шкіри чи волосся"), "lang": "uk"}))
+    рг = [_КМ._у_річ(dict(з), з["слот"], T) for з in записи if з.get("lab") and з.get("слот")]
+    зк = _КС.біля_обличчя(_O.елементи(рг), особа) if рг else []
+    if not зк:
+        return {}
+    з = зк[0]
+    return dict(пункт=dict(бік="обличчя", пункт="K-CLR-02", правила=["K-CLR-02"],
+                           стан=("пройдено" if з.get("сила") == "ok" else "провал"), що=з.get("суть")))
+
+
 def рівень(суд):
     """Рівень суду коду для сторожа: «gate» — блокер структури чи гейт (і гейт, знятий «без
     замків»: річ її, але вага гейта та сама); «remarks» — знахідки, що промовляються; «clean»."""
@@ -610,6 +630,11 @@ def суд(d):
     вих["рівень"] = рівень(вих["суд"])
     вих["пункти"] = _пункти(о)
     вих["без_входу"] = _без_входу(о, сцен, речі)
+    обличчя = _контраст_обличчя(F, T, записи, d.get("source") or "uncontrolled")
+    if обличчя.get("пункт"):
+        вих["пункти"].append(обличчя["пункт"])
+    if обличчя.get("без_входу"):
+        вих["без_входу"].append(обличчя["без_входу"])
     вих["зміни"], вих["зміни_звіт"] = зміни(d, F, T, сцен, речі, образ, запасні, о, палітра, драп,
                                            крамниця=bool(d.get("крамниця")) and bool(d.get("каталог")))
     return вих
@@ -711,8 +736,9 @@ def _сцена_для_моделі(суд_):
         "\"verdict\": your overall view of whether she should wear the outfit as it is.",
         "\"works\": what works in the outfit as a whole — colors with each other, colors to her palette, "
         "contrast near her face, silhouette. Each point names its items and one \"about\" code.",
-        "Claim only what the check does not contradict: a finding against items is not a success for "
-        "those items, and an item with palette \"out\" is not a palette success.",
+        "Claim a success only where the check supports it: a finding or a failed point against items is "
+        "not a success for them; a palette success names only items with palette \"in\"; a contrast "
+        "success needs the passed contrast point.",
         "\"change\": at most two changes, only ids from \"changes\", her own alternatives first; an "
         "empty list when \"changes\" is empty.",
         "\"unknown\": what you cannot judge, the most important for her question first.",
@@ -861,11 +887,19 @@ def _суперечить(про, речі, суд_):
             continue
         if str(з.get("правило") or "").startswith(префікси) and set(з.get("речі") or []) & set(речі):
             return "finding:%s:%s" % (з.get("ід"), з.get("правило"))
+    for п in суд_.get("пункти") or []:
+        if п.get("стан") == "провал" and any(str(х).startswith(префікси) for х in п.get("правила") or []):
+            return "failed_point:%s:%s" % (п.get("бік"), п.get("пункт"))
     if про == "palette":
+        # «колір — твій» лише про речі, чий виміряний колір код знайшов у її палітрі; «на межі» й
+        # «поза» — не успіх палітри, а колір без виміру — не доказ
         за_ід = {р["ід"]: р for р in суд_.get("речі") or []}
-        поза = [і for і in речі if ((за_ід.get(і) or {}).get("палітра") or {}).get("стан") == "поза палітрою"]
-        if поза:
-            return "palette_out:%s" % ",".join(поза)
+        не_її = [і for і in речі if ((за_ід.get(і) or {}).get("палітра") or {}).get("стан") != "у палітрі"]
+        if не_її:
+            return "palette_not_in:%s" % ",".join(не_її)
+    if про == "contrast" and not any(п.get("стан") == "пройдено" and "K-CLR-02" in (п.get("правила") or [])
+                                     for п in суд_.get("пункти") or []):
+        return "no_check:K-CLR-02"
     return None
 
 
