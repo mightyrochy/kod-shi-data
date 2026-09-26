@@ -8073,6 +8073,23 @@ async function оцінитиОбразП(){
     if (кн) кн.textContent = ОЦ.результат ? 'Оцінити ще раз' : 'Оцінити';
   }
 }
+/* Кадр її речі за рамкою моделі — для мініатюри (довга сторона `сторона` px). Не вийшло
+   (браузер не декодував, рамки нема) — null, і лишається ціле фото. */
+async function кадрРечіУрлП(ф, рамка, сторона){
+  if (!рамка) return null;
+  try{
+    const бм = await createImageBitmap(await (await fetch(урлФотоП(ф))).blob());
+    const x0 = Math.round(рамка.ліво / 1000 * бм.width), y0 = Math.round(рамка.верх / 1000 * бм.height);
+    const ш = Math.max(1, Math.round((рамка.право - рамка.ліво) / 1000 * бм.width));
+    const в = Math.max(1, Math.round((рамка.низ - рамка.верх) / 1000 * бм.height));
+    const м = Math.min(1, (сторона || 192) / Math.max(ш, в));
+    const кан = document.createElement('canvas');
+    кан.width = Math.max(1, Math.round(ш * м)); кан.height = Math.max(1, Math.round(в * м));
+    кан.getContext('2d').drawImage(бм, x0, y0, ш, в, 0, 0, кан.width, кан.height);
+    if (бм.close) бм.close();
+    return кан.toDataURL('image/jpeg', 0.85);
+  }catch(e){ return null; }
+}
 /* Рядок сцени над карткою — тими самими словами, що в картці сценарію (довідник) */
 function рядокСценаріюОцінкиП(с){
   const ч = [];
@@ -8123,7 +8140,10 @@ function рядокЗміниП(з, р){
   if (зм.звідки === 'own'){
     const річ = ((р.суд || {}).речі || []).find(x=>x.ід === зм.нова) || {};
     const ф = ОЦ.фото.find(x=>x.ід === річ.фото);
-    if (ф) і.src = урлФотоП(ф); else і.style.visibility = 'hidden';
+    /* мініатюра — РАМКОЮ ЇЇ РЕЧІ, а не цілим фото: на одному фото бувають дві пари, і вона
+       мусить бачити, яку саме має на увазі зміна (ручний огляд стенда, сцена 6) */
+    if (ф){ і.src = урлФотоП(ф); кадрРечіУрлП(ф, річ.рамка).then(у=>{ if (у) і.src = у; }); }
+    else і.style.visibility = 'hidden';
     н.appendChild(ел('span', 'назва', з.текст || ''));
     н.appendChild(ел('div', 'під', 'твоя річ з фото'));
   } else {
@@ -8231,7 +8251,7 @@ function допитОцінкиБлокП(){
   б.appendChild(та);
   const ряд = ел('div', 'ряд'); const кн = ел('button', 'мал', 'Спитати'); кн.type = 'button'; кн.id = 'оц-допит-слати';
   кн.onclick = ()=>допитОцінкиП(); ряд.appendChild(кн); б.appendChild(ряд);
-  б.appendChild(Object.assign(ел('div', 'статус'), {id: 'оц-допит-стан'}));
+  const дс = ел('div', 'статус'); дс.id = 'оц-допит-стан'; б.appendChild(дс);
   return б;
 }
 async function допитОцінкиП(){
