@@ -38,7 +38,8 @@ import річ_з_фото as _РФ
         _ЗП.Поле("question", "her question, in her own words", треба=True),
         _ЗП.Поле("items", "her own items from this conversation, as the code sees them: name, slot, "
                           "colour, formality 1–10; «вердикт_коду» is the code's verdict on the item "
-                          "for her palette and this occasion",
+                          "for her palette and this occasion — a level plus statement codes, each "
+                          "code defined in «означення» right beside them (Ч-1, CLAUDE.md п.12)",
                  "do not contradict «вердикт_коду»",
                  без="She has not shown or described any item yet."),
         _ЗП.Поле("photos", "which attached image (in order) shows which item: [{photo, item}]",
