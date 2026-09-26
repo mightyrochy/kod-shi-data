@@ -778,6 +778,22 @@ function записатиВиклик(н, тип, промпт, р){
     + (р.думка ? ', думка ' + р.думка.length + ' симв.' : '') + ') ──\n'
     + (р.помилка ? 'ПОМИЛКА: ' + р.помилка : р.текст) + '\n', 'utf8');
 }
+/* ЗАЯВА → СЛОВА (Ч-1, п.12): визначення заяви з промпта плюс її `values`. Значення бувають
+   вільним текстом ({free_text}), переліком і парами — заглушка розкриває всі три, щоб на стенді
+   було видно ЗМІСТ, а не «[object Object]». */
+function значеннямСловами(v) {
+  if (v === null || v === undefined) return '';
+  if (Array.isArray(v)) return v.map(значеннямСловами).join(', ');
+  if (typeof v === 'object')
+    return v.free_text !== undefined ? String(v.free_text)
+      : Object.entries(v).map(([к, x]) => к + ' ' + значеннямСловами(x)).join(' ');
+  return String(v);
+}
+function заявоюСловами(з, визн) {
+  const о = (визн[з.code] || з.code).replace(/\s*\(значення:[^)]*\)/, '');
+  const зн = Object.entries(з.values || {}).map(([к, v]) => к + ' ' + значеннямСловами(v));
+  return зн.length ? о + ' — ' + зн.join(', ') : о;
+}
 function відповісти(текст) {
   /* МОВНИЙ ШАР (25.09.2026): заглушка-перекладачка. ВХІД — той самий паспорт, що дає
      заглушка виклику 0, у кодах внутрішньої мови (таблиця з файлу схеми, `x-таблиця`), але
@@ -811,12 +827,7 @@ function відповісти(текст) {
     const визнЗаяв = {};
     for (const [, к, о] of текст.matchAll(/^- ([a-z_]+) — ([^\n]+?)\.$/gm)) визнЗаяв[к] = о;
     const вердикти = (р.item_verdicts || []).map(в => {
-      const тіло = ((в.verdict || {}).statements || []).map(з => {
-        let о = (визнЗаяв[з.code] || з.code).replace(/\s*\(значення:[^)]*\)/, '');
-        const зн = Object.entries(з.values || {}).map(([к, v]) =>
-          к + ' ' + (v && v.free_text ? v.free_text : v));
-        return зн.length ? о + ' — ' + зн.join(', ') : о;
-      }).join('; ');
+      const тіло = ((в.verdict || {}).statements || []).map(з => заявоюСловами(з, визнЗаяв)).join('; ');
       return (в.item ? '«' + в.item.free_text + '» — ' : '') + тіло + '.';
     });
     const рядки = ['Записала.'].concat(додано, вердикти, р.answer ? [р.answer.free_text] : [],
@@ -834,12 +845,7 @@ function відповісти(текст) {
     for (const [, к, о] of текст.matchAll(/^- ([a-z_]+) — ([^\n]+?)\.$/gm)) визн[к] = о;
     const пов = JSON.parse(текст.slice(текст.lastIndexOf('ПОВІДОМЛЕННЯ:') + 'ПОВІДОМЛЕННЯ:'.length));
     const вих = {};
-    for (const п of пов) вих[String(п.н)] = (п.заяви || []).map(з => {
-      let о = визн[з.code] || з.code;
-      о = о.replace(/\s*\(значення:[^)]*\)/, '');
-      const зн = Object.entries(з.values || {});
-      return зн.length ? о + ' — ' + зн.map(([к, v]) => к + ' ' + v).join(', ') : о;
-    }).join('; ') + '.';
+    for (const п of пов) вих[String(п.н)] = (п.заяви || []).map(з => заявоюСловами(з, визн)).join('; ') + '.';
     return {тип: 'мовний шар: повідомлення', текст: JSON.stringify(вих)};
   }
   if (/^Ти — перекладачка в застосунку-стилістці/.test(текст || '')) {
