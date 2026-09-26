@@ -8,18 +8,21 @@
 import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import мовний_шар as М
+# ЦИТАТИ (М-1, В-4): шов бере річ лише з дослівним уривком її слів (`quote`), тож кожна відповідь
+# несе уривок, а шов — її слова ходу; вимір цілісності речі той самий
+СЛОВА = "Можна яскравий верх — куртку чи жакет, не темного кольору"
 ВІДПОВІДІ = [
-    ("рядок 156, MamayLM-12B", {"wants": [{"slot": "top", "item_type": "jacket", "color_class": "bright"}],
-                                "vetoes": [{"slot": "top", "color_name": "dark"}]}),
-    ("та сама межа, ключ з одруком", {"vetoes": [{"slot": "top", "colour": "dark"}]}),
-    ("межа прочитана", {"vetoes": [{"color_class": "dark"}]}),
-    ("колір «невідомо»", {"vetoes": [{"slot": "top", "color_name": "null"}]}),
+    ("рядок 156, MamayLM-12B", {"wants": [{"slot": "top", "item_type": "jacket", "color_class": "bright", "quote": "яскравий верх — куртку"}],
+                                "vetoes": [{"slot": "top", "color_name": "dark", "quote": "не темного кольору"}]}, СЛОВА),
+    ("та сама межа, ключ з одруком", {"vetoes": [{"slot": "top", "colour": "dark", "quote": "не темного кольору"}]}, СЛОВА),
+    ("межа прочитана", {"vetoes": [{"color_class": "dark", "quote": "не темного кольору"}]}, СЛОВА),
+    ("колір «невідомо»", {"vetoes": [{"slot": "top", "color_name": "null", "quote": "не темного кольору"}]}, СЛОВА),
     ("її річ із чужою ознакою (Т-12, 12B)", {"own_items": [{"name": "спідницю", "status": "has", "slot": "bottom",
-                                                            "zone": "belly"}]}),
+                                                            "zone": "belly"}]}, "візьми мою спідницю, живіт не відкривати"),
 ]
-for де, відп in ВІДПОВІДІ:
+for де, відп, слова in ВІДПОВІДІ:
     р = М.прийняти_вхід("scenario", json.dumps(відп, ensure_ascii=False))
-    п = М.паспорт_з_шару(р["внутрішня"], {})["паспорт"]
+    п = М.паспорт_з_шару(р["внутрішня"], {}, слова_ходу=слова)["паспорт"]
     межі = {к: v for к, v in (п.get("вето_тверде") or {}).items() if v and к != "без_читача"}
     print("── %s\n   ВІДПОВІДЬ: %s\n   ВНУТРІШНЯ: %s\n   незнайомі: %s\n   МЕЖІ ЯДРА: %s\n   БАЖАННЯ: %s" % (
         де, json.dumps(відп, ensure_ascii=False), json.dumps(р["внутрішня"], ensure_ascii=False),
