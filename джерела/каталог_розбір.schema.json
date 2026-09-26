@@ -1,0 +1,712 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "lyusterko-catalog-parse-v1",
+ "title": "Розбір каталогу Люстерка",
+ "description": "Поля, якими українська мовна модель описує річ каталогу для коду: коди із закритих переліків або \"unknown\" (опори в тексті крамниці нема — вигадувати не можна). Переліки slot, item_type, fabric, material, pattern, color_name, length, shaft — ті самі, що в `внутрішня_мова.ТАБЛИЦЯ`; cut — `силует_крої.КРОЇ`. Породжує файл `каталог_розбір.схема()`; вхід моделі — `каталог_розбір.вхід()`.",
+ "x-форми-unknown": [
+  "unknown",
+  "null",
+  "none",
+  "невідомо"
+ ],
+ "x-звідки-код-бере-сьогодні": {
+  "slot": "фід_слот.слот (СЛОТ_КЛЮЧІ)",
+  "item_type": "фід_слот.тип_речі (ТИП_КЛЮЧІ)",
+  "set_kind": "фід_слот.тип_набору",
+  "set_parts": "коду нема: лише регулярки верх/низ",
+  "fabric": "verify.тканина_зі_слова (СЛОВО_ТКАНИНИ)",
+  "material": "verify.тканина_зі_слова.рід",
+  "cut": "фід_атрибути.крій_з_силуету / verify.крій_зі_слова",
+  "length": "фід_атрибути.довжина_речі (ДОВЖИНА_КЛЮЧІ_ОДЯГ)",
+  "sleeve": "готове поле збагачення «рукав_рівень»",
+  "neckline": "готове поле «виріз_тип»",
+  "vamp": "фід_взуття.ВИРІЗ_ЗА_ТИПОМ",
+  "shaft": "фід_взуття.ХАЛЯВА_ЗА_ТИПОМ",
+  "heel": "каблук.каблук (СЛОВА, ПЛОСКІ)",
+  "metal": "фід_атрибути.метал (_МЕТАЛ_СЛОВНИК)",
+  "metal_where": "коду нема",
+  "color_main": "verify.назва_кольору (ЛЕКСИКОН, ФОРМИ)",
+  "color_extra": "фід_розбір._СЕП_КОЛЬОРУ (решта слів поля)",
+  "color_why": "коду нема",
+  "color_from": "фід_розбір: param картки, інакше назва",
+  "pattern": "verify.клас_мотиву",
+  "decor": "траурний_регістр.святкова_оздоба",
+  "veto": "паспорт_нагоди.ВЕТО_СЛОВА (основи слів)"
+ },
+ "$defs": {
+  "catalog_parse": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id"
+   ],
+   "description": "розбір однієї речі каталогу мовною моделлю",
+   "properties": {
+    "id": {
+     "type": "string",
+     "description": "id речі в каталозі; його дописує прогін, у моделі його не питають — вона не має чого echo-їти"
+    },
+    "slot": {
+     "description": "місце речі в образі",
+     "enum": [
+      "top",
+      "bottom",
+      "dress",
+      "set",
+      "outerwear",
+      "shoes",
+      "bag",
+      "scarf",
+      "headwear",
+      "belt",
+      "tights",
+      "socks",
+      "jewelry",
+      "earrings",
+      "collar_necklace",
+      "necklace",
+      "brooch",
+      "bracelet",
+      "ring",
+      "glasses",
+      "unknown"
+     ]
+    },
+    "item_type": {
+     "description": "тип речі",
+     "enum": [
+      "evening_dress",
+      "cocktail_dress",
+      "suit",
+      "sheath_dress",
+      "sundress",
+      "blazer",
+      "over_knee_boots",
+      "chelsea_boots",
+      "ugg_boots",
+      "ballet_flats",
+      "mules",
+      "espadrilles",
+      "pumps",
+      "dress_shoes",
+      "moccasins",
+      "loafers",
+      "sneakers",
+      "plimsolls",
+      "ankle_boots",
+      "boots",
+      "heeled_sandals",
+      "sandals",
+      "clutch",
+      "backpack",
+      "tote",
+      "baguette_bag",
+      "hobo_bag",
+      "crossbody_bag",
+      "bucket_bag",
+      "belt_bag",
+      "briefcase",
+      "saddle_bag",
+      "hoodie",
+      "sportswear",
+      "loungewear",
+      "leggings",
+      "jeans",
+      "t_shirt",
+      "shirt",
+      "blouse",
+      "knitwear",
+      "cardigan",
+      "sweater",
+      "shorts",
+      "jumpsuit",
+      "skirt",
+      "trousers",
+      "coat",
+      "trench_coat",
+      "jacket",
+      "vest",
+      "top_garment",
+      "stole",
+      "kerchief",
+      "twilly",
+      "snood",
+      "shawl",
+      "bactus_scarf",
+      "ring",
+      "headband",
+      "bow",
+      "hair_clip",
+      "hair_tie",
+      "scarf_generic",
+      "jewelry_generic",
+      "bag_generic",
+      "unknown"
+     ]
+    },
+    "set_kind": {
+     "description": "чи річ продають набором і яким",
+     "enum": [
+      "suit",
+      "casual_suit",
+      "set",
+      "jewelry_set",
+      "not_a_set",
+      "unknown"
+     ]
+    },
+    "set_parts": {
+     "type": "array",
+     "description": "частини набору",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "slot": {
+        "description": "місце цієї частини набору",
+        "enum": [
+         "top",
+         "bottom",
+         "dress",
+         "set",
+         "outerwear",
+         "shoes",
+         "bag",
+         "scarf",
+         "headwear",
+         "belt",
+         "tights",
+         "socks",
+         "jewelry",
+         "earrings",
+         "collar_necklace",
+         "necklace",
+         "brooch",
+         "bracelet",
+         "ring",
+         "glasses",
+         "unknown"
+        ]
+       },
+       "item_type": {
+        "description": "тип цієї частини набору",
+        "enum": [
+         "evening_dress",
+         "cocktail_dress",
+         "suit",
+         "sheath_dress",
+         "sundress",
+         "blazer",
+         "over_knee_boots",
+         "chelsea_boots",
+         "ugg_boots",
+         "ballet_flats",
+         "mules",
+         "espadrilles",
+         "pumps",
+         "dress_shoes",
+         "moccasins",
+         "loafers",
+         "sneakers",
+         "plimsolls",
+         "ankle_boots",
+         "boots",
+         "heeled_sandals",
+         "sandals",
+         "clutch",
+         "backpack",
+         "tote",
+         "baguette_bag",
+         "hobo_bag",
+         "crossbody_bag",
+         "bucket_bag",
+         "belt_bag",
+         "briefcase",
+         "saddle_bag",
+         "hoodie",
+         "sportswear",
+         "loungewear",
+         "leggings",
+         "jeans",
+         "t_shirt",
+         "shirt",
+         "blouse",
+         "knitwear",
+         "cardigan",
+         "sweater",
+         "shorts",
+         "jumpsuit",
+         "skirt",
+         "trousers",
+         "coat",
+         "trench_coat",
+         "jacket",
+         "vest",
+         "top_garment",
+         "stole",
+         "kerchief",
+         "twilly",
+         "snood",
+         "shawl",
+         "bactus_scarf",
+         "ring",
+         "headband",
+         "bow",
+         "hair_clip",
+         "hair_tie",
+         "scarf_generic",
+         "jewelry_generic",
+         "bag_generic",
+         "unknown"
+        ]
+       }
+      }
+     }
+    },
+    "fabric": {
+     "description": "тканина речі",
+     "enum": [
+      "wool",
+      "cashmere",
+      "mohair",
+      "angora",
+      "alpaca",
+      "cotton",
+      "viscose",
+      "tencel",
+      "lyocell",
+      "modal",
+      "linen",
+      "silk",
+      "polyester",
+      "polyamide",
+      "nylon",
+      "acrylic",
+      "elastane",
+      "stretch",
+      "denim",
+      "satin",
+      "atlas",
+      "chiffon",
+      "muslin",
+      "batiste",
+      "tweed",
+      "boucle",
+      "corduroy",
+      "velvet",
+      "jersey",
+      "knitted",
+      "suede",
+      "faux_leather",
+      "leather",
+      "patent_leather",
+      "nubuck",
+      "velour",
+      "lace",
+      "guipure",
+      "openwork",
+      "unknown"
+     ]
+    },
+    "material": {
+     "description": "матеріал верху взуття, сумки чи пояса",
+     "enum": [
+      "leather",
+      "suede",
+      "faux_leather",
+      "patent_leather",
+      "velour",
+      "nubuck",
+      "unknown"
+     ]
+    },
+    "cut": {
+     "description": "крій",
+     "enum": [
+      "skinny",
+      "straight",
+      "tapered",
+      "wide",
+      "flared",
+      "culottes",
+      "pencil",
+      "a-line",
+      "full",
+      "pleated",
+      "bias-slip",
+      "bodycon",
+      "fitted",
+      "regular",
+      "relaxed",
+      "oversized",
+      "belted",
+      "wrap",
+      "peplum",
+      "shift",
+      "sheath",
+      "empire",
+      "double-breasted",
+      "unknown"
+     ]
+    },
+    "length": {
+     "description": "довжина",
+     "enum": [
+      "mini",
+      "mid_thigh",
+      "knee",
+      "midi",
+      "maxi",
+      "waist",
+      "unknown"
+     ]
+    },
+    "sleeve": {
+     "description": "рукав",
+     "enum": [
+      "sleeveless",
+      "straps",
+      "cap",
+      "short",
+      "elbow",
+      "three_quarter",
+      "long",
+      "unknown"
+     ]
+    },
+    "neckline": {
+     "description": "виріз горловини",
+     "enum": [
+      "round",
+      "v_neck",
+      "deep_v",
+      "square",
+      "boat",
+      "halter",
+      "one_shoulder",
+      "off_shoulder",
+      "strapless",
+      "turtleneck",
+      "stand_collar",
+      "shirt_collar",
+      "cowl",
+      "unknown"
+     ]
+    },
+    "vamp": {
+     "description": "виріз взуття на стопі",
+     "enum": [
+      "low",
+      "high",
+      "unknown"
+     ]
+    },
+    "shaft": {
+     "description": "докуди дістає халява",
+     "enum": [
+      "ankle",
+      "calf",
+      "knee",
+      "thigh",
+      "unknown"
+     ]
+    },
+    "heel": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "present": {
+       "description": "чи є підбори",
+       "enum": [
+        "yes",
+        "no",
+        "unknown"
+       ]
+      },
+      "shape": {
+       "description": "форма підборів",
+       "enum": [
+        "thin",
+        "block",
+        "wedge",
+        "platform",
+        "unknown"
+       ]
+      },
+      "height": {
+       "description": "висота підборів",
+       "enum": [
+        "flat",
+        "low",
+        "mid",
+        "high",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "metal": {
+     "description": "метал речі",
+     "enum": [
+      "gold",
+      "white_gold",
+      "silver",
+      "steel",
+      "brass",
+      "bronze",
+      "copper",
+      "platinum",
+      "none",
+      "unknown"
+     ]
+    },
+    "metal_where": {
+     "description": "метал — тіло речі чи лише її фурнітура",
+     "enum": [
+      "body",
+      "hardware",
+      "both",
+      "none",
+      "unknown"
+     ]
+    },
+    "color_main": {
+     "description": "колір самої речі",
+     "enum": [
+      "black",
+      "white",
+      "grey",
+      "graphite",
+      "beige",
+      "cream",
+      "milky",
+      "sand",
+      "taupe",
+      "camel",
+      "latte",
+      "cocoa",
+      "brown",
+      "chocolate",
+      "red",
+      "burgundy",
+      "cherry",
+      "raspberry",
+      "brick",
+      "terracotta",
+      "ginger",
+      "coral",
+      "orange",
+      "peach",
+      "yellow",
+      "lemon",
+      "mustard",
+      "golden",
+      "khaki",
+      "olive",
+      "green",
+      "pine_green",
+      "mint",
+      "turquoise",
+      "petrol",
+      "light_blue",
+      "denim_blue",
+      "blue",
+      "navy",
+      "lilac",
+      "purple",
+      "plum",
+      "magenta",
+      "fuchsia",
+      "pink",
+      "rose",
+      "powder_pink",
+      "silvery",
+      "pearly",
+      "unknown"
+     ]
+    },
+    "color_extra": {
+     "type": "array",
+     "items": {
+      "description": "інші кольори, названі крамницею",
+      "enum": [
+       "black",
+       "white",
+       "grey",
+       "graphite",
+       "beige",
+       "cream",
+       "milky",
+       "sand",
+       "taupe",
+       "camel",
+       "latte",
+       "cocoa",
+       "brown",
+       "chocolate",
+       "red",
+       "burgundy",
+       "cherry",
+       "raspberry",
+       "brick",
+       "terracotta",
+       "ginger",
+       "coral",
+       "orange",
+       "peach",
+       "yellow",
+       "lemon",
+       "mustard",
+       "golden",
+       "khaki",
+       "olive",
+       "green",
+       "pine_green",
+       "mint",
+       "turquoise",
+       "petrol",
+       "light_blue",
+       "denim_blue",
+       "blue",
+       "navy",
+       "lilac",
+       "purple",
+       "plum",
+       "magenta",
+       "fuchsia",
+       "pink",
+       "rose",
+       "powder_pink",
+       "silvery",
+       "pearly",
+       "unknown"
+      ]
+     }
+    },
+    "color_why": {
+     "description": "чому кольорів кілька",
+     "enum": [
+      "one_color",
+      "two_colors",
+      "print_colors",
+      "trim",
+      "hardware",
+      "lining",
+      "variants",
+      "unknown"
+     ]
+    },
+    "color_from": {
+     "description": "де в тексті названо колір",
+     "enum": [
+      "param",
+      "name",
+      "description",
+      "several",
+      "not_stated",
+      "unknown"
+     ]
+    },
+    "pattern": {
+     "description": "візерунок",
+     "enum": [
+      "solid",
+      "polka_dot",
+      "floral",
+      "stripes",
+      "check",
+      "animal_print",
+      "camouflage",
+      "geometric",
+      "abstract",
+      "lace_motif",
+      "embroidery",
+      "print_generic",
+      "unknown"
+     ]
+    },
+    "decor": {
+     "type": "array",
+     "items": {
+      "description": "оздоба",
+      "enum": [
+       "sequins",
+       "rhinestones",
+       "beads",
+       "pearls",
+       "tulle",
+       "feathers",
+       "lurex",
+       "glitter",
+       "metallic",
+       "embroidery",
+       "lace_trim",
+       "ruffles",
+       "bow",
+       "fringe",
+       "chain",
+       "studs",
+       "cutouts",
+       "none",
+       "unknown"
+      ]
+     }
+    },
+    "veto": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "stripes": {
+       "description": "смужка на речі",
+       "enum": [
+        "yes",
+        "no",
+        "unknown"
+       ]
+      },
+      "big_print": {
+       "description": "великий принт на речі",
+       "enum": [
+        "yes",
+        "no",
+        "unknown"
+       ]
+      },
+      "print": {
+       "description": "будь-який принт на речі",
+       "enum": [
+        "yes",
+        "no",
+        "unknown"
+       ]
+      },
+      "shine": {
+       "description": "блиск тканини чи оздоби",
+       "enum": [
+        "yes",
+        "no",
+        "unknown"
+       ]
+      },
+      "oversize": {
+       "description": "оверсайзний об'єм",
+       "enum": [
+        "yes",
+        "no",
+        "unknown"
+       ]
+      },
+      "tight": {
+       "description": "обтислий крій",
+       "enum": [
+        "yes",
+        "no",
+        "unknown"
+       ]
+      }
+     }
+    }
+   }
+  }
+ }
+}
