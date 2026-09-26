@@ -204,6 +204,8 @@ def схема():
 # кількох слів і колір у назві товару; metal_where — «золотий» тілом чи фурнітурою; set_parts —
 # частини комплекту, яких код не витягує.
 _ПРАВИЛА_UK = (
+    "«опис» крамниці може нести її блоки про ІНШІ речі й умови (доставка, оплата, схожі товари з "
+    "цінами) — розбирай лише ту річ, яку названо в «назва».",
     "Значення кожного поля — код із переліку цього поля у «схема_відповіді», малими латинськими "
     "літерами; слів людини й кодів поза переліком не пиши.",
     "Поле, про яке текст крамниці не каже, — «unknown»; не добирай код із того, якою річ такого "
@@ -218,6 +220,8 @@ _ПРАВИЛА_UK = (
 )
 _ПРАВИЛА_EN = (
     "Read only what the shop wrote about this item: name, category, description, card fields.",
+    "The shop's «description» may carry blocks about OTHER items and about terms (delivery, "
+    "payment, similar items with prices) — parse only the item named in «name».",
     "Every value is a code from that field's list in «схема_відповіді», lowercase latin; never a "
     "human word, never a code outside the list.",
     "A field the shop text does not speak about is «unknown»; do not infer a code from what items "
