@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+"""Розбір 3/8: легенда реєстрів у ПАКЕТ_V1 доїжджає порожньою.
+
+`пакет_моделі.пакет_для_моделі` кладе в пакет `реєстри_ід` = {назва реєстру: ІД
+ПРАВИЛА корпусу} — щоб мітка `реєстр` речі щось означала. Далі весь пакет іде
+через `міст_вхід._без_ід_глибоко` (ID правил до моделі не їдуть), і саме ці
+значення вирізаються. Проба друкує, що лежить у реєстри_ід у справжньому запиті
+й що мав би там лежати за кодом.
+Прогін: python3 проби/шлях_пул_реєстри_ід.py
+"""
+import json, os, sys
+ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ТУТ)
+os.chdir(ТУТ)
+import реєстри as Р
+from міст_вхід import _без_ід_глибоко
+ФАЙЛ = os.path.join(os.path.dirname(ТУТ), "аудит", "тести", "власник_2026-09-25",
+                    "verdykty-0phxvk-2026-09-25-2012.json")
+пак = {}
+for пр in json.load(open(ФАЙЛ, encoding="utf-8"))["прогони"]:
+    for в in пр["вердикти"]:
+        for c in ((в.get("етапи") or {}).get("виклики") or []):
+            т = (c.get("запит") or {}).get("текст") or "" if isinstance(c.get("запит"), dict) else ""
+            if т.startswith("{") and c.get("крок") == "складання" and json.loads(т).get("пул"):
+                пак = json.loads(т)
+ід = пак.get("реєстри_ід") or {}
+речей = sum(len(v) for v in (пак.get("пул") or {}).values())
+з_реєстром = sum(1 for с in (пак.get("пул") or {}) for r in пак["пул"][с] if r.get("реєстр"))
+print("у запиті складання: речей %d, з міткою «реєстр» %d" % (речей, з_реєстром))
+print("реєстри_ід у запиті (%d ключів): %s" % (len(ід), json.dumps(ід, ensure_ascii=False)))
+print("порожніх значень: %d із %d" % (sum(1 for v in ід.values() if not str(v).strip()), len(ід)))
+мало_б = {д["назва"].split(" / ")[0]: д.get("ід") for д in Р.РЕЄСТРИ.values()
+          if д["назва"].split(" / ")[0] in ід}
+print("що кладе код до чистки: %s" % json.dumps(мало_б, ensure_ascii=False))
+print("після _без_ід_глибоко:  %s" % json.dumps(_без_ід_глибоко(мало_б), ensure_ascii=False))
+print("символів пакета на цю легенду: %d" % len(json.dumps(ід, ensure_ascii=False)))
