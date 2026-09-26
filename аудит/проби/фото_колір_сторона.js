@@ -9,10 +9,24 @@ const path = require('path');
 const {chromium} = require(path.join(__dirname, '..', '..', 'джерела', 'node_modules', 'playwright'));
 const fs = require('fs');
 const ТЕКА = path.join(__dirname, '..', '..', 'джерела', 'аудит', 'фото_v2');
+/* БІНАРНИК БРАУЗЕРА: `PW`/`CHROMIUM`, а інакше — той, що вже лежить у образі
+   (`PLAYWRIGHT_BROWSERS_PATH`). Без цього проба падала там, де Chromium є, але
+   версія його теки не та, якої чекає свіжий playwright. */
+function хром(){
+  for (const ш of [process.env.PW, process.env.CHROMIUM]) if (ш && fs.existsSync(ш)) return ш;
+  const база = process.env.PLAYWRIGHT_BROWSERS_PATH || '/opt/pw-browsers';
+  try{
+    for (const т of fs.readdirSync(база).filter(x => /^chromium-\d+$/.test(x)).sort().reverse()){
+      const ш = path.join(база, т, 'chrome-linux', 'chrome');
+      if (fs.existsSync(ш)) return ш;
+    }
+  }catch(_){ }
+  return null;
+}
 /* 0 — кадр як є (база порівняння); далі сторони, якими показ шле фото у виклики */
 const СТОРОНИ = [0, 1024, 768, 512, 384, 256];
 (async () => {
-  const бр = await chromium.launch(process.env.PW ? {executablePath: process.env.PW} : {});
+  const бр = await chromium.launch(хром() ? {executablePath: хром()} : {});
   const ст = await бр.newPage();
   await ст.setContent('<html><body></body></html>');
   const файли = process.argv.slice(2).length ? process.argv.slice(2)
