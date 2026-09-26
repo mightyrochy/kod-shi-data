@@ -556,7 +556,7 @@ def вітрина(d, ід):
     р = _json.loads(_МОП.показ(dict(каталог=d["каталог"], кеш_кольорів=d.get("кеш_кольорів"),
                                     речі=list(ід))))
     return {х.get("id"): {к: х.get(к) for к in ("id", "назва", "назва_крамниці", "слот", "ціна", "урл",
-                                               "фото", "крамниця", "колір")
+                                               "фото", "фото_усі", "крамниця", "колір")
                           if х.get(к) not in (None, "", [])}
             for х in (р if isinstance(р, list) else []) if isinstance(х, dict) and х.get("id")}
 
@@ -705,8 +705,6 @@ def _сцена_для_моделі(суд_):
         _ЗП.Поле("changes", "changes the code has verified: each replaces one outfit item with her "
                             "alternative or a shop item and lowers the total weight of findings"),
         _ЗП.Поле("unknown", "what the code could not check and what input it lacked"),
-        _ЗП.Поле("previous", "your previous answer to her about this outfit and her new question",
-                 як="answer her new question; keep to what you said unless the check contradicts it"),
     ),
     правила=(
         "\"answer\": answer her question first and directly, in one to three sentences.",
@@ -763,6 +761,43 @@ def перевірка_для_моделі(суд_):
                               "node": с.get("node")}.items() if v not in (None, "", [])}
 
 
+# ДОПИТ ПІД КАРТКОЮ (власник 26.09: «Під карткою можна допитати»). Вхід — той самий, що в
+# `ОЦІНКА`, плюс її попередня відповідь і попередні питання; відповідь — одне поле «answer».
+# Сторожа тут нема не з лінощів: тверджень кодами допит не несе, а слів код не читає (п.12);
+# суд коду лежить у вході так само, як у першому виклику.
+ДОПИТ = _ЗП.Оголошення(
+    задача="оцінка_допит",
+    роль=ОЦІНКА.роль,
+    вхід=ОЦІНКА.вхід[:1] + (
+        _ЗП.Поле("previous", "what you already told her about this outfit, and her earlier questions "
+                             "with your answers", треба=True),) + ОЦІНКА.вхід[1:],
+    правила=(
+        "\"answer\": answer her new question (\"question\") directly, in one to four sentences.",
+        "Keep to what you already told her unless the check contradicts it.",
+        "Claim only what the check does not contradict; suggest replacing an item only with ids from "
+        "\"changes\" and name the item in words.",
+    ),
+    вихід="OUTFIT_FOLLOWUP_V1",
+    скелет={"answer": "<the answer to her new question>"},
+    межі=ОЦІНКА.межі,
+    мова_промпту="en",
+)
+
+
+def промпт_допиту(суд_, питання, попередня, мова_тексту=None):
+    """Промпт задачі `ДОПИТ` рядком: суд той самий, питання — нове, попередня відповідь — у вході."""
+    дані = дані_оцінки(суд_, питання)
+    дані["previous"] = попередня or {}
+    return _json.dumps(_ЗП.зібрати(ДОПИТ, дані, мова_тексту=мова_тексту), ensure_ascii=False, default=str)
+
+
+def прийняти_допит(відповідь):
+    """Відповідь задачі `ДОПИТ` → {відповідь, причина}: текст лише з поля «answer»."""
+    об, причина = _ПР.розбір(відповідь)
+    т = _текст(об.get("answer")) if isinstance(об, dict) else ""
+    return dict(відповідь=т, причина=(None if т else (причина or "нема поля «answer»")))
+
+
 def невідоме_для_моделі(суд_):
     """«Без входу» для моделі — те, що стосується ЦЬОГО образу: входи сцени й виміру, пункти
     чеклістів без входу і питання суду про її речі. Питання про образ узагалі без речей (розмір
@@ -781,7 +816,7 @@ def невідоме_для_моделі(суд_):
     return вих
 
 
-def дані_оцінки(суд_, питання=None, попередня=None):
+def дані_оцінки(суд_, питання=None):
     """Суд коду + її питання → дані задачі `ОЦІНКА` (внутрішня мова)."""
     нагода, погода = _сцена_для_моделі(суд_)
     дані = {
@@ -798,14 +833,12 @@ def дані_оцінки(суд_, питання=None, попередня=None)
         дані["occasion"] = нагода
     if погода:
         дані["weather"] = погода
-    if попередня:
-        дані["previous"] = попередня
     return дані
 
 
-def промпт_оцінки(суд_, питання=None, мова_тексту=None, попередня=None):
+def промпт_оцінки(суд_, питання=None, мова_тексту=None):
     """Промпт задачі `ОЦІНКА` рядком (англійський шаблон збирача)."""
-    return _json.dumps(_ЗП.зібрати(ОЦІНКА, дані_оцінки(суд_, питання, попередня),
+    return _json.dumps(_ЗП.зібрати(ОЦІНКА, дані_оцінки(суд_, питання),
                                    мова_тексту=мова_тексту), ensure_ascii=False, default=str)
 
 
