@@ -272,6 +272,10 @@
       "heels",
       "unknown"
      ]
+    },
+    "quote": {
+     "type": "string",
+     "description": "дослівний уривок її слів про цю річ"
     }
    }
   },
@@ -519,6 +523,10 @@
       "pearly",
       "unknown"
      ]
+    },
+    "quote": {
+     "type": "string",
+     "description": "дослівний уривок її слів про цю річ"
     }
    },
    "required": [
@@ -897,6 +905,60 @@
       }
      ],
      "description": "питання, яке вона ставить стилістці"
+    },
+    "event_formality": {
+     "oneOf": [
+      {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "from",
+        "to"
+       ],
+       "properties": {
+        "from": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 10
+        },
+        "to": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 10
+        }
+       }
+      },
+      {
+       "const": "unknown"
+      }
+     ],
+     "description": "звичний рівень ошатності події, яку вона назвала (event), коли її не позначає жоден код occasion чи place: шкала та сама, що в formality"
+    },
+    "rest": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/free_text"
+      },
+      {
+       "const": "unknown"
+      }
+     ],
+     "description": "решта її слів цього ходу, що не лягла в жодне поле вище, — дослівно, її мовою"
+    },
+    "question_about": {
+     "description": "про що її питання: app — про застосунок (екрани, кнопки, кроки, що робити далі); look — про її образ, речі, фото, стиль чи кольори",
+     "enum": [
+      "app",
+      "look",
+      "unknown"
+     ]
+    },
+    "quotes": {
+     "description": "для кожного поля з кодом чи числом — дослівний уривок її слів, на якому воно стоїть: {\"<поле>\": \"<уривок>\"}",
+     "type": "object",
+     "additionalProperties": {
+      "type": "string"
+     }
     }
    }
   },
@@ -1370,10 +1432,32 @@
      "type": "object"
     },
     "code_lines": {
-     "description": "рядки коду для неї: про її річ, про додане до сценарію",
+     "description": "рядки коду для неї про її річ з фото (вердикт коду)",
      "type": "array",
      "items": {
       "$ref": "#/$defs/free_text"
+     }
+    },
+    "added": {
+     "description": "що код додав до сценарію з її слів, сказаних поза екраном сценарію: own_items — її речі (її словами), які стоять у кожному образі; wish — сказане стало побажанням до образів; build_on: scenario_screen — образи з цим збираються кнопкою «Зібрати образи» на екрані «Сценарій»",
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "own_items": {
+       "description": "її речі її словами",
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/free_text"
+       }
+      },
+      "wish": {
+       "type": "boolean"
+      },
+      "build_on": {
+       "enum": [
+        "scenario_screen"
+       ]
+      }
      }
     },
     "answer": {
@@ -1834,6 +1918,10 @@
   },
   "required": {
    "occasion": "нагода"
+  },
+  "question_about": {
+   "app": "app",
+   "look": "look"
   },
   "verdict_reason": {
    "color_not_mine": "колір не мій",
