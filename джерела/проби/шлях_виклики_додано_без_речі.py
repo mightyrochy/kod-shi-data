@@ -8,14 +8,15 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bridge as B
 вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), варіантів=10, ремонт_варіантів=5, бюджет_символів=120000, без_фото=1)
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["руки"]["1"])["пул"]
+пул = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["пакети"]["1"]["пул"]
 н = lambda с, k: пул[с][k % len(пул[с])]["н"]
 від = lambda т, **д: json.loads(B.виклик("від_моделі", json.dumps(dict(вх, текст_моделі=т, **д), ensure_ascii=False)))
 образи = [dict(ід="о%d" % (і + 1), підпис="беж", день="Офіс.", речі=[н(с, і) for с in ("верх", "низ", "сумка", "пояс")]) for і in range(5)]
 в1 = від(json.dumps(dict(версія="1", образи=образи), ensure_ascii=False))
 пр = json.loads(в1["промпт_ремонту"])
-бл = пр["вердикт"][0]["структура"]["блокери"]
-print("ремонт бачить: блокери о1 %s · поле «ід» у блокера: %s · у вітрині взуття %d" % ([б["код"] for б in бл], ["ід" in б for б in бл], len(пр["вітрина"].get("взуття") or [])))
+бл = пр["verdict"][0]["structure"]["blockers"]   # П-2: англійський дріт; вітрина — один перелік без слота
+_вз = [р for р in (пр.get("showcase") or []) if р.get("heel")]   # взуття — речі з віссю каблука
+print("ремонт бачить: блокери о1 %s · поле «id» у блокера: %s · у вітрині взуття %d" % ([б["code"] for б in бл], ["id" in б for б in бл], len(_вз)))
 for о in образи:
     о["день"] = "Додано взуття для ходи."
     о["виконано"] = [dict(знахідка="нема_взуття", дія="виправлено", чому="Додано взуття: лофери"),

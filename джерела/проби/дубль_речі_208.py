@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bridge as B
 вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), варіантів=10, ремонт_варіантів=5,
           бюджет_символів=120000, без_фото=1)
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["руки"]["1"])["пул"]
+пул = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["пакети"]["1"]["пул"]
 н = lambda с, k=0: пул[с][k]["н"]
 д = lambda о: json.dumps(dict(версія="1", образи=[dict(ід="о1", речі=о, день="офіс"),
                                                  dict(ід="о2", речі=[н("сукня"), н("взуття", 1), н("сумка", 1)], день="офіс")]), ensure_ascii=False)

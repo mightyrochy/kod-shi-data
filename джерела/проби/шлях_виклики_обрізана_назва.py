@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bridge as B
 вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), варіантів=10, ремонт_варіантів=5, бюджет_символів=120000, без_фото=1)
 з = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
-пул = json.loads(з["руки"]["1"])["пул"]
+пул = з["пакети"]["1"]["пул"]
 н = lambda с, k: пул[с][k % len(пул[с])]["н"]
 довга = max(пул["верх"], key=lambda r: len(r.get("назва") or ""))
 образи = [dict(ід="о%d" % (і + 1), підпис="беж", день="Офіс.", речі=[довга["н"] if (і == 0) else н("верх", і)] + [н(с, і) for с in ("низ", "взуття", "сумка", "пояс")]) for і in range(5)]

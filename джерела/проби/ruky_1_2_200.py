@@ -14,7 +14,7 @@ for сід in (1, 14, 29, 30, 33):
     r = json.loads(B.виклик("запити", json.dumps(dict(вх, сід=сід), ensure_ascii=False)))
     s = json.dumps(r, ensure_ascii=False); i = s.find('"контроль"')
     кон = json.loads(s[i + 11: s.find("}", i) + 1])
-    пул = [sum(len(v) for v in json.loads(r["руки"][h])["пул"].values()) for h in ("1", "2")]
+    пул = [sum(len(v) for v in r["пакети"][h]["пул"].values()) for h in ("1", "2")]
     print("(Б) сід %2d · %s · пул р1 %d / р2 %d · спільних %s · рядків брифа різних %s із %s"
           % (сід, r["поломка"]["що_змінено"], *пул, кон["пул_спільних"], кон["різних"], кон["різних"] + кон["сліпих"]))
 кат = {c["id"]: c for c in B.каталог_останнього_пакета()}

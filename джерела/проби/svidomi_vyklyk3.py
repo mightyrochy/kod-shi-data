@@ -13,7 +13,7 @@ import bridge as B, feed as Ф
 d0 = dict(вх, каталог=Ф.каталог_на_диску("каталог_brief.xml"), варіантів=10, ремонт_варіантів=5,
           кеш_кольорів=os.path.join(tempfile.gettempdir(), "кеш_проби_свід3.json"))
 міст = lambda **kw: json.loads(B.виклик("від_моделі", json.dumps(dict(d0, **kw), ensure_ascii=False)))
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["руки"]["1"])["пул"]
+пул = json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["пакети"]["1"]["пул"]
 н = lambda сл, i=0: пул[сл][i % len(пул[сл])]["н"]
 склад = [н("сукня", 3), н("взуття"), н("сумка"), н("каблучка")]
 

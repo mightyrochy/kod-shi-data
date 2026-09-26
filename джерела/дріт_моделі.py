@@ -84,10 +84,10 @@ _ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "
 
 
 def _число(v):
-    """3.0 → 3; інше число — округлене до десятих; не число — як є."""
+    """3.0 → 3; інше число — як є (до трьох знаків: WHR 0.747 — факт, а не шум); не число — як є."""
     if isinstance(v, bool) or not isinstance(v, (int, float)):
         return v
-    return int(v) if float(v).is_integer() else round(float(v), 1)
+    return int(v) if float(v).is_integer() else round(float(v), 3)
 
 
 def код(поле, v):
