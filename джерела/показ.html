@@ -4986,8 +4986,10 @@ function розібратиКолір(текст){
      (`міст_вхід.ПРИЧИНИ_ПОРТРЕТА`), речення з неї пише мовна модель (`застосуватиКольори`) */
   const о = _jsonКольоруП(сире);
   if (о && ['photo', 'skin', 'hair', 'eyes'].some(к => к in о)){
-    const фото = String(о.photo == null ? 'usable' : о.photo).trim().toLowerCase();
-    if (!/^usable\b/.test(фото)){ из.відмова = фото || 'unknown'; return из; }
+    /* перше слово-код: модель інколи переписує й підпис скелета («… — usable, or why it is not») */
+    const фото = (о.photo == null || о.photo === true) ? 'usable'
+      : ((String(о.photo).trim().toLowerCase().match(/^[a-z_]+/) || [''])[0] || 'unknown');
+    if (фото !== 'usable'){ из.відмова = фото; return из; }
     const hexи = v => (Array.isArray(v) ? v : [v]).map(_hexКольоруП).filter(Boolean);
     из.шкіра = hexи(о.skin); из.волосся = hexи(о.hair);
     из.очі = hexи(о.eyes)[0] || null; из.кільце = hexи(о.limbal_ring)[0] || null;

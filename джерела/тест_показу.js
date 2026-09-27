@@ -1426,6 +1426,9 @@ function мостПриміркиЗаглушка(w){
          && a2.волосся[0] === "#4a4644" && a2.кільце === null && a2.освітлення === null, a2);
     const e = р('{"photo": "portrait_face_small", "skin": ["#f2d6c4"]}');
     тест("відмова — код причини; кольорів із відмови не беремо", e.відмова === "portrait_face_small" && e.шкіра.length === 0, e);
+    const e2 = р('{"photo": "portrait_eyes_hidden — usable, or why it is not"}'), e3 = р('{"photo": true, "skin": ["#f2d6c4"], "hair": ["#4a4644"], "eyes": "#6b8cae"}');
+    тест("код причини — перше слово поля (підпис скелета не заважає); photo: true — придатне",
+         e2.відмова === "portrait_eyes_hidden" && !e3.відмова && e3.шкіра[0] === "#f2d6c4", [e2, e3]);
     const b = р("шкіра 1 #f2d6c4\nшкіра 2 #efd0bc\nволосся 1 #4a4644\nочі #6b8cae");
     тест("запасний шлях: рядки з мітками", b.шкіра.length === 2 && b.волосся.length === 1 && b.очі === "#6b8cae" && !b.відмова, b);
     const b2 = р("skin 1 #f2d6c4\nskin 2 #efd0bc\nhair #4a4644\neyes #6b8cae\nring #5f6259");
