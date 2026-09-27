@@ -420,6 +420,8 @@ def _РЕ_кандидата(r):
 #     несе, не замовляється й називається (17.09.2026); пояснення — окремим викликом опису;
 #   · «her_items» — рядок 152: її річ у кожному образі (`річ_з_фото.закріпити_в_образі`); що
 #     джинси — низ, модель знає сама (власник 24–25.09), тож слота її речі промпт не називає;
+#   · «softening» — без замків (п.5, 21.09): її річ, що личить гірше, лишається, а решта образу
+#     пом'якшує (`річ_з_фото.пом_якшення`); доти — реченням `річ_з_фото.рядок_пакета`;
 #   · «she_rejected_items» — рядок 149: речі «не ця» з пулу знято; без поля модель бере
 #     їхнього близнюка з тієї самої крамниці;
 #   · «kinds_missing» — «нема речі» ≠ «річ не потрібна»: без поля модель мовчки складає образ
@@ -471,6 +473,9 @@ import внутрішня_мова as _ВМ_П
                     "when you must, with «deliberate», naming it «n»/top or «n»/bottom"),
         _ЗП.Поле("pool[].for_her_wish", "her wish this item answers"),
         _ЗП.Поле("pool[].shown_before", "the item already stood in her outfits for this case"),
+        _ЗП.Поле("pool[].softening", "her own item that suits her less by the code's check («verdict_level»): "
+                                     "what the rest of the outfit does to soften it",
+                 як="the item stays — she chose it herself; build the rest of the outfit this way"),
         _ЗП.Поле("her_items", "«n» of her own items from her photo",
                  як="each stands in every outfit as it is: build the rest around them so that they look "
                     "their best on her, and add nothing that takes the place of one of them"),

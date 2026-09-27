@@ -126,7 +126,8 @@ def невідомо(v, коди=()):
         "shawl": "шаль", "bactus_scarf": "бактус", "ring": "каблучка", "headband": "обруч",
         "bow": "бант", "hair_clip": "заколка", "hair_tie": "резинка",
         "scarf_generic": "шарф_без_уточнення", "jewelry_generic": "прикраса_без_уточнення",
-        "bag_generic": "сумка_без_уточнення"},
+        "bag_generic": "сумка_без_уточнення", "dress_generic": "сукня_без_уточнення",
+        "two_piece_set": "комплект", "casual_suit": "костюм_повсякденний"},
     "fabric": {
         "wool": "вовна", "cashmere": "кашемір", "mohair": "мохер", "angora": "ангора",
         "alpaca": "альпака", "cotton": "бавовна", "viscose": "віскоза", "tencel": "тенсел",
@@ -137,7 +138,7 @@ def невідомо(v, коди=()):
         "tweed": "твід", "boucle": "букле", "corduroy": "вельвет", "velvet": "оксамит",
         "jersey": "трикотаж", "knitted": "вʼязане", "suede": "замша", "faux_leather": "екошкіра",
         "leather": "шкіра", "patent_leather": "лак", "nubuck": "нубук", "velour": "велюр",
-        "lace": "мереживо", "guipure": "гіпюр", "openwork": "ажур"},
+        "lace": "мереживо", "guipure": "гіпюр", "openwork": "ажур", "woven": "полотно"},
     "pattern": {
         "solid": "solid", "polka_dot": "горох", "floral": "квітковий", "stripes": "смужка",
         "check": "клітинка", "animal_print": "анімалістичний", "camouflage": "камуфляж",
@@ -158,7 +159,10 @@ def невідомо(v, коди=()):
         "light_blue": "блакитний", "denim_blue": "джинсовий", "blue": "синій",
         "navy": "темно-синій", "lilac": "бузковий", "purple": "фіолетовий", "plum": "сливовий",
         "magenta": "маджента", "fuchsia": "фуксія", "pink": "рожевий", "rose": "трояндовий",
-        "powder_pink": "пудровий", "silvery": "срібний", "pearly": "перлинний"},
+        "powder_pink": "пудровий", "silvery": "срібний", "pearly": "перлинний",
+        # решта слів лексикону (`verify.ЛЕКСИКОН`) — П-2: колір речі пулу їде моделі кодом
+        "creamy": "кремовий", "mocha": "мокко", "powder": "пудра", "soft_pink": "ніжно-рожевий",
+        "emerald": "смарагд", "electric_blue": "електрик"},
     # Ознака речі, яку ядро читає словом у тексті речі (`читач_вето` → «слово в тексті речі»)
     "feature": {"heels": "підбори"},
     "own_item_status": {"has": "певна", "maybe": "непевна", "not_wanted": "відмова"},
