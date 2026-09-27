@@ -71,6 +71,14 @@ def невідомо(v, коди=()):
     "palette_family": {"red": "червона", "orange": "помаранчева", "yellow": "жовта",
                        "green": "зелена", "blue": "синя", "violet": "фіолетова",
                        "pink": "рожева", "eyes": "очі"},
+    # СХЕМА ПАЛІТРИ І РОЛЬ СЛОТА В НІЙ (П-6): коди, якими знахідки кольору кажуть моделі, яку
+    # схему образ мав тримати і яку роль мав слот. Дзеркала `палітра_схеми.СХЕМИ` і
+    # `дріт_моделі._СХЕМА` / `_РОЛЬ` — ті самі коди, що вже їдуть у пакеті.
+    "palette_scheme": {"neutrals_plus_accent": "нейтрали+акцент", "tonal": "тональна",
+                       "analogous": "аналогова", "muted_complementary": "приглушена_комплементарна",
+                       "triad": "тріада", "color_block": "колор_блок"},
+    "scheme_role": {"dominant": "домінанта", "secondary": "секундант", "accent": "акцент",
+                    "neutral": "нейтраль"},
     # ТЕМПЕРАТУРА КОЛЬОРУ ПАЛІТРИ (`palettes.кольори` → поле `температура`): свій бік
     # речі чи нейтралі, не погода. Окремо від `weather_feel` саме тому (П-5).
     "colour_temperature": {"warm": "тепла", "cool": "холодна", "neutral": "нейтральна",
@@ -1153,6 +1161,201 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "too_few_items": "речей в образі замало для цієї нагоди (значення: count — скільки є, minimum — скільки "
                      "щонайменше треба)",
     "single_item_not_outfit": "одна річ — це ще не образ: додати щонайменше взуття (або верх чи низ до комплекту)",
+    # ── ЗНАХІДКИ КОЛЬОРУ Й ПАЛІТРИ НА ДРОТІ МОДЕЛІ (П-6, `суд_від_моделі`: K-PAL-02…18, K-COL-02/05, K-COMP-07) ──
+    "scheme_slot_neutral_item_coloured": "обрана схема тримає цей слот нейтральним, а річ у ньому кольорова "
+                                         "(значення: scheme — код схеми, slot — код слота, chroma — хрома речі)",
+    "neutral_item_in_slot": "поставити в цей слот нейтральну річ (значення: slot — код слота)",
+    "item_hue_outside_scheme_arc": "тон речі поза дугою обраної схеми для цього слота; дуга — межа, а не порада "
+                                   "(значення: scheme — код схеми, slot — код слота, role — роль слота в схемі, "
+                                   "arc — дуга тону в градусах, hue — тон речі, chroma — її хрома)",
+    "item_in_arc_or_neutral": "у цьому слоті — річ у дузі схеми або нейтральна (значення: slot — код слота)",
+    "farthest_colour_near_face": "біля обличчя стоїть колір із найдальшої від її осей області: спільних "
+                                 "характеристик із нею в нього нема; це не заборона (значення: slot — код слота)",
+    "move_colour_away_from_face": "той самий колір перенести в слот далі від обличчя або взяти в цьому слоті "
+                                  "колір її палітри (значення: slot — код слота, far_slots — коди слотів далі від "
+                                  "обличчя)",
+    "off_palette_colour_near_face": "біля обличчя стоїть річ кольору поза вікнами її палітри (значення: slot — "
+                                    "код слота, nearness — близькість до обличчя від 0 до 1)",
+    "off_palette_colour_contrast_mismatch": "в образі є колір поза палітрою, а контраст образу не збігається з її "
+                                            "власним, тож нести цей колір нема на чому (значення: lightness_range "
+                                            "— розмах світлоти образу від і до, однакові числа — вимір; her_level "
+                                            "— її рівень контрасту: low, medium, high; on_windows — true, коли "
+                                            "судження на вікнах слів кольору, а не на вимірі)",
+    "match_contrast_or_move_colour": "звести контраст образу до її власного або лишити колір поза палітрою в "
+                                     "слоті далі від обличчя",
+    "colours_off_her_combination_logic": "кольори образу разом не тримають логіки, якою складені її поєднання",
+    "colour_step_below_min": "кроку світлоти між кольорами образу менше за поріг (значення: step_min — поріг "
+                             "кроку в L*; on_windows — true, коли судження на вікнах слів кольору, а не на "
+                             "вимірі)",
+    "more_than_one_loud_colour": "гучних кольорів в образі більше за один (значення: loud_from — з якої хроми "
+                                 "колір гучний)",
+    "lightness_range_off_her_contrast": "розмах світлоти образу не пасує до її контрасту: для низького він "
+                                        "завеликий, для високого замалий (значення: lightness_range — розмах від "
+                                        "і до; her_level — її рівень контрасту; limit — межа розмаху для її "
+                                        "рівня; on_windows — true, коли судження на вікнах слів кольору, а не на "
+                                        "вимірі)",
+    "separate_lightness_or_one_loud": "розвести світлоти кольорів або лишити гучним лише один",
+    "accent_not_from_eyes": "слот несе акцент, а його тон не з сім'ї її очей (значення: slot — код слота, hue — "
+                            "тон акценту в градусах, eye_arcs — дуги тону її очей)",
+    "accent_in_eye_family": "акцент узяти з сім'ї її очей у цьому слоті (значення: slot — код слота, eye_arcs — "
+                            "дуги тону її очей)",
+    "complementary_pair_not_muted": "образ веде пара протилежних кольорів, а гучних кольорів більше, ніж дозволяє "
+                                    "прийом: один із двох мав би бути приглушений або малий (значення: hue_gap — "
+                                    "розведення тону в градусах, loud — скільки гучних, allowed — скільки "
+                                    "дозволено; soft_palette — true, коли її палітра м'яка й приглушені мають "
+                                    "бути обидва; on_windows — true, коли судження на вікнах слів кольору, а не "
+                                    "на вимірі)",
+    "mute_one_colour_or_small_area": "приглушити один із кольорів або лишити його малою площею",
+    "loud_accent_on_low_contrast": "образ — її нейтралі плюс один акцент, і акцент гучний при низькому контрасті: "
+                                   "читається не як акцент, а як чужа пляма (значення: chroma — хрома акценту, "
+                                   "loud_from — з якої хроми колір гучний)",
+    "colour_block_on_low_contrast": "великі слоти несуть кілька кольорових сімей — це колор-блок, а його нема "
+                                    "серед прийомів для її контрасту під цим наміром (значення: families — коди "
+                                    "сімей)",
+    "one_colour_family_in_big_slots": "лишити одну кольорову сім'ю у великих слотах, решту віддати нейтралям",
+    "print_dominant_off_palette": "домінанта кольору принту цієї речі поза вікнами її палітри (значення: slot — "
+                                  "код слота, pattern — код візерунка)",
+    "print_in_palette_or_solid": "у цьому слоті — принт із домінантою в її палітрі або однотонна річ (значення: "
+                                 "slot — код слота)",
+    "drama_by_chroma_on_soft_palette": "її палітра м'яка, а образ робить драматичним гучний колір при малому "
+                                       "розмаху світлоти: на м'якій людині це читається як чуже (значення: "
+                                       "loud_from — з якої хроми колір гучний, lightness_range — розмах світлоти "
+                                       "від і до; on_windows — true, коли судження на вікнах слів кольору, а не "
+                                       "на вимірі)",
+    "separate_lightness_or_texture_shine": "розвести світлоти речей або взяти фактуру й блиск замість гучного "
+                                           "кольору",
+    "grey_hair_no_eye_colour_near_face": "її волосся не несе температури, тож головний акцент — очі, а біля "
+                                         "обличчя нема жодного кольору з їхньої сім'ї",
+    "eye_family_colour_near_face": "біля обличчя — колір із сім'ї її очей: шарф, верх або сережки",
+    "loud_elements_over_budget": "гучних елементів більше за стелю — решта образу не встигає бути тлом; волосся й "
+                                 "оправа входять у лічбу нарівні з речами (значення: count — скільки гучних, "
+                                 "ceiling — стеля; face — які риси обличчя теж гучні: hair, glasses)",
+    "keep_one_loud_mute_rest": "лишити один гучний як фокус, решту взяти приглушеними версіями тієї самої сім'ї "
+                               "або нейтралями",
+    "accent_orphan": "акцентний колір стоїть лише в одному слоті й більше ніде — око не знаходить наміру "
+                     "(значення: colour — код кольору чи сім'ї, hue — тон у градусах, slot — код слота; "
+                     "on_windows — true, коли судження на вікнах слів кольору, а не на вимірі)",
+    "accent_in_declared_focus": "акцент стоїть в одному слоті, але цю зону оголошено фокусом — тоді він законний "
+                                "як пуант (значення: slot — код слота)",
+    "echo_accent_or_declare_focus": "повторити цей колір у другій рознесеній зоні (взуття, сумка, шарф, "
+                                    "прикраси), або оголосити цю зону фокусом, або прибрати",
+    "accent_echo_over_ceiling": "акцентний колір повторено в забагатьох зонах — повтор перестає читатись як намір "
+                                "і стає уніформою (значення: colour — код кольору чи сім'ї, hue — тон у градусах, "
+                                "zones — у скількох зонах, ceiling — стеля; on_windows — true, коли судження на "
+                                "вікнах слів кольору, а не на вимірі)",
+    "keep_two_three_carriers": "лишити два-три носії цього кольору, решту перевести в нейтраль",
+    "accent_role_lost": "схема дала слоту роль акценту, а річ у ньому тихіша за поріг, хоч у доборі були речі з "
+                        "такою хромою (значення: scheme — код схеми, slot — код слота, chroma_from — поріг хроми "
+                        "акценту, chroma — хрома речі, pool_count — скільки таких речей було в доборі)",
+    "item_chroma_at_least_in_slot": "у цьому слоті — річ із хромою не нижче порога (значення: chroma_from — "
+                                    "поріг, slot — код слота)",
+    "accent_role_none_in_pool": "схема вимагає акценту в слоті, а в доборі цього слота нема жодної речі з "
+                                "потрібною хромою (значення: scheme — код схеми, slot — код слота, chroma_from — "
+                                "поріг хроми)",
+    "not_fixable_from_pool": "полагодити це з добору нема чим — це брак каталогу, а не вибір стилістки",
+    "formula_taken_as_ready": "схему взято за готову відповідь, а образ провалює пункти підлоги прісності: "
+                              "формула — стартова точка, а не вирок (значення: scheme — код схеми, "
+                              "blandness_failed — скільки пунктів прісності провалено)",
+    "walk_failed_blandness_points": "пройтися по названих пунктах прісності окремо: правильна схема жодного з них "
+                                    "не закриває",
+    # ── ПІДСУМОК ЧЕКЛІСТІВ ОБРАЗУ (П-6, `суд_чеклісти`: K-SYS-08/09) ──
+    "excess_ceiling_broken": "стеля надлишку пробита: частину перевірених пунктів чекліста надлишку провалено; "
+                             "які саме — у чеклісті цього образу (значення: failed — скільки провалено, checked — "
+                             "скільки перевірено)",
+    "blandness_floor_not_reached": "підлогу прісності не набрано: частину перевірених пунктів чекліста прісності "
+                                   "провалено; які саме — у чеклісті цього образу (значення: failed — скільки "
+                                   "провалено, checked — скільки перевірено)",
+    "remove_excess_in_failed_points": "зняти надлишок у проваленому пункті до видачі: провалений пункт "
+                                      "ремонтується, а не супроводжує образ",
+    "add_interest_source": "додати джерело інтересу в проваленому пункті: фактуру, рішення силуету, колір, деталь "
+                           "ремесла, хід регістру, аксесуар як структуру чи жест розкладки",
+    # ── АКСЕСУАРИ Й ЦІНА НА ОБРАЗ (П-6: K-ACC-01/05/06/07/13, K-CRA-12, K-PRC-01) ──
+    "accessory_spends_chroma_budget": "гучний аксесуар — не оздоба: його хрома витрачає з бюджету акцентів, хоч "
+                                      "площі за ним нема (значення: slot — код слота, chroma — хрома аксесуара, "
+                                      "loud_from — з якої хроми колір гучний)",
+    "quieter_accessory_or_quieter_surface": "якщо в образі вже є гучна поверхня — узяти цей аксесуар тихішим, або "
+                                            "лишити його акцентом і зняти гучність із більшої поверхні",
+    "bag_format_at_scale_edge": "формат сумки — край шкали, а не її середина: і завелика, і демонстративно мала "
+                                "однаково збивають пропорцію (значення: format — large чи small)",
+    "medium_bag_or_calm_rest": "сумка середнього формату з ясною формою; якщо лишається ця — тримати решту образу "
+                               "спокійною",
+    "asymmetry_interest_source_available": "тиха річ може стати джерелом інтересу без кольору, якщо її покласти "
+                                           "несиметрично (значення: places — коди місць носіння)",
+    "wear_item_asymmetrically": "покласти річ несиметрично в одному з цих місць; місце обирає стилістка, воно не "
+                                "властивість товару (значення: places — коди місць носіння)",
+    "face_field_carrier_frees_top": "річ займає приобличчеве поле, тож колір біля обличчя несе вона, а верх "
+                                    "судиться дальнім вікном, як низ і взуття (значення: slot — код слота носія)",
+    "carrier_itself_in_face_window": "сам носій мусить бути в приобличчевому вікні її палітри — інакше це не "
+                                     "рятунок, а перенесення проблеми",
+    "same_kind_accessories_duplicate": "в образі кілька предметів одного роду — вони витрачають один бюджет, і "
+                                       "образ не постраждає без одного з них (значення: count — скільки "
+                                       "предметів, kind — рід: metal, metal_near_face, print_source, "
+                                       "shine_source, near_face_accent, loud_colour_accent, other)",
+    "remove_duplicate_accessory": "зняти один із дублів — той, що дає найменше (значення: slot — код слота того, "
+                                  "що зняти)",
+    "scarf_too_small_for_head_wrap": "сторона квадрата хустки замала для повного обгортання голови — ворота "
+                                     "фізичні, не смакові (значення: side_cm — сторона хустки в см, wrap_from_cm "
+                                     "— від якої сторони обгортання можливе)",
+    "choose_available_scarf_place": "обрати місце з доступних для цього формату, або квадрат більшого формату, "
+                                    "якщо потрібне саме обгортання (значення: places — коди доступних місць, "
+                                    "wrap_from_cm — від якої сторони обгортання можливе)",
+    "price_top_quarter_of_slot": "річ у верхній чверті свого слота за ціною на образ — ціною, поділеною на "
+                                 "кількість образів добору, у які вона може стати; це нижня оцінка, не прогноз "
+                                 "носінь (значення: slot — код слота, cheaper — скільки речей слота дешевші на "
+                                 "образ, of — зі скількох, reach — у скількох образах добору вона може стати; "
+                                 "resoleable — для взуття: true — низ прошивний, пару можна перевзути, false — "
+                                 "клеєний)",
+    "compare_with_cheaper_in_slot": "порівняти з дешевшими на образ речами того самого слота в доборі (значення: "
+                                    "cheaper — скільки їх)",
+    # ── ВЗУТТЯ, АКСЕСУАРИ В ПОГОДУ, КОЛЬЄ (П-6: K-SHO-04/07/08/10/13/15, K-WEA-05/06/08, K-JEW-01) ──
+    "shoes_cut_leg_line": "пара ріже лінію ноги: за світлотою вона не зведена ні до ноги, ні до низу (значення: "
+                          "to_leg — різниця світлоти до ноги чи колготок, to_bottom — до низу, step — поріг "
+                          "кроку; neighbour — що поруч з ногою: skin чи tights)",
+    "shoes_to_leg_or_bottom_tone": "звести пару до ноги (нюд у тон шкіри чи колготки в тон пари) — лінія триває "
+                                   "від пальців; або до низу — колона кольору в нижній третині",
+    "high_cut_quiet_edge_keep": "виріз пари високий, але край зведено за світлотою до шкіри чи колготок — лінії "
+                                "впоперек стопи він майже не малює: пару тримати (значення: dl — різниця світлоти "
+                                "краю й сусідньої поверхні, step — поріг кроку, neighbour — skin чи tights)",
+    "high_cut_contrasting_edge": "виріз пари високий і контрастний до шкіри чи колготок — край малює лінію "
+                                 "впоперек стопи двічі: зняти один із двох важелів (значення: dl — різниця "
+                                 "світлоти краю й сусідньої поверхні, step — поріг кроку, neighbour — skin чи "
+                                 "tights)",
+    "nude_edge_or_matching_tights_or_lower_cut": "нюдовий тон краю, або колготки в тон пари, або пара з нижчим "
+                                                 "вирізом у тому ж інтервалі формальності",
+    "cut_hidden_by_dense_tights": "під щільними колготами край пари не видно, тож вісь вирізу вимкнена (значення: "
+                                  "den — щільність колготок, den_band — смуга щільності дня від і до)",
+    "low_cut_keeps_leg_line": "виріз пари низький — лінія ноги починається від пальців: пару тримати",
+    "high_cut_breaks_leg_line": "виріз пари високий — край посеред стопи чи на щиколотці ріже лінію ноги",
+    "lower_cut_same_formality_or_nude_edge": "пара з нижчим вирізом у тому самому інтервалі формальності, або "
+                                             "звести край за світлотою до шкіри чи колготок",
+    "delicate_shoes_under_heavy_fabric": "делікатне взуття під важким полотном низу губиться: масу пари задає "
+                                         "вага полотна, а не лише обʼєм (значення: fabric — код тканини низу)",
+    "heavier_pair_or_lighter_fabric": "важча пара того ж інтервалу формальності, або той самий крій низу в легшій "
+                                      "тканині",
+    "shoe_allowance_too_small": "припуск довжини пари до її стопи замалий: пальці битимуться при кроці (значення: "
+                                "allowance_mm — припуск у мм, minimum_mm — джерельний мінімум)",
+    "other_size_or_model_in_allowance": "інший розмір цієї моделі або інша модель у смузі припуску",
+    "shoe_allowance_too_big": "припуск довжини пари до її стопи завеликий: стопа ковзатиме всередині; межа — наша "
+                              "оцінка, тож пара лишається (значення: allowance_mm — припуск у мм, maximum_mm — "
+                              "оцінена межа)",
+    "try_on_half_size_down": "приміряти; пів розміру менше, якщо пʼята не тримається",
+    "shop_says_size_runs_off": "крамниця сама каже, що модель маломірить чи великомірить: номер розміру цієї пари "
+                               "посадки не описує (значення: runs — small, large чи true_to_size)",
+    "size_by_insole_measure": "брати номер за виміром устілки з картки, а не за звичним розміром; пару, яку не "
+                              "можна поміряти, не підіймати в ранзі за розміром",
+    "smooth_sole_on_ice": "повністю гладка підошва за температури ожеледі — однозначне «ні» для зими (значення: "
+                          "temperature_c — температура дня)",
+    "deep_multidirectional_tread": "підошва з глибоким різноспрямованим протектором",
+    "summer_accessory_no_warmth": "літній матеріал аксесуара в холод не гріє — носити можна, тепла він не дає "
+                                  "(значення: material — код матеріалу, temperature_c — температура дня)",
+    "winter_form_of_slot": "зимова форма цього ж слота: фетр, вовна, кашемір чи шкіра з підкладкою",
+    "winter_accessory_too_hot": "зимовий матеріал аксесуара в спеку не носиться (значення: material — код "
+                                "матеріалу, temperature_c — температура дня)",
+    "summer_form_of_slot": "літня форма цього ж слота",
+    "necklace_on_neckline_edge": "кольє сідає на край горловини: там воно конкурує з тканиною замість обрамляти "
+                                 "обличчя (значення: gap_cm — зазор між краєм кольє й горловини, clearance_cm — "
+                                 "потрібний зазор)",
+    "necklace_clearly_above_or_below": "коротший ланцюг — вище краю горловини, або довший — виразно нижче",
 }
 
 
@@ -1695,6 +1898,221 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "too_few_items": "the outfit has too few items for this occasion (values: count — how many it has, minimum — "
                      "the least it needs)",
     "single_item_not_outfit": "a single item is not an outfit: add at least shoes (or a top or bottom to the set)",
+    # ── ЗНАХІДКИ КОЛЬОРУ Й ПАЛІТРИ НА ДРОТІ МОДЕЛІ (П-6, `суд_від_моделі`: K-PAL-02…18, K-COL-02/05, K-COMP-07) ──
+    "scheme_slot_neutral_item_coloured": "the chosen scheme keeps this slot neutral, but the item in it is "
+                                         "coloured (values: scheme — scheme code, slot — slot code, chroma — the "
+                                         "item's chroma)",
+    "neutral_item_in_slot": "put a neutral item in this slot (values: slot — slot code)",
+    "item_hue_outside_scheme_arc": "the item's hue lies outside the chosen scheme's arc for this slot; the arc is "
+                                   "a limit, not advice (values: scheme — scheme code, slot — slot code, role — "
+                                   "the slot's role in the scheme, arc — hue arc in degrees, hue — the item's "
+                                   "hue, chroma — its chroma)",
+    "item_in_arc_or_neutral": "in this slot, an item within the scheme's arc or a neutral one (values: slot — "
+                              "slot code)",
+    "farthest_colour_near_face": "a colour from the region farthest from her axes sits near the face and shares "
+                                 "no characteristic with her; not a ban (values: slot — slot code)",
+    "move_colour_away_from_face": "move this colour to a slot further from the face, or take a colour of her "
+                                  "palette in this slot (values: slot — slot code, far_slots — codes of slots "
+                                  "further from the face)",
+    "off_palette_colour_near_face": "an item of a colour outside her palette windows sits near the face (values: "
+                                    "slot — slot code, nearness — closeness to the face from 0 to 1)",
+    "off_palette_colour_contrast_mismatch": "the outfit has an off-palette colour and its contrast does not match "
+                                            "hers, so nothing carries that colour (values: lightness_range — the "
+                                            "outfit's lightness range from and to, equal numbers when measured; "
+                                            "her_level — her contrast level: low, medium, high; on_windows — true "
+                                            "when judged on colour-word windows, not on measurement)",
+    "match_contrast_or_move_colour": "bring the outfit's contrast to her own, or keep the off-palette colour in a "
+                                     "slot further from the face",
+    "colours_off_her_combination_logic": "together the outfit's colours do not follow the logic her colour "
+                                         "combinations are built on",
+    "colour_step_below_min": "the step of lightness between the outfit's colours is below the threshold (values: "
+                             "step_min — the step threshold in L*; on_windows — true when judged on colour-word "
+                             "windows, not on measurement)",
+    "more_than_one_loud_colour": "the outfit has more than one loud colour (values: loud_from — the chroma from "
+                                 "which a colour is loud)",
+    "lightness_range_off_her_contrast": "the outfit's lightness range does not suit her contrast: too wide for a "
+                                        "low one, too narrow for a high one (values: lightness_range — the range "
+                                        "from and to; her_level — her contrast level; limit — the range limit for "
+                                        "her level; on_windows — true when judged on colour-word windows, not on "
+                                        "measurement)",
+    "separate_lightness_or_one_loud": "separate the colours' lightness, or keep only one of them loud",
+    "accent_not_from_eyes": "the slot carries the accent, but its hue is not from the family of her eyes (values: "
+                            "slot — slot code, hue — the accent's hue in degrees, eye_arcs — the hue arcs of her "
+                            "eyes)",
+    "accent_in_eye_family": "take the accent from the family of her eyes in this slot (values: slot — slot code, "
+                            "eye_arcs — the hue arcs of her eyes)",
+    "complementary_pair_not_muted": "a pair of opposite colours leads the outfit, and it has more loud colours "
+                                    "than the move allows: one of the two should be muted or small (values: "
+                                    "hue_gap — hue separation in degrees, loud — how many are loud, allowed — how "
+                                    "many are allowed; soft_palette — true when her palette is soft and both "
+                                    "should be muted; on_windows — true when judged on colour-word windows, not "
+                                    "on measurement)",
+    "mute_one_colour_or_small_area": "mute one of the colours or keep it to a small area",
+    "loud_accent_on_low_contrast": "the outfit is her neutrals plus one accent, and the accent is loud on a low "
+                                   "contrast: it reads as a foreign spot, not an accent (values: chroma — the "
+                                   "accent's chroma, loud_from — the chroma from which a colour is loud)",
+    "colour_block_on_low_contrast": "the large slots carry several colour families, a colour block, which is not "
+                                    "among the moves for her contrast under this intent (values: families — "
+                                    "family codes)",
+    "one_colour_family_in_big_slots": "keep one colour family in the large slots and give the rest to neutrals",
+    "print_dominant_off_palette": "the dominant colour of this item's print lies outside her palette windows "
+                                  "(values: slot — slot code, pattern — pattern code)",
+    "print_in_palette_or_solid": "in this slot, a print whose dominant colour is in her palette, or a solid item "
+                                 "(values: slot — slot code)",
+    "drama_by_chroma_on_soft_palette": "her palette is soft, but a loud colour makes the outfit dramatic with a "
+                                       "small lightness range: on a soft person it reads as foreign (values: "
+                                       "loud_from — the chroma from which a colour is loud, lightness_range — the "
+                                       "lightness range from and to; on_windows — true when judged on colour-word "
+                                       "windows, not on measurement)",
+    "separate_lightness_or_texture_shine": "separate the items' lightness, or use texture and shine instead of a "
+                                           "loud colour",
+    "grey_hair_no_eye_colour_near_face": "her hair carries no temperature, so the eyes are the main accent, yet "
+                                         "no colour of their family sits near the face",
+    "eye_family_colour_near_face": "near the face, a colour of her eye family: a scarf, a top or earrings",
+    "loud_elements_over_budget": "there are more loud elements than the ceiling, so the rest of the outfit cannot "
+                                 "be a background; hair and frames count like items (values: count — how many are "
+                                 "loud, ceiling — the ceiling; face — which facial features are loud too: hair, "
+                                 "glasses)",
+    "keep_one_loud_mute_rest": "keep one loud element as the focus and take the rest as muted versions of the "
+                               "same family or as neutrals",
+    "accent_orphan": "the accent colour stands in one slot only and nowhere else, so the eye finds no intent "
+                     "(values: colour — colour or family code, hue — hue in degrees, slot — slot code; on_windows "
+                     "— true when judged on colour-word windows, not on measurement)",
+    "accent_in_declared_focus": "the accent stands in one slot, but that zone is declared the focus, so it is "
+                                "legitimate as a point (values: slot — slot code)",
+    "echo_accent_or_declare_focus": "repeat this colour in a second, separate zone (shoes, bag, scarf, "
+                                    "jewellery), or declare this zone the focus, or remove it",
+    "accent_echo_over_ceiling": "the accent colour repeats in too many zones, so the repetition stops reading as "
+                                "intent and becomes a uniform (values: colour — colour or family code, hue — hue "
+                                "in degrees, zones — in how many zones, ceiling — the ceiling; on_windows — true "
+                                "when judged on colour-word windows, not on measurement)",
+    "keep_two_three_carriers": "keep two or three carriers of this colour and turn the rest neutral",
+    "accent_role_lost": "the scheme gave the slot the accent role, but the item in it is quieter than the "
+                        "threshold, though the selection had items with such chroma (values: scheme — scheme "
+                        "code, slot — slot code, chroma_from — the accent's chroma threshold, chroma — the item's "
+                        "chroma, pool_count — how many such items the selection had)",
+    "item_chroma_at_least_in_slot": "in this slot, an item with chroma at least at the threshold (values: "
+                                    "chroma_from — the threshold, slot — slot code)",
+    "accent_role_none_in_pool": "the scheme requires an accent in the slot, and the selection for that slot has "
+                                "no item with the needed chroma (values: scheme — scheme code, slot — slot code, "
+                                "chroma_from — the chroma threshold)",
+    "not_fixable_from_pool": "nothing in the selection can fix this: it is a gap in the catalogue, not the "
+                             "stylist's choice",
+    "formula_taken_as_ready": "the scheme was taken as a ready answer, and the outfit fails points of the "
+                              "blandness floor: a formula is a starting point, not a verdict (values: scheme — "
+                              "scheme code, blandness_failed — how many blandness points failed)",
+    "walk_failed_blandness_points": "work through the failed blandness points one by one: the right scheme alone "
+                                    "closes none of them",
+    # ── ПІДСУМОК ЧЕКЛІСТІВ ОБРАЗУ (П-6, `суд_чеклісти`: K-SYS-08/09) ──
+    "excess_ceiling_broken": "the ceiling of excess is broken: some checked points of the excess checklist "
+                             "failed; the outfit's checklist names them (values: failed — how many failed, "
+                             "checked — how many were checked)",
+    "blandness_floor_not_reached": "the floor against blandness is not reached: some checked points of the "
+                                   "blandness checklist failed; the outfit's checklist names them (values: failed "
+                                   "— how many failed, checked — how many were checked)",
+    "remove_excess_in_failed_points": "remove the excess in the failed points before showing: a failed point is "
+                                      "repaired, not carried along",
+    "add_interest_source": "add a source of interest in the failed points: texture, a silhouette decision, "
+                           "colour, a craft detail, a register move, an accessory as structure, or a styling "
+                           "gesture",
+    # ── АКСЕСУАРИ Й ЦІНА НА ОБРАЗ (П-6: K-ACC-01/05/06/07/13, K-CRA-12, K-PRC-01) ──
+    "accessory_spends_chroma_budget": "a loud accessory is not a trim: its chroma spends from the accent budget "
+                                      "although it has no area (values: slot — slot code, chroma — the "
+                                      "accessory's chroma, loud_from — the chroma from which a colour is loud)",
+    "quieter_accessory_or_quieter_surface": "if the outfit already has a loud surface, take this accessory "
+                                            "quieter; or keep it as the accent and take the loudness off the "
+                                            "larger surface",
+    "bag_format_at_scale_edge": "the bag's format is at the edge of the scale, not its middle: too large and "
+                                "pointedly small both break the proportion (values: format — large or small)",
+    "medium_bag_or_calm_rest": "a medium bag with a clear shape; if this one stays, keep the rest of the outfit "
+                               "calm",
+    "asymmetry_interest_source_available": "a quiet item can become a source of interest without colour when worn "
+                                           "asymmetrically (values: places — wearing place codes)",
+    "wear_item_asymmetrically": "wear the item asymmetrically in one of these places; the stylist chooses the "
+                                "place, it is not a property of the product (values: places — wearing place "
+                                "codes)",
+    "face_field_carrier_frees_top": "the item occupies the field near the face, so it carries the colour there "
+                                    "and the top is judged by the far window, like the bottom and shoes (values: "
+                                    "slot — the carrier's slot code)",
+    "carrier_itself_in_face_window": "the carrier itself must be in her palette's near-face window, otherwise it "
+                                     "moves the problem instead of solving it",
+    "same_kind_accessories_duplicate": "the outfit has several items of one kind; they spend one budget, and the "
+                                       "outfit loses nothing without one of them (values: count — how many items, "
+                                       "kind — metal, metal_near_face, print_source, shine_source, "
+                                       "near_face_accent, loud_colour_accent, other)",
+    "remove_duplicate_accessory": "remove one of the duplicates, the one that gives least (values: slot — slot "
+                                  "code of the one to remove)",
+    "scarf_too_small_for_head_wrap": "the scarf's square side is too small for a full head wrap; a physical "
+                                     "limit, not taste (values: side_cm — the scarf's side in cm, wrap_from_cm — "
+                                     "the side from which a wrap is possible)",
+    "choose_available_scarf_place": "choose one of the places available for this format, or a larger square if a "
+                                    "wrap is needed (values: places — available place codes, wrap_from_cm — the "
+                                    "side from which a wrap is possible)",
+    "price_top_quarter_of_slot": "the item is in the top quarter of its slot by price per outfit (price divided "
+                                 "by how many outfits of the selection it can join); a lower estimate, not a wear "
+                                 "forecast (values: slot — slot code, cheaper — how many items of the slot are "
+                                 "cheaper per outfit, of — out of how many, reach — how many outfits of the "
+                                 "selection it can join; resoleable — for shoes: true when the sole is stitched "
+                                 "and can be replaced, false when glued)",
+    "compare_with_cheaper_in_slot": "compare with the items of the same slot in the selection that cost less per "
+                                    "outfit (values: cheaper — how many)",
+    # ── ВЗУТТЯ, АКСЕСУАРИ В ПОГОДУ, КОЛЬЄ (П-6: K-SHO-04/07/08/10/13/15, K-WEA-05/06/08, K-JEW-01) ──
+    "shoes_cut_leg_line": "the pair cuts the leg line: by lightness it matches neither the leg nor the bottom "
+                          "(values: to_leg — lightness difference to the leg or tights, to_bottom — to the "
+                          "bottom, step — the step threshold; neighbour — what is next to the foot: skin or "
+                          "tights)",
+    "shoes_to_leg_or_bottom_tone": "match the pair to the leg (a nude in the skin's tone, or tights in the pair's "
+                                   "tone) so the line runs from the toes, or to the bottom as a colour column in "
+                                   "the lower third",
+    "high_cut_quiet_edge_keep": "the pair's cut is high, but its edge matches the skin or tights in lightness and "
+                                "barely draws a line across the foot: keep the pair (values: dl — lightness "
+                                "difference between the edge and the neighbouring surface, step — the step "
+                                "threshold, neighbour — skin or tights)",
+    "high_cut_contrasting_edge": "the pair's cut is high and contrasts with the skin or tights, so the edge draws "
+                                 "a line across the foot twice: remove one of the two levers (values: dl — "
+                                 "lightness difference between the edge and the neighbouring surface, step — the "
+                                 "step threshold, neighbour — skin or tights)",
+    "nude_edge_or_matching_tights_or_lower_cut": "a nude edge, or tights in the pair's tone, or a pair with a "
+                                                 "lower cut in the same formality range",
+    "cut_hidden_by_dense_tights": "under dense tights the pair's edge is not visible, so the cut-line axis is off "
+                                  "(values: den — the tights' density, den_band — the day's density band from and "
+                                  "to)",
+    "low_cut_keeps_leg_line": "the pair's cut is low, so the leg line starts at the toes: keep the pair",
+    "high_cut_breaks_leg_line": "the pair's cut is high: an edge mid-foot or at the ankle cuts the leg line",
+    "lower_cut_same_formality_or_nude_edge": "a pair with a lower cut in the same formality range, or match the "
+                                             "edge to the skin or tights in lightness",
+    "delicate_shoes_under_heavy_fabric": "delicate shoes get lost under a heavy bottom fabric: the fabric's "
+                                         "weight, not only its volume, sets the pair's needed mass (values: "
+                                         "fabric — the bottom's fabric code)",
+    "heavier_pair_or_lighter_fabric": "a heavier pair in the same formality range, or the same bottom cut in a "
+                                      "lighter fabric",
+    "shoe_allowance_too_small": "the pair's length allowance over her foot is too small: the toes will hit when "
+                                "walking (values: allowance_mm — the allowance in mm, minimum_mm — the sourced "
+                                "minimum)",
+    "other_size_or_model_in_allowance": "another size of this model, or another model within the allowance band",
+    "shoe_allowance_too_big": "the pair's length allowance over her foot is too large: the foot will slide "
+                              "inside; the limit is our estimate, so the pair stays (values: allowance_mm — the "
+                              "allowance in mm, maximum_mm — the estimated limit)",
+    "try_on_half_size_down": "try it on; half a size down if the heel does not hold",
+    "shop_says_size_runs_off": "the shop itself says the model runs small or large, so this pair's size number "
+                               "does not describe its fit (values: runs — small, large or true_to_size)",
+    "size_by_insole_measure": "take the size by the insole measurement on the card, not the usual size; a pair "
+                              "that cannot be measured is not ranked up for size",
+    "smooth_sole_on_ice": "a fully smooth sole at black-ice temperatures is a clear no for winter (values: "
+                          "temperature_c — the day's temperature)",
+    "deep_multidirectional_tread": "a sole with a deep multidirectional tread",
+    "summer_accessory_no_warmth": "the accessory's summer material gives no warmth in the cold; it can be worn "
+                                  "but does not warm (values: material — material code, temperature_c — the day's "
+                                  "temperature)",
+    "winter_form_of_slot": "the winter form of the same slot: felt, wool, cashmere or lined leather",
+    "winter_accessory_too_hot": "the accessory's winter material is not worn in the heat (values: material — "
+                                "material code, temperature_c — the day's temperature)",
+    "summer_form_of_slot": "the summer form of the same slot",
+    "necklace_on_neckline_edge": "the necklace sits on the neckline's edge, where it competes with the fabric "
+                                 "instead of framing the face (values: gap_cm — the gap between the necklace and "
+                                 "the neckline edge, clearance_cm — the needed gap)",
+    "necklace_clearly_above_or_below": "a shorter chain, above the neckline edge, or a longer one, clearly below "
+                                       "it",
 }
 
 
