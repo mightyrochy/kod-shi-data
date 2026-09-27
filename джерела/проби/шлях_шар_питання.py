@@ -24,7 +24,7 @@ try:
                                          випадок="похід на концерт, театр", фото_речей=["ф1"])))["промпт"]
     д = json.loads(промпт)
     входи = dict(питання=bool(д.get("question")), речі=len(д.get("items") or []),
-                 вердикт_коду=sum(1 for р in д.get("items") or [] if р.get("вердикт_коду")),
+                 вердикт_коду=sum(1 for р in д.get("items") or [] if р.get("verdict") or р.get("вердикт_коду")),
                  фото_до_речей=len(д.get("photos") or []), випадок=bool(д.get("case")))
 except ImportError:
     промпт = тіло("помічникП")

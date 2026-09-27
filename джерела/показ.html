@@ -4953,55 +4953,19 @@ function малюватиВирізку(){
 }
 
 /* ── КОЛЬОРИ ЛЮДИНИ ───────────────────────────────────────────────────────
-   Запит і розбір відповіді — дослівно зі стенда: обидва несуть історію
-   спійманих помилок (мітка як найближче слово перед hex, «#» не є розміткою,
-   кирилиця поза `\w`). Звірка слова з числом лишається в Python. */
-const ПРОМПТ_КОЛІР = `Подивись на це фото людини і назви ЇЇ ВЛАСНІ кольори у форматі hex.
-
-СПЕРШУ ВИРІШИ, ЧИ ФОТО ПРИДАТНЕ. Якщо ні — поверни ЄДИНИЙ рядок
-«не читається: причина» і більше нічого. Непридатне: чорно-біле або з важким
-фільтром; обличчя дрібніше за чверть кадру; очі закриті окулярами, волоссям
-чи примружені; кольорове сценічне або неонове світло; пересвітлення, де шкіра
-вибита в білий. Відмова краща за здогад: далі ці числа йдуть у детермінований
-розрахунок, який не вміє сумніватись і побудує на них увесь образ.
-
-Як зчитувати:
-— шкіра: ТРИ точки — щока, лоб і щелепа. Кожна без тіні, без відблиску,
-  без рум'ян і тонального. Три, бо одна точка на щоці помиляється на 8–14
-  одиниць світлоти залежно від того, куди впало світло, і цієї похибки досить,
-  щоб перекинути рівень контрасту;
-— волосся: ПЕРШИМ рядком дай тон, що займає НАЙБІЛЬШУ ПЛОЩУ голови — навіть
-  якщо він не найсвітліший і не найтемніший. Саме перший рядок код бере як
-  «її волосся»: від нього рахується світлота, «її чорний» і ручка корекції.
-  Далі — решта видимих тонів, у будь-якому порядку. Рівне однотонне волосся —
-  один рядок. Мелірування, балаяж, відрослі корені, сивина — окремими рядками.
-  Не вигадуй відтінків, яких не видно, і не зводь різні до одного;
-— очі: тіло райдужки — один рядок; якщо по краю райдужки є помітно темніше
-  кільце (лімбальне), дай його окремим рядком «кільце #xxxxxx»; якщо не видно — не вигадуй;
-— бери колір із людини, не з фону й не з одягу;
-— якщо фото жовтить або синить від освітлення, перерахуй на нейтральне денне
-  світло і скажи окремим рядком, у який бік і наскільки правив.
-
-Наприкінці — ті самі три речі СЛОВАМИ. Суди оком, як людина з відстані двох
-кроків, а не піпеткою. Це незалежна перевірка hex: якщо слово розійдеться з
-числом, стенд відкине зчитування, тож не підганяй слово під свій же hex.
-Слово волосся — про ПЕРШИЙ рядок волосся.
-
-Відповідь — тільки ці рядки, без пояснень:
-шкіра 1 #xxxxxx
-шкіра 2 #xxxxxx
-шкіра 3 #xxxxxx
-волосся 1 #xxxxxx
-волосся 2 #xxxxxx
-очі #xxxxxx
-кільце #xxxxxx (лише якщо є)
-освітлення: одним реченням, як виправляв
-слово шкіра: дуже темна | темна | середня | світла | дуже світла
-слово волосся: дуже темне | темне | середнє | світле | дуже світле
-слово очі: дуже темні | темні | середні | світлі | дуже світлі`;
+   ПРОМПТ — ОГОЛОШЕННЯ ЗБИРАЧА АНГЛІЙСЬКОЮ (П-4, 27.09.2026, CLAUDE.md п.12):
+   `міст_вхід.ЧИТАННЯ_ПОРТРЕТА`, складене під час збірки — `build_артефакт` ставить вміст
+   рядка на місце плейсхолдера. Доти тут стояв сам текст промпта українською, повз збирач.
+   Даних, крім фото, у виклику нема, тож і Pyodide на знайомстві йому не потрібен; той самий
+   рядок бачить ручний шлях («Скопіювати запит»).
+   ВІДПОВІДЬ — JSON за скелетом оголошення, розбір — тут (`розібратиКолір`). Відповідь, що
+   JSON-ом не стала (чат-помічник ручного шляху відповів рядками), читається запасним шляхом:
+   мітка — найближче слово перед hex, «#» не є розміткою, кирилиця поза `\w` (історія
+   спійманих помилок). Звірки слова з числом нема з 13.09 (Н-02-03) — слів і не просимо. */
+const ПРОМПТ_КОЛІР = "__ПРОМПТ_КОЛІР_ПОКАЗУ__";
 
 const _КОРЕНІ = [["шкір","шкіра"],["skin","шкіра"],["волос","волосся"],["hair","волосся"],
-                 ["кільц","кільце"],["лімбальн","кільце"],["limbal","кільце"],
+                 ["кільц","кільце"],["лімбальн","кільце"],["limbal","кільце"],["ring","кільце"],
                  ["райдуж","очі"],["очі","очі"],["очей","очі"],["око","очі"],["iris","очі"],["eye","очі"]];
 function _міткаПеред(фрагмент){
   let ім = null, поз = -1;
@@ -5011,29 +4975,38 @@ function _міткаПеред(фрагмент){
   }
   return ім;
 }
+/* JSON відповіді: від першого `{` до останнього `}` — обгортка ``` і слова навколо не заважають */
+function _jsonКольоруП(т){
+  const поч = т.indexOf('{'), кін = т.lastIndexOf('}');
+  if (поч < 0 || кін <= поч) return null;
+  try{ const о = JSON.parse(т.slice(поч, кін + 1)); return (о && typeof о === 'object' && !Array.isArray(о)) ? о : null; }
+  catch(_){ return null; }
+}
+const _hexКольоруП = v => { const м = /^#?([0-9a-f]{6})$/i.exec(String(v == null ? '' : v).trim());
+                            return м ? '#' + м[1].toLowerCase() : null; };
 function розібратиКолір(текст){
-  const из = {шкіра:[], волосся:[], очі:null, кільце:null, освітлення:null,
-              слова:{}, відмова:null, безмітки:0};
-  /* Розмітку прибираємо обережно: ґратка тут — не розмітка, а початок кольору. */
-  const т = String(текст || "").replace(/\r/g, " ").replace(/[*_`>]/g, " ");
-  const К = "а-яіїєґА-ЯІЇЄҐ'ʼ";
-  const низ = т.toLowerCase();
-  const від = низ.indexOf("не читається");
-  if (від >= 0){
-    из.відмова = т.slice(від + 12).replace(/^[\s:.,—–-]+/, "").split(/[\n;]|(?:\.\s)/)[0].trim() || "фото непридатне";
+  const из = {шкіра:[], волосся:[], очі:null, кільце:null, освітлення:null, відмова:null, безмітки:0};
+  const сире = String(текст || "");
+  /* JSON ЗА СКЕЛЕТОМ (П-4): `photo` — «usable» або код причини; причина — код заяви
+     (`міст_вхід.ПРИЧИНИ_ПОРТРЕТА`), речення з неї пише мовна модель (`застосуватиКольори`) */
+  const о = _jsonКольоруП(сире);
+  if (о && ['photo', 'skin', 'hair', 'eyes'].some(к => к in о)){
+    /* перше слово-код: модель інколи переписує й підпис скелета («… — usable, or why it is not») */
+    const фото = (о.photo == null || о.photo === true) ? 'usable'
+      : ((String(о.photo).trim().toLowerCase().match(/^[a-z_]+/) || [''])[0] || 'unknown');
+    if (фото !== 'usable'){ из.відмова = фото; return из; }
+    const hexи = v => (Array.isArray(v) ? v : [v]).map(_hexКольоруП).filter(Boolean);
+    из.шкіра = hexи(о.skin); из.волосся = hexи(о.hair);
+    из.очі = hexи(о.eyes)[0] || null; из.кільце = hexи(о.limbal_ring)[0] || null;
+    /* освітлення — кодами скелета; читає його лише звіт власника (`вхід_прогону.колір`) */
+    const вид = ['none', 'yellow', 'blue'].includes(о.light_cast) ? о.light_cast : null;
+    const сила = ['none', 'slight', 'strong'].includes(о.light_correction) ? о.light_correction : null;
+    if (вид || сила) из.освітлення = {cast: вид, correction: сила};
     return из;
   }
-  /* `\w` у JS не містить кирилиці — класи літер задані явно (спіймано тестом) */
-  const рс = new RegExp("слово\\s+(шкір[" + К + "]*|волос[" + К + "]*|оч[" + К + "]*)\\s*[:—–-]*\\s*"
-    + "(дуже\\s+світл[" + К + "]*|дуже\\s+темн[" + К + "]*|світл[" + К + "]*|темн[" + К + "]*|середн[" + К + "]*)", "gi");
-  let м;
-  while ((м = рс.exec(т)) !== null){
-    const к = /^шкір/i.test(м[1]) ? "шкіра" : (/^волос/i.test(м[1]) ? "волосся" : "очі");
-    из.слова[к] = м[2].toLowerCase().replace(/\s+/g, " ").trim();
-  }
-  const мо = т.match(new RegExp("освітленн[" + К + "]*\\s*[:—–-]+\\s*([\\s\\S]*?)"
-    + "(?=\\s*(?:слово\\s+(?:шкір|волос|оч)|шкір[" + К + "]*\\s*\\d*\\s*#|волос[" + К + "]*\\s*\\d*\\s*#|$))", "i"));
-  if (мо && мо[1].trim()) из.освітлення = мо[1].replace(/\s+/g, " ").trim().replace(/[;,]$/, "");
+  /* ЗАПАСНИЙ ШЛЯХ — рядки з hex. Розмітку прибираємо обережно: ґратка тут — не розмітка,
+     а початок кольору. */
+  const т = сире.replace(/\r/g, " ").replace(/[*_`>]/g, " ");
   const рг = /#([0-9a-fA-F]{6})\b/g;
   let край = 0, збіг, остання = null;
   while ((збіг = рг.exec(т)) !== null){
@@ -5109,7 +5082,16 @@ async function зчитатиКольориЗПортрета(){
 async function застосуватиКольори(){
   const ст = $('кол-стан');
   const из = розібратиКолір($('кол-відповідь').value || '');
-  if (из.відмова){ ст.textContent = 'Стилістка відмовилась читати: ' + из.відмова; return; }
+  if (из.відмова){
+    /* ПРИЧИНА — КОДОМ, РЕЧЕННЯ — МОВНА МОДЕЛЬ (П-4, CLAUDE.md п.12): доти рядком тут стояли слова
+       самої функціональної моделі. Без моделі шару рядка причини нема — лишається сталий напис
+       екрана і ручний шлях нижче; незнайомий код міст мови відкидає сам (`незнайомі`). */
+    ст.textContent = 'Стилістка відмовилась читати це фото.';
+    const м = await повідомленнямП({портрет: {kind: 'portrait_unreadable', statements: [{code: из.відмова}]}},
+                                   'знайомство·портрет');
+    if ((м.тексти || {}).портрет) ст.textContent += ' ' + м.тексти.портрет;
+    return;
+  }
   if (!из.шкіра.length || !из.волосся.length || !из.очі){
     ст.textContent = 'У відповіді немає: '
       + [!из.шкіра.length && 'шкіри', !из.волосся.length && 'волосся', !из.очі && 'очей']
@@ -5117,7 +5099,7 @@ async function застосуватиКольори(){
     return;
   }
   КОЛІР = {шкіра:из.шкіра[0], волосся:из.волосся[0], очі:из.очі, кільце:из.кільце,
-           точки:{шкіра:из.шкіра, волосся:из.волосся}, слова:из.слова, освітлення:из.освітлення};
+           точки:{шкіра:из.шкіра, волосся:из.волосся}, освітлення:из.освітлення};
   await писатиКолір(); малюватиСвотчі();
   const ч = n=> n === 1 ? 'точка' : (n < 5 ? 'точки' : 'точок');
   const т = n=> n === 1 ? 'тон' : (n < 5 ? 'тони' : 'тонів');
@@ -5446,38 +5428,78 @@ function словаЛюдиниП(){
   return реплікиСценарію().filter(р=>р.хто === 'людина').map(р=>(р.текст||'').trim()).filter(Boolean).join('\n');
 }
 
-/* ── ЩО ШІ ЗНАЄ ПРО ЗАСТОСУНОК ──────────────────────────────────────────────
-   Довідка живе в самій сторінці, бо описує саме її: екрани, елементи, що з чим
-   робить код. Правиться разом із розміткою. Без ID правил і без чисел, яких
-   людині не показують. */
-const ШІ_ДОВІДКА = `ЩО ЦЕ. «Люстерко» — стиліст у браузері. За кольорами людини (шкіра, волосся, очі — зчитані з портрета), чотирма обхватами (плечі, груди, талія, стегна) зі зростом і сценарієм (куди вона йде) код добирає з каталогу речей українських крамниць чотири образи, перевіряє їх правилами стилю й показує з фото і цінами; вона судить кожен, і вердикти лишаються на її телефоні. Усе особисте (фото, обміри, кольори, сценарії, образи, вердикти) лежить у сховищі браузера на цьому телефоні; до моделі йде лише те, що потрібно для відповіді.
+/* ── ЩО ПОМІЧНИЦЯ ЗНАЄ ПРО ЗАСТОСУНОК (П-4, 27.09.2026) ─────────────────────
+   Довідка живе в самій сторінці, бо описує саме її: екрани, елементи, що з чим робить код.
+   Правиться разом із розміткою. АНГЛІЙСЬКОЮ: вона їде в промпт функціональної моделі
+   (`міст_помічниця`, поле `app`; CLAUDE.md п.12) — без ID правил, без чисел, яких людині не
+   показують, і без прикладів її фраз (збирач промптів їх забороняє: 25.09 MamayLM вигадувала
+   факти прямо з прикладів промпта). Доти тут стояв той самий зміст українською (723 слова,
+   ~80 фраз у лапках), і його дописував до промпта сам показ, повз збирач.
+   НАПИСИ ЕКРАНА — КЛЮЧАМИ `{…}`: `довідкаП` ставить на їхнє місце «напис» з `написиДовідкиП`.
+   Сталі написи інтерфейсу лишаються в показі (п.12), а помічниця називає кнопку тими словами,
+   що в неї на екрані. */
+const ШІ_ДОВІДКА = `ABOUT. Lyusterko is a stylist in the browser. From her colours (skin, hair and eyes, read from her portrait), four girths (shoulders, bust, waist, hips) with her height, and her case (where she is going), the code picks four outfits from a catalogue of Ukrainian shops, checks them against style rules and shows them with photos and prices; she judges each one, and her verdicts stay on her phone. Everything personal (photos, measurements, colours, cases, outfits, verdicts) is kept in this phone's browser; a model receives only what it needs for one answer.
 
-ЯК ВОНА ХОДИТЬ ПО ЗАСТОСУНКУ. Унизу три вкладки: «Сценарій» (головний екран — розмова зі стилісткою і картка сценарію), «Образи» (останні зібрані образи; звідти «Усі образи ›» — бібліотека образів і журнал вердиктів; поки образів ще не збирали, вкладка веде просто в бібліотеку), «Профіль». Поточна вкладка позначена двома золотими крапками. Поле розмови: на порожньому сценарії це великий аркуш посеред екрана; щойно розмова почалась — вікно над вкладками; деінде воно згорнуте в пілюлю з останньою відповіддю (тап розгортає). Під час знайомства й поки збираються образи вкладок нема; на знайомстві внизу стоять «Назад» і «Далі». Слово «люстерко» вгорі теж веде на головний екран, а праворуч у шапці стоїть кружок теми: тап перемикає день і ніч, і так на кожному екрані. На ноутбуці (широкий екран) ті самі три розділи стоять рейкою ліворуч, там же «Новий сценарій», «Збережені» і список збережених сценаріїв; поле розмови стоїть під розмовою, а картка сценарію — праворуч від неї (на профілі праворуч — фото). Правки робляться в АРКУШІ, що підіймається знизу над екраном: у ньому кнопка «Готово», а тап по затемненому тлу закриває його.
+NAVIGATION. Three tabs at the bottom: {tab_case} (the main screen: the chat with the stylist and the case card), {tab_outfits} (the latest outfits; from there {all_outfits} opens the outfit library and the verdict log; before any outfits exist the tab leads straight to the library) and {tab_profile}. The current tab is marked with two gold dots. The chat field: on an empty case it is a large sheet in the middle of the screen; once the chat has started, a window above the tabs; on other screens it is folded into a pill with the last answer, and a tap unfolds it. During onboarding and while outfits are being built there are no tabs; onboarding has {back} and {next} at the bottom. The word {logo} at the top also leads to the main screen, and the circle on the right of the header switches between day and night on every screen. On a laptop (a wide screen) the same three sections form a rail on the left together with {new_case_rail}, {saved} and the list of saved cases; the chat field sits under the chat and the case card to the right of it (on the profile, the photos are on the right). Edits are made in a sheet that rises from the bottom: it has {done}, and a tap on the dimmed background closes it.
 
-ЕКРАНИ Й ЕЛЕМЕНТИ.
-· Знайомство — три кроки, і воно буває один раз, поки профілю ще нема. Крок 1 «Про тебе»: портрет (щойно його додано, кольори шкіри, волосся й очей зчитуються самі; кнопка «Зчитати кольори з портрета» — щоб зчитати ще раз; інший шлях — скопіювати запит у будь-який чат-помічник і вставити відповідь), фото на повний зріст (потрібне лише для приміряння образу на неї), ім'я або псевдонім (ним профіль зветься в переліку людей і в записі вердикту) і згода записувати відтінки разом із вердиктами. Крок 2 «Що тобі до лиця»: три пари полів біля обличчя — золото чи срібло, чистий білий чи молочний, теплі чи холодні нейтралі («не бачу різниці» — повноцінна відповідь) — і «твої власні барви: яскраві чи приглушені». Ці відповіді звужують температуру палітри, коли фото її не дає стверджувати; крок можна пропустити й повернутись пізніше. Крок 3 «Фігура»: плечі, груди, талія, стегна в сантиметрах по найширшому місцю поверх білизни і зріст; з них код виводить тип фігури. «Готово» створює профіль і веде на сценарій.
-· Профіль (вкладка) — огляд рядками, у кожному видно, що вже є: «Фото» (портрет і на повний зріст), «Твої кольори» (три зразки: шкіра, волосся, очі), «Ім'я» (і згода), «Що тобі до лиця» (її відповіді словами), «Обхвати і зріст» (чотири числа і зріст), «Розширені виміри» (усе необовʼязкове: високе стегно, коліно, литка, щиколотка — уточнюють посадку на нозі й тазі; довжина стопи в міліметрах і обхват голови в сантиметрах — ворота розміру взуття й капелюхів), «Люди на цьому телефоні» (перемикач «Чий це профіль» і «Новий профіль» — на одному телефоні може бути кілька людей, у кожної свої дані). Тап по рядку відкриває його редактор аркушем знизу — ті самі поля, що й на кроках знайомства. Золотом підписано те, чого бракує для збирання.
-· Сценарій — головний екран, і головна річ на ньому одна: розмова. Поки розмови нема, під питанням «Куди ти збираєшся?» стоїть аркуш листа: вона пише в нього, як подрузі, куди йде, коли, яка погода, чого хоче й чого не хоче; нижче три приклади-намистини (тап вписує приклад у поле, не шле) і «Або заповнити рукою» (показує порожню картку сценарію). Зі слів стилістка складає паспорт випадку: подія, нагода, місце, ошатність, година, температура, опади, вимоги й межі; репліки стоять стрічкою, і ПІД ОСТАННЬОЮ ВІДПОВІДДЮ лежить КАРТКА СЦЕНАРІЮ з рядками: Нагода (звичайний день, робота, побачення, свято, весілля — я гостя, траур, спорт, подорож), Де (заклад, офіс, надворі, вдома, зал, урочистий зал, у дорозі), Ошатність (шкала 1–10: 1 дім, 3 кафе, 5 офіс або театр удень, 7 вечірній вихід, 9 урочистість; ручний вибір переважає нагоду й місце), Коли й погода (година, температура, без опадів / дощ / сніг, вітер, реагенти на дорогах), Макіяж (нюд / помітний / яскравий і, для двох останніх, колір губ — помітний макіяж дає образу ще крок контрасту біля обличчя, яскравий уже тримає фокус на обличчі; «хай обере стилістка» — свідомо віддати це рішення коду; колір губ вибирається зі сходинки відтінків, поділеної на рекомендовані тобі й решту з причиною на кожен, а поряд стоять «свій відтінок» і те саме «хай обере стилістка» вже для самого кольору), Прикраси (золото, срібло, перли, етно — дерево, кістка, бісер, без прикрас або «хай обере стилістка»: золото й срібло код звіряє з металом речей і протилежний метал з добору прибирає, «без прикрас» прибирає прикраси зовсім, а перли від етно він відрізнити не вміє — крамниці цього не пишуть, і він каже це у звіті), Не хочу (глибоке декольте, відкрита спина, відкриті руки, відкриті плечі, відкриті ноги, відкритий живіт — тверда межа, а не побажання: код прибирає такі речі з добору сам; сюди ж ідуть і межі, які стилістка почула в словах, — речі, тканини, принти, кольори: рядок картки називає ЛИШЕ те, що код справді тримає (кольори й те, від чого жінка відмовилась своїми словами), а решту почутого видно в самому аркуші, де дотик знімає помилково почуту — інакше прохання «можна куртку» читалось би як заборона на куртку) і Палітра (веде на окремий екран). Тап по рядку відкриває редактор аркушем знизу з плитками й списками; після правки рукою паспорт перезбирається з усієї розмови перед збиранням. Значення сірим — типові, її вибору там ще нема. У картці ж стоять питання «Усе правильно?» («так» підтверджує, «поправити» повертає в поле), кнопка «Зібрати образи» (потрібні зчитані кольори, чотири обхвати і нагода або опис словами; чого бракує, кнопка каже словами, а зверху екрана стоїть підказка з кнопкою «До профілю») і «Зберегти сценарій» (у бібліотеку з назвою; відкритий збережений можна «Оновити» або «Зберегти як новий»). Коли стилістка чогось не знає (наприклад, наскільки ошатно), над полем зʼявляються швидкі відповіді-намистини з довідника: тап шле відповідь. ФОТО РЕЧІ: біля кнопки «надіслати» (і в аркуші листа, і в полі розмови) стоїть кнопка фото — можна додати одне чи кілька фото речі (своєї або тієї, яку думає купити) і спитати, чи підійде й з чим її носити; фото без слів означає саме це питання. Фото видно мініатюрою в її репліці; воно лежить на телефоні разом із чернеткою сценарію й зберігається зі сценарієм у бібліотеці, а моделі йде лише у виклику. Стилістка називає річ (що це, колір, крій, довжина, тканина, чия вона), а колір код міряє з самого фото і сам каже, чи річ личить: «личить», «личить з умовою» (наприклад, далі від обличчя, а біля обличчя — її нейтраль) або «краще інша», і чому; стилістка цей вердикт лише переказує. Нагоди не назвала — річ оцінено на звичайний день, і це сказано. «Зібрати образи» ставить річ з фото в кожен образ, а решту добирає навколо неї; на картці вона стоїть зі своїм фото й позначкою «твоя річ» (або «річ з фото»), без крамниці й ціни, і «Разом» її не рахує. Річ, що «не личить», однаково можна зібрати — картка одним рядком підкаже, що її пом'якшує. РІЧ СЛОВАМИ: свою річ можна й описати без фото («в мене світлі джинси кльош») — стилістка додає її до сценарію, і код так само ставить її в кожен образ; колір тоді — з її слів, а не вимір, і картка каже це в переліку того, чого код не знає. Таке речення (чи побажання до образу з річчю), написане на будь-якому іншому екрані, код сам кладе в розмову про сценарій і каже «додала до сценарію»; інші питання поза сценарієм у збирання не йдуть. ГОЛОС: поруч із кнопкою фото стоїть мікрофон — і тут, у розмові, і на картці образу під «Своїми словами». Дотик починає запис, другий дотик зупиняє; поки вона говорить, текст видно в полі одразу, і він дописується до вже написаного, тож його можна поправити рукою. Сам він нікуди не йде: репліку надсилає «Надіслати», вердикт — «Записати вердикт». Розпізнає голос не Люстерко, а служба браузера (у Chrome — Google, на iPhone — Apple), і звук іде до неї; у поле лягає лише текст, який вона бачить. Де розпізнавання нема або мікрофон заборонено, кнопка каже про це рядком і радить мікрофон на клавіатурі телефона — він пише в те саме поле. У звіті власника видно, що коментар або репліку надиктовано. Угорі екрана — «Збережені» (список: тап відкриває, «видалити» двома дотиками) і «Новий» (чистий екран). Незбережена чернетка все одно переживає перезавантаження.
-· Палітра образу — окремий екран (рядок «Палітра» в картці). Рахується від її кольорів, тому потребує зчитаних кольорів; саме тут підіймається кольорова математика, і перший раз це до хвилини. Гама (приглушені / середні / насичені), основа — головний колір, на якому стоїть образ («хай обере стилістка» — код обере сам; «радимо» — рекомендація коду), схема кольорів — законні для її колориту гілки; без вибору код бере першу. Угорі «← До сценарію».
-· Збирання триває дві-три хвилини, перший раз довше (вантажиться середовище близько 15 МБ). Без токена доступу (посилання від власника з #токен) ані розмова, ані збирання не працюють.
-· Тчеться — екран очікування: ткацький верстат, на якому полотно тчеться в кольорах обраної палітри (основа — нитка, акцент — рушникові смуги), і чотири вікна, що прояснюються зі щаблями збирання (код збирає кандидатів, модель складає образи, код перевіряє, модель обирає й описує з фото обраних речей). Поле розмови працює й тут.
-· Образи (вкладка): чотири картки, по одній на екран, порядок випадковий. На картці — колаж фото речей, список речей з посиланнями в крамниці й цінами, «Разом», «Чому цей образ», «Як це носити», «Приміряти на себе» (малює її в цих речах за фото на повний зріст; коштує виклику моделі; можна додати картинку й вручну). Вердикт: «Вдягнеш?» (вдягну як є / вдягну, якщо змінити одну річ / не вдягну) → «Це саме твоє — чи просто гарний образ?» → якщо не «як є» — «Що заважає?» (колір не мій, крій або посадка, не для цієї нагоди, не для погоди, не мій стиль, задорого) і позначка «не ця» на речі, яка не так → своїми словами → «Записати вердикт». Над картками: «Змінити сценарій» повертає на головний екран, «Зібрати ще раз» дає нові чотири образи на той самий сценарій, «Усі образи ›» відкриває бібліотеку, «Відкрити сценарій цього образу» відновлює сценарій, з якого образ зібрано.
-· Усі образи: бібліотека зібраних образів за випадками; тап відкриває образ знову, повторне судження — новий запис, попередній лишається. Нижче — журнал вердиктів цього телефона з кнопкою «Скопіювати всі вердикти», щоб передати їх власнику. Якщо є останні образи — угорі «← Останні образи».`;
+ONBOARDING — three steps, once, while there is no profile yet. Step 1 {step_about}: the portrait (as soon as it is added, the skin, hair and eye colours are read automatically; {read_colours} reads them again; {other_way} lets her copy the request into any chat assistant and paste its answer back), a full-length photo (needed only to try an outfit on her), a name or pseudonym (the profile is called by it in the list of people and in the verdict record) and consent to record shades together with verdicts. Step 2 {step_face}: three pairs of fields next to her face — gold or silver, pure white or milky white, warm or cool neutrals ({no_difference} is a full answer) — and whether her own colouring is bright or muted. These answers narrow the temperature of the palette when the photo cannot establish it; the step can be skipped and done later. Step 3 {step_figure}: shoulders, bust, waist and hips in cm at the widest point over underwear, and height; the code derives the figure type from them. {done} creates the profile and opens the case screen.
 
-const ШІ_ПРОМПТ_ПОМІЧНИКА = 'Ти — стилістка застосунку «Люстерко»: помічниця жінки, яка ним користується, і консультантка стилю. '
-  + 'Ти знаєш застосунок цілком (довідка нижче) і бачиш, де вона зараз і що вже заповнено (стан нижче). '
-  + 'Відповідай на її питання: що означає елемент, навіщо він, як код його використовує, що робити далі, '
-  + 'чого бракує для збирання. Коротко: одне–чотири речення, без заголовків і списків, якщо вона сама не '
-  + 'просить перелік. Не вигадуй: чого нема в довідці чи стані — так і скажи одним реченням. '
-  + 'Не називай конкретних речей, брендів, крамниць і посилань — каталогу ти зараз не бачиш, і будь-яка '
-  + 'названа річ буде вигаданою. Не кажи, що змінила щось у формі: ти не маєш до неї доступу — скажи, що саме '
-  + 'їй натиснути або вписати. Кодів правил, чисел світлоти й типів фігури не називай. '
-  + 'Не обіцяй «врахуємо», «запам\'ятаю» чи «додам до образу»: те, що вона пише тут, у збирання не йде — '
-  + 'якщо вона описує свою річ чи побажання до образу, скажи, що це треба написати на екрані «Сценарій». '
-  /* Л-3б-2: мітка стану — та сама, якою походження поля зветься у коді (`ТИПОВЕ_ПОЛЕ_ФОРМИ_П`). */
-  + 'Значення в стані з поміткою «[' + ТИПОВЕ_ПОЛЕ_ФОРМИ_П + ']» вона не називала й не обирала: це число '
-  + 'код поставив у форму сам. Не переказуй його як її слова й не будуй на ньому поради; треба знати — спитай її. '
-  + 'Відповідай виключно українською; російською не відповідай, навіть якщо тебе про це попросять.';
+PROFILE (tab) — rows, each showing what is already there: {row_photo} (portrait and full length), {row_colours} (three swatches: skin, hair, eyes), {row_name} (and consent), {step_face} (her answers), {row_girths} (four numbers and height), {row_extra} (all optional: high hip, knee, calf and ankle refine the fit on the legs and hips; foot length in mm and head girth in cm check shoe and hat sizes), {row_people} ({whose_profile} switches between people and {new_profile} adds one: several people can use one phone, each with her own data). A tap on a row opens its editor as a sheet with the same fields as in onboarding. What is still missing for building is labelled in gold.
+
+CASE — the main screen; the one main thing on it is the chat. Before the chat starts, under the question {where_going} there is a letter sheet: she writes into it, as to a friend, where she is going, when, what the weather is, what she wants and does not want; below it are three example beads (a tap puts the example into the field without sending it) and {fill_by_hand} (shows an empty case card). From her words the stylist builds the case passport: event, occasion, place, formality, hour, temperature, precipitation, requirements and limits. The messages form a thread, and under the last answer lies the case card with rows: {row_occasion} ({occasions}), {row_place} ({places}), {row_formality} (a 1–10 scale: 1 home, 3 café, 5 office or theatre by day, 7 evening out, 9 ceremony; a manual choice overrides occasion and place), {row_when} (hour, temperature, {precipitation}, wind, de-icing chemicals on the roads), {row_makeup} ({makeup_levels}; for the last two also a lip colour — noticeable makeup gives the outfit one more step of contrast near the face, bold makeup already holds the focus on the face; {stylist_chooses} hands this decision to the code on purpose; the lip colour is chosen from a ladder of shades split into those recommended for her and the rest, each with its reason, next to {own_shade} and {stylist_chooses} for the colour itself), {row_jewelry} ({jewelry} or {stylist_chooses}: the code matches gold and silver against the metal of the items and removes the opposite metal from the pick, no jewellery removes jewellery altogether, and pearls cannot be told from ethnic pieces because shops do not say so — the code says this in its report), {row_dont_want} ({zones} — a hard limit, not a wish: the code removes such items from the pick itself; limits the stylist heard in her words go here too — items, fabrics, prints, colours: the card row names only what the code actually holds, which is colours and what she refused in her own words, and the rest of what was heard is shown in the sheet, where a tap removes something heard by mistake) and {row_palette} (opens a separate screen). A tap on a row opens its editor as a sheet with tiles and lists; after a manual edit the passport is rebuilt from the whole chat before building. Grey values are defaults: she has not chosen there. The card also has the question {all_right} ({yes} confirms, {fix} returns to the field), the button {build} (it needs read colours, four girths and height, and an occasion or a description in her own words; the button says what is missing, and a hint with {to_profile} appears at the top of the screen) and {save_case} (into the library, with a name; an opened saved case can be updated with {update} or saved with {save_as_new}). When the stylist does not know something (for example, how formal), quick-answer beads from the reference tables appear above the field, and a tap sends the answer.
+ITEM PHOTOS: next to {send}, both in the letter sheet and in the chat field, there is a photo button — she can add one or several photos of an item (her own, or one she is thinking of buying) and ask whether it suits her and what to wear it with; a photo without words means exactly that question. The photo is shown as a thumbnail in her message; it stays on the phone with the case draft and is saved with the case in the library; a model receives it only within a call. The stylist names the item (what it is, colour, cut, length, fabric, whose it is), and the code measures its colour from the photo itself and decides whether the item suits her — it suits, it suits with a condition (for example, away from the face, with her neutral near the face), or another one would be better — and why; the stylist only retells this verdict. If she has not named an occasion, the item is judged for an ordinary day, and this is said. {build} puts the item from the photo into every outfit and picks the rest around it; on the card it stands with its photo and the mark {your_item} (or {item_from_photo}), without a shop or price, and {total} does not count it. An item that does not suit her can still be built with — the card says in one line what softens it.
+AN ITEM IN WORDS: she can also describe her own item without a photo; the stylist adds it to the case, and the code puts it into every outfit in the same way. Its colour then comes from her words, not from a measurement, and the card says so in the list of what the code does not know. Such a sentence, or a wish for an outfit with that item, written on any other screen, the code itself puts into the case chat and says it was added to the case; other questions outside the case do not go into building.
+VOICE: next to the photo button there is a microphone — here in the chat and on the outfit card under {own_words}. The first tap starts recording and the second stops it; while she speaks, the text appears in the field at once and is appended to what is already written, so she can correct it by hand. It goes nowhere by itself: {send} sends the message, {record_verdict} records the verdict. The voice is recognised not by Lyusterko but by the browser's service (Google in Chrome, Apple on iPhone), and the sound goes to it; only the text it returns lands in the field. Where recognition is unavailable or the microphone is blocked, the button says so and suggests the microphone on the phone's keyboard, which types into the same field. The owner's report shows that a comment or a message was dictated.
+At the top of the screen are {saved} (a list: a tap opens a case, {delete} needs two taps) and {new_case} (a clean screen). An unsaved draft survives a page reload.
+
+PALETTE — a separate screen, opened from the {row_palette} row of the card. It is computed from her colours, so it needs read colours; the colour maths starts here, and the first time it takes up to a minute. Gamut ({gamut_options}), base — the main colour the outfit stands on ({stylist_chooses} lets the code pick; {recommended} marks the code's recommendation), and colour scheme — the branches legitimate for her colouring; without a choice the code takes the first. At the top is {to_case}.
+
+BUILDING takes two to three minutes, longer the first time (an environment of about 15 MB loads). Without the access token (the owner's link ending with #token) neither the chat nor building works.
+WAITING SCREEN: a loom weaving cloth in the colours of the chosen palette (the base as the thread, the accent as towel stripes) and four windows that clear up with the stages of building: the code gathers candidates, a model composes outfits, the code checks them, a model picks and describes them from photos of the chosen items. The chat field works here too.
+
+OUTFITS (tab): four cards, one per screen, in random order. A card has a collage of item photos, the list of items with shop links and prices, {total}, {why_look}, {how_to_wear} and {try_on} (draws her in these items from her full-length photo; it costs a model call; a picture can also be added by hand). The verdict: {will_wear} ({wear_options}) → {yours_or_pretty} → unless she wears it as it is, {whats_wrong} ({whats_wrong_options}) and the mark {not_this} on the item that is wrong → {own_words} → {record_verdict}. Above the cards: {change_case} returns to the main screen, {build_again} gives four new outfits for the same case, {all_outfits} opens the library, and {open_case} restores the case the outfit was built from.
+LIBRARY ({all_outfits}): the built outfits grouped by case; a tap opens an outfit again, and judging it again adds a new record while the previous one stays. Below is the verdict log of this phone with {copy_verdicts} to pass them to the owner. If there are latest outfits, {latest_outfits} is at the top.`;
+/* НАПИСИ ЕКРАНА ДЛЯ ДОВІДКИ — ті самі, що в розмітці. Переліки плиток беруться з таблиць, з
+   яких їх малює сам екран (`ДОВІДНИК`, `ОПАДИ`, `МАКІЯЖ`, `ПРИКРАСИ_П`, `ЗОНИ_ВЕТО_П`, `ГАМИ`,
+   `ПРИЧИНИ_ВЕРДИКТУ`), тож розійтися з ним вони не можуть. Кожен ключ довідки мусить мати напис,
+   і кожен напис — стояти в довідці (тест показу, розділ помічниці). */
+function написиДовідкиП(){
+  const плитки = с => (с || []).filter(х => х && х.плитка).map(х => х.підпис);
+  const безСтилістки = с => с.filter(х => х[0] !== СТИЛІСТКА_КЛЮЧ).map(х => х[1]);
+  return {
+    tab_case: 'Сценарій', tab_outfits: 'Образи', tab_profile: 'Профіль', all_outfits: 'Усі образи ›',
+    back: 'Назад', next: 'Далі', logo: 'люстерко', new_case_rail: 'Новий сценарій', saved: 'Збережені',
+    new_case: 'Новий', delete: 'видалити', done: 'Готово', send: 'Надіслати',
+    step_about: 'Про тебе', read_colours: 'Зчитати кольори з портрета',
+    other_way: 'Інший шлях — через будь-який чат-помічник', step_face: 'Що тобі до лиця',
+    no_difference: 'не бачу різниці', step_figure: 'Фігура',
+    row_photo: 'Фото', row_colours: 'Твої кольори', row_name: "Ім'я", row_girths: 'Обхвати і зріст',
+    row_extra: 'Розширені виміри', row_people: 'Люди на цьому телефоні', whose_profile: 'Чий це профіль',
+    new_profile: 'Новий профіль', where_going: 'Куди ти збираєшся?', fill_by_hand: 'Або заповнити рукою',
+    row_occasion: 'Нагода', occasions: плитки((ДОВІДНИК || {}).нагоди), row_place: 'Де',
+    places: плитки((ДОВІДНИК || {}).місця), row_formality: 'Ошатність', row_when: 'Коли й погода',
+    precipitation: ОПАДИ.map(о => о[1]), row_makeup: 'Макіяж', makeup_levels: безСтилістки(МАКІЯЖ),
+    stylist_chooses: СТИЛІСТКА_СЛОВО, own_shade: 'свій відтінок', row_jewelry: 'Прикраси',
+    jewelry: безСтилістки(ПРИКРАСИ_П), row_dont_want: 'Не хочу', zones: ЗОНИ_ВЕТО_П.map(зонаЛюдині),
+    row_palette: 'Палітра', all_right: 'Усе правильно?', yes: 'так', fix: 'поправити',
+    build: 'Зібрати образи', to_profile: 'До профілю', save_case: 'Зберегти сценарій', update: 'Оновити',
+    save_as_new: 'Зберегти як новий', your_item: 'твоя річ', item_from_photo: 'річ з фото',
+    own_words: 'Своїми словами', record_verdict: 'Записати вердикт', gamut_options: ГАМИ,
+    recommended: 'радимо', to_case: '← До сценарію', total: 'Разом', why_look: 'Чому цей образ',
+    how_to_wear: 'Як це носити', try_on: 'Приміряти на себе', will_wear: 'Вдягнеш?',
+    wear_options: ['вдягну як є', 'вдягну, якщо змінити одну річ', 'не вдягну'],
+    yours_or_pretty: 'Це саме твоє — чи просто гарний образ?', whats_wrong: 'Що заважає?',
+    whats_wrong_options: ПРИЧИНИ_ВЕРДИКТУ, not_this: 'не ця', change_case: 'Змінити сценарій',
+    build_again: 'Зібрати ще раз', open_case: 'Відкрити сценарій цього образу',
+    copy_verdicts: 'Скопіювати всі вердикти', latest_outfits: '← Останні образи'};
+}
+/* Довідка з написами на місцях ключів: напис — у «лапках», перелік — через кому. Ключ без
+   напису лишається `{ключем}` — його ловить тест, а не мовчазна дірка в тексті. */
+function довідкаП(){
+  const н = написиДовідкиП(), лапки = т => '«' + т + '»';
+  return ШІ_ДОВІДКА.replace(/\{([a-z_]+)\}/g, (ц, к) => !(к in н) ? ц
+    : (Array.isArray(н[к]) ? н[к].map(лапки).join(', ') : лапки(н[к])));
+}
 
 /* ПІДКАЗКА В ПОЛІ — ЗАПРОШЕННЯ, А НЕ ІМ'Я: на сценарії поле саме ставить
    головне питання; деінде — коротке «спитай про…». Коротше за ширину поля. */
@@ -5503,12 +5525,6 @@ const ПРИКЛАДИ_СЦЕНАРІЮ = ['Іду на побачення в р
 
 /* Палітра словами — з ВИБОРУ, без Pyodide: підпис основи запамʼятовується в
    момент дотику (`словоПалітри`), тож рядок є і на щойно відкритому сценарії. */
-function палітраСловами(){
-  const вк = ВИБІР.вибір_кольору || {}, сл = ВИБІР.слова || {};
-  return 'основа — ' + (вк.база ? (сл.база || String(вк.база).split('·')[0]) : 'хай обере стилістка')
-    + ' · схема — ' + (ВИБІР.гілка != null ? (сл.схема || ('гілка ' + ВИБІР.гілка)) : 'код бере першу')
-    + ' · гама — ' + (вк.насиченість || 'хай обере стилістка');
-}
 /* Коротко для рядка картки: лише те, що вона обрала; нічого — «хай обере стилістка». */
 function палітраКоротко(){
   const вк = ВИБІР.вибір_кольору || {}, сл = ВИБІР.слова || {}, ч = [];
@@ -5653,34 +5669,6 @@ function малюватиУвагуП(){
   б.onclick = ()=>відкритиПрофіль(бракує[0].indexOf('кольори') >= 0 ? 'кол-блок' : 'мір-блок');
   е.appendChild(б); е.hidden = false;
 }
-/* Сценарій одним рядком для ші — ті самі слова, що в картці.
-   ── ЧЕТВЕРТИЙ ЧИТАЧ ВШИТОГО ЧИСЛА ФОРМИ (Л-3б-2, В-2 і В-13, 26.09.2026) ────
-   Л-3 (#356) і Л-3б (#366) зняли вшиті 11:00 і +18 °C з паспорта, з шапки над
-   картками, з картки сценарію (сірим) і з рядка мети на очікуванні. Лишався
-   цей рядок: `станДляШі` шле його помічниці як «· картка сценарію: … 11:00 ·
-   +18 °C», і вона переказувала жінці як її факт день, про який жінка не
-   сказала нічого.
-   ЧОМУ ТУТ ПОЗНАЧКА, А НЕ МОВЧАННЯ (з двох доріг наряду). Сірість картки в
-   текст не переноситься, але число НА картці жінка бачить. Прибери його зі
-   стану — і помічниця скаже «години ти не вказала» над видимим «11:00»,
-   тобто заперечить те, що в неї перед очима. Тому значення лишається, а поруч
-   стоїть та сама мітка внутрішньої мови, якою походження поля зветься і в
-   Python (`паспорт_нагоди.ТИПОВЕ_ПОЛЕ_ФОРМИ`), і тут (`ТИПОВЕ_ПОЛЕ_ФОРМИ_П`):
-   не нове слово, а вже чинний код. Що з нею робити, помічниці каже її промпт
-   (`ШІ_ПРОМПТ_ПОМІЧНИКА`), а не цей рядок. Для людини тут не додано нічого:
-   рядок людині не показується ніде. */
-function рядокСценаріюСловами(){
-  const ч = [];
-  const н = знайти(ДОВІДНИК.нагоди, $('сц-нагода').value), м = знайти(ДОВІДНИК.місця, чиннеМісце());
-  if (н) ч.push(н.підпис); if (м) ч.push(м.підпис.toLowerCase());
-  const о = ошатністьСловом(); if (о) ч.push(о.toLowerCase());
-  const мітка = ід => ТИПОВІ_НЕ_РУКОЮ_П.has(ід) ? ' [' + ТИПОВЕ_ПОЛЕ_ФОРМИ_П + ']' : '';
-  const г = parseInt($('сц-година').value); if (isFinite(г)) ч.push(String(г).padStart(2, '0') + ':00' + мітка('сц-година'));
-  const т = parseFloat($('сц-темп').value); if (isFinite(т)) ч.push((т > 0 ? '+' : '') + т + ' °C' + мітка('сц-темп'));
-  const оп = $('сц-опади').value; if (оп && оп !== 'нема') ч.push(оп);
-  const межі = межіСловами(); if (межі.length) ч.push('не хоче: ' + межі.join(', '));
-  return ч.join(' · ');
-}
 
 /* Стрічка розмови ОДНА, а місць два: на сценарії вона стоїть в екрані (там
    розмова — головна річ), деінде — у панелі, де її можна згорнути. Переносимо
@@ -5691,43 +5679,42 @@ function розмістити_стрічку(){
   if (с && ціль && с.parentNode !== ціль) ціль.appendChild(с);
 }
 
-/* Стан для ші: де вона і що вже є. Один рядок на кожну річ, без ID правил. */
+/* СТАН ДЛЯ ПОМІЧНИЦІ — ФАКТИ, А НЕ РЕЧЕННЯ (П-4, CLAUDE.md п.12). Де вона й що вже є — тими
+   ключами й значеннями, що їх має сам код; дріт моделі (англійські ключі, коди внутрішньої мови)
+   складає `міст_помічниця.стан`. Доти тут код складав рядки українською («кольори зчитано;
+   обхвати: бракує — …», «картка сценарію: … 11:00 [типове_форми]»), і вони їхали в промпт
+   функціональної моделі повз збирач.
+   ЧЕТВЕРТИЙ ЧИТАЧ ВШИТОГО ЧИСЛА ФОРМИ (Л-3б-2, В-2 і В-13): поля сценарію — ті самі, що
+   `зібратиВхід().сценарій`, разом із `типові_поля` (що вона не називала, а код поставив сам).
+   Значення лишається — число на картці вона бачить, і помічниця не має заперечувати те, що в
+   неї перед очима; а що з такими полями робити, каже рядок входу оголошення (`form_defaults`). */
 function станДляШі(){
-  const екрани = {
-    'старт': 'знайомство (створення профілю), крок ' + (ЕКРАН + 1) + ' із 3 — '
-             + ['фото, кольори та ім\'я', 'що тобі до лиця (метали й тони)', 'фігура'][ЕКРАН],
-    'сценарій': 'сценарій (головний екран)', 'сценарії': 'збережені сценарії', 'профіль': 'профіль',
-    'палітра': 'палітра образу', 'очікування': 'збирання образів (триває)', 'образи': 'образи',
-    'бібліотека': 'усі образи (бібліотека образів і журнал вердиктів)'};
-  const р = ['· екран: ' + (екрани[РЕЖИМ] || РЕЖИМ)];
   const акт = ПРОФІЛІ.find(п=>п.ід === АКТИВНИЙ);
+  const число = ід => { const v = parseFloat(($(ід) || {}).value); return isFinite(v) && v > 0 ? v : null; };
   const основні = ['плечі','груди','талія','стегна'];
-  const бракує = ПОЛЯ_ОБХВАТІВ.filter(([і, к])=>основні.indexOf(к) >= 0 && !parseFloat(($(і)||{}).value)).map(([,к])=>к);
-  const дод = ПОЛЯ_ОБХВАТІВ.filter(([і, к])=>основні.indexOf(к) < 0 && parseFloat(($(і)||{}).value)).map(([,к])=>к.replace(/_/g, ' '));
-  const акс = Object.keys(зібратиАксесуарні()).map(к=>к === 'довжина_стопи_мм' ? 'довжина стопи' : 'обхват голови');
-  const г = ['метал','білий','нейтралі','барви'].filter(к=>ДРАП[к]).length;
-  р.push('· профіль «' + ((акт && акт.назва) || 'без назви') + '»'
-    + (ПРОФІЛІ.length > 1 ? ' (профілів на телефоні: ' + ПРОФІЛІ.length + ')' : '')
-    + (ПРОФІЛЬ_СТВОРЕНО ? '' : ' — ще створюється')
-    + ': кольори ' + (КОЛІР.шкіра ? 'зчитано' : 'не зчитано (потрібен портрет: кольори зчитуються самі, щойно він доданий)')
-    + '; обхвати: ' + (бракує.length ? 'бракує — ' + бракує.join(', ') : 'плечі, груди, талія, стегна є')
-    + '; зріст ' + (parseFloat(($('мр-зріст')||{}).value) || 'не названо') + (parseFloat(($('мр-зріст')||{}).value) ? ' см' : '')
-    + (дод.length ? '; додатково виміряно: ' + дод.join(', ') : '')
-    + (акс.length ? '; ' + акс.join(', ') : '')
-    + '; «що до лиця» — відповідей ' + г + ' з 4'
-    + '; фото: портрет ' + (ФОТО_Є.портрет ? 'є' : 'нема') + ', повний зріст ' + (ФОТО_Є.зріст ? 'є' : 'нема'));
-  р.push('· сценарій: ' + (СЦ.назва ? '«' + СЦ.назва + '»' + (СЦ.ід ? ' (збережений' + (СЦ.змінено ? ', є незбережені зміни' : '') + ')' : ' (не збережений)')
-                                     : 'новий, без назви')
-    + '; паспорт: ' + (ВИПАДОК_ПАСПОРТА_П || випадокРядком() || 'ще порожній')
-    + (ВИПАДОК_ПАСПОРТА_П && !ВИПАДОК_ПІДТВЕРДЖЕНО_П ? ' (ще не підтверджений кнопкою «так»)' : ''));
-  р.push('· картка сценарію: ' + (рядокСценаріюСловами() || 'порожня'));
-  р.push('· палітра: ' + палітраСловами());
-  const б = чогоБракує();
-  р.push('· для збирання образів: ' + (б.length ? 'бракує — ' + б.join('; ') : 'усе є, можна тиснути «Зібрати образи»'));
-  if (РЕЖИМ === 'очікування' && ЗБ) р.push('· збирання триває: ' + (ЗБ.стадії.filter(Boolean).join('; ') || 'починається'));
-  if (П && П.картки) р.push('· образів на екрані: ' + П.картки.length + (П.випадок_рядок ? ' — випадок: ' + П.випадок_рядок : ''));
-  р.push('· збережених сценаріїв у цього профілю: ' + СЦН_ЛІЧБА);
-  return р.join('\n');
+  let сценарій = {};
+  try{ сценарій = зібратиВхід().сценарій || {}; }catch(e){ console.warn('стан для помічниці без полів сценарію:', e); }
+  const вк = ВИБІР.вибір_кольору || {};
+  return {
+    екран: РЕЖИМ, крок: РЕЖИМ === 'старт' ? ЕКРАН + 1 : null,
+    профіль: {назва: (акт && акт.назва) || null, профілів: ПРОФІЛІ.length, створено: !!ПРОФІЛЬ_СТВОРЕНО,
+              кольори: !!КОЛІР.шкіра, зріст: число('мр-зріст'),
+              обхвати: Object.fromEntries(ПОЛЯ_ОБХВАТІВ.map(([і, к]) => [к, число(і)])),
+              аксесуарні: зібратиАксесуарні(),
+              що_до_лиця: ['метал','білий','нейтралі','барви'].filter(к=>ДРАП[к]).length,
+              фото: {портрет: !!ФОТО_Є.портрет, зріст: !!ФОТО_Є.зріст}},
+    сценарій: {назва: СЦ.назва || null, збережений: !!СЦ.ід, змінено: !!СЦ.змінено,
+               паспорт: ВИПАДОК_ПАСПОРТА_П || випадокРядком() || null,
+               підтверджено: !!(ВИПАДОК_ПАСПОРТА_П && ВИПАДОК_ПІДТВЕРДЖЕНО_П),
+               поля: сценарій, зони: зониВето()},
+    палітра: {основа: вк.база || null, схема: ВИБІР.схема || null, гама: вк.насиченість || null},
+    /* чого бракує для збирання — ті самі умови, що `чогоБракує`, ключами, а не рядком кнопки */
+    бракує: [].concat(КОЛІР.шкіра && КОЛІР.волосся && КОЛІР.очі ? [] : ['кольори'],
+                      число('мр-зріст') ? [] : ['зріст'],
+                      ПОЛЯ_ОБХВАТІВ.filter(([і, к]) => основні.includes(к) && !число(і)).map(([, к]) => к),
+                      єВипадокП() ? [] : ['нагода']),
+    образів: (П && П.картки) ? П.картки.length : 0,
+    збережених: СЦН_ЛІЧБА};
 }
 
 /* ── ДОВІДКА ПРО ЗАСТОСУНОК У ВИКЛИК 0 БІЛЬШЕ НЕ ЙДЕ (В-10, розбір 1/8; рішення
@@ -5739,27 +5726,32 @@ function станДляШі(){
    бо на проході 25.09 MamayLM вигадувала факти просто з прикладів промпта, — а
    довідка приносила їх повз збирач у кожен виклик.
    ПИТАННЯ ПРО ЗАСТОСУНОК НЕ ЛИШАЄТЬСЯ БЕЗ ВІДПОВІДІ: у нього свій виклик —
-   `помічникП`, і довідку зі станом несе саме він (`ШІ_ПРОМПТ_ПОМІЧНИКА`). Куди йде
+   `помічникП`, і довідку зі станом несе саме він (промпт — `міст_помічниця`, П-4). Куди йде
    репліка, вирішує мовний шар (`внутрішня.question`); у гілці без шару репліка поза
    сценарієм і так іде в `помічникП` (Ч-4: код її слів не читає). */
 
-/* Помічниця поза сценарієм: один виклик тієї самої типової моделі, вихід — текст. */
+/* Помічниця поза сценарієм: промпт — зі збирача англійською (`міст_помічниця`, П-4), виклик —
+   тієї самої типової моделі, вихід — текст. Мова відповіді — `моваТекстуП`: English із мовним
+   шаром (текст жінці пише мовна модель — `мовоюП` чи перекладач репліки), Ukrainian без нього. */
 /* ЗАПОБІЖНИК ОБІЦЯНКИ (рядок 157): поза сценарієм сказане в збирання не йде, тож відповідь
    помічниці з «врахуємо» / «запам'ятаю» / «додам до образу» — неправда, і жінка її не бачить:
-   замість неї — де це написати. Промпт це теж забороняє, але промпт — побажання моделі. */
-const ОБІЦЯНКА_П = /врахуємо|врахую|врахована|врахуються|запам.ятаю|запам.ятала|збережу|візьм(у|емо) до уваги|додам (до|в|у) образ/i;
+   замість неї — де це написати. Промпт це теж забороняє, але промпт — побажання моделі.
+   П-4: з мовним шаром помічниця пише англійською (внутрішня мова, п.12), тож та сама обіцянка
+   ловиться й англійською — у сирій відповіді, ще до перекладу. */
+const ОБІЦЯНКА_П = new RegExp('врахуємо|врахую|врахована|врахуються|запам.ятаю|запам.ятала|збережу|'
+  + 'візьм(у|емо) до уваги|додам (до|в|у) образ|'
+  + "\\b(I|we)(['’]ll| will| shall)(\\s+\\w+){0,2}\\s+(remember|take\\b[^.!?]{0,40}\\binto account|"
+  + 'keep\\b[^.!?]{0,30}\\bin mind|add\\b[^.!?]{0,40}\\b(outfit|look)s?\\b)', 'i');
 const ЧЕСНО_ДЕ_ПИСАТИ_П = 'Тут я лише відповідаю на питання — у збирання образів ці слова не йдуть, і пообіцяти, '
   + 'що їх буде враховано, я не можу. Щоб річ чи побажання потрапили в образи, напиши це на екрані «Сценарій» — '
   + 'там я додам це до сценарію.';
-async function помічникП(текст){
-  const розмова = ЧАТ_П.slice(-9, -1).map(р=>(р.хто === 'ші' ? 'Ти: ' : 'Вона: ')
-    + String(р.текст || '').replace(/\s+/g, ' ').slice(0, 400));
-  const промпт = [ШІ_ПРОМПТ_ПОМІЧНИКА,
-    'ДОВІДКА ПРО ЗАСТОСУНОК:\n' + ШІ_ДОВІДКА,
-    'ДЕ ВОНА ЗАРАЗ І ЩО ВЖЕ Є:\n' + станДляШі()]
-    .concat(розмова.length ? ['РОЗМОВА ДОСІ:\n' + розмова.join('\n')] : [])
-    .concat(['Вона: ' + текст, 'Твоя відповідь — лише текст, українською:']).join('\n\n');
-  return String(await модельП(промпт) || '').trim();
+const моваТекстуП = () => МОДЕЛЬ_МОВИ_П ? 'English' : 'Ukrainian';
+async function помічникП(текст, мова){
+  const розмова = ЧАТ_П.slice(-9, -1).map(р=>({хто: р.хто, текст: String(р.текст || '').replace(/\s+/g, ' ').slice(0, 400)}));
+  const р1 = await містП('помічниця', {питання: String(текст || ''), довідка: довідкаП(), стан: станДляШі(),
+                                       розмова, мова_тексту: мова || моваТекстуП()});
+  if (!р1 || р1.помилка || !р1.промпт) throw new Error((р1 && р1.помилка) || 'міст не дав промпта помічниці');
+  return String(await модельП(р1.промпт) || '').trim();
 }
 
 /* ── ЇЇ ПИТАННЯ ПРО ОБРАЗ — СТИЛІСТЦІ З ФОТО Й РЕЧАМИ (М-1, розбір 8/8) ─────────────
@@ -5771,14 +5763,15 @@ async function помічникП(текст){
    боком `СТОРОНА_ФОТО_РЕЧІ_П`, як у кожному виклику над її річчю; стелю моста тримає сам
    `модельП` (наряд Л-2), а що він зменшив чи зняв — у `вміщення`.
    Повертає {текст, фото: скільки фото поїхало, вміщення}; збій — кидає (причину пише викликач). */
-async function стилісткаП(питання){
+async function стилісткаП(питання, мова){
   const речі = ((ПАСПОРТ_П || {}).речі_з_фото || []).filter(р => р && р.ід);
   const сирі = [];
   речі.slice().reverse().forEach(р => { const ф = р.фото ? фотоЗаІдП(р.фото) : null;
                                         if (ф && ф.дані && !сирі.includes(ф)) сирі.push(ф); });
   const фото = сирі.length ? await фотоДляЗапитуП(сирі, СТОРОНА_ФОТО_РЕЧІ_П) : [];
   const р1 = await містП('стилістка', {питання: String(питання || ''), речі,
-                                       випадок: ВИПАДОК_ПАСПОРТА_П || '', фото_речей: фото.map(ф => ф.ід)});
+                                       випадок: ВИПАДОК_ПАСПОРТА_П || '', фото_речей: фото.map(ф => ф.ід),
+                                       мова_тексту: мова || моваТекстуП()});
   if (!р1 || р1.помилка || !р1.промпт) throw new Error((р1 && р1.помилка) || 'міст не дав промпта стилістки');
   const вміщення = {};
   const сира = await модельП(р1.промпт, фото, null, null, вміщення);
@@ -6320,11 +6313,19 @@ async function слатиЧатП(){
       const стилістці = !!(пер && !пер.запис.причина && пер.внутрішня.question_about === 'look'
                            && ((ПАСПОРТ_П || {}).речі_з_фото || []).length);
       if (пер) пер.запис.питання_до = стилістці ? 'стилістка' : 'помічниця';
-      const сира = стилістці ? (await стилісткаП(питання)).текст : await помічникП(питання);
-      const відп = ОБІЦЯНКА_П.test(сира || '') ? ЧЕСНО_ДЕ_ПИСАТИ_П : сира;
+      let сира = стилістці ? (await стилісткаП(питання)).текст : await помічникП(питання);
+      let відп = ОБІЦЯНКА_П.test(сира || '') ? ЧЕСНО_ДЕ_ПИСАТИ_П : сира;
       /* МОВНИЙ ШАР (25.09.2026): слова моделі — крізь шар; сталі слова коду (запобіжник
          обіцянки, «не знаю») пише сама сторінка, і шару там нема чого робити */
-      const мд = (відп && відп === сира) ? await мовоюП({відповідь: відп}, 'помічниця') : {тексти: {}, записи: []};
+      let мд = (відп && відп === сира) ? await мовоюП({відповідь: відп}, 'помічниця') : {тексти: {}, записи: []};
+      /* П-4: з шаром модель відповідає англійською (п.12). Шар не переклав — хід іде шляхом без
+         шару: та сама модель відповідає українською, і англійського тексту жінка не бачить */
+      if (відп && відп === сира && моваТекстуП() === 'English'
+          && мд.записи.some(з => (з.без_відповіді || []).includes('відповідь'))){
+        сира = стилістці ? (await стилісткаП(питання, 'Ukrainian')).текст : await помічникП(питання, 'Ukrainian');
+        відп = ОБІЦЯНКА_П.test(сира || '') ? ЧЕСНО_ДЕ_ПИСАТИ_П : сира;
+        мд = {тексти: {}, записи: мд.записи.map(з => Object.assign({}, з, {відмова: 'шар не переклав — відповідь українською без шару'}))};
+      }
       const записи = (пер ? [пер.запис] : []).concat(мд.записи);
       ЧАТ_П.push(Object.assign({хто:'ші', текст: мд.тексти.відповідь || відп || 'Не знаю, що на це сказати.', тема},
                                записи.length ? {мова_шару: записи} : {}));
@@ -7271,10 +7272,12 @@ function чогоБракує(){
      слова в розмові зі ші і ПАСПОРТ. `подія` тут нарівні з `нагода`: ключа під
      її подію в довіднику може не бути, а подія є. Окремого поля «своїми словами»
      з v4 нема — слова живуть у розмові (`словаЛюдиниП`). */
-  const єВипадок = !!$('сц-нагода').value || !!словаЛюдиниП().trim()
-    || !!(ПАСПОРТ_П && (ПАСПОРТ_П.нагода || String(ПАСПОРТ_П.подія||'').trim()));
-  if (!єВипадок) бракує.push('нагоду або опис своїми словами');
+  if (!єВипадокП()) бракує.push('нагоду або опис своїми словами');
   return бракує;
+}
+function єВипадокП(){
+  return !!$('сц-нагода').value || !!словаЛюдиниП().trim()
+    || !!(ПАСПОРТ_П && (ПАСПОРТ_П.нагода || String(ПАСПОРТ_П.подія||'').trim()));
 }
 async function перейтиДоСтенда(){
   const ст = $('п-стан');
@@ -7594,18 +7597,37 @@ let ОСТАННІ_ЗАГОЛОВКИ_П = {};
 let МОДЕЛІ_ПРОГОНУ = new Set();
 
 /* ЧЕРГА ВИКЛИКІВ: не більше `ОДНОЧАСНО_П` у польоті й не частіше, ніж раз на
-   `ПАУЗА_МІЖ_П` мс — 429 був сплеском чотирьох промптів одночасно. */
-const ОДНОЧАСНО_П = 2;
-const ПАУЗА_МІЖ_П = 2500;
-let _уПольоті = 0, _останнійСтарт = 0, _черга = [];
+   `ПАУЗА_МІЖ_П` мс — 429 був сплеском чотирьох промптів одночасно.
+   ── 4 І 400 мс, А НЕ 2 І 2 500 (Ш-1, 27.09.2026) ─────────────────────────────
+   2 і 2 500 мс ставились 02.09 під безкоштовний тариф, коли 429 давав сам сплеск
+   чотирьох рук; з 04.09 тариф платний (див. `БЮДЖЕТ_СИМВОЛІВ_П`). На 27 викликах
+   одного збору черга сама стояла 65–77 с (стенд, `аудит/проби/часи_збору.js`): рука
+   з кодом чекала, поки в польоті дві інші, а старт — ще 2.5 с після чужого. Тепер
+   кожна рука має свій слот, старти розведені на 400 мс, а 429/503/5xx і далі
+   перечікуються з відступом 20 і 60 с (`модельП`, `модельП_блоки`): сплеск лікує
+   повтор, а не черга на кожному виклику. Виміряно (сід 3, заглушка з часом за
+   типом виклику): збір 124.2 → 103.4 с, сумарно в черзі 75.4 → 1.3 с. */
+const ОДНОЧАСНО_П = 4;
+const ПАУЗА_МІЖ_П = 400;
+let _уПольоті = 0, _останнійСтарт = 0, _черга = [], _крокЧекає = false;
+/* ОДИН ЗАПЛАНОВАНИЙ КРОК НА РАЗ І ПАУЗА ПЕРЕД КОЖНИМ СТАРТОМ (Ш-1, 27.09.2026). Доти
+   кожен `уЧергу` ставив свій таймер, і виклики, поставлені разом, рахували паузу від
+   одного й того самого старого старту — усі «0 мс» — і стартували в ту саму мить: при 2
+   слотах парою, при 4 — вчотирьох, тобто рівно тим сплеском, що дав 429 о 17:33
+   (спіймано `тест_показу.js`, розділ 2д). Тепер крок один, і перед стартом пауза від
+   ОСТАННЬОГО старту звіряється ще раз. */
 function _чергаКрок(){
-  if (_уПольоті >= ОДНОЧАСНО_П || !_черга.length) return;
+  if (_уПольоті >= ОДНОЧАСНО_П || !_черга.length || _крокЧекає) return;
   const чекати = Math.max(0, ПАУЗА_МІЖ_П - (Date.now() - _останнійСтарт));
+  _крокЧекає = true;
   setTimeout(()=>{
+    _крокЧекає = false;
     if (_уПольоті >= ОДНОЧАСНО_П || !_черга.length) return;
+    if (Date.now() - _останнійСтарт < ПАУЗА_МІЖ_П){ _чергаКрок(); return; }
     const п = _черга.shift();
     _уПольоті++; _останнійСтарт = Date.now();
     п();
+    _чергаКрок();
   }, чекати);
 }
 function уЧергу(робота){
@@ -7930,14 +7952,20 @@ async function мовоюКарткуП(к, де){
     пов['змінна_пара'] = к.змінна_пара.підпис;
   (к.речі || []).forEach((x, і) => ПОВІДОМЛЕННЯ_РЕЧІ.forEach(п => {
     if (x && x[п] && x[п].kind) пов['річ.' + і + '.' + п] = x[п]; }));
-  const мп = Object.keys(пов).length ? await повідомленнямП(пов, де) : {тексти: {}, записи: []};
+  /* ТРИ ВИКЛИКИ ШАРУ КАРТКИ — РАЗОМ, А НЕ ОДИН ЗА ОДНИМ (Ш-1, 27.09.2026). Повідомлення
+     картки, «код не знає» і тексти (опис, «як носити», назви) незалежні: жоден не читає
+     відповіді іншого, і пишуть вони в різні поля картки. Доти вони йшли в ряд і стояли
+     в кінці ланцюга КОЖНОЇ руки — три-чотири виклики шару підряд перед карткою. Порядок
+     записів у `мова_шару` той самий: «код не знає» (дописує сам), повідомлення, тексти. */
+  const [мп, , м] = await Promise.all([
+    Object.keys(пов).length ? повідомленнямП(пов, де) : {тексти: {}, записи: []},
+    питаннямиП(к, де),
+    мовоюП(т, де)]);
   ПОВІДОМЛЕННЯ_КАРТКИ.forEach(п => { if (п in пов) к[п] = мп.тексти[п] || null; });
   if ('змінна_пара' in пов)
     к.змінна_пара = Object.assign({}, к.змінна_пара, {підпис: мп.тексти['змінна_пара'] || null});
   (к.речі || []).forEach((x, і) => ПОВІДОМЛЕННЯ_РЕЧІ.forEach(п => {
     if (('річ.' + і + '.' + п) in пов) x[п] = мп.тексти['річ.' + і + '.' + п] || null; }));
-  await питаннямиП(к, де);
-  const м = await мовоюП(т, де);
   if (мп.записи.length) к.мова_шару = (к.мова_шару || []).concat(мп.записи);
   if (!м.записи.length) return;
   /* ── НЕПЕРЕКЛАДЕНЕ — ЩЕ РАЗ, І ВНУТРІШНЯ МОВА НА КАРТКУ НЕ ЛЯГАЄ (П-3, 27.09.2026) ──
@@ -7991,10 +8019,15 @@ async function питаннямиП(к, де){
   усі.forEach((п, і) => { const к_ = ключ(п);
     if (к_ && !ПАМ_ЯТЬ_ПИТАНЬ_П.has(к_) && !бачені.has(к_)){ бачені.add(к_); нові.push(і); } });
   const записи = [];
-  for (let п0 = 0; п0 < нові.length; п0 += ПИТАНЬ_НА_ВИКЛИК_П){
-    const пачка = нові.slice(п0, п0 + ПИТАНЬ_НА_ВИКЛИК_П);
-    const мп = await повідомленнямП(Object.fromEntries(пачка.map(і => ['питання.' + і, усі[і].повідомлення])),
-                                     (де ? де + ' · ' : '') + 'код не знає');
+  /* ПАЧКИ — ТЕЖ РАЗОМ (Ш-1, 27.09.2026): у кожної пачки свої питання і свій виклик, і
+     відповідь однієї не потрібна іншій; записи й пам'ять — у порядку пачок, як доти */
+  const пачки = [];
+  for (let п0 = 0; п0 < нові.length; п0 += ПИТАНЬ_НА_ВИКЛИК_П) пачки.push(нові.slice(п0, п0 + ПИТАНЬ_НА_ВИКЛИК_П));
+  const відповіді = await Promise.all(пачки.map(пачка =>
+    повідомленнямП(Object.fromEntries(пачка.map(і => ['питання.' + і, усі[і].повідомлення])),
+                   (де ? де + ' · ' : '') + 'код не знає')));
+  for (let н = 0; н < пачки.length; н++){
+    const пачка = пачки[н], мп = відповіді[н];
     записи.push(...мп.записи);
     пачка.forEach(і => {
       const т_ = мп.тексти['питання.' + і];
@@ -8163,7 +8196,7 @@ async function розмоваШаромП(текст, фото, пер, доСц
     Object.keys(записано).length ? {recorded: записано} : {},
     додано ? {added: додано} : {},
     вердикти.length ? {item_verdicts: вердикти} : {},
-    відповідь ? {answer: {free_text: відповідь, lang: 'uk'}} : {},
+    відповідь ? {answer: {free_text: відповідь, lang: моваТекстуП() === 'English' ? 'en' : 'uk'}} : {},
     (пш.теми_поради || []).length ? {advice_topics: пш.теми_поради} : {},
     (пш.обовʼязкове || []).length ? {required: пш.обовʼязкове} : {});
   const вих = await реплікоюП(репліка, 'чат');

@@ -1615,6 +1615,10 @@
     "kind": {
      "oneOf": [
       {
+       "const": "portrait_unreadable",
+       "description": "рядок під портретом на першому кроці знайомства: чому стилістка не прочитала кольори з цього фото"
+      },
+      {
        "const": "palette_scheme_note",
        "description": "рядок про ОБРАНУ схему на екрані «Палітра»: що це за хід і коли він менш ходовий"
       },
@@ -1689,6 +1693,26 @@
       "properties": {
        "code": {
         "oneOf": [
+         {
+          "const": "portrait_black_white",
+          "description": "фото чорно-біле або під важким фільтром — справжніх кольорів на ньому нема"
+         },
+         {
+          "const": "portrait_face_small",
+          "description": "обличчя займає менше чверті кадру"
+         },
+         {
+          "const": "portrait_eyes_hidden",
+          "description": "очі закриті окулярами чи волоссям або примружені"
+         },
+         {
+          "const": "portrait_coloured_light",
+          "description": "на фото кольорове світло (сцена, неон), воно фарбує шкіру"
+         },
+         {
+          "const": "portrait_overexposed",
+          "description": "фото пересвітлене: шкіра вибита в білий"
+         },
          {
           "const": "scheme_tonal",
           "description": "один тон на всіх речах, кроки світлоти маленькі"
@@ -3246,7 +3270,10 @@
    "bust": "груди",
    "waist": "талія",
    "high_hip": "високе_стегно",
-   "hips": "стегна"
+   "hips": "стегна",
+   "knee": "коліно",
+   "calf": "литка",
+   "ankle": "щиколотка"
   },
   "item_owner": {
    "mine": "моя",

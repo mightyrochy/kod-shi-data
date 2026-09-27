@@ -19,6 +19,7 @@ import сценарій as СЦ
 # на телефоні перший же виклик 0 з фото впав би ImportError. У `паспорт_нагоди` імпорт
 # лишається лінивим: там він замкнув би коло через `silhouette` → `outfit`.
 import річ_з_фото as _РФ  # noqa: F401 — якір вантажу, див. вище
+import збирач_промптів as _ЗП
 
 СЛОТИ = ("верх", "низ", "взуття", "сумка")
 МАКС_ТОНІВ = 8
@@ -530,3 +531,80 @@ def _індекс_гілки(розвилка, гілка, схема):
             if г["схема"] == схема:
                 return i
     return None if гілка is None else min(гілка, len(розвилка) - 1)
+
+
+# ═══════════ ЇЇ КОЛЬОРИ З ПОРТРЕТА: ПРОМПТ НА ЗБИРАЧІ (П-4, 27.09.2026) ═══════════════
+# ЩО БУЛО. `показ.html.ПРОМПТ_КОЛІР` — стала JS українською (197 слів) повз збирач: на неї не
+# діяли ні англійський шаблон (CLAUDE.md п.12), ні межі, ні заборона прикладів-фраз, а причини
+# правил стояли в самому промпті реченнями для моделі («Три, бо одна точка на щоці…»).
+# ЩО ТЕПЕР. Оголошення тут, поруч із кодом, що читає ці hex (`_шкіра`, `_волосся`, `_features`).
+# Даних у виклику, крім самого фото, нема, тож промпт СТАЛИЙ: його складає збірка
+# (`build_артефакт`, плейсхолдер `__ПРОМПТ_КОЛІР_ПОКАЗУ__`), а не телефон — інакше перше
+# зчитування на знайомстві чекало б Pyodide задля того самого рядка. Відповідь розбирає показ
+# (`розібратиКолір`), так само без Pyodide.
+# ВІДПОВІДЬ — JSON за власним скелетом; доти — рядки тексту («шкіра 1 #…», «слово шкіра: …»,
+# «не читається: …»). Що змінилось, крім форми:
+#   · відмова — КОД із закритого переліку (`ПРИЧИНИ_ПОРТРЕТА`, заяви `внутрішня_мова`), а не
+#     речення: речення жінці пише мовна модель (вид `portrait_unreadable`), не функціональна;
+#   · «слова» світлоти (шкіра, волосся, очі) прибрано: їх просили як незалежну звірку hex, але
+#     звірку знесено 13.09 (Н-02-03 — `щабель`, `bridge._СЛОВА`), і відтоді їх не читає жоден
+#     рядок коду, ні показ, ні Python;
+#   · освітлення — кодами (`light_cast`, `light_correction`), а не реченням: його читає лише звіт
+#     власника (`вхід_прогону.колір.освітлення`).
+ПРИЧИНИ_ПОРТРЕТА = ("portrait_black_white", "portrait_face_small", "portrait_eyes_hidden",
+                    "portrait_coloured_light", "portrait_overexposed")
+ПОРТРЕТ_ПРИДАТНИЙ = "usable"
+# ЧОМУ ЦІ РЯДКИ (для людей; моделі це не потрібно):
+#   · непридатне фото — лише код причини, без кольорів: hex далі йде в детермінований розрахунок
+#     (`_features` → `colorspace.features`), який не вміє сумніватись і будує на ньому весь
+#     профіль, тож відмова краща за здогад. Умови — ті самі п'ять, що й доти, і на кожну — свій код;
+#   · шкіра — три точки: одна точка на щоці несе ±8–14 L* похибки від тіні, відблиску й тонального
+#     і перекидає рівень контрасту; код бере медіану точок (`_шкіра`, `_медіана_lab`);
+#   · волосся — першим тон найбільшої площі: перший запис код бере як «її волосся» (світлота, «її
+#     чорний», ручка корекції — `_волосся`, `_зсув_волосся`), решта — окремими рисами
+#     (`волосся_N`); злитий в один запис балаяж губить крок світлоти, який несе саме він;
+#   · очі — тіло райдужки, а темне лімбальне кільце — окремо: K-ECHO-01 / Zyla, кільце — кандидат
+#     «її чорний» (риса `очі_кільце`);
+#   · колір — з неї, не з тла й одягу: кожен запис стає її рисою;
+#   · жовтить чи синить — перерахувати на нейтральне денне світло: hex портрета код бере як є,
+#     балансу білого для нього нема; що правилось — у звіт власника;
+#   · межі: `лише_вхід` — тонів, яких не видно, не вигадувати; `невідомо` — кільце, якого не видно, — null.
+ЧИТАННЯ_ПОРТРЕТА = _ЗП.Оголошення(
+    задача="колір_портрета",
+    роль="You read a woman's own colours — skin, hair and eyes — from her portrait photo.",
+    вхід=(_ЗП.Поле("photo_of_her", "her portrait photo, attached as an image", треба=True),),
+    правила=(
+        "First decide whether the photo is usable. It is not when it is black-and-white or heavily "
+        "filtered, the face takes less than a quarter of the frame, the eyes are covered by glasses "
+        "or hair or narrowed, the light is coloured (stage or neon), or it is so overexposed that "
+        "the skin turns white. Then give only the reason in \"photo\" and no colours.",
+        "Skin: three points — cheek, forehead, jaw — each free of shadow, highlight, blush and foundation.",
+        "Hair: first the tone that covers the largest area of the head, even when it is neither the "
+        "lightest nor the darkest; then every other visible tone (highlights, balayage, roots, grey) "
+        "as its own entry. Even single-tone hair is one entry. Do not merge different tones.",
+        "Eyes: the body of the iris. A clearly darker ring along the edge of the iris goes to "
+        "\"limbal_ring\".",
+        "Take the colours from her, not from the background or her clothes.",
+        "If the light makes the photo yellow or blue, correct the colours to neutral daylight and "
+        "record the correction.",
+    ),
+    вихід="PORTRAIT_COLOURS",
+    скелет={"photo": "|".join((ПОРТРЕТ_ПРИДАТНИЙ,) + ПРИЧИНИ_ПОРТРЕТА),
+            "skin": ["<hex>"], "hair": ["<hex>"], "eyes": "<hex>", "limbal_ring": "<hex>",
+            "light_cast": "none|yellow|blue", "light_correction": "none|slight|strong"},
+    поля_виходу={"photo": "usable, or why it is not",
+                 "skin": "#rrggbb: cheek, forehead, jaw",
+                 "hair": "#rrggbb, the largest-area tone first",
+                 "eyes": "#rrggbb of the iris body",
+                 "limbal_ring": "#rrggbb, or null",
+                 "light_cast": "the cast you corrected",
+                 "light_correction": "how much you corrected it"},
+    межі=("лише_вхід", "невідомо"),
+    мова_промпту="en",
+)
+
+
+def промпт_кольору():
+    """Промпт зчитування її кольорів із портрета — рядок JSON збирача. Сталий: даних, крім
+    самого фото (його показ чіпляє картинкою), у виклику нема."""
+    return _json.dumps(_ЗП.зібрати(ЧИТАННЯ_ПОРТРЕТА, {"photo_of_her": True}), ensure_ascii=False)
