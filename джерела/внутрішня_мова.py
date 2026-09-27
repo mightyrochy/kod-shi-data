@@ -523,8 +523,13 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                            "прочитала кольори з цього фото",
     "palette_scheme_note": "рядок про ОБРАНУ схему на екрані «Палітра»: що це за хід і коли він "
                            "менш ходовий",
-    "palette_default_scheme": "рядок на екрані «Палітра», поки вона схему не обрала: за чим "
-                              "збирається образ без її вибору і скільки схем радить стилістка",
+    # П-7 (27.09.2026): схему, основу й гаму, які вона лишила «хай обере стилістка», обирає
+    # функціональна модель (`вибір_палітри`); слова «код» у цих рядках для неї нема (Ш-1 — теж).
+    "palette_default_scheme": "рядок на екрані «Палітра» про схему й основу, які вона лишила "
+                              "стилістці, поки стилістка їх не обрала або не змогла обрати: за чим "
+                              "тоді збирається образ і скільки схем радить стилістка",
+    "palette_stylist_choice": "рядок на екрані «Палітра» про те, що вона лишила стилістці: що "
+                              "стилістка обрала під цей вихід і чому, і що обрати інше можна самій",
     "palette_rarer_scheme": "рядок біля плитки однієї схеми: чому цей хід рідший і чого для "
                             "нього ще нема. Починається назвою схеми",
     "card_scheme": "рядок на картці образу про обіцянку схеми палітри",
@@ -622,6 +627,8 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     # підписі на картці. Перекладачка ці слова не міняє, вона лише будує з них речення.
     "scheme_chosen_by_her": "схему палітри для цього образу ти обрала сама; її назва "
                             "(значення: scheme — назва схеми)",
+    "scheme_chosen_by_stylist": "схему палітри для цього образу обрала за тебе стилістка; її назва "
+                                "(значення: scheme — назва схеми)",
     "scheme_taken_by_code": "схему палітри для цього образу взято за замовчуванням, ти її не обирала; "
                             "її назва (значення: scheme — назва схеми)",
     "scheme_not_in_code_substituted": "названої схеми в наборі сьогодні нема, тож образ "
@@ -861,10 +868,34 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                                  "не названо",
     "layer_gate_reason": "причина, яку назвав корпус про складання шарів (значення: reason — "
                          "вільний текст правила: перекажи його зміст)",
-    # ── екран палітри без її вибору ──────────────────────────────────────────
-    "default_scheme_until_chosen": "поки ти не обрала, образ збирається за цією схемою: під неї "
-                                   "підбираються речі, по ній же перевіряється акцент "
-                                   "(значення: scheme — назва схеми)",
+    # ── екран палітри без її вибору: обирає стилістка (П-7, `вибір_палітри`) ─────
+    "stylist_will_choose": "поки ти не обрала сама, схему й основу під твою нагоду обере стилістка",
+    "stylist_chose_scheme": "схему під цей вихід обрала стилістка: під неї підбираються речі й по ній "
+                            "перевіряється акцент (значення: scheme — назва схеми)",
+    "stylist_chose_base": "основу — головний колір образу — обрала стилістка (значення: base — назва "
+                          "кольору; shade — light: світлий, dark: темний, нема — середній)",
+    "stylist_chose_saturation": "гаму кольорів образу обрала стилістка (значення: saturation — muted: "
+                                "приглушені, medium: середні, vivid: насичені)",
+    "stylist_did_not_choose": "цю частину стилістка цього разу за тебе не обрала (значення: why — "
+                              "no_model: стилістка була недоступна; unreadable: її відповідь не "
+                              "прочиталась; outside_list: вона назвала те, чого серед можливих нема)",
+    "first_scheme_of_advice": "тож образ збирається за першою схемою нашої поради під твій колорит "
+                              "(значення: scheme — назва схеми)",
+    "base_from_her_features": "окремої основи нема: відтінки схеми стають від кольору твоїх очей, "
+                              "волосся чи шкіри",
+    # причини стилістки — ті самі коди, що в `вибір_палітри.ПРИЧИНИ` (там — англійською для неї)
+    "why_her_contrast": "бо це тримає твій власний контраст світлого й темного на обличчі",
+    "why_her_eyes": "бо це перегукується з кольором твоїх очей або відтіняє його",
+    "why_her_undertone": "бо це на тому самому теплому чи холодному боці, що й твій колорит",
+    "why_her_hair": "бо це пасує до кольору твого волосся",
+    "why_her_metal": "бо це пасує до металу твоїх прикрас на сьогодні чи того, що тобі до лиця",
+    "why_goal_flatter": "бо образ має лестити тобі",
+    "why_goal_conceal": "бо образ не має привертати зайвої уваги",
+    "why_goal_express": "бо образ має привертати погляд",
+    "why_occasion": "бо це пасує до рівня й настрою нагоди та місця",
+    "why_weather": "бо це пасує до погоди, сезону й світла цього дня",
+    "why_her_words": "бо це йде за тим, про що ти просила",
+    "why_first_advice": "бо це перша порада під твій колорит, і цей вихід не просить іншого",
     "schemes_advised_count": "скільки схем стилістка радить до цього образу (значення: count — число)",
     "rarer_schemes_count": "скільки схем рідші — їх теж можна обрати (значення: count — число)",
     "choose_another_if_wants": "іншу можна обрати самій, якщо хочеться",
@@ -2163,8 +2194,6 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                                  "reason here",
     "layer_gate_reason": "a reason named by the corpus about stacking layers (values: reason — the rule's free "
                          "text)",
-    "default_scheme_until_chosen": "until she chooses, the outfit is built by this scheme: items are picked for "
-                                   "it and the accent is checked by it (values: scheme — the scheme's name)",
     "schemes_advised_count": "how many schemes the code advises for this outfit (values: count — a number)",
     "rarer_schemes_count": "how many schemes are rarer; they can be chosen too (values: count — a number)",
     "choose_another_if_wants": "she can choose another one herself if she wants",
@@ -2884,6 +2913,31 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "accent_colour_or_print_near_face": "an accent colour or print in the slot nearest the face",
     "item_removable_no_metric_drops": "the item can go: without it no metric of the look drops",
     "remove_this_item": "remove this item",
+    # ── пари до заяв П-7 (#411: схему й основу обирає стилістка, «чому» схеми) ──
+    "base_from_her_features": "no separate base: the scheme's shades come from her eye, hair or skin colour",
+    "first_scheme_of_advice": "so the outfit follows the first scheme of our advice for her colouring (scheme)",
+    "scheme_chosen_by_stylist": "the stylist chose this outfit's palette scheme for her (scheme)",
+    "stylist_chose_base": "the stylist chose the base, the outfit's main colour (base; shade: light|dark, absent "
+                          "= medium)",
+    "stylist_chose_saturation": "the stylist chose the outfit's colour saturation (saturation: "
+                                "muted|medium|vivid)",
+    "stylist_chose_scheme": "the stylist chose the scheme for this outing: items are picked for it and the accent "
+                            "is checked against it (scheme)",
+    "stylist_did_not_choose": "the stylist did not choose this part this time (why: "
+                              "no_model|unreadable|outside_list)",
+    "stylist_will_choose": "until she chooses, the stylist picks the scheme and base for her occasion",
+    "why_first_advice": "because it is the first advice for her colouring and this outing asks for nothing else",
+    "why_goal_conceal": "because the outfit should not draw extra attention",
+    "why_goal_express": "because the outfit should draw the eye",
+    "why_goal_flatter": "because the outfit should flatter her",
+    "why_her_contrast": "because it keeps her own light-dark contrast of the face",
+    "why_her_eyes": "because it echoes or sets off her eye colour",
+    "why_her_hair": "because it suits her hair colour",
+    "why_her_metal": "because it suits her jewellery metal today or the metal that suits her",
+    "why_her_undertone": "because it is on the same warm or cool side as her colouring",
+    "why_her_words": "because it follows what she asked for",
+    "why_occasion": "because it suits the level and mood of the occasion and place",
+    "why_weather": "because it suits the day's weather, season and light",
 }
 
 

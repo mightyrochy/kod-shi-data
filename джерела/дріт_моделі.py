@@ -55,7 +55,8 @@ _ДЖЕРЕЛО_ТЕМПЕРАТУРИ = {"фото": "photo", "самозвіт
 _РОЛЬ = {"домінанта": "dominant", "секундант": "secondary", "акцент": "accent", "нейтраль": "neutral"}
 _СХЕМА = {"нейтрали+акцент": "neutrals_plus_accent", "тональна": "tonal", "аналогова": "analogous",
           "приглушена_комплементарна": "muted_complementary", "тріада": "triad",
-          "колор_блок": "color_block"}                                             # палітра_схеми.СХЕМИ
+          "колор_блок": "color_block",
+          "контраст-мисматч": "contrast_mismatch"}                                 # палітра_схеми.СХЕМИ, МИСМАТЧ
 _ПРИЙОМ = {"перегук_рис": "echo_features", "тон_у_тон": "tone_on_tone", "аналогова": "analogous",
            "приглушена_комплементарна": "muted_complementary", "нейтраль_плюс_акцент": "neutral_plus_accent",
            "колор_блок": "color_block", "контраст_як_носій": "contrast_as_carrier",
@@ -90,7 +91,8 @@ _ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "
                  "опади": "precipitation", "намір": "intent", "мета": "goal", "макіяж": "makeup",
                  "прикраси": "jewelry", "реєстр_людини": "her_registers", "бажання": "wishes",
                  "вето": "refusals", "ноги_вище_см": "legs_shown_above_cm", "настрій": "mood",
-                 "невідомо": "unknown", "вимоги_людини": "her_words"}
+                 "невідомо": "unknown", "вимоги_людини": "her_words",
+                 "мета_слова": "goal_quote", "намір_слова": "intent_quote", "решта": "her_other_words"}
 
 
 def _число(v):
