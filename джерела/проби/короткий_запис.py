@@ -8,7 +8,7 @@
 import json, os, statistics as st, sys, tempfile
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path[:0] = [ТУТ, os.path.join(ТУТ, "..", "аудит", "проби")]; os.chdir(ТУТ)
-import feed as Ф, bridge as B, міст_пакет as МП, дріт_моделі as Д, каталог_коди as КК
+import feed as Ф, bridge as B, міст_пакет as МП, дріт_моделі as Д, каталог_коди as КК, каталог_розбір as КР
 import заглушка_розбору as ЗР            # заглушка файла розбору: без неї міряти нема на чому
 ФАЙЛ = os.path.join(tempfile.gettempdir(), КК.РОЗБІР_ІМ + ".gz")
 os.environ["ROZBIR_KODY"] = os.environ.get("ROZBIR_KODY") or ЗР.зібрати(ФАЙЛ)[0]
@@ -62,8 +62,8 @@ print("  КОЛІР РІВНО РАЗ (§5): речей із виміром і �
          sum(1 for o in _кор if "color_main" in o),
          sum(1 for o in _кор if o.get(_кл["color_disputed"]))))
 print("  СТЕЛЯ РЯДКА ОСОБЛИВОСТЕЙ: короткий запис коротший за теперішній, поки рядок ≤ %.0f симв. "
-      "(зараз %.0f; `каталог_розбір.СТЕЛЯ_СЛІВ` = 15 слів дає до ~90)"
+      "(зараз %.0f; стеля `каталог_розбір.СТЕЛЯ_СЛІВ` = %d слів)"
       % (max(0.0, сер(МІРИ[0][1]) - сер(МІРИ[1][1])),
-         сер([len(r.get("features") or "") for r in короткі])))
+         сер([len(r.get("features") or "") for r in короткі]), КР.СТЕЛЯ_СЛІВ))
 print("РЕЧЕЙ У БЮДЖЕТІ 120 000: повний %d (%d симв.) → короткий %d (%d симв.) = %+.0f %%"
       % (len(повні), симв_п, len(короткі), симв_к, 100.0 * len(короткі) / len(повні) - 100))
