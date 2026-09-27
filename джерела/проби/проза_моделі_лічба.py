@@ -8,7 +8,8 @@
 import ast, io, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
 СЛ = re.compile(r"[а-яіїєґ]{3,}", re.I)
-ВУЗЛИ = [("palettes.py", "словами", 0), ("brief.py", "ЯРЛИК_РЕБРА", 0),
+# Імена ДО і ПІСЛЯ хвилі стоять разом: вузла, якого вже нема, дає 0 (як у `кошик_в_лічба`).
+ВУЗЛИ = [("palettes.py", "словами", 0), ("brief.py", "ЯРЛИК_РЕБРА", 0), ("brief.py", "ярлик_ребра", 0),
          ("суд_погода.py", "_погода_словами", 0), ("суд_погода.py", "блокер_пальта", 0),
          ("palettes.py", "БІК_СЛОВОМ", None), ("palettes.py", "осі", None)]
 ФРАЗА = lambda в: (isinstance(в, ast.Constant) and isinstance(в.value, str) and " " in в.value
