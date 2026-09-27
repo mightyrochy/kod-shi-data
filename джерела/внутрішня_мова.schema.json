@@ -280,6 +280,7 @@
      "description": "ознака речі",
      "enum": [
       "heels",
+      "large_print",
       "unknown"
      ]
     },
@@ -883,6 +884,13 @@
     },
     "retract": {
      "description": "межі чи бажання, від яких вона в цих словах відмовилась",
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/thing"
+     }
+    },
+    "beliefs": {
+     "description": "її переконання: що, на її думку, їй не личить чи псує фігуру; з ним не сперечаються",
      "type": "array",
      "items": {
       "$ref": "#/$defs/thing"
@@ -3120,7 +3128,8 @@
    "electric_blue": "електрик"
   },
   "feature": {
-   "heels": "підбори"
+   "heels": "підбори",
+   "large_print": "великий принт"
   },
   "own_item_status": {
    "has": "певна",
