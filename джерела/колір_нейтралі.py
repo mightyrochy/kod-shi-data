@@ -492,7 +492,9 @@ def бік_b_біля_обличчя(E, F, _речі=None, _intent="conventional
                       "«пасує», не «вдягну»); ключ носія — очі за Perrett 2023, ITA шкіри "
                       "боку не дає; межі боку T3 (`b_нейтралі`); при ненадійному фото очей "
                       "b* райдужки шумить так само, як b* шкіри (K-PC-05)",
-            вимір=abs(b), поріг=abs(поріг))
+            вимір=abs(b), поріг=abs(поріг),
+            заяви=[_ВМ.заява("item_near_face_opposite_eye_side", item_side="cool" if бік_речі < 0 else "warm", eyes="warm" if бб["бік"] > 0 else "cool")],
+            ремонт_заяви=[_ВМ.заява("eye_side_near_face_this_further")])
         z["сила_нп"] = round(float(z.get("сила_нп") or 0.0) * float(near), 2)
         z["сила_нп_джерело"] = "вимір (|b*| речі за межею боку) × приобличчева вага"
         z["b_очей"] = бб["b_очей"]; z["near"] = round(float(near), 2)

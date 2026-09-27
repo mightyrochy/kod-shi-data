@@ -3,7 +3,8 @@
 `verdict[].structure.blockers` у промптах ремонту, вибору й повноти), — скільки з них везуть
 `statements` (коди `внутрішня_мова.ЗАЯВИ`) і скільки ще прозу коду (`what`, ремонт текстом).
 Живий шлях `bridge` на `стенд_вх.json`: два сіди × два сценарії × три образи. Нижче — місця в
-коді, що народжують знахідку (`_зн(…)` чи `правило=` + `суть=`), і скільки з них уже несуть заяви.
+коді, що народжують знахідку (`_зн(…)` чи `правило=` + `суть=`), і скільки з них несуть заяви (у виклику
+чи в обгортці того самого рядка); «питання»/«утримано» лічаться окремо — `знахідки_вердикту` їх до дроту не пускає.
 Запуск із `джерела`: python3 проби/дріт_заяви_лічба.py"""
 import ast, io, os, sys, json, random, collections
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
@@ -28,10 +29,12 @@ for сід in (3, 5):
                     Л["вузлів"] += 1; Л["із statements"] += bool(z.get("statements")); Л["what прозою"] += "what" in z
 print("ДРІТ:", " · ".join("%s %d" % кв for кв in Л.items()))
 print("  прозою ще:", ", ".join("%s ×%d" % кв for кв in без.most_common()) or "нічого")
-С = collections.Counter()
+С, СКЛ = collections.Counter(), (ast.FunctionDef, ast.ClassDef, ast.If, ast.For, ast.While, ast.With, ast.Try)
 for ф in sorted(x for x in os.listdir(".") if x.endswith(".py") and not x.startswith(("audit", "батарея", "тест", "measure", "gate", "проба_"))):
-    for в in ast.walk(ast.parse(io.open(ф, encoding="utf-8").read())):
-        кл = {k.arg for k in getattr(в, "keywords", ())}
-        if isinstance(в, ast.Call) and (getattr(в.func, "id", None) == "_зн" or {"правило", "суть"} <= кл):
-            С["місць"] += 1; С["із заявами"] += bool(кл & {"заяви", "ремонт_заяви"})
-print("КОД: місць народження знахідки %(місць)d · із заявами %(із заявами)d" % С)
+    for ст in (x for x in ast.walk(ast.parse(io.open(ф, encoding="utf-8").read())) if isinstance(x, ast.stmt) and not isinstance(x, СКЛ)):
+        вв = [в for в in ast.walk(ст) if isinstance(в, ast.Call)]
+        є = any(k.arg in ("заяви", "ремонт_заяви") for в in вв for k in в.keywords)   # і в обгортці того ж рядка
+        for в in (в for в in вв if getattr(в.func, "id", None) == "_зн" or {"правило", "суть"} <= {k.arg for k in в.keywords}):
+            пит = any(isinstance(а, ast.Constant) and а.value in ("питання", "утримано") for а in в.args[1:2])
+            С["питання/утримано (до дроту не їдуть)" if пит else "місць"] += 1; С["із заявами"] += є and not пит
+print("КОД: місць народження знахідки %(місць)d · із заявами %(із заявами)d · питання/утримано %(питання/утримано (до дроту не їдуть))d" % С)

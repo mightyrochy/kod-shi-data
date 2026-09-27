@@ -1765,6 +1765,138 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                             "тканини від і до, direction — warmer чи colder, fabrics — коди тканин)",
     "same_item_in_day_band_fabric": "та сама річ у тканині смуги дня, або той самий колір і крій без сезонної "
                                     "тканини",
+    # ── П-6 хвиля 5: посадка, край, поділ, носіння, розмір аксесуарів, погода, інтерес — що і як полагодити ──
+    "look_split_in_half": "лінія речі ділить образ навпіл: верх і низ майже рівні (ratio — верх:низ)",
+    "move_dividing_line_cm": "зсунути лінію поділу ближче до cm см від підлоги: заправити, коротший верх або інша "
+                             "посадка пояса",
+    "skin_band_boot_hem": "між халявою і поділом смуга шкіри (cm) на широкій частині ноги: край взуття ріже лінію "
+                          "ноги",
+    "close_skin_band": "закрити смугу: щільні колготи в тон взуття, чоботи до коліна з міді, поділ нижче "
+                       "hem_to_cm або халява вище shaft_to_cm (см від підлоги)",
+    "edge_on_widest_point": "край закінчується на опуклості тіла (level; edge — shaft халява, hem поділ, "
+                            "accessory край аксесуара); direction — куди вести: shorten вкоротити, lengthen "
+                            "подовжити, higher_shaft вища халява, lower_shaft нижча халява, no_lever важеля нема, "
+                            "not_flattering_intent намір не лестити; length_from_word — довжина взята зі слова "
+                            "назви",
+    "move_edge_to_cm": "зсунути край у межі ranges (см від підлоги), де тіло вужче",
+    "edge_move_needs_other_model": "у межах цієї моделі зсунути край нікуди: потрібна інша модель або вужчих "
+                                   "місць поруч нема",
+    "shoulder_seam_off_acromion": "плечовий шов не на краю плеча: side beyond — звисає за край (річ ширша), short "
+                                  "— не дістає (річ вужча)",
+    "other_size_or_cut_shoulder_costly": "інший розмір або крій; переробка плеча найдорожча, тож це радше відмова "
+                                         "від речі",
+    "oversize_reads_too_big": "об'єм читається завеликим, а не свідомим оверсайзом; провалені маркери failed: "
+                              "shoulder — плече, balance — поруч нема прилеглої речі, narrow_point — щиколотка чи "
+                              "зап'ястя закриті",
+    "oversize_fix": "виправити провалені маркери markers: плече по краю плеча або конструктивно спущене; одна "
+                    "прилегла річ поруч або заправка; відкрити щиколотку чи зап'ястя",
+    "item_under_her_hard_no": "річ під жорстким «ні» жінки",
+    "other_item_in_slot": "інша річ у цьому слоті",
+    "hem_without_shoes_unjudged": "пари в образі нема, тож пропорцію низу з поділом не визначити",
+    "add_shoes_compose_with_hem": "додати пару й скласти пропорцію низу разом із нею: нагода → база → пара й "
+                                  "поділ разом → аксесуари",
+    "pair_tone_vs_leg_proportion": "тон пари проти пропорції торс : нога (leg_pct — нога у % зросту; pair — nude "
+                                   "нюд або contrast контраст); far_from_middle — пропорція вже далі від "
+                                   "середини, і нюд жене її ще далі, а контраст тягне до середини",
+    "contrast_pair_to_middle": "контрастна пара: зсуває пропорцію торс : нога до середини",
+    "nude_or_tights_to_middle": "нюдова пара або тон колготок: зсуває пропорцію до середини",
+    "heel_wear_cost": "каблук heel_cm см на hours год (surface — поверхня): вартість носіння названа",
+    "cushioned_insole_softens": "устілка з п'ятковою чашею й підтримкою склепіння знижує ударне навантаження: та "
+                                "сама пара стає легшою",
+    "long_day_items_unbearable": "на довгий день (hours год) речі в цих слотах (slots) стають нестерпними "
+                                 "по-своєму: вимагають уваги під час носіння",
+    "shoe_type_outside_temp_band": "тип взуття (type) поза смугою температури дня (temp_c)",
+    "take_from_day_band": "узяти зі смуги дня: типи types або щільність den (DEN)",
+    "tights_den_off_day_band": "щільність колготок den DEN поза смугою дня band; need — denser щільніші чи "
+                               "thinner тонші",
+    "tights_lightness_closer_to": "світлота колготок ближча до closer (shoes — взуття: колонка ноги; bottom — "
+                                  "низ: крок світлоти); це дві різні цілі",
+    "tights_lightness_by_goal": "довша лінія ноги — світлота колготок до взуття; м'яка світлота — до низу",
+    "frame_bigger_eye_or_wider_bridge": "оправа з більшим розміром ока або ширшим містком",
+    "watch_lugs_over_wrist": "вушка годинника (lug_mm) ширші за пласку частину зап'ястка (ceiling_mm)",
+    "watch_shorter_lugs": "корпус із коротшими вушками, не обов'язково менший діаметром",
+    "glove_bl_origin_unknown": "довжина рукавички в BL без походження виміру: від шва великого пальця чи повна — "
+                               "невідомо",
+    "take_bl_origin_from_card": "узяти з картки початок виміру довжини рукавички",
+    "shoe_width_separate_axis": "колодка пари вужча чи ширша за середню (width): ширина — окрема вісь, довжина на "
+                                "неї не відповідає",
+    "measure_pair_not_bigger_size": "міряти саме цю пару, а не брати розмір більший; або модель тієї самої "
+                                    "довжини на іншій колодці",
+    "belt_waist_not_defined": "пояс тут не перша третя річ: талія не виражена",
+    "third_piece_elsewhere_or_wide_belt_at_waist": "третю річ узяти з іншого слота (хустка, верхній шар, "
+                                                   "прикраса); якщо пояс лишається — ширший і на природній талії, "
+                                                   "не на стегнах",
+    "accent_surfaces_exact_match": "дві акцентні поверхні збігаються точно (dE): тягнуть погляд горизонтально, а "
+                                   "не до обличчя",
+    "secondary_colour_or_neutral_or_declared_column": "у другій речі — вторинний колір першої або контрастна "
+                                                      "нейтраль; або свідомо заявлена колона кольору",
+    "sole_glued_not_resoleable": "низ пари клеєний: перевзути не можна, і знаменник ціни коротший",
+    "prefer_stitched_when_equal": "коли дві пари підходять однаково — брати прошивну",
+    "wear_in_allowed_state": "носити в одному з дозволених станів",
+    "item_near_face_opposite_eye_side": "кольорова річ біля обличчя на протилежному очам боці жовто-синьої осі "
+                                        "(item_side — бік речі, eyes — бік очей)",
+    "eye_side_near_face_this_further": "біля обличчя лишити речі з боку очей; цю — далі від обличчя або з "
+                                       "нейтральним шаром між нею і лицем",
+    "camouflage_reads_as_position": "камуфляж у воєнному контексті читається як позиція",
+    "keep_only_deliberately": "лишати лише як свідомий вибір",
+    "same_motif_family_not_separated": "два принти однієї сім'ї мотиву без розведення (scale_spread — "
+                                       "розведеність масштабу, 1 ≈ ×2; lightness_differs — чи різна світлота)",
+    "one_motif_x2_scale_and_lightness_or_texture": "один мотив узяти щонайменше вдвічі дрібнішим чи більшим і "
+                                                   "розвести світлотою або фактурою",
+    "border_colour_held_by_companions": "колір речі ледь у палітрі, і його тримають компаньйони її боку (side)",
+    "border_colour_not_held": "колір речі ледь у палітрі, а компаньйони не тримають її бік (side)",
+    "companions_on_her_side_or_swap": "дати поруч речі її боку (side) або замінити саму річ",
+    "same_item_in_other_hand": "та сама річ уже стоїть у руці hand цього прогону: це повтор, а не вибір",
+    "other_item_same_slot_family": "узяти в цій руці іншу річ тієї самої сім'ї слота",
+    "foreign_registers_over_one_quote": "речей із чужих їй реєстрів (registers) більше, ніж одна цитата",
+    "anchor_volume": "дати об'єму якір: втягнути талію (пояс, запах, заправка), вкоротити низ до щиколотки або "
+                     "звузити його, або лишити один шар прилеглим",
+    "give_contour_direction": "дати контуру напрям: звузити низ або розширити його при прилеглому верху; або "
+                              "втягнути талію — тоді форма читається як X",
+    "name_fabric_woven_or_knit": "назвати тканину речі: полотно чи трикотаж",
+    "more_ease_at_level": "розмір більший або крій із припуском щонайменше min_cm см на цьому рівні",
+    "cut_glides_over_level": "крій, що ковзає по цьому рівню: дизайн-припуск ease_cm см",
+    "cut_adds_volume_at_level": "крій, що додає об'єм на цьому рівні",
+    "follow_waist_or_declared_other_shape": "крій, що йде за лінією талії (приталений, запах, футляр, з поясом); "
+                                            "або свідомо інша форма — як вибір, а не дефолт",
+    "make_waist_or_declared_column": "створити талію (пояс, запах, баска, приталений крій) або свідома колона: "
+                                     "рівна лінія без перепадів",
+    "remove_weaker_flare": "прибрати слабший відліт контуру (level): там прилеглий крій; лишити один об'єм, "
+                           "другий слот вести по тілу",
+    "lead_look_to_target_shape": "вести образ до цільового контуру з заяви (target)",
+    "folklore_constant_in_text": "у тексті моделі фольклорна константа правила rule: число звучить як вимір, "
+                                 "якого нема",
+    "say_without_number": "сказати те саме без числа",
+    "heel_above_comfort_ceiling": "каблук heel_cm см вищий за стелю комфорту ceiling_cm см: комфорт — її мета "
+                                  "образу",
+    "lower_heel_same_formality": "пара з каблуком нижче ceiling_cm см тієї ж формальності: лофер, човник на "
+                                 "низькому підборі чи блочний каблук",
+    "all_colour_under_coat": "весь колір лишився під пальтом: надворі образ без інтересу",
+    "build_from_coat_or_colour_on_top": "будувати образ від пальта досередини або винести колір у шарф, шапку чи "
+                                        "сумку — те, що видно поверх пальта",
+    "light_flare_in_wind": "легкий кльош на вітрі (light_fabric — легка тканина): ризик",
+    "heavier_fabric_below_knee_or_straighter": "важча тканина того ж силуету, довжина нижче коліна або пряміший "
+                                               "крій на цей вихід",
+    "dark_fitted_in_sun": "темне й облягаюче на прямому сонці: гріє",
+    "looser_cut_or_lighter_same_colour": "той самий колір, але вільніший крій, або світліша версія того ж кольору "
+                                         "при тому ж крої",
+    "item_opens_vetoed_zone": "річ відкриває зону, яку жінка не відкриває (zones): її особиста межа",
+    "hem_above_her_limit": "поділ на hem_cm см від підлоги — вище її межі limit_cm см",
+    "other_item_within_her_coverage": "інша річ у межах її покриття",
+    "fabric_formality_vs_cut": "тканина (fabric) формальніша чи простіша за крій (direction: higher — тканина "
+                               "вища, lower — нижча)",
+    "same_item_fabric_level_or_cut_level": "та сама річ у тканині рівня fabric_level або той самий крій на рівні "
+                                           "cut_level (рівні формальності)",
+    "mono_object_silhouette": "одна річ (dress — сукня) — моно-об'єкт силуету: образ одягнений, не стилізований",
+    "add_third_piece_to_mono": "додати третю річ: взуття в тоні поділу, відкритий шар або структурний аксесуар",
+    "motif_scale_off_person": "мотив принта не в масштабі особи (item_motif: larger — більший, smaller — "
+                              "дрібніший)",
+    "take_motif_scale": "узяти мотив need (smaller — дрібніший, larger — більший)",
+    "interest_sources_below_floor": "у образі count джерел інтересу при підлозі floor",
+    "texture_near_face": "виразна фактура в слоті, найближчому до обличчя: інтерес без другого колірного фокусу",
+    "accent_colour_or_print_near_face": "акцентний колір або принт у слоті, найближчому до обличчя",
+    "item_removable_no_metric_drops": "річ можна зняти: без неї жодна метрика образу не падає",
+    "remove_this_item": "зняти цю річ",
 }
 
 
@@ -2624,6 +2756,131 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                             "(direction: warmer|colder)",
     "same_item_in_day_band_fabric": "the same item in a fabric of the day's band, or the same colour and cut "
                                     "without the seasonal fabric",
+    # ── П-6 хвиля 5: посадка, край, поділ, носіння, розмір аксесуарів, погода, інтерес — що і як полагодити ──
+    "look_split_in_half": "the item's line splits the look in half (ratio = top:bottom)",
+    "move_dividing_line_cm": "move the dividing line to ~cm from the floor: tuck in, shorter top or another waist "
+                             "rise",
+    "skin_band_boot_hem": "skin band (cm) between shaft and hem at a wide part of the leg: the shoe edge cuts the "
+                          "leg line",
+    "close_skin_band": "close the band: dense tights in the shoe tone, knee boots with a midi, hem below "
+                       "hem_to_cm or shaft above shaft_to_cm (cm from floor)",
+    "edge_on_widest_point": "edge ends on a body bulge (level; edge: shaft|hem|accessory); direction: "
+                            "shorten|lengthen|higher_shaft|lower_shaft|no_lever|not_flattering_intent; "
+                            "length_from_word: length taken from the name",
+    "move_edge_to_cm": "move the edge into ranges (cm from floor), where the body is narrower",
+    "edge_move_needs_other_model": "within this model the edge cannot move: another model is needed, or no "
+                                   "narrower point nearby",
+    "shoulder_seam_off_acromion": "shoulder seam off the shoulder point: beyond = hangs past (item wider), short "
+                                  "= falls short (item narrower)",
+    "other_size_or_cut_shoulder_costly": "another size or cut; altering the shoulder costs most, so rather drop "
+                                         "the item",
+    "oversize_reads_too_big": "volume reads as too big, not deliberate oversize; failed markers: shoulder, "
+                              "balance (no fitted item beside), narrow_point (ankle/wrist covered)",
+    "oversize_fix": "fix the failed markers: shoulder at the shoulder point or built-in dropped; one fitted item "
+                    "beside or a tuck; show ankle or wrist",
+    "item_under_her_hard_no": "item falls under her hard no",
+    "other_item_in_slot": "another item in this slot",
+    "hem_without_shoes_unjudged": "no pair in the look, so the lower proportion with the hem cannot be judged",
+    "add_shoes_compose_with_hem": "add a pair and set the lower proportion with it: occasion → base → pair and "
+                                  "hem together → accessories",
+    "pair_tone_vs_leg_proportion": "pair tone vs torso:leg proportion (leg_pct of height; pair: nude|contrast); "
+                                   "far_from_middle: already past the middle, so nude pushes further and contrast "
+                                   "pulls back",
+    "contrast_pair_to_middle": "a contrasting pair: shifts torso:leg toward the middle",
+    "nude_or_tights_to_middle": "nude pair or tights tone: shifts the proportion toward the middle",
+    "heel_wear_cost": "heel heel_cm cm for hours h (surface): wear cost named",
+    "cushioned_insole_softens": "an insole with heel cup and arch support cuts impact: the same pair gets easier",
+    "long_day_items_unbearable": "over a long day (hours) items in these slots become unbearable in their own "
+                                 "way: they demand attention while worn",
+    "shoe_type_outside_temp_band": "shoe type outside the day's temperature band (temp_c)",
+    "take_from_day_band": "take from the day's band: types, or density den (DEN)",
+    "tights_den_off_day_band": "tights den outside the day's band; need: denser|thinner",
+    "tights_lightness_closer_to": "tights lightness closer to closer (shoes: leg column; bottom: lightness step); "
+                                  "two different goals",
+    "tights_lightness_by_goal": "longer leg line: tights lightness to the shoes; soft lightness: to the bottom",
+    "frame_bigger_eye_or_wider_bridge": "a frame with a bigger eye size or wider bridge",
+    "watch_lugs_over_wrist": "watch lug-to-lug (lug_mm) wider than the flat of her wrist (ceiling_mm)",
+    "watch_shorter_lugs": "a case with shorter lugs, not necessarily a smaller diameter",
+    "glove_bl_origin_unknown": "glove length in BL without its origin: from thumb seam or full length is unknown",
+    "take_bl_origin_from_card": "take the glove length origin from the card",
+    "shoe_width_separate_axis": "the pair's last is narrow or wide (width): width is its own axis, length does "
+                                "not answer it",
+    "measure_pair_not_bigger_size": "try this pair, not a bigger size; or a model of the same length on another "
+                                    "last",
+    "belt_waist_not_defined": "a belt is not the first third piece here: the waist is not defined",
+    "third_piece_elsewhere_or_wide_belt_at_waist": "take the third piece from another slot (scarf, outer layer, "
+                                                   "jewellery); if the belt stays, wider and at the natural "
+                                                   "waist, not the hips",
+    "accent_surfaces_exact_match": "two accent surfaces match exactly (dE): they pull the eye sideways, not up to "
+                                   "the face",
+    "secondary_colour_or_neutral_or_declared_column": "second item in the first one's secondary colour or a "
+                                                      "contrasting neutral; or a declared colour column",
+    "sole_glued_not_resoleable": "glued sole: cannot be resoled, so the price spreads over a shorter life",
+    "prefer_stitched_when_equal": "when two pairs fit equally, take the stitched one",
+    "wear_in_allowed_state": "wear it in one of the allowed states",
+    "item_near_face_opposite_eye_side": "coloured item near the face on the yellow-blue side opposite to her eyes "
+                                        "(item_side vs eyes)",
+    "eye_side_near_face_this_further": "keep the eyes' side near the face; this item further away or with a "
+                                       "neutral layer between",
+    "camouflage_reads_as_position": "camouflage in wartime reads as a stance",
+    "keep_only_deliberately": "keep only as a deliberate choice",
+    "same_motif_family_not_separated": "two prints of one motif family not separated (scale_spread, 1 = x2; "
+                                       "lightness_differs)",
+    "one_motif_x2_scale_and_lightness_or_texture": "take one motif at least x2 smaller or larger and separate by "
+                                                   "lightness or texture",
+    "border_colour_held_by_companions": "item's colour is barely in palette and her-side companions hold it "
+                                        "(side)",
+    "border_colour_not_held": "item's colour is barely in palette and companions do not hold her side (side)",
+    "companions_on_her_side_or_swap": "put her-side (side) items beside it, or swap the item itself",
+    "same_item_in_other_hand": "the same item already stands in hand hand of this run: a repeat, not a choice",
+    "other_item_same_slot_family": "take another item of the same slot family in this hand",
+    "foreign_registers_over_one_quote": "more than one quote item from registers not hers (registers)",
+    "anchor_volume": "anchor the volume: cinch the waist (belt, wrap, tuck), shorten the bottom to the ankle or "
+                     "narrow it, or keep one layer fitted",
+    "give_contour_direction": "give the contour a direction: narrow the bottom or widen it under a fitted top; or "
+                              "cinch the waist so it reads as X",
+    "name_fabric_woven_or_knit": "name the item's fabric: woven or knit",
+    "more_ease_at_level": "a bigger size or a cut with at least min_cm cm ease at this level",
+    "cut_glides_over_level": "a cut that skims this level: design ease ease_cm cm",
+    "cut_adds_volume_at_level": "a cut that adds volume at this level",
+    "follow_waist_or_declared_other_shape": "a cut following the waist (fitted, wrap, sheath, belted); or another "
+                                            "shape as a declared choice",
+    "make_waist_or_declared_column": "make a waist (belt, wrap, peplum, fitted) or a declared column: one even "
+                                     "line",
+    "remove_weaker_flare": "remove the weaker contour flare (level) with a fitted cut there; keep one volume, the "
+                           "other slot follows the body",
+    "lead_look_to_target_shape": "lead the look to the target shape in the statement (target)",
+    "folklore_constant_in_text": "the model's text has a folklore constant of rule: the number sounds like a "
+                                 "measurement that does not exist",
+    "say_without_number": "say the same without the number",
+    "heel_above_comfort_ceiling": "heel heel_cm cm above the comfort ceiling ceiling_cm cm: comfort is her goal",
+    "lower_heel_same_formality": "a pair below ceiling_cm cm of the same formality: loafer, low pump or block "
+                                 "heel",
+    "all_colour_under_coat": "all colour stays under the coat: outdoors the look has no interest",
+    "build_from_coat_or_colour_on_top": "build the look from the coat inward, or move colour to scarf, hat or "
+                                        "bag, visible over the coat",
+    "light_flare_in_wind": "a light flare in the wind (light_fabric): a risk",
+    "heavier_fabric_below_knee_or_straighter": "heavier fabric of the same silhouette, below-knee length, or a "
+                                               "straighter cut for this outing",
+    "dark_fitted_in_sun": "dark and clinging in direct sun: it heats up",
+    "looser_cut_or_lighter_same_colour": "the same colour in a looser cut, or a lighter version of it in the same "
+                                         "cut",
+    "item_opens_vetoed_zone": "item exposes a zone she keeps covered (zones): her personal limit",
+    "hem_above_her_limit": "hem at hem_cm cm from floor, above her limit limit_cm cm",
+    "other_item_within_her_coverage": "another item within her coverage",
+    "fabric_formality_vs_cut": "fabric (fabric) is dressier or plainer than the cut (direction: higher|lower)",
+    "same_item_fabric_level_or_cut_level": "the same item in fabric of level fabric_level, or the same cut at "
+                                           "level cut_level (formality levels)",
+    "mono_object_silhouette": "one item (dress) is a mono-object silhouette: dressed, not styled",
+    "add_third_piece_to_mono": "add a third piece: shoes in the hem tone, an open layer or a structural accessory",
+    "motif_scale_off_person": "print motif off the person's scale (item_motif: larger|smaller)",
+    "take_motif_scale": "take a motif need (smaller|larger)",
+    "interest_sources_below_floor": "the look has count interest sources at floor floor",
+    "texture_near_face": "a pronounced texture in the slot nearest the face: interest without a second colour "
+                         "focus",
+    "accent_colour_or_print_near_face": "an accent colour or print in the slot nearest the face",
+    "item_removable_no_metric_drops": "the item can go: without it no metric of the look drops",
+    "remove_this_item": "remove this item",
 }
 
 

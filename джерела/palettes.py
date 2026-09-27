@@ -799,7 +799,14 @@ def контекст_втягує(ос, речі):
                                "дати поруч %s речі або замінити саму річ" % (хто, свій_бік, свій))),
                         чому=("частка вікна %.2f; компаньйони b*=%.1f (%s бік людини), C=%.1f (%s)" %
                               (ч, b_сер, "той самий" if згода else "протилежний", C_сер, "приглушені" if м_які else "гучні")),
-                        джерело="Kettlewell 'How can colours work for multiple seasonal palettes' (K-PAL-16, T3, hint)"))
+                        джерело="Kettlewell 'How can colours work for multiple seasonal palettes' (K-PAL-16, T3, hint)",
+                        # П-6 (п.12): те саме кодами — бік людини й слот межової речі
+                        заяви=[_ВМ.заява("border_colour_held_by_companions" if сила > 0 else
+                                         "border_colour_not_held",
+                                         side="warm" if бік > 0 else "cool",
+                                         slot=_ВМ.код_або_невідомо("slot", r.get("слот")))],
+                        **({} if сила > 0 else {"ремонт_заяви": [_ВМ.заява(
+                            "companions_on_her_side_or_swap", side="warm" if бік > 0 else "cool")]})))
     return out
 
 # ── K-COND-05: КАЛЕНДАРНИЙ СЕЗОН ДІЛИТЬ ПАЛІТРУ (Сидорович, Київ) ─────────────
