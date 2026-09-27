@@ -841,8 +841,12 @@ button.як-слово{background:none;border:0;padding:0;font:inherit;color:var
    коли кадр не відкрився, і щоб порожнє місце не читалось як «ще вантажиться». */
 .річ .арка,.змп-річ .арка{display:block;width:48px;height:60px;background:var(--папір);border:1px solid var(--межа);
   clip-path:polygon(20% 0,80% 0,100% 18%,100% 100%,0 100%,0 18%)}
-.ф .арка{display:block;width:100%;max-width:110px;aspect-ratio:3/4;background:var(--папір);
-  border:1px solid rgba(0,0,0,.08);clip-path:polygon(20% 0,80% 0,100% 18%,100% 100%,0 100%,0 18%)}
+/* У колажі тло САМЕ папероване, тож силует тут — у тоні, який у колажі стоїть під
+   фото (`--фото-тло`), інакше він зливається з аркушем і місця речі не видно. Розмір
+   ТВЕРДИЙ, а не у відсотках плитки: силует лежить усередині `<a>` (рядковий елемент),
+   і `width:100%` дало б нуль — плитка виходила порожньою. */
+.ф .арка{display:block;width:84px;height:112px;background:var(--фото-тло);
+  border:1px solid var(--межа-темна);clip-path:polygon(20% 0,80% 0,100% 18%,100% 100%,0 100%,0 18%)}
 .річ .н{min-width:0}
 .річ .н a,.річ .н .назва{color:var(--чорнило);text-decoration:none;font-size:13.5px;line-height:1.3;display:block;
   overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
