@@ -80,6 +80,8 @@ def повтор_прогону(реєстр, рука, речі):
         "тема-4 XIII: набір існує, щоб було з чого обирати; та сама річ у двох "
         "картках одного прогону — це повтор, не вибір ші",
         ремонт="узяти в цій руці іншу річ тієї самої сім'ї слота",
+        заяви=[_ВМ.заява("same_item_in_other_hand", hand=інша_рука)],
+        ремонт_заяви=[_ВМ.заява("other_item_same_slot_family")]
     )
 
 
@@ -336,9 +338,23 @@ def _коротко_жінці(блокери, сценарій=None):
     `сценарій` для них передає викликач. Решта блокерів — суть КОРПУСУ, як доти.
 
     `блокери` — dict'и з `код`/`суть` (`структура.блокери`) або самі рядки суті:
-    код тоді виводиться з тексту (`_код_блокера`)."""
-    дублі, решта, пальто = [], [], False
+    код тоді виводиться з тексту (`_код_блокера`).
+
+    П-6 (27.09.2026, CLAUDE.md п.12): блокер, що несе ЗАЯВИ (`суд_від_моделі.
+    структура_образу_заяви`), іде на картку ТИМИ САМИМИ кодами, які бачила функціональна
+    модель, — без читання його слів (`_РЕ_СІМ_Я`) і без «причини корпусу» вільним текстом.
+    Дублі слотів так само зливаються в одну заяву; слова рядка лишаються звіту власника."""
+    дублі, решта, пальто, коди = [], [], False, []
     for b in блокери or []:
+        зб = [x for x in ((b or {}).get("заяви") or []) if isinstance(b, dict)
+              and isinstance(x, dict) and x.get("code") in _ВМ.ЗАЯВИ]
+        if зб:
+            for з in зб:
+                if з["code"] == "several_items_in_one_slot":
+                    дублі.extend((з.get("values") or {}).get("slots") or [None])
+                elif з not in коди:
+                    коди.append(з)
+            continue
         суть = _без_вказівки_моделі(str((b or {}).get("суть") or "") if isinstance(b, dict)
                                     else str(b or ""))
         код = ((b or {}).get("код") if isinstance(b, dict) else None) or _код_блокера(суть)
@@ -352,11 +368,12 @@ def _коротко_жінці(блокери, сценарій=None):
     частини = ([_ВМ.заява("several_items_in_one_slot",
                           slots=[с for с in dict.fromkeys(дублі) if с])
                 if any(дублі) else _ВМ.заява("several_items_in_one_slot")] if дублі else [])
-    if пальто:
+    if пальто and not any(з.get("code") == "weather_needs_outerwear" for з in коди):
         import суд_погода as _ПОГ
         _т, _о = (сценарій or {}).get("темп_c"), (сценарій or {}).get("опади")
         частини.append(_ВМ.заява("weather_needs_outerwear",
                                  **(_ПОГ.погода_значеннями(_т, _о) if _т not in (None, "") else {})))
+    частини += коди
     частини += [_ВМ.заява("blocker_reason", reason={"free_text": т, "lang": "uk"}) for т in решта]
     більше = len(частини) - _БЛОКЕРІВ_НА_КАРТЦІ
     частини = частини[:_БЛОКЕРІВ_НА_КАРТЦІ]
@@ -547,7 +564,8 @@ def промпт_вибору(образи, випадок=None, без_фото
         _ЗП.Поле("day", "her day as facts"),
         _ЗП.Поле("verdict", "your outfits and the code's check of each: «your_outfit» — its items, caption and "
                             "«day» (your sentence about her day in it); «structure» — blockers; «findings» "
-                            "(«weight» weighs the finding, not the outfit); «checklist»; «knot»", треба=True),
+                            "(«weight» weighs the finding, not the outfit; «register» «gate» — a gate, none — "
+                            "a remark); «checklist»; «knot»", треба=True),
         _ЗП.Поле("not_run_everywhere", "checklist items the code did not check in any outfit"),
         _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination"),
         _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
@@ -1033,7 +1051,10 @@ def _заяви_ремонту(зміна, словник):
         суть = str(г.get("суть") or "")
         # шар названий у самій суті — тоді дія каже «саме той шар», а не повторює назву
         якщо_той_самий = зміна.get("зняв") and суть.startswith("«%s»" % стара)
-        return [_ВМ.заява("layer_gate_reason", reason=_ВМ.вільний(суть)),
+        # П-6: знахідка несе заяви (`outer_will_not_fit_over_bulky`, …) — картка каже їх, а
+        # не суть корпусу вільним текстом; без заяв — як доти
+        _зг = [x for x in (г.get("заяви") or []) if isinstance(x, dict) and x.get("code") in _ВМ.ЗАЯВИ]
+        return (_зг or [_ВМ.заява("layer_gate_reason", reason=_ВМ.вільний(суть))]) + [
                 _ВМ.заява("code_removed_this_layer") if якщо_той_самий else дія]
     if г.get("правило") == "слот_двічі":
         чому = (_ВМ.заява("set_already_has_top_and_bottom",
@@ -1234,7 +1255,10 @@ def повнота_набору(вердикт, кандидати=None, кат�
             # прийняв — радити це жінці означало б радити ваду. Без ремонту (у образі
             # ще й структурна діра, або суддю не передано) — рядок той самий, що доти.
             _суть_ш = {"free_text": str(_шари[0].get("суть") or ""), "lang": "uk"}
-            _н = [_ВМ.заява("layers_do_not_stack", reason=_суть_ш)]
+            # П-6: ті самі коди, що бачила функціональна модель; без заяв — суть вільним текстом
+            _зш = [x for x in (_шари[0].get("заяви") or [])
+                   if isinstance(x, dict) and x.get("code") in _ВМ.ЗАЯВИ]
+            _н = _зш or [_ВМ.заява("layers_do_not_stack", reason=_суть_ш)]
             if ремонт:
                 _н.append(_ВМ.заява("tried_swaps_all_flawed", swaps=ремонт["замін_у_пулі"])
                           if ремонт.get("замін_у_пулі")
