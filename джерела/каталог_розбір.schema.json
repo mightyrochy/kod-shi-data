@@ -1,8 +1,8 @@
 {
  "$schema": "https://json-schema.org/draft/2020-12/schema",
- "$id": "lyusterko-catalog-parse-v1",
+ "$id": "lyusterko-catalog-parse-v2",
  "title": "Розбір каталогу Люстерка",
- "description": "Поля, якими українська мовна модель описує річ каталогу для коду: коди із закритих переліків або \"unknown\" (опори в тексті крамниці нема — вигадувати не можна). Переліки slot, item_type, fabric, material, pattern, color_name, length, shaft — ті самі, що в `внутрішня_мова.ТАБЛИЦЯ`; cut — `силует_крої.КРОЇ`. Породжує файл `каталог_розбір.схема()`; вхід моделі — `каталог_розбір.вхід()`.",
+ "description": "Поля, якими українська мовна модель описує річ каталогу для коду: коди із закритих переліків або \"unknown\" (опори в тексті крамниці нема — вигадувати не можна). Переліки slot, item_type, fabric, material, pattern, color_name, length, shaft — ті самі, що в `внутрішня_мова.ТАБЛИЦЯ`; cut — `силует_крої.КРОЇ`. Поруч із кодами — рядок особливостей `features` англійською для функціональної моделі. Породжує файл `каталог_розбір.схема()`; вхід моделі — `каталог_розбір.вхід()`.",
  "x-форми-unknown": [
   "unknown",
   "null",
@@ -31,7 +31,8 @@
   "color_from": "фід_розбір: param картки, інакше назва",
   "pattern": "verify.клас_мотиву",
   "decor": "траурний_регістр.святкова_оздоба",
-  "veto": "паспорт_нагоди.ВЕТО_СЛОВА (основи слів)"
+  "veto": "паспорт_нагоди.ВЕТО_СЛОВА (основи слів)",
+  "features": "коду нема й не буде: рядок читає лише функціональна модель (п.12)"
  },
  "$defs": {
   "catalog_parse": {
@@ -141,6 +142,9 @@
       "scarf_generic",
       "jewelry_generic",
       "bag_generic",
+      "dress_generic",
+      "two_piece_set",
+      "casual_suit",
       "unknown"
      ]
     },
@@ -257,6 +261,9 @@
          "scarf_generic",
          "jewelry_generic",
          "bag_generic",
+         "dress_generic",
+         "two_piece_set",
+         "casual_suit",
          "unknown"
         ]
        }
@@ -305,6 +312,7 @@
       "lace",
       "guipure",
       "openwork",
+      "woven",
       "unknown"
      ]
     },
@@ -522,6 +530,12 @@
       "powder_pink",
       "silvery",
       "pearly",
+      "creamy",
+      "mocha",
+      "powder",
+      "soft_pink",
+      "emerald",
+      "electric_blue",
       "unknown"
      ]
     },
@@ -579,6 +593,12 @@
        "powder_pink",
        "silvery",
        "pearly",
+       "creamy",
+       "mocha",
+       "powder",
+       "soft_pink",
+       "emerald",
+       "electric_blue",
        "unknown"
       ]
      }
@@ -705,6 +725,11 @@
        ]
       }
      }
+    },
+    "features": {
+     "type": "string",
+     "x-стеля-слів": 15,
+     "description": "чим річ відрізняється від інших з тими самими кодами: один рядок англійською, до 15 слів, або unknown. Вільний текст для функціональної моделі; код його не читає і перевіряє лише форму (рядок, кількість слів, латиниця)"
     }
    }
   }
