@@ -85,7 +85,8 @@ _ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "
                  "опади": "precipitation", "намір": "intent", "мета": "goal", "макіяж": "makeup",
                  "прикраси": "jewelry", "реєстр_людини": "her_registers", "бажання": "wishes",
                  "вето": "refusals", "ноги_вище_см": "legs_shown_above_cm", "настрій": "mood",
-                 "невідомо": "unknown", "вимоги_людини": "her_words"}
+                 "невідомо": "unknown", "вимоги_людини": "her_words",
+                 "мета_слова": "goal_quote", "намір_слова": "intent_quote", "решта": "her_other_words"}
 
 
 def _число(v):
