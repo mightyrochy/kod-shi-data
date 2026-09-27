@@ -7714,7 +7714,10 @@ const МІСТ_П = (function(){
   }catch(_){ }
   return {адреса: а, токен: т};
 })();
-let ТОКЕНИ_П = {вхід:0, вихід:0, викликів:0};
+/* `кеш` — вхідні токени, прочитані з кешу провайдера (К-4): міст віддає їх одним іменем
+   для обох провайдерів (`worker_джерело.js`), і вони вже НЕ входять у `вхід`. Окремим
+   числом, а не всередині входу: інакше «кеш працює» не видно ні у звіті, ні на екрані. */
+let ТОКЕНИ_П = {вхід:0, вихід:0, кеш:0, викликів:0};
 let ОСТАННІ_ЗАГОЛОВКИ_П = {};
 let МОДЕЛІ_ПРОГОНУ = new Set();
 
@@ -7828,10 +7831,11 @@ async function модельП_блоки(зміст, модель, історі�
                     + (await відп.text()).replace(/\s+/g,' ').slice(0, 1200));
   const дані = await відп.json(), u = дані.usage || {};
   ТОКЕНИ_П.вхід += (u.input_tokens || 0) + (u.cache_read_input_tokens || 0);
+  ТОКЕНИ_П.кеш += (u.cache_read_input_tokens || 0);
   ТОКЕНИ_П.вихід += (u.output_tokens || 0);
   ТОКЕНИ_П.викликів += 1;
   const свої = {};
-  відп.headers.forEach((з, і) => { if (/^x-(images-dropped|provider|thinking|runs-left|model|attempts)$/i.test(і)) свої[і.toLowerCase()] = з; });
+  відп.headers.forEach((з, і) => { if (/^x-(images-dropped|provider|thinking|runs-left|model|attempts|cached-tokens)$/i.test(і)) свої[і.toLowerCase()] = з; });
   ОСТАННІ_ЗАГОЛОВКИ_П = свої;
   if (заголовкиВих) Object.assign(заголовкиВих, свої);
   if (свої['x-model']) МОДЕЛІ_ПРОГОНУ.add(свої['x-model']);
@@ -7869,10 +7873,11 @@ async function модельП(промпт, фото, історія, стан, 
                     + (await відп.text()).replace(/\s+/g," ").slice(0, 1200));
   const дані = await відп.json(), u = дані.usage || {};
   ТОКЕНИ_П.вхід += (u.input_tokens || 0) + (u.cache_read_input_tokens || 0);
+  ТОКЕНИ_П.кеш += (u.cache_read_input_tokens || 0);
   ТОКЕНИ_П.вихід += (u.output_tokens || 0);
   ТОКЕНИ_П.викликів += 1;
   ОСТАННІ_ЗАГОЛОВКИ_П = {};
-  відп.headers.forEach((з, і) => { if (/^x-(images-dropped|provider|thinking|runs-left|model|attempts)$/i.test(і)) ОСТАННІ_ЗАГОЛОВКИ_П[і.toLowerCase()] = з; });
+  відп.headers.forEach((з, і) => { if (/^x-(images-dropped|provider|thinking|runs-left|model|attempts|cached-tokens)$/i.test(і)) ОСТАННІ_ЗАГОЛОВКИ_П[і.toLowerCase()] = з; });
   if (ОСТАННІ_ЗАГОЛОВКИ_П['x-model']) МОДЕЛІ_ПРОГОНУ.add(ОСТАННІ_ЗАГОЛОВКИ_П['x-model']);
   /* обрізання об стелю мовчазне — тому `stop_reason` читається; із `стан` обрізана
      відповідь іде далі з позначкою (рядок 208, див. `модельП_блоки`) */
@@ -9262,7 +9267,9 @@ function малюватиТокениП(){
   const т = ТОКЕНИ_П;
   e.textContent = т.викликів
     ? ('цей прогін: ' + т.викликів + ' виклик(ів) моделі · вхід '
-       + т.вхід.toLocaleString('uk') + ' · вихід ' + т.вихід.toLocaleString('uk')
+       + т.вхід.toLocaleString('uk')
+       + (т.кеш ? ' (з кешу ' + т.кеш.toLocaleString('uk') + ')' : '')
+       + ' · вихід ' + т.вихід.toLocaleString('uk')
        + ' · разом ' + (т.вхід+т.вихід).toLocaleString('uk') + ' токенів')
     : '';
 }
@@ -9976,7 +9983,7 @@ async function зібратиОбразиП(){
            запис пояснював би образ ЧУЖИМИ даними. У звіт іде раз на прогін. */
         вхід: (()=>{ try{ return зібратиВхід(); }
                      catch(e){ return {помилка_знімка: String(e)}; } })()};
-  ТОКЕНИ_П = {вхід:0, вихід:0, викликів:0}; МОДЕЛІ_ПРОГОНУ = new Set(); малюватиТокениП();
+  ТОКЕНИ_П = {вхід:0, вихід:0, кеш:0, викликів:0}; МОДЕЛІ_ПРОГОНУ = new Set(); малюватиТокениП();
   ст.textContent = '';
   /* число речей — зі збирача, не з рук: каталог міняється, сторінка ні */
   const _n = (КАТАЛОГ_ПІДПИС_П.match(/(\d+) речей/) || [])[1];

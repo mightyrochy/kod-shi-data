@@ -173,6 +173,57 @@ const пнг = байтів => {
        вихідні.length === 1 && !("temperature" in вихідні[0].body)
        && в.headers.get("x-temperature") === "n/a", вихідні[0] && вихідні[0].body);
 
+  console.log("3к. КЕШ НЕЗМІННОГО ПОЧАТКУ ЗАПИТУ (наряд К-4)");
+  /* Збирач ставить `task` ПЕРШИМ (`збирач_промптів.зібрати`), і міст ріже перший
+     текстовий блок рівно на його закритій дужці: Anthropic пише кеш на межі
+     `cache_control`, Gemini тримає неявний кеш сам на сталому префіксі. Склеєний текст
+     мусить лишитись байт у байт тим самим — інакше змінився б промпт, а не лише ціна. */
+  {
+    const промпт = JSON.stringify({version:"1", task:{role:"r", rules:["a\"}b", "{c}"], answer_schema:{x:["<y>"]}},
+                                   pool:[{n:"#1·01"}], outfits_wanted:4});
+    const межа = промпт.indexOf('},"pool"') + 1;
+    відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"ок"}], stop_reason:"end_turn",
+        usage:{input_tokens:5, output_tokens:1, cache_read_input_tokens:1200, cache_creation_input_tokens:0}}), {status:200});
+    вихідні.length = 0;
+    в = await зап({model:"claude-sonnet-5", messages:[{role:"user", content:[{type:"text", text:промпт}]}]});
+    const бл = вихідні[0].body.messages[0].content;
+    тест("claude: перший блок — рівно до закритої дужки «task», на ньому cache_control ephemeral",
+         бл.length === 2 && бл[0].text === промпт.slice(0, межа)
+         && JSON.stringify(бл[0].cache_control) === '{"type":"ephemeral"}' && !бл[1].cache_control, бл);
+    тест("claude: склеєні блоки — той самий промпт байт у байт (модель бачить те саме)",
+         бл.map(б => б.text).join("") === промпт, бл.length);
+    тест("прочитане з кешу видно заголовком x-cached-tokens, і він відкритий сторінці",
+         в.headers.get("x-cached-tokens") === "1200"
+         && /x-cached-tokens/.test(в.headers.get("Access-Control-Expose-Headers")), в.headers.get("x-cached-tokens"));
+    /* Фото попереду — префікс несталий: різати нічого, інакше кеш лише писався б. */
+    вихідні.length = 0;
+    в = await зап({model:"claude-sonnet-5", messages:[{role:"user", content:[
+      {type:"image", source:{type:"base64", media_type:"image/jpeg", data:"BBBB"}}, {type:"text", text:промпт}]}]});
+    тест("claude: коли перед текстом стоїть фото, міст не ріже й не кешує нічого",
+         вихідні[0].body.messages[0].content.length === 2
+         && !вихідні[0].body.messages[0].content.some(б => б.cache_control), вихідні[0].body.messages[0].content);
+    /* Промпт іншої будови (завдання не на початку) — теж без межі. */
+    вихідні.length = 0;
+    в = await зап({model:"claude-sonnet-5", messages:[{role:"user", content:[{type:"text",
+      text:JSON.stringify({version:"1", pool:[1,2,3], task:{role:"r"}})}]}]});
+    тест("claude: завдання не на початку промпта → межі нема, блок один",
+         вихідні[0].body.messages[0].content.length === 1
+         && !вихідні[0].body.messages[0].content[0].cache_control, вихідні[0].body.messages[0].content);
+    /* Gemini: поля в тілі нема (неявний кеш), а `cachedContentTokenCount` ВІДНІМАЄТЬСЯ
+       від `promptTokenCount` — Google рахує кеш усередині нього, показ додав би двічі. */
+    вихідні.length = 0;
+    відповідач = () => new Response(JSON.stringify({candidates:[{content:{parts:[{text:"є"}]}, finishReason:"STOP"}],
+        usageMetadata:{promptTokenCount:5000, cachedContentTokenCount:4200, candidatesTokenCount:100}}), {status:200});
+    в = await зап({model:"gemini-3.5-flash-lite", messages:[{role:"user", content:[{type:"text", text:промпт}]}]});
+    const тг = вихідні[0].body.contents[0].parts;
+    const дг = await в.json();
+    тест("gemini: тіло як доти — один part, жодного cache_control (неявний кеш поля не просить)",
+         тг.length === 1 && тг[0].text === промпт && !/cache_control/.test(JSON.stringify(вихідні[0].body)), тг);
+    тест("gemini: кеш окремим числом, вхід без нього (5000 − 4200 = 800), x-cached-tokens=4200",
+         дг.usage.input_tokens === 800 && дг.usage.cache_read_input_tokens === 4200
+         && в.headers.get("x-cached-tokens") === "4200", дг.usage);
+  }
+
   console.log("4. КАСКАД МИСЛЕННЯ: 400 через thinking → наступна форма → без поля");
   вихідні.length = 0;
   let n = 0;
