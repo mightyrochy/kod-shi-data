@@ -50,6 +50,34 @@ const СТЕЛЯ_ВИХОДУ     = 4000;
 const СТЕЛЯ_ВХОДУ_СИМВ = 400000;   // виміряно: рука з пулом ≈ 130 000 симв
 const ПРОГОНІВ_НА_ДОБУ = 40;
 
+/* ── ТЕМПЕРАТУРА ДОХОДИТЬ ДО ОБОХ ПРОВАЙДЕРІВ (рядок 158 дошки, 27.09.2026) ──
+   ЩО БУЛО. Показ шле `temperature: 0` у тілі запиту (`мовний_шар.ВИБІРКА` →
+   `_дзвінокП`), бо рішення власника «температура мовного шару 0» тримається на
+   тому, що ОДНАКОВА РЕПЛІКА дає ОДИН ПАСПОРТ. Маршрут `claude-` віддає тіло як
+   є, тож там поле доїжджало. Маршрут `gemini-` будує тіло НАНОВО
+   (`contents` + `generationConfig`) і брав із нього лише `max_tokens` і
+   мислення — температура мовчки зникала, а модель шару відповідала з
+   температурою за замовчуванням провайдера (для Gemini це 1.0). Тобто
+   стабільність паспорта не гарантувалась НІЧИМ саме на тому провайдері, на
+   якому крутиться шар (`МОДЕЛЬ_МОВИ_П` — gemini-).
+
+   ЩО ТЕПЕР. Одне правило на обидва маршрути: число з `temperature` тіла їде
+   провайдеру його власним полем (Anthropic — верхній рівень, Gemini —
+   `generationConfig.temperature`), і що саме поїхало, видно в заголовку
+   `x-temperature` — без нього «дійшла чи ні» лишалось би твердженням.
+
+   ЧОМУ ЛИШЕ ЧИСЛО Й ЛИШЕ ЦЕ ПОЛЕ. Не-число (null, рядок, NaN) поле ЗНІМАЄ, а не
+   перетворює: `{"temperature": null}` у `generationConfig` Gemini відкидає 400,
+   і причина 400 виглядала б як поломка моделі. Решти полів вибірки (`top_p`,
+   `top_k`, `seed`) показ не шле — додавати їх наперед означало б зашити здогад
+   про імена, яких ніхто не виміряв. Межі значення міст НЕ править: Anthropic
+   приймає 0..1, Gemini 0..2, і тихе підганяння дало б модель, що відповідає не
+   з тією температурою, яку просили; чуже 400 із текстом провайдера чесніше. */
+const температура_тіла = т => {
+  const з = Number(т && т.temperature);
+  return (т && т.temperature !== null && т.temperature !== undefined && Number.isFinite(з)) ? з : null;
+};
+
 /* ── ПРОВАЙДЕРИ ─────────────────────────────────────────────────────────────
    ІМЕНА МОДЕЛЕЙ НЕ ВШИТІ НАВМИСНО. Каталог Google рухається швидко (лінія 2.5
    гаситься восени 2026), і зашитий список моделей протух би мовчки, віддаючи
@@ -68,7 +96,10 @@ const ПРОВАЙДЕРИ = [
        `claude-` не працював би з першого ж виклику — рівно в момент, коли
        систему роздають тестувальницям. Gemini не зачеплено: його `запит`
        будує нове тіло. */
-    запит: т => { const р = {...т}; delete р._думки; return р; },
+    запит: т => { const р = {...т}; delete р._думки;
+                  const темп = температура_тіла(т);
+                  if (темп === null) delete р.temperature; else р.temperature = темп;
+                  return р; },
     відповідь: д => д,
   },
   {
@@ -124,6 +155,7 @@ const ПРОВАЙДЕРИ = [
             : {text: б.text}),
       })),
       generationConfig: Object.assign({maxOutputTokens: т.max_tokens},
+        температура_тіла(т) === null ? {} : {temperature: температура_тіла(т)},
         /image|nano-banana/i.test(String(т.model || ""))
           ? {responseModalities: ["TEXT", "IMAGE"]}
           : (т._думки ? {thinkingConfig: т._думки} : {})),
@@ -237,7 +269,8 @@ function заголовки(п) {
       "anthropic-ratelimit-requests-remaining, anthropic-ratelimit-requests-reset, " +
       "anthropic-ratelimit-tokens-remaining, anthropic-ratelimit-tokens-reset, " +
       "anthropic-ratelimit-input-tokens-remaining, anthropic-ratelimit-output-tokens-remaining, " +
-      "retry-after, x-runs-left, x-provider, x-thinking, x-images-dropped, x-model, x-attempts",
+      "retry-after, x-runs-left, x-provider, x-thinking, x-images-dropped, x-model, x-attempts, " +
+      "x-temperature",
     "Access-Control-Max-Age": "86400",
   };
 }
@@ -392,6 +425,9 @@ export default {
     вих.set("x-images-dropped", String(випало_фото));
     вих.set("x-model", модель_ок);
     вих.set("x-attempts", спроби.join(" "));
+    /* ASCII, як і решта значень (кирилиця в заголовку кидає TypeError ще до мережі):
+       «n/a» — тим самим словом, що й `x-runs-left`, коли числа нема. */
+    вих.set("x-temperature", температура_тіла(тіло) === null ? "n/a" : String(температура_тіла(тіло)));
 
     const сире = await відп.text();
     if (відп.status === 504 || відп.status === 524)

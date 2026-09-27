@@ -7,19 +7,63 @@
 на якій слово кольору розійшлось із базою, для запиту не годиться: саме так обрано
 `СТОРОНА_ФОТО_РЕЧІ_П`. Друкує факт.
 Запуск: cd джерела && python3 проби/шлях_розмір_фото_колір.py [пікселі.jsonl]
-   (без файла проба сама кличе Chromium; PW=<шлях> — інший бінарник)"""
+   (без файла проба сама кличе Chromium; PW=<шлях> — інший бінарник)
+
+БЕЗ ВХОДУ — НАЗВАНИМ ПОЛЕМ, НЕ ТРЕЙСБЕКОМ (рядок 159, 27.09.2026). Проба живе лише
+там, де є ПОВНИЙ стенд: пікселі дає Chromium через `playwright`, а його ставить
+`npm i` у теці `джерела`. У хмарній сесії без стенда вона друкувала хвіст чужого
+трейсбека («Chromium не дав пікселів: pers:147:16 … MODULE_NOT_FOUND») і виходила 2 —
+тобто «зламано» там, де насправді «нема входу». Тепер вона перевіряє вхід ДО запуску
+й називає, чого саме бракує: модуля `playwright` чи бінарника Chromium. Нема входу —
+рядок «БЕЗ ВХОДУ» і вихід 0 (CLAUDE.md п.4: це чесний стан, а не вада); вхід є, а
+колір розійшовся — падіння, як і доти."""
 import json, os, re, subprocess, sys
 _К = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _К)
 import річ_з_фото as РФ
 
+_JS = os.path.join(_К, "..", "аудит", "проби", "фото_колір_сторона.js")
+
+
+def _чого_бракує():
+    """Чого бракує стендові пікселів — рядком, або None, коли вхід повний.
+
+    Дивиться РІВНО те, що бере `фото_колір_сторона.js`: модуль `playwright` у
+    `джерела/node_modules` і бінарник Chromium (`PW`/`CHROMIUM`, інакше тека
+    `PLAYWRIGHT_BROWSERS_PATH`). Обидва — вхід проби, не її предмет."""
+    бракує = []
+    if not os.path.isdir(os.path.join(_К, "node_modules", "playwright")):
+        бракує.append("модуля `playwright` у `джерела/node_modules` (ставить `cd джерела && npm i playwright`)")
+    for ш in (os.environ.get("PW"), os.environ.get("CHROMIUM")):
+        if ш and os.path.exists(ш):
+            break
+    else:
+        база = os.environ.get("PLAYWRIGHT_BROWSERS_PATH") or "/opt/pw-browsers"
+        теки = sorted((т for т in os.listdir(база) if re.fullmatch(r"chromium-\d+", т)), reverse=True) \
+            if os.path.isdir(база) else []
+        if not any(os.path.exists(os.path.join(база, т, "chrome-linux", "chrome")) for т in теки):
+            бракує.append("бінарника Chromium (шукали в `PW`, `CHROMIUM` і `%s`)" % база)
+    if not os.path.isdir(os.path.join(_К, "аудит", "фото_v2")):
+        бракує.append("теки знімків `джерела/аудит/фото_v2`")
+    return " і ".join(бракує) or None
+
+
 if len(sys.argv) > 1:
     рядки = open(sys.argv[1], encoding="utf-8").read().splitlines()
 else:
-    п = subprocess.run(["node", os.path.join(_К, "..", "аудит", "проби", "фото_колір_сторона.js")],
-                       capture_output=True, text=True)
+    нема = _чого_бракує()
+    if нема:
+        print("БЕЗ ВХОДУ: нема %s." % нема)
+        print("  Ця проба міряє колір на пікселях, які дає Chromium тим самим шляхом, що показ, —")
+        print("  без повного стенда міряти нема чого. Пікселі з машини зі стендом можна подати файлом:")
+        print("  node аудит/проби/фото_колір_сторона.js > пікселі.jsonl && "
+              "python3 проби/шлях_розмір_фото_колір.py пікселі.jsonl")
+        sys.exit(0)
+    п = subprocess.run(["node", _JS], capture_output=True, text=True)
     if п.returncode:
-        print("Chromium не дав пікселів:", (п.stderr or "")[-300:]); sys.exit(2)
+        print("Chromium не дав пікселів (вхід був на місці — це вада, не брак входу):",
+              (п.stderr or "")[-300:])
+        sys.exit(2)
     рядки = п.stdout.splitlines()
 
 показ = open(os.path.join(_К, "показ.html"), encoding="utf-8").read()

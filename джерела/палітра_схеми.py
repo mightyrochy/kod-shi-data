@@ -1016,7 +1016,8 @@ def повідомлення_великих(речі, спец_слоти, за_
     if not (є or пл["нейтральні"]):
         return None
     _сл = lambda с: _ВМ.код("slot", с) or _ВМ.UNKNOWN
-    заяви = [_ВМ.заява("scheme_chosen_by_her" if обрана else "scheme_taken_by_code", scheme=схема),
+    заяви = [_ВМ.заява("scheme_chosen_by_stylist" if обрана == "стилістка" else     # П-7: тристан
+                       "scheme_chosen_by_her" if обрана else "scheme_taken_by_code", scheme=схема),
              _ВМ.заява("scheme_big_surfaces_equal", count=len(сім_ї),
                        families=[слово[с["роль"]] for с in сім_ї])]
     бракує = [с["роль"] for с in сім_ї if с["роль"] not in є]

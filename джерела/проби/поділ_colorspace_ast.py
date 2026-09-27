@@ -7,7 +7,8 @@
 import ast, os, subprocess, sys
 ДЖЕРЕЛА = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ДЖЕРЕЛА)
-from поділ_спільне import dump_без_докстрінгів, очікувані
+from поділ_спільне import (dump_без_докстрінгів, загублені_імена,
+                           очікувані_і_знесені)
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "d1dbd9a"
 МОДУЛІ = ("колір_простір_реєстр", "колір_простір_перетворення", "колір_простір_стеля",
           "колір_простір_шкіра", "колір_простір_індукція", "колір_простір_надійність",
@@ -32,11 +33,11 @@ for м in МОДУЛІ:
         if ім not in до: зайві.append((м, ім)); continue
         де.setdefault(ім, м)
         if до[ім] != д: розбіжні.append((м, ім))
-загублені = sorted(set(до) - set(де))
+ОЧІК, знесені = очікувані_і_знесені("colorspace")
+загублені = загублені_імена(до, де, знесені)
 import colorspace as фасад
 не_ті_самі = [ім for ім, м in де.items() if м != "colorspace"
               and getattr(фасад, ім, None) is not getattr(__import__(м), ім)]
-ОЧІК = очікувані("colorspace")
 спост = {"%s::%s" % п for п in розбіжні}
 поза_списком, не_справдилось = sorted(спост - ОЧІК), sorted(ОЧІК - спост)
 print("вузлів у colorspace.py@%s: %d · знайдено: %d · AST розбіжні: %d (очікувані: %d) · "
