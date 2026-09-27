@@ -3232,6 +3232,438 @@
          {
           "const": "necklace_clearly_above_or_below",
           "description": "коротший ланцюг — вище краю горловини, або довший — виразно нижче"
+         },
+         {
+          "const": "no_third_piece_dressed_not_styled",
+          "description": "у образі лише база й жодного шару чи аксесуара: це «одягнена», а «стилізована» починається з третьої речі (значення: items — скільки речей в образі)"
+         },
+         {
+          "const": "add_layer_or_strong_accessory",
+          "description": "додати один шар — жакет, кардиган чи жилет — або один сильний аксесуар: пояс, шарф, виразну прикрасу"
+         },
+         {
+          "const": "focus_count_over_ceiling",
+          "description": "фокусів в образі більше за стелю — рівні фокуси гасять один одного, і образ читається зайнятим (значення: count — скільки фокусів, ceiling — стеля)"
+         },
+         {
+          "const": "keep_one_focus_quiet_rest",
+          "description": "лишити один фокус, решту стишити: нижча хрома, дрібніший масштаб принта, гладша фактура того самого слота"
+         },
+         {
+          "const": "sprezzatura_gestures_over_one",
+          "description": "жестів вивченої недбалості більше одного — другий знімає з першого ознаку вибору, і вони читаються неохайністю (значення: count — скільки жестів)"
+         },
+         {
+          "const": "keep_one_gesture_near_face",
+          "description": "лишити один жест — той, що ближче до обличчя; решту виконати рівно: застебнути, опустити комір, надіти як належить"
+         },
+         {
+          "const": "visible_layers_over_ceiling",
+          "description": "видимих шарів більше за практичну стелю — силует перестає читатись як рішення (значення: count — скільки шарів, ceiling — стеля)"
+         },
+         {
+          "const": "remove_layer_without_warmth_or_colour",
+          "description": "зняти один шар — той, що не несе ні тепла, ні кольору"
+         },
+         {
+          "const": "layers_end_at_same_level",
+          "description": "два шари завершуються на одному рівні тіла — кроку між ними нема, і вони читаються однією товстою горизонталлю (значення: level — код рівня тіла)"
+         },
+         {
+          "const": "outer_layer_clearly_longer_or_shorter",
+          "description": "взяти верхній шар помітно довшим або коротшим за те, що під ним"
+         },
+         {
+          "const": "interest_only_texture_render_loses",
+          "description": "увесь інтерес образу фактурний, а фотографія приміряння фактуру майже з'їдає — у житті образ працює як є (значення: sources — скільки фактурних джерел)"
+         },
+         {
+          "const": "add_non_texture_source_for_render",
+          "description": "для рендера додати одне нефактурне джерело: акцентний колір або чіткіший край силуету"
+         },
+         {
+          "const": "shine_surfaces_over_budget",
+          "description": "поверхонь вираженого блиску більше за бюджет (значення: count — скільки поверхонь, budget — бюджет; evening_plus_one — вечір чи нагода дали +1)"
+         },
+         {
+          "const": "keep_one_sparkle_rest_matte",
+          "description": "лишити одну головну іскру, решту взяти в матовому чи брашованому фініші, або прибрати блиск із найбільшої площі"
+         },
+         {
+          "const": "several_lustre_backgrounds",
+          "description": "кілька поверхонь м'якого люстру — такий фон один на образ, інакше «все блищить» (значення: count — скільки поверхонь)"
+         },
+         {
+          "const": "keep_one_lustre_background",
+          "description": "лишити один люстровий фон, решту в матовому"
+         },
+         {
+          "const": "two_shiny_adjacent",
+          "description": "дві блискучі речі поруч по тілу без матової між ними — вони підсилюють одна одну (значення: slots — коди двох слотів)"
+         },
+         {
+          "const": "separate_shine_or_matte_between",
+          "description": "рознести: лишити блиск в одній зоні, а сусідню взяти матовою, або поставити матову річ між ними"
+         },
+         {
+          "const": "metal_appears_once",
+          "description": "метал з'являється в образі один раз проти речей іншого металу — читається як випадковість, а не вибір (значення: metal — код металу, others — скільки речей іншого металу, nearness — близькість до обличчя від 0 до 1; connector — true, коли є двотонна річ-конектор)"
+         },
+         {
+          "const": "repeat_metal_or_one_metal_or_connector",
+          "description": "повторити цей метал у другій зоні (вуха, зап'ясток, пальці), або прибрати цю річ і лишити один метал, або додати двотонну річ-конектор (значення: metal — код металу)"
+         },
+         {
+          "const": "metal_tones_over_two",
+          "description": "металевих тонів більше за два — мікс перестає читатись як задум (значення: count — скільки тонів, metals — коди металів)"
+         },
+         {
+          "const": "reduce_to_two_metal_tones",
+          "description": "звести до двох тонів: третій прибрати чи замінити двотонною річчю, або лишити його в одній дрібній речі далеко від обличчя"
+         },
+         {
+          "const": "she_asked_no_jewellery",
+          "description": "вона просила образ без прикрас, а прикраса в образі є"
+         },
+         {
+          "const": "remove_jewellery_her_decision",
+          "description": "прибрати прикраси: це її рішення про сьогодні"
+         },
+         {
+          "const": "she_wanted_non_metal_jewellery",
+          "description": "вона хотіла прикраси не з металу, а веде металева (значення: lead — код металу, що веде, wanted — pearls, ethnic чи other)"
+         },
+         {
+          "const": "non_metal_near_face_metal_further",
+          "description": "біля обличчя поставити річ без металевого блиску, метал — далі"
+         },
+         {
+          "const": "lead_metal_not_her_wish",
+          "description": "провідний метал образу — не той, що вона хоче з цим образом (значення: lead — код металу, що веде, wish — код бажаного)"
+         },
+         {
+          "const": "wished_metal_near_face",
+          "description": "поставити бажаний метал біля обличчя, а той, що веде, лишити далі або прибрати (значення: wish — код бажаного металу, lead — код того, що веде)"
+         },
+         {
+          "const": "today_metal_differs_from_profile",
+          "description": "сьогодні вона хоче не той метал, що назвала своїм до лиця в профілі, і образ веде її сьогоднішній — це її рішення, не помилка (значення: today — код сьогоднішнього, profile — код профільного, lead — код того, що веде)"
+         },
+         {
+          "const": "her_choice_may_try_profile_metal",
+          "description": "нічого не міняти: рішення — її; якщо захоче звірити, спробувати профільний метал біля обличчя (значення: profile — код металу)"
+         },
+         {
+          "const": "lead_metal_not_her_named",
+          "description": "провідний метал образу — не той, що вона назвала своїм (значення: lead — код металу, що веде, named — код названого)"
+         },
+         {
+          "const": "named_metal_near_face_or_deliberate",
+          "description": "поставити названий нею метал біля обличчя, а той, що веде, лишити далі — або свідомо йти проти, це законний хід (значення: named — код названого, lead — код того, що веде)"
+         },
+         {
+          "const": "lead_metal_against_her_warmth",
+          "description": "провідний метал проти температури її обличчя за фото — це конвенція, а не механізм (значення: lead — код металу, warmth — тепло обличчя від −1 до 1, confidence — впевненість входу; olive — true, коли підтон оливковий і метали часто працюють обидва)"
+         },
+         {
+          "const": "ask_her_metal_or_move_it_further",
+          "description": "спитати її напряму, золото чи срібло виграшніше біля обличчя, або перенести цей метал далі від обличчя"
+         },
+         {
+          "const": "no_register_leads",
+          "description": "в образі кілька реєстрів стилю, і жоден не веде: мікс читається лише при домінанті (значення: registers — коди реєстрів)"
+         },
+         {
+          "const": "one_register_leads_other_one_quote",
+          "description": "лишити один реєстр провідним, а з другого взяти одну річ-цитату, або оголосити злам явно"
+         },
+         {
+          "const": "conflicting_register_pair",
+          "description": "ці два реєстри — конфліктна пара без домінанти (значення: registers — коди двох реєстрів)"
+         },
+         {
+          "const": "one_grammar_or_declared_break",
+          "description": "звести до однієї граматики стилю або оголосити злам"
+         },
+         {
+          "const": "leading_register_outside_occasion_band",
+          "description": "провідний реєстр типово живе на інших рівнях формальності, ніж просить нагода — це high-low, законний лише як один заявлений злам (значення: register — код реєстру, register_band — його типовий інтервал формальності, occasion_band — інтервал нагоди)"
+         },
+         {
+          "const": "declare_break_or_register_covering_occasion",
+          "description": "або оголосити злам, або взяти реєстр, чий інтервал накриває нагоду"
+         },
+         {
+          "const": "costume_one_genre_everywhere",
+          "description": "костюм, а не образ: усі розпізнані речі оголошують один жанр — жанр цитують, а не носять уніформою (значення: items — скільки речей, register — код жанру)"
+         },
+         {
+          "const": "one_genre_quote_rest_her_base",
+          "description": "лишити одну річ-цитату жанру, решту взяти з її власної бази, або зламати жанр однією річчю іншого реєстру"
+         },
+         {
+          "const": "formality_spread_over_limit",
+          "description": "розкид формальності речей образу більший за допуск (значення: spread — розкид у кроках, limit — допуск; shoes_involved — одна з речей розриву взуття; no_prestige_context — буденна нагода без норми, де свідомий high-low не читається)"
+         },
+         {
+          "const": "raise_lowest_item_or_declared_high_low",
+          "description": "підтягнути найнижчу річ на 1–2 кроки (замінити взуття чи низ), або лишити як свідомий high-low: один розрив, заякорений повтором кольору чи явним фокусом"
+         },
+         {
+          "const": "raise_lowest_item_no_high_low_here",
+          "description": "підтягнути найнижчу річ на 1–2 кроки (замінити взуття чи низ): у буденній нагоді high-low не читається, розрив лишається розривом"
+         },
+         {
+          "const": "shoes_register_off_rest",
+          "description": "взуття задає свій рівень формальності й відходить від решти образу понад допуск (значення: direction — below чи above решти, steps_over — на скільки кроків понад допуск, limit — допуск)"
+         },
+         {
+          "const": "shoes_to_outfit_level_or_high_low",
+          "description": "замінити взуття на рівень решти образу, або лишити як свідомий high-low, якщо посадка й решта бездоганні (значення: direction — up чи down)"
+         },
+         {
+          "const": "outfit_level_off_occasion",
+          "description": "рівень формальності образу нижчий чи вищий за те, що просить сценарій (значення: direction — below чи above, level — медіанний рівень образу, target — ціль нагоди від і до, risk_posture — постава ризику: neutral, half_step_over, half_step_under_plus_detail)"
+         },
+         {
+          "const": "shift_outfit_level",
+          "description": "зсунути рівень образу на названу кількість кроків (значення: steps — скільки кроків, direction — up чи down)"
+         },
+         {
+          "const": "open_zones_over_limit",
+          "description": "відкритих зон тіла більше, ніж просить контекст (значення: zones — коди зон: neckline, back, arms, shoulders, legs, belly, neckline_back — декольте чи спина; limit — ліміт; evening — вечірній контекст, де ліміт два)"
+         },
+         {
+          "const": "keep_one_open_zone",
+          "description": "лишити одну відкриту зону: ноги, або декольте, або плечі чи спину"
+         },
+         {
+          "const": "item_type_not_in_dress_code",
+          "description": "цей тип речі не належить до названого дрес-коду (значення: item_type — код типу, dress_code — код дрес-коду)"
+         },
+         {
+          "const": "type_named_by_code_or_drop_code",
+          "description": "замінити річ типом, який називає дрес-код, або зняти заявлений код, якщо запрошення його не вимагає"
+         },
+         {
+          "const": "dress_code_requires_type",
+          "description": "дрес-код прямо просить річ такого типу, а в образі її нема (значення: dress_code — код дрес-коду, types — коди типів)"
+         },
+         {
+          "const": "add_required_type",
+          "description": "додати річ одного з названих типів (значення: types — коди типів)"
+         },
+         {
+          "const": "shoes_outside_dress_code_band",
+          "description": "взуття поза рівнем формальності, який дрес-код називає прямо (значення: band — рівні від і до, dress_code — код дрес-коду)"
+         },
+         {
+          "const": "shoes_in_band",
+          "description": "взуття названого рівня формальності (значення: band — рівні від і до)"
+         },
+         {
+          "const": "near_white_at_guest_wedding",
+          "description": "майже-біле на чужому весіллі: на фото читається як весільне — крем, айворі, світло-жовтий, блідо-блакитний теж (значення: lightness, chroma — світлота й хрома речі, area_pct — площа в образі у відсотках)"
+         },
+         {
+          "const": "same_silhouette_away_from_white",
+          "description": "той самий силует у кольорі з хромою вище або світлотою нижче названих меж, або уточнити в пари дрес-код: all-black чи black&white скасовує вето (значення: chroma_above, lightness_below — межі)"
+         },
+         {
+          "const": "guest_colour_too_loud_for_occasion",
+          "description": "колір перетягує увагу на гостю — для цієї нагоди він гучніший за стелю (значення: occasion — код нагоди, loudness — гучність кольору, ceiling — стеля, area_pct — площа у відсотках)"
+         },
+         {
+          "const": "deeper_version_or_accessory_area",
+          "description": "та сама сім'я в глибшій версії (бордо, вино, теракота), або зменшити площу цього кольору до аксесуара"
+         },
+         {
+          "const": "lightness_off_occasion_window",
+          "description": "світлота речі поза вікном, яке просить нагода чи час дня (значення: lightness — світлота речі, window — вікно від і до, occasion — код нагоди)"
+         },
+         {
+          "const": "same_silhouette_deeper",
+          "description": "той самий силует у глибшій версії"
+         },
+         {
+          "const": "same_silhouette_lighter",
+          "description": "той самий силует у світлішій версії"
+         },
+         {
+          "const": "outside_mourning_register",
+          "description": "річ поза траурним регістром: для жалоби вона надто світла чи гучна (значення: lightness_max — межа світлоти, chroma_max — межа гучності; at_event — на самій події, де велика поверхня блокує; her_own_choice — цю річ назвала вона сама, і її вибір сильніший)"
+         },
+         {
+          "const": "darker_quieter_version_of_item",
+          "description": "темніша й тихіша версія тієї самої речі: чорний, графіт, темно-синій, шоколад, глибоке бордо"
+         },
+         {
+          "const": "chroma_too_high_for_photo_event",
+          "description": "на фото-події надвисока хрома під спалахом «вибухає» (значення: chroma — хрома речі, ceiling — стеля для фото)"
+         },
+         {
+          "const": "judged_from_item_name",
+          "description": "цей висновок стоїть на слові в назві речі, а не на полі каталогу"
+         },
+         {
+          "const": "different_prints_mixed",
+          "description": "в образі змішано різні принти (значення: prints — коди візерунків)"
+         },
+         {
+          "const": "tie_prints_by_colour_or_one_dominates",
+          "description": "зв'язати принти спільним кольором або дати одному домінувати площею"
+         },
+         {
+          "const": "daytime_shine",
+          "description": "блискучі паєтки, люрекс чи стрази вдень — денний контекст (значення: slot — код слота, hour — година початку)"
+         },
+         {
+          "const": "matte_item_in_slot",
+          "description": "матова річ у цьому слоті (значення: slot — код слота)"
+         },
+         {
+          "const": "bag_type_below_event_level",
+          "description": "тип сумки (рюкзак, шопер, поясна) нижчий за рівень події (значення: event_level — рівень події)"
+         },
+         {
+          "const": "bag_of_event_level",
+          "description": "сумка рівня події (значення: event_level — рівень події)"
+         },
+         {
+          "const": "layers_off_temperature_map",
+          "description": "шарів на торсі замало чи забагато для температури дня за мапою шарів (значення: direction — too_few чи too_many, temperature_c — температура, layers — скільки тепла дають шари, needed — скільки просить мапа; partial_warmth_items — скільки шарів гріють лише частково, як тренч)"
+         },
+         {
+          "const": "layers_to_temperature_map",
+          "description": "привести кількість шарів до мапи смуги дня тканинами цієї смуги"
+         },
+         {
+          "const": "cold_accessories_carry_no_colour",
+          "description": "у лютий холод видно переважно верхній шар і аксесуари, а шапка, шарф і рукавиці тут тихі — увесь колір лишився під пальтом (значення: temperature_c — температура)"
+         },
+         {
+          "const": "move_colour_to_hat_scarf_gloves",
+          "description": "перенести кольоровий інтерес у шапку, шарф чи рукавиці"
+         },
+         {
+          "const": "smooth_protected_leather_or_rubber_or_treat",
+          "description": "замінити на гладку захищену шкіру чи гуму, або обробити водовідштовхувальним і прийняти ризик"
+         },
+         {
+          "const": "face_contrast_above_her_own",
+          "description": "контраст біля обличчя вищий за її власний — одяг носить людину, обличчя стирається (значення: jump — стрибок світлоти біля обличчя, own — її власний контраст; with_neckline_buffer — стрибок із буфером вирізу; makeup_plus — скільки додає помітний макіяж, і цього не вистачило)"
+         },
+         {
+          "const": "face_item_in_lightness_window",
+          "description": "замінити річ біля обличчя на річ у вікні світлоти (значення: window — вікно світлоти від і до)"
+         },
+         {
+          "const": "open_neckline_as_buffer",
+          "description": "відкритий виріз: шкіра стає буфером і розбиває стрибок"
+         },
+         {
+          "const": "mid_lightness_scarf_or_collar",
+          "description": "шарф чи комір проміжної світлоти — розбиває стрибок на два"
+         },
+         {
+          "const": "move_dark_item_down",
+          "description": "перенести темну річ у низ: низ і взуття майже вільні від цього правила"
+         },
+         {
+          "const": "face_contrast_below_her_own",
+          "description": "контраст біля обличчя нижчий за її власний — легка вицвілість (значення: jump — найбільший стрибок біля обличчя, own — її власний контраст)"
+         },
+         {
+          "const": "lift_face_contrast_with_accessory",
+          "description": "підняти контраст аксесуаром, не міняючи речей: прикраса з блиском, світла деталь біля обличчя, помада на крок виразніша чи принт із потрібним розкидом"
+         },
+         {
+          "const": "chroma_gap_between_items",
+          "description": "речі образу не збігаються інтенсивністю: сумісність тримає близькість насиченості, а не відношення тонів (значення: gap — розрив хроми в OKLab, threshold — поріг; louder — яка з двох речей знахідки гучніша: 1 чи 2; on_windows — true, коли судження на вікнах слів кольору, а не на вимірі)"
+         },
+         {
+          "const": "match_chroma_register",
+          "description": "звести хроми до одного регістру: приглушити гучнішу річ або підняти хрому тихішої — тон міняти не треба"
+         },
+         {
+          "const": "waistline_hidden_by_top",
+          "description": "посадка низу нічого не робить: пояс схований верхом, тож око бачить край верху, а не пояс (значення: rise — посадка: high, mid, low; hidden_cm — на скільки см схований)"
+         },
+         {
+          "const": "tuck_top_or_shorter_top",
+          "description": "заправити верх, щоб пояс став видимим, або взяти коротший верх, що закінчується вище пояса"
+         },
+         {
+          "const": "maxi_without_lift_or_volume",
+          "description": "максі без підйому й без власного обʼєму: з трьох опор максі — зріст, підйом, обʼєм — в образі нема жодної (значення: heel_cm — каблук пари, коли картка його називає)"
+         },
+         {
+          "const": "heeled_shoes_or_voluminous_maxi",
+          "description": "взуття з підйомом від 4 см під цю довжину, або максі обʼємного крою: А-силует, плісе, кльош"
+         },
+         {
+          "const": "midi_proportion_decided_by_shoes",
+          "description": "міді — найризикованіша довжина, і пропорцію вирішує взуття (значення: heel_cm — каблук пари, коли картка його називає)"
+         },
+         {
+          "const": "shoes_continuing_leg_line",
+          "description": "звірити пару з поділом: під міді працює взуття, що продовжує лінію ноги — тон до ноги, підйом, вузька халява"
+         },
+         {
+          "const": "print_shapes_echo_keep",
+          "description": "мотиви різних сімей відлунюють формою — мікс тримається на цьому, лишити (значення: shape — curved чи angular, prints — коди візерунків)"
+         },
+         {
+          "const": "print_mix_no_shared_colour",
+          "description": "мікс принтів без спільного кольору розпадається на дві окремі речі (значення: scale_spread — наскільки розведено масштаби, від 0 до 1, коли виміряно)"
+         },
+         {
+          "const": "print_with_other_colour_or_linking_item",
+          "description": "замінити один принт на версію з кольором другого, або звʼязати третьою річчю в спільному кольорі"
+         },
+         {
+          "const": "two_prints_close_scale",
+          "description": "два принти близького масштабу сперечаються за увагу (значення: scale_spread — розведеність масштабу від 0 до 1)"
+         },
+         {
+          "const": "one_print_clearly_smaller_or_larger",
+          "description": "узяти один принт помітно дрібнішим або більшим, спільний колір лишити"
+         },
+         {
+          "const": "two_fixes_pull_one_item_apart",
+          "description": "два ремонти тягнуть одну річ у різні боки на одній осі кольору — порядку пріоритету доказ не дає (значення: slot — код слота, axes — осі: lightness, chroma, hue)"
+         },
+         {
+          "const": "choose_one_fix_or_split_goals",
+          "description": "виконати один із двох ремонтів і прийняти, що друга мета лишиться недосягнутою, або рознести цілі на різні речі: одну в шарф чи прикрасу, другу у верх"
+         },
+         {
+          "const": "warm_cool_neutrals_no_step",
+          "description": "тепла й холодна нейтралі поруч без кроку світлоти (значення: dl — різниця світлоти, de — видима різниця кольору; on_windows — судження на вікнах слів кольору)"
+         },
+         {
+          "const": "neutrals_same_lightness_visibly_different",
+          "description": "дві нейтралі на одній світлоті, але видимо різні (значення: dl — різниця світлоти, de — видима різниця кольору; on_windows — судження на вікнах слів кольору)"
+         },
+         {
+          "const": "separate_lightness_or_tone_on_tone",
+          "description": "розвести нейтралі за світлотою на крок, або зблизити до тону в тон, і тоді це свідомий хід (значення: step — поріг кроку)"
+         },
+         {
+          "const": "two_different_whites",
+          "description": "в образі два різні білі — вершковий і оптичний, і різниця температур читається як бруд"
+         },
+         {
+          "const": "one_white",
+          "description": "звести до одного білого"
+         },
+         {
+          "const": "neutral_near_face_off_her_temperature",
+          "description": "нейтраль біля обличчя холодніша чи тепліша за її температуру (значення: direction — cooler чи warmer, b — жовто-синя вісь речі, window — її вікно від і до, nearness — близькість до обличчя)"
+         },
+         {
+          "const": "her_temperature_neutral_near_face",
+          "description": "покласти біля обличчя нейтраль її температури — шарф, топ чи розстібнутий шар; річ лишається"
          }
         ]
        },
@@ -3300,6 +3732,18 @@
    "secondary": "секундант",
    "accent": "акцент",
    "neutral": "нейтраль"
+  },
+  "metal": {
+   "gold": "золото",
+   "bronze": "бронза",
+   "brass": "латунь",
+   "copper": "мідь",
+   "silver": "срібло",
+   "white_gold": "біле_золото",
+   "platinum": "платина",
+   "steel": "сталь",
+   "rose_gold": "рожеве_золото",
+   "two_tone": "двотонний"
   },
   "colour_temperature": {
    "warm": "тепла",
