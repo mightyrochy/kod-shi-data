@@ -179,15 +179,16 @@ const пнг = байтів => {
      `cache_control`, Gemini тримає неявний кеш сам на сталому префіксі. Склеєний текст
      мусить лишитись байт у байт тим самим — інакше змінився б промпт, а не лише ціна. */
   {
-    const промпт = JSON.stringify({version:"1", task:{role:"r", rules:["a\"}b", "{c}"], answer_schema:{x:["<y>"]}},
+    const промпт = JSON.stringify({version:"1", task:{role:"r", rules:["a\"}b", "{c}"], answer_schema:{x:["<y>"]},
+                                   input:["\"pool\" — items"], statement_codes:{too_few_items:"…"}},
                                    pool:[{n:"#1·01"}], outfits_wanted:4});
-    const межа = промпт.indexOf('},"pool"') + 1;
+    const межа = промпт.indexOf(',"input"');
     відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"ок"}], stop_reason:"end_turn",
         usage:{input_tokens:5, output_tokens:1, cache_read_input_tokens:1200, cache_creation_input_tokens:0}}), {status:200});
     вихідні.length = 0;
     в = await зап({model:"claude-sonnet-5", messages:[{role:"user", content:[{type:"text", text:промпт}]}]});
     const бл = вихідні[0].body.messages[0].content;
-    тест("claude: перший блок — рівно до закритої дужки «task», на ньому cache_control ephemeral",
+    тест("claude: перший блок — рівно до коми перед «input» (далі — зібране з цих даних), cache_control ephemeral",
          бл.length === 2 && бл[0].text === промпт.slice(0, межа)
          && JSON.stringify(бл[0].cache_control) === '{"type":"ephemeral"}' && !бл[1].cache_control, бл);
     тест("claude: склеєні блоки — той самий промпт байт у байт (модель бачить те саме)",
