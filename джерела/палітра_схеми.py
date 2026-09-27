@@ -39,7 +39,6 @@
 import colorspace as cs
 import outfit as O
 import внутрішня_мова as _ВМ
-import внутрішня_мова as _ВМ
 import реєстр_правил as _РЕЄСТР
 
 
