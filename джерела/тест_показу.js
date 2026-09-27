@@ -3819,7 +3819,9 @@ function мостПриміркиЗаглушка(w){
     const байти22 = new TextEncoder().encode(JSON.stringify(пакет22));
     const ст22 = new Uint8Array(await new Response(new Blob([байти22]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
     const б6422 = Buffer.from(ст22).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б6422});
+    const idb22 = new IDBFactory();
+    const урл22 = "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б6422;
+    const {w, d, помилки} = сторінка({url: урл22, idb: idb22});
     await чекатиНа(() => d.querySelectorAll("#картки .картка").length === 1, "картка пакета не намалювалась");
     w.eval("містП = async () => [];");
     const ідА = w.eval("П.прогін");
@@ -3874,6 +3876,19 @@ function мостПриміркиЗаглушка(w){
          плитки22б.length === 3 && плитки22б.filter(т => т === "вдягну з поправкою").length === 1
          && плитки22б.filter(т => т === "вдягну як є").length === 1
          && плитки22б.filter(т => т === "не вдягну").length === 1, плитки22б);
+    /* ТЕ САМЕ ПОСИЛАННЯ, ВІДКРИТЕ ВДРУГЕ, — ТОЙ САМИЙ ПРОГІН (`ідПакетаП`). Ід із
+       годинника плодив би тут запис на кожне відкриття: власник відкриває
+       надіслане собі посилання по кілька разів, і «Усі образи» засмічувались би
+       копіями одного прогону. Сховище те саме (`idb22`), сторінка нова. */
+    {
+      const друге = сторінка({url: урл22, idb: idb22});
+      await чекатиНа(() => друге.d.querySelectorAll("#картки .картка").length === 1, "пакет не намалювався вдруге");
+      await пауза(80);
+      const записів = JSON.parse(await друге.w.eval("усіОбрази().then(о => JSON.stringify(о.map(з => String(з.ключ))))"));
+      тест("те саме посилання, відкрите вдруге, дописує СВІЙ запис, а не плодить новий",
+           друге.w.eval("П.прогін") === ідА && записів.length === 3 && записів.filter(к => к === ідА).length === 1,
+           [друге.w.eval("П.прогін"), ідА, записів]);
+    }
     const звіт22б = JSON.parse(await w.eval("усіВердикти().then(в => JSON.stringify(звітВердиктів(в, new Date())))"));
     тест("файл вивантажує і давній вердикт — окремою групою, за його колишнім ключем",
          звіт22б.прогони.length === 3
