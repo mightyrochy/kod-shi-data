@@ -8,8 +8,7 @@
 всім. Мірило — гучність C*×L*/50, стеля 45 (K-KOH-08 з `формальність`, не наше число).
 Прогін: cd джерела && python3 проби/мета_уваги_пул.py
 """
-import json, sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+import json, sys, pathlib; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import feed as Ф, bridge as B, composer as К, pipeline as ПЛ, регістр_уваги as РУ
 from композитор_річ import _у_річ
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
@@ -22,7 +21,8 @@ F, T, _, kw = B._збірка(B._нормалізувати_вхід(B._заст
 база = пул(None)
 образ = lambda ключ: [_у_річ(за_ід.get(r["id"], r), с, T) for с, рч in база.items() if рч
                       for r in [max(рч, key=ключ)]]
-гучний, тихий = образ(lambda r: г1(r) or -1.0), образ(lambda r: -(г1(r) or 999.0))зн = lambda о, м: [z for ст in (ПЛ.перевірити_образ(F, о, тіло=T, мета=м, **kw).get("стани")
+гучний, тихий = образ(lambda r: г1(r) or -1.0), образ(lambda r: -(г1(r) or 999.0))
+зн = lambda о, м: [z for ст in (ПЛ.перевірити_образ(F, о, тіло=T, мета=м, **kw).get("стани")
                                 or {}).values() for z in (ст or [])
                    if isinstance(z, dict) and z.get("правило") == "R-CHEV-08"]
 print("сцена (нагода стенда Б: робоча нарада) %s · каталог %d · стеля %.0f"
