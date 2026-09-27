@@ -9,7 +9,8 @@
 import ast, os, subprocess, sys
 ДЖЕРЕЛА = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ДЖЕРЕЛА)
-from поділ_спільне import dump_без_докстрінгів, очікувані
+from поділ_спільне import (dump_без_докстрінгів, загублені_імена,
+                           очікувані_і_знесені)
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "b8f70a4"
 МОДУЛІ = ("батарея_корпус", "батарея_входи", "батарея_образи", "батарея_слід",
           "батарея_міст", "батарея_труба", "батарея_трейс", "gate_reach")
@@ -33,11 +34,11 @@ for м in МОДУЛІ:
         if ім not in до: зайві.append((м, ім)); continue
         де.setdefault(ім, м)
         if до[ім] != д: розбіжні.append((м, ім))
-загублені = sorted(set(до) - set(де))
+ОЧІК, знесені = очікувані_і_знесені("gate_reach")
+загублені = загублені_імена(до, де, знесені)
 import gate_reach
 не_ті_самі = [ім for ім, м in де.items() if м != "gate_reach"
               and getattr(gate_reach, ім, None) is not getattr(__import__(м), ім)]
-ОЧІК = очікувані("gate_reach")
 спост = {"%s::%s" % п for п in розбіжні}
 поза_списком, не_справдилось = sorted(спост - ОЧІК), sorted(ОЧІК - спост)
 print("вузлів у gate_reach.py@%s: %d · знайдено: %d · AST розбіжні: %d (очікувані: %d) · "
