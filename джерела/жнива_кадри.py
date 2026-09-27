@@ -128,6 +128,7 @@ def main():
     ap.add_argument("--крамниці", default="", help="лише ці крамниці, через кому")
     ap.add_argument("--ліміт", type=int, default=None, help="лише перші N речей")
     ap.add_argument("--продовжити", action="store_true", help="пропустити речі, уже записані у вихід")
+    ap.add_argument("--заново", action="store_true", help="почати порожній вихід (інакше наявний дописується)")
     ap.add_argument("--сухо", action="store_true", help="без маски: відбір і качання (перевірка шляху)")
     ap.add_argument("--качалок", type=int, default=6, help="потоків качання кадрів однієї речі")
     ap.add_argument("--кожні", type=int, default=20, help="записувати вихід кожні N речей")
@@ -139,8 +140,10 @@ def main():
     зб = F.читати_збагачення()
     сп_цілі, сп = цілі(offers, зб)
     крамниці = {к.strip() for к in а.крамниці.split(",") if к.strip()}
+    # наявний вихід ДОПИСУЄТЬСЯ, а не затирається: прогін частинами (`--крамниці`, `--ліміт`)
+    # без `--продовжити` лише переміряє свої речі, а чужі лишає; порожній — лише `--заново`
     дані = {"мета": {}, "записи": {}}
-    if а.продовжити and os.path.exists(а.вихід):
+    if os.path.exists(а.вихід) and not а.заново:
         with gzip.open(а.вихід, "rt", encoding="utf-8") as f:
             дані = json.load(f)
     черга = [(o, з) for o, з in сп_цілі
