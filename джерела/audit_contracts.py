@@ -185,6 +185,246 @@ def _декларація(дерево):
     return ключі, проміжки
 
 
+# ── ТРИ ФОРМИ ЗАПИСУ, ЯКИХ СКАНЕР НЕ БАЧИВ (Ф-143, 27.09.2026) ───────────────
+# ЩО ЦЕ МІНЯЄ (правило 3, before/after). Виміряно на каталозі: `audit_contracts`
+# стояв ЧЕРВОНИМ на чистому main («РОЗРИВІВ: 3»), тобто червоними були всі
+# відкриті PR. Три «сироти» — `task`, `твій_образ`, `є_також_у` — насправді
+# ПИШУТЬСЯ, і кожна в формі, якої не знала жодна з чотирьох регулярок запису
+# (`.setdefault("k"`, `d["k"] = …`, `імя = …`, `"k":`). Спільне в усіх трьох:
+# рядок-ключ і місце, де він стає ключем, РОЗВЕДЕНІ — між ними стала, змінна
+# петлі або таблиця перейменування. Регулярка бачить лише збіг «рядок ПОРУЧ із
+# дужкою», тож розведене вона не бачить за побудовою: лікувати це ще одним
+# патерном значить накрити ним і справжніх сиріт. Тому тут AST, який РОЗВ'ЯЗУЄ
+# розведення, а не вгадує його:
+#   (1) `пакет_моделі:738` — `for ключ, значення in (…, ("є_також_у", […]), …):`
+#       і в тілі `річ[ключ] = значення`. Ключем рядок робить ЗМІННА петлі.
+#   (2) `протокол:1281` — `dict({ТВІЙ_ОБРАЗ: …})`, де `ТВІЙ_ОБРАЗ = "твій_образ"`
+#       стоїть сталою модуля. Ключем рядок робить СТАЛА.
+#   (3) `збирач_промптів:100` — `КЛЮЧІ_EN = {"завдання": "task"}` і `к.get(с, с)`,
+#       результат якого стає ключем (`вих[ключ("завдання")] = …`). Англійський
+#       дріт п.12 виробляє ключі ЗНАЧЕННЯМИ таблиці — а значення сканер ніколи
+#       не рахував за ключ, і не має рахувати: інакше кожен рядок кожного
+#       словника проєкту став би «записаним полем», і перевірка вмерла б.
+#       Ключем значення робить те, що результат перейменування йде в ПОЗИЦІЮ
+#       КЛЮЧА. Саме позиція й перевіряється: `_ІНШИЙ_МЕТАЛ.get(м, м)` у `brief`
+#       — той самий тотожний `.get`, але результат іде у ЗНАЧЕННЯ, і таблицею
+#       ключів він не стає.
+# ЧОМУ ЦЕ НЕ ГЛУШНИК. Жодного списку-винятку тут нема: кожна форма вимагає
+# ДОКАЗУ в AST, що рядок справді доходить до позиції ключа. Поле, яке читають і
+# ніде не пишуть, жодної з трьох умов не виконує — доказ у тілі PR: штучна
+# сирота в копії теки ловиться після правки так само, як і до неї.
+
+
+def _гілки(в):
+    """Гілки виразу: тернар дає дві, решта — себе. Потрібне, бо таблиця
+    приходить розпакуванням кортежу з тернара (`… = (…) if en else (…)`)."""
+    return (_гілки(в.body) + _гілки(в.orelse)) if isinstance(в, ast.IfExp) else [в]
+
+
+def _елементи(в):
+    """Елементи літерала кортежу/списку (через гілки тернара). Не літерал — нічого:
+    вгадувати вміст обчисленого виразу тут не можна, це й було б глушником."""
+    вих = []
+    for г in _гілки(в):
+        if isinstance(г, (ast.Tuple, ast.List)):
+            вих.extend(г.elts)
+    return вих
+
+
+def _сталі_рядки(дерево):
+    """{ім'я: {значення}} для сталих модуля `ІМЯ = "рядок"`.
+
+    Лише верхній рівень: локальна змінна з рядком — не стала контракту, і
+    розв'язувати її означало б приймати за ключ будь-який рядок будь-де."""
+    вих = collections.defaultdict(set)
+    for n in дерево.body:
+        if not (isinstance(n, ast.Assign) and isinstance(n.value, ast.Constant)
+                and isinstance(n.value.value, str)):
+            continue
+        for ц in n.targets:
+            if isinstance(ц, ast.Name):
+                вих[ц.id].add(n.value.value)
+    return вих
+
+
+def _позиції_ключа(дерево):
+    """Вирази, значення яких СТАЄ ключем структури: ключ dict-літерала й
+    dict-комприхеншена, зріз у `d[…] = …`, перший аргумент `setdefault`.
+
+    Саме «стає», а не «стоїть поруч»: читання `d[…]` сюди не входить — воно
+    ключа не створює, і рахувати його за запис означало б, що читач сам себе
+    забезпечує писарем."""
+    вих = []
+    for n in ast.walk(дерево):
+        if isinstance(n, ast.Dict):
+            вих.extend(к for к in n.keys if к is not None)   # `**розпакування` — None
+        elif isinstance(n, ast.DictComp):
+            вих.append(n.key)
+        elif isinstance(n, (ast.Assign, ast.AugAssign, ast.AnnAssign)):
+            цілі = n.targets if isinstance(n, ast.Assign) else [n.target]
+            вих.extend(ц.slice for ц in цілі if isinstance(ц, ast.Subscript))
+        elif (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+              and n.func.attr == "setdefault" and n.args):
+            вих.append(n.args[0])
+    return вих
+
+
+def _сталі_як_ключі(дерево):
+    """(запис, читання) для ключів, названих СТАЛОЮ модуля, а не рядком на місці.
+
+    Форма (2): `dict({ТВІЙ_ОБРАЗ: …})`. Читання `с[ТВІЙ_ОБРАЗ]` повертається
+    теж — інакше перевірка стала б однобокою: розв'язана стала в записі й
+    нерозв'язана в читанні дали б поле, яке «пишуть і ніхто не читає»."""
+    сталі = _сталі_рядки(дерево)
+    if not сталі:
+        return set(), set()
+    ключі_запису = {id(в) for в in _позиції_ключа(дерево)}
+    зап = set()
+    for в in _позиції_ключа(дерево):
+        if isinstance(в, ast.Name):
+            зап |= сталі.get(в.id, set())
+    чит = set()
+    for n in ast.walk(дерево):
+        if (isinstance(n, ast.Subscript) and isinstance(n.slice, ast.Name)
+                and id(n.slice) not in ключі_запису):
+            чит |= сталі.get(n.slice.id, set())
+    return зап, чит
+
+
+def _петля_пар(дерево):
+    """Ключі з форми (1): `for ключ, значення in ((«к», v), …): річ[ключ] = значення`.
+
+    Записом рядок робить ЗМІННА петлі, тож ні `d["k"] = …`, ні ключ
+    dict-літерала його тут не бачать. Умова точна: тіло петлі мусить справді
+    індексувати запис саме тією змінною, і саму пару мусить дати ЛІТЕРАЛ —
+    беруться рядки рівно з тієї позиції кортежу, що йде в зріз."""
+    вих = set()
+    for n in ast.walk(дерево):
+        if not (isinstance(n, ast.For) and isinstance(n.target, ast.Tuple)):
+            continue
+        імена = [ц.id if isinstance(ц, ast.Name) else None for ц in n.target.elts]
+        пишуть = set()
+        for в in n.body:
+            for m in ast.walk(в):
+                if not isinstance(m, ast.Assign):
+                    continue
+                for ц in m.targets:
+                    if (isinstance(ц, ast.Subscript) and isinstance(ц.slice, ast.Name)
+                            and ц.slice.id in імена):
+                        пишуть.add(імена.index(ц.slice.id))
+        if not пишуть:
+            continue
+        for е in _елементи(n.iter):
+            for i in пишуть:
+                пара = _елементи(е)
+                if i < len(пара) and isinstance(пара[i], ast.Constant) \
+                        and isinstance(пара[i].value, str):
+                    вих.add(пара[i].value)
+    return вих
+
+
+def _звідки_словники(дерево):
+    """{ім'я: {вузли dict-літералів}} — пряме присвоєння, тернар і розпакування
+    кортежу за позицією. Без цього ланцюга таблиця `КЛЮЧІ_EN` не знаходиться:
+    у місці вжитку вона зветься `к` і приходить третьою позицією тернара."""
+    табл = collections.defaultdict(set)
+    пари = []
+    for n in ast.walk(дерево):
+        if not isinstance(n, ast.Assign):
+            continue
+        for ц in n.targets:
+            if isinstance(ц, ast.Name):
+                пари.append((ц.id, n.value))
+            elif isinstance(ц, ast.Tuple):
+                for i, е in enumerate(ц.elts):
+                    if not isinstance(е, ast.Name):
+                        continue
+                    for г in _гілки(n.value):
+                        if isinstance(г, (ast.Tuple, ast.List)) and i < len(г.elts):
+                            пари.append((е.id, г.elts[i]))
+    for _ in range(3):                # ланцюг псевдонімів: к ← КЛЮЧІ_EN ← літерал
+        for імя, в in пари:
+            for г in _гілки(в):
+                if isinstance(г, ast.Dict):
+                    табл[імя].add(г)
+                elif isinstance(г, ast.Name) and г.id in табл:
+                    табл[імя] |= табл[г.id]
+    return табл
+
+
+def _тотожний_get(в):
+    """Ім'я таблиці, якщо вираз — `Т.get(x, x)` (той самий аргумент двічі), інакше
+    None. Тотожна підстава — це і є перейменування: ключ, якого в таблиці нема,
+    лишається собою."""
+    if not (isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute)
+            and в.func.attr == "get" and len(в.args) == 2
+            and isinstance(в.func.value, ast.Name)):
+        return None
+    a, b = в.args
+    if isinstance(a, ast.Name) and isinstance(b, ast.Name) and a.id == b.id:
+        return в.func.value.id
+    return None
+
+
+def _перейменовані_ключі(дерево):
+    """Ключі з форми (3): ЗНАЧЕННЯ таблиці, якою код перейменовує ключі.
+
+    Таблицею КЛЮЧІВ робить не тотожний `.get` сам собою, а те, що його результат
+    іде в ПОЗИЦІЮ КЛЮЧА — просто чи через функцію-перейменувач
+    (`ключ = lambda с: к.get(с, с)`; `вих[ключ("завдання")] = …`). Тому
+    `_ІНШИЙ_МЕТАЛ.get(м, м)` у `brief`, чий результат іде у значення, сюди не
+    потрапляє, і `МЕЖІ_EN` — теж рядок-у-рядок і теж поруч — лишається значеннями.
+    Беруться лише таблиці рядок-у-рядок: перейменувати ключ можна тільки на рядок."""
+    перейменувачі = collections.defaultdict(set)      # функція → {таблиці}
+    for n in ast.walk(дерево):
+        тіла, імена = [], []
+        if isinstance(n, ast.Assign) and isinstance(n.value, ast.Lambda):
+            тіла, імена = [n.value.body], [ц.id for ц in n.targets
+                                           if isinstance(ц, ast.Name)]
+        elif isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            тіла = [r.value for r in ast.walk(n)
+                    if isinstance(r, ast.Return) and r.value is not None]
+            імена = [n.name]
+        for тіло in тіла:
+            for m in ast.walk(тіло):
+                т = _тотожний_get(m)
+                if т:
+                    for і in імена:
+                        перейменувачі[і].add(т)
+
+    таблиці = set()
+    for в in _позиції_ключа(дерево):
+        т = _тотожний_get(в)
+        if т:
+            таблиці.add(т)
+        elif isinstance(в, ast.Call) and isinstance(в.func, ast.Name):
+            таблиці |= перейменувачі.get(в.func.id, set())
+
+    if not таблиці:
+        return set()
+    словники, вих = _звідки_словники(дерево), set()
+    for т in таблиці:
+        for d in словники.get(т, set()):
+            if not d.keys or any(not (isinstance(к, ast.Constant)
+                                      and isinstance(к.value, str)) for к in d.keys):
+                continue                       # не рядок-у-рядок → не таблиця ключів
+            if any(not (isinstance(v, ast.Constant) and isinstance(v.value, str))
+                   for v in d.values):
+                continue
+            вих |= {v.value for v in d.values}
+    return вих
+
+
+def _розведені_ключі(t_запис):
+    """(запис, читання) для трьох форм, де рядок і позиція ключа розведені."""
+    try:
+        дерево = ast.parse(t_запис)
+    except SyntaxError:
+        return set(), set()
+    зап, чит = _сталі_як_ключі(дерево)
+    return зап | _петля_пар(дерево) | _перейменовані_ключі(дерево), чит
+
+
 def поля():
     читання, запис = collections.defaultdict(set), collections.defaultdict(set)
     for м in МОДУЛІ:
@@ -249,6 +489,12 @@ def поля():
                 r'(?:^|[\s,({])([A-Za-zА-Яа-яіїєґΑ-Ωα-ωΔΣσ_][\w\'іїєґА-Яа-яΑ-Ωα-ωΔΣσ_]{2,38})\s*=[^=]',
                 t_запис, re.M): запис[m.group(1)].add(м)
         for m in re.finditer(r'"([^"]{3,40})"\s*:', t_запис): запис[m.group(1)].add(м)
+        # ТРИ ФОРМИ, ДЕ РЯДОК І ПОЗИЦІЯ КЛЮЧА РОЗВЕДЕНІ (Ф-143) — обходом AST,
+        # бо регулярка бачить лише збіг «рядок поруч із дужкою». Обґрунтування
+        # кожної форми — у коментарі перед `_гілки` вище.
+        _зап_розв, _чит_розв = _розведені_ключі(t_запис)
+        for к in _зап_розв: запис[к].add(м)
+        for к in _чит_розв: читання[к].add(м)
     сироти = {p: sorted(d) for p, d in читання.items()
               if p not in запис and p not in ЗОВНІШНІ and p not in _ОГОЛОШЕНІ
               and not НЕ_ПОЛЯ.search(p)}
