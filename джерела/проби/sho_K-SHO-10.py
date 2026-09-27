@@ -19,7 +19,7 @@ import feed as Ф, bridge as B, accessory as АК
 вх["гілка"] = 0
 з = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = {c["назва"]: c for c in B.каталог_останнього_пакета()}
-пул = json.loads(з["руки"]["1"])["пул"]
+пул = з["пакети"]["1"]["пул"]
 важке = лежить = None
 for сл in ("сукня", "низ"):
     for r in (пул.get(сл) or []):

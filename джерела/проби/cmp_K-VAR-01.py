@@ -22,7 +22,7 @@ import feed as Ф, bridge as B, composer as КМ, pipeline as PL
 вх["гілка"] = 0
 вх["варіантів"] = 6
 r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
-h1 = json.loads(r["руки"]["1"])
+h1 = r["пакети"]["1"]
 пак = [p for p in B._КЕШ_ПАКЕТА.values() if p.get("кандидати")][0]
 спром = КМ.полюси_пулу(пак["кандидати"])
 гілки = collections.Counter(x.get("гілка") for п in пак["кандидати"].values() for x in п)
@@ -34,8 +34,10 @@ for ід, _ in PL.ПОЛЮСИ_ОБРАЗУ:
     print("   %-16s %s · %s" % (ід, "ЗАМОВЛЕНО " if с.get("є") else "не замовлено",
                                 (с.get("чому") or "")[:72]))
 нема = [ід for ід, _ in PL.ПОЛЮСИ_ОБРАЗУ if not (спром.get(ід) or {}).get("є")]
-рядок = next((в for в in h1["завдання"]["вимоги"] if "пул дати не може" in в), None)
-print("рядок вимог про недосяжні полюси:", "НЕМА" if not рядок else рядок[:110])
+# П-2: недосяжні полюси — полем пакета (`полюси_недосяжні`), у промпті — «poles_unavailable» зі своїм рядком
+_пр = json.loads(r["руки"]["1"])
+рядок = next((в for в in _пр["task"]["input"] if в.startswith('"poles_unavailable"')), None) if _пр.get("poles_unavailable") else None
+print("недосяжні полюси в промпті:", "НЕМА" if not рядок else "%s · %s" % ([p["id"] for p in _пр["poles_unavailable"]], рядок[:90]))
 assert нема, "на цьому каталозі принаймні «розрив» недосяжний — інакше проба не міряє нічого"
 assert рядок, "недосяжний полюс мусить бути названий, а не мовчки зниклий"
 assert all(p["ід"] not in нема for p in h1["полюси"]), "замовлено полюс, якого пул не несе"

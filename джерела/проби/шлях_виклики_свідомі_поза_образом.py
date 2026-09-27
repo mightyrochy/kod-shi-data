@@ -8,7 +8,7 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bridge as B
 вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), варіантів=10, ремонт_варіантів=5, бюджет_символів=120000, без_фото=1)
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["руки"]["1"])["пул"]
+пул = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["пакети"]["1"]["пул"]
 н = lambda с, k: пул[с][k % len(пул[с])]["н"]
 убір = пул["головний_убір"][0]
 від = lambda т, **д: json.loads(B.виклик("від_моделі", json.dumps(dict(вх, текст_моделі=т, **д), ensure_ascii=False)))
@@ -26,7 +26,7 @@ for с in о1.get("свідомі") or []:
 print("вибір: ід %d · день «%s» · верхній рівень свідомі %s" % (len(вб.get("ід") or []), вб.get("день"), [x.get("текст") for x in в3.get("свідомі") or []]))
 о = json.loads(B.виклик("опис", json.dumps(dict(вх, речі=вб.get("ід"), підпис=вб.get("підпис"), номери=вб.get("номери"), образ=вб.get("обрано"),
                свідомі=[x.get("текст") for x in в3.get("свідомі") or []], день=вб.get("день") or ""), ensure_ascii=False)))
-п = json.loads(о["промпт"])
+п = о["опис"]   # ОПИС_V1 обʼєктом коду: промпт тепер англійським дротом (П-2)
 print("промпт опису: образ.речі %s" % [r.get("назва")[:30] for r in п["образ"]["речі"]])
 print("   свідомі %s · день_образу «%s»" % (п.get("свідомі"), п.get("день_образу")))
 print("   убір в образ.речі: %s · убір у свідомі: %s" % (any(убір["назва"][:20] in r.get("назва", "") for r in п["образ"]["речі"]),

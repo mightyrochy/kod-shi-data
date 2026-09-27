@@ -7,7 +7,7 @@ import json, os, sys
 Д = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, Д); os.chdir(Д)
 import bridge as B
 вх = json.load(open("стенд_вх.json", encoding="utf-8")); вх["гілка"] = 0
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["руки"]["1"])["пул"]
+пул = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["пакети"]["1"]["пул"]
 верх, низ, вз, сум = (пул[с][0]["н"] for с in ("верх", "низ", "взуття", "сумка"))
 від = lambda речі: json.loads(B.виклик("від_моделі", json.dumps(dict(вх, текст_моделі=json.dumps(
     {"версія": "1", "образи": [{"ід": "о1", "речі": речі}]}, ensure_ascii=False)), ensure_ascii=False)))

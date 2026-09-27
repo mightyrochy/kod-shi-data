@@ -14,7 +14,7 @@ import bridge as B
 d0 = dict(вх, сценарій=dict(нагода="вечірка", місце="ресторан", година=19, темп_c=18, дрес_код="cocktail"),
           випадок="коктейль, ресторан, 19:00")
 з = json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))
-пул = json.loads(з["руки"]["1"])["пул"]
+пул = з["пакети"]["1"]["пул"]
 ядро = [пул[с][0]["н"] for с in ("верх", "низ", "взуття") if пул.get(с)]
 текст = json.dumps(dict(образи=[dict(підпис="о1", речі=ядро)]), ensure_ascii=False)
 в = json.loads(B.виклик("від_моделі", json.dumps(dict(d0, текст_моделі=текст), ensure_ascii=False)))

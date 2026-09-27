@@ -8,7 +8,7 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bridge as B
 вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), варіантів=10, ремонт_варіантів=5, бюджет_символів=120000, без_фото=1)
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["руки"]["1"])["пул"]
+пул = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["пакети"]["1"]["пул"]
 н = lambda с, k: пул[с][k % len(пул[с])]["н"]
 від = lambda т, **д: json.loads(B.виклик("від_моделі", json.dumps(dict(вх, текст_моделі=т, **д), ensure_ascii=False)))
 склад = lambda і: [н(с, і) for с in ("верх", "низ", "взуття", "пояс")] + ([н("сумка", і), н("взуття", і + 7)] if і == 4 else [])
@@ -21,5 +21,5 @@ print("вибір: обрано %s · ід %d · замінено %s · день
 print("картка (повнота ремонту): образ %s · речей %d · повний %s" % (пв.get("образ"), len(пв.get("ід") or []), пв.get("повний")))
 о = json.loads(B.виклик("опис", json.dumps(dict(вх, речі=пв.get("ід"), номери=вб.get("номери") or пв.get("номери"),
                образ=(вб.get("обрано") or вб.get("замінено") or пв.get("образ")), день=(вб.get("день") or "")), ensure_ascii=False)))
-п = json.loads(о["промпт"])
+п = о["опис"]   # ОПИС_V1 обʼєктом коду: промпт тепер англійським дротом (П-2)
 print("промпт опису: образ.ід %s · день_образу «%s» · речей %d" % (п["образ"].get("ід"), п.get("день_образу"), len(п["образ"]["речі"])))

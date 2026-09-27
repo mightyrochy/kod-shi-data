@@ -29,7 +29,7 @@ print('хибних маршрутів: %d, хибних закріплень: %
 for (мітка, сирі), сц in itertools.product((('з кольором', модель), ('без кольору', [])), СЦ):
     річ = Р.речі_з_json(сирі, None, None, словами=сл)[0]
     д = dict(вх, сценарій=сц, паспорт=dict(сц, речі_з_фото=[річ]), варіантів=10, бюджет_символів=120000, без_фото=1)
-    пул = json.loads(json.loads(B.виклик('запити', json.dumps(д, ensure_ascii=False)))['руки']['1'])['пул']
+    пул = json.loads(B.виклик('запити', json.dumps(д, ensure_ascii=False)))['пакети']['1']['пул']   # П-2: ПАКЕТ_V1 обʼєктом
     н = lambda с, i: пул[с][i % len(пул[с])]['н'] if пул.get(с) else None
     обр = [dict(ід='о%d' % i, речі=[x for x in [н('верх', i), н('низ', i), н('взуття', i), н('сумка', i), н('шарф', i) or н('сережки', i)] if x]) for i in range(1, 5)]
     for о in json.loads(B.виклик('від_моделі', json.dumps(dict(д, текст_моделі=json.dumps(dict(версія='1', образи=обр), ensure_ascii=False)), ensure_ascii=False))).get('образи') or []:

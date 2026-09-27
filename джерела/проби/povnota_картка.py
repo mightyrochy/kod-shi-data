@@ -18,7 +18,7 @@ import bridge as B
           випадок="побачення, ресторан, 19:00, 20 °C")
 міст = lambda **д: json.loads(B.виклик("від_моделі", json.dumps(dict(вх, **д), ensure_ascii=False)))
 з = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
-пул = json.loads(з["руки"]["1"])["пул"]
+пул = з["пакети"]["1"]["пул"]
 _н = lambda с, i: (пул.get(с) or [])[i % len(пул[с])]["н"]
 _ядро = "сукня" if пул.get("сукня") else "верх"
 _прик = next((с for с in ПРИКРАСИ if пул.get(с)), None)

@@ -11,7 +11,7 @@ import bridge as B, реєстри as РЕ
 
 вх = json.load(open("стенд_вх.json", encoding="utf-8")); вх["гілка"] = 0
 r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
-пул = json.loads(r["руки"]["1"])["пул"]
+пул = r["пакети"]["1"]["пул"]
 за_реєстром = {}
 for с, речі in пул.items():
     for р in речі:

@@ -8,19 +8,22 @@ import json, os, re, sys
 Д = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, Д); os.chdir(Д)
 import bridge as B
 вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), варіантів=10, ремонт_варіантів=5, без_фото=1)
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["руки"]["1"])["пул"]
+пул = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["пакети"]["1"]["пул"]
 н = lambda с, k: пул[с][k % len(пул[с])]["н"]
 образи = [dict(ід="о%d" % (і + 1), підпис="образ %d" % (і + 1),
                речі=[н("верх", і), н("низ", і), н("взуття", 0 if і < 6 else і), н("сумка", і), н("прикраси", 0 if і < 6 else і)])
           for і in range(10)]
 в = json.loads(B.виклик("від_моделі", json.dumps(dict(вх, текст_моделі=json.dumps(dict(версія="1", образи=образи),
                                                                                  ensure_ascii=False)), ensure_ascii=False)))
-пр = json.loads(в["промпт_ремонту"])
-знах = [з for з in (пр.get("набір") or {}).get("знахідки") or [] if "варіанти одного задуму" in str(з.get("суть"))]
-слоти = sorted(set(re.findall(r"слот «([^»]+)» — одна річ", " ".join(str(з.get("суть")) for з in знах))))
-віт = пр.get("вітрина") or {}
+пр = json.loads(в["промпт_ремонту"])   # П-2: англійський дріт — «set», «showcase» одним переліком без слота
+знах = [з for з in (пр.get("set") or {}).get("findings") or [] if "варіанти одного задуму" in str(з.get("what"))]
+слоти = sorted(set(re.findall(r"слот «([^»]+)» — одна річ", " ".join(str(з.get("what")) for з in знах))))
+віт = в["вердикт"].get("вітрина") or {}   # обʼєкт коду: вітрина за слотами
+у_промпті = {р.get("n") for р in пр.get("showcase") or []}
 print("ФАКТ · K-VAR-01 у промпті ремонту: %s · слоти повтору: %s" % ("так" if знах else "ні", ", ".join(слоти) or "—"))
-print("ФАКТ · вітрина: %s" % (", ".join("%s %d" % (с, len(р)) for с, р in віт.items()) or "порожня"))
+print("ФАКТ · вітрина: %s · у промпті речей вітрини %d" % (", ".join("%s %d" % (с, len(р)) for с, р in віт.items()) or "порожня",
+                                                         len(у_промпті)))
 for с in слоти:
-    print("ФАКТ · слот повтору «%s»: у вітрині %d речей, яких модель не брала" % (с, len(віт.get(с) or [])))
+    print("ФАКТ · слот повтору «%s»: у вітрині %d речей, яких модель не брала (у промпті з них %d)"
+          % (с, len(віт.get(с) or []), sum(р.get("н") in у_промпті for р in віт.get(с) or [])))
 print("ФАКТ · промпт ремонту %d симв." % len(в["промпт_ремонту"]))

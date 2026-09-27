@@ -7,22 +7,22 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bridge as B, протокол as P
 вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), варіантів=10, ремонт_варіантів=5, бюджет_символів=120000, без_фото=1)
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["руки"]["1"])["пул"]
+пул = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["пакети"]["1"]["пул"]
 н = lambda с, k: пул[с][k % len(пул[с])]["н"]
 образи = [dict(ід="о%d" % (і + 1), підпис="тихий беж із хакі", полюс=P.ПОЛЮСИ[і % 6], день="Офіс, стіл, коротка дорога.",
                речі=([н("сукня", і)] if і % 2 else [н("верх", і), н("низ", і)]) + [н(с, і % 3) for с in ("взуття", "сумка", "пояс")])
           for і in range(10)]
 від = lambda т, **д: json.loads(B.виклик("від_моделі", json.dumps(dict(вх, текст_моделі=т, **д), ensure_ascii=False)))
 в1 = від(json.dumps(dict(версія="1", образи=образи), ensure_ascii=False))
-т = в1["промпт_ремонту"]; пр = json.loads(т); ск = пр["завдання"]["схема_відповіді"]
+т = в1["промпт_ремонту"]; пр = json.loads(т); ск = пр["task"]["answer_schema"]   # П-2: англійський дріт
 д = lambda о: json.dumps(о, ensure_ascii=False, separators=(",", ":"))
 def шляхи(x, п=""):
     if isinstance(x, dict):
         return set().union(*[{п + к} | шляхи(v, п + к) for к, v in x.items()]) if x else set()
     return set().union(*[шляхи(v, п + "[].") for v in x]) if isinstance(x, list) and x else set()
-спільні = sorted(шляхи(ск) & шляхи({к: v for к, v in пр.items() if к != "завдання"}))
-суд = пр.get("вердикт") or пр["образи"]
-твій = lambda с: {к: v for к, v in (с.get("твій_образ") or с).items() if к in ("ід", "підпис", "речі", "день")}
+спільні = sorted(шляхи(ск) & шляхи({к: v for к, v in пр.items() if к != "task"}))
+суд = пр["verdict"]
+твій = lambda с: {к: v for к, v in (с.get("your_outfit") or с).items() if к in ("id", "caption", "items", "day")}
 print("промпт ремонту %d симв. · шляхи відповіді, які повторює вхід: %s" % (len(т), ", ".join(спільні) or "—"))
 print("скелет відповіді: після нього ще %d симв. промпта · суд над о1 у вході %d симв., склад о1 у формі відповіді %d"
       % (len(т) - т.index(д(ск)) - len(д(ск)), len(д(суд[0])), len(д(твій(суд[0])))))

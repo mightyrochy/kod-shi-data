@@ -14,7 +14,7 @@ import bridge as B, протокол as P
 вх = json.load(open("стенд_вх.json"))
 d0 = dict(вх, сценарій=dict(нагода="вечірка", місце="ресторан", година=19, темп_c=18,
                             дрес_код="cocktail"), випадок="коктейль, ресторан, 19:00")
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["руки"]["1"])["пул"]
+пул = json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["пакети"]["1"]["пул"]
 н = lambda с, k: пул[с][k % len(пул[с])]["н"]
 суд = lambda образи: json.loads(B.виклик("від_моделі", json.dumps(
     dict(d0, текст_моделі=json.dumps(dict(версія="1", образи=образи), ensure_ascii=False)),
