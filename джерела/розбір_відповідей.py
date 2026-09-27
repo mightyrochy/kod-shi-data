@@ -73,7 +73,11 @@ import дріт_моделі as _Д
         _ЗП.Поле("she_refuses", "what she refused",
                  як="do not advise an item that breaks it and do not call it a compromise; when such an "
                     "item is in the outfit, tell her so plainly"),
-        _ЗП.Поле("missing", "the code's words about what this outfit lacks",
+        # Ч-1 (CLAUDE.md п.12): the code no longer writes this as a sentence — it sends the
+        # same statement codes the language model turns into the card line; codes are English
+        # by construction, so this English prompt carries them as they are.
+        _ЗП.Поле("missing", "what this outfit lacks, as statement codes «code» (with «values» where "
+                            "a statement carries names or numbers)",
                  як="do not describe it as an item of the outfit, nor from the photo of another item; you "
                     "may say in one sentence that it is missing"),
     ),
@@ -140,7 +144,7 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     дає, крім домену крамниці.
 
     `день` — її день фактами (`сценарій.день_кодами`), `день_образу` — речення моделі
-    про день обраного образу з вибору (рядок 195), `неповний` — рядок коду про те, чого
+    про день обраного образу з вибору (рядок 195), `неповний` — ЗАЯВИ коду про те, чого
     в образі нема (рядок 208); без них промпт не несе ні поля, ні його рядка.
     `мова_тексту` — мова вільного тексту відповіді (`завдання.мова`): English з мовним
     шаром, Ukrainian без нього (показ шле `мова_тексту`, як рукам 3–4).
@@ -172,8 +176,12 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         об["день"] = dict(день)
     if str(день_образу or "").strip():
         об["день_образу"] = str(день_образу).strip()
-    if str(неповний or "").strip():
-        об["неповний"] = str(неповний).strip()
+    # Ч-1 (п.12): «чого в образі нема» приїжджає ПОВІДОМЛЕННЯМ внутрішньою мовою
+    # (`повнота_образу._коротко_жінці`) — моделі йдуть самі ЗАЯВИ, тими самими кодами, з
+    # яких перекладачка складає рядок картки. Рядок сюди більше не приходить.
+    _з_неп = (неповний or {}).get("statements") if isinstance(неповний, dict) else None
+    if _з_неп:
+        об["неповний"] = [з for з in _з_неп if isinstance(з, dict) and з.get("code")]
     _межі = [str(м).strip() for м in (межі or []) if str(м or "").strip()]
     if _межі:
         об["межі"] = _межі
