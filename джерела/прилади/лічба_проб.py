@@ -65,11 +65,18 @@ def гнати(шлях, стеля):
     cwd = ДЖЕРЕЛА if у_джерелах else КОРІНЬ
     арг = шлях[len('джерела/'):] if у_джерелах else шлях
     почато = time.time()
+    # PYTHONPATH = ТЕКА ПРОГОНУ, БО ТАК КАЖУТЬ САМІ ПРОБИ. 41 проба з 516 у
+    # `джерела/проби/` документує прогін рядком `PYTHONPATH=. python3 проби/…`
+    # (решта кладе корінь у `sys.path` сама). Без цього прилад називав би їх
+    # червоними за `ModuleNotFoundError: No module named 'bridge'` — тобто
+    # міряв би власний спосіб запуску, а не проби. Запускати кожну «як
+    # документовано» і означає дати їй цей шлях.
     # stdin закритий: проба, що чекає на введення, має впасти, а не повісити прогін.
     try:
         р = subprocess.run([sys.executable, арг], cwd=cwd, stdin=subprocess.DEVNULL,
                            capture_output=True, text=True, errors='replace',
-                           timeout=стеля, env=dict(os.environ, PYTHONIOENCODING='utf-8'))
+                           timeout=стеля, env=dict(os.environ, PYTHONIOENCODING='utf-8',
+                                                  PYTHONPATH=cwd))
         rc, вивід, помилки = р.returncode, р.stdout, р.stderr
     except subprocess.TimeoutExpired:
         rc, вивід, помилки = 124, '', 'СТЕЛЯ ЧАСУ %d с' % стеля

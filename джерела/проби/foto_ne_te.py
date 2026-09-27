@@ -7,15 +7,24 @@ Valentina), і 5 з vilni.store, де всі 5 SKU діляться ОДНИМ �
 «фото_не_те» своїми номерами й мовчить про решту 20. Питання — чи код
 (`pipeline.опис_відповідь_з_json`, `номери_речей`) резолвить номер у ТУ САМУ
 річ, а не в чужу (02.09 вже було). Запуск: `python3 проби/foto_ne_te.py`."""
-import sys, pathlib, json
+import sys, pathlib, json, collections
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import feed as F, pipeline as PL
 
 offers, _ = F.читати_yml("каталог_повний.xml")
 матч = [o for o in offers if o.get("магазин") == "theoriginals.com.ua" and o.get("фото")][:20]
-не_те = [o for o in offers if o.get("магазин") == "vilni.store" and o.get("фото")][:5]
-assert len({tuple(o["фото"]) for o in не_те}) == 1, "п'ятірка мусить ділити ОДНЕ фото-заглушку"
+# П'ЯТІРКУ БЕРЕМО З НАЙБІЛЬШОЇ ГРУПИ СПІЛЬНОГО ФОТО, А НЕ З ПОЧАТКУ СПИСКУ (27.09.2026,
+# рядок 173). Доти стояло `[:5]` — перші п'ять речей крамниці. Фікстура відстала від
+# каталогу: після чисток і поповнень перші п'ять діляться вже ДВОМА наборами, і проба
+# падала на власному `assert`, не дійшовши до питання, яке ставить. Заглушка нікуди не
+# ділась — її й досі ділять 167 речей; проба тепер шукає групу, а не позицію.
+_вілні = [o for o in offers if o.get("магазин") == "vilni.store" and o.get("фото")]
+_групи = collections.Counter(tuple(o["фото"]) for o in _вілні)
+_заглушка = _групи.most_common(1)[0][0] if _групи else ()
+не_те = [o for o in _вілні if tuple(o["фото"]) == _заглушка][:5]
+assert len(не_те) == 5 and len({tuple(o["фото"]) for o in не_те}) == 1, \
+    "п'ятірка мусить ділити ОДНЕ фото-заглушку (найбільша група: %d речей)" % _групи.most_common(1)[0][1]
 
 усі = матч + не_те
 кандидати = {"верх": [dict(id=o["id"], назва=o.get("назва"), слот="верх",
