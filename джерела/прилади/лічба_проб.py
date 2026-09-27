@@ -127,8 +127,14 @@ def main():
     print('проб знайдено %d · у черзі %d · ниток %d · стеля %d с' % (len(усі), len(черга), ниток, стеля))
     звіт_файл = open(os.environ['ZVIT'], 'w', encoding='utf-8') if os.environ.get('ZVIT') else None
     звіти = []
+    # `as_completed`, а не `map`: `map` віддає наслідки В ПОРЯДКУ ЧЕРГИ, тож одна повільна
+    # проба тримала б звіт і `ZVIT` за собою (виміряно 27.09: 14 рядків журналу за 12 хв на
+    # прогоні, де насправді вже було зміряно понад сотню). Прогін від цього не швидший —
+    # чесним стає лише те, що видно на ходу.
     with cf.ThreadPoolExecutor(max_workers=ниток) as пул:
-        for готово, z in enumerate(пул.map(lambda ш: гнати(ш, стеля), черга), 1):
+        завдання = {пул.submit(гнати, ш, стеля): ш for ш in черга}
+        for готово, майбутнє in enumerate(cf.as_completed(завдання), 1):
+            z = майбутнє.result()
             звіти.append(z)
             if звіт_файл:
                 звіт_файл.write(json.dumps(z, ensure_ascii=False) + '\n')
