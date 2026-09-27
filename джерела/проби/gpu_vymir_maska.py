@@ -10,7 +10,13 @@ from жнива_маски import маска_речі
 
 
 def смі():
-    """Зайнята пам'ять карти в МіБ — з драйвера, бо /system_stats ComfyUI бреше (виміряно 27.09)."""
+    """Зайнята пам'ять карти в МіБ — з драйвера, а не з /system_stats ComfyUI.
+
+    ЧОМУ НЕ ComfyUI: доки в його процесі не піднято CUDA (`torch_vram_total` близько 0),
+    він показує майже всю карту вільною — виміряно 27.09 двічі: 14.55 ГБ «вільних» при
+    13972 МіБ зайнятих і 14.64 ГБ «вільних» при 10831 МіБ зайнятих. Коли SAM уже
+    завантажено, його число сходиться з драйвером (0.37 ГБ вільних при 15924 МіБ).
+    """
     в = subprocess.run(["nvidia-smi", "--query-gpu=memory.used", "--format=csv,noheader,nounits"],
                        capture_output=True, text=True).stdout.strip().splitlines()
     return int(в[0])
