@@ -34,9 +34,16 @@ const б64 = zlib.gzipSync(Buffer.from(JSON.stringify({в: 'ПОКАЗ-V1', зб
   await ст.waitForFunction(() => document.querySelectorAll('#картки .картка .список .річ').length === 3, null, {timeout: 60000});
   await ст.waitForTimeout(8000);          // два кола ряду плюс запас на мережу
   console.log(JSON.stringify(await ст.evaluate(() => ({
-    список: [...document.querySelectorAll('#картки .картка .список .річ')].map(р =>
-      ((р.querySelector('a, .назва') || {}).textContent || '') + ' → ' + (р.querySelector('img') ? 'кадр' : р.querySelector('i.арка') ? 'силует' : 'ПОРОЖНЬО')),
-    колаж: {кадрів: document.querySelectorAll('.колаж img').length, силуетів: document.querySelectorAll('.колаж i.арка').length},
+    /* «кадр» і «БИТИЙ КАДР» — різні стани: на збірці до Ф-143 у рядку лишався `<img>`,
+       який нічого не показує (`naturalWidth` 0), і лічба вузлів звала це кадром. */
+    список: [...document.querySelectorAll('#картки .картка .список .річ')].map(р => {
+      const і = р.querySelector('img');
+      return ((р.querySelector('a, .назва') || {}).textContent || '') + ' → '
+        + (і ? (і.complete && і.naturalWidth > 0 ? 'кадр' : 'БИТИЙ КАДР')
+             : р.querySelector('i.арка') ? 'силует' : 'ПОРОЖНЬО'); }),
+    колаж: {кадрів: [...document.querySelectorAll('.колаж img')].filter(і => і.complete && і.naturalWidth > 0).length,
+            битих: [...document.querySelectorAll('.колаж img')].filter(і => !(і.complete && і.naturalWidth > 0)).length,
+            силуетів: document.querySelectorAll('.колаж i.арка').length},
     фраз_коду: /знімок крамниці не відкрився/.test(document.body.innerText)})), null, 1));
   await (await ст.$('#картки .картка')).screenshot({path: ЗНІМОК});
   console.log('знімок: ' + ЗНІМОК + ' ' + fs.statSync(ЗНІМОК).size + ' Б');
