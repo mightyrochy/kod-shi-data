@@ -1106,13 +1106,22 @@ import збирач_промптів as _ЗП_
         _ЗП_.Поле("її_слова", "her words"),
         # Рядок 152: колір код міряє лише всередині «рамка»; «чия» веде картку («її власна» /
         # «думає купити»); вердикт — коду; без нагоди річ судиться на `ТИПОВА_НАГОДА_РЕЧІ`.
+        # «ОЦІНИ МІЙ ОБРАЗ» БЕЗ МОВНОГО ШАРУ (Ч-5, перевірка #396): фото й питання про її образ
+        # в оцінку веде лише переклад шару (`показ.питанняПроЇЇОбразП`); без шару код її слів не
+        # читає (п.12), і хід іде сюди — у виклик 0 зі сценарієм. Стенд без шару чекав на екран
+        # оцінки 600 с. Стилістка тут образу не судить (вердикт — коду) і каже чесно, де його
+        # оцінюють цілим; сам хід відповідає в розмові й не висне.
         _ЗП_.Поле("фото_речей", "photos of her items, in the order of the images in this message",
                   як="add one object per item to \"речі_з_фото\"; \"рамка\" — bounds of the item itself "
                      "in thousandths of the photo width and height (0 left or top edge, 1000 right or "
                      "bottom), tight around the item, without background or other items; \"чия\" — "
                      "\"моя\" when she says she has the item, \"хочу купити\" when she is choosing it in "
                      "a shop, otherwise \"невідомо\"; do not say whether the item suits her — the code "
-                     "says that; if she did not say where she is going, do not ask about the occasion"),
+                     "says that; if she did not say where she is going, do not ask about the occasion; "
+                     "when she asks you to judge her look or these items — how they look, whether they go "
+                     "together or suit her — do not judge them: in \"відповідь_людині\" tell her that the "
+                     "whole look is judged on the «Оціни мій образ» screen, where the code checks the "
+                     "colours, her palette and the silhouette"),
         # Рядок 157 (її річ словами) — поля «речі_словами» тут більше нема (Ч-4): їх заповнювала
         # граматика коду в її словах; тепер її речі словами дає лише мовна модель шару (`own_items`).
         # `річ_з_фото.речі_з_json` приймає лише слова цих списків (`_слово`), чуже — null.
@@ -1731,8 +1740,8 @@ def _типова_нагода(п):
     а ця функція бачила лише чотири визначальні поля — і штампувала «щоденне»: шапка казала
     «Звичайний день», суд спідниці — «Нагоди ти не назвала». Та сама репліка без фото давала
     шапку «концерт». Тепер «типово для речі з фото» — лише коли вона справді нічого не
-    назвала; назвала подію без смуги — нагода лишається обовʼязковим питанням шару
-    (`обовʼязкове`), а суд речі проти нагоди стоїть «без входу» (`річ_з_фото.вердикт`)."""
+    назвала; назвала подію без смуги — де вона буде, лишається обовʼязковим питанням шару
+    (`обовʼязкове` = `event_place`), а суд речі проти нагоди стоїть «без входу» (`річ_з_фото.вердикт`)."""
     if any(п.get(k) not in (None, "", "невідомо") for k in ("нагода", "місце", "дрес_код", "ошатність")):
         return п
     if подія_названа(п):
