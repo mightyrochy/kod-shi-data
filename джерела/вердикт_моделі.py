@@ -137,9 +137,10 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         _ЗП.Поле("verdict[].structure.blockers", "what keeps the outfit from being shown",
                  як="each must disappear: change an item or drop the outfit"),
         _ЗП.Поле("verdict[].findings", "what the code found: «weight» weighs the finding, not the outfit; "
-                                       "«register» «gate» must disappear; «fix» — the code's repair, or the key "
-                                       "of its text in «fixes»; «merged» — how many findings of one rule it "
-                                       "joins; «declared»: true — your own declared move",
+                                       "«register» «gate» must disappear (no «register» — a remark); «fix» — "
+                                       "the code's repair, or the key of its text in «fixes»; «merged» — how "
+                                       "many findings of one rule it joins; «declared»: true — your own "
+                                       "declared move",
                  як="keep a declared move and repeat it in «deliberate», or change your mind and say why"),
         _ЗП.Поле("verdict[].checklist", "«excess» — what is already too much, «blandness» — what is lacking; "
                                         "both weigh the same; «no_input» and «not_run» — items the code did "
@@ -1447,7 +1448,9 @@ def вердикт_v1(образи, варіантів=2, випадок=None, �
             зап["свідомі"] = _свід
         if о.get("чекліст"):
             зап["чекліст"] = о["чекліст"]
-        зап["вузол"] = (dict(назва=str(о["вузол"]), чому=str(о.get("рядок_вузла") or ""))
+        зап["вузол"] = (dict(назва=str(о["вузол"]), чому=str(о.get("рядок_вузла") or ""),
+                             # П-6: те саме кодами — їх везе дріт моделі (`knot.statements`)
+                             **({"заяви": list(о["заяви_вузла"])} if о.get("заяви_вузла") else {}))
                         if о.get("вузол") else None)
         обр.append(зап)
     # СЛОТИ, ЯКІ НАЗВАВ K-VAR-01, — І У ВІТРИНІ (25.09.2026, доручення куратора після Т-7):

@@ -682,9 +682,10 @@ _зн6 = dict(ід="з-о1-1", сила_нп=0.5, регістр="репліка
             заяви=[_ВМ6.заява("too_few_items", count=3, minimum=5)], ремонт_заяви=[_ВМ6.заява("needs_third_piece")],
             злито=2)
 _д6 = _ДМ6._знахідка(_зн6, None, {})
-звірка("знахідка із заявами на дроті: statements і fix кодами, `merged` числом; прози `what` і тексту ремонту нема",
-       _д6.get("statements") == [{"code": "too_few_items", "values": {"count": 3, "minimum": 5}}]
-       and _д6.get("fix") == [{"code": "needs_third_piece"}] and _д6.get("merged") == 2 and "what" not in _д6, str(_д6))
+звірка("знахідка із заявами на дроті: statements і fix кодами стисло ({код: значення} або код), `merged` "
+       "числом; прози `what` і тексту ремонту нема",
+       _д6.get("statements") == [{"too_few_items": {"count": 3, "minimum": 5}}]
+       and _д6.get("fix") == ["needs_third_piece"] and _д6.get("merged") == 2 and "what" not in _д6, str(_д6))
 _д6б = _ДМ6._знахідка(dict(_зн6, заяви=None, ремонт_заяви=None), None, {})
 звірка("знахідка без заяв — як доти: суть словами, ремонт ключем легенди",
        _д6б.get("what") == "фраза коду" and _д6б.get("fix") == "r1" and "statements" not in _д6б, str(_д6б))

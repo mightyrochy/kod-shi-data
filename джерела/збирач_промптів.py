@@ -113,18 +113,28 @@ import протокол as _ПР
 КЛЮЧІ_ЗАЯВ = ("statements", "fix")
 СЛОВНИК_КОДІВ_EN = "statement_codes"
 # Рядок входу, що йде РАЗОМ зі словником — один на виклик, а не фраза в кожному оголошенні.
-РЯДОК_ЗАЯВ_EN = ("\"statements\" and \"fix\" — what the code found and how to repair it, as codes with "
-                 "values; each code is defined in \"%s\"" % СЛОВНИК_КОДІВ_EN)
+РЯДОК_ЗАЯВ_EN = ("\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, "
+                 "or {code: values}; codes are defined in \"%s\"" % СЛОВНИК_КОДІВ_EN)
 
 
 def коди_заяв(дані):
-    """Усі коди заяв у даних виклику — порядком першої появи (обхід у глибину)."""
+    """Усі коди заяв у даних виклику — порядком першої появи (обхід у глибину). Заява на
+    дроті — код рядком або `{код: значення}` (`дріт_моделі.заяви`); повна форма
+    `{code, values}` читається теж."""
     вих = []
+    def _код(x):
+        if isinstance(x, str):
+            return [x]
+        if isinstance(x, dict):
+            return [x["code"]] if isinstance(x.get("code"), str) else [к for к in x if isinstance(к, str)][:1]
+        return []
     def _обхід(в):
         if isinstance(в, dict):
             for к, v in в.items():
                 if к in КЛЮЧІ_ЗАЯВ and isinstance(v, list):
-                    вих.extend(x["code"] for x in v if isinstance(x, dict) and isinstance(x.get("code"), str))
+                    for x in v:
+                        вих.extend(_код(x))
+                    continue
                 _обхід(v)
         elif isinstance(в, (list, tuple)):
             for v in в:
