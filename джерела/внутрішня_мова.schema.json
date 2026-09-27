@@ -1586,6 +1586,10 @@
        {
         "const": "occasion",
         "description": "куди вона йде — нагода або місце"
+       },
+       {
+        "const": "event_place",
+        "description": "подію вона вже назвала, але де вона буде й наскільки ошатна, код не знає: спитати саме це, саму подію не перепитувати"
        }
       ]
      },
@@ -1651,6 +1655,10 @@
        "description": "рядок на картці образу про матеріал речі в погоду цього дня"
       },
       {
+       "const": "lipstick_shade_note",
+       "description": "рядок біля відтінка помади на екрані «Макіяж сьогодні»: чому цей відтінок для неї менш ходовий. Стоїть і в переліку «ще N відтінків — не радимо, але можна», і під кольором губ, який вона назвала сама. Вибору не блокує ніколи — рамку «вибір лишається твій» дописує сам екран"
+      },
+      {
        "const": "her_item_verdict",
        "description": "вердикт коду про її власну річ: чи підійде вона під цей вихід"
       },
@@ -1672,7 +1680,7 @@
       },
       {
        "const": "card_added_by_code",
-       "description": "рядок на картці образу про речі, які доклав код, а не стилістка"
+       "description": "рядок на картці образу про те, що в ньому зробив КОД, а не стилістка: речі, які він доклав у порожні місця, і речі, які він зняв або замінив, бо з ними образ не проходив перевірку (ярус 4)"
       },
       {
        "const": "card_code_unknown",
@@ -2227,7 +2235,7 @@
          },
          {
           "const": "needs_coat_none_in_pool",
-          "description": "за такої погоди потрібне пальто чи тепла куртка, а в доборі під цю нагоду сьогодні нема жодного — взяти своє (значення: weather — погода цього дня словами коду)"
+          "description": "за такої погоди потрібне пальто чи тепла куртка, а в доборі під цю нагоду сьогодні нема жодного — взяти своє (значення: temperature_c — температура дня числом, як її знає код; precipitation — код мокрих опадів, коли вони є)"
          },
          {
           "const": "catalogue_has_none_for_case",
@@ -2239,7 +2247,7 @@
          },
          {
           "const": "weather_needs_outerwear",
-          "description": "за такої погоди без пальта чи теплої куртки не вийти (значення: weather — погода цього дня словами коду)"
+          "description": "за такої погоди без пальта чи теплої куртки не вийти (значення: temperature_c — температура дня числом, як її знає код; precipitation — код мокрих опадів, коли вони є)"
          },
          {
           "const": "item_added_by_code",
@@ -2264,6 +2272,90 @@
          {
           "const": "no_photo_frames_did_not_open",
           "description": "знімки цієї речі крамниця у фід дала, але жоден із них не відкрився — чому саме, код не знає"
+         },
+         {
+          "const": "lipstick_lighter_than_skin",
+          "description": "відтінок світліший за твою шкіру, тож кроку контрасту біля обличчя він не дасть"
+         },
+         {
+          "const": "lipstick_too_close_to_skin",
+          "description": "відтінок надто близький до твоєї шкіри, тож кроку контрасту біля обличчя він не дасть"
+         },
+         {
+          "const": "lipstick_cooler_than_undertone",
+          "description": "відтінок холодніший за твій підтон"
+         },
+         {
+          "const": "lipstick_warmer_than_undertone",
+          "description": "відтінок тепліший за твій підтон"
+         },
+         {
+          "const": "lipstick_too_loud_for_olive_skin",
+          "description": "твоїй оливковій шкірі личать приглушені відтінки, а цей надто гучний"
+         },
+         {
+          "const": "lipstick_too_much_white_pigment",
+          "description": "на твоїй шкірі це вже заява, а не нюд: білого пігменту в ньому забагато"
+         },
+         {
+          "const": "code_removed_item_from_stylist_look",
+          "description": "код зняв названу річ з образу стилістки (значення: item — назва речі)"
+         },
+         {
+          "const": "code_swapped_item_from_stylist_look",
+          "description": "код замінив названу річ на іншу з того самого добору (значення: was — що було, now — що стало)"
+         },
+         {
+          "const": "code_removed_this_layer",
+          "description": "код зняв із образу стилістки саме той шар, про який ідеться вище"
+         },
+         {
+          "const": "set_already_has_top_and_bottom",
+          "description": "комплект уже має свій верх і низ, і окрема річ на це місце була б другою на те саме місце (значення: slot — код слота)"
+         },
+         {
+          "const": "two_items_one_slot_not_worn",
+          "description": "дві речі на одне місце в образі не носять"
+         },
+         {
+          "const": "item_failed_weather_of_day",
+          "description": "ця річ не тримала погоди дня"
+         },
+         {
+          "const": "item_outside_chosen_scheme",
+          "description": "ця річ випадала з кольорів обраної тобою схеми"
+         },
+         {
+          "const": "item_not_worn_by_her",
+          "description": "таких речей ти не носиш"
+         },
+         {
+          "const": "item_against_her_intent",
+          "description": "ця річ не відповідала твоєму наміру на цей день"
+         },
+         {
+          "const": "shoes_do_not_fit_her_foot",
+          "description": "ця пара не налізе на твою стопу"
+         },
+         {
+          "const": "hat_does_not_fit_her_head",
+          "description": "цей убір не сяде за розміром голови"
+         },
+         {
+          "const": "frame_does_not_fit_her_eyes",
+          "description": "ця оправа не стане на очі"
+         },
+         {
+          "const": "item_does_not_fit_shoulders",
+          "description": "ця річ не сяде в плечах"
+         },
+         {
+          "const": "item_failed_check_unnamed",
+          "description": "з цією річчю образ не проходив перевірку, а чим саме — код тут не назвав"
+         },
+         {
+          "const": "layer_gate_reason",
+          "description": "причина, яку назвав корпус про складання шарів (значення: reason — вільний текст правила: перекажи його зміст)"
          },
          {
           "const": "default_scheme_until_chosen",
