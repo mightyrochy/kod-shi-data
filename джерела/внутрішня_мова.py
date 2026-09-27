@@ -1800,7 +1800,7 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                                    "середини, і нюд жене її ще далі, а контраст тягне до середини",
     "contrast_pair_to_middle": "контрастна пара: зсуває пропорцію торс : нога до середини",
     "nude_or_tights_to_middle": "нюдова пара або тон колготок: зсуває пропорцію до середини",
-    "heel_wear_cost": "каблук heel_cm см на hours год (surface — поверхня): вартість носіння названа",
+    "heel_wear_cost": "каблук heel_cm см на hours год: вартість носіння названа",
     "cushioned_insole_softens": "устілка з п'ятковою чашею й підтримкою склепіння знижує ударне навантаження: та "
                                 "сама пара стає легшою",
     "long_day_items_unbearable": "на довгий день (hours год) речі в цих слотах (slots) стають нестерпними "
@@ -2788,7 +2788,7 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                                    "pulls back",
     "contrast_pair_to_middle": "a contrasting pair: shifts torso:leg toward the middle",
     "nude_or_tights_to_middle": "nude pair or tights tone: shifts the proportion toward the middle",
-    "heel_wear_cost": "heel heel_cm cm for hours h (surface): wear cost named",
+    "heel_wear_cost": "heel heel_cm cm for hours h: wear cost named",
     "cushioned_insole_softens": "an insole with heel cup and arch support cuts impact: the same pair gets easier",
     "long_day_items_unbearable": "over a long day (hours) items in these slots become unbearable in their own "
                                  "way: they demand attention while worn",
