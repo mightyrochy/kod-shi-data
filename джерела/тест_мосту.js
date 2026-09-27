@@ -136,6 +136,43 @@ const пнг = байтів => {
        в.headers.get("x-provider") === "gemini" && в.headers.get("x-thinking") === "thinkingLevel",
        [в.headers.get("x-provider"), в.headers.get("x-thinking")]);
 
+  console.log("3т. ТЕМПЕРАТУРА ДОХОДИТЬ ДО ОБОХ ПРОВАЙДЕРІВ (рядок 158)");
+  /* Показ шле `temperature: 0` (`мовний_шар.ВИБІРКА`), бо «однакова репліка → один
+     паспорт» тримається лише на ній. Маршрут `gemini-` будує тіло нанову, тож поле
+     треба перекласти в `generationConfig`; маршрут `claude-` віддає тіло як є. */
+  відповідач = () => new Response(JSON.stringify({candidates:[{content:{parts:[{text:"є"}]}, finishReason:"STOP"}],
+      usageMetadata:{}}), {status:200});
+  вихідні.length = 0;
+  в = await зап({model:"gemini-flash-latest", temperature:0, messages:[{role:"user", content:"x"}]});
+  тест("gemini: temperature 0 → generationConfig.temperature 0 (не зникає)",
+       вихідні.length === 1 && вихідні[0].body.generationConfig.temperature === 0,
+       вихідні[0] && вихідні[0].body.generationConfig);
+  тест("gemini: заголовок x-temperature називає, що поїхало, і відкритий сторінці",
+       в.headers.get("x-temperature") === "0"
+       && /x-temperature/.test(в.headers.get("Access-Control-Expose-Headers")), в.headers.get("x-temperature"));
+  вихідні.length = 0;
+  в = await зап({model:"gemini-flash-latest", messages:[{role:"user", content:"x"}]});
+  тест("gemini без температури: поля в generationConfig нема, x-temperature=n/a",
+       вихідні.length === 1 && !("temperature" in вихідні[0].body.generationConfig)
+       && в.headers.get("x-temperature") === "n/a", вихідні[0] && вихідні[0].body.generationConfig);
+  вихідні.length = 0;
+  в = await зап({model:"gemini-flash-latest", temperature:"нуль", messages:[{role:"user", content:"x"}]});
+  тест("gemini: не-число знімає поле (інакше 400 «temperature» замість відповіді)",
+       вихідні.length === 1 && !("temperature" in вихідні[0].body.generationConfig)
+       && в.headers.get("x-temperature") === "n/a", вихідні[0] && вихідні[0].body.generationConfig);
+  відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"ок"}],
+      stop_reason:"end_turn", usage:{input_tokens:5, output_tokens:1}}), {status:200});
+  вихідні.length = 0;
+  в = await зап({model:"claude-sonnet-5", temperature:0, messages:[{role:"user", content:"x"}]});
+  тест("claude: temperature 0 доїжджає верхнім полем тіла, x-temperature=0",
+       вихідні.length === 1 && вихідні[0].body.temperature === 0
+       && в.headers.get("x-temperature") === "0", вихідні[0] && вихідні[0].body);
+  вихідні.length = 0;
+  в = await зап({model:"claude-sonnet-5", temperature:null, messages:[{role:"user", content:"x"}]});
+  тест("claude: temperature null знімається з тіла (Anthropic віддав би 400)",
+       вихідні.length === 1 && !("temperature" in вихідні[0].body)
+       && в.headers.get("x-temperature") === "n/a", вихідні[0] && вихідні[0].body);
+
   console.log("4. КАСКАД МИСЛЕННЯ: 400 через thinking → наступна форма → без поля");
   вихідні.length = 0;
   let n = 0;
