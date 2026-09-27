@@ -622,6 +622,11 @@ async function живоюМоделлю(тіло, тип){
                          ? МОДЕЛЬ_МОВИ_СТЕНДУ : МОДЕЛЬ_ЖИВА), messages: повідомлення,
                  max_tokens: тіло.max_tokens || 4000, stream: false};
   if (ТЕМПЕРАТУРА !== null && !Number.isNaN(ТЕМПЕРАТУРА)) запит.temperature = ТЕМПЕРАТУРА;
+  /* М-2: вибірку, яку сторінка сама поклала в тіло (мовний шар — `мовний_шар.ВИБІРКА`,
+     температура 0), стенд пересилає як є — інакше LM Studio брала б свою, і вимір був би
+     про налаштування LM Studio, а не про продукт. MODEL_TEMP сильніша: це свідомий дослід. */
+  else if (typeof тіло.temperature === 'number') запит.temperature = тіло.temperature;
+  if (typeof тіло.seed === 'number') запит.seed = тіло.seed;
   if (!process.env.THINK) запит.reasoning_effort = 'none';
   if (process.env.JSON_MODE && ЧЕКАЄ_JSON(тип)) запит.response_format = {type: 'json_object'};
   const почато = Date.now();
