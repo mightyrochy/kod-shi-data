@@ -1006,12 +1006,11 @@ def промпт_репліки(репліка):
     р = _ВМ.РЕПЛІКА
     теми = "; ".join("%s — %s" % (к, о) for к, о in _ВМ.ТЕМИ_ПОРАДИ.items())
     обов = "; ".join("%s — %s" % (к, о) for к, о in _ВМ.ОБОВʼЯЗКОВЕ.items())
-    вжиті = {з.get("code") for в in ((репліка or {}).get("item_verdicts") or [])
-             for з in ((в.get("verdict") or {}).get("statements") or []) if isinstance(з, dict)}
     # Ч-6: коди у `values` вердиктів визначаються так само, як у промпті повідомлень —
     # інакше модель пише жінці «bag» замість слова (той самий отвір, та сама латка).
     _зз = [з for в in ((репліка or {}).get("item_verdicts") or [])
            for з in ((в.get("verdict") or {}).get("statements") or []) if isinstance(з, dict)]
+    вжиті = {з.get("code") for з in _зз}
     заяви = (_коди_словником(_зз) + ["", "ЗАЯВИ ВЕРДИКТІВ:"] + _заяви_словником(вжиті)) if вжиті else []
     return "\n".join([
         ПРОМПТ_РЕПЛІКИ, "",
