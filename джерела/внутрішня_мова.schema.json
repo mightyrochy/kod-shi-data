@@ -1461,11 +1461,24 @@
      "description": "що код записав із її слів цього ходу (поля сценарію кодами)",
      "type": "object"
     },
-    "code_lines": {
-     "description": "рядки коду для неї про її річ з фото (вердикт коду)",
+    "item_verdicts": {
+     "description": "вердикт коду про кожну її річ з фото: заяви кодами",
      "type": "array",
      "items": {
-      "$ref": "#/$defs/free_text"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "item": {
+        "$ref": "#/$defs/free_text",
+        "description": "назва її речі"
+       },
+       "verdict": {
+        "$ref": "#/$defs/screen_message"
+       }
+      },
+      "required": [
+       "verdict"
+      ]
      }
     },
     "added": {
@@ -1560,6 +1573,646 @@
    "required": [
     "text"
    ]
+  },
+  "screen_message": {
+   "type": "object",
+   "description": "рядок, який жінка прочитає на екрані, внутрішньою мовою: вид рядка й заяви кодами",
+   "additionalProperties": false,
+   "properties": {
+    "kind": {
+     "oneOf": [
+      {
+       "const": "palette_scheme_note",
+       "description": "рядок про ОБРАНУ схему на екрані «Палітра»: що це за хід і коли він менш ходовий"
+      },
+      {
+       "const": "palette_default_scheme",
+       "description": "рядок на екрані «Палітра», поки вона схему не обрала: за чим збирається образ без її вибору і скільки схем код радить"
+      },
+      {
+       "const": "palette_rarer_scheme",
+       "description": "рядок біля плитки однієї схеми: чому цей хід рідший і чого код про нього ще не вміє. Починається назвою схеми"
+      },
+      {
+       "const": "card_scheme",
+       "description": "рядок на картці образу про обіцянку схеми палітри"
+      },
+      {
+       "const": "card_occasion",
+       "description": "рядок на картці образу про те, що код зробив для цієї нагоди"
+      },
+      {
+       "const": "card_wear_cost",
+       "description": "рядок на картці образу про ціну носіння за цей вихід"
+      },
+      {
+       "const": "card_swap_pair",
+       "description": "рядок на картці образу перед змінною парою взуття"
+      },
+      {
+       "const": "card_material",
+       "description": "рядок на картці образу про матеріал речі в погоду цього дня"
+      },
+      {
+       "const": "her_item_verdict",
+       "description": "вердикт коду про її власну річ: чи підійде вона під цей вихід"
+      },
+      {
+       "const": "her_item_softening",
+       "description": "рядок під її річчю на картці: річ стоїть у кожному образі, і чим решта образу її пом'якшує"
+      },
+      {
+       "const": "no_photo_reason",
+       "description": "рядок біля речі на картці: чому в неї нема знімка"
+      },
+      {
+       "const": "item_source",
+       "description": "рядок біля речі на картці: звідки вона в образі"
+      },
+      {
+       "const": "card_incomplete",
+       "description": "рядок на картці образу про те, чого в ньому нема"
+      },
+      {
+       "const": "card_added_by_code",
+       "description": "рядок на картці образу про речі, які доклав код, а не стилістка"
+      }
+     ]
+    },
+    "statements": {
+     "description": "що саме код каже, у порядку, в якому це має звучати",
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "code": {
+        "oneOf": [
+         {
+          "const": "scheme_tonal",
+          "description": "один тон на всіх речах, кроки світлоти маленькі"
+         },
+         {
+          "const": "scheme_analogous",
+          "description": "сусідні тони кольорового кола"
+         },
+         {
+          "const": "scheme_neutrals_accent",
+          "description": "нейтральна база і один кольоровий спалах"
+         },
+         {
+          "const": "scheme_muted_complementary",
+          "description": "два протилежні кольори"
+         },
+         {
+          "const": "scheme_triad",
+          "description": "три кольори на великих речах, приблизно порівну"
+         },
+         {
+          "const": "same_calm_contrast",
+          "description": "контраст лишається таким самим спокійним, як твій власний"
+         },
+         {
+          "const": "native_to_her_soft_contrast",
+          "description": "це рідний дім твого м'якого контрасту"
+         },
+         {
+          "const": "both_sides_muted",
+          "description": "обидві сторони притишені"
+         },
+         {
+          "const": "cleaner_side_against_base",
+          "description": "чистіший колір проти темної або світлої бази"
+         },
+         {
+          "const": "same_fabric_reads_flat",
+          "description": "менш вдало виходить, коли всі речі однієї тканини: без різниці фактур образ читається площинним"
+         },
+         {
+          "const": "analogous_close_to_tonal",
+          "description": "від тональної відрізняється ледь-ледь: на око різниця тонка, тож бери ту, чия назва тобі ближча"
+         },
+         {
+          "const": "tonal_needs_wide_range",
+          "description": "брати ширший розбіг світлоти, від темного до світлого"
+         },
+         {
+          "const": "tonal_narrow_one_blot",
+          "description": "надто вузька тональна на твоєму контрасті виглядає однією плямою"
+         },
+         {
+          "const": "tonal_only_wide_works",
+          "description": "на твоєму контрасті працює лише широка тональна, від темного до світлого"
+         },
+         {
+          "const": "tonal_narrow_flattens",
+          "description": "вузька робить виразне обличчя пласким"
+         },
+         {
+          "const": "analogous_needs_step",
+          "description": "лишити між сусідніми тонами помітний крок світлоти"
+         },
+         {
+          "const": "analogous_same_light_merges",
+          "description": "на однаковій світлоті сусідні тони зливаються"
+         },
+         {
+          "const": "analogous_needs_jump",
+          "description": "закладати всередину стрибок світлоти"
+         },
+         {
+          "const": "analogous_flat_on_vivid",
+          "description": "без цього стрибка сусідні тони на виразному обличчі виглядають пласко"
+         },
+         {
+          "const": "accent_keep_muted",
+          "description": "акцент тримати приглушеним"
+         },
+         {
+          "const": "loud_accent_pulls_from_face",
+          "description": "гучний колір повертає різкий контраст і починає перетягувати увагу з обличчя"
+         },
+         {
+          "const": "contrast_holds_stronger_accent",
+          "description": "твій контраст тримає і помітніший акцент — головне не робити його гучним"
+         },
+         {
+          "const": "light_dark_plus_accent_natural",
+          "description": "світла й темна нейтраль плюс акцент — природна пара для твого виразного контрасту: образ повторює те, що вже є в обличчі"
+         },
+         {
+          "const": "boldest_everyday_move",
+          "description": "на твоєму м'якому контрасті це найсміливіший із буденних ходів"
+         },
+         {
+          "const": "second_side_small_patch",
+          "description": "другу сторону брати малою плямою"
+         },
+         {
+          "const": "pair_pulls_look_on_itself",
+          "description": "інакше пара перетягне образ на себе"
+         },
+         {
+          "const": "keep_one_side_muted",
+          "description": "хоч одну зі сторін тримати приглушеною"
+         },
+         {
+          "const": "two_clean_sides_argue",
+          "description": "дві чисті сторони сперечаються між собою"
+         },
+         {
+          "const": "contrast_takes_more_colour",
+          "description": "твій контраст витримує більше кольору, ніж інші рівні"
+         },
+         {
+          "const": "cleaner_side_needs_photo",
+          "description": "чистішу сторону беремо лише тоді, коли знімок дав надійну відповідь про яскравість твоїх рис; інакше тримаємо приглушено"
+         },
+         {
+          "const": "triad_three_families_limit",
+          "description": "разом із металом прикрас виходить межа в три кольорові сім'ї, тож аксесуарам лишається повторити одну з них"
+         },
+         {
+          "const": "contrast_mismatch",
+          "description": "контраст образу свідомо не під твій власний: обличчя лишається у своєму вікні, зсувається решта драбини світлоти. Це хід «одяг у фокусі», а не «лестити обличчю», тому й рідший"
+         },
+         {
+          "const": "contrast_mismatch_levels",
+          "description": "рівні цього зсуву (значення: look_level — контраст образу, own_level — твій власний; коди low, medium, high)"
+         },
+         {
+          "const": "bright_makeup_keeps_accent_muted",
+          "description": "яскравий макіяж уже тримає увагу на обличчі — тоді акцент в одязі лишаємо приглушеним"
+         },
+         {
+          "const": "rarer_move",
+          "description": "цей хід рідший"
+         },
+         {
+          "const": "rarer_than_everyday",
+          "description": "ця схема рідше щоденна"
+         },
+         {
+          "const": "colour_families_at_once",
+          "description": "скільки кольорових сімей схема тримає одночасно (значення: families — число)"
+         },
+         {
+          "const": "code_does_not_advise_here",
+          "description": "під цим виходом код сам його не радить"
+         },
+         {
+          "const": "no_catalogue_filter_yet",
+          "description": "каталожного фільтра під цю схему код поки не вміє: обереш її — речі не доберуться, і код скаже це рядком, а не мовчанням"
+         },
+         {
+          "const": "scheme_chosen_by_her",
+          "description": "цю схему палітри ти обрала сама (значення: scheme — назва схеми)"
+         },
+         {
+          "const": "scheme_taken_by_code",
+          "description": "цю схему палітри взяв код, ти її не обирала (значення: scheme — назва схеми)"
+         },
+         {
+          "const": "scheme_not_in_code_substituted",
+          "description": "названої схеми в наборі коду сьогодні нема, тож образ зібрано за іншою (значення: asked — яку просила, given — за якою зібрано)"
+         },
+         {
+          "const": "not_a_refusal_of_her_choice",
+          "description": "це не відмова твоєму вибору — просто цієї схеми тут ще не існує"
+         },
+         {
+          "const": "scheme_asks_no_colour_in_mourning",
+          "description": "ця схема кольору не просить: образ тримається темних і тихих тонів, без кольорового акценту"
+         },
+         {
+          "const": "scheme_rests_on_her_item_colour",
+          "description": "схема тримається на кольорі твоєї власної речі, і решту образу зібрано навколо неї (значення: item — слово кольору тієї речі; from_photo — чи річ із фото)"
+         },
+         {
+          "const": "scheme_rests_on_colour",
+          "description": "схема тримається на кольорі"
+         },
+         {
+          "const": "colour_to_be_carried_by_slots",
+          "description": "колір мали нести ці слоти образу (значення: slots — коди слотів)"
+         },
+         {
+          "const": "look_came_out_all_neutral",
+          "description": "а цей образ вийшов увесь нейтральний"
+         },
+         {
+          "const": "coloured_items_in_pool_exist",
+          "description": "кольорові речі під цю схему в доборі є"
+         },
+         {
+          "const": "shop_calls_them_words",
+          "description": "речі під цю схему в доборі є, і крамниця називає їх цими словами (значення: words — слова крамниці)"
+         },
+         {
+          "const": "colour_only_where_look_has_none",
+          "description": "колір є лише в тому, чого в цьому образі нема (значення: slots — коди слотів)"
+         },
+         {
+          "const": "her_item_stands_in_slot",
+          "description": "у цих слотах стоїть твоя власна річ — її код не міняє (значення: slots — коди слотів)"
+         },
+         {
+          "const": "mark_not_this_and_rebuild",
+          "description": "познач «не ця» на цій речі образу, і образ зберуть заново, з кольором (значення: slot — код слота)"
+         },
+         {
+          "const": "scheme_asked_for_shade",
+          "description": "схема просила колір у названому відтінку (значення: anchor — від чого взято відтінок: eyes, hair, skin; base — слово твоєї обраної основи; families — слова кольорових сімей, коли якоря нема)"
+         },
+         {
+          "const": "shade_not_in_catalogue_at_all",
+          "description": "у каталозі речей цього відтінку для цих слотів сьогодні нема зовсім"
+         },
+         {
+          "const": "shade_not_found_for_her",
+          "description": "під твої мірки й цю нагоду цього відтінку сьогодні не знайшлося"
+         },
+         {
+          "const": "built_from_what_was_found",
+          "description": "зібрано з того, що знайшлося (значення: colours — слова крамниці про кольори речей образу)"
+         },
+         {
+          "const": "assortment_gap_not_advice",
+          "description": "це брак асортименту, а не порада проти твого вибору"
+         },
+         {
+          "const": "pool_limit_not_advice",
+          "description": "це межа добору під твої мірки й цю нагоду, а не порада проти твого вибору"
+         },
+         {
+          "const": "scheme_big_surfaces_equal",
+          "description": "схема — це названі кольори на великих речах приблизно порівну (значення: families — слова сімей у порядку; count — скільки їх: 3 — три кольори, 2 — дві сторони пари)"
+         },
+         {
+          "const": "families_present_but_unbalanced",
+          "description": "усі вони в образі є, але один колір займає більшість, а інший — зовсім мало: рівніші площі тримають схему краще (значення: most, least — слова тих кольорів)"
+         },
+         {
+          "const": "big_items_carry_only_some",
+          "description": "у цьому образі великі речі несуть одні з цих кольорів, а інших на них нема (значення: present, missing — слова кольорів)"
+         },
+         {
+          "const": "big_items_all_neutral",
+          "description": "у цьому образі великі речі — нейтральні"
+         },
+         {
+          "const": "accessory_only_echoes_colour",
+          "description": "на цьому аксесуарі колір є, але аксесуар тут лише відлунює колір (значення: slot — код слота, colour — слово кольору)"
+         },
+         {
+          "const": "pool_has_big_items_mark_not_this",
+          "description": "у доборі є великі речі цих кольорів: познач «не ця» на названих речах образу, і образ зберуть заново (значення: colours — слова кольорів, slots — коди слотів)"
+         },
+         {
+          "const": "colour_can_be_added_as_layer",
+          "description": "ці кольори можна додати шаром, і такі речі в доборі є (значення: pairs — по парі {colour, layer}, layer — код слота шару)"
+         },
+         {
+          "const": "needs_separate_top_and_bottom",
+          "description": "для цих кольорів потрібні окремі верх і низ замість цільної речі: познач «не ця» на ній, і образ зберуть заново (значення: colours — слова кольорів, whole — код слота цільної речі)"
+         },
+         {
+          "const": "big_items_of_colour_elsewhere",
+          "description": "великі речі цих кольорів у доборі є — серед таких слотів (значення: colours — слова кольорів, slots — коди слотів)"
+         },
+         {
+          "const": "big_items_of_colour_not_found",
+          "description": "великих речей цих кольорів під твої мірки й цю нагоду сьогодні не знайшлося (значення: colours — слова кольорів; none_in_catalogue — true, коли в каталозі їх нема зовсім)"
+         },
+         {
+          "const": "mourning_funeral",
+          "description": "образ на похорон"
+         },
+         {
+          "const": "mourning_period",
+          "description": "триває жалоба"
+         },
+         {
+          "const": "mourning_only_dark",
+          "description": "код добрав лише темні речі — без світлого, яскравого й святкових оздоб"
+         },
+         {
+          "const": "mourning_only_dark_and_quiet",
+          "description": "код добрав лише темні й тихі речі — без світлого, яскравого й святкових оздоб"
+         },
+         {
+          "const": "mourning_shine_unknown_one",
+          "description": "чи не блищить біля обличчя одна названа річ, код не знає (значення: item — назва речі; said_in — де сказано про блиск: name — у назві речі, shop — крамниця пише; words — самі ті слова; photo — як матеріал прочитався з фото, або нема)"
+         },
+         {
+          "const": "mourning_shine_unknown_many",
+          "description": "чи не блищать біля обличчя названі речі, код не знає: крамниця й фото називають різні матеріали (значення: items — назви речей)"
+         },
+         {
+          "const": "mourning_no_metal_near_face",
+          "description": "металевих прикрас біля обличчя — намиста, сережок — у доборі нема: на жалобі без блиску біля обличчя, а які прикраси ти хочеш, ти не сказала; скажи «срібло» чи «золото» — і вони з'являться"
+         },
+         {
+          "const": "her_own_choice_kept_as_is",
+          "description": "те, що ти назвала сама, лишилось у доборі як є"
+         },
+         {
+          "const": "heel_cost_on_surface",
+          "description": "каблук цієї пари — відчутна ціна для ніг на цій поверхні (значення: surface — код поверхні)"
+         },
+         {
+          "const": "heel_cost_long_walk",
+          "description": "каблук цієї пари — відчутна ціна для ніг на довгій прогулянці"
+         },
+         {
+          "const": "heel_cost_long_day",
+          "description": "каблук цієї пари — відчутна ціна для ніг за довгий день на ногах"
+         },
+         {
+          "const": "not_a_ban_her_choice",
+          "description": "це не заборона: вибір за тобою"
+         },
+         {
+          "const": "flat_pair_removes_cost",
+          "description": "пара на низькому ходу цю ціну знімає"
+         },
+         {
+          "const": "swap_pair_example",
+          "description": "ось така пара, наприклад: її можна взяти з собою й перевзутися, коли захочеш"
+         },
+         {
+          "const": "material_on_salted_road",
+          "description": "названі матеріали на солоній дорозі без просочення псуються (значення: materials — коди матеріалів)"
+         },
+         {
+          "const": "material_in_rain",
+          "description": "названі матеріали в дощ без просочення намокають і псуються (значення: materials — коди матеріалів)"
+         },
+         {
+          "const": "impregnate_or_smooth_leather",
+          "description": "вибір за тобою: просоч тричі з просушуванням або візьми гладку шкіру"
+         },
+         {
+          "const": "impregnate_or_smooth_or_textile",
+          "description": "вибір за тобою: просоч заздалегідь або візьми гладку шкіру чи текстиль"
+         },
+         {
+          "const": "item_suits",
+          "description": "річ тобі личить"
+         },
+         {
+          "const": "item_suits_with_condition",
+          "description": "річ личить з умовою"
+         },
+         {
+          "const": "item_better_another",
+          "description": "краще інша річ — ця на цей вихід личить гірше"
+         },
+         {
+          "const": "item_can_still_build",
+          "description": "зібрати з нею все одно можна — решту образу код добере так, щоб пом'якшити"
+         },
+         {
+          "const": "cannot_say_if_suits",
+          "description": "чи личить, сказати поки не можна"
+         },
+         {
+          "const": "occasion_not_named_everyday",
+          "description": "нагоди ти не назвала, тож річ оцінено на звичайний день"
+         },
+         {
+          "const": "colour_in_her_palette",
+          "description": "колір речі — у твоїй палітрі"
+         },
+         {
+          "const": "colour_edge_of_palette_near_face",
+          "description": "колір на межі твоєї палітри, а річ близько до обличчя: біля обличчя постав свою нейтраль — шарф, комір чи сережки у твоїх кольорах, і далі від обличчя цей колір тобі не заважатиме"
+         },
+         {
+          "const": "colour_outside_palette_near_face",
+          "description": "колір далекий від твоєї палітри, а річ близько до обличчя: біля обличчя постав свою нейтраль — шарф, комір чи сережки у твоїх кольорах, і далі від обличчя цей колір тобі не заважатиме"
+         },
+         {
+          "const": "colour_outside_palette_far_from_face",
+          "description": "колір не з твоєї палітри, але річ далеко від обличчя — там він не заважає"
+         },
+         {
+          "const": "item_contrast_higher_near_face",
+          "description": "контраст речі з твоїм обличчям вищий за твій власний — між нею й обличчям дай щось проміжної світлоти: шарф чи комір"
+         },
+         {
+          "const": "item_contrast_lower_near_face",
+          "description": "біля обличчя річ тихіша за твій власний контраст — оживи обличчя деталлю: прикрасою з блиском, світлою деталлю чи помадою"
+         },
+         {
+          "const": "cut_against_her_figure",
+          "description": "крій веде контур не туди, куди просить твоя фігура (значення: balance — чим це врівноважити; це порада корпусу вільним текстом, перекажи її зміст)"
+         },
+         {
+          "const": "item_more_casual_than_occasion",
+          "description": "для цієї нагоди річ буденна — рівень підняти рештою образу"
+         },
+         {
+          "const": "item_dressier_than_occasion",
+          "description": "для цієї нагоди річ занадто ошатна — рівень приглушити рештою образу"
+         },
+         {
+          "const": "material_ruined_by_rain",
+          "description": "матеріал речі в дощ псується, тож на сьогодні краще інша (значення: material — матеріал)"
+         },
+         {
+          "const": "outer_layer_unneeded_warm",
+          "description": "за такої температури верхній шар зайвий"
+         },
+         {
+          "const": "colour_from_her_words_not_photo",
+          "description": "колір узято з твого опису, не з фото (значення: colour — як ти його назвала)"
+         },
+         {
+          "const": "colour_unknown_not_checked",
+          "description": "колору цієї речі код не знає — фото нема, і колір не названо, тож із твоєю палітрою річ не звірено; назви колір словом — звірить"
+         },
+         {
+          "const": "her_item_in_every_look",
+          "description": "цю річ ти обрала сама, тож вона стоїть у кожному образі"
+         },
+         {
+          "const": "colour_unknown_rest_not_matched",
+          "description": "колору цієї речі код не знає — фото нема, і колір ти не назвала, тож решту образу з нею за кольором не звіряно"
+         },
+         {
+          "const": "near_face_her_neutral_or_palette_colour",
+          "description": "біля обличчя — твоя нейтраль або колір твоєї палітри: шарф, комір чи сережки"
+         },
+         {
+          "const": "between_item_and_face_mid_lightness",
+          "description": "між річчю й обличчям — річ проміжної світлоти: шарф чи комір"
+         },
+         {
+          "const": "near_face_shine_or_light_detail",
+          "description": "біля обличчя — прикраса з блиском або світла деталь"
+         },
+         {
+          "const": "balance_contour_with_rest",
+          "description": "контур урівноважити рештою образу (значення: balance — чим саме; це порада корпусу вільним текстом, перекажи її зміст)"
+         },
+         {
+          "const": "raise_formality_with_rest",
+          "description": "рівень ошатності підняти рештою образу"
+         },
+         {
+          "const": "lower_formality_with_rest",
+          "description": "рівень ошатності приглушити рештою образу"
+         },
+         {
+          "const": "outer_layer_and_shoes_for_rain",
+          "description": "верхній шар, що накриває від дощу, і взуття на мокру дорогу"
+         },
+         {
+          "const": "look_incomplete",
+          "description": "образ неповний"
+         },
+         {
+          "const": "several_items_in_one_slot",
+          "description": "у цих слотах по кілька речей — лишити по одній у кожному (значення: slots — коди слотів; без них — просто «кілька речей на один слот»)"
+         },
+         {
+          "const": "blocker_reason",
+          "description": "причина, яку назвав корпус (значення: reason — вільний текст правила: перекажи його зміст)"
+         },
+         {
+          "const": "more_blockers_in_report",
+          "description": "решта причин лишилась у звіті (значення: count — скільки їх)"
+         },
+         {
+          "const": "layers_do_not_stack",
+          "description": "шари цього образу не складуться (значення: reason — суть правила вільним текстом: перекажи її зміст)"
+         },
+         {
+          "const": "repair_failed_needs_thinner_top",
+          "description": "полагодити не вийшло: під цей шар потрібен тонший верх по фігурі"
+         },
+         {
+          "const": "tried_swaps_all_flawed",
+          "description": "код пробував зняти шар і кілька замін із добору, і жоден варіант не складається без іншої вади (значення: swaps — скільки замін)"
+         },
+         {
+          "const": "no_other_item_for_that_slot",
+          "description": "у доборі нема іншої речі на це місце, а без шару образ не складається"
+         },
+         {
+          "const": "no_other_combination_take_another_top",
+          "description": "іншого поєднання в доборі сьогодні нема — взяти інший верх або зняти верхній шар"
+         },
+         {
+          "const": "needs_coat_none_in_pool",
+          "description": "за такої погоди потрібне пальто чи тепла куртка, а в доборі під цю нагоду сьогодні нема жодного — взяти своє (значення: weather — погода цього дня словами коду)"
+         },
+         {
+          "const": "catalogue_has_none_for_case",
+          "description": "у каталозі під цей випадок нема потрібної речі, тому образ лишається неповним; це брак каталогу, а не показу (значення: missing — код того, чого нема)"
+         },
+         {
+          "const": "code_added_to_empty_slots",
+          "description": "ці місця в образі стилістка лишила порожніми, і їх заповнив код, а не стилістка; без них образ не готовий (значення: slots — коди слотів)"
+         },
+         {
+          "const": "weather_needs_outerwear",
+          "description": "за такої погоди без пальта чи теплої куртки не вийти (значення: weather — погода цього дня словами коду)"
+         },
+         {
+          "const": "item_added_by_code",
+          "description": "цю річ дібрав код, а не стилістка"
+         },
+         {
+          "const": "no_photo_feed_gave_none",
+          "description": "крамниця не дала у фід жодного знімка цієї речі"
+         },
+         {
+          "const": "no_photo_shop_forbids",
+          "description": "крамниця не дозволяє показувати свої знімки на інших сайтах"
+         },
+         {
+          "const": "no_photo_shop_placeholder",
+          "description": "крамниця поставила у фід свою заглушку замість фото речі"
+         },
+         {
+          "const": "no_photo_other_items_only",
+          "description": "крамниця віддала у фід лише фото інших товарів"
+         },
+         {
+          "const": "default_scheme_until_chosen",
+          "description": "поки ти не обрала, образ збирається за цією схемою: під неї підбираються речі, по ній же перевіряється акцент (значення: scheme — назва схеми)"
+         },
+         {
+          "const": "schemes_advised_count",
+          "description": "скільки схем код радить до цього образу (значення: count — число)"
+         },
+         {
+          "const": "rarer_schemes_count",
+          "description": "скільки схем рідші — їх теж можна обрати (значення: count — число)"
+         },
+         {
+          "const": "choose_another_if_wants",
+          "description": "іншу можна обрати самій, якщо хочеться"
+         }
+        ]
+       },
+       "values": {
+        "type": "object"
+       }
+      },
+      "required": [
+       "code"
+      ]
+     },
+     "minItems": 1
+    }
+   },
+   "required": [
+    "kind",
+    "statements"
+   ]
   }
  },
  "x-форми-unknown": [
@@ -1569,6 +2222,37 @@
   "невідомо"
  ],
  "x-таблиця": {
+  "contrast_level": {
+   "low": "низький",
+   "medium": "середній",
+   "high": "високий"
+  },
+  "colour_family": {
+   "red_pink": "червона/рожева",
+   "orange_terracotta": "помаранчева/теракота",
+   "yellow": "жовта",
+   "yellow_green": "жовто-зелена",
+   "green": "зелена",
+   "blue_green": "синьо-зелена",
+   "blue": "синя",
+   "violet_magenta": "фіолетова/маджента",
+   "neutral_warm": "нейтраль-тепла",
+   "neutral_cool": "нейтраль-холодна",
+   "neutral_achromatic": "нейтраль-ахроматична"
+  },
+  "colour_anchor": {
+   "eyes": "очі",
+   "hair": "волосся",
+   "skin": "шкіра",
+   "chosen_base": "обраний"
+  },
+  "missing_part": {
+   "no_bag": "нема_сумки",
+   "no_shoes": "нема_взуття",
+   "no_base": "нема_верху_низу",
+   "no_outerwear": "нема_верхнього_шару",
+   "no_third_item": "неповний"
+  },
   "occasion": {
    "everyday": "щоденне",
    "work": "робота",
