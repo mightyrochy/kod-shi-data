@@ -166,6 +166,28 @@ async function обгорнути(стор){
   });
 }
 
+let _pythonВід = 0;   // скільки викликів Python уже названо попереднім звітом
+
+/* python-виклики від попереднього звіту, згорнуті за іменем: «ім ×N = с (макс)» */
+function _заІменем(виклики){
+  const п = {};
+  виклики.forEach(з => { const x = п[з[0]] = п[з[0]] || {раз: 0, с: 0, макс: 0};
+    x.раз += 1; x.с += (з[2] - з[1]) / 1000; x.макс = Math.max(x.макс, (з[2] - з[1]) / 1000); });
+  return Object.entries(п).sort((a, b) => b[1].с - a[1].с)
+    .map(([к, x]) => к + ' ×' + x.раз + ' = ' + x.с.toFixed(1) + ' с (макс ' + x.макс.toFixed(1) + ')').join(' · ');
+}
+const _pythonСторінки = стор => стор.evaluate(() => { try { return JSON.parse(pyodide_показу.runPython(
+  'import json, bridge\njson.dumps(getattr(bridge, "_часи", []))')); } catch (e) { return []; } });
+
+/* ПОВТОРНИЙ ЗБІР («Зібрати ще раз», сцена 4є): час зі сторінки і Python лише цього збору */
+async function повтор(стор, номер){
+  if (!УВІМКНЕНО) return;
+  const поступ = await стор.evaluate(() => (document.getElementById('зб-поступ') || {}).textContent || '');
+  const усі = await _pythonСторінки(стор), нові = усі.slice(_pythonВід);
+  _pythonВід = усі.length;
+  console.log('   ЧАСИ збору ' + номер + ': ' + поступ + ' · PYTHON: ' + _заІменем(нові));
+}
+
 /* ── ЗВІТ: подія на рядок, підсумок і JSON ──────────────────────────────────── */
 async function звіт(стор){
   if (!УВІМКНЕНО) return null;
@@ -175,8 +197,8 @@ async function звіт(стор){
     виклики: (typeof ЗБ !== 'undefined' && ЗБ ? ЗБ.картки : []).map(к => к ? {рука: к.рука,
       кроки: ((к.етапи || {}).виклики || []).map(в => ({крок: в.крок || null, чого: ((в.запит || {}).чого) || null,
         симв: ((в.запит || {}).симв_разом) || (((в.запит || {}).текст) || '').length || null}))} : null)}));
-  д.python = await стор.evaluate(() => { try { return JSON.parse(pyodide_показу.runPython(
-    'import json, bridge\njson.dumps(getattr(bridge, "_часи", []))')); } catch (e) { return []; } });
+  д.python = await _pythonСторінки(стор);
+  _pythonВід = д.python.length;
   const с = мс => ((мс - д.т0) / 1000).toFixed(1);
   const рука = п => (п == null || п < 0) ? '?' : (д.ключ[п] || '?');
   const під = [];
@@ -195,11 +217,7 @@ async function звіт(стор){
   /* головний потік зайнятий Python: відрізки `код` не накладаються — сума = час, коли
      сторінка не могла ні малювати, ні приймати відповіді */
   const коду = д.python.reduce((а, з) => а + (з[2] - з[1]), 0);
-  const поІмені = {};
-  д.python.forEach(з => { const x = поІмені[з[0]] = поІмені[з[0]] || {раз: 0, с: 0, макс: 0};
-    x.раз += 1; x.с += (з[2] - з[1]) / 1000; x.макс = Math.max(x.макс, (з[2] - з[1]) / 1000); });
-  console.log('  PYTHON (чистий час bridge.виклик): ' + Object.entries(поІмені).sort((a, b) => b[1].с - a[1].с)
-    .map(([к, x]) => к + ' ×' + x.раз + ' = ' + x.с.toFixed(1) + ' с (макс ' + x.макс.toFixed(1) + ')').join(' · '));
+  console.log('  PYTHON (чистий час bridge.виклик): ' + _заІменем(д.python));
   const моделі = д.події.filter(з => з.к === 'модель');
   const чекали = моделі.reduce((а, з) => а + (з.старт ? з.старт - з.т0 : 0), 0);
   const обслуг = моделі.reduce((а, з) => а + ((з.т1 || д.кінець) - (з.старт || з.т0)), 0);
@@ -215,4 +233,4 @@ async function звіт(стор){
   return вих;
 }
 
-module.exports = {УВІМКНЕНО, затримкаМс, почекати, обгорнути, звіт};
+module.exports = {УВІМКНЕНО, затримкаМс, почекати, обгорнути, звіт, повтор};

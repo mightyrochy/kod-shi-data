@@ -3503,6 +3503,7 @@ function відповісти(текст) {
       await стор.waitForFunction(() => document.querySelectorAll('#картки .картка').length >= 4
         && ЗБ && ЗБ.готово, null, { timeout: 1500000 });
       await с(1200);
+      await ЧАСИ.повтор(стор, з + 1);
       const к = await картки12(); збори.push(к);
       for (const x of к){
         await стор.evaluate(п => показатиОбраз(п), x.і); await с(300); await дотягнутиФото();
