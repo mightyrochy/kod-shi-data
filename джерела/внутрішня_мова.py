@@ -228,6 +228,28 @@ def невідомо(v, коди=()):
 }
 
 
+# ── СЛОТ ЇЇ РЕЧІ З ТИПУ — ТАБЛИЦЕЮ КОДІВ (Ч-4, 27.09.2026) ──────────────────────────
+# Коли перекладач назвав її річ типом без слота (`own_items[].item_type`), слот доти брався
+# словником крамниць (`фід_слот.слот`) по слову ключа ядра — код читав слово. Тепер — пара двох
+# закритих переліків, та сама за змістом, що давав той словник на кожному коді `item_type`
+# (виміряно), з одним виправленням: `belt_bag` (поясна сумка) — сумка, а не пояс. Тип без
+# рядка тут — як доти: слота код не знає, і річ без слота не закріплюється.
+СЛОТ_ТИПУ = {
+    "evening_dress": "dress", "cocktail_dress": "dress", "sundress": "dress", "jumpsuit": "dress",
+    "dress_generic": "dress",
+    "ugg_boots": "shoes", "ballet_flats": "shoes", "mules": "shoes", "espadrilles": "shoes",
+    "dress_shoes": "shoes", "moccasins": "shoes", "loafers": "shoes", "sneakers": "shoes",
+    "plimsolls": "shoes", "ankle_boots": "shoes", "boots": "shoes", "heeled_sandals": "shoes",
+    "sandals": "shoes",
+    "clutch": "bag", "backpack": "bag", "tote": "bag", "belt_bag": "bag", "bag_generic": "bag",
+    "hoodie": "top", "t_shirt": "top", "shirt": "top", "blouse": "top", "cardigan": "top",
+    "sweater": "top", "vest": "top", "top_garment": "top",
+    "leggings": "bottom", "jeans": "bottom", "shorts": "bottom", "skirt": "bottom", "trousers": "bottom",
+    "coat": "outerwear", "trench_coat": "outerwear", "jacket": "outerwear",
+    "stole": "scarf", "kerchief": "scarf", "snood": "scarf", "scarf_generic": "scarf",
+    "ring": "ring", "jewelry_generic": "jewelry"}
+
+
 def ключ(поле, код):
     """Код внутрішньої мови → ключ ядра, або None (unknown, порожньо чи код поза переліком)."""
     if код in (None, "", UNKNOWN) or not isinstance(код, (str, int, float)):
