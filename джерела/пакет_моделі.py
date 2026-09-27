@@ -472,6 +472,12 @@ import внутрішня_мова as _ВМ_П
                          "(1 home, 5 office, 9 gala); «L» — lightness from 0 to 100",
                  як="take items only from here and name each by its «n» in full; fitness for the "
                     "occasion, taste and the unity of the outfit are yours", треба=True),
+        # К-3: короткий запис речі (перемикач `короткий_запис`) пише часті поля короткими
+        # ключами, а що кожен означає — цей рядок. Платиться раз на пакет замість того, щоб
+        # платитись іменем ключа на кожній із сотень речей пулу. Поля нема у звичайному
+        # записі, і рядок тоді в промпт не йде (`збирач_промптів.зібрати`).
+        _ЗП.Поле("pool_keys", "the short keys the items of «pool» use, and what each one means",
+                 як="read every item of «pool» by these keys"),
         _ЗП.Поле("pool[].two_piece", "a set sold as one item",
                  як="it is a whole outfit, like a dress: add no top or bottom to it; take one half only "
                     "when you must, with «deliberate», naming it «n»/top or «n»/bottom"),
