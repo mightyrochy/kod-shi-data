@@ -137,8 +137,9 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         _ЗП.Поле("verdict[].structure.blockers", "what keeps the outfit from being shown",
                  як="each must disappear: change an item or drop the outfit"),
         _ЗП.Поле("verdict[].findings", "what the code found: «weight» weighs the finding, not the outfit; "
-                                       "«register» «gate» must disappear; «fix» — the key of the code's repair "
-                                       "text in «fixes»; «declared»: true — your own declared move",
+                                       "«register» «gate» must disappear; «fix» — the code's repair, or the key "
+                                       "of its text in «fixes»; «merged» — how many findings of one rule it "
+                                       "joins; «declared»: true — your own declared move",
                  як="keep a declared move and repeat it in «deliberate», or change your mind and say why"),
         _ЗП.Поле("verdict[].checklist", "«excess» — what is already too much, «blandness» — what is lacking; "
                                         "both weigh the same; «no_input» and «not_run» — items the code did "
@@ -219,13 +220,19 @@ def номер_речі(ід, ном=None, частина=None):
     return т + ("/%s" % частина if частина else "")
 
 
-def блокери_структури(рядки, речі=None, ном=None):
+def блокери_структури(рядки, речі=None, ном=None, заяви=None):
     """Структурні рядки `блокує` → `[{код, речі, суть}]` за `ВЕРДИКТ_V1.структура.блокери`.
 
     `речі` — речі образу з `перевірити_від_моделі` ({id, слот, назва}); для
     «слот_двічі» адресою стають речі названого слота, для решти адреси нема — образ
     цілий. Вето людини (K-PC-08) сюди кладе `знахідки_вердикту`, бо його речі лежать
-    у знахідці, не в рядку."""
+    у знахідці, не в рядку.
+
+    `заяви` — {рядок: [заяви]} від того самого `структура_образу`, що написав рядок
+    (`суд_від_моделі.структура_образу_заяви`, П-6): блокер несе їх полем `заяви`, і дріт
+    моделі везе коди, а не рядок. Рядок тут лише ключ того самого запису — слів ніхто не
+    читає."""
+    заяви = заяви or {}
     вих = []
     for р in (рядки or []):
         т = str(р or "")
@@ -242,7 +249,7 @@ def блокери_структури(рядки, речі=None, ном=None):
                       for r in (речі or [])
                       if r.get("слот") in слоти
                       or _сім_я_слота(r.get("слот"), r.get("назва")) in слоти]
-        вих.append(dict(код=код, речі=адреси, суть=т))
+        вих.append(dict(код=код, речі=адреси, суть=т, **({"заяви": list(заяви[т])} if заяви.get(т) else {})))
     return вих
 
 
@@ -294,7 +301,8 @@ def знахідки_вердикту(знахідки, образ, ном=None)
     рядки = [dict(z) for z in (знахідки or []) if isinstance(z, dict) and z.get("правило")]
     рядки = [z for z in _РЕЄСТР.обмежити_вагу(рядки) if not z.pop("під_підлогою", False)]
     вето = [dict(код="вето", речі=[номер_речі(r, ном) for r in (z.get("речі") or []) if r not in (None, "")],
-                 суть="вето людини: %s" % _номери_в_тексті(str(z.get("суть") or ""), ном)[:80])
+                 суть="вето людини: %s" % _номери_в_тексті(str(z.get("суть") or ""), ном)[:80],
+                 **({"заяви": list(z["заяви"])} if z.get("заяви") else {}))
             for z in рядки if z.get("правило") == "K-PC-08"]
     рядки = [z for z in рядки if z.get("правило") != "K-PC-08" and not _питання_або_нуль(z)]
     злиті, порядок = {}, []
@@ -339,7 +347,13 @@ def знахідки_вердикту(знахідки, образ, ном=None)
             # силу, яку ші бачить. Без цього поля ші бачить наслідок і не бачить
             # причини, а зведення чесно рахує обидва правила «лише слідом».
             **({"також_правила": [str(x) for x in z["також_правила"]]}
-               if z.get("також_правила") else {})))
+               if z.get("також_правила") else {}),
+            # П-6 (CLAUDE.md п.12): те саме кодами заяв — дріт моделі везе їх, а не прозу
+            # `суть`/`ремонт`, яка лишається діагнозом звіту. `злито` — числом (хвіст у `суть`
+            # вище лишається звіту: там він пояснює одну суть над кількома речами).
+            **({"заяви": list(z["заяви"])} if z.get("заяви") else {}),
+            **({"ремонт_заяви": list(z["ремонт_заяви"])} if z.get("ремонт_заяви") else {}),
+            **({"злито": int(z["злито"])} if z.get("злито", 1) > 1 else {})))
     return рядки_схеми, вето
 
 
