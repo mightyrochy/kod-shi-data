@@ -81,6 +81,8 @@ def невідомо(v, коди=()):
                     "neutral": "нейтраль"},
     # МЕТАЛ ПРИКРАСИ ЧИ ФУРНІТУРИ (`суд_блиск.МЕТАЛИ_ТЕПЛІ/ХОЛОДНІ/МІСТ`, П-6): знахідки металів
     # кажуть моделі, який метал веде і який повторити, кодом, а не словом ядра.
+    # СТАН ВЕРХНЬОГО ШАРУ (`верхнє_стан.СТАНИ`, П-6): застібнуто, розстібнуто, накинуто.
+    "outer_state": {"buttoned": "застібнуто", "unbuttoned": "розстібнуто", "draped": "накинуто"},
     "metal": {"gold": "золото", "bronze": "бронза", "brass": "латунь", "copper": "мідь",
               "silver": "срібло", "white_gold": "біле_золото", "platinum": "платина", "steel": "сталь",
               "rose_gold": "рожеве_золото", "two_tone": "двотонний"},
@@ -1598,6 +1600,156 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                                              "window — її вікно від і до, nearness — близькість до обличчя)",
     "her_temperature_neutral_near_face": "покласти біля обличчя нейтраль її температури — шарф, топ чи "
                                          "розстібнутий шар; річ лишається",
+    # ── ВЕРХНІЙ ШАР: СТАН, ТЕПЛО, ДОВЖИНА, ПРОПОРЦІЯ, ПЛЕЧЕ, ДОГЛЯД (П-6: K-OUT-*) ──
+    "outer_default_state": "стан верхнього шару за замовчуванням і які стани йому доступні (значення: state — код "
+                           "стану, allowed — коди дозволених: buttoned, unbuttoned, draped)",
+    "closed_front_gives_eye_nothing": "закритий фронт верхнього шару не дає оку нічого: найдешевший ремонт — "
+                                      "лишити відкритим або шарф у V",
+    "leave_open_or_v_scarf": "лишити відкритим, або шарф у V, якщо закритий стан обовʼязковий",
+    "draped_state_unavailable": "стан «накинуто на плечі» цій речі недоступний — конструкція плеча його не тримає",
+    "belt_ties_not_buckles": "пояс верхнього шару завʼязується, а не застібається (значення: knot — back, коли "
+                             "пальто носиться відкритим, або front)",
+    "knot_placement_buckle_as_detail": "вузол на названому боці (спереду — злегка не по центру), пряжку лишити "
+                                       "деталлю, не застібкою (значення: knot — back чи front)",
+    "raise_collar_free_state": "підняти комір — четвертий стан, і він нічого не коштує",
+    "raise_collar": "підняти комір: вертикаль біля шиї подовжує, силует гострішає й збирається",
+    "high_stand_collar_frees_slot": "висока стійка коміра звільняє слот — шарф не потрібен, стійка несе колір "
+                                    "біля обличчя сама (значення: slot — код слота, що звільнився)",
+    "no_scarf_needed_collar_carries_colour": "шарф не потрібен: слот і бюджет акценту звільнено, стійка входить у "
+                                             "приобличчеву площу своїм кольором",
+    "draped_is_minutes_state": "«накинуто» — стан на хвилини, не на весь вихід",
+    "draped_only_as_transition": "тримати «накинуто» як стан переходу, а не як стан носіння",
+    "unbuttoning_is_styling_command": "розстебнути — команда укладки, а не властивість речі",
+    "leave_open_or_belt_tightly": "лишити відкритим — відкриває вертикаль; або туго підперезати, щоб відновити "
+                                  "талію (значення: has_belt — чи є в неї пояс)",
+    "no_belt_wear_open": "пояса в гардеробі нема, тож лишається носити розстібнутим",
+    "belt_over_is_other_slot": "пояс поверх — операція з іншого слота",
+    "wear_open_or_buy_belt": "носити розстібнутим — витягнутіший силует, вужчий фронт; або докупити пояс",
+    "own_belt_over_or_wear_open": "власний пояс поверх — брати його з каталогу не треба; або носити розстібнутим",
+    "drape_third_solution_sleeve_conflict": "накинути — третій розвʼязок, коли рукав не сходиться",
+    "do_not_put_arms_in_sleeves": "не вдягати верхній шар у рукави — третій розвʼязок того самого конфлікту, "
+                                  "іншої речі він не потребує",
+    "ease_ladder_off_unbuttoned": "драбина припусків тут не діє: стан розстібнутий",
+    "layer_test_over_real_layers": "пробу шару робити поверх тих шарів, які реально носитимуться",
+    "measure_winter_outer_over_sweater": "міряти зимовий верхній шар поверх светра, а не поверх футболки",
+    "belt_makes_ease_interval": "пояс робить припуск інтервалом — річ проходить драбину припусків на кількох "
+                                "рівнях",
+    "outer_will_not_fit_over_bulky": "верхній шар не налізе поверх обʼємної речі під ним (значення: outer — назва "
+                                     "шару, under — назва речі під ним)",
+    "thin_fitted_top_under_or_bulky_without_jacket": "під приталений шар — тонкий верх по фігурі (сорочка, тонкий "
+                                                     "трикотаж), або обʼємний светр без жакета чи з вільним кроєм "
+                                                     "зверху",
+    "two_high_necklines_stacked": "дві високі горловини одна на одній (значення: upper, lower — назви речей)",
+    "open_neckline_on_top_or_one_high_neck": "зверху — річ із відкритим вирізом (кардиган, жакет, V-виріз), або "
+                                             "лишити одну високу горловину",
+    "outer_length_state_chosen_for_warmth": "довжину й стан верхнього шару обрано по теплу, а не по пропорції",
+    "fill_power_without_fill_weight": "fill power без ваги наповнювача — не вимір тепла",
+    "ask_fill_weight_or_ignore_fill_power": "запитати вагу наповнювача, або не використовувати fill power у "
+                                            "рішенні зовсім",
+    "trench_counted_as_warm_layer": "тренч рахувався тепловим шаром, а він від дощу",
+    "warm_layer_under_or_instead_of_trench": "утеплений шар під тренч або замість нього, або оголосити вовняну "
+                                             "версію",
+    "layer_closes_wet_windy_regime": "цей шар закриває режим, у якому пуховик мокне, а пальто продувається",
+    "layer_declared_no_filling": "оголошено «без утеплювача» — не рахувати цей шар тепловим нарівні з утепленим "
+                                 "того ж типу",
+    "down_loses_warmth_when_wet": "оголошено пух — у мокрий день він втрачає саме те, чим гріє",
+    "filling_declared_by_word": "склад утеплювача оголошено словом — теплова мітка типу лишається",
+    "filling_not_declared_ask_composition": "утеплювача не оголошено, а назва категорії його не оголошує — питати "
+                                            "склад",
+    "composition_not_declared_ask": "склад не оголошено — питати склад: вовняна версія тримає зиму, бавовняна ні",
+    "wool_below_band_goes_lower": "вовни в складі менше за смугу — у холод цей шар іде нижче за вовняні",
+    "wool_declared_goes_higher": "вовна в складі оголошена — у холод цей шар іде вище за решту того ж типу",
+    "oversize_lets_wind_in": "оверсайз впускає вітер рукавами й коміром — не брати цей шар як тепло",
+    "through_quilting_slightly_colder": "наскрізна простібка трохи холодніша за коробчасту — лише тайбрейк між "
+                                        "рівними",
+    "outer_warmth_note": "нота про тепло верхнього шару (значення: note — текст ноти)",
+    "long_item_on_short_height_ranked": "довга річ на невисокому зрості: довжина йде в ранг, а не у фільтр "
+                                        "(значення: height_cm — її зріст)",
+    "shorter_outer_or_fitted_version": "коротший верхній шар, або цей самий, приталений у талії замість "
+                                       "підперезаного",
+    "outer_length_share_of_height": "довжина верхнього шару як частка її зросту (значення: length_cm — довжина, "
+                                    "share_pct — частка у відсотках)",
+    "outer_edges_nearly_coincide": "краї верхнього шару й речі під ним майже збігаються (значення: gap_cm — "
+                                   "різниця країв, direction — outer_longer: верхній шар довший, це ремонтується; "
+                                   "outer_shorter: коротший, ремонту нема)",
+    "shorten_outer_or_other_outer": "вкоротити верхній шар до чистої різниці (це переносить кишені, лацкани й "
+                                    "застібку), або інша річ у слоті верхнього шару",
+    "change_bottom_or_other_outer": "замінити спідницю чи сукню — подовжити верхній шар нічим не можна, — або "
+                                    "інший верхній шар",
+    "edge_violation_repairable": "порушення країв ремонтується: верхній шар можна вкоротити",
+    "edge_violation_terminal": "порушення країв термінальне: подовжити виріб не можна",
+    "shorten_outer_layer": "вкоротити верхній шар",
+    "other_item_lower_edge_slot": "інша річ у слоті нижнього краю",
+    "volume_not_cancelled_by_volume": "обʼєм не гасять обʼємом",
+    "lower_inner_volume_or_shorten_outer": "знизити внутрішній обʼєм — прямі чи вузькі джинси, спідниця по фігурі "
+                                           "— або вкоротити верхній шар, лишивши низ як є",
+    "pile_adds_width": "ворс верхнього шару додає ширини понад крій (значення: pile — слово ворсу)",
+    "smoother_pile_if_width_unwanted": "гладший ворс, якщо ширина небажана",
+    "quilting_geometry_visible_axis": "геометрія простібки — видима вісь обʼєму",
+    "detachable_hood_configuration_axis": "знімний капюшон — вісь конфігурації, як пояс",
+    "remove_hood_when_no_volume_needed": "зняти капюшон, коли обʼєм біля плечей не потрібен",
+    "shoulder_levers_vs_her_widest": "важелі верхнього шару біля плечей проти того, де в неї найширше (значення: "
+                                     "levers — add, remove чи cancel обʼєм; widest — hips, shoulders чи equal; "
+                                     "agreement — узгодженість від −1 до 1, мінус — тягнуть проти)",
+    "detachable_hood_both_branches": "знімний капюшон проходить обидві гілки: з ним — для вузьких плечей, без "
+                                     "нього — для широких",
+    "item_with_opposite_neck_lever": "інша річ із протилежним важелем біля шиї",
+    "front_holds_vertical_keep_open_above_fullest": "фронт тримає вертикаль — не застібати вище найповнішої точки",
+    "front_shelf_across_bust_deeper_v": "фронт лягає полицею впоперек грудей — потрібен глибший V: нижча застібка "
+                                        "або ревер",
+    "jacket_peeks_under_coat": "жакет визирає з-під пальта",
+    "longer_outer_layer": "довший верхній шар: коротке пальто над кравецтвом провалюється за побудовою",
+    "outer_shoulder_off_body": "плече верхнього шару не сходиться з тілом (значення: direction — wider: ширше, ще "
+                               "ремонтопридатне; narrower: вужче, ремонту нема)",
+    "measure_shoulder_first_take_away_not_add": "міряти плече першим — шов трохи за плечовою кісткою; забрати "
+                                                "можна, додати ні: завелике — під переробку, замале — інший "
+                                                "верхній шар",
+    "outer_shoulder_fits": "плече верхнього шару сходиться — ворота пройдено",
+    "take_away_possible_add_not": "напрям розходження вирішує все: забрати можна, додати — ні",
+    "too_big_alter_too_small_drop": "завелике — лишити з нотою «під переробку», замале — відкинути, ремонт "
+                                    "неможливий",
+    "salt_slush_warmer_wears_faster": "сольова сльота: те, що краще гріє, гірше витримує",
+    "clean_after_each_outing_or_sturdier_layer": "чистити після кожного виходу; для сльоти — стійкіший верхній "
+                                                 "шар, вовну — для сухого морозу",
+    "suede_under_salt_no_home_cleaning": "замша під сіллю: домашнє чищення заборонене",
+    "professional_cleaning_or_suede_spray": "професійне чищення, а не домашнє; захисний спрей тонкими шарами "
+                                            "після кожного намокання — лише натяк",
+    # ── ОБІЦЯНКА СХЕМИ ПАЛІТРИ (П-6: K-COL-03) ──
+    "scheme_promised_accent_all_neutral": "схема обіцяє нейтралі й акцент, а в образі жодна виміряна річ не несе "
+                                          "кольору — це невиконана схема, а не спокійний образ (значення: scheme "
+                                          "— код схеми, measured — скільки речей виміряно)",
+    "swap_one_item_to_colour_in_slot": "замінити одну річ, найкраще в цьому слоті, на кольорову з добору, решту "
+                                       "лишити нейтральною (значення: slot — код слота)",
+    "scheme_one_accent_look_has_more": "схема обіцяє нейтралі й один акцент, а образ несе кілька кольорових сімей "
+                                       "(значення: families — коди сімей)",
+    "keep_one_coloured_rest_neutral": "лишити кольоровою одну річ, решту замінити нейтралями тієї самої смуги "
+                                      "світлоти",
+    "scheme_families_missing_on_big_items": "схема обіцяє свої кольорові сім'ї на великих речах, а великі речі "
+                                            "образу несуть не всі; аксесуар може відлунити сім'ю, але не бути її "
+                                            "єдиним носієм (значення: scheme — код схеми, families — скільки "
+                                            "сімей у схемі, present — скільки їх на великих речах, missing — "
+                                            "слова сімей, яких бракує; accessories_only — сім'ї лише на "
+                                            "аксесуарах)",
+    "scheme_family_fix": "що зробити для сім'ї схеми (значення: family — слово сім'ї; action — replace: замінити "
+                         "нею річ у слоті, add_layer: додати шаром, rebuild: окремі верх і низ замість цільної "
+                         "речі, elsewhere: вона є лише в слотах, яких у цьому образі нема, assortment_gap: "
+                         "великих речей цієї сім'ї в доборі нема, це не вибір проти схеми; slot — код слота)",
+    "scheme_family_areas_unbalanced": "сім'ї схеми на великих речах займають нерівні площі: найменша менша за "
+                                      "поріг від найбільшої, і одна сім'я домінує (значення: scheme — код схеми, "
+                                      "shares_pct — частки сімей у відсотках, min_ratio — поріг)",
+    "even_out_family_areas": "зрівняти площі: більшу за площею сім'ю — на меншу річ, меншу — на більшу",
+    # ── НАБІР ОБРАЗІВ (П-6: K-VAR-01, K-COMP-02) ──
+    "outfits_variants_of_one_idea": "частина образів набору — варіанти одного задуму, а не різні образи: вибору "
+                                    "між ними нема (значення: in_groups — скільки образів у групах, outfits — "
+                                    "скільки образів разом; same_item_slots — слоти, де на весь набір одна річ)",
+    "one_outfit_per_group_rest_different": "лишити по одному образу з кожної групи, а решту зробити іншими — "
+                                           "інший герой або інша колірна схема, не інша сумка при тому самому "
+                                           "задумі (значення: slots — слоти, де взяти різні речі)",
+    "outfit_hero_count_off": "образ веде одна виразна річ: у названих образах її нема або їх дві, і вони "
+                             "змагаються (значення: without — ід образів без героя, with_two — ід образів із "
+                             "двома)",
+    "one_hero_per_outfit": "дати кожному названому образу рівно одну виразну річ: додати якір, де його нема, і "
+                           "приглушити одну з двох, де їх дві",
 }
 
 
@@ -2606,6 +2758,171 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                                              "face)",
     "her_temperature_neutral_near_face": "put a neutral of her temperature near the face (a scarf, a top or an "
                                          "open layer); the item stays",
+    # ── ВЕРХНІЙ ШАР: СТАН, ТЕПЛО, ДОВЖИНА, ПРОПОРЦІЯ, ПЛЕЧЕ, ДОГЛЯД (П-6: K-OUT-*) ──
+    "outer_default_state": "the outer layer's default state and which states are available to it (values: state — "
+                           "state code, allowed — allowed state codes: buttoned, unbuttoned, draped)",
+    "closed_front_gives_eye_nothing": "the outer layer's closed front gives the eye nothing: the cheapest fix is "
+                                      "to leave it open or add a V scarf",
+    "leave_open_or_v_scarf": "leave it open, or add a V scarf if the closed state is required",
+    "draped_state_unavailable": "the draped-over-the-shoulders state is not available for this item: its shoulder "
+                                "construction does not hold it",
+    "belt_ties_not_buckles": "the outer layer's belt is tied, not buckled (values: knot — back when the coat is "
+                             "worn open, or front)",
+    "knot_placement_buckle_as_detail": "the knot on the named side (in front, slightly off centre); keep the "
+                                       "buckle as a detail, not a fastening (values: knot — back or front)",
+    "raise_collar_free_state": "raising the collar is a fourth state and costs nothing",
+    "raise_collar": "raise the collar: the vertical at the neck lengthens, and the silhouette gets sharper and "
+                    "more composed",
+    "high_stand_collar_frees_slot": "a high stand collar frees a slot: no scarf is needed, the collar carries the "
+                                    "colour near the face itself (values: slot — the freed slot code)",
+    "no_scarf_needed_collar_carries_colour": "no scarf is needed: the slot and the accent budget are freed, and "
+                                             "the collar enters the near-face area with its own colour",
+    "draped_is_minutes_state": "draped is a state for minutes, not for the whole outing",
+    "draped_only_as_transition": "keep draped as a transition state, not as the wearing state",
+    "unbuttoning_is_styling_command": "unbuttoning is a styling command, not a property of the item",
+    "leave_open_or_belt_tightly": "leave it open, which opens the vertical, or belt it tightly to restore the "
+                                  "waist (values: has_belt — whether she has a belt)",
+    "no_belt_wear_open": "there is no belt in the wardrobe, so it stays worn open",
+    "belt_over_is_other_slot": "a belt over it is an operation from another slot",
+    "wear_open_or_buy_belt": "wear it open (a longer silhouette, a narrower front), or buy a belt",
+    "own_belt_over_or_wear_open": "her own belt over it (no need to take one from the catalogue), or wear it open",
+    "drape_third_solution_sleeve_conflict": "draping is the third solution when the sleeve does not fit over",
+    "do_not_put_arms_in_sleeves": "do not put the arms into the outer layer's sleeves: the third solution of the "
+                                  "same conflict, needing no other item",
+    "ease_ladder_off_unbuttoned": "the ease ladder does not apply here: the state is unbuttoned",
+    "layer_test_over_real_layers": "test the layer over the layers that will really be worn",
+    "measure_winter_outer_over_sweater": "measure the winter outer layer over a sweater, not over a T-shirt",
+    "belt_makes_ease_interval": "a belt turns the ease into a range, so the item passes the ease ladder at "
+                                "several levels",
+    "outer_will_not_fit_over_bulky": "the outer layer will not fit over the bulky item under it (values: outer — "
+                                     "the layer's name, under — the name of the item under it)",
+    "thin_fitted_top_under_or_bulky_without_jacket": "under a fitted layer, a thin fitted top (a shirt, fine "
+                                                     "knit), or the bulky sweater without the jacket or with a "
+                                                     "loose, oversize cut over it",
+    "two_high_necklines_stacked": "two high necklines stacked on each other (values: upper, lower — the items' "
+                                  "names)",
+    "open_neckline_on_top_or_one_high_neck": "on top, an item with an open neckline (a cardigan, a jacket, a "
+                                             "V-neck), or keep one high neckline",
+    "outer_length_state_chosen_for_warmth": "the outer layer's length and state are chosen for warmth, not for "
+                                            "proportion",
+    "fill_power_without_fill_weight": "fill power without the fill weight is no measure of warmth",
+    "ask_fill_weight_or_ignore_fill_power": "ask for the fill weight, or leave fill power out of the decision",
+    "trench_counted_as_warm_layer": "the trench was counted as a warm layer, but it is for rain",
+    "warm_layer_under_or_instead_of_trench": "a warm layer under the trench or instead of it, or declare a wool "
+                                             "version",
+    "layer_closes_wet_windy_regime": "this layer covers the conditions in which a down jacket gets wet and a coat "
+                                     "lets the wind through",
+    "layer_declared_no_filling": "declared without filling: do not count this layer as warm as a filled one of "
+                                 "the same type",
+    "down_loses_warmth_when_wet": "down is declared, and on a wet day it loses exactly what makes it warm",
+    "filling_declared_by_word": "the filling is declared by a word, and the type's warmth label stays",
+    "filling_not_declared_ask_composition": "no filling is declared and the category name does not declare it: "
+                                            "ask for the composition",
+    "composition_not_declared_ask": "the composition is not declared: ask for it; a wool version holds winter, a "
+                                    "cotton one does not",
+    "wool_below_band_goes_lower": "the wool content is below the band, so in the cold this layer ranks below wool "
+                                  "ones",
+    "wool_declared_goes_higher": "wool content is declared, so in the cold this layer ranks above others of the "
+                                 "same type",
+    "oversize_lets_wind_in": "an oversize cut lets wind in through the sleeves and collar: do not count this "
+                             "layer as warmth",
+    "through_quilting_slightly_colder": "through-stitched quilting is slightly colder than box quilting, only a "
+                                        "tiebreak between equals",
+    "outer_warmth_note": "a note about the outer layer's warmth (values: note — the note's text)",
+    "long_item_on_short_height_ranked": "a long item on a petite height: length counts in the ranking, not as a "
+                                        "filter (values: height_cm — her height)",
+    "shorter_outer_or_fitted_version": "a shorter outer layer, or this one fitted at the waist instead of belted",
+    "outer_length_share_of_height": "the outer layer's length as a share of her height (values: length_cm — the "
+                                    "length, share_pct — the share in percent)",
+    "outer_edges_nearly_coincide": "the edges of the outer layer and the item under it almost coincide (values: "
+                                   "gap_cm — the edge difference, direction — outer_longer: the outer layer is "
+                                   "longer, which can be altered; outer_shorter: it is shorter, with no "
+                                   "alteration possible)",
+    "shorten_outer_or_other_outer": "shorten the outer layer to a clear difference (this moves pockets, lapels "
+                                    "and the fastening), or another outer layer",
+    "change_bottom_or_other_outer": "replace the skirt or dress, since nothing can lengthen the outer layer, or "
+                                    "take another outer layer",
+    "edge_violation_repairable": "the edge violation can be fixed: the outer layer can be shortened",
+    "edge_violation_terminal": "the edge violation is terminal: the garment cannot be lengthened",
+    "shorten_outer_layer": "shorten the outer layer",
+    "other_item_lower_edge_slot": "another item in the slot of the lower edge",
+    "volume_not_cancelled_by_volume": "volume is not cancelled by volume",
+    "lower_inner_volume_or_shorten_outer": "lower the inner volume (straight or slim jeans, a fitted skirt), or "
+                                           "shorten the outer layer and keep the bottom",
+    "pile_adds_width": "the outer layer's pile adds width beyond the cut (values: pile — the pile word)",
+    "smoother_pile_if_width_unwanted": "a smoother pile if the width is unwanted",
+    "quilting_geometry_visible_axis": "the quilting geometry is a visible axis of volume",
+    "detachable_hood_configuration_axis": "a detachable hood is a configuration axis, like a belt",
+    "remove_hood_when_no_volume_needed": "remove the hood when volume at the shoulders is not needed",
+    "shoulder_levers_vs_her_widest": "the outer layer's levers at the shoulders against where she is widest "
+                                     "(values: levers — add, remove or cancel volume; widest — hips, shoulders or "
+                                     "equal; agreement — from -1 to 1, negative when they pull against)",
+    "detachable_hood_both_branches": "a detachable hood serves both branches: with it for narrow shoulders, "
+                                     "without it for broad ones",
+    "item_with_opposite_neck_lever": "another item with the opposite lever at the neck",
+    "front_holds_vertical_keep_open_above_fullest": "the front holds a vertical: do not fasten it above the "
+                                                    "fullest point",
+    "front_shelf_across_bust_deeper_v": "the front lies as a shelf across the bust: a deeper V is needed, a lower "
+                                        "fastening or a lapel",
+    "jacket_peeks_under_coat": "the jacket peeks out from under the coat",
+    "longer_outer_layer": "a longer outer layer: a short coat over tailoring fails by construction",
+    "outer_shoulder_off_body": "the outer layer's shoulder does not match the body (values: direction — wider: "
+                               "still alterable; narrower: no alteration possible)",
+    "measure_shoulder_first_take_away_not_add": "measure the shoulder first (the seam slightly past the shoulder "
+                                                "bone); taking away works, adding does not: too big can be "
+                                                "altered, too small means another outer layer",
+    "outer_shoulder_fits": "the outer layer's shoulder fits: the gate is passed",
+    "take_away_possible_add_not": "the direction of the mismatch decides everything: taking away is possible, "
+                                  "adding is not",
+    "too_big_alter_too_small_drop": "too big: keep with a note for alteration; too small: drop, no alteration is "
+                                    "possible",
+    "salt_slush_warmer_wears_faster": "salty slush: what warms better wears out faster",
+    "clean_after_each_outing_or_sturdier_layer": "clean after each outing; for slush a sturdier outer layer, wool "
+                                                 "for dry frost",
+    "suede_under_salt_no_home_cleaning": "suede under salt: home cleaning is ruled out",
+    "professional_cleaning_or_suede_spray": "professional cleaning, not at home; a protective spray in thin "
+                                            "layers after each wetting is only a hint",
+    # ── ОБІЦЯНКА СХЕМИ ПАЛІТРИ (П-6: K-COL-03) ──
+    "scheme_promised_accent_all_neutral": "the scheme promises neutrals plus an accent, but no measured item of "
+                                          "the outfit carries colour: an unfulfilled scheme, not a calm outfit "
+                                          "(values: scheme — scheme code, measured — how many items were "
+                                          "measured)",
+    "swap_one_item_to_colour_in_slot": "replace one item, best in this slot, with a coloured one from the "
+                                       "selection and keep the rest neutral (values: slot — slot code)",
+    "scheme_one_accent_look_has_more": "the scheme promises neutrals and one accent, but the outfit carries "
+                                       "several colour families (values: families — family codes)",
+    "keep_one_coloured_rest_neutral": "keep one item coloured and replace the rest with neutrals of the same "
+                                      "lightness band",
+    "scheme_families_missing_on_big_items": "the scheme promises its colour families on the large items, but the "
+                                            "outfit's large items do not carry them all; an accessory can echo a "
+                                            "family but not be its only carrier (values: scheme — scheme code, "
+                                            "families — how many families the scheme has, present — how many are "
+                                            "on large items, missing — the words of the missing families; "
+                                            "accessories_only — families only on accessories)",
+    "scheme_family_fix": "what to do for a scheme family (values: family — the family word; action — replace: put "
+                         "it on the item in the slot, add_layer: add it as a layer, rebuild: a separate top and "
+                         "bottom instead of a one-piece item, elsewhere: it exists only in slots this outfit "
+                         "lacks, assortment_gap: the selection has no large items of it, not a choice against the "
+                         "scheme; slot — slot code)",
+    "scheme_family_areas_unbalanced": "the scheme's families on the large items take unequal areas: the smallest "
+                                      "is below the threshold of the largest, so one family dominates (values: "
+                                      "scheme — scheme code, shares_pct — the families' shares in percent, "
+                                      "min_ratio — the threshold)",
+    "even_out_family_areas": "even out the areas: the larger family on a smaller item, the smaller one on a "
+                             "larger item",
+    # ── НАБІР ОБРАЗІВ (П-6: K-VAR-01, K-COMP-02) ──
+    "outfits_variants_of_one_idea": "some outfits of the set are variants of one idea rather than different "
+                                    "outfits, so there is no real choice between them (values: in_groups — how "
+                                    "many outfits are in groups, outfits — how many outfits in all; "
+                                    "same_item_slots — slots where the whole set shares one item)",
+    "one_outfit_per_group_rest_different": "keep one outfit from each group and make the rest different, with "
+                                           "another hero or another colour scheme, not another bag for the same "
+                                           "idea (values: slots — slots where different items are needed)",
+    "outfit_hero_count_off": "one striking item leads an outfit; the named outfits have none, or two that compete "
+                             "(values: without — ids of outfits without a hero, with_two — ids of outfits with "
+                             "two)",
+    "one_hero_per_outfit": "give each named outfit exactly one striking item: add an anchor where there is none "
+                           "and quieten one of the two where there are two",
 }
 
 
