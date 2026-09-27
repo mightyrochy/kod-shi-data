@@ -1486,8 +1486,8 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "keep_one_open_zone": "лишити одну відкриту зону: ноги, або декольте, або плечі чи спину",
     "item_type_not_in_dress_code": "цей тип речі не належить до названого дрес-коду (значення: item_type — код "
                                    "типу, dress_code — код дрес-коду)",
-    "type_named_by_code_or_drop_code": "замінити річ типом, який називає дрес-код, або зняти заявлений код, якщо "
-                                       "запрошення його не вимагає",
+    "type_named_by_code_or_drop_code": "замінити річ типом, який називає дрес-код, або зняти заявлений "
+                                       "дрес-код, якщо запрошення його не вимагає",
     "dress_code_requires_type": "дрес-код прямо просить річ такого типу, а в образі її нема (значення: dress_code "
                                 "— код дрес-коду, types — коди типів)",
     "add_required_type": "додати річ одного з названих типів (значення: types — коди типів)",
@@ -2586,7 +2586,7 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "open_zones_over_limit": "more open body zones than the context allows",
     "keep_one_open_zone": "keep one open zone: legs, neckline, or shoulders/back",
     "item_type_not_in_dress_code": "item type not allowed by the dress code",
-    "type_named_by_code_or_drop_code": "a type the dress code names, or drop the stated code",
+    "type_named_by_code_or_drop_code": "a type the dress code names, or drop the stated dress code",
     "dress_code_requires_type": "dress code explicitly requires a type the outfit lacks",
     "add_required_type": "add an item of these types",
     "shoes_outside_dress_code_band": "shoes outside the dress code's named level",
