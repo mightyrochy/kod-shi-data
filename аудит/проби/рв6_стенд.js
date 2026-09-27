@@ -35,6 +35,8 @@ const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 /* SLABKA=<форма,…> — слабка модель поверх заглушки (рядок 208, `слабка_модель.js`) */
 const СЛАБКА = require(path.join(__dirname, 'слабка_модель.js'));
+/* CHASY=1 / ZATRYMKA=… — годинник збору (наряд Ш-1, `часи_збору.js`); без них — як доти */
+const ЧАСИ = require(path.join(__dirname, 'часи_збору.js'));
 const БАЗА = process.argv[2] || 'http://127.0.0.1:8765', КОРІНЬ = process.argv[3] || process.cwd();
 const ТЕКА_PYODIDE = process.argv[4] || '/tmp/pyodide';
 /* СІД — пʼятим аргументом (або env `SEED`, латиницею: кириличних імен env
@@ -1536,6 +1538,7 @@ function відповісти(текст) {
       const мс = Number(зат[(картинокВіддано - 1) % зат.length]) || 0;
       if (мс) await new Promise(р => setTimeout(р, мс));
     }
+    await ЧАСИ.почекати(тіло.model, разом, (в.текст || '').length, в.тип);
     await route.fulfill({ status: 200, contentType: 'application/json',
       headers: {'x-model': 'заглушка-рв6', ...(урлФото ? {'x-images-dropped': String(дроп)} : {})},
       body: JSON.stringify({ content: вміст, usage: {input_tokens: 1, output_tokens: 1}, stop_reason: в.стоп || 'end_turn' }) });
@@ -2207,6 +2210,7 @@ function відповісти(текст) {
   /* Знімок ВІКНА саме в цю мить: сторінку прокручено до низу, і на ньому видно
      те, про що рядок 183, — чи кнопка стоїть над панеллю, чи під нею. */
   await знімок('scenarii_knopka_nad_panelliu', null, true);
+  await ЧАСИ.обгорнути(стор);
   const тЗапити = Date.now();
   /* `noWaitAfter`: дотик ПОЧИНАЄ збирання в самій сторінці, а не навігацію. Без
      нього Playwright після вдалого кліку чекає «scheduled navigations» і зрідка
@@ -2309,6 +2313,7 @@ function відповісти(текст) {
   console.log('\n2б. чотири картки за', ч(), '· розклад рук:', с2.розклад, '· пул:', с2.пул, '· поломка руки 2:', JSON.stringify(с2.поломка && с2.поломка.назва),
               '· контроль:', JSON.stringify(с2.контроль));
   for (const к of с2.картки) console.log('   рука', к.рука, JSON.stringify(к));
+  await ЧАСИ.звіт(стор);
   ф('чотири картки, жодного збою', с2.картки.length === 4 && с2.картки.every(к => !к.збій), с2.картки.map(к => к.збій));
   /* ── ЩО КОД ПОЧУВ І НЕ ВЗЯВ — У ЗВІТІ ВЛАСНИКА (рядок 188) ────────────────
      Поле паспорта `не_взято_кодом` мусить доїхати в `ЗБ.діагноз`, бо саме звідти
@@ -3627,6 +3632,7 @@ function відповісти(текст) {
       await стор.waitForFunction(() => document.querySelectorAll('#картки .картка').length >= 4
         && ЗБ && ЗБ.готово, null, { timeout: 1500000 });
       await с(1200);
+      await ЧАСИ.повтор(стор, з + 1);
       const к = await картки12(); збори.push(к);
       for (const x of к){
         await стор.evaluate(п => показатиОбраз(п), x.і); await с(300); await дотягнутиФото();
