@@ -50,7 +50,8 @@ _ДЖЕРЕЛО_ТЕМПЕРАТУРИ = {"фото": "photo", "самозвіт
 _РОЛЬ = {"домінанта": "dominant", "секундант": "secondary", "акцент": "accent", "нейтраль": "neutral"}
 _СХЕМА = {"нейтрали+акцент": "neutrals_plus_accent", "тональна": "tonal", "аналогова": "analogous",
           "приглушена_комплементарна": "muted_complementary", "тріада": "triad",
-          "колор_блок": "color_block"}                                             # палітра_схеми.СХЕМИ
+          "колор_блок": "color_block",
+          "контраст-мисматч": "contrast_mismatch"}                                 # палітра_схеми.СХЕМИ, МИСМАТЧ
 _ПРИЙОМ = {"перегук_рис": "echo_features", "тон_у_тон": "tone_on_tone", "аналогова": "analogous",
            "приглушена_комплементарна": "muted_complementary", "нейтраль_плюс_акцент": "neutral_plus_accent",
            "колор_блок": "color_block", "контраст_як_носій": "contrast_as_carrier",
