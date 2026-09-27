@@ -13,7 +13,7 @@ import bridge as B
 
 вх = json.load(open("стенд_вх.json", encoding="utf-8")); вх["гілка"] = 0
 r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
-пул = json.loads(r["руки"]["1"])["пул"]
+пул = r["пакети"]["1"]["пул"]
 взяті = set()
 
 

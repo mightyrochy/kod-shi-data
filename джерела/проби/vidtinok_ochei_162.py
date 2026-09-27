@@ -27,7 +27,7 @@ for назва, hx_ in ОЧІ.items():
     сл = К.Counter(КР.не_вимір(r).get("слово") for r in кат if КР.несе_тон(r, д) == "слово")
     print("%-18s h %5.1f дуга %s · ДО слово %3d вимір %3d · ПІСЛЯ слово %4d вимір %3d · слова: %s" % (
         назва, h, д, а["слово"], а["вимір"], б["слово"], б["вимір"], dict(сл.most_common(4))))
-р = json.loads(json.loads(B.виклик("запити", json.dumps(json.load(open("стенд_вх.json")), ensure_ascii=False)))["руки"]["1"])
+р = json.loads(B.виклик("запити", json.dumps(json.load(open("стенд_вх.json")), ensure_ascii=False)))["пакети"]["1"]
 д, в_ = ПС._дуга(cs.lch(cs.hx("#759087"))[2], пів), lambda w: V.ЛЕКСИКОН.get((V.слово_крамниці(str(w).lower()) or {}).get("ім", w)) or (0, 0, 0, 0, None)
 част = lambda w: None if not в_(w)[4] else round(sum(КР._на_дузі((в_(w)[4][0] + k + .5) % 360, д) for k in range(int((в_(w)[4][1] - в_(w)[4][0]) % 360))) / max(1, int((в_(w)[4][1] - в_(w)[4][0]) % 360)), 2)
 for сл in АКЦ:

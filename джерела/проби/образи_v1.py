@@ -14,7 +14,7 @@ import bridge as B, feed as Ф, протокол as P
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 d0 = dict(вх, каталог=Ф.каталог_на_диску("каталог_brief.xml"), варіантів=10, ремонт_варіантів=5,
           кеш_кольорів=os.path.join(tempfile.gettempdir(), "кеш_проби_т04.json"))
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["руки"]["1"])["пул"]
+пул = json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["пакети"]["1"]["пул"]
 сукні, вз = [r["н"] for r in пул["сукня"]], пул["взуття"][0]["н"]
 сила = lambda зн: [(z["сила_нп"], bool(z.get("свідомий"))) for z in зн if z.get("правило") == "K-KOH-06"]
 

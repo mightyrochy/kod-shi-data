@@ -18,7 +18,7 @@ def прогін(сцена, режим):
     МП._КЕШ_ПАКЕТА.clear()
     вх = json.load(open("стенд_вх.json"))
     вх["сценарій"], вх["випадок"] = dict(С.СЦЕНАРІЇ[сцена]), сцена
-    п = json.loads(json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["руки"]["1"])
+    п = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["пакети"]["1"]
     маг = п.get("магазини") or {}
     return {сл: [x for x in рч if маг.get(str(x.get("н")).split("·")[-1]) in ЗАБОРОНА]
             for сл, рч in (п.get("пул") or {}).items()}, sum(len(v) for v in (п.get("пул") or {}).values())

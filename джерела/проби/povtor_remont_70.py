@@ -27,8 +27,10 @@ import bridge as B, feed as Ф
 сумка = lambda речі: next((str(r.get("назва"))[:26] for r in (речі or []) if r.get("слот") == "сумка"), "—")
 крок = lambda т: json.loads(B.виклик("від_моделі", json.dumps(т, ensure_ascii=False)))
 json_ = lambda о: json.dumps(dict(версія='1', **о), ensure_ascii=False)
-# Т-7: образи промпту — «вердикт»[].твій_образ (форма на дроті); на main — «образи» як є
-образи_промпту = lambda т: [с.get("твій_образ", с) for с in (json.loads(т).get("вердикт") or json.loads(т)["образи"])]
+# П-2: образи промпту — «verdict»[].your_outfit (англійський дріт); речі — номером «n» опису
+образи_промпту = lambda т: [dict(ід=с["your_outfit"]["id"], речі=[р.get("n") if isinstance(р, dict) else р
+                                                                 for р in с["your_outfit"]["items"]])
+                            for с in json.loads(т)["verdict"]]
 
 
 def образи_стенда(пул, скільки):        # сценарна модель `рв6_стенд.js`: пул[слот][i % довжина]
@@ -43,7 +45,7 @@ def образи_стенда(пул, скільки):        # сценарна
 
 for сід in ([int(x) for x in sys.argv[1:]] or [7, 11]):
     з = json.loads(B.виклик("запити", json.dumps(dict(ВХ, сід=сід), ensure_ascii=False)))
-    пули = {р: json.loads(з["руки"][р])["пул"] for р in ("1", "2")}
+    пули = {р: з["пакети"][р]["пул"] for р in ("1", "2")}
     print("сід %d · сумок у пулі: рука 1 — %d, рука 2 — %d"
           % (сід, len(пули["1"].get("сумка") or []), len(пули["2"].get("сумка") or [])))
     for рука in ("1", "2"):
