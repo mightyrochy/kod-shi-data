@@ -10,7 +10,7 @@ import каталог_розбір as КР, фід_каталог as ФК, фі�
 exec(subprocess.run(["git", "-C", Д, "show", "66eb52c:джерела/каталог_розбір.py"], capture_output=True, text=True, check=True).stdout, ДО.__dict__)
 тека = sys.argv[1] if len(sys.argv) > 1 else tempfile.mkdtemp()
 if len(sys.argv) < 2: tarfile.open(os.path.join(Д, "..", "аудит", "тести", "сирі_2026-09-26", "p3_katalog_rozbir.tar.gz")).extractall(тека)  # noqa: E701
-ФОРМИ = {"прийнято": "tok " * 9, "довгий фрагментами": ", ".join(["tok tok tok"] * 7), "довгий суцільний": "tok " * 20,
+ФОРМИ = {"прийнято": "tok " * 9, "довгий фрагментами": ", ".join(["tok tok tok"] * КР.СТЕЛЯ_СЛІВ), "довгий суцільний": "tok " * 2 * КР.СТЕЛЯ_СЛІВ,
          "кирилиця": "tok ток", "unknown": "unknown", "нема поля": None, "не рядок": {"tok": 1}, "список": ["tok tok", "tok"]}
 вид = lambda з, пр: "+".join(п.split(": ", 1)[1].split(" — ")[0] for п in пр if п.startswith("features:")) or (  # noqa: E731
     "unknown" if з == КР.UNKNOWN else "прийнято")
