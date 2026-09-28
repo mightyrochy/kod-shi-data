@@ -668,6 +668,88 @@ def перевірити_знахідки(знахідки, режим="блок
                 перевірено_анти=len(АНТИ), чисто=(not брудні))
 
 
+# ── R-LNG-01 НА ТЕКСТАХ, ЩО ЙДУТЬ МОВНІЙ МОДЕЛІ (28.09.2026, Ф-2) ────────────
+# ЩО ЦЕ МІНЯЄ. before: гейт читав `суть`/`чому`/`ремонт` знахідки — українські поля,
+# які їдуть у звіт власника, — і НЕ читав `заяви`. А після п.12 (26.09) речення жінці
+# складає мовна модель саме з заяв, тобто рядки `внутрішня_мова.ЗАЯВИ` і є той текст,
+# з якого виростає сказане їй. Вони англійські, а всі формули АНТИ — українські, тож
+# «raise the collar: lengthens the neck» проходив гейт, хоч український двійник тієї
+# самої фрази («подовжує шию») не пройшов би. Тобто головний канал до людини стояв
+# поза гейтом. after: та сама заборона R-LNG-01 діє на англійському боці — дієслово
+# ВИЗУАЛЬНОГО ЕФЕКТУ + зона тіла; вимір і координата («the hem lands on the widest
+# point of the calf») проходять, бо ефекту не заявляють.
+#
+# ЧОМУ ОКРЕМИЙ ПЕРЕЛІК ФОРМУЛ, А НЕ ДРУГА МОВА В `АНТИ`. `АНТИ` прогоняється на
+# КОЖНОМУ тексті людині; додати туди англійські формули означало б ганяти їх на
+# українських реченнях, де вони лише коштують час і дають хибні спрацювання на
+# запозиченнях. Тут перевіряється СЛОВНИК — таблиця, яка змінюється комітом, а не
+# прогоном, — і перевіряється вона на тесті протоколу, тобто перед кожним пушем.
+# ЗОНА Й ПРИКМЕТНИК ПЕРЕД НЕЮ: «hides her DEFINED waist» — та сама заборона, що
+# «hides the waist», тож між присвійним і зоною пускається до двох слів.
+_EN_ЗОНА = r"(?:(?:her|your|the)\s+(?:\w+\s+){0,2})?"
+_EN_ЗОНИ = (r"(?:neck|waist|waistline|hips?|legs?|shoulders?|bust|chest|belly|tummy|"
+            r"stomach|arms?|calf|calves|thighs?|figure|body|proportions?)")
+# ДВІ ГРУПИ ДІЄСЛІВ, І ПОДІЛ ВИМІРЯНИЙ НА ВЛАСНОМУ СЛОВНИКУ. Перша — слова, які перед
+# зоною бувають лише дієсловом. Друга (narrow, slim, correct, flatter, hide) в англійській
+# однаково часто прикметник: «on for NARROW shoulders» — опис тіла, яке річ обслуговує, а
+# не заявлений ефект, і гейт мусить його пустити. Тому для другої групи потрібна ознака
+# дієслова: закінчення (-s/-es/-ed/-ing) або інфінітив/модальне слово попереду.
+ФОРМУЛИ_EN_LNG_01 = (
+ r"\b(?:lengthen|elongat|shorten|widen|balanc|accentuat|emphasis|emphasiz|"
+ r"highlight|conceal|minimis|minimiz|optically\s+reduc)\w*\s+"
+ + _EN_ЗОНА + _EN_ЗОНИ + r"\b",
+ r"(?:\b(?:to|will|can|may|should|would)\s+(?:narrow|slim|correct|flatter|hide)\b|"
+ r"\b(?:narrow|slim|correct|flatter|hid)(?:es|ed|ing|s)\b)\s+"
+ + _EN_ЗОНА + _EN_ЗОНИ + r"\b",
+ r"\b(?:makes?|make)\s+(?:her|your|the)\s+" + _EN_ЗОНИ
+ + r"\b\s*\w*\s*(?:longer|slimmer|narrower|thinner|smaller|wider)\b",
+ r"\b" + _EN_ЗОНИ + r"\b\s+(?:reads?|looks?|appears?)\s+"
+ r"(?:longer|slimmer|narrower|thinner|taller)\b",
+)
+
+
+def перевірити_внутрішню_мову(таблиця, цілі_людини=None):
+    """R-LNG-01 на англійських рядках, які код віддає мовній моделі.
+
+    `таблиця` — `{код: текст}` (`внутрішня_мова.ЗАЯВИ`). Повертає
+    `dict(усього, брудні=[{код, текст, збіги}], чисто)`. Імпорту `внутрішня_мова`
+    тут немає навмисно: гейт — модуль без ребер, і таблицю подає викликач
+    (`тест_протоколу`, проба), а не гейт тягне словник до себе.
+
+    `цілі_людини` знімає правило для названих нею зон — тим самим правилом, що й
+    на українському боці, бо це та сама goal-ініціація."""
+    цілі = [str(z).lower() for z in (цілі_людини or [])]
+    брудні = []
+    for код, текст in (таблиця or {}).items():
+        if not текст:
+            continue
+        з = _знайти(str(текст), ФОРМУЛИ_EN_LNG_01)
+        if цілі:
+            з = [x for x in з if not any(ц[:4] in x["фрагмент"].lower() for ц in цілі)]
+        if з:
+            брудні.append(dict(код=код, текст=str(текст),
+                               збіги=[x["фрагмент"] for x in з]))
+    return dict(усього=len(таблиця or {}), брудні=брудні, чисто=(not брудні),
+                правило="R-LNG-01")
+
+
+_КЕЙСИ_EN = [
+ ("raise the collar: lengthens the neck, sharpens the silhouette", False),
+ ("a detachable hood serves both: on for narrow shoulders, off for broad", True),
+ ("to flatter the figure", False),
+ ("a straight boxy cut hides her defined waist", False),
+ ("the cut balances her hips", False),
+ ("makes her legs look longer", False),
+ ("the leg reads longer under this length", False),
+ # ПАРА: вимір і координата ефекту не заявляють і мусять проходити
+ ("the hem lands on the widest point of the calf, 40 cm from the floor", True),
+ ("raise the collar: it adds a vertical near the face and sharpens the silhouette", True),
+ ("the cut runs straight past the waistline instead of following it", True),
+ ("shoes with a lift of 4 cm or more under this length", True),
+ ("the item clings tightly to this part of the body where it would be better for it to skim", True),
+]
+
+
 # ─────────────────────────── САМОПЕРЕВІРКА ───────────────────────────
 _КЕЙСИ = [
  ("Ця спідниця сховає ваду в зоні живота", False, "R-ONB-06"),
@@ -807,6 +889,16 @@ def прогін():
         впало += (not ок)
         print("  %s %-10s %-44s → %s" % ("✓" if ок else "✗", очік, текст[:44],
                                          к[:30] or "НЕ ПОЗНАЧЕНО"))
+
+    # ── R-LNG-01 НА АНГЛІЙСЬКОМУ БОЦІ (Ф-2): кейси словника, що йде мовній моделі
+    print("\n" + "-" * 78)
+    print("R-LNG-01 · англійські рядки, які код віддає мовній моделі")
+    for текст, очік_чисто in _КЕЙСИ_EN:
+        в = перевірити_внутрішню_мову({"кейс": текст})
+        ок = (в["чисто"] == очік_чисто)
+        впало += (not ок)
+        print("%s %-60s %s" % ("  ✓" if ок else "  ✗", текст[:60],
+                               "чисто" if в["чисто"] else в["брудні"][0]["збіги"][0][:28]))
 
     # роздільна здатність: скільки ДОЗВОЛЕНОГО тексту гейт пропускає
     дозв = [c for c in _КЕЙСИ if c[1]]
