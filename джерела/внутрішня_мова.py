@@ -1122,6 +1122,12 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                     "visible (values: count — in how many places)",
     "claim_zone_clinged": "the item clings tightly to this part of the body where it would be better for it "
                           "to skim (values: level — body level code)",
+    # Ф-4 (28.09.2026): склад каже, що тканина тягнеться, — вікно ковзання опубліковане
+    # для полотна, тож те саме від'ємне відхилення тут значить менше.
+    "fabric_stretches_ease_window_weaker": "the declared composition has elastane, and the published ease "
+                                           "window holds for woven cloth, so how closely this item sits is "
+                                           "decided by the stretch rather than by the cut (values: "
+                                           "elastane_percent — the share the shop declares)",
     "claim_zone_tented": "the item tents over this part of the body where it would be better to give it shape "
                          "(values: level — body level code)",
     "claim_ease_below_min": "the item's width ease at this level is too small to wear it freely (values: "
