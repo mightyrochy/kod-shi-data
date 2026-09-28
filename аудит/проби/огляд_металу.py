@@ -1,0 +1,88 @@
+# -*- coding: utf-8 -*-
+# Аркуші ручного огляду МЕТАЛУ прикрас і фурнітури (п.10 CLAUDE.md, рядок 161): речі, де метал названо або де
+# він мав би бути названий, з фото КАРТКИ поруч із тим, що про метал думає код (поле, назва, колір, тон кольору
+# проти тону металу). Куратор дивиться очима: чи справді на фото той метал, який каже код.
+# Запуск: python3 аудит/проби/огляд_металу.py <тека_для_аркушів> [клас]   (потрібні PIL, curl, мережа)
+# Класи: біле_золото · основа_покриття · тон_не_збігся · без_металу · усі (типово)
+import sys, os, json, collections, subprocess, hashlib, concurrent.futures as cf
+S = os.path.abspath(sys.argv[1]); КЛАС = sys.argv[2] if len(sys.argv) > 2 else 'усі'
+os.makedirs(S, exist_ok=True); os.makedirs('/tmp/фото_метал', exist_ok=True)
+Д = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'джерела')
+sys.path.insert(0, os.path.abspath(Д)); os.chdir(Д)
+import feed as F; F.каталог_на_диску('каталог_повний.xml')
+import фід_каталог as ФК, фід_фото as ФФ, palettes as ПЛ, фід_атрибути as ФА
+from PIL import Image, ImageDraw, ImageFont
+кат = ФК._прочитати_каталог('каталог_повний.xml', 0)['каталог']
+_оф = F.читати_yml('каталог_повний.xml')[0]
+_зб, _спільні, _хости = F.читати_збагачення(), ФФ._спільні_фото(_оф), ФФ._хости_крамниць(_оф)
+_за_ід = {o['id']: o for o in _оф}
+ТОН = {'золото': 'золото', 'бронза': 'золото', 'латунь': 'золото', 'мідь': 'золото', 'рожеве_золото': 'золото',
+       'срібло': 'срібло', 'біле_золото': 'срібло', 'платина': 'срібло', 'сталь': 'срібло'}
+def фото_картки(x):
+    o = _за_ід.get(x.get('id')) or x
+    р = ФФ.кадри_речі(o, _спільні.get(o.get('магазин')) or {}, _хости,
+                      (x.get('кадр_кольору') or {}).get('кадр') or (_зб.get(o.get('id')) or {}).get('фото'))
+    return р[0] if р else None
+def клас_речі(x):
+    # Класи — ТИМИ САМИМИ читачами, що й код продукту (`фід_атрибути`), щоб аркуш показував
+    # рішення коду, а не друге схоже рішення аркуша (та сама причина, що у `фото_картки`).
+    o = _за_ід.get(x.get('id')) or x
+    тон = ФА._метали_в_полях(o, ФА._ПОЛЕ_ТОНУ)
+    основа = ФА._метали_в_полях(o, ФА._ПОЛЕ_МЕТАЛУ)
+    назва = ФА._метали_в_тексті(o.get('назва') or '')
+    м = x.get('метал'); сл = x.get('слот')
+    if len(тон) > 1 or len(назва) > 1 or (not тон and not назва and len(основа) > 1): return 'два_метали'
+    if 'біле_золото' in назва + основа + тон: return 'біле_золото'
+    if (set(основа) & {'сталь', 'латунь'}) and (set(тон) & {'золото', 'срібло'}): return 'основа_покриття'
+    if сл in ФА._МЕТАЛ_СЛОТИ and not м: return 'без_металу'
+    if м and x.get('lab') and ПЛ.метал_речі(tuple(x['lab']), сл) != ТОН.get(м): return 'тон_не_збігся'
+    return None
+вибір = collections.defaultdict(list)
+for x in кат:
+    к = клас_речі(x)
+    if к and (КЛАС in ('усі', к)): вибір[к].append(x)
+def шлях(u): return '/tmp/фото_метал/' + hashlib.md5(u.encode()).hexdigest() + '.img'
+def тягти(u):
+    p = шлях(u)
+    if not os.path.exists(p) or os.path.getsize(p) == 0:
+        subprocess.run(['curl', '-sS', '-L', '-m', '40', '-o', p, u], capture_output=True)
+    return p
+МЕЖА = 16
+для_аркушів = {к: xs[:МЕЖА] for к, xs in вибір.items()}
+урли = [u for xs in для_аркушів.values() for u in [фото_картки(x) for x in xs] if u]
+with cf.ThreadPoolExecutor(12) as ex: list(ex.map(тягти, урли))
+def lab_rgb(lab):
+    L, a, b = lab; fy = (L + 16) / 116; fx = fy + a / 500; fz = fy - b / 200
+    f = lambda t: t ** 3 if t ** 3 > 0.008856 else (t - 16 / 116) / 7.787
+    X, Y, Z = 0.95047 * f(fx), 1.0 * f(fy), 1.08883 * f(fz)
+    r = 3.2406 * X - 1.5372 * Y - 0.4986 * Z; g = -0.9689 * X + 1.8758 * Y + 0.0415 * Z; bb = 0.0557 * X - 0.2040 * Y + 1.0570 * Z
+    c = lambda v: max(0, min(255, round(255 * (1.055 * v ** (1 / 2.4) - 0.055 if v > 0.0031308 else 12.92 * v))))
+    return (c(r), c(g), c(bb))
+шр = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 13)
+шрж = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 14)
+Ш, ВФ, ВТ = 270, 300, 140
+for к, xs in для_аркушів.items():
+    ряд = (len(xs) + 3) // 4
+    арк = Image.new('RGB', (Ш * 4, (ВФ + ВТ) * ряд + 36), 'white'); д = ImageDraw.Draw(арк)
+    д.text((8, 8), 'КЛАС %s · таких речей у каталозі %d · на аркуші %d' % (к, len(вибір[к]), len(xs)), fill='black', font=шрж)
+    for i, x in enumerate(xs):
+        X, Y = (i % 4) * Ш, 36 + (i // 4) * (ВФ + ВТ)
+        u = фото_картки(x); o = _за_ід.get(x.get('id')) or x; п = o.get('параметри') or {}
+        try:
+            im = Image.open(шлях(u)).convert('RGB'); im.thumbnail((Ш - 10, ВФ - 10)); арк.paste(im, (X + 5, Y + 5))
+        except Exception:
+            д.text((X + 10, Y + 20), 'на картці без фото' if not u else 'фото не відкрилось', fill='red', font=шр)
+        lab = x.get('lab'); м = x.get('метал')
+        if lab: д.rectangle([X + Ш - 45, Y + ВФ + 4, X + Ш - 8, Y + ВФ + 30], fill=lab_rgb(lab), outline='black')
+        рядки = ['%s · %s' % (x.get('id', '').split('@')[0], x.get('слот')),
+                 'МЕТАЛ КОДУ: %s  (тон %s)' % (м, ТОН.get(м)),
+                 'тон кольору: %s' % (ПЛ.метал_речі(tuple(lab), x.get('слот')) if lab else '—'),
+                 'колір: %s · джерело %s' % (x.get('колір_назва'), x.get('колір_джерело')),
+                 'поле метал/матеріал: %s' % (' '.join(str(п.get(k) or '') for k in ФА._ПОЛЕ_МЕТАЛУ) or '—')[:38],
+                 'поле колір: %s · склад: %s' % (str(п.get('колір') or '—')[:14], str(п.get('склад') or '—')[:18]),
+                 (o.get('назва') or '')[:38], (o.get('назва') or '')[38:76]]
+        for k, t in enumerate(рядки): д.text((X + 6, Y + ВФ + 4 + k * 17), t[:42], fill='black', font=шр)
+    арк.save('%s/метал_%s.jpg' % (S, к), quality=82)
+print('класів %d · речей на аркушах %d · усього в класах: %s'
+      % (len(для_аркушів), sum(len(v) for v in для_аркушів.values()),
+         ', '.join('%s %d' % (к, len(v)) for к, v in sorted(вибір.items()))))
