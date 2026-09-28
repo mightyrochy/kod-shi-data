@@ -359,7 +359,8 @@ def довідник():
     # чесно лишається на дефолті з причиною в `чому_мети`. `намір` (K-PER-00) —
     # сусідня вісь: `statement` сам по собі мети «експресія» не дає.
     "мета": "невідомо | лестити — she wants it to flatter her | приховати — she does not want attention or "
-            "wants to hide something | експресія — she wants to be looked at",
+            "wants to hide something | експресія — she wants to be looked at | вище — she wants a longer "
+            "line, to look taller",
     # ── МАКІЯЖ У РОЗМОВІ (рядок 108, «до цього має бути додане питання про макіяж») ─
     # ТОЙ САМИЙ формат, що плитка «Макіяж сьогодні» і `сценарій.макіяж` (один ключ →
     # `colorspace.додати_макіяж`, `face_contrast.рівень_макіяжу`, K-CLR-03, R-MUA-04).

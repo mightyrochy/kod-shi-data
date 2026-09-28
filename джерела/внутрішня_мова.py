@@ -146,7 +146,13 @@ def невідомо(v, коди=()):
     # тканини, і доти це число вгадувала модель виклику 0).
     "weather_feel": {"frost": -8.0, "cold": 2.0, "cool": 10.0, "warm": 20.0, "hot": 28.0},
     "intent": {к: к for к in ("conventional", "statement", "comfort_first", "context_optimal")},
-    "goal": {"flatter": "лестити", "conceal": "приховати", "express": "експресія"},
+    # ── ЧЕТВЕРТА МЕТА: «ВИЩЕ» (28.09.2026, рішення власника «10 а», звіт Research П8) ──
+    # Вертикаль — ОКРЕМА вісь від уваги: «щоб личило» / «не привертати» / «щоб дивились»
+    # нічого не кажуть про подовження лінії, а звіт ставить її окремим правилом-кандидатом
+    # («лінія талії за метою», П8) і окремим рядком мови («„витягує силует“ — лише коли
+    # людина сама обрала таку мету»). Ставиться ЛИШЕ зі слів жінки, як і решта трьох.
+    "goal": {"flatter": "лестити", "conceal": "приховати", "express": "експресія",
+             "taller": "вище"},
     "makeup_level": {"nude": "нюд", "noticeable": "помітний", "bold": "яскравий"},
     "jewelry": {"gold": "золото", "silver": "срібло", "pearls": "перли", "ethnic": "етно",
                 "other": "інші", "none": "без прикрас"},
@@ -391,7 +397,8 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
                                  "statement — хоче вразити, заявити про себе; conventional — "
                                  "нічого з цього"),
     "goal": _перелік("goal", "мета на цей вихід: flatter — щоб личило; conceal — не привертати "
-                             "уваги чи щось сховати; express — щоб на неї дивились"),
+                             "уваги чи щось сховати; express — щоб на неї дивились; taller — "
+                             "вона хоче довшу лінію, здаватись вищою"),
     "makeup": {"description": "макіяж на цей вихід", "type": "object", "additionalProperties": False,
                "properties": {
                    "level": _перелік("makeup_level", "рівень макіяжу"),
@@ -991,6 +998,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                  "outfit",
     "cannot_tell_two_accent_surfaces_match": "so the code cannot tell whether two accent items match exactly "
                                              "in colour",
+    "photo_colour_noise_above_match_threshold": "the colour measured from a photo is noisier than the exact "
+                                                "match threshold (values: noise, threshold — dE00), so two "
+                                                "measured hex values cannot settle an exact match",
     "cannot_tell_lightness_structure": "so the code cannot tell which structure of light and dark the outfit "
                                        "carries",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
@@ -1109,7 +1119,11 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
                                         "ordinary straight cut; what follows holds only if the cut really is "
                                         "such",
-    "claim_boxy_cut_hides_waist": "a straight boxy cut hides her defined waist",
+    # МОВА ПРО РІЧ І ЛІНІЮ (28.09.2026, Ф-2): текст заяви їде мовній моделі, тож
+    # заборона корпусу на «ховає» (R-ONB-06, R-LNG-01) діє тут так само, як у `суть`.
+    # Було: "a straight boxy cut hides her defined waist" — річ діє на тіло. Стало:
+    # речення про крій і його власну лінію; геометрія знахідки не змінилась.
+    "claim_boxy_cut_does_not_follow_waist": "the cut runs straight past the waistline instead of following it",
     "claim_no_waist_no_column": "neither a waist nor an even column: the shape does not read",
     "claim_volume_without_anchor": "volume fits the body nowhere, so the body shows nowhere",
     "claim_volume_without_anchor_no_shape": "the outfit's volume touches the body nowhere and no shape reads: "
@@ -1118,6 +1132,16 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                     "visible (values: count — in how many places)",
     "claim_zone_clinged": "the item clings tightly to this part of the body where it would be better for it "
                           "to skim (values: level — body level code)",
+    # «10 а» (28.09.2026): колона в один тон при меті `taller` — механізм, а не пласкість.
+    "column_one_tone_is_her_goal": "one tone from head to toe is a column, and a column is the mechanism for "
+                                   "the longer line she asked for: keep it (values: surfaces — how many "
+                                   "weighty surfaces share the tone)",
+    # Ф-4 (28.09.2026): склад каже, що тканина тягнеться, — вікно ковзання опубліковане
+    # для полотна, тож те саме від'ємне відхилення тут значить менше.
+    "fabric_stretches_ease_window_weaker": "the declared composition has elastane, and the published ease "
+                                           "window holds for woven cloth, so how closely this item sits is "
+                                           "decided by the stretch rather than by the cut (values: "
+                                           "elastane_percent — the share the shop declares)",
     "claim_zone_tented": "the item tents over this part of the body where it would be better to give it shape "
                          "(values: level — body level code)",
     "claim_ease_below_min": "the item's width ease at this level is too small to wear it freely (values: "
@@ -1132,8 +1156,11 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                       "contour without a marked waist, O — volume in the middle, I — a narrow "
                                       "straight contour, HX — a waist on the edge of being marked; never "
                                       "write the letters themselves, only the description)",
-    "look_shape_is": "the shape the outfit gives, with no judgement, because this outing does not aim to "
-                     "flatter the figure (values: look — shape codes: A — hips wider than shoulders, V — "
+    # Ф-2: було «does not aim to flatter the figure». Сенс той самий — мети `flatter`
+    # на цей вихід не поставлено, — але фраза дослівно та, яку R-LNG-01 забороняє
+    # (дієслово ефекту + зона). Мету називаємо ЇЇ КОДОМ, а не описом дії над тілом.
+    "look_shape_is": "the shape the outfit gives, with no judgement, because the goal for this outing is "
+                     "not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — "
                      "shoulders wider than hips, X — a marked waist, H — a straight contour without a marked "
                      "waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the "
                      "edge of being marked; never write the letters themselves, only the description)",
@@ -1817,7 +1844,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                        "buckle left as a detail, not a fastening (values: knot — back or "
                                        "front)",
     "raise_collar_free_state": "raising the collar is a free fourth state",
-    "raise_collar": "raise the collar: lengthens the neck, sharpens the silhouette",
+    # Ф-2: було "lengthens the neck" — ефект НА ТІЛІ без названої нею мети
+    # (R-LNG-01, звіт Research §6 п.2). Вертикаль біля обличчя — властивість речі.
+    "raise_collar": "raise the collar: it adds a vertical near the face and sharpens the silhouette",
     "high_stand_collar_frees_slot": "a high stand collar frees the slot: no scarf is needed, the stand "
                                     "carries the colour near the face by itself (values: slot — the code of "
                                     "the slot freed)",
@@ -2052,6 +2081,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                                    "natural waist, not the hips",
     "accent_surfaces_exact_match": "two accent surfaces match exactly (dE): they pull the eye sideways, not "
                                    "up to the face",
+    "accent_surfaces_same_colour_word": "two accent surfaces are named by the same colour word by two "
+                                        "different shops (values: colour — the word): they read as one "
+                                        "colour and pull the eye sideways, not up to the face",
     "secondary_colour_or_neutral_or_declared_column": "second item in the first one's secondary colour or a "
                                                       "contrasting neutral; or a declared colour column",
     "sole_glued_not_resoleable": "glued sole: cannot be resoled, so the price spreads over a shorter life",
@@ -2242,6 +2274,18 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
 }
 
 
+
+
+# ── ЯКІ МЕТИ ДАЮТЬ НАПРЯМ (28.09.2026) ──────────────────────────────────────
+# ОДИН ПЕРЕЛІК НА ВСЮ СИСТЕМУ. `fit.гармонізує` уже оголошував себе «одним перемикачем
+# на форму», але порівняння `мета == "лестити"` стояло ще у двох колірних місцях
+# (`колір_нейтралі.бік_b_біля_обличчя`, `палітра_нейтраль`) — три копії одного рішення.
+# З появою четвертої мети («вище») копії розійшлися б мовчки: форма дала б напрям, а
+# колір — ні. Перелік лежить тут, поруч зі словником `goal`, бо це той самий словник
+# із іншого боку: які з його значень ПРОСЯТЬ напрям, а які лише міняють вісь уваги.
+# «приховати» й «експресія» тут нема навмисно — вони не про гармонізацію, і їхню
+# власну знахідку дає `регістр_уваги` (R-CHEV-08).
+МЕТИ_З_НАПРЯМОМ = ("лестити", "вище")
 
 
 def визначення_заяв(коди):
