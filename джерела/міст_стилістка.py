@@ -113,8 +113,9 @@ def прийняти(відповідь):
     т = об.get("answer") if isinstance(об, dict) else None
     if isinstance(т, str) and т.strip():
         return dict(відповідь=т.strip(), причина=None)
-    return dict(відповідь="", причина=("нема поля answer" if isinstance(об, dict)
-                                        else "відповідь не JSON-об'єкт (%s)" % чому_не))
+    # ПРИЧИНА — КОДОМ (рядок 168, п.12): вона їде в запис виклику й діагноз звіту власника, не жінці
+    return dict(відповідь="", причина=("no_answer_field" if isinstance(об, dict)
+                                        else "not_json_object: %s" % чому_не))
 
 
 def стилістка(вхід):

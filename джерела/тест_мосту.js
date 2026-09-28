@@ -173,6 +173,35 @@ const пнг = байтів => {
        вихідні.length === 1 && !("temperature" in вихідні[0].body)
        && в.headers.get("x-temperature") === "n/a", вихідні[0] && вихідні[0].body);
 
+  /* М-6: сучасні моделі Anthropic (Opus 4.7+, Sonnet 5, Fable 5) приймають `temperature`
+     лише типовим значенням, НЕтипове = 400 «Sampling parameters rejected». Отже рішення
+     «температура 0» на цьому маршруті впало б 400 на першому ж виклику — тож міст знімає
+     поле й повторює запит, як робить із полем мислення Gemini, і каже це заголовком. */
+  let стуків = 0;
+  відповідач = () => (++стуків === 1
+    ? new Response(JSON.stringify({type:"error", error:{type:"invalid_request_error",
+        message:"temperature: Sampling parameters are not supported for this model."}}), {status:400})
+    : new Response(JSON.stringify({content:[{type:"text",text:"ок"}], stop_reason:"end_turn",
+        usage:{input_tokens:5, output_tokens:1}}), {status:200}));
+  вихідні.length = 0;
+  в = await зап({model:"claude-sonnet-5", temperature:0, messages:[{role:"user", content:"x"}]});
+  тест("claude: 400 через вибірку → поле знято, запит повторено, відповідь 200",
+       в.status === 200 && вихідні.length === 2 && вихідні[0].body.temperature === 0
+       && !("temperature" in вихідні[1].body), [в.status, вихідні.map(x=>x.body.temperature)]);
+  тест("claude: x-temperature=dropped, і службового поля провайдер не бачить",
+       в.headers.get("x-temperature") === "dropped" && !("_без_темп" in вихідні[1].body)
+       && /temperature dropped/.test(в.headers.get("x-attempts") || ""),
+       [в.headers.get("x-temperature"), в.headers.get("x-attempts")]);
+  стуків = 0;
+  відповідач = () => new Response(JSON.stringify({type:"error", error:{message:"model not found"}}), {status:400});
+  вихідні.length = 0;
+  в = await зап({model:"claude-sonnet-5", temperature:0, messages:[{role:"user", content:"x"}]});
+  тест("claude: 400 НЕ через вибірку — поле не знімається й повтору нема (чужа помилка як є)",
+       в.status === 400 && вихідні.length === 1 && в.headers.get("x-temperature") === "0",
+       [в.status, вихідні.length, в.headers.get("x-temperature")]);
+  відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"ок"}],
+      stop_reason:"end_turn", usage:{input_tokens:5, output_tokens:1}}), {status:200});
+
   console.log("3к. КЕШ НЕЗМІННОГО ПОЧАТКУ ЗАПИТУ (наряд К-4)");
   /* Збирач ставить `task` ПЕРШИМ (`збирач_промптів.зібрати`), і міст ріже перший
      текстовий блок рівно на його закритій дужці: Anthropic пише кеш на межі
