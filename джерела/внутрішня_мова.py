@@ -598,6 +598,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     # («на фото не знайшлося жодної речі»), — фраза коду людині (п.12, кошик В).
     "review_refused": "рядок на екрані «Оціни мій образ», коли оцінити не вдалось: що саме "
                       "стилістка не побачила на її фото і що їй зробити, щоб оцінити",
+    # Ч-9 (28.09.2026, рядок 206): доти картка без опису ставила ЦІЛИЙ АБЗАЦ, складений кодом
+    # (`показ.рядокБезОпису`), — кошик В п.12. Тепер код каже КОДАМИ, речення пише мовна модель.
+    "card_without_description": "рядок на місці «Чому цей образ», коли пояснення до образу не "
+                                "вийшло: що саме сталось і що на картці однаково правдиве",
 }
 
 # ЗАЯВИ: код → ЩО САМЕ сказано. Це ВИЗНАЧЕННЯ для моделі, не готова фраза. Числа й назви
@@ -1241,6 +1245,24 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                           "scenario names none of the fields that set dressiness (values: fields — the keys "
                           "of these fields)",
     "retry_gives_same": "a retry without changes gives the same",
+    # ── збирання спіткнулось не на сценарії (Ч-9, рядок 206; доти абзац коду
+    #    `показ.рядокЗбоюЗбирання`) ────────────────────────────────────────────────
+    "assembly_stumbled_on_requirements": "the outfits were not built: on this set of requirements the "
+                                         "assembly itself stumbled — this is not about her choices being "
+                                         "wrong, it is the build that did not go through",
+    "detail_is_in_verdict_report": "the detail of what happened is kept in the verdict report, which she can "
+                                   "copy or save to a file from this screen",
+    "try_other_scenario_or_drop_requirement": "she tries another outing, or drops one of her requirements — "
+                                              "the narrowest one is often enough",
+    "connection_did_not_reach": "the connection to the stylist did not reach this time",
+    "retry_in_a_minute_may_work": "a retry in a minute may work, because this one passes by itself",
+    # ── картка без пояснення (Ч-9, рядок 206; доти абзац коду `показ.рядокБезОпису`) ──
+    "description_not_text_after_retry": "the stylist answered with something that was not text, even after "
+                                        "being asked a second time, so this outfit has no explanation",
+    "description_did_not_arrive": "the explanation for this outfit did not arrive: the connection broke on "
+                                  "the last step",
+    "items_prices_links_are_true": "the items, the prices and the links on this card are true, so the outfit "
+                                   "can be judged without the explanation",
     "name_occasion_or_place": "she chooses an occasion or a place on the scenario screen, or says in words "
                               "where she is going, and builds again",
     "photo_shared_by_other_products": "the photo the code measured the item on stands on several other "
