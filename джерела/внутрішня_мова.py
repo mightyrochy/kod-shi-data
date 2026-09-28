@@ -286,6 +286,42 @@ def невідомо(v, коди=()):
                    "wrist": "зап'ясток", "as_top": "верх"},
     "item_attribute": {"colour": "колір", "cut": "крій", "length": "довжина", "fabric": "тканина",
                        "pattern": "візерунок", "shine": "блиск"},
+    # ── ВИМІРИ НАГОДИ: ПАСПОРТ НАГОДИ v2 (НГ-1, 28.09.2026) ─────────────────────────
+    # Проєкт — `аудит/тести/нагода_архітектура_2026-09-28.md` §2. Доти нагода жила в ядрі
+    # ОДНИМ словом (`нагода="весілля_гість"`), і 18 ключів давали лише 14 різних рішень:
+    # подорож = прогулянка, театр = церква, дім = спорт, побачення = школа. Виміри — те, що
+    # РІЗНИТЬ події: хто вона на цій події, перед кого йде, чи це храм, скільки образів,
+    # чий колір зайнятий, чи це раз чи щодня. Кожен може бути "unknown": вигадувати не можна.
+    # ВІДПОВІДНІСТЬ ТОТОЖНА, ЯК У `need` І `question_about`: ключа ядра в цих вимірів нема й
+    # доти не було — ядро читало саму назву нагоди. Код лишається кодом, доки НГ-2 не дасть
+    # його правилам (пул, суд, пакет). Тут — лише перелік; хто його заповнює — `паспорт_нагоди`.
+    "event_kind": {к: к for к in (
+        "everyday", "home", "walk", "work", "interview", "school", "conference", "gala",
+        "wedding", "celebration", "funeral", "date", "theatre", "museum", "church",
+        "sport", "travel", "other")},
+    "role": {к: к for к in ("guest", "close_family", "main_person", "host", "candidate",
+                            "speaker", "worker", "mourner_close", "acquaintance")},
+    "audience": {к: к for к in ("usual", "conservative")},
+    # РУХ НА ПОДІЇ — ШИРШЕ, НІЖ `movement` ЯДРА. Ядро знає три стани («сидіти | ходити |
+    # багато ходити», `протокол.ВИПАДОК`), а події різнять ще стояти, танцювати, ставати на
+    # коліна й рухатись спортивно: саме цим театр відрізняється від церкви, а корпоратив від
+    # ювілею (§2.1). Другий перелік, а не розширений перший, — навмисно: код `stand` у полі
+    # `рух` паспорта не пройшов би enum ВИПАДКУ, тобто розширення першого зламало б протокол
+    # на першій же відповіді моделі. Зведення трьох станів ядра в цей перелік —
+    # `паспорт_нагоди.РУХ_ЯДРА_У_ВИМІР`; зведе обидва НГ-2, коли рух почнуть читати правила.
+    "event_movement": {к: к for к in ("sit", "stand", "walk", "walk_long", "dance", "kneel",
+                                      "sport")},
+    "religious_place": {к: к for к in ("none", "temple", "written_rule_place")},
+    "mourning_closeness": {к: к for к in ("none", "acquaintance", "close")},
+    "look_volume": {к: к for к in ("one_look", "travel_day")},
+    # Колір, що належить іншій особі цієї події (майже-біле на весіллі гості): окремо від її
+    # власного `вето`, бо це звичай події, а не її межа. Її явне слово сильніше (п.9).
+    "reserved_colour": {к: к for к in ("near_white",)},
+    "recurrence": {к: к for к in ("once", "regular")},
+    # ЗВІДКИ ВИМІР (§1.2): сила джерела, від письмового правила до «нічого не відомо».
+    # Порядок переліку і є порядком сили — його тримає `паспорт_нагоди.ЗВІДКИ_СИЛА`.
+    "evidence_source": {к: к for к in ("written", "her_words", "sub", "preset", "like",
+                                       "default", "unknown")},
 }
 
 
@@ -1782,6 +1818,13 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                   "needed — how much the map asks for; partial_warmth_items — how many layers "
                                   "warm only partly, like a trench)",
     "layers_to_temperature_map": "bring the layers to the day's map, in the band's fabrics",
+    "outer_layer_only_partly_warm_for_frost": "in this band the warmth is carried by the coat itself, and "
+                                              "this outer layer is only partly warm by its type — a jacket, "
+                                              "a bomber, a vest, a cardigan or a poncho (values: "
+                                              "temperature_c — the temperature, outer_type — its type code, "
+                                              "warmth_share — how much of a layer it counts as)",
+    "warmer_coat_not_a_fourth_item": "a warmer coat — insulated, or wool — instead of this one, rather than a "
+                                     "fourth item under it; a scarf, a hat and mittens close the rest",
     "cold_accessories_carry_no_colour": "in hard frost mostly the outer layer and the accessories are "
                                         "visible, and the hat, the scarf and the mittens are quiet here: all "
                                         "the colour stayed under the coat (values: temperature_c — the "

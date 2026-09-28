@@ -1,0 +1,178 @@
+/* Інструкція для тестувальниць — верстка під A4, друк у PDF через Chromium.
+   Тони й шрифти — ті самі, що в продукті (джерела/показ.html: токени :root). */
+
+@font-face{font-family:"Fixel Text";font-style:normal;font-weight:400;font-display:block;
+  src:url("шрифти/FixelText-Regular.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-style:normal;font-weight:500;font-display:block;
+  src:url("шрифти/FixelText-Medium.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-style:normal;font-weight:600;font-display:block;
+  src:url("шрифти/FixelText-SemiBold.woff2") format("woff2")}
+/* Fixel — ті самі файли, що тягне продукт із jsDelivr (MacPaw/Fixel, OFL);
+   покладені поруч, щоб документ верстався однаково й без мережі.
+   Kyiv*Type — незмінені файли автора з `шрифти/` репозиторію (NoDerivates). */
+@font-face{font-family:"KyivType Titling";font-style:normal;font-weight:1 1000;font-display:block;
+  src:url("../../../шрифти/KyivTypeTitling-VarGX.ttf") format("truetype")}
+@font-face{font-family:"KyivType Serif";font-style:normal;font-weight:1 1000;font-display:block;
+  src:url("../../../шрифти/KyivTypeSerif-VarGX.ttf") format("truetype")}
+
+:root{
+  --полотно:#F4F0E8;
+  --аркуш:#FBF9F4;
+  --папір:#EDE7DA;
+  --чорнило:#1B1A17;
+  --олівець:#6B665C;
+  --межа:#E0D9CB;
+  --межа-темна:#C4BBA6;
+  --золото:#8B6B2C;
+  --сигнал:#A6452F;
+  --текст:"Fixel Text","Arsenal",system-ui,sans-serif;
+  --дисплей:"KyivType Titling","Arsenal",Georgia,serif;
+  --голос:"KyivType Serif",Georgia,serif;
+}
+
+@page{size:A4;margin:15mm 15mm 16mm}
+@page:first{margin:0}
+
+*{box-sizing:border-box}
+html{font-size:9.7pt}
+body{margin:0;background:#fff;color:var(--чорнило);
+  font:400 1em/1.48 var(--текст);
+  -webkit-font-smoothing:antialiased;hyphens:auto}
+
+/* ── титул ───────────────────────────────────────────────────────────── */
+.титул{page-break-after:always;height:297mm;width:210mm;position:relative;
+  background:var(--полотно);padding:38mm 22mm 20mm;overflow:hidden}
+.титул::before{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent 0 11px,rgba(27,26,23,.035) 11px 12px);
+  pointer-events:none}
+.титул .знак{font:500 13pt/1 var(--дисплей);font-variation-settings:"CONT" 600;
+  letter-spacing:.02em;text-transform:lowercase;position:relative}
+.титул .знак::after{content:"";display:block;width:52pt;height:2pt;background:var(--золото);margin-top:5pt}
+.титул h1{font:400 40pt/1.04 var(--дисплей);font-variation-settings:"CONT" 480;
+  margin:22mm 0 0;letter-spacing:-.01em;position:relative}
+.титул h1 em{font-style:normal;color:var(--золото)}
+.титул .під{font-size:13pt;line-height:1.45;color:var(--олівець);margin:9mm 0 0;max-width:118mm;position:relative}
+.титул .низ{position:absolute;left:22mm;right:22mm;bottom:20mm;
+  border-top:1px solid var(--межа-темна);padding-top:5mm;
+  font-size:9pt;color:var(--олівець);display:flex;justify-content:space-between;gap:8mm}
+.титул .вазон{position:absolute;right:-14mm;bottom:34mm;width:96mm;opacity:.5}
+
+/* ── зміст ───────────────────────────────────────────────────────────── */
+.зміст{page-break-after:always}
+.зміст ol{list-style:none;margin:0;padding:0;counter-reset:з}
+.зміст li{counter-increment:з;display:flex;align-items:baseline;gap:3mm;
+  padding:2.1mm 0;border-bottom:1px dotted var(--межа-темна);font-size:10.5pt}
+.зміст li b{font-weight:500}
+.зміст li::before{content:counter(з);font:500 9pt/1 var(--текст);color:var(--золото);
+  min-width:6mm;text-align:right}
+.зміст li small{margin-left:auto;color:var(--олівець);font-size:9pt;white-space:nowrap}
+
+/* ── загальна типографіка ────────────────────────────────────────────── */
+h2{font:400 19pt/1.1 var(--дисплей);font-variation-settings:"CONT" 480;
+  margin:0 0 4mm;letter-spacing:-.005em;page-break-after:avoid}
+h2 .н{display:block;font:500 8.5pt/1 var(--текст);letter-spacing:.14em;
+  text-transform:uppercase;color:var(--золото);margin-bottom:2.5mm}
+h3{font:600 11.5pt/1.3 var(--текст);margin:6mm 0 2mm;page-break-after:avoid}
+h4{font:600 10pt/1.3 var(--текст);margin:4mm 0 1.5mm;page-break-after:avoid}
+p{margin:0 0 2.6mm;orphans:2;widows:2}
+ul,ol{margin:0 0 3mm;padding-left:5mm}
+li{margin:0 0 1.2mm}
+strong{font-weight:600}
+em.кн{font-style:normal;font-weight:500;background:var(--папір);
+  border-radius:2pt;padding:.5pt 1.6pt;white-space:nowrap}
+.розділ{page-break-before:auto}
+/* правило-роздільник живе НА заголовку, а не на секції: інакше воно лишається
+   самотньою рискою внизу сторінки, а сам заголовок їде на наступну */
+.розділ>h2{margin-top:9mm;padding-top:5mm;border-top:1px solid var(--межа-темна);
+  page-break-inside:avoid;break-inside:avoid}
+.нова-сторінка{page-break-before:always}
+.нова-сторінка>h2{margin-top:0;padding-top:0;border-top:0}
+.тихо{color:var(--олівець)}
+
+/* ── двоколонка «знімок + опис» ──────────────────────────────────────── */
+/* Знімок і короткий вступ поруч — одним нерозривним блоком; ДОВГІ ТАБЛИЦІ
+   кнопок винесені з нього й ідуть на всю ширину нижче. Рядок ґріда Chromium у
+   друці не ділиться, і таблиця всередині блоку виштовхувала його на нову
+   сторінку цілком, лишаючи попередню наполовину порожньою. */
+.екран{display:grid;grid-template-columns:41mm 1fr;gap:5mm;
+  margin:0 0 5mm;page-break-inside:avoid}
+.екран.вузький{grid-template-columns:36mm 1fr}
+
+/* галерея аркушів правки: знімок над текстом, дві плитки в рядок — так кадр
+   лишається читним, а сторінка не порожніє під високим вузьким блоком */
+.галерея{display:grid;grid-template-columns:1fr 1fr;gap:5mm 6mm;margin:0 0 5mm;
+  page-break-inside:avoid}
+.плитка-екрана{page-break-inside:avoid}
+.плитка-екрана figure{margin:0 0 2.4mm;max-width:58mm}
+.плитка-екрана h4{margin:0 0 1.4mm}
+.плитка-екрана p{font-size:9pt;margin:0 0 1.8mm}
+.екран .опис>*:first-child{margin-top:0}
+
+/* рамка телефону */
+.телефон{position:relative;border:1.4pt solid var(--чорнило);border-radius:5mm;
+  padding:2mm 1.6mm 3mm;background:var(--чорнило);
+  box-shadow:0 1.2mm 3mm rgba(27,26,23,.16)}
+.телефон::before{content:"";position:absolute;left:50%;top:1mm;transform:translateX(-50%);
+  width:12mm;height:.9mm;border-radius:1mm;background:#5a564e}
+.телефон img{display:block;width:100%;border-radius:1.6mm;background:var(--полотно)}
+.телефон figcaption{color:#cfc7b5;font-size:7pt;text-align:center;margin-top:1.2mm;line-height:1.25}
+figure{margin:0;page-break-inside:avoid}
+.екран>figure{align-self:start}
+/* довгий знімок: обрізаємо низ м'яким затуханням, щоб сторінка не розповзалась */
+.обріз{max-height:118mm;overflow:hidden;position:relative;border-radius:1.6mm}
+.обріз::after{content:"";position:absolute;left:0;right:0;bottom:0;height:12mm;
+  background:linear-gradient(transparent,var(--чорнило))}
+
+/* тінь без рамки — для аркушів і фрагментів */
+.клапоть{border:1px solid var(--межа-темна);border-radius:2.4mm;overflow:hidden;max-width:74mm;
+  box-shadow:0 .8mm 2.4mm rgba(27,26,23,.12);background:var(--аркуш)}
+.клапоть img{display:block;width:100%}
+
+/* ── таблиця кнопок ──────────────────────────────────────────────────── */
+table{width:100%;border-collapse:collapse;font-size:9pt;margin:0 0 3.4mm;
+  page-break-inside:auto}
+th{text-align:left;font-weight:600;font-size:8.5pt;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--золото);
+  border-bottom:1px solid var(--межа-темна);padding:0 3mm 1.4mm 0;vertical-align:bottom}
+td{padding:1.4mm 3mm 1.4mm 0;border-bottom:1px solid var(--межа);vertical-align:top}
+td:first-child{font-weight:500;width:34%}
+tr{page-break-inside:avoid}
+
+/* ── врізки ──────────────────────────────────────────────────────────── */
+.вріз{background:var(--аркуш);border:1px solid var(--межа);border-left:2.4pt solid var(--золото);
+  border-radius:0 2.4mm 2.4mm 0;padding:2.8mm 3.4mm;margin:0 0 3.4mm;
+  font-size:9pt;page-break-inside:avoid}
+.вріз.увага{border-left-color:var(--сигнал);background:#fbf5f2}
+.вріз>*:first-child{margin-top:0}
+.вріз>*:last-child{margin-bottom:0}
+.вріз b.мітка{display:block;font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--золото);margin-bottom:1.6mm}
+.вріз.увага b.мітка{color:var(--сигнал)}
+
+.голос{font-family:var(--голос);font-size:11pt;line-height:1.45}
+
+/* ── кроки ───────────────────────────────────────────────────────────── */
+.кроки{counter-reset:к;list-style:none;padding:0;margin:0 0 5mm}
+.кроки li{counter-increment:к;position:relative;padding-left:9mm;margin-bottom:3mm;
+  page-break-inside:avoid}
+.кроки li::before{content:counter(к);position:absolute;left:0;top:-.2mm;
+  width:6mm;height:6mm;border-radius:50%;background:var(--чорнило);color:var(--полотно);
+  font:600 8pt/6mm var(--текст);text-align:center}
+.кроки li b{display:block;font-weight:600}
+
+/* ── картки сценаріїв перевірки ──────────────────────────────────────── */
+.проба{border:1px solid var(--межа-темна);border-radius:3mm;background:var(--аркуш);
+  padding:3.2mm 4mm;margin:0 0 3.2mm;page-break-inside:avoid}
+.проба h3{margin:0 0 2.4mm;font-size:11.5pt;display:flex;gap:2.6mm;align-items:baseline}
+.проба h3 span.ном{font:500 8.5pt/1 var(--текст);color:var(--полотно);background:var(--золото);
+  border-radius:2pt;padding:1.1mm 1.8mm;flex:none}
+.проба dl{display:grid;grid-template-columns:24mm 1fr;gap:1.4mm 3mm;margin:0;font-size:9.5pt}
+.проба dt{font-weight:600;color:var(--олівець);font-size:8.5pt;letter-spacing:.04em;
+  text-transform:uppercase;padding-top:.5mm}
+.проба dd{margin:0}
+.проба dd.скажи{font-family:var(--голос);font-size:10.5pt;line-height:1.4}
+.проба ul{margin:0;padding-left:4.4mm}
+
+/* нумерація сторінок — малюється скриптом рендера */
+.нога{position:fixed;bottom:-12mm;left:0;right:0;font-size:8pt;color:var(--олівець);
+  display:flex;justify-content:space-between;border-top:1px solid var(--межа);padding-top:1.6mm}
