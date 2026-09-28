@@ -1485,6 +1485,17 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                               "річ-конектор (значення: metal — код металу)",
     "metal_tones_over_two": "металевих тонів більше за два — мікс перестає читатись як задум (значення: count — "
                             "скільки тонів, metals — коди металів)",
+    "metal_variant_unsettled": "який метал на кадрі цієї речі — не вирішено: крамниця називає кілька "
+                               "металів на ту саму позицію або сама собі суперечить (склад проти назви) "
+                               "(значення: items — перелік {slot, variants — коди металів крамниці, "
+                               "named — метал, який узяв код, frame_tone — тон, у якому читається колір "
+                               "речі})",
+    "named_metal_is_detail_not_surface": "метал названо, але вимір не знайшов його тону в жодному кластері "
+                                         "поверхні речей образу — на кадрі метал деталь (обідок, підвіс, "
+                                         "оправа), а не поверхня (значення: metal — код металу, items — "
+                                         "скільки металевих речей в образі)",
+    "put_solid_metal_near_face": "якщо метал має вести образ — поставити біля обличчя річ, яка й є металом, "
+                                 "а не тканину з металевим обідком",
     "reduce_to_two_metal_tones": "звести до двох тонів: третій прибрати чи замінити двотонною річчю, або лишити "
                                  "його в одній дрібній речі далеко від обличчя",
     "she_asked_no_jewellery": "вона просила образ без прикрас, а прикраса в образі є",
@@ -2621,6 +2632,11 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "repeat_metal_or_one_metal_or_connector": "repeat the metal in a second zone, keep one metal, or add a "
                                               "two-tone connector",
     "metal_tones_over_two": "more than two metal tones",
+    "metal_variant_unsettled": "which metal is on this frame is unsettled: the shop names several metals "
+                               "for one listing, or contradicts itself (alloy vs. name)",
+    "named_metal_is_detail_not_surface": "metal is named, yet on the frame it is a trim or a charm, not the "
+                                         "surface of the piece",
+    "put_solid_metal_near_face": "put a piece that IS metal near the face, not fabric with a metal trim",
     "reduce_to_two_metal_tones": "reduce to two metal tones",
     "she_asked_no_jewellery": "she asked for no jewellery, yet the outfit has some",
     "remove_jewellery_her_decision": "remove the jewellery: her decision for today",
