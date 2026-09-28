@@ -594,6 +594,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                          "перевіреним. Це не вада образу й не порада, а чесне «не знаю»",
     "assembly_refused": "рядок на екрані сценарію, коли образи зібрати не вдалось: що сталось "
                         "і що їй зробити, щоб зібрати",
+    # Ч-8 (28.09.2026, рядок 197): доти екран «Оціни мій образ» ставив рядком те, що кинув код
+    # («на фото не знайшлося жодної речі»), — фраза коду людині (п.12, кошик В).
+    "review_refused": "рядок на екрані «Оціни мій образ», коли оцінити не вдалось: що саме "
+                      "стилістка не побачила на її фото і що їй зробити, щоб оцінити",
 }
 
 # ЗАЯВИ: код → ЩО САМЕ сказано. Це ВИЗНАЧЕННЯ для моделі, не готова фраза. Числа й назви
@@ -2079,6 +2083,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "accent_colour_or_print_near_face": "an accent colour or print in the slot nearest the face",
     "item_removable_no_metric_drops": "the item can go: without it no metric of the look drops",
     "remove_this_item": "remove this item",
+    # ── оцінка її власного образу з фото: чого на кадрі не знайшлось (Ч-8, рядок 197) ──
+    "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one)",
+    "review_items_not_recognized": "items are visible in the frames, but none of them could be matched "
+                                   "to a place in the outfit (values: why — the reason, when there is one)",
 }
 
 
