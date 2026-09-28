@@ -6,7 +6,8 @@
   Логіка v5 (19.09.2026): профіль створюється раз — три кроки знайомства
   (про тебе з ім'ям → що тобі до лиця → фігура) — і далі правиться з вкладки
   «Профіль»: огляд рядками з прев'ю, кожен рядок відкриває свій редактор аркушем
-  знизу; три вкладки під великим пальцем: Сценарій · Образи · Профіль; головний
+  знизу; чотири вкладки під великим пальцем: Сценарій · Образи · Оцінити · Профіль;
+  головний
   екран — розмова зі стилісткою: поки її нема, поле стоїть аркушем листа посеред
   екрана, далі — стрічка реплік, у кінці якої картка сценарію з рядками, питанням
   «Усе правильно?» і дією «Зібрати образи»; рядки правляться аркушем знизу; над
@@ -251,8 +252,8 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .ряд{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
 .мітка{font:500 20px/1.25 var(--дисплей);font-variation-settings:"CONT" 260;margin:22px 0 8px}
 
-/* ── ВКЛАДКИ ВНИЗУ: три розділи під великим пальцем; поточна — «ї». ───────── */
-.вкладки{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px;padding:8px 0 10px;position:relative}
+/* ── ВКЛАДКИ ВНИЗУ: чотири розділи під великим пальцем; поточна — «ї». ───── */
+.вкладки{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:8px;padding:8px 0 10px;position:relative}
 .вкладки::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--межа)}
 .вкладки button{background:none;border:0;clip-path:none;padding:6px 4px 2px;color:var(--олівець);
   display:flex;flex-direction:column;align-items:center;gap:4px;font:500 11.5px/1.2 var(--текст);position:relative}
@@ -363,10 +364,7 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .панель .чат-ввід:has(.чат-вкладення:not(:empty)){flex-wrap:wrap}
 .панель .чат-ввід .чат-вкладення{flex:1 0 100%}
 /* фото в її репліці: мініатюри над словами; без слів — лише фото */
-/* ── «ОЦІНИ МІЙ ОБРАЗ» (Л-6): вхід поруч зі збиранням, фото з «+», картка тим самим візерунком ── */
-.оц-вхід{width:100%;margin-top:10px;border:1px solid var(--межа-темна)}
-#оц-вхід-місце{margin:12px 0 0}
-#оц-вхід-місце:empty{display:none}
+/* ── «ОЦІНИ МІЙ ОБРАЗ» (Л-6): вхід — вкладка панелі, фото з «+», картка тим самим візерунком ── */
 .оц-фото{display:flex;flex-wrap:wrap;gap:14px;margin-top:4px}
 .оц-плюс{width:64px;height:64px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--межа-темна);
   border-radius:6px;font:300 30px/1 var(--текст);color:var(--олівець);background:var(--аркуш);cursor:pointer}
@@ -1097,6 +1095,8 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
   <symbol id="і-галочка" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5.5-6"/></symbol>
   <symbol id="і-тема" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></symbol>
   <symbol id="і-розмова" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 4v-4h-.5A1.5 1.5 0 0 1 4 14.5z"/><path d="M8 9h8M8 12h5"/></symbol>
+  <!-- «Оцінити» — лупа з галочкою: розглянути її власний образ і сказати вердикт -->
+  <symbol id="і-оцінка" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.3 15.3L21 21"/><path d="M7.8 10.8l2.2 2.2 3.7-4.3"/></symbol>
   <symbol id="і-фото" viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.3l1.5-2h5.4l1.5 2h2.3A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.4"/></symbol>
 </svg>
 
@@ -1394,10 +1394,9 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
 
     <div class="пс-дія">
       <button class="далі зі-стрілкою головна" id="зб-зібрати" type="button"><span>Зібрати образи</span><svg class="і" style="width:18px;height:18px"><use href="#і-стрілка"/></svg></button>
-      <!-- «ОЦІНИ МІЙ ОБРАЗ» (наряд Л-6, 26.09.2026) — друга дія поруч зі збиранням. Вузол один:
-           поки картки сценарію нема, `малюватиКарткуСценарію` переносить його під аркуш листа
-           (`#оц-вхід-місце`), щоб оцінку можна було почати й на порожньому екрані. -->
-      <div id="оц-кнопка-місце"><button class="тихо оц-вхід" id="оц-кнопка" type="button">Оціни мій образ</button></div>
+      <!-- «Оціни мій образ» стояла тут кнопкою (наряд Л-6) і губилась унизу екрана під
+           прикладами: слово власника 28.09 — вхід переїхав на панель швидкого доступу
+           четвертою вкладкою «Оцінити» (`#вк-оцінка`), тут його більше нема. -->
       <div id="зб-картка"><div class="статус" id="зб-статус"></div></div>
       <div class="пс-дрібні"><button class="текст" id="сц-зберегти" type="button">Зберегти сценарій</button></div>
     </div>
@@ -1406,7 +1405,6 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
 
   <div id="сц-приклади"></div>
   <div class="ряд" id="сц-рукою-ряд"><button class="текст" id="сц-рукою-показати" type="button">Або заповнити рукою</button></div>
-  <div id="оц-вхід-місце"></div>
 
   <!-- форма збереження живе тут схованою і відкривається аркушем знизу -->
   <div class="сц-збер" id="сц-збер-форма" hidden>
@@ -1880,11 +1878,14 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
       <button class="тихо" id="н-назад" type="button">Назад</button>
       <button class="далі зі-стрілкою" id="н-далі" type="button"><span id="н-далі-текст">Далі</span><svg class="і" style="width:18px;height:18px"><use href="#і-стрілка"/></svg></button>
     </div>
-    <!-- ВКЛАДКИ — три розділи, названі словами й з іконками, під великим пальцем.
-         Поточна позначена «ї» — двома золотими крапками. -->
+    <!-- ВКЛАДКИ — чотири розділи, названі словами й з іконками, під великим пальцем.
+         Поточна позначена «ї» — двома золотими крапками. Напис четвертої — «Оцінити»:
+         «Оціни мій образ» у 77 px смуги на 360 px ламається на три рядки, повне слово
+         лишилось у `title`/`aria-label`. -->
     <nav class="вкладки" id="вкладки" aria-label="Розділи">
       <button type="button" id="вк-сценарій"><svg class="і"><use href="#і-розмова"/></svg><span>Сценарій</span></button>
       <button type="button" id="вк-образи"><svg class="і"><use href="#і-ошатність"/></svg><span>Образи</span></button>
+      <button type="button" id="вк-оцінка" title="Оціни мій образ" aria-label="Оціни мій образ"><svg class="і"><use href="#і-оцінка"/></svg><span>Оцінити</span></button>
       <span id="смуга-профілів"><button type="button" id="пф-кнопка"><i id="пф-ініціали">·</i><span>Профіль</span></button></span>
     </nav>
   </div>
@@ -4817,7 +4818,7 @@ async function створитиПрофіль(){
    кінці якої — картка сценарію з дією «Зібрати образи». Профіль правиться з
    вкладки «Профіль» («профіль»: огляд рядками, кожен рядок відкриває свій
    редактор аркушем знизу). Палітра — власний екран із рядка картки; збережені
-   сценарії — підекран сценарію. Розділи — три вкладки внизу під великим пальцем. */
+   сценарії — підекран сценарію. Розділи — чотири вкладки внизу під великим пальцем. */
 const ЕКРАНИ = ['е-профіль','е-лице','е-мірки'];          // кроки знайомства
 const УСІ_ЕКРАНИ = ['е-профіль','е-лице','е-мірки','е-огляд','е-випадок','е-палітра','е-сценарії',
                     'е-очікування','е-образи','е-бібліотека','е-оцінка'];
@@ -4831,8 +4832,9 @@ const ЕКРАНИ_РЕЖИМІВ = {
   'бібліотека': ['е-бібліотека'],
   'оцінка':     ['е-оцінка']};
 /* Яку вкладку підсвітити: палітра й збережені належать сценарію, бібліотека — образам. */
-const ВКЛАДКА_РЕЖИМУ = {'сценарій':'вк-сценарій', 'палітра':'вк-сценарій', 'сценарії':'вк-сценарій', 'оцінка':'вк-сценарій',
-                        'образи':'вк-образи', 'бібліотека':'вк-образи', 'профіль':'пф-кнопка'};
+const ВКЛАДКА_РЕЖИМУ = {'сценарій':'вк-сценарій', 'палітра':'вк-сценарій', 'сценарії':'вк-сценарій',
+                        'образи':'вк-образи', 'бібліотека':'вк-образи',
+                        'оцінка':'вк-оцінка', 'профіль':'пф-кнопка'};
 let ЕКРАН = 0;
 let РЕЖИМ = 'старт';
 let ПРОФІЛЬ_СТВОРЕНО = false;
@@ -5578,7 +5580,7 @@ function словаЛюдиниП(){
    що в неї на екрані. */
 const ШІ_ДОВІДКА = `ABOUT. Lyusterko is a stylist in the browser. From her colours (skin, hair and eyes, read from her portrait), four girths (shoulders, bust, waist, hips) with her height, and her case (where she is going), the code picks four outfits from a catalogue of Ukrainian shops, checks them against style rules and shows them with photos and prices; she judges each one, and her verdicts stay on her phone. Everything personal (photos, measurements, colours, cases, outfits, verdicts) is kept in this phone's browser; a model receives only what it needs for one answer.
 
-NAVIGATION. Three tabs at the bottom: {tab_case} (the main screen: the chat with the stylist and the case card), {tab_outfits} (the latest outfits; from there {all_outfits} opens the outfit library and the verdict log; before any outfits exist the tab leads straight to the library) and {tab_profile}. The current tab is marked with two gold dots. The chat field: on an empty case it is a large sheet in the middle of the screen; once the chat has started, a window above the tabs; on other screens it is folded into a pill with the last answer, and a tap unfolds it. During onboarding and while outfits are being built there are no tabs; onboarding has {back} and {next} at the bottom. The word {logo} at the top also leads to the main screen, and the circle on the right of the header switches between day and night on every screen. On a laptop (a wide screen) the same three sections form a rail on the left together with {new_case_rail}, {saved} and the list of saved cases; the chat field sits under the chat and the case card to the right of it (on the profile, the photos are on the right). Edits are made in a sheet that rises from the bottom: it has {done}, and a tap on the dimmed background closes it.
+NAVIGATION. Four tabs at the bottom: {tab_case} (the main screen: the chat with the stylist and the case card), {tab_outfits} (the latest outfits; from there {all_outfits} opens the outfit library and the verdict log; before any outfits exist the tab leads straight to the library), {tab_review} (photos of what she is wearing now → a verdict on her own outfit) and {tab_profile}. The current tab is marked with two gold dots. The chat field: on an empty case it is a large sheet in the middle of the screen; once the chat has started, a window above the tabs; on other screens it is folded into a pill with the last answer, and a tap unfolds it. During onboarding and while outfits are being built there are no tabs; onboarding has {back} and {next} at the bottom. The word {logo} at the top also leads to the main screen, and the circle on the right of the header switches between day and night on every screen. On a laptop (a wide screen) the same four sections form a rail on the left together with {new_case_rail}, {saved} and the list of saved cases; the chat field sits under the chat and the case card to the right of it (on the profile, the photos are on the right). Edits are made in a sheet that rises from the bottom: it has {done}, and a tap on the dimmed background closes it.
 
 ONBOARDING — three steps, once, while there is no profile yet. Step 1 {step_about}: the portrait (as soon as it is added, the skin, hair and eye colours are read automatically; {read_colours} reads them again; {other_way} lets her copy the request into any chat assistant and paste its answer back), a full-length photo (needed only to try an outfit on her), a name or pseudonym (the profile is called by it in the list of people and in the verdict record) and consent to record shades together with verdicts. Step 2 {step_face}: three pairs of fields next to her face — gold or silver, pure white or milky white, warm or cool neutrals ({no_difference} is a full answer) — and whether her own colouring is bright or muted. These answers narrow the temperature of the palette when the photo cannot establish it; the step can be skipped and done later. Step 3 {step_figure}: shoulders, bust, waist and hips in cm at the widest point over underwear, and height; the code derives the figure type from them. {done} creates the profile and opens the case screen.
 
@@ -5605,7 +5607,8 @@ function написиДовідкиП(){
   const плитки = с => (с || []).filter(х => х && х.плитка).map(х => х.підпис);
   const безСтилістки = с => с.filter(х => х[0] !== СТИЛІСТКА_КЛЮЧ).map(х => х[1]);
   return {
-    tab_case: 'Сценарій', tab_outfits: 'Образи', tab_profile: 'Профіль', all_outfits: 'Усі образи ›',
+    tab_case: 'Сценарій', tab_outfits: 'Образи', tab_review: 'Оцінити', tab_profile: 'Профіль',
+    all_outfits: 'Усі образи ›',
     back: 'Назад', next: 'Далі', logo: 'люстерко', new_case_rail: 'Новий сценарій', saved: 'Збережені',
     new_case: 'Новий', delete: 'видалити', done: 'Готово', send: 'Надіслати',
     step_about: 'Про тебе', read_colours: 'Зчитати кольори з портрета',
@@ -5790,8 +5793,6 @@ function малюватиКарткуСценарію(){
                    || мкР || прР || СЦ.ід || КАРТКА_РУКОЮ);
   к.hidden = !єЩось;
   const р = $('сц-рукою-ряд'); if (р) р.style.display = єЩось ? 'none' : '';
-  /* «Оціни мій образ» (Л-6): поруч зі збиранням, коли картка є; під аркушем листа, коли нема */
-  перенести($('оц-кнопка'), єЩось ? $('оц-кнопка-місце') : $('оц-вхід-місце'));
   /* Поки сценарію нема, «Зберегти» й «Новий» нічого не означають: лишається
      «Збережені» — єдине, що на порожньому екрані має сенс. */
   { const нв = $('сц-новий'); if (нв) нв.hidden = !(єЩось || СЦ.ід || ЧАТ_П.length); }
@@ -7534,7 +7535,7 @@ async function старт(){
     if (РЕЖИМ === 'старт') екран(КОЛІР.шкіра ? 1 : 0);
     $('пф-вибір').onchange = е=>перемкнути(е.target.value);
     $('пф-новий').onclick = створитиПрофіль;
-    /* ВКЛАДКИ (v4.2): три розділи словами під великим пальцем. «Образи» веде до
+    /* ВКЛАДКИ (v4.2): чотири розділи словами під великим пальцем. «Образи» веде до
        останніх образів, а коли їх у цій вкладці ще нема — у бібліотеку. */
     $('вк-сценарій').onclick = ()=>{ if (РЕЖИМ !== 'очікування') режим('сценарій'); };
     $('вк-образи').onclick = ()=>{
@@ -7546,8 +7547,8 @@ async function старт(){
     $('знак').onclick = ()=>{ if (РЕЖИМ !== 'очікування') режим(домашнійРежим()); };
     $('пал-кнопка').onclick = ()=>режим('палітра');
     $('пал-назад').onclick = ()=>режим('сценарій');
-    /* «Оціни мій образ» (наряд Л-6): вхід — друга кнопка поруч зі збиранням, екран окремий */
-    $('оц-кнопка').onclick = ()=>режим('оцінка');
+    /* «Оціни мій образ» (наряд Л-6; вхід переїхав у панель 28.09): вкладка «Оцінити» */
+    $('вк-оцінка').onclick = ()=>{ if (РЕЖИМ !== 'очікування') режим('оцінка'); };
     $('оц-назад').onclick = ()=>режим('сценарій');
     привʼязатиОцінкуП();
     $('сцн-назад').onclick = ()=>режим('сценарій');
