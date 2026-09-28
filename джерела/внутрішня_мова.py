@@ -1780,6 +1780,13 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                   "needed — how much the map asks for; partial_warmth_items — how many layers "
                                   "warm only partly, like a trench)",
     "layers_to_temperature_map": "bring the layers to the day's map, in the band's fabrics",
+    "outer_layer_only_partly_warm_for_frost": "in this band the warmth is carried by the coat itself, and "
+                                              "this outer layer is only partly warm by its type — a jacket, "
+                                              "a bomber, a vest, a cardigan or a poncho (values: "
+                                              "temperature_c — the temperature, outer_type — its type code, "
+                                              "warmth_share — how much of a layer it counts as)",
+    "warmer_coat_not_a_fourth_item": "a warmer coat — insulated, or wool — instead of this one, rather than a "
+                                     "fourth item under it; a scarf, a hat and mittens close the rest",
     "cold_accessories_carry_no_colour": "in hard frost mostly the outer layer and the accessories are "
                                         "visible, and the hat, the scarf and the mittens are quiet here: all "
                                         "the colour stayed under the coat (values: temperature_c — the "
