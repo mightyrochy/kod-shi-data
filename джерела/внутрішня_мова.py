@@ -1109,7 +1109,11 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
                                         "ordinary straight cut; what follows holds only if the cut really is "
                                         "such",
-    "claim_boxy_cut_hides_waist": "a straight boxy cut hides her defined waist",
+    # МОВА ПРО РІЧ І ЛІНІЮ (28.09.2026, Ф-2): текст заяви їде мовній моделі, тож
+    # заборона корпусу на «ховає» (R-ONB-06, R-LNG-01) діє тут так само, як у `суть`.
+    # Було: "a straight boxy cut hides her defined waist" — річ діє на тіло. Стало:
+    # речення про крій і його власну лінію; геометрія знахідки не змінилась.
+    "claim_boxy_cut_does_not_follow_waist": "the cut runs straight past the waistline instead of following it",
     "claim_no_waist_no_column": "neither a waist nor an even column: the shape does not read",
     "claim_volume_without_anchor": "volume fits the body nowhere, so the body shows nowhere",
     "claim_volume_without_anchor_no_shape": "the outfit's volume touches the body nowhere and no shape reads: "
@@ -1132,8 +1136,11 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                       "contour without a marked waist, O — volume in the middle, I — a narrow "
                                       "straight contour, HX — a waist on the edge of being marked; never "
                                       "write the letters themselves, only the description)",
-    "look_shape_is": "the shape the outfit gives, with no judgement, because this outing does not aim to "
-                     "flatter the figure (values: look — shape codes: A — hips wider than shoulders, V — "
+    # Ф-2: було «does not aim to flatter the figure». Сенс той самий — мети `flatter`
+    # на цей вихід не поставлено, — але фраза дослівно та, яку R-LNG-01 забороняє
+    # (дієслово ефекту + зона). Мету називаємо ЇЇ КОДОМ, а не описом дії над тілом.
+    "look_shape_is": "the shape the outfit gives, with no judgement, because the goal for this outing is "
+                     "not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — "
                      "shoulders wider than hips, X — a marked waist, H — a straight contour without a marked "
                      "waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the "
                      "edge of being marked; never write the letters themselves, only the description)",
@@ -1810,7 +1817,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                        "buckle left as a detail, not a fastening (values: knot — back or "
                                        "front)",
     "raise_collar_free_state": "raising the collar is a free fourth state",
-    "raise_collar": "raise the collar: lengthens the neck, sharpens the silhouette",
+    # Ф-2: було "lengthens the neck" — ефект НА ТІЛІ без названої нею мети
+    # (R-LNG-01, звіт Research §6 п.2). Вертикаль біля обличчя — властивість речі.
+    "raise_collar": "raise the collar: it adds a vertical near the face and sharpens the silhouette",
     "high_stand_collar_frees_slot": "a high stand collar frees the slot: no scarf is needed, the stand "
                                     "carries the colour near the face by itself (values: slot — the code of "
                                     "the slot freed)",
