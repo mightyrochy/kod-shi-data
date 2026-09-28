@@ -216,7 +216,7 @@ async function підсумок(стор) {
       рядки: [...е.querySelectorAll('p.не-вийшло')].map(р => р.textContent.slice(0, 160))};
   }));
   const діагноз = await стор.evaluate(() => ((typeof ЗБ !== 'undefined' && ЗБ && ЗБ.діагноз) || [])
-    .filter(р => /^рука [12]|ЗБИРАННЯ ВПАЛО/.test(р) && !/зламана:|— код не знає:/.test(р)));
+    .filter(р => /^hand_[12]|^build · failed/.test(р) && !/^control · |· code_unknown=/.test(р)));
   const статус = await стор.evaluate(() => ((document.getElementById('зб-статус') || {}).textContent || '').trim());
   console.log('\nСЛАБКА МОДЕЛЬ (' + [...УВІМКНЕНІ].join('+') + ') — що дійшло до картки:'
     + (статус ? '\n   рядок стану збирання: «' + статус + '»' : ''));
