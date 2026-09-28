@@ -1545,6 +1545,18 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                               "connector item (values: metal — metal code)",
     "metal_tones_over_two": "there are more than two metal tones: the mix stops reading as an intention "
                             "(values: count — how many tones, metals — metal codes)",
+    "metal_variant_unsettled": "which metal is on this item's frame is unsettled: the shop names several "
+                               "metals for the same listing, or contradicts itself, alloy against name "
+                               "(values: items — list of {slot, variants — the shop's metal codes, named "
+                               "— the metal the code took, frame_tone — the tone the item's colour reads "
+                               "as})",
+    "named_metal_is_detail_not_surface": "the metal is named, yet the measurement found no cluster of its "
+                                         "tone on the surface of the outfit's items: on the frame the metal "
+                                         "is a detail — a trim, a charm, a setting — not the surface "
+                                         "(values: metal — metal code, items — how many metal items in the "
+                                         "outfit)",
+    "put_solid_metal_near_face": "if metal is to lead the outfit, put a piece that IS metal near the face, "
+                                 "not fabric with a metal trim",
     "reduce_to_two_metal_tones": "reduce it to two tones: remove the third or replace it with a two-tone "
                                  "item, or leave it in one small item far from the face",
     "she_asked_no_jewellery": "she asked for no jewellery, yet the outfit has some",
