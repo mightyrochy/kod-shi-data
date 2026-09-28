@@ -1020,18 +1020,60 @@
    "description": "її коментар до образу",
    "additionalProperties": false,
    "properties": {
+    "wear": {
+     "description": "чи вдягне вона цей образ, за її словами: as_is — так, як є; one_change — якщо змінити одну річ; no — ні",
+     "enum": [
+      "as_is",
+      "one_change",
+      "no",
+      "unknown"
+     ]
+    },
+    "mine": {
+     "description": "чи це її образ, за її словами: mine — саме її; pretty — гарний, але не її; not_mine — не її",
+     "enum": [
+      "mine",
+      "pretty",
+      "not_mine",
+      "unknown"
+     ]
+    },
     "reasons": {
-     "description": "що їй заважає в образі",
+     "description": "що їй заважає в образі: colour — колір; cut — фасон: крій, посадка, довжина, силует; combination — як речі поєднуються між собою; style — стиль, настрій, «не я»; occasion — доречність для нагоди чи місця; weather — погода, сезон; comfort — зручність: взуття, рух, тканина; price — ціна; photo — з фото не видно чи не зрозуміло, яка річ насправді; on_me — не певна, як це буде саме на ній",
      "type": "array",
      "items": {
-      "description": "причина",
+      "description": "аспект",
       "enum": [
-       "color_not_mine",
-       "cut_or_fit",
-       "wrong_occasion",
-       "wrong_weather",
-       "not_my_style",
-       "too_expensive",
+       "colour",
+       "cut",
+       "combination",
+       "style",
+       "occasion",
+       "weather",
+       "comfort",
+       "price",
+       "photo",
+       "on_me",
+       "unknown"
+      ]
+     }
+    },
+    "good": {
+     "description": "що в образі вдалось чи їй подобається; коди ті самі, що в reasons",
+     "type": "array",
+     "items": {
+      "description": "аспект",
+      "enum": [
+       "colour",
+       "cut",
+       "combination",
+       "style",
+       "occasion",
+       "weather",
+       "comfort",
+       "price",
+       "photo",
+       "on_me",
        "unknown"
       ]
      }
@@ -1059,21 +1101,56 @@
         ]
        },
        "reasons": {
-        "description": "чому",
+        "description": "чому; коди ті самі, що в reasons",
         "type": "array",
         "items": {
-         "description": "причина",
+         "description": "аспект",
          "enum": [
-          "color_not_mine",
-          "cut_or_fit",
-          "wrong_occasion",
-          "wrong_weather",
-          "not_my_style",
-          "too_expensive",
+          "colour",
+          "cut",
+          "combination",
+          "style",
+          "occasion",
+          "weather",
+          "comfort",
+          "price",
+          "photo",
+          "on_me",
           "unknown"
          ]
         }
        }
+      }
+     }
+    },
+    "shift": {
+     "description": "куди, за її словами, зсунути наступний образ цього виходу",
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "formality": {
+       "description": "more — ошатніший; less — простіший",
+       "enum": [
+        "more",
+        "less",
+        "unknown"
+       ]
+      },
+      "warmth": {
+       "description": "more — тепліший; less — легший",
+       "enum": [
+        "more",
+        "less",
+        "unknown"
+       ]
+      },
+      "attention": {
+       "description": "more — помітніший, яскравіший; less — спокійніший",
+       "enum": [
+        "more",
+        "less",
+        "unknown"
+       ]
       }
      }
     },
@@ -5135,13 +5212,31 @@
    "look": "look",
    "build": "build"
   },
-  "verdict_reason": {
-   "color_not_mine": "колір не мій",
-   "cut_or_fit": "крій або посадка",
-   "wrong_occasion": "не для цієї нагоди",
-   "wrong_weather": "не для погоди",
-   "not_my_style": "не мій стиль",
-   "too_expensive": "задорого"
+  "verdict_wear": {
+   "as_is": "вдягну як є",
+   "one_change": "вдягну, якщо змінити одну річ",
+   "no": "не вдягну"
+  },
+  "verdict_mine": {
+   "mine": "саме моє",
+   "pretty": "просто гарний",
+   "not_mine": "не моє"
+  },
+  "verdict_aspect": {
+   "colour": "colour",
+   "cut": "cut",
+   "combination": "combination",
+   "style": "style",
+   "occasion": "occasion",
+   "weather": "weather",
+   "comfort": "comfort",
+   "price": "price",
+   "photo": "photo",
+   "on_me": "on_me"
+  },
+  "direction": {
+   "more": "more",
+   "less": "less"
   },
   "opinion": {
    "like": "подобається",
