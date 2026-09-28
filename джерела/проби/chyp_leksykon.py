@@ -4,7 +4,7 @@
 (`palettes._назва`)? Окремо — три смуги хроми «червоної» сім'ї.
 Запуск із теки `джерела`: `python3 проби/chyp_leksykon.py`."""
 import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # `джерела`, не `проби`: інакше `import bridge` не знаходить модуля
 import bridge as B, verify as V, colorspace as cs
 
 

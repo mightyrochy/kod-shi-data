@@ -13,7 +13,7 @@ import json, os, sys
 sys.path.insert(0, ТУТ)
 os.chdir(ТУТ)
 import пакет_моделі as ПМ
-ПОКАЗ = ("знімк", "ціни нема")
+ПОКАЗ = ("знімк", "ціни нема", "no_photo_", "no_price")  # рядок 205: старі файли прозою, нові кодами
 ФАЙЛ = os.path.join(os.path.dirname(ТУТ), "аудит", "тести", "власник_2026-09-25",
                     "verdykty-0phxvk-2026-09-25-2012.json")
 for пр in json.load(open(ФАЙЛ, encoding="utf-8"))["прогони"]:
