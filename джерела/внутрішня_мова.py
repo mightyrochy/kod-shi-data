@@ -597,9 +597,9 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "cleaner_side_against_base": "a cleaner colour against a dark or light base",
     # ── схеми палітри: коли менш ходові й що з ними робити ───────────────────
     "same_fabric_reads_flat": "works less well when all items are of one fabric: without a difference in "
-                               "textures the outfit reads flat",
+                              "textures the outfit reads flat",
     "analogous_close_to_tonal": "differs from tonal only slightly: the difference is subtle to the eye, so "
-                                 "she may take whichever name she prefers",
+                                "she may take whichever name she prefers",
     "tonal_needs_wide_range": "take a wider range of lightness, from dark to light",
     "tonal_narrow_one_blot": "a too narrow tonal scheme reads as one blot on her contrast",
     "tonal_only_wide_works": "on her contrast only a wide tonal scheme works, from dark to light",
@@ -610,10 +610,10 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "analogous_flat_on_vivid": "without that jump neighbouring hues look flat on an expressive face",
     "accent_keep_muted": "keep the accent muted",
     "loud_accent_pulls_from_face": "a loud colour brings back sharp contrast and starts pulling attention "
-                                    "from the face",
+                                   "from the face",
     "contrast_holds_stronger_accent": "her contrast holds a more visible accent too — just not a loud one",
     "light_dark_plus_accent_natural": "a light and a dark neutral plus an accent is a natural pair for her "
-                                       "expressive contrast: the outfit repeats what is already in the face",
+                                      "expressive contrast: the outfit repeats what is already in the face",
     "boldest_everyday_move": "on her soft contrast this is the boldest of the everyday moves",
     "second_side_small_patch": "take the second side as a small patch",
     "pair_pulls_look_on_itself": "otherwise the pair pulls the outfit onto itself",
@@ -621,174 +621,174 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "two_clean_sides_argue": "two clean sides argue with each other",
     "contrast_takes_more_colour": "her contrast carries more colour than the other levels",
     "cleaner_side_needs_photo": "the cleaner side is taken only when the photo gave a reliable answer about "
-                                 "the brightness of her features; otherwise it stays muted",
+                                "the brightness of her features; otherwise it stays muted",
     "triad_three_families_limit": "together with the metal of the jewellery this reaches the limit of three "
-                                   "colour families, so the accessories can only repeat one of them",
+                                  "colour families, so the accessories can only repeat one of them",
     "contrast_mismatch": "the outfit's contrast is deliberately not her own: the face stays in its window and "
-                          "the rest of the lightness ladder shifts; a \"clothes in focus\" move, not a "
-                          "\"flatter the face\" one, hence rarer",
+                         "the rest of the lightness ladder shifts; a \"clothes in focus\" move, not a "
+                         "\"flatter the face\" one, hence rarer",
     "contrast_mismatch_levels": "the levels of this shift (values: look_level — the outfit's contrast, "
-                                 "own_level — her own; codes low, medium, high)",
+                                "own_level — her own; codes low, medium, high)",
     "bright_makeup_keeps_accent_muted": "bright make-up already holds attention on the face, so the accent in "
-                                         "the clothes stays muted",
+                                        "the clothes stays muted",
     "rarer_move": "this move is rarer",
     "rarer_than_everyday": "this scheme is less of an everyday one",
     "colour_families_at_once": "how many colour families the scheme holds at once (values: families — a "
-                                "number)",
+                               "number)",
     "code_does_not_advise_here": "for this outing the stylist does not advise it by itself",
     "no_catalogue_filter_yet": "there is no selection for this scheme yet: if she chooses it, no items are "
-                                "picked, and this is said in a line instead of silence",
+                               "picked, and this is said in a line instead of silence",
     # ── КАРТКА ОБРАЗУ: ЧИ ВИЙШЛА ОБІЦЯНКА СХЕМИ ПАЛІТРИ (рядки 127, 133, 145) ──
     # Назви схем і слова кольорів — ВІЛЬНИЙ ТЕКСТ, і це свідомо: схему жінка щойно бачила
     # тим самим словом на плитці палітри, а колір речі — тим самим словом крамниці, що в
     # підписі на картці. Перекладачка ці слова не міняє, вона лише будує з них речення.
     "scheme_chosen_by_her": "she chose this palette scheme herself (values: scheme — the scheme's name)",
     "scheme_chosen_by_stylist": "the stylist chose this outfit's palette scheme for her (values: scheme — the "
-                                 "scheme's name)",
+                                "scheme's name)",
     "scheme_taken_by_code": "this outfit's palette scheme was taken by default; she did not choose it "
-                             "(values: scheme — the scheme's name)",
+                            "(values: scheme — the scheme's name)",
     "scheme_not_in_code_substituted": "the named scheme is not in today's set, so the outfit was built by "
-                                       "another one (values: asked — the one she asked for, given — the one it "
-                                       "was built by)",
+                                      "another one (values: asked — the one she asked for, given — the one it "
+                                      "was built by)",
     "not_a_refusal_of_her_choice": "this is not a refusal of her choice: the scheme simply does not exist "
-                                    "here yet",
+                                   "here yet",
     "scheme_asks_no_colour_in_mourning": "this scheme asks for no colour: the outfit keeps to dark, quiet "
-                                          "tones without a colour accent",
+                                         "tones without a colour accent",
     "scheme_rests_on_her_item_colour": "the scheme rests on the colour of her own item, and the rest of the "
-                                        "outfit is built around it (values: item — the colour word of that "
-                                        "item; from_photo — whether the item comes from a photo)",
+                                       "outfit is built around it (values: item — the colour word of that "
+                                       "item; from_photo — whether the item comes from a photo)",
     "scheme_rests_on_colour": "the scheme rests on a colour",
     "colour_to_be_carried_by_slots": "the colour was to be carried by these slots of the outfit (values: "
-                                      "slots — slot codes)",
+                                     "slots — slot codes)",
     "look_came_out_all_neutral": "but this outfit came out all neutral",
     "coloured_items_in_pool_exist": "coloured items for this scheme exist in the selection",
     "shop_calls_them_words": "items for this scheme exist in the selection, and the shop calls them these "
-                              "words (values: words — the shop's words)",
+                             "words (values: words — the shop's words)",
     "colour_only_where_look_has_none": "the colour exists only in slots this outfit does not have (values: "
-                                        "slots — slot codes)",
+                                       "slots — slot codes)",
     "her_item_stands_in_slot": "her own item stands in these slots, and the code does not change it (values: "
-                                "slots — slot codes)",
+                               "slots — slot codes)",
     "mark_not_this_and_rebuild": "marking \"not this one\" on the outfit's item in the named slot rebuilds "
-                                  "the outfit, this time with colour (values: slot — slot code)",
+                                 "the outfit, this time with colour (values: slot — slot code)",
     "scheme_asked_for_shade": "the scheme asked for a colour in the named shade (values: anchor — where the "
-                               "shade comes from: eyes, hair, skin; base — the word of her chosen base; "
-                               "families — words of colour families when there is no anchor)",
+                              "shade comes from: eyes, hair, skin; base — the word of her chosen base; "
+                              "families — words of colour families when there is no anchor)",
     "shade_not_in_catalogue_at_all": "the catalogue has no items of this shade for these slots today at all",
     "shade_not_found_for_her": "none of this shade was found today for her sizes and this occasion",
     "built_from_what_was_found": "built from what was found (values: colours — the shop's words for the "
-                                  "colours of the outfit's items)",
+                                 "colours of the outfit's items)",
     "assortment_gap_not_advice": "this is a gap in the assortment, not advice against her choice",
     "pool_limit_not_advice": "this is the limit of the selection for her sizes and this occasion, not advice "
-                              "against her choice",
+                             "against her choice",
     # ── КАРТКА ОБРАЗУ: СХЕМА ВЕЛИКИХ ПОВЕРХОНЬ (рядок 133) ───────────────────
     "scheme_big_surfaces_equal": "the scheme means the named colours on the large items in roughly equal "
-                                  "parts (values: families — family words in order; count — how many: 3 — "
-                                  "three colours, 2 — the two sides of a pair)",
+                                 "parts (values: families — family words in order; count — how many: 3 — "
+                                 "three colours, 2 — the two sides of a pair)",
     "families_present_but_unbalanced": "all of them are in the outfit, but one colour takes most of it and "
-                                        "another very little: more equal areas hold the scheme better (values: "
-                                        "most, least — the words of those colours)",
+                                       "another very little: more equal areas hold the scheme better (values: "
+                                       "most, least — the words of those colours)",
     "big_items_carry_only_some": "the large items of this outfit carry some of these colours and not the "
-                                  "others (values: present, missing — colour words)",
+                                 "others (values: present, missing — colour words)",
     "big_items_all_neutral": "the large items of this outfit are neutral",
     "accessory_only_echoes_colour": "this accessory has the colour, but it only echoes it here (values: slot "
-                                     "— slot code, colour — colour word)",
+                                    "— slot code, colour — colour word)",
     "pool_has_big_items_mark_not_this": "the selection has large items of these colours: marking \"not this "
-                                         "one\" on the named items rebuilds the outfit (values: colours — "
-                                         "colour words, slots — slot codes)",
+                                        "one\" on the named items rebuilds the outfit (values: colours — "
+                                        "colour words, slots — slot codes)",
     "colour_can_be_added_as_layer": "these colours can be added as a layer, and such items exist in the "
-                                     "selection (values: pairs — pairs {colour, layer}, layer — the slot code "
-                                     "of the layer)",
+                                    "selection (values: pairs — pairs {colour, layer}, layer — the slot code "
+                                    "of the layer)",
     "needs_separate_top_and_bottom": "these colours need a separate top and bottom instead of a one-piece "
-                                      "item: marking \"not this one\" on it rebuilds the outfit (values: "
-                                      "colours — colour words, whole — slot code of the one-piece item)",
+                                     "item: marking \"not this one\" on it rebuilds the outfit (values: "
+                                     "colours — colour words, whole — slot code of the one-piece item)",
     "big_items_of_colour_elsewhere": "large items of these colours exist in the selection among these slots "
-                                      "(values: colours — colour words, slots — slot codes)",
+                                     "(values: colours — colour words, slots — slot codes)",
     "big_items_of_colour_not_found": "no large items of these colours were found today for her sizes and this "
-                                      "occasion (values: colours — colour words; none_in_catalogue — true when "
-                                      "the catalogue has none at all)",
+                                     "occasion (values: colours — colour words; none_in_catalogue — true when "
+                                     "the catalogue has none at all)",
     # ── КАРТКА ОБРАЗУ: ЩО КОД ЗРОБИВ ДЛЯ ТРАУРНОЇ НАГОДИ (рядок 154) ─────────
     "mourning_funeral": "the outfit is for a funeral",
     "mourning_period": "she is in mourning",
     "mourning_only_dark": "only dark items went into the selection: nothing light, bright or festively "
-                           "trimmed",
+                          "trimmed",
     "mourning_only_dark_and_quiet": "only dark and quiet items went into the selection: nothing light, bright "
-                                     "or festively trimmed",
+                                    "or festively trimmed",
     "mourning_shine_unknown_one": "whether one named item shines near the face is unknown (values: item — the "
-                                   "item's name; said_in — where the shine is mentioned: name — in the item's "
-                                   "name, shop — the shop says so; words — those words themselves; photo — how "
-                                   "the material read from the photo, or none)",
+                                  "item's name; said_in — where the shine is mentioned: name — in the item's "
+                                  "name, shop — the shop says so; words — those words themselves; photo — how "
+                                  "the material read from the photo, or none)",
     "mourning_shine_unknown_many": "whether the named items shine near the face is unknown: the shop and the "
-                                    "photo name different materials (values: items — the items' names)",
+                                   "photo name different materials (values: items — the items' names)",
     "mourning_no_metal_near_face": "the selection has no metal jewellery near the face (necklaces, earrings): "
-                                    "in mourning there is no shine near the face, and she has not said which "
-                                    "jewellery she wants; once she says \"silver\" or \"gold\", it appears",
+                                   "in mourning there is no shine near the face, and she has not said which "
+                                   "jewellery she wants; once she says \"silver\" or \"gold\", it appears",
     "her_own_choice_kept_as_is": "what she named herself stayed in the selection as it is",
     # ── КАРТКА ОБРАЗУ: ЦІНА НОСІННЯ ЗА ЦЕЙ ВИХІД (рядок 173) ─────────────────
     "heel_cost_on_surface": "the heel of this pair is a noticeable cost for the feet on this surface (values: "
-                             "surface — surface code)",
+                            "surface — surface code)",
     "heel_cost_long_walk": "the heel of this pair is a noticeable cost for the feet on a long walk",
     "heel_cost_long_day": "the heel of this pair is a noticeable cost for the feet over a long day on her "
-                           "feet",
+                          "feet",
     "not_a_ban_her_choice": "this is not a ban: the choice is hers",
     "flat_pair_removes_cost": "a low-heeled pair removes this cost",
     "swap_pair_example": "such a pair, for example: she can take it along and change shoes when she wants",
     # ── КАРТКА ОБРАЗУ: МАТЕРІАЛ У ПОГОДУ ЦЬОГО ДНЯ (рядок 193) ───────────────
     "material_on_salted_road": "the named materials spoil on a salted road when untreated (values: materials "
-                                "— material codes)",
+                               "— material codes)",
     "material_in_rain": "the named materials soak and spoil in rain when untreated (values: materials — "
-                         "material codes)",
+                        "material codes)",
     "impregnate_or_smooth_leather": "the choice is hers: waterproof it three times with drying in between, or "
-                                     "take smooth leather",
+                                    "take smooth leather",
     "impregnate_or_smooth_or_textile": "the choice is hers: waterproof it beforehand, or take smooth leather "
-                                        "or a textile",
+                                       "or a textile",
     # ── ЇЇ ВЛАСНА РІЧ: ЧИ ПІДІЙДЕ (`річ_з_фото.вердикт`) ─────────────────────
     "item_suits": "the item suits her",
     "item_suits_with_condition": "the item suits her with a condition",
     "item_better_another": "another item is better: this one suits this occasion worse",
     "item_can_still_build": "an outfit can still be built with it: the rest of the outfit is picked so as to "
-                             "soften it",
+                            "soften it",
     "cannot_say_if_suits": "whether it suits her cannot be said yet",
     "occasion_not_named_everyday": "she named no occasion, so the item was judged for an ordinary day",
     "colour_in_her_palette": "the item's colour is in her palette",
     "colour_edge_of_palette_near_face": "the colour is on the edge of her palette and the item is close to "
-                                         "the face: her neutral near the face (a scarf, collar or earrings in "
-                                         "her colours) lets this colour sit further away without bothering her",
+                                        "the face: her neutral near the face (a scarf, collar or earrings in "
+                                        "her colours) lets this colour sit further away without bothering her",
     "colour_outside_palette_near_face": "the colour is far from her palette and the item is close to the "
-                                         "face: her neutral near the face (a scarf, collar or earrings in her "
-                                         "colours) lets this colour sit further away without bothering her",
+                                        "face: her neutral near the face (a scarf, collar or earrings in her "
+                                        "colours) lets this colour sit further away without bothering her",
     "colour_outside_palette_far_from_face": "the colour is not from her palette, but the item is far from the "
-                                             "face, where it does not bother her",
+                                            "face, where it does not bother her",
     "item_contrast_higher_near_face": "the item's contrast with her face is higher than her own: something of "
-                                       "intermediate lightness between it and the face (a scarf or collar)",
+                                      "intermediate lightness between it and the face (a scarf or collar)",
     "item_contrast_lower_near_face": "near the face the item is quieter than her own contrast: a detail "
-                                      "enlivens the face (shiny jewellery, a light detail or lipstick)",
+                                     "enlivens the face (shiny jewellery, a light detail or lipstick)",
     "cut_against_her_figure": "the cut leads the contour away from where her figure asks (values: balance — "
-                               "how to balance it; this is the corpus's advice as free text, retell its "
-                               "content rather than quoting it)",
+                              "how to balance it; this is the corpus's advice as free text, retell its "
+                              "content rather than quoting it)",
     "item_more_casual_than_occasion": "the item is casual for this occasion: raise the level with the rest of "
-                                       "the outfit",
+                                      "the outfit",
     "item_dressier_than_occasion": "the item is too dressy for this occasion: tone the level down with the "
-                                    "rest of the outfit",
+                                   "rest of the outfit",
     "material_ruined_by_rain": "the item's material is ruined by rain, so another is better today (values: "
-                                "material — the material)",
+                               "material — the material)",
     "outer_layer_unneeded_warm": "at this temperature an outer layer is unnecessary",
     "colour_from_her_words_not_photo": "the colour was taken from her description, not from a photo (values: "
-                                        "colour — how she named it)",
+                                       "colour — how she named it)",
     "colour_unknown_not_checked": "this item's colour is unknown, as there is no photo and no colour was "
-                                   "named, so the item was not checked against her palette; a colour in words "
-                                   "makes the check possible",
+                                  "named, so the item was not checked against her palette; a colour in words "
+                                  "makes the check possible",
     # ── ЇЇ РІЧ НА КАРТЦІ: ЧИМ РЕШТА ОБРАЗУ ЇЇ ПОМʼЯКШУЄ (`річ_з_фото.помʼякшення`) ──
     "her_item_in_every_look": "she chose this item herself, so it stands in every outfit",
     "colour_unknown_rest_not_matched": "this item's colour is unknown, as there is no photo and she named no "
-                                        "colour, so the rest of the outfit was not matched to it by colour",
+                                       "colour, so the rest of the outfit was not matched to it by colour",
     "near_face_her_neutral_or_palette_colour": "near the face: her neutral or a colour of her palette (a "
-                                                "scarf, collar or earrings)",
+                                               "scarf, collar or earrings)",
     "between_item_and_face_mid_lightness": "between the item and the face: an item of intermediate lightness "
-                                            "(a scarf or collar)",
+                                           "(a scarf or collar)",
     "near_face_shine_or_light_detail": "near the face: shiny jewellery or a light detail",
     "balance_contour_with_rest": "balance the contour with the rest of the outfit (values: balance — how "
-                                  "exactly; this is the corpus's advice as free text, retell its content "
-                                  "rather than quoting it)",
+                                 "exactly; this is the corpus's advice as free text, retell its content "
+                                 "rather than quoting it)",
     "raise_formality_with_rest": "raise the level of dressiness with the rest of the outfit",
     "lower_formality_with_rest": "tone the level of dressiness down with the rest of the outfit",
     "outer_layer_and_shoes_for_rain": "an outer layer that covers from the rain, and shoes for a wet road",
@@ -797,41 +797,41 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     # мовна модель. Чотири стани різні, і мішати їх означало б повернути тишу (п.4).
     "her_item_not_in_looks_she_said_no": "she said not to use this item in the outfits",
     "her_item_slot_unclear": "what this item is and where its place in an outfit is has not been worked out, "
-                              "so it did not go into every outfit; once she names it in words, it does",
+                             "so it did not go into every outfit; once she names it in words, it does",
     "her_item_not_named_others_in_frame": "this photo has several items and she did not mention this one, so "
-                                           "it is unknown whether it is hers; once she says it is, it goes "
-                                           "into every outfit",
+                                          "it is unknown whether it is hers; once she says it is, it goes "
+                                          "into every outfit",
     "her_item_later_item_in_same_place": "a later item of hers from a photo stands in this place of the "
-                                          "outfit",
+                                         "outfit",
     # ── КАРТКА ОБРАЗУ: ЧОГО В НЬОМУ НЕМА І ЩО ДОКЛАВ КОД (ярус 3, рядки 146, 202) ──
     "look_incomplete": "the outfit is incomplete",
     "several_items_in_one_slot": "several items stand in each of these slots: keep one in each (values: slots "
-                                  "— slot codes; without them just \"several items in one slot\")",
+                                 "— slot codes; without them just \"several items in one slot\")",
     "blocker_reason": "a reason named by the corpus (values: reason — the rule's free text: retell its "
-                       "content rather than quoting it)",
+                      "content rather than quoting it)",
     "more_blockers_in_report": "the other reasons stayed in the report (values: count — how many)",
     "layers_do_not_stack": "the layers of this outfit will not stack (values: reason — the rule's point as "
-                            "free text: retell its content rather than quoting it)",
+                           "free text: retell its content rather than quoting it)",
     "repair_failed_needs_thinner_top": "the repair did not work: this layer needs a thinner, fitted top under "
-                                        "it",
+                                       "it",
     "tried_swaps_all_flawed": "removing the layer and several swaps from the selection were tried, and no "
-                               "variant comes together without another flaw (values: swaps — how many swaps)",
+                              "variant comes together without another flaw (values: swaps — how many swaps)",
     "no_other_item_for_that_slot": "the selection has no other item for this place, and without the layer the "
-                                    "outfit does not work",
+                                   "outfit does not work",
     "no_other_combination_take_another_top": "the selection has no other combination today: take another top "
-                                              "or remove the outer layer",
+                                             "or remove the outer layer",
     "needs_coat_none_in_pool": "this weather needs a coat or a warm jacket, and the selection for this "
-                                "occasion has none today: she takes her own (values: temperature_c — the day's "
-                                "temperature as the code knows it; precipitation — code of wet precipitation, "
-                                "when there is any)",
+                               "occasion has none today: she takes her own (values: temperature_c — the day's "
+                               "temperature as the code knows it; precipitation — code of wet precipitation, "
+                               "when there is any)",
     "catalogue_has_none_for_case": "the catalogue has no needed item for this case, so the outfit stays "
-                                    "incomplete; a gap in the catalogue, not in the display (values: missing — "
-                                    "code of what is missing)",
+                                   "incomplete; a gap in the catalogue, not in the display (values: missing — "
+                                   "code of what is missing)",
     "code_added_to_empty_slots": "the stylist left these places of the outfit empty and the code filled them; "
-                                  "the outfit is not ready without them (values: slots — slot codes)",
+                                 "the outfit is not ready without them (values: slots — slot codes)",
     "weather_needs_outerwear": "this weather cannot be met without a coat or a warm jacket (values: "
-                                "temperature_c — the day's temperature as a number, as the code knows it; "
-                                "precipitation — the code of wet precipitation when there is any)",
+                               "temperature_c — the day's temperature as a number, as the code knows it; "
+                               "precipitation — the code of wet precipitation when there is any)",
     # ── КАРТКА ОБРАЗУ: ЧОМУ БІЛЯ РЕЧІ НЕМА ЗНІМКА ────────────────────────────
     "item_added_by_code": "this item was picked by the selection, not by the stylist",
     "no_photo_feed_gave_none": "the shop gave no photo of this item in the feed",
@@ -846,33 +846,33 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     # коду, ні тексту), а мовчазний кадр не каже й поготів, — тож заява стверджує рівно
     # те, що код знає, і ні слова більше.
     "no_photo_frames_did_not_open": "the shop did give photos of this item in the feed, but none of them "
-                                     "opened, and why exactly is unknown",
+                                    "opened, and why exactly is unknown",
     # ── ВІДТІНОК ПОМАДИ: ЧОМУ МЕНШ ХОДОВИЙ (Ч-3, `помада.суд`, R-MUA-03) ─────
     # Доти `помада.py` писала ці причини сама («світліша за твою шкіру — кроку контрасту не
     # дасть») і віддавала їх показу готовим рядком. Тепер — коди; речення пише мовна модель.
     # Жодна з них вибору не блокує: рішення власника 21.09 («все можливе доступне людині для
     # вибору, можна просто мʼяко написати причину, чому вони менш „ходові“»).
     "lipstick_lighter_than_skin": "the shade is lighter than her skin, so it gives no step of contrast near "
-                                   "the face",
+                                  "the face",
     "lipstick_too_close_to_skin": "the shade is too close to her skin, so it gives no step of contrast near "
-                                   "the face",
+                                  "the face",
     "lipstick_cooler_than_undertone": "the shade is cooler than her undertone",
     "lipstick_warmer_than_undertone": "the shade is warmer than her undertone",
     "lipstick_too_loud_for_olive_skin": "muted shades suit her olive skin, and this one is too loud",
     "lipstick_too_much_white_pigment": "on her skin this is already a statement, not a nude: too much white "
-                                        "pigment",
+                                       "pigment",
     # ── ЯРУС 4: ЩО КОД ЗНЯВ АБО ЗАМІНИВ У ОБРАЗІ СТИЛІСТКИ (Ч-3, `повнота_образу._рядок_ремонту`) ──
     # Доти цей ярус складав ФРАЗУ («Код зняв «…» з образу стилістки, бо таких речей ти не
     # носиш.») і дописував її до повідомлення добору через `"%s %s"` — тобто в рядок ішов
     # `repr` словника внутрішньої мови, і жінка читала його на картці. Тепер ярус віддає
     # заяви, і повідомлення в полі лишається ОДНЕ.
     "code_removed_item_from_stylist_look": "the named item was removed from the stylist's outfit (values: "
-                                            "item — the item's name)",
+                                           "item — the item's name)",
     "code_swapped_item_from_stylist_look": "the named item was replaced with another one from the same "
-                                            "selection (values: was — what it was, now — what it is now)",
+                                           "selection (values: was — what it was, now — what it is now)",
     "code_removed_this_layer": "the layer named above is exactly the one removed from the stylist's outfit",
     "set_already_has_top_and_bottom": "the set already has its own top and bottom, so a separate item there "
-                                       "would be a second one in the same place (values: slot — slot code)",
+                                      "would be a second one in the same place (values: slot — slot code)",
     "two_items_one_slot_not_worn": "two items in one place of an outfit are not worn",
     "item_failed_weather_of_day": "this item did not hold up to the day's weather",
     "item_outside_chosen_scheme": "this item fell outside the colours of the scheme she chose",
@@ -883,22 +883,22 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "frame_does_not_fit_her_eyes": "this frame will not fit her eyes",
     "item_does_not_fit_shoulders": "this item will not fit in the shoulders",
     "item_failed_check_unnamed": "the outfit with this item did not pass the check, and what exactly failed "
-                                  "is not named here",
+                                 "is not named here",
     "layer_gate_reason": "a reason named by the corpus about the stacking of layers (values: reason — the "
-                          "rule's free text: retell its content rather than quoting it)",
+                         "rule's free text: retell its content rather than quoting it)",
     # ── екран палітри без її вибору: обирає стилістка (П-7, `вибір_палітри`) ─────
     "stylist_will_choose": "until she chooses, the stylist picks the scheme and base for her occasion",
     "stylist_chose_scheme": "the stylist chose the scheme for this outing: items are picked for it and the "
-                             "accent is checked against it (values: scheme — the scheme's name)",
+                            "accent is checked against it (values: scheme — the scheme's name)",
     "stylist_chose_base": "the stylist chose the base, the outfit's main colour (values: base — the colour's "
-                           "name; shade — light, dark, absent means medium)",
+                          "name; shade — light, dark, absent means medium)",
     "stylist_chose_saturation": "the stylist chose the outfit's colour saturation (values: saturation — "
-                                 "muted, medium, vivid)",
+                                "muted, medium, vivid)",
     "stylist_did_not_choose": "the stylist did not choose this part for her this time (values: why — "
-                               "no_model: the stylist was unavailable; unreadable: her answer could not be "
-                               "read; outside_list: she named something that is not among the possible ones)",
+                              "no_model: the stylist was unavailable; unreadable: her answer could not be "
+                              "read; outside_list: she named something that is not among the possible ones)",
     "first_scheme_of_advice": "so the outfit follows the first scheme of our advice for her colouring "
-                               "(values: scheme — the scheme's name)",
+                              "(values: scheme — the scheme's name)",
     "base_from_her_features": "no separate base: the scheme's shades come from her eye, hair or skin colour",
     # причини стилістки — ті самі коди, що в `вибір_палітри.ПРИЧИНИ` (там — англійською для неї)
     "why_her_contrast": "because it keeps her own light-dark contrast of the face",
@@ -913,7 +913,7 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "why_weather": "because it suits the day's weather, season and light",
     "why_her_words": "because it follows what she asked for",
     "why_first_advice": "because it is the first advice for her colouring and this outing asks for nothing "
-                         "else",
+                        "else",
     "schemes_advised_count": "how many schemes the stylist advises for this outfit (values: count — a number)",
     "rarer_schemes_count": "how many schemes are rarer; they can be chosen too (values: count — a number)",
     "choose_another_if_wants": "she can choose another one herself if she wants",
@@ -925,98 +925,98 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     # пише мовна модель. `суть` лишилась діагнозом суду для звіту власника (`етапи`).
     # ── колір лише словом, а не вимір (`колір_річ.без_входу_кольору`) ──────────
     "colour_word_shop": "the code knows the colour of the named items only from the shop's word, not from "
-                         "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
+                        "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
     "colour_word_model": "the code knows the colour of the named items only from the model's word, not from "
-                          "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
+                         "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
     "colour_word_not_photo": "the colour of the named items comes from a word, not from measuring the photo "
-                              "(values: items — items: slot — slot code, colour — colour word)",
+                             "(values: items — items: slot — slot code, colour — colour word)",
     "cannot_tell_item_holds_scheme_hue": "so the code cannot tell whether the item holds the hue of the "
-                                          "chosen palette scheme",
+                                         "chosen palette scheme",
     "cannot_tell_look_contrast_matches_hers": "so the code cannot tell whether the outfit's contrast matches "
-                                               "her own",
+                                              "her own",
     "cannot_tell_look_follows_her_combinations": "so the code cannot tell whether the outfit's colours follow "
-                                                  "the logic of her combinations",
+                                                 "the logic of her combinations",
     "cannot_tell_complementary_pair_leads": "so the code cannot tell whether a pair of opposite colours leads "
-                                             "the outfit",
+                                            "the outfit",
     "cannot_tell_drama_by_chroma": "so the code cannot tell whether a loud colour makes the outfit expressive "
-                                    "instead of the difference between light and dark",
+                                   "instead of the difference between light and dark",
     "cannot_tell_accent_echoed": "so the code cannot tell whether the accent colour repeats elsewhere in the "
-                                  "outfit",
+                                 "outfit",
     "cannot_tell_two_accent_surfaces_match": "so the code cannot tell whether two accent items match exactly "
-                                              "in colour",
+                                             "in colour",
     "cannot_tell_lightness_structure": "so the code cannot tell which structure of light and dark the outfit "
-                                        "carries",
+                                       "carries",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
-                                          "differ visibly",
+                                         "differ visibly",
     "cannot_tell_two_different_whites": "so the code cannot tell whether the outfit has two different whites, "
-                                         "cream and optical",
+                                        "cream and optical",
     "cannot_tell_two_loud_colours_clash": "so the code cannot tell whether two loud colours compete for "
-                                           "attention",
+                                          "attention",
     "cannot_tell_items_intensity_match": "so the code cannot tell whether the outfit's items match in colour "
-                                          "saturation",
+                                         "saturation",
     "cannot_tell_coordination_rank": "so the code cannot tell how well the outfit's colours are coordinated",
     # ── правила, яким входу нема ніде (`верхнє_суд.БЕЗ_ВХОДУ`, `аксесуари_суд.БЕЗ_ВХОДУ`) ──
     "no_input_outer_warmth": "nobody publishes the warmth of an outer layer as a number, so the code judges "
-                              "whether it is enough for this weather only by the item's type",
+                             "whether it is enough for this weather only by the item's type",
     "no_input_down_fill_power": "the cards do not carry down quality together with filling weight, so the "
-                                 "code does not read the warmth of a down jacket as a number",
+                                "code does not read the warmth of a down jacket as a number",
     "no_input_filling_loft": "the cards do not carry the filling's thickness, so the code does not know how "
-                              "much room it takes under an outer layer",
+                             "much room it takes under an outer layer",
     "no_input_down_category_meaning": "nobody has checked yet whether a shop's \"down jacket\" is real down "
-                                       "and not synthetic, so the code does not count warmth by the category "
-                                       "name",
+                                      "and not synthetic, so the code does not count warmth by the category "
+                                      "name",
     "no_input_belt_height_petite": "sources advise different heights for the belt of an outer layer on a "
-                                    "petite figure, so the code does not advise this",
+                                   "petite figure, so the code does not advise this",
     "no_input_pocket_type_on_hip": "the cards do not say whether an outer layer's hip pockets are patch or "
-                                    "slit, so the code does not judge how they lie on the hips",
+                                   "slit, so the code does not judge how they lie on the hips",
     "no_input_ease_look_vs_move": "the difference between ease \"for the look\" and ease \"for movement\" in "
-                                   "a woman's coat is not researched yet, so the code does not judge it",
+                                  "a woman's coat is not researched yet, so the code does not judge it",
     "no_input_collar_vs_face": "the code does not match collar shapes to face shapes: there is no evidence "
-                                "for women, only the men's shirt tradition",
+                               "for women, only the men's shirt tradition",
     "no_input_hand_finger_neck_sizes": "the code does not check glove, ring and choker sizes against her: it "
-                                        "has no palm, finger or neck measurements",
+                                       "has no palm, finger or neck measurements",
     "no_input_frame_size": "the catalogue has no glasses, so the code does not check frame size against her "
-                            "face",
+                           "face",
     "no_input_watch_size": "the catalogue has no watches, so the code does not check watch size against the "
-                            "wrist",
+                           "wrist",
     "no_input_glove_size": "the catalogue has no gloves and the code has no size system for them, so it does "
-                            "not check glove size",
+                           "not check glove size",
     "no_input_hat_girth": "no hat in the catalogue carries a girth in its card, so the code does not check "
-                           "hat size against the head",
+                          "hat size against the head",
     "no_input_hardware_metal": "shops do not state the metal of hardware (buckles, clasps, bag fittings), so "
-                                "the code counts metal mixing only by the jewellery",
+                               "the code counts metal mixing only by the jewellery",
     "no_input_scarf_chosen_last": "the code picks the scarf together with the rest of the items, not last, "
-                                   "for what the outfit lacks",
+                                  "for what the outfit lacks",
     "no_input_pocket_square": "the catalogue has no pocket squares, so the code does not apply rules on their "
-                               "fold and fabric",
+                              "fold and fabric",
     "no_input_lens_prescription": "the code does not know the strength of her lenses, so it does not restrict "
-                                   "frames for a prescription",
+                                  "frames for a prescription",
     "no_input_facial_feature_scale": "the code does not read the scale and direction of her facial features "
-                                      "from the photo, so it does not size jewellery to them",
+                                     "from the photo, so it does not size jewellery to them",
     "no_input_stone_clarity_band_width": "the cards do not carry stone clarity or band width, so the code "
-                                          "counts the visibility of jewellery only roughly: visible or not",
+                                         "counts the visibility of jewellery only roughly: visible or not",
     "no_input_brooch_weight": "the cards do not carry brooch weights, so the code does not know whether a "
-                               "brooch pulls a thin fabric",
+                              "brooch pulls a thin fabric",
     "no_input_hat_brim_vs_cheekbones": "the cards do not carry brim width and the code has no face width, so "
-                                        "it does not match brims to cheekbones",
+                                       "it does not match brims to cheekbones",
     "no_input_shoes_formality_outlier_rule": "the corpus has no separate rule on shoes dressier or more "
-                                              "casual than the rest of the outfit; the neighbouring rule on "
-                                              "shoe dressiness does the same check",
+                                             "casual than the rest of the outfit; the neighbouring rule on "
+                                             "shoe dressiness does the same check",
     "no_input_toe_shape": "the cards do not carry the toe shape of shoes, so the code does not know how it "
-                           "changes the pair's dressiness",
+                          "changes the pair's dressiness",
     # ── ворота розміру (`аксесуари_розмір`) ──────────────────────────────────
     "shoe_size_not_checked": "the code did not check the pair's size against her foot (values: item — item "
-                              "name)",
-    "hat_size_not_checked": "the code did not check the hat's size against her head (values: item — item "
                              "name)",
+    "hat_size_not_checked": "the code did not check the hat's size against her head (values: item — item "
+                            "name)",
     "frame_size_not_checked": "the code did not check the frame's size against her face (values: item — item "
-                               "name)",
+                              "name)",
     "watch_size_not_checked": "the code did not check the watch's size against her wrist (values: item — item "
-                               "name)",
+                              "name)",
     "glove_size_not_checked": "the code did not check the gloves' size against her palm (values: item — item "
-                               "name)",
+                              "name)",
     "her_foot_length_unknown": "the code does not know her foot length; it is one question of the "
-                                "questionnaire",
+                               "questionnaire",
     "her_head_girth_unknown": "the code does not know her head girth; it is one question of the questionnaire",
     "her_pupil_distance_unknown": "the code does not know the distance between her pupils",
     "her_wrist_girth_unknown": "the code does not know her wrist girth",
@@ -1027,1015 +1027,1015 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "item_lug_width_unknown": "the card does not carry the watch's lug width",
     "item_glove_size_unknown": "the card does not carry the gloves' size mark",
     "item_frame_size_unreadable": "the code could not read the frame size from the card (values: item — item "
-                                   "name)",
+                                  "name)",
     # ── спосіб носіння (`аксесуари_структура`, `аксесуари_суд`) ────────────────
     "wear_way_not_chosen": "how she wears this item is not chosen yet, and which rules apply to it depends on "
-                            "that; all the ways are equal and she is the one who chooses (values: item — the "
-                            "item's name; ways — codes of the ways: hand — in the hand, shoulder — on the "
-                            "shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, "
-                            "shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the "
-                            "bag handle, wrist — on the wrist, as_top — instead of a top)",
+                           "that; all the ways are equal and she is the one who chooses (values: item — the "
+                           "item's name; ways — codes of the ways: hand — in the hand, shoulder — on the "
+                           "shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, "
+                           "shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the "
+                           "bag handle, wrist — on the wrist, as_top — instead of a top)",
     "scarf_near_face_way_unknown": "whether she wears this scarf near the face; which top suits her depends "
-                                    "on it, since a scarf near the face carries colour there by itself "
-                                    "(values: item — item name; ways — codes of wearing ways: neck, hair, "
-                                    "shoulders)",
+                                   "on it, since a scarf near the face carries colour there by itself "
+                                   "(values: item — item name; ways — codes of wearing ways: neck, hair, "
+                                   "shoulders)",
     "face_frame_carrier_no_palette_data": "an item near the face could widen the choice of tops, but this "
-                                           "time the code had no palette data for that (values: item — item "
-                                           "name)",
+                                          "time the code had no palette data for that (values: item — item "
+                                          "name)",
     "glasses_pairs_count_unknown": "the code does not know how many pairs of glasses she has; with several "
-                                    "pairs a frame could rescue the colour near the face",
+                                   "pairs a frame could rescue the colour near the face",
     "scarf_size_unknown": "the card does not name the scarf's size, so the code does not know which knots and "
-                           "ways of wearing are possible (values: item — item name)",
+                          "ways of wearing are possible (values: item — item name)",
     # ── довжина, крій і форма (`fit`, `силует_*`) ────────────────────────────
     "item_length_unknown_edge_default": "the cards do not carry the length of the named items: the usual edge "
-                                         "for such an item was taken, so the code does not know where exactly "
-                                         "it lands on the body (values: slots — slot codes)",
+                                        "for such an item was taken, so the code does not know where exactly "
+                                        "it lands on the body (values: slots — slot codes)",
     "length_word_edge_may_land_on_widest": "the code knows the item's length only from a word, and its edge "
-                                            "may land right on the widest place of the body (values: slot — "
-                                            "slot code; length — the length word; level — code of the body "
-                                            "level where the edge may land)",
+                                           "may land right on the widest place of the body (values: slot — "
+                                           "slot code; length — the length word; level — code of the body "
+                                           "level where the edge may land)",
     "item_length_unknown_outside_contour": "the cards do not carry the length of the named items, so they are "
-                                            "left out of the outfit's shape, counted from the other items "
-                                            "(values: slots — slot codes)",
+                                           "left out of the outfit's shape, counted from the other items "
+                                           "(values: slots — slot codes)",
     "cut_unknown_form_default": "the cards do not name the cut of some items, so the code counts the outfit's "
-                                 "shape on the usual cut (values: slots — slot codes)",
+                                "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
-                                         "ordinary straight cut; what follows holds only if the cut really is "
-                                         "such",
+                                        "ordinary straight cut; what follows holds only if the cut really is "
+                                        "such",
     "claim_boxy_cut_hides_waist": "a straight boxy cut hides her defined waist",
     "claim_no_waist_no_column": "neither a waist nor an even column: the shape does not read",
     "claim_volume_without_anchor": "volume fits the body nowhere, so the body shows nowhere",
     "claim_volume_without_anchor_no_shape": "the outfit's volume touches the body nowhere and no shape reads: "
-                                             "there is no waist and the contour leads nowhere",
+                                            "there is no waist and the contour leads nowhere",
     "claim_contour_several_flares": "the contour leaves the body in several places, so no single line is "
-                                     "visible (values: count — in how many places)",
+                                    "visible (values: count — in how many places)",
     "claim_zone_clinged": "the item clings tightly to this part of the body where it would be better for it "
-                           "to skim (values: level — body level code)",
+                          "to skim (values: level — body level code)",
     "claim_zone_tented": "the item tents over this part of the body where it would be better to give it shape "
-                          "(values: level — body level code)",
+                         "(values: level — body level code)",
     "claim_ease_below_min": "the item's width ease at this level is too small to wear it freely (values: "
-                             "level — body level code)",
+                            "level — body level code)",
     "fabric_unknown_ease_below_min_if_woven": "the card does not name the item's fabric: if it is not knit, "
-                                               "the ease in width at this level is too small to wear it freely "
-                                               "(values: level — body level code)",
+                                              "the ease in width at this level is too small to wear it freely "
+                                              "(values: level — body level code)",
     "claim_look_shape_vs_body_shape": "the outfit's shape is not the one worth leading to for her figure "
-                                       "(values: body — the figure's shape, look — the outfit's shape, target "
-                                       "— the shapes to lead to; shape codes: A — hips wider than shoulders, V "
-                                       "— shoulders wider than hips, X — a marked waist, H — a straight "
-                                       "contour without a marked waist, O — volume in the middle, I — a narrow "
-                                       "straight contour, HX — a waist on the edge of being marked; never "
-                                       "write the letters themselves, only the description)",
+                                      "(values: body — the figure's shape, look — the outfit's shape, target "
+                                      "— the shapes to lead to; shape codes: A — hips wider than shoulders, V "
+                                      "— shoulders wider than hips, X — a marked waist, H — a straight "
+                                      "contour without a marked waist, O — volume in the middle, I — a narrow "
+                                      "straight contour, HX — a waist on the edge of being marked; never "
+                                      "write the letters themselves, only the description)",
     "look_shape_is": "the shape the outfit gives, with no judgement, because this outing does not aim to "
-                      "flatter the figure (values: look — shape codes: A — hips wider than shoulders, V — "
-                      "shoulders wider than hips, X — a marked waist, H — a straight contour without a marked "
-                      "waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the "
-                      "edge of being marked; never write the letters themselves, only the description)",
+                     "flatter the figure (values: look — shape codes: A — hips wider than shoulders, V — "
+                     "shoulders wider than hips, X — a marked waist, H — a straight contour without a marked "
+                     "waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the "
+                     "edge of being marked; never write the letters themselves, only the description)",
     "vertical_balance_not_judged": "the code does not judge the ratio of the outfit's top and bottom to her "
-                                    "proportions: the sources have too little evidence for it",
+                                   "proportions: the sources have too little evidence for it",
     "leg_proportion_template_crotch": "the code does not count torso-to-leg proportions: the crotch height "
-                                       "comes from a template, not from her; one measurement fixes this",
+                                      "comes from a template, not from her; one measurement fixes this",
     "calf_girth_not_measured": "her calf girth is unknown, so how the edges of shoes and of a hem land on the "
-                                "calf is not measured; there is a field for it in \"Extended measurements\"",
+                               "calf is not measured; there is a field for it in \"Extended measurements\"",
     "calf_not_widest_point": "the calf is measured and is not the widest place of her leg, so there is "
-                              "nothing to compare the edges of shoes and hem with",
+                             "nothing to compare the edges of shoes and hem with",
     "shoe_cut_irrelevant_leg_covered": "the shoe's cut-line decides nothing here: a long bottom covers the "
-                                        "leg (values: item — item name)",
+                                       "leg (values: item — item name)",
     # ── колір образу: площі й поєднання (`колір_*`, `coordination`, `суд_огляд`) ─
     "areas_not_measured": "the code did not measure how much room each item takes in the outfit, so rules "
-                           "that depend on area give no conclusion",
+                          "that depend on area give no conclusion",
     "several_colour_fixes_one_item": "several colour fixes fell on one item; the code merged them into one "
-                                      "(values: slot — slot code)",
+                                     "(values: slot — slot code)",
     "one_weighty_surface": "the outfit has only one large surface, so there is no structure of light and dark "
-                            "between items",
+                           "between items",
     "chroma_clash_skipped_no_area": "the code did not check whether loud colours clash for items whose areas "
-                                     "were not measured",
+                                    "were not measured",
     "unmeasured_accents_not_grouped": "items with an unmeasured colour do not enter the check of accent "
-                                       "repetition",
+                                      "repetition",
     "coordination_not_computed": "the code did not compute how well the outfit's colours are coordinated",
     "coordination_rank_not_computed": "the coordination of the outfit's colours is computed, but it gave no "
-                                       "place among the other outfits",
+                                      "place among the other outfits",
     "coordination_rank_homogeneous": "the outfit has no place by colour coordination: all candidates are the "
-                                      "same in colour",
+                                     "same in colour",
     "feature_and_item_indistinguishable": "a feature of her face and the item near it are the same colour in "
-                                           "the photo, so the code does not know whether the face contrast was "
-                                           "read correctly (values: feature — hair, eyes or glasses; item — "
-                                           "item name)",
+                                          "the photo, so the code does not know whether the face contrast was "
+                                          "read correctly (values: feature — hair, eyes or glasses; item — "
+                                          "item name)",
     "print_motif_scale_unknown": "two items have prints of one family, and the cards do not carry the motif "
-                                  "scale, so the code did not check whether they differ in scale",
+                                 "scale, so the code did not check whether they differ in scale",
     "lead_metal_rule_held_olive": "both metals suit her olive undertone, so the code requires no leading "
-                                   "metal",
+                                  "metal",
     "item_holds_look_interest": "this item could be removed, but without it the outfit becomes empty, so the "
-                                 "code keeps it (values: slot — slot code)",
+                                "code keeps it (values: slot — slot code)",
     "which_white_suits_unknown": "which white suits her, optical or cream, cannot be seen from this photo; "
-                                  "she can say what looks better near her face",
+                                 "she can say what looks better near her face",
     "which_white_answer_no_side": "her answer about white does not say whether it is warm or cool, and the "
-                                   "photo does not decide it either",
+                                  "photo does not decide it either",
     # ── ошатність, стиль і нагода (`формальність`, `реєстри`, `суд_намір`) ────────
     "dress_code_level_depends_on_event": "the dressiness of this dress code depends on the type of event, and "
-                                          "the type is not named (values: dress_code — dress code code)",
+                                         "the type is not named (values: dress_code — dress code code)",
     "item_type_unknown_dress_code_unchecked": "the cards do not name the type of some items, so the code did "
-                                               "not check the dress code for them (values: count — how many "
-                                               "such items; dress_code — dress code code)",
+                                              "not check the dress code for them (values: count — how many "
+                                              "such items; dress_code — dress code code)",
     "her_register_unknown": "she did not name her style, so the code does no soft selection by style",
     "items_register_unknown": "the code did not determine the style of some items: their cards have no words "
-                               "that show it (values: count — how many such items)",
+                              "that show it (values: count — how many such items)",
     "mourning_colour_word_only": "the code knows the item's colour only from a word, so it does not know "
-                                  "whether it is dark and quiet enough for mourning (values: item — item name "
-                                  "or slot code; colour — colour word)",
+                                 "whether it is dark and quiet enough for mourning (values: item — item name "
+                                 "or slot code; colour — colour word)",
     "heel_height_unknown_comfort_ceiling": "the pair has a heel, but the card does not say its height, so the "
-                                            "code did not check it against the limit for a comfortable outing "
-                                            "(values: item — item name)",
+                                           "code did not check it against the limit for a comfortable outing "
+                                           "(values: item — item name)",
     "heel_height_unknown_wear_cost": "the pair has a heel, but the card does not say its height, so the code "
-                                      "does not count the wearing cost for the feet (values: item — item name)",
+                                     "does not count the wearing cost for the feet (values: item — item name)",
     "wear_cost_no_duration_surface": "the code does not count the wearing cost for the feet: it is unknown "
-                                      "how many hours and on what she will walk",
+                                     "how many hours and on what she will walk",
     # ── погода й матеріал (`суд_погода`, `аксесуари_погода`) ──────────────────────
     "sole_grip_unknown_ice": "the card does not say whether the sole grips on ice, and today there is black "
-                              "ice (values: item — item name)",
+                             "ice (values: item — item name)",
     "no_light_outer_layer_in_catalogue": "no light outer layer for this occasion was found in the catalogue",
     "fabric_season_not_judged_indoors": "the code does not judge fabric seasonality indoors (values: slot — "
-                                         "slot code)",
+                                        "slot code)",
     "long_hem_rain_ground_unknown": "the code does not know whether a long hem touches the wet ground in the "
-                                     "rain: \"maxi\" means both ankle and floor (values: slots — slot codes)",
+                                    "rain: \"maxi\" means both ankle and floor (values: slots — slot codes)",
     # ── верхній шар (`верхнє_*`) ───────────────────────────────────────────────
     "outer_edges_gap_no_length": "the code does not know the distance between the edge of the outer layer and "
-                                  "the edge of the item under it: the cards carry no lengths (values: items — "
-                                  "item names)",
+                                 "the edge of the item under it: the cards carry no lengths (values: items — "
+                                 "item names)",
     "outer_edges_coincide_sources_disagree": "the edges of the outer layer and the item under it coincide "
-                                              "exactly, and the sources disagree about that; the code takes no "
-                                              "side (values: items — item names)",
+                                             "exactly, and the sources disagree about that; the code takes no "
+                                             "side (values: items — item names)",
     "cascade_declared_no_penalty": "the edges of the layers stand in even steps: the code counts such a "
-                                    "cascade as intended and does not penalise close edges (values: items — "
-                                    "item names)",
+                                   "cascade as intended and does not penalise close edges (values: items — "
+                                   "item names)",
     "outer_ease_not_in_feed": "the cards do not carry the width ease of the layers, so the code does not "
-                               "check whether one layer lies comfortably over another (values: items — item "
-                               "names)",
+                              "check whether one layer lies comfortably over another (values: items — item "
+                              "names)",
     "fitted_outer_over_knit_cut_unknown": "the code does not know whether a fitted layer goes over a knit "
-                                           "top: the card does not name the knit top's cut (values: outer — "
-                                           "the layer's name; top — the top's name)",
+                                          "top: the card does not name the knit top's cut (values: outer — "
+                                          "the layer's name; top — the top's name)",
     "front_v_depth_no_body_input": "the code computed the depth of the outer layer's neckline, but has "
-                                    "nothing to apply it to: it does not know her under-bust girth or neck "
-                                    "length (values: item — item name)",
+                                   "nothing to apply it to: it does not know her under-bust girth or neck "
+                                   "length (values: item — item name)",
     "outer_shoulder_not_measured": "the card does not carry the outer layer's shoulder width, so the code "
-                                    "does not judge whether the shoulder fits (values: item — item name)",
+                                   "does not judge whether the shoulder fits (values: item — item name)",
     "outer_composition_unknown_salt": "the card does not name the outer layer's composition, so the code does "
-                                       "not know whether road salt damages it (values: item — item name)",
+                                      "not know whether road salt damages it (values: item — item name)",
     # ── річ: розмір, крій і знімок (`суд_річ`) ───────────────────────────────────
     "size_is_label_not_fit": "a shop size is a number, not a fit: without the garment's measurements the code "
-                              "does not know how the item fits (values: sizes — sizes by slot: slot — slot "
-                              "code, range — sizes)",
+                             "does not know how the item fits (values: sizes — sizes by slot: slot — slot "
+                             "code, range — sizes)",
     "cut_from_photo_shop_differs": "the cut was read from the photo, and the shop names another one (values: "
-                                    "items — the items: slot — slot code, shop — the cut by the shop, photo — "
-                                    "the cut from the photo; the cut names are in English, retell them in her "
-                                    "language)",
+                                   "items — the items: slot — slot code, shop — the cut by the shop, photo — "
+                                   "the cut from the photo; the cut names are in English, retell them in her "
+                                   "language)",
     "cut_from_shop_photo_differs": "the cut was taken from the shop's word, and the photo shows another one "
-                                    "(values: items — the items: slot — slot code, shop — the cut by the shop, "
-                                    "photo — the cut from the photo; the cut names are in English, retell them "
-                                    "in her language)",
+                                   "(values: items — the items: slot — slot code, shop — the cut by the shop, "
+                                   "photo — the cut from the photo; the cut names are in English, retell them "
+                                   "in her language)",
     # ── відмова збирати: сценарію нема (K-IO-01, `міст_запити`; Ч-4 — доти готове речення
     #    коду `сценарій.БРАК_СЦЕНАРІЮ_ЖІНЦІ`) ─────────────────────────────────────────
     "no_scenario_fields": "the outfits were not built because the code does not know where she is going: the "
-                           "scenario names none of the fields that set dressiness (values: fields — the keys "
-                           "of these fields)",
+                          "scenario names none of the fields that set dressiness (values: fields — the keys "
+                          "of these fields)",
     "retry_gives_same": "a retry without changes gives the same",
     "name_occasion_or_place": "she chooses an occasion or a place on the scenario screen, or says in words "
-                               "where she is going, and builds again",
+                              "where she is going, and builds again",
     "photo_shared_by_other_products": "the photo the code measured the item on stands on several other "
-                                       "products of this shop, so the measurement may belong to another item "
-                                       "(values: count — on how many products; items — items: slot — slot "
-                                       "code, shop — the shop, unknown — what the code does not know about it: "
-                                       "colour, cut, length, fabric, pattern, shine)",
+                                      "products of this shop, so the measurement may belong to another item "
+                                      "(values: count — on how many products; items — items: slot — slot "
+                                      "code, shop — the shop, unknown — what the code does not know about it: "
+                                      "colour, cut, length, fabric, pattern, shine)",
     "photo_shows_other_colour": "in the card's photo the code sees a different colour than the one the item "
-                                 "is described and judged by: the shop may have shown another colour of the "
-                                 "model or named it differently (values: items — items: slot — slot code, "
-                                 "colour — the item's colour, photo — the colour in the photo)",
+                                "is described and judged by: the shop may have shown another colour of the "
+                                "model or named it differently (values: items — items: slot — slot code, "
+                                "colour — the item's colour, photo — the colour in the photo)",
     # ── СТРУКТУРА ОБРАЗУ: БЛОКЕРИ КОДАМИ (П-6, `суд_від_моделі.структура_образу_заяви`) ──
     "no_top_bottom_or_dress": "the outfit has neither of these foundations and no dress to replace them: "
-                               "without them these are accessories, not an outfit (values: missing — the slot "
-                               "codes that are missing)",
+                              "without them these are accessories, not an outfit (values: missing — the slot "
+                              "codes that are missing)",
     "dress_with_separate_bottom": "dress plus a separate bottom doubles the bottom: keep one",
     "dress_with_set": "a dress and a set together double both the top and the bottom: that is two whole "
-                       "outfits, keep one",
+                      "outfits, keep one",
     "set_with_separate_part": "a set (top and bottom in one item) together with a separate top or bottom is a "
-                               "doubling: keep the set, or take half of it and declare that a deliberate move "
-                               "(values: slots — codes of the separate slots)",
+                              "doubling: keep the set, or take half of it and declare that a deliberate move "
+                              "(values: slots — codes of the separate slots)",
     "no_shoes": "the outfit has no shoes, and without them it is not ready: add a pair for the occasion",
     "no_bag": "no bag, and the occasion requires one",
     "needs_third_piece": "needs one more piece beyond top, bottom, shoes: outer layer, jewellery, belt, scarf "
-                          "or hat",
+                         "or hat",
     "too_few_items": "too few items in the outfit for this occasion (values: count — how many there are, "
-                      "minimum — how many are needed at least)",
+                     "minimum — how many are needed at least)",
     "single_item_not_outfit": "one item is not an outfit yet: add at least shoes, or a top or a bottom to a "
-                               "set",
+                              "set",
     # ── ЗНАХІДКИ КОЛЬОРУ Й ПАЛІТРИ НА ДРОТІ МОДЕЛІ (П-6, `суд_від_моделі`: K-PAL-02…18, K-COL-02/05, K-COMP-07) ──
     "scheme_slot_neutral_item_coloured": "the chosen scheme keeps this slot neutral, and the item in it is "
-                                          "coloured (values: scheme — scheme code, slot — slot code, chroma — "
-                                          "the item's chroma)",
+                                         "coloured (values: scheme — scheme code, slot — slot code, chroma — "
+                                         "the item's chroma)",
     "neutral_item_in_slot": "put a neutral item in this slot (values: slot — slot code)",
     "item_hue_outside_scheme_arc": "the item's hue is outside the chosen scheme's arc for this slot; the arc "
-                                    "is a limit, not advice (values: scheme — scheme code, slot — slot code, "
-                                    "role — the slot's role in the scheme, arc — the hue arc in degrees, hue — "
-                                    "the item's hue, chroma — its chroma)",
+                                   "is a limit, not advice (values: scheme — scheme code, slot — slot code, "
+                                   "role — the slot's role in the scheme, arc — the hue arc in degrees, hue — "
+                                   "the item's hue, chroma — its chroma)",
     "item_in_arc_or_neutral": "in this slot an item within the scheme's arc, or a neutral one (values: slot — "
-                               "slot code)",
+                              "slot code)",
     "farthest_colour_near_face": "near the face stands a colour from the region farthest from her axes: it "
-                                  "shares no characteristic with her; this is not a ban (values: slot — slot "
-                                  "code)",
+                                 "shares no characteristic with her; this is not a ban (values: slot — slot "
+                                 "code)",
     "move_colour_away_from_face": "move the same colour to a slot farther from the face, or take a colour of "
-                                   "her palette in this slot (values: slot — slot code, far_slots — codes of "
-                                   "the slots farther from the face)",
+                                  "her palette in this slot (values: slot — slot code, far_slots — codes of "
+                                  "the slots farther from the face)",
     "off_palette_colour_near_face": "an item of a colour outside the windows of her palette stands near the "
-                                     "face (values: slot — slot code, nearness — nearness to the face from 0 "
-                                     "to 1)",
+                                    "face (values: slot — slot code, nearness — nearness to the face from 0 "
+                                    "to 1)",
     "off_palette_colour_contrast_mismatch": "the outfit has a colour outside the palette, and the outfit's "
-                                             "contrast does not match her own, so there is nothing to carry "
-                                             "that colour (values: lightness_range — the outfit's lightness "
-                                             "range from and to, equal numbers mean a measurement; her_level — "
-                                             "her contrast level: low, medium, high; on_windows — true when "
-                                             "the judgement rests on the windows of colour words, not on a "
-                                             "measurement)",
+                                            "contrast does not match her own, so there is nothing to carry "
+                                            "that colour (values: lightness_range — the outfit's lightness "
+                                            "range from and to, equal numbers mean a measurement; her_level — "
+                                            "her contrast level: low, medium, high; on_windows — true when "
+                                            "the judgement rests on the windows of colour words, not on a "
+                                            "measurement)",
     "match_contrast_or_move_colour": "match the outfit's contrast to hers, or move the off-palette colour "
-                                      "away from the face",
+                                     "away from the face",
     "colours_off_her_combination_logic": "the colours together break the logic of her combinations",
     "colour_step_below_min": "the lightness step between the outfit's colours is below the threshold (values: "
-                              "step_min — the step threshold in L*; on_windows — true when the judgement rests "
-                              "on the windows of colour words, not on a measurement)",
+                             "step_min — the step threshold in L*; on_windows — true when the judgement rests "
+                             "on the windows of colour words, not on a measurement)",
     "more_than_one_loud_colour": "the outfit has more than one loud colour (values: loud_from — the chroma "
-                                  "from which a colour counts as loud)",
+                                 "from which a colour counts as loud)",
     "lightness_range_off_her_contrast": "the outfit's lightness range does not suit her contrast: too wide "
-                                         "for a low one, too narrow for a high one (values: lightness_range — "
-                                         "the range from and to; her_level — her contrast level; limit — the "
-                                         "range limit for her level; on_windows — true when the judgement "
-                                         "rests on the windows of colour words, not on a measurement)",
+                                        "for a low one, too narrow for a high one (values: lightness_range — "
+                                        "the range from and to; her_level — her contrast level; limit — the "
+                                        "range limit for her level; on_windows — true when the judgement "
+                                        "rests on the windows of colour words, not on a measurement)",
     "separate_lightness_or_one_loud": "separate the colours' lightness, or keep one loud",
     "accent_not_from_eyes": "the slot carries the accent, and its hue is not from the family of her eyes "
-                             "(values: slot — slot code, hue — the accent's hue in degrees, eye_arcs — the hue "
-                             "arcs of her eyes)",
+                            "(values: slot — slot code, hue — the accent's hue in degrees, eye_arcs — the hue "
+                            "arcs of her eyes)",
     "accent_in_eye_family": "take the accent from the family of her eyes in this slot (values: slot — slot "
-                             "code, eye_arcs — the hue arcs of her eyes)",
+                            "code, eye_arcs — the hue arcs of her eyes)",
     "complementary_pair_not_muted": "the outfit is led by a pair of opposite colours, and there are more loud "
-                                     "colours than the move allows: one of the two should be muted or small "
-                                     "(values: hue_gap — the hue spread in degrees, loud — how many are loud, "
-                                     "allowed — how many are allowed; soft_palette — true when her palette is "
-                                     "soft and both should be muted; on_windows — true when the judgement "
-                                     "rests on the windows of colour words, not on a measurement)",
+                                    "colours than the move allows: one of the two should be muted or small "
+                                    "(values: hue_gap — the hue spread in degrees, loud — how many are loud, "
+                                    "allowed — how many are allowed; soft_palette — true when her palette is "
+                                    "soft and both should be muted; on_windows — true when the judgement "
+                                    "rests on the windows of colour words, not on a measurement)",
     "mute_one_colour_or_small_area": "mute one colour or keep it to a small area",
     "loud_accent_on_low_contrast": "the outfit is her neutrals plus one accent, and the accent is loud on a "
-                                    "low contrast: it reads not as an accent but as a foreign spot (values: "
-                                    "chroma — the accent's chroma, loud_from — the chroma from which a colour "
-                                    "counts as loud)",
+                                   "low contrast: it reads not as an accent but as a foreign spot (values: "
+                                   "chroma — the accent's chroma, loud_from — the chroma from which a colour "
+                                   "counts as loud)",
     "colour_block_on_low_contrast": "the large slots carry several colour families, which is colour blocking, "
-                                     "and that is not among the moves for her contrast under this intention "
-                                     "(values: families — family codes)",
+                                    "and that is not among the moves for her contrast under this intention "
+                                    "(values: families — family codes)",
     "one_colour_family_in_big_slots": "keep one colour family on large slots, the rest neutral",
     "print_dominant_off_palette": "the dominant colour of this item's print is outside the windows of her "
-                                   "palette (values: slot — slot code, pattern — pattern code)",
+                                  "palette (values: slot — slot code, pattern — pattern code)",
     "print_in_palette_or_solid": "in this slot a print whose dominant is in her palette, or a solid item "
-                                  "(values: slot — slot code)",
+                                 "(values: slot — slot code)",
     "drama_by_chroma_on_soft_palette": "her palette is soft, and the outfit is made dramatic by a loud colour "
-                                        "on a small lightness range: on a soft person that reads as foreign "
-                                        "(values: loud_from — the chroma from which a colour counts as loud, "
-                                        "lightness_range — the lightness range from and to; on_windows — true "
-                                        "when the judgement rests on the windows of colour words, not on a "
-                                        "measurement)",
+                                       "on a small lightness range: on a soft person that reads as foreign "
+                                       "(values: loud_from — the chroma from which a colour counts as loud, "
+                                       "lightness_range — the lightness range from and to; on_windows — true "
+                                       "when the judgement rests on the windows of colour words, not on a "
+                                       "measurement)",
     "separate_lightness_or_texture_shine": "separate lightness, or use texture and shine instead of loud "
-                                            "colour",
+                                           "colour",
     "grey_hair_no_eye_colour_near_face": "her hair carries no temperature, so the eyes are the main accent, "
-                                          "and near the face there is no colour from their family",
+                                         "and near the face there is no colour from their family",
     "eye_family_colour_near_face": "an eye-family colour near the face: scarf, top or earrings",
     "loud_elements_over_budget": "there are more loud elements than the ceiling, and the rest of the outfit "
-                                  "does not get to be a background; hair and frames count on a par with the "
-                                  "items (values: count — how many are loud, ceiling — the ceiling; face — "
-                                  "which facial features are loud too: hair, glasses)",
+                                 "does not get to be a background; hair and frames count on a par with the "
+                                 "items (values: count — how many are loud, ceiling — the ceiling; face — "
+                                 "which facial features are loud too: hair, glasses)",
     "keep_one_loud_mute_rest": "keep one loud element as the focus and take the rest as muted versions of the "
-                                "same family, or as neutrals",
+                               "same family, or as neutrals",
     "accent_orphan": "the accent colour stands in one slot only and nowhere else: the eye finds no intention "
-                      "(values: colour — the code of the colour or family, hue — the hue in degrees, slot — "
-                      "slot code; on_windows — true when the judgement rests on the windows of colour words, "
-                      "not on a measurement)",
+                     "(values: colour — the code of the colour or family, hue — the hue in degrees, slot — "
+                     "slot code; on_windows — true when the judgement rests on the windows of colour words, "
+                     "not on a measurement)",
     "accent_in_declared_focus": "the accent stands in one slot, but that zone is declared the focus, and then "
-                                 "it is legitimate as a point (values: slot — slot code)",
+                                "it is legitimate as a point (values: slot — slot code)",
     "echo_accent_or_declare_focus": "repeat the colour in a second zone (shoes, bag, scarf, jewellery), "
-                                     "declare the focus, or remove it",
+                                    "declare the focus, or remove it",
     "accent_echo_over_ceiling": "the accent colour is repeated in too many zones: the repetition stops "
-                                 "reading as an intention and becomes a uniform (values: colour — the code of "
-                                 "the colour or family, hue — the hue in degrees, zones — in how many zones, "
-                                 "ceiling — the ceiling; on_windows — true when the judgement rests on the "
-                                 "windows of colour words, not on a measurement)",
+                                "reading as an intention and becomes a uniform (values: colour — the code of "
+                                "the colour or family, hue — the hue in degrees, zones — in how many zones, "
+                                "ceiling — the ceiling; on_windows — true when the judgement rests on the "
+                                "windows of colour words, not on a measurement)",
     "keep_two_three_carriers": "keep two or three carriers, make the rest neutral",
     "accent_role_lost": "the scheme gave the slot the role of the accent, and the item in it is quieter than "
-                         "the threshold, although the selection did hold items of such chroma (values: scheme "
-                         "— scheme code, slot — slot code, chroma_from — the accent chroma threshold, chroma — "
-                         "the item's chroma, pool_count — how many such items there were in the selection)",
+                        "the threshold, although the selection did hold items of such chroma (values: scheme "
+                        "— scheme code, slot — slot code, chroma_from — the accent chroma threshold, chroma — "
+                        "the item's chroma, pool_count — how many such items there were in the selection)",
     "item_chroma_at_least_in_slot": "in this slot an item with chroma no lower than the threshold (values: "
-                                     "chroma_from — the threshold, slot — slot code)",
+                                    "chroma_from — the threshold, slot — slot code)",
     "accent_role_none_in_pool": "the scheme requires an accent in the slot, and the selection for that slot "
-                                 "holds no item with the needed chroma (values: scheme — scheme code, slot — "
-                                 "slot code, chroma_from — the chroma threshold)",
+                                "holds no item with the needed chroma (values: scheme — scheme code, slot — "
+                                "slot code, chroma_from — the chroma threshold)",
     "not_fixable_from_pool": "the selection cannot fix this: a catalogue gap, not the stylist's choice",
     "formula_taken_as_ready": "the scheme was taken as a ready answer while the outfit fails points of the "
-                               "blandness floor: the formula is a starting point, not a verdict (values: "
-                               "scheme — scheme code, blandness_failed — how many blandness points are failed)",
+                              "blandness floor: the formula is a starting point, not a verdict (values: "
+                              "scheme — scheme code, blandness_failed — how many blandness points are failed)",
     "walk_failed_blandness_points": "fix the failed blandness points one by one; the scheme alone closes none",
     # ── ПІДСУМОК ЧЕКЛІСТІВ ОБРАЗУ (П-6, `суд_чеклісти`: K-SYS-08/09) ──
     "excess_ceiling_broken": "the excess ceiling is broken: some of the checked points of the excess "
-                              "checklist are failed; which ones is in this outfit's checklist (values: failed "
-                              "— how many are failed, checked — how many were checked)",
+                             "checklist are failed; which ones is in this outfit's checklist (values: failed "
+                             "— how many are failed, checked — how many were checked)",
     "blandness_floor_not_reached": "the blandness floor is not reached: some of the checked points of the "
-                                    "blandness checklist are failed; which ones is in this outfit's checklist "
-                                    "(values: failed — how many are failed, checked — how many were checked)",
+                                   "blandness checklist are failed; which ones is in this outfit's checklist "
+                                   "(values: failed — how many are failed, checked — how many were checked)",
     "remove_excess_in_failed_points": "remove the excess in the failed point before showing it: a failed "
-                                       "point is repaired, not shipped alongside the outfit",
+                                      "point is repaired, not shipped alongside the outfit",
     "add_interest_source": "add a source of interest: texture, silhouette, colour, craft detail, register "
-                            "move, structural accessory or styling gesture",
+                           "move, structural accessory or styling gesture",
     # ── АКСЕСУАРИ Й ЦІНА НА ОБРАЗ (П-6: K-ACC-01/05/06/07/13, K-CRA-12, K-PRC-01) ──
     "accessory_spends_chroma_budget": "a loud accessory is not a trimming: its chroma spends from the accent "
-                                       "budget even though there is no area behind it (values: slot — slot "
-                                       "code, chroma — the accessory's chroma, loud_from — the chroma from "
-                                       "which a colour counts as loud)",
+                                      "budget even though there is no area behind it (values: slot — slot "
+                                      "code, chroma — the accessory's chroma, loud_from — the chroma from "
+                                      "which a colour counts as loud)",
     "quieter_accessory_or_quieter_surface": "if the outfit already has a loud surface, take this accessory "
-                                             "quieter, or keep it as the accent and take the loudness off the "
-                                             "larger surface",
+                                            "quieter, or keep it as the accent and take the loudness off the "
+                                            "larger surface",
     "bag_format_at_scale_edge": "the bag's format is at the edge of the scale, not its middle: both an "
-                                 "oversized and a demonstratively small one upset the proportion alike "
-                                 "(values: format — large or small)",
+                                "oversized and a demonstratively small one upset the proportion alike "
+                                "(values: format — large or small)",
     "medium_bag_or_calm_rest": "a medium-format bag with a clear shape; if this one stays, keep the rest of "
-                                "the outfit calm",
+                               "the outfit calm",
     "asymmetry_interest_source_available": "a quiet item can become a source of interest without colour if it "
-                                            "is placed asymmetrically (values: places — codes of the ways of "
-                                            "wearing)",
+                                           "is placed asymmetrically (values: places — codes of the ways of "
+                                           "wearing)",
     "wear_item_asymmetrically": "place the item asymmetrically in one of these places; the place is the "
-                                 "stylist's choice, not a property of the goods (values: places — codes of the "
-                                 "ways of wearing)",
+                                "stylist's choice, not a property of the goods (values: places — codes of the "
+                                "ways of wearing)",
     "face_field_carrier_frees_top": "the item occupies the field near the face, so it is the one carrying the "
-                                     "colour there, and the top is judged by the far window, like the bottom "
-                                     "and the shoes (values: slot — the carrier's slot code)",
+                                    "colour there, and the top is judged by the far window, like the bottom "
+                                    "and the shoes (values: slot — the carrier's slot code)",
     "carrier_itself_in_face_window": "the carrier itself must be within the near-face window of her palette, "
-                                      "otherwise this is not a rescue but a moved problem",
+                                     "otherwise this is not a rescue but a moved problem",
     "same_kind_accessories_duplicate": "the outfit has several items of one kind: they spend one budget, and "
-                                        "the outfit would not suffer without one of them (values: count — how "
-                                        "many items, kind — the kind: metal, metal_near_face, print_source, "
-                                        "shine_source, near_face_accent, loud_colour_accent, other)",
+                                       "the outfit would not suffer without one of them (values: count — how "
+                                       "many items, kind — the kind: metal, metal_near_face, print_source, "
+                                       "shine_source, near_face_accent, loud_colour_accent, other)",
     "remove_duplicate_accessory": "remove one of the duplicates, the one that gives the least (values: slot — "
-                                   "the slot code of the one to remove)",
+                                  "the slot code of the one to remove)",
     "scarf_too_small_for_head_wrap": "the side of the square scarf is too small to wrap the head fully: the "
-                                      "gate is physical, not a matter of taste (values: side_cm — the scarf's "
-                                      "side in cm, wrap_from_cm — the side from which wrapping is possible)",
+                                     "gate is physical, not a matter of taste (values: side_cm — the scarf's "
+                                     "side in cm, wrap_from_cm — the side from which wrapping is possible)",
     "choose_available_scarf_place": "choose a place available for this format, or a square of a larger format "
-                                     "if the wrap is exactly what is wanted (values: places — codes of the "
-                                     "available places, wrap_from_cm — the side from which wrapping is "
-                                     "possible)",
+                                    "if the wrap is exactly what is wanted (values: places — codes of the "
+                                    "available places, wrap_from_cm — the side from which wrapping is "
+                                    "possible)",
     "price_top_quarter_of_slot": "the item is in the top quarter of its slot by price per outfit, that is its "
-                                  "price divided by the number of outfits of the selection it can stand in; "
-                                  "this is a lower estimate, not a forecast of wearings (values: slot — slot "
-                                  "code, cheaper — how many items of the slot are cheaper per outfit, of — out "
-                                  "of how many, reach — in how many outfits of the selection it can stand; "
-                                  "resoleable — for shoes: true means a stitched sole and the pair can be "
-                                  "resoled, false means glued)",
+                                 "price divided by the number of outfits of the selection it can stand in; "
+                                 "this is a lower estimate, not a forecast of wearings (values: slot — slot "
+                                 "code, cheaper — how many items of the slot are cheaper per outfit, of — out "
+                                 "of how many, reach — in how many outfits of the selection it can stand; "
+                                 "resoleable — for shoes: true means a stitched sole and the pair can be "
+                                 "resoled, false means glued)",
     "compare_with_cheaper_in_slot": "compare it with the items of the same slot in the selection that are "
-                                     "cheaper per outfit (values: cheaper — how many of them there are)",
+                                    "cheaper per outfit (values: cheaper — how many of them there are)",
     # ── ВЗУТТЯ, АКСЕСУАРИ В ПОГОДУ, КОЛЬЄ (П-6: K-SHO-04/07/08/10/13/15, K-WEA-05/06/08, K-JEW-01) ──
     "shoes_cut_leg_line": "the pair cuts the line of the leg: by lightness it is matched neither to the leg "
-                           "nor to the bottom (values: to_leg — the lightness difference to the leg or the "
-                           "tights, to_bottom — to the bottom, step — the step threshold; neighbour — what is "
-                           "next to the leg: skin or tights)",
+                          "nor to the bottom (values: to_leg — the lightness difference to the leg or the "
+                          "tights, to_bottom — to the bottom, step — the step threshold; neighbour — what is "
+                          "next to the leg: skin or tights)",
     "shoes_to_leg_or_bottom_tone": "match the pair to the leg (a nude in the tone of the skin, or tights in "
-                                    "the tone of the pair) so the line continues from the toes, or to the "
-                                    "bottom, for a column of colour in the lower third",
+                                   "the tone of the pair) so the line continues from the toes, or to the "
+                                   "bottom, for a column of colour in the lower third",
     "high_cut_quiet_edge_keep": "the pair's cut is high, but the edge is matched by lightness to the skin or "
-                                 "the tights, so it barely draws a line across the foot: keep the pair "
-                                 "(values: dl — the lightness difference between the edge and the neighbouring "
-                                 "surface, step — the step threshold, neighbour — skin or tights)",
+                                "the tights, so it barely draws a line across the foot: keep the pair "
+                                "(values: dl — the lightness difference between the edge and the neighbouring "
+                                "surface, step — the step threshold, neighbour — skin or tights)",
     "high_cut_contrasting_edge": "the pair's cut is high and contrasts with the skin or the tights, so the "
-                                  "edge draws a line across the foot twice: drop one of the two levers "
-                                  "(values: dl — the lightness difference between the edge and the "
-                                  "neighbouring surface, step — the step threshold, neighbour — skin or "
-                                  "tights)",
+                                 "edge draws a line across the foot twice: drop one of the two levers "
+                                 "(values: dl — the lightness difference between the edge and the "
+                                 "neighbouring surface, step — the step threshold, neighbour — skin or "
+                                 "tights)",
     "nude_edge_or_matching_tights_or_lower_cut": "a nude tone at the edge, or tights in the tone of the pair, "
-                                                  "or a pair with a lower cut within the same formality "
-                                                  "interval",
+                                                 "or a pair with a lower cut within the same formality "
+                                                 "interval",
     "cut_hidden_by_dense_tights": "under dense tights the pair's edge is not visible, so the cut-line axis is "
-                                   "off (values: den — the tights' denier, den_band — the day's denier band "
-                                   "from and to)",
+                                  "off (values: den — the tights' denier, den_band — the day's denier band "
+                                  "from and to)",
     "low_cut_keeps_leg_line": "the pair's cut is low, so the line of the leg starts at the toes: keep the "
-                               "pair",
+                              "pair",
     "high_cut_breaks_leg_line": "high cut at mid-foot or ankle cuts the leg line",
     "lower_cut_same_formality_or_nude_edge": "a pair with a lower cut within the same formality interval, or "
-                                              "match the edge by lightness to the skin or the tights",
+                                             "match the edge by lightness to the skin or the tights",
     "delicate_shoes_under_heavy_fabric": "delicate shoes are lost under a heavy bottom fabric: the mass of "
-                                          "the pair is set by the weight of the cloth, not by volume alone "
-                                          "(values: fabric — the bottom's fabric code)",
+                                         "the pair is set by the weight of the cloth, not by volume alone "
+                                         "(values: fabric — the bottom's fabric code)",
     "heavier_pair_or_lighter_fabric": "a heavier pair of the same formality, or the bottom in a lighter "
-                                       "fabric",
+                                      "fabric",
     "shoe_allowance_too_small": "the length allowance of the pair over her foot is too small: the toes will "
-                                 "hit at every step (values: allowance_mm — the allowance in mm, minimum_mm — "
-                                 "the minimum from the source)",
+                                "hit at every step (values: allowance_mm — the allowance in mm, minimum_mm — "
+                                "the minimum from the source)",
     "other_size_or_model_in_allowance": "another size or model within the allowance",
     "shoe_allowance_too_big": "the length allowance of the pair over her foot is too big: the foot will slide "
-                               "inside; the limit is our estimate, so the pair stays (values: allowance_mm — "
-                               "the allowance in mm, maximum_mm — the estimated limit)",
+                              "inside; the limit is our estimate, so the pair stays (values: allowance_mm — "
+                              "the allowance in mm, maximum_mm — the estimated limit)",
     "try_on_half_size_down": "try on; half a size down if the heel slips",
     "shop_says_size_runs_off": "the shop itself says the model runs small or large: the size number of this "
-                                "pair does not describe the fit (values: runs — small, large or true_to_size)",
+                               "pair does not describe the fit (values: runs — small, large or true_to_size)",
     "size_by_insole_measure": "take the number by the insole measurement from the card, not by the usual "
-                               "size; a pair that cannot be tried on is not raised in rank for size",
+                              "size; a pair that cannot be tried on is not raised in rank for size",
     "smooth_sole_on_ice": "a fully smooth sole at black-ice temperatures is a plain no for winter (values: "
-                           "temperature_c — the day's temperature)",
+                          "temperature_c — the day's temperature)",
     "deep_multidirectional_tread": "a sole with a deep multidirectional tread",
     "summer_accessory_no_warmth": "the accessory's summer material gives no warmth in the cold: it can be "
-                                   "worn, it just does not warm (values: material — material code, "
-                                   "temperature_c — the day's temperature)",
+                                  "worn, it just does not warm (values: material — material code, "
+                                  "temperature_c — the day's temperature)",
     "winter_form_of_slot": "the winter form of this slot: felt, wool, cashmere, lined leather",
     "winter_accessory_too_hot": "the accessory's winter material is not worn in the heat (values: material — "
-                                 "material code, temperature_c — the day's temperature)",
+                                "material code, temperature_c — the day's temperature)",
     "summer_form_of_slot": "the summer form of this slot",
     "necklace_on_neckline_edge": "the necklace sits on the edge of the neckline: there it competes with the "
-                                  "fabric instead of framing the face (values: gap_cm — the gap between the "
-                                  "edge of the necklace and the neckline, clearance_cm — the gap needed)",
+                                 "fabric instead of framing the face (values: gap_cm — the gap between the "
+                                 "edge of the necklace and the neckline, clearance_cm — the gap needed)",
     "necklace_clearly_above_or_below": "a shorter chain above the neckline, or a longer one clearly below",
     # ── РЕМЕСЛО, БЛИСК І МЕТАЛИ (П-6: K-CRA-01/02/03/06/07/10, K-MAT-04, K-COL-06-M) ──
     "no_third_piece_dressed_not_styled": "the outfit has only the base and no layer or accessory: that is "
-                                          "\"dressed\", while \"styled\" starts with the third piece (values: "
-                                          "items — how many items are in the outfit)",
+                                         "\"dressed\", while \"styled\" starts with the third piece (values: "
+                                         "items — how many items are in the outfit)",
     "add_layer_or_strong_accessory": "add one layer — a jacket, a cardigan or a vest — or one strong "
-                                      "accessory: a belt, a scarf, a striking piece of jewellery",
+                                     "accessory: a belt, a scarf, a striking piece of jewellery",
     "focus_count_over_ceiling": "the outfit has more focuses than the ceiling: equal focuses put each other "
-                                 "out, and the outfit reads busy (values: count — how many focuses, ceiling — "
-                                 "the ceiling)",
+                                "out, and the outfit reads busy (values: count — how many focuses, ceiling — "
+                                "the ceiling)",
     "keep_one_focus_quiet_rest": "keep one focus and quieten the rest: lower chroma, a smaller print scale, a "
-                                  "smoother texture in the same slot",
+                                 "smoother texture in the same slot",
     "sprezzatura_gestures_over_one": "there is more than one gesture of studied carelessness: the second "
-                                      "takes the mark of choice off the first, and they read as untidiness "
-                                      "(values: count — how many gestures)",
+                                     "takes the mark of choice off the first, and they read as untidiness "
+                                     "(values: count — how many gestures)",
     "keep_one_gesture_near_face": "keep one gesture, the one nearer the face, and do the rest neatly: button "
-                                   "it up, turn the collar down, put it on as it is meant to be",
+                                  "it up, turn the collar down, put it on as it is meant to be",
     "visible_layers_over_ceiling": "there are more visible layers than the practical ceiling: the silhouette "
-                                    "stops reading as a decision (values: count — how many layers, ceiling — "
-                                    "the ceiling)",
+                                   "stops reading as a decision (values: count — how many layers, ceiling — "
+                                   "the ceiling)",
     "remove_layer_without_warmth_or_colour": "remove the layer that carries neither warmth nor colour",
     "layers_end_at_same_level": "two layers end at the same level of the body: there is no step between them, "
-                                 "and they read as one thick horizontal (values: level — body level code)",
+                                "and they read as one thick horizontal (values: level — body level code)",
     "outer_layer_clearly_longer_or_shorter": "outer layer clearly longer or shorter than what is under it",
     "interest_only_texture_render_loses": "all the interest of the outfit is texture, and the try-on "
-                                           "photograph all but eats texture up: in life the outfit works as it "
-                                           "is (values: sources — how many texture sources)",
+                                          "photograph all but eats texture up: in life the outfit works as it "
+                                          "is (values: sources — how many texture sources)",
     "add_non_texture_source_for_render": "for the render add one non-texture source: accent colour or sharper "
-                                          "silhouette edge",
+                                         "silhouette edge",
     "shine_surfaces_over_budget": "there are more surfaces of pronounced shine than the budget (values: count "
-                                   "— how many surfaces, budget — the budget; evening_plus_one — the evening "
-                                   "or the occasion gave one more)",
+                                  "— how many surfaces, budget — the budget; evening_plus_one — the evening "
+                                  "or the occasion gave one more)",
     "keep_one_sparkle_rest_matte": "keep one main sparkle and take the rest in a matte or brushed finish, or "
-                                    "remove the shine from the largest area",
+                                   "remove the shine from the largest area",
     "several_lustre_backgrounds": "several surfaces of soft lustre: there is one such background per outfit, "
-                                   "otherwise everything glimmers (values: count — how many surfaces)",
+                                  "otherwise everything glimmers (values: count — how many surfaces)",
     "keep_one_lustre_background": "keep one lustre background, the rest matte",
     "two_shiny_adjacent": "two shiny items adjacent on the body with no matte one between them: they "
-                           "reinforce each other (values: slots — the codes of the two slots)",
+                          "reinforce each other (values: slots — the codes of the two slots)",
     "separate_shine_or_matte_between": "separate them: keep the shine in one zone and take the neighbouring "
-                                        "one matte, or put a matte item between them",
+                                       "one matte, or put a matte item between them",
     "metal_appears_once": "the metal appears in the outfit once against items of another metal: it reads as "
-                           "an accident, not a choice (values: metal — metal code, others — how many items of "
-                           "the other metal, nearness — nearness to the face from 0 to 1; connector — true "
-                           "when there is a two-tone connector item)",
+                          "an accident, not a choice (values: metal — metal code, others — how many items of "
+                          "the other metal, nearness — nearness to the face from 0 to 1; connector — true "
+                          "when there is a two-tone connector item)",
     "repeat_metal_or_one_metal_or_connector": "repeat this metal in a second zone (ears, wrist, fingers), or "
-                                               "remove this item and keep one metal, or add a two-tone "
-                                               "connector item (values: metal — metal code)",
+                                              "remove this item and keep one metal, or add a two-tone "
+                                              "connector item (values: metal — metal code)",
     "metal_tones_over_two": "there are more than two metal tones: the mix stops reading as an intention "
-                             "(values: count — how many tones, metals — metal codes)",
+                            "(values: count — how many tones, metals — metal codes)",
     "reduce_to_two_metal_tones": "reduce it to two tones: remove the third or replace it with a two-tone "
-                                  "item, or leave it in one small item far from the face",
+                                 "item, or leave it in one small item far from the face",
     "she_asked_no_jewellery": "she asked for no jewellery, yet the outfit has some",
     "remove_jewellery_her_decision": "remove the jewellery: her decision for today",
     "she_wanted_non_metal_jewellery": "she wanted jewellery that is not metal, and a metal one leads (values: "
-                                       "lead — the code of the leading metal, wanted — pearls, ethnic or "
-                                       "other)",
+                                      "lead — the code of the leading metal, wanted — pearls, ethnic or "
+                                      "other)",
     "non_metal_near_face_metal_further": "a non-metal item near the face, the metal further away",
     "lead_metal_not_her_wish": "the outfit's leading metal is not the one she wants with this outfit (values: "
-                                "lead — the code of the leading metal, wish — the code of the wanted one)",
+                               "lead — the code of the leading metal, wish — the code of the wanted one)",
     "wished_metal_near_face": "put the wanted metal near the face and leave the leading one further away or "
-                               "remove it (values: wish — the code of the wanted metal, lead — the code of the "
-                               "leading one)",
+                              "remove it (values: wish — the code of the wanted metal, lead — the code of the "
+                              "leading one)",
     "today_metal_differs_from_profile": "today she wants a metal other than the one she named as suiting her "
-                                         "in her profile, and the outfit follows today's: that is her "
-                                         "decision, not a mistake (values: today — today's code, profile — the "
-                                         "profile's code, lead — the code of the leading one)",
+                                        "in her profile, and the outfit follows today's: that is her "
+                                        "decision, not a mistake (values: today — today's code, profile — the "
+                                        "profile's code, lead — the code of the leading one)",
     "her_choice_may_try_profile_metal": "change nothing, the decision is hers; if she wants to compare, try "
-                                         "the profile metal near the face (values: profile — metal code)",
+                                        "the profile metal near the face (values: profile — metal code)",
     "lead_metal_not_her_named": "the outfit's leading metal is not the one she named as hers (values: lead — "
-                                 "the code of the leading metal, named — the code of the named one)",
+                                "the code of the leading metal, named — the code of the named one)",
     "named_metal_near_face_or_deliberate": "put the metal she named near the face and leave the leading one "
-                                            "further away, or go against it deliberately, which is a "
-                                            "legitimate move (values: named — the code of the named one, lead "
-                                            "— the code of the leading one)",
+                                           "further away, or go against it deliberately, which is a "
+                                           "legitimate move (values: named — the code of the named one, lead "
+                                           "— the code of the leading one)",
     "lead_metal_against_her_warmth": "the leading metal goes against the temperature of her face as read from "
-                                      "the photo: this is a convention, not a mechanism (values: lead — metal "
-                                      "code, warmth — the warmth of the face from -1 to 1, confidence — the "
-                                      "confidence of the input; olive — true when the undertone is olive and "
-                                      "both metals often work)",
+                                     "the photo: this is a convention, not a mechanism (values: lead — metal "
+                                     "code, warmth — the warmth of the face from -1 to 1, confidence — the "
+                                     "confidence of the input; olive — true when the undertone is olive and "
+                                     "both metals often work)",
     "ask_her_metal_or_move_it_further": "ask her directly whether gold or silver is better near her face, or "
-                                         "move this metal further from the face",
+                                        "move this metal further from the face",
     # ── РЕЄСТРИ СТИЛЮ (П-6: K-REG-01/05/06, K-CRA-09) ──
     "no_register_leads": "the outfit has several style registers and none of them leads: a mix reads only "
-                          "when one dominates (values: registers — register codes)",
+                         "when one dominates (values: registers — register codes)",
     "one_register_leads_other_one_quote": "one register leads, another gives one quote item, or declare the "
-                                           "break",
+                                          "break",
     "conflicting_register_pair": "these two registers are a conflicting pair with no dominant one (values: "
-                                  "registers — the codes of the two registers)",
+                                 "registers — the codes of the two registers)",
     "one_grammar_or_declared_break": "one style grammar, or a declared break",
     "leading_register_outside_occasion_band": "the leading register normally lives at other levels of "
-                                               "formality than the occasion asks for: this is high-low, "
-                                               "legitimate only as one declared break (values: register — "
-                                               "register code, register_band — its usual formality interval, "
-                                               "occasion_band — the occasion's interval)",
+                                              "formality than the occasion asks for: this is high-low, "
+                                              "legitimate only as one declared break (values: register — "
+                                              "register code, register_band — its usual formality interval, "
+                                              "occasion_band — the occasion's interval)",
     "declare_break_or_register_covering_occasion": "declare the break, or take a register covering the "
-                                                    "occasion",
+                                                   "occasion",
     "costume_one_genre_everywhere": "a costume, not an outfit: every recognised item announces one genre, and "
-                                     "a genre is quoted, not worn as a uniform (values: items — how many "
-                                     "items, register — the genre's code)",
+                                    "a genre is quoted, not worn as a uniform (values: items — how many "
+                                    "items, register — the genre's code)",
     "one_genre_quote_rest_her_base": "keep one genre quote, the rest from her own base, or break the genre "
-                                      "with another register",
+                                     "with another register",
     # ── ФОРМАЛЬНІСТЬ, ДРЕС-КОД, НАГОДА, ТРАУР (П-6: K-KOH-02/05/06/08/10, K-SHO-03, K-OCC-01) ──
     "formality_spread_over_limit": "the formality spread between the outfit's items is wider than the "
-                                    "allowance (values: spread — the spread in steps, limit — the allowance; "
-                                    "shoes_involved — one of the items of the gap is the shoes; "
-                                    "no_prestige_context — an everyday occasion with no norm, where a "
-                                    "deliberate high-low does not read)",
+                                   "allowance (values: spread — the spread in steps, limit — the allowance; "
+                                   "shoes_involved — one of the items of the gap is the shoes; "
+                                   "no_prestige_context — an everyday occasion with no norm, where a "
+                                   "deliberate high-low does not read)",
     "raise_lowest_item_or_declared_high_low": "raise the lowest item by one or two steps (replace the shoes "
-                                               "or the bottom), or keep it as a deliberate high-low: one gap, "
-                                               "anchored by a repeated colour or an explicit focus",
+                                              "or the bottom), or keep it as a deliberate high-low: one gap, "
+                                              "anchored by a repeated colour or an explicit focus",
     "raise_lowest_item_no_high_low_here": "raise the lowest item by one or two steps (replace the shoes or "
-                                           "the bottom): at an everyday occasion high-low does not read, and "
-                                           "the gap stays a gap",
+                                          "the bottom): at an everyday occasion high-low does not read, and "
+                                          "the gap stays a gap",
     "shoes_register_off_rest": "the shoes set their own level of formality and depart from the rest of the "
-                                "outfit by more than the allowance (values: direction — below or above the "
-                                "rest, steps_over — by how many steps over the allowance, limit — the "
-                                "allowance)",
+                               "outfit by more than the allowance (values: direction — below or above the "
+                               "rest, steps_over — by how many steps over the allowance, limit — the "
+                               "allowance)",
     "shoes_to_outfit_level_or_high_low": "replace the shoes with the level of the rest of the outfit, or keep "
-                                          "them as a deliberate high-low if the fit and the rest are flawless "
-                                          "(values: direction — up or down)",
+                                         "them as a deliberate high-low if the fit and the rest are flawless "
+                                         "(values: direction — up or down)",
     "outfit_level_off_occasion": "the outfit's level of formality is lower or higher than what the scenario "
-                                  "asks for (values: direction — below or above, level — the outfit's median "
-                                  "level, target — the occasion's target from and to, risk_posture — the risk "
-                                  "posture: neutral, half_step_over, half_step_under_plus_detail)",
+                                 "asks for (values: direction — below or above, level — the outfit's median "
+                                 "level, target — the occasion's target from and to, risk_posture — the risk "
+                                 "posture: neutral, half_step_over, half_step_under_plus_detail)",
     "shift_outfit_level": "shift the outfit's level by the named number of steps (values: steps — how many "
-                           "steps, direction — up or down)",
+                          "steps, direction — up or down)",
     "open_zones_over_limit": "more zones of the body are open than the context asks for (values: zones — zone "
-                              "codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté "
-                              "or back; limit — the limit; evening — an evening context, where the limit is "
-                              "two)",
+                             "codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté "
+                             "or back; limit — the limit; evening — an evening context, where the limit is "
+                             "two)",
     "keep_one_open_zone": "keep one open zone: legs, neckline, or shoulders/back",
     "item_type_not_in_dress_code": "this type of item does not belong to the named dress code (values: "
-                                    "item_type — type code, dress_code — dress code code)",
+                                   "item_type — type code, dress_code — dress code code)",
     "type_named_by_code_or_drop_code": "replace the item with a type the dress code names, or drop the stated "
-                                        "dress code if the invitation does not require it",
+                                       "dress code if the invitation does not require it",
     "dress_code_requires_type": "the dress code explicitly asks for an item of such a type, and the outfit "
-                                 "has none (values: dress_code — dress code code, types — type codes)",
+                                "has none (values: dress_code — dress code code, types — type codes)",
     "add_required_type": "add an item of one of the named types (values: types — type codes)",
     "shoes_outside_dress_code_band": "the shoes are outside the level of formality the dress code names "
-                                      "explicitly (values: band — the levels from and to, dress_code — dress "
-                                      "code code)",
+                                     "explicitly (values: band — the levels from and to, dress_code — dress "
+                                     "code code)",
     "shoes_in_band": "shoes of the named level of formality (values: band — the levels from and to)",
     "near_white_at_guest_wedding": "near-white at someone else's wedding: in photographs it reads as bridal, "
-                                    "and cream, ivory, light yellow and pale blue do too (values: lightness, "
-                                    "chroma — the item's lightness and chroma, area_pct — its area in the "
-                                    "outfit as a percentage)",
+                                   "and cream, ivory, light yellow and pale blue do too (values: lightness, "
+                                   "chroma — the item's lightness and chroma, area_pct — its area in the "
+                                   "outfit as a percentage)",
     "same_silhouette_away_from_white": "the same silhouette in a colour with chroma above or lightness below "
-                                        "the named limits, or check the dress code with the couple: all-black "
-                                        "or black and white lifts the veto (values: chroma_above, "
-                                        "lightness_below — the limits)",
+                                       "the named limits, or check the dress code with the couple: all-black "
+                                       "or black and white lifts the veto (values: chroma_above, "
+                                       "lightness_below — the limits)",
     "guest_colour_too_loud_for_occasion": "the colour pulls attention onto the guest: for this occasion it is "
-                                           "louder than the ceiling (values: occasion — occasion code, "
-                                           "loudness — the colour's loudness, ceiling — the ceiling, area_pct "
-                                           "— the area as a percentage)",
+                                          "louder than the ceiling (values: occasion — occasion code, "
+                                          "loudness — the colour's loudness, ceiling — the ceiling, area_pct "
+                                          "— the area as a percentage)",
     "deeper_version_or_accessory_area": "the same family in a deeper version (burgundy, wine, terracotta), or "
-                                         "reduce the area of this colour to an accessory",
+                                        "reduce the area of this colour to an accessory",
     "lightness_off_occasion_window": "the item's lightness is outside the window the occasion or the time of "
-                                      "day asks for (values: lightness — the item's lightness, window — the "
-                                      "window from and to, occasion — occasion code)",
+                                     "day asks for (values: lightness — the item's lightness, window — the "
+                                     "window from and to, occasion — occasion code)",
     "same_silhouette_deeper": "same silhouette in a deeper version",
     "same_silhouette_lighter": "same silhouette in a lighter version",
     "outside_mourning_register": "the item is outside the mourning register: for mourning it is too light or "
-                                  "too loud (values: lightness_max — the lightness limit, chroma_max — the "
-                                  "loudness limit; at_event — at the event itself, where a large surface "
-                                  "blocks; her_own_choice — she named this item herself, and her choice is "
-                                  "stronger)",
+                                 "too loud (values: lightness_max — the lightness limit, chroma_max — the "
+                                 "loudness limit; at_event — at the event itself, where a large surface "
+                                 "blocks; her_own_choice — she named this item herself, and her choice is "
+                                 "stronger)",
     "darker_quieter_version_of_item": "a darker, quieter version: black, graphite, navy, chocolate, deep "
-                                       "burgundy",
+                                      "burgundy",
     "chroma_too_high_for_photo_event": "at a photographed event a very high chroma blows out under the flash "
-                                        "(values: chroma — the item's chroma, ceiling — the ceiling for "
-                                        "photographs)",
+                                       "(values: chroma — the item's chroma, ceiling — the ceiling for "
+                                       "photographs)",
     "judged_from_item_name": "judged from a word in the item's name, not a catalogue field",
     "different_prints_mixed": "different prints are mixed in the outfit (values: prints — pattern codes)",
     "tie_prints_by_colour_or_one_dominates": "tie the prints by a shared colour, or let one dominate by area",
     "daytime_shine": "shiny sequins, lurex or rhinestones in the daytime, which is a daytime context (values: "
-                      "slot — slot code, hour — the starting hour)",
+                     "slot — slot code, hour — the starting hour)",
     "matte_item_in_slot": "a matte item in this slot (values: slot — slot code)",
     "bag_type_below_event_level": "the bag's type (a backpack, a tote, a belt bag) is below the level of the "
-                                   "event (values: event_level — the event's level)",
+                                  "event (values: event_level — the event's level)",
     "bag_of_event_level": "a bag of the event's level (values: event_level — the event's level)",
     # ── ПОГОДА, КОНТРАСТ БІЛЯ ОБЛИЧЧЯ, ІНТЕНСИВНІСТЬ, ПОСАДКА, ДОВЖИНА, ПРИНТИ, НЕЙТРАЛІ (П-6) ──
     "layers_off_temperature_map": "there are too few or too many layers on the torso for the day's "
-                                   "temperature by the layer map (values: direction — too_few or too_many, "
-                                   "temperature_c — the temperature, layers — how much warmth the layers give, "
-                                   "needed — how much the map asks for; partial_warmth_items — how many layers "
-                                   "warm only partly, like a trench)",
+                                  "temperature by the layer map (values: direction — too_few or too_many, "
+                                  "temperature_c — the temperature, layers — how much warmth the layers give, "
+                                  "needed — how much the map asks for; partial_warmth_items — how many layers "
+                                  "warm only partly, like a trench)",
     "layers_to_temperature_map": "bring the layers to the day's map, in the band's fabrics",
     "cold_accessories_carry_no_colour": "in hard frost mostly the outer layer and the accessories are "
-                                         "visible, and the hat, the scarf and the mittens are quiet here: all "
-                                         "the colour stayed under the coat (values: temperature_c — the "
-                                         "temperature)",
+                                        "visible, and the hat, the scarf and the mittens are quiet here: all "
+                                        "the colour stayed under the coat (values: temperature_c — the "
+                                        "temperature)",
     "move_colour_to_hat_scarf_gloves": "move the colour into the hat, scarf or gloves",
     "smooth_protected_leather_or_rubber_or_treat": "replace it with smooth protected leather or rubber, or "
-                                                    "treat it with a water repellent and accept the risk",
+                                                   "treat it with a water repellent and accept the risk",
     "face_contrast_above_her_own": "the contrast near the face is higher than her own: the clothes wear the "
-                                    "person and the face is rubbed out (values: jump — the lightness jump near "
-                                    "the face, own — her own contrast; with_neckline_buffer — the jump with "
-                                    "the neckline buffer; makeup_plus — how much noticeable make-up adds, and "
-                                    "that was not enough)",
+                                   "person and the face is rubbed out (values: jump — the lightness jump near "
+                                   "the face, own — her own contrast; with_neckline_buffer — the jump with "
+                                   "the neckline buffer; makeup_plus — how much noticeable make-up adds, and "
+                                   "that was not enough)",
     "face_item_in_lightness_window": "replace the item near the face with one inside the lightness window "
-                                      "(values: window — the lightness window from and to)",
+                                     "(values: window — the lightness window from and to)",
     "open_neckline_as_buffer": "an open neckline as a skin buffer",
     "mid_lightness_scarf_or_collar": "a scarf or collar of intermediate lightness",
     "move_dark_item_down": "move the dark item to the bottom: the bottom and the shoes are almost free of "
-                            "this rule",
+                           "this rule",
     "face_contrast_below_her_own": "the contrast near the face is lower than her own, a slight fading "
-                                    "(values: jump — the largest jump near the face, own — her own contrast)",
+                                   "(values: jump — the largest jump near the face, own — her own contrast)",
     "lift_face_contrast_with_accessory": "lift the contrast with an accessory without changing the items: a "
-                                          "shiny piece of jewellery, a light detail near the face, a lipstick "
-                                          "one step stronger, or a print with the spread needed",
+                                         "shiny piece of jewellery, a light detail near the face, a lipstick "
+                                         "one step stronger, or a print with the spread needed",
     "chroma_gap_between_items": "the outfit's items do not match in intensity: compatibility rests on "
-                                 "nearness of saturation, not on the relation of hues (values: gap — the "
-                                 "chroma gap in OKLab, threshold — the threshold; louder — which of the two "
-                                 "items of the finding is louder: 1 or 2; on_windows — true when the judgement "
-                                 "rests on the windows of colour words, not on a measurement)",
+                                "nearness of saturation, not on the relation of hues (values: gap — the "
+                                "chroma gap in OKLab, threshold — the threshold; louder — which of the two "
+                                "items of the finding is louder: 1 or 2; on_windows — true when the judgement "
+                                "rests on the windows of colour words, not on a measurement)",
     "match_chroma_register": "bring chromas to one register: mute the louder or raise the quieter; hue can "
-                              "stay",
+                             "stay",
     "waistline_hidden_by_top": "the bottom's rise does nothing: the waistband is hidden by the top, so the "
-                                "eye sees the edge of the top and not the waistband (values: rise — the rise: "
-                                "high, mid, low; hidden_cm — by how many cm it is hidden)",
+                               "eye sees the edge of the top and not the waistband (values: rise — the rise: "
+                               "high, mid, low; hidden_cm — by how many cm it is hidden)",
     "tuck_top_or_shorter_top": "tuck the top in so the waistband becomes visible, or take a shorter top that "
-                                "ends above the waistband",
+                               "ends above the waistband",
     "maxi_without_lift_or_volume": "a maxi with no lift and no volume of its own: of the three supports of a "
-                                    "maxi — height, lift, volume — the outfit has none (values: heel_cm — the "
-                                    "pair's heel when the card names it)",
+                                   "maxi — height, lift, volume — the outfit has none (values: heel_cm — the "
+                                   "pair's heel when the card names it)",
     "heeled_shoes_or_voluminous_maxi": "shoes with a lift of 4 cm or more under this length, or a maxi of a "
-                                        "voluminous cut: an A-line, pleats, a flare",
+                                       "voluminous cut: an A-line, pleats, a flare",
     "midi_proportion_decided_by_shoes": "the midi is the riskiest length, and the shoes decide the proportion "
-                                         "(values: heel_cm — the pair's heel when the card names it)",
+                                        "(values: heel_cm — the pair's heel when the card names it)",
     "shoes_continuing_leg_line": "check the pair against the hemline: under a midi the shoes that work are "
-                                  "the ones that continue the line of the leg — a tone matched to the leg, a "
-                                  "lift, a narrow shaft",
+                                 "the ones that continue the line of the leg — a tone matched to the leg, a "
+                                 "lift, a narrow shaft",
     "print_shapes_echo_keep": "motifs of different families echo each other in shape, and the mix holds on "
-                               "that: keep it (values: shape — curved or angular, prints — pattern codes)",
+                              "that: keep it (values: shape — curved or angular, prints — pattern codes)",
     "print_mix_no_shared_colour": "a mix of prints with no shared colour falls apart into two separate items "
-                                   "(values: scale_spread — how far the scales are spread, from 0 to 1, when "
-                                   "measured)",
+                                  "(values: scale_spread — how far the scales are spread, from 0 to 1, when "
+                                  "measured)",
     "print_with_other_colour_or_linking_item": "one print in a version with the other's colour, or a linking "
-                                                "item in a shared colour",
+                                               "item in a shared colour",
     "two_prints_close_scale": "two prints of a close scale compete for attention (values: scale_spread — the "
-                               "spread of scale from 0 to 1)",
+                              "spread of scale from 0 to 1)",
     "one_print_clearly_smaller_or_larger": "one print clearly smaller or larger, keep the shared colour",
     "two_fixes_pull_one_item_apart": "two fixes pull one item in opposite directions along the same colour "
-                                      "axis, and the evidence gives no order of priority (values: slot — slot "
-                                      "code, axes — the axes: lightness, chroma, hue)",
+                                     "axis, and the evidence gives no order of priority (values: slot — slot "
+                                     "code, axes — the axes: lightness, chroma, hue)",
     "choose_one_fix_or_split_goals": "do one of the two fixes and accept that the second goal stays "
-                                      "unreached, or split the goals across different items: one into a scarf "
-                                      "or a piece of jewellery, the other into the top",
+                                     "unreached, or split the goals across different items: one into a scarf "
+                                     "or a piece of jewellery, the other into the top",
     "warm_cool_neutrals_no_step": "a warm and a cool neutral side by side with no step of lightness (values: "
-                                   "dl — the lightness difference, de — the visible colour difference; "
-                                   "on_windows — the judgement rests on the windows of colour words)",
+                                  "dl — the lightness difference, de — the visible colour difference; "
+                                  "on_windows — the judgement rests on the windows of colour words)",
     "neutrals_same_lightness_visibly_different": "two neutrals at the same lightness but visibly different "
-                                                  "(values: dl — the lightness difference, de — the visible "
-                                                  "colour difference; on_windows — the judgement rests on the "
-                                                  "windows of colour words)",
+                                                 "(values: dl — the lightness difference, de — the visible "
+                                                 "colour difference; on_windows — the judgement rests on the "
+                                                 "windows of colour words)",
     "separate_lightness_or_tone_on_tone": "separate the neutrals by a step of lightness, or bring them "
-                                           "together tone on tone, and then it is a deliberate move (values: "
-                                           "step — the step threshold)",
+                                          "together tone on tone, and then it is a deliberate move (values: "
+                                          "step — the step threshold)",
     "two_different_whites": "the outfit has two different whites, a cream one and an optical one, and the "
-                             "difference of temperature reads as dirt",
+                            "difference of temperature reads as dirt",
     "one_white": "one white",
     "neutral_near_face_off_her_temperature": "the neutral near the face is cooler or warmer than her "
-                                              "temperature (values: direction — cooler or warmer, b — the "
-                                              "item's yellow-blue axis, window — her window from and to, "
-                                              "nearness — nearness to the face)",
+                                             "temperature (values: direction — cooler or warmer, b — the "
+                                             "item's yellow-blue axis, window — her window from and to, "
+                                             "nearness — nearness to the face)",
     "her_temperature_neutral_near_face": "put a neutral of her temperature near the face — a scarf, a top or "
-                                          "an unbuttoned layer; the item stays",
+                                         "an unbuttoned layer; the item stays",
     # ── ВЕРХНІЙ ШАР: СТАН, ТЕПЛО, ДОВЖИНА, ПРОПОРЦІЯ, ПЛЕЧЕ, ДОГЛЯД (П-6: K-OUT-*) ──
     "outer_default_state": "the outer layer's default state and the states available to it (values: state — "
-                            "state code, allowed — the codes allowed: buttoned, unbuttoned, draped)",
+                           "state code, allowed — the codes allowed: buttoned, unbuttoned, draped)",
     "closed_front_gives_eye_nothing": "a closed front of the outer layer gives the eye nothing: the cheapest "
-                                       "fix is to leave it open, or a scarf in the V",
+                                      "fix is to leave it open, or a scarf in the V",
     "leave_open_or_v_scarf": "leave it open, or a V scarf if it must be closed",
     "draped_state_unavailable": "draping over the shoulders is unavailable for this item",
     "belt_ties_not_buckles": "the outer layer's belt ties rather than buckles (values: knot — back when the "
-                              "coat is worn open, or front)",
+                             "coat is worn open, or front)",
     "knot_placement_buckle_as_detail": "the knot on the named side (in front, slightly off centre), and the "
-                                        "buckle left as a detail, not a fastening (values: knot — back or "
-                                        "front)",
+                                       "buckle left as a detail, not a fastening (values: knot — back or "
+                                       "front)",
     "raise_collar_free_state": "raising the collar is a free fourth state",
     "raise_collar": "raise the collar: lengthens the neck, sharpens the silhouette",
     "high_stand_collar_frees_slot": "a high stand collar frees the slot: no scarf is needed, the stand "
-                                     "carries the colour near the face by itself (values: slot — the code of "
-                                     "the slot freed)",
+                                    "carries the colour near the face by itself (values: slot — the code of "
+                                    "the slot freed)",
     "no_scarf_needed_collar_carries_colour": "no scarf is needed: the slot and the accent budget are freed, "
-                                              "and the stand enters the near-face area with its own colour",
+                                             "and the stand enters the near-face area with its own colour",
     "draped_is_minutes_state": "draped is a state for minutes, not the whole outing",
     "draped_only_as_transition": "keep draped as a transition, not the wearing state",
     "unbuttoning_is_styling_command": "unbuttoned is a styling command, not a property of the item",
     "leave_open_or_belt_tightly": "leave it open, which opens up the vertical, or belt it tightly to bring "
-                                   "the waist back (values: has_belt — whether she has a belt)",
+                                  "the waist back (values: has_belt — whether she has a belt)",
     "no_belt_wear_open": "no belt in her wardrobe: wear it open",
     "belt_over_is_other_slot": "a belt over it comes from another slot",
     "wear_open_or_buy_belt": "wear it unbuttoned for a longer silhouette and a narrower front, or buy a belt "
-                              "for it",
+                             "for it",
     "own_belt_over_or_wear_open": "her own belt over it, so there is no need to take one from the catalogue, "
-                                   "or wear it unbuttoned",
+                                  "or wear it unbuttoned",
     "drape_third_solution_sleeve_conflict": "draping solves a sleeve that does not fit over",
     "do_not_put_arms_in_sleeves": "do not put the arms into the sleeves of the outer layer: a third way out "
-                                   "of the same conflict, and it needs no other item",
+                                  "of the same conflict, and it needs no other item",
     "ease_ladder_off_unbuttoned": "ease ladder does not apply: worn unbuttoned",
     "layer_test_over_real_layers": "fit the outer layer over the layers really worn",
     "measure_winter_outer_over_sweater": "fit a winter outer layer over a sweater, not a T-shirt",
     "belt_makes_ease_interval": "a belt makes the ease a range: the item passes the ladder of eases at "
-                                 "several levels",
+                                "several levels",
     "outer_will_not_fit_over_bulky": "the outer layer will not fit over the bulky item under it (values: "
-                                      "outer — the layer's name, under — the name of the item under it)",
+                                     "outer — the layer's name, under — the name of the item under it)",
     "thin_fitted_top_under_or_bulky_without_jacket": "under a fitted layer a thin top that follows the figure "
-                                                      "(a shirt, a fine knit), or the bulky jumper without the "
-                                                      "jacket, or with a loose cut on top",
+                                                     "(a shirt, a fine knit), or the bulky jumper without the "
+                                                     "jacket, or with a loose cut on top",
     "two_high_necklines_stacked": "two high necklines one on top of the other (values: upper, lower — the "
-                                   "names of the items)",
+                                  "names of the items)",
     "open_neckline_on_top_or_one_high_neck": "an item with an open neckline on top (a cardigan, a jacket, a "
-                                              "V-neck), or keep only one high neckline",
+                                             "V-neck), or keep only one high neckline",
     "outer_length_state_chosen_for_warmth": "length and state chosen for warmth, not proportion",
     "fill_power_without_fill_weight": "fill power without fill weight is no warmth measure",
     "ask_fill_weight_or_ignore_fill_power": "ask for the weight of the filling, or do not use fill power in "
-                                             "the decision at all",
+                                            "the decision at all",
     "trench_counted_as_warm_layer": "a trench was counted as warmth, but it is for rain",
     "warm_layer_under_or_instead_of_trench": "an insulated layer under the trench or instead of it, or "
-                                              "declare the wool version",
+                                             "declare the wool version",
     "layer_closes_wet_windy_regime": "this layer covers the wet-and-windy gap of down and coats",
     "layer_declared_no_filling": "the item declares \"no filling\": do not count this layer as warm on a par "
-                                  "with an insulated one of the same type",
+                                 "with an insulated one of the same type",
     "down_loses_warmth_when_wet": "down loses its warmth on a wet day",
     "filling_declared_by_word": "filling declared by a word; the type's warmth label stays",
     "filling_not_declared_ask_composition": "the filling is not declared, and the category name does not "
-                                             "declare it either: ask for the composition",
+                                            "declare it either: ask for the composition",
     "composition_not_declared_ask": "composition not declared: wool holds winter, cotton does not",
     "wool_below_band_goes_lower": "wool content below the band: ranks lower in the cold",
     "wool_declared_goes_higher": "wool in the composition is declared: in the cold this layer ranks above the "
-                                  "rest of its type",
+                                 "rest of its type",
     "oversize_lets_wind_in": "oversize lets wind in: do not count it as warmth",
     "through_quilting_slightly_colder": "through-stitched quilting is slightly colder; a tiebreak only",
     "outer_warmth_note": "a note about the warmth of the outer layer (values: note — the text of the note)",
     "long_item_on_short_height_ranked": "a long item on a petite height: the length goes into the ranking, "
-                                         "not into the filter (values: height_cm — her height)",
+                                        "not into the filter (values: height_cm — her height)",
     "shorter_outer_or_fitted_version": "a shorter outer layer, or this one fitted at the waist",
     "outer_length_share_of_height": "the outer layer's length as a share of her height (values: length_cm — "
-                                     "the length, share_pct — the share as a percentage)",
+                                    "the length, share_pct — the share as a percentage)",
     "outer_edges_nearly_coincide": "the edges of the outer layer and of the item under it almost coincide "
-                                    "(values: gap_cm — the difference between the edges, direction — "
-                                    "outer_longer: the outer layer is longer and this can be altered; "
-                                    "outer_shorter: it is shorter and there is no alteration)",
+                                   "(values: gap_cm — the difference between the edges, direction — "
+                                   "outer_longer: the outer layer is longer and this can be altered; "
+                                   "outer_shorter: it is shorter and there is no alteration)",
     "shorten_outer_or_other_outer": "shorten the outer layer to a clean difference (this moves the pockets, "
-                                     "the lapels and the fastening), or another item in the outer-layer slot",
+                                    "the lapels and the fastening), or another item in the outer-layer slot",
     "change_bottom_or_other_outer": "change the skirt or the dress, since the outer layer cannot be "
-                                     "lengthened by anything, or another outer layer",
+                                    "lengthened by anything, or another outer layer",
     "edge_violation_repairable": "edge conflict fixable: the outer layer can be shortened",
     "edge_violation_terminal": "edge conflict terminal: it cannot be lengthened",
     "shorten_outer_layer": "shorten the outer layer",
     "other_item_lower_edge_slot": "another item in the lower-edge slot",
     "volume_not_cancelled_by_volume": "volume is not cancelled by volume",
     "lower_inner_volume_or_shorten_outer": "lower the inner volume — straight or narrow jeans, a skirt that "
-                                            "follows the figure — or shorten the outer layer and leave the "
-                                            "bottom as it is",
+                                           "follows the figure — or shorten the outer layer and leave the "
+                                           "bottom as it is",
     "pile_adds_width": "the pile of the outer layer adds width beyond the cut (values: pile — the word for "
-                        "the pile)",
+                       "the pile)",
     "smoother_pile_if_width_unwanted": "a smoother pile if the width is unwanted",
     "quilting_geometry_visible_axis": "quilting geometry is a visible axis of volume",
     "detachable_hood_configuration_axis": "a detachable hood is a configuration choice",
     "remove_hood_when_no_volume_needed": "remove the hood when shoulder volume is not wanted",
     "shoulder_levers_vs_her_widest": "the outer layer's levers at the shoulders against the place where she "
-                                      "is widest (values: levers — add, remove or cancel volume; widest — "
-                                      "hips, shoulders or equal; agreement — the agreement from -1 to 1, a "
-                                      "minus means they pull against each other)",
+                                     "is widest (values: levers — add, remove or cancel volume; widest — "
+                                     "hips, shoulders or equal; agreement — the agreement from -1 to 1, a "
+                                     "minus means they pull against each other)",
     "detachable_hood_both_branches": "a detachable hood serves both: on for narrow shoulders, off for broad",
     "item_with_opposite_neck_lever": "another item with the opposite neck lever",
     "front_holds_vertical_keep_open_above_fullest": "the front holds a vertical: do not fasten above the "
-                                                     "fullest point",
+                                                    "fullest point",
     "front_shelf_across_bust_deeper_v": "the front lies as a shelf across the bust, so a deeper V is needed: "
-                                         "a lower fastening or a revere",
+                                        "a lower fastening or a revere",
     "jacket_peeks_under_coat": "the jacket peeks out under the coat",
     "longer_outer_layer": "a longer outer layer: a short coat over tailoring fails by construction",
     "outer_shoulder_off_body": "the outer layer's shoulder does not meet the body (values: direction — wider: "
-                                "wider, still repairable; narrower: narrower, with no repair)",
+                               "wider, still repairable; narrower: narrower, with no repair)",
     "measure_shoulder_first_take_away_not_add": "check the shoulder first, with the seam a little past the "
-                                                 "shoulder bone; width can be taken away but not added: too "
-                                                 "big goes for alteration, too small means another outer layer",
+                                                "shoulder bone; width can be taken away but not added: too "
+                                                "big goes for alteration, too small means another outer layer",
     "outer_shoulder_fits": "the outer shoulder fits",
     "take_away_possible_add_not": "taking away is possible, adding is not",
     "too_big_alter_too_small_drop": "too big: keep it with a note \"for alteration\"; too small: drop it, "
-                                     "repair is impossible",
+                                    "repair is impossible",
     "salt_slush_warmer_wears_faster": "salty slush: what warms better wears out faster",
     "clean_after_each_outing_or_sturdier_layer": "clean it after every outing; for slush a sturdier outer "
-                                                  "layer, and keep the wool for dry frost",
+                                                 "layer, and keep the wool for dry frost",
     "suede_under_salt_no_home_cleaning": "suede under salt: no home cleaning",
     "professional_cleaning_or_suede_spray": "professional cleaning rather than at home; a protective spray in "
-                                             "thin coats after each wetting is only a hint",
+                                            "thin coats after each wetting is only a hint",
     # ── ОБІЦЯНКА СХЕМИ ПАЛІТРИ (П-6: K-COL-03) ──
     "scheme_promised_accent_all_neutral": "the scheme promises neutrals and an accent, and not one measured "
-                                           "item of the outfit carries colour: that is an unfulfilled scheme, "
-                                           "not a calm outfit (values: scheme — scheme code, measured — how "
-                                           "many items were measured)",
+                                          "item of the outfit carries colour: that is an unfulfilled scheme, "
+                                          "not a calm outfit (values: scheme — scheme code, measured — how "
+                                          "many items were measured)",
     "swap_one_item_to_colour_in_slot": "swap one item, best of all in this slot, for a coloured one from the "
-                                        "selection, and keep the rest neutral (values: slot — slot code)",
+                                       "selection, and keep the rest neutral (values: slot — slot code)",
     "scheme_one_accent_look_has_more": "the scheme promises neutrals and one accent, and the outfit carries "
-                                        "several colour families (values: families — family codes)",
+                                       "several colour families (values: families — family codes)",
     "keep_one_coloured_rest_neutral": "keep one item coloured, the rest neutral of the same lightness band",
     "scheme_families_missing_on_big_items": "the scheme promises its colour families on the large items, and "
-                                             "the outfit's large items do not carry all of them; an accessory "
-                                             "may echo a family but not be its only carrier (values: scheme — "
-                                             "scheme code, families — how many families the scheme has, "
-                                             "present — how many of them are on the large items, missing — the "
-                                             "words of the families that are missing; accessories_only — the "
-                                             "families that are on accessories only)",
+                                            "the outfit's large items do not carry all of them; an accessory "
+                                            "may echo a family but not be its only carrier (values: scheme — "
+                                            "scheme code, families — how many families the scheme has, "
+                                            "present — how many of them are on the large items, missing — the "
+                                            "words of the families that are missing; accessories_only — the "
+                                            "families that are on accessories only)",
     "scheme_family_fix": "what to do for the scheme's family (values: family — the family's word; action — "
-                          "replace: replace an item in the slot with it, add_layer: add it as a layer, "
-                          "rebuild: a separate top and bottom instead of a whole item, elsewhere: it exists "
-                          "only in slots this outfit does not have, assortment_gap: the selection has no large "
-                          "items of this family, and that is not a choice against the scheme; slot — slot "
-                          "code)",
+                         "replace: replace an item in the slot with it, add_layer: add it as a layer, "
+                         "rebuild: a separate top and bottom instead of a whole item, elsewhere: it exists "
+                         "only in slots this outfit does not have, assortment_gap: the selection has no large "
+                         "items of this family, and that is not a choice against the scheme; slot — slot "
+                         "code)",
     "scheme_family_areas_unbalanced": "the scheme's families take unequal areas on the large items: the "
-                                       "smallest is below the threshold share of the largest, and one family "
-                                       "dominates (values: scheme — scheme code, shares_pct — the families' "
-                                       "shares as percentages, min_ratio — the threshold)",
+                                      "smallest is below the threshold share of the largest, and one family "
+                                      "dominates (values: scheme — scheme code, shares_pct — the families' "
+                                      "shares as percentages, min_ratio — the threshold)",
     "even_out_family_areas": "even the areas: larger family on a smaller item and vice versa",
     # ── НАБІР ОБРАЗІВ (П-6: K-VAR-01, K-COMP-02) ──
     "outfits_variants_of_one_idea": "some outfits of the set are variants of one idea rather than different "
-                                     "outfits: there is no choice between them (values: in_groups — how many "
-                                     "outfits are in groups, outfits — how many outfits there are altogether; "
-                                     "same_item_slots — the slots where one item serves the whole set)",
+                                    "outfits: there is no choice between them (values: in_groups — how many "
+                                    "outfits are in groups, outfits — how many outfits there are altogether; "
+                                    "same_item_slots — the slots where one item serves the whole set)",
     "one_outfit_per_group_rest_different": "keep one outfit from each group and make the rest different — "
-                                            "another hero item or another colour scheme, not another bag under "
-                                            "the same idea (values: slots — the slots where to take different "
-                                            "items)",
+                                           "another hero item or another colour scheme, not another bag under "
+                                           "the same idea (values: slots — the slots where to take different "
+                                           "items)",
     "outfit_hero_count_off": "an outfit is led by one striking item: in the named outfits there is none, or "
-                              "there are two and they compete (values: without — the ids of the outfits with "
-                              "no hero, with_two — the ids of those with two)",
+                             "there are two and they compete (values: without — the ids of the outfits with "
+                             "no hero, with_two — the ids of those with two)",
     "one_hero_per_outfit": "give each named outfit exactly one striking item: add an anchor where there is "
-                            "none, and quieten one of the two where there are two",
+                           "none, and quieten one of the two where there are two",
     # ── ВУЗОЛ НАПРУГИ ОБРАЗУ (П-6: `graph.заяви_вузла`) ──
     "tension_knot": "the outfit's knot of tension, the place where the largest number of findings meet "
-                     "(values: node — the code of a slot, a body level or a zone, or whole_outfit; tension — "
-                     "the tension; edges — how many findings are on it; linked — the codes of the slots tied "
-                     "to it by those findings)",
+                    "(values: node — the code of a slot, a body level or a zone, or whole_outfit; tension — "
+                    "the tension; edges — how many findings are on it; linked — the codes of the slots tied "
+                    "to it by those findings)",
     "change_one_item_of_bundle": "the knot is held by a bundle of items: change one item out of it",
     "change_item_in_knot_slot": "the other slots take no part in these findings: change the item in the "
-                                 "knot's slot itself",
+                                "knot's slot itself",
     "change_items_meeting_at_knot": "change the items meeting at the knot",
     "change_what_lies_on_body_zone": "change what lies on that body zone",
     "change_outfit_composition": "change the outfit's composition, not one item",
     # ── ТКАНИНА НЕ ПО СЕЗОНУ (П-6: K-MAT-03) ──
     "fabric_out_of_season": "the item's fabric reads out of season: the day is warmer or colder than its "
-                             "band, which is semantics rather than a thermometer (values: temperature_c — the "
-                             "day's temperature, band — the fabric's band from and to, direction — warmer or "
-                             "colder, fabrics — fabric codes)",
+                            "band, which is semantics rather than a thermometer (values: temperature_c — the "
+                            "day's temperature, band — the fabric's band from and to, direction — warmer or "
+                            "colder, fabrics — fabric codes)",
     "same_item_in_day_band_fabric": "the same item in a fabric of the day's band, or the same colour and cut "
-                                     "without the seasonal fabric",
+                                    "without the seasonal fabric",
     # ── П-6 хвиля 5: посадка, край, поділ, носіння, розмір аксесуарів, погода, інтерес — що і як полагодити ──
     "look_split_in_half": "the item's line splits the look in half (ratio = top:bottom)",
     "move_dividing_line_cm": "move the dividing line to ~cm from the floor: tuck in, shorter top or another "
-                              "waist rise",
+                             "waist rise",
     "skin_band_boot_hem": "skin band (cm) between shaft and hem at a wide part of the leg: the shoe edge cuts "
-                           "the leg line",
+                          "the leg line",
     "close_skin_band": "close the band: dense tights in the shoe tone, knee boots with a midi, hem below "
-                        "hem_to_cm or shaft above shaft_to_cm (cm from floor)",
+                       "hem_to_cm or shaft above shaft_to_cm (cm from floor)",
     "edge_on_widest_point": "the edge ends on a bulge of the body (values: level — body level; edge — shaft, "
-                             "hem or accessory: the edge of a boot shaft, a hemline or an accessory; direction "
-                             "— where to lead it: shorten, lengthen, higher_shaft, lower_shaft, no_lever — "
-                             "there is no lever, not_flattering_intent — the intention is not to flatter; "
-                             "length_from_word — the length was taken from a word of the name)",
+                            "hem or accessory: the edge of a boot shaft, a hemline or an accessory; direction "
+                            "— where to lead it: shorten, lengthen, higher_shaft, lower_shaft, no_lever — "
+                            "there is no lever, not_flattering_intent — the intention is not to flatter; "
+                            "length_from_word — the length was taken from a word of the name)",
     "move_edge_to_cm": "move the edge into ranges (cm from floor), where the body is narrower",
     "edge_move_needs_other_model": "within this model the edge cannot move: another model is needed, or no "
-                                    "narrower point nearby",
+                                   "narrower point nearby",
     "shoulder_seam_off_acromion": "shoulder seam off the shoulder point: beyond = hangs past (item wider), "
-                                   "short = falls short (item narrower)",
+                                  "short = falls short (item narrower)",
     "other_size_or_cut_shoulder_costly": "another size or cut; altering the shoulder costs most, so rather "
-                                          "drop the item",
+                                         "drop the item",
     "oversize_reads_too_big": "the volume reads as too big rather than as a deliberate oversize (values: "
-                               "failed — the markers that failed: shoulder — the shoulder, balance — there is "
-                               "no fitted item beside it, narrow_point — the ankle or the wrist is covered)",
+                              "failed — the markers that failed: shoulder — the shoulder, balance — there is "
+                              "no fitted item beside it, narrow_point — the ankle or the wrist is covered)",
     "oversize_fix": "fix the failed markers: shoulder at the shoulder point or built-in dropped; one fitted "
-                     "item beside or a tuck; show ankle or wrist",
+                    "item beside or a tuck; show ankle or wrist",
     "item_under_her_hard_no": "item falls under her hard no",
     "other_item_in_slot": "another item in this slot",
     "hem_without_shoes_unjudged": "no pair in the look, so the lower proportion with the hem cannot be judged",
     "add_shoes_compose_with_hem": "add a pair and set the lower proportion with it: occasion → base → pair "
-                                   "and hem together → accessories",
+                                  "and hem together → accessories",
     "pair_tone_vs_leg_proportion": "the tone of the pair against the torso-to-leg proportion (values: leg_pct "
-                                    "— the leg as a percentage of her height; pair — nude or contrast; "
-                                    "far_from_middle — the proportion is already past the middle, so a nude "
-                                    "drives it further away and a contrast pulls it back)",
+                                   "— the leg as a percentage of her height; pair — nude or contrast; "
+                                   "far_from_middle — the proportion is already past the middle, so a nude "
+                                   "drives it further away and a contrast pulls it back)",
     "contrast_pair_to_middle": "a contrasting pair: shifts torso:leg toward the middle",
     "nude_or_tights_to_middle": "nude pair or tights tone: shifts the proportion toward the middle",
     "heel_wear_cost": "heel heel_cm cm for hours h: wear cost named",
     "cushioned_insole_softens": "an insole with heel cup and arch support cuts impact: the same pair gets "
-                                 "easier",
+                                "easier",
     "long_day_items_unbearable": "over a long day (hours) items in these slots become unbearable in their own "
-                                  "way: they demand attention while worn",
+                                 "way: they demand attention while worn",
     "shoe_type_outside_temp_band": "shoe type outside the day's temperature band (temp_c)",
     "take_from_day_band": "take from the day's band: types, or density den (DEN)",
     "tights_den_off_day_band": "the tights' denier is outside the day's band (values: den — the denier, band "
-                                "— the day's band; need — denser or thinner)",
+                               "— the day's band; need — denser or thinner)",
     "tights_lightness_closer_to": "tights lightness closer to closer (shoes: leg column; bottom: lightness "
-                                   "step); two different goals",
+                                  "step); two different goals",
     "tights_lightness_by_goal": "longer leg line: tights lightness to the shoes; soft lightness: to the "
-                                 "bottom",
+                                "bottom",
     "frame_bigger_eye_or_wider_bridge": "a frame with a bigger eye size or wider bridge",
     "watch_lugs_over_wrist": "watch lug-to-lug (lug_mm) wider than the flat of her wrist (ceiling_mm)",
     "watch_shorter_lugs": "a case with shorter lugs, not necessarily a smaller diameter",
     "glove_bl_origin_unknown": "glove length in BL without its origin: from thumb seam or full length is "
-                                "unknown",
+                               "unknown",
     "take_bl_origin_from_card": "take the glove length origin from the card",
     "shoe_width_separate_axis": "the pair's last is narrow or wide (width): width is its own axis, length "
-                                 "does not answer it",
+                                "does not answer it",
     "measure_pair_not_bigger_size": "try this pair, not a bigger size; or a model of the same length on "
-                                     "another last",
+                                    "another last",
     "belt_waist_not_defined": "a belt is not the first third piece here: the waist is not defined",
     "third_piece_elsewhere_or_wide_belt_at_waist": "take the third piece from another slot (scarf, outer "
-                                                    "layer, jewellery); if the belt stays, wider and at the "
-                                                    "natural waist, not the hips",
+                                                   "layer, jewellery); if the belt stays, wider and at the "
+                                                   "natural waist, not the hips",
     "accent_surfaces_exact_match": "two accent surfaces match exactly (dE): they pull the eye sideways, not "
-                                    "up to the face",
+                                   "up to the face",
     "secondary_colour_or_neutral_or_declared_column": "second item in the first one's secondary colour or a "
-                                                       "contrasting neutral; or a declared colour column",
+                                                      "contrasting neutral; or a declared colour column",
     "sole_glued_not_resoleable": "glued sole: cannot be resoled, so the price spreads over a shorter life",
     "prefer_stitched_when_equal": "when two pairs fit equally, take the stitched one",
     "wear_in_allowed_state": "wear it in one of the allowed states",
     "item_near_face_opposite_eye_side": "coloured item near the face on the yellow-blue side opposite to her "
-                                         "eyes (item_side vs eyes)",
+                                        "eyes (item_side vs eyes)",
     "eye_side_near_face_this_further": "keep the eyes' side near the face; this item further away or with a "
-                                        "neutral layer between",
+                                       "neutral layer between",
     "camouflage_reads_as_position": "camouflage in wartime reads as a stance",
     "keep_only_deliberately": "keep only as a deliberate choice",
     "same_motif_family_not_separated": "two prints of one motif family with no separation (values: "
-                                        "scale_spread — the spread of scale, 1 is about twice; "
-                                        "lightness_differs — whether their lightness differs)",
+                                       "scale_spread — the spread of scale, 1 is about twice; "
+                                       "lightness_differs — whether their lightness differs)",
     "one_motif_x2_scale_and_lightness_or_texture": "take one motif at least x2 smaller or larger and separate "
-                                                    "by lightness or texture",
+                                                   "by lightness or texture",
     "border_colour_held_by_companions": "item's colour is barely in palette and her-side companions hold it "
-                                         "(side)",
+                                        "(side)",
     "border_colour_not_held": "item's colour is barely in palette and companions do not hold her side (side)",
     "companions_on_her_side_or_swap": "put her-side (side) items beside it, or swap the item itself",
     "same_item_in_other_hand": "the same item already stands in hand hand of this run: a repeat, not a choice",
     "other_item_same_slot_family": "take another item of the same slot family in this hand",
     "foreign_registers_over_one_quote": "more than one quote item from registers not hers (registers)",
     "anchor_volume": "anchor the volume: cinch the waist (belt, wrap, tuck), shorten the bottom to the ankle "
-                      "or narrow it, or keep one layer fitted",
+                     "or narrow it, or keep one layer fitted",
     "give_contour_direction": "give the contour a direction: narrow the bottom or widen it under a fitted "
-                               "top; or cinch the waist so it reads as X",
+                              "top; or cinch the waist so it reads as X",
     "name_fabric_woven_or_knit": "name the item's fabric: woven or knit",
     "more_ease_at_level": "a bigger size or a cut with at least min_cm cm ease at this level",
     "cut_glides_over_level": "a cut that skims this level: design ease ease_cm cm",
     "cut_adds_volume_at_level": "a cut that adds volume at this level",
     "follow_waist_or_declared_other_shape": "a cut following the waist (fitted, wrap, sheath, belted); or "
-                                             "another shape as a declared choice",
+                                            "another shape as a declared choice",
     "make_waist_or_declared_column": "make a waist (belt, wrap, peplum, fitted) or a declared column: one "
-                                      "even line",
+                                     "even line",
     "remove_weaker_flare": "remove the weaker contour flare (level) with a fitted cut there; keep one volume, "
-                            "the other slot follows the body",
+                           "the other slot follows the body",
     "lead_look_to_target_shape": "lead the look to the target shape in the statement (target)",
     "folklore_constant_in_text": "the model's text has a folklore constant of rule: the number sounds like a "
-                                  "measurement that does not exist",
+                                 "measurement that does not exist",
     "say_without_number": "say the same without the number",
     "heel_above_comfort_ceiling": "heel heel_cm cm above the comfort ceiling ceiling_cm cm: comfort is her "
-                                   "goal",
+                                  "goal",
     "lower_heel_same_formality": "a pair with a heel below the named ceiling of the same formality: a loafer, "
-                                  "a low-heeled court shoe or a block heel (values: ceiling_cm — the ceiling "
-                                  "in cm)",
+                                 "a low-heeled court shoe or a block heel (values: ceiling_cm — the ceiling "
+                                 "in cm)",
     "all_colour_under_coat": "all colour stays under the coat: outdoors the look has no interest",
     "build_from_coat_or_colour_on_top": "build the look from the coat inward, or move colour to scarf, hat or "
-                                         "bag, visible over the coat",
+                                        "bag, visible over the coat",
     "light_flare_in_wind": "a light flare in the wind (light_fabric): a risk",
     "heavier_fabric_below_knee_or_straighter": "heavier fabric of the same silhouette, below-knee length, or "
-                                                "a straighter cut for this outing",
+                                               "a straighter cut for this outing",
     "dark_fitted_in_sun": "dark and clinging in direct sun: it heats up",
     "looser_cut_or_lighter_same_colour": "the same colour in a looser cut, or a lighter version of it in the "
-                                          "same cut",
+                                         "same cut",
     "item_opens_vetoed_zone": "item exposes a zone she keeps covered (zones): her personal limit",
     "hem_above_her_limit": "hem at hem_cm cm from floor, above her limit limit_cm cm",
     "other_item_within_her_coverage": "another item within her coverage",
     "fabric_formality_vs_cut": "fabric (fabric) is dressier or plainer than the cut (direction: higher|lower)",
     "same_item_fabric_level_or_cut_level": "the same item in fabric of level fabric_level, or the same cut at "
-                                            "level cut_level (formality levels)",
+                                           "level cut_level (formality levels)",
     "mono_object_silhouette": "one item (dress) is a mono-object silhouette: dressed, not styled",
     "add_third_piece_to_mono": "add a third piece: shoes in the hem tone, an open layer or a structural "
-                                "accessory",
+                               "accessory",
     "motif_scale_off_person": "print motif off the person's scale (item_motif: larger|smaller)",
     "take_motif_scale": "take a motif need (smaller|larger)",
     "interest_sources_below_floor": "the look has count interest sources at floor floor",
     "texture_near_face": "a pronounced texture in the slot nearest the face: interest without a second colour "
-                          "focus",
+                         "focus",
     "accent_colour_or_print_near_face": "an accent colour or print in the slot nearest the face",
     "item_removable_no_metric_drops": "the item can go: without it no metric of the look drops",
     "remove_this_item": "remove this item",
