@@ -594,6 +594,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                          "перевіреним. Це не вада образу й не порада, а чесне «не знаю»",
     "assembly_refused": "рядок на екрані сценарію, коли образи зібрати не вдалось: що сталось "
                         "і що їй зробити, щоб зібрати",
+    # Ч-8 (28.09.2026, рядок 197): доти екран «Оціни мій образ» ставив рядком те, що кинув код
+    # («на фото не знайшлося жодної речі»), — фраза коду людині (п.12, кошик В).
+    "review_refused": "рядок на екрані «Оціни мій образ», коли оцінити не вдалось: що саме "
+                      "стилістка не побачила на її фото і що їй зробити, щоб оцінити",
 }
 
 # ЗАЯВИ: код → ЩО САМЕ сказано. Це ВИЗНАЧЕННЯ для перекладачки, не готова фраза: вона
@@ -1970,6 +1974,11 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "accent_colour_or_print_near_face": "акцентний колір або принт у слоті, найближчому до обличчя",
     "item_removable_no_metric_drops": "річ можна зняти: без неї жодна метрика образу не падає",
     "remove_this_item": "зняти цю річ",
+    # ── оцінка її власного образу з фото: чого на кадрі не знайшлось (Ч-8, рядок 197) ──
+    "review_no_items_on_photo": "на надісланих кадрах не знайшлось жодної речі (why — причина коду, "
+                                "коли вона є)",
+    "review_items_not_recognized": "речі на кадрах видно, але жодної з них не вдалось звести з "
+                                   "місцем в образі (why — причина коду, коли вона є)",
 }
 
 
@@ -2977,6 +2986,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "why_her_words": "because it follows what she asked for",
     "why_occasion": "because it suits the level and mood of the occasion and place",
     "why_weather": "because it suits the day's weather, season and light",
+    "review_no_items_on_photo": "no item was found in the frames she sent (why — the code's reason, when it has one)",
+    "review_items_not_recognized": "items are visible in the frames, but none could be matched to a "
+                                   "place in the outfit (why — the code's reason, when it has one)",
 }
 
 
