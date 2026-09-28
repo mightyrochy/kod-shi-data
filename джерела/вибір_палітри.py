@@ -335,7 +335,8 @@ def _причини(сирі, куди):
         if к in ПРИЧИНИ and к not in вих:
             вих.append(к)
         elif к:
-            куди.append("причина «%s» поза переліком — відкинута" % к)
+            # рядок 205: `відхилено` їде рядком діагнозу `palette · choice · rejected=` — кодом
+            куди.append("reason_outside_list:%s · taken=none" % к)
     return вих[:_ПРИЧИН_МАКС]
 
 
