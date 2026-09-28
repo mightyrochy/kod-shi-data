@@ -89,8 +89,13 @@ def _коди(група):
 КАБЛУК_Є = ТРИ
 КАБЛУК_ФОРМА = ["thin", "block", "wedge", "platform", UNKNOWN]
 КАБЛУК_ВИСОТА = ["flat", "low", "mid", "high", UNKNOWN]
-МЕТАЛ = ["gold", "white_gold", "silver", "steel", "brass", "bronze", "copper", "platinum",
-         "none", UNKNOWN]
+# `rose_gold` (28.09.2026, рядок 226): код уміє віддати цей код (`_МЕТАЛ_В_КОД`,
+# `фід_атрибути._МЕТАЛ_ФОРМИ` — «рожеве/червоне золото», rose/pink gold), а
+# переліку моделі його бракувало. Наслідок був однобокий: на ж-11735 код казав
+# `rose_gold`, а модель такого коду сказати не могла, тож звірка діставала вічне
+# «модель не знає» замість згоди чи незгоди.
+МЕТАЛ = ["gold", "rose_gold", "white_gold", "silver", "steel", "brass", "bronze", "copper",
+         "platinum", "none", UNKNOWN]
 МЕТАЛ_ДЕ = ["body", "hardware", "both", "none", UNKNOWN]
 НАБІР = ["suit", "casual_suit", "set", "jewelry_set", "not_a_set", UNKNOWN]
 ОЗДОБА = ["sequins", "rhinestones", "beads", "pearls", "tulle", "feathers", "lurex", "glitter",
