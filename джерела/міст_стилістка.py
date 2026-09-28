@@ -11,8 +11,13 @@
 (показ чіпляє їх блоками в межах стелі моста). Відповідь — вільний текст у полі `answer`;
 до жінки її доносить перекладач репліки (`мовний_шар`, поле `answer`).
 
-ДВА КРОКИ, ЯК `мова`: {питання, речі?, випадок?, фото_речей?} → {промпт};
-{відповідь_моделі} → {відповідь, причина}. Python між кроками стану не тримає."""
+ДВА КРОКИ, ЯК `мова`: {питання, речі?, випадок?, фото_речей?, мова_тексту?} → {промпт};
+{відповідь_моделі} → {відповідь, причина}. Python між кроками стану не тримає.
+
+П-4 (27.09.2026): шаблон — англійський (`мова_промпту="en"`; доти ключі, межі й «мова» стояли
+українською, хоч тексти були англійські), речі — англійськими ключами й кодами (`_річ`: доти
+модель читала «вердикт_коду», «означення» та інші ключі ядра, і оголошення мусило їх називати).
+Відповідь `answer` — мовою `мова_тексту`: English із мовним шаром, Ukrainian без нього."""
 import json as _json
 
 import протокол as _ПР
@@ -26,6 +31,7 @@ import річ_з_фото as _РФ
     "випадок": "вхід із показу: рядок випадку для моделей (`ВИПАДОК_ПАСПОРТА_П`)",
     "фото_речей": "вхід із показу: ід фото, які показ чіпляє до виклику блоками, у тому самому порядку",
     "відповідь_моделі": "вхід із показу: сира відповідь моделі на промпт першого кроку",
+    "мова_тексту": "вхід із показу: мова відповіді — English із мовним шаром, Ukrainian без нього",
 }
 
 # ОГОЛОШЕННЯ ЗАДАЧІ — англійською (CLAUDE.md п.12: промпти функціональної моделі — англійською,
@@ -36,11 +42,10 @@ import річ_з_фото as _РФ
          "look; you answer it.",
     вхід=(
         _ЗП.Поле("question", "her question, in her own words", треба=True),
-        _ЗП.Поле("items", "her own items from this conversation, as the code sees them: name, slot, "
-                          "colour, formality 1–10; «вердикт_коду» is the code's verdict on the item "
-                          "for her palette and this occasion — a level plus statement codes, each "
-                          "code defined in «означення» right beside them (Ч-1, CLAUDE.md п.12)",
-                 "do not contradict «вердикт_коду»",
+        _ЗП.Поле("items", "her own items from this conversation, as the code sees them: features as "
+                          "codes, formality 1–10; \"verdict\" is the code's verdict on the item for her "
+                          "palette and this occasion — statement codes, each defined in \"definitions\"",
+                 "do not contradict \"verdict\"",
                  без="She has not shown or described any item yet."),
         _ЗП.Поле("photos", "which attached image (in order) shows which item: [{photo, item}]",
                  без="No image is attached: judge only by the item descriptions."),
@@ -53,23 +58,53 @@ import річ_з_фото as _РФ
         "Name no shops, brands, prices or links: you do not see the catalogue.",
         "Two to four sentences.",
     ),
-    вихід="питання_образу",
+    вихід="LOOK_ANSWER",
     скелет={"answer": "<text>"},
     поля_виходу={"answer": "your answer to her question"},
     межі=("лише_вхід", "для_неї", "без_чисел_тіла"),
+    мова_промпту="en",
 )
 
 
-def промпт(питання, речі=None, випадок="", фото_речей=None):
-    """Промпт моделі: її питання, її речі (слова коду й вердикт), рядок випадку, які фото
+def _річ(р):
+    """Її річ із паспорта → дріт англійськими ключами: повний опис кодами, без слота (модель сама
+    знає, де річ в образі, — власник 24–25.09), колір — словом виміру, коли код міряв (свідок
+    сильніший за перше слово моделі), вердикт коду — заявами з означеннями тих самих кодів, що
+    читає перекладачка (`_РФ._словник_заяв`, Ч-1). Lab, hex і рамка не їдуть: модель говорить
+    словами, числа — внутрішня шкала коду."""
+    о = {"id": р["ід"]}
+    if р.get("фото"):
+        о["photo"] = р["фото"]
+    if р.get("назва"):
+        о["name"] = р["назва"]
+    колір = (р.get("вимір") or {}).get("слово") or р.get("колір")
+    if колір:
+        о["color"] = _РФ.код_поля("color", колір) or колір
+    for поле, ключ in (("cut", "крій"), ("length", "довжина"), ("fabric", "матеріал"),
+                       ("pattern", "принт"), ("owner", "чия")):
+        к = _РФ.код_поля(поле, р.get(ключ))
+        if к:
+            о[поле] = к
+    if р.get("ошатність") is not None:
+        о["formality"] = р["ошатність"]
+    пов = (р.get("вердикт") or {}).get("повідомлення")
+    if пов:
+        о["verdict"] = {"statements": пов["statements"], "definitions": _РФ._словник_заяв(пов)}
+    if р.get("закріплена") is not None:
+        о["in_every_outfit"] = bool(р.get("закріплена"))
+    return о
+
+
+def промпт(питання, речі=None, випадок="", фото_речей=None, мова_тексту=None):
+    """Промпт моделі: її питання, її речі (коди й вердикт коду), рядок випадку, які фото
     прикріплено до яких речей. Фото без речі в паспорті не згадується."""
     речі = [р for р in речі or [] if isinstance(р, dict) and р.get("ід")]
     за_фото = {р.get("фото"): р.get("ід") for р in речі if р.get("фото")}
     дані = dict(question=str(питання or "").strip(),
-                items=[_РФ.для_моделі(р) for р in речі],
+                items=[_річ(р) for р in речі],
                 photos=[dict(photo=ф, item=за_фото[ф]) for ф in фото_речей or [] if ф in за_фото],
                 case=str(випадок or "").strip())
-    return _json.dumps(_ЗП.зібрати(ПИТАННЯ, дані), ensure_ascii=False)
+    return _json.dumps(_ЗП.зібрати(ПИТАННЯ, дані, мова_тексту=мова_тексту), ensure_ascii=False)
 
 
 def прийняти(відповідь):
@@ -78,8 +113,9 @@ def прийняти(відповідь):
     т = об.get("answer") if isinstance(об, dict) else None
     if isinstance(т, str) and т.strip():
         return dict(відповідь=т.strip(), причина=None)
-    return dict(відповідь="", причина=("нема поля answer" if isinstance(об, dict)
-                                        else "відповідь не JSON-об'єкт (%s)" % чому_не))
+    # ПРИЧИНА — КОДОМ (рядок 168, п.12): вона їде в запис виклику й діагноз звіту власника, не жінці
+    return dict(відповідь="", причина=("no_answer_field" if isinstance(об, dict)
+                                        else "not_json_object: %s" % чому_не))
 
 
 def стилістка(вхід):
@@ -90,4 +126,4 @@ def стилістка(вхід):
     if not str(d.get("питання") or "").strip():
         return _json.dumps(dict(помилка="нема питання"), ensure_ascii=False)
     return _json.dumps(dict(промпт=промпт(d["питання"], d.get("речі"), d.get("випадок") or "",
-                                          d.get("фото_речей"))), ensure_ascii=False)
+                                          d.get("фото_речей"), d.get("мова_тексту"))), ensure_ascii=False)

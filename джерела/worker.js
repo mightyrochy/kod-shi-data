@@ -50,6 +50,117 @@ const СТЕЛЯ_ВИХОДУ     = 4000;
 const СТЕЛЯ_ВХОДУ_СИМВ = 400000;   // виміряно: рука з пулом ≈ 130 000 симв
 const ПРОГОНІВ_НА_ДОБУ = 40;
 
+/* ── ТЕМПЕРАТУРА ДОХОДИТЬ ДО ОБОХ ПРОВАЙДЕРІВ (рядок 158 дошки, 27.09.2026) ──
+   ЩО БУЛО. Показ шле `temperature: 0` у тілі запиту (`мовний_шар.ВИБІРКА` →
+   `_дзвінокП`), бо рішення власника «температура мовного шару 0» тримається на
+   тому, що ОДНАКОВА РЕПЛІКА дає ОДИН ПАСПОРТ. Маршрут `claude-` віддає тіло як
+   є, тож там поле доїжджало. Маршрут `gemini-` будує тіло НАНОВО
+   (`contents` + `generationConfig`) і брав із нього лише `max_tokens` і
+   мислення — температура мовчки зникала, а модель шару відповідала з
+   температурою за замовчуванням провайдера (для Gemini це 1.0). Тобто
+   стабільність паспорта не гарантувалась НІЧИМ саме на тому провайдері, на
+   якому крутиться шар (`МОДЕЛЬ_МОВИ_П` — gemini-).
+
+   ЩО ТЕПЕР. Одне правило на обидва маршрути: число з `temperature` тіла їде
+   провайдеру його власним полем (Anthropic — верхній рівень, Gemini —
+   `generationConfig.temperature`), і що саме поїхало, видно в заголовку
+   `x-temperature` — без нього «дійшла чи ні» лишалось би твердженням.
+
+   ЧОМУ ЛИШЕ ЧИСЛО Й ЛИШЕ ЦЕ ПОЛЕ. Не-число (null, рядок, NaN) поле ЗНІМАЄ, а не
+   перетворює: `{"temperature": null}` у `generationConfig` Gemini відкидає 400,
+   і причина 400 виглядала б як поломка моделі. Решти полів вибірки (`top_p`,
+   `top_k`, `seed`) показ не шле — додавати їх наперед означало б зашити здогад
+   про імена, яких ніхто не виміряв. Межі значення міст НЕ править: Anthropic
+   приймає 0..1, Gemini 0..2, і тихе підганяння дало б модель, що відповідає не
+   з тією температурою, яку просили; чуже 400 із текстом провайдера чесніше. */
+const температура_тіла = т => {
+  const з = Number(т && т.temperature);
+  return (т && т.temperature !== null && т.temperature !== undefined && Number.isFinite(з)) ? з : null;
+};
+
+/* ── КЕШ НЕЗМІННОГО ПОЧАТКУ ЗАПИТУ (наряд К-4, 27.09.2026) ───────────────────
+   СЛОВО ВЛАСНИКА 27.09: «незмінна частина кожного запиту збирання образів (словник
+   кодів, правила, роль, схема полів) стає закешованим початком запиту. Швидкість та
+   сама, а платимо за цю частину значно менше.»
+
+   ЩО САМЕ НЕЗМІННЕ. Збирач промптів ставить обʼєкт `task` («завдання» в українському
+   шаблоні) ПЕРШИМ, а дані виклику — після нього (`збирач_промптів.зібрати`, К-4). Отже
+   незмінний початок — від `{` повідомлення до коми перед `input`: усередині `task` збирач
+   так само ставить незмінне (роль, правила, межі, мова, імʼя відповіді, схема) перед тим,
+   що зібране з даних цього виклику (`input`, `statement_codes`).
+
+   ДВА ПРОВАЙДЕРИ — ДВА РІЗНІ МЕХАНІЗМИ, І ЛИШЕ ОДИН ПОТРЕБУЄ ПОЛЯ В ТІЛІ.
+   · Anthropic: кеш пишеться на ЯВНІЙ МЕЖІ `cache_control` в кінці блоку, який має
+     лишатись однаковим (документація «Prompt caching», Messages API). Одним текстовим
+     блоком межу поставити нікуди — вона впала б у кінець усього промпта, тобто за
+     пулом, і кожен виклик лише ПИСАВ би кеш (125 % ціни) без жодного влучання. Тому
+     міст ріже перший текстовий блок надвоє рівно на цій межі; склеєний текст
+     байт у байт той самий, що й був, — модель бачить те саме повідомлення.
+   · Gemini: неявний кеш (implicit caching) вмикається сам на моделях 2.5+ і тримається
+     на СТАЛОМУ ПРЕФІКСІ запиту — поля в тілі для нього нема взагалі. Явне кешування
+     (`cachedContents`) обрано НЕ БУЛО, і не «бо складніше», а ЗА ЧИСЛАМИ. Воно вимагає
+     окремого ресурсу (створити, тримати ключ десь між викликами — у воркера для цього
+     є лише KV, — і видалити) і ПЛАТИ ЗА ЗБЕРІГАННЯ: $1.00 за мільйон токенів на годину
+     (прайс Google). Наш незмінний початок складання — 1 642 токени (вимір
+     `проби/кеш_незмінне.py`): година зберігання коштує $0.0016, а одне влучання
+     економить 1 642 × ($0.30 − $0.03)/10⁶ = $0.00044. Тобто явний кеш окупається лише
+     від чотирьох влучань на годину — на одну жінку з її чотирма руками він був би
+     ЗБИТКОМ. Неявний кеш не коштує нічого й дає ту саму знижку 90 %.
+     ЧОГО ВІН НЕ ДАЄ, СКАЗАНО ЧЕСНО: неявний кеш має поріг спільного префікса —
+     2 048 токенів на 2.5 Flash і 4 096 на 3.x Flash. Наші 1 642 його не досягають, тож
+     на `gemini-3.x` знижки поки не буде; на маршруті `claude-` (поріг 1 024 для Sonnet 5,
+     512 для Opus 5) — буде. Це межа виміряна, а не здогадана, і лежить рядком дошки.
+
+   ЧОМУ БЕЗ `ttl`. Типовий TTL Anthropic — 5 хвилин, і запис у такий кеш коштує 125 %
+   базової ціни входу; година коштує 200 % і (на час написання) окремого заголовка
+   `anthropic-beta`. Один збір образів — це десятки секунд, тобто всі виклики прогону
+   влазять у пʼять хвилин. Беремо дешевше й без беженого заголовка.
+
+   ЧОМУ ЛИШЕ ПЕРШИЙ БЛОК І ЛИШЕ КОЛИ ВІН ПЕРШИЙ. Перед текстом у повідомленні можуть
+   стояти фото (`модельП` кладе блоки `image` попереду). Фото — це саме те, що між
+   викликами міняється, тож префікс із ним несталий: кеш писався б і не влучав, а запис
+   дорожчий за звичайний вхід. Коли текст не перший — міст не чіпає нічого. */
+function межа_кешу(текст) {
+  // Завдання мусить бути ПЕРШИМ ключем повідомлення (після необовʼязкової «версії») —
+  // саме так його ставить збирач. Промпт іншої будови (складений рядком у показі, чи
+  // старого порядку «дані першими») межі не дістає: там вона різала б навпіл змінне.
+  const м = /^\{(?:"(?:version|версія)":"[^"]*",)?"(?:task|завдання)":\s*\{/.exec(текст || "");
+  if (!м) return -1;
+  let глибина = 0, у_рядку = false, екран = false;
+  for (let і = м[0].length - 1; і < текст.length; і++) {
+    const з = текст[і];
+    if (екран) { екран = false; continue; }
+    if (з === "\\") { екран = true; continue; }
+    if (з === '"') { у_рядку = !у_рядку; continue; }
+    if (у_рядку) continue;
+    /* МЕЖА — ПЕРЕД «input», А НЕ В КІНЦІ ЗАВДАННЯ. Кеш Anthropic збігається лише тоді,
+       коли ВЕСЬ текст до межі той самий; за межею вміст може бути будь-який. А в кінці
+       завдання стоять два розділи, зібрані з даних ЦЬОГО виклику: «input» (лише наявні
+       поля) і «statement_codes» (лише наявні коди). Поставити межу за ними означало б
+       писати кеш, який не влучить, щойно у виклику зʼявилось інше поле: на ремонті це
+       160 токенів спільного початку замість ~980 (вимір `проби/кеш_незмінне.py`). Тому
+       ріжемо там, де збирач кінчає незмінне, — на комі перед «input»/«вхід». */
+    if (глибина === 1 && з === "," && (текст.startsWith(',"input":', і) || текст.startsWith(',"вхід":', і)))
+      return і;
+    if (з === "{") глибина++;
+    else if (з === "}" && --глибина === 0) return і + 1;
+  }
+  return -1;
+}
+const з_кешем = т => {
+  const п = (т.messages || [])[0];
+  if (!п || !Array.isArray(п.content) || !п.content.length) return т;
+  const б = п.content[0];
+  if (!б || б.type !== "text" || б.cache_control) return т;
+  const к = межа_кешу(б.text);
+  if (к <= 0 || к >= String(б.text || "").length) return т;
+  return {...т, messages: [{...п, content: [
+    {type: "text", text: б.text.slice(0, к), cache_control: {type: "ephemeral"}},
+    {type: "text", text: б.text.slice(к)},
+    ...п.content.slice(1),
+  ]}, ...т.messages.slice(1)]};
+};
+
 /* ── ПРОВАЙДЕРИ ─────────────────────────────────────────────────────────────
    ІМЕНА МОДЕЛЕЙ НЕ ВШИТІ НАВМИСНО. Каталог Google рухається швидко (лінія 2.5
    гаситься восени 2026), і зашитий список моделей протух би мовчки, віддаючи
@@ -68,7 +179,10 @@ const ПРОВАЙДЕРИ = [
        `claude-` не працював би з першого ж виклику — рівно в момент, коли
        систему роздають тестувальницям. Gemini не зачеплено: його `запит`
        будує нове тіло. */
-    запит: т => { const р = {...т}; delete р._думки; return р; },
+    запит: т => { const р = з_кешем({...т}); delete р._думки;
+                  const темп = температура_тіла(т);
+                  if (темп === null) delete р.temperature; else р.temperature = темп;
+                  return р; },
     відповідь: д => д,
   },
   {
@@ -124,6 +238,7 @@ const ПРОВАЙДЕРИ = [
             : {text: б.text}),
       })),
       generationConfig: Object.assign({maxOutputTokens: т.max_tokens},
+        температура_тіла(т) === null ? {} : {temperature: температура_тіла(т)},
         /image|nano-banana/i.test(String(т.model || ""))
           ? {responseModalities: ["TEXT", "IMAGE"]}
           : (т._думки ? {thinkingConfig: т._думки} : {})),
@@ -201,7 +316,17 @@ const ПРОВАЙДЕРИ = [
         // судитиме стелю виводу замість образу.
         stop_reason: (к.finishReason === "MAX_TOKENS") ? "max_tokens"
                    : (к.finishReason || "end_turn").toLowerCase(),
-        usage: {input_tokens: u.promptTokenCount || 0,
+        /* ── КЕШОВАНІ ТОКЕНИ — ОДНИМ ІМЕНЕМ НА ОБОХ ПРОВАЙДЕРАХ (К-4) ──────────
+           Сторінка читає формат Anthropic, де `input_tokens` — це вхід БЕЗ кешу, а
+           прочитане з кешу стоїть окремо в `cache_read_input_tokens`. Google рахує
+           інакше: документація generateContent про `promptTokenCount` каже прямо —
+           «this is still the total effective prompt size meaning this includes the
+           number of tokens in the cached content». Тож віддавати `cachedContentTokenCount`
+           поруч із повним `promptTokenCount` означало б порахувати кеш ДВІЧІ (показ
+           додає обидва поля). Тому тут кеш ВІДНІМАЄТЬСЯ — і два провайдери починають
+           означати те саме число тим самим словом. */
+        usage: {input_tokens: Math.max(0, (u.promptTokenCount || 0) - (u.cachedContentTokenCount || 0)),
+                cache_read_input_tokens: u.cachedContentTokenCount || 0,
                 output_tokens: (u.candidatesTokenCount || 0) + (u.thoughtsTokenCount || 0),
                 // ОКРЕМИМ ЧИСЛОМ. Разом із текстовими токенами воно ховає
                 // причину порожньої відповіді за словом «вихід».
@@ -237,7 +362,8 @@ function заголовки(п) {
       "anthropic-ratelimit-requests-remaining, anthropic-ratelimit-requests-reset, " +
       "anthropic-ratelimit-tokens-remaining, anthropic-ratelimit-tokens-reset, " +
       "anthropic-ratelimit-input-tokens-remaining, anthropic-ratelimit-output-tokens-remaining, " +
-      "retry-after, x-runs-left, x-provider, x-thinking, x-images-dropped, x-model, x-attempts",
+      "retry-after, x-runs-left, x-provider, x-thinking, x-images-dropped, x-model, x-attempts, " +
+      "x-temperature, x-cached-tokens",
     "Access-Control-Max-Age": "86400",
   };
 }
@@ -392,6 +518,9 @@ export default {
     вих.set("x-images-dropped", String(випало_фото));
     вих.set("x-model", модель_ок);
     вих.set("x-attempts", спроби.join(" "));
+    /* ASCII, як і решта значень (кирилиця в заголовку кидає TypeError ще до мережі):
+       «n/a» — тим самим словом, що й `x-runs-left`, коли числа нема. */
+    вих.set("x-temperature", температура_тіла(тіло) === null ? "n/a" : String(температура_тіла(тіло)));
 
     const сире = await відп.text();
     if (відп.status === 504 || відп.status === 524)
@@ -402,8 +531,12 @@ export default {
     let дані;
     try { дані = JSON.parse(сире); }
     catch { return відмова(502, "провайдер віддав не JSON: " + сире.slice(0,300), п); }
-    return new Response(JSON.stringify(пров.відповідь(дані)),
-                        {status:200, headers:вих});
+    const наш = пров.відповідь(дані);
+    /* СКІЛЬКИ ВХОДУ ПРИЙШЛО З КЕШУ — ЗАГОЛОВКОМ (К-4). Без нього «кеш працює» лишалось
+       би твердженням: тіло читає показ, а ручний огляд і проби дивляться на заголовки.
+       ASCII, як і решта значень; `0` — кеш не влучив, і це теж факт. */
+    вих.set("x-cached-tokens", String(((наш || {}).usage || {}).cache_read_input_tokens || 0));
+    return new Response(JSON.stringify(наш), {status:200, headers:вих});
   },
 };
 
@@ -413,4 +546,4 @@ export default {
    перевірити ще й CORS зі СПРАВЖНЬОГО походження Pages, чого запит із
    самого воркера не перевіряє: там походження своє. */
 
-const ПРОБА = `<!doctype html>\n<html lang="uk">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Проба мосту · Люстерко</title>\n<!--\n  НАВІЩО ЦЯ СТОРІНКА, А НЕ curl.\n  curl НЕ ПЕРЕВІРЯЄ CORS. Він шле запит і читає відповідь незалежно від того,\n  що сказав «Access-Control-Allow-Origin», — бо CORS накладає БРАУЗЕР, а не\n  сервер. Тобто зелений curl нічого не доводить про те, чи запрацює показ.\n  Ця сторінка ходить тим самим шляхом, що й показ: із того самого походження,\n  тим самим заголовком токена, тим самим тілом. Що спрацювало тут — спрацює там.\n\n  ДРУГЕ: вона на телефоні. curl на Android — це Termux і півгодини; ця\n  сторінка — посилання й одна кнопка.\n\n  ТРЕТЄ: вона окремо називає ТРИ різні поломки, які інакше зливаються в одне\n  «не працює»: міст не піднявся · міст живий, але не пускає · міст пускає,\n  а провайдер відмовляє (найчастіше — невірне ім'я моделі, 404).\n-->\n<style>\n  :root { color-scheme: light dark; }\n  body { font: 16px/1.5 system-ui, sans-serif; margin: 0; padding: 18px;\n         max-width: 720px; }\n  h1 { font-size: 20px; margin: 0 0 4px; }\n  p.тьм { color: #6b6b6b; margin: 4px 0 16px; font-size: 14px; }\n  label { display: block; font-size: 13px; color: #6b6b6b; margin: 12px 0 3px; }\n  input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 15px;\n          border: 1px solid #bbb; border-radius: 8px; font-family: ui-monospace, monospace; }\n  button { margin-top: 16px; padding: 12px 18px; font-size: 16px; border: 0;\n           border-radius: 8px; background: #1a1a1a; color: #fff; width: 100%; }\n  button:disabled { opacity: .5; }\n  pre { white-space: pre-wrap; word-break: break-word; background: #f4f4f4;\n        padding: 12px; border-radius: 8px; font-size: 13px; margin-top: 16px;\n        font-family: ui-monospace, monospace; }\n  @media (prefers-color-scheme: dark) { pre { background: #1e1e1e; } }\n  .добре { color: #0a7d32; } .зле { color: #b00020; }\n</style>\n</head>\n<body>\n<h1>Проба мосту</h1>\n<p class="тьм">Три невідомих одразу: чи піднявся міст, чи пускає він це\nпоходження й токен, чи існує така модель. Кожне називається окремо.</p>\n\n<label>Адреса мосту</label>\n<input id="адреса" placeholder="https://lyusterko-mist.ТВІЙ.workers.dev" autocapitalize="off" spellcheck="false">\n<label>Токен (латиницею — кирилиця в заголовку HTTP не проходить)</label>\n<input id="токен" placeholder="tok-a1" autocapitalize="off" spellcheck="false">\n<label>Ім'я моделі</label>\n<input id="модель" value="gemini-3.5-flash-lite" autocapitalize="off" spellcheck="false">\n\n<button id="пуск">Перевірити міст</button>\n<pre id="вивід">Заповніть поля або відкрийте цю сторінку з хешем:\n#міст=АДРЕСА&amp;т=ТОКЕН&amp;модель=ІМ'Я</pre>\n\n<script>\n"use strict";\nconst $ = і => document.getElementById(і);\nconst в = $("вивід");\n\n/* Ті самі ключі, що читає показ, — щоб заповнене тут працювало і там. */\n(function(){\n  try{\n    const h = new URLSearchParams((location.hash || "").replace(/^#/, ""));\n    $("адреса").value = h.get("міст")   || localStorage.getItem("міст:адреса") || "";\n    $("токен").value  = h.get("т")      || localStorage.getItem("міст:токен")  || "";\n    $("модель").value = h.get("модель") || localStorage.getItem("міст:модель") || "gemini-3.5-flash-lite";\n  }catch(_){}\n})();\n\nfunction рядок(о){ return Object.entries(о).map(([к,з])=>к+"="+з).join("\\n"); }\n\n$("пуск").onclick = async () => {\n  const адреса = $("адреса").value.trim();\n  const токен  = $("токен").value.trim();\n  const модель = $("модель").value.trim();\n  if (!адреса || !токен){ в.textContent = "Потрібні адреса й токен."; return; }\n  /* Не-ASCII тут падає ще до мережі — краще сказати це словами, ніж дати\n     людині дивитись на TypeError у консолі, якої на телефоні нема. */\n  if (/[^\\x00-\\x7F]/.test(токен)){\n    в.textContent = "✗ Токен має не-ASCII символ. Заголовки HTTP приймають лише "\n                  + "латиницю й цифри — кириличний токен не пройде навіть до мосту.";\n    return;\n  }\n  try{\n    localStorage.setItem("міст:адреса", адреса);\n    localStorage.setItem("міст:токен", токен);\n    localStorage.setItem("міст:модель", модель);\n  }catch(_){}\n\n  $("пуск").disabled = true;\n  в.textContent = "Стукаю…\\nпоходження: " + location.origin;\n  const почато = Date.now();\n  let відп;\n  try{\n    відп = await fetch(адреса, {\n      method: "POST",\n      headers: {"Content-Type":"application/json", "x-lyusterko-token": токен},\n      /* Найдешевший можливий запит: одне слово, стеля 16 токенів. Мета —\n         перевірити ШЛЯХ, а не якість моделі. Стеля 256, а не 16: Flash мислить\n         за замовчуванням, і думки рахуються ПРОТИ неї — на 16 весь бюджет\n         з'їдали думки, текст був порожній, а виглядало це як «модель мовчить». */\n      body: JSON.stringify({model: модель, max_tokens: 256,\n        messages: [{role:"user", content:[{type:"text",\n          text:"Відповідай одним словом українською: яка зараз пора року в Україні у вересні?"}]}]}),\n    });\n  }catch(e){\n    в.innerHTML = '<span class="зле">✗ Не достукався взагалі.</span>\\n\\n'\n      + String(e) + "\\n\\n"\n      + "Найчастіші причини, у порядку ймовірності:\\n"\n      + "· адреса з друкарською помилкою або воркер не задеплоєний\\n"\n      + "· у ДОЗВОЛЕНІ_ПОХОДЖЕННЯ немає «" + location.origin + "»\\n"\n      + "  (саме це походження треба вписати у worker.js і передеплоїти)\\n"\n      + "· браузер зарізав змішаний вміст: сторінка http, міст https";\n    $("пуск").disabled = false; return;\n  }\n\n  const заг = {};\n  відп.headers.forEach((з,і)=>{ заг[і] = з; });\n  const сире = await відп.text();\n  const час = ((Date.now()-почато)/1000).toFixed(1);\n\n  if (!відп.ok){\n    let підказка = "";\n    if (відп.status === 403) підказка = "Міст ЖИВИЙ, але не пускає це походження.\\n"\n      + "Впиши «" + location.origin + "» у ДОЗВОЛЕНІ_ПОХОДЖЕННЯ й передеплой.";\n    else if (відп.status === 401 && /ACCESS_TOKEN_TYPE_UNSUPPORTED|invalid authentication/i.test(сире))\n      підказка = "МІСТ ПРАЦЮЄ. Відмовив САМ GOOGLE: ключ формату AQ. його\\n"\n      + "Generative Language API не приймає для цього проєкту.\\n"\n      + "Це відома біда переходу AIza → AQ, і вона не в твоєму коді.\\n"\n      + "Що робити: натисни «Copy cURL quickstart» на сторінці ключа —\\n"\n      + "там Google сам пише, як зараз кликати. Якщо там інший заголовок\\n"\n      + "або інша адреса — покажи мені, і я поправлю міст за десять хвилин.";\n    else if (відп.status === 401 && /"м/.test(сире)) підказка = "Міст живий і пускає "\n      + "походження, але ТОКЕН невідомий.\\nПеревір секрет TESTER_TOKENS — через кому, без пробілів.";\n    else if (відп.status === 401) підказка = "401 прийшов від провайдера, не від мосту:\\n"\n      + "ключ не підійшов. Дивись тіло нижче — воно від Google.";\n    else if (відп.status === 400) підказка = "Міст живий, але не впізнав модель.\\n"\n      + "Ім'я має починатись на gemini- або claude-.";\n    else if (відп.status === 404) підказка = "МОДЕЛІ З ТАКИМ ІМЕНЕМ НЕМА.\\n"\n      + "Це найчастіша поломка: каталог Google рухається, і ім'я треба звірити\\n"\n      + "в AI Studio. Пробуй інші, міняючи лише поле «модель».";\n    else if (відп.status === 429) підказка = "Квота вичерпана або запити занадто часті.\\n"\n      + "На дармовому тарифі Gemini це 10–15 запитів на хвилину.";\n    else if (відп.status === 503) підказка =\n      "МОДЕЛЬ ПЕРЕВАНТАЖЕНА (сплеск попиту в Google, тимчасово). Міст уже спробував\\n"\n      + "двічі. Що робити: повторити за хвилину, або задати на воркері\\n"\n      + "GEMINI_FALLBACK=gemini-3.5-flash-lite — тоді міст сам перейде на неї,\\n"\n      + "а яка модель відповіла, покаже рядок «відповіла».";\n    else if (відп.status === 504 || відп.status === 524) підказка =\n      "МІСТ ПРАЦЮЄ — МОВЧИТЬ МОДЕЛЬ. Спроби й секунди — у тілі нижче.\\n"\n      + "Це латентність провайдера, не міст. Що робити: інше ім'я моделі в полі\\n"\n      + "«модель» (напр. gemini-2.5-flash-lite), змінна GEMINI_THINKING=off,\\n"\n      + "і GEMINI_FALLBACK=gemini-2.5-flash-lite,gemini-2.5-flash на воркері —\\n"\n      + "тоді міст сам перейде на наступну, коли основна мовчить.";\n    else if (відп.status === 500 && /секрета/.test(сире)) підказка =\n      "Міст живий, але секрета з ключем на ньому нема.\\n"\n      + "Додай GEMINI_API_KEY (або ANTHROPIC_API_KEY) у Variables and Secrets.";\n    в.innerHTML = '<span class="зле">✗ HTTP ' + відп.status + '</span>  ·  ' + час + " с\\n\\n"\n      + (підказка ? підказка + "\\n\\n" : "")\n      + "тіло відповіді:\\n" + сире.slice(0, 900) + "\\n\\nзаголовки:\\n" + рядок(заг);\n    $("пуск").disabled = false; return;\n  }\n\n  let д; try{ д = JSON.parse(сире); }catch{ д = null; }\n  const текст = д && (д.content||[]).map(б=>б.text||"").join(" ").trim();\n  const u = (д && д.usage) || {};\n  в.innerHTML = '<span class="добре">✓ Міст працює.</span>  ·  ' + час + " с\\n\\n"\n    + "провайдер   : " + (заг["x-provider"] || "?") + "\\n"\n    + "відповіла   : " + (заг["x-model"] || "?") + (заг["x-attempts"] ? "  (спроби: " + заг["x-attempts"] + ")" : "") + "\\n"\n    + "модель      : " + модель + "\\n"\n    + "відповідь   : " + (текст || "(порожньо)") + "\\n"\n    + "токени      : вхід " + (u.input_tokens ?? "?") + " · вихід " + (u.output_tokens ?? "?")\n    + (u.thinking_tokens ? " (з них думок " + u.thinking_tokens + ")" : "") + "\\n"\n    + "мислення    : " + ({"thinkingLevel":"обмежене (рівень)",\n                          "thinkingBudget":"обмежене (бюджет)",\n                          "as-is":"як у моделі за замовчуванням",\n                          "dropped-after-400":"⚠ модель не приймає це поле — знято"}\n                         [заг["x-thinking"]] || заг["x-thinking"] || "?") + "\\n"\n    + "stop_reason : " + (д && д.stop_reason) + "\\n"\n    + "прогонів    : " + (заг["x-runs-left"] || "n/a") + "\\n\\n"\n    + "Тепер це саме ім'я моделі можна ставити в МОДЕЛЬ_П у показі,\\n"\n    + "а показ відкривати з #міст=" + адреса + "&т=" + токен;\n  $("пуск").disabled = false;\n};\n</script>\n</body>\n</html>\n`;
+const ПРОБА = `<!doctype html>\n<html lang="uk">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Проба мосту · Люстерко</title>\n<!--\n  НАВІЩО ЦЯ СТОРІНКА, А НЕ curl.\n  curl НЕ ПЕРЕВІРЯЄ CORS. Він шле запит і читає відповідь незалежно від того,\n  що сказав «Access-Control-Allow-Origin», — бо CORS накладає БРАУЗЕР, а не\n  сервер. Тобто зелений curl нічого не доводить про те, чи запрацює показ.\n  Ця сторінка ходить тим самим шляхом, що й показ: із того самого походження,\n  тим самим заголовком токена, тим самим тілом. Що спрацювало тут — спрацює там.\n\n  ДРУГЕ: вона на телефоні. curl на Android — це Termux і півгодини; ця\n  сторінка — посилання й одна кнопка.\n\n  ТРЕТЄ: вона окремо називає ТРИ різні поломки, які інакше зливаються в одне\n  «не працює»: міст не піднявся · міст живий, але не пускає · міст пускає,\n  а провайдер відмовляє (найчастіше — невірне ім'я моделі, 404).\n-->\n<style>\n  :root { color-scheme: light dark; }\n  body { font: 16px/1.5 system-ui, sans-serif; margin: 0; padding: 18px;\n         max-width: 720px; }\n  h1 { font-size: 20px; margin: 0 0 4px; }\n  p.тьм { color: #6b6b6b; margin: 4px 0 16px; font-size: 14px; }\n  label { display: block; font-size: 13px; color: #6b6b6b; margin: 12px 0 3px; }\n  input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 15px;\n          border: 1px solid #bbb; border-radius: 8px; font-family: ui-monospace, monospace; }\n  button { margin-top: 16px; padding: 12px 18px; font-size: 16px; border: 0;\n           border-radius: 8px; background: #1a1a1a; color: #fff; width: 100%; }\n  button:disabled { opacity: .5; }\n  pre { white-space: pre-wrap; word-break: break-word; background: #f4f4f4;\n        padding: 12px; border-radius: 8px; font-size: 13px; margin-top: 16px;\n        font-family: ui-monospace, monospace; }\n  @media (prefers-color-scheme: dark) { pre { background: #1e1e1e; } }\n  .добре { color: #0a7d32; } .зле { color: #b00020; }\n</style>\n</head>\n<body>\n<h1>Проба мосту</h1>\n<p class="тьм">Три невідомих одразу: чи піднявся міст, чи пускає він це\nпоходження й токен, чи існує така модель. Кожне називається окремо.</p>\n\n<label>Адреса мосту</label>\n<input id="адреса" placeholder="https://lyusterko-mist.ТВІЙ.workers.dev" autocapitalize="off" spellcheck="false">\n<label>Токен (латиницею — кирилиця в заголовку HTTP не проходить)</label>\n<input id="токен" placeholder="tok-a1" autocapitalize="off" spellcheck="false">\n<label>Ім'я моделі</label>\n<input id="модель" value="gemini-3.5-flash-lite" autocapitalize="off" spellcheck="false">\n\n<button id="пуск">Перевірити міст</button>\n<pre id="вивід">Заповніть поля або відкрийте цю сторінку з хешем:\n#міст=АДРЕСА&amp;т=ТОКЕН&amp;модель=ІМ'Я</pre>\n\n<script>\n"use strict";\nconst $ = і => document.getElementById(і);\nconst в = $("вивід");\n\n/* Ті самі ключі, що читає показ, — щоб заповнене тут працювало і там. */\n(function(){\n  try{\n    const h = new URLSearchParams((location.hash || "").replace(/^#/, ""));\n    $("адреса").value = h.get("міст")   || localStorage.getItem("міст:адреса") || "";\n    $("токен").value  = h.get("т")      || localStorage.getItem("міст:токен")  || "";\n    $("модель").value = h.get("модель") || localStorage.getItem("міст:модель") || "gemini-3.5-flash-lite";\n  }catch(_){}\n})();\n\nfunction рядок(о){ return Object.entries(о).map(([к,з])=>к+"="+з).join("\\n"); }\n\n$("пуск").onclick = async () => {\n  const адреса = $("адреса").value.trim();\n  const токен  = $("токен").value.trim();\n  const модель = $("модель").value.trim();\n  if (!адреса || !токен){ в.textContent = "Потрібні адреса й токен."; return; }\n  /* Не-ASCII тут падає ще до мережі — краще сказати це словами, ніж дати\n     людині дивитись на TypeError у консолі, якої на телефоні нема. */\n  if (/[^\\x00-\\x7F]/.test(токен)){\n    в.textContent = "✗ Токен має не-ASCII символ. Заголовки HTTP приймають лише "\n                  + "латиницю й цифри — кириличний токен не пройде навіть до мосту.";\n    return;\n  }\n  try{\n    localStorage.setItem("міст:адреса", адреса);\n    localStorage.setItem("міст:токен", токен);\n    localStorage.setItem("міст:модель", модель);\n  }catch(_){}\n\n  $("пуск").disabled = true;\n  в.textContent = "Стукаю…\\nпоходження: " + location.origin;\n  const почато = Date.now();\n  let відп;\n  try{\n    відп = await fetch(адреса, {\n      method: "POST",\n      headers: {"Content-Type":"application/json", "x-lyusterko-token": токен},\n      /* Найдешевший можливий запит: одне слово, стеля 16 токенів. Мета —\n         перевірити ШЛЯХ, а не якість моделі. Стеля 256, а не 16: Flash мислить\n         за замовчуванням, і думки рахуються ПРОТИ неї — на 16 весь бюджет\n         з'їдали думки, текст був порожній, а виглядало це як «модель мовчить». */\n      /* \`temperature: 0\` — ЩОБ ВИДНО БУЛО, ЧИ ВОНА ДОХОДИТЬ (рядок 158, 27.09.2026).\n         Маршрут \`gemini-\` будує тіло нанову й доти губив це поле мовчки; тепер\n         проба шле його тим самим шляхом, що й показ, а рядок «температура» нижче\n         каже, що міст поклав у запит до провайдера (заголовок \`x-temperature\`). */\n      body: JSON.stringify({model: модель, max_tokens: 256, temperature: 0,\n        messages: [{role:"user", content:[{type:"text",\n          text:"Відповідай одним словом українською: яка зараз пора року в Україні у вересні?"}]}]}),\n    });\n  }catch(e){\n    в.innerHTML = '<span class="зле">✗ Не достукався взагалі.</span>\\n\\n'\n      + String(e) + "\\n\\n"\n      + "Найчастіші причини, у порядку ймовірності:\\n"\n      + "· адреса з друкарською помилкою або воркер не задеплоєний\\n"\n      + "· у ДОЗВОЛЕНІ_ПОХОДЖЕННЯ немає «" + location.origin + "»\\n"\n      + "  (саме це походження треба вписати у worker.js і передеплоїти)\\n"\n      + "· браузер зарізав змішаний вміст: сторінка http, міст https";\n    $("пуск").disabled = false; return;\n  }\n\n  const заг = {};\n  відп.headers.forEach((з,і)=>{ заг[і] = з; });\n  const сире = await відп.text();\n  const час = ((Date.now()-почато)/1000).toFixed(1);\n\n  if (!відп.ok){\n    let підказка = "";\n    if (відп.status === 403) підказка = "Міст ЖИВИЙ, але не пускає це походження.\\n"\n      + "Впиши «" + location.origin + "» у ДОЗВОЛЕНІ_ПОХОДЖЕННЯ й передеплой.";\n    else if (відп.status === 401 && /ACCESS_TOKEN_TYPE_UNSUPPORTED|invalid authentication/i.test(сире))\n      підказка = "МІСТ ПРАЦЮЄ. Відмовив САМ GOOGLE: ключ формату AQ. його\\n"\n      + "Generative Language API не приймає для цього проєкту.\\n"\n      + "Це відома біда переходу AIza → AQ, і вона не в твоєму коді.\\n"\n      + "Що робити: натисни «Copy cURL quickstart» на сторінці ключа —\\n"\n      + "там Google сам пише, як зараз кликати. Якщо там інший заголовок\\n"\n      + "або інша адреса — покажи мені, і я поправлю міст за десять хвилин.";\n    else if (відп.status === 401 && /"м/.test(сире)) підказка = "Міст живий і пускає "\n      + "походження, але ТОКЕН невідомий.\\nПеревір секрет TESTER_TOKENS — через кому, без пробілів.";\n    else if (відп.status === 401) підказка = "401 прийшов від провайдера, не від мосту:\\n"\n      + "ключ не підійшов. Дивись тіло нижче — воно від Google.";\n    else if (відп.status === 400) підказка = "Міст живий, але не впізнав модель.\\n"\n      + "Ім'я має починатись на gemini- або claude-.";\n    else if (відп.status === 404) підказка = "МОДЕЛІ З ТАКИМ ІМЕНЕМ НЕМА.\\n"\n      + "Це найчастіша поломка: каталог Google рухається, і ім'я треба звірити\\n"\n      + "в AI Studio. Пробуй інші, міняючи лише поле «модель».";\n    else if (відп.status === 429) підказка = "Квота вичерпана або запити занадто часті.\\n"\n      + "На дармовому тарифі Gemini це 10–15 запитів на хвилину.";\n    else if (відп.status === 503) підказка =\n      "МОДЕЛЬ ПЕРЕВАНТАЖЕНА (сплеск попиту в Google, тимчасово). Міст уже спробував\\n"\n      + "двічі. Що робити: повторити за хвилину, або задати на воркері\\n"\n      + "GEMINI_FALLBACK=gemini-3.5-flash-lite — тоді міст сам перейде на неї,\\n"\n      + "а яка модель відповіла, покаже рядок «відповіла».";\n    else if (відп.status === 504 || відп.status === 524) підказка =\n      "МІСТ ПРАЦЮЄ — МОВЧИТЬ МОДЕЛЬ. Спроби й секунди — у тілі нижче.\\n"\n      + "Це латентність провайдера, не міст. Що робити: інше ім'я моделі в полі\\n"\n      + "«модель» (напр. gemini-2.5-flash-lite), змінна GEMINI_THINKING=off,\\n"\n      + "і GEMINI_FALLBACK=gemini-2.5-flash-lite,gemini-2.5-flash на воркері —\\n"\n      + "тоді міст сам перейде на наступну, коли основна мовчить.";\n    else if (відп.status === 500 && /секрета/.test(сире)) підказка =\n      "Міст живий, але секрета з ключем на ньому нема.\\n"\n      + "Додай GEMINI_API_KEY (або ANTHROPIC_API_KEY) у Variables and Secrets.";\n    в.innerHTML = '<span class="зле">✗ HTTP ' + відп.status + '</span>  ·  ' + час + " с\\n\\n"\n      + (підказка ? підказка + "\\n\\n" : "")\n      + "тіло відповіді:\\n" + сире.slice(0, 900) + "\\n\\nзаголовки:\\n" + рядок(заг);\n    $("пуск").disabled = false; return;\n  }\n\n  let д; try{ д = JSON.parse(сире); }catch{ д = null; }\n  const текст = д && (д.content||[]).map(б=>б.text||"").join(" ").trim();\n  const u = (д && д.usage) || {};\n  в.innerHTML = '<span class="добре">✓ Міст працює.</span>  ·  ' + час + " с\\n\\n"\n    + "провайдер   : " + (заг["x-provider"] || "?") + "\\n"\n    + "відповіла   : " + (заг["x-model"] || "?") + (заг["x-attempts"] ? "  (спроби: " + заг["x-attempts"] + ")" : "") + "\\n"\n    + "модель      : " + модель + "\\n"\n    + "відповідь   : " + (текст || "(порожньо)") + "\\n"\n    + "токени      : вхід " + (u.input_tokens ?? "?") + " · вихід " + (u.output_tokens ?? "?")\n    + (u.thinking_tokens ? " (з них думок " + u.thinking_tokens + ")" : "") + "\\n"\n    + "мислення    : " + ({"thinkingLevel":"обмежене (рівень)",\n                          "thinkingBudget":"обмежене (бюджет)",\n                          "as-is":"як у моделі за замовчуванням",\n                          "dropped-after-400":"⚠ модель не приймає це поле — знято"}\n                         [заг["x-thinking"]] || заг["x-thinking"] || "?") + "\\n"\n    + "температура : " + (!заг["x-temperature"] || заг["x-temperature"] === "n/a"\n                          ? "⚠ у запит не пішла — провайдер узяв свою"\n                          : заг["x-temperature"] + " — пішла в запит до провайдера") + "\\n"\n    + "stop_reason : " + (д && д.stop_reason) + "\\n"\n    + "прогонів    : " + (заг["x-runs-left"] || "n/a") + "\\n\\n"\n    + "Тепер це саме ім'я моделі можна ставити в МОДЕЛЬ_П у показі,\\n"\n    + "а показ відкривати з #міст=" + адреса + "&т=" + токен;\n  $("пуск").disabled = false;\n};\n</script>\n</body>\n</html>\n`;
