@@ -821,11 +821,12 @@
      ]
     },
     "goal": {
-     "description": "мета на цей вихід: flatter — щоб личило; conceal — не привертати уваги чи щось сховати; express — щоб на неї дивились",
+     "description": "мета на цей вихід: flatter — щоб личило; conceal — не привертати уваги чи щось сховати; express — щоб на неї дивились; taller — вона хоче довшу лінію, здаватись вищою",
      "enum": [
       "flatter",
       "conceal",
       "express",
+      "taller",
       "unknown"
      ]
     },
@@ -2661,6 +2662,10 @@
           "description": "so the code cannot tell whether two accent items match exactly in colour"
          },
          {
+          "const": "photo_colour_noise_above_match_threshold",
+          "description": "the colour measured from a photo is noisier than the exact match threshold (values: noise, threshold — dE00), so two measured hex values cannot settle an exact match"
+         },
+         {
           "const": "cannot_tell_lightness_structure",
           "description": "so the code cannot tell which structure of light and dark the outfit carries"
          },
@@ -2881,8 +2886,8 @@
           "description": "the item cards here do not name the cut, so it was counted as an ordinary straight cut; what follows holds only if the cut really is such"
          },
          {
-          "const": "claim_boxy_cut_hides_waist",
-          "description": "a straight boxy cut hides her defined waist"
+          "const": "claim_boxy_cut_does_not_follow_waist",
+          "description": "the cut runs straight past the waistline instead of following it"
          },
          {
           "const": "claim_no_waist_no_column",
@@ -2905,6 +2910,14 @@
           "description": "the item clings tightly to this part of the body where it would be better for it to skim (values: level — body level code)"
          },
          {
+          "const": "column_one_tone_is_her_goal",
+          "description": "one tone from head to toe is a column, and a column is the mechanism for the longer line she asked for: keep it (values: surfaces — how many weighty surfaces share the tone)"
+         },
+         {
+          "const": "fabric_stretches_ease_window_weaker",
+          "description": "the declared composition has elastane, and the published ease window holds for woven cloth, so how closely this item sits is decided by the stretch rather than by the cut (values: elastane_percent — the share the shop declares)"
+         },
+         {
           "const": "claim_zone_tented",
           "description": "the item tents over this part of the body where it would be better to give it shape (values: level — body level code)"
          },
@@ -2922,7 +2935,7 @@
          },
          {
           "const": "look_shape_is",
-          "description": "the shape the outfit gives, with no judgement, because this outing does not aim to flatter the figure (values: look — shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the edge of being marked; never write the letters themselves, only the description)"
+          "description": "the shape the outfit gives, with no judgement, because the goal for this outing is not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the edge of being marked; never write the letters themselves, only the description)"
          },
          {
           "const": "vertical_balance_not_judged",
@@ -3986,7 +3999,7 @@
          },
          {
           "const": "raise_collar",
-          "description": "raise the collar: lengthens the neck, sharpens the silhouette"
+          "description": "raise the collar: it adds a vertical near the face and sharpens the silhouette"
          },
          {
           "const": "high_stand_collar_frees_slot",
@@ -4487,6 +4500,10 @@
          {
           "const": "accent_surfaces_exact_match",
           "description": "two accent surfaces match exactly (dE): they pull the eye sideways, not up to the face"
+         },
+         {
+          "const": "accent_surfaces_same_colour_word",
+          "description": "two accent surfaces are named by the same colour word by two different shops (values: colour — the word): they read as one colour and pull the eye sideways, not up to the face"
          },
          {
           "const": "secondary_colour_or_neutral_or_declared_column",
@@ -5038,7 +5055,8 @@
   "goal": {
    "flatter": "лестити",
    "conceal": "приховати",
-   "express": "експресія"
+   "express": "експресія",
+   "taller": "вище"
   },
   "makeup_level": {
    "nude": "нюд",
