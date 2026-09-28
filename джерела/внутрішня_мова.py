@@ -2136,6 +2136,117 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one)",
     "review_items_not_recognized": "items are visible in the frames, but none of them could be matched "
                                    "to a place in the outfit (values: why — the reason, when there is one)",
+    # ── НОТИ СЛОТІВ ПУЛУ (Ч-10, 28.09.2026, рядок 223; доти цілі речення коду в
+    #    `ноти_слотів` — кошик В п.12). Читачі ті самі: функціональна модель (`kind_notes`
+    #    пакета) і звіт власника (`етапи.прогін.ноти_слотів`). Числа й слоти — у `values`.
+    #    ЦЕ НЕ ЗАЯВИ ДЛЯ ЖІНКИ: нота каже МОДЕЛІ, що сталось із пулом цього слота, і
+    #    словник один на обидві моделі (Ч-7), тож визначення тут такі самі за будовою.
+    "kind_empty_after_absolute_filters": "this kind holds no item at all once the absolute filters of the "
+                                        "scene are applied",
+    "kind_no_candidate_in_catalogue": "the catalogue holds no candidate for this kind at all",
+    "kind_dropped_from_outfit": "this kind fell out of the outfit, and that is named rather than hidden: "
+                               "\"no item\" is not \"the item is not needed\"",
+    "kind_no_window_hit_models_taken": "no item of this kind hit any window of the palette, so this many "
+                                       "distinct models were taken with no colour criterion at all: the "
+                                       "choice inside this kind does not rest on the palette "
+                                       "(values: models — how many distinct models)",
+    # ── верхній шар: температурні ворота двобічні (`композитор_збирання`) ─────────────
+    "outer_layer_kept_despite_warmth": "the outer layer stays although the temperature band alone would not "
+                                      "ask for it (values: temperature_c — °C of the scene; held_by — "
+                                      "dress_code when the dressiness band or the dress code holds it, "
+                                      "weather_or_outdoors when rain, wind or the street below +22 °C does)",
+    "outer_layer_removed_by_temperature": "the outer layer was removed by the temperature band: it asks for "
+                                         "one layer on the torso, so the empty kind is not a gap in the "
+                                         "catalogue (values: temperature_c — °C of the scene)",
+    # ── прикраси з цим образом (`композитор_збирання`, `композитор_слоти`) ───────────
+    "jewellery_kind_dropped_by_her_word": "this jewellery kind was dropped from the outfit because she asked "
+                                          "for no jewellery: her decision about today, neither a gap in the "
+                                          "catalogue nor an empty kind (values: removed — how many items left "
+                                          "the pool, when the pool was already built)",
+    "jewellery_metal_she_asked_for": "the metal she asked for leads this kind: items of her metal stay, items "
+                                     "with no metal word stay too (the feed names a metal on a minority of "
+                                     "jewellery, and silence is not another metal), items of the opposite "
+                                     "metal are removed (values: jewellery — her jewellery code; her_metal, "
+                                     "without_metal_word, opposite_removed — how many of each)",
+    "jewellery_opposite_metal_kept_last": "items of the opposite metal were kept at the tail rather than "
+                                          "removed: removing them would leave the kind below the floor of the "
+                                          "pool, and her own word must not empty the kind (values: jewellery "
+                                          "— her jewellery code; her_metal, without_metal_word, "
+                                          "opposite_at_tail — how many of each)",
+    "jewellery_without_metal_word_first": "items with no metal word were put ahead of the ones that name a "
+                                          "metal; beyond that the code sees no metal here (values: jewellery "
+                                          "— her jewellery code; without_metal_word, with_metal_word)",
+    "pearls_are_not_metal_kind_unknown": "pearls are not a metal, and the feed does not write the kind of "
+                                         "stone into the item card, so the code cannot tell pearls apart",
+    "ethnic_jewellery_none_in_catalogue": "ethnic jewellery (wood, bone, beads) — the catalogue holds none",
+    "other_non_metal_not_named_by_feed": "anything without a metal — the feed does not name pearls or wood "
+                                         "separately, so the code cannot tell these apart either",
+    # ── ошатність нагоди й ошатність речі з фото (`композитор_слоти`) ───────────────
+    "kind_cut_to_occasion_formality": "the kind was cut to the dressiness band of the occasion: items whose "
+                                      "formality interval lies outside the band left the pool, items with no "
+                                      "formality of their type stay (not knowing is not a reason to remove) "
+                                      "(values: band — the band from…to; had, fit, without_formality, "
+                                      "removed; removed_types — {item type code: how many})",
+    "kind_empty_after_occasion_formality": "no item of this kind fits the dressiness band of the occasion, so "
+                                          "the kind stays empty: a daytime layer over an outfit for this "
+                                          "occasion is not an outfit (values: band — the band from…to; had; "
+                                          "removed_types — {item type code: how many})",
+    "kind_cut_to_photo_formality": "the kind was cut by the dressiness the code measured on the shop photos, "
+                                   "and what stays is ordered by distance from the band (values: band — the "
+                                   "band from…to; had, removed, too_casual, too_dressy)",
+    "kind_empty_after_photo_formality": "no item of this kind fits the band by the dressiness measured on the "
+                                       "shop photos (values: band — the band from…to; had, removed, "
+                                       "too_casual, too_dressy)",
+    # ── мета образу в порядку пулу (`регістр_уваги.нота_пулу`) ──────────────────────
+    "goal_moves_loud_items_in_kind": "her goal for this outing moved the items that carry a witness of "
+                                     "loudness inside this kind: they stand after the quiet ones for conceal "
+                                     "and before them for express, and an item she chose herself does not "
+                                     "move (values: goal — goal code; moved, of — how many items of the kind)",
+    # ── траурний регістр спорожнив слот (`композитор_збирання`, рядок 154) ──────────
+    "kind_empty_after_mourning_register": "for this kind the catalogue holds no item dark and quiet enough, "
+                                         "without festive trim; the kind stays empty because a light or a "
+                                         "festive item is not an outfit for this occasion (values: removed — "
+                                         "how many the mourning register took out for this kind; by_reason — "
+                                         "{the register\'s reason code: how many})",
+    # ── гілка «на межі» під сміливим наміром (`композитор_збирання`) ────────────────
+    "edge_branch_absent_by_construction": "the \"edge\" branch does not exist by construction: the core was "
+                                          "built as the union of all branches of the fork, so not one window "
+                                          "of another gamut is left. This is not a property of the catalogue "
+                                          "— for an edge to appear, one single scheme has to be chosen",
+    "edge_branch_absent_in_catalogue": "no item of this kind hits any window of another gamut without hitting "
+                                       "a core window as well, so this kind has no \"edge\" branch: a "
+                                       "property of the catalogue, not an omission — a bold intent reaches "
+                                       "here by the core and by the break (values: items — items of the kind "
+                                       "with a measured colour; windows — windows of the other gamut)",
+    # ── добір у пулі мосту (`міст_пакет`) ──────────────────────────────────────────
+    "kind_topped_up_to_minimum": "the kind was topped up: the windows of the palette held fewer items than "
+                                 "the outfit needs, and without this kind there is no outfit (shoes and a bag "
+                                 "the occasion demands, an outer layer the cold below +10 °C, a top and a "
+                                 "bottom are what an outfit is). The added items travel with \"in_arc: "
+                                 "false\" — a named step outside the palette, not a hidden one (values: had, "
+                                 "need, added, now)",
+    "chosen_colour_accent_topped_up": "an accent of the colour she chose was topped up into this kind past "
+                                      "the lightness band of the window, while the hue arc and the chroma "
+                                      "stay: a named step outside the window, not a substitution (values: "
+                                      "in_accent_kinds — items of her family the windows gave across the "
+                                      "accent kinds; added)",
+    "chosen_colour_barely_in_catalogue": "the colour she chose is barely present in this catalogue: the "
+                                         "accent kinds hold this few items of her family while the scheme "
+                                         "asks for an accent. Tell her so plainly — there is nothing to take "
+                                         "the accent of her colour from; a shortage of stock, not advice "
+                                         "against her choice (values: kinds — kind codes; found)",
+    "scheme_families_lead_large_kinds": "the families of the scheme stand first in the large kinds, each "
+                                        "family on its own large item (values: scheme — scheme code; kinds — "
+                                        "kind codes; missing — scheme roles whose family the large items of "
+                                        "the pool do not hold at all, a shortage of stock, not a choice "
+                                        "against the scheme)",
+    "scheme_colour_lies_in_kinds": "these items carry the colour in the arc of the scheme and stand FIRST in "
+                                   "their kinds: an order, not a selection — a neutral beside them is lawful "
+                                   "too, but by itself it does not keep the promise of the scheme (values: "
+                                   "items; kinds — kind codes)",
+    "scheme_accent_absent_in_pool": "not one item of the accent kinds carries a colour in the arc of the "
+                                    "scheme: do not pretend the outfit keeps it — a shortage of stock, not a "
+                                    "choice against her (values: kinds — kind codes; scheme — scheme code)",
 }
 
 
@@ -2166,6 +2277,33 @@ def повідомлення(вид, *заяви):
         raise KeyError("вид повідомлення поза словником ВИДИ_ПОВІДОМЛЕНЬ: %r" % (вид,))
     з = [x for x in заяви if x]
     return dict(kind=вид, statements=з) if з else None
+
+
+def нота(*частини):
+    """Нота слота пулу внутрішньою мовою — ПЕРЕЛІК заяв у порядку появи, або None, коли
+    сказати нема чого (Ч-10, рядок 223: `ноти_слотів`). Частина — заява (`{code, values}`),
+    перелік заяв або None.
+
+    ЧОМУ ПЕРЕЛІК, А НЕ ОДНА ЗАЯВА. Причин на один слот буває кілька, і вони про РІЗНЕ:
+    бажаний метал і ошатність нагоди пояснюють ту саму лічбу пулу, температурні ворота
+    стоять до добору, а добір мосту — після. Доти вони зчіплювались у рядок (« · », «; »),
+    і кожне нове місце мусило саме не затерти попереднє; перелік знімає це з викликача."""
+    вих = []
+    for ч in частини:
+        if not ч:
+            continue
+        вих.extend(ч if isinstance(ч, list) else [ч])
+    return вих or None
+
+
+def дописати_ноту(карта, ключ, *частини):
+    """Заяви ДОПИСУЮТЬСЯ до ноти, яка вже стоїть у карті `ноти_слотів`, а не затирають її:
+    два місця кажуть про один слот (`композитор_збирання` до добору, `міст_пакет` після).
+    Віддає ноту слота, яка стала."""
+    нова = нота(карта.get(ключ), *частини)
+    if нова:
+        карта[ключ] = нова
+    return карта.get(ключ)
 
 
 # ПОВІДОМЛЕННЯ — те, що код віддає показу замість готової фрази. `ключ` каже, у яке
