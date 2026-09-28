@@ -1611,6 +1611,88 @@
     "text"
    ]
   },
+  "conversation_turn": {
+   "type": "object",
+   "description": "хід розмови мовної моделі: що змінилось у паспорті, хто відповідає і що сказати їй",
+   "additionalProperties": false,
+   "properties": {
+    "update": {
+     "$ref": "#/$defs/scenario",
+     "description": "що її нове повідомлення змінює в паспорті — лише змінене, поле за полем; кожне поле з кодом чи числом — парою {quote, value}"
+    },
+    "need": {
+     "description": "хто відповідає на цей хід (`ПОТРЕБИ`)",
+     "enum": [
+      "none",
+      "app",
+      "look",
+      "build",
+      "unknown"
+     ]
+    },
+    "text": {
+     "type": "string",
+     "description": "відповідь мовної моделі їй: що зрозуміла й записала, і відповідь на її питання, коли need=none; без питань до неї"
+    },
+    "invite_topics": {
+     "description": "теми, до яких `invite` м'яко запрошує",
+     "type": "array",
+     "items": {
+      "oneOf": [
+       {
+        "const": "occasion",
+        "description": "куди вона збирається"
+       },
+       {
+        "const": "goal",
+        "description": "чи хоче вона сьогодні привертати увагу чи лишитись непомітною"
+       },
+       {
+        "const": "makeup",
+        "description": "який макіяж і яку помаду вона планує"
+       },
+       {
+        "const": "movement",
+        "description": "чи багато вона ходитиме і як довго"
+       },
+       {
+        "const": "temperature",
+        "description": "скільки буде градусів"
+       },
+       {
+        "const": "jewelry",
+        "description": "які прикраси вона хоче з цим образом"
+       },
+       {
+        "const": "register",
+        "description": "якою мовою стилю вона одягається"
+       }
+      ]
+     },
+     "maxItems": 3,
+     "uniqueItems": true
+    },
+    "invite": {
+     "type": "string",
+     "description": "одне м'яке речення-запрошення розповісти про `invite_topics`: відповідати не мусить, образи зберуться й так"
+    },
+    "ask_code": {
+     "description": "обовʼязкове питання, яке ставить `ask` (`ОБОВʼЯЗКОВЕ`)",
+     "enum": [
+      "occasion",
+      "event_place"
+     ]
+    },
+    "ask": {
+     "type": "string",
+     "description": "одне коротке пряме питання про `ask_code`"
+    }
+   },
+   "required": [
+    "need",
+    "text"
+   ]
+  },
   "screen_message": {
    "type": "object",
    "description": "рядок, який жінка прочитає на екрані, внутрішньою мовою: вид рядка й заяви кодами",
@@ -1693,6 +1775,10 @@
       {
        "const": "assembly_refused",
        "description": "рядок на екрані сценарію, коли образи зібрати не вдалось: що сталось і що їй зробити, щоб зібрати"
+      },
+      {
+       "const": "review_refused",
+       "description": "рядок на екрані «Оціни мій образ», коли оцінити не вдалось: що саме стилістка не побачила на її фото і що їй зробити, щоб оцінити"
       }
      ]
     },
@@ -4476,6 +4562,14 @@
          {
           "const": "remove_this_item",
           "description": "зняти цю річ"
+         },
+         {
+          "const": "review_no_items_on_photo",
+          "description": "на надісланих кадрах не знайшлось жодної речі (why — причина коду, коли вона є)"
+         },
+         {
+          "const": "review_items_not_recognized",
+          "description": "речі на кадрах видно, але жодної з них не вдалось звести з місцем в образі (why — причина коду, коли вона є)"
          }
         ]
        },
@@ -4986,6 +5080,12 @@
   "question_about": {
    "app": "app",
    "look": "look"
+  },
+  "need": {
+   "none": "none",
+   "app": "app",
+   "look": "look",
+   "build": "build"
   },
   "verdict_reason": {
    "color_not_mine": "колір не мій",
