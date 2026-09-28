@@ -26,9 +26,9 @@ for назва, слова, типи, кольори, чинні in ВИПАДК
                   паспорт=dict(п, вето_тверде=вето))
         r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
         л = {k: v for k, v in (((r.get("відсічено") or {}).get("лічба")) or {}).items()
-             if k.startswith("вето людини")}
+             if k.startswith("person_veto")}
         пул = sum(len(v) for v in (r.get("кандидати") or {}).values())
-        print("%-34s %s · пул %d · знято вето людини: %s"
+        print("%-34s %s · пул %d · знято person_veto: %s"
               % (назва if мітка.strip() == "ДО" else "", мітка, пул,
                  json.dumps(л, ensure_ascii=False) if л else "нічого"))
         if мітка.strip() == "ПІСЛЯ":
