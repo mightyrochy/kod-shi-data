@@ -7,7 +7,17 @@ llama.cpp `llama-server`), міст до справжньої моделі не 
   MODEL      — ід моделі шару (`mamaylm-gemma-3-12b-it-v2.0`, Lapa…); без неї модель не кличеться;
   MODEL_URL  — адреса сервера, типово http://127.0.0.1:1234/v1;
   MODEL_TEMP — температура; без неї — та, що стоїть на сервері;
-  MODEL_MAX_TOKENS — стеля відповіді (типово 4000, як у стелі мосту).
+  MODEL_MAX_TOKENS — стеля відповіді (типово 4000, як у стелі мосту);
+  MODEL_SEED  — сід вибірки (рядок 196): те, чим llama.cpp сіє, коли вибірка не жадібна;
+  MODEL_CACHE=0 — без кеша префікса (`cache_prompt: false` llama.cpp / LM Studio).
+
+СТАБІЛЬНІСТЬ ДЛЯ ПРОБ, А НЕ ДЛЯ ПРОДУКТУ (М-6, рядок 196 дошки). Замір М-5 показав: той самий
+промпт при температурі 0 дав ІНШУ відповідь, коли промпт читався наново після іншого, ніж коли
+йшов із кеша префікса — жадібне декодування детерміноване, а логіти залежать від того, якими
+пачками прочитано промпт. Тому проба, що МІРЯЄ стабільність, має вміти зняти кеш префікса й
+прибити сід; інакше вона міряє кеш, а не модель. У продукт ці поля не йдуть і йти не можуть:
+`seed` API Anthropic відкидає 400 («Extra inputs are not permitted», М-2), а `cache_prompt` —
+поле llama.cpp, якого нема ні в Anthropic, ні в Gemini. Тут вони є, бо тут сервер — локальний.
 """
 import json
 import os
@@ -72,6 +82,10 @@ def модель(промпт):
                 max_tokens=int(os.environ.get("MODEL_MAX_TOKENS") or 4000), stream=False)
     if os.environ.get("MODEL_TEMP"):
         тіло["temperature"] = float(os.environ["MODEL_TEMP"])
+    if os.environ.get("MODEL_SEED"):
+        тіло["seed"] = int(os.environ["MODEL_SEED"])
+    if os.environ.get("MODEL_CACHE") == "0":
+        тіло["cache_prompt"] = False
     запит = urllib.request.Request(АДРЕСА + "/chat/completions", data=json.dumps(тіло).encode("utf-8"),
                                    headers={"Content-Type": "application/json"})
     т0 = time.time()
