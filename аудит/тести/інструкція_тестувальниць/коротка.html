@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Люстерко — коротка інструкція для тестувальниць</title>
+<style>
+@font-face{font-family:Fixel;src:url(шрифти/FixelText-Regular.woff2) format('woff2');font-weight:400}
+@font-face{font-family:Fixel;src:url(шрифти/FixelText-Medium.woff2) format('woff2');font-weight:500}
+@font-face{font-family:Fixel;src:url(шрифти/FixelText-SemiBold.woff2) format('woff2');font-weight:600}
+:root{--bg:#f6f1e8;--card:#fbf8f2;--ink:#1d1b18;--mute:#6b645a;--acc:#8a6a2f;--line:#d9d0c1;--bad:#9b3b2e}
+@page{size:A4;margin:11mm 11mm 12mm}
+*{box-sizing:border-box}
+body{margin:0;font-family:Fixel,system-ui,sans-serif;font-size:9.2pt;line-height:1.36;color:var(--ink);background:#fff}
+h1{font-size:21pt;line-height:1.1;margin:0 0 2mm;font-weight:600}
+h1 em{font-style:normal;color:var(--acc)}
+h2{font-size:12.5pt;margin:0 0 2mm;font-weight:600;display:flex;gap:2.5mm;align-items:baseline}
+h2 .n{color:var(--acc);font-size:10pt}
+h3{font-size:10pt;margin:2.5mm 0 1mm;font-weight:600}
+p{margin:0 0 1.6mm}
+.mute{color:var(--mute)}
+.page{break-after:page}
+.page:last-child{break-after:auto}
+section{break-inside:avoid;margin-bottom:4mm}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+.box{background:var(--bg);border-left:2.5pt solid var(--acc);padding:2mm 3mm;margin:2mm 0;border-radius:1mm}
+.box.bad{border-color:var(--bad)}
+.box b{color:var(--acc)} .box.bad b{color:var(--bad)}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;columns:2;column-gap:6mm}
+ol.steps li{counter-increment:s;break-inside:avoid;margin:0 0 1.6mm;padding-left:7mm;position:relative}
+ol.steps li:before{content:counter(s);position:absolute;left:0;top:0;width:5mm;height:5mm;border-radius:50%;background:var(--ink);color:#fff;font-size:7.5pt;font-weight:600;display:flex;align-items:center;justify-content:center}
+ul{margin:0 0 1.5mm;padding-left:4mm} li{margin:0 0 .6mm}
+.b{font-weight:600}
+.btn{display:inline-block;border:.6pt solid var(--ink);border-radius:3pt;padding:0 1.4mm;font-size:8.3pt;white-space:nowrap}
+/* екран із підписами */
+.scr{display:grid;grid-template-columns:44mm 1fr;gap:3.5mm;align-items:start}
+.scr.w{grid-template-columns:40mm 1fr}
+.shot{position:relative;border:.6pt solid var(--line);border-radius:2.5mm;overflow:hidden;background:var(--card)}
+.shot img{display:block;width:100%}
+.m{position:absolute;transform:translate(-50%,-50%);width:4.6mm;height:4.6mm;border-radius:50%;background:var(--acc);color:#fff;font-size:7.3pt;font-weight:600;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 .7pt #fff}
+.leg{margin:0;padding:0;list-style:none}
+.leg li{display:grid;grid-template-columns:5.2mm 1fr;margin:0 0 1.3mm}
+.leg li .k{width:4.4mm;height:4.4mm;border-radius:50%;background:var(--acc);color:#fff;font-size:7pt;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:.3mm}
+table{border-collapse:collapse;width:100%;font-size:8.3pt;line-height:1.3}
+th,td{border-bottom:.5pt solid var(--line);padding:1.3mm 1.6mm;vertical-align:top;text-align:left}
+th{background:var(--bg);font-weight:600;font-size:8pt}
+td:first-child{font-weight:600;width:25mm}
+td.say{width:58mm;font-style:italic}
+tr{break-inside:avoid}
+.head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.2pt solid var(--acc);padding-bottom:2mm;margin-bottom:3.5mm}
+.logo{font-size:15pt;font-weight:500}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:2mm;margin-top:1.5mm}
+.tabs div{background:var(--bg);border-radius:1.5mm;padding:1.5mm 2mm;font-size:8.3pt}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ СТОРІНКА 1 ═══════════ -->
+<div class="page">
+<div class="head"><div><div class="logo">люстерко</div><div class="mute">Коротка інструкція для тестувальниць · вересень 2026</div></div><div class="mute" style="text-align:right">Телефон вертикально · потрібен інтернет<br>Один сценарій ≈ 15–20 хв</div></div>
+
+<h1>Як тестувати <em>Люстерко.</em></h1>
+<p>Люстерко збирає жінці <b>чотири готові образи</b> з речей, що справді продаються в українських крамницях, і пояснює, чому саме так. Ти розповідаєш, куди йдеш, — стилістка заповнює сценарій і збирає образи. <b>Наша мета — знайти, де вона помиляється.</b></p>
+
+<div class="cols">
+<section>
+<h3>Що ми просимо</h3>
+<ul>
+<li><b>Пройти сценарії зі сторінок 6–7</b> — по два-три за раз, можна кілька днів.</li>
+<li><b>Вердикт на кожен із чотирьох образів</b> — навіть на ті, що не подобаються: вони для нас найцінніші.</li>
+<li><b>Писати чи наговорювати своїми словами.</b> «Не моє» без причини нам нічого не дає; «не моє, бо ця спідниця мене вкорочує» — дуже багато.</li>
+<li><b>Наприкінці дня — вивантажити файл вердиктів</b> і надіслати нам (с. 5).</li>
+</ul>
+<div class="box bad"><b>Найважливіше.</b> Вердикти лежать лише на твоєму телефоні, доки ти не надіслала файл. Не чисти дані браузера й не відкривай Люстерко в приватному вікні — вердикти зникнуть.</div>
+</section>
+<section>
+<h3>Увесь шлях</h3>
+<ol class="steps">
+<li>Відкрий посилання на телефоні (перший раз — до хвилини).</li>
+<li><b>Знайомство</b> — три кроки, лише один раз.</li>
+<li>Скажи стилістці, куди йдеш, — текстом або голосом.</li>
+<li>Перевір <b>картку сценарію</b>, поправ рядки, якщо треба.</li>
+<li>За бажанням — <b>Палітра</b>.</li>
+<li><span class="btn">Зібрати образи</span> — 2–3 хв.</li>
+<li>Розглянь чотири образи.</li>
+<li><b>Вердикт на кожен</b> і <span class="btn">Записати вердикт</span>.</li>
+<li>Новий сценарій: вкладка <b>Сценарій</b> → <b>Новий</b>.</li>
+</ol>
+<h3>Чотири вкладки внизу</h3>
+<div class="tabs"><div><b>Сценарій</b><br>розмова й картка</div><div><b>Образи</b><br>останні + усі</div><div><b>Оцінити</b><br>твій власний образ</div><div><b>Профіль</b><br>фото, кольори, обхвати</div></div>
+</section>
+</div>
+
+<section>
+<h2><span class="n">1</span>Знайомство — один раз, три кроки</h2>
+<div class="scr w">
+<div class="shot"><img src="знімки/01-znaiomstvo-pro-tebe.png">
+<span class="m" style="left:64%;top:56%">1</span><span class="m" style="left:24%;top:71%">2</span><span class="m" style="left:40%;top:13%">3</span></div>
+<ul class="leg">
+<li><span class="k">1</span><span><b>Портрет</b> — обличчя при денному світлі, без фільтрів. З нього Люстерко саме зчитує відтінки шкіри, волосся й очей. Нижче з'являться смужки «Твої кольори»; якщо вони виглядають не так — <span class="btn">Зчитати кольори з портрета</span>.</span></li>
+<li><span class="k">2</span><span><b>На повний зріст</b> — для кнопки «Приміряти на себе».</span></li>
+<li><span class="k">3</span><span><b>Три кроки.</b> <b>Про тебе</b>: фото, ім'я, галочка «дозволяю записати відтінки» — постав її, нам це дуже потрібно. <b>До лиця</b>: чотири питання (золото чи срібло, білий чи молочний, теплі чи холодні нейтралі, яскраві чи приглушені) — можна пропустити. <b>Фігура</b>: плечі, груди, талія, стегна й зріст у см, по найширшому місці, поверх білизни; кнопка <span class="btn">Готово</span>.</span></li>
+</ul>
+</div>
+<p class="mute" style="margin-top:1.5mm">Усе введене потім можна змінити у вкладці <b>Профіль</b>.</p>
+</section>
+</div>
+
+<!-- ═══════════ СТОРІНКА 2 ═══════════ -->
+<div class="page">
+<section>
+<h2><span class="n">2</span>Головний екран: «Куди ти збираєшся?»</h2>
+<div class="scr">
+<div class="shot"><img src="знімки/04-scenarii-porozhnii.png">
+<span class="m" style="left:48%;top:36%">1</span><span class="m" style="left:49%;top:58.5%">2</span><span class="m" style="left:66%;top:58.5%">3</span><span class="m" style="left:83%;top:58.5%">4</span><span class="m" style="left:88%;top:80%">5</span><span class="m" style="left:48%;top:98%">6</span><span class="m" style="left:72%;top:5%">7</span><span class="m" style="left:90%;top:5%">8</span></div>
+<ul class="leg">
+<li><span class="k">1</span><span><b>Напиши, як подрузі:</b> куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Одним реченням чи абзацом — стилістка сама розбере.</span></li>
+<li><span class="k">2</span><span><b>Фото речі</b> — «хочу образ під цю спідницю» або «оціни мій образ».</span></li>
+<li><span class="k">3</span><span><b>Голос.</b> Слова лягають у поле і <b>не надсилаються самі</b> — перевір розпізнане.</span></li>
+<li><span class="k">4</span><span><b>Надіслати.</b></span></li>
+<li><span class="k">5</span><span>Готові приклади — тапни, щоб підставити.</span></li>
+<li><span class="k">6</span><span><b>Або заповнити рукою</b> — картка сценарію без розмови.</span></li>
+<li><span class="k">7</span><span><b>Збережені</b> сценарії; після початку поруч з'являється <b>Новий</b> — почати з чистого аркуша.</span></li>
+<li><span class="k">8</span><span>Світла / темна тема.</span></li>
+</ul>
+</div>
+<div class="box"><b>Як поводиться стилістка.</b> Може м'яко запросити розповісти ще (мета образу, прикраси, макіяж) — це необов'язково: проігноруй, і вона збере образи все одно. <b>Помилка</b>: повторює те саме питання, блокує збирання, питає вже сказане.</div>
+</section>
+
+<section>
+<h2><span class="n">3</span>Картка сценарію — що стилістка зрозуміла</h2>
+<div class="scr">
+<div class="shot"><img src="знімки/05b-scenarii-riadky.png">
+<span class="m" style="left:95%;top:26.5%">1</span><span class="m" style="left:95%;top:33.5%">2</span><span class="m" style="left:95%;top:43.5%">3</span><span class="m" style="left:95%;top:53%">4</span><span class="m" style="left:95%;top:60%">5</span><span class="m" style="left:95%;top:67%">6</span><span class="m" style="left:95%;top:74%">7</span><span class="m" style="left:95%;top:80.5%">8</span><span class="m" style="left:88%;top:89.7%">9</span></div>
+<ul class="leg">
+<li><span class="k">1</span><span><b>Нагода</b> — плитки. Нагоди, якої нема на плитках (весілля гостею, церква), кажи словами: стилістка розуміє.</span></li>
+<li><span class="k">2</span><span><b>Де</b> — ресторан, офіс, парк, театр…</span></li>
+<li><span class="k">3</span><span><b>Ошатність</b> — від «за місцем» до святкового.</span></li>
+<li><span class="k">4</span><span><b>Коли й погода</b> — година, °C, дощ/сніг, вітер, реагенти.</span></li>
+<li><span class="k">5</span><span><b>Макіяж</b> на сьогодні + відтінки помади під твої кольори.</span></li>
+<li><span class="k">6</span><span><b>Прикраси</b> — золото, срібло, перли, етно, без прикрас.</span></li>
+<li><span class="k">7</span><span><b>Не хочу</b> — тверда межа: зони тіла + те, що стилістка почула в словах («підбори»). Дотик знімає.</span></li>
+<li><span class="k">8</span><span><b>Палітра</b> — окремий екран (с. 3).</span></li>
+<li><span class="k">9</span><span><span class="btn">Зібрати образи</span>; нижче — <b>Зберегти сценарій</b>.</span></li>
+</ul>
+</div>
+<p class="mute" style="margin-top:1.5mm">Тапни будь-який рядок — знизу відкриється аркуш із варіантами, <span class="btn">Готово</span> закриває. Помилка: в образах є те, що ти заборонила в «Не хочу».</p>
+</section>
+</div>
+
+<!-- ═══════════ СТОРІНКА 3 ═══════════ -->
+<div class="page">
+<div class="cols">
+<section>
+<h2><span class="n">4</span>Палітра</h2>
+<div class="shot" style="width:44mm;float:left;margin-right:3mm"><img src="знімки/11-palitra.png">
+<span class="m" style="left:14%;top:2.5%">1</span><span class="m" style="left:88%;top:29%">2</span><span class="m" style="left:88%;top:53%">3</span><span class="m" style="left:88%;top:73%">4</span><span class="m" style="left:88%;top:88%">5</span></div>
+<ul class="leg">
+<li><span class="k">1</span><span>Назад до сценарію.</span></li>
+<li><span class="k">2</span><span>Що зараз обрано і ким.</span></li>
+<li><span class="k">3</span><span><b>Гама</b> — наскільки гучні кольори.</span></li>
+<li><span class="k">4</span><span><b>Хай обере стилістка</b> — типово; можна нічого не чіпати.</span></li>
+<li><span class="k">5</span><span><b>Основа</b> — головний колір образу. Рекомендовані зверху, решта — нижче, теж клікабельні. Далі на екрані — <b>Схема</b> (як добираються інші кольори) з поясненням стилістки.</span></li>
+</ul>
+<div style="clear:both"></div>
+<div class="box">Якщо ти обрала основу й схему, <b>кольори речей мають із ними збігатися.</b> Не збігаються — напиши у вердикті.</div>
+</section>
+
+<section>
+<h2><span class="n">5</span>Чотири образи</h2>
+<div class="shot" style="width:44mm;float:left;margin-right:3mm"><img src="знімки/13-obrazy.png">
+<span class="m" style="left:9%;top:26%">1</span><span class="m" style="left:32%;top:26%">2</span><span class="m" style="left:51%;top:26%">3</span><span class="m" style="left:82%;top:26%">4</span><span class="m" style="left:66%;top:43.5%">5</span></div>
+<ul class="leg">
+<li><span class="k">1</span><span><b>Змінити сценарій</b> — поправити рядок і зібрати знову.</span></li>
+<li><span class="k">2</span><span><b>Зібрати ще раз</b> — той самий сценарій, інші образи.</span></li>
+<li><span class="k">3</span><span><b>Усі образи</b> — бібліотека й вивантаження вердиктів.</span></li>
+<li><span class="k">4</span><span>Відкрити сценарій цього образу.</span></li>
+<li><span class="k">5</span><span>Гортання 1 / 4.</span></li>
+</ul>
+<div style="clear:both"></div>
+<p class="mute">Образи звуться «Перший…Четвертий» навмисне. Під час збирання — екран «Тчеться твій образ», 2–3 хв (перший раз — до 4). Понад 5 хв без змін — поломка (с. 7).</p>
+</section>
+</div>
+
+<section>
+<h2><span class="n">6</span>Картка образу</h2>
+<div class="scr w">
+<div class="shot"><img src="знімки/14-kartka-obrazu.png">
+<span class="m" style="left:50%;top:38%">1</span><span class="m" style="left:88%;top:83.5%">2</span><span class="m" style="left:42%;top:88%">3</span></div>
+<ul class="leg">
+<li><span class="k">1</span><span><b>Колаж</b> — фото речей із крамниць; тапни, щоб роздивитись.</span></li>
+<li><span class="k">2</span><span><b>не ця</b> — познач річ, що не пасує, і тисни «Зібрати ще раз»: образ зберуть без неї.</span></li>
+<li><span class="k">3</span><span>«Фото крамниці може не відповідати назві» — звір фото з назвою й напиши у вердикті, чи вони різні.</span></li>
+<li><span class="k">·</span><span>Нижче: ціни й <b>Разом</b>; <b>Чому цей образ</b> — головний текст для перевірки, читай уважно; <b>Як це носити</b>; <span class="btn">Приміряти на себе</span> (потрібне фото на повний зріст, до хвилини).</span></li>
+</ul>
+</div>
+<div class="box bad"><b>Поломка, про яку обов'язково напиши:</b> на екрані технічні слова — коди на кшталт <i>R-COL-16</i>, <i>#3f4f49</i>, фігурні дужки, <b>англійські речення</b> посеред українського тексту.</div>
+<div class="box"><b>Два образи з чотирьох можуть бути без фото й цін</b> — це навмисна частина перевірки. Вердикт на них потрібен так само.</div>
+</section>
+</div>
+
+<!-- ═══════════ СТОРІНКА 4 ═══════════ -->
+<div class="page">
+<section>
+<h2><span class="n">7</span>Вердикт — найцінніше, що ти нам даєш</h2>
+<div class="scr">
+<div class="shot"><img src="знімки/15-verdykt-kv2.png" id="verdykt">
+<span class="m" style="left:88%;top:12%">1</span><span class="m" style="left:88%;top:45%">2</span><span class="m" style="left:88%;top:62%">3</span><span class="m" style="left:88%;top:78%">4</span><span class="m" style="left:50%;top:94%">5</span></div>
+<ul class="leg">
+<li><span class="k">1</span><span><b>Що скажеш про цей образ?</b> Поле — головне. Кілька речень, як подрузі. Питання над полем підлаштовується під твій вибір.</span></li>
+<li><span class="k">2</span><span><b>Або скажи голосом</b> — часто виходить докладніше; слова можна поправити.</span></li>
+<li><span class="k">3</span><span><b>Вдягнеш?</b> — як є · якщо змінити одну річ (напиши, яку) · не вдягну.</span></li>
+<li><span class="k">4</span><span><b>Це саме твоє — чи просто гарний?</b> Окреме питання: образ може бути «вдягну як є» і водночас «просто гарний» — така пара нам найцікавіша. Чипи «що заважає» — коротка підказка, не замість слів.</span></li>
+<li><span class="k">5</span><span><span class="btn">Записати вердикт</span> → під карткою «Записано». Далі стрілка «наступний ›».</span></li>
+</ul>
+</div>
+<div class="cols" style="margin-top:2mm">
+<div>
+<h3>Про що писати</h3>
+<ul>
+<li>Що впало в око першим.</li>
+<li>Що змінила б — конкретно («замість лоферів — прості човники»).</li>
+<li><b>Чому «не моє»</b> — найцінніше («колір робить мене жовтою»).</li>
+<li>Чи пасує до нагоди; чи сумка, взуття, прикраси доречні.</li>
+<li>Чи пояснення зрозуміле й не суперечить образу.</li>
+<li>Чи не повторюються речі між образами.</li>
+</ul>
+</div>
+<div>
+<h3>Приклад</h3>
+<p class="mute">✗ «Не моє.» · ✗ «Норм.»</p>
+<p>✓ «Не моє. Спідниця-олівець із лоферами — як форма, я в офісі так не вдягаюся. Сумка пляжна, на роботу не піду. Блузу б лишила. Написано, що образ спокійний, а бірюзова сумка кричить — це суперечить поясненню.»</p>
+</div>
+</div>
+</section>
+
+<div class="cols">
+<section>
+<h2><span class="n">8</span>«Оціни мій образ»</h2>
+<div class="shot" style="width:40mm;float:left;margin-right:3mm"><img src="знімки/16-otsinka-ekran.png">
+<span class="m" style="left:53%;top:35%">1</span><span class="m" style="left:88%;top:57%">2</span><span class="m" style="left:88%;top:81%">3</span></div>
+<ul class="leg">
+<li><span class="k">1</span><span>Фото образу цілим або кожної речі.</span></li>
+<li><span class="k">2</span><span>Твоє питання («чи піду я в цьому на співбесіду?»).</span></li>
+<li><span class="k">3</span><span>Нагода й погода — необов'язково. Далі <span class="btn">Оцінити</span>.</span></li>
+</ul>
+<p style="clear:both" class="mute">У відповідь: коротка відповідь, «Що вдало», «Що змінити» з мініатюрою твоєї речі, «Спитати ще». Той самий вердикт унизу. Помилка: названа річ, якої нема на фото; переплутані кольори; відповідь не на твоє питання.</p>
+</section>
+
+<section>
+<h2><span class="n">9</span>Надіслати вердикти</h2>
+<div class="shot" style="width:40mm;float:left;margin-right:3mm"><img src="знімки/20-zhurnal.png">
+<span class="m" style="left:90%;top:42.5%">1</span><span class="m" style="left:80%;top:52%">2</span><span class="m" style="left:90%;top:87%">3</span></div>
+<p>Вкладка <b>Образи</b> → <b>Усі образи</b> → унизу блок <b>«Вердикти на цьому телефоні»</b>.</p>
+<ul class="leg">
+<li><span class="k">1</span><span><b>Зберегти всі вердикти файлом</b> — прикріпи файл до повідомлення й надішли нам. Нічого в ньому не редагуй.</span></li>
+<li><span class="k">2</span><span>Скопіювати — те саме текстом.</span></li>
+<li><span class="k">3</span><span>Вибрати дні чи образи; «Лише не вивантажені».</span></li>
+</ul>
+<p style="clear:both" class="mute">Вивантажуй щодня — так робота не загубиться.</p>
+</section>
+</div>
+</div>
+
+<!-- ═══════════ СТОРІНКА 5–6: СЦЕНАРІЇ ═══════════ -->
+<div class="page">
+<h2><span class="n">10</span>Рекомендовані сценарії</h2>
+<p>Кожен сценарій — один повний прохід: сказати → перевірити картку → зібрати → <b>чотири вердикти</b>. Слова можна міняти на свої, головне — суть. <span class="mute">У кожному шукай: річ не за нагодою; недоречна сумка чи взуття; кольори не з палітри; пояснення незрозуміле або суперечить образу; повтор речей; технічні чи англійські слова.</span></p>
+<table>
+<tr><th>Сценарій</th><th>Скажи (текстом або голосом)</th><th>Що перевірити · що вважати помилкою</th></tr>
+<tr><td>1 · Звичайний день</td><td class="say">«Звичайний день, по справах у місті, +14, без дощу. Хочу зручно, але не по-домашньому.»</td><td>Буденно, взуття на півдня ходьби, чотири різні образи. <b>Помилка:</b> вечірня сукня чи підбори; чотири майже однакові образи.</td></tr>
+<tr><td>2 · Робота, офіс</td><td class="say">«Завтра презентація для клієнта в офісі, business casual, о десятій. Без підборів.»</td><td>У картці «Робота», «ділово», у «Не хочу» — підбори. <b>Помилка:</b> підбори хоч в одному образі; пляжна сумка; глибоке декольте.</td></tr>
+<tr><td>3 · Побачення</td><td class="say">«Іду на побачення в ресторан, увечері. Обіцяють дощ.»</td><td>Дощ врахований (взуття, верхній шар), образ вечірній. <b>Помилка:</b> замша під дощ; денний офісний образ; нема верхнього шару.</td></tr>
+<tr><td>4 · Свято, вечірка</td><td class="say">«Новорічна вечірка в барі, увечері, мінус два. Хочу, щоб мене помітили.»</td><td>Святковість (блиск, фактура, колір), мороз, «щоб помітили» — у поясненні. <b>Помилка:</b> буденний чи тихий сірий образ; сукня без верхнього шару.</td></tr>
+<tr><td>5 · Театр, концерт</td><td class="say">«Іду в театр на вечірню виставу, о сьомій. Не хочу відкритих плечей.»</td><td>Стриманіше й ошатніше за «просто вечерю». <b>Помилка:</b> відкриті плечі; джинси й кросівки; величезний шопер.</td></tr>
+<tr><td>6 · Спорт</td><td class="say">«Йду на тренування в зал, по обіді. Треба зручно й щоб не сковувало.»</td><td>Справжній спортивний одяг, кросівки. <b>Помилка:</b> спідниця, джинси, підбори; сережки й браслети.</td></tr>
+<tr><td>7 · Подорож, у дорозі</td><td class="say">«Завтра переліт на чотири години, потім одразу зустріч. Хочу не пожмакатись.»</td><td>Немнучкі тканини, взуття, яке легко зняти, образ доживає до зустрічі. <b>Помилка:</b> льон; шнурівка; «не пожмакатись» не згадане.</td></tr>
+<tr><td>8 · Весілля гостею <span class="mute">(лише словами)</span></td><td class="say">«Іду на весілля подруги гостею, у серпні, вдень, у заміському ресторані. Буду на траві.»</td><td>Плиток не чіпай: чи стилістка сама зрозуміла нагоду. Нема білого й майже-білого, взуття для трави. <b>Помилка:</b> біла чи кремова сукня; шпильки на газон; нагода розпізнана як «Свято».</td></tr>
+<tr><td>9 · Церква <span class="mute">(лише словами)</span></td><td class="say">«У неділю йду до церкви на службу, зранку.»</td><td>Закриті плечі й коліна, стриманість. <b>Помилка:</b> міні чи відкриті плечі; стилістка каже, що не розуміє нагоди.</td></tr>
+<tr><td>10 · Погода</td><td class="say">Той самий «звичайний день у місті» чотири рази, міняючи лише погоду в картці: −15 і сніг · +32 і сонце · +9 і сильний вітер · +12 і дощ.</td><td>Образи відчутно різні. Зимове взуття й верх при −15; без вовни при +32; при вітрі — нічого, що задирається; при дощі — не замша. <b>Помилка:</b> однакові образи за −15 і +32; сандалі в сніг; пальто в спеку.</td></tr>
+<tr><td>11 · Палітра: стилістка проти тебе</td><td class="say">Один вихід двічі: раз — нічого не чіпати в Палітрі; раз — обрати «насичені», виразну основу й схему «контраст-мисмач».</td><td>Образи різні; кольори другого заходу відповідають обраному; рідші схеми клікабельні. <b>Помилка:</b> твій вибір проігноровано; порожні пояснення «без пояснення словами».</td></tr>
+<tr><td>12 · Мета образу</td><td class="say">«Вечеря з друзями в ресторані» тричі, з різною метою: «хочу, щоб було видно фігуру» · «хочу прикрити живіт і руки» · «хочу вибухнути кольором».</td><td>Три набори різні; мета названа в поясненні. <b>Помилка:</b> однакові набори; «прикрити живіт» — а короткий топ; «вибухнути кольором» — а образ найтихіший.</td></tr>
+<tr><td>13 · Прикраси й макіяж</td><td class="say">«Вечеря в місті. Сьогодні хочу срібло, і макіяж яскравий, з помадою.» Потім те саме — руками в рядках Прикраси й Макіяж.</td><td>Обидва шляхи дають те саме в картці; прикраси справді срібні; відтінки помади розумні під твої кольори. <b>Помилка:</b> золото замість срібла; сказане словами не дійшло до картки.</td></tr>
+<tr><td>14 · «Оціни мій образ»</td><td class="say">Сфотографуйся в дзеркалі у звичному вбранні → вкладка Оцінити → «Чи пасують ці кольори між собою і мені?». Потім те саме фото в розмові: «оціни мій образ».</td><td>Речі названо правильно, відповідь на твоє питання, «Що змінити» — твоя річ; обидва шляхи схожі. <b>Помилка:</b> вигадана річ; переплутані кольори; суперечливі поради.</td></tr>
+<tr><td>15 · Кілька побажань разом</td><td class="say">«Іду на день народження в кафе ввечері. Без підборів, без міні, хочу зручніше, і щоб не в чорному.»</td><td>Враховані всі чотири побажання одночасно. <b>Помилка:</b> враховано лише частину (підборів нема, а чорне лишилось).</td></tr>
+</table>
+
+<section style="margin-top:4mm">
+<h2><span class="n">11</span>Якщо щось зламалось</h2>
+<div class="cols">
+<div>
+<p><b>Поломка</b> — коли застосунок не працює, а не коли образ не сподобався (про несмак — у вердикті).</p>
+<ul>
+<li>біла сторінка або сама перезавантажилась;</li>
+<li>очікування понад 5 хв без змін;</li>
+<li>кнопка не тисне, аркуш не закривається;</li>
+<li>порожні квадрати замість фото;</li>
+<li>після «Записати вердикт» нема «Записано»;</li>
+<li>текст обрізаний або налазить;</li>
+<li>технічні чи англійські слова на екрані.</li>
+</ul>
+</div>
+<div>
+<p><b>Що зробити:</b> зніми екран → якщо встигаєш, вивантаж вердикти файлом → аж тоді перезавантажуй.</p>
+<p><b>Що написати:</b> що робила · що сталося · коли · знімок · телефон і браузер («Samsung, Chrome»).</p>
+<p><b>Куди слати:</b> файл вердиктів і повідомлення про поломки — туди ж, звідки отримала посилання. Дякуємо!</p>
+</div>
+</div>
+</section>
+</div>
+
+</body>
+</html>
