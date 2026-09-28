@@ -2793,6 +2793,22 @@
           "description": "the code knows the item's length only from a word, and its edge may land right on the widest place of the body (values: slot — slot code; length — the length word; level — code of the body level where the edge may land)"
          },
          {
+          "const": "hem_class_on_her_height_differs_from_shop_word",
+          "description": "the shop declares the item's length in centimetres, and on her own height that length puts the hem at a different place than the shop's own length word suggests; the measurement is the stronger of the two, and this is worth telling her about this item rather than hiding (values: slot — slot code; measured — code of the body level the hem actually reaches; word — the shop's length word; hem_cm — height of the hem above the floor, in centimetres)"
+         },
+         {
+          "const": "measured_hem_may_land_on_widest",
+          "description": "the declared length puts the hem close to the widest place of the body, and which size she takes decides whether it lands there: the shop gives one length per size and her size is not known (values: slot — slot code; level — code of the body level in question)"
+         },
+         {
+          "const": "item_longer_than_her_body",
+          "description": "on her own height this item is longer than her body from the point the shop measures it, so its hem reaches the floor and the extra length pools there (values: slot — slot code; excess_cm — how many centimetres longer)"
+         },
+         {
+          "const": "declared_length_outside_body",
+          "description": "the shop declares a length in centimetres that would put the hem outside the body on her height, so the number was not used as a measurement (values: slot — slot code)"
+         },
+         {
           "const": "item_length_unknown_outside_contour",
           "description": "the cards do not carry the length of the named items, so they are left out of the outfit's shape, counted from the other items (values: slots — slot codes)"
          },
