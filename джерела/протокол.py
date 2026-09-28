@@ -814,8 +814,7 @@ _КОДИ_ВМ = lambda поле: слово(*_ВМ.ТАБЛИЦЯ[поле])
                "wind_ms": ЧИСЛО, "wind": обʼєкт({"free_text": РЯДОК, "lang": РЯДОК}),
                "direct_sun": ЛОГІЧНЕ, "road_salt": ЛОГІЧНЕ, "start_hour": ЦІЛЕ,
                "part_of_day": слово("morning", "day", "evening", "night"), "until_night": ЛОГІЧНЕ,
-               "light": слово("daylight", "artificial"),
-               "formality": обʼєкт({"from": ЧИСЛО, "to": ЧИСЛО})})
+               "light": слово("daylight", "artificial")})
 
 ПАКЕТ_V1 = обʼєкт({
     "версія": слово(ВЕРСІЯ),

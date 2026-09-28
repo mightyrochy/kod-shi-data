@@ -90,10 +90,10 @@ _ДЖЕРЕЛО_КРАЮ = {"слово": "word", "річ": "item_data"}        
 # коли день є, у випадку їх нема — ті самі факти двічі різними словами модель читала б як два.
 _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "рух": "movement", "дрес_код": "dress_code",
                   "тривалість_год": "duration_h", "темп_c": "temperature_c", "опади": "precipitation",
-                  "година": "start_hour", "ошатність": "formality"}
+                  "година": "start_hour"}
 _ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
                  "тривалість_год": "duration_h", "рух": "movement", "дрес_код": "dress_code",
-                 "ошатність": "formality", "година": "start_hour", "темп_c": "temperature_c",
+                 "ошатність_слова": "formality_quote", "година": "start_hour", "темп_c": "temperature_c",
                  "опади": "precipitation", "намір": "intent", "мета": "goal", "макіяж": "makeup",
                  "прикраси": "jewelry", "реєстр_людини": "her_registers", "бажання": "wishes",
                  "вето": "refusals", "ноги_вище_см": "legs_shown_above_cm", "настрій": "mood",
@@ -360,7 +360,7 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
     "fe": "what sets this item apart from other items with the same codes",
     "L": "lightness from 0 to 100", "Lf": "where the lightness came from",
     "hm": "hem in cm from the floor", "hf": "where the hem came from",
-    "fo": "formality from 1 to 10, the same scale as the occasion (1 home, 5 office, 9 gala)",
+    "fo": "the item's formality from 1 to 10 (1 home, 5 office, 9 gala)",
     "fc": "temperature band of the fabric, °C", "he": "heel", "hs": "heel shape",
     "hh": "heel height",
 }
@@ -557,8 +557,7 @@ def випадок(в, день=None):
             v = _з(_ПРОХАННЯ_ВЗУТТЯ, v)
         elif к == "реєстр_людини":
             v = [код("register", x) for x in v]
-        elif к == "ошатність":
-            v = [_число(x) for x in v]
+
         elif к == "макіяж" and isinstance(v, dict):
             v = {кк: vv for кк, vv in (("level", код("makeup_level", v.get("рівень"))), ("lips", v.get("губи"))) if vv}
         elif к == "вето" and isinstance(v, dict):

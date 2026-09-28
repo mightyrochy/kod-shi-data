@@ -462,6 +462,8 @@ import внутрішня_мова as _ВМ_П
                  як="they say more than the code: the outfit answers them"),
         _ЗП.Поле("case.intent_quote", "her own words behind «intent»",
                  як="they say more than the code: the outfit answers them"),
+        _ЗП.Поле("case.formality_quote", "her own words about how dressy she wants to be",
+                 як="the outfit answers them"),
         _ЗП.Поле("case.her_other_words", "the rest of what she said, which no field of «case» carries",
                  як="it is part of her case"),
         _ЗП.Поле("case.shoe_request", "what she asked for about heels: heel or no_heel",
@@ -483,7 +485,7 @@ import внутрішня_мова as _ВМ_П
                     "role «neutral» is a break too"),
         _ЗП.Поле("pool", "the catalog items the code let through: in stock, right for this temperature and "
                          "the stated dress code, within her palette's lightness and her refusals; each with "
-                         "its full description; «formality» — from 1 to 10, the same scale as the occasion "
+                         "its full description; «formality» — the item's dressiness from 1 to 10 "
                          "(1 home, 5 office, 9 gala); «L» — lightness from 0 to 100",
                  як="take items only from here and name each by its «n» in full; fitness for the "
                     "occasion, taste and the unity of the outfit are yours", треба=True),
@@ -967,10 +969,24 @@ def випадок_для_пакета(паспорт, рядок, сценар�
     for _к in типові_з_форми(паспорт):
         в.pop(_к, None)
     сц = сценарій or {}
+    # ── НАГОДА ЇДЕ СЛОВОМ-КОДОМ, А НЕ КЛЮЧАМИ КОДУ В «ПОДІЇ» (НЛ-1, 28.09.2026) ──────────
+    # Слово власника: «Модель стиліст має отримувати нагоду словом.» Без паспорта (стенд, CLI)
+    # `подія` збиралась із ключів сценарію — модель читала `event: "робота, офіс"` (українські
+    # ключі коду з підкресленнями, «весілля гість») і жодного `occasion`. Тепер нагода й місце
+    # сценарію стають полями випадку (дріт кладе їх кодом: `occasion: work`), а подія — лише
+    # її слова: з паспорта, або рядок випадку, коли ні нагоди, ні місця нема.
+    import формальність as _ФОРМ_НС
+    _відомі = dict(нагода=_ФОРМ_НС.НАГОДА_У_МІСЦЕ, місце=_ФОРМ_НС.МІСЦЯ_ДІАПАЗОНИ)
+    _вільні = []
+    for _к in ("нагода", "місце"):
+        _v = str(сц.get(_к) or "").strip()
+        if not в.get(_к) and _v:
+            if _v in _відомі[_к]:
+                в[_к] = _v
+            else:
+                _вільні.append(_v)        # слово поза переліком — не код, а її слово події
     if not str(в.get("подія") or "").strip():
-        в["подія"] = ", ".join(str(сц.get(к) or "").replace("_", " ").strip()
-                               for к in ("нагода", "місце")
-                               if str(сц.get(к) or "").strip()) or str(рядок or "")
+        в["подія"] = ", ".join(_вільні) or ("" if (в.get("нагода") or в.get("місце")) else str(рядок or ""))
     в["рядок"] = str(рядок or в["подія"])
     # ── `her_words` НЕСЕ ЛИШЕ ТЕ, ЧОГО НЕ НЕСЕ ЖОДНЕ ПОЛЕ ВИПАДКУ (рядок 170) ──
     # Переказ полів («Хоче: …», «Не хоче: …», «Настрій: …», «Прикраси…») знімається: ті самі
@@ -1003,6 +1019,9 @@ def випадок_для_пакета(паспорт, рядок, сценар�
     for _поле in ("мета", "намір"):
         if цитата_поля(паспорт or {}, _поле):
             в[_поле + "_слова"] = цитата_поля(паспорт, _поле)
+    # ОШАТНІСТЬ — ЇЇ СЛОВАМИ, НЕ СМУГОЮ (НЛ-1): смуга 1–10 лишається коду (дріт її не везе)
+    if " ".join(str((паспорт or {}).get("ошатність_слова") or "").split()):
+        в["ошатність_слова"] = " ".join(str(паспорт["ошатність_слова"]).split())
     if [x for x in (паспорт or {}).get("решта") or [] if str(x).strip()]:
         в["решта"] = [str(x).strip() for x in паспорт["решта"] if str(x).strip()]
     return в
@@ -1485,8 +1504,8 @@ def пакет_для_моделі(F, каталог, тіло, слоти=("в�
         пакет["слоти_випали"] = _випали
     обмеження = {"по_одній_на_слот": True}
     # ОБОВ'ЯЗКОВІ СЛОТИ ЗА НАГОДОЮ (16.09.2026): те саме, що блокує `структура_образу`.
-    _наг_ = " ".join(str((сценарій or {}).get(k) or "") for k in ("нагода", "місце", "дрес_код")).lower()
-    if not any(w in _наг_ for w in ("спорт", "трен", "йога", "біг", "пляж", "вдома", "домаш")):
+    import формальність as _ФОРМ_БС
+    if not _ФОРМ_БС.без_сумки_й_взуття({k: (сценарій or {}).get(k) for k in ("нагода", "місце", "дрес_код")}):
         обмеження["обов'язкові_слоти"] = ["взуття", "сумка"]
         # ПАЛЬТОВА ЗОНА (рядок 146): нижче +10 °C — і верхній шар, коли цей пул має
         # чим його закрити; свідок той самий, що в блокера `структура_образу`.
