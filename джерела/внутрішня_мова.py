@@ -991,6 +991,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                  "outfit",
     "cannot_tell_two_accent_surfaces_match": "so the code cannot tell whether two accent items match exactly "
                                              "in colour",
+    "photo_colour_noise_above_match_threshold": "the colour measured from a photo is noisier than the exact "
+                                                "match threshold (values: noise, threshold — dE00), so two "
+                                                "measured hex values cannot settle an exact match",
     "cannot_tell_lightness_structure": "so the code cannot tell which structure of light and dark the outfit "
                                        "carries",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
@@ -2045,6 +2048,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                                    "natural waist, not the hips",
     "accent_surfaces_exact_match": "two accent surfaces match exactly (dE): they pull the eye sideways, not "
                                    "up to the face",
+    "accent_surfaces_same_colour_word": "two accent surfaces are named by the same colour word by two "
+                                        "different shops (values: colour — the word): they read as one "
+                                        "colour and pull the eye sideways, not up to the face",
     "secondary_colour_or_neutral_or_declared_column": "second item in the first one's secondary colour or a "
                                                       "contrasting neutral; or a declared colour column",
     "sole_glued_not_resoleable": "glued sole: cannot be resoled, so the price spreads over a shorter life",
