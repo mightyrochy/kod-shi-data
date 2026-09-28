@@ -1820,7 +1820,8 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "filling_declared_by_word": "filling declared by a word; the type's warmth label stays",
     "filling_not_declared_ask_composition": "the filling is not declared, and the category name does not "
                                             "declare it either: ask for the composition",
-    "composition_not_declared_ask": "composition not declared: wool holds winter, cotton does not",
+    "composition_not_declared_ask": "the composition is not declared — ask for it: a wool version holds winter, a cotton "
+                                    "one does not",
     "wool_below_band_goes_lower": "wool content below the band: ranks lower in the cold",
     "wool_declared_goes_higher": "wool in the composition is declared: in the cold this layer ranks above the "
                                  "rest of its type",
