@@ -24,8 +24,8 @@ ACHROMATIC_C (661–668); якір підтону, КАСТ_ББ, ПОПУЛЯЦ
 РЕБРА. Імпортує `колір_простір_реєстр` (REGISTRY, CONST, WIDTHS, `tier`),
 `колір_простір_перетворення` (`lch`, `soft`, `hex_з_lab`) і `колір_простір_стеля`
 (`c_max`); фасад не імпортує."""
-import math, random
-import statistics as _statistics
+import math
+import statistics as _statistics   # `random` більше не імпортується: кидків у цьому модулі нема (див. `_ВУЗЛИ_ШКІРИ`)
 from колір_простір_реєстр import REGISTRY, CONST, WIDTHS, tier
 from колір_простір_перетворення import lch, soft, hex_з_lab
 from колір_простір_стеля import c_max
