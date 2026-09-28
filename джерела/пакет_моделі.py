@@ -516,7 +516,8 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("zones_she_keeps_covered", "body zones she does not show"),
         _ЗП.Поле("style_rules", "rules of the style corpus for her and this case (the code's words)",
                  як="keep each"),
-        _ЗП.Поле("kind_notes", "what the code says about kinds of items in this pool"),
+        _ЗП.Поле("kind_notes", "what the code says about kinds of items in this pool: each kind "
+                               "carries \"statements\" — codes defined in \"statement_codes\""),
         _ЗП.Поле("kinds_missing", "kinds of items this pool has none of", як="say so in «needed»"),
         _ЗП.Поле("break", "where this pool offers a deliberate break of the palette"),
         _ЗП.Поле("poles", "ideas of the outfits",
