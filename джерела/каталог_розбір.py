@@ -471,14 +471,145 @@ def промпт(offer, мова="uk"):
     return ЗП.зібрати(РОЗБІР[мова], вхід(offer, мова))
 
 
+# ── ЗВЕДЕННЯ ЗНАЧЕННЯ МОДЕЛІ ДО ПЕРЕЛІКУ (РЗ-1) ─────────────────────────────
+# ЧОМУ ВОНО Є. На повному прогоні каталогу (8 892 речі, MamayLM) модель віддала 15 095 значень
+# ПОЗА переліком — і кожне ставало "unknown", тобто полем, якого нема. Це не впертість моделі, а
+# три її звички, видні в лічбі: вона повторює РОЗДІЛОВИЙ ЗНАК схеми («viscose|polyester»,
+# «regular|relaxed», «cotton, viscose»), дописує ПОЯСНЕННЯ через тире («unknown — виріз взуття на
+# стопі») і бере СИНОНІМ коду замість самого коду («midi_dress» замість «dress_generic», «free»
+# замість «relaxed», «milk» замість «milky»). Повтор моделі коштував би годин карти й дав би інші
+# відповіді; зведення коштує нуль і дає ТОЙ САМИЙ результат на тих самих файлах — тому воно
+# стоїть тут, у `з_відповіді`, через яку йде і `--зібрати`, і кожна проба.
+#
+# ЦЕ НЕ ЧИТАННЯ СЛІВ ЛЮДИНИ (п.12). У мапі — лише коди: токени з `a-z0-9_`, якими модель
+# відповідає на СХЕМУ, а не текст крамниці. Кирилиця («Бежевий», «Кулір») у мапу не потрапляє
+# НІКОЛИ: назву кольору чи тканини словами тлумачить мовна модель, а не код, тож такі значення
+# лишаються "unknown" з названою причиною.
+#
+# НІЧОГО МОВЧКИ: зведене значення додає до `причини` рядок «<поле>: «X» зведено до «Y»», а
+# незведене — давнє «поза переліком». Обидва видно в `--зібрати` і в пробі.
+_ЗАЙВИЙ_ХВІСТ = re.compile(r"\s+[\u2014\u2013-]\s.*$|\s*\(.*$")   # «unknown — чому», «low (4 cm)»
+_НЕ_КОД = re.compile(r"[^a-z0-9]+")
+_РОЗДІЛЬНИК = re.compile(r"[|,;/]")
+# Приставка сили («light_olive», «dark_taupe», «light_milky») — не окремий код: переліку відтінків
+# усередині кольору нема й не буде, а сам колір у ньому є. Перевіряється ПІСЛЯ переліку й мапи,
+# тож власні коди з такою приставкою («light_blue», «soft_pink») лишаються собою.
+_ПРИСТАВКА_СИЛИ = re.compile(r"^(?:light|dark|bright|deep|pale|soft|rich|very)_")
+# Слова відсутності. Поле, у переліку якого є свій код «того нема», дістає його; решта — "unknown".
+_ВІДСУТНІСТЬ = frozenset(("no", "none", "not_applicable", "no_applicable", "na", "not_stated",
+                          "absent", "nothing", "without"))
+_НЕМАЄ = {"metal": "none", "metal_where": "none", "decor[]": "none", "set_kind": "not_a_set",
+          "pattern": "solid", "heel.present": "no"}
+# «sleeve: no» СВІДОМО НЕ ЗВЕДЕНО до "sleeveless", хоч це 1 443 значення — найбільше з усіх.
+# Лічба за групами каже, що воно значить не «без рукавів», а «рукава тут не буває»: низ 1 174,
+# взуття 65, верхній шар 10 — проти 129 суконь і 57 верхів. Переліку `sleeve` коду «не стосується»
+# бракує, тож чесна відповідь — "unknown", а не рукав, якого модель не бачила. Те саме з
+# `vamp`/`shaft`/`heel.*`: «no» там майже завжди не взуття (vamp: низ 290, верх 221 проти взуття 11).
+# Коди-синоніми: значення моделі → код переліку. Лише те, що читається однозначно; сумнівне
+# («mid» — mid_thigh чи midi? «asymmetric», «hood», «bomber» — коду нема) лишається "unknown".
+_КОЛІР = {"milk": "milky", "pearl": "pearly", "ivory": "cream", "vanilla": "cream",
+          "ecru": "cream", "off_white": "cream", "capuccino": "latte", "cappuccino": "latte",
+          "capuchino": "latte", "kapuchino": "latte", "mokko": "mocha", "mocca": "mocha",
+          "caramel": "camel", "cinnamon": "brown", "tobacco": "brown", "dark_blue": "navy",
+          "indigo": "navy", "denim": "denim_blue", "cobalt": "blue", "bluish": "blue",
+          "cornflower": "light_blue", "sky": "light_blue", "electric": "electric_blue",
+          "wine": "burgundy", "maroon": "burgundy", "marsala": "burgundy", "violet": "purple",
+          "lavender": "lilac", "powdery": "powder", "gray": "grey", "silver": "silvery",
+          "lime": "green", "pistachio": "green", "sage": "olive"}
+_СИНОНІМИ = {
+    "color_main": _КОЛІР, "color_extra[]": _КОЛІР,
+    "color_why": {"print": "print_colors"},
+    "cut": {"free": "relaxed", "trapeze": "a-line", "trapezoid": "a-line",
+            "trapezoidal": "a-line", "slim": "skinny", "palazzo": "wide", "baggy": "oversized",
+            "loose": "relaxed", "a_silhouette": "a-line", "a_shape": "a-line"},
+    "decor[]": {"lace": "lace_trim", "guipure": "lace_trim", "cutout": "cutouts",
+                "frills": "ruffles", "flounces": "ruffles"},
+    "fabric": {"knitwear": "knitted", "knit": "knitted", "eco_leather": "faux_leather",
+               "ecoleather": "faux_leather", "artificial_leather": "faux_leather",
+               "genuine_leather": "leather", "natural_leather": "leather"},
+    "heel.shape": {"stiletto": "thin", "square": "block", "thick": "block", "chunky": "block"},
+    # «midi_dress»/«maxi_dress» — довжина всередині типу; довжину несе `length`, а тип сукні,
+    # якої нема в переліку, — `dress_generic`. Голі «maxi»/«mini» НЕ зводяться: на «низі» це спідниця.
+    "item_type": {"midi_dress": "dress_generic", "maxi_dress": "dress_generic",
+                  "mini_dress": "dress_generic", "long_dress": "dress_generic",
+                  "short_dress": "dress_generic", "knee_dress": "dress_generic",
+                  "dress": "dress_generic", "summer_dress": "sundress", "bag": "bag_generic",
+                  "scarf": "scarf_generic", "jewelry": "jewelry_generic"},
+    "length": {"full": "maxi", "long": "maxi", "floor": "maxi", "to_the_floor": "maxi",
+               "ankle": "maxi", "short": "mini", "below_knee": "midi", "above_knee": "mini"},
+    "material": {"ecoleather": "faux_leather", "eco_leather": "faux_leather",
+                 "artificial_leather": "faux_leather", "natural_leather": "leather",
+                 "genuine_leather": "leather", "velvet": "velour"},
+    "neckline": {"v": "v_neck", "v_shaped": "v_neck", "v_cut": "v_neck", "collar": "shirt_collar",
+                 "turn_down": "shirt_collar", "turn_down_collar": "shirt_collar",
+                 "stand_up_collar": "stand_collar", "polo": "shirt_collar",
+                 "boat_neck": "boat", "round_neck": "round", "square_neck": "square"},
+    "pattern": {"print": "print_generic", "lace": "lace_motif", "rhombus": "geometric",
+                "rhombs": "geometric", "diamonds": "geometric", "plaid": "check",
+                "tartan": "check", "striped": "stripes", "flowers": "floral",
+                "flower": "floral", "dots": "polka_dot", "peas": "polka_dot"},
+    "set_kind": {"two_piece_set": "set", "three_piece_set": "set", "piece_set": "set"},
+    "sleeve": {"3_4": "three_quarter", "three_quarters": "three_quarter",
+               "long_sleeve": "long", "short_sleeve": "short", "cap_sleeve": "cap"},
+    "slot": {"top_garment": "top"}, "set_parts[].slot": {"top_garment": "top"},
+}
+
+
+def _вид(т):
+    """Рядок → токен коду (`a-z0-9_`) або "" — тим самим видом, що й коди переліку, тож
+    «a-line» і «a_line», «t-shirt» і «t_shirt» зводяться до одного ключа."""
+    return _НЕ_КОД.sub("_", str(т).strip().lower()).strip("_")
+
+
+_ІНДЕКС = {ш: {_вид(к): к for к in к_ль} for ш, к_ль in ПЕРЕЛІКИ.items()}
+
+
+def _звести(знач, шлях):
+    """Значення моделі поза переліком → код переліку або "unknown". Порядок: зняти пояснення в
+    хвості; спробувати ціле значення, потім кожен шматок між роздільниками схеми — у тому
+    порядку, як їх написала модель (перший = те, що модель назвала головним). «yes» і «no»
+    разом — модель не обрала, тож "unknown", а не перше з двох."""
+    коди, син = _ІНДЕКС[шлях], _СИНОНІМИ.get(шлях, {})
+    т = _ЗАЙВИЙ_ХВІСТ.sub("", str(знач).strip().lower())
+    шматки = [_вид(ш) for ш in _РОЗДІЛЬНИК.split(т)]
+    # Ціле значення йде першим (щоб «a-line», «3/4», «no_print», «two_piece_set» не розпалися на
+    # шматки), але слово відсутності в ньому читається лише тоді, коли роздільника нема: інакше
+    # «no|unknown» на veto читалось би як «того нема» замість коду «no», який стоїть у переліку.
+    варіанти = [(_вид(т), len(шматки) == 1)] + [(ш, True) for ш in шматки]
+    if "yes" in [в for в, _ in варіанти] and "no" in [в for в, _ in варіанти]:
+        return UNKNOWN
+    for в, можна_відсутність in варіанти:
+        if not в:
+            continue
+        if в in син:
+            return син[в]
+        for ф in [в, в + "s"] + ([в[:-1]] if в.endswith("s") else []):
+            if ф in коди:
+                return коди[ф]
+        основа = _ПРИСТАВКА_СИЛИ.sub("", в)
+        if основа != в and (основа in син or основа in коди):
+            return син[основа] if основа in син else коди[основа]
+        if можна_відсутність and (в in _ВІДСУТНІСТЬ or в.startswith("no_")
+                                  or в.startswith("without_")):
+            return _НЕМАЄ.get(шлях, UNKNOWN)
+    return UNKNOWN
+
+
 # ── ВІДПОВІДЬ МОДЕЛІ → ПОЛЯ ВНУТРІШНЬОЮ МОВОЮ ───────────────────────────────
 def _код(знач, коди, шлях, причини):
-    """Одне значення моделі → код переліку або "unknown"; кожна вада — рядок у `причини`."""
+    """Одне значення моделі → код переліку або "unknown"; кожна вада — рядок у `причини`.
+    Значення поза переліком не викидається одразу: спершу `_звести` (РЗ-1) пробує впізнати в
+    ньому код — розділовий знак схеми, пояснення в хвості, синонім. Зведення названо причиною;
+    невпізнане лишається "unknown" із давнім «поза переліком»."""
     if ВМ.невідомо(знач, коди):
         return UNKNOWN
     т = str(знач).strip().lower()
     if т in коди:
         return т
+    зведено = _звести(знач, шлях) if шлях in _ІНДЕКС else UNKNOWN
+    if зведено != UNKNOWN:
+        причини.append("%s: «%s» зведено до «%s»" % (шлях, str(знач)[:40], зведено))
+        return зведено
     причини.append("%s: «%s» поза переліком" % (шлях, str(знач)[:40]))
     return UNKNOWN
 
