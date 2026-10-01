@@ -935,7 +935,7 @@ def опис(об):
         р = {"n": x.get("н"), "name": x.get("назва")}
         for ключ, v in (("set_half", _з(_ЧАСТИНА, x.get("частина"))), ("shop", x.get("магазин")),
                         ("color", код("color_name", x.get("колір")) if x.get("колір") else None),
-                        ("hex", x.get("hex")), ("photos", x.get("фото_номери")),
+                        ("hex", x.get("hex")), ("photos", x.get("фото_номери")), ("no_photo", True if x.get("без_кадру") else None),
                         ("hers", True if x.get("її_річ") else None)):
             if v not in (None, "", []):
                 р[ключ] = v
