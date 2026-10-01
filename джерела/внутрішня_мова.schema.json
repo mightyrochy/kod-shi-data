@@ -673,6 +673,144 @@
      ],
      "description": "подія коротко, її мовою"
     },
+    "kind": {
+     "description": "вид події; other — коли жоден вид не підходить",
+     "enum": [
+      "everyday",
+      "home",
+      "walk",
+      "work",
+      "interview",
+      "school",
+      "conference",
+      "gala",
+      "wedding",
+      "celebration",
+      "funeral",
+      "date",
+      "theatre",
+      "museum",
+      "church",
+      "sport",
+      "travel",
+      "other",
+      "unknown"
+     ]
+    },
+    "like": {
+     "description": "найближчий вид для незвичної події (kind=other)",
+     "enum": [
+      "everyday",
+      "home",
+      "walk",
+      "work",
+      "interview",
+      "school",
+      "conference",
+      "gala",
+      "wedding",
+      "celebration",
+      "funeral",
+      "date",
+      "theatre",
+      "museum",
+      "church",
+      "sport",
+      "travel",
+      "other",
+      "unknown"
+     ]
+    },
+    "parts": {
+     "description": "частини одного виходу по черзі, коли вона назвала дві-три (вінчання, потім банкет)",
+     "type": "array",
+     "items": {
+      "description": "вид частини",
+      "enum": [
+       "everyday",
+       "home",
+       "walk",
+       "work",
+       "interview",
+       "school",
+       "conference",
+       "gala",
+       "wedding",
+       "celebration",
+       "funeral",
+       "date",
+       "theatre",
+       "museum",
+       "church",
+       "sport",
+       "travel",
+       "other",
+       "unknown"
+      ]
+     },
+     "maxItems": 3
+    },
+    "role": {
+     "description": "хто вона на цій події, лише коли сама сказала",
+     "enum": [
+      "guest",
+      "close_family",
+      "main_person",
+      "host",
+      "candidate",
+      "speaker",
+      "worker",
+      "mourner_close",
+      "acquaintance",
+      "unknown"
+     ]
+    },
+    "audience": {
+     "description": "перед ким: conservative — начальство, старші, духовенство",
+     "enum": [
+      "usual",
+      "conservative",
+      "unknown"
+     ]
+    },
+    "religious_place": {
+     "description": "храм чи місце з письмовим правилом одягу",
+     "enum": [
+      "none",
+      "temple",
+      "written_rule_place",
+      "unknown"
+     ]
+    },
+    "reserved_colour": {
+     "description": "колір, що на цій події належить іншій особі",
+     "enum": [
+      "near_white",
+      "unknown"
+     ]
+    },
+    "volume": {
+     "description": "скільки образів: travel_day — один образ на переїзд",
+     "enum": [
+      "one_look",
+      "travel_day",
+      "unknown"
+     ]
+    },
+    "written": {
+     "description": "поля, значення яких написано в запрошенні чи правилах місця",
+     "type": "array",
+     "items": {
+      "description": "поле",
+      "enum": [
+       "dress_code",
+       "religious_place",
+       "reserved_colour",
+       "unknown"
+      ]
+     },
+     "uniqueItems": true
+    },
     "setting": {
      "description": "у приміщенні, просто неба чи змішано",
      "enum": [
@@ -5515,6 +5653,11 @@
   "recurrence": {
    "once": "once",
    "regular": "regular"
+  },
+  "written_field": {
+   "dress_code": "dress_code",
+   "religious_place": "religious_place",
+   "reserved_colour": "reserved_colour"
   },
   "evidence_source": {
    "written": "written",
