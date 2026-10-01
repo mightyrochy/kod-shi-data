@@ -891,8 +891,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         типова = ім == "нагода" and джерела_досі.get("нагода") == _ПН.ТИПОВА_НАГОДА_РЕЧІ
         об[ім] = к if к is not None else (досі.get(ім) if є(досі.get(ім)) and not типова else None)
     об["подія"] = _текст(в.get("event")) or _текст(досі.get("подія"))
-    # ВИМІРИ НАГОДИ З РОЗМОВИ (НГ-4): вид, найближчий вид, частини дня, роль, аудиторія, віра,
-    # зарезервований колір, обсяг і що з цього написано. Коди — тими самими переліками, що
+    # ВИМІРИ НАГОДИ З РОЗМОВИ (НГ-4; після НП-в — лише зарезервований колір). Коди — тими самими переліками, що
     # схема; нове значення ходу замінює давнє, чого хід не назвав — лишається з паспорта досі.
     # Розбір і перенос між ходами — `паспорт_нагоди.паспорт_з_json`, ті самі ключі.
     for ім, (поле, перелік, список) in _ПН.ПОЛЯ_ВИМІРІВ_РОЗМОВИ.items():
@@ -1389,27 +1388,8 @@ _ПОЛЯ_EN = {
     "place": "where she will be",
     "dress_code": "the dress code, when it is named",
     "event": "the event briefly, in her words",
-    "kind": "the kind of event; other — when no kind fits, and then \"like\" is required",
-    "like": "only with kind other: the listed kind closest to her event in dress and setting",
-    "parts": "the parts of one outing in order, when she named two or three (a ceremony, then a "
-             "banquet; work, then a date); each part is a kind code",
-    "role": "who she is at this event, from what she said about herself or about whose event it is: "
-            "guest — invited; close_family — a relative of the main people; main_person — the event is "
-            "about her (bride, birthday); host — she organises it; speaker — she presents or performs; "
-            "candidate — she is being assessed; worker — she is there for her job; mourner_close — the "
-            "deceased was her family or a close friend; acquaintance — she knew the deceased or the hosts "
-            "only a little",
-    "audience": "who will see her: conservative — bosses, elders, clergy or a formal family "
-                "circle; usual — friends, colleagues as usual",
-    "religious_place": "temple — she will be in a church, monastery, mosque or synagogue, or at a "
-                       "religious service or rite held there (a church wedding, a christening); "
-                       "written_rule_place — a place with a written dress rule (some monasteries, "
-                       "courts, a club with a posted rule)",
     "reserved_colour": "a colour that belongs to another person at this event, when she says so; "
                        "near_white — white and ivory belong to the bride",
-    "volume": "how many looks: travel_day — one look for a whole day on the road; one_look — one "
-              "look",
-    "written": "which of these fields she says are written in an invitation or the place's rules",
     "setting": "indoors, outdoors or mixed",
     "duration_h": "how many hours the event lasts",
     "movement": "whether she will sit, walk or walk a lot",
@@ -1583,14 +1563,11 @@ def _коди_розмови():
     "An event she names goes into \"event\" and also as the code of \"occasion\" or \"place\" whose label "
     "names this event or one of its kind, with the name of the event as quote; when no such code exists — "
     "\"event_formality\" instead.",
-    # НГ-4 (проєкт нагоди §1.3, §0.6–0.7): вид — для кожного виходу; незвичний — `other` + `like`,
-    # нового ключа модель не вигадує. Виміри — лише з її слів; «невідомо» — повноправне значення:
-    # код бере припущення з пресету виду чи `like` і називає його, збирання не блокується (п.9).
-    "Every outing she describes also gets \"kind\", with the name of the event as quote. When no kind "
-    "fits, \"kind\" is other and \"like\" is the listed kind closest to it in dress and setting, on the "
-    "same quote. role, audience, religious_place, reserved_colour, volume, parts and written come only "
-    "from her own words; one she did not mention stays absent — unknown is a valid value: the code "
-    "assumes it from the kind and names the assumption, and the looks are put together anyway.",
+    # НП-в (принцип власника 01.10: «код має знати те, що може точно порахувати»): видів,
+    # «найближчого виду», ролі, аудиторії, віри, обсягу й частин дня модель коду більше не дає —
+    # стилістка бере подію її словами. Зарезервований колір — рахівне (вето майже-білого).
+    "reserved_colour comes only from her own words; when she did not mention it, it stays absent — "
+    "unknown is a valid value, and the looks are put together anyway.",
     # П.14 і п.3 наряду: межа мовної моделі — кодами `need`.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
     "without her items, looks and photos. When \"need\" is not \"none\", do not answer the question in "
@@ -1615,11 +1592,8 @@ def _коди_розмови():
     # П.9 (Р-3, 20.09): драпіровка — лише профіль; про прикраси — лише «які з цим образом».
     "Never ask her what suits her face (metal, white, neutrals): that is her profile. About jewellery — "
     "only which jewellery she wants with this look.",
-    # Проєкт нагоди §1.4.5: конфесію й траур проактивно не питати (`profile.ТРАУР_ПОЛІТИКА`); роль —
-    # лише з її слів.
-    "Never ask about her faith, a religious service, mourning or her role at the event: write them only "
-    "from what she tells herself — whose event it is counts (her grandmother's funeral, her sister's "
-    "wedding).",
+    # Проєкт нагоди §1.4.5: конфесію й траур проактивно не питати (`profile.ТРАУР_ПОЛІТИКА`).
+    "Never ask about her faith, a religious service, mourning or her role at the event.",
 )
 
 СКЕЛЕТ_РОЗМОВИ = {

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""НГ-1: сила джерела виміру й «Інше» через `like`.
+"""НГ-1: сила джерела виміру; після НП-в «Інше» через `like` і частини дня з паспорта не діють.
 
 Друкує, чим стає вимір на чотирьох сходинках `ЗВІДКИ_СИЛА`, які працюють у НГ-1:
 her_words (її слово чи плитка) → preset (вид) → like (найближчий вид для «Іншого») →
@@ -14,9 +14,7 @@ import паспорт_нагоди as ПН
 ВИПАДКИ = (
     ("плитка «церква»", {}, ("religious_place", "movement", "audience")),
     ("вона сказала «сидіти»", dict(рух="сидіти"), ("movement",)),
-    ("«Інше», найближче весілля", dict(нагода=None, вид="other", like="wedding"), ("kind", "role", "reserved_colour")),
-    ("«Інше» без найближчого", dict(нагода=None, вид="other"), ("kind", "role", "audience")),
-    ("вінчання → банкет", dict(частини_дня=["church", "celebration"]), ("parts",)),
+    ("паспорт несе вид other + like", dict(вид="other", like="wedding"), ("kind", "role", "reserved_colour")),
 )
 for ім, поверх, дивимось in ВИПАДКИ:
     п = dict(поверх)
@@ -31,10 +29,8 @@ for ім, поверх, дивимось in ВИПАДКИ:
 п_слово, з_слово = ПН.виміри_нагоди(dict(рух="сидіти"), СЦ)
 assert п_плитка["movement"] == "stand" and з_слово["movement"] == "her_words"
 assert п_слово["movement"] == "sit", "її слово не перебило пресет виду"
-в_л, з_л = ПН.виміри_нагоди(dict(вид="other", like="wedding"), dict(година=11))
-assert в_л["kind"] == "other" and в_л["reserved_colour"] == "near_white" and з_л["role"] == "like"
-в_б, з_б = ПН.виміри_нагоди(dict(вид="other"), dict(година=11))
-assert в_б["role"] == "unknown" and з_б["role"] == "unknown", "«Інше» без like не вигадує ролі"
-assert в_б["audience"] == "usual" and з_б["audience"] == "default", "типове коду не поставлено"
-в_ч, _ = ПН.виміри_нагоди(dict(частини_дня=["church", "celebration"]), СЦ)
-assert в_ч["parts"] == ["church", "celebration"], в_ч["parts"]
+# НП-в: вид, like і частини дня мовна модель більше не дає — паспорт їх не читає (пресет плитки лишається)
+в_л, з_л = ПН.виміри_нагоди(dict(вид="other", like="wedding", частини_дня=["church"]), СЦ)
+assert в_л["kind"] == "church" and з_л["kind"] == "her_words" and в_л["reserved_colour"] == "unknown"
+assert в_л["parts"] == ["church"] and з_л["parts"] == "default", в_л["parts"]
+print("вид/like/частини_дня з паспорта не діють: так")
