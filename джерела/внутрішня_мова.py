@@ -1094,6 +1094,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "photo_colour_noise_above_match_threshold": "the colour measured from a photo is noisier than the exact "
                                                 "match threshold (values: noise, threshold — dE00), so two "
                                                 "measured hex values cannot settle an exact match",
+    "photo_colour_noise_above_visible_difference": "the colour measured from a photo is noisier than the "
+                                                   "difference that reads as visible (values: noise, "
+                                                   "threshold — dE00), so two measured hex values cannot "
+                                                   "settle whether two items differ visibly",
     "cannot_tell_lightness_structure": "so the code cannot tell which structure of light and dark the outfit "
                                        "carries",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
