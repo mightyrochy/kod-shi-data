@@ -673,6 +673,144 @@
      ],
      "description": "подія коротко, її мовою"
     },
+    "kind": {
+     "description": "вид події; other — коли жоден вид не підходить",
+     "enum": [
+      "everyday",
+      "home",
+      "walk",
+      "work",
+      "interview",
+      "school",
+      "conference",
+      "gala",
+      "wedding",
+      "celebration",
+      "funeral",
+      "date",
+      "theatre",
+      "museum",
+      "church",
+      "sport",
+      "travel",
+      "other",
+      "unknown"
+     ]
+    },
+    "like": {
+     "description": "найближчий вид для незвичної події (kind=other)",
+     "enum": [
+      "everyday",
+      "home",
+      "walk",
+      "work",
+      "interview",
+      "school",
+      "conference",
+      "gala",
+      "wedding",
+      "celebration",
+      "funeral",
+      "date",
+      "theatre",
+      "museum",
+      "church",
+      "sport",
+      "travel",
+      "other",
+      "unknown"
+     ]
+    },
+    "parts": {
+     "description": "частини одного виходу по черзі, коли вона назвала дві-три (вінчання, потім банкет)",
+     "type": "array",
+     "items": {
+      "description": "вид частини",
+      "enum": [
+       "everyday",
+       "home",
+       "walk",
+       "work",
+       "interview",
+       "school",
+       "conference",
+       "gala",
+       "wedding",
+       "celebration",
+       "funeral",
+       "date",
+       "theatre",
+       "museum",
+       "church",
+       "sport",
+       "travel",
+       "other",
+       "unknown"
+      ]
+     },
+     "maxItems": 3
+    },
+    "role": {
+     "description": "хто вона на цій події, лише коли сама сказала",
+     "enum": [
+      "guest",
+      "close_family",
+      "main_person",
+      "host",
+      "candidate",
+      "speaker",
+      "worker",
+      "mourner_close",
+      "acquaintance",
+      "unknown"
+     ]
+    },
+    "audience": {
+     "description": "перед ким: conservative — начальство, старші, духовенство",
+     "enum": [
+      "usual",
+      "conservative",
+      "unknown"
+     ]
+    },
+    "religious_place": {
+     "description": "храм чи місце з письмовим правилом одягу",
+     "enum": [
+      "none",
+      "temple",
+      "written_rule_place",
+      "unknown"
+     ]
+    },
+    "reserved_colour": {
+     "description": "колір, що на цій події належить іншій особі",
+     "enum": [
+      "near_white",
+      "unknown"
+     ]
+    },
+    "volume": {
+     "description": "скільки образів: travel_day — один образ на переїзд",
+     "enum": [
+      "one_look",
+      "travel_day",
+      "unknown"
+     ]
+    },
+    "written": {
+     "description": "поля, значення яких написано в запрошенні чи правилах місця",
+     "type": "array",
+     "items": {
+      "description": "поле",
+      "enum": [
+       "dress_code",
+       "religious_place",
+       "reserved_colour",
+       "unknown"
+      ]
+     },
+     "uniqueItems": true
+    },
     "setting": {
      "description": "у приміщенні, просто неба чи змішано",
      "enum": [
@@ -1040,7 +1178,7 @@
      ]
     },
     "reasons": {
-     "description": "що їй заважає в образі: colour — колір; cut — фасон: крій, посадка, довжина, силует; combination — як речі поєднуються між собою; style — стиль, настрій, «не я»; occasion — доречність для нагоди чи місця; weather — погода, сезон; comfort — зручність: взуття, рух, тканина; price — ціна; photo — з фото не видно чи не зрозуміло, яка річ насправді; on_me — не певна, як це буде саме на ній",
+     "description": "що їй заважає в образі: colour — колір; cut — фасон: крій, посадка, довжина, силует; combination — як речі поєднуються між собою; style — стиль, настрій, «не я»; occasion — доречність для нагоди чи місця; weather — погода, сезон; comfort — зручність: взуття, рух, тканина; price — ціна; photo — з фото не видно чи не зрозуміло, яка річ насправді; on_me — не певна, як це буде саме на ній; want_to_try — хоче спробувати, попри сумнів",
      "type": "array",
      "items": {
       "description": "аспект",
@@ -1055,6 +1193,7 @@
        "price",
        "photo",
        "on_me",
+       "want_to_try",
        "unknown"
       ]
      }
@@ -1075,6 +1214,7 @@
        "price",
        "photo",
        "on_me",
+       "want_to_try",
        "unknown"
       ]
      }
@@ -1117,6 +1257,7 @@
           "price",
           "photo",
           "on_me",
+          "want_to_try",
           "unknown"
          ]
         }
@@ -2872,6 +3013,22 @@
          {
           "const": "length_word_edge_may_land_on_widest",
           "description": "the code knows the item's length only from a word, and its edge may land right on the widest place of the body (values: slot — slot code; length — the length word; level — code of the body level where the edge may land)"
+         },
+         {
+          "const": "hem_class_on_her_height_differs_from_shop_word",
+          "description": "the shop declares the item's length in centimetres, and on her own height that length puts the hem at a different place than the shop's own length word suggests; the measurement is the stronger of the two, and this is worth telling her about this item rather than hiding (values: slot — slot code; measured — code of the body level the hem actually reaches; word — the shop's length word; hem_cm — height of the hem above the floor, in centimetres)"
+         },
+         {
+          "const": "measured_hem_may_land_on_widest",
+          "description": "the declared length puts the hem close to the widest place of the body, and which size she takes decides whether it lands there: the shop gives one length per size and her size is not known (values: slot — slot code; level — code of the body level in question)"
+         },
+         {
+          "const": "item_longer_than_her_body",
+          "description": "on her own height this item is longer than her body from the point the shop measures it, so its hem reaches the floor and the extra length pools there (values: slot — slot code; excess_cm — how many centimetres longer)"
+         },
+         {
+          "const": "declared_length_outside_body",
+          "description": "the shop declares a length in centimetres that would put the hem outside the body on her height, so the number was not used as a measurement (values: slot — slot code)"
          },
          {
           "const": "item_length_unknown_outside_contour",
@@ -5370,7 +5527,8 @@
    "comfort": "comfort",
    "price": "price",
    "photo": "photo",
-   "on_me": "on_me"
+   "on_me": "on_me",
+   "want_to_try": "want_to_try"
   },
   "direction": {
    "more": "more",
@@ -5519,6 +5677,11 @@
   "recurrence": {
    "once": "once",
    "regular": "regular"
+  },
+  "written_field": {
+   "dress_code": "dress_code",
+   "religious_place": "religious_place",
+   "reserved_colour": "reserved_colour"
   },
   "evidence_source": {
    "written": "written",

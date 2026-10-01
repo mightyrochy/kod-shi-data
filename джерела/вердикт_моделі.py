@@ -133,7 +133,9 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
                     "together with the items"),
         _ЗП.Поле("verdict", "the code's check of each outfit you put together: «your_outfit» — its items with "
                             "full descriptions, caption and «day» (your sentence about her day in it); "
-                            "«structure»; «findings»; «checklist»; «knot»", треба=True),
+                            "«your_declared» — the moves you declared in «deliberate»; «structure»; "
+                            "«findings»; «checklist»; «knot» — the place where most conditions meet",
+                 треба=True),
         _ЗП.Поле("verdict[].structure.blockers", "what keeps the outfit from being shown",
                  як="each must disappear: change an item or drop the outfit"),
         _ЗП.Поле("verdict[].findings", "what the code found: «weight» weighs the finding, not the outfit; "
@@ -142,8 +144,9 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
                                        "many findings of one rule it joins; «declared»: true — your own "
                                        "declared move",
                  як="keep a declared move and repeat it in «deliberate», or change your mind and say why"),
-        _ЗП.Поле("verdict[].checklist", "«excess» — what is already too much, «blandness» — what is lacking; "
-                                        "both weigh the same; «no_input» and «not_run» — items the code did "
+        _ЗП.Поле("verdict[].checklist", "by area, the points the outfit «failed» and how many it «passed»: "
+                                        "«excess» — what is already too much, «blandness» — what is lacking, "
+                                        "both weigh the same; «no_input» and «not_run» — points the code did "
                                         "not check"),
         _ЗП.Поле("fixes", "the code's repair texts by key"),
         _ЗП.Поле("not_run_everywhere", "checklist items the code did not check in any outfit"),
