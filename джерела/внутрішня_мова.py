@@ -197,7 +197,14 @@ def невідомо(v, коди=()):
         "bow": "бант", "hair_clip": "заколка", "hair_tie": "резинка",
         "scarf_generic": "шарф_без_уточнення", "jewelry_generic": "прикраса_без_уточнення",
         "bag_generic": "сумка_без_уточнення", "dress_generic": "сукня_без_уточнення",
-        "two_piece_set": "комплект", "casual_suit": "костюм_повсякденний"},
+        "two_piece_set": "комплект", "casual_suit": "костюм_повсякденний",
+        # ВМ-2 (01.10.2026): типи, що доти їхали в пул, ремонт і вибір словом ядра — `feed.ТИП_КЛЮЧІ`
+        # (боді, лонгслів) і тип верхнього шару (`верхнє_погода.ТЕПЛОВІ_ФУНКЦІЇ`), яким
+        # `пакет_моделі._річ_пулу` підміняє порожній `тип`
+        "bodysuit": "боді", "longsleeve": "лонгслів", "half_coat": "півпальто",
+        "down_jacket": "пуховик", "fur_coat": "шуба", "sheepskin_coat": "дублянка", "parka": "парка",
+        "raincoat": "плащ", "rain_cape": "дощовик", "windbreaker": "вітровка", "anorak": "анорак",
+        "bomber": "бомбер", "poncho": "пончо"},
     "fabric": {
         "wool": "вовна", "cashmere": "кашемір", "mohair": "мохер", "angora": "ангора",
         "alpaca": "альпака", "cotton": "бавовна", "viscose": "віскоза", "tencel": "тенсел",
@@ -1085,6 +1092,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                                    "difference that reads as visible (values: noise, "
                                                    "threshold — dE00), so two measured hex values cannot "
                                                    "settle whether two items differ visibly",
+    "photo_lightness_noise_above_step": "the lightness measured from a photo is noisier than one lightness step "
+                                        "(values: noise, step — L*), so two measured hex values cannot settle "
+                                        "whether two items sit on one lightness",
     "cannot_tell_lightness_structure": "so the code cannot tell which structure of light and dark the outfit "
                                        "carries",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
@@ -2203,7 +2213,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "accent_surfaces_exact_match": "two accent surfaces match exactly (dE): they pull the eye sideways, not "
                                    "up to the face",
     "accent_surfaces_same_colour_word": "two accent surfaces are named by the same colour word by two "
-                                        "different shops (values: colour — the word): they read as one "
+                                        "different shops (values: colour — its colour code): they read as one "
                                         "colour and pull the eye sideways, not up to the face",
     "secondary_colour_or_neutral_or_declared_column": "second item in the first one's secondary colour or a "
                                                       "contrasting neutral; or a declared colour column",
@@ -2549,6 +2559,144 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "base_is_outfit_colour": "this base is the colour of the outfit; items of its family are in the pool "
                              "(values: hex; chosen_by — she_chose, stylist_chose or code_default)",
 }
+
+# ── РІЗНОМАНІТНІСТЬ НАБОРУ Й ПЕРЕВІРКА «ВИКОНАНО» (ВМ-2, 01.10.2026; рядок 483) ─────────────
+# Доти обидва їхали в ремонт і вибір реченнями коду українською (`set.variety.why`,
+# `verdict[].done_check[].why`): «о1, о2 — варіанти одного задуму…», «K-… лишилась 0.75 (було
+# 0.75) над …». Ті самі факти — кодами; речення лишаються звітові власника.
+ЗАЯВИ.update({
+    "variety_group": "these outfits are variants of one idea: they share «shared» of «total» items and the "
+                     "features named in «same»; keep one of them or make them different (values: outfits — "
+                     "outfit ids; shared; total; same — scheme, hero, silhouette_letter)",
+    "variety_kind_one_item": "these outfits stand on one and the same item of this kind: keep it in at most "
+                             "«keep_at_most» of them and replace it with another item of the same kind in the "
+                             "rest; the kind of this item stays (values: outfits — outfit ids; item — «n»; "
+                             "kind — kind code; keep_at_most)",
+    "variety_all_different": "all outfits differ: no pair matched in items, or in scheme together with hero "
+                             "(values: outfits — how many)",
+    "variety_kind_repeat_not_checked": "a repeat of one item within a kind was not checked: the outfit records "
+                                       "carry no kinds of items",
+    "variety_letter_without_length": "the silhouette letter was counted without these items: they have no "
+                                     "length (values: items)",
+    "done_finding_gone": "the finding of this rule over these items is gone in the new check (values: rule)",
+    "done_finding_weakened": "the finding of this rule weakened in the new check (values: rule; was, now — "
+                             "its weights)",
+    "done_finding_stands": "the finding of this rule still stands in the new check (values: rule; was, now — "
+                           "its weights; items — what it stands over)",
+    "done_declined_accepted": "declined deliberately: the reason is accepted as a declared move (values: why — "
+                              "the reason in the stylist's words)",
+    "done_declined_without_why": "«declined» without «why»: there is no reason, so the move is not declared",
+    "done_blocker_not_declinable": "a structural blocker cannot be declined: the outfit is not ready without it "
+                                   "(values: blocker — blocker code)",
+    "done_blocker_gone": "the structural blocker is gone in the new check (values: blocker — blocker code)",
+    "done_blocker_stands": "the structural blocker still stands in the new check (values: blocker — blocker code)",
+    "done_outfit_not_checked": "the outfit did not reach the check: there is nothing to verify",
+    "done_unknown_id": "the previous verdict has no finding or blocker with this id",
+})
+
+
+# ── ПУНКТИ ЧЕКЛІСТІВ СУДУ ОБРАЗУ (ВМ-2, 01.10.2026; рядок 483 дошки, CLAUDE.md п.12) ─────────
+# ЩО БУЛО. Пункти чекліста (`суд_чеклісти`: надлишок 1–19, прісність B1–B7, палітра P1–P8,
+# аксесуари A1–A14) їхали в англійські промпти ремонту й вибору ІМЕНАМИ ПУНКТІВ — українськими
+# фразами коду («рівно один фокус», «метал один, або свідомий мікс із повтором»): кошик В п.12,
+# ~650–800 символів самого `not_run_everywhere` на виклик, і R-LNG-01 їх не бачив.
+# ЩО ТЕПЕР. На дроті — КОД пункту (`ЧЕКЛІСТ_КОДИ`: ід пункту → код); що він означає, модель
+# читає в одному словнику виклику (`task.statement_codes`, `збирач_промптів.коди_заяв`) — тим
+# самим шляхом, що коди заяв. Визначення називає ID правил пункту (сторож — `тест_протоколу`:
+# кожне правило пункту стоїть у його визначенні). Імена пунктів українською лишаються в
+# обʼєкті коду — для звіту власника (`чекліст_вердикту`).
+ПУНКТИ_ЧЕКЛІСТА = {
+    # надлишок (K-SYS-08)
+    "chroma_budget": "at most 1–2 loud colours in the outfit, hair and glasses frames included (K-COL-02)",
+    "single_focus": "exactly one focal point (K-CRA-02, K-COL-05)",
+    "lightness_steps": "lightness in 2–3 clear steps, not noise (K-COL-01)",
+    "one_silhouette_letter": "one readable silhouette letter (K-SIL-01)",
+    "formality_spread": "the formality of the items spreads over at most 2 steps, or a high-low mix is declared "
+                        "(K-KOH-02, K-SHO-03)",
+    "shine_budget": "at most 1–2 shiny surfaces (K-MAT-04, K-MAT-04-L, K-MAT-04-A)",
+    "print_budget": "prints share a common thread and differ in scale (K-COL-10, R-PRN-03, R-PRN-02)",
+    "layering_depth": "at most 3 visible layers, with a visible step between them (K-CRA-06)",
+    "accent_echo": "each accent echoes at least twice or is the single focus (K-COL-05, K-COMP-05)",
+    "one_sprezzatura": "at most one sprezzatura gesture (K-CRA-03)",
+    "hem_off_widest_point": "no hem lands on the widest point of a body zone, when her goal asks for it (K-FIT-03)",
+    "one_metal": "one metal, or a deliberate mix with a repeat (K-CRA-07, K-CRA-07-N)",
+    "genre_dominant": "one style genre leads (K-KOH-04, K-REG-01)",
+    "one_trend_item": "one trend item in a lasting base, not a seasonal uniform (K-CRA-08)",
+    "fabric_cut_formality": "the fabric and the cut of one item do not pull to different formality levels "
+                            "(K-MAT-02, K-MAT-01)",
+    "scale_to_person": "the scale of prints, accessories and textures matches her own scale (K-SIL-06)",
+    "layer_hems_apart": "the hems of the outer layer and of what is under it do not almost coincide "
+                        "(K-OUT-03, K-OUT-04, K-OUT-43)",
+    "repairs_not_opposed": "two repairs on one item do not pull in opposite directions (K-COL-CONF, K-COL-JOIN)",
+    "near_face_weight": "the visual weight of the items near the face is keyed to the viewing distance (K-COND-04)",
+    "neutrals_same_lightness": "two neutrals at one lightness are either tone-on-tone or a clear step apart, "
+                               "not «almost the same» (K-COL-06)",
+    # прісність (K-SYS-09)
+    "interest_sources": "enough sources of interest for her intent (K-INT-04)",
+    "not_median_choice": "at least one element is not the median choice for the case",
+    "not_default_formula": "the outfit differs from the default «neutral base + one accent»: neutrals, at most "
+                           "one accent and no print are the default",
+    "texture_adds": "texture or material carries what the colour does not",
+    "silhouette_decided": "the silhouette is a decision, not a default: a letter is chosen (K-SIL-01)",
+    "not_same_for_anyone": "this is not the answer the system would give another person",
+    "passport_from_talk": "the case passport was filled by the language model that saw the whole conversation "
+                          "with her",
+    # палітра (K-PAL)
+    "face_colour_in_windows": "the colour near the face lies in her palette windows (K-PAL-09, K-PAL-14)",
+    "colours_in_her_pairings": "the colours of the outfit follow the logic of her pairings (K-PAL-15)",
+    "print_dominant_hers": "the dominant colour of a print is her colour (K-PAL-10)",
+    "off_palette_has_carrier": "a colour outside her palette has a carrier: the contrast of the outfit (K-PAL-08)",
+    "grey_hair_eyes_lead": "with grey hair, the eyes stay the main accent (K-PAL-13)",
+    "context_keeps_edge_colour": "the context does not push an edge colour out of her palette (K-PAL-16)",
+    "face_colour_eye_side": "a coloured item near the face lies on the side of the yellow–blue axis her eyes "
+                            "give (R-COL-16)",
+    "scheme_chosen": "the scheme of the outfit was chosen by her or by the stylist, not by a blind rank of the code",
+    # аксесуари
+    "glove_sleeve_length": "glove length and sleeve length are one decision (K-GLV-02)",
+    "tights_density": "the density of the tights matches the fabric weight of the day (K-HOS-01)",
+    "tights_link": "tights are a link of «shoes – leg – bottom», not a separate choice (K-HOS-02)",
+    "jewelry_scale": "the scale of the jewelry repeats the scale of her features (K-JEW-02)",
+    "necklace_off_neckline": "the edge of a necklace does not coincide with the edge of the neckline (K-JEW-01)",
+    "accessory_edge_placement": "the edge of an accessory does not sit on a curve of the body where it can go "
+                                "elsewhere (K-EDG-01, K-ACC-04)",
+    "price_per_combinations": "the price is divided by the number of combinations the item enters, not by "
+                              "itself (K-PRC-01)",
+    "repairable_shoes": "repairability lengthens the price denominator of the shoes (K-PRC-02)",
+    "refusal_reason_physical": "a physical reason for a refusal is named, not reduced to taste (K-END-02)",
+    "glasses_in_chroma": "glasses frames count in the chroma budget as a permanent colour near the face "
+                         "(K-FCE-04)",
+    "jewelry_kind_asked": "the jewelry is of the kind she asked for (pearls, ethnic), not only of that metal "
+                          "(K-COL-06-M)",
+    "accent_surfaces_differ": "two accent surfaces do not match exactly, unless a colour column is declared "
+                              "(K-ACC-10)",
+    "weather_withstood": "the weather of the day: layers, fabric, shoes and hem withstand it (K-WEA-01, K-WEA-05)",
+    "metal_is_surface": "the metal of the jewelry is the surface of the item, not a rim on fabric or a stone "
+                        "setting (K-COL-06-M, K-CRA-07)",
+}
+# ід пункту (`суд_чеклісти.ЧЕКЛІСТ_*`, перше поле) → код. Ід унікальні через усі чотири списки.
+ЧЕКЛІСТ_КОДИ = {1: "chroma_budget", 2: "single_focus", 3: "lightness_steps", 4: "one_silhouette_letter",
+    5: "formality_spread", 6: "shine_budget", 7: "print_budget", 8: "layering_depth", 9: "accent_echo",
+    10: "one_sprezzatura", 11: "hem_off_widest_point", 12: "one_metal", 13: "genre_dominant",
+    14: "one_trend_item", 15: "fabric_cut_formality", 16: "scale_to_person", 17: "layer_hems_apart",
+    18: "repairs_not_opposed", 19: "near_face_weight", 20: "neutrals_same_lightness", "B1": "interest_sources", "B2": "not_median_choice",
+    "B3": "not_default_formula", "B4": "texture_adds", "B5": "silhouette_decided",
+    "B6": "not_same_for_anyone", "B7": "passport_from_talk", "P1": "face_colour_in_windows",
+    "P2": "colours_in_her_pairings", "P3": "print_dominant_hers", "P4": "off_palette_has_carrier",
+    "P5": "grey_hair_eyes_lead", "P6": "context_keeps_edge_colour", "P7": "face_colour_eye_side",
+    "P8": "scheme_chosen", "A1": "glove_sleeve_length", "A2": "tights_density", "A3": "tights_link",
+    "A4": "jewelry_scale", "A5": "necklace_off_neckline", "A6": "accessory_edge_placement",
+    "A7": "price_per_combinations", "A8": "repairable_shoes", "A9": "refusal_reason_physical",
+    "A10": "glasses_in_chroma", "A11": "jewelry_kind_asked", "A12": "accent_surfaces_differ",
+    "A13": "weather_withstood", "A14": "metal_is_surface"}
+_спільні = set(ПУНКТИ_ЧЕКЛІСТА) & set(ЗАЯВИ)
+if _спільні:
+    raise KeyError("код пункту чекліста збігся з кодом заяви: %s" % sorted(_спільні))
+ЗАЯВИ.update(ПУНКТИ_ЧЕКЛІСТА)
+
+
+def код_пункту(ід):
+    """Ід пункту чекліста → код внутрішньої мови; пункт без коду — None (сторож — `тест_протоколу`)."""
+    return ЧЕКЛІСТ_КОДИ.get(ід)
 
 
 
