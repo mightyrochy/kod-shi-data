@@ -292,9 +292,13 @@ const ПРОВАЙДЕРИ = [
       };
       const здобуті = await Promise.all(блоки.map(тягнути));
       let разом = 0;
-      for (const з of здобуті) {
-        if (!з) { випало++; continue; }
-        if (разом + з.байти.length > СТЕЛЯ_ФОТО_РАЗОМ) { випало++; continue; }
+      /* ФОТО-513: кадр, що не дійшов, ЛИШАЄ СВОЄ МІСЦЕ — текстом «not delivered». Доти він просто
+         зникав із запиту, і модель, яка лічить зображення, віддавала наступній речі чужий кадр. */
+      const випав = б => { б.type = "text"; б.text = "(image not delivered)"; delete б.source; };
+      for (let i = 0; i < здобуті.length; i++) {
+        const з = здобуті[i];
+        if (!з) { випало++; випав(блоки[i]); continue; }
+        if (разом + з.байти.length > СТЕЛЯ_ФОТО_РАЗОМ) { випало++; випав(блоки[i]); continue; }
         разом += з.байти.length;
         let бін = ""; const шм = 0x8000;
         for (let i = 0; i < з.байти.length; i += шм) бін += String.fromCharCode.apply(null, з.байти.subarray(i, i + шм));

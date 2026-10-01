@@ -2410,6 +2410,153 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "scheme_accent_absent_in_pool": "not one item of the accent kinds carries a colour in the arc of the "
                                     "scheme: do not pretend the outfit keeps it — a shortage of stock, not a "
                                     "choice against her (values: kinds — kind codes; scheme — scheme code)",
+    # ── ПРАВИЛА СТИЛЮ ПРОМПТА СКЛАДАННЯ РУК 1–2 (ВМ-1, 01.10.2026; CLAUDE.md п.12) ─────────
+    # Доти `style_rules` їхали в англійський промпт складання українськими реченнями брифа
+    # (`brief.бриф`, ребра `hypergraph`, рядки схеми `міст_пакет`): ~3 200 кириличних літер. Тепер
+    # кожен рядок брифа несе поруч `заява` — код звідси зі значеннями (числа, коди, hex), а
+    # український `рядок` лишається для людини й старих читачів. Орієнтири тіла — коди: ankle,
+    # mid_calf, knee, mid_thigh, widest_hip, upper_thigh, waist, under_bust, bust.
+    "lightness_spread_close": "keep the items close in lightness: neighbouring steps only, no very light item "
+                              "next to a very dark one",
+    "lightness_spread_moderate": "a moderate step of lightness between the items fits: light next to "
+                                 "medium-dark — yes, black with white — no",
+    "lightness_spread_marked": "a marked step of lightness between the items fits, up to a contrasting pair",
+    "lightness_spread_free": "the lightness of the items may differ freely, the lightest next to the darkest "
+                             "included",
+    "makeup_widens_face_contrast": "visible make-up adds lightness contrast near the face: an item near the face "
+                                   "may stand a step further from the face's lightness than her own contrast "
+                                   "allows, but need not (values: delta_L — what the make-up adds, L*; "
+                                   "face_limit_L — the limit with it, L*)",
+    "seen_close_seated": "she will be seen up close and seated: the top, collar, neck and ears are judged; "
+                         "colour near the face matters most, the shoes are hardly seen",
+    "seen_full_height": "she will be seen at full height and in motion: the whole figure counts; near the face "
+                        "still matters, the shoes and the bottom are in view too",
+    "seen_distance_unknown": "where she will be seen from is unknown: near the face and the bottom weigh as "
+                             "usual",
+    "hair_own_lightness_step": "her hair already has its own step of lightness (highlights, regrowth or grey): "
+                               "the outfit gets this step for free, so the clothes add no sharp one",
+    "own_colouring_vivid": "her own colouring is vivid (her words, not measured): colour is present in the "
+                           "outfit as colour, not only as a neutral with an accent",
+    "own_colouring_vivid_low_contrast": "her own colouring is vivid (her words, not measured) and her lightness "
+                                        "contrast is low: neutrals alone dim her — the outfit needs real "
+                                        "colour, with small steps of lightness between the items",
+    "own_colouring_muted": "her own colouring is muted (her words, not measured): clean bright colours pull "
+                           "attention from the face — keep everything muted",
+    "white_cool": "white and light neutrals are clean and cool (optical white), not milky",
+    "white_warm": "white and light neutrals are warm: milky, ivory, cream — not optical white",
+    "near_face_side": "her eyes lie on this side of the yellow–blue axis: coloured items near the face (top, "
+                      "scarf, earrings) from the same side read more even — a direction among equals, not a ban "
+                      "on the other side (values: side — warm or cool)",
+    "jewellery_metal": "the metal of jewellery and hardware — the one answer for this outfit (values: metal — "
+                       "gold, silver or gold_and_silver; from — her_choice or palette)",
+    "evening_outing": "an evening outing: fabrics with shine or a pronounced texture, colours deeper and richer "
+                      "than by day, more open skin allowed; a matt, light, fully closed outfit reads as daytime",
+    "day_outing": "a daytime outing: matt fabrics, lighter, less open skin, more practical; shine and deep "
+                  "evening colours read as overdressing",
+    "mourning_event": "a mourning event: large items and details dark and quiet — black, graphite, navy, "
+                      "chocolate, deep burgundy; matt fabrics, no shine near the face, no festive trims "
+                      "(sequins, tulle, feathers, rhinestones); \"lighter by day\" and \"shine in the evening\" "
+                      "do not apply",
+    "mourning_state": "she is in mourning (the period lasts): large items dark and quiet, without festive trims; "
+                      "the nearer the end of the period, the softer this limit",
+    "cold_outer_layer_counts": "in this cold the outer layer is part of the outfit, not an addition: its colour "
+                               "and formality are judged with the rest; open shoes, thin tights and bare ankles "
+                               "are a mistake here, not a style (values: temperature_c)",
+    "precipitation_shoes_materials": "precipitation: closed shoes, no fabric soles, no suede or nubuck; "
+                                     "materials afraid of water stay out of the outfit",
+    "weather_layers": "the weather outside and the layers it asks for (values: temperature_c; layers — how many "
+                      "layers on the torso, a half is one more light removable layer; fabrics — fabric codes "
+                      "for this temperature; outer_at_formality — true when the outer layer is held to the "
+                      "outfit's formality too)",
+    "scheme_colours_by_kind": "the colours of the palette scheme by kind of item (values: scheme; kinds — per "
+                              "kind: hex; area — its share of the outfit's area, %; echo — true when it only "
+                              "echoes one of the large items and is not required; hue — fixed: the same hue, a "
+                              "touch lighter or darker, not another colour, free: the hue is free, keep the "
+                              "lightness and the mutedness; shares_role_with — kinds with the same role: the "
+                              "same colour there is a deliberate echo, to set them apart keep the role and "
+                              "change the lightness)",
+    "scheme_no_kind_colours": "this scheme has no colours by kind of item: the palette has no selection for it "
+                              "yet (values: scheme)",
+    "mourning_scheme_dark_only": "on a mourning occasion the scheme's colours come only in their dark and quiet "
+                                 "version; nothing light, bright or festive",
+    "mourning_accent_not_asked": "a colour accent is not asked for here: an outfit without it at a funeral is "
+                                 "fitting, not bland",
+    "colouring_words_vs_choice": "her words about her colouring contradict her colour choice: follow the "
+                                 "scheme's concrete colours, not the general words (values: said — muted or "
+                                 "vivid; chosen — saturated or muted)",
+    "accent_twice_or_in_focus": "an accent either repeats exactly twice at separate points or stands once in the "
+                                "focus zone; one random accent is noise, four or more are too many",
+    "accent_from_iris_near_face": "the accent colour is taken from the tone of her iris: one of its two echo "
+                                  "points is near the face (scarf, collar, top, earrings); an accent only low in "
+                                  "the outfit does not answer the eyes",
+    "area_shares_unequal": "keep the scheme's area shares: the two largest items do not split the outfit in half",
+    "close_tones_need_texture": "a scheme on close tones holds by texture: at least two surfaces different to the "
+                                "touch; pronounced shine on two items at most",
+    "three_colour_families_max": "no more than three colour families in the whole outfit, the metal included; "
+                                 "the outer layer, scarf and accessories bring no new colours",
+    "one_register_one_quote": "keep ONE style language: take one «register» of the items as leading and at most "
+                              "ONE item of another as a quote; three equal languages are a conflict, not "
+                              "eclecticism",
+    "one_focus_zone": "exactly one zone of maximum interest, and there must be one: texture, silhouette, a "
+                      "gesture, a statement accessory or a print",
+    "shoes_level_and_mass": "shoes at most one step from the outfit's level; the mass of the shoes holds the "
+                            "volume of the bottom (no thin heel under a wide leg)",
+    "shoes_her_request_first": "the shoes follow her own request («shoe_request», «refusals»); besides it, the "
+                               "mass of the shoes holds the volume of the bottom",
+    "shoes_for_movement": "because of the movement of her day: no stilettos, a stable sole",
+    "fabric_level_form_drape": "fabric carries both level and form: smooth, matt and fine is dressier than "
+                               "textured and coarse; a structured form needs a structured fabric, a soft one a "
+                               "fluid fabric. Fabric also decides how the item lies on the body: clinging (shows "
+                               "the relief — only on purpose), skimming (follows the body without sticking — the "
+                               "working default) or standing in its own form; a zone not to be stressed is taken "
+                               "by skimming or by the item's own form, not by clinging",
+    "bag_structured": "the bag is structured",
+    "bag_may_be_soft": "the bag may be soft",
+    "jewellery_one_or_few_small": "jewellery: one visible piece or several small ones, not both",
+    "no_hem_at": "no hem of any item ends at these points — they are the widest points of her body; other "
+                 "lengths are free (values: at — body landmarks)",
+    "top_hem_at": "the hem of the top item ends at one of these points (values: at — body landmarks)",
+    "pair_wider_zone": "one half of her body is wider than the other: volume or structure on the narrower half, "
+                       "a clean line on the wider one; clinging on the narrower half does not make up for the "
+                       "difference (values: wider — top or bottom; narrower; difference_pct — the difference of "
+                       "girths, %)",
+    "pair_even": "her top and bottom are even: there is no difference to make up for; the waist sets the form, "
+                 "not the pair",
+    "volume_anchor": "a voluminous outfit keeps one anchor where the body shows: the waist (belt, wrap, tuck) or "
+                     "the ankle (a tapered or cropped bottom); volume without an anchor reads as \"the body shows "
+                     "nowhere\"",
+    "one_line": "the contour leaves the body in ONE place below the shoulders: a voluminous top together with a "
+                "voluminous bottom gives two lines, and neither reads",
+    "cuts_best_on_her": "the cuts of this kind that score highest on her body, equal among themselves (values: "
+                        "kind; cuts; score — 0 to 1; weaker — how many other cuts score lower: weaker, not "
+                        "banned)",
+    "cuts_none_scored": "no cut of this kind scored above zero on her body (values: kind; nearest — the cuts "
+                        "nearest by rank)",
+    "body_knot": "most conditions meet at these zones of her body; conditions shared by both zones need ONE "
+                 "item for both, since a fix on one zone moves the other; the rest on the first zone is fixed "
+                 "separately (values: zones — per zone: conditions, tension 0 to 1; shared; own)",
+    "wish_kinds_first": "she asked for these: put an item of these kinds in every outfit where it fits — such "
+                        "items stand first in the pool and carry «for_her_wish» (values: wishes — her words; "
+                        "kinds)",
+    "wish_is_a_class": "a wish is a class of items, not one item: take one item «for_her_wish» in at most this "
+                       "many outfits of the set, the rest from other items of the class; her own item is not a "
+                       "repeat (values: max_outfits)",
+    "shown_before_last_resort": "items with «shown_before» stood in her outfits of the earlier set for this case: "
+                                "take one only when the pool has no other fitting item of the same kind — she "
+                                "asked for variety",
+    "scheme_large_items_carry": "each colour family of the scheme sits on ITS OWN large item (top, bottom or "
+                                "dress, a second layer, the outer layer), in roughly equal areas; bag, shoes and "
+                                "jewellery may repeat one of them but do not carry the scheme by themselves: an "
+                                "outfit with colour only on accessories does not keep this scheme; with the metal "
+                                "— no more than three colour families (values: scheme; families — colour codes, or the "
+                                "shop's word when the colour has no code)",
+    "scheme_needs_colour": "an outfit in which NO item carries colour does not keep this scheme — that is "
+                           "blandness, not calm (values: scheme; colour_kinds — the kinds the scheme gives "
+                           "colour)",
+    "scheme_one_accent": "the rest stays neutral and the accent is one: two or more DIFFERENT colour families "
+                         "break this scheme from the other side",
+    "base_is_outfit_colour": "this base is the colour of the outfit; items of its family are in the pool "
+                             "(values: hex; chosen_by — she_chose, stylist_chose or code_default)",
 }
 
 
