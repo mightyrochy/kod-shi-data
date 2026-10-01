@@ -527,8 +527,11 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("she_rejected_items", "items she rejected on earlier cards",
                  як="do not take them or their twins from the same shop"),
         _ЗП.Поле("zones_she_keeps_covered", "body zones she does not show"),
-        _ЗП.Поле("style_rules", "rules of the style corpus for her and this case, in Ukrainian",
+        _ЗП.Поле("style_rules", "rules of the style corpus for her and this case: each entry is a code, or "
+                                "{code: values}; codes are defined in \"statement_codes\"",
                  як="keep each"),
+        # НП-в переробляє рядки рівня нагоди; доти вони їдуть реченнями брифа (ВМ-1)
+        _ЗП.Поле("occasion_rules", "rules of the occasion's level of dress, in Ukrainian", як="keep each"),
         _ЗП.Поле("kind_notes", "what the code says about kinds of items in this pool: each kind "
                                "carries \"statements\" — codes defined in \"statement_codes\""),
         _ЗП.Поле("kinds_missing", "kinds of items this pool has none of", як="say so in «needed»"),

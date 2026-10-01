@@ -362,8 +362,13 @@ def main():
          and all(_гол66(k).get("name") == _слово66 and _гол66(k).get("chosen_by") == "her"
                  for k in "34"),
          {k: (_осн66(k) if k in "12" else _гол66(k)) for k in "1234"})
+    # ВМ-1 (01.10.2026): кольори схеми по видах речей їдуть рукам 1–2 заявою
+    # `scheme_colours_by_kind` (або `scheme_no_kind_colours`), а не українським рядком
+    # «Схема «…»» брифа — гейт міряє той самий факт у новому місці.
+    import re as _re66
     тест("схема, вікна й каталог лишаються привілеєм рук із кодом — руки 3 і 4 їх не бачать",
-         all(("Схема «" in _р66["руки"][k]) == (k in "12") for k in "1234")
+         all(bool(_re66.search(r"scheme_(colours_by_kind|no_kind_colours)", _р66["руки"][k])) == (k in "12")
+             for k in "1234")
          and all(bool(_пак66[k] and _пак66[k].get("пул")
                       and ((_пак66[k].get("людина") or {}).get("палітра") or {}).get("схема"))
                  == (k in "12") for k in "1234"))
