@@ -299,10 +299,12 @@ const пнг = байтів => {
         {type:"image", source:{type:"url", url:"https://dead.example/2.jpg"}},
         {type:"text", text:"опиши"}]}]});
   const частини = вихідні[0].body.contents[0].parts;
-  тест("gemini-: воркер стягнув фото й вклав inline_data (image/png, base64), мертве фото випало, текст на місці",
-       фотоЗапити.length === 2 && частини.length === 2 && частини[0].inline_data
+  /* ФОТО-513: мертве фото не зникає, а лишає своє місце текстом — номери кадрів за ним не зсуваються */
+  тест("gemini-: воркер стягнув фото й вклав inline_data (image/png, base64), мертве фото лишило місце «not delivered», текст на місці",
+       фотоЗапити.length === 2 && частини.length === 3 && частини[0].inline_data
        && частини[0].inline_data.mime_type === "image/png" && /^iVBOR/.test(частини[0].inline_data.data)
-       && частини[1].text === "опиши", частини);
+       && /not delivered/.test(частини[1].text) && !частини[1].inline_data && частини[2].text === "опиши",
+       частини.map(ч => ч.text || "inline_data"));
   тест("x-images-dropped=1 і заголовок відкритий сторінці", в.headers.get("x-images-dropped") === "1"
        && /x-images-dropped/.test(в.headers.get("Access-Control-Expose-Headers")), в.headers.get("x-images-dropped"));
 
