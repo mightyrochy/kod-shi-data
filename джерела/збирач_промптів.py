@@ -177,8 +177,8 @@ def вибірка(о):
     "невідомо": "What you do not know is \"unknown\", null or an empty list, as the schema allows.",
     # «you» англійською не розрізняє «ти» і «ви»: живий стенд НГ-4 (sonnet, 01.10) дав репліку розмови
     # на «ви», хоча українська межа каже «на „ти“» — тож форму звертання названо прямо.
-    "для_неї": ("Text for her: address her informally — in Ukrainian «ти», never «ви» — in plain "
-                "human words, without item numbers, ids, hex codes or markdown."),
+    "для_неї": ("Text for her: address her informally, with the familiar singular \"you\", never the "
+                "polite plural; in plain human words, without item numbers, ids, hex codes or markdown."),
     "без_чисел_тіла": "Do not name lightness numbers or body-type labels and do not say you had limits.",
 }
 МОВА_EN = "English"
