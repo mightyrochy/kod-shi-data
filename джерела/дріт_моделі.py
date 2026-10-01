@@ -887,9 +887,14 @@ def вердикт(в, ремонти=True, межі=None):
             о["knot"] = ({"statements": заяви(с["вузол"]["заяви"])} if с["вузол"].get("заяви") else
                          {"name": с["вузол"].get("назва"), "why": с["вузол"].get("чому")})
         if с.get("виконання"):
-            о["done_check"] = [{к2: v for к2, v in (("finding", x.get("знахідка")), ("action", x.get("дія")),
-                                                    ("verified", x.get("перевірено")), ("why", x.get("чому")))
-                                if v is not None and v != ""}
+            # ВМ-2: дія — кодом відповіді (`fixed`/`declined`/`partly`), «чому» — заявами, коли вони є
+            import протокол as _ПР
+            о["done_check"] = [{к2: v for к2, v in (("finding", x.get("знахідка")),
+                                                    ("action", _з(_ПР.ЗНАЧЕННЯ_ВІДПОВІДІ_EN["дія"], x.get("дія"))),
+                                                    ("verified", x.get("перевірено")),
+                                                    ("statements", заяви(x.get("заяви"))),
+                                                    ("why", None if x.get("заяви") else x.get("чому")))
+                                if v is not None and v != "" and v != []}
                                for x in с["виконання"] if isinstance(x, dict)]
         вих["verdict"].append(о)
     н = в.get("набір")
@@ -897,8 +902,11 @@ def вердикт(в, ремонти=True, межі=None):
         набір = {}
         р = н.get("різноманітність")
         if isinstance(р, dict):
+            # ВМ-2: «чому» — заявами (`variety_*`), коли вони є; речення лишається звітові
             набір["variety"] = {к2: v for к2, v in (("ok", р.get("ок")), ("groups", р.get("групи")),
-                                                    ("why", р.get("чому"))) if v is not None}
+                                                    ("statements", заяви(р.get("заяви")) or None),
+                                                    ("why", None if р.get("заяви") else р.get("чому")))
+                                if v is not None}
         г = н.get("герой")
         if isinstance(г, dict):
             набір["hero"] = {к2: v for к2, v in (("ok", г.get("ок")),
@@ -942,7 +950,10 @@ def вердикт(в, ремонти=True, межі=None):
                                  ("empty_kinds", {код("slot", с): н for с, н in (б.get("порожні") or {}).items()}),
                                  ("same_kind", б.get("двічі"))) if v}
             for б in в["бракує"] if isinstance(б, dict)]
-    return вих
+    # ІД ОБРАЗІВ І ЗНАХІДОК — ЛАТИНКОЮ (ВМ-2): «о1» → «o1», «з-о1-1» → «f-o1-1»; розбір відповіді
+    # повертає їх до ід коду (`протокол.ід_з_дроту`)
+    import протокол as _ПР
+    return _ПР.ід_на_дріт_усюди(вих)
 
 
 # ── ОПИС ────────────────────────────────────────────────────────────────────────

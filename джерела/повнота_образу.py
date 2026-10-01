@@ -577,9 +577,11 @@ def промпт_вибору(образи, випадок=None, без_фото
                             "«day» (your sentence about her day in it); «structure» — blockers; «findings» "
                             "(«weight» weighs the finding, not the outfit; «register» «gate» — a gate, none — "
                             "a remark); «checklist» — by area, the points the outfit «failed», how many it "
-                            "«passed», and how many the code could not check («no_input», «not_run»); "
+                            "«passed», and how many the code could not check («no_input», «not_run»); each "
+                            "point is a code defined in \"statement_codes\"; "
                             "«knot» — the place where most conditions meet", треба=True),
-        _ЗП.Поле("not_run_everywhere", "checklist items the code did not check in any outfit"),
+        _ЗП.Поле("not_run_everywhere", "by area, the checklist points the code did not check in any outfit; "
+                                       "each point is a code defined in \"statement_codes\""),
         _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination"),
         _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
         _ЗП.Поле("she_refuses", "what she refused",
