@@ -1336,6 +1336,18 @@ function ходомРозмови(текст){
       else if (весілля) в.open_zones = 'one';
     }
     if (!в.reserved_colour && весілля) в.reserved_colour = 'near_white';
+    /* НП-в5 (рядок 522 (3)): частину дня, коли години нема, жива модель бере з назви події чи плитки
+       («Офіційний вечір» — evening). Заглушка — так само: підпис обраного коду в словнику кодів
+       (`task.codes`) називає вечір. Година з її слів чи плитки — сильніша, тоді поля нема. */
+    const година = [в.hour, (д.chosen || {}).hour, (д.passport || {}).hour].find(x => typeof x === 'number');
+    if (!в.part_of_day && година === undefined){
+      const підпис = (поле, код) => {
+        const ряд = (((д.task || {}).codes) || []).find(р => р.startsWith('- ' + поле + ' —')) || '';
+        const з_ = код ? new RegExp('\\b' + код + ' \\(([^()]*)\\)').exec(ряд) : null;
+        return з_ ? з_[1] : '';
+      };
+      if (/вечір|вечірн/i.test(підпис('occasion', н[1]) + ' ' + підпис('place', н[0]))) в.part_of_day = 'evening';
+    }
   }
   const сцена = ['occasion', 'place', 'dress_code', 'formality'].some(має);
   const ask_code = сцена ? null : (має('event') ? 'event_place' : 'occasion');
@@ -2262,6 +2274,32 @@ function підсумокМоделі(){
     await стор.click('#чат-мікрофон');           // дотик — стоп, як у жінки
   }
 
+  /* PLYTKA=<ключ нагоди> (НП-в5, рядок 520) — шлях без розмови: «Або заповнити рукою», дотик плитки
+     нагоди (той самий обробник, що в жінки), «Зібрати образи». Друкує ошатність паспорта, рядки звіту
+     «tiles · …» (хід плиток мовної моделі) і знімає сценарій і картки; далі стенд не йде. */
+  if (process.env.PLYTKA){
+    const т0 = Date.now();
+    await стор.click('#сц-рукою-показати');
+    const є = await стор.evaluate(к => { const о = (ДОВІДНИК.нагоди || []).find(о_ => о_.ключ === к);
+      const п = о && [...document.querySelectorAll('#сц-нагода-плитки > *')].find(е => (е.textContent || '').includes(о.підпис));
+      if (п) п.click(); return {підпис: о && о.підпис, плитка: !!п, нагода: document.getElementById('сц-нагода').value}; }, process.env.PLYTKA);
+    console.log('\nPLYTKA · дотик:', JSON.stringify(є));
+    await с(1500);
+    const доЗбору = await стор.evaluate(() => ({ключ_ходу: !!ХІД_ПЛИТОК_П.обіцянка, ошатність: (ПАСПОРТ_П || {}).ошатність || null}));
+    await знімок('plytka_stsenarii', null, true);
+    await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к && typeof к.onclick === 'function') к.onclick(); });
+    await стор.waitForFunction("(typeof ЗБ !== 'undefined' && ЗБ && ЗБ.готово) || " + ВИРАЗ_ЗБОЮ, null, { timeout: 900000 }).catch(() => null);
+    const р = await стор.evaluate(() => ({ошатність: (ПАСПОРТ_П || {}).ошатність, година: (ПАСПОРТ_П || {}).година,
+      джерело_полів: (ПАСПОРТ_П || {}).джерело_полів, плиток: (ЗБ.діагноз || []).filter(д => /^tiles · /.test(д)),
+      карток: (ЗБ.картки || []).filter(Boolean).length, збій: (ЗБ.діагноз || []).filter(д => /fail|error/i.test(д)).slice(0, 5)}));
+    console.log('PLYTKA · до збору:', JSON.stringify(доЗбору), '\nPLYTKA · паспорт після «Зібрати»:', JSON.stringify(р),
+      '\nPLYTKA · за', ((Date.now() - т0) / 1000).toFixed(1), 'с');
+    ф('PLYTKA: плитка без розмови — у паспорті ошатність є числом моделі (хід плиток)',
+      Array.isArray(р.ошатність) && р.ошатність.every(x => typeof x === 'number') && р.плиток.length > 0, р);
+    await знімок('plytka_kartky', null);
+    await браузер.close();
+    process.exit(провалів ? 1 : 0);
+  }
   /* 1. чат заповнює плитки і рядок «Я зрозуміла так» */
   /* з HOLOS=1 текст уже в полі — його продиктували сценою 1д вище */
   if (!ГОЛОС_СТЕНД) await стор.fill('#чат-поле', ЧАТ_ТЕКСТ);

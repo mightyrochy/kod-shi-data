@@ -794,8 +794,11 @@ def _її_речі(речі):
 # і це видно рядком формату #309 у `не_взято_кодом` і в записі виклику шару.
 # `reserved_colour` і `open_zones` (НП-в) — норма події, яку модель розуміє з події, як ошатність:
 # гостя на весіллі не каже «біле не моє», а храм не каже «плечі закрити» — цитати нема й не буде.
+# `part_of_day` (НП-в5, рядок 522 (3)) — так само: «Офіційний вечір» — плитка, а не її слова, і
+# вечір у назві події модель розуміє тим самим ходом; години (`hour`) це не стосується — число
+# лише з її слів.
 _БЕЗ_ЦИТАТИ = ("event", "mood", "question", "question_about", "rest", "quotes", "formality",
-               "reserved_colour", "open_zones")
+               "reserved_colour", "open_zones", "part_of_day")
 _РЕЧІ_З_ЦИТАТОЮ = ("wants", "vetoes", "retract", "own_items", "beliefs")
 
 
@@ -1404,7 +1407,8 @@ _ПОЛЯ_EN = {
     "activity": "what she will do there",
     "surface": "what is under her feet",
     "hour": "start hour on a 24-hour clock",
-    "part_of_day": "part of the day, when no hour is named",
+    "part_of_day": "part of the day, when no hour is named: from her words, or when the event or a tile "
+                   "in \"chosen\" itself names it (an evening reception — evening)",
     "temperature_c": "air temperature, °C",
     "weather_feel": "the weather, when no number of degrees is named",
     "precipitation": "rain or snow",
@@ -1559,6 +1563,10 @@ def _коди_розмови():
     "\"update\" holds only what her new message changes: new fields and changed values. A new value "
     "replaces the old one; a wish or a limit from before that she takes back goes into \"retract\". "
     "Do not repeat fields that do not change.",
+    # НП-в5 (рядок 520): плитка без розмови — хід без її листа; паспорт тоді потребує числа моделі.
+    "When her new message is unknown, she wrote nothing and only changed the tiles: \"update\" gives "
+    "formality, part_of_day, reserved_colour and open_zones for what \"chosen\" and the passport say now; "
+    "\"need\" is none and \"text\" is one short word.",
     # Сторож М-1 (`_тримається`): поле без дослівного уривка її слів код не бере — тепер уривок
     # може стояти в будь-якій її репліці розмови (`слова_розмови`).
     "Every field with a code or a number and every item stands on her words: \"quote\" is a fragment of "
@@ -1581,6 +1589,9 @@ def _коди_розмови():
     "norm, without quote: set them when the event has such a norm (a wedding where she is a guest — "
     "near_white; a church or a funeral — open_zones none); no norm — leave them absent: unknown is a "
     "valid value, and the looks are put together anyway.",
+    # НП-в5 (рядок 522 (3)): вечір плитки «Офіційний вечір» — розуміння моделі, не таблиця коду.
+    "\"part_of_day\" may also go without quote when no hour is known and the event or a tile in \"chosen\" "
+    "itself names the part of the day (an evening reception — evening); otherwise leave it absent.",
     # П.14 і п.3 наряду: межа мовної моделі — кодами `need`.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
     "without her items, looks and photos. When \"need\" is not \"none\", do not answer the question in "
