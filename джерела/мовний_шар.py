@@ -792,7 +792,10 @@ def _її_речі(речі):
 # речі), а код звіряє лише одне — що цей уривок справді є в її словах ходу (механіка
 # `цитата_тримає` з #311: підрядок, без словника). Поле без такої цитати в паспорт не йде,
 # і це видно рядком формату #309 у `не_взято_кодом` і в записі виклику шару.
-_БЕЗ_ЦИТАТИ = ("event", "mood", "question", "question_about", "rest", "quotes", "formality")
+# `reserved_colour` і `open_zones` (НП-в) — норма події, яку модель розуміє з події, як ошатність:
+# гостя на весіллі не каже «біле не моє», а храм не каже «плечі закрити» — цитати нема й не буде.
+_БЕЗ_ЦИТАТИ = ("event", "mood", "question", "question_about", "rest", "quotes", "formality",
+               "reserved_colour", "open_zones")
 _РЕЧІ_З_ЦИТАТОЮ = ("wants", "vetoes", "retract", "own_items", "beliefs")
 
 
@@ -1391,11 +1394,13 @@ _ПОЛЯ_EN = {
     "place": "where she will be",
     "dress_code": "the dress code, when it is named",
     "event": "the event briefly, in her words",
-    "reserved_colour": "a colour that belongs to another person at this event, when she says so; "
-                       "near_white — white and ivory belong to the bride",
+    "reserved_colour": "a colour that belongs to another person at this event: near_white — white, "
+                       "ivory and cream belong to the bride when she is not the bride herself",
+    "open_zones": "how many body zones (neckline or back, legs, shoulders) it is appropriate to show "
+                  "at this event: none — church, funeral, interview and other reserved settings; one; two",
     "setting": "indoors, outdoors or mixed",
     "duration_h": "how many hours the event lasts",
-    "movement": "whether she will sit, walk or walk a lot",
+    "movement": "whether she will sit, stand, walk, walk a lot, dance, kneel or do sport",
     "activity": "what she will do there",
     "surface": "what is under her feet",
     "hour": "start hour on a 24-hour clock",
@@ -1530,6 +1535,8 @@ def _коди_розмови():
         if _група(ім, с) == "вільні":
             р.append("- %s — %s%s" % (ім, _ПОЛЯ_EN[ім], "; " + _тип_en(с) if с.get("type") == "array" else ""))
     р.append("- formality — %s; without quote" % _ПОЛЯ_EN["formality"])
+    for ім in ("reserved_colour", "open_zones"):
+        р.append("- %s — %s; %s; without quote" % (ім, _ПОЛЯ_EN[ім], _тип_en(поля[ім])))
     р.append("Advice topics — code: what to invite her to tell · when the topic applies (after your "
              "update, and only while the passport does not know it):")
     р += ["- %s: %s · %s" % (к, про, коли) for к, (про, коли) in _умови_тем().items()]
@@ -1570,8 +1577,10 @@ def _коди_розмови():
     # НП-в (принцип власника 01.10: «код має знати те, що може точно порахувати»): видів,
     # «найближчого виду», ролі, аудиторії, віри, обсягу й частин дня модель коду більше не дає —
     # стилістка бере подію її словами. Зарезервований колір — рахівне (вето майже-білого).
-    "reserved_colour comes only from her own words; when she did not mention it, it stays absent — "
-    "unknown is a valid value, and the looks are put together anyway.",
+    "\"reserved_colour\" and \"open_zones\" are, like formality, your understanding of the event's "
+    "norm, without quote: set them when the event has such a norm (a wedding where she is a guest — "
+    "near_white; a church or a funeral — open_zones none); no norm — leave them absent: unknown is a "
+    "valid value, and the looks are put together anyway.",
     # П.14 і п.3 наряду: межа мовної моделі — кодами `need`.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
     "without her items, looks and photos. When \"need\" is not \"none\", do not answer the question in "
@@ -1654,12 +1663,11 @@ def _паспорт_прості():
     ОДНА ВІДПОВІДНІСТЬ НА СИСТЕМУ (рядок 279, НГ-4): доти тут стояв другий примірник таблиці
     `паспорт_нагоди.ПОЛЕ_ВИМІРУ`, і розбіжність стерегла лише проба. Тепер він виводиться з неї —
     порядок той самий, тож промпт байт у байт той, що доти. Поза ним — виміри розмови
-    (`ПОЛЯ_ВИМІРІВ_РОЗМОВИ`: їх `паспорт_кодами` пише окремо) і `рух`: ядро тримає три стани
-    (`movement`), а вимір — сім (`event_movement`, рядок 280)."""
+    (`ПОЛЯ_ВИМІРІВ_РОЗМОВИ`: їх `паспорт_кодами` пише окремо). Рух — один перелік `movement`
+    (НП-в, рядок 280), тож окремого зведення для нього нема."""
     import паспорт_нагоди as _ПН
     свої = set(_ПН.ПОЛЯ_ВИМІРІВ_РОЗМОВИ)
-    return tuple((ключ, "movement" if ключ == "рух" else перелік)
-                 for _, перелік, ключ in _ПН.ПОЛЕ_ВИМІРУ if ключ and ключ not in свої)
+    return tuple((ключ, перелік) for _, перелік, ключ in _ПН.ПОЛЕ_ВИМІРУ if ключ and ключ not in свої)
 
 
 _ПАСПОРТ_ЧИСЛА = (("година", "hour"), ("темп_c", "temperature_c"), ("тривалість_год", "duration_h"),

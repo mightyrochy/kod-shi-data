@@ -680,6 +680,15 @@
       "unknown"
      ]
     },
+    "open_zones": {
+     "description": "скільки зон тіла (декольте чи спина, ноги, плечі) доречно відкрити на цій події",
+     "enum": [
+      "none",
+      "one",
+      "two",
+      "unknown"
+     ]
+    },
     "setting": {
      "description": "у приміщенні, просто неба чи змішано",
      "enum": [
@@ -702,11 +711,15 @@
      ]
     },
     "movement": {
-     "description": "сидітиме, ходитиме чи багато ходитиме",
+     "description": "сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, ставатиме на коліна чи займатиметься спортом",
      "enum": [
       "sit",
+      "stand",
       "walk",
       "walk_a_lot",
+      "dance",
+      "kneel",
+      "sport",
       "unknown"
      ]
     },
@@ -5264,8 +5277,12 @@
   },
   "movement": {
    "sit": "сидіти",
+   "stand": "стояти",
    "walk": "ходити",
-   "walk_a_lot": "багато ходити"
+   "walk_a_lot": "багато ходити",
+   "dance": "танцювати",
+   "kneel": "ставати на коліна",
+   "sport": "спорт"
   },
   "activity": {
    "children": "діти",
@@ -5745,15 +5762,6 @@
    "usual": "usual",
    "conservative": "conservative"
   },
-  "event_movement": {
-   "sit": "sit",
-   "stand": "stand",
-   "walk": "walk",
-   "walk_long": "walk_long",
-   "dance": "dance",
-   "kneel": "kneel",
-   "sport": "sport"
-  },
   "religious_place": {
    "none": "none",
    "temple": "temple",
@@ -5770,6 +5778,11 @@
   },
   "reserved_colour": {
    "near_white": "near_white"
+  },
+  "open_zones": {
+   "none": "none",
+   "one": "one",
+   "two": "two"
   },
   "recurrence": {
    "once": "once",

@@ -1323,6 +1323,20 @@ function ходомРозмови(текст){
     const смуга = СТЕНД_ОШАТНІСТЬ_МІСЦЯ[з('place')] || СТЕНД_ОШАТНІСТЬ_НАГОДИ[з('occasion')] || null;
     if (смуга) в.formality = {from: смуга[0], to: смуга[1]};
   }
+  /* НП-в: скільки відкритих зон і чий колір на події — теж розуміння мовної моделі, не пресет коду.
+     Заглушка грає їх за нагодою/місцем: стримані нагоди — `none`, весілля — `one` і біле нареченої
+     (гостею; роль стенда — гостя). Чого нагода не каже — поля нема, і K-KOH-10 бере типовий ліміт. */
+  {
+    const з = к => [в[к], (д.chosen || {})[к], (д.passport || {})[к]].map(x => (x && x.value) || x).find(x => typeof x === 'string');
+    const н = [з('place'), з('occasion')];
+    const весілля = н.some(x => ['wedding_day', 'wedding_evening', 'wedding_guest'].includes(x));
+    if (!в.open_zones){
+      if (н.some(x => ['church', 'church_service', 'funeral', 'mourning', 'job_interview', 'school', 'school_parents_meeting'].includes(x)))
+        в.open_zones = 'none';
+      else if (весілля) в.open_zones = 'one';
+    }
+    if (!в.reserved_colour && весілля) в.reserved_colour = 'near_white';
+  }
   const сцена = ['occasion', 'place', 'dress_code', 'formality'].some(має);
   const ask_code = сцена ? null : (має('event') ? 'event_place' : 'occasion');
   const відповідь = {update: в, need, text: 'Записала.'};
