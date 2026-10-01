@@ -457,6 +457,12 @@ import внутрішня_мова as _ВМ_П
     "потрібно[].опис": "what is missing, in a few words",
 }
 
+# Рядок правила K-CRA-01 (третя річ) в задачі складання — іменем, щоб рука 2 без цього
+# правила (Р2-2а, `правило_руки2`) дістала ту саму задачу без нього, а не іншу.
+РЯДОК_ТРЕТЬОЇ_РЕЧІ = ("Besides the top and the bottom (or the dress) — at least one outer layer, piece of "
+                      "jewelry, belt, scarf or hat; 5–7 items in all, 4–6 with a dress.")
+РЯДКИ_ЗАДАЧІ_ЗА_ПРАВИЛОМ = {"K-CRA-01": РЯДОК_ТРЕТЬОЇ_РЕЧІ}
+
 СКЛАДАННЯ = _ЗП.Оголошення(
     задача="складання",
     роль="You are the stylist. You put together outfits for her from the items of «pool» for her case.",
@@ -539,8 +545,7 @@ import внутрішня_мова as _ВМ_П
     ),
     правила=(
         "One item of each kind; an outfit has a dress, a set, or a top and a bottom.",
-        "Besides the top and the bottom (or the dress) — at least one outer layer, piece of jewelry, belt, "
-        "scarf or hat; 5–7 items in all, 4–6 with a dress.",
+        РЯДОК_ТРЕТЬОЇ_РЕЧІ,
         "Do not state how an item fits: «pool» has no garment measurements, and a size is a number on the "
         "shop's scale — the fit needs trying on.",
         "When you break a condition or take an item outside the palette on purpose, say so in «deliberate» "
@@ -562,8 +567,16 @@ def промпт_складання(пакет):
     тими самими фактами кодами (`дріт_моделі.пакет`). Мова вільного тексту відповіді —
     `завдання.мова_тексту` пакета (English з мовним шаром, Ukrainian без нього)."""
     з = (пакет or {}).get("завдання") or {}
-    return _json_.dumps(_ЗП.зібрати(СКЛАДАННЯ, _Д.пакет(пакет), мова_тексту=з.get("мова_тексту")),
+    return _json_.dumps(_ЗП.зібрати(_задача_руки(СКЛАДАННЯ), _Д.пакет(пакет),
+                                    мова_тексту=з.get("мова_тексту")),
                         ensure_ascii=False, separators=(",", ":"))
+
+
+def _задача_руки(о):
+    """Задача складання без рядків правила, вимкненого руці 2 (Р2-2а); поза рукою 2 — та сама."""
+    import dataclasses as _dc, правило_руки2 as _ПР2
+    геть = {р for к, р in РЯДКИ_ЗАДАЧІ_ЗА_ПРАВИЛОМ.items() if _ПР2.вимкнене(к)}
+    return _dc.replace(о, правила=tuple(р for р in о.правила if р not in геть)) if геть else о
 
 
 def вага_пулу(текст):
@@ -1430,6 +1443,10 @@ def пакет_для_моделі(F, каталог, тіло, слоти=("в�
     # `структура_образу`, каже «смуга просить, а пул має чим закрити».
     import суд_погода as _ПОГ
     _пальто = bool(_ПОГ.пальтова_смуга((сценарій or {}).get("темп_c")) and _ПОГ.пальта_пулу(кандидати))
+    # Р2-2а: пальто в холод (K-OUT-33) вимкнене руці 2 — ні обов'язкового слота, ні «coat_required»
+    import правило_руки2 as _ПР2
+    if _пальто and _ПР2.торкнулось("K-OUT-33", "prompt", поле="coat_required"):
+        _пальто = False
     _рз = рез.get("розрив") or {}
     # ── ПОЛЮС, ЯКОГО ПУЛ НЕ НЕСЕ, БІЛЬШЕ НЕ ЗАМОВЛЯЄТЬСЯ (K-VAR-01, 17.09.2026) ─
     # Словник полюсів різався тут рівно за числом образів — і мовчки обіцяв те,
