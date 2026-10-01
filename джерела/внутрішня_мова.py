@@ -250,13 +250,13 @@ def невідомо(v, коди=()):
     # АСПЕКТ — нейтральний код (колір, фасон…), а знак дає питання, на яке вона відповідала:
     # «що заважає» (`reasons`) чи «що вдалось» (`good`). Доти причини були лише мінусом
     # («колір не мій»), і для «вдягну як є» картка не збирала нічого. Ядро аспектів не читає,
-    # відповідність тотожна, як у `question_about`. `photo` і `on_me` чипа не мають — їх
-    # дістає лише мовна модель з її слів (шум для калібрування: судила фото, а не образ).
+    # відповідність тотожна, як у `question_about`. `photo`, `on_me` і `want_to_try` мають чипи лише під «що заважає» (ПК-1); калібрування їх не читає
+    # (шум: судила фото чи себе, а не образ).
     "verdict_wear": {"as_is": "вдягну як є", "one_change": "вдягну, якщо змінити одну річ",
                      "no": "не вдягну"},
     "verdict_mine": {"mine": "саме моє", "pretty": "просто гарний", "not_mine": "не моє"},
     "verdict_aspect": {к: к for к in ("colour", "cut", "combination", "style", "occasion", "weather",
-                                      "comfort", "price", "photo", "on_me")},
+                                      "comfort", "price", "photo", "on_me", "want_to_try")},
     # Куди зсунути наступний образ за її словами («занадто строго» — formality: less).
     "direction": {"more": "more", "less": "less"},
     "opinion": {"like": "подобається", "dislike": "не подобається"},
@@ -506,7 +506,7 @@ _АСПЕКТИ_ОПИС = ("colour — колір; cut — фасон: крій
                  "поєднуються між собою; style — стиль, настрій, «не я»; occasion — доречність для нагоди "
                  "чи місця; weather — погода, сезон; comfort — зручність: взуття, рух, тканина; price — "
                  "ціна; photo — з фото не видно чи не зрозуміло, яка річ насправді; on_me — не певна, "
-                 "як це буде саме на ній")
+                 "як це буде саме на ній; want_to_try — хоче спробувати, попри сумнів")
 _ЗСУВ = lambda опис: _перелік("direction", опис)
 
 КОМЕНТАР_ВЕРДИКТУ = {
@@ -1185,6 +1185,24 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                            "may land right on the widest place of the body (values: slot — "
                                            "slot code; length — the length word; level — code of the body "
                                            "level where the edge may land)",
+    # Ф-9 (28.09.2026): довжина виробу в сантиметрах проти зросту профілю
+    "hem_class_on_her_height_differs_from_shop_word":
+        "the shop declares the item's length in centimetres, and on her own height that length puts the "
+        "hem at a different place than the shop's own length word suggests; the measurement is the "
+        "stronger of the two, and this is worth telling her about this item rather than hiding "
+        "(values: slot — slot code; measured — code of the body level the hem actually reaches; "
+        "word — the shop's length word; hem_cm — height of the hem above the floor, in centimetres)",
+    "measured_hem_may_land_on_widest":
+        "the declared length puts the hem close to the widest place of the body, and which size she "
+        "takes decides whether it lands there: the shop gives one length per size and her size is not "
+        "known (values: slot — slot code; level — code of the body level in question)",
+    "item_longer_than_her_body":
+        "on her own height this item is longer than her body from the point the shop measures it, so "
+        "its hem reaches the floor and the extra length pools there "
+        "(values: slot — slot code; excess_cm — how many centimetres longer)",
+    "declared_length_outside_body":
+        "the shop declares a length in centimetres that would put the hem outside the body on her "
+        "height, so the number was not used as a measurement (values: slot — slot code)",
     "item_length_unknown_outside_contour": "the cards do not carry the length of the named items, so they are "
                                            "left out of the outfit's shape, counted from the other items "
                                            "(values: slots — slot codes)",
