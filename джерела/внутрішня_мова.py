@@ -45,7 +45,7 @@ def невідомо(v, коди=()):
     return not т or (т.lower() in ФОРМИ_НЕВІДОМО and (т == UNKNOWN or т not in коди))
 
 # ── ОДНА ТАБЛИЦЯ ВІДПОВІДНОСТІ: код внутрішньої мови → чинний ключ ядра ──────
-# Ключі ядра — рівно ті, що читає код: нагоди `формальність.НАГОДА_У_МІСЦЕ`, місця
+# Ключі ядра — рівно ті, що читає код: нагоди `паспорт_нагоди.ПСЕВДОНІМИ_НАГОДИ`, місця
 # `МІСЦЯ_ДІАПАЗОНИ`, дрес-коди `КОДИ_ДІАПАЗОНИ`, реєстри `реєстри.РЕЄСТРИ`, зони
 # `паспорт_нагоди.ЗОНИ_ВЕТО`, слоти `graph.СЛОТИ`, типи `feed.ТИП_КЛЮЧІ`, тканини
 # `verify.ВОЛОКНА`, візерунки `verify.КЛАСИ_МОТИВУ`, класи кольору `колір_річ`, назви
@@ -1760,7 +1760,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "open_zones_over_limit": "more zones of the body are open than the context asks for (values: zones — zone "
                              "codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté "
                              "or back; limit — the limit; evening — an evening context, where the limit is "
-                             "two)",
+                             "two; conservative — a reserved audience or a place of worship, where the "
+                             "limit is one lower)",
+    "cover_open_zones": "cover the open zones: for this audience or place none is expected open — a "
+                        "jacket, a wrap or a longer hem",
     "keep_one_open_zone": "keep one open zone: legs, neckline, or shoulders/back",
     "item_type_not_in_dress_code": "this type of item does not belong to the named dress code (values: "
                                    "item_type — type code, dress_code — dress code code)",
