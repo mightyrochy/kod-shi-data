@@ -3075,6 +3075,10 @@
           "description": "the declared composition has elastane, and the published ease window holds for woven cloth, so how closely this item sits is decided by the stretch rather than by the cut (values: elastane_percent — the share the shop declares)"
          },
          {
+          "const": "fabric_stretches_ease_below_woven_min",
+          "description": "the item's width ease at this level is below the minimum for non-stretch woven cloth, but the declared composition has elastane, so whether it goes on freely is decided by the stretch, which the code does not measure (values: level — body level code, elastane_percent — the share the shop declares)"
+         },
+         {
           "const": "claim_zone_tented",
           "description": "the item tents over this part of the body where it would be better to give it shape (values: level — body level code)"
          },
@@ -4065,6 +4069,18 @@
          {
           "const": "tuck_top_or_shorter_top",
           "description": "tuck the top in so the waistband becomes visible, or take a shorter top that ends above the waistband"
+         },
+         {
+          "const": "rise_below_waist_for_taller_goal",
+          "description": "she asked for a longer line, and this bottom's waistband sits below her waist, so the eye starts her legs lower (values: rise — mid or low; below_waist_cm — how far below her waist it sits)"
+         },
+         {
+          "const": "take_high_rise_or_empire",
+          "description": "a high rise or an empire / raised waistline moves the start of the legs up and lengthens the line"
+         },
+         {
+          "const": "rise_not_declared_for_taller_goal",
+          "description": "she asked for a longer line, but the card does not name this bottom's rise, so the code cannot tell where the waistband sits"
          },
          {
           "const": "maxi_without_lift_or_volume",
