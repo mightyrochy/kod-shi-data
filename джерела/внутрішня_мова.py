@@ -2310,6 +2310,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                           "the kind stays empty: a daytime layer over an outfit for this "
                                           "occasion is not an outfit (values: band — the band from…to; had; "
                                           "removed_types — {item type code: how many})",
+    "kind_only_below_band_items": "every item of this kind in the catalogue is more casual than the dressiness "
+                                  "band of the occasion, so the kind keeps only the ones closest to the band, as "
+                                  "a fallback rather than a fit (values: band — the band from…to; kept; reasons "
+                                  "— {reason code: how many})",
     "kind_cut_to_photo_formality": "the kind was cut by the dressiness the code measured on the shop photos, "
                                    "and what stays is ordered by distance from the band (values: band — the "
                                    "band from…to; had, removed, too_casual, too_dressy)",
