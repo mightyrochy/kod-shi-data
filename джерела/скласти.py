@@ -17,7 +17,7 @@
 `node --check`. Помилка цього класу тепер червона на складанні, а не на
 телефоні.
 """
-import os, re, subprocess, sys
+import os, re, subprocess, sys, tempfile
 
 ТУТ = os.path.dirname(os.path.abspath(__file__))
 
@@ -95,7 +95,9 @@ def перевірити(шлях="worker.js"):
     if r.returncode:
         raise SystemExit(шлях + " не парситься:\n" + r.stderr[-600:])
 
-    добув = os.path.join(ТУТ, "_добути.mjs")
+    # Чернетка живе в тимчасовій теці, не в дереві: раніше вона лежала в git, хоч
+    # збирач сам її пише й видаляє, і кожен прогін показував «D джерела/_добути.mjs».
+    добув = os.path.join(tempfile.gettempdir(), "_добути.mjs")
     open(добув, "w", encoding="utf-8").write(
         "import fs from 'fs';\n"
         "const сир = fs.readFileSync(%r,'utf-8')\n" % п +
