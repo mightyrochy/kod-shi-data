@@ -37,7 +37,7 @@ for ід, _ in PL.ПОЛЮСИ_ОБРАЗУ:
 # П-2: недосяжні полюси — полем пакета (`полюси_недосяжні`), у промпті — «poles_unavailable» зі своїм рядком
 _пр = json.loads(r["руки"]["1"])
 рядок = next((в for в in _пр["task"]["input"] if в.startswith('"poles_unavailable"')), None) if _пр.get("poles_unavailable") else None
-print("недосяжні полюси в промпті:", "НЕМА" if not рядок else "%s · %s" % ([p["id"] for p in _пр["poles_unavailable"]], рядок[:90]))
+print("недосяжні полюси в промпті:", "НЕМА" if not рядок else "%s · %s" % (list(_пр["poles_unavailable"]), рядок[:90]))
 assert нема, "на цьому каталозі принаймні «розрив» недосяжний — інакше проба не міряє нічого"
 assert рядок, "недосяжний полюс мусить бути названий, а не мовчки зниклий"
 assert all(p["ід"] not in нема for p in h1["полюси"]), "замовлено полюс, якого пул не несе"
