@@ -280,7 +280,9 @@ def прийняти(розмітка, відповідь):
              "словах нема — нема й поля: код його не бере. Подію, яку вона назвала, пиши в event — "
              "і ще кодом: occasion чи place, у підписі якого стоїть ця подія чи подія того самого "
              "роду, парою, де quote — назва події з її слів (назва події — опора і для event, і для "
-             "цього коду). Коли такого коду в переліках нема — замість нього event_formality. Усе, "
+             "цього коду). Коли такого коду в переліках нема — замість нього event_formality. Вид події — "
+             "ще й кодом kind на тій самій цитаті; жоден вид не підходить — kind other і like, "
+             "найближчий вид. Усе, "
              "що вона сказала і що не лягло в жодне поле, — у rest дослівно. Питання — у question, а "
              "про що воно — у question_about."),
     "verdict_comment": dict(
@@ -889,6 +891,16 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         типова = ім == "нагода" and джерела_досі.get("нагода") == _ПН.ТИПОВА_НАГОДА_РЕЧІ
         об[ім] = к if к is not None else (досі.get(ім) if є(досі.get(ім)) and not типова else None)
     об["подія"] = _текст(в.get("event")) or _текст(досі.get("подія"))
+    # ВИМІРИ НАГОДИ З РОЗМОВИ (НГ-4): вид, найближчий вид, частини дня, роль, аудиторія, віра,
+    # зарезервований колір, обсяг і що з цього написано. Коди — тими самими переліками, що
+    # схема; нове значення ходу замінює давнє, чого хід не назвав — лишається з паспорта досі.
+    # Розбір і перенос між ходами — `паспорт_нагоди.паспорт_з_json`, ті самі ключі.
+    for ім, (поле, перелік, список) in _ПН.ПОЛЯ_ВИМІРІВ_РОЗМОВИ.items():
+        if список:
+            коди = [к for к in (_ВМ.ключ(перелік, x) for x in (в.get(поле) or [])) if к]
+            об[ім] = list(dict.fromkeys(коди))[:3] or (досі.get(ім) if є(досі.get(ім)) else None)
+        else:
+            об[ім] = _ВМ.ключ(перелік, в.get(поле)) or (досі.get(ім) if є(досі.get(ім)) else None)
     для_числа = lambda ч, поле, код: ч if ч is not None else _ВМ.ключ(поле, код)
     об["година"] = для_числа(в.get("hour"), "part_of_day", в.get("part_of_day"))
     об["темп_c"] = для_числа(в.get("temperature_c"), "weather_feel", в.get("weather_feel"))
@@ -1377,6 +1389,27 @@ _ПОЛЯ_EN = {
     "place": "where she will be",
     "dress_code": "the dress code, when it is named",
     "event": "the event briefly, in her words",
+    "kind": "the kind of event; other — when no kind fits, and then \"like\" is required",
+    "like": "only with kind other: the listed kind closest to her event in dress and setting",
+    "parts": "the parts of one outing in order, when she named two or three (a ceremony, then a "
+             "banquet; work, then a date); each part is a kind code",
+    "role": "who she is at this event, from what she said about herself or about whose event it is: "
+            "guest — invited; close_family — a relative of the main people; main_person — the event is "
+            "about her (bride, birthday); host — she organises it; speaker — she presents or performs; "
+            "candidate — she is being assessed; worker — she is there for her job; mourner_close — the "
+            "deceased was her family or a close friend; acquaintance — she knew the deceased or the hosts "
+            "only a little",
+    "audience": "who will see her: conservative — bosses, elders, clergy or a formal family "
+                "circle; usual — friends, colleagues as usual",
+    "religious_place": "temple — she will be in a church, monastery, mosque or synagogue, or at a "
+                       "religious service or rite held there (a church wedding, a christening); "
+                       "written_rule_place — a place with a written dress rule (some monasteries, "
+                       "courts, a club with a posted rule)",
+    "reserved_colour": "a colour that belongs to another person at this event, when she says so; "
+                       "near_white — white and ivory belong to the bride",
+    "volume": "how many looks: travel_day — one look for a whole day on the road; one_look — one "
+              "look",
+    "written": "which of these fields she says are written in an invitation or the place's rules",
     "setting": "indoors, outdoors or mixed",
     "duration_h": "how many hours the event lasts",
     "movement": "whether she will sit, walk or walk a lot",
@@ -1550,6 +1583,14 @@ def _коди_розмови():
     "An event she names goes into \"event\" and also as the code of \"occasion\" or \"place\" whose label "
     "names this event or one of its kind, with the name of the event as quote; when no such code exists — "
     "\"event_formality\" instead.",
+    # НГ-4 (проєкт нагоди §1.3, §0.6–0.7): вид — для кожного виходу; незвичний — `other` + `like`,
+    # нового ключа модель не вигадує. Виміри — лише з її слів; «невідомо» — повноправне значення:
+    # код бере припущення з пресету виду чи `like` і називає його, збирання не блокується (п.9).
+    "Every outing she describes also gets \"kind\", with the name of the event as quote. When no kind "
+    "fits, \"kind\" is other and \"like\" is the listed kind closest to it in dress and setting, on the "
+    "same quote. role, audience, religious_place, reserved_colour, volume, parts and written come only "
+    "from her own words; one she did not mention stays absent — unknown is a valid value: the code "
+    "assumes it from the kind and names the assumption, and the looks are put together anyway.",
     # П.14 і п.3 наряду: межа мовної моделі — кодами `need`.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
     "without her items, looks and photos. When \"need\" is not \"none\", do not answer the question in "
@@ -1557,6 +1598,11 @@ def _коди_розмови():
     # Т-18 і п.9: питання до неї — лише через `ask` і `invite`, які судить код (`суд_частин`).
     "\"text\" is your reply to her: briefly what you understood and recorded from her new message, and "
     "your answer when \"need\" is \"none\". \"text\" asks her nothing and has no question marks.",
+    # НГ-4, живий стенд 01.10: «записала це в твій паспорт» (слово системи, не її) і «врахую, що образ
+    # має бути стриманим перед керівництвом» — аудиторію й частини дня код ще не читає (НГ-9, НГ-12),
+    # тож обіцянка була б неправдою; що код зробить із почутим, вирішує код, а не модель розмови.
+    "\"text\" does not mention the passport, codes or fields, and does not promise how the looks will "
+    "take what she said into account.",
     # П.9 (20.09, рядки 108 і 114): поради — групою до трьох тем, м'яко, без повторів.
     "\"invite\" is optional: one soft sentence inviting her to tell about up to three codes from "
     "\"advice_topics\" whose condition holds after your update and that her new message does not "
@@ -1569,6 +1615,11 @@ def _коди_розмови():
     # П.9 (Р-3, 20.09): драпіровка — лише профіль; про прикраси — лише «які з цим образом».
     "Never ask her what suits her face (metal, white, neutrals): that is her profile. About jewellery — "
     "only which jewellery she wants with this look.",
+    # Проєкт нагоди §1.4.5: конфесію й траур проактивно не питати (`profile.ТРАУР_ПОЛІТИКА`); роль —
+    # лише з її слів.
+    "Never ask about her faith, a religious service, mourning or her role at the event: write them only "
+    "from what she tells herself — whose event it is counts (her grandmother's funeral, her sister's "
+    "wedding).",
 )
 
 СКЕЛЕТ_РОЗМОВИ = {
@@ -1619,10 +1670,20 @@ def _коди_розмови():
 
 
 # ── ПАСПОРТ І ПЛИТКИ КОДАМИ: МОДЕЛЬ БАЧИТЬ ТЕ, ЩО ЗНАЄ КОД, ЙОГО Ж МОВОЮ ──────────────────
-_ПАСПОРТ_ПРОСТІ = (("нагода", "occasion"), ("місце", "place"), ("дрес_код", "dress_code"),
-                   ("формат", "setting"), ("рух", "movement"), ("активність", "activity"),
-                   ("поверхня", "surface"), ("опади", "precipitation"), ("намір", "intent"),
-                   ("мета", "goal"), ("прикраси", "jewelry"))
+def _паспорт_прості():
+    """((ключ паспорта, перелік), …) — прості поля паспорта для моделі розмови, у порядку ключів промпта.
+
+    ОДНА ВІДПОВІДНІСТЬ НА СИСТЕМУ (рядок 279, НГ-4): доти тут стояв другий примірник таблиці
+    `паспорт_нагоди.ПОЛЕ_ВИМІРУ`, і розбіжність стерегла лише проба. Тепер він виводиться з неї —
+    порядок той самий, тож промпт байт у байт той, що доти. Поза ним — виміри розмови
+    (`ПОЛЯ_ВИМІРІВ_РОЗМОВИ`: їх `паспорт_кодами` пише окремо) і `рух`: ядро тримає три стани
+    (`movement`), а вимір — сім (`event_movement`, рядок 280)."""
+    import паспорт_нагоди as _ПН
+    свої = set(_ПН.ПОЛЯ_ВИМІРІВ_РОЗМОВИ)
+    return tuple((ключ, "movement" if ключ == "рух" else перелік)
+                 for _, перелік, ключ in _ПН.ПОЛЕ_ВИМІРУ if ключ and ключ not in свої)
+
+
 _ПАСПОРТ_ЧИСЛА = (("година", "hour"), ("темп_c", "temperature_c"), ("тривалість_год", "duration_h"),
                   ("ноги_вище_см", "legs_above_cm"))
 _ГРУПИ_ВЕТО = (("типи", ("item_type", "slot", "feature", "length")), ("кольори", ("color_name", "color_class")),
@@ -1645,7 +1706,7 @@ def паспорт_кодами(п):
     дж = п.get("джерело_полів") if isinstance(п.get("джерело_полів"), dict) else {}
     типові = set(_ПН.типові_з_форми(п))
     вих = {}
-    for ключ, поле in _ПАСПОРТ_ПРОСТІ:
+    for ключ, поле in _паспорт_прості():
         if ключ == "нагода" and дж.get("нагода") == _ПН.ТИПОВА_НАГОДА_РЕЧІ:
             continue
         к = _ВМ.код(поле, п.get(ключ)) if _є(п.get(ключ)) else None
@@ -1656,6 +1717,13 @@ def паспорт_кодами(п):
             вих[поле] = п[ключ]
     if _є(п.get("подія")):
         вих["event"] = str(п["подія"])
+    for ключ, (поле, перелік, список) in _ПН.ПОЛЯ_ВИМІРІВ_РОЗМОВИ.items():      # НГ-4: те, що вона вже сказала
+        if список and isinstance(п.get(ключ), list):
+            коди = [к for к in (_ВМ.код(перелік, x) for x in п[ключ]) if к]
+            if коди:
+                вих[поле] = коди
+        elif not список and _є(п.get(ключ)) and _ВМ.код(перелік, п[ключ]):
+            вих[поле] = _ВМ.код(перелік, п[ключ])
     ош = п.get("ошатність")
     if isinstance(ош, (list, tuple)) and len(ош) == 2 and дж.get("ошатність") != "подія":
         вих["formality"] = {"from": ош[0], "to": ош[1]}

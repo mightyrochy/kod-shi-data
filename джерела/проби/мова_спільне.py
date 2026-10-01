@@ -9,7 +9,10 @@ llama.cpp `llama-server`), міст до справжньої моделі не 
   MODEL_TEMP — температура; без неї — та, що стоїть на сервері;
   MODEL_MAX_TOKENS — стеля відповіді (типово 4000, як у стелі мосту);
   MODEL_SEED  — сід вибірки (рядок 196): те, чим llama.cpp сіє, коли вибірка не жадібна;
-  MODEL_CACHE=0 — без кеша префікса (`cache_prompt: false` llama.cpp / LM Studio).
+  MODEL_CACHE=0 — без кеша префікса (`cache_prompt: false` llama.cpp / LM Studio);
+  ZHYVA=sonnet|haiku — замість сервера жива модель Claude через `claude -p` по підписці (п.15),
+             той самий транспорт і системний рядок, що в `аудит/проби/рв6_стенд.js`; температури
+             CLI не дає — вибірка типова, тож розкид тут не менший, ніж у продукту з температурою 0.
 
 СТАБІЛЬНІСТЬ ДЛЯ ПРОБ, А НЕ ДЛЯ ПРОДУКТУ (М-6, рядок 196 дошки). Замір М-5 показав: той самий
 промпт при температурі 0 дав ІНШУ відповідь, коли промпт читався наново після іншого, ніж коли
@@ -32,7 +35,12 @@ import мовний_шар as М            # noqa: E402
 import паспорт_нагоди as ПН        # noqa: E402
 
 ЗБЕРЕЖЕНІ = os.path.join(ТУТ, "мова_збережені.json")
-МОДЕЛЬ = os.environ.get("MODEL") or None
+ЖИВА = (os.environ.get("ZHYVA") or "").strip() or None
+МОДЕЛЬ = os.environ.get("MODEL") or (("claude:" + ЖИВА) if ЖИВА else None)
+СИСТЕМНИЙ = ("You are the model behind a mobile styling app. The user message is the application prompt, "
+             "verbatim. Do exactly what it asks and output only the answer it asks for: raw JSON with no code "
+             "fence when it asks for JSON, plain prose when it asks for prose. No preamble, no commentary, no "
+             "tools, no questions back.")
 АДРЕСА = (os.environ.get("MODEL_URL") or "http://127.0.0.1:1234/v1").rstrip("/")
 
 
@@ -78,6 +86,14 @@ def модель(промпт):
     """(текст відповіді моделі шару, секунд) або (None, 0) без MODEL."""
     if not МОДЕЛЬ:
         return None, 0.0
+    if ЖИВА:
+        import subprocess
+        т0 = time.time()
+        р = subprocess.run([os.environ.get("ZHYVA_BIN") or "/opt/node22/bin/claude", "-p", "--model", ЖИВА,
+                            "--tools", "", "--strict-mcp-config", "--no-session-persistence",
+                            "--system-prompt", СИСТЕМНИЙ], input=промпт, capture_output=True, text=True,
+                           timeout=900, env=dict(os.environ, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"))
+        return р.stdout.strip(), time.time() - т0
     тіло = dict(model=МОДЕЛЬ, messages=[dict(role="user", content=промпт)],
                 max_tokens=int(os.environ.get("MODEL_MAX_TOKENS") or 4000), stream=False)
     if os.environ.get("MODEL_TEMP"):
