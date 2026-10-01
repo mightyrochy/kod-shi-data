@@ -527,8 +527,11 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("she_rejected_items", "items she rejected on earlier cards",
                  як="do not take them or their twins from the same shop"),
         _ЗП.Поле("zones_she_keeps_covered", "body zones she does not show"),
-        _ЗП.Поле("style_rules", "rules of the style corpus for her and this case, in Ukrainian",
+        _ЗП.Поле("style_rules", "rules of the style corpus for her and this case: each entry is a code, or "
+                                "{code: values}; codes are defined in \"statement_codes\"",
                  як="keep each"),
+        # НП-в переробляє рядки рівня нагоди; доти вони їдуть реченнями брифа (ВМ-1)
+        _ЗП.Поле("occasion_rules", "rules of the occasion's level of dress, in Ukrainian", як="keep each"),
         _ЗП.Поле("kind_notes", "what the code says about kinds of items in this pool: each kind "
                                "carries \"statements\" — codes defined in \"statement_codes\""),
         _ЗП.Поле("kinds_missing", "kinds of items this pool has none of", як="say so in «needed»"),
@@ -1768,7 +1771,11 @@ def _жорстке_відсічення(r, темп_c=None, вето=None, ош
             try:
                 lo, hi = float(см[0]), float(см[1])
                 if max(0.0, float(темп_c) - hi, lo - float(темп_c)) > ДОПУСК_ТКАНИНИ_C:
-                    return "fabric_off_temperature"
+                    # Р2-2б: тканина проти градусів дня (K-MAT-03) вимкнена руці 2 — річ
+                    # лишається в пулі, а що відсікло б, лягає в тінь
+                    import правило_руки2 as _ПР2
+                    if not _ПР2.торкнулось("K-MAT-03", "pool", слот=сл):
+                        return "fabric_off_temperature"
             except (TypeError, ValueError, IndexError):
                 pass
     if вето:
