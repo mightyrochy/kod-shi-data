@@ -535,7 +535,8 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("kind_notes", "what the code says about kinds of items in this pool: each kind "
                                "carries \"statements\" — codes defined in \"statement_codes\""),
         _ЗП.Поле("kinds_missing", "kinds of items this pool has none of", як="say so in «needed»"),
-        _ЗП.Поле("break", "where this pool offers a deliberate break of the palette"),
+        _ЗП.Поле("break", "where this pool offers a deliberate break of the palette: the kind, and "
+                          "\"statements\" — codes defined in \"statement_codes\""),
         _ЗП.Поле("poles", "ideas of the outfits",
                  як="each outfit follows its own idea and puts its «id» in «pole»; outfits differ by "
                     "idea, not by a detail; give no explanations — they are asked for once an outfit is "
@@ -1561,7 +1562,7 @@ def пакет_для_моделі(F, каталог, тіло, слоти=("в�
         пакет["магазини"] = {к: м for м, к in _коди.items()}
     if _рз.get("слот"):
         пакет["розрив"] = {к: v for к, v in (("слот", _рз["слот"]),
-                                             ("чому", _рз.get("чому") or "")) if v}
+                                             ("чому", _рз.get("чому") or [])) if v}
     # ЗАВДАННЯ — ЛИШЕ ТЕ, ЩО ЧИТАЄ КОД: скільки образів, яка схема відповіді й мова вільного
     # тексту в ній. Роль, вхід, правила й СКЕЛЕТ (з тієї самої схеми, якою відповідь потім
     # перевіряють) дає збирач з оголошення `СКЛАДАННЯ` (`промпт_складання`, П-2).
