@@ -39,14 +39,31 @@ for x in придатні: по[x['слот']].append(x)
 квота = {с: int(40 * в / sum(вага.values())) for с, в in вага.items()}
 for с in sorted(вага, key=lambda с: -(40 * вага[с] / sum(вага.values())) % 1)[:40 - sum(квота.values())]:
     квота[с] += 1
-вибір = [(x, 'слот') for с in sorted(по) for x in rnd.sample(sorted(по[с], key=lambda x: x['id']), квота[с])]
-взято = {x['id'] for x, _ in вибір}
-тихі = sorted((x for x in придатні if мовчазна(_за_ід[x['id']]) and x['id'] not in взято), key=lambda x: x['id'])
-вибір += [(x, 'мовчазна') for x in rnd.sample(тихі, 20)]
 def шлях(u): return '/tmp/фото_огляд/' + hashlib.md5(u.encode()).hexdigest() + '.img'
 def тягти(u):
     if not os.path.exists(шлях(u)) or os.path.getsize(шлях(u)) == 0:
         subprocess.run(['curl', '-sS', '-L', '-m', '40', '-o', шлях(u), u], capture_output=True)
+def видно(x):
+    """Кадр картки відкривається як фото. attico.ua з хмари віддає сторінку Cloudflare замість фото (3 речі
+    першого прогону) — таку річ суддя не побачить, її заміняє наступна в тому самому сідованому порядку."""
+    тягти(кадри(x)[0])
+    try:
+        Image.open(шлях(кадри(x)[0])).verify(); return True
+    except Exception:                                  # noqa: BLE001 — не фото: річ не судиться, лічба нижче
+        відкинуто.append(x['id']); return False
+відкинуто = []
+запас = random.Random(17)                              # заміни — окремим генератором: вибір лишається тим самим
+def взяти(xs, к):
+    за_ід = sorted(xs, key=lambda x: x['id']); вибрані = rnd.sample(за_ід, к)
+    решта = [x for x in запас.sample(за_ід, len(за_ід)) if x not in вибрані]
+    вих = []
+    for x in вибрані:
+        вих.append(x if видно(x) else next(з for з in решта if з not in вибрані + вих and видно(з)))
+    return вих
+вибір = [(x, 'слот') for с in sorted(по) for x in взяти(по[с], квота[с])]
+взято = {x['id'] for x, _ in вибір}
+тихі = sorted((x for x in придатні if мовчазна(_за_ід[x['id']]) and x['id'] not in взято), key=lambda x: x['id'])
+вибір += [(x, 'мовчазна') for x in взяти(тихі, 20)]
 with cf.ThreadPoolExecutor(12) as ex: list(ex.map(тягти, [u for x, _ in вибір for u in кадри(x)]))
 ПОЛЯ_Б = ('слот', 'тип', 'набір', 'довжина_рівень', 'довжина_джерело', 'рукав_слово', 'крій', 'крій_джерело', 'волокно',
           'волокно_джерело', 'матеріал', 'матеріал_фото', 'візерунок', 'візерунок_джерело', 'колір_назва', 'колір_назва_джерело',
@@ -68,5 +85,5 @@ for п in range(0, len(записи), 2):                     # дві речі 
             except Exception as е:                    # noqa: BLE001 — биті кадри видно на аркуші
                 д.text((к * 360 + 10, р * 510 + 60), 'кадр не відкрився: %s' % type(е).__name__, fill='red', font=шр)
     арк.save('%s/сліпі/%02d.jpg' % (ТЕКА, п // 2 + 1), quality=85)
-print('речей %d · по слотах %s · мовчазних кандидатів %d' % (len(записи), dict(collections.Counter(
-    з['б']['слот'] for з in записи if з['група'] == 'слот')), len(тихі)))
+print('речей %d · по слотах %s · мовчазних кандидатів %d · кадр не фото, замінено: %s' % (len(записи), dict(collections.Counter(
+    з['б']['слот'] for з in записи if з['група'] == 'слот')), len(тихі), відкинуто))
