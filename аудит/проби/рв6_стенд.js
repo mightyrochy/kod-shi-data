@@ -1281,6 +1281,19 @@ function українськоюОпису(текст){
    питання DOVIDKA_PYTANNIA, none — решта; `text` — «Записала.»; `ask` — лише коли після її оновлення
    сценарію й досі нема (та сама умова, що в шві); `invite` — теми з `advice_topics`, доречні на
    будь-якому стані (прикраси, реєстр), до трьох. Суддя всього цього — код (`суд_частин`), не заглушка. */
+/* Ошатність, яку заглушка ставить за мовну модель (НП-в крок 2): ті самі числа, що доти давав пресет
+   виду (`паспорт_нагоди.ВИДИ_НАГОДИ`) і таблиця місць (`формальність.МІСЦЯ_ДІАПАЗОНИ`), — щоб замір
+   «до/після» на стенді міряв зміну джерела, а не числа. Жива модель (ZHYVA) ставить своє. */
+const СТЕНД_ОШАТНІСТЬ_НАГОДИ = {everyday: [3, 4], home: [1, 2], walk: [2, 4], work: [6, 8], job_interview: [6, 8],
+  school: [4, 5], formal_day: [5, 7], formal_evening: [6, 8], wedding_day: [6, 8], wedding_guest: [7, 9],
+  celebration: [5, 7], mourning: [5, 7], date: [4, 5], theatre: [4, 6], museum: [3, 5], church: [4, 6],
+  sport: [1, 2], travel: [2, 4]};
+const СТЕНД_ОШАТНІСТЬ_МІСЦЯ = {fine_dining: [7, 8], restaurant_upscale: [6, 8], restaurant_casual: [4, 5], bar: [3, 5],
+  cafe: [3, 4], theatre: [4, 6], opera_premiere: [6, 8], office_corporate: [6, 8], office_creative: [3, 5],
+  job_interview: [6, 8], conference: [5, 7], presentation: [6, 8], walk: [2, 4], park: [2, 3], playground: [2, 3],
+  school_parents_meeting: [4, 5], hospital_visit: [3, 5], long_transit: [2, 4], flight: [2, 4], museum: [3, 5],
+  vernissage: [5, 7], house_party: [3, 5], festive_dinner: [5, 7], club: [4, 6], sport: [1, 2], home: [1, 2],
+  church_service: [4, 6], wedding_day: [6, 8], wedding_evening: [7, 9], funeral: [5, 7]};
 function ходомРозмови(текст){
   const д = JSON.parse(текст), слова = String(д.her_new_message || '');
   const лист = (РОЗМОВА_СТЕНДУ || []).find(л => л.вона.trim() === слова.trim());
@@ -1299,8 +1312,15 @@ function ходомРозмови(текст){
   const need = (ДОВІДКА_ПИТАННЯ && слова.trim() === ДОВІДКА_ПИТАННЯ.trim()) ? 'app'
     : ((д.photos || []).length || (питання && /оціни|підійд|личит|поєдну|як тобі/i.test(слова))) ? 'look' : 'none';
   const має = к => в[к] != null || (д.passport || {})[к] != null || (д.chosen || {})[к] != null;
+  /* НП-в крок 2: ошатність ставить мовна модель ЗАВЖДИ — заглушка грає її числом за місцем, інакше
+     за нагодою (з її слів, паспорта чи обраних плиток `chosen`); числа — ті, що доти давав пресет коду */
+  if (!в.formality){
+    const з = к => [в[к], (д.chosen || {})[к], (д.passport || {})[к]].map(x => (x && x.value) || x).find(x => typeof x === 'string');
+    const смуга = СТЕНД_ОШАТНІСТЬ_МІСЦЯ[з('place')] || СТЕНД_ОШАТНІСТЬ_НАГОДИ[з('occasion')] || null;
+    if (смуга) в.formality = {from: смуга[0], to: смуга[1]};
+  }
   const сцена = ['occasion', 'place', 'dress_code', 'formality'].some(має);
-  const ask_code = сцена ? null : (має('event') ? (має('event_formality') ? null : 'event_place') : 'occasion');
+  const ask_code = сцена ? null : (має('event') ? 'event_place' : 'occasion');
   const відповідь = {update: в, need, text: 'Записала.'};
   if (ask_code) Object.assign(відповідь, {ask_code, ask: ask_code === 'event_place'
     ? 'Скажи, де буде ця подія і наскільки вона святкова: без цього образи не зберуться.'

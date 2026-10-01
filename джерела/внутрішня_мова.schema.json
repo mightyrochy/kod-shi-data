@@ -815,7 +815,7 @@
        "const": "unknown"
       }
      ],
-     "description": "наскільки ошатно, коли вона сама це сказала: шкала 1–10 (1 дім, 3 кафе, 5 офіс чи театр удень, 7 вечірній вихід, 9 урочистість)"
+     "description": "наскільки ошатний цей вихід, шкала 1–10 (`формальність.ФОРМАЛЬНІСТЬ_ЯКОРІ`): мовна модель ставить завжди — з її слів, події й обраних плиток (НП-в крок 2)"
     },
     "intent": {
      "description": "намір: comfort_first — зручність і свобода руху понад усе; context_optimal — доречність і рівень події понад усе; statement — хоче вразити, заявити про себе; conventional — нічого з цього",
@@ -966,34 +966,6 @@
       }
      ],
      "description": "питання, яке вона ставить стилістці"
-    },
-    "event_formality": {
-     "oneOf": [
-      {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "from",
-        "to"
-       ],
-       "properties": {
-        "from": {
-         "type": "integer",
-         "minimum": 1,
-         "maximum": 10
-        },
-        "to": {
-         "type": "integer",
-         "minimum": 1,
-         "maximum": 10
-        }
-       }
-      },
-      {
-       "const": "unknown"
-      }
-     ],
-     "description": "звичний рівень ошатності події, яку вона назвала (event), коли її не позначає жоден код occasion чи place: шкала та сама, що в formality"
     },
     "rest": {
      "oneOf": [
