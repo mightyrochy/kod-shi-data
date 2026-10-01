@@ -244,9 +244,21 @@ def невідомо(v, коди=()):
     # кожного коду — `ПОТРЕБИ` нижче. Код маршруту, не ключ ядра: відповідність тотожна, як у
     # `question_about`.
     "need": {"none": "none", "app": "app", "look": "look", "build": "build"},
-    "verdict_reason": {"color_not_mine": "колір не мій", "cut_or_fit": "крій або посадка",
-                       "wrong_occasion": "не для цієї нагоди", "wrong_weather": "не для погоди",
-                       "not_my_style": "не мій стиль", "too_expensive": "задорого"},
+    # ── ВЕРДИКТ КАРТКИ КОДАМИ (КВ-1, 28.09.2026) ─────────────────────────────────────
+    # Дві осі картки: «Вдягнеш?» (`verdict_wear`) і «Це саме твоє?» (`verdict_mine`); ключ
+    # ядра — сталий напис чипа, той самий, що читає `вердикт_моделі.вердикт_у_ребра`.
+    # АСПЕКТ — нейтральний код (колір, фасон…), а знак дає питання, на яке вона відповідала:
+    # «що заважає» (`reasons`) чи «що вдалось» (`good`). Доти причини були лише мінусом
+    # («колір не мій»), і для «вдягну як є» картка не збирала нічого. Ядро аспектів не читає,
+    # відповідність тотожна, як у `question_about`. `photo` і `on_me` чипа не мають — їх
+    # дістає лише мовна модель з її слів (шум для калібрування: судила фото, а не образ).
+    "verdict_wear": {"as_is": "вдягну як є", "one_change": "вдягну, якщо змінити одну річ",
+                     "no": "не вдягну"},
+    "verdict_mine": {"mine": "саме моє", "pretty": "просто гарний", "not_mine": "не моє"},
+    "verdict_aspect": {к: к for к in ("colour", "cut", "combination", "style", "occasion", "weather",
+                                      "comfort", "price", "photo", "on_me")},
+    # Куди зсунути наступний образ за її словами («занадто строго» — formality: less).
+    "direction": {"more": "more", "less": "less"},
     "opinion": {"like": "подобається", "dislike": "не подобається"},
     # Ознаки речі каталогу, які ядро вже тримає закритим переліком (`пакет_моделі._річ_пулу`)
     "material": {"leather": "шкіра", "suede": "замша", "faux_leather": "екошкіра",
@@ -274,6 +286,42 @@ def невідомо(v, коди=()):
                    "wrist": "зап'ясток", "as_top": "верх"},
     "item_attribute": {"colour": "колір", "cut": "крій", "length": "довжина", "fabric": "тканина",
                        "pattern": "візерунок", "shine": "блиск"},
+    # ── ВИМІРИ НАГОДИ: ПАСПОРТ НАГОДИ v2 (НГ-1, 28.09.2026) ─────────────────────────
+    # Проєкт — `аудит/тести/нагода_архітектура_2026-09-28.md` §2. Доти нагода жила в ядрі
+    # ОДНИМ словом (`нагода="весілля_гість"`), і 18 ключів давали лише 14 різних рішень:
+    # подорож = прогулянка, театр = церква, дім = спорт, побачення = школа. Виміри — те, що
+    # РІЗНИТЬ події: хто вона на цій події, перед кого йде, чи це храм, скільки образів,
+    # чий колір зайнятий, чи це раз чи щодня. Кожен може бути "unknown": вигадувати не можна.
+    # ВІДПОВІДНІСТЬ ТОТОЖНА, ЯК У `need` І `question_about`: ключа ядра в цих вимірів нема й
+    # доти не було — ядро читало саму назву нагоди. Код лишається кодом, доки НГ-2 не дасть
+    # його правилам (пул, суд, пакет). Тут — лише перелік; хто його заповнює — `паспорт_нагоди`.
+    "event_kind": {к: к for к in (
+        "everyday", "home", "walk", "work", "interview", "school", "conference", "gala",
+        "wedding", "celebration", "funeral", "date", "theatre", "museum", "church",
+        "sport", "travel", "other")},
+    "role": {к: к for к in ("guest", "close_family", "main_person", "host", "candidate",
+                            "speaker", "worker", "mourner_close", "acquaintance")},
+    "audience": {к: к for к in ("usual", "conservative")},
+    # РУХ НА ПОДІЇ — ШИРШЕ, НІЖ `movement` ЯДРА. Ядро знає три стани («сидіти | ходити |
+    # багато ходити», `протокол.ВИПАДОК`), а події різнять ще стояти, танцювати, ставати на
+    # коліна й рухатись спортивно: саме цим театр відрізняється від церкви, а корпоратив від
+    # ювілею (§2.1). Другий перелік, а не розширений перший, — навмисно: код `stand` у полі
+    # `рух` паспорта не пройшов би enum ВИПАДКУ, тобто розширення першого зламало б протокол
+    # на першій же відповіді моделі. Зведення трьох станів ядра в цей перелік —
+    # `паспорт_нагоди.РУХ_ЯДРА_У_ВИМІР`; зведе обидва НГ-2, коли рух почнуть читати правила.
+    "event_movement": {к: к for к in ("sit", "stand", "walk", "walk_long", "dance", "kneel",
+                                      "sport")},
+    "religious_place": {к: к for к in ("none", "temple", "written_rule_place")},
+    "mourning_closeness": {к: к for к in ("none", "acquaintance", "close")},
+    "look_volume": {к: к for к in ("one_look", "travel_day")},
+    # Колір, що належить іншій особі цієї події (майже-біле на весіллі гості): окремо від її
+    # власного `вето`, бо це звичай події, а не її межа. Її явне слово сильніше (п.9).
+    "reserved_colour": {к: к for к in ("near_white",)},
+    "recurrence": {к: к for к in ("once", "regular")},
+    # ЗВІДКИ ВИМІР (§1.2): сила джерела, від письмового правила до «нічого не відомо».
+    # Порядок переліку і є порядком сили — його тримає `паспорт_нагоди.ЗВІДКИ_СИЛА`.
+    "evidence_source": {к: к for к in ("written", "her_words", "sub", "preset", "like",
+                                       "default", "unknown")},
 }
 
 
@@ -447,14 +495,40 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
                                           "not_wanted — цієї своєї речі не хоче")},
     **{к: v for к, v in РІЧ_У_СЛОВАХ.items() if к not in ("zone", "feature")})
 
+# ── КОМЕНТАР ДАЄ ТЕ САМЕ, ЩО КНОПКИ, І БІЛЬШЕ (КВ-1, слово власника 28.09) ─────────────
+# «Основний упор — на детальні враження в полі (текстом чи голосом)», кнопки — допоміжні. Отже
+# поле мусить нести все, що несуть дотики: обидві осі (`wear`, `mine`), аспекти зі знаком
+# (`reasons` — мінус, `good` — плюс), річ (`about_items`) — і те, чого дотик не скаже зовсім:
+# напрям (`shift`) і що замість (`wants`/`vetoes`). Що вона НАТИСНУЛА, перекладачка бачить у
+# КОНТЕКСТ.tapped — щоб зрозуміти «так, через це», але поля пише лише з її слів: зведення
+# «дотик ∪ слова» і розбіжність між ними рахує код (`зведенийВердиктП` у показі).
+_АСПЕКТИ_ОПИС = ("colour — колір; cut — фасон: крій, посадка, довжина, силует; combination — як речі "
+                 "поєднуються між собою; style — стиль, настрій, «не я»; occasion — доречність для нагоди "
+                 "чи місця; weather — погода, сезон; comfort — зручність: взуття, рух, тканина; price — "
+                 "ціна; photo — з фото не видно чи не зрозуміло, яка річ насправді; on_me — не певна, "
+                 "як це буде саме на ній")
+_ЗСУВ = lambda опис: _перелік("direction", опис)
+
 КОМЕНТАР_ВЕРДИКТУ = {
-    "reasons": _список(_перелік("verdict_reason", "причина"), "що їй заважає в образі"),
+    "wear": _перелік("verdict_wear", "чи вдягне вона цей образ, за її словами: as_is — так, як є; "
+                                     "one_change — якщо змінити одну річ; no — ні"),
+    "mine": _перелік("verdict_mine", "чи це її образ, за її словами: mine — саме її; pretty — гарний, "
+                                     "але не її; not_mine — не її"),
+    "reasons": _список(_перелік("verdict_aspect", "аспект"), "що їй заважає в образі: " + _АСПЕКТИ_ОПИС),
+    "good": _список(_перелік("verdict_aspect", "аспект"), "що в образі вдалось чи їй подобається; коди "
+                                                          "ті самі, що в reasons"),
     "about_items": _список({
         "type": "object", "additionalProperties": False, "required": ["id"],
         "properties": {"id": {"type": "string", "description": "id речі з переліку речей образу"},
                        "opinion": _перелік("opinion", "як вона про цю річ"),
-                       "reasons": _список(_перелік("verdict_reason", "причина"), "чому")}},
+                       "reasons": _список(_перелік("verdict_aspect", "аспект"), "чому; коди ті самі, "
+                                                                                 "що в reasons")}},
         "речі образу, про які вона сказала"),
+    "shift": {"description": "куди, за її словами, зсунути наступний образ цього виходу",
+              "type": "object", "additionalProperties": False,
+              "properties": {"formality": _ЗСУВ("more — ошатніший; less — простіший"),
+                             "warmth": _ЗСУВ("more — тепліший; less — легший"),
+                             "attention": _ЗСУВ("more — помітніший, яскравіший; less — спокійніший")}},
     "wants": _список({"$ref": "#/$defs/thing"}, "чого вона хотіла б натомість"),
     "vetoes": _список({"$ref": "#/$defs/thing"}, "чого вона не хоче"),
     "note": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="решта сказаного, що не лягає в поля вище"),
@@ -998,6 +1072,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                  "outfit",
     "cannot_tell_two_accent_surfaces_match": "so the code cannot tell whether two accent items match exactly "
                                              "in colour",
+    "photo_colour_noise_above_match_threshold": "the colour measured from a photo is noisier than the exact "
+                                                "match threshold (values: noise, threshold — dE00), so two "
+                                                "measured hex values cannot settle an exact match",
     "cannot_tell_lightness_structure": "so the code cannot tell which structure of light and dark the outfit "
                                        "carries",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
@@ -1759,6 +1836,13 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                   "needed — how much the map asks for; partial_warmth_items — how many layers "
                                   "warm only partly, like a trench)",
     "layers_to_temperature_map": "bring the layers to the day's map, in the band's fabrics",
+    "outer_layer_only_partly_warm_for_frost": "in this band the warmth is carried by the coat itself, and "
+                                              "this outer layer is only partly warm by its type — a jacket, "
+                                              "a bomber, a vest, a cardigan or a poncho (values: "
+                                              "temperature_c — the temperature, outer_type — its type code, "
+                                              "warmth_share — how much of a layer it counts as)",
+    "warmer_coat_not_a_fourth_item": "a warmer coat — insulated, or wool — instead of this one, rather than a "
+                                     "fourth item under it; a scarf, a hat and mittens close the rest",
     "cold_accessories_carry_no_colour": "in hard frost mostly the outer layer and the accessories are "
                                         "visible, and the hat, the scarf and the mittens are quiet here: all "
                                         "the colour stayed under the coat (values: temperature_c — the "
@@ -2089,6 +2173,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                                    "natural waist, not the hips",
     "accent_surfaces_exact_match": "two accent surfaces match exactly (dE): they pull the eye sideways, not "
                                    "up to the face",
+    "accent_surfaces_same_colour_word": "two accent surfaces are named by the same colour word by two "
+                                        "different shops (values: colour — the word): they read as one "
+                                        "colour and pull the eye sideways, not up to the face",
     "secondary_colour_or_neutral_or_declared_column": "second item in the first one's secondary colour or a "
                                                       "contrasting neutral; or a declared colour column",
     "sole_glued_not_resoleable": "glued sole: cannot be resoled, so the price spreads over a shorter life",
