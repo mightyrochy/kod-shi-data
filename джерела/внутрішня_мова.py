@@ -1260,6 +1260,13 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                            "window holds for woven cloth, so how closely this item sits is "
                                            "decided by the stretch rather than by the cut (values: "
                                            "elastane_percent — the share the shop declares)",
+    # рядок 302 (01.10.2026): склад каже, що полотно тягнеться, — мінімум носіння
+    # опублікований для нерозтяжного полотна, тож «не вдягнути» тут не вердикт.
+    "fabric_stretches_ease_below_woven_min": "the item's width ease at this level is below the minimum for "
+                                             "non-stretch woven cloth, but the declared composition has "
+                                             "elastane, so whether it goes on freely is decided by the "
+                                             "stretch, which the code does not measure (values: level — body "
+                                             "level code, elastane_percent — the share the shop declares)",
     "claim_zone_tented": "the item tents over this part of the body where it would be better to give it shape "
                          "(values: level — body level code)",
     "claim_ease_below_min": "the item's width ease at this level is too small to wear it freely (values: "
@@ -1907,6 +1914,15 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                "high, mid, low; hidden_cm — by how many cm it is hidden)",
     "tuck_top_or_shorter_top": "tuck the top in so the waistband becomes visible, or take a shorter top that "
                                "ends above the waistband",
+    # рядок 310 (01.10.2026): мета `taller` перемикає лінію талії (П8, K-FIT-04/K-BOD-04
+    # за метою, а не за ярликом зросту).
+    "rise_below_waist_for_taller_goal": "she asked for a longer line, and this bottom's waistband sits below "
+                                        "her waist, so the eye starts her legs lower (values: rise — mid or "
+                                        "low; below_waist_cm — how far below her waist it sits)",
+    "take_high_rise_or_empire": "a high rise or an empire / raised waistline moves the start of the legs up "
+                                "and lengthens the line",
+    "rise_not_declared_for_taller_goal": "she asked for a longer line, but the card does not name this bottom's "
+                                         "rise, so the code cannot tell where the waistband sits",
     "maxi_without_lift_or_volume": "a maxi with no lift and no volume of its own: of the three supports of a "
                                    "maxi — height, lift, volume — the outfit has none (values: heel_cm — the "
                                    "pair's heel when the card names it)",
