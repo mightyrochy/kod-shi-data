@@ -275,7 +275,7 @@ def main():
          {з["тема"] for з in _ПР65.ПЕРЕЛІК} == {"colour", "figure", "composition", "occasion", "weather",
                                                 "jewellery", "style",
                                                 # Р2-2б: решта тем, по одному правилу
-                                                "materials", "silhouette", "fit"}
+                                                "materials", "silhouette", "fit", "accessories"}
          and len({з["тема"] for з in _ПР65.ПЕРЕЛІК}) == len(_ПР65.ПЕРЕЛІК)
          and not ({"K-CLR-02", "no_bag"} & {к for з in _ПР65.ПЕРЕЛІК for к in з["коди"]}),
          sorted((з["тема"], з["ід"]) for з in _ПР65.ПЕРЕЛІК))
