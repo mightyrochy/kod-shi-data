@@ -782,7 +782,8 @@ def _чекліст(ч, скрізь):
     for бік, п in (ч or {}).items():
         if not isinstance(п, dict):
             continue
-        б = {"надлишок": "excess", "прісність": "blandness", "палітра": "palette"}.get(бік, бік)
+        б = {"надлишок": "excess", "прісність": "blandness", "палітра": "palette",
+             "аксесуари": "accessories"}.get(бік, бік)   # ПР-10: «аксесуари» доїжджав кирилицею
         о = {}
         if п.get("провал"):
             о["failed"] = list(п["провал"])
@@ -849,8 +850,10 @@ def вердикт(в, ремонти=True, межі=None):
         if с.get("знахідки"):
             о["findings"] = [_знахідка(z, склад, ремонти) for z in с["знахідки"]]
         if с.get("свідомі"):
-            о["your_declared"] = [{к2: v for к2, v in (("item", _номер(x.get("річ"))), ("why", x.get("чому")),
-                                                       ("text", x.get("текст"))) if v}
+            # ПР-10: без «text» — це «назва — чому» тими самими словами, що вже стоять у «item» і
+            # «why» (назва речі — у «your_outfit»); доти кожен свідомий хід їхав двічі
+            о["your_declared"] = [{к2: v for к2, v in (("item", _номер(x.get("річ"))), ("why", x.get("чому")))
+                                   if v}
                                   for x in с["свідомі"] if isinstance(x, dict)]
         if с.get("чекліст"):
             о["checklist"] = _чекліст(с["чекліст"], скрізь)
