@@ -1768,7 +1768,11 @@ def _жорстке_відсічення(r, темп_c=None, вето=None, ош
             try:
                 lo, hi = float(см[0]), float(см[1])
                 if max(0.0, float(темп_c) - hi, lo - float(темп_c)) > ДОПУСК_ТКАНИНИ_C:
-                    return "fabric_off_temperature"
+                    # Р2-2б: тканина проти градусів дня (K-MAT-03) вимкнена руці 2 — річ
+                    # лишається в пулі, а що відсікло б, лягає в тінь
+                    import правило_руки2 as _ПР2
+                    if not _ПР2.торкнулось("K-MAT-03", "pool", слот=сл):
+                        return "fabric_off_temperature"
             except (TypeError, ValueError, IndexError):
                 pass
     if вето:
