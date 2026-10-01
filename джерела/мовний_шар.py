@@ -1393,14 +1393,16 @@ _ПОЛЯ_EN = {
     "like": "only with kind other: the listed kind closest to her event in dress and setting",
     "parts": "the parts of one outing in order, when she named two or three (a ceremony, then a "
              "banquet; work, then a date); each part is a kind code",
-    "role": "who she is at this event, only when she said it herself: close_family — a relative of "
-            "the main people; main_person — the event is about her (bride, birthday); host — she "
-            "organises it; speaker — she presents or performs; candidate — she is being assessed; "
-            "worker — she is there for her job; mourner_close — she lost someone close; acquaintance "
-            "— she knew the deceased or the hosts only a little",
+    "role": "who she is at this event, from what she said about herself or about whose event it is: "
+            "guest — invited; close_family — a relative of the main people; main_person — the event is "
+            "about her (bride, birthday); host — she organises it; speaker — she presents or performs; "
+            "candidate — she is being assessed; worker — she is there for her job; mourner_close — the "
+            "deceased was her family or a close friend; acquaintance — she knew the deceased or the hosts "
+            "only a little",
     "audience": "who will see her: conservative — bosses, elders, clergy or a formal family "
                 "circle; usual — friends, colleagues as usual",
-    "religious_place": "temple — a church, monastery, mosque, synagogue or a religious service; "
+    "religious_place": "temple — she will be in a church, monastery, mosque or synagogue, or at a "
+                       "religious service or rite held there (a church wedding, a christening); "
                        "written_rule_place — a place with a written dress rule (some monasteries, "
                        "courts, a club with a posted rule)",
     "reserved_colour": "a colour that belongs to another person at this event, when she says so; "
@@ -1611,7 +1613,8 @@ def _коди_розмови():
     # Проєкт нагоди §1.4.5: конфесію й траур проактивно не питати (`profile.ТРАУР_ПОЛІТИКА`); роль —
     # лише з її слів.
     "Never ask about her faith, a religious service, mourning or her role at the event: write them only "
-    "when she tells them herself.",
+    "from what she tells herself — whose event it is counts (her grandmother's funeral, her sister's "
+    "wedding).",
 )
 
 СКЕЛЕТ_РОЗМОВИ = {
