@@ -147,9 +147,10 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         _ЗП.Поле("verdict[].checklist", "by area, the points the outfit «failed» and how many it «passed»: "
                                         "«excess» — what is already too much, «blandness» — what is lacking, "
                                         "both weigh the same; «no_input» and «not_run» — points the code did "
-                                        "not check"),
+                                        "not check; each point is a code defined in \"statement_codes\""),
         _ЗП.Поле("fixes", "the code's repair texts by key"),
-        _ЗП.Поле("not_run_everywhere", "checklist items the code did not check in any outfit"),
+        _ЗП.Поле("not_run_everywhere", "by area, the checklist points the code did not check in any outfit; "
+                                       "each point is a code defined in \"statement_codes\""),
         _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination, findings about the set"),
         _ЗП.Поле("set.not_done", "gate findings that still stand in the new check and are not named in «done»",
                  як="give each an entry in «done» of its outfit, or drop the outfit"),
@@ -377,6 +378,9 @@ def чекліст_вердикту(чеклісти):
             continue
         вих[бік] = dict(провал=[str(p.get("що") or p.get("пункт") or "")
                                 for p in пункти if p.get("стан") == "провал"],
+                        # ВМ-2: ід провалених пунктів — ними пункт їде на дріт кодом
+                        # (`протокол._чекліст_на_дріт`); імена вище — для звіту власника
+                        провал_ід=[p.get("пункт") for p in пункти if p.get("стан") == "провал"],
                         пройдено=sum(1 for p in пункти if p.get("стан") == "пройдено"),
                         без_входу=sum(1 for p in пункти if p.get("стан") == "без входу"))
         # ── ПРОВАЛЕНИЙ ПУНКТ НАЗИВАЄ СВОЇ ПРАВИЛА (друге проходження гейта) ───
@@ -403,7 +407,7 @@ def чекліст_вердикту(чеклісти):
         # «довжина виробу в см». Тому `бракує` лишається докладнішою назвою там,
         # де вона зміряна, а `вхід` — назвою за замовчуванням, і жоден вимкнений
         # пункт більше не виходить безіменним.
-        _бракує = [dict(що=str(p.get("що") or ""),
+        _бракує = [dict(що=str(p.get("що") or ""), пункт=p.get("пункт"),
                         бракує=str(p.get("бракує") or p.get("вхід") or ""),
                         правила=list(p.get("правила") or ()))
                    for p in пункти if p.get("стан") == "без входу"

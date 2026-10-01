@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """В-1: чи тримається вибір моделі, коли той самий перелік прийшов в ІНШОМУ порядку. Пул руки 1 сцени стенда;
-способи перемикача `вибір`: «список» (складання з усього пулу), «оцінка» (що «пасує»), «турнір» (переможці груп) —
+способи перемикача `вибір`: «список» (складання з усього пулу), «оцінка» (що «fits»), «турнір» (переможці груп) —
 кожен двома сідами порядку (у турнірі сід ділить і групи). Друкує збіг обраного (Жаккар), частку обраних першими й у
 першій третині свого переліку проти рівного шансу, виклики й секунди. Модель: MODEL=<ід> (+ MODEL_URL, типово LM Studio
 http://127.0.0.1:1234/v1; MODEL_TEMP; THINK=1) — живий замір на ноутбуці; без MODEL — заглушка, що бере ЗГОРИ.
@@ -11,12 +11,13 @@ import feed as Ф, bridge as B, міст_пакет as МП, протокол as
 B.виклик("запити", json.dumps(dict(json.load(open("стенд_вх.json", encoding="utf-8")), сід=7, каталог=Ф.каталог_на_диску("каталог_повний.xml")), ensure_ascii=False))
 пак, лічба, Е = next(p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")), [0], os.environ   # перший — рука 1
 def заглушка(об, з):
-    if з == "ОЦІНКИ_V1": return {"оцінки": {x["н"]: ("пасує" if і < len(р) // 2 else "колір") for р in об["речі"].values() for і, x in enumerate(р)}}
-    if з == "ТУРНІР_V1": return {"переможці": {г: [x["н"] for x in р[:2]] for г, р in об["групи"].items()}}
+    if з == "ОЦІНКИ_V1": return {"ratings": {x["n"]: ("fits" if і < len(р) // 2 else "colour") for р in об["items"].values() for і, x in enumerate(р)}}
+    if з == "ТУРНІР_V1": return {"winners": {г: [x["n"] for x in р[:2]] for г, р in об["groups"].items()}}
     return {"образи": [{"ід": "о%d" % k, "речі": [р[k % min(3, len(р))]["н"] for р in об["пул"].values()]} for k in (1, 2, 3)]}
 def модель(т):
     лічба[0] += 1; об = json.loads(т); з = (об.get("завдання") or об.get("task") or {})
-    if not Е.get("MODEL"): return json.dumps(dict(версія="1", **заглушка(об, з.get("відповідь") or з.get("answer"))))
+    в = з.get("відповідь") or з.get("answer")
+    if not Е.get("MODEL"): return json.dumps(dict({"version" if в in ("ОЦІНКИ_V1", "ТУРНІР_V1") else "версія": "1"}, **заглушка(об, в)))
     тіло = dict(model=Е["MODEL"], messages=[dict(role="user", content=т)], max_tokens=4000, **({"temperature": float(Е["MODEL_TEMP"])}
                 if "MODEL_TEMP" in Е else {}), **({} if Е.get("THINK") else {"reasoning_effort": "none"}))
     з = urllib.request.Request(Е.get("MODEL_URL", "http://127.0.0.1:1234/v1").rstrip("/") + "/chat/completions",

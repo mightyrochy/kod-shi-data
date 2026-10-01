@@ -92,6 +92,7 @@ LM Studio (кеш префікса слота). Урок Т-7 («коли піс
 вказівка відповідати за скелетом, а не дані.
 """
 import copy as _copy
+import re as _re
 from dataclasses import dataclass, field
 
 import протокол as _ПР
@@ -192,6 +193,11 @@ def вибірка(о):
 # ремонт (`fix`). Інших місць, де код говорить заявами з моделлю, нема — тож збирач шукає
 # коди лише під цими ключами, а не кожне поле `code` (у блокера `code` — вид блокера, не заява).
 КЛЮЧІ_ЗАЯВ = ("statements", "fix")
+# ВМ-2 (01.10.2026): пункти чекліста суду їдуть кодами (`внутрішня_мова.ЧЕКЛІСТ_КОДИ`) у списках
+# `failed` і `not_run` образу та в `not_run_everywhere` ({бік: [коди]}); їхні визначення — у тому
+# самому словнику виклику. Рядок числа (`failed` у значеннях заяви) кодом не є: береться лише список.
+КЛЮЧІ_ПУНКТІВ = ("failed", "not_run", "not_run_everywhere")
+_КОД_ПУНКТУ = _re.compile(r"[a-z][a-z_]*")     # пункт без коду (старий вердикт) їде іменем і в словник не йде
 СЛОВНИК_КОДІВ_EN = "statement_codes"
 # Рядок входу, що йде РАЗОМ зі словником — один на виклик, а не фраза в кожному оголошенні.
 РЯДОК_ЗАЯВ_EN = ("\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, "
@@ -215,6 +221,11 @@ def коди_заяв(дані):
                 if к in КЛЮЧІ_ЗАЯВ and isinstance(v, list):
                     for x in v:
                         вих.extend(_код(x))
+                    continue
+                if к in КЛЮЧІ_ПУНКТІВ:
+                    for x in (v.values() if isinstance(v, dict) else [v]):
+                        вих.extend(п for п in (x if isinstance(x, list) else [])
+                                   if isinstance(п, str) and _КОД_ПУНКТУ.fullmatch(п))
                     continue
                 _обхід(v)
         elif isinstance(в, (list, tuple)):
