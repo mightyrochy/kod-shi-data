@@ -1645,7 +1645,8 @@ def вердикт(вхід):
     import pipeline as _PL
     if d.get("записи") is not None:
         return _json.dumps(_PL.калібрування(d["записи"], мінімум=int(d.get("мінімум") or 8)), ensure_ascii=False)
-    return _json.dumps(_PL.вердикт_у_ребра(d.get("вердикт"), d.get("в") or {}, d.get("коментар") or ""), ensure_ascii=False)
+    return _json.dumps(_PL.вердикт_у_ребра(d.get("вердикт"), d.get("в") or {}, d.get("коментар") or "",
+                                            зведено=d.get("зведено")), ensure_ascii=False)
 
 
 def _розмова_для_суду(паспорт):
