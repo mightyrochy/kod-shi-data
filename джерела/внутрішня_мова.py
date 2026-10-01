@@ -45,7 +45,7 @@ def невідомо(v, коди=()):
     return not т or (т.lower() in ФОРМИ_НЕВІДОМО and (т == UNKNOWN or т not in коди))
 
 # ── ОДНА ТАБЛИЦЯ ВІДПОВІДНОСТІ: код внутрішньої мови → чинний ключ ядра ──────
-# Ключі ядра — рівно ті, що читає код: нагоди `формальність.НАГОДА_У_МІСЦЕ`, місця
+# Ключі ядра — рівно ті, що читає код: нагоди `паспорт_нагоди.ПСЕВДОНІМИ_НАГОДИ`, місця
 # `МІСЦЯ_ДІАПАЗОНИ`, дрес-коди `КОДИ_ДІАПАЗОНИ`, реєстри `реєстри.РЕЄСТРИ`, зони
 # `паспорт_нагоди.ЗОНИ_ВЕТО`, слоти `graph.СЛОТИ`, типи `feed.ТИП_КЛЮЧІ`, тканини
 # `verify.ВОЛОКНА`, візерунки `verify.КЛАСИ_МОТИВУ`, класи кольору `колір_річ`, назви
@@ -318,6 +318,10 @@ def невідомо(v, коди=()):
     # власного `вето`, бо це звичай події, а не її межа. Її явне слово сильніше (п.9).
     "reserved_colour": {к: к for к in ("near_white",)},
     "recurrence": {к: к for к in ("once", "regular")},
+    # ЩО НАПИСАНО, А НЕ СКАЗАНО (НГ-4): поле, значення якого стоїть у запрошенні чи в письмових
+    # правилах місця. Сила `written` (§1.2) — над її словами як факт про подію; її бажання
+    # речі лишається окремим полем і сильніше за фільтр (п.9).
+    "written_field": {к: к for к in ("dress_code", "religious_place", "reserved_colour")},
     # ЗВІДКИ ВИМІР (§1.2): сила джерела, від письмового правила до «нічого не відомо».
     # Порядок переліку і є порядком сили — його тримає `паспорт_нагоди.ЗВІДКИ_СИЛА`.
     "evidence_source": {к: к for к in ("written", "her_words", "sub", "preset", "like",
@@ -423,6 +427,21 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     "place": _перелік("place", "місце — де вона буде"),
     "dress_code": _перелік("dress_code", "дрес-код, коли його названо"),
     "event": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="подія коротко, її мовою"),
+    # ── ВИМІРИ НАГОДИ З РОЗМОВИ (НГ-4, проєкт §1.2–1.3, §2) ──────────────────────────
+    # Вид — код для стилістки й журналу; виміри — те, що код читатиме (НГ-2…НГ-9). Кожен —
+    # парою з цитатою її слів (сторож `_тримається`); чого вона не сказала — поля нема, і це
+    # «невідомо», а не здогад: решту код бере з пресету виду чи `like` як назване припущення.
+    "kind": _перелік("event_kind", "вид події; other — коли жоден вид не підходить"),
+    "like": _перелік("event_kind", "найближчий вид для незвичної події (kind=other)"),
+    "parts": _список(_перелік("event_kind", "вид частини"), "частини одного виходу по черзі, "
+                     "коли вона назвала дві-три (вінчання, потім банкет)", maxItems=3),
+    "role": _перелік("role", "хто вона на цій події, лише коли сама сказала"),
+    "audience": _перелік("audience", "перед ким: conservative — начальство, старші, духовенство"),
+    "religious_place": _перелік("religious_place", "храм чи місце з письмовим правилом одягу"),
+    "reserved_colour": _перелік("reserved_colour", "колір, що на цій події належить іншій особі"),
+    "volume": _перелік("look_volume", "скільки образів: travel_day — один образ на переїзд"),
+    "written": _список(_перелік("written_field", "поле"), "поля, значення яких написано в "
+                       "запрошенні чи правилах місця", uniqueItems=True),
     "setting": _перелік("setting", "у приміщенні, просто неба чи змішано"),
     "duration_h": _число("скільки годин триває подія", minimum=0),
     "movement": _перелік("movement", "сидітиме, ходитиме чи багато ходитиме"),
@@ -1778,7 +1797,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "open_zones_over_limit": "more zones of the body are open than the context asks for (values: zones — zone "
                              "codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté "
                              "or back; limit — the limit; evening — an evening context, where the limit is "
-                             "two)",
+                             "two; conservative — a reserved audience or a place of worship, where the "
+                             "limit is one lower)",
+    "cover_open_zones": "cover the open zones: for this audience or place none is expected open — a "
+                        "jacket, a wrap or a longer hem",
     "keep_one_open_zone": "keep one open zone: legs, neckline, or shoulders/back",
     "item_type_not_in_dress_code": "this type of item does not belong to the named dress code (values: "
                                    "item_type — type code, dress_code — dress code code)",
@@ -2289,6 +2311,11 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                           "pool, and her own word must not empty the kind (values: jewellery "
                                           "— her jewellery code; her_metal, without_metal_word, "
                                           "opposite_at_tail — how many of each)",
+    "jewellery_gold_less_usual_for_cool": "gold items stand in this kind next to the silver ones although her "
+                                          "palette reads cool, where silver is the usual metal: nothing was "
+                                          "removed or locked, gold is simply the less usual choice for a cool "
+                                          "palette, and she may take it (values: gold_items — how many pool "
+                                          "items entered through the gold row)",
     "jewellery_without_metal_word_first": "items with no metal word were put ahead of the ones that name a "
                                           "metal; beyond that the code sees no metal here (values: jewellery "
                                           "— her jewellery code; without_metal_word, with_metal_word)",

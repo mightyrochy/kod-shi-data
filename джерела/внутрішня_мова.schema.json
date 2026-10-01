@@ -673,6 +673,144 @@
      ],
      "description": "подія коротко, її мовою"
     },
+    "kind": {
+     "description": "вид події; other — коли жоден вид не підходить",
+     "enum": [
+      "everyday",
+      "home",
+      "walk",
+      "work",
+      "interview",
+      "school",
+      "conference",
+      "gala",
+      "wedding",
+      "celebration",
+      "funeral",
+      "date",
+      "theatre",
+      "museum",
+      "church",
+      "sport",
+      "travel",
+      "other",
+      "unknown"
+     ]
+    },
+    "like": {
+     "description": "найближчий вид для незвичної події (kind=other)",
+     "enum": [
+      "everyday",
+      "home",
+      "walk",
+      "work",
+      "interview",
+      "school",
+      "conference",
+      "gala",
+      "wedding",
+      "celebration",
+      "funeral",
+      "date",
+      "theatre",
+      "museum",
+      "church",
+      "sport",
+      "travel",
+      "other",
+      "unknown"
+     ]
+    },
+    "parts": {
+     "description": "частини одного виходу по черзі, коли вона назвала дві-три (вінчання, потім банкет)",
+     "type": "array",
+     "items": {
+      "description": "вид частини",
+      "enum": [
+       "everyday",
+       "home",
+       "walk",
+       "work",
+       "interview",
+       "school",
+       "conference",
+       "gala",
+       "wedding",
+       "celebration",
+       "funeral",
+       "date",
+       "theatre",
+       "museum",
+       "church",
+       "sport",
+       "travel",
+       "other",
+       "unknown"
+      ]
+     },
+     "maxItems": 3
+    },
+    "role": {
+     "description": "хто вона на цій події, лише коли сама сказала",
+     "enum": [
+      "guest",
+      "close_family",
+      "main_person",
+      "host",
+      "candidate",
+      "speaker",
+      "worker",
+      "mourner_close",
+      "acquaintance",
+      "unknown"
+     ]
+    },
+    "audience": {
+     "description": "перед ким: conservative — начальство, старші, духовенство",
+     "enum": [
+      "usual",
+      "conservative",
+      "unknown"
+     ]
+    },
+    "religious_place": {
+     "description": "храм чи місце з письмовим правилом одягу",
+     "enum": [
+      "none",
+      "temple",
+      "written_rule_place",
+      "unknown"
+     ]
+    },
+    "reserved_colour": {
+     "description": "колір, що на цій події належить іншій особі",
+     "enum": [
+      "near_white",
+      "unknown"
+     ]
+    },
+    "volume": {
+     "description": "скільки образів: travel_day — один образ на переїзд",
+     "enum": [
+      "one_look",
+      "travel_day",
+      "unknown"
+     ]
+    },
+    "written": {
+     "description": "поля, значення яких написано в запрошенні чи правилах місця",
+     "type": "array",
+     "items": {
+      "description": "поле",
+      "enum": [
+       "dress_code",
+       "religious_place",
+       "reserved_colour",
+       "unknown"
+      ]
+     },
+     "uniqueItems": true
+    },
     "setting": {
      "description": "у приміщенні, просто неба чи змішано",
      "enum": [
@@ -3754,7 +3892,11 @@
          },
          {
           "const": "open_zones_over_limit",
-          "description": "more zones of the body are open than the context asks for (values: zones — zone codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté or back; limit — the limit; evening — an evening context, where the limit is two)"
+          "description": "more zones of the body are open than the context asks for (values: zones — zone codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté or back; limit — the limit; evening — an evening context, where the limit is two; conservative — a reserved audience or a place of worship, where the limit is one lower)"
+         },
+         {
+          "const": "cover_open_zones",
+          "description": "cover the open zones: for this audience or place none is expected open — a jacket, a wrap or a longer hem"
          },
          {
           "const": "keep_one_open_zone",
@@ -4777,6 +4919,10 @@
           "description": "items of the opposite metal were kept at the tail rather than removed: removing them would leave the kind below the floor of the pool, and her own word must not empty the kind (values: jewellery — her jewellery code; her_metal, without_metal_word, opposite_at_tail — how many of each)"
          },
          {
+          "const": "jewellery_gold_less_usual_for_cool",
+          "description": "gold items stand in this kind next to the silver ones although her palette reads cool, where silver is the usual metal: nothing was removed or locked, gold is simply the less usual choice for a cool palette, and she may take it (values: gold_items — how many pool items entered through the gold row)"
+         },
+         {
           "const": "jewellery_without_metal_word_first",
           "description": "items with no metal word were put ahead of the ones that name a metal; beyond that the code sees no metal here (values: jewellery — her jewellery code; without_metal_word, with_metal_word)"
          },
@@ -5535,6 +5681,11 @@
   "recurrence": {
    "once": "once",
    "regular": "regular"
+  },
+  "written_field": {
+   "dress_code": "dress_code",
+   "religious_place": "religious_place",
+   "reserved_colour": "reserved_colour"
   },
   "evidence_source": {
    "written": "written",

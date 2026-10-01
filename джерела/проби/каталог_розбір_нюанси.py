@@ -4,9 +4,9 @@
 (ім'я латиницею з великої літери з даних крамниці, що не є кодом, або ім'я крамниці), з кодом через «_», з «|», з кирилицею, з самих кодів і кольору;
 слів рядка, що повторюють коди чи імена полів ТІЄЇ Ж відповіді (колір — ні: відтінок крамниці рядок несе навмисно); промпт — як його бачила модель
 і за чинним правилом (uk, en). «Після» правила — та сама проба на теці перепрогону. Запуск: python3 джерела/проби/каталог_розбір_нюанси.py [тека …]"""
-import collections, glob, json, os, re, statistics as st, sys, tarfile  # noqa: E401
+import collections, glob, json, os, re, statistics as st, subprocess, sys, tarfile, types  # noqa: E401
 Д = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, Д)  # noqa: E702
-import каталог_розбір as КР, збирач_промптів as ЗП  # noqa: E401,E402
+import збирач_промптів as ЗП; КР = types.ModuleType("каталог_розбір_к4"); КР.__file__ = os.path.join(Д, "каталог_розбір.py"); exec(subprocess.run(["git", "-C", Д, "show", "4fedabb:джерела/каталог_розбір.py"], capture_output=True, text=True, check=True).stdout, КР.__dict__)  # noqa: E702 — модуль розбору К-4 (uk/en), яким міряно; РЗ-К лишив одну англійську мову
 МАРКЕТИНГ = re.compile(r"\b(?:comfort|elegan|stylish|perfect|beaut|suitab|ideal|trend|fashion|luxur|cozy|cosy|versatil|chic|flatter|feminin|romantic|"
                        r"modern|timeless|everyday|daily|casual|office|holiday|occasion|combin|easy|quality|premium|refined|unique|special|lovely|basic)\w*", re.I)
 ВСІ_КОДИ, КОЛІР = {с for к in КР.ПЕРЕЛІКИ.values() for код in к for с in re.split(r"[_\-]", код)}, set(КР.ПЕРЕЛІКИ["color_main"]) | {"color", "colour", "shade", "tone"}
