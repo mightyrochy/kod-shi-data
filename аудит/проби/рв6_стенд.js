@@ -1918,7 +1918,7 @@ function підсумокМоделі(){
   await стор.route(u => цеМіст(u), async route => {
     const тіло = route.request().postDataJSON() || {};
     const ост = (тіло.messages || []).slice(-1)[0] || {};
-    const текст = (ост.content || []).map(б => б.text || '').join('\n');
+    const текст = (ост.content || []).map(б => б.text || '').filter(т => !/^Photo \d+:( not available)?$|^\(image not delivered\)$/.test(т)).join('\n');
     const фото = (ост.content || []).filter(б => б.type === 'image').length;
     /* ── СКІЛЬКИ СИМВОЛІВ ПІШЛО НАСПРАВДІ, І СТЕЛЯ ЯК У СПРАВЖНЬОГО МОСТА (наряд Л-2) ──
        Заглушка доти міряла лише ТЕКСТ (`довжина`), а 413 прогону власника 25.09

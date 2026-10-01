@@ -47,10 +47,16 @@ import дріт_моделі as _Д
         _ЗП.Поле("outfit", "the chosen outfit: its items with number «n», name and shop, and what the code "
                            "knows of their color", треба=True),
         _ЗП.Поле("outfit.items[].photos",
-                 "the numbers of this item's images among those placed before this object",
+                 "the numbers of this item's photos: every photo stands under its own label «Photo N:» "
+                 "among the blocks placed before this object; under a label with «not delivered» or "
+                 "«not available» there is no image",
                  як="describe what you see on the photos, not the name; from each photo take only the named "
-                    "item — the other clothes in the frame are not part of the outfit",
+                    "item — the other clothes in the frame are not part of the outfit; never take for an "
+                    "item a photo under another number, and when all of its photos are not delivered, "
+                    "describe it by its name only",
                  без="There are no item photos: describe the items by their names; leave «wrong_photos» empty."),
+        _ЗП.Поле("outfit.items[].no_photo", "this item has no photo of its own among the others",
+                 як="describe it by its name only; do not take another item's photo for it"),
         _ЗП.Поле("outfit.items[].hers", "her own item from her photo, not a product",
                  як="do not offer to buy it and do not mention a price or a shop; say how the other items "
                     "work with it"),
@@ -158,6 +164,10 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         ном = [int(n) for n in (x.get("фото_номери") or [])]
         if ном:
             з["фото_номери"] = ном
+        elif any(y.get("фото_номери") for y in (речі or [])):
+            # ФОТО-513: коли кадри в образі є, а в цієї речі їх нема, це називається — інакше
+            # модель, що лічить зображення, шукала б її кадр серед чужих (`без_кадру` → `no_photo`).
+            з["без_кадру"] = True
         if x.get("її_річ"):
             з["її_річ"] = True
         р.append(з)
