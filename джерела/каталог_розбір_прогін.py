@@ -157,7 +157,7 @@ def _записати(куди, мірка):
     os.replace(шлях + ".tmp", шлях)
 
 
-def прогін(ід_моделі, мова="uk", куди=None, на_групу=НА_ГРУПУ, сід=СІД, усі=False, ті_самі=None):
+def прогін(ід_моделі, мова=КР.МОВА, куди=None, на_групу=НА_ГРУПУ, сід=СІД, усі=False, ті_самі=None):
     """Вибірку — через модель у теку. Один файл на річ («── ЗАПИТ», «── ВІДПОВІДЬ»), плюс
     `прогін.json` з міркою кожного виклику. Повертає шлях теки.
 
@@ -264,7 +264,7 @@ def зібрати(тека):
 if __name__ == "__main__":
     р = argparse.ArgumentParser(description="прогін розбору каталогу на локальній мовній моделі")
     р.add_argument("--модель", default=os.environ.get("MODEL"), help="ід моделі в LM Studio")
-    р.add_argument("--мова", default="uk", choices=sorted(КР.РОЗБІР), help="мова оголошення промпта")
+    р.add_argument("--мова", default=КР.МОВА, choices=sorted(КР.РОЗБІР), help="мова оголошення промпта")
     р.add_argument("--куди", default=None, help="тека для сирих відповідей")
     р.add_argument("--на-групу", type=int, default=НА_ГРУПУ, dest="на_групу")
     р.add_argument("--усі", action="store_true",
