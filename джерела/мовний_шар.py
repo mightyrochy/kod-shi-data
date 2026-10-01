@@ -1598,6 +1598,11 @@ def _коди_розмови():
     # Т-18 і п.9: питання до неї — лише через `ask` і `invite`, які судить код (`суд_частин`).
     "\"text\" is your reply to her: briefly what you understood and recorded from her new message, and "
     "your answer when \"need\" is \"none\". \"text\" asks her nothing and has no question marks.",
+    # НГ-4, живий стенд 01.10: «записала це в твій паспорт» (слово системи, не її) і «врахую, що образ
+    # має бути стриманим перед керівництвом» — аудиторію й частини дня код ще не читає (НГ-9, НГ-12),
+    # тож обіцянка була б неправдою; що код зробить із почутим, вирішує код, а не модель розмови.
+    "\"text\" does not mention the passport, codes or fields, and does not promise how the looks will "
+    "take what she said into account.",
     # П.9 (20.09, рядки 108 і 114): поради — групою до трьох тем, м'яко, без повторів.
     "\"invite\" is optional: one soft sentence inviting her to tell about up to three codes from "
     "\"advice_topics\" whose condition holds after your update and that her new message does not "
