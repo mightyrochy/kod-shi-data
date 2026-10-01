@@ -1,13 +1,18 @@
 {
  "$schema": "https://json-schema.org/draft/2020-12/schema",
- "$id": "lyusterko-catalog-parse-v2",
+ "$id": "lyusterko-catalog-parse-v3",
  "title": "Розбір каталогу Люстерка",
- "description": "Поля, якими українська мовна модель описує річ каталогу для коду: коди із закритих переліків або \"unknown\" (опори в тексті крамниці нема — вигадувати не можна). Переліки slot, item_type, fabric, material, pattern, color_name, length, shaft — ті самі, що в `внутрішня_мова.ТАБЛИЦЯ`; cut — `силует_крої.КРОЇ`. Поруч із кодами — рядок особливостей `features` англійською для функціональної моделі. Породжує файл `каталог_розбір.схема()`; вхід моделі — `каталог_розбір.вхід()`.",
+ "description": "Поля, якими мовна модель описує річ каталогу для коду: коди із закритих переліків, \"not_applicable\" (поля в такої речі не буває) або \"unknown\" (опори в тексті крамниці нема — вигадувати не можна). Модель відповідає парами {quote, value} (`model_answer`); код лишає значення лише тоді, коли цитата стоїть у тексті речі. Переліки slot, item_type, fabric, material, pattern, color_name, length, shaft — ті самі, що в `внутрішня_мова.ТАБЛИЦЯ`; cut — `силует_крої.КРОЇ`. Поруч із кодами — рядок особливостей `features` англійською для функціональної моделі. Породжує файл `каталог_розбір.схема()`; вхід моделі — `каталог_розбір.вхід()`.",
  "x-форми-unknown": [
   "unknown",
   "null",
   "none",
   "невідомо"
+ ],
+ "x-виведені-кодом": [
+  "color_from",
+  "slot (СЛОТ_ТИПУ)",
+  "set_parts[].slot (СЛОТ_ТИПУ)"
  ],
  "x-звідки-код-бере-сьогодні": {
   "slot": "фід_слот.слот (СЛОТ_КЛЮЧІ)",
@@ -48,7 +53,7 @@
      "description": "id речі в каталозі; його дописує прогін, у моделі його не питають — вона не має чого echo-їти"
     },
     "slot": {
-     "description": "місце речі в образі",
+     "description": "place of the item in an outfit",
      "enum": [
       "top",
       "bottom",
@@ -74,7 +79,7 @@
      ]
     },
     "item_type": {
-     "description": "тип речі",
+     "description": "item type",
      "enum": [
       "evening_dress",
       "cocktail_dress",
@@ -149,7 +154,7 @@
      ]
     },
     "set_kind": {
-     "description": "чи річ продають набором і яким",
+     "description": "whether the item is sold as a set, and which",
      "enum": [
       "suit",
       "casual_suit",
@@ -167,7 +172,7 @@
       "additionalProperties": false,
       "properties": {
        "slot": {
-        "description": "місце цієї частини набору",
+        "description": "place of this part of the set",
         "enum": [
          "top",
          "bottom",
@@ -193,7 +198,7 @@
         ]
        },
        "item_type": {
-        "description": "тип цієї частини набору",
+        "description": "type of this part of the set",
         "enum": [
          "evening_dress",
          "cocktail_dress",
@@ -271,7 +276,7 @@
      }
     },
     "fabric": {
-     "description": "тканина речі",
+     "description": "fabric of the item",
      "enum": [
       "wool",
       "cashmere",
@@ -313,11 +318,12 @@
       "guipure",
       "openwork",
       "woven",
+      "not_applicable",
       "unknown"
      ]
     },
     "material": {
-     "description": "матеріал верху взуття, сумки чи пояса",
+     "description": "upper material of shoes, bag or belt",
      "enum": [
       "leather",
       "suede",
@@ -325,11 +331,12 @@
       "patent_leather",
       "velour",
       "nubuck",
+      "not_applicable",
       "unknown"
      ]
     },
     "cut": {
-     "description": "крій",
+     "description": "cut",
      "enum": [
       "skinny",
       "straight",
@@ -354,11 +361,12 @@
       "sheath",
       "empire",
       "double-breasted",
+      "not_applicable",
       "unknown"
      ]
     },
     "length": {
-     "description": "довжина",
+     "description": "length",
      "enum": [
       "mini",
       "mid_thigh",
@@ -366,11 +374,12 @@
       "midi",
       "maxi",
       "waist",
+      "not_applicable",
       "unknown"
      ]
     },
     "sleeve": {
-     "description": "рукав",
+     "description": "sleeve",
      "enum": [
       "sleeveless",
       "straps",
@@ -379,11 +388,12 @@
       "elbow",
       "three_quarter",
       "long",
+      "not_applicable",
       "unknown"
      ]
     },
     "neckline": {
-     "description": "виріз горловини",
+     "description": "neckline",
      "enum": [
       "round",
       "v_neck",
@@ -398,24 +408,27 @@
       "stand_collar",
       "shirt_collar",
       "cowl",
+      "not_applicable",
       "unknown"
      ]
     },
     "vamp": {
-     "description": "виріз взуття на стопі",
+     "description": "how high the shoe covers the foot",
      "enum": [
       "low",
       "high",
+      "not_applicable",
       "unknown"
      ]
     },
     "shaft": {
-     "description": "докуди дістає халява",
+     "description": "where the boot shaft ends",
      "enum": [
       "ankle",
       "calf",
       "knee",
       "thigh",
+      "not_applicable",
       "unknown"
      ]
     },
@@ -424,39 +437,43 @@
      "additionalProperties": false,
      "properties": {
       "present": {
-       "description": "чи є підбори",
+       "description": "is there a heel",
        "enum": [
         "yes",
         "no",
+        "not_applicable",
         "unknown"
        ]
       },
       "shape": {
-       "description": "форма підборів",
+       "description": "heel shape",
        "enum": [
         "thin",
         "block",
         "wedge",
         "platform",
+        "not_applicable",
         "unknown"
        ]
       },
       "height": {
-       "description": "висота підборів",
+       "description": "heel height",
        "enum": [
         "flat",
         "low",
         "mid",
         "high",
+        "not_applicable",
         "unknown"
        ]
       }
      }
     },
     "metal": {
-     "description": "метал речі",
+     "description": "metal of the item",
      "enum": [
       "gold",
+      "rose_gold",
       "white_gold",
       "silver",
       "steel",
@@ -469,7 +486,7 @@
      ]
     },
     "metal_where": {
-     "description": "метал — тіло речі чи лише її фурнітура",
+     "description": "metal is the body of the item or only its hardware",
      "enum": [
       "body",
       "hardware",
@@ -479,7 +496,7 @@
      ]
     },
     "color_main": {
-     "description": "колір самої речі",
+     "description": "colour of the item itself",
      "enum": [
       "black",
       "white",
@@ -542,7 +559,7 @@
     "color_extra": {
      "type": "array",
      "items": {
-      "description": "інші кольори, названі крамницею",
+      "description": "other colours the text names for this item",
       "enum": [
        "black",
        "white",
@@ -604,7 +621,7 @@
      }
     },
     "color_why": {
-     "description": "чому кольорів кілька",
+     "description": "why there are several colours",
      "enum": [
       "one_color",
       "two_colors",
@@ -617,7 +634,7 @@
      ]
     },
     "color_from": {
-     "description": "де в тексті названо колір",
+     "description": "where the text names the colour",
      "enum": [
       "param",
       "name",
@@ -628,7 +645,7 @@
      ]
     },
     "pattern": {
-     "description": "візерунок",
+     "description": "pattern",
      "enum": [
       "solid",
       "polka_dot",
@@ -648,7 +665,7 @@
     "decor": {
      "type": "array",
      "items": {
-      "description": "оздоба",
+      "description": "decoration",
       "enum": [
        "sequins",
        "rhinestones",
@@ -677,7 +694,7 @@
      "additionalProperties": false,
      "properties": {
       "stripes": {
-       "description": "смужка на речі",
+       "description": "stripes on the item",
        "enum": [
         "yes",
         "no",
@@ -685,7 +702,7 @@
        ]
       },
       "big_print": {
-       "description": "великий принт на речі",
+       "description": "big print on the item",
        "enum": [
         "yes",
         "no",
@@ -693,7 +710,7 @@
        ]
       },
       "print": {
-       "description": "будь-який принт на речі",
+       "description": "any print on the item",
        "enum": [
         "yes",
         "no",
@@ -701,7 +718,7 @@
        ]
       },
       "shine": {
-       "description": "блиск тканини чи оздоби",
+       "description": "shine of fabric or trim",
        "enum": [
         "yes",
         "no",
@@ -709,7 +726,7 @@
        ]
       },
       "oversize": {
-       "description": "оверсайзний об'єм",
+       "description": "oversized volume",
        "enum": [
         "yes",
         "no",
@@ -717,7 +734,7 @@
        ]
       },
       "tight": {
-       "description": "обтислий крій",
+       "description": "tight fit",
        "enum": [
         "yes",
         "no",
@@ -729,7 +746,1135 @@
     "features": {
      "type": "string",
      "x-стеля-слів": 30,
-     "description": "усі нюанси речі з тексту крамниці, яких не несуть коди: один рядок англійською, до 30 слів, або unknown. Вільний текст для функціональної моделі; код його не читає і перевіряє лише форму (рядок, кількість слів, латиниця)"
+     "description": "рядок англійською, до 30 слів: фрагменти моделі, чиї цитати тримаються, через кому, або unknown. Вільний текст для функціональної моделі; код його не читає і перевіряє лише форму (рядок, кількість слів, латиниця)"
+    }
+   }
+  },
+  "model_answer": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "slot",
+    "item_type",
+    "set_kind",
+    "set_parts",
+    "fabric",
+    "material",
+    "cut",
+    "length",
+    "sleeve",
+    "neckline",
+    "vamp",
+    "shaft",
+    "heel",
+    "metal",
+    "metal_where",
+    "color_main",
+    "color_extra",
+    "color_why",
+    "pattern",
+    "decor",
+    "veto",
+    "features"
+   ],
+   "properties": {
+    "slot": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "top",
+        "bottom",
+        "dress",
+        "set",
+        "outerwear",
+        "shoes",
+        "bag",
+        "scarf",
+        "headwear",
+        "belt",
+        "tights",
+        "socks",
+        "jewelry",
+        "earrings",
+        "collar_necklace",
+        "necklace",
+        "brooch",
+        "bracelet",
+        "ring",
+        "glasses",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "item_type": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "evening_dress",
+        "cocktail_dress",
+        "suit",
+        "sheath_dress",
+        "sundress",
+        "blazer",
+        "over_knee_boots",
+        "chelsea_boots",
+        "ugg_boots",
+        "ballet_flats",
+        "mules",
+        "espadrilles",
+        "pumps",
+        "dress_shoes",
+        "moccasins",
+        "loafers",
+        "sneakers",
+        "plimsolls",
+        "ankle_boots",
+        "boots",
+        "heeled_sandals",
+        "sandals",
+        "clutch",
+        "backpack",
+        "tote",
+        "baguette_bag",
+        "hobo_bag",
+        "crossbody_bag",
+        "bucket_bag",
+        "belt_bag",
+        "briefcase",
+        "saddle_bag",
+        "hoodie",
+        "sportswear",
+        "loungewear",
+        "leggings",
+        "jeans",
+        "t_shirt",
+        "shirt",
+        "blouse",
+        "knitwear",
+        "cardigan",
+        "sweater",
+        "shorts",
+        "jumpsuit",
+        "skirt",
+        "trousers",
+        "coat",
+        "trench_coat",
+        "jacket",
+        "vest",
+        "top_garment",
+        "stole",
+        "kerchief",
+        "twilly",
+        "snood",
+        "shawl",
+        "bactus_scarf",
+        "ring",
+        "headband",
+        "bow",
+        "hair_clip",
+        "hair_tie",
+        "scarf_generic",
+        "jewelry_generic",
+        "bag_generic",
+        "dress_generic",
+        "two_piece_set",
+        "casual_suit",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "set_kind": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "suit",
+        "casual_suit",
+        "set",
+        "jewelry_set",
+        "not_a_set",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "set_parts": {
+     "type": "array",
+     "maxItems": 4,
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "slot",
+       "item_type"
+      ],
+      "properties": {
+       "slot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "quote",
+         "value"
+        ],
+        "properties": {
+         "quote": {
+          "type": "string",
+          "maxLength": 120
+         },
+         "value": {
+          "enum": [
+           "top",
+           "bottom",
+           "dress",
+           "set",
+           "outerwear",
+           "shoes",
+           "bag",
+           "scarf",
+           "headwear",
+           "belt",
+           "tights",
+           "socks",
+           "jewelry",
+           "earrings",
+           "collar_necklace",
+           "necklace",
+           "brooch",
+           "bracelet",
+           "ring",
+           "glasses",
+           "unknown"
+          ]
+         }
+        }
+       },
+       "item_type": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "quote",
+         "value"
+        ],
+        "properties": {
+         "quote": {
+          "type": "string",
+          "maxLength": 120
+         },
+         "value": {
+          "enum": [
+           "evening_dress",
+           "cocktail_dress",
+           "suit",
+           "sheath_dress",
+           "sundress",
+           "blazer",
+           "over_knee_boots",
+           "chelsea_boots",
+           "ugg_boots",
+           "ballet_flats",
+           "mules",
+           "espadrilles",
+           "pumps",
+           "dress_shoes",
+           "moccasins",
+           "loafers",
+           "sneakers",
+           "plimsolls",
+           "ankle_boots",
+           "boots",
+           "heeled_sandals",
+           "sandals",
+           "clutch",
+           "backpack",
+           "tote",
+           "baguette_bag",
+           "hobo_bag",
+           "crossbody_bag",
+           "bucket_bag",
+           "belt_bag",
+           "briefcase",
+           "saddle_bag",
+           "hoodie",
+           "sportswear",
+           "loungewear",
+           "leggings",
+           "jeans",
+           "t_shirt",
+           "shirt",
+           "blouse",
+           "knitwear",
+           "cardigan",
+           "sweater",
+           "shorts",
+           "jumpsuit",
+           "skirt",
+           "trousers",
+           "coat",
+           "trench_coat",
+           "jacket",
+           "vest",
+           "top_garment",
+           "stole",
+           "kerchief",
+           "twilly",
+           "snood",
+           "shawl",
+           "bactus_scarf",
+           "ring",
+           "headband",
+           "bow",
+           "hair_clip",
+           "hair_tie",
+           "scarf_generic",
+           "jewelry_generic",
+           "bag_generic",
+           "dress_generic",
+           "two_piece_set",
+           "casual_suit",
+           "unknown"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    "fabric": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "wool",
+        "cashmere",
+        "mohair",
+        "angora",
+        "alpaca",
+        "cotton",
+        "viscose",
+        "tencel",
+        "lyocell",
+        "modal",
+        "linen",
+        "silk",
+        "polyester",
+        "polyamide",
+        "nylon",
+        "acrylic",
+        "elastane",
+        "stretch",
+        "denim",
+        "satin",
+        "atlas",
+        "chiffon",
+        "muslin",
+        "batiste",
+        "tweed",
+        "boucle",
+        "corduroy",
+        "velvet",
+        "jersey",
+        "knitted",
+        "suede",
+        "faux_leather",
+        "leather",
+        "patent_leather",
+        "nubuck",
+        "velour",
+        "lace",
+        "guipure",
+        "openwork",
+        "woven",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "material": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "leather",
+        "suede",
+        "faux_leather",
+        "patent_leather",
+        "velour",
+        "nubuck",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "cut": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "skinny",
+        "straight",
+        "tapered",
+        "wide",
+        "flared",
+        "culottes",
+        "pencil",
+        "a-line",
+        "full",
+        "pleated",
+        "bias-slip",
+        "bodycon",
+        "fitted",
+        "regular",
+        "relaxed",
+        "oversized",
+        "belted",
+        "wrap",
+        "peplum",
+        "shift",
+        "sheath",
+        "empire",
+        "double-breasted",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "length": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "mini",
+        "mid_thigh",
+        "knee",
+        "midi",
+        "maxi",
+        "waist",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "sleeve": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "sleeveless",
+        "straps",
+        "cap",
+        "short",
+        "elbow",
+        "three_quarter",
+        "long",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "neckline": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "round",
+        "v_neck",
+        "deep_v",
+        "square",
+        "boat",
+        "halter",
+        "one_shoulder",
+        "off_shoulder",
+        "strapless",
+        "turtleneck",
+        "stand_collar",
+        "shirt_collar",
+        "cowl",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "vamp": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "low",
+        "high",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "shaft": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "ankle",
+        "calf",
+        "knee",
+        "thigh",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "heel": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "present",
+      "shape",
+      "height"
+     ],
+     "properties": {
+      "present": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "enum": [
+          "yes",
+          "no",
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "shape": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "enum": [
+          "thin",
+          "block",
+          "wedge",
+          "platform",
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "height": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "enum": [
+          "flat",
+          "low",
+          "mid",
+          "high",
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       }
+      }
+     }
+    },
+    "metal": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "gold",
+        "rose_gold",
+        "white_gold",
+        "silver",
+        "steel",
+        "brass",
+        "bronze",
+        "copper",
+        "platinum",
+        "none",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "metal_where": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "body",
+        "hardware",
+        "both",
+        "none",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "color_main": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "black",
+        "white",
+        "grey",
+        "graphite",
+        "beige",
+        "cream",
+        "milky",
+        "sand",
+        "taupe",
+        "camel",
+        "latte",
+        "cocoa",
+        "brown",
+        "chocolate",
+        "red",
+        "burgundy",
+        "cherry",
+        "raspberry",
+        "brick",
+        "terracotta",
+        "ginger",
+        "coral",
+        "orange",
+        "peach",
+        "yellow",
+        "lemon",
+        "mustard",
+        "golden",
+        "khaki",
+        "olive",
+        "green",
+        "pine_green",
+        "mint",
+        "turquoise",
+        "petrol",
+        "light_blue",
+        "denim_blue",
+        "blue",
+        "navy",
+        "lilac",
+        "purple",
+        "plum",
+        "magenta",
+        "fuchsia",
+        "pink",
+        "rose",
+        "powder_pink",
+        "silvery",
+        "pearly",
+        "creamy",
+        "mocha",
+        "powder",
+        "soft_pink",
+        "emerald",
+        "electric_blue",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "color_extra": {
+     "type": "array",
+     "maxItems": 4,
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "quote",
+       "value"
+      ],
+      "properties": {
+       "quote": {
+        "type": "string",
+        "maxLength": 120
+       },
+       "value": {
+        "enum": [
+         "black",
+         "white",
+         "grey",
+         "graphite",
+         "beige",
+         "cream",
+         "milky",
+         "sand",
+         "taupe",
+         "camel",
+         "latte",
+         "cocoa",
+         "brown",
+         "chocolate",
+         "red",
+         "burgundy",
+         "cherry",
+         "raspberry",
+         "brick",
+         "terracotta",
+         "ginger",
+         "coral",
+         "orange",
+         "peach",
+         "yellow",
+         "lemon",
+         "mustard",
+         "golden",
+         "khaki",
+         "olive",
+         "green",
+         "pine_green",
+         "mint",
+         "turquoise",
+         "petrol",
+         "light_blue",
+         "denim_blue",
+         "blue",
+         "navy",
+         "lilac",
+         "purple",
+         "plum",
+         "magenta",
+         "fuchsia",
+         "pink",
+         "rose",
+         "powder_pink",
+         "silvery",
+         "pearly",
+         "creamy",
+         "mocha",
+         "powder",
+         "soft_pink",
+         "emerald",
+         "electric_blue",
+         "unknown"
+        ]
+       }
+      }
+     }
+    },
+    "color_why": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "one_color",
+        "two_colors",
+        "print_colors",
+        "trim",
+        "hardware",
+        "lining",
+        "variants",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "pattern": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "solid",
+        "polka_dot",
+        "floral",
+        "stripes",
+        "check",
+        "animal_print",
+        "camouflage",
+        "geometric",
+        "abstract",
+        "lace_motif",
+        "embroidery",
+        "print_generic",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "decor": {
+     "type": "array",
+     "maxItems": 6,
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "quote",
+       "value"
+      ],
+      "properties": {
+       "quote": {
+        "type": "string",
+        "maxLength": 120
+       },
+       "value": {
+        "enum": [
+         "sequins",
+         "rhinestones",
+         "beads",
+         "pearls",
+         "tulle",
+         "feathers",
+         "lurex",
+         "glitter",
+         "metallic",
+         "embroidery",
+         "lace_trim",
+         "ruffles",
+         "bow",
+         "fringe",
+         "chain",
+         "studs",
+         "cutouts",
+         "none",
+         "unknown"
+        ]
+       }
+      }
+     }
+    },
+    "veto": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "stripes",
+      "big_print",
+      "print",
+      "shine",
+      "oversize",
+      "tight"
+     ],
+     "properties": {
+      "stripes": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "big_print": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "print": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "shine": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "oversize": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "tight": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      }
+     }
+    },
+    "features": {
+     "type": "array",
+     "maxItems": 12,
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "quote",
+       "value"
+      ],
+      "properties": {
+       "quote": {
+        "type": "string",
+        "maxLength": 120
+       },
+       "value": {
+        "type": "string",
+        "maxLength": 80
+       }
+      }
+     }
     }
    }
   }
