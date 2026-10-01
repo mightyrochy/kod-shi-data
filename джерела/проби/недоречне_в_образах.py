@@ -26,8 +26,9 @@ def образ(мітка, id_, речі):
     нев = [(н, вирок(н)) for н in речі if вирок(н)[1]]
     print("  %-10s %d/%d нижче смуги%s" % (мітка, len(нев), len(речі), "".join("\n      %s «%s» · слот %s · %s · доречних того слота в пулі: %d" % (н, next(p["name"] for p in ру1[0]["pool"] if p["n"] == н)[:45], с, к, в_смузі[с]) for н, (с, к) in нев)))
 print("РУКА 1 · складання (10 образів):"); [образ(о["id"], о["id"], о["items"]) for о in json.loads(ру1[2])["outfits"]]
-вердикти = [читати(ш) for ш in файли("ВЕРДИКТ_V1_ОБРАЗИ")]; ід1 = set(н for о in json.loads(ру1[2])["outfits"] for н in о["items"])
-рем = max(вердикти, key=lambda x: len(set(ID.findall(x[1])) & ід1)); номер = lambda ш: int(re.search(r"seed\d+_(\d+)_", ш).group(1))
-вибір = next(ш for ш in файли("ВЕРДИКТ_V1_ВИБІР") if номер(ш) > номер(next(ш2 for ш2 in файли("ВЕРДИКТ_V1_ОБРАЗИ") if читати(ш2)[1] == рем[1])))
-обр = json.loads(читати(вибір)[2])["chosen"]; print("РУКА 1 · обраний образ %s (з ремонту, %d образів):" % (обр, len(json.loads(рем[2])["outfits"])))
-образ("обраний", обр, next(о for о in json.loads(рем[2])["outfits"] if о["id"] == обр)["items"])
+ру2 = min(пакети, key=lambda x: len(x[0]["style_rules"])) if len(пакети) > 1 else ру1
+def схожість(в, ру):   # образи, яких склав вибір, — ремонт образів складання; рука 1 ↔ рука 2 розрізняються тим, чиї образи ближчі
+    return sum(max(len(set(х["n"] for х in о["your_outfit"]["items"]) & set(с["items"])) / max(1, len(с["items"])) for с in json.loads(ру[2])["outfits"]) for о in в["verdict"])
+вибори = [читати(ш) for ш in файли("ВЕРДИКТ_V1_ВИБІР")]; в1 = max(вибори, key=lambda в: схожість(в[0], ру1) - схожість(в[0], ру2))
+обр = json.loads(в1[2])["chosen"]; о = next(о["your_outfit"] for о in в1[0]["verdict"] if о["your_outfit"]["id"] == обр)
+print("РУКА 1 · обраний образ %s (з %d образів ремонту):" % (обр, len(в1[0]["verdict"]))); образ("обраний", обр, [х["n"] for х in о["items"]])
