@@ -16,7 +16,7 @@ def заглушка(об, з):
     return {"образи": [{"ід": "о%d" % k, "речі": [р[k % min(3, len(р))]["н"] for р in об["пул"].values()]} for k in (1, 2, 3)]}
 def модель(т):
     лічба[0] += 1; об = json.loads(т); з = (об.get("завдання") or об.get("task") or {})
-    в = з.get("відповідь") or з.get("answer")
+    в = {"ITEM_RATINGS_V1": "ОЦІНКИ_V1", "TOURNAMENT_V1": "ТУРНІР_V1"}.get(з.get("answer"), з.get("відповідь") or з.get("answer"))
     if not Е.get("MODEL"): return json.dumps(dict({"version" if в in ("ОЦІНКИ_V1", "ТУРНІР_V1") else "версія": "1"}, **заглушка(об, в)))
     тіло = dict(model=Е["MODEL"], messages=[dict(role="user", content=т)], max_tokens=4000, **({"temperature": float(Е["MODEL_TEMP"])}
                 if "MODEL_TEMP" in Е else {}), **({} if Е.get("THINK") else {"reasoning_effort": "none"}))

@@ -2203,7 +2203,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "accent_surfaces_exact_match": "two accent surfaces match exactly (dE): they pull the eye sideways, not "
                                    "up to the face",
     "accent_surfaces_same_colour_word": "two accent surfaces are named by the same colour word by two "
-                                        "different shops (values: colour — the word): they read as one "
+                                        "different shops (values: colour — its colour code): they read as one "
                                         "colour and pull the eye sideways, not up to the face",
     "secondary_colour_or_neutral_or_declared_column": "second item in the first one's secondary colour or a "
                                                       "contrasting neutral; or a declared colour column",
@@ -2402,6 +2402,41 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                                     "scheme: do not pretend the outfit keeps it — a shortage of stock, not a "
                                     "choice against her (values: kinds — kind codes; scheme — scheme code)",
 }
+
+# ── РІЗНОМАНІТНІСТЬ НАБОРУ Й ПЕРЕВІРКА «ВИКОНАНО» (ВМ-2, 01.10.2026; рядок 483) ─────────────
+# Доти обидва їхали в ремонт і вибір реченнями коду українською (`set.variety.why`,
+# `verdict[].done_check[].why`): «о1, о2 — варіанти одного задуму…», «K-… лишилась 0.75 (було
+# 0.75) над …». Ті самі факти — кодами; речення лишаються звітові власника.
+ЗАЯВИ.update({
+    "variety_group": "these outfits are variants of one idea: they share «shared» of «total» items and the "
+                     "features named in «same»; keep one of them or make them different (values: outfits — "
+                     "outfit ids; shared; total; same — scheme, hero, silhouette_letter)",
+    "variety_kind_one_item": "these outfits stand on one and the same item of this kind: keep it in at most "
+                             "«keep_at_most» of them and replace it with another item of the same kind in the "
+                             "rest; the kind of this item stays (values: outfits — outfit ids; item — «n»; "
+                             "kind — kind code; keep_at_most)",
+    "variety_all_different": "all outfits differ: no pair matched in items, or in scheme together with hero "
+                             "(values: outfits — how many)",
+    "variety_kind_repeat_not_checked": "a repeat of one item within a kind was not checked: the outfit records "
+                                       "carry no kinds of items",
+    "variety_letter_without_length": "the silhouette letter was counted without these items: they have no "
+                                     "length (values: items)",
+    "done_finding_gone": "the finding of this rule over these items is gone in the new check (values: rule)",
+    "done_finding_weakened": "the finding of this rule weakened in the new check (values: rule; was, now — "
+                             "its weights)",
+    "done_finding_stands": "the finding of this rule still stands in the new check (values: rule; was, now — "
+                           "its weights; items — what it stands over)",
+    "done_declined_accepted": "declined deliberately: the reason is accepted as a declared move (values: why — "
+                              "the reason in the stylist's words)",
+    "done_declined_without_why": "«declined» without «why»: there is no reason, so the move is not declared",
+    "done_blocker_not_declinable": "a structural blocker cannot be declined: the outfit is not ready without it "
+                                   "(values: blocker — blocker code)",
+    "done_blocker_gone": "the structural blocker is gone in the new check (values: blocker — blocker code)",
+    "done_blocker_stands": "the structural blocker still stands in the new check (values: blocker — blocker code)",
+    "done_outfit_not_checked": "the outfit did not reach the check: there is nothing to verify",
+    "done_unknown_id": "the previous verdict has no finding or blocker with this id",
+})
+
 
 # ── ПУНКТИ ЧЕКЛІСТІВ СУДУ ОБРАЗУ (ВМ-2, 01.10.2026; рядок 483 дошки, CLAUDE.md п.12) ─────────
 # ЩО БУЛО. Пункти чекліста (`суд_чеклісти`: надлишок 1–19, прісність B1–B7, палітра P1–P8,
