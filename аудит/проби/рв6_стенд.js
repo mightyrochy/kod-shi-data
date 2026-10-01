@@ -836,7 +836,9 @@ async function живоюМоделлю(тіло, тип){
         ? 'data:' + (дж.media_type || 'image/jpeg') + ';base64,' + дж.data
         : await кадрБазою(дж.url || '');
       if (url) зміст.push({type: 'image_url', image_url: {url}});
-      else фотоНеДійшло++;
+      /* ФОТО-513: як у `worker_джерело.js` — кадр, що не дійшов, лишає своє місце текстом, а не
+         зникає (інакше кадри за ним зсуваються проти підписів «Photo N:») */
+      else { фотоНеДійшло++; зміст.push({type: 'text', text: '(image not delivered)'}); }
     }
     повідомлення.push({role: м.role === 'assistant' ? 'assistant' : 'user', content: зміст});
   }
@@ -918,7 +920,8 @@ async function клодомCLI(тіло, тип){
         continue;
       }
       const url = await кадрБазою(дж.url || '');
-      if (url) блоки.push(клодКадром(url)); else фотоНеДійшло++;
+      if (url) блоки.push(клодКадром(url));
+      else { фотоНеДійшло++; блоки.push({type: 'text', text: '(image not delivered)'}); }  // ФОТО-513, як у воркері
     }
   }
   const рядок = JSON.stringify({type: 'user', message: {role: 'user', content: блоки}}) + '\n';
