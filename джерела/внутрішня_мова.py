@@ -2709,7 +2709,7 @@ if _спільні:
 
 
 # ── ПУНКТИ ЧЕКЛІСТІВ СУДУ ОБРАЗУ (ВМ-2, 01.10.2026; рядок 483 дошки, CLAUDE.md п.12) ─────────
-# ЩО БУЛО. Пункти чекліста (`суд_чеклісти`: надлишок 1–19, прісність B1–B7, палітра P1–P8,
+# ЩО БУЛО. Пункти чекліста (`суд_чеклісти`: надлишок 1–20, прісність B1–B7, палітра P1–P8,
 # аксесуари A1–A14) їхали в англійські промпти ремонту й вибору ІМЕНАМИ ПУНКТІВ — українськими
 # фразами коду («рівно один фокус», «метал один, або свідомий мікс із повтором»): кошик В п.12,
 # ~650–800 символів самого `not_run_everywhere` на виклик, і R-LNG-01 їх не бачив.
@@ -2741,10 +2741,9 @@ if _спільні:
     "layer_hems_apart": "the hems of the outer layer and of what is under it do not almost coincide "
                         "(K-OUT-03, K-OUT-04, K-OUT-43)",
     "repairs_not_opposed": "two repairs on one item do not pull in opposite directions (K-COL-CONF, K-COL-JOIN)",
-    # пункт 20 (КОЛ-2, #505): прийшов у main без коду, і сторож ВМ-2 у тест_протоколу червонів
-    "neutrals_lightness_apart": "two neutrals of the outfit are either tone-on-tone or a clear lightness step "
-                                "apart, not \"almost the same\" (K-COL-06)",
     "near_face_weight": "the visual weight of the items near the face is keyed to the viewing distance (K-COND-04)",
+    "neutrals_tone_or_step": "two neutrals on one lightness are tone-on-tone or set apart by a lightness step, "
+                             "not «almost the same» (K-COL-06)",
     # прісність (K-SYS-09)
     "interest_sources": "enough sources of interest for her intent (K-INT-04)",
     "not_median_choice": "at least one element is not the median choice for the case",
@@ -2796,7 +2795,7 @@ if _спільні:
     5: "formality_spread", 6: "shine_budget", 7: "print_budget", 8: "layering_depth", 9: "accent_echo",
     10: "one_sprezzatura", 11: "hem_off_widest_point", 12: "one_metal", 13: "genre_dominant",
     14: "one_trend_item", 15: "fabric_cut_formality", 16: "scale_to_person", 17: "layer_hems_apart",
-    18: "repairs_not_opposed", 19: "near_face_weight", 20: "neutrals_lightness_apart", "B1": "interest_sources", "B2": "not_median_choice",
+    18: "repairs_not_opposed", 19: "near_face_weight", 20: "neutrals_tone_or_step", "B1": "interest_sources", "B2": "not_median_choice",
     "B3": "not_default_formula", "B4": "texture_adds", "B5": "silhouette_decided",
     "B6": "not_same_for_anyone", "B7": "passport_from_talk", "P1": "face_colour_in_windows",
     "P2": "colours_in_her_pairings", "P3": "print_dominant_hers", "P4": "off_palette_has_carrier",
