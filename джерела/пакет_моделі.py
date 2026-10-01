@@ -434,6 +434,11 @@ def _РЕ_кандидата(r):
 #     їхнього близнюка з тієї самої крамниці;
 #   · «kinds_missing» — «нема речі» ≠ «річ не потрібна»: без поля модель мовчки складає образ
 #     без слота.
+#   · ПР-10 (01.10.2026, власник: «прибрати все зайве, зробити її максимально чіткою»): рядок
+#     «pool» пояснює ВСІ числові ключі речі (`hem_cm`, `fabric_c`, `*_from`, `branch`, `register`
+#     доти їхали без жодного слова); «shops» знято — код крамниці вже в «n», домени складанню
+#     нічого не дають; «poles_unavailable» — лише id, без речення коду українською; «style_rules»
+#     прямо названо українськими — їх пише бриф, і модель має знати, що це не шум.
 import збирач_промптів as _ЗП
 import внутрішня_мова as _ВМ_П
 
@@ -474,17 +479,19 @@ import внутрішня_мова as _ВМ_П
                     "the language"),
         _ЗП.Поле("day", "her day as facts: what she will do, where and on what ground she will walk, how "
                         "long, the weather, the hour and light, the level of the occasion",
-                 як="think each item of each outfit through against this day, not only the shoes — "
-                    "together with her wishes, refusals, her items and body"),
+                 як="check every item of every outfit against this day, not only the shoes"),
         _ЗП.Поле("person", "her coloring, palette and body"),
         _ЗП.Поле("person.palette.slot_roles", "the color role of each kind of item in her palette's scheme",
                  як="keep these roles; an item with «in_arc»: false lies outside the scheme — take it only "
                     "as a declared break in «deliberate», at most one per outfit; a colored item in the "
                     "role «neutral» is a break too"),
         _ЗП.Поле("pool", "the catalog items the code let through: in stock, right for this temperature and "
-                         "the stated dress code, within her palette's lightness and her refusals; each with "
-                         "its full description; «formality» — from 1 to 10, the same scale as the occasion "
-                         "(1 home, 5 office, 9 gala); «L» — lightness from 0 to 100",
+                         "the stated dress code, within her palette's lightness and her refusals; «formality» — "
+                         "1 to 10, the scale of the occasion (1 home, 5 office, 9 gala); «L» — lightness 0 to "
+                         "100; «hem_cm» — where the hem falls, cm above the floor; «fabric_c» — the °C the "
+                         "fabric suits; «L_from», «hem_from» — what the number was read from; «branch» — where "
+                         "the colour lies against her palette: core, edge or break; «register» — the item's "
+                         "style language",
                  як="take items only from here and name each by its «n» in full; fitness for the "
                     "occasion, taste and the unity of the outfit are yours", треба=True),
         # К-3: короткий запис речі (перемикач `короткий_запис`) пише часті поля короткими
@@ -514,7 +521,7 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("she_rejected_items", "items she rejected on earlier cards",
                  як="do not take them or their twins from the same shop"),
         _ЗП.Поле("zones_she_keeps_covered", "body zones she does not show"),
-        _ЗП.Поле("style_rules", "rules of the style corpus for her and this case (the code's words)",
+        _ЗП.Поле("style_rules", "rules of the style corpus for her and this case, in Ukrainian",
                  як="keep each"),
         _ЗП.Поле("kind_notes", "what the code says about kinds of items in this pool: each kind "
                                "carries \"statements\" — codes defined in \"statement_codes\""),
@@ -524,11 +531,10 @@ import внутрішня_мова as _ВМ_П
                  як="each outfit follows its own idea and puts its «id» in «pole»; outfits differ by "
                     "idea, not by a detail; give no explanations — they are asked for once an outfit is "
                     "chosen"),
-        _ЗП.Поле("poles_unavailable", "ideas this pool cannot give",
+        _ЗП.Поле("poles_unavailable", "«id» of the ideas this pool cannot give",
                  як="do not invent them and do not fill their place with a variation of an outfit you "
                     "already made"),
         _ЗП.Поле("register_rules", "the corpus rule behind each register label of the items"),
-        _ЗП.Поле("shops", "shop codes used in «n»"),
         _ЗП.Поле("outfits_wanted", "how many outfits to put together", треба=True),
     ),
     правила=(

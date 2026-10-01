@@ -62,6 +62,23 @@ _ПРИЙОМ = {"перегук_рис": "echo_features", "тон_у_тон": "
            "колор_блок": "color_block", "контраст_як_носій": "contrast_as_carrier",
            "розміщення": "placement", "принт": "print", "метал": "metal",
            "драматизація_м_якої": "dramatize_soft", "сивина": "grey_hair"}          # palettes.ПРИЙОМИ
+# СУТЬ ПРИЙОМУ — АНГЛІЙСЬКОЮ (ПР-10, п.12). `palettes.ПРИЙОМИ` пише суть реченням українською
+# (`суть_моделі` / `суть`), і доти воно їхало в англійський промпт складання як є. Тут — та сама
+# суть внутрішньою мовою за кодом прийому; прийом поза переліком лишає свою суть, як доти.
+СУТЬ_ПРИЙОМУ_EN = {
+    "echo_features": "repeat her eye colour as an accent, her hair as a neutral, her skin as her own white",
+    "tone_on_tone": "one colour family, 2–3 visible steps of lightness, different textures",
+    "analogous": "neighbouring families of the palette with a step of lightness between them",
+    "muted_complementary": "a family plus its complement; one of the two muted or small",
+    "neutral_plus_accent": "her neutrals plus one accent; the family of her eyes comes first",
+    "color_block": "2–3 families in equal areas",
+    "contrast_as_carrier": "a colour outside the palette can be worn when the outfit's contrast matches hers",
+    "placement": "palette colours near the face; colours outside it in kinds far from the face (bottom, shoes)",
+    "print": "a print fits when its dominant colour is in the palette and its inner contrast is close to hers",
+    "metal": "metal by colour temperature: warm — gold, cool — silver, neutral — both",
+    "dramatize_soft": "make a soft palette dramatic by lightness contrast, texture and shine, not by chroma",
+    "grey_hair": "re-measure: contrast, depth and chroma soften; grey becomes a neutral; the eyes are the main accent",
+}
 _МЕТАЛ = {"золото": "gold", "срібло": "silver", "і золото, і срібло": "gold_and_silver",
           "обидва": "gold_and_silver"}
 # Хто обрав основу образу (`пакет_моделі`: «основа.джерело»). Різниця «вона обрала сама» /
@@ -632,9 +649,12 @@ def палітра(п):
                                     colors=[колір_з_hex(к) for к in (x.get("кольори") or [])])
                                for x in п["поєднання"] if isinstance(x, dict)]
     if п.get("прийоми"):
-        пал["techniques"] = [dict({"technique": _з(_ПРИЙОМ, x.get("прийом"))},
-                                  **({"gist": x["суть"]} if x.get("суть") else {}))
-                             for x in п["прийоми"] if isinstance(x, dict)]
+        пал["techniques"] = []
+        for x in п["прийоми"]:
+            if isinstance(x, dict):
+                т = _з(_ПРИЙОМ, x.get("прийом"))
+                суть = СУТЬ_ПРИЙОМУ_EN.get(т) or x.get("суть")
+                пал["techniques"].append(dict({"technique": т}, **({"gist": суть} if суть else {})))
     # ── ОСНОВА ОБРАЗУ — КОДАМИ, А НЕ УКРАЇНСЬКИМИ КЛЮЧАМИ (рядок 171 дошки) ──────
     # Доти `основа` падала в «як є» нижче й доїжджала до англійського промпта рук 1–2
     # словником `{"слово":"хакі","hex":"#a0aa8d","джерело":"стилістка обрала під цей вихід"}`:
@@ -649,6 +669,19 @@ def палітра(п):
         if к not in ("схема", "ролі_слотів", "нейтралі", "акценти", "метал", "найдальші",
                      "поєднання", "прийоми", "основа") and v not in (None, "", [], {}):
             пал[к] = v
+    # СЛОВА КОЛЬОРІВ — КОДАМИ (ПР-10, п.12). `palettes.для_пакета` кладе в `accent_families`,
+    # `neutral_axes` і `wardrobe_season` слова лексикону («м'ятний», «срібний»), бо дописати
+    # переклад у дріт тоді не можна було (К-3); у промпт вони їхали кирилицею. Слово без коду
+    # лишається словом — факт не губиться.
+    _к = lambda w: (код("color_name", w) or w) if isinstance(w, str) else w
+    if isinstance(пал.get("accent_families"), list):
+        пал["accent_families"] = [dict(x, colors=[_к(w) for w in (x.get("colors") or [])])
+                                  if isinstance(x, dict) else x for x in пал["accent_families"]]
+    if isinstance(пал.get("neutral_axes"), list):
+        пал["neutral_axes"] = [dict(x, name=_к(x.get("name"))) if isinstance(x, dict) else x
+                               for x in пал["neutral_axes"]]
+    if isinstance(пал.get("wardrobe_season"), dict):
+        пал["wardrobe_season"] = {с: [_к(w) for w in (v or [])] for с, v in пал["wardrobe_season"].items()}
     return пал
 
 
@@ -952,7 +985,7 @@ def полюси(п, образів=None):
 def пакет(п):
     """ПАКЕТ_V1 обʼєктом коду → дані промпта складання кодами: випадок, день, людина, пул одним
     переліком (комплект — `two_piece`, слота нема), межі складання полями, її речі номерами,
-    правила корпусу рядками, задуми, недосяжні задуми, крамниці, скільки образів."""
+    правила корпусу рядками, задуми, недосяжні задуми, скільки образів."""
     п = п or {}
     день = п.get("день")
     вих = {}
@@ -1009,11 +1042,14 @@ def пакет(п):
         вих["poles"] = полюси(п["полюси"], з.get("образів"))
     if п.get("полюси_недосяжні"):
         import протокол as _ПР
-        вих["poles_unavailable"] = [{"id": _ПР.ЗНАЧЕННЯ_ВІДПОВІДІ_EN["полюс"].get(x.get("ід"), x.get("ід")),
-                                     "why": x.get("чому")} for x in п["полюси_недосяжні"]]
+        # ЛИШЕ ID (ПР-10): «чому» — речення коду українською, а моделі досить знати, яких задумів
+        # цей пул не дає; причина лишається в пакеті й у сліді K-VAR-01 для звіту власника.
+        вих["poles_unavailable"] = [_ПР.ЗНАЧЕННЯ_ВІДПОВІДІ_EN["полюс"].get(x.get("ід"), x.get("ід"))
+                                    for x in п["полюси_недосяжні"]]
     if п.get("реєстри_ід"):
         вих["register_rules"] = {реєстр(к): v for к, v in п["реєстри_ід"].items()}
-    if п.get("магазини"):
-        вих["shops"] = п["магазини"]
+    # КРАМНИЦІ («shops») У ПРОМПТ НЕ ЙДУТЬ (ПР-10): модель називає річ «n» повністю, і код
+    # крамниці вже в ньому («#12·29»), тож «близнюк із тієї самої крамниці» видно без мапи; домени
+    # нічого не додають до складання образу. Мапа лишається в пакеті (`магазини`) для людини.
     вих["outfits_wanted"] = int(з.get("образів") or 1)
     return вих
