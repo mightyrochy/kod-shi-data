@@ -968,6 +968,10 @@ def опис(об):
                     ("межі", "she_refuses"), ("неповний", "missing")):
         if об.get(к):
             вих[ключ] = об[к]
+    # її межі — кодами тієї самої осі, що в пакеті складання (ВМ-1): «підбори» → heels
+    if isinstance(вих.get("she_refuses"), list):
+        вих["she_refuses"] = list(dict.fromkeys(слово_межі(w) if isinstance(w, str) else w
+                                                for w in вих["she_refuses"]))
     if об.get("укладка"):
         вих["ways_to_wear"] = [{"item": x.get("річ"), "options": x.get("опції")}
                                for x in об["укладка"] if isinstance(x, dict)]
