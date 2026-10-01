@@ -200,15 +200,18 @@ def _тип(v):
 
 
 def _межа_типу(v):
-    """Тип речі в її межі («Не хоче») кодом: тип речі, інакше ознака («підбори» → heels), інакше як є."""
+    """Тип речі в її межі («Не хоче») кодом: тип речі, ознака («підбори» → heels), довжина, вид речі
+    (межа на весь слот, «без сукні» → dress), інакше як є."""
     if not v:
         return None
-    return _ВМ.код("item_type", v) or _ВМ.код("feature", v) or _тип(v)
+    return (_ВМ.код("item_type", v) or _ВМ.код("feature", v) or _ВМ.код("length", v)
+            or _ВМ.код("slot", v) or _тип(v))
 
 
 # Осі, якими код чує слово межі (`profile.жорстке_ні_фільтр`): тип, ознака, тканина, принт, клас і
 # назва кольору, зона. Слово поза всіма лишається словом — це її межа, а не фраза коду.
-_ОСІ_СЛОВА_МЕЖІ = ("item_type", "feature", "fabric", "pattern", "color_class", "color_name", "zone")
+_ОСІ_СЛОВА_МЕЖІ = ("item_type", "feature", "length", "fabric", "pattern", "color_class", "color_name", "zone",
+                   "slot")
 
 
 def слово_межі(w):
@@ -1064,8 +1067,9 @@ def пакет(п):
     # ТА САМА МЕЖА ДВІЧІ — РАЗ (ВМ-1): `she_refuses` (слова фільтра `жорстке_ні`) і
     # `case.refusals` (чинне вето паспорта) — один предикат (`міст_вхід._застосувати_паспорт`);
     # код, що вже стоїть у `case.refusals`, у `she_refuses` не повторюється.
-    if вих.get("she_refuses") and isinstance((вих.get("case") or {}).get("refusals"), dict):
-        _вже = {x for v in вих["case"]["refusals"].values() if isinstance(v, list) for x in v}
+    _відм = (вих.get("case") or {}).get(_ПОЛЯ_ВИПАДКУ["вето"])     # той самий ключ, що пише `випадок`
+    if вих.get("she_refuses") and isinstance(_відм, dict):
+        _вже = {x for v in _відм.values() if isinstance(v, list) for x in v}
         _лишок = [x for x in вих["she_refuses"] if x not in _вже]
         if _лишок:
             вих["she_refuses"] = _лишок
