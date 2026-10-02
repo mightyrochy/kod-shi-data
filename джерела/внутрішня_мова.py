@@ -699,6 +699,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "card_added_by_code": "рядок на картці образу про те, що в ньому зробив ДОБІР, а не стилістка: "
                           "речі, докладені в порожні місця, і речі, зняті або замінені, "
                           "бо з ними образ не проходив перевірку (ярус 4)",
+    # ФОТО-1 (02.10.2026, CLAUDE.md п.17): крок опису бачив фото речей і замінив одну річ запасною того
+    # самого слота, яку код перевірив тим самим судом (`заміна_з_фото`)
+    "card_item_swapped": "рядок на картці образу: стилістка, побачивши фото речей, замінила одну річ "
+                         "іншою того самого роду з її добору — що замінила і чому",
     "card_code_unknown": "рядок у згорнутому блоці «код не знає» на картці образу: чого код не "
                          "знає — про речі, про неї чи про її день — і що через це лишилось не "
                          "перевіреним. Це не вада образу й не порада, а чесне «не знаю»",
@@ -1030,6 +1034,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                            "item — the item's name)",
     "code_swapped_item_from_stylist_look": "the named item was replaced with another one from the same "
                                            "selection (values: was — what it was, now — what it is now)",
+    "stylist_swapped_item_after_photo": "after seeing the item photos the stylist replaced one item with "
+                                        "another of the same kind from her selection; the code checked the "
+                                        "outfit again (values: was — what it was, now — what it is now; "
+                                        "reason — colour: the photo showed a clearly different colour than "
+                                        "the shop named, kind: the photo showed another kind of item, "
+                                        "occasion: the item on the photo does not suit her occasion)",
     "code_removed_this_layer": "the layer named above is exactly the one removed from the stylist's outfit",
     "set_already_has_top_and_bottom": "the set already has its own top and bottom, so a separate item there "
                                       "would be a second one in the same place (values: slot — slot code)",
@@ -1278,6 +1288,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_length_unknown_outside_contour": "the cards do not carry the length of the named items, so they are "
                                            "left out of the outfit's shape, counted from the other items "
                                            "(values: slots — slot codes)",
+    "dividing_line_item_length_unknown": "the outfit's dividing line is the hem of its top item, and the cards do "
+                                         "not carry the length of the named top items, so the line was not "
+                                         "judged (values: slots — slot codes)",
     "cut_unknown_form_default": "the cards do not name the cut of some items, so the code counts the outfit's "
                                 "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
@@ -2480,6 +2493,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "stay: a named step outside the window, not a substitution (values: "
                                       "in_accent_kinds — items of her family the windows gave across the "
                                       "accent kinds; added)",
+    "scheme_family_topped_up": "the scheme she chose herself had too few items of one of its colour families "
+                               "on separate large items, so items of that family were topped up into this kind "
+                               "from the catalogue by hue arc and chroma alone, past the window's lightness and "
+                               "chroma bands (values: role — the family's scheme role; added)",
     "chosen_colour_barely_in_catalogue": "the colour she chose is barely present in this catalogue: the "
                                          "accent kinds hold this few items of her family while the scheme "
                                          "asks for an accent. Tell her so plainly — there is nothing to take "
@@ -2665,8 +2682,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "dress, a second layer, the outer layer), in roughly equal areas; bag, shoes and "
                                 "jewellery may repeat one of them but do not carry the scheme by themselves: an "
                                 "outfit with colour only on accessories does not keep this scheme; with the metal "
-                                "— no more than three colour families (values: scheme; families — colour codes, or the "
-                                "shop's word when the colour has no code)",
+                                "— no more than three colour families; when chosen_by is she_chose, the scheme is her own explicit "
+                                "choice and an outfit whose large items miss a family the pool holds is a gate, not a "
+                                "remark (values: scheme; families — colour codes, or the shop's word when the colour "
+                                "has no code; chosen_by — she_chose when she picked the scheme herself)",
     "scheme_needs_colour": "an outfit in which NO item carries colour does not keep this scheme — that is "
                            "blandness, not calm (values: scheme; colour_kinds — the kinds the scheme gives "
                            "colour)",
