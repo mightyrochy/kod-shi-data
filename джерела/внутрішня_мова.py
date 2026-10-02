@@ -2416,10 +2416,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                          "separately, so the code cannot tell these apart either",
     # ── ошатність нагоди й ошатність речі з фото (`композитор_слоти`) ───────────────
     "kind_cut_to_occasion_formality": "the kind was cut to the dressiness band of the occasion: items whose "
-                                      "formality interval lies outside the band left the pool, items with no "
+                                      "formality interval lies below the band left the pool; items dressier "
+                                      "than the band stay after the fitting ones, and items with no "
                                       "formality of their type stay (not knowing is not a reason to remove) "
                                       "(values: band — the band from…to; had, fit, without_formality, "
-                                      "removed; removed_types — {item type code: how many})",
+                                      "removed, above_band; removed_types — {item type code: how many})",
     "kind_empty_after_occasion_formality": "no item of this kind fits the dressiness band of the occasion, so "
                                           "the kind stays empty: a daytime layer over an outfit for this "
                                           "occasion is not an outfit (values: band — the band from…to; had; "
