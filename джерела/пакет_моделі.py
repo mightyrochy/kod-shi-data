@@ -289,7 +289,8 @@ def пакувати_кандидатів(кандидати, нумерація
         # ЛИШЕ КОЛИ КОМПЛЕКТ Є В ПУЛІ. Рядок не має права стояти «про всяк випадок»:
         # інструкція без предмета — шум у промпті.
         рядки.append("Слот «комплект» — костюм або комплект: ЦІЛИЙ образ, верх і низ разом, "
-                     "як сукня. До нього не додається ні верх, ні низ. Узяти лише половину "
+                     "як сукня. До нього не додається ні верх, ні низ — крім одного верху під "
+                     "піджаком чи жилетом комплекту (позначка «top_is_layer»). Узяти лише половину "
                      "можна тільки з великої потреби — і тоді назви це в полі «свідомо» "
                      "свого образу.")
     if ном:
@@ -534,6 +535,9 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("pool[].two_piece", "a set sold as one item",
                  як="it is a whole outfit, like a dress: add no top or bottom to it; take one half only "
                     "when you must, with «deliberate», naming it «n»/top or «n»/bottom"),
+        _ЗП.Поле("pool[].top_is_layer", "the top half of this set is a jacket, waistcoat or cardigan",
+                 як="one top under it (blouse, shirt, turtleneck, top) is a normal suit outfit, not a "
+                    "doubling; a second bottom or a second top still is"),
         _ЗП.Поле("pool[].for_her_wish", "her wish this item answers"),
         # ВІДСІВ-1 (02.10): пул не знімає речі нижче смуги нагоди — судить суд (K-KOH-07)
         _ЗП.Поле("pool[].below_band", "the code measures this item as more casual than the level of the "
