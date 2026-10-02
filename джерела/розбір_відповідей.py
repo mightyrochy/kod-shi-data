@@ -87,6 +87,10 @@ import дріт_моделі as _Д
                             "a statement carries names or numbers)",
                  як="do not describe it as an item of the outfit, nor from the photo of another item; you "
                     "may say in one sentence that it is missing"),
+        # МАК-2 (рядок 258, П-4): порада про рівень макіяжу — заявами; вибір її (п.9)
+        _ЗП.Поле("makeup", "a soft note on the level of her make-up today, as statement codes «code»",
+                 як="say it in your own words in one gentle sentence in the third part of «text»: advice "
+                    "only, her choice stands, and nothing in the outfit depends on it"),
         # ФОТО-1 (02.10.2026, CLAUDE.md п.17): друга половина заміни — лише коли опис назвав річ, а
         # код знайшов запасні, що пройшли його суд (`заміна_з_фото`); у звичайному виклику поля нема
         _ЗП.Поле("swap_spares", "the item you named for replacement, your reason, and the spares of the "
@@ -166,7 +170,7 @@ def _укладка_опису(канал_3):
 
 def опис_обʼєкт(речі, образ=None, задум=None, випадок=None, свідомі=None, фото_є=True,
                 канал_3=None, палітра=None, день=None, день_образу=None, неповний=None,
-                межі=None, мова_тексту=None, випадок_коди=None, заміна_запасні=None):
+                межі=None, мова_тексту=None, випадок_коди=None, заміна_запасні=None, макіяж=None):
     """Четвертий виклик: `ОПИС_V1` — обраний образ обʼєктом коду (його перевіряє схема,
     його кладе звіт); моделі його несе `промпт_опису` англійським дротом.
 
@@ -230,6 +234,11 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     _межі = [str(м).strip() for м in (межі or []) if str(м or "").strip()]
     if _межі:
         об["межі"] = _межі
+    # МАК-2 (рядок 258, П-4): порада про рівень макіяжу — ЗАЯВИ коду; опис — єдиний текст, який
+    # жінка читає цілком, тож порада, що жила лише в брифі складання, до неї не доходила
+    _мк = [з for з in (макіяж or []) if isinstance(з, dict) and з.get("code")]
+    if _мк:
+        об["макіяж"] = _мк
     # ── ПАЛІТРА ЖІНКИ В ОПИСІ (K-PAL-11/14/15 і прийоми, 17.09.2026) ─────────
     # Опис — єдиний текст, який жінка читає цілком. Доти в ньому не було ні
     # металу, ні «чого уникати», ні жодного поєднання: практиковий шар палітри
