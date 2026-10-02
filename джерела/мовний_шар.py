@@ -1452,10 +1452,41 @@ import збирач_промптів as _ЗП_Р
 # ЩАБЛІ ШКАЛИ ОШАТНОСТІ ДЛЯ МОВНОЇ МОДЕЛІ (НП-в крок 2) — англійською за
 # `формальність.ФОРМАЛЬНІСТЬ_ЯКОРІ` (K-KOH-01): те саме число 1–10, яким код міряє речі
 # (`інтервал_формальності`), тож смуга з її числа й інтервал речі стоять на одній шкалі.
-_ЩАБЛІ_EN = ("1 loungewear at home, 2 athleisure, 3 jeans, T-shirt and sneakers, 4 neat casual, dark denim, "
-             "5 textured jacket, refined knit, loafers, 6 blazer with trousers, sheath dress, "
-             "7 suit without tie, cocktail dress, 8 business suit, 9 tuxedo, evening gown, "
+_ЩАБЛІ_EN = ("1 loungewear at home; 2 athleisure; 3 jeans, T-shirt and sneakers; 4 neat casual, dark denim; "
+             "5 textured jacket, refined knit, loafers; 6 blazer with trousers, sheath dress; "
+             "7 suit without tie, cocktail dress; 8 business suit; 9 tuxedo, evening gown; "
              "10 white tie, full evening dress")
+
+
+# Слова прикладів — звичайні назви подій, не коди: з кодами місць модель почала ставити `place` у двозначних
+# фразах (театр / прем'єра, суд — корпоративний офіс), а «нагода/місце різні» зросли з 1–6 до 7–12 з 40.
+_ПРИКЛАДИ_МІСЦЬ_EN = {
+    "дім": "home", "спорт": "sport", "парк": "a park", "дитячий_майданчик": "a playground", "прогулянка": "a walk",
+    "транспорт_довгий": "a long trip", "подорож_переліт": "a flight", "кафе": "a café", "бар": "a bar",
+    "офіс_креативний": "a creative office", "лікарня_візит": "a hospital visit", "музей": "a museum",
+    "домашня_вечірка": "a house party", "ресторан_районний": "a neighbourhood restaurant",
+    "школа_батьківські": "a school parents' meeting", "театр": "a theatre or a concert", "клуб": "a club",
+    "церква_служба": "a church service", "конференція": "a conference", "вернісаж": "a vernissage",
+    "святкова_вечеря": "a festive dinner", "похорон": "a funeral", "ресторан_високий": "an upscale restaurant",
+    "опера_прем'єра": "an opera premiere", "офіс_корпоративний": "a corporate office",
+    "співбесіда": "a job interview", "презентація": "a presentation", "весілля_денне": "a daytime wedding",
+    "fine_dining": "fine dining", "весілля_вечірнє": "an evening wedding"}
+
+
+def _смуги_місць_en():
+    """Якорі шкали прикладами подій (ШКАЛА-1070, рядок 1070): звична смуга кожного місця — з тієї самої
+    таблиці коду (`формальність.МІСЦЯ_ДІАПАЗОНИ`), купно за смугою, звичайними словами (`_ПРИКЛАДИ_МІСЦЬ_EN`).
+    ЩО ЦЕ МІНЯЄ В РІШЕННІ. Доти модель мала лише щаблі одягом і ставила смугу «на око»: та сама фраза
+    двічі давала різне число у 6–11 з 40 (`проби/нагода_фрази_нг4.py`, зсуви на крок), а побачення в
+    районному ресторані — [6,7] замість звичних цьому місцю 4–5. Тепер у неї є від чого почати."""
+    import формальність as _ФОРМ_
+    купи = {}
+    for м, (від, до) in _ФОРМ_.МІСЦЯ_ДІАПАЗОНИ.items():
+        купи.setdefault((від, до), []).append(_ПРИКЛАДИ_МІСЦЬ_EN[м])
+    return " · ".join("%d–%d %s" % (від, до, ", ".join(к)) if від != до else "%d %s" % (від, ", ".join(к))
+                      for (від, до), к in sorted(купи.items()))
+
+
 _ПОЛЯ_EN = {
     "occasion": "what kind of event it is",
     "place": "where she will be",
@@ -1476,8 +1507,8 @@ _ПОЛЯ_EN = {
     "temperature_c": "air temperature, °C",
     "weather_feel": "the weather, when no number of degrees is named",
     "precipitation": "rain or snow",
-    "formality": ("how dressy this outing is, {from, to} on the 1–10 scale: always present, your estimate "
-                  "from her words, the event and \"chosen\" — %s" % _ЩАБЛІ_EN),
+    "formality": ("how dressy this outing is, {from, to} on the 1–10 scale: always present, taken by the "
+                  "anchors from her words, the event and \"chosen\" — steps: %s" % _ЩАБЛІ_EN),
     "intent": "what matters most to her: comfort_first — comfort and freedom of movement; "
               "context_optimal — being appropriate to the event and its level; statement — she wants "
               "to impress, stand out or be noticed, however she words it (all eyes on her, a star, bold, "
@@ -1616,6 +1647,7 @@ def _коди_розмови():
         if _група(ім, с) == "вільні":
             р.append("- %s — %s%s" % (ім, _ПОЛЯ_EN[ім], "; " + _тип_en(с) if с.get("type") == "array" else ""))
     р.append("- formality — %s; without quote" % _ПОЛЯ_EN["formality"])
+    р.append("  · anchors — usual bands of events (examples for the band only, not codes): %s" % _смуги_місць_en())
     # МОВА-1 (02.10): `part_of_day` — службове, як ці два, але доти його рядка тут не було: модель не
     # бачила ні опису, ні кодів, і «вдень», «по обіді», «на обід» без години губились (проба
     # `мова1_нечіткі.py`: 0 з 5 таких випадків).
@@ -1675,8 +1707,25 @@ def _коди_розмови():
     "parts, both describe the part she names first, and \"event\" keeps all of them.",
     # НП-в крок 2: ошатність — число мовної моделі ЗАВЖДИ, без цитати (її слова, подія, плитки);
     # з нього код рахує смугу й відсів пулу, інших джерел смуги нема.
-    "\"formality\" is always present, without quote: how dressy this outing is, as you understand it "
-    "from all her words, the event and \"chosen\"; she said nothing about it — your best estimate.",
+    # ШКАЛА-1070 (рядок 1070): смуга — за якорем, не на око. Початок — звична смуга найближчого прикладу
+    # (`_смуги_місць_en`), зсув — лише за тим, що вона чи подія додають понад свій вид, і не більше кроку, цілою
+    # смугою (ширина та сама: доти [5,6]↔[5,7] і [4,6]↔[5,6] для тієї самої фрази). Вгору — K-KOH-07 (ставки,
+    # господар) і K-KOH-06 (вечір там, куди ходять удень). Приклад уже несе свою звичну пору: театр увечері —
+    # смуга театру (плитка «Театр, концерт» о 20:00). «Рівний вибір — угору» (K-KOH-06, укр. база вища) знято:
+    # нотаріус їхав 5–6 → 6–8, суд 6–7 → 7–9 (A/B 4 виклики на фразу).
+    # Побачення (рядок 1130, довідник нагод `аудит/тести/нагода_архітектура_2026-09-28.md` §1.1: «побачення / школа —
+    # смуга 4–5; побачення: помітніше ввечері»): удень 4–5, увечері на крок вище — 5–6. Доти вечеря-побачення о 19:30
+    # лишалась на 4–5 районного ресторану (вечірній підйом — лише для денних місць), і рука 1 брала трикотажні штани.
+    "\"formality\" is always present, without quote: how dressy this outing is, taken by the anchors in "
+    "\"codes\", not by eye. Start from the usual band of the example nearest to her event; it already holds "
+    "the usual time of day of such an event. The examples are for the band only and do not decide \"place\" "
+    "or \"occasion\". Keep the band as it is unless her words or the event add what its kind does not have; "
+    "then move the whole band, keeping its width, one step at most: down — she says it is simple, nothing "
+    "special; up — she wants to dress up, there are stakes or a host (an interview, a speech, she is the "
+    "hostess or the birthday girl, an official reception), or the event is in the evening where people "
+    "usually go by day (an office, a school, a museum). A date is 4–5 by day and one step higher in the evening "
+    "(5–6): in the evening she is seen more. A named dress code — its band. She said nothing about it — the "
+    "usual band of her event.",
     # НП-в (принцип власника 01.10: «код має знати те, що може точно порахувати»): видів,
     # «найближчого виду», ролі, аудиторії, віри, обсягу й частин дня модель коду більше не дає —
     # стилістка бере подію її словами. Зарезервований колір — рахівне (вето майже-білого).
