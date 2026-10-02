@@ -1596,8 +1596,6 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                      "(values: colour — the code of the colour or family, hue — the hue in degrees, slot — "
                      "slot code; on_windows — true when the judgement rests on the windows of colour words, "
                      "not on a measurement)",
-    "accent_in_declared_focus": "the accent stands in one slot, but that zone is declared the focus, and then "
-                                "it is legitimate as a point (values: slot — slot code)",
     "echo_accent_or_declare_focus": "repeat the colour in a second zone (shoes, bag, scarf, jewellery), "
                                     "declare the focus, or remove it",
     "accent_echo_over_ceiling": "the accent colour is repeated in too many zones: the repetition stops "
