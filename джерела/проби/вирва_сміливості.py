@@ -5,8 +5,9 @@
 loud_from із промпту вибору), контраст (max L*−min L*≥50), фактура (ОДЯГ, не аксесуар: блиск/сатин/мереживо/оксамит/лак/атлас/принт),
 багатобарвний (≥3 кольорові сектори по 60° серед речей з C*≥15). «Заявлено» (deliberate) і «поза палітрою» (in_arc) до балу не входять.
 Вага знахідок: з промпту вибору, а коли її нема (після ВИБ-1) — з промпту ремонту за id знахідки; нема ніде → 0 і друкується «нема»."""
-import gzip, json, glob, re, math, collections as K
+import gzip, json, glob, re, math, sys, collections as K
 Р = "/home/user/kod-shi-data/аудит/перевірки/"
+ДАНІ, ФІЛЬТР = (sys.argv[1] if len(sys.argv) > 1 else None), re.compile(sys.argv[2] if len(sys.argv) > 2 else ".")  # ЗАМІР-Ш: тека з <прогін>/вердикти.txt.gz замість ПЕР-492 + ЖП-а; фільтр — за іменем теки
 ТЕК = {"satin", "lace", "guipure", "velvet", "velour", "patent_leather", "atlas", "openwork", "tweed", "boucle"}
 АКС = ("bag", "jewel", "scarf", "belt", "headband", "shoes", "pumps", "loafers", "boots", "sandals", "sneakers", "mules", "flats", "plimsolls", "clutch", "tote", "ring", "kerchief", "hat", "glasses", "tights", "bracelet", "earring", "necklace", "brooch", "bow", "hair")
 дж = lambda с: json.loads(с) if с and с.lstrip()[:1] in ("{", "[") else None
@@ -33,12 +34,12 @@ def зібрати(сп):  # потік викликів → вирви: асе�
         elif кр == "choice": [x.update(c=(п, в)) for x in руки[::-1] if x["r"] and not x["c"] and наб(п["verdict"][0]) & {i for o in x["r"][1]["outfits"] for i in o["items"]}][:1]
     return руки
 ВИР, ВИГ, СЛ, НЕВ, ЦН = [], [], re.compile(r"satin|lace|velvet|sequin|metallic|glossy|shine|patent|print|floral|embroider|silk|sheen"), [], {}  # вирви; вигадані образи рук 3–4; невідомі номери; цілі слотів схеми по нагодах
-for f in sorted(glob.glob(Р + "per_492/*/вердикти.txt.gz")):
+for f in sorted(x for x in glob.glob((ДАНІ or Р + "per_492") + "/*/вердикти.txt.gz") if ФІЛЬТР.search(x.split("/")[-2])):
     for в in json.load(gzip.open(f, "rt"))["прогони"][0]["вердикти"]:
-        н = f.split("/")[-2][:-2]; кл = [(c["крок"], дж(c["запит"]["текст"]), дж(c["відповідь_сира"])) for c in в["етапи"]["виклики"]]
-        if str(в["рука"]) in "12": ВИР.append(("В", н, int(в["рука"]), зібрати(кл)[0])); НЕВ += [(н, в["рука"], x["підпис"]) for c in в["етапи"]["виклики"] for x in (c.get("розбір_блоків") or {}).get("невідомі_в_образах", [])]
+        н = f.split("/")[-2][:None if ДАНІ else -2]; кл = [(c["крок"], дж(c["запит"]["текст"]), дж(c["відповідь_сира"])) for c in в["етапи"]["виклики"]]
+        if str(в["рука"]) in "12": ВИР.append(("Ш" if ДАНІ else "В", н, int(в["рука"]), зібрати(кл)[0])); НЕВ += [(н, в["рука"], x["підпис"]) for c in в["етапи"]["виклики"] for x in (c.get("розбір_блоків") or {}).get("невідомі_в_образах", [])]
         else: ВИГ.append((н, int(в["рука"]), [(None if i["slot"] in ("earrings", "bracelet", "necklace", "ring", "brooch", "jewelry") else i.get("color_hex"), i["slot"] in ("top", "bottom", "dress", "set", "outerwear"), bool(СЛ.search((i["name"] + i["details"]).lower()))) for i in кл[1][2]["items"]]))
-for т in sorted(glob.glob(Р + "zhp_a/*")):
+for т in ([] if ДАНІ else sorted(glob.glob(Р + "zhp_a/*"))):
     сп = []
     for f in sorted(glob.glob(т + "/вікл/*ПАКЕТ*") + glob.glob(т + "/вікл/*ВЕРДИКТ*"), key=lambda p: int(re.search(r"seed3_(\d+)", p).group(1))):
         м = re.match(r"── ПРОМПТ[^\n]*\n(.*?)\n── ВІДПОВІДЬ[^\n]*\n(.*)", gzip.open(f, "rt").read(), re.S); п = дж(м.group(1)) if м else None
@@ -72,11 +73,11 @@ for с, н, р, x in ВИР:
         КОЛ[гр]["речей"] += len(пр); КОЛ[гр]["у зоні"] += sum(зона(d["hex"]) for d in пр); КОЛ[гр]["ΔE≤20 до цілі"] += sum(min(math.dist(лчх(d["hex"]), лчх(t)) for t in Ц) <= 20 for d in пр)
         КОЛ[гр]["секторів"] += len({сек(d["hex"]) for d in пр}); КОЛ[гр]["слів"] += len({d.get("color") for d in пр})
 print("сер. нагода рука | сміливих у 10 | у 5 | бал обраного (0–4) | що сталося зі сміливими з 10"); [print(*r) for r in РЯД]
-print("ідей смілива/решта", ЛІЧ["ідей", True], ЛІЧ["ідей", False], "| у5:", ЛІЧ["у5", True], ЛІЧ["у5", False], "| обране смілива:", ЛІЧ["обране", True], "з 30 | перехід (було,стало):", {(a, b): ЛІЧ["перехід", a, b] for a in (0, 1) for b in (0, 1)}, "\nзагибель сміливих R1:", dict(ФЕ))
+print("ідей смілива/решта", ЛІЧ["ідей", True], ЛІЧ["ідей", False], "| у5:", ЛІЧ["у5", True], ЛІЧ["у5", False], "| обране смілива:", ЛІЧ["обране", True], "з", len(ВИР), "| перехід (було,стало):", {(a, b): ЛІЧ["перехід", a, b] for a in (0, 1) for b in (0, 1)}, "\nзагибель сміливих R1:", dict(ФЕ))
 print("полюс: ідей/у5/обрано/сміливих:", {p: tuple(v) for p, v in ПОЛ.items()}, "| вага знахідок у5/відсіяні: %.2f/%.2f" % tuple(sum(w for k, w in ВАГ if k == b) / sum(1 for k, _ in ВАГ if k == b) for b in (True, False)))
-print("вибір: ранг ваги обраного (0=найлегший):", sorted((k[1], v) for k, v in ЛІЧ.items() if k[0] == "ранг ваги"), "| позиція у списку:", sorted((k[1], v) for k, v in ЛІЧ.items() if k[0] == "позиція"), "| облік зауважень у причині:", ЛІЧ["облік зауважень у причині", True], "з 30 | «найменше»:", ЛІЧ["твердить найменше"], "із них хибно:", ЛІЧ["…але не найменше ні вагою ні числом"])
+print("вибір: ранг ваги обраного (0=найлегший):", sorted((k[1], v) for k, v in ЛІЧ.items() if k[0] == "ранг ваги"), "| позиція у списку:", sorted((k[1], v) for k, v in ЛІЧ.items() if k[0] == "позиція"), "| облік зауважень у причині:", ЛІЧ["облік зауважень у причині", True], "з", len(ВИР), "| «найменше»:", ЛІЧ["твердить найменше"], "із них хибно:", ЛІЧ["…але не найменше ні вагою ні числом"])
 print("знахідки (частка ідей) сміливі/решта:", {c: ("%.2f" % (КОД[True][c] / ЛІЧ["ідей", True]), "%.2f" % (КОД[False][c] / ЛІЧ["ідей", False])) for c in ("accessory_spends_chroma_budget", "loud_accent_on_low_contrast", "off_palette_colour_near_face", "accent_orphan")}, "| невідомі номери після ремонту:", НЕВ)
-print("постачання: пул лише «ядро» у", ЛІЧ["пул: ядро/решта", True], "з 30; полюс break недоступний у", ЛІЧ["полюс break недоступний"], "з 30 | колір (одяг):", {г: "речей %d · у зоні %.0f%% · ΔE≤20 до цілі %.0f%% · секторів/слів на вирву %.1f/%.1f" % (v["речей"], 100 * v["у зоні"] / v["речей"], 100 * v["ΔE≤20 до цілі"] / v["речей"], v["секторів"] / 30, v["слів"] / 30) for г, v in КОЛ.items()})
+print("постачання: пул лише «ядро» у", ЛІЧ["пул: ядро/решта", True], "з", len(ВИР), "; полюс break недоступний у", ЛІЧ["полюс break недоступний"], "з", len(ВИР), "| колір (одяг):", {г: "речей %d · у зоні %.0f%% · ΔE≤20 до цілі %.0f%% · секторів/слів на вирву %.1f/%.1f" % (v["речей"], 100 * v["у зоні"] / v["речей"], 100 * v["ΔE≤20 до цілі"] / v["речей"], v["секторів"] / len(ВИР), v["слів"] / len(ВИР)) for г, v in КОЛ.items()})
 ГР = [(h, ЦН[н]) for н, _, i in ВИГ for h, о, _ in i if h and о]  # одяг рук 3–4: колір і близькість до цілей слотів схеми тієї ж нагоди
 print("руки 3–4 (вигадані): сміливих %d з %d" % (sum(ознаки(р)[1] >= 2 for _, _, р in ВИГ), len(ВИГ)), [(н, р, ознаки(i)[1]) for н, р, i in ВИГ], "| одяг у зоні %d, ΔE≤20 до цілі %d з %d" % (sum(зона(h) for h, _ in ГР), sum(min(math.dist(лчх(h), лчх(t)) for t in Ц_) <= 20 for h, Ц_ in ГР), len(ГР)))
 print("вага знахідок у промпті вибору (звідки):", {k[1]: v for k, v in ЛІЧ.items() if k[0] == "вага"}, "| вага: нема в даних" if ЛІЧ["вага", "вибір"] + ЛІЧ["вага", "ремонт"] == 0 else "")
