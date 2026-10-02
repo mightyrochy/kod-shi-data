@@ -699,6 +699,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "card_added_by_code": "рядок на картці образу про те, що в ньому зробив ДОБІР, а не стилістка: "
                           "речі, докладені в порожні місця, і речі, зняті або замінені, "
                           "бо з ними образ не проходив перевірку (ярус 4)",
+    # ФОТО-1 (02.10.2026, CLAUDE.md п.17): крок опису бачив фото речей і замінив одну річ запасною того
+    # самого слота, яку код перевірив тим самим судом (`заміна_з_фото`)
+    "card_item_swapped": "рядок на картці образу: стилістка, побачивши фото речей, замінила одну річ "
+                         "іншою того самого роду з її добору — що замінила і чому",
     "card_code_unknown": "рядок у згорнутому блоці «код не знає» на картці образу: чого код не "
                          "знає — про речі, про неї чи про її день — і що через це лишилось не "
                          "перевіреним. Це не вада образу й не порада, а чесне «не знаю»",
@@ -1030,6 +1034,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                            "item — the item's name)",
     "code_swapped_item_from_stylist_look": "the named item was replaced with another one from the same "
                                            "selection (values: was — what it was, now — what it is now)",
+    "stylist_swapped_item_after_photo": "after seeing the item photos the stylist replaced one item with "
+                                        "another of the same kind from her selection; the code checked the "
+                                        "outfit again (values: was — what it was, now — what it is now; "
+                                        "reason — colour: the photo showed a clearly different colour than "
+                                        "the shop named, kind: the photo showed another kind of item, "
+                                        "occasion: the item on the photo does not suit her occasion)",
     "code_removed_this_layer": "the layer named above is exactly the one removed from the stylist's outfit",
     "set_already_has_top_and_bottom": "the set already has its own top and bottom, so a separate item there "
                                       "would be a second one in the same place (values: slot — slot code)",
