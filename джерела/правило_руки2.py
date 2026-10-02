@@ -133,6 +133,10 @@ import ід_правил as ІП
     dict(тема="palette_scheme", ід="K-PAL-18", коди=("K-PAL-18",),
          бриф=(), місця=("judge",),
          вхід="палітри.розвилка[].спец.слоти: роль акцент + C"),
+    # МАК-2 (рядок 258, П-4): порада про рівень макіяжу живе лише в промпті (рядок брифа `макіяж`)
+    dict(тема="makeup", ід="R-MUA-02", коди=("R-MUA-02",),
+         бриф=("макіяж",), місця=("prompt",),
+         вхід="особа.рівень: low + сценарій.макіяж: not_said + occasion_dressy | макіяж: bright + business"),
     dict(тема="materials", ід="K-MAT-03", коди=("K-MAT-03",),
          бриф=(), місця=("pool", "judge"),
          вхід="сценарій.темп_c + річ.сезон_тканини"),
@@ -190,6 +194,11 @@ def вхід(запис, d, п=None):
         є = any(isinstance(сп, dict) and сп.get("роль") == "акцент" and сп.get("C")
                 for г in розв for сп in (((г or {}).get("спец") or {}).get("слоти") or {}).values())
         return (True, None) if є else (False, "палітри.розвилка: no_accent_role")
+    if ід == "R-MUA-02":
+        # та сама функція, що вирішує рядок брифа руки 1 і тему розмови: вони не розходяться
+        import face_contrast as _KC
+        return (True, None) if _KC.порада_з_випадку(((п or {}).get("особа") or {}).get("рівень"), сцен) \
+            else (False, "сценарій.макіяж: no_makeup_advice_applies")
     if ід == "K-MAT-03":
         return (True, None) if сцен.get("темп_c") is not None else (False, "сценарій.темп_c: none")
     if ід == "K-COL-06-M":
