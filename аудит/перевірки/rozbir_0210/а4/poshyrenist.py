@@ -6,6 +6,7 @@ R = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 h = lambda x: tuple(int(x[i:i+2], 16) for i in (1, 3, 5))
 TOP = re.compile(r'блуз|сороч|\bтоп|футбол|светр|джемпер|гольф|водолаз|лонгслів|боді|кофт|майк|пуловер', re.I)
 JKT = re.compile(r'піджак|жакет|жилет|блейзер|костюм|двійка', re.I)
+SPORT = re.compile(r'світшот|джогер|спортивн|хакі$', re.I)
 KNIT = re.compile(r'в[ʼ\'’]?яз|светр|джемпер|кардиган|гольф|пуловер|трикотаж', re.I)
 runs = collections.defaultdict(set); hands = collections.Counter()
 def codes(f): return {z['code'] for z in f.get('заяви') or []}
@@ -18,7 +19,7 @@ for run in sorted(os.listdir(R)):
     for v in d['прогони'][0]['вердикти']:
         if v['рука'] not in ('1', '2'): continue
         its = v.get('речі_образу') or []
-        suit = [r for r in its if (r.get('укладка') or {}).get('тип') in ('костюм', 'комплект') and JKT.search(r['назва']) and not TOP.search(r['назва'])]
+        suit = [r for r in its if (r.get('укладка') or {}).get('тип') in ('костюм', 'комплект') and JKT.search(r['назва']) and not TOP.search(r['назва']) and not SPORT.search(r['назва'])]
         if suit and not any(TOP.search(r['назва']) for r in its if r not in suit):
             runs['В-1 фінал: піджак/жилет комплекту без верху'].add(run); hands['В-1'] += 1
         st = v['етапи']['виклики']
