@@ -432,6 +432,18 @@ _РОС_ЛИШЕ_ЗІ_СВІДКОМ = {"образ", "носить", "сумк�
 # він і породжується: `pipeline.мова_повтор` і показ читали його літералом
 # «R-LNG-UA» у трьох місцях, і перше перейменування розвело б їх мовчки.
 ЯРУС_УКРАЇНСЬКОЇ = "R-LNG-UA"
+# Ід правила гейта → код порушення внутрішньої мови (ВМ-3б, рядок 542): повтор мови несе моделі
+# код, а не `суть`/`дозволено` словами (визначення — `внутрішня_мова.ПОРУШЕННЯ_МОВИ`). Сторож
+# повноти — `тест_протоколу` (кожне правило АНТИ і ярус української мають код).
+КОДИ_ПОРУШЕНЬ = {ЯРУС_УКРАЇНСЬКОЇ: "russian_in_text", "K-SIG-01": "status_signal",
+                 "K-LNG-04": "refuting_her_belief", "R-HELM-03": "stripes_body_volume",
+                 "K-PC-06": "age_as_filter", "R-ONB-06": "hide_flaw_fix_body", "R-TYP-04": "type_verdict",
+                 "R-ABC-08": "style_score", "R-PSY-02": "colour_emotion",
+                 "R-PSY-01": "clothes_psychology_promise", "R-BPC-02": "body_by_size",
+                 "R-SIM-12/R-VEB-10": "gender_theory_prescriptive", "R-SIM-03/M11": "trickle_down_law",
+                 "K-KOH-08": "outshine_host", "R-PP-09/R-LOC-06": "western_cue_transfer",
+                 "R-LNG-01": "body_zone_advice", "R-NVB-02": "comfort_causal_promise",
+                 "R-TYP-05": "type_label_mechanism"}
 
 
 def російське(текст):

@@ -40,6 +40,7 @@
 """
 import json as _json
 import math as _math
+import re as _re
 
 import протокол as _ПР
 import збирач_промптів as _ЗП
@@ -385,14 +386,16 @@ def _без_входу(о, сцен, речі):
             if isinstance(х, dict) and х.get("стан") == "без входу":
                 вих.append(dict(rule=list(х.get("правила") or []), check=бік,
                                 what={"free_text": str(х.get("що") or ""), "lang": "uk"},
-                                missing={"free_text": str(х.get("бракує") or х.get("вхід") or ""), "lang": "uk"}))
+                                missing={"free_text": str(х.get("бракує") or х.get("вхід") or ""), "lang": "uk"},
+                                **({"point": _ВМ.код_пункту(х.get("пункт"))} if _ВМ.код_пункту(х.get("пункт")) else {})))
     за_ід = {р["ід"]: р for р in речі}
     for відро in ("черга_на_вхід", "утримано"):
         for з in (о.get(відро) or []):
             if isinstance(з, dict):
                 вих.append(dict(rule=[з.get("правило")], kind=відро,
                                 items=[_до_фото(х, за_ід) for х in (з.get("речі") or []) if х != "образ"],
-                                what={"free_text": str(з.get("суть") or ""), "lang": "uk"}))
+                                what={"free_text": str(з.get("суть") or ""), "lang": "uk"},
+                                **({"statements": list(з["заяви"])} if з.get("заяви") else {})))
     return вих
 
 
@@ -415,7 +418,7 @@ def _контраст_обличчя(F, T, записи, source):
     import outfit as _O, колір_світлота as _КС, composer as _КМ
     особа = _O.контраст_особи(F, source)
     if not особа.get("доступно"):
-        return dict(без_входу=dict(rule=["K-CLR-02"], check="обличчя",
+        return dict(без_входу=dict(rule=["K-CLR-02"], check="обличчя", point=_ВМ.код_пункту("K-CLR-02"),
                                    what={"free_text": "контраст біля обличчя", "lang": "uk"},
                                    missing={"free_text": str(особа.get("чому") or "нема шкіри чи волосся"), "lang": "uk"}))
     рг = [_КМ._у_річ(dict(з), з["слот"], T) for з in записи if з.get("lab") and з.get("слот")]
@@ -725,12 +728,14 @@ def _сцена_для_моделі(суд_):
         _ЗП.Поле("outfit", "ids of the items worn together: the outfit you judge", треба=True),
         _ЗП.Поле("alternatives", "ids of her items shown as alternatives, not worn in the outfit"),
         _ЗП.Поле("check", "the code's check of the outfit as a whole: findings (rule, strength, sila_np — "
-                          "weight 0–1, register — gate blocks, remark is said, items, essence, fix), "
-                          "structure blockers, and checklist points the outfit passed or failed",
+                          "weight 0–1, register — gate blocks, remark is said, items, statements — what the "
+                          "code found, fix — how to repair it), structure blockers, and the codes of the "
+                          "checklist points the outfit passed and failed",
                  треба=True),
         _ЗП.Поле("changes", "changes the code has verified: each replaces one outfit item with her "
                             "alternative or a shop item and lowers the total weight of findings"),
-        _ЗП.Поле("unknown", "what the code could not check and what input it lacked"),
+        _ЗП.Поле("unknown", "what the code could not check: inputs she did not give, checklist points "
+                            "not run (codes), and rules about her items that lacked data"),
     ),
     правила=(
         "\"answer\": answer her question first and directly, in one to three sentences.",
@@ -763,29 +768,104 @@ _РЕГІСТР_КОД = {"гейт": "gate", "репліка": "remark", "пи�
 _СТАН_КОД = {"пройдено": "passed", "провал": "failed"}
 
 
+# ── ВМ-3б (01.10.2026, рядок 540 дошки, CLAUDE.md п.12): СУД — КОДАМИ, НЕ ПРОЗОЮ КОДУ ─────────
+# ЩО БУЛО. «check» і «unknown» везли в англійський промпт оцінки фрази коду українською:
+# суть і ремонт знахідок, імена пунктів чекліста («рівно один фокус»), бік чекліста словом
+# («надлишок»), а ід речей її фото й змін — кирилицею («ф1·2», «з1»). На стенді (сід 3) —
+# 7 958 знаків кирилиці від коду на два виклики «ОЦІНКА: відповідь».
+# ЩО ТЕПЕР. Знахідка й блокер — заявами (`statements`, `fix`: ті самі коди, що в ремонті й
+# виборі, `дріт_моделі.заяви`); пункт — кодом (`внутрішня_мова.ЧЕКЛІСТ_КОДИ`); що означає кожен
+# код, модель читає в одному словнику виклику (`task.statement_codes`). Слова лишаються в
+# обʼєкті суду — для звіту власника й сторожа; на дріт ідуть лише коди.
+# Знахідка без заяв (старий суд) — як доти, прозою (`what`): мовчки губити її не можна.
 def _вільний(т):
     """Рядок коду → позначений вільний текст внутрішньої мови (мова — українська ядра)."""
     return {"free_text": str(т), "lang": "uk"} if т not in (None, "") else None
 
 
+def _заяви(обʼєкт, ключ_заяв):
+    """Заяви обʼєкта на дріт (`дріт_моделі.заяви`): код рядком або `{код: значення}`; без заяв — None."""
+    import дріт_моделі as _ДМ
+    return _ДМ.заяви(обʼєкт.get(ключ_заяв)) or None
+
+
+# Ід на дроті — латинкою: ід речі її фото «ф1»/«ф1·2» → «p1»/«p1-2», ід зміни «з1» → «c1»,
+# ід знахідки «з-о1-1» → «f-o1-1» (`протокол.ід_на_дріт`). Відповідь повертається тими самими
+# ідами, і `прийняти_оцінку` читає їх назад (`ід_з_дроту`).
+_ФОТО_ІД = _re.compile(r"ф(\d+)(?:·(\d+))?")
+_ФОТО_ДРІТ = _re.compile(r"p(\d+)(?:-(\d+))?")
+_ЗМІНА_ІД = _re.compile(r"з(\d+)")
+_ЗМІНА_ДРІТ = _re.compile(r"c(\d+)")
+
+
+def ід_на_дріт(v):
+    """Ід оцінки (річ фото, зміна, знахідка) → ід дроту латинкою; інше — як є."""
+    if not isinstance(v, str):
+        return v
+    м = _ФОТО_ІД.fullmatch(v)
+    if м:
+        return "p" + м.group(1) + ("-" + м.group(2) if м.group(2) else "")
+    м = _ЗМІНА_ІД.fullmatch(v)
+    if м:
+        return "c" + м.group(1)
+    return _ПР.ід_на_дріт(v)
+
+
+def ід_з_дроту(v):
+    """Ід дроту («p1-2», «c1», «f-o1-1») → ід оцінки; інше — як є."""
+    if not isinstance(v, str):
+        return v
+    v = v.strip()
+    м = _ФОТО_ДРІТ.fullmatch(v)
+    if м:
+        return "ф" + м.group(1) + ("·" + м.group(2) if м.group(2) else "")
+    м = _ЗМІНА_ДРІТ.fullmatch(v)
+    if м:
+        return "з" + м.group(1)
+    return _ПР.ід_з_дроту(v)
+
+
+def _ід_усюди(в):
+    """`ід_на_дріт` над усім деревом даних: кожен рядок, що є ід точно, — латинкою."""
+    if isinstance(в, dict):
+        return {к: _ід_усюди(v) for к, v in в.items()}
+    if isinstance(в, list):
+        return [_ід_усюди(v) for v in в]
+    return ід_на_дріт(в)
+
+
 def перевірка_для_моделі(суд_):
-    """Суд коду → «check» задачі `ОЦІНКА`: знахідки, блокери й пункти чекліста, що пройдено чи
-    провалено (пройдений пункт — доказ «що вдало»; «без входу» — у `unknown`)."""
+    """Суд коду → «check» задачі `ОЦІНКА`: знахідки, блокери й коди пунктів чекліста, що
+    пройдено (`passed` — доказ «що вдало») чи провалено (`failed`); «без входу» — у `unknown`."""
+    import дріт_моделі as _ДМ
     с = суд_.get("суд") or {}
     знахідки = []
     for з in с.get("findings") or []:
         знахідки.append({к: v for к, v in {
             "id": з.get("ід"), "rule": з.get("правило"), "strength": з.get("сила"),
             "sila_np": з.get("сила_нп"), "register": _РЕГІСТР_КОД.get(з.get("регістр"), з.get("регістр")),
-            "items": з.get("речі") or [], "essence": _вільний(з.get("суть")), "fix": _вільний(з.get("ремонт")),
+            "items": з.get("речі") or [], "statements": _заяви(з, "заяви"),
+            "what": None if з.get("заяви") else _вільний(з.get("суть")),
+            "fix": _заяви(з, "ремонт_заяви") or (None if з.get("заяви") else _вільний(з.get("ремонт"))),
             "gate_on_her_item": (True if з.get("без_замків") else None)}.items() if v not in (None, "", [])})
-    блокери = [{к: v for к, v in {"code": б.get("код"), "items": б.get("речі") or [],
-                                  "essence": _вільний(б.get("суть"))}.items() if v not in (None, "", [])}
+    # блокер — кодом закритого переліку (`дріт_моделі._БЛОКЕР`); його суть словами їде лише тоді,
+    # коли нема ні заяв, ні коду з переліку (та сама межа, що в `дріт_моделі.вердикт`)
+    блокери = [{к: v for к, v in {"code": _ДМ._з(_ДМ._БЛОКЕР, б.get("код")), "items": б.get("речі") or [],
+                                  "statements": _заяви(б, "заяви"),
+                                  "what": (None if б.get("заяви") or б.get("код") in _ДМ._БЛОКЕР
+                                           else _вільний(б.get("суть")))}.items()
+                if v not in (None, "", [])}
                for б in с.get("blockers") or []]
-    пункти = [{"side": п["бік"], "point": п["пункт"], "rules": п["правила"], "state": _СТАН_КОД[п["стан"]],
-               "what": _вільний(п["що"])} for п in суд_.get("пункти") or [] if п.get("стан") in _СТАН_КОД]
+    пункти = {}
+    for п in суд_.get("пункти") or []:
+        if п.get("стан") in _СТАН_КОД:
+            пункти.setdefault(_СТАН_КОД[п["стан"]], []).append(_ВМ.код_пункту(п.get("пункт")) or п.get("що"))
+    # вузол — слот найтіснішого місця графа образу (`суд_від_моделі`, «верхній_шар») → код слота
+    вузол = с.get("node")
+    if isinstance(вузол, str):
+        вузол = _ВМ.код("slot", вузол) or вузол
     return {к: v for к, v in {"findings": знахідки, "blockers": блокери, "points": пункти,
-                              "node": с.get("node")}.items() if v not in (None, "", [])}
+                              "node": вузол}.items() if v not in (None, "", [], {})}
 
 
 # ДОПИТ ПІД КАРТКОЮ (власник 26.09: «Під карткою можна допитати»). Вхід — той самий, що в
@@ -813,8 +893,8 @@ def перевірка_для_моделі(суд_):
 
 def промпт_допиту(суд_, питання, попередня, мова_тексту=None):
     """Промпт задачі `ДОПИТ` рядком: суд той самий, питання — нове, попередня відповідь — у вході."""
-    дані = дані_оцінки(суд_, питання)
-    дані["previous"] = попередня or {}
+    дані = _ід_усюди(дані_оцінки(суд_, питання))
+    дані["previous"] = _ід_усюди(попередня or {})
     return _json.dumps(_ЗП.зібрати(ДОПИТ, дані, мова_тексту=мова_тексту), ensure_ascii=False, default=str)
 
 
@@ -831,15 +911,27 @@ def невідоме_для_моделі(суд_):
     каблучки, оправа окулярів, криси капелюха — K-SIZ-01, K-EYE-01, K-HAT-02) у промпт не йдуть:
     на стенді вони давали 55 % промпта при нулі стосунку до її фото. Звіт власника бере
     `без_входу` повним переліком — там нічого не знято. `missing` (чого бракувало коду) лишається
-    у звіті: моделі досить назви пункту й правила (та сама межа, що `протокол._чекліст_на_дріт`)."""
-    вих = []
+    у звіті: моделі досить назви пункту й правила (та сама межа, що `протокол._чекліст_на_дріт`).
+
+    ВМ-3б (рядок 540): пункт без входу — КОДОМ у спільному списку `not_run` (правила пункту
+    названо в його визначенні, `task.statement_codes`), питання суду про її речі — заявами;
+    `why` входу «колір» (чому пікселів не було) лишається звітові, як `missing`."""
+    вих, не_перевірено = [], []
     for б in суд_.get("без_входу") or []:
         if б.get("input"):
-            вих.append(б)
+            вих.append({к: б[к] for к in ("input", "items") if б.get(к)})
         elif б.get("check"):
-            вих.append({к: б[к] for к in ("rule", "check", "what") if б.get(к)})
+            if б.get("point"):
+                не_перевірено.append(б["point"])
+            else:
+                вих.append({к: б[к] for к in ("rule", "check", "what") if б.get(к)})
         elif б.get("items"):
-            вих.append({к: б[к] for к in ("rule", "items", "what") if б.get(к)})
+            вих.append({к: v for к, v in (("rule", б.get("rule")), ("items", б.get("items")),
+                                          ("statements", _заяви(б, "statements")),
+                                          ("what", None if б.get("statements") else б.get("what")))
+                        if v})
+    if не_перевірено:
+        вих.append({"not_run": list(dict.fromkeys(не_перевірено))})
     return вих
 
 
@@ -864,8 +956,8 @@ def дані_оцінки(суд_, питання=None):
 
 
 def промпт_оцінки(суд_, питання=None, мова_тексту=None):
-    """Промпт задачі `ОЦІНКА` рядком (англійський шаблон збирача)."""
-    return _json.dumps(_ЗП.зібрати(ОЦІНКА, дані_оцінки(суд_, питання),
+    """Промпт задачі `ОЦІНКА` рядком (англійський шаблон збирача); ід — латинкою (`ід_на_дріт`)."""
+    return _json.dumps(_ЗП.зібрати(ОЦІНКА, _ід_усюди(дані_оцінки(суд_, питання)),
                                    мова_тексту=мова_тексту), ensure_ascii=False, default=str)
 
 
@@ -928,7 +1020,7 @@ def прийняти_оцінку(відповідь, суд_):
         if not isinstance(п, dict):
             continue
         про = п.get("about") if п.get("about") in ПРО else None
-        речі = [str(і) for і in (п.get("items") or []) if str(і) in образ]
+        речі = [ід_з_дроту(str(і)) for і in (п.get("items") or []) if ід_з_дроту(str(і)) in образ]
         текст = _текст(п.get("text"))
         if not текст:
             continue
@@ -948,7 +1040,7 @@ def прийняти_оцінку(відповідь, суд_):
     for н, з in enumerate(об.get("change") if isinstance(об.get("change"), list) else []):
         if not isinstance(з, dict):
             continue
-        ід = str(з.get("id") or "")
+        ід = ід_з_дроту(str(з.get("id") or ""))
         if ід not in зміни:
             сторож.append(dict(де="change[%d]" % н, чому="change_not_verified", що=ід, текст=_текст(з.get("text"))))
             continue
@@ -971,9 +1063,10 @@ def повтор_вердикту(суд_, сторож):
     """Рядок для ОДНОГО повтору, коли `verdict` суперечить гейту: що саме в суді (коди)."""
     if not any(с.get("чому") == "contradicts_gate" for с in сторож or []):
         return None
-    гейти = [з.get("ід") for з in (суд_.get("суд") or {}).get("findings") or []
+    import дріт_моделі as _ДМ
+    гейти = [ід_на_дріт(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []
              if з.get("регістр") == "гейт" or з.get("без_замків")]
-    блок = [б.get("код") for б in (суд_.get("суд") or {}).get("blockers") or []]
+    блок = [_ДМ._з(_ДМ._БЛОКЕР, б.get("код")) for б in (суд_.get("суд") or {}).get("blockers") or []]
     return ("Your verdict \"wear_as_is\" contradicts the check: blocking findings %s%s. Answer again "
             "with the same schema." % (", ".join(str(х) for х in гейти) or "—",
                                        ("; structure blockers " + ", ".join(str(х) for х in блок)) if блок else ""))

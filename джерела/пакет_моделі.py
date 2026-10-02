@@ -535,7 +535,8 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("kind_notes", "what the code says about kinds of items in this pool: each kind "
                                "carries \"statements\" — codes defined in \"statement_codes\""),
         _ЗП.Поле("kinds_missing", "kinds of items this pool has none of", як="say so in «needed»"),
-        _ЗП.Поле("break", "where this pool offers a deliberate break of the palette"),
+        _ЗП.Поле("break", "where this pool offers a deliberate break of the palette: the kind, and "
+                          "\"statements\" — codes defined in \"statement_codes\""),
         _ЗП.Поле("poles", "ideas of the outfits",
                  як="each outfit follows its own idea and puts its «id» in «pole»; outfits differ by "
                     "idea, not by a detail; give no explanations — they are asked for once an outfit is "
@@ -1446,9 +1447,8 @@ def пакет_для_моделі(F, каталог, тіло, слоти=("в�
     # `структура_образу`, каже «смуга просить, а пул має чим закрити».
     import суд_погода as _ПОГ
     _пальто = bool(_ПОГ.пальтова_смуга((сценарій or {}).get("темп_c")) and _ПОГ.пальта_пулу(кандидати))
-    # Р2-2а: пальто в холод (K-OUT-33) вимкнене руці 2 — ні обов'язкового слота, ні «coat_required»
-    import правило_руки2 as _ПР2
-    if _пальто and _ПР2.торкнулось("K-OUT-33", "prompt", поле="coat_required"):
+    # Р2-2а: пальто в холод вимкнене руці 2 — ні обов'язкового слота, ні «coat_required» (гачок один: Р2-2д)
+    if _пальто and _ПОГ.знято_рукою_2("prompt", поле="coat_required"):
         _пальто = False
     _рз = рез.get("розрив") or {}
     # ── ПОЛЮС, ЯКОГО ПУЛ НЕ НЕСЕ, БІЛЬШЕ НЕ ЗАМОВЛЯЄТЬСЯ (K-VAR-01, 17.09.2026) ─
@@ -1561,7 +1561,7 @@ def пакет_для_моделі(F, каталог, тіло, слоти=("в�
         пакет["магазини"] = {к: м for м, к in _коди.items()}
     if _рз.get("слот"):
         пакет["розрив"] = {к: v for к, v in (("слот", _рз["слот"]),
-                                             ("чому", _рз.get("чому") or "")) if v}
+                                             ("чому", _рз.get("чому") or [])) if v}
     # ЗАВДАННЯ — ЛИШЕ ТЕ, ЩО ЧИТАЄ КОД: скільки образів, яка схема відповіді й мова вільного
     # тексту в ній. Роль, вхід, правила й СКЕЛЕТ (з тієї самої схеми, якою відповідь потім
     # перевіряють) дає збирач з оголошення `СКЛАДАННЯ` (`промпт_складання`, П-2).
