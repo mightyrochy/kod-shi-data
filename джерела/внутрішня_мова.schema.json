@@ -785,6 +785,19 @@
       }
      ]
     },
+    "minute": {
+     "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
+     "oneOf": [
+      {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 59
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
     "part_of_day": {
      "description": "частина доби, коли години не названо",
      "enum": [
@@ -5053,6 +5066,14 @@
          {
           "const": "makeup_widens_face_contrast",
           "description": "visible make-up adds lightness contrast near the face: an item near the face may stand a step further from the face's lightness than her own contrast allows, but need not (values: delta_L — what the make-up adds, L*; face_limit_L — the limit with it, L*)"
+         },
+         {
+          "const": "visible_makeup_helps_low_contrast",
+          "description": "her features are low in contrast, and visible make-up (a defined lip or eye) is what lifts the face against the clothes near it: for this occasion it may be suggested softly; nothing in the outfits depends on it, and what she plans stays hers"
+         },
+         {
+          "const": "bright_makeup_softer_for_work",
+          "description": "bright make-up is the less usual level for work or an interview, where a visible but moderate one is the usual: a soft remark only, her choice stands and no outfit changes because of it"
          },
          {
           "const": "seen_close_seated",

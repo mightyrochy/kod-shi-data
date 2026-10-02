@@ -13,7 +13,7 @@ import ід_правил as _ід_правил
 from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей
 from розбір_відповідей import _словник_речей, _за_номером, СВІДОМИЙ_МНОЖНИК, _свідомі_з_json
 from суд_від_моделі import _сім_я_слота, _множина
-from повнота_образу import _вітрина_ремонту, _код_блокера
+from повнота_образу import _вітрина_ремонту, _код_блокера, ВИБІР as _ВИБІР
 
 
 # ── `_формат_відповіді` ЗНЕСЕНО (Т-02, 12.09.2026) ───────────────────────────
@@ -102,6 +102,13 @@ def вага_питання(z):
 # ЧОМУ ЦІ РЯДКИ (для людей; моделі це не потрібно):
 #   · «обери ті, які можеш зробити кращими, не ті, до яких менше зауважень» — інакше модель
 #     сортує образи за лічбою знахідок (R-ABC-08: число описує ребро, не образ);
+#   · ВИРВА-968 (CLAUDE.md п.17): «кращими» не казало ЗА ЧИМ, і відсів 10→5 ішов за тим, що
+#     бачила модель, — вагами знахідок і лічбою чекліста. ЗАМІР-Ш ПІСЛЯ: під `statement` 6 ідей
+#     полюса «розрив» → 0 у п'ятірці. Тепер мірило відсіву — її випадок кодами (той самий, що
+#     у вибору: намір, мета, її слова) і різні ідеї; ваг і лічби на дроті нема; зауваження
+#     саме собою не прибирає образ і оголошений хід. «break_kind» доти звався «єдиним видом,
+#     що може ламати палітру», а складання клало розрив у слот найменшого тиску пулу (низ):
+#     ремонт бачив `shoes`/`bag` і гасив оголошений розрив у низі 6 разів із 6;
 #   · «declared» — друга ітерація «лагодила» хід, який сама пояснила в першій, а код уже
 #     послабив знахідку оголошенням (`СВІДОМИЙ_МНОЖНИК`);
 #   · «excess»/«blandness» рівносильні (K-SYS-08/09); «no_input»/«not_run» — третій стан;
@@ -127,7 +134,10 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
     задача="ремонт",
     роль="You are the stylist. The code checked the outfits you put together for her; you improve them.",
     вхід=(
-        _ЗП.Поле("case", "her occasion in her and the code's words"),
+        _ЗП.Поле("case", "her case: the occasion and event, her «intent» and «goal», her words, wishes, mood "
+                         "and refusals",
+                 як="this is what she wants; which outfits you keep and how you improve them answer it"),
+        *[п for п in _ВИБІР.вхід if п.шлях.startswith("case.")],
         _ЗП.Поле("day", "her day as facts",
                  як="think each outfit through against her day item by item: replace an item that will not "
                     "stand the day, or say gently in the outfit's «day» why it stays; write «day» anew "
@@ -139,16 +149,16 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
                  треба=True),
         _ЗП.Поле("verdict[].structure.blockers", "what keeps the outfit from being shown",
                  як="each must disappear: change an item or drop the outfit"),
-        _ЗП.Поле("verdict[].findings", "what the code found: «weight» weighs the finding, not the outfit; "
-                                       "«register» «gate» must disappear (no «register» — a remark); «fix» — "
+        _ЗП.Поле("verdict[].findings", "what the code found: «register» «gate» must disappear (no «register» — "
+                                       "a remark: information about the outfit, not a score); «fix» — "
                                        "the code's repair, or the key of its text in «fixes»; «merged» — how "
                                        "many findings of one rule it joins; «declared»: true — your own "
                                        "declared move",
                  як="keep a declared move and repeat it in «deliberate», or change your mind and say why"),
-        _ЗП.Поле("verdict[].checklist", "by area, the points the outfit «failed» and how many it «passed»: "
-                                        "«excess» — what is already too much, «blandness» — what is lacking, "
-                                        "both weigh the same; «no_input» and «not_run» — points the code did "
-                                        "not check; each point is a code defined in \"statement_codes\""),
+        _ЗП.Поле("verdict[].checklist", "by area, the points the outfit «failed»: «excess» — what is already "
+                                        "too much, «blandness» — what is lacking, both weigh the same; "
+                                        "«not_run» — points the code did not check; each point is a code "
+                                        "defined in \"statement_codes\""),
         _ЗП.Поле("fixes", "the code's repair texts by key"),
         _ЗП.Поле("not_run_everywhere", "by area, the checklist points the code did not check in any outfit; "
                                        "each point is a code defined in \"statement_codes\""),
@@ -159,14 +169,20 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
                              "stands on one item, for the tightest spots, and what the code found for your "
                              "«needed» («found_for»)",
                  як="take the item a missing kind needs; the rest is your choice"),
-        _ЗП.Поле("break_kind", "the one kind of item that may break the palette",
-                 як="only with an entry in «deliberate»"),
+        _ЗП.Поле("break_kind", "where the code would place a new deliberate break of the palette: the kind "
+                               "far from the face that is the tightest spot in most outfits",
+                 як="a break you already declared («your_declared») stays in its own kind; a new break — "
+                    "only with an entry in «deliberate»"),
         _ЗП.Поле("language", "violations in your previous text", як="do not repeat them; «instead» — what to use"),
         _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
         _ЗП.Поле("outfits_wanted", "how many outfits to return", треба=True),
     ),
     правила=(
-        "Choose the outfits you can make better and improve them — not the ones with the fewest remarks.",
+        "Choose the outfits you keep by what she wants in «case» — her occasion, «intent», «goal» and her own "
+        "words — and so that their ideas («pole») differ; then improve them. Do not choose by how many remarks "
+        "an outfit has or how mild they are: an outfit that answers her better stays with its remarks.",
+        "A remark (a finding without «register» «gate») does not by itself drop an outfit or undo a move you "
+        "declared: fix it, or keep the item and say why in «done».",
         "For every finding with «register» «gate» — an entry in «done» of its outfit: «finding» is its «id».",
         "One item of each kind: an item of a kind the outfit already has replaces it; a missing kind is added "
         "without removing other items. An outfit has a dress, a set, or a top and a bottom.",

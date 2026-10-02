@@ -458,6 +458,8 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
                                      "багато пішки, фотосесія чи зйомка"),
     "surface": _перелік("surface", "що під ногами"),
     "hour": _число("година початку за 24-годинним годинником", тип="integer", minimum=0, maximum=23),
+    "minute": _число("хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
+                     тип="integer", minimum=0, maximum=59),
     "part_of_day": _перелік("part_of_day", "частина доби, коли години не названо"),
     "temperature_c": _число("температура повітря, °C"),
     "weather_feel": _перелік("weather_feel", "погода без числа градусів"),
@@ -2531,6 +2533,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                    "may stand a step further from the face's lightness than her own contrast "
                                    "allows, but need not (values: delta_L — what the make-up adds, L*; "
                                    "face_limit_L — the limit with it, L*)",
+    # МАК-2 (рядок 258, П-4; R-MUA-02): порада про РІВЕНЬ макіяжу — м'яка, вибір її (п.9)
+    "visible_makeup_helps_low_contrast": "her features are low in contrast, and visible make-up (a defined lip "
+                                         "or eye) is what lifts the face against the clothes near it: for this "
+                                         "occasion it may be suggested softly; nothing in the outfits depends on "
+                                         "it, and what she plans stays hers",
+    "bright_makeup_softer_for_work": "bright make-up is the less usual level for work or an interview, where a "
+                                     "visible but moderate one is the usual: a soft remark only, her choice "
+                                     "stands and no outfit changes because of it",
     "seen_close_seated": "she will be seen up close and seated: the top, collar, neck and ears are judged; "
                          "colour near the face matters most, the shoes are hardly seen",
     "seen_full_height": "she will be seen at full height and in motion: the whole figure counts; near the face "
