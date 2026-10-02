@@ -32,7 +32,9 @@ def зібрати(сп):  # потік викликів → вирви: асе�
     for кр, п, в in сп:
         if not (п and в): continue
         if кр == "assembly": руки.append(dict(a=(п, в), r=None, c=None))
-        elif кр == "repair": [x.update(r=(п, в)) for x in руки[::-1] if наб(п["verdict"][0]) in {frozenset(o["items"]) for o in x["a"][1]["outfits"]}][:1]
+        elif кр == "repair":  # за набором речей; коли набір змінено кодом між складанням і ремонтом (ЗАМІР-Ш, ПІСЛЯ #539) — до останнього складання без ремонту
+            зб = [x for x in руки[::-1] if наб(п["verdict"][0]) in {frozenset(o["items"]) for o in x["a"][1]["outfits"]}] or [x for x in руки[::-1] if x["r"] is None][:1]
+            [x.update(r=(п, в)) for x in зб]
         elif кр == "choice": [x.update(c=(п, в)) for x in руки[::-1] if x["r"] and not x["c"] and наб(п["verdict"][0]) & {i for o in x["r"][1]["outfits"] for i in o["items"]}][:1]
     return руки
 ВИР, ВИГ, СЛ, НЕВ, ЦН = [], [], re.compile(r"satin|lace|velvet|sequin|metallic|glossy|shine|patent|print|floral|embroider|silk|sheen"), [], {}  # вирви; вигадані образи рук 3–4; невідомі номери; цілі слотів схеми по нагодах
@@ -48,7 +50,9 @@ for т in ([] if ДАНІ else sorted(glob.glob(Р + "zhp_a/*"))):
         if п: сп.append(("assembly" if "pool" in п else "choice" if re.match("ВИБІР|CHOICE", п["task"]["answer"]) else "repair", п, дж(м.group(2))))
     ВИР += [("Ж" + т[-1], т.split("/")[-1][:-2], k + 1, x) for k, x in enumerate(зібрати(сп))]
 ФЕ, ЛІЧ, ПОЛ, ВАГ, РЯД, КОД, КОЛ = K.Counter(), K.Counter(), K.defaultdict(lambda: [0, 0, 0, 0]), [], [], [K.Counter(), K.Counter()], K.defaultdict(lambda: K.Counter())
+ПРОП = []  # руки без ремонту чи вибору в потоці викликів (вибір на одному «образі» з 25 речей — ПІСЛЯ #539, ЗАМІР-Ш) — не рахуються, але названі
 for с, н, р, x in ВИР:
+    if not (x["a"] and x["r"] and x["c"]): ПРОП.append((н, р)); continue
     ап, ао = x["a"]; рп, ро = x["r"]; сп_, со = x["c"]; Д = {i["n"]: i for i in ап["pool"]}; Ц = ЦН[н] = цілі(ап)
     for o in рп["verdict"] + сп_["verdict"]: [Д.setdefault(i["n"], i) for i in o["your_outfit"]["items"]]
     пол = {re.sub(r"\D", "", o["id"]): o["pole"] for o in ао["outfits"]}; ід5 = {o["id"] for o in ро["outfits"]}
@@ -83,3 +87,4 @@ print("постачання: пул лише «ядро» у", ЛІЧ["пул: �
 ГР = [(h, ЦН[н]) for н, _, i in ВИГ for h, о, _ in i if h and о]  # одяг рук 3–4: колір і близькість до цілей слотів схеми тієї ж нагоди
 print("руки 3–4 (вигадані): сміливих %d з %d" % (sum(ознаки(р)[1] >= 2 for _, _, р in ВИГ), len(ВИГ)), [(н, р, ознаки(i)[1]) for н, р, i in ВИГ], "| одяг у зоні %d, ΔE≤20 до цілі %d з %d" % (sum(зона(h) for h, _ in ГР), sum(min(math.dist(лчх(h), лчх(t)) for t in Ц_) <= 20 for h, Ц_ in ГР), len(ГР)))
 print("вага знахідок у промпті вибору (звідки):", {k[1]: v for k, v in ЛІЧ.items() if k[0] == "вага"}, "| вага: нема в даних" if ЛІЧ["вага", "вибір"] + ЛІЧ["вага", "ремонт"] == 0 else "")
+if ПРОП: print("пропущено рук без повного ланцюга:", ПРОП)
