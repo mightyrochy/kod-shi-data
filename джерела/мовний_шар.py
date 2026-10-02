@@ -1766,12 +1766,16 @@ def _коди_розмови():
     # презентація, суд, нотаріус, знайомство з родиною — не вище свого прикладу), а крок угору — лише за тим, що
     # названо її словами: хоче вбратися, вона сама в центрі (промова, господиня, іменинниця, мама нареченої),
     # вечір там, куди ходять удень. Дрес-код — рівно його смуга з таблиці коду (`_смуги_дрес_кодів_en`). Найближчий
-    # приклад — назване місце, а без місця — заняття («прогулянка парком» — то парк 2–3, то прогулянка 2–4).
+    # приклад: за названим місцем, без місця — за заняттям; свято з гостями в ресторані чи залі — святкова
+    # вечеря. Без цього речення — 2, 3, 4, 8 з 40 (розкид — вибір між сусідніми прикладами: парк 2–3 | прогулянка 2–4);
+    # «лише місце першим» — 1 і 2, але корпоратив у ресторані й випускний у школі падали до 4–5; «свято — приклад
+    # свята, де б не було» — 2 і 5, і ДН у кафе ставав 5–7.
     "\"formality\" is always present, without quote: how dressy this outing is, taken by the anchors in "
     "\"codes\", not by eye. A named dress code — exactly its band from the dress-code bands. Otherwise start "
     "from the usual band of the example nearest to what kind of event it is — not to how important it is to "
-    "her: the place her words name (a walk in a park — a park), or, when they name none, what she will be "
-    "doing; the example already holds the usual time of day and the usual stakes of such an event. The examples "
+    "her. Pick it by the place her words name, or, when she names none, by what she will be doing: a walk "
+    "in a park — a park; a celebration with guests in a restaurant or a hall (a corporate party, an "
+    "anniversary, a graduation, a banquet) — a festive dinner. The example already holds the usual time of day and the usual stakes of such an event. The examples "
     "are for the band only and do not decide \"place\" or \"occasion\". Keep that band and its width. Move "
     "the whole band one step — never more, never twice — only for one of these, said in her words: down — "
     "she says it is simple, nothing special; up — she says she wants to dress up; she herself is the centre "
