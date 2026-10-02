@@ -1278,6 +1278,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_length_unknown_outside_contour": "the cards do not carry the length of the named items, so they are "
                                            "left out of the outfit's shape, counted from the other items "
                                            "(values: slots — slot codes)",
+    "dividing_line_item_length_unknown": "the outfit's dividing line is the hem of its top item, and the cards do "
+                                         "not carry the length of the named top items, so the line was not "
+                                         "judged (values: slots — slot codes)",
     "cut_unknown_form_default": "the cards do not name the cut of some items, so the code counts the outfit's "
                                 "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
