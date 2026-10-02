@@ -498,6 +498,8 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("day.unknown", "what she has not told about her day: the place, the hour, the weather",
                  як="do not assume a value for it; prefer items that hold either way"),
         _ЗП.Поле("person", "her coloring, palette and body"),
+        # рядок 1423: код фігури без визначення модель читала як ярлик — тепер з ним (O — вертикаль)
+        _ЗП.Поле("person.body.shape", _Д.ФІГУРА_КОДИ_EN),
         _ЗП.Поле("person.palette.slot_roles", "the color role of each kind of item in her palette's scheme",
                  як="keep these roles; an item with «in_arc»: false lies outside the scheme — take it only "
                     "as a declared break in «deliberate», at most one per outfit; a colored item in the "

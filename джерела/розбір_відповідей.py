@@ -73,6 +73,16 @@ import дріт_моделі as _Д
                     "jewelry, the colors farthest from her (only those «farthest» names; without "
                     "«farthest» call no colour farthest from her) and one combination she can put "
                     "together herself; not as a list"),
+        # РЯДОК 1422 (K-BOD-02, K-SIL-03; CLAUDE.md п.4): її фігура кодами — ті самі, що в брифі складання
+        _ЗП.Поле("body", "her figure as the code measured it: height, shape code, zones, and statements — the cuts "
+                         "that sit best on her, where a voluminous outfit takes its anchor, where most conditions "
+                         "meet on her body",
+                 як="in the third part of «text» say in one or two sentences what this outfit does for her "
+                    "figure — which line it draws, where it sets the eye (shoulders, waist, hips, legs, "
+                    "height), with the items that do it; when an item of the outfit works against these "
+                    "statements, say so gently, the choice is hers; never name the shape code, a body type "
+                    "or a number"),
+        _ЗП.Поле("body.shape", _Д.ФІГУРА_КОДИ_EN),
         _ЗП.Поле("ways_to_wear", "ways the items can be worn: each statement is one way — its place, "
                                  "and its effect when the code knows one",
                  як="in «how_to_wear» say which way you chose"),
@@ -171,7 +181,8 @@ def _укладка_опису(канал_3):
 
 def опис_обʼєкт(речі, образ=None, задум=None, випадок=None, свідомі=None, фото_є=True,
                 канал_3=None, палітра=None, день=None, день_образу=None, неповний=None,
-                межі=None, мова_тексту=None, випадок_коди=None, заміна_запасні=None, макіяж=None):
+                межі=None, мова_тексту=None, випадок_коди=None, заміна_запасні=None, макіяж=None,
+                тіло=None):
     """Четвертий виклик: `ОПИС_V1` — обраний образ обʼєктом коду (його перевіряє схема,
     його кладе звіт); моделі його несе `промпт_опису` англійським дротом.
 
@@ -189,6 +200,7 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     шаром, Ukrainian без нього (показ шле `мова_тексту`, як рукам 3–4).
     `заміна_запасні` — ФОТО-1: `{річ: н, чому, запасні: [речі тими самими полями, що образ]}`, лише
     в зайвому виклику, коли опис назвав річ для заміни, а код знайшов запасні (`заміна_з_фото`).
+    `тіло` — її фігура кодами (`hypergraph.тіло_для_опису`, рядок 1422): без неї промпт не несе поля.
     """
     р = []
     for x in (речі or []):
@@ -237,6 +249,11 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         об["межі"] = _межі
     # МАК-2 (рядок 258, П-4): порада про рівень макіяжу — ЗАЯВИ коду; опис — єдиний текст, який
     # жінка читає цілком, тож порада, що жила лише в брифі складання, до неї не доходила
+    # ФІГУРА (рядок 1422, CLAUDE.md п.4 — третє місце правила K-BOD-02/K-SIL-03, пояснення жінці):
+    # бриф складання ніс крої, якір і вузол тіла, а опис — ні, і в 22 з 24 прогонів ж4–ж8 рука 1
+    # не казала про тіло ні слова. Тепер опис дістає ті самі коди; речення пише модель (п.12).
+    if isinstance(тіло, dict) and тіло:
+        об["тіло"] = dict(тіло)
     _мк = [з for з in (макіяж or []) if isinstance(з, dict) and з.get("code")]
     if _мк:
         об["макіяж"] = _мк
