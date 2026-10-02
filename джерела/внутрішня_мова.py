@@ -2503,6 +2503,17 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                    "may stand a step further from the face's lightness than her own contrast "
                                    "allows, but need not (values: delta_L — what the make-up adds, L*; "
                                    "face_limit_L — the limit with it, L*)",
+    "visible_makeup_helps_low_contrast": "her features are low in contrast, and visible make-up (a defined lip "
+                                         "or eye) is what lifts the face against the clothes near it: for this "
+                                         "occasion it may be suggested softly; nothing in the outfits depends on "
+                                         "it, and what she plans stays hers",
+    "bright_makeup_softer_for_work": "bright make-up is the less usual level for work or an interview, where a "
+                                     "visible but moderate one is the usual: a soft remark only, her choice "
+                                     "stands and no outfit changes because of it",
+    "business_second_near_face_jewellery": "a business look usually keeps ONE accent near the face, and this "
+                                           "outfit has more than one piece of jewellery there: a hint, not a "
+                                           "fault (values: pieces — how many near-face pieces; occasion — "
+                                           "work or interview)",
     "seen_close_seated": "she will be seen up close and seated: the top, collar, neck and ears are judged; "
                          "colour near the face matters most, the shoes are hardly seen",
     "seen_full_height": "she will be seen at full height and in motion: the whole figure counts; near the face "
@@ -2763,7 +2774,7 @@ if _спільні:
 
 # ── ПУНКТИ ЧЕКЛІСТІВ СУДУ ОБРАЗУ (ВМ-2, 01.10.2026; рядок 483 дошки, CLAUDE.md п.12) ─────────
 # ЩО БУЛО. Пункти чекліста (`суд_чеклісти`: надлишок 1–20, прісність B1–B7, палітра P1–P8,
-# аксесуари A1–A14) їхали в англійські промпти ремонту й вибору ІМЕНАМИ ПУНКТІВ — українськими
+# аксесуари A1–A15) їхали в англійські промпти ремонту й вибору ІМЕНАМИ ПУНКТІВ — українськими
 # фразами коду («рівно один фокус», «метал один, або свідомий мікс із повтором»): кошик В п.12,
 # ~650–800 символів самого `not_run_everywhere` на виклик, і R-LNG-01 їх не бачив.
 # ЩО ТЕПЕР. На дроті — КОД пункту (`ЧЕКЛІСТ_КОДИ`: ід пункту → код); що він означає, модель
@@ -2838,6 +2849,8 @@ if _спільні:
     "weather_withstood": "the weather of the day: layers, fabric, shoes and hem withstand it (K-WEA-01, K-WEA-05)",
     "metal_is_surface": "the metal of the jewelry is the surface of the item, not a rim on fabric or a stone "
                         "setting (K-COL-06-M, K-CRA-07)",
+    "business_one_near_face_accent": "a business look keeps at most one accent near the face: a hint from "
+                                     "practice, not a corpus rule of its own (K-ACC-13)",
     # пункт оцінки «Оціни мій образ» (`оцінка_образу._контраст_обличчя`), не чекліста суду: суд
     # образу віддає лише порушення K-CLR-02, а «в межах» оцінка робить пунктом сама (ВМ-3б)
     "face_contrast": "the lightness jump near her face matches her own contrast (K-CLR-02)",
@@ -2857,7 +2870,8 @@ if _спільні:
     "A4": "jewelry_scale", "A5": "necklace_off_neckline", "A6": "accessory_edge_placement",
     "A7": "price_per_combinations", "A8": "repairable_shoes", "A9": "refusal_reason_physical",
     "A10": "glasses_in_chroma", "A11": "jewelry_kind_asked", "A12": "accent_surfaces_differ",
-    "A13": "weather_withstood", "A14": "metal_is_surface", "K-CLR-02": "face_contrast"}
+    "A13": "weather_withstood", "A14": "metal_is_surface", "A15": "business_one_near_face_accent",
+    "K-CLR-02": "face_contrast"}
 _спільні = set(ПУНКТИ_ЧЕКЛІСТА) & set(ЗАЯВИ)
 if _спільні:
     raise KeyError("код пункту чекліста збігся з кодом заяви: %s" % sorted(_спільні))
