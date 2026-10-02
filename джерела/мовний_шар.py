@@ -1421,7 +1421,10 @@ _ПОЛЯ_EN = {
                   "from her words, the event and \"chosen\" — %s" % _ЩАБЛІ_EN),
     "intent": "what matters most to her: comfort_first — comfort and freedom of movement; "
               "context_optimal — being appropriate to the event and its level; statement — she wants "
-              "to impress; conventional — none of these",
+              "to impress, stand out or be noticed, however she words it (all eyes on her, a star, bold, "
+              "bright, not like everyone else, tired of grey and safe) — a separate field from goal, "
+              "both are set when she says it; conventional — none of these, also when she wants to be "
+              "unnoticed",
     "goal": "her aim for this outing: flatter — to suit her; conceal — no attention or hiding "
             "something; express — to be looked at",
     "makeup": "make-up for this outing; lips_hex only when she named a lip colour",

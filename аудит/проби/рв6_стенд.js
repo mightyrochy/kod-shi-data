@@ -87,6 +87,12 @@ let провалів = 0;
    Імена латиницею: оболонка кириличних env не має (той самий урок, що в
    `стенд_pyodide_кеш.sh`). */
 const ЗНІМКИ = process.env.ZNIMKY || null;
+/* КАРТ-1: що картка сценарію каже в «Де» й «Ошатність» і яке число дала модель (ПАСПОРТ_П.ошатність) — для проби `карт1_картка.py` */
+const КАРТКА_РЯДКИ = () => ({де: (document.getElementById('зн-місце') || {}).textContent, ошатність_картки: (document.getElementById('зн-дрес') || {}).textContent,
+  діапазон_рядок: (document.getElementById('сц-діапазон') || {}).textContent, нагода: (document.getElementById('зн-нагода') || {}).textContent,
+  коли: (document.getElementById('зн-коли') || {}).textContent, число_моделі: (() => { const п = (typeof паспортКартки === 'function') ? паспортКартки() : ((typeof ПАСПОРТ_П !== 'undefined') ? ПАСПОРТ_П : null); return (п && п.ошатність) || null; })(),
+  дрес_код_моделі: (typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П) ? (ПАСПОРТ_П.дрес_код || null) : null,
+  година_моделі: (typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П) ? (ПАСПОРТ_П.година == null ? null : ПАСПОРТ_П.година) : null});
 const ФОТО_КРАМНИЦЬ = process.env.FOTO === '1';
 /* Стеля очікування одного кадру крамниці під `FOTO=1` — та сама, що `КАДР_ЧЕКАТИ_МС`
    у показі (Ф-143): прилад не має терпіти довше, ніж терпить сам продукт. */
@@ -2344,6 +2350,12 @@ function підсумокМоделі(){
     await стор.mouse.move(0, 0);
     await с(1500);
     const доЗбору = await стор.evaluate(() => ({ключ_ходу: !!ХІД_ПЛИТОК_П.обіцянка, ошатність: (ПАСПОРТ_П || {}).ошатність || null}));
+    console.log('KARTKA · до збору:', JSON.stringify(await стор.evaluate(КАРТКА_РЯДКИ)));
+    /* КАРТ-1: число ходу плиток приходить у фоні — картка мусить перемалюватися, коли воно прийшло (до «Зібрати») */
+    const тЧ = Date.now();
+    const прийшло = await стор.waitForFunction("typeof ПАСПОРТ_ПЛИТОК_П !== 'undefined' && !!ПАСПОРТ_ПЛИТОК_П", null, { timeout: 20000 }).then(() => true).catch(() => false);
+    await с(100);
+    console.log('KARTKA · число від ходу плиток (' + (прийшло ? (Date.now() - тЧ) + ' мс після 1.5 с' : 'НЕ ПРИЙШЛО за 20 с') + '):', JSON.stringify(await стор.evaluate(КАРТКА_РЯДКИ)));
     await знімок('plytka_stsenarii', null, true);
     await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к && typeof к.onclick === 'function') к.onclick(); });
     await стор.waitForFunction("(typeof ЗБ !== 'undefined' && ЗБ && ЗБ.готово) || " + ВИРАЗ_ЗБОЮ, null, { timeout: 900000 }).catch(() => null);
@@ -2354,6 +2366,7 @@ function підсумокМоделі(){
       '\nPLYTKA · за', ((Date.now() - т0) / 1000).toFixed(1), 'с');
     ф('PLYTKA: плитка без розмови — у паспорті ошатність є числом моделі (хід плиток)',
       Array.isArray(р.ошатність) && р.ошатність.every(x => typeof x === 'number') && р.плиток.length > 0, р);
+    console.log('KARTKA · після збору:', JSON.stringify(await стор.evaluate(КАРТКА_РЯДКИ)));
     await знімок('plytka_kartky', null);
     await браузер.close();
     process.exit(провалів ? 1 : 0);
@@ -2411,6 +2424,7 @@ function підсумокМоделі(){
       + '\n   ЯДРО: нагода=' + р.нагода + ' місце=' + р.місце + ' дрес_код=' + р.дрес_код
       + '\n   ВИМІРИ: ' + р.виміри.join(' · ') + '\n   НЕ ВЗЯТО: ' + JSON.stringify(р.не_взято)
       + '\n   ЗАПИСИ ШАРУ: ' + JSON.stringify(р.записи));
+    console.log('KARTKA · після розмови:', JSON.stringify(await стор.evaluate(КАРТКА_РЯДКИ)));
     await знімок('ng4_rozmova', null);
     await знімок('ng4_kartka', '#е-випадок');
     if (ЗНІМКИ) fs.writeFileSync(path.join(ЗНІМКИ, 'ng4_rozmova_seed' + СІД + '.txt'), JSON.stringify(
@@ -3652,7 +3666,7 @@ function підсумокМоделі(){
     for (const ключ of (з.без_відповіді || [])){
       const добрав = к.записи.slice(і + 1).find(п => !(п.без_відповіді || []).includes(ключ)
                                                   && /\p{L}/u.test(String((п.вихід || {})[ключ] || '')));
-      (добрав ? добрані : нічиї).push({ключ, вхід: String((з.вхід || {})[ключ] || ''), добрав: добрав && добрав.де});
+      (добрав ? добрані : нічиї).push({ключ, вхід: (в_ => (в_ && typeof в_ === 'object') ? JSON.stringify(в_) : String(в_ || ''))((з.вхід || {})[ключ]), добрав: добрав && добрав.де});
     }
     const показ = р => р.ключ + ' («' + String(р.вхід).replace(/\s+/g, ' ').slice(0, 40) + '»)';
     if (добрані.length)
