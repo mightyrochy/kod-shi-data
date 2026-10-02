@@ -8,7 +8,10 @@ for a in 1 2 3; do
   L=/tmp/rz/runs/${W}_${N}/лог.txt
   rc=$(tail -1 /tmp/rz/done.txt | grep -o "rc=[0-9]*")
   grep -q "не дав result" $L && rc=rc=bad
-  [ "$rc" = rc=0 ] && break
+  # rc=1 стенда — лише «є ✗ у звірках» (так було в усіх 15 прогонах ЗАМІР-Д); збій = rc=124, немає картки/вердиктів, «не дав result»
+  [ "$rc" = rc=124 ] && rc=rc=bad
+  { [ -s /tmp/rz/runs/${W}_${N}/знімки/картки.txt ] && [ -s /tmp/rz/runs/${W}_${N}/вердикти.txt ]; } || rc=rc=bad
+  [ "$rc" != rc=bad ] && break
   echo "спроба $a: $rc $W $N" >> $R/прогони_ж1ж2.txt
   grep -qi "limit\|ліміт" $L && sleep 600
 done
