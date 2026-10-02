@@ -1003,6 +1003,14 @@ def опис(об):
                                for x in об["укладка"] if isinstance(x, dict)]
     if об.get("палітра"):
         вих["palette"] = палітра(об["палітра"])
+    # ФОТО-1: запасні тієї речі, яку опис назвав для заміни, — тими самими полями, що речі образу
+    _зап = об.get("заміна_запасні")
+    if isinstance(_зап, dict) and _зап.get("запасні"):
+        вих["swap_spares"] = {"item": _зап.get("річ"), "why": _зап.get("чому"), "spares": [
+            {к: v for к, v in (("n", x.get("н")), ("name", x.get("назва")), ("shop", x.get("магазин")),
+                               ("color", код("color_name", x.get("колір")) if x.get("колір") else None),
+                               ("hex", x.get("hex")), ("photos", x.get("фото_номери")))
+             if v not in (None, "", [])} for x in _зап["запасні"]]}
     return вих
 
 
