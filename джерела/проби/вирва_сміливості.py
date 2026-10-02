@@ -26,7 +26,7 @@ def річ(d):
     fb = d.get("fabric") if isinstance(d.get("fabric"), list) else [d.get("fabric")]
     return (None if d.get("color") in ("golden", "silvery", "pearly") or re.search("jewel|ring|brooch", d.get("type") or "") else d.get("hex"), not any(a in (d.get("type") or "x") for a in АКС), bool(d.get("shine") or d.get("pattern") or set(fb) & ТЕК))
 зона = lambda h: math.hypot(*лчх(h)[1:]) < 15 or 60 <= math.degrees(math.atan2(лчх(h)[2], лчх(h)[1])) % 360 < 180  # нейтраль або жовто-зелено-блакитний сектор
-цілі = lambda п: re.findall(r'(?:"hex": "|\\n\s+[а-яіїє\' ]+: )(#[0-9a-f]{6})', json.dumps([s for s in п["style_rules"] if "хема" in json.dumps(s, ensure_ascii=False) or "scheme_colours_by_kind" in json.dumps(s)], ensure_ascii=False))
+цілі = lambda п: re.findall(r'(?:"hex": "|\\n\s+[а-яіїє\' ]+: )(#[0-9a-f]{6})', json.dumps([s for s in п.get("style_rules", []) if "хема" in json.dumps(s, ensure_ascii=False) or "scheme_colours_by_kind" in json.dumps(s)] + [((п.get("person") or {}).get("palette") or {}).get("kind_colours")], ensure_ascii=False))  # СХЕМА-2: ціль слота — `person.palette.kind_colours`
 def зібрати(сп):  # потік викликів → вирви: асемблі → ремонт (за набором речей) → вибір (за перетином із відповіддю ремонту)
     руки = []; наб = lambda o: frozenset(i["n"] for i in o["your_outfit"]["items"])
     for кр, п, в in сп:
