@@ -448,8 +448,10 @@ import внутрішня_мова as _ВМ_П
 ПОЛЯ_ОБРАЗІВ_EN = {
     "образи[].підпис": "3–5 words: the idea of the outfit",
     "образи[].речі": "«n» of the item, in full",
-    "образи[].день": "one sentence, up to 25 words: how this outfit lives through her day; where her wish "
-                     "argues with the day, say so gently — the choice is hers",
+    # рядок 1427: «the choice is hers» — лише про її бажання; за свою річ стилістка каже, чому вона
+    "образи[].день": "one sentence, up to 25 words: how this outfit lives through her day; where something she "
+                     "asked for herself argues with the day, say so gently — that part is hers to decide; where "
+                     "an item you chose argues with the day, say why you still chose it",
     "образи[].свідомо[].річ": "«n» of the item",
     "потрібно[].слот": "the kind of item that is missing, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["slot"]),
     "потрібно[].тип": "its type, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["item_type"]),

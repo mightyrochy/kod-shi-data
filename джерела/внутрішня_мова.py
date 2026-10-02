@@ -1377,6 +1377,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "shoe_cut_irrelevant_leg_covered": "the shoe's cut-line decides nothing here: a long bottom covers the "
                                        "leg (values: item — item name)",
     # ── колір образу: площі й поєднання (`колір_*`, `coordination`, `суд_огляд`) ─
+    "dress_formality_no_photo_score": "how dressy this dress is, the code does not know: its kind in one word "
+                                      "covers both everyday and evening dresses, and there is no dressiness "
+                                      "score from its photo (values: items — the dresses)",
     "areas_not_measured": "the code did not measure how much room each item takes in the outfit, so rules "
                           "that depend on area give no conclusion",
     "several_colour_fixes_one_item": "several colour fixes fell on one item; the code merged them into one "
