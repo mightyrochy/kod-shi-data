@@ -44,8 +44,11 @@ import дріт_моделі as _Д
     задача="опис",
     роль="You are the stylist. You describe to her the outfit you chose for her.",
     вхід=(
-        _ЗП.Поле("outfit", "the chosen outfit: its items with number «n», name and shop, and what the code "
-                           "knows of their color", треба=True),
+        # ОПИС-1 (рядок 1430): «колір» — дані крамниці для читання фото, а не те, що бачить жінка; доти
+        # модель звіряла фото з ним уголос («У назві вказано зелений…», «У коді вказано…») — 30 карток
+        _ЗП.Поле("outfit", "the chosen outfit: its items with number «n», name and shop, and the shop's data on "
+                           "their color («color», «hex») — a hint for reading the photo, not something she sees",
+                 треба=True),
         _ЗП.Поле("outfit.items[].photos",
                  "the numbers of this item's photos: every photo stands under its own label «Photo N:» "
                  "among the blocks placed before this object; under a label with «not delivered» or "
@@ -68,14 +71,22 @@ import дріт_моделі as _Д
                     "with it — in one gentle sentence, the choice is hers"),
         _ЗП.Поле("your_day_sentence", "your sentence about her day in this outfit, from the choice",
                  як="a hint, not ready text"),
+        # ОПИС-1 (рядок 1428, K-PAL-11/14/15): «найдальші» й «комбінація» доти йшли в КОЖЕН опис —
+        # 22 картки з «найдальшими» (і на похороні — «маленька оливкова чи зелена деталь»), 33 з 77
+        # описів радили додати річ, якої в образі нема. Тепер лише те, що стосується речей образу.
         _ЗП.Поле("palette", "her palette",
-                 як="in the third part say in your own words what concerns this outfit: the metal of the "
-                    "jewelry, the colors farthest from her (only those «farthest» names; without "
-                    "«farthest» call no colour farthest from her) and one combination she can put "
-                    "together herself; not as a list"),
+                 як="in the third part, in your own words and only where it concerns the items of this "
+                    "outfit: the metal, when the outfit has jewelry or metal details; a colour «farthest» "
+                    "from her only when an item of this outfit carries it (call no other colour farthest "
+                    "from her); a combination she can put together — optional, and only from the items of "
+                    "this outfit, never by adding an item; not as a list"),
+        # ОПИС-1 (рядок 1428, K-ACC-12, K-EDG-01): у кожної сумки є три способи (рука, плече, навскоси),
+        # і «Як це носити» доти щоразу казало про сумку — 69 рядків із 337, «діагональ» — 39 карток
         _ЗП.Поле("ways_to_wear", "ways the items can be worn: each statement is one way — its place, "
                                  "and its effect when the code knows one",
-                 як="in «how_to_wear» say which way you chose"),
+                 як="in «how_to_wear» name a way only when it changes something for this outfit — its effect "
+                    "matters here (a line across the torso that already has many, a hem it lands on); a way "
+                    "that changes nothing is left out, and a bag is not mentioned at all then"),
         _ЗП.Поле("your_declared", "numbers of the items you placed deliberately against a condition",
                  як="in «how_to_wear» say what to do with them"),
         _ЗП.Поле("she_refuses", "what she refused",
@@ -103,8 +114,15 @@ import дріт_моделі as _Д
                     "answer «swap» again with «item», «why» and «to»"),
     ),
     правила=(
-        "Describe only the items of «outfit»: no suggestions to buy more, no items it does not contain.",
-        "Do not change the outfit yourself: when an item on its photo differs from its name, say so in words.",
+        # ОПИС-1 (рядок 1429): вигадані речі — ≥12 карток («простий світлий топ» без топа, «золоті
+        # сережки» без сережок, зачіска моделі з фото); рядок 1430 — службові звірки назви з фото
+        "Describe only the items of «outfit»: no suggestions to buy or add more, no items it does not contain — "
+        "no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or "
+        "she may own it.",
+        "Do not change the outfit yourself. Describe each item as its photo shows it; never compare the photo "
+        "with the name, the shop's data or «color» in «text» or «how_to_wear» (no «the name says …, but the "
+        "photo …», no «the code»): a clearly different item or colour goes only into «wrong_photos» or «swap».",
+        "Say each thing about an item once, and do not state a quality and then doubt it.",
         "Only when a photo shows that an item is not what this outfit needs — a clearly different colour, "
         "another kind of item, or unfit for her occasion — and that matters for this outfit, name that one "
         "item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in "
@@ -112,10 +130,19 @@ import дріт_моделі as _Д
     ),
     вихід="ОПИС_ВІДПОВІДЬ_V1",
     поля_виходу={
-        "текст": "prose for her in three parts: (1) each item on its own line — what it is, cut, length, "
-                 "color in words, fabric; (2) shoes, outer layer, accessories; (3) why it works — "
-                 "3–4 sentences",
-        "як_носити": "one piece of advice per line",
+        # ОПИС-1 (рядок 1428): «Чому цей образ» рук 1–2 — медіана 2 730 знаків (4–5 екранів), рук 3–4 —
+        # 553; частина (2) повторювала (1), а (3) збирала всі поля входу
+        "текст": "prose for her: (1) each item on its own line — what it is, cut, length, color in words, "
+                 "fabric, in one or two sentences; (2) optional, only when it adds something — how the "
+                 "shoes, the outer layer and the accessories go with the rest, in one or two sentences; "
+                 "(3) why it works — 3–4 sentences, taking from «day», «palette», «makeup» and «missing» "
+                 "only what matters most for this outfit and her occasion",
+        "як_носити": "one piece of advice per line, at most three, each changing how the outfit looks or "
+                     "lives through her day",
+        "названо[].н": "«n» of the item of «outfit» that «text» or «how_to_wear» names; a thing that is "
+                       "not an item of «outfit» has no «n» — and should not be named at all",
+        "названо[].що": "every garment, shoe, bag, jewelry or accessory that «text» or «how_to_wear» names — "
+                        "each once, in a few words",
         "фото_не_те": "«n» of an item whose photo shows another item, a clearly different color, a "
                       "placeholder or a logo; the same item on a person, from another angle, close up or "
                       "with other clothes in the frame is no reason; when in doubt, leave it out",
@@ -300,11 +327,36 @@ def фото_доведено_коду(запис):
     return ("на першому кадрі vision-модель описала %s — це та сама річ" % r["слот"])
 
 
-def опис_відповідь_з_json(текст, кандидати=None, каталог=None):
+# ОПИС-1 (рядок 1429, CLAUDE.md п.4 і п.12): повтор опису, що назвав річ поза образом. Код слів
+# прози не читає: він звіряє лише номери з поля `названо`, яке модель заповнює сама, і повертає
+# їй її ж слова («що») тих записів, у яких номера речі образу нема.
+ПОВТОР_НАЗВАНОГО_EN = ("Your «text» or «how_to_wear» names things that are not items of «outfit»: %s. "
+                       "Rewrite the whole answer without them — describe only the items of «outfit» — "
+                       "and return the same JSON object.")
+
+
+def _названо_поза_образом(названо, словник, за_ном, склад):
+    """Записи `названо` без номера речі образу → [слова моделі]. `склад` — id картки; без нього
+    звіряється лише те, що номер резолвиться в річ пулу чи каталогу."""
+    поза = []
+    for x in _список(названо):
+        if not isinstance(x, dict):
+            continue
+        що = str(x.get("що") or "").strip()[:80]
+        н = str(x.get("н") or "").strip()
+        ід = _розпізнати_речі(н, словник, за_ном, поле=True)[0] if н and н.lower() not in ("null", "none") else []
+        if not ід or (склад and not set(ід) <= set(склад)):
+            поза.append(що or н or "?")
+    return поза
+
+
+def опис_відповідь_з_json(текст, кандидати=None, каталог=None, склад=None):
     """`ОПИС_ВІДПОВІДЬ_V1` → проза для жінки, поради й речі з поганим фото (Т-06, крок 3).
 
     Повертає `{текст, як_носити, фото_не_те, фото_не_ті, фото_не_ті_знято, проза,
-    помилки, повторний_виклик, заміна?}`. `заміна` (ФОТО-1) — пропозиція моделі id-ами
+    помилки, повторний_виклик, заміна?, названо_поза_образом?}`. `склад` — id речей картки:
+    запис `названо` без номера речі образу (`_названо_поза_образом`, рядок 1429) — це річ, якої
+    в образі нема, і опис просять переписати (`повторний_виклик`, один повтор у показі). `заміна` (ФОТО-1) — пропозиція моделі id-ами
     (`{річ, чому, на?}`) або `{відмова, сире}`, коли номер не резолвився; рішення — `заміна_з_фото`. `фото_не_ті` — id каталогу, у які резолвились
     номери речей із `фото_не_те`; вони й лягають на картку позначкою під річчю.
     `фото_не_ті_знято` — ті, кому код доказом відмовив (`фото_доведено_коду`),
@@ -369,11 +421,20 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
             р["заміна"] = (dict(річ=_рі[0], чому=_зм.get("чому"), **({"на": _на[0]} if _на and _на[0] else {}))
                            if len(_рі) == 1 and _на else
                            dict(відмова="number_not_resolved", сире=dict(_зм)))
+        _поза = _названо_поза_образом(об.get("названо"), словник, за_ном, склад)
+        if _поза:
+            р["названо_поза_образом"] = _поза
     р["проза"] = "\n".join([р["текст"] or ""] + р["як_носити"]).strip() or None
     if not р["текст"]:
         р["повторний_виклик"] = _ПР.помилка_формату(
             р["помилки"][:8] or [dict(де="текст", що="обовʼязковий")],
             відповідь="ОПИС_ВІДПОВІДЬ_V1")
+    elif р.get("названо_поза_образом"):
+        р["повторний_виклик"] = _json_ід.dumps(dict(
+            version=_ПР.ВЕРСІЯ, error="named_not_in_outfit", named=р["названо_поза_образом"][:8],
+            answer=_ПР.НАЗВИ_ВІДПОВІДІ_EN["ОПИС_ВІДПОВІДЬ_V1"],
+            instead=ПОВТОР_НАЗВАНОГО_EN % ", ".join("«%s»" % w for w in р["названо_поза_образом"][:8])),
+            ensure_ascii=False)
     return р
 
 
