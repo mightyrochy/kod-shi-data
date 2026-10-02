@@ -530,9 +530,13 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("she_rejected_items", "items she rejected on earlier cards",
                  як="do not take them or their twins from the same shop"),
         _ЗП.Поле("zones_she_keeps_covered", "body zones she does not show"),
-        _ЗП.Поле("style_rules", "rules of the style corpus for her and this case: each entry is a code, or "
-                                "{code: values}; codes are defined in \"statement_codes\"",
-                 як="keep each"),
+        # БРИФ-1 (02.10.2026): правила, які код уже застосував у пулі чи перевіряє в суді, сюди не
+        # їдуть (`дріт_моделі.ЗАЯВИ_ДІЮТЬ_У_КОДІ`); лишається виміряне про неї, її відповіді й
+        # бажання, факти дня — інформація для вибору, тож і наказу «keep each» нема
+        _ЗП.Поле("style_rules", "what the code measured about her and this case, her own answers and wishes: "
+                                "each entry is a code, or {code: values}; codes are defined in "
+                                "\"statement_codes\"; the rules the code already applied to «pool» are not "
+                                "repeated here"),
         # НП-в переробляє рядки рівня нагоди; доти вони їдуть реченнями брифа (ВМ-1)
         _ЗП.Поле("occasion_rules", "rules of the occasion's level of dress, in Ukrainian", як="keep each"),
         _ЗП.Поле("kind_notes", "what the code says about kinds of items in this pool: each kind "
