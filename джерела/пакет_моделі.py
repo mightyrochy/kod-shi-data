@@ -495,6 +495,8 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("day", "her day as facts: what she will do, where and on what ground she will walk, how "
                         "long, the weather, the hour and light, the level of the occasion",
                  як="check every item of every outfit against this day, not only the shoes"),
+        _ЗП.Поле("day.unknown", "what she has not told about her day: the place, the hour, the weather",
+                 як="do not assume a value for it; prefer items that hold either way"),
         _ЗП.Поле("person", "her coloring, palette and body"),
         _ЗП.Поле("person.palette.slot_roles", "the color role of each kind of item in her palette's scheme",
                  як="keep these roles; an item with «in_arc»: false lies outside the scheme — take it only "
