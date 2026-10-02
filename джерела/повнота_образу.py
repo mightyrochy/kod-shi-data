@@ -16,7 +16,7 @@ import збирач_промптів as _ЗП
 from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей, скелет_схеми, _річ_пулу
 from розбір_відповідей import _словник_речей, _за_номером, _розпізнати_речі, _запис_образу, _свідомі_з_json, \
     _список
-from суд_від_моделі import СЛОТИ_БЛОКЕРА, _ЧОМУ_БЛОКЕРА, _сім_я_слота, структура_образу
+from суд_від_моделі import СЛОТИ_БЛОКЕРА, _ЧОМУ_БЛОКЕРА, _сім_я_слота, структура_образу, комплект_з_шаром
 
 
 # ── K-VAR-01 МІЖ КАРТКАМИ, А НЕ ЛИШЕ ВСЕРЕДИНІ РУКИ (рядок 48, 19.09.2026) ───
@@ -599,6 +599,9 @@ def промпт_вибору(образи, випадок=None, без_фото
         _ЗП.Поле("case.language_model_note", "the language model's note on her words about the event, "
                                              "when they are hard to read without context",
                  як="it explains her words and does not replace them: where they differ, her words win"),
+        _ЗП.Поле("case.palette_scheme", "the palette scheme she chose herself on the palette screen: «scheme», "
+                                        "and «families» — its colour families, each meant for its own large item",
+                 як="her explicit choice: the code's remarks about this scheme carry her wish, not the code's"),
         _ЗП.Поле("day", "her day as facts"),
         _ЗП.Поле("verdict", "your outfits and what the code noticed in each: «your_outfit» — its items, caption "
                             "and «day» (your sentence about her day in it); «structure» — blockers; «checklist» — "
@@ -627,6 +630,9 @@ def промпт_вибору(образи, випадок=None, без_фото
         "A finding with «register» «gate» stops the outfit unless you accept it: if the outfit you choose has "
         "gates, accept each of them in «accept» with why it serves her here. That is your weighed decision and "
         "not a reason to pass over the outfit.",
+        "When «case» has «palette_scheme», she chose that scheme herself: an outfit whose large items carry its "
+        "families answers her own choice. Pass over such an outfit only when her occasion or day clearly asks for "
+        "it; accepting a gate about her scheme needs a reason stronger than her own choice.",
         "Do not choose an outfit with blockers in «structure» while there is one without them.",
         "Do not rewrite the outfit: its only allowed change is «remove».",
     ),
@@ -1418,7 +1424,7 @@ def повнота_набору(вердикт, кандидати=None, кат�
         "Choose ONE outfit — the one you would stand behind for her — and clear all of its blockers.",
         "A missing kind of item: add one item for it from «showcase».",
         "Several items of one kind: keep the one that suits the outfit best and remove the others.",
-        "Change nothing else: the remaining items and the caption stay as they are.",
+        "Change nothing else: the remaining items, the caption and the day stay as they are.",
         "Name every item by its «n» — in full, exactly as in «verdict» or «showcase».",
         "Return exactly ONE outfit.",
     ),
@@ -1426,6 +1432,7 @@ def повнота_набору(вердикт, кандидати=None, кат�
     поля_виходу={
         "образи[].ід": "«id» of the outfit you finished",
         "образи[].речі": "«n» of all items of the finished outfit",
+        "образи[].день": "«day» of «your_outfit», unchanged",
     },
     межі=("лише_вхід",),
     мова_промпту="en",
@@ -1449,7 +1456,7 @@ def повнота_набору(вердикт, кандидати=None, кат�
         "Finish EVERY outfit in «verdict»: clear all of its blockers.",
         "A missing kind of item: add one item for it from «showcase».",
         "Several items of one kind: keep the one that suits the outfit best and remove the others.",
-        "Change nothing else: the remaining items and the caption stay as they are.",
+        "Change nothing else: the remaining items, the caption and the day stay as they are.",
         "Name every item by its «n» — in full, exactly as in «verdict» or «showcase».",
         "Return every outfit of «verdict», each under its own «id».",
     ),
@@ -1457,6 +1464,7 @@ def повнота_набору(вердикт, кандидати=None, кат�
     поля_виходу={
         "образи[].ід": "«id» of the outfit, as in «verdict»",
         "образи[].речі": "«n» of all items of the finished outfit",
+        "образи[].день": "«day» of «your_outfit», unchanged",
     },
     межі=("лише_вхід",),
     мова_промпту="en",
@@ -1572,7 +1580,10 @@ def вердикт_повноти(вердикт, спроба=1, всі=False):
     # повноти стосунку не мають, а важать більшу частину промпта ремонту. Описи — бо модель
     # вирішує, котру з двох речей лишити, і речі, які отримує модель, — завжди з описом
     # (рішення власника 25.09).
-    в["образи"] = [{k: v for k, v in о.items() if k in ("ід", "підпис", "речі", "описи", "структура")}
+    # «день» — її речення про день цього образу (КОМПЛЕКТ-1, рядок 1417): без нього модель
+    # писала в обов'язкове «day» відповіді коди випадку («office_corporate, formality 6-8»), 22
+    # з 25 образів, і вони йшли у вибір як її речення.
+    в["образи"] = [{k: v for k, v in о.items() if k in ("ід", "підпис", "речі", "описи", "день", "структура")}
                    for о in образи]
     for ключ in ("набір", "мова", "реєстр", "завдання"):
         в.pop(ключ, None)
@@ -1604,6 +1615,28 @@ def вердикт_повноти(вердикт, спроба=1, всі=False):
 # лізе назад другою. Вертається річ ТОГО САМОГО образу: пара «відповідь ↔ образ до
 # ремонту» зводиться найбільшим перетином складу, тим самим ключем, що
 # `вердикт_моделі._зіставити_образи`.
+def _склади_до_ремонту(попередній, ном):
+    """Образи вердикта, з яким рука пішла в ремонт: `[(ід, склад id, день)]`."""
+    за_ном = {"#%d·%s" % v: k for k, v in (ном or {}).items()}
+    return [(str(о.get("ід") or ""), [за_ном[н] for н in
+                                     (str(r).split("/")[0] for r in (о.get("речі") or []))
+                                     if н in за_ном], о.get("день"))
+            for о in ((попередній or {}).get("образи") or []) if isinstance(о, dict)]
+
+
+def дні_до_ремонту(набори, попередній, ном):
+    """Речення «день» образу до ремонту повноти — на кожен склад відповіді (None, коли пари
+    нема). Ремонт повноти дня не міняє (КОМПЛЕКТ-1, рядок 1417): модель писала туди коди
+    випадку, і вони йшли у вибір як її речення; день лишається її реченням з образу до
+    ремонту — пара зводиться найбільшим перетином складу, як у `дотримати_склад`."""
+    поп = _склади_до_ремонту(попередній, ном)
+    вих = []
+    for н in (набори or []):
+        _і, був, день = max(поп, key=lambda п: len(set(п[1]) & set(н)), default=("", [], None))
+        вих.append(день if (set(був) & set(н)) and день else None)
+    return вих
+
+
 def дотримати_склад(набори, попередній, ном, словник):
     """Склади відповіді ремонту повноти → ті самі склади з речами, яких ремонт не просив
     знімати. `(набори, повернуто)`; `повернуто` — `[{образ, річ, слот, сім_я}]` для звіту.
@@ -1616,11 +1649,7 @@ def дотримати_склад(набори, попередній, ном, с
     Без попереднього вердикта, без номерів або коли перетину складів нема, віддає
     `набори` як є: вгадувати, що модель мала на думці, тут нема з чого.
     """
-    за_ном = {"#%d·%s" % v: k for k, v in (ном or {}).items()}
-    поп = [(str(о.get("ід") or ""), [за_ном[н] for н in
-                                    (str(r).split("/")[0] for r in (о.get("речі") or []))
-                                    if н in за_ном])
-           for о in ((попередній or {}).get("образи") or []) if isinstance(о, dict)]
+    поп = [(і, ск) for і, ск, _д in _склади_до_ремонту(попередній, ном)]
     сім = lambda і: _сім_я_слота((словник.get(і) or {}).get("слот"),
                                  (словник.get(і) or {}).get("назва"))
     вих, повернуто = [], []
@@ -1631,6 +1660,15 @@ def дотримати_склад(набори, попередній, ном, с
             вих.append(склад)
             continue
         зайняті = {сім(і) for і in склад}
+        # КОМПЛЕКТ-1 (рядок 1411): ціла річ (сукня, комплект) сама закриває верх і низ, тож
+        # знятий ремонтом верх чи низ поруч із нею назад не йде — інакше «зняти — повернути»
+        # ходило колом, і блокер «комплект + верх» лишався. Виняток — верх під піджаком чи
+        # жилетом комплекту (`комплект_з_шаром`): його суд не блокує, і повернути його можна.
+        _шар_компл = any(сім(і) == "комплект" and комплект_з_шаром(словник.get(і) or {}) for і in склад)
+        if {"сукня", "комплект"} & зайняті:
+            зайняті.add("низ")
+            if not (_шар_компл and "сукня" not in зайняті):
+                зайняті.add("верх")
         for і in був:
             с = сім(і)
             if і in склад or с in зайняті:

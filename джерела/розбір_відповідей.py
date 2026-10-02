@@ -70,8 +70,9 @@ import дріт_моделі as _Д
                  як="a hint, not ready text"),
         _ЗП.Поле("palette", "her palette",
                  як="in the third part say in your own words what concerns this outfit: the metal of the "
-                    "jewelry, the colors farthest from her and one combination she can put together "
-                    "herself; not as a list"),
+                    "jewelry, the colors farthest from her (only those «farthest» names; without "
+                    "«farthest» call no colour farthest from her) and one combination she can put "
+                    "together herself; not as a list"),
         _ЗП.Поле("ways_to_wear", "ways the items can be worn: each statement is one way — its place, "
                                  "and its effect when the code knows one",
                  як="in «how_to_wear» say which way you chose"),

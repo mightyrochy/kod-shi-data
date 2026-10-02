@@ -834,6 +834,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                        "slots — slot codes)",
     "her_item_stands_in_slot": "her own item stands in these slots, and the code does not change it (values: "
                                "slots — slot codes)",
+    "stylist_declared_on_purpose": "the stylist chose these items deliberately for this outfit and said so: "
+                                   "this is her considered decision, not something left unfinished (values: "
+                                   "items — the items' names as the card shows them)",
+    "action_is_only_her_option": "the outfit is complete as it is: what follows is only an option she may take "
+                                 "if she wants more colour, not a task left to her",
     "mark_not_this_and_rebuild": "marking \"not this one\" on this item of the outfit rebuilds the outfit, this "
                                  "time with colour (values: item — the item's name as the card shows it: call "
                                  "the item by this name; slot — the kind of that item, when there is no name)",
@@ -857,17 +862,23 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "big_items_carry_only_some": "the large items of this outfit carry some of these colours and not the "
                                  "others (values: present, missing — colour words)",
     "big_items_all_neutral": "the large items of this outfit are neutral",
+    # СХЕМА-КАРТКА (02.10.2026, рядки 1294, 1404): велика річ іншого кольору — не нейтраль; свідомий
+    # хід стилістки — її рішення; дія під чужою схемою — лише вибір для неї, не доручення
+    "big_items_other_colour": "the large items carry a colour, just not one of this scheme's colours: the outfit "
+                              "is not neutral (values: colours — the shop's words for those items' colours)",
     "accessory_only_echoes_colour": "this accessory has the colour, but it only echoes it here (values: slot "
                                     "— slot code, colour — colour word)",
     "pool_has_big_items_mark_not_this": "the selection has large items of these colours: marking \"not this "
                                         "one\" on the named items rebuilds the outfit (values: colours — "
-                                        "colour words, slots — slot codes)",
+                                        "colour words, slots — slot codes, items — the names of those "
+                                        "items as the card shows them: call them by these names)",
     "colour_can_be_added_as_layer": "these colours can be added as a layer, and such items exist in the "
                                     "selection (values: pairs — pairs {colour, layer}, layer — the slot code "
                                     "of the layer)",
     "needs_separate_top_and_bottom": "these colours need a separate top and bottom instead of a one-piece "
                                      "item: marking \"not this one\" on it rebuilds the outfit (values: "
-                                     "colours — colour words, whole — slot code of the one-piece item)",
+                                     "colours — colour words, whole — slot code of the one-piece item, "
+                                     "item — its name as the card shows it)",
     "big_items_of_colour_elsewhere": "large items of these colours exist in the selection among these slots "
                                      "(values: colours — colour words, slots — slot codes)",
     "big_items_of_colour_not_found": "no large items of these colours were found today for her sizes and this "
@@ -1596,8 +1607,6 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                      "(values: colour — the code of the colour or family, hue — the hue in degrees, slot — "
                      "slot code; on_windows — true when the judgement rests on the windows of colour words, "
                      "not on a measurement)",
-    "accent_in_declared_focus": "the accent stands in one slot, but that zone is declared the focus, and then "
-                                "it is legitimate as a point (values: slot — slot code)",
     "echo_accent_or_declare_focus": "repeat the colour in a second zone (shoes, bag, scarf, jewellery), "
                                     "declare the focus, or remove it",
     "accent_echo_over_ceiling": "the accent colour is repeated in too many zones: the repetition stops "
@@ -1685,10 +1694,6 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "shoes_to_leg_or_bottom_tone": "match the pair to the leg (a nude in the tone of the skin, or tights in "
                                    "the tone of the pair) so the line continues from the toes, or to the "
                                    "bottom, for a column of colour in the lower third",
-    "high_cut_quiet_edge_keep": "the pair's cut is high, but the edge is matched by lightness to the skin or "
-                                "the tights, so it barely draws a line across the foot: keep the pair "
-                                "(values: dl — the lightness difference between the edge and the neighbouring "
-                                "surface, step — the step threshold, neighbour — skin or tights)",
     "high_cut_contrasting_edge": "the pair's cut is high and contrasts with the skin or the tights, so the "
                                  "edge draws a line across the foot twice: drop one of the two levers "
                                  "(values: dl — the lightness difference between the edge and the "
@@ -1700,8 +1705,6 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "cut_hidden_by_dense_tights": "under dense tights the pair's edge is not visible, so the cut-line axis is "
                                   "off (values: den — the tights' denier, den_band — the day's denier band "
                                   "from and to)",
-    "low_cut_keeps_leg_line": "the pair's cut is low, so the line of the leg starts at the toes: keep the "
-                              "pair",
     "high_cut_breaks_leg_line": "high cut at mid-foot or ankle cuts the leg line",
     "lower_cut_same_formality_or_nude_edge": "a pair with a lower cut within the same formality interval, or "
                                              "match the edge by lightness to the skin or the tights",
@@ -1743,10 +1746,17 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "add_layer_or_strong_accessory": "add one layer — a jacket, a cardigan or a vest — or one strong "
                                      "accessory: a belt, a scarf, a striking piece of jewellery",
     "focus_count_over_ceiling": "the outfit has more focuses than the ceiling: equal focuses put each other "
-                                "out, and the outfit reads busy (values: count — how many focuses, ceiling — "
-                                "the ceiling)",
-    "keep_one_focus_quiet_rest": "keep one focus and quieten the rest: lower chroma, a smaller print scale, a "
-                                 "smoother texture in the same slot",
+                                "out, and the outfit reads busy; one colour repeated in several items is one "
+                                "focus (an echo), and a texture alone is not a focus (values: count — how many "
+                                "focuses, ceiling — the ceiling; keep — slot codes of the focus declared by the "
+                                "palette scheme or the focus zone, quiet — slot codes of the other focuses, "
+                                "keep_by — who declared it: scheme, zone or deliberate — your own declared move)",
+    "keep_one_focus_quiet_rest": "keep one focus and quieten the rest with a quieter item in the same slot: lower "
+                                 "chroma, a smaller print scale; not by removing every focus — the outfit keeps one",
+    "keep_declared_focus_quiet_others": "keep the declared focus as it is and quieten only the other focuses with "
+                                        "a quieter item in the same slot; an echo of the kept colour is not a "
+                                        "second focus (values: keep — slot codes to keep, quiet — slot codes to "
+                                        "quieten)",
     "sprezzatura_gestures_over_one": "there is more than one gesture of studied carelessness: the second "
                                      "takes the mark of choice off the first, and they read as untidiness "
                                      "(values: count — how many gestures)",
@@ -2416,10 +2426,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                          "separately, so the code cannot tell these apart either",
     # ── ошатність нагоди й ошатність речі з фото (`композитор_слоти`) ───────────────
     "kind_cut_to_occasion_formality": "the kind was cut to the dressiness band of the occasion: items whose "
-                                      "formality interval lies outside the band left the pool, items with no "
+                                      "formality interval lies below the band left the pool; items dressier "
+                                      "than the band stay after the fitting ones, and items with no "
                                       "formality of their type stay (not knowing is not a reason to remove) "
                                       "(values: band — the band from…to; had, fit, without_formality, "
-                                      "removed; removed_types — {item type code: how many})",
+                                      "removed, above_band; removed_types — {item type code: how many})",
     "kind_empty_after_occasion_formality": "no item of this kind fits the dressiness band of the occasion, so "
                                           "the kind stays empty: a daytime layer over an outfit for this "
                                           "occasion is not an outfit (values: band — the band from…to; had; "
