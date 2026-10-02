@@ -561,7 +561,14 @@ def промпт_вибору(образи, випадок=None, без_фото
 # вибір речей не додає й текстів не переписує, а номер ітерації моделі нічого не каже; тексти
 # ремонтів знахідок — теж (вибір не ремонтує).
 # ЧОМУ ЦІ РЯДКИ (для людей; моделі це не потрібно):
-#   · «найкращий, а не той, до якого менше зауважень» — щоб вибір не йшов за лічбою знахідок;
+#   · ВИБ-1 (рішення власника 02.10.2026, CLAUDE.md п.17: «Вибір фінального образу має залежати від
+#     наміру людини і того, як його зрозуміла модель-стилістка. Потрібно давати моделі-стилістці
+#     свободу приймати зважені рішення.»): мірило вибору — її намір, як його зрозуміла стилістка
+#     («case» кодами — той самий випадок, що в складанні: подія, намір, мета, її слова, нота мовної
+#     моделі); зауваження коду — інформація при образі (`дріт_моделі.вердикт(вибір=True)`: без ваг і
+#     без лічби чекліста), і в «чому» стилістка називає, які з них приймає свідомо.
+#     ДО: правило «not the one with the fewest remarks» стояло, але вхід ніс лічбу passed/failed,
+#     і «чому» спиралось на лічбу зауважень у 23/32 виборах (`проби/виб1_вирва.py`);
 #   · «day» (рядок 195) — вибір судиться й проти її дня, а не лише проти зауважень коду;
 #   · «blockers» — образ із блокером структури код не приймає (`вибір_з_json`) і бере
 #     інший, тож такий вибір марний;
@@ -571,32 +578,46 @@ def промпт_вибору(образи, випадок=None, без_фото
     задача="вибір",
     роль="You are the stylist. From the outfits you put together, you choose one for her.",
     вхід=(
-        _ЗП.Поле("case", "her occasion in her and the code's words"),
+        _ЗП.Поле("case", "her case: the occasion and event, her «intent» and «goal», her words, wishes, mood "
+                         "and refusals",
+                 як="this is what she wants; the choice answers it"),
+        _ЗП.Поле("case.goal_quote", "her own words behind «goal»",
+                 як="they say more than the code"),
+        _ЗП.Поле("case.intent_quote", "her own words behind «intent»",
+                 як="they say more than the code"),
+        _ЗП.Поле("case.her_words", "what she asked for in her own words"),
+        _ЗП.Поле("case.her_other_words", "the rest of what she said, which no field of «case» carries",
+                 як="it is part of her case"),
+        _ЗП.Поле("case.language_model_note", "the language model's note on her words about the event, "
+                                             "when they are hard to read without context",
+                 як="it explains her words and does not replace them: where they differ, her words win"),
         _ЗП.Поле("day", "her day as facts"),
-        _ЗП.Поле("verdict", "your outfits and the code's check of each: «your_outfit» — its items, caption and "
-                            "«day» (your sentence about her day in it); «structure» — blockers; «findings» "
-                            "(«weight» weighs the finding, not the outfit; «register» «gate» — a gate, none — "
-                            "a remark); «checklist» — by area, the points the outfit «failed», how many it "
-                            "«passed», and how many the code could not check («no_input», «not_run»); each "
-                            "point is a code defined in \"statement_codes\"; "
-                            "«knot» — the place where most conditions meet", треба=True),
-        _ЗП.Поле("not_run_everywhere", "by area, the checklist points the code did not check in any outfit; "
-                                       "each point is a code defined in \"statement_codes\""),
+        _ЗП.Поле("verdict", "your outfits and what the code noticed in each: «your_outfit» — its items, caption "
+                            "and «day» (your sentence about her day in it); «structure» — blockers; «findings» — "
+                            "the code's remarks («register» «gate» — a gate); «checklist» — by area, the "
+                            "points the code noticed as not met; each point and remark is a code defined in "
+                            "\"statement_codes\"; «your_declared» — your declared deliberate moves",
+                 треба=True),
         _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination"),
         _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
         _ЗП.Поле("she_refuses", "what she refused",
                  як="do not choose an outfit that breaks it while there is one that does not"),
     ),
     правила=(
-        "Choose ONE outfit — the one you vouch for before her: the best for her, her day and her occasion, "
-        "not the one with the fewest remarks.",
+        "Choose ONE outfit — the one you vouch for before her: the one that best serves her intent as you "
+        "understood it from «case» (her occasion, «intent», «goal», her own words and «language_model_note») "
+        "and her «day».",
+        "The code's remarks are information about each outfit, not a score: weigh what each one means for her "
+        "intent; do not count them and do not choose by how few remarks an outfit has or how mild they are. A "
+        "bolder outfit that serves her intent better wins over a quieter one with fewer remarks.",
         "Do not choose an outfit with blockers in «structure» while there is one without them.",
         "Do not rewrite the outfit: its only allowed change is «remove».",
     ),
     вихід="ВИБІР_V1",
     поля_виходу={
         "обрано": "«id» of the chosen outfit, from «your_outfit»",
-        "чому": "one sentence: why this outfit",
+        "чому": "one or two sentences: how this outfit serves her intent as you understood it, and which of "
+                "the code's remarks you accept on purpose and why — not how many remarks it has",
         "прибрати": "«n» of an item to remove: only when a blocker says two items are of one kind — the "
                     "weaker of the two",
     },
