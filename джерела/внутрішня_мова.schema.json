@@ -3024,6 +3024,10 @@
           "description": "the cards do not carry the length of the named items, so they are left out of the outfit's shape, counted from the other items (values: slots — slot codes)"
          },
          {
+          "const": "length_word_line_may_split_in_half",
+          "description": "the code knows the length of the outfit's top item only from a word, and its hem — the outfit's dividing line — may split the field from shoulders to floor in half (values: slot — slot code; length — the length word)"
+         },
+         {
           "const": "dividing_line_item_length_unknown",
           "description": "the outfit's dividing line is the hem of its top item, and the cards do not carry the length of the named top items, so the line was not judged (values: slots — slot codes)"
          },
@@ -5293,7 +5297,27 @@
          },
          {
           "const": "body_knot",
-          "description": "most conditions meet at these zones of her body; conditions shared by both zones need ONE item for both, since a fix on one zone moves the other; the rest on the first zone is fixed separately (values: zones — per zone: conditions, tension 0 to 1; shared; own)"
+          "description": "most conditions meet at these zones of her body; conditions shared by both zones need ONE item for both, since a fix on one zone moves the other; the rest on the first zone is fixed separately (values: zones — per zone: conditions, tension 0 to 1; shared, own — condition codes, defined here too)"
+         },
+         {
+          "const": "pair_balance",
+          "description": "condition: the balance of her top and bottom halves — volume or structure on the narrower half, a clean line on the wider one"
+         },
+         {
+          "const": "wearing_minimum",
+          "description": "condition: a woven item needs wearing ease over her body girth at each zone; with less it does not close, and that is not \"fitted\" (knits excluded: their ease may be negative)"
+         },
+         {
+          "const": "fit_band",
+          "description": "condition: keep one fit from top to bottom of the item, in the skimming band above the wearing minimum — less clings, more is a tent"
+         },
+         {
+          "const": "top_cut",
+          "description": "condition: the cut of the top item — the cuts that score highest on her body"
+         },
+         {
+          "const": "bottom_cut",
+          "description": "condition: the cut of the bottom item — the cuts that score highest on her body"
          },
          {
           "const": "wish_kinds_first",
