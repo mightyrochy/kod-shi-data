@@ -1529,12 +1529,18 @@ assert set(_ПОТРЕБИ_EN) == set(_ВМ.ПОТРЕБИ)
 def _коди_розмови():
     """Словник кодів ходу розмови — СТАЛИЙ (іде в кешований початок промпта): поля сценарію з
     формою значення, ознаки речі, теми поради з умовою, обовʼязкові питання, коди `need`."""
+    import паспорт_нагоди as _ПН_
     поля = {ім: с for ім, с in _ВМ.СЦЕНАРІЙ.items() if ім not in _БЕЗ_У_РОЗМОВІ}
     р = ["Fields with a code or a number — each is a JSON object {\"quote\": the fragment of her words "
          "it stands on, copied letter for letter, \"value\": its value}:"]
     for ім, с in поля.items():
         if _група(ім, с) == "пари":
             р.append("- %s — %s; %s" % (ім, _ПОЛЯ_EN[ім], _довідник_en(ім) if ім in _ГРУПИ_ДОВІДНИКА else _тип_en(с)))
+            # Рядки 238 і 474: підпис плитки «Офіс» на одному з двох офісів не робить цей код загальним
+            if ім == "place":
+                р += ["  · %s — kinds of one place, %s: one of them only when her words say which kind; "
+                      "her words name only the %s — no place" % (" | ".join(коди), рід, рід)
+                      for рід, коди in _ПН_.МІСЦЯ_ПІДВИДИ.items()]
     р.append("Items — lists of objects; each object has \"quote\" — the fragment of her words about this "
              "item, copied letter for letter — and only the attributes she named:")
     for ім in _РЕЧІ_З_ЦИТАТОЮ:
@@ -1602,6 +1608,19 @@ def _коди_розмови():
     "names this event or one of its kind, with the name of the event as quote. An event with no label of its "
     "own (a family visit, a local custom) takes the code of its nearest kind, and \"stylist_note\" says what "
     "the event really is.",
+    # Рядки 238 і 474 (Ж-1, НГ-4): «в офісі» давало то `office_creative` (підпис плитки «Офіс»), то
+    # `office_corporate` — код вужчий, ніж її слова; суд цитати цього не бачить (п.12: код слів не читає),
+    # тож межу каже правило. Невідомо — чесне значення; подія її словами однаково йде стилістці.
+    "A code is never narrower than her words: \"occasion\" and \"place\" take a code only when her words "
+    "name what that code means, and a label that sounds general does not make its code general. When her "
+    "words fit several codes of the field equally and none is nearer to what she means, the field is "
+    "absent: unknown is a valid value.",
+    # Хрестини «спершу церква, потім обід у ресторані» давали нагоду однієї частини й місце іншої — або
+    # без місця; «працюю з дому» — то home, то work. Нагода — що вона робить, місце — де; обидва про одне,
+    # а кілька частин — про першу названу (одяг вона вдягає на неї), решта лишається в «event».
+    "\"occasion\" is what she will be doing and \"place\" is where she will be; both describe the same "
+    "part of her day, never the occasion of one part and the place of another. When her day has several "
+    "parts, both describe the part she names first, and \"event\" keeps all of them.",
     # НП-в крок 2: ошатність — число мовної моделі ЗАВЖДИ, без цитати (її слова, подія, плитки);
     # з нього код рахує смугу й відсів пулу, інших джерел смуги нема.
     "\"formality\" is always present, without quote: how dressy this outing is, as you understand it "
