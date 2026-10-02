@@ -1540,6 +1540,8 @@ def _довідник_en(поле):
 def _умови_тем():
     """{тема: (про що запросити, коли тема доречна)} — сталі рядки словника кодів ходу."""
     import паспорт_нагоди as _ПН
+    import face_contrast as _KC
+    import формальність as _ФОРМ
     коди = lambda поле, ключі: " | ".join(к for к in (_ВМ.код(поле, x) for x in ключі) if к)
     вечір = ("an evening scene: hour 18 or later, or occasion %s, or place %s, or activity photoshoot"
              % (коди("occasion", _ПН._ВЕЧІРНІ_НАГОДИ), коди("place", _ПН._ВЕЧІРНІ_МІСЦЯ)))
@@ -1548,7 +1550,12 @@ def _умови_тем():
         "occasion": ("where she is going in this item: work, a date, a celebration or every day",
                      "she sent a photo of her item and no occasion, place or event is known"),
         "goal": ("whether today she wants to draw attention or stay unnoticed", вечір),
-        "makeup": ("what make-up she plans and the lip colour", вечір),
+        # МАК-2 (рядок 258): та сама умова, що `face_contrast.порада_з_випадку` у судді тем
+        "makeup": ("what make-up she plans and the lip colour",
+                   "%s; or profile colouring.contrast is low and the occasion is dressy: occasion %s, place %s, "
+                   "dress_code %s, or formality from %g up"
+                   % (вечір, коди("occasion", _ПН.НАГОДИ_ДІЛОВІ), коди("place", _ПН.МІСЦЯ_ДІЛОВІ),
+                      коди("dress_code", _ФОРМ.ДРЕС_КОДИ_ДІЛОВІ), _KC.ОШАТНІСТЬ_ДЛЯ_ПОРАДИ_МАКІЯЖУ)),
         "movement": ("whether she will walk much and for how long",
                      "%s, or occasion %s" % (надворі, коди("occasion", _ПН._ХОДИТИ_НАГОДИ))),
         "temperature": ("how many degrees it will be", надворі),
