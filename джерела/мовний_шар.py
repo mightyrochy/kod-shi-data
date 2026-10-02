@@ -1413,7 +1413,7 @@ _ПОЛЯ_EN = {
     "surface": "what is under her feet",
     "hour": "start hour on a 24-hour clock",
     "part_of_day": "part of the day, when no hour is named: from her words, or when the event or a tile "
-                   "in \"chosen\" itself names it (an evening reception — evening)",
+                   "in \"chosen\" names it or usually takes it (an evening reception, a theatre — evening)",
     "temperature_c": "air temperature, °C",
     "weather_feel": "the weather, when no number of degrees is named",
     "precipitation": "rain or snow",
@@ -1598,8 +1598,13 @@ def _коди_розмови():
     "near_white; a church or a funeral — open_zones none); no norm — leave them absent: unknown is a "
     "valid value, and the looks are put together anyway.",
     # НП-в5 (рядок 522 (3)): вечір плитки «Офіційний вечір» — розуміння моделі, не таблиця коду.
+    # ПЛИТ-1 (рядок 754): лише «назва каже вечір» мало — плитка «Театр, кіно, концерт» вечора не
+    # називає, і хід плиток лишав паспорт на типових 11:00. Тепер, як formality, — розуміння події:
+    # подія, що зазвичай має одну частину дня, дає її; подія будь-якої пори — поля нема.
     "\"part_of_day\" may also go without quote when no hour is known and the event or a tile in \"chosen\" "
-    "itself names the part of the day (an evening reception — evening); otherwise leave it absent.",
+    "names the part of the day (an evening reception — evening) or the event usually takes one part of the "
+    "day (a theatre, a concert or an opera — evening); an event that happens at any time of day — leave it "
+    "absent.",
     # П.14 і п.3 наряду: межа мовної моделі — кодами `need`.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
     "without her items, looks and photos. When \"need\" is not \"none\", do not answer the question in "
