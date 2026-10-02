@@ -857,7 +857,7 @@ def _її_речі(речі):
 # вечір у назві події модель розуміє тим самим ходом; години (`hour`) це не стосується — число
 # лише з її слів.
 _БЕЗ_ЦИТАТИ = ("event", "mood", "question", "question_about", "rest", "quotes", "formality",
-               "reserved_colour", "open_zones", "part_of_day", "stylist_note")
+               "reserved_colour", "open_zones", "part_of_day", "stylist_note", "minute")
 _РЕЧІ_З_ЦИТАТОЮ = ("wants", "vetoes", "retract", "own_items", "beliefs")
 
 
@@ -925,7 +925,7 @@ def _тримається(в, слова):
 
 
 def паспорт_з_шару(внутрішня, сценарій, вето_чипів=None, паспорт_досі=None, драп=None, фото=None,
-                   речі_з_фото=None, слова_ходу="", частини=None):
+                   речі_з_фото=None, слова_ходу="", частини=None, контраст=None):
     """Внутрішня мова одного ходу → паспорт ядра, теми поради й обов'язкове.
 
     ДЕЛЬТА, А НЕ ПОВНИЙ ПАСПОРТ: перекладач переказує лише цей хід. Чого він не почув —
@@ -971,11 +971,18 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     для_числа = lambda ч, поле, код: ч if ч is not None else _ВМ.ключ(поле, код)
     об["година"] = для_числа(в.get("hour"), "part_of_day", в.get("part_of_day"))
     об["темп_c"] = для_числа(в.get("temperature_c"), "weather_feel", в.get("weather_feel"))
+    # ХВИЛИНИ (рядки 933/1135): число `година` ціле, бо рахунки частини дня, світла й погоди йдуть
+    # годинами, а хвилини їдуть окремим полем `хвилини` лише до показу. Без години з її слів
+    # (`hour` не пройшов сторожа) хвилини нічого не значать і не беруться; нова година без
+    # хвилин ходу скидає старі.
+    об["хвилини"] = в.get("minute") if в.get("hour") is not None else None
     об["тривалість_год"] = в.get("duration_h")
     об["ноги_вище_см"] = в.get("legs_above_cm")
     for ім in ("година", "темп_c", "тривалість_год", "ноги_вище_см"):
         if об[ім] is None and є(досі.get(ім)):
             об[ім] = досі[ім]
+    if об["хвилини"] is None and в.get("hour") is None and об["година"] == досі.get("година") and є(досі.get("хвилини")):
+        об["хвилини"] = досі["хвилини"]
     # ── ОШАТНІСТЬ — ЧИСЛО МОВНОЇ МОДЕЛІ ЗАВЖДИ (НП-в крок 2, принцип власника 01.10) ──────
     # Доти смугу давали три джерела: її слова (`formality` з цитатою), смуга події без коду
     # (`event_formality`) і — коли обох нема — пресет плитки в коді (довідник видів, знято в НП-в).
@@ -1097,7 +1104,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     if частини is not None:
         дозволені = [к for к in (_ВМ.код("advice_topic", т) for т in _ПН.теми_дозволені(
             сценарій or {}, dict(п, поради_дані=дані), драп=драп_поради,
-            є_річ=bool(фото or п.get("речі_з_фото")))) if к]
+            є_річ=bool(фото or п.get("речі_з_фото")), контраст=контраст)) if к]
         текст, теми, відкинуто, бракує = суд_частин(частини, дозволені, обовʼязкове)
         п["поради_дані"] = дані + [_ВМ.ключ("advice_topic", т) for т in теми]
         п["розмову_вела"] = "мовна модель"
@@ -1109,7 +1116,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         п["розмову_вела"] = досі["розмову_вела"]
     порада = None if обовʼязкове else _ПН.порада_коду(
         сценарій or {}, dict(п, поради_дані=дані), "",
-        драп=драп_поради, є_річ=bool(фото or п.get("речі_з_фото")))
+        драп=драп_поради, є_річ=bool(фото or п.get("речі_з_фото")), контраст=контраст)
     теми = list((порада or {}).get("теми") or [])
     п["поради_дані"] = дані + теми
     return dict(паспорт=п, теми_поради=[_ВМ.код("advice_topic", т) for т in теми if _ВМ.код("advice_topic", т)],
@@ -1452,10 +1459,41 @@ import збирач_промптів as _ЗП_Р
 # ЩАБЛІ ШКАЛИ ОШАТНОСТІ ДЛЯ МОВНОЇ МОДЕЛІ (НП-в крок 2) — англійською за
 # `формальність.ФОРМАЛЬНІСТЬ_ЯКОРІ` (K-KOH-01): те саме число 1–10, яким код міряє речі
 # (`інтервал_формальності`), тож смуга з її числа й інтервал речі стоять на одній шкалі.
-_ЩАБЛІ_EN = ("1 loungewear at home, 2 athleisure, 3 jeans, T-shirt and sneakers, 4 neat casual, dark denim, "
-             "5 textured jacket, refined knit, loafers, 6 blazer with trousers, sheath dress, "
-             "7 suit without tie, cocktail dress, 8 business suit, 9 tuxedo, evening gown, "
+_ЩАБЛІ_EN = ("1 loungewear at home; 2 athleisure; 3 jeans, T-shirt and sneakers; 4 neat casual, dark denim; "
+             "5 textured jacket, refined knit, loafers; 6 blazer with trousers, sheath dress; "
+             "7 suit without tie, cocktail dress; 8 business suit; 9 tuxedo, evening gown; "
              "10 white tie, full evening dress")
+
+
+# Слова прикладів — звичайні назви подій, не коди: з кодами місць модель почала ставити `place` у двозначних
+# фразах (театр / прем'єра, суд — корпоративний офіс), а «нагода/місце різні» зросли з 1–6 до 7–12 з 40.
+_ПРИКЛАДИ_МІСЦЬ_EN = {
+    "дім": "home", "спорт": "sport", "парк": "a park", "дитячий_майданчик": "a playground", "прогулянка": "a walk",
+    "транспорт_довгий": "a long trip", "подорож_переліт": "a flight", "кафе": "a café", "бар": "a bar",
+    "офіс_креативний": "a creative office", "лікарня_візит": "a hospital visit", "музей": "a museum",
+    "домашня_вечірка": "a house party", "ресторан_районний": "a neighbourhood restaurant",
+    "школа_батьківські": "a school parents' meeting", "театр": "a theatre or a concert", "клуб": "a club",
+    "церква_служба": "a church service", "конференція": "a conference", "вернісаж": "a vernissage",
+    "святкова_вечеря": "a festive dinner", "похорон": "a funeral", "ресторан_високий": "an upscale restaurant",
+    "опера_прем'єра": "an opera premiere", "офіс_корпоративний": "a corporate office",
+    "співбесіда": "a job interview", "презентація": "a presentation", "весілля_денне": "a daytime wedding",
+    "fine_dining": "fine dining", "весілля_вечірнє": "an evening wedding"}
+
+
+def _смуги_місць_en():
+    """Якорі шкали прикладами подій (ШКАЛА-1070, рядок 1070): звична смуга кожного місця — з тієї самої
+    таблиці коду (`формальність.МІСЦЯ_ДІАПАЗОНИ`), купно за смугою, звичайними словами (`_ПРИКЛАДИ_МІСЦЬ_EN`).
+    ЩО ЦЕ МІНЯЄ В РІШЕННІ. Доти модель мала лише щаблі одягом і ставила смугу «на око»: та сама фраза
+    двічі давала різне число у 6–11 з 40 (`проби/нагода_фрази_нг4.py`, зсуви на крок), а побачення в
+    районному ресторані — [6,7] замість звичних цьому місцю 4–5. Тепер у неї є від чого почати."""
+    import формальність as _ФОРМ_
+    купи = {}
+    for м, (від, до) in _ФОРМ_.МІСЦЯ_ДІАПАЗОНИ.items():
+        купи.setdefault((від, до), []).append(_ПРИКЛАДИ_МІСЦЬ_EN[м])
+    return " · ".join("%d–%d %s" % (від, до, ", ".join(к)) if від != до else "%d %s" % (від, ", ".join(к))
+                      for (від, до), к in sorted(купи.items()))
+
+
 _ПОЛЯ_EN = {
     "occasion": "what kind of event it is",
     "place": "where she will be",
@@ -1471,13 +1509,15 @@ _ПОЛЯ_EN = {
     "activity": "what she will do there",
     "surface": "what is under her feet",
     "hour": "start hour on a 24-hour clock",
+    "minute": "minutes of the start time, only when she names them with the hour (19:30 — 30; half past "
+              "seven in the evening — 30); never without \"hour\"",
     "part_of_day": "part of the day, when no hour is named: from her words, or when the event or a tile "
                    "in \"chosen\" names it or usually takes it (an evening reception, a theatre — evening)",
     "temperature_c": "air temperature, °C",
     "weather_feel": "the weather, when no number of degrees is named",
     "precipitation": "rain or snow",
-    "formality": ("how dressy this outing is, {from, to} on the 1–10 scale: always present, your estimate "
-                  "from her words, the event and \"chosen\" — %s" % _ЩАБЛІ_EN),
+    "formality": ("how dressy this outing is, {from, to} on the 1–10 scale: always present, taken by the "
+                  "anchors from her words, the event and \"chosen\" — steps: %s" % _ЩАБЛІ_EN),
     "intent": "what matters most to her: comfort_first — comfort and freedom of movement; "
               "context_optimal — being appropriate to the event and its level; statement — she wants "
               "to impress, stand out or be noticed, however she words it (all eyes on her, a star, bold, "
@@ -1540,6 +1580,8 @@ def _довідник_en(поле):
 def _умови_тем():
     """{тема: (про що запросити, коли тема доречна)} — сталі рядки словника кодів ходу."""
     import паспорт_нагоди as _ПН
+    import face_contrast as _KC
+    import формальність as _ФОРМ
     коди = lambda поле, ключі: " | ".join(к for к in (_ВМ.код(поле, x) for x in ключі) if к)
     вечір = ("an evening scene: hour 18 or later, or occasion %s, or place %s, or activity photoshoot"
              % (коди("occasion", _ПН._ВЕЧІРНІ_НАГОДИ), коди("place", _ПН._ВЕЧІРНІ_МІСЦЯ)))
@@ -1548,13 +1590,18 @@ def _умови_тем():
         "occasion": ("where she is going in this item: work, a date, a celebration or every day",
                      "she sent a photo of her item and no occasion, place or event is known"),
         "goal": ("whether today she wants to draw attention or stay unnoticed", вечір),
-        "makeup": ("what make-up she plans and the lip colour", вечір),
+        # МАК-2 (рядок 258): та сама умова, що `face_contrast.порада_з_випадку` у судді тем
+        "makeup": ("what make-up she plans and the lip colour",
+                   "%s; or profile colouring.contrast is low and the occasion is dressy: occasion %s, place %s, "
+                   "dress_code %s, or formality from %g up"
+                   % (вечір, коди("occasion", _ПН.НАГОДИ_ДІЛОВІ), коди("place", _ПН.МІСЦЯ_ДІЛОВІ),
+                      коди("dress_code", _ФОРМ.ДРЕС_КОДИ_ДІЛОВІ), _KC.ОШАТНІСТЬ_ДЛЯ_ПОРАДИ_МАКІЯЖУ)),
         "movement": ("whether she will walk much and for how long",
                      "%s, or occasion %s" % (надворі, коди("occasion", _ПН._ХОДИТИ_НАГОДИ))),
         "temperature": ("how many degrees it will be", надворі),
         "jewelry": ("which jewellery she wants with THIS look: gold, silver, pearls, ethnic or none",
                     "the occasion is not sport"),
-        "register": ("the style she dresses in: classic, sporty, boho, minimalism and so on", "always"),
+        "register": ("the style she wants THIS look in: classic, sporty, boho, minimalism and so on", "always"),
     }
 
 
@@ -1616,10 +1663,13 @@ def _коди_розмови():
         if _група(ім, с) == "вільні":
             р.append("- %s — %s%s" % (ім, _ПОЛЯ_EN[ім], "; " + _тип_en(с) if с.get("type") == "array" else ""))
     р.append("- formality — %s; without quote" % _ПОЛЯ_EN["formality"])
+    р.append("  · anchors — usual bands of events (examples for the band only, not codes): %s" % _смуги_місць_en())
     # МОВА-1 (02.10): `part_of_day` — службове, як ці два, але доти його рядка тут не було: модель не
     # бачила ні опису, ні кодів, і «вдень», «по обіді», «на обід» без години губились (проба
     # `мова1_нечіткі.py`: 0 з 5 таких випадків).
-    for ім in ("reserved_colour", "open_zones", "part_of_day"):
+    # `minute` (рядки 933/1135) — службове так само: стоїть при `hour`, цитати не потребує, бо без години
+    # з її слів шов його не бере (`паспорт_з_шару`).
+    for ім in ("reserved_colour", "open_zones", "part_of_day", "minute"):
         р.append("- %s — %s; %s; without quote" % (ім, _ПОЛЯ_EN[ім], _тип_en(поля[ім])))
     р.append("Advice topics — code: what to invite her to tell · when the topic applies (after your "
              "update, and only while the passport does not know it):")
@@ -1675,8 +1725,25 @@ def _коди_розмови():
     "parts, both describe the part she names first, and \"event\" keeps all of them.",
     # НП-в крок 2: ошатність — число мовної моделі ЗАВЖДИ, без цитати (її слова, подія, плитки);
     # з нього код рахує смугу й відсів пулу, інших джерел смуги нема.
-    "\"formality\" is always present, without quote: how dressy this outing is, as you understand it "
-    "from all her words, the event and \"chosen\"; she said nothing about it — your best estimate.",
+    # ШКАЛА-1070 (рядок 1070): смуга — за якорем, не на око. Початок — звична смуга найближчого прикладу
+    # (`_смуги_місць_en`), зсув — лише за тим, що вона чи подія додають понад свій вид, і не більше кроку, цілою
+    # смугою (ширина та сама: доти [5,6]↔[5,7] і [4,6]↔[5,6] для тієї самої фрази). Вгору — K-KOH-07 (ставки,
+    # господар) і K-KOH-06 (вечір там, куди ходять удень). Приклад уже несе свою звичну пору: театр увечері —
+    # смуга театру (плитка «Театр, концерт» о 20:00). «Рівний вибір — угору» (K-KOH-06, укр. база вища) знято:
+    # нотаріус їхав 5–6 → 6–8, суд 6–7 → 7–9 (A/B 4 виклики на фразу).
+    # Побачення (рядок 1130, довідник нагод `аудит/тести/нагода_архітектура_2026-09-28.md` §1.1: «побачення / школа —
+    # смуга 4–5; побачення: помітніше ввечері»): удень 4–5, увечері на крок вище — 5–6. Доти вечеря-побачення о 19:30
+    # лишалась на 4–5 районного ресторану (вечірній підйом — лише для денних місць), і рука 1 брала трикотажні штани.
+    "\"formality\" is always present, without quote: how dressy this outing is, taken by the anchors in "
+    "\"codes\", not by eye. Start from the usual band of the example nearest to her event; it already holds "
+    "the usual time of day of such an event. The examples are for the band only and do not decide \"place\" "
+    "or \"occasion\". Keep the band as it is unless her words or the event add what its kind does not have; "
+    "then move the whole band, keeping its width, one step at most: down — she says it is simple, nothing "
+    "special; up — she wants to dress up, there are stakes or a host (an interview, a speech, she is the "
+    "hostess or the birthday girl, an official reception), or the event is in the evening where people "
+    "usually go by day (an office, a school, a museum). A date is 4–5 by day and one step higher in the evening "
+    "(5–6): in the evening she is seen more. A named dress code — its band. She said nothing about it — the "
+    "usual band of her event.",
     # НП-в (принцип власника 01.10: «код має знати те, що може точно порахувати»): видів,
     # «найближчого виду», ролі, аудиторії, віри, обсягу й частин дня модель коду більше не дає —
     # стилістка бере подію її словами. Зарезервований колір — рахівне (вето майже-білого).
@@ -1715,8 +1782,12 @@ def _коди_розмови():
     "direct question, and \"ask_code\" is that code. Nothing else is required: never say that the looks "
     "cannot be put together.",
     # П.9 (Р-3, 20.09): драпіровка — лише профіль; про прикраси — лише «які з цим образом».
+    # 936: «в якому стилі зазвичай одягаєшся» — звичка людини, тобто профіль; у розмові про цей вихід
+    # запрошення стосується лише цього виходу й цього образу.
     "Never ask her what suits her face (metal, white, neutrals): that is her profile. About jewellery — "
-    "only which jewellery she wants with this look.",
+    "only which jewellery she wants with this look. Never ask how she usually dresses, her habits, her "
+    "wardrobe or her taste in general: that is her profile too. An invitation is only about THIS outing and "
+    "THIS look, and the \"register\" topic asks which style she wants for this look.",
     # Проєкт нагоди §1.4.5: конфесію й траур проактивно не питати (`profile.ТРАУР_ПОЛІТИКА`).
     "Never ask about her faith, a religious service, mourning or her role at the event.",
 )
@@ -1885,6 +1956,8 @@ def плитки_кодами(сценарій):
     for ключ, поле in (("година", "hour"), ("темп_c", "temperature_c")):
         if _є(с.get(ключ)) and ключ not in типові and isinstance(с.get(ключ), (int, float)):
             вих[поле] = с[ключ]
+    if "hour" in вих and isinstance(с.get("хвилини"), int) and 0 < с["хвилини"] < 60:
+        вих["minute"] = с["хвилини"]
     мк = _ПН.макіяж_канон(с.get("макіяж"))
     if isinstance(мк, dict) and _ВМ.код("makeup_level", мк.get("рівень")):
         вих["makeup"] = {"level": _ВМ.код("makeup_level", мк.get("рівень"))}
@@ -1972,6 +2045,19 @@ def теми_відкриті(паспорт, сценарій=None):
             "temperature": ст["темп_c"] not in (None, ""), "jewelry": ст["прикраси"], "register": ст["реєстр"],
             "occasion": ст["нагода"] or ст["місце"] or ст["подія"]}
     return [к for к in _ВМ.ТЕМИ_ПОРАДИ if _ВМ.ключ("advice_topic", к) not in дані and not знає.get(к)]
+
+
+def контраст_профілю(профіль):
+    """Рівень контрасту обличчя з кольорів профілю («низький» | «середній» | «високий») або None — той
+    самий вимір, що `особа.рівень` пакета (`міст_вхід._features` → `outfit.контраст_особи`, як у
+    `міст_основи`); зросту й мірок не треба. МАК-2: ним суддя тем знає, чи доречна тема «макіяж»
+    удень (`паспорт_нагоди.порада_коду`). Без шкіри, волосся й очей — None, тема як доти."""
+    if not isinstance(профіль, dict) or not all(профіль.get(к) for к in ("шкіра", "волосся", "очі")):
+        return None
+    import міст_вхід as _МВ
+    import outfit as _O
+    о = _O.контраст_особи(_МВ._features(профіль)[0])
+    return о.get("рівень") if о.get("доступно") else None
 
 
 def промпт_розмови(d):
@@ -2069,20 +2155,29 @@ def суд_частин(частини, дозволені, обовʼязков
         else:
             шматки.append(ask)
     бракує = [к for к in обовʼязкове if not (ask and ч.get("ask_code") == к)]
-    теми, invite = list(ч.get("invite_topics") or []), ч.get("invite")
-    if invite or теми:
-        чому = ("required_this_turn" if обовʼязкове else "no_topics" if not теми
+    # ОДНА НЕДОЗВОЛЕНА ТЕМА НЕ ЗНІМАЄ ДОЗВОЛЕНИХ (рядок 1001): доти запрошення на [register, jewelry,
+    # movement] при дозволених [jewelry, register] відкидалось цілим, `поради_дані` лишались порожні.
+    # Тепер недозволене відкидається поіменно (запис у `відкинуто`), дозволене лишається; цілим
+    # запрошення відкидається, лише коли дозволених не лишилось.
+    всі_теми, invite = list(ч.get("invite_topics") or []), ч.get("invite")
+    теми = [т for т in всі_теми if т in дозволені]
+    недозволені = [т for т in всі_теми if т not in дозволені]
+    if invite or всі_теми:
+        чому = ("required_this_turn" if обовʼязкове else "no_topics" if not всі_теми
                 else "no_invite_text" if not invite
-                else "too_many_topics" if len(теми) > _ПН.ПОРАД_ЗА_ХІД_МАКС
-                else "topic_not_allowed" if any(т not in дозволені for т in теми)
+                else "too_many_topics" if len(всі_теми) > _ПН.ПОРАД_ЗА_ХІД_МАКС
+                else "topic_not_allowed" if not теми
                 else "question_in_invite" if _ПИТАННЯ.search(invite)
                 else "too_many_sentences" if len([р for р in _РЕЧЕННЯ.split(invite) if р.strip()]) > _ПН.ПОРАДА_РЕЧЕНЬ_МАКС
                 else None)
         if чому:
-            відкинуто.append(dict(частина="invite", чому=чому, теми=теми,
+            відкинуто.append(dict(частина="invite", чому=чому, теми=всі_теми,
                                   дозволені=list(дозволені)))
             теми = []
         else:
+            if недозволені:
+                відкинуто.append(dict(частина="invite_topics", чому="topic_not_allowed", теми=недозволені,
+                                      лишено=теми, дозволені=list(дозволені)))
             шматки.append(invite)
     return " ".join(шматки).strip(), теми, відкинуто, бракує
 
@@ -2098,8 +2193,9 @@ def мова(вхід):
       · {коментар_з: внутрішня мова коментаря до образу, паспорт?} → `паспорт_з_коментаря`
         (С-2: межі й бажання коментаря — у паспорт сценарію, відкинуті речі — у «не ця»);
       · {паспорт_з: внутрішня, сценарій, вето?, паспорт?, драп_сирий?, фото_речей?,
-        речі_з_фото?, слова_ходу?, слова_розмови?, частини?} → `паспорт_з_шару` + рядки випадку
+        речі_з_фото?, слова_ходу?, слова_розмови?, частини?, профіль?} → `паспорт_з_шару` + рядки випадку
         (з `частини` — ще й суд частин ходу розмови: `текст`, `відкинуто`, `бракує_обовʼязкового`);
+        `профіль` — кольори людини: з них контраст обличчя для теми «макіяж» (МАК-2);
       · {репліка} → {промпт, вибірка}; {репліка, відповідь_моделі} → `прийняти_репліку`;
       · {повідомлення} → {промпт, розмітка, незнайомі, вибірка}; {розмітка_повідомлень,
         відповідь_моделі} → `прийняти_повідомлення`.
@@ -2131,7 +2227,8 @@ def мова(вхід):
                            драп=(d.get("драп_сирий") or None), фото=(d.get("фото_речей") or None),
                            речі_з_фото=d.get("речі_з_фото"),
                            слова_ходу=(d.get("слова_розмови") or d.get("слова_ходу") or ""),
-                           частини=(d.get("частини") if isinstance(d.get("частини"), dict) else None))
+                           частини=(d.get("частини") if isinstance(d.get("частини"), dict) else None),
+                           контраст=контраст_профілю(d.get("профіль")))
         return дамп(dict(р, випадок=_ПН.паспорт_рядком(р["паспорт"]),
                          випадок_людині=_ПН.паспорт_рядком_людині(р["паспорт"]),
                          # ШМАТКИ З КЛЮЧАМИ — поруч із рядком (Л-9): показ вішає піктограму
