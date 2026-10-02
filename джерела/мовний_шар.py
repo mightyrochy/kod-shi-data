@@ -798,7 +798,7 @@ def _її_речі(речі):
 # вечір у назві події модель розуміє тим самим ходом; години (`hour`) це не стосується — число
 # лише з її слів.
 _БЕЗ_ЦИТАТИ = ("event", "mood", "question", "question_about", "rest", "quotes", "formality",
-               "reserved_colour", "open_zones", "part_of_day")
+               "reserved_colour", "open_zones", "part_of_day", "stylist_note")
 _РЕЧІ_З_ЦИТАТОЮ = ("wants", "vetoes", "retract", "own_items", "beliefs")
 
 
@@ -1012,6 +1012,11 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     решта = list(dict.fromkeys(x for x in решта if x))[-6:]
     if решта:
         п["решта"] = решта
+    # ПОЯСНЕННЯ МОВНОЇ МОДЕЛІ СТИЛІСТЦІ (НП-в6): нове замінює давнє, хід без нього лишає давнє —
+    # як `подія`. Код його не читає: воно їде стилістці (`пакет_моделі.випадок_для_пакета`).
+    пояснення = _текст(в.get("stylist_note")) or _текст(досі.get("пояснення_мови"))
+    if пояснення:
+        п["пояснення_мови"] = пояснення
     if вигадки:
         п["не_взято_кодом"] = list(п.get("не_взято_кодом") or []) + вигадки
     if подія_без_смуги:
@@ -1431,6 +1436,9 @@ _ПОЛЯ_EN = {
     "own_items": "her own items described in words",
     "question": "her question, her words",
     "rest": "whatever else her new message says that fits no field above, verbatim",
+    "stylist_note": "only when her words about the event are hard to read without context (a local custom, "
+                    "slang, irony, an event the stylist may not know): one or two sentences in English for "
+                    "the stylist on what she means; the stylist gets her own words too. Otherwise unknown",
 }
 _РЕЧІ_EN = {"slot": "part of the look", "item_type": "item type", "fabric": "fabric", "pattern": "pattern",
             "color_class": "colour class", "color_name": "colour name", "zone": "body zone she keeps covered",
@@ -1714,6 +1722,8 @@ def паспорт_кодами(п):
             вих[поле] = п[ключ]
     if _є(п.get("подія")):
         вих["event"] = str(п["подія"])
+    if _є(п.get("пояснення_мови")):
+        вих["stylist_note"] = str(п["пояснення_мови"])
     for ключ, (поле, перелік, список) in _ПН.ПОЛЯ_ВИМІРІВ_РОЗМОВИ.items():      # НГ-4: те, що вона вже сказала
         if список and isinstance(п.get(ключ), list):
             коди = [к for к in (_ВМ.код(перелік, x) for x in п[ключ]) if к]

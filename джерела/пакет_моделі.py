@@ -475,6 +475,9 @@ import внутрішня_мова as _ВМ_П
                  як="they say more than the code: the outfit answers them"),
         _ЗП.Поле("case.her_other_words", "the rest of what she said, which no field of «case» carries",
                  як="it is part of her case"),
+        _ЗП.Поле("case.language_model_note", "the language model's note on her words about the event, "
+                                             "when they are hard to read without context",
+                 як="it explains her words and does not replace them: where they differ, her words win"),
         _ЗП.Поле("case.shoe_request", "what she asked for about heels: heel or no_heel",
                  як="her own request: take no shoes against it"),
         _ЗП.Поле("case.beliefs", "her own words about what she holds does not suit her",
@@ -1028,6 +1031,10 @@ def випадок_для_пакета(паспорт, рядок, сценар�
             в[_поле + "_слова"] = цитата_поля(паспорт, _поле)
     if [x for x in (паспорт or {}).get("решта") or [] if str(x).strip()]:
         в["решта"] = [str(x).strip() for x in паспорт["решта"] if str(x).strip()]
+    # ПОЯСНЕННЯ МОВНОЇ МОДЕЛІ (НП-в6, принцип власника 01.10): коли її слова про подію важко
+    # тлумачити, мовна модель пише стилістці коротко англійською, що вона має на увазі. Код не читає.
+    if str((паспорт or {}).get("пояснення_мови") or "").strip():
+        в["пояснення_мови"] = str(паспорт["пояснення_мови"]).strip()
     return в
 
 
