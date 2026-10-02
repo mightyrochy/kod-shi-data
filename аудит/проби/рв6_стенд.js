@@ -810,7 +810,6 @@ function постЖСОН(адреса, тіло){
    фото речі — а саме на них вона й судить «фото_не_те». Тепер адаптер робить те
    саме, що воркер: тягне кадр і кладе його base64, а скільки не дістав — віддає
    тим самим заголовком. */
-let фотоНеДійшло = 0;
 /* WEBP ЛОКАЛЬНИЙ РАНТАЙМ НЕ БЕРЕ (виміряно 24.09.2026): той самий кадр у jpeg
    дає HTTP 200 і опис речі, у webp — `HTTP 400 'url' field must be a base64
    encoded image` і на qwen3.5-9b, і на qwen3-vl-8b. А webp у каталозі багато
@@ -830,26 +829,41 @@ const ЖИВІ_ТИПИ = new Set(['image/jpeg', 'image/png']);
    FOTO_MAX×FOTO_MAX (типово 1024; FOTO_MAX=0 — слати як є). Лише для живої
    моделі: заглушка кадрів не бачить. */
 const ФОТО_МАКС = ('FOTO_MAX' in process.env) ? Number(process.env.FOTO_MAX) : 1024;
-async function кадрБазою(url){
+/* КЛОД БЕРЕ ЧОТИРИ ТИПИ (КАДР-870, 02.10.2026): jpeg, png, webp, gif — тож для `claude -p`
+   (`сире`) кадр іде як є, без перекодування. Доти адаптер знімав webp лише через `sharp`, а
+   `sharp` у цьому середовищі нема: «не дійшло» ставало кожне webp-фото (29 з 40 адрес
+   каталогу — webp: emmeliedelage, rito, sezone…), тобто 20–50 % кадрів кожного опису —
+   стенд міряв свою втрату, а не продукт (там адреси несе сам Anthropic). Причина кожної втрати
+   лишається в `ПРИЧИНИ_ВТРАТ` і друкується в підсумку. */
+const КЛОД_ТИПИ = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const КЛОД_КАДР_МАКС_Б = 5 * 1024 * 1024;
+const ПРИЧИНИ_ВТРАТ = [];
+async function кадрБазою(url, сире){
+  const втрата = п => { ПРИЧИНИ_ВТРАТ.push(п + ' · ' + String(url).slice(0, 90)); return null; };
   try {
-    const в = await fetch(url, {redirect: 'follow'});
-    if (!в.ok) return null;
+    let в = null;
+    for (let спроба = 0; спроба < 2; спроба++){
+      try { в = await fetch(url, {redirect: 'follow'}); if (в.ok || в.status < 500) break; } catch (е) { if (спроба) throw е; }
+    }
+    if (!в.ok) return втрата('HTTP ' + в.status);
     let тип = (в.headers.get('content-type') || 'image/jpeg').split(';')[0].trim();
     let байти = Buffer.from(await в.arrayBuffer());
-    if (!байти.length) return null;
+    if (!байти.length) return втрата('порожньо');
+    const прийнятні = сире ? КЛОД_ТИПИ : ЖИВІ_ТИПИ;
     const великий = _sharp && ФОТО_МАКС > 0 && await _sharp(байти).metadata()
       .then(м => Math.max(м.width || 0, м.height || 0) > ФОТО_МАКС, () => false);
-    if (!ЖИВІ_ТИПИ.has(тип) || великий){
-      if (!_sharp) return null;
+    if (!прийнятні.has(тип) || великий){
+      if (!_sharp) return втрата(!прийнятні.has(тип) ? 'тип ' + тип + ' без sharp' : 'великий без sharp');
       байти = await (великий ? _sharp(байти).resize({width: ФОТО_МАКС, height: ФОТО_МАКС, fit: 'inside'}) : _sharp(байти))
         .jpeg({quality: 88}).toBuffer();
       тип = 'image/jpeg';
     }
+    if (сире && байти.length > КЛОД_КАДР_МАКС_Б) return втрата('понад 5 МБ');
     return 'data:' + тип + ';base64,' + байти.toString('base64');
-  } catch (_) { return null; }
+  } catch (е) { return втрата('мережа ' + String((е.cause && е.cause.code) || е.message).slice(0, 40)); }
 }
 async function живоюМоделлю(тіло, тип){
-  фотоНеДійшло = 0;
+  let фотоНеДійшло = 0; /* локально: виклики йдуть паралельно, глобальний лічильник їх мішав (КАДР-870) */
   /* ZHYVA=… — інший транспорт, той самий шов і той самий журнал (наряд Ж-1) */
   if (КЛОД_ШВОМ) return клодомCLI(тіло, тип);
   const повідомлення = [];
@@ -932,6 +946,7 @@ function клодКадром(дж){
     media_type: дж.slice(5, п), data: дж.slice(к + 1)}};
 }
 async function клодомCLI(тіло, тип){
+  let фотоНеДійшло = 0;
   const пов = тіло.messages || [];
   if (пов.length > 1) клодІсторій++;
   const блоки = [];
@@ -950,7 +965,7 @@ async function клодомCLI(тіло, тип){
           media_type: дж.media_type || 'image/jpeg', data: дж.data}});
         continue;
       }
-      const url = await кадрБазою(дж.url || '');
+      const url = await кадрБазою(дж.url || '', true);
       if (url) блоки.push(клодКадром(url));
       else { фотоНеДійшло++; блоки.push({type: 'text', text: '(image not delivered)'}); }  // ФОТО-513, як у воркері
     }
@@ -3636,6 +3651,7 @@ function підсумокМоделі(){
     console.log('   фото карток:', шФото, fs.statSync(шФото).size, 'Б · прийшло', ок, 'з', усіх,
                 (ФОТО_КРАМНИЦЬ ? '· листів мережі про картинки: ' + фотоПодії.length : '· без FOTO=1 мережі нема'));
     for (const р of фотоПодії.filter(р => р.startsWith('IMGFAIL') || !/ 200 /.test(р)).slice(0, 8)) console.log('     ' + р);
+    if (ПРИЧИНИ_ВТРАТ.length) console.log('   кадрів не дійшло до моделі: ' + ПРИЧИНИ_ВТРАТ.length + ' · ' + ПРИЧИНИ_ВТРАТ.slice(0, 5).join(' | '));
     const шКартки = path.join(тека, 'картки.txt');
     fs.writeFileSync(шКартки, с2.картки.map((к, i) =>
       '═══ картка ' + (i + 1) + ' з ' + с2.картки.length + ' · рука ' + к.рука
