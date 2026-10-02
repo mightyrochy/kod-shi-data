@@ -507,14 +507,14 @@ html.аркуш-відкрито{overflow:hidden}
   clip-path:polygon(evenodd,var(--ск) 0,calc(100% - var(--ск)) 0,100% var(--ск),100% 100%,0 100%,0 var(--ск),
     1px calc(var(--ск) + .4px),1px calc(100% - 1px),calc(100% - 1px) calc(100% - 1px),calc(100% - 1px) calc(var(--ск) + .4px),
     calc(100% - var(--ск) - .4px) 1px,calc(var(--ск) + .4px) 1px)}
-.рядок{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;width:100%;text-align:left;
+.рядок{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;text-align:left;
   background:none;border:0;border-top:1px solid var(--межа);clip-path:none;padding:14px 16px;color:var(--чорнило);font:400 15px/1.35 var(--текст)}
 .список .рядок:first-child{border-top:0}
 .рядок .н{display:flex;flex-direction:column;gap:3px;min-width:0}
 .рядок .н b{font-weight:500;font-size:15.5px}
 .рядок .н small{font-size:13px;color:var(--олівець)}
 .рядок::after{content:"›";color:var(--олівець);font-size:20px;line-height:1}
-.рядок .прев{font:400 14px/1.3 var(--текст);color:var(--олівець);text-align:right;max-width:46%}
+.рядок .прев{font:400 14px/1.3 var(--текст);color:var(--олівець);text-align:right;justify-self:end;min-width:0;overflow-wrap:anywhere}
 .рядок .прев.число{font-weight:500;color:var(--чорнило);font-variant-numeric:tabular-nums;letter-spacing:.02em;white-space:nowrap}
 .рядок .прев.число small{color:var(--олівець);font-weight:400;margin-left:6px;font-size:13px}
 .рядок .прев.брак{color:var(--золото);font-weight:500;font-size:13px}
@@ -523,7 +523,7 @@ html.аркуш-відкрито{overflow:hidden}
 .рядок .прев .зразки i+i{border-left:0}
 .рядок .прев.фото{display:inline-flex;gap:4px}
 .рядок .прев.фото i{display:inline-block;width:26px;height:34px;background:var(--папір) var(--фактура);clip-path:polygon(6px 0,100% 0,100% 100%,0 100%,0 6px)}
-.рядок .прев.фото i.є{background:var(--чорнило)}
+.рядок .прев.фото i.є{background:var(--папір) var(--фактура) center/cover no-repeat}
 
 
 
@@ -5636,6 +5636,7 @@ function відкритиАркушПрофілю(ід){
   if (ід === 'др-блок') малюватиДрап();
 }
 /* Огляд профілю: рядки з прев'ю зі стану — те саме, що бачить код. */
+let ОГЛЯД_URL = [];   // object URL мініатюр фото; звільняються при перемальовуванні
 function малюватиОгляд(){
   const о = $('е-огляд'); if (!о) return;
   const акт = ПРОФІЛІ.find(п=>п.ід === АКТИВНИЙ);
@@ -5646,7 +5647,13 @@ function малюватиОгляд(){
   const пост = (ід, текст, клас)=>{ const е = $(ід); if (!е) return null;
     е.innerHTML = ''; е.className = 'прев' + (клас ? ' ' + клас : ''); if (текст != null) е.textContent = текст; return е; };
   { const ф = пост('ог-фото', null, 'фото');
-    if (ф) [ФОТО_Є.портрет, ФОТО_Є.зріст].forEach(є=>ф.appendChild(ел('i', є ? 'є' : ''))); }
+    ОГЛЯД_URL.forEach(u=>{ try{ URL.revokeObjectURL(u); }catch(_){} }); ОГЛЯД_URL = [];
+    if (ф) [['портрет', ФОТО_Є.портрет], ['зріст', ФОТО_Є.зріст]].forEach(([вид, є])=>{
+      const і = ел('i', є ? 'є' : ''); ф.appendChild(і);
+      if (!є) return;
+      читатиКв_(ключФото(вид)).then(б=>{
+        if (!б || typeof б === 'string' || !і.isConnected) return;
+        const u = URL.createObjectURL(б); ОГЛЯД_URL.push(u); і.style.backgroundImage = 'url("' + u + '")'; }); }); }
   { const к = пост('ог-кольори', null, КОЛІР.шкіра ? '' : 'брак');
     if (к){
       if (КОЛІР.шкіра){ const з = ел('span', 'зразки');
