@@ -4355,7 +4355,8 @@ function звітВердиктів(вс, коли){
       + 'називає крок і вирок: `not_schema`/`repair_not_schema`/`choice_not_schema`/'
       + '`description_not_schema` (з `schema=`, `errors=` парами `де=що` через « | », `retry=1`), '
       + '`usable_but_off_schema`, `no_outfit_in_answer` (з `model_said=` — цитатою моделі), '
-      + '`blocks=/with_id=/without_id=`, `iter2_no_outfit`, `choice_rejected`, `remove_not_done`, '
+      + '`blocks=/with_id=/without_id=`, `iter2_no_outfit`, `choice_rejected`, `choice_gates_not_accepted`, '
+      + '`choice_gates_accepted`, `accept_not_taken`, `remove_not_done`, '
       + '`choice_not_complete`, `careful_choice_empty`, `completeness_repair · attempt= · '
       + 'outfit= · items= · complete=yes|no · code_added_slots=`, `no_accepted_outfit · on_card=none '
       + '· fullest= · items= · to_her= · why=`, `code_added=`, `gate_repair_by_code=`, '
@@ -11989,8 +11990,12 @@ async function зібратиОбразиП(){
              помилок JSON-ом), і просить ще раз. Далі — запасний образ коду, і він
              названий у діагнозі, а не взятий мовчки. */
           if ((в3.вибір||{}).повторний_виклик){
-            ЗБ.діагноз.push('hand_' + рука + ' · choice_not_schema · schema=VYBIR_V1 · errors='
-              + ((в3.вибір.помилки||[]).map(п=>(п.де||'') + '=' + (п.що||'')).join(' | '))
+            /* ВИБІР-3 (рядок 1040): образ обрано, але його гейт не прийнято полем `прийнято` —
+               той самий один повтор, з адресою гейтів, замість чужого образу на картці */
+            ЗБ.діагноз.push('hand_' + рука + (в3.вибір.названо
+              ? ' · choice_gates_not_accepted · outfit=' + в3.вибір.названо + ' · why=' + (в3.вибір.чому_відмова || '')
+              : ' · choice_not_schema · schema=VYBIR_V1 · errors='
+                + ((в3.вибір.помилки||[]).map(п=>(п.де||'') + '=' + (п.що||'')).join(' | ')))
               + ' · retry=1');
             викликів += 1;
             const ст3б = станОбриву();
@@ -12003,6 +12008,10 @@ async function зібратиОбразиП(){
           const вб = в3.вибір || {};
           if (вб.замінено) ЗБ.діагноз.push('hand_' + рука + ' · choice_rejected · why='
             + (вб.чому_відмова || 'unspecified') + ' · taken_outfit=' + вб.замінено);
+          if ((вб.прийнято||[]).length) ЗБ.діагноз.push('hand_' + рука + ' · choice_gates_accepted · outfit='
+            + (вб.обрано || вб.названо) + ' · rules=' + вб.прийнято.map(п=>п.правило).join(','));
+          for (const п of (вб.прийнято_знехтувано||[]))
+            ЗБ.діагноз.push('hand_' + рука + ' · accept_not_taken · finding=' + п.знахідка + ' · why=' + п.чому);
           for (const з of (вб.знехтувано||[]))
             ЗБ.діагноз.push('hand_' + рука + ' · remove_not_done · item=' + з.річ + ' · why=' + з.чому);
           /* ГЕЙТ ВИБОРУ — З ПОЛІВ КОДУ, А НЕ З ЛІЧБИ РЕЧЕЙ (18.09.2026).
