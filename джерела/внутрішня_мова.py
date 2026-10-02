@@ -740,6 +740,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
 # ЧОГО ЦЕ КОШТУЄ, ЧЕСНО: на стенді без живої моделі шару заглушка (`рв6_стенд.js`) ставить у
 # картку саме визначення, тож знімки ручного огляду тепер англійські — українське речення
 # народжується лише там, де є жива мовна модель (ноутбук). Рядок про це — на дошці.
+# Значення `place` заяв опцій розкладки (ВМ-3б): коди місця — англійські слова (`hand`, `crossbody`,
+# `on_face`…), тож визначення називає лише, що це місце; перелік у кожному визначенні роздув би промпт.
+_МІСЦЯ_ОПЦІЙ = "where it is worn"
 ЗАЯВИ = {
     # ── портрет, з якого кольори не читаються (П-4, `міст_вхід.ПРИЧИНИ_ПОРТРЕТА`) ─────
     "portrait_black_white": "the photo is black-and-white or under a heavy filter: it carries no true colours",
@@ -1207,6 +1210,39 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                            "shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, "
                            "shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the "
                            "bag handle, wrist — on the wrist, as_top — instead of a top)",
+    # ── опції розкладки речі для опису (`аксесуари_структура.опції_заявами`, ВМ-3б) ──────────
+    # values: place — код місця: hand, shoulder, crossbody, neck, hair, shoulders, waist, bag_handle,
+    # wrist, as_top (як у `wear_way_not_chosen`), dominant_wrist, other_wrist, on_face, on_head
+    # (`аксесуари_структура._МІСЦЕ_КОД`)
+    "wear_place_open": "the item can be worn this way; the code names no effect of it (values: place — "
+                       + _МІСЦЯ_ОПЦІЙ + ")",
+    "place_near_face_field": "worn this way, the item sits in the field near her face and brings its colour "
+                             "there (K-ACC-07) (values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
+    "place_above_face": "worn this way, the item sits above her face (K-ACC-07) (values: place — "
+                        + _МІСЦЯ_ОПЦІЙ + ")",
+    "place_top_layer_asymmetry": "worn this way, the item becomes a top layer and gives asymmetry (K-ACC-06) "
+                                 "(values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
+    "place_belt_preconditions": "worn this way, the item works as a belt, and the conditions of a belt apply "
+                                "(K-ACC-02) (values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
+    "place_on_accessory_off_face": "worn this way, it is an accessory on an accessory and does not touch the "
+                                   "field near her face (values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
+    "place_wrist_accent_budget": "worn this way, it takes the wrist's place in the accent budget: it competes "
+                                 "with bracelets, a scarf on the wrist and rings of the same hand (K-WCH-03) "
+                                 "(values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
+    "place_becomes_garment": "worn this way, the item becomes a garment: its area and its kind change "
+                             "(K-ACC-12) (values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
+    "place_diagonal_adds_edge": "worn this way, the strap runs as a diagonal across the torso — one more edge "
+                                "(K-EDG-01) (values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
+    "place_strap_length_sets_edge": "worn this way, the strap length decides where the bag's lower edge sits "
+                                    "(values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
+    "place_no_edge_on_torso": "worn this way, the bag adds no edge on the torso at all (values: place — "
+                              + _МІСЦЯ_ОПЦІЙ + ")",
+    "place_face_colour_variable": "worn this way, the frame's colour near her face is a variable, not a "
+                                  "constant (values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
+    "scarf_wraps_head": "the scarf is large enough to wrap the head fully (values: size_cm — its side in cm)",
+    "scarf_too_small_to_wrap_head": "the scarf is too small to wrap the head fully: a physical limit, not "
+                                    "taste (values: size_cm — its side in cm, unknown when the card does not "
+                                    "give it)",
     "scarf_near_face_way_unknown": "whether she wears this scarf near the face; which top suits her depends "
                                    "on it, since a scarf near the face carries colour there by itself "
                                    "(values: item — item name; ways — codes of wearing ways: neck, hair, "
@@ -2639,6 +2675,70 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
 })
 
 
+# ── ПОРУШЕННЯ ГЕЙТА МОВИ ДЛЯ ПЕРЕПИСУ (ВМ-3б, 01.10.2026; рядок 542 дошки, CLAUDE.md п.12) ──────
+# ЩО БУЛО. Повтор мови (`вердикт_моделі.мова_повтор`) віз моделі український шаблон: наказ,
+# формат, «фото» і `порушення` словами гейта (`language_gate.АНТИ`: `суть`, `дозволено`) —
+# ~1 350 знаків кирилиці від коду на виклик. ЩО ТЕПЕР. На дроті — код порушення
+# (`language_gate.КОДИ_ПОРУШЕНЬ`: ід правила гейта → код) і збіги з її тексту; що не так і що
+# натомість, модель читає у визначенні коду. Українські `суть` і `дозволено` лишаються в гейті —
+# для звіту власника; ід правил на дріт не йдуть, як і доти (Р-1).
+ПОРУШЕННЯ_МОВИ = {
+    "russian_in_text": "Russian in the text for her: a Russian word, ending or letter. Instead: the same "
+                       "meaning in Ukrainian, without a single Russian word or ending (R-LNG-UA)",
+    "status_signal": "explaining a choice by how the item presents her to others (\"reads expensive\", "
+                     "\"looks cheap\", \"signals status\"). Instead: deliberateness as a condition, not status "
+                     "as a goal — an element may read as CHOSEN rather than accidental (K-SIG-01)",
+    "refuting_her_belief": "refuting her belief about stripes or prints (\"actually it does not widen\"). "
+                           "Instead: take the belief as a limit — do not offer such items and do not raise the "
+                           "topic (K-LNG-04)",
+    "stripes_body_volume": "stripes as a claim about body volume in either direction. Instead: a stripe as a "
+                           "composition element — where it draws a line and what it rhymes with, with no claim "
+                           "about body volume (R-HELM-03)",
+    "age_as_filter": "age as a filter of items (\"after N years one does not wear X\"). Instead: a life "
+                     "transition as context (a new job, a return, a change of role) (K-PC-06)",
+    "hide_flaw_fix_body": "\"hide a flaw / correct the body\", softened forms included, when she did not "
+                          "set such a goal. Instead: composition, colour, occasion, comfort; play with texture, "
+                          "not with the body (R-ONB-06)",
+    "type_verdict": "a confident typology verdict (\"your season is Winter\", \"you are Soft Natural\"). "
+                    "Instead: a vocabulary bridge — \"if you are used to colour types, this is roughly…\" "
+                    "translated into axes: value contrast, depth, temperature (R-TYP-04)",
+    "style_score": "a universal numeric style score. Instead: the strength of a single finding with its "
+                   "measure and threshold (R-ABC-08)",
+    "colour_emotion": "a universal colour → emotion or trait meaning (\"blue = trust\"). Instead: colour as "
+                      "a measure and its relation to her colouring and to the other items, with no claim about "
+                      "the viewer's emotion (R-PSY-02)",
+    "clothes_psychology_promise": "a causal psychological promise of clothes (\"will give you confidence\", "
+                                  "\"93% is non-verbal\"). Instead: \"reads as a put-together outfit for "
+                                  "[the occasion]\"; comfort and freedom of movement in neutral words "
+                                  "(R-PSY-01)",
+    "body_by_size": "a comment on her body through size (\"L suits you better\"). Instead: the brand's size "
+                    "chart with the garment's own centimetres, not her body (R-BPC-02)",
+    "gender_theory_prescriptive": "Simmel's or Veblen's gender theses as prescriptions. Instead: as a "
+                                  "description of a mechanism, marked as a theory of 1899/1904 "
+                                  "(R-SIM-12, R-VEB-10)",
+    "trickle_down_law": "trickle-down as a one-way waterfall. Instead: movement both ways; trickle-down as "
+                        "ONE of the mechanisms, not a law (R-SIM-03)",
+    "outshine_host": "white at someone else's wedding framed as outshining the host. Instead: speak about "
+                     "the item, not about rivalry with the host (K-KOH-08)",
+    "western_cue_transfer": "western cue → meaning carried over without a local measure; Ukrainian "
+                            "vernacular mixed with a Russian-coded \"post-Soviet\" aesthetic. Instead: "
+                            "Ukrainian markers named and locally measured; without a measure — silence "
+                            "(R-PP-09, R-LOC-06)",
+    "body_zone_advice": "a body zone as the OBJECT of advice when she did not set it as a goal. Instead: "
+                        "composition, colour, occasion, comfort; a measure without a claimed effect (\"the hem "
+                        "ends at the widest point of the calf\") is always allowed (R-LNG-01)",
+    "comfort_causal_promise": "a causal promise around comfort and freedom of movement. Instead: comfort as "
+                              "a MEASURE — range of motion, ease in centimetres, fabric weight, stretch — "
+                              "without a causal wrapper (R-NVB-02)",
+    "type_label_mechanism": "a typology label used as a MECHANISM rather than a vocabulary bridge. Instead: "
+                            "the bridge translated into axes — the label outside, the axes inside (R-TYP-05)",
+}
+_спільні = set(ПОРУШЕННЯ_МОВИ) & set(ЗАЯВИ)
+if _спільні:
+    raise KeyError("код порушення мови збігся з кодом заяви: %s" % sorted(_спільні))
+ЗАЯВИ.update(ПОРУШЕННЯ_МОВИ)
+
+
 # ── ПУНКТИ ЧЕКЛІСТІВ СУДУ ОБРАЗУ (ВМ-2, 01.10.2026; рядок 483 дошки, CLAUDE.md п.12) ─────────
 # ЩО БУЛО. Пункти чекліста (`суд_чеклісти`: надлишок 1–20, прісність B1–B7, палітра P1–P8,
 # аксесуари A1–A14) їхали в англійські промпти ремонту й вибору ІМЕНАМИ ПУНКТІВ — українськими
@@ -2716,8 +2816,12 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "weather_withstood": "the weather of the day: layers, fabric, shoes and hem withstand it (K-WEA-01, K-WEA-05)",
     "metal_is_surface": "the metal of the jewelry is the surface of the item, not a rim on fabric or a stone "
                         "setting (K-COL-06-M, K-CRA-07)",
+    # пункт оцінки «Оціни мій образ» (`оцінка_образу._контраст_обличчя`), не чекліста суду: суд
+    # образу віддає лише порушення K-CLR-02, а «в межах» оцінка робить пунктом сама (ВМ-3б)
+    "face_contrast": "the lightness jump near her face matches her own contrast (K-CLR-02)",
 }
-# ід пункту (`суд_чеклісти.ЧЕКЛІСТ_*`, перше поле) → код. Ід унікальні через усі чотири списки.
+# ід пункту (`суд_чеклісти.ЧЕКЛІСТ_*`, перше поле) → код. Ід унікальні через усі чотири списки;
+# «K-CLR-02» — пункт контрасту біля обличчя, який оцінка образу додає до них сама (ВМ-3б).
 ЧЕКЛІСТ_КОДИ = {1: "chroma_budget", 2: "single_focus", 3: "lightness_steps", 4: "one_silhouette_letter",
     5: "formality_spread", 6: "shine_budget", 7: "print_budget", 8: "layering_depth", 9: "accent_echo",
     10: "one_sprezzatura", 11: "hem_off_widest_point", 12: "one_metal", 13: "genre_dominant",
@@ -2731,7 +2835,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "A4": "jewelry_scale", "A5": "necklace_off_neckline", "A6": "accessory_edge_placement",
     "A7": "price_per_combinations", "A8": "repairable_shoes", "A9": "refusal_reason_physical",
     "A10": "glasses_in_chroma", "A11": "jewelry_kind_asked", "A12": "accent_surfaces_differ",
-    "A13": "weather_withstood", "A14": "metal_is_surface"}
+    "A13": "weather_withstood", "A14": "metal_is_surface", "K-CLR-02": "face_contrast"}
 _спільні = set(ПУНКТИ_ЧЕКЛІСТА) & set(ЗАЯВИ)
 if _спільні:
     raise KeyError("код пункту чекліста збігся з кодом заяви: %s" % sorted(_спільні))

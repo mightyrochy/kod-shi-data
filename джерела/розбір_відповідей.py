@@ -62,7 +62,7 @@ import дріт_моделі as _Д
                     "work with it"),
         _ЗП.Поле("outfit.items[].set_half", "only this half of a set is in the outfit"),
         _ЗП.Поле("idea", "your caption of this outfit"),
-        _ЗП.Поле("case", "her occasion in her and the code's words"),
+        _ЗП.Поле("case", "her occasion: its fields as codes, her own words as quotes"),
         _ЗП.Поле("day", "her day as facts",
                  як="in the third part of «text» say how this outfit lives through her day; what argues "
                     "with it — in one gentle sentence, the choice is hers"),
@@ -72,7 +72,8 @@ import дріт_моделі as _Д
                  як="in the third part say in your own words what concerns this outfit: the metal of the "
                     "jewelry, the colors farthest from her and one combination she can put together "
                     "herself; not as a list"),
-        _ЗП.Поле("ways_to_wear", "ways the items can be worn: each place with its effect",
+        _ЗП.Поле("ways_to_wear", "ways the items can be worn: each statement is one way — its place, "
+                                 "and its effect when the code knows one",
                  як="in «how_to_wear» say which way you chose"),
         _ЗП.Поле("your_declared", "numbers of the items you placed deliberately against a condition",
                  як="in «how_to_wear» say what to do with them"),
@@ -116,6 +117,10 @@ def _укладка_опису(канал_3):
     руці — читається як вечірнє»), бо схема дозволяє рядок, а втратити наслідок
     означало б дати вибір без ціни. Ворота формату («лише в приміщенні») ідуть
     останнім рядком опцій — це умова вибору, і модель мусить її бачити.
+
+    ВМ-3б (рядок 541, CLAUDE.md п.12): поруч із фразами — `заяви` (ті самі опції й ворота
+    кодами, `аксесуари_структура.опції_заявами`; команди верхнього шару — їхні заяви й заяви
+    ремонту). На дріт опису (`дріт_моделі.опис`) їдуть заяви; фрази лишаються звітові.
     """
     к3 = канал_3 or {}
     вих = []
@@ -128,17 +133,20 @@ def _укладка_опису(канал_3):
         if о.get("ворота_формату"):
             опції.append(str(о["ворота_формату"])[:110])
         if опції:
-            вих.append(dict(річ=str(о.get("річ") or о.get("клас") or "річ")[:60], опції=опції))
+            вих.append(dict(річ=str(о.get("річ") or о.get("клас") or "річ")[:60], опції=опції,
+                            **({"заяви": list(о["опції_заяви"])} if о.get("опції_заяви") else {})))
     for c in (к3.get("команди") or [])[:5]:
         суть = str(c.get("суть") or "").strip()
         if суть:
-            вих.append(dict(річ=str((c.get("речі") or ["образ"])[0])[:60], опції=[суть[:140]]))
+            з = list(c.get("заяви") or []) + list(c.get("ремонт_заяви") or [])
+            вих.append(dict(річ=str((c.get("речі") or ["образ"])[0])[:60], опції=[суть[:140]],
+                            **({"заяви": з} if з else {})))
     return вих
 
 
 def опис_обʼєкт(речі, образ=None, задум=None, випадок=None, свідомі=None, фото_є=True,
                 канал_3=None, палітра=None, день=None, день_образу=None, неповний=None,
-                межі=None, мова_тексту=None):
+                межі=None, мова_тексту=None, випадок_коди=None):
     """Четвертий виклик: `ОПИС_V1` — обраний образ обʼєктом коду (його перевіряє схема,
     його кладе звіт); моделі його несе `промпт_опису` англійським дротом.
 
@@ -182,6 +190,11 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         об["укладка"] = укл
     if випадок:
         об["випадок"] = str(випадок)
+    # ВМ-3б (рядок 541, CLAUDE.md п.12): той самий випадок ПОЛЯМИ (`пакет_моделі.випадок_для_пакета`)
+    # — моделі він їде кодами (`дріт_моделі.випадок`), а рядок `випадок` лишається звітові. Межі
+    # тут не їдуть: у опису вони окремим полем `межі` (ВМ-1, рядок 401).
+    if isinstance(випадок_коди, dict) and випадок_коди.get("подія"):
+        об["випадок_коди"] = {к: v for к, v in випадок_коди.items() if к != "вето"}
     if день:
         об["день"] = dict(день)
     if str(день_образу or "").strip():

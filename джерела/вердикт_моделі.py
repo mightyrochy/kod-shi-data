@@ -577,6 +577,49 @@ def мова_повтор(мова, спроба=1, відповідь="ОПИС
     return об
 
 
+# ── ПОВТОР МОВИ НА ДРОТІ — АНГЛІЙСЬКОЮ І КОДАМИ (ВМ-3б, 01.10.2026; рядок 542, CLAUDE.md п.12) ──
+# ЩО БУЛО. `промпт_мови` був самим обʼєктом `мова_повтор` (без ід правил): українські ключі,
+# наказ, формат і «фото» українською, назва схеми «ОПИС_ВІДПОВІДЬ_V1», а порушення — `суть` і
+# `натомість` словами гейта: ~1 350 знаків кирилиці від коду на виклик (стенд, сід 3).
+# ЩО ТЕПЕР. Обʼєкт `мова_повтор` лишається, як був: його читає показ (`спроб_усього`,
+# `українська`) і звіт. Моделі йде ця копія — англійські ключі й вказівки, назва схеми дроту
+# (`протокол.НАЗВИ_ВІДПОВІДІ_EN`), порушення кодом (`language_gate.КОДИ_ПОРУШЕНЬ`) зі збігами з
+# її тексту, а що код означає і що натомість — у словнику виклику (`statement_codes`). Порушення
+# без коду (правило, якого словник ще не знає) їде своєю `суть`, а не губиться мовчки.
+_НАКАЗ_МОВИ_EN = ("Rewrite THIS SAME text: the same items, the same advice, the same order. Change only "
+                  "what \"statements\" names.")
+_НАКАЗ_УКРАЇНСЬКОЇ_EN = "No Russian word, ending or letter: the whole text in Ukrainian."
+
+
+def мова_повтор_на_дріт(об):
+    """Обʼєкт `мова_повтор` → промпт перепису для моделі: англійський дріт, порушення кодами."""
+    import language_gate as _МГ
+    import внутрішня_мова as _ВМ
+    if not isinstance(об, dict):
+        return об
+    сх = _ПР.НАЗВИ_ВІДПОВІДІ_EN.get(об.get("відповідь"), об.get("відповідь"))
+    заяви = []
+    for п in об.get("порушення") or []:
+        код = _МГ.КОДИ_ПОРУШЕНЬ.get(п.get("правило"))
+        збіги = list(п.get("збіги") or [])
+        if код:
+            заяви.append({код: {"matches": збіги}} if збіги else код)
+        else:
+            заяви.append({"what": п.get("суть"), "matches": збіги})
+    коди = [next(iter(з)) if isinstance(з, dict) else з for з in заяви]
+    коди = [к for к in коди if к in _ВМ.ЗАЯВИ]
+    вих = {"version": об.get("версія"), "error": "language", "attempt": об.get("спроба"),
+           "attempts_total": об.get("спроб_усього"),
+           "order": _НАКАЗ_МОВИ_EN + ((" " + _НАКАЗ_УКРАЇНСЬКОЇ_EN) if об.get("українська") else ""),
+           "statements": заяви, "statement_codes": _ВМ.визначення_заяв(коди), "answer": сх,
+           "format": "Return THE SAME object following \"%s\" — only the wording changes." % сх}
+    if об.get("відповідь") == "ОПИС_ВІДПОВІДЬ_V1":
+        вих["photos"] = ("There are NO images in this call — only the language of the text changes. Leave "
+                         "\"%s\" EMPTY: what is wrong on the photos is already recorded from the previous "
+                         "answer and is taken from there." % _ПР.КЛЮЧІ_ВІДПОВІДІ_EN.get("фото_не_те", "фото_не_те"))
+    return {к: v for к, v in вих.items() if v not in (None, "", [], {})}
+
+
 def мова_рішення(мова, спроб=0):
     """Р-2 над ЦИМ текстом: що робити, якщо він фінальний і гейт його не пустив.
 
