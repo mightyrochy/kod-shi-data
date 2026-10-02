@@ -17,7 +17,7 @@ def заглушка(т):
     if "items" in о: return json.dumps({"version": "1", "ratings": {x["n"]: "fits" for р in о["items"].values() for x in р}})
     if "groups" in о: return json.dumps({"version": "1", "winners": {г: [x["n"] for x in р[:2]] for г, р in о["groups"].items()}})
     return json.dumps({"версія": "1", "образи": []})
-for с in ("оцінка", "турнір"): УВ.прогнати(с, пак, заглушка, 7)
+for с in ("assess", "tournament"): УВ.прогнати(с, пак, заглушка, 7)
 уник = sorted(set(бачено), key=бачено.index)
 print("журнал (проба): кроки %s · кирилиця в кроці: %d з %d" % (уник, sum(1 for к in уник if re.search("[а-яіїєґ]", к, re.I)), len(уник)))
 ряд = list(range(40))
