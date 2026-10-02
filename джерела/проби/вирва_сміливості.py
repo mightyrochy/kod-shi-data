@@ -73,6 +73,9 @@ for с, н, р, x in ВИР:
     РЯД.append((с, н, р, б10, sum(Ф[0] >= 2 for Ф in фін.values()), ч[0], "|", *[f"{к.split()[0]} {v}" for к, v in фк.items()])); ЛІЧ["обране", ч[0] >= 2] += 1; ЛІЧ["ранг ваги", sorted(Ф[3] for Ф in фін.values()).index(ч[3])] += 1
     ЛІЧ["позиція", [o["your_outfit"]["id"] for o in сп_["verdict"]].index(со["chosen"])] += 1; ЛІЧ["облік зауважень у причині", bool(re.search(r"blocker|remark|finding|tension|fewest|lightest|mildest|lowest|checks?\b|blandness|excess|problems?|gate", со.get("why", ""), re.I))] += 1
     най = bool(re.search(r"fewest|milder|mildest|lightest|only light|lowest tension", со.get("why", ""), re.I)); ЛІЧ["твердить найменше"] += най; ЛІЧ["…але не найменше ні вагою ні числом"] += най and ч[3] > min(Ф[3] for Ф in фін.values()) and ч[4] > min(Ф[4] for Ф in фін.values())
+    for o in ао["outfits"]:  # ВИРВА-968: оголошений хід складання → ремонт лишив у п'ятірці / змінив річ / відсіяв образ
+        р_ = next((q for q in ро["outfits"] if re.sub(r"\D", "", q["id"]) == re.sub(r"\D", "", o["id"])), None)
+        for дл in o.get("deliberate") or []: ЛІЧ["хід", o.get("pole"), "відсіяно" if not р_ else "лишено" if дл.get("item") in р_["items"] else "змінено"] += 1
     ЛІЧ["пул: ядро/решта", all(i.get("branch") == "core" for i in ап["pool"])] += 1; ЛІЧ["полюс break недоступний"] += "break" in ап.get("poles_unavailable", [])
     for гр, наб in (("пул", [[i["n"] for i in ап["pool"]]]), ("ідеї10", [[i["n"] for i in o["your_outfit"]["items"]] for o in рп["verdict"]]), ("фінал5", [Ф[5] for Ф in фін.values()]), ("обране", [ч[5]])):
         пр = [Д[n] for ns in наб for n in ns if n in Д and Д[n].get("hex") and річ(Д[n])[1] and Д[n].get("color") not in ("golden", "silvery")]; сек = lambda h: "н" if math.hypot(*лчх(h)[1:]) < 15 else int(math.degrees(math.atan2(лчх(h)[2], лчх(h)[1])) % 360 // 60)
@@ -87,4 +90,5 @@ print("постачання: пул лише «ядро» у", ЛІЧ["пул: �
 ГР = [(h, ЦН[н]) for н, _, i in ВИГ for h, о, _ in i if h and о]  # одяг рук 3–4: колір і близькість до цілей слотів схеми тієї ж нагоди
 print("руки 3–4 (вигадані): сміливих %d з %d" % (sum(ознаки(р)[1] >= 2 for _, _, р in ВИГ), len(ВИГ)), [(н, р, ознаки(i)[1]) for н, р, i in ВИГ], "| одяг у зоні %d, ΔE≤20 до цілі %d з %d" % (sum(зона(h) for h, _ in ГР), sum(min(math.dist(лчх(h), лчх(t)) for t in Ц_) <= 20 for h, Ц_ in ГР), len(ГР)))
 print("вага знахідок у промпті вибору (звідки):", {k[1]: v for k, v in ЛІЧ.items() if k[0] == "вага"}, "| вага: нема в даних" if ЛІЧ["вага", "вибір"] + ЛІЧ["вага", "ремонт"] == 0 else "")
+print("оголошені ходи складання → ремонт (полюс, доля): к-сть", sorted((k[1:], v) for k, v in ЛІЧ.items() if k[0] == "хід"))
 if ПРОП: print("пропущено рук без повного ланцюга:", ПРОП)
