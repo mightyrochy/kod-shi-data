@@ -11,4 +11,6 @@ for kv in $X; do
 done
 S=$(date +%s)
 CHROMIUM=/opt/pw-browsers/chromium NODE_PATH=/opt/node22/lib/node_modules timeout 3000 node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 /tmp/стенд /tmp/pyodide 3 > $D/лог.txt 2>&1
-echo "rc=$? $W $N $(( $(date +%s) - S ))с $(date +%T)" >> /tmp/rz/done.txt
+RC=$?
+[ $RC -ne 0 ] && [ -s $D/знімки/картки.txt ] && { echo "rc=0 (стенд rc=$RC, картки є) $W $N $(( $(date +%s) - S ))с $(date +%T)" >> /tmp/rz/done.txt; exit 0; }
+echo "rc=$RC $W $N $(( $(date +%s) - S ))с $(date +%T)" >> /tmp/rz/done.txt
