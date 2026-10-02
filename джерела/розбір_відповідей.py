@@ -47,16 +47,22 @@ import дріт_моделі as _Д
         _ЗП.Поле("outfit", "the chosen outfit: its items with number «n», name and shop, and what the code "
                            "knows of their color", треба=True),
         _ЗП.Поле("outfit.items[].photos",
-                 "the numbers of this item's images among those placed before this object",
+                 "the numbers of this item's photos: every photo stands under its own label «Photo N:» "
+                 "among the blocks placed before this object; under a label with «not delivered» or "
+                 "«not available» there is no image",
                  як="describe what you see on the photos, not the name; from each photo take only the named "
-                    "item — the other clothes in the frame are not part of the outfit",
+                    "item — the other clothes in the frame are not part of the outfit; never take for an "
+                    "item a photo under another number, and when all of its photos are not delivered, "
+                    "describe it by its name only",
                  без="There are no item photos: describe the items by their names; leave «wrong_photos» empty."),
+        _ЗП.Поле("outfit.items[].no_photo", "this item has no photo of its own among the others",
+                 як="describe it by its name only; do not take another item's photo for it"),
         _ЗП.Поле("outfit.items[].hers", "her own item from her photo, not a product",
                  як="do not offer to buy it and do not mention a price or a shop; say how the other items "
                     "work with it"),
         _ЗП.Поле("outfit.items[].set_half", "only this half of a set is in the outfit"),
         _ЗП.Поле("idea", "your caption of this outfit"),
-        _ЗП.Поле("case", "her occasion in her and the code's words"),
+        _ЗП.Поле("case", "her occasion: its fields as codes, her own words as quotes"),
         _ЗП.Поле("day", "her day as facts",
                  як="in the third part of «text» say how this outfit lives through her day; what argues "
                     "with it — in one gentle sentence, the choice is hers"),
@@ -66,7 +72,8 @@ import дріт_моделі as _Д
                  як="in the third part say in your own words what concerns this outfit: the metal of the "
                     "jewelry, the colors farthest from her and one combination she can put together "
                     "herself; not as a list"),
-        _ЗП.Поле("ways_to_wear", "ways the items can be worn: each place with its effect",
+        _ЗП.Поле("ways_to_wear", "ways the items can be worn: each statement is one way — its place, "
+                                 "and its effect when the code knows one",
                  як="in «how_to_wear» say which way you chose"),
         _ЗП.Поле("your_declared", "numbers of the items you placed deliberately against a condition",
                  як="in «how_to_wear» say what to do with them"),
@@ -110,6 +117,10 @@ def _укладка_опису(канал_3):
     руці — читається як вечірнє»), бо схема дозволяє рядок, а втратити наслідок
     означало б дати вибір без ціни. Ворота формату («лише в приміщенні») ідуть
     останнім рядком опцій — це умова вибору, і модель мусить її бачити.
+
+    ВМ-3б (рядок 541, CLAUDE.md п.12): поруч із фразами — `заяви` (ті самі опції й ворота
+    кодами, `аксесуари_структура.опції_заявами`; команди верхнього шару — їхні заяви й заяви
+    ремонту). На дріт опису (`дріт_моделі.опис`) їдуть заяви; фрази лишаються звітові.
     """
     к3 = канал_3 or {}
     вих = []
@@ -122,17 +133,20 @@ def _укладка_опису(канал_3):
         if о.get("ворота_формату"):
             опції.append(str(о["ворота_формату"])[:110])
         if опції:
-            вих.append(dict(річ=str(о.get("річ") or о.get("клас") or "річ")[:60], опції=опції))
+            вих.append(dict(річ=str(о.get("річ") or о.get("клас") or "річ")[:60], опції=опції,
+                            **({"заяви": list(о["опції_заяви"])} if о.get("опції_заяви") else {})))
     for c in (к3.get("команди") or [])[:5]:
         суть = str(c.get("суть") or "").strip()
         if суть:
-            вих.append(dict(річ=str((c.get("речі") or ["образ"])[0])[:60], опції=[суть[:140]]))
+            з = list(c.get("заяви") or []) + list(c.get("ремонт_заяви") or [])
+            вих.append(dict(річ=str((c.get("речі") or ["образ"])[0])[:60], опції=[суть[:140]],
+                            **({"заяви": з} if з else {})))
     return вих
 
 
 def опис_обʼєкт(речі, образ=None, задум=None, випадок=None, свідомі=None, фото_є=True,
                 канал_3=None, палітра=None, день=None, день_образу=None, неповний=None,
-                межі=None, мова_тексту=None):
+                межі=None, мова_тексту=None, випадок_коди=None):
     """Четвертий виклик: `ОПИС_V1` — обраний образ обʼєктом коду (його перевіряє схема,
     його кладе звіт); моделі його несе `промпт_опису` англійським дротом.
 
@@ -158,6 +172,10 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         ном = [int(n) for n in (x.get("фото_номери") or [])]
         if ном:
             з["фото_номери"] = ном
+        elif any(y.get("фото_номери") for y in (речі or [])):
+            # ФОТО-513: коли кадри в образі є, а в цієї речі їх нема, це називається — інакше
+            # модель, що лічить зображення, шукала б її кадр серед чужих (`без_кадру` → `no_photo`).
+            з["без_кадру"] = True
         if x.get("її_річ"):
             з["її_річ"] = True
         р.append(з)
@@ -172,6 +190,11 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         об["укладка"] = укл
     if випадок:
         об["випадок"] = str(випадок)
+    # ВМ-3б (рядок 541, CLAUDE.md п.12): той самий випадок ПОЛЯМИ (`пакет_моделі.випадок_для_пакета`)
+    # — моделі він їде кодами (`дріт_моделі.випадок`), а рядок `випадок` лишається звітові. Межі
+    # тут не їдуть: у опису вони окремим полем `межі` (ВМ-1, рядок 401).
+    if isinstance(випадок_коди, dict) and випадок_коди.get("подія"):
+        об["випадок_коди"] = {к: v for к, v in випадок_коди.items() if к != "вето"}
     if день:
         об["день"] = dict(день)
     if str(день_образу or "").strip():

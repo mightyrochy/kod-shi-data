@@ -561,7 +561,14 @@ def промпт_вибору(образи, випадок=None, без_фото
 # вибір речей не додає й текстів не переписує, а номер ітерації моделі нічого не каже; тексти
 # ремонтів знахідок — теж (вибір не ремонтує).
 # ЧОМУ ЦІ РЯДКИ (для людей; моделі це не потрібно):
-#   · «найкращий, а не той, до якого менше зауважень» — щоб вибір не йшов за лічбою знахідок;
+#   · ВИБ-1 (рішення власника 02.10.2026, CLAUDE.md п.17: «Вибір фінального образу має залежати від
+#     наміру людини і того, як його зрозуміла модель-стилістка. Потрібно давати моделі-стилістці
+#     свободу приймати зважені рішення.»): мірило вибору — її намір, як його зрозуміла стилістка
+#     («case» кодами — той самий випадок, що в складанні: подія, намір, мета, її слова, нота мовної
+#     моделі); зауваження коду — інформація при образі (`дріт_моделі.вердикт(вибір=True)`: без ваг і
+#     без лічби чекліста), і в «чому» стилістка називає, які з них приймає свідомо.
+#     ДО: правило «not the one with the fewest remarks» стояло, але вхід ніс лічбу passed/failed,
+#     і «чому» спиралось на лічбу зауважень у 23/32 виборах (`проби/виб1_вирва.py`);
 #   · «day» (рядок 195) — вибір судиться й проти її дня, а не лише проти зауважень коду;
 #   · «blockers» — образ із блокером структури код не приймає (`вибір_з_json`) і бере
 #     інший, тож такий вибір марний;
@@ -571,30 +578,46 @@ def промпт_вибору(образи, випадок=None, без_фото
     задача="вибір",
     роль="You are the stylist. From the outfits you put together, you choose one for her.",
     вхід=(
-        _ЗП.Поле("case", "her occasion in her and the code's words"),
+        _ЗП.Поле("case", "her case: the occasion and event, her «intent» and «goal», her words, wishes, mood "
+                         "and refusals",
+                 як="this is what she wants; the choice answers it"),
+        _ЗП.Поле("case.goal_quote", "her own words behind «goal»",
+                 як="they say more than the code"),
+        _ЗП.Поле("case.intent_quote", "her own words behind «intent»",
+                 як="they say more than the code"),
+        _ЗП.Поле("case.her_words", "what she asked for in her own words"),
+        _ЗП.Поле("case.her_other_words", "the rest of what she said, which no field of «case» carries",
+                 як="it is part of her case"),
+        _ЗП.Поле("case.language_model_note", "the language model's note on her words about the event, "
+                                             "when they are hard to read without context",
+                 як="it explains her words and does not replace them: where they differ, her words win"),
         _ЗП.Поле("day", "her day as facts"),
-        _ЗП.Поле("verdict", "your outfits and the code's check of each: «your_outfit» — its items, caption and "
-                            "«day» (your sentence about her day in it); «structure» — blockers; «findings» "
-                            "(«weight» weighs the finding, not the outfit; «register» «gate» — a gate, none — "
-                            "a remark); «checklist» — by area, the points the outfit «failed», how many it "
-                            "«passed», and how many the code could not check («no_input», «not_run»); "
-                            "«knot» — the place where most conditions meet", треба=True),
-        _ЗП.Поле("not_run_everywhere", "checklist items the code did not check in any outfit"),
+        _ЗП.Поле("verdict", "your outfits and what the code noticed in each: «your_outfit» — its items, caption "
+                            "and «day» (your sentence about her day in it); «structure» — blockers; «findings» — "
+                            "the code's remarks («register» «gate» — a gate); «checklist» — by area, the "
+                            "points the code noticed as not met; each point and remark is a code defined in "
+                            "\"statement_codes\"; «your_declared» — your declared deliberate moves",
+                 треба=True),
         _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination"),
         _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
         _ЗП.Поле("she_refuses", "what she refused",
                  як="do not choose an outfit that breaks it while there is one that does not"),
     ),
     правила=(
-        "Choose ONE outfit — the one you vouch for before her: the best for her, her day and her occasion, "
-        "not the one with the fewest remarks.",
+        "Choose ONE outfit — the one you vouch for before her: the one that best serves her intent as you "
+        "understood it from «case» (her occasion, «intent», «goal», her own words and «language_model_note») "
+        "and her «day».",
+        "The code's remarks are information about each outfit, not a score: weigh what each one means for her "
+        "intent; do not count them and do not choose by how few remarks an outfit has or how mild they are. A "
+        "bolder outfit that serves her intent better wins over a quieter one with fewer remarks.",
         "Do not choose an outfit with blockers in «structure» while there is one without them.",
         "Do not rewrite the outfit: its only allowed change is «remove».",
     ),
     вихід="ВИБІР_V1",
     поля_виходу={
         "обрано": "«id» of the chosen outfit, from «your_outfit»",
-        "чому": "one sentence: why this outfit",
+        "чому": "one or two sentences: how this outfit serves her intent as you understood it, and which of "
+                "the code's remarks you accept on purpose and why — not how many remarks it has",
         "прибрати": "«n» of an item to remove: only when a blocker says two items are of one kind — the "
                     "weaker of the two",
     },
@@ -690,7 +713,7 @@ def _склад_вибору(о, словник, за_ном, прибрати=(
         чому_ні = ("items_in_look=%d · minimum=2" % len(ід)) if ід else "no_item_recognised"
     elif блокери:
         чому_ні = "structural_blocker=%s" % ",".join(
-            str(б.get("код") or "unknown") for б in блокери[:2])
+            _ВМ.код_або_невідомо("structural_blocker", б.get("код")) for б in блокери[:2])
     return dict(ід=ід, частини=частини, прибрано=прибрано, знехтувано=знехтувано,
                 чому_ні=чому_ні, невірні_пари=list(запис["невірні_пари"]))
 
@@ -709,8 +732,9 @@ def _чому_не_можна(к, прибирали=False):
     _бл = [b for b in (ст.get("блокери") or [])
            if not (прибирали and (b or {}).get("код") == "слот_двічі")]
     if ст.get("ок") is False and _бл:
+        # ВМ-3а (рядок 224): код блокера внутрішньою мовою, не ключ ядра («слот_двічі» → two_in_one_kind)
         return "structural_blocker=" + ",".join(
-            str((b or {}).get("код") or "unknown") for b in _бл[:2])
+            _ВМ.код_або_невідомо("structural_blocker", (b or {}).get("код")) for b in _бл[:2])
     г = [z for z in ((к or {}).get("знахідки") or [])
          if isinstance(z, dict) and z.get("регістр") == "гейт" and not z.get("свідомий")]
     if г:
@@ -854,7 +878,8 @@ def _дібрати_кодом(ід, частини, кандидати, сло�
                                     напис=_ВМ.повідомлення("item_source", _ВМ.заява("item_added_by_code")))]
                     continue
         if взято is None:
-            чому_ні = "no_candidate:%s" % ціль
+            # ВМ-3а (рядок 224): ціль — кодом `missing_part` («нема_верху_низу» → no_base)
+            чому_ні = "no_candidate:%s" % _ВМ.код_або_невідомо("missing_part", ціль)
             break
         і, слот = взято
         ід.append(і)
@@ -1256,8 +1281,8 @@ def повнота_набору(вердикт, кандидати=None, кат�
         # читати саме це — інакше вона судить систему за брак, якого в системі
         # нема, і чекає полагодження там, де лагодити нема чого.
         if str(добір_ні or "").startswith("no_candidate:"):
-            _чого = _ВМ.код("missing_part", добір_ні.split(":", 1)[1])
-            if _чого:
+            _чого = добір_ні.split(":", 1)[1]
+            if _чого in _ВМ.ТАБЛИЦЯ["missing_part"]:
                 рядок = _ВМ.повідомлення("card_incomplete",
                                          _ВМ.заява("catalogue_has_none_for_case", missing=_чого))
     # ── ШАРИ НЕ СКЛАДУТЬСЯ — КАЖЕТЬСЯ СЛОВАМИ (рядок 158) ──────────────────────
@@ -1293,7 +1318,7 @@ def повнота_набору(вердикт, кандидати=None, кат�
     # Коли модель не впоралась і пул основи дати не може, картку показувати
     # нема чого — той самий контракт «немає образу», що вище (`найкращий is
     # None`): `ід` порожній, рядок лишається єдиним, що бачить жінка.
-    if добір_ні == "no_candidate:нема_верху_низу":
+    if добір_ні == "no_candidate:no_base":
         return dict(ід=[], частини={}, номери={}, образ=None, повний=False,
                     рядок=рядок, чому=чому, дібрані=[], рядок_добору=None,
                     добір_ні=добір_ні)

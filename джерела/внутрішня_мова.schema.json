@@ -125,6 +125,19 @@
       "dress_generic",
       "two_piece_set",
       "casual_suit",
+      "bodysuit",
+      "longsleeve",
+      "half_coat",
+      "down_jacket",
+      "fur_coat",
+      "sheepskin_coat",
+      "parka",
+      "raincoat",
+      "rain_cape",
+      "windbreaker",
+      "anorak",
+      "bomber",
+      "poncho",
       "unknown"
      ]
     },
@@ -418,6 +431,19 @@
       "dress_generic",
       "two_piece_set",
       "casual_suit",
+      "bodysuit",
+      "longsleeve",
+      "half_coat",
+      "down_jacket",
+      "fur_coat",
+      "sheepskin_coat",
+      "parka",
+      "raincoat",
+      "rain_cape",
+      "windbreaker",
+      "anorak",
+      "bomber",
+      "poncho",
       "unknown"
      ]
     },
@@ -673,115 +699,6 @@
      ],
      "description": "подія коротко, її мовою"
     },
-    "kind": {
-     "description": "вид події; other — коли жоден вид не підходить",
-     "enum": [
-      "everyday",
-      "home",
-      "walk",
-      "work",
-      "interview",
-      "school",
-      "conference",
-      "gala",
-      "wedding",
-      "celebration",
-      "funeral",
-      "date",
-      "theatre",
-      "museum",
-      "church",
-      "sport",
-      "travel",
-      "other",
-      "unknown"
-     ]
-    },
-    "like": {
-     "description": "найближчий вид для незвичної події (kind=other)",
-     "enum": [
-      "everyday",
-      "home",
-      "walk",
-      "work",
-      "interview",
-      "school",
-      "conference",
-      "gala",
-      "wedding",
-      "celebration",
-      "funeral",
-      "date",
-      "theatre",
-      "museum",
-      "church",
-      "sport",
-      "travel",
-      "other",
-      "unknown"
-     ]
-    },
-    "parts": {
-     "description": "частини одного виходу по черзі, коли вона назвала дві-три (вінчання, потім банкет)",
-     "type": "array",
-     "items": {
-      "description": "вид частини",
-      "enum": [
-       "everyday",
-       "home",
-       "walk",
-       "work",
-       "interview",
-       "school",
-       "conference",
-       "gala",
-       "wedding",
-       "celebration",
-       "funeral",
-       "date",
-       "theatre",
-       "museum",
-       "church",
-       "sport",
-       "travel",
-       "other",
-       "unknown"
-      ]
-     },
-     "maxItems": 3
-    },
-    "role": {
-     "description": "хто вона на цій події, лише коли сама сказала",
-     "enum": [
-      "guest",
-      "close_family",
-      "main_person",
-      "host",
-      "candidate",
-      "speaker",
-      "worker",
-      "mourner_close",
-      "acquaintance",
-      "unknown"
-     ]
-    },
-    "audience": {
-     "description": "перед ким: conservative — начальство, старші, духовенство",
-     "enum": [
-      "usual",
-      "conservative",
-      "unknown"
-     ]
-    },
-    "religious_place": {
-     "description": "храм чи місце з письмовим правилом одягу",
-     "enum": [
-      "none",
-      "temple",
-      "written_rule_place",
-      "unknown"
-     ]
-    },
     "reserved_colour": {
      "description": "колір, що на цій події належить іншій особі",
      "enum": [
@@ -789,27 +706,14 @@
       "unknown"
      ]
     },
-    "volume": {
-     "description": "скільки образів: travel_day — один образ на переїзд",
+    "open_zones": {
+     "description": "скільки зон тіла (декольте чи спина, ноги, плечі) доречно відкрити на цій події",
      "enum": [
-      "one_look",
-      "travel_day",
+      "none",
+      "one",
+      "two",
       "unknown"
      ]
-    },
-    "written": {
-     "description": "поля, значення яких написано в запрошенні чи правилах місця",
-     "type": "array",
-     "items": {
-      "description": "поле",
-      "enum": [
-       "dress_code",
-       "religious_place",
-       "reserved_colour",
-       "unknown"
-      ]
-     },
-     "uniqueItems": true
     },
     "setting": {
      "description": "у приміщенні, просто неба чи змішано",
@@ -833,11 +737,15 @@
      ]
     },
     "movement": {
-     "description": "сидітиме, ходитиме чи багато ходитиме",
+     "description": "сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, ставатиме на коліна чи займатиметься спортом",
      "enum": [
       "sit",
+      "stand",
       "walk",
       "walk_a_lot",
+      "dance",
+      "kneel",
+      "sport",
       "unknown"
      ]
     },
@@ -946,7 +854,7 @@
        "const": "unknown"
       }
      ],
-     "description": "наскільки ошатно, коли вона сама це сказала: шкала 1–10 (1 дім, 3 кафе, 5 офіс чи театр удень, 7 вечірній вихід, 9 урочистість)"
+     "description": "наскільки ошатний цей вихід, шкала 1–10 (`формальність.ФОРМАЛЬНІСТЬ_ЯКОРІ`): мовна модель ставить завжди — з її слів, події й обраних плиток (НП-в крок 2)"
     },
     "intent": {
      "description": "намір: comfort_first — зручність і свобода руху понад усе; context_optimal — доречність і рівень події понад усе; statement — хоче вразити, заявити про себе; conventional — нічого з цього",
@@ -1098,34 +1006,6 @@
      ],
      "description": "питання, яке вона ставить стилістці"
     },
-    "event_formality": {
-     "oneOf": [
-      {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "from",
-        "to"
-       ],
-       "properties": {
-        "from": {
-         "type": "integer",
-         "minimum": 1,
-         "maximum": 10
-        },
-        "to": {
-         "type": "integer",
-         "minimum": 1,
-         "maximum": 10
-        }
-       }
-      },
-      {
-       "const": "unknown"
-      }
-     ],
-     "description": "звичний рівень ошатності події, яку вона назвала (event), коли її не позначає жоден код occasion чи place: шкала та сама, що в formality"
-    },
     "rest": {
      "oneOf": [
       {
@@ -1136,6 +1016,17 @@
       }
      ],
      "description": "решта її слів цього ходу, що не лягла в жодне поле вище, — дослівно, її мовою"
+    },
+    "stylist_note": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/free_text"
+      },
+      {
+       "const": "unknown"
+      }
+     ],
+     "description": "лише коли її слова про подію важко витлумачити без контексту (місцевий звичай, сленг, іронія, незвична подія): коротке пояснення для стилістки англійською, що вона має на увазі; інакше — невідомо"
     },
     "question_about": {
      "description": "про що її питання: app — про застосунок (екрани, кнопки, кроки, що робити далі); look — про її образ, речі, фото, стиль чи кольори",
@@ -1412,6 +1303,19 @@
       "dress_generic",
       "two_piece_set",
       "casual_suit",
+      "bodysuit",
+      "longsleeve",
+      "half_coat",
+      "down_jacket",
+      "fur_coat",
+      "sheepskin_coat",
+      "parka",
+      "raincoat",
+      "rain_cape",
+      "windbreaker",
+      "anorak",
+      "bomber",
+      "poncho",
       "unknown"
      ]
     },
@@ -2807,6 +2711,14 @@
           "description": "the colour measured from a photo is noisier than the exact match threshold (values: noise, threshold — dE00), so two measured hex values cannot settle an exact match"
          },
          {
+          "const": "photo_colour_noise_above_visible_difference",
+          "description": "the colour measured from a photo is noisier than the difference that reads as visible (values: noise, threshold — dE00), so two measured hex values cannot settle whether two items differ visibly"
+         },
+         {
+          "const": "photo_lightness_noise_above_step",
+          "description": "the lightness measured from a photo is noisier than one lightness step (values: noise, step — L*), so two measured hex values cannot settle whether two items sit on one lightness"
+         },
+         {
           "const": "cannot_tell_lightness_structure",
           "description": "so the code cannot tell which structure of light and dark the outfit carries"
          },
@@ -2991,6 +2903,62 @@
           "description": "how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top)"
          },
          {
+          "const": "wear_place_open",
+          "description": "the item can be worn this way; the code names no effect of it (values: place — where it is worn)"
+         },
+         {
+          "const": "place_near_face_field",
+          "description": "worn this way, the item sits in the field near her face and brings its colour there (K-ACC-07) (values: place — where it is worn)"
+         },
+         {
+          "const": "place_above_face",
+          "description": "worn this way, the item sits above her face (K-ACC-07) (values: place — where it is worn)"
+         },
+         {
+          "const": "place_top_layer_asymmetry",
+          "description": "worn this way, the item becomes a top layer and gives asymmetry (K-ACC-06) (values: place — where it is worn)"
+         },
+         {
+          "const": "place_belt_preconditions",
+          "description": "worn this way, the item works as a belt, and the conditions of a belt apply (K-ACC-02) (values: place — where it is worn)"
+         },
+         {
+          "const": "place_on_accessory_off_face",
+          "description": "worn this way, it is an accessory on an accessory and does not touch the field near her face (values: place — where it is worn)"
+         },
+         {
+          "const": "place_wrist_accent_budget",
+          "description": "worn this way, it takes the wrist's place in the accent budget: it competes with bracelets, a scarf on the wrist and rings of the same hand (K-WCH-03) (values: place — where it is worn)"
+         },
+         {
+          "const": "place_becomes_garment",
+          "description": "worn this way, the item becomes a garment: its area and its kind change (K-ACC-12) (values: place — where it is worn)"
+         },
+         {
+          "const": "place_diagonal_adds_edge",
+          "description": "worn this way, the strap runs as a diagonal across the torso — one more edge (K-EDG-01) (values: place — where it is worn)"
+         },
+         {
+          "const": "place_strap_length_sets_edge",
+          "description": "worn this way, the strap length decides where the bag's lower edge sits (values: place — where it is worn)"
+         },
+         {
+          "const": "place_no_edge_on_torso",
+          "description": "worn this way, the bag adds no edge on the torso at all (values: place — where it is worn)"
+         },
+         {
+          "const": "place_face_colour_variable",
+          "description": "worn this way, the frame's colour near her face is a variable, not a constant (values: place — where it is worn)"
+         },
+         {
+          "const": "scarf_wraps_head",
+          "description": "the scarf is large enough to wrap the head fully (values: size_cm — its side in cm)"
+         },
+         {
+          "const": "scarf_too_small_to_wrap_head",
+          "description": "the scarf is too small to wrap the head fully: a physical limit, not taste (values: size_cm — its side in cm, unknown when the card does not give it)"
+         },
+         {
           "const": "scarf_near_face_way_unknown",
           "description": "whether she wears this scarf near the face; which top suits her depends on it, since a scarf near the face carries colour there by itself (values: item — item name; ways — codes of wearing ways: neck, hair, shoulders)"
          },
@@ -3073,6 +3041,10 @@
          {
           "const": "fabric_stretches_ease_window_weaker",
           "description": "the declared composition has elastane, and the published ease window holds for woven cloth, so how closely this item sits is decided by the stretch rather than by the cut (values: elastane_percent — the share the shop declares)"
+         },
+         {
+          "const": "fabric_stretches_ease_below_woven_min",
+          "description": "the item's width ease at this level is below the minimum for non-stretch woven cloth, but the declared composition has elastane, so whether it goes on freely is decided by the stretch, which the code does not measure (values: level — body level code, elastane_percent — the share the shop declares)"
          },
          {
           "const": "claim_zone_tented",
@@ -4067,6 +4039,18 @@
           "description": "tuck the top in so the waistband becomes visible, or take a shorter top that ends above the waistband"
          },
          {
+          "const": "rise_below_waist_for_taller_goal",
+          "description": "she asked for a longer line, and this bottom's waistband sits below her waist, so the eye starts her legs lower (values: rise — mid or low; below_waist_cm — how far below her waist it sits)"
+         },
+         {
+          "const": "take_high_rise_or_empire",
+          "description": "a high rise or an empire / raised waistline moves the start of the legs up and lengthens the line"
+         },
+         {
+          "const": "rise_not_declared_for_taller_goal",
+          "description": "she asked for a longer line, but the card does not name this bottom's rise, so the code cannot tell where the waistband sits"
+         },
+         {
           "const": "maxi_without_lift_or_volume",
           "description": "a maxi with no lift and no volume of its own: of the three supports of a maxi — height, lift, volume — the outfit has none (values: heel_cm — the pair's heel when the card names it)"
          },
@@ -4672,7 +4656,7 @@
          },
          {
           "const": "accent_surfaces_same_colour_word",
-          "description": "two accent surfaces are named by the same colour word by two different shops (values: colour — the word): they read as one colour and pull the eye sideways, not up to the face"
+          "description": "two accent surfaces are named by the same colour word by two different shops (values: colour — its colour code): they read as one colour and pull the eye sideways, not up to the face"
          },
          {
           "const": "secondary_colour_or_neutral_or_declared_column",
@@ -4951,6 +4935,18 @@
           "description": "every item of this kind in the catalogue is more casual than the dressiness band of the occasion, so the kind keeps only the ones closest to the band, as a fallback rather than a fit (values: band — the band from…to; kept; reasons — {reason code: how many})"
          },
          {
+          "const": "item_below_occasion_band_unexplained",
+          "description": "by the code's measure this item is more casual than the level of the occasion, and «deliberate» of the outfit does not say why it is here: maybe a slip (values: reason — the measure's code; band — the occasion's band from…to; item — the item's formality from…to, or its photo score)"
+         },
+         {
+          "const": "item_below_occasion_band_explained",
+          "description": "by the code's measure this item is more casual than the level of the occasion, and the outfit says why: a choice, not a slip — for information only (values: reason; band; by — deliberate or her_wish)"
+         },
+         {
+          "const": "say_why_this_item_or_one_reaching_band",
+          "description": "say in «deliberate» why this very item, or take one that reaches the level of the occasion"
+         },
+         {
           "const": "kind_cut_to_photo_formality",
           "description": "the kind was cut by the dressiness the code measured on the shop photos, and what stays is ordered by distance from the band (values: band — the band from…to; had, removed, too_casual, too_dressy)"
          },
@@ -4975,6 +4971,30 @@
           "description": "no item of this kind hits any window of another gamut without hitting a core window as well, so this kind has no \"edge\" branch: a property of the catalogue, not an omission — a bold intent reaches here by the core and by the break (values: items — items of the kind with a measured colour; windows — windows of the other gamut)"
          },
          {
+          "const": "break_kind_least_pressed",
+          "description": "the deliberate break of the palette goes into this kind: it lies far from the face (the near-face rules do not act here beyond the corpus threshold) and is not an outer layer (the heat gates); among such kinds the style corpus presses least here on the core pool (values: pressure — {kind code: mean corpus tension on the core pool}, lowest first; outside_palette — items of this kind outside the palette)"
+         },
+         {
+          "const": "break_nothing_outside_palette",
+          "description": "no eligible kind holds an item outside the palette: there is nothing to break the palette with"
+         },
+         {
+          "const": "pool_cut_to_budget",
+          "description": "the full pool was over the character budget of the item list, so it was cut by the stratified sampler: a floor of items per kind, the rest in proportion to what each kind has (values: full_chars — characters of the full list; floor — items per kind)"
+         },
+         {
+          "const": "pool_budget_not_met",
+          "description": "the budget is not met: even the smallest possible sample is over it, and the smallest possible pool was given"
+         },
+         {
+          "const": "pool_sampler_gave_other_than_asked",
+          "description": "the sampler gave a different number of items than was requested (values: requested, given)"
+         },
+         {
+          "const": "pool_stratum_axis_blind",
+          "description": "an axis of the sampler's strata is missing on more than a tenth of the rows of these kinds, so there the sampler cannot stratify by it (values: axis — type, zone or branch; share — % of the pool rows without it; kinds — {kind code: % of its rows without it}, highest first)"
+         },
+         {
           "const": "kind_topped_up_to_minimum",
           "description": "the kind was topped up: the windows of the palette held fewer items than the outfit needs, and without this kind there is no outfit (shoes and a bag the occasion demands, an outer layer the cold below +10 °C, a top and a bottom are what an outfit is). The added items travel with \"in_arc: false\" — a named step outside the palette, not a hidden one (values: had, need, added, now)"
          },
@@ -4997,6 +5017,606 @@
          {
           "const": "scheme_accent_absent_in_pool",
           "description": "not one item of the accent kinds carries a colour in the arc of the scheme: do not pretend the outfit keeps it — a shortage of stock, not a choice against her (values: kinds — kind codes; scheme — scheme code)"
+         },
+         {
+          "const": "lightness_spread_close",
+          "description": "keep the items close in lightness: neighbouring steps only, no very light item next to a very dark one"
+         },
+         {
+          "const": "lightness_spread_moderate",
+          "description": "a moderate step of lightness between the items fits: light next to medium-dark — yes, black with white — no"
+         },
+         {
+          "const": "lightness_spread_marked",
+          "description": "a marked step of lightness between the items fits, up to a contrasting pair"
+         },
+         {
+          "const": "lightness_spread_free",
+          "description": "the lightness of the items may differ freely, the lightest next to the darkest included"
+         },
+         {
+          "const": "makeup_widens_face_contrast",
+          "description": "visible make-up adds lightness contrast near the face: an item near the face may stand a step further from the face's lightness than her own contrast allows, but need not (values: delta_L — what the make-up adds, L*; face_limit_L — the limit with it, L*)"
+         },
+         {
+          "const": "seen_close_seated",
+          "description": "she will be seen up close and seated: the top, collar, neck and ears are judged; colour near the face matters most, the shoes are hardly seen"
+         },
+         {
+          "const": "seen_full_height",
+          "description": "she will be seen at full height and in motion: the whole figure counts; near the face still matters, the shoes and the bottom are in view too"
+         },
+         {
+          "const": "seen_distance_unknown",
+          "description": "where she will be seen from is unknown: near the face and the bottom weigh as usual"
+         },
+         {
+          "const": "hair_own_lightness_step",
+          "description": "her hair already has its own step of lightness (highlights, regrowth or grey): the outfit gets this step for free, so the clothes add no sharp one"
+         },
+         {
+          "const": "own_colouring_vivid",
+          "description": "her own colouring is vivid (her words, not measured): colour is present in the outfit as colour, not only as a neutral with an accent"
+         },
+         {
+          "const": "own_colouring_vivid_low_contrast",
+          "description": "her own colouring is vivid (her words, not measured) and her lightness contrast is low: neutrals alone dim her — the outfit needs real colour, with small steps of lightness between the items"
+         },
+         {
+          "const": "own_colouring_muted",
+          "description": "her own colouring is muted (her words, not measured): clean bright colours pull attention from the face — keep everything muted"
+         },
+         {
+          "const": "white_cool",
+          "description": "white and light neutrals are clean and cool (optical white), not milky"
+         },
+         {
+          "const": "white_warm",
+          "description": "white and light neutrals are warm: milky, ivory, cream — not optical white"
+         },
+         {
+          "const": "near_face_side",
+          "description": "her eyes lie on this side of the yellow–blue axis: coloured items near the face (top, scarf, earrings) from the same side read more even — a direction among equals, not a ban on the other side (values: side — warm or cool)"
+         },
+         {
+          "const": "jewellery_metal",
+          "description": "the metal of jewellery and hardware — the one answer for this outfit (values: metal — gold, silver or gold_and_silver; from — her_choice or palette)"
+         },
+         {
+          "const": "evening_outing",
+          "description": "an evening outing: fabrics with shine or a pronounced texture, colours deeper and richer than by day, more open skin allowed; a matt, light, fully closed outfit reads as daytime"
+         },
+         {
+          "const": "day_outing",
+          "description": "a daytime outing: matt fabrics, lighter, less open skin, more practical; shine and deep evening colours read as overdressing"
+         },
+         {
+          "const": "mourning_event",
+          "description": "a mourning event: large items and details dark and quiet — black, graphite, navy, chocolate, deep burgundy; matt fabrics, no shine near the face, no festive trims (sequins, tulle, feathers, rhinestones); \"lighter by day\" and \"shine in the evening\" do not apply"
+         },
+         {
+          "const": "mourning_state",
+          "description": "she is in mourning (the period lasts): large items dark and quiet, without festive trims; the nearer the end of the period, the softer this limit"
+         },
+         {
+          "const": "cold_outer_layer_counts",
+          "description": "in this cold the outer layer is part of the outfit, not an addition: its colour and formality are judged with the rest; open shoes, thin tights and bare ankles are a mistake here, not a style (values: temperature_c)"
+         },
+         {
+          "const": "precipitation_shoes_materials",
+          "description": "precipitation: closed shoes, no fabric soles, no suede or nubuck; materials afraid of water stay out of the outfit"
+         },
+         {
+          "const": "precipitation_water_shy_materials_with_condition",
+          "description": "precipitation: closed shoes, no fabric soles; suede, nubuck and velour only on the condition that they are treated against water"
+         },
+         {
+          "const": "occasion_level",
+          "description": "the occasion's level of formality (values: level — home, everyday, neat, smart, evening, very_smart or ceremonial; up_to — its upper bound on the 1–10 formality scale; rules_out — what this occasion rules out: near_white — white and colours that read as white on photos (cream, pale yellow, pale blue), bright_and_light — bright and light colours; loudness_max — no colour louder than this, loudness = chroma C* × L*/50: deep wine or terracotta ≈ 23–32, bright red, fuchsia, cobalt or mustard ≈ 62–87)"
+         },
+         {
+          "const": "risk_direction",
+          "description": "when the occasion's level cannot be hit exactly, miss it in this direction (values: posture — half_step_over: half a step overdressed, a sign of respect; half_step_under_plus_detail: half a step underdressed plus one quality detail)"
+         },
+         {
+          "const": "level_breakers_up_to_4",
+          "description": "the level is held by fabric, finish and shoes, not by the item's name; at this level nothing is ruled out"
+         },
+         {
+          "const": "level_breakers_up_to_6",
+          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: sports shoes, sports knit, acid-washed denim"
+         },
+         {
+          "const": "level_breakers_up_to_7",
+          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: sneakers, T-shirt, a kimono cardigan as the outer layer, mules and flip-flops, matt suede in shoes"
+         },
+         {
+          "const": "level_breakers_up_to_8",
+          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: knit cardigan, kimono, mules, a block sandal of everyday look, matt cotton and suede, an everyday bag"
+         },
+         {
+          "const": "level_breakers_up_to_10",
+          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: everything daytime — cotton, knit, suede, open everyday shoes, cardigans"
+         },
+         {
+          "const": "high_occasion_floor",
+          "description": "the event's level starts from this number on the 1–10 formality scale: no item sits more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); shoes at the outfit's level or above (values: from)"
+         },
+         {
+          "const": "weather_layers",
+          "description": "the weather outside and the layers it asks for (values: temperature_c; layers — how many layers on the torso, a half is one more light removable layer; fabrics — fabric codes for this temperature; outer_at_formality — true when the outer layer is held to the outfit's formality too)"
+         },
+         {
+          "const": "scheme_colours_by_kind",
+          "description": "the colours of the palette scheme by kind of item (values: scheme; kinds — per kind: hex; area — its share of the outfit's area, %; echo — true when it only echoes one of the large items and is not required; hue — fixed: the same hue, a touch lighter or darker, not another colour, free: the hue is free, keep the lightness and the mutedness; shares_role_with — kinds with the same role: the same colour there is a deliberate echo, to set them apart keep the role and change the lightness)"
+         },
+         {
+          "const": "scheme_no_kind_colours",
+          "description": "this scheme has no colours by kind of item: the palette has no selection for it yet (values: scheme)"
+         },
+         {
+          "const": "mourning_scheme_dark_only",
+          "description": "on a mourning occasion the scheme's colours come only in their dark and quiet version; nothing light, bright or festive"
+         },
+         {
+          "const": "mourning_accent_not_asked",
+          "description": "a colour accent is not asked for here: an outfit without it at a funeral is fitting, not bland"
+         },
+         {
+          "const": "colouring_words_vs_choice",
+          "description": "her words about her colouring contradict her colour choice: follow the scheme's concrete colours, not the general words (values: said — muted or vivid; chosen — saturated or muted)"
+         },
+         {
+          "const": "accent_twice_or_in_focus",
+          "description": "an accent either repeats exactly twice at separate points or stands once in the focus zone; one random accent is noise, four or more are too many"
+         },
+         {
+          "const": "accent_from_iris_near_face",
+          "description": "the accent colour is taken from the tone of her iris: one of its two echo points is near the face (scarf, collar, top, earrings); an accent only low in the outfit does not answer the eyes"
+         },
+         {
+          "const": "area_shares_unequal",
+          "description": "keep the scheme's area shares: the two largest items do not split the outfit in half"
+         },
+         {
+          "const": "close_tones_need_texture",
+          "description": "a scheme on close tones holds by texture: at least two surfaces different to the touch; pronounced shine on two items at most"
+         },
+         {
+          "const": "three_colour_families_max",
+          "description": "no more than three colour families in the whole outfit, the metal included; the outer layer, scarf and accessories bring no new colours"
+         },
+         {
+          "const": "one_register_one_quote",
+          "description": "keep ONE style language: take one «register» of the items as leading and at most ONE item of another as a quote; three equal languages are a conflict, not eclecticism"
+         },
+         {
+          "const": "one_focus_zone",
+          "description": "exactly one zone of maximum interest, and there must be one: texture, silhouette, a gesture, a statement accessory or a print"
+         },
+         {
+          "const": "shoes_level_and_mass",
+          "description": "shoes at most one step from the outfit's level; the mass of the shoes holds the volume of the bottom (no thin heel under a wide leg)"
+         },
+         {
+          "const": "shoes_her_request_first",
+          "description": "the shoes follow her own request («shoe_request», «refusals»); besides it, the mass of the shoes holds the volume of the bottom"
+         },
+         {
+          "const": "shoes_for_movement",
+          "description": "because of the movement of her day: no stilettos, a stable sole"
+         },
+         {
+          "const": "fabric_level_form_drape",
+          "description": "fabric carries both level and form: smooth, matt and fine is dressier than textured and coarse; a structured form needs a structured fabric, a soft one a fluid fabric. Fabric also decides how the item lies on the body: clinging (shows the relief — only on purpose), skimming (follows the body without sticking — the working default) or standing in its own form; a zone not to be stressed is taken by skimming or by the item's own form, not by clinging"
+         },
+         {
+          "const": "bag_structured",
+          "description": "the bag is structured"
+         },
+         {
+          "const": "bag_may_be_soft",
+          "description": "the bag may be soft"
+         },
+         {
+          "const": "jewellery_one_or_few_small",
+          "description": "jewellery: one visible piece or several small ones, not both"
+         },
+         {
+          "const": "no_hem_at",
+          "description": "no hem of any item ends at these points — they are the widest points of her body; other lengths are free (values: at — body landmarks)"
+         },
+         {
+          "const": "top_hem_at",
+          "description": "the hem of the top item ends at one of these points (values: at — body landmarks)"
+         },
+         {
+          "const": "pair_wider_zone",
+          "description": "one half of her body is wider than the other: volume or structure on the narrower half, a clean line on the wider one; clinging on the narrower half does not make up for the difference (values: wider — top or bottom; narrower; difference_pct — the difference of girths, %)"
+         },
+         {
+          "const": "pair_even",
+          "description": "her top and bottom are even: there is no difference to make up for; the waist sets the form, not the pair"
+         },
+         {
+          "const": "volume_anchor",
+          "description": "a voluminous outfit keeps one anchor where the body shows: the waist (belt, wrap, tuck) or the ankle (a tapered or cropped bottom); volume without an anchor reads as \"the body shows nowhere\""
+         },
+         {
+          "const": "one_line",
+          "description": "the contour leaves the body in ONE place below the shoulders: a voluminous top together with a voluminous bottom gives two lines, and neither reads"
+         },
+         {
+          "const": "cuts_best_on_her",
+          "description": "the cuts of this kind that score highest on her body, equal among themselves (values: kind; cuts; score — 0 to 1; weaker — how many other cuts score lower: weaker, not banned)"
+         },
+         {
+          "const": "cuts_none_scored",
+          "description": "no cut of this kind scored above zero on her body (values: kind; nearest — the cuts nearest by rank)"
+         },
+         {
+          "const": "body_knot",
+          "description": "most conditions meet at these zones of her body; conditions shared by both zones need ONE item for both, since a fix on one zone moves the other; the rest on the first zone is fixed separately (values: zones — per zone: conditions, tension 0 to 1; shared; own)"
+         },
+         {
+          "const": "wish_kinds_first",
+          "description": "she asked for these: put an item of these kinds in every outfit where it fits — such items stand first in the pool and carry «for_her_wish» (values: wishes — her words; kinds)"
+         },
+         {
+          "const": "wish_is_a_class",
+          "description": "a wish is a class of items, not one item: take one item «for_her_wish» in at most this many outfits of the set, the rest from other items of the class; her own item is not a repeat (values: max_outfits)"
+         },
+         {
+          "const": "shown_before_last_resort",
+          "description": "items with «shown_before» stood in her outfits of the earlier set for this case: take one only when the pool has no other fitting item of the same kind — she asked for variety"
+         },
+         {
+          "const": "scheme_large_items_carry",
+          "description": "each colour family of the scheme sits on ITS OWN large item (top, bottom or dress, a second layer, the outer layer), in roughly equal areas; bag, shoes and jewellery may repeat one of them but do not carry the scheme by themselves: an outfit with colour only on accessories does not keep this scheme; with the metal — no more than three colour families (values: scheme; families — colour codes, or the shop's word when the colour has no code)"
+         },
+         {
+          "const": "scheme_needs_colour",
+          "description": "an outfit in which NO item carries colour does not keep this scheme — that is blandness, not calm (values: scheme; colour_kinds — the kinds the scheme gives colour)"
+         },
+         {
+          "const": "scheme_one_accent",
+          "description": "the rest stays neutral and the accent is one: two or more DIFFERENT colour families break this scheme from the other side"
+         },
+         {
+          "const": "base_is_outfit_colour",
+          "description": "this base is the colour of the outfit; items of its family are in the pool (values: hex; chosen_by — she_chose, stylist_chose or code_default)"
+         },
+         {
+          "const": "variety_group",
+          "description": "these outfits are variants of one idea: they share «shared» of «total» items and the features named in «same»; keep one of them or make them different (values: outfits — outfit ids; shared; total; same — scheme, hero, silhouette_letter)"
+         },
+         {
+          "const": "variety_kind_one_item",
+          "description": "these outfits stand on one and the same item of this kind: keep it in at most «keep_at_most» of them and replace it with another item of the same kind in the rest; the kind of this item stays (values: outfits — outfit ids; item — «n»; kind — kind code; keep_at_most)"
+         },
+         {
+          "const": "variety_all_different",
+          "description": "all outfits differ: no pair matched in items, or in scheme together with hero (values: outfits — how many)"
+         },
+         {
+          "const": "variety_kind_repeat_not_checked",
+          "description": "a repeat of one item within a kind was not checked: the outfit records carry no kinds of items"
+         },
+         {
+          "const": "variety_letter_without_length",
+          "description": "the silhouette letter was counted without these items: they have no length (values: items)"
+         },
+         {
+          "const": "done_finding_gone",
+          "description": "the finding of this rule over these items is gone in the new check (values: rule)"
+         },
+         {
+          "const": "done_finding_weakened",
+          "description": "the finding of this rule weakened in the new check (values: rule; was, now — its weights)"
+         },
+         {
+          "const": "done_finding_stands",
+          "description": "the finding of this rule still stands in the new check (values: rule; was, now — its weights; items — what it stands over)"
+         },
+         {
+          "const": "done_declined_accepted",
+          "description": "declined deliberately: the reason is accepted as a declared move (values: why — the reason in the stylist's words)"
+         },
+         {
+          "const": "done_declined_without_why",
+          "description": "«declined» without «why»: there is no reason, so the move is not declared"
+         },
+         {
+          "const": "done_blocker_not_declinable",
+          "description": "a structural blocker cannot be declined: the outfit is not ready without it (values: blocker — blocker code)"
+         },
+         {
+          "const": "done_blocker_gone",
+          "description": "the structural blocker is gone in the new check (values: blocker — blocker code)"
+         },
+         {
+          "const": "done_blocker_stands",
+          "description": "the structural blocker still stands in the new check (values: blocker — blocker code)"
+         },
+         {
+          "const": "done_outfit_not_checked",
+          "description": "the outfit did not reach the check: there is nothing to verify"
+         },
+         {
+          "const": "done_unknown_id",
+          "description": "the previous verdict has no finding or blocker with this id"
+         },
+         {
+          "const": "russian_in_text",
+          "description": "Russian in the text for her: a Russian word, ending or letter. Instead: the same meaning in Ukrainian, without a single Russian word or ending (R-LNG-UA)"
+         },
+         {
+          "const": "status_signal",
+          "description": "explaining a choice by how the item presents her to others (\"reads expensive\", \"looks cheap\", \"signals status\"). Instead: deliberateness as a condition, not status as a goal — an element may read as CHOSEN rather than accidental (K-SIG-01)"
+         },
+         {
+          "const": "refuting_her_belief",
+          "description": "refuting her belief about stripes or prints (\"actually it does not widen\"). Instead: take the belief as a limit — do not offer such items and do not raise the topic (K-LNG-04)"
+         },
+         {
+          "const": "stripes_body_volume",
+          "description": "stripes as a claim about body volume in either direction. Instead: a stripe as a composition element — where it draws a line and what it rhymes with, with no claim about body volume (R-HELM-03)"
+         },
+         {
+          "const": "age_as_filter",
+          "description": "age as a filter of items (\"after N years one does not wear X\"). Instead: a life transition as context (a new job, a return, a change of role) (K-PC-06)"
+         },
+         {
+          "const": "hide_flaw_fix_body",
+          "description": "\"hide a flaw / correct the body\", softened forms included, when she did not set such a goal. Instead: composition, colour, occasion, comfort; play with texture, not with the body (R-ONB-06)"
+         },
+         {
+          "const": "type_verdict",
+          "description": "a confident typology verdict (\"your season is Winter\", \"you are Soft Natural\"). Instead: a vocabulary bridge — \"if you are used to colour types, this is roughly…\" translated into axes: value contrast, depth, temperature (R-TYP-04)"
+         },
+         {
+          "const": "style_score",
+          "description": "a universal numeric style score. Instead: the strength of a single finding with its measure and threshold (R-ABC-08)"
+         },
+         {
+          "const": "colour_emotion",
+          "description": "a universal colour → emotion or trait meaning (\"blue = trust\"). Instead: colour as a measure and its relation to her colouring and to the other items, with no claim about the viewer's emotion (R-PSY-02)"
+         },
+         {
+          "const": "clothes_psychology_promise",
+          "description": "a causal psychological promise of clothes (\"will give you confidence\", \"93% is non-verbal\"). Instead: \"reads as a put-together outfit for [the occasion]\"; comfort and freedom of movement in neutral words (R-PSY-01)"
+         },
+         {
+          "const": "body_by_size",
+          "description": "a comment on her body through size (\"L suits you better\"). Instead: the brand's size chart with the garment's own centimetres, not her body (R-BPC-02)"
+         },
+         {
+          "const": "gender_theory_prescriptive",
+          "description": "Simmel's or Veblen's gender theses as prescriptions. Instead: as a description of a mechanism, marked as a theory of 1899/1904 (R-SIM-12, R-VEB-10)"
+         },
+         {
+          "const": "trickle_down_law",
+          "description": "trickle-down as a one-way waterfall. Instead: movement both ways; trickle-down as ONE of the mechanisms, not a law (R-SIM-03)"
+         },
+         {
+          "const": "outshine_host",
+          "description": "white at someone else's wedding framed as outshining the host. Instead: speak about the item, not about rivalry with the host (K-KOH-08)"
+         },
+         {
+          "const": "western_cue_transfer",
+          "description": "western cue → meaning carried over without a local measure; Ukrainian vernacular mixed with a Russian-coded \"post-Soviet\" aesthetic. Instead: Ukrainian markers named and locally measured; without a measure — silence (R-PP-09, R-LOC-06)"
+         },
+         {
+          "const": "body_zone_advice",
+          "description": "a body zone as the OBJECT of advice when she did not set it as a goal. Instead: composition, colour, occasion, comfort; a measure without a claimed effect (\"the hem ends at the widest point of the calf\") is always allowed (R-LNG-01)"
+         },
+         {
+          "const": "comfort_causal_promise",
+          "description": "a causal promise around comfort and freedom of movement. Instead: comfort as a MEASURE — range of motion, ease in centimetres, fabric weight, stretch — without a causal wrapper (R-NVB-02)"
+         },
+         {
+          "const": "type_label_mechanism",
+          "description": "a typology label used as a MECHANISM rather than a vocabulary bridge. Instead: the bridge translated into axes — the label outside, the axes inside (R-TYP-05)"
+         },
+         {
+          "const": "chroma_budget",
+          "description": "at most 1–2 loud colours in the outfit, hair and glasses frames included (K-COL-02)"
+         },
+         {
+          "const": "single_focus",
+          "description": "exactly one focal point (K-CRA-02, K-COL-05)"
+         },
+         {
+          "const": "lightness_steps",
+          "description": "lightness in 2–3 clear steps, not noise (K-COL-01)"
+         },
+         {
+          "const": "one_silhouette_letter",
+          "description": "one readable silhouette letter (K-SIL-01)"
+         },
+         {
+          "const": "formality_spread",
+          "description": "the formality of the items spreads over at most 2 steps, or a high-low mix is declared (K-KOH-02, K-SHO-03)"
+         },
+         {
+          "const": "shine_budget",
+          "description": "at most 1–2 shiny surfaces (K-MAT-04, K-MAT-04-L, K-MAT-04-A)"
+         },
+         {
+          "const": "print_budget",
+          "description": "prints share a common thread and differ in scale (K-COL-10, R-PRN-03, R-PRN-02)"
+         },
+         {
+          "const": "layering_depth",
+          "description": "at most 3 visible layers, with a visible step between them (K-CRA-06)"
+         },
+         {
+          "const": "accent_echo",
+          "description": "each accent echoes at least twice or is the single focus (K-COL-05, K-COMP-05)"
+         },
+         {
+          "const": "one_sprezzatura",
+          "description": "at most one sprezzatura gesture (K-CRA-03)"
+         },
+         {
+          "const": "hem_off_widest_point",
+          "description": "no hem lands on the widest point of a body zone, when her goal asks for it (K-FIT-03)"
+         },
+         {
+          "const": "one_metal",
+          "description": "one metal, or a deliberate mix with a repeat (K-CRA-07, K-CRA-07-N)"
+         },
+         {
+          "const": "genre_dominant",
+          "description": "one style genre leads (K-KOH-04, K-REG-01)"
+         },
+         {
+          "const": "one_trend_item",
+          "description": "one trend item in a lasting base, not a seasonal uniform (K-CRA-08)"
+         },
+         {
+          "const": "fabric_cut_formality",
+          "description": "the fabric and the cut of one item do not pull to different formality levels (K-MAT-02, K-MAT-01)"
+         },
+         {
+          "const": "scale_to_person",
+          "description": "the scale of prints, accessories and textures matches her own scale (K-SIL-06)"
+         },
+         {
+          "const": "layer_hems_apart",
+          "description": "the hems of the outer layer and of what is under it do not almost coincide (K-OUT-03, K-OUT-04, K-OUT-43)"
+         },
+         {
+          "const": "repairs_not_opposed",
+          "description": "two repairs on one item do not pull in opposite directions (K-COL-CONF, K-COL-JOIN)"
+         },
+         {
+          "const": "near_face_weight",
+          "description": "the visual weight of the items near the face is keyed to the viewing distance (K-COND-04)"
+         },
+         {
+          "const": "neutrals_tone_or_step",
+          "description": "two neutrals on one lightness are tone-on-tone or set apart by a lightness step, not «almost the same» (K-COL-06)"
+         },
+         {
+          "const": "interest_sources",
+          "description": "enough sources of interest for her intent (K-INT-04)"
+         },
+         {
+          "const": "not_median_choice",
+          "description": "at least one element is not the median choice for the case"
+         },
+         {
+          "const": "not_default_formula",
+          "description": "the outfit differs from the default «neutral base + one accent»: neutrals, at most one accent and no print are the default"
+         },
+         {
+          "const": "texture_adds",
+          "description": "texture or material carries what the colour does not"
+         },
+         {
+          "const": "silhouette_decided",
+          "description": "the silhouette is a decision, not a default: a letter is chosen (K-SIL-01)"
+         },
+         {
+          "const": "not_same_for_anyone",
+          "description": "this is not the answer the system would give another person"
+         },
+         {
+          "const": "passport_from_talk",
+          "description": "the case passport was filled by the language model that saw the whole conversation with her"
+         },
+         {
+          "const": "face_colour_in_windows",
+          "description": "the colour near the face lies in her palette windows (K-PAL-09, K-PAL-14)"
+         },
+         {
+          "const": "colours_in_her_pairings",
+          "description": "the colours of the outfit follow the logic of her pairings (K-PAL-15)"
+         },
+         {
+          "const": "print_dominant_hers",
+          "description": "the dominant colour of a print is her colour (K-PAL-10)"
+         },
+         {
+          "const": "off_palette_has_carrier",
+          "description": "a colour outside her palette has a carrier: the contrast of the outfit (K-PAL-08)"
+         },
+         {
+          "const": "grey_hair_eyes_lead",
+          "description": "with grey hair, the eyes stay the main accent (K-PAL-13)"
+         },
+         {
+          "const": "context_keeps_edge_colour",
+          "description": "the context does not push an edge colour out of her palette (K-PAL-16)"
+         },
+         {
+          "const": "face_colour_eye_side",
+          "description": "a coloured item near the face lies on the side of the yellow–blue axis her eyes give (R-COL-16)"
+         },
+         {
+          "const": "scheme_chosen",
+          "description": "the scheme of the outfit was chosen by her or by the stylist, not by a blind rank of the code"
+         },
+         {
+          "const": "glove_sleeve_length",
+          "description": "glove length and sleeve length are one decision (K-GLV-02)"
+         },
+         {
+          "const": "tights_density",
+          "description": "the density of the tights matches the fabric weight of the day (K-HOS-01)"
+         },
+         {
+          "const": "tights_link",
+          "description": "tights are a link of «shoes – leg – bottom», not a separate choice (K-HOS-02)"
+         },
+         {
+          "const": "jewelry_scale",
+          "description": "the scale of the jewelry repeats the scale of her features (K-JEW-02)"
+         },
+         {
+          "const": "necklace_off_neckline",
+          "description": "the edge of a necklace does not coincide with the edge of the neckline (K-JEW-01)"
+         },
+         {
+          "const": "accessory_edge_placement",
+          "description": "the edge of an accessory does not sit on a curve of the body where it can go elsewhere (K-EDG-01, K-ACC-04)"
+         },
+         {
+          "const": "price_per_combinations",
+          "description": "the price is divided by the number of combinations the item enters, not by itself (K-PRC-01)"
+         },
+         {
+          "const": "repairable_shoes",
+          "description": "repairability lengthens the price denominator of the shoes (K-PRC-02)"
+         },
+         {
+          "const": "refusal_reason_physical",
+          "description": "a physical reason for a refusal is named, not reduced to taste (K-END-02)"
+         },
+         {
+          "const": "glasses_in_chroma",
+          "description": "glasses frames count in the chroma budget as a permanent colour near the face (K-FCE-04)"
+         },
+         {
+          "const": "jewelry_kind_asked",
+          "description": "the jewelry is of the kind she asked for (pearls, ethnic), not only of that metal (K-COL-06-M)"
+         },
+         {
+          "const": "accent_surfaces_differ",
+          "description": "two accent surfaces do not match exactly, unless a colour column is declared (K-ACC-10)"
+         },
+         {
+          "const": "weather_withstood",
+          "description": "the weather of the day: layers, fabric, shoes and hem withstand it (K-WEA-01, K-WEA-05)"
+         },
+         {
+          "const": "metal_is_surface",
+          "description": "the metal of the jewelry is the surface of the item, not a rim on fabric or a stone setting (K-COL-06-M, K-CRA-07)"
+         },
+         {
+          "const": "face_contrast",
+          "description": "the lightness jump near her face matches her own contrast (K-CLR-02)"
          }
         ]
        },
@@ -5102,6 +5722,16 @@
    "no_outerwear": "нема_верхнього_шару",
    "no_third_item": "неповний"
   },
+  "structural_blocker": {
+   "kind_twice": "слот_двічі",
+   "no_top_and_bottom": "нема_верху_низу",
+   "single_item": "одна_річ",
+   "refusal": "вето",
+   "no_shoes": "нема_взуття",
+   "no_bag": "нема_сумки",
+   "no_outer_layer": "нема_верхнього_шару",
+   "incomplete": "неповний"
+  },
   "occasion": {
    "everyday": "щоденне",
    "work": "робота",
@@ -5175,8 +5805,12 @@
   },
   "movement": {
    "sit": "сидіти",
+   "stand": "стояти",
    "walk": "ходити",
-   "walk_a_lot": "багато ходити"
+   "walk_a_lot": "багато ходити",
+   "dance": "танцювати",
+   "kneel": "ставати на коліна",
+   "sport": "спорт"
   },
   "activity": {
    "children": "діти",
@@ -5362,7 +5996,20 @@
    "bag_generic": "сумка_без_уточнення",
    "dress_generic": "сукня_без_уточнення",
    "two_piece_set": "комплект",
-   "casual_suit": "костюм_повсякденний"
+   "casual_suit": "костюм_повсякденний",
+   "bodysuit": "боді",
+   "longsleeve": "лонгслів",
+   "half_coat": "півпальто",
+   "down_jacket": "пуховик",
+   "fur_coat": "шуба",
+   "sheepskin_coat": "дублянка",
+   "parka": "парка",
+   "raincoat": "плащ",
+   "rain_cape": "дощовик",
+   "windbreaker": "вітровка",
+   "anorak": "анорак",
+   "bomber": "бомбер",
+   "poncho": "пончо"
   },
   "fabric": {
    "wool": "вовна",
@@ -5656,15 +6303,6 @@
    "usual": "usual",
    "conservative": "conservative"
   },
-  "event_movement": {
-   "sit": "sit",
-   "stand": "stand",
-   "walk": "walk",
-   "walk_long": "walk_long",
-   "dance": "dance",
-   "kneel": "kneel",
-   "sport": "sport"
-  },
   "religious_place": {
    "none": "none",
    "temple": "temple",
@@ -5681,6 +6319,11 @@
   },
   "reserved_colour": {
    "near_white": "near_white"
+  },
+  "open_zones": {
+   "none": "none",
+   "one": "one",
+   "two": "two"
   },
   "recurrence": {
    "once": "once",
