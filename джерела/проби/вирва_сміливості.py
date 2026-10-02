@@ -41,7 +41,7 @@ def зібрати(сп):  # потік викликів → вирви: асе�
 for f in sorted(x for x in glob.glob((ДАНІ or Р + "per_492") + "/*/вердикти.txt.gz") if ФІЛЬТР.search(x.split("/")[-2])):
     for в in json.load(gzip.open(f, "rt"))["прогони"][0]["вердикти"]:
         н = f.split("/")[-2][:None if ДАНІ else -2]; кл = [(c["крок"], дж(c["запит"]["текст"]), дж(c["відповідь_сира"])) for c in в["етапи"]["виклики"]]
-        if str(в["рука"]) in "12": ВИР.append(("Ш" if ДАНІ else "В", н, int(в["рука"]), зібрати(кл)[0])); НЕВ += [(н, в["рука"], x["підпис"]) for c in в["етапи"]["виклики"] for x in (c.get("розбір_блоків") or {}).get("невідомі_в_образах", [])]
+        if str(в["рука"]) in "12": ВИР.append(("Ш" if ДАНІ else "В", н, int(в["рука"]), (зібрати(кл) or [dict(a=None, r=None, c=None)])[0])); НЕВ += [(н, в["рука"], x["підпис"]) for c in в["етапи"]["виклики"] for x in (c.get("розбір_блоків") or {}).get("невідомі_в_образах", [])]
         else: ВИГ.append((н, int(в["рука"]), [(None if i["slot"] in ("earrings", "bracelet", "necklace", "ring", "brooch", "jewelry") else i.get("color_hex"), i["slot"] in ("top", "bottom", "dress", "set", "outerwear"), bool(СЛ.search((i["name"] + i["details"]).lower()))) for i in кл[1][2]["items"]]))
 for т in ([] if ДАНІ else sorted(glob.glob(Р + "zhp_a/*"))):
     сп = []
