@@ -59,6 +59,7 @@ for с, н, р, x in ВИР:
     бал = lambda ns: ознаки([річ(Д[n]) for n in ns if n in Д])[1]; ВР = {(o["your_outfit"]["id"], f["id"]): f["weight"] for o in рп["verdict"] for f in o["findings"] if "weight" in f}  # після ВИБ-1 вибір ваг не несе → вага з ремонту за id знахідки
     вг = lambda o, f: (f["weight"], "вибір") if "weight" in f else (ВР[o["your_outfit"]["id"], f["id"]], "ремонт") if (o["your_outfit"]["id"], f["id"]) in ВР else (0, "нема")
     вага = lambda o: sum(вг(o, f)[0] for f in o["findings"])
+    for o in сп_["verdict"]: o.setdefault("findings", [dict(id=e["id"], statements=[к]) for к, es in (сп_.get("remarks_by_code") or {}).items() for e in es if e.get("outfit") == o["your_outfit"]["id"]])  # після #569 знахідки вибору — карта remarks_by_code
     фін = {}  # id ідеї → (бал після ремонту, блокери, обрано, вага, к-сть знахідок, набір речей)
     for o in сп_["verdict"]:
         ЛІЧ.update(("вага", вг(o, f)[1]) for f in o["findings"]); ns = [i["n"] for i in o["your_outfit"]["items"]]; ід = max(ро["outfits"], key=lambda q: len(set(q["items"]) & set(ns)) / len(set(q["items"]) | set(ns)))["id"]
