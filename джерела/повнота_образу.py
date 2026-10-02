@@ -601,11 +601,14 @@ def промпт_вибору(образи, випадок=None, без_фото
                  як="it explains her words and does not replace them: where they differ, her words win"),
         _ЗП.Поле("day", "her day as facts"),
         _ЗП.Поле("verdict", "your outfits and what the code noticed in each: «your_outfit» — its items, caption "
-                            "and «day» (your sentence about her day in it); «structure» — blockers; «findings» — "
-                            "the code's remarks («register» «gate» — a gate); «checklist» — by area, the "
-                            "points the code noticed as not met; each point and remark is a code defined in "
+                            "and «day» (your sentence about her day in it); «structure» — blockers; «checklist» — "
+                            "by area, the points the code noticed as not met; each point is a code defined in "
                             "\"statement_codes\"; «your_declared» — your declared deliberate moves",
                  треба=True),
+        _ЗП.Поле("remarks_by_code", "the code's remarks on the outfits, by remark code (each code is defined in "
+                                    "\"statement_codes\"): for each code, every outfit it stands on — «outfit», "
+                                    "«id» of the remark, «items», «values»; «register» «gate» — a gate",
+                 як="a remark that stands on every outfit does not tell them apart"),
         _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination"),
         _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
         _ЗП.Поле("she_refuses", "what she refused",
