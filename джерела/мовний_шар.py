@@ -1713,6 +1713,9 @@ def _коди_розмови():
     # господар) і K-KOH-06 (вечір там, куди ходять удень). Приклад уже несе свою звичну пору: театр увечері —
     # смуга театру (плитка «Театр, концерт» о 20:00). «Рівний вибір — угору» (K-KOH-06, укр. база вища) знято:
     # нотаріус їхав 5–6 → 6–8, суд 6–7 → 7–9 (A/B 4 виклики на фразу).
+    # Побачення (рядок 1130, довідник нагод `аудит/тести/нагода_архітектура_2026-09-28.md` §1.1: «побачення / школа —
+    # смуга 4–5; побачення: помітніше ввечері»): удень 4–5, увечері на крок вище — 5–6. Доти вечеря-побачення о 19:30
+    # лишалась на 4–5 районного ресторану (вечірній підйом — лише для денних місць), і рука 1 брала трикотажні штани.
     "\"formality\" is always present, without quote: how dressy this outing is, taken by the anchors in "
     "\"codes\", not by eye. Start from the usual band of the example nearest to her event; it already holds "
     "the usual time of day of such an event. The examples are for the band only and do not decide \"place\" "
@@ -1720,8 +1723,9 @@ def _коди_розмови():
     "then move the whole band, keeping its width, one step at most: down — she says it is simple, nothing "
     "special; up — she wants to dress up, there are stakes or a host (an interview, a speech, she is the "
     "hostess or the birthday girl, an official reception), or the event is in the evening where people "
-    "usually go by day (an office, a school, a museum). A named dress code — its band. She said nothing "
-    "about it — the usual band of her event.",
+    "usually go by day (an office, a school, a museum). A date is 4–5 by day and one step higher in the evening "
+    "(5–6): in the evening she is seen more. A named dress code — its band. She said nothing about it — the "
+    "usual band of her event.",
     # НП-в (принцип власника 01.10: «код має знати те, що може точно порахувати»): видів,
     # «найближчого виду», ролі, аудиторії, віри, обсягу й частин дня модель коду більше не дає —
     # стилістка бере подію її словами. Зарезервований колір — рахівне (вето майже-білого).
