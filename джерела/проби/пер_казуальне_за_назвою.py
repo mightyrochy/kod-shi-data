@@ -11,7 +11,7 @@ for r in (sorted(os.listdir(БАЗА)) if ДИРИ else ["робота","спі�
         if р not in (1,2): continue
         зб=в["етапи"]["виклики"][0]; q=зб["запит"]["текст"]; пакет=json.loads(q[q.index("{"):])
         наз={x["n"]:x["name"] for x in пакет["pool"]}
-        o=json.loads(зб["відповідь_сира"][зб["відповідь_сира"].index("{"):])["outfits"]
+        o=json.JSONDecoder().raw_decode(зб["відповідь_сира"][зб["відповідь_сира"].index("{"):])[0]["outfits"]  # перший об'єкт — як у коді (ЗАМІР-Д: «Correction:» + другий JSON)
         різні=set(n for x in o for n in x["items"]); поз=[(n,наз.get(n,"")[:50]) for n in sorted(різні) if КАЗ.search(наз.get(n,""))]
         обр=sum(1 for x in o if any(КАЗ.search(наз.get(n,"")) for n in x["items"]))
         print(f"{r} рука{р}: образів {len(o)}, з казуальним за назвою {обр}, різних речей {len(різні)}, казуальних {len(поз)}", поз if r!="прогулянка" else "")
