@@ -1048,9 +1048,13 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                            "item — the item's name)",
     "code_swapped_item_from_stylist_look": "the named item was replaced with another one from the same "
                                            "selection (values: was — what it was, now — what it is now)",
+    # ОПИС-1 (рядок 980): шар вставляв назву крамниці в речення цілком («замінила «Літні туфлі, ATTICO,
+    # шкіра, колір кольоровий» на …», ж7_ювілей_свекрухи 02.10) — назва тут дані, а не слова для неї
     "stylist_swapped_item_after_photo": "after seeing the item photos the stylist replaced one item with "
                                         "another of the same kind from her selection; the code checked the "
-                                        "outfit again (values: was — what it was, now — what it is now; "
+                                        "outfit again (values: was — what it was, now — what it is now, both "
+                                        "as the shop names them: name each in a few words of your own — its "
+                                        "kind and colour — never quote the shop's name; "
                                         "reason — colour: the photo showed a clearly different colour than "
                                         "the shop named, kind: the photo showed another kind of item, "
                                         "occasion: the item on the photo does not suit her occasion)",
@@ -1128,16 +1132,24 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "outfit",
     "cannot_tell_two_accent_surfaces_match": "so the code cannot tell whether two accent items match exactly "
                                              "in colour",
+    # ОПИС-1 (рядок 1254, K-COL-06): одиниці «dE00», «hex», «L*» у визначеннях шар повторював у реченні
+    # для неї («розкид близько 11,5 dE00 … за двома виміряними hex»), сторож латиниці (П-3) знімав
+    # речення, і питання «код не знає» лишалось без тексту — 9 питань у 8 прогонах 02.10. Зміст той
+    # самий, словами: шкала — різниця кольорів на око, кроки світлоти — щаблі від темного до світлого.
     "photo_colour_noise_above_match_threshold": "the colour measured from a photo is noisier than the exact "
-                                                "match threshold (values: noise, threshold — dE00), so two "
-                                                "measured hex values cannot settle an exact match",
+                                                "match threshold (values: noise, threshold — both as colour "
+                                                "difference on one scale; numbers for the code, not for her), "
+                                                "so two colours measured from photos cannot settle an exact "
+                                                "match",
     "photo_colour_noise_above_visible_difference": "the colour measured from a photo is noisier than the "
                                                    "difference that reads as visible (values: noise, "
-                                                   "threshold — dE00), so two measured hex values cannot "
-                                                   "settle whether two items differ visibly",
+                                                   "threshold — both as colour difference on one scale; numbers "
+                                                   "for the code, not for her), so two colours measured from "
+                                                   "photos cannot settle whether two items differ visibly",
     "photo_lightness_noise_above_step": "the lightness measured from a photo is noisier than one lightness step "
-                                        "(values: noise, step — L*), so two measured hex values cannot settle "
-                                        "whether two items sit on one lightness",
+                                        "(values: noise, step — both on the scale from dark to light; numbers "
+                                        "for the code, not for her), so two colours measured from photos cannot "
+                                        "settle whether two items sit on one lightness",
     "cannot_tell_lightness_structure": "so the code cannot tell which structure of light and dark the outfit "
                                        "carries",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
