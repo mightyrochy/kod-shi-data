@@ -2480,6 +2480,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "stay: a named step outside the window, not a substitution (values: "
                                       "in_accent_kinds — items of her family the windows gave across the "
                                       "accent kinds; added)",
+    "scheme_family_topped_up": "the scheme she chose herself had too few items of one of its colour families "
+                               "on separate large items, so items of that family were topped up into this kind "
+                               "from the catalogue by hue arc and chroma alone, past the window's lightness and "
+                               "chroma bands (values: role — the family's scheme role; added)",
     "chosen_colour_barely_in_catalogue": "the colour she chose is barely present in this catalogue: the "
                                          "accent kinds hold this few items of her family while the scheme "
                                          "asks for an accent. Tell her so plainly — there is nothing to take "
@@ -2665,8 +2669,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "dress, a second layer, the outer layer), in roughly equal areas; bag, shoes and "
                                 "jewellery may repeat one of them but do not carry the scheme by themselves: an "
                                 "outfit with colour only on accessories does not keep this scheme; with the metal "
-                                "— no more than three colour families (values: scheme; families — colour codes, or the "
-                                "shop's word when the colour has no code)",
+                                "— no more than three colour families; when chosen_by is she_chose, the scheme is her own explicit "
+                                "choice and an outfit whose large items miss a family the pool holds is a gate, not a "
+                                "remark (values: scheme; families — colour codes, or the shop's word when the colour "
+                                "has no code; chosen_by — she_chose when she picked the scheme herself)",
     "scheme_needs_colour": "an outfit in which NO item carries colour does not keep this scheme — that is "
                            "blandness, not calm (values: scheme; colour_kinds — the kinds the scheme gives "
                            "colour)",
