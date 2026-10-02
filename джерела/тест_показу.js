@@ -3921,6 +3921,10 @@ function мостПриміркиЗаглушка(w){
          w.eval("питанняПроЇЇОбразП({question: {free_text: 'x'}, question_about: 'look', event: 'date'})") === false
          && w.eval("питанняПроЇЇОбразП({question: {free_text: 'x'}, question_about: 'app'})") === false
          && w.eval("питанняПроЇЇОбразП({question: {free_text: 'x'}, question_about: 'look', own_items: []})") === true, null);
+    /* ФІКС-6б: ошатність (НП-в — щоходу) і норма події без цитати — не нагода; нагода — так */
+    тест("ошатність і норма події, які мовна модель ставить щоходу, хід «оціни мій образ» у сценарій не ведуть",
+         w.eval("лишеПитанняП({formality: {from: 6, to: 8}, reserved_colour: 'near_white', open_zones: 'one'})") === true
+         && w.eval("лишеПитанняП({formality: {from: 6, to: 8}, occasion: 'date'})") === false, null);
     тест("без винятків", помилки.length === 0, помилки);
   }
 
