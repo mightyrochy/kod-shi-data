@@ -1478,7 +1478,7 @@ _ПРИКЛАДИ_МІСЦЬ_EN = {
     "школа_батьківські": "a school parents' meeting", "театр": "a theatre or a concert", "клуб": "a club",
     "церква_служба": "a church service", "конференція": "a conference", "вернісаж": "a vernissage",
     "святкова_вечеря": "a festive dinner", "похорон": "a funeral", "ресторан_високий": "an upscale restaurant",
-    "опера_прем'єра": "an opera premiere", "офіс_корпоративний": "a corporate office",
+    "опера_прем'єра": "a premiere or a gala night (theatre, opera)", "офіс_корпоративний": "a corporate office",
     "співбесіда": "a job interview", "презентація": "a presentation", "весілля_денне": "a daytime wedding",
     "fine_dining": "fine dining", "весілля_вечірнє": "an evening wedding"}
 
@@ -1495,6 +1495,22 @@ def _смуги_місць_en():
         купи.setdefault((від, до), []).append(_ПРИКЛАДИ_МІСЦЬ_EN[м])
     return " · ".join("%d–%d %s" % (від, до, ", ".join(к)) if від != до else "%d %s" % (від, ", ".join(к))
                       for (від, до), к in sorted(купи.items()))
+
+
+def _смуги_дрес_кодів_en():
+    """Названий дрес-код — його смуга з таблиці коду (`формальність.КОДИ_ДІАПАЗОНИ`), а не на око (рядок 1131):
+    «Благодійний бал, black tie» модель ставила то 9–9, то 9–10, хоч код міряє black tie смугою 8–9."""
+    import формальність as _ФОРМ_
+    return ", ".join("%s %d–%d" % (к, від, до) if від != до else "%s %d" % (к, від)
+                     for к, (від, до) in _ФОРМ_.КОДИ_ДІАПАЗОНИ.items() if к in _ВМ.ТАБЛИЦЯ["dress_code"])
+
+
+def _місця_вечірні_en():
+    """Коди місць, які код сам читає вечірніми без години (`формальність.місце_вечірнє`: святкова вечеря,
+    вечірнє весілля, прем'єра). Рядок 1134: плитка «Свято, вечірка» шле місце `festive_dinner`, а модель
+    ставила то вечір (20:00), то нічого (11:00 форми) — тепер вечір, як читає код."""
+    import формальність as _ФОРМ_
+    return " | ".join(к for к in (_ВМ.код("place", м) for м in _ФОРМ_.МІСЦЯ_ДІАПАЗОНИ if _ФОРМ_.місце_вечірнє(м)) if к)
 
 
 _ПОЛЯ_EN = {
@@ -1667,6 +1683,7 @@ def _коди_розмови():
             р.append("- %s — %s%s" % (ім, _ПОЛЯ_EN[ім], "; " + _тип_en(с) if с.get("type") == "array" else ""))
     р.append("- formality — %s; without quote" % _ПОЛЯ_EN["formality"])
     р.append("  · anchors — usual bands of events (examples for the band only, not codes): %s" % _смуги_місць_en())
+    р.append("  · dress-code bands: %s" % _смуги_дрес_кодів_en())
     # МОВА-1 (02.10): `part_of_day` — службове, як ці два, але доти його рядка тут не було: модель не
     # бачила ні опису, ні кодів, і «вдень», «по обіді», «на обід» без години губились (проба
     # `мова1_нечіткі.py`: 0 з 5 таких випадків).
@@ -1723,9 +1740,15 @@ def _коди_розмови():
     # Хрестини «спершу церква, потім обід у ресторані» давали нагоду однієї частини й місце іншої — або
     # без місця; «працюю з дому» — то home, то work. Нагода — що вона робить, місце — де; обидва про одне,
     # а кілька частин — про першу названу (одяг вона вдягає на неї), решта лишається в «event».
+    # ШКАЛА-2 (рядок 1132): «працюю з дому» — то home, то work; «на кожен день в університет» — то everyday, то
+    # school; «театр на прем'єру» — то theatre, то opera_premiere (смуга 4–6 проти 6–8). Нагода — рід заняття
+    # (робота вдома — робота, навчання — школа), «щодня» — частота, а не рід; місце — те, що названо її словами.
     "\"occasion\" is what she will be doing and \"place\" is where she will be; both describe the same "
     "part of her day, never the occasion of one part and the place of another. When her day has several "
-    "parts, both describe the part she names first, and \"event\" keeps all of them.",
+    "parts, both describe the part she names first, and \"event\" keeps all of them. \"occasion\" is the "
+    "kind of what she does, not how often or where: working is work even at home (place home); studying at "
+    "a school, a university or courses is school, also every day. \"place\" is the place her words name: "
+    "a premiere or a show at a theatre is theatre; opera_premiere only when her words name an opera.",
     # НП-в крок 2: ошатність — число мовної моделі ЗАВЖДИ, без цитати (її слова, подія, плитки);
     # з нього код рахує смугу й відсів пулу, інших джерел смуги нема.
     # ШКАЛА-1070 (рядок 1070): смуга — за якорем, не на око. Початок — звична смуга найближчого прикладу
@@ -1737,16 +1760,28 @@ def _коди_розмови():
     # Побачення (рядок 1130, довідник нагод `аудит/тести/нагода_архітектура_2026-09-28.md` §1.1: «побачення / школа —
     # смуга 4–5; побачення: помітніше ввечері»): удень 4–5, увечері на крок вище — 5–6. Доти вечеря-побачення о 19:30
     # лишалась на 4–5 районного ресторану (вечірній підйом — лише для денних місць), і рука 1 брала трикотажні штани.
+    # ШКАЛА-2 (рядок 1131): «зсув за ставками» модель робила там, де ставки неочевидні (співбесіда в банку 6–8 |
+    # 7–9, корпоратив з начальством 5–6 | 6–8, прем'єра 4–6 | 5–7, бал black tie 9–9 | 9–10) — 3 і 7 з 40
+    # «лише formality» (`нагода_фрази_нг4.py`). Тепер приклад уже несе звичні ставки свого роду (співбесіда,
+    # презентація, суд, нотаріус, знайомство з родиною — не вище свого прикладу), а крок угору — лише за тим, що
+    # названо її словами: хоче вбратися, вона сама в центрі (промова, господиня, іменинниця, мама нареченої),
+    # вечір там, куди ходять удень. Дрес-код — рівно його смуга з таблиці коду (`_смуги_дрес_кодів_en`). Найближчий
+    # приклад — назване місце, а без місця — заняття («прогулянка парком» — то парк 2–3, то прогулянка 2–4).
     "\"formality\" is always present, without quote: how dressy this outing is, taken by the anchors in "
-    "\"codes\", not by eye. Start from the usual band of the example nearest to her event; it already holds "
-    "the usual time of day of such an event. The examples are for the band only and do not decide \"place\" "
-    "or \"occasion\". Keep the band as it is unless her words or the event add what its kind does not have; "
-    "then move the whole band, keeping its width, one step at most: down — she says it is simple, nothing "
-    "special; up — she wants to dress up, there are stakes or a host (an interview, a speech, she is the "
-    "hostess or the birthday girl, an official reception), or the event is in the evening where people "
-    "usually go by day (an office, a school, a museum). A date is 4–5 by day and one step higher in the evening "
-    "(5–6): in the evening she is seen more. A named dress code — its band. She said nothing about it — the "
-    "usual band of her event.",
+    "\"codes\", not by eye. A named dress code — exactly its band from the dress-code bands. Otherwise start "
+    "from the usual band of the example nearest to what kind of event it is — not to how important it is to "
+    "her: the place her words name (a walk in a park — a park), or, when they name none, what she will be "
+    "doing; the example already holds the usual time of day and the usual stakes of such an event. The examples "
+    "are for the band only and do not decide \"place\" or \"occasion\". Keep that band and its width. Move "
+    "the whole band one step — never more, never twice — only for one of these, said in her words: down — "
+    "she says it is simple, nothing special; up — she says she wants to dress up; she herself is the centre "
+    "of the event and its example does not already say so (she gives a speech or a toast, she is the hostess, "
+    "the birthday girl, the mother of the bride or the groom); the event is in the evening at a place people "
+    "usually go to by day (an office, a school, a museum). Not a reason to move: how important, serious or "
+    "nervous the event is, who will be there (bosses, family, officials, strangers), how strict the "
+    "institution is (a bank, a court, a notary), a first meeting. A date is 4–5 by day and one step higher "
+    "in the evening (5–6): in the evening she is seen more. She said nothing about it — the usual band of her "
+    "event.",
     # НП-в (принцип власника 01.10: «код має знати те, що може точно порахувати»): видів,
     # «найближчого виду», ролі, аудиторії, віри, обсягу й частин дня модель коду більше не дає —
     # стилістка бере подію її словами. Зарезервований колір — рахівне (вето майже-білого).
@@ -1761,8 +1796,9 @@ def _коди_розмови():
     # МОВА-1 (рядок 860): і з її слів без години («вдень», «по обіді») — поле тепер є у словнику кодів.
     "\"part_of_day\" goes without quote and only when no hour is known: from her words, or when the event or "
     "a tile in \"chosen\" names the part of the day (an evening reception — evening) or the event usually "
-    "takes one part of the day (a theatre, a concert or an opera — evening); an event that happens at any "
-    "time of day — leave it absent.",
+    "takes one part of the day (a theatre, a concert or an opera — evening); a place in her words or in "
+    "\"chosen\" that the code reads as evening by itself (%s) — evening; another event that happens at "
+    "any time of day — leave it absent." % _місця_вечірні_en(),
     # П.14 і п.3 наряду: межа мовної моделі — кодами `need`.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
     "without her items, looks and photos. When \"need\" is not \"none\", do not answer the question in "
