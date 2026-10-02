@@ -2417,6 +2417,17 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                   "band of the occasion, so the kind keeps only the ones closest to the band, as "
                                   "a fallback rather than a fit (values: band — the band from…to; kept; reasons "
                                   "— {reason code: how many})",
+    # ВІДСІВ-1 (02.10.2026): казуальніше за смугу нагоди судить суд, не пул (K-KOH-07)
+    "item_below_occasion_band_unexplained": "by the code's measure this item is more casual than the level of "
+                                            "the occasion, and «deliberate» of the outfit does not say why it "
+                                            "is here: maybe a slip (values: reason — the measure's code; band — "
+                                            "the occasion's band from…to; item — the item's formality from…to, "
+                                            "or its photo score)",
+    "item_below_occasion_band_explained": "by the code's measure this item is more casual than the level of the "
+                                          "occasion, and the outfit says why: a choice, not a slip — for "
+                                          "information only (values: reason; band; by — deliberate or her_wish)",
+    "say_why_this_item_or_one_reaching_band": "say in «deliberate» why this very item, or take one that reaches "
+                                              "the level of the occasion",
     "kind_cut_to_photo_formality": "the kind was cut by the dressiness the code measured on the shop photos, "
                                    "and what stays is ordered by distance from the band (values: band — the "
                                    "band from…to; had, removed, too_casual, too_dressy)",
@@ -2550,6 +2561,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                "are a mistake here, not a style (values: temperature_c)",
     "precipitation_shoes_materials": "precipitation: closed shoes, no fabric soles, no suede or nubuck; "
                                      "materials afraid of water stay out of the outfit",
+    "precipitation_water_shy_materials_with_condition": "precipitation: closed shoes, no fabric soles; suede, "
+                                                        "nubuck and velour only on the condition that they are "
+                                                        "treated against water",
     # Рядки нагоди брифа (рядок 532): рівень, напрям промаху, що вибиває зі щабля, нижня межа
     # високої події — доти українськими реченнями в `occasion_rules` промпта складання.
     "occasion_level": "the occasion's level of formality (values: level — home, everyday, neat, smart, evening, "
