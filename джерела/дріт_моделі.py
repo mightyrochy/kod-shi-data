@@ -959,6 +959,25 @@ def _для_вибору(z):
     return z
 
 
+def _ремарки_за_кодом(о, ремарки):
+    """ПОРЯДОК-1090 (вибір): знахідки образу переходять у кореневу карту «код зауваження → образи, на яких він стоїть»
+    (кожен запис несе `outfit`, `id` знахідки й решту її полів). Знахідка без заяв лишається при образі.
+    ЧОМУ: п'ять блоків по ~11 знахідок поруч не давали вибору чим відрізняти образи, і модель брала перший у списку
+    (живий sonnet, ті самі образи, кожен по черзі першим: 0.51 вибору першого при 0.20 навмання; тут — 0.42)."""
+    ід = (о.get("your_outfit") or {}).get("id")
+    лишилось = []
+    for z in о.pop("findings", None) or []:
+        if not (isinstance(z, dict) and z.get("statements")):
+            лишилось.append(z)
+            continue
+        решта = {к: v for к, v in z.items() if к != "statements"}
+        for ст in z["statements"]:
+            for код, знач in (ст.items() if isinstance(ст, dict) else [(ст, None)]):
+                ремарки.setdefault(код, []).append(dict(outfit=ід, **решта, **({"values": знач} if знач else {})))
+    if лишилось:
+        о["findings"] = лишилось
+
+
 def вердикт(в, ремонти=True, межі=None, вибір=False):
     """Вердикт на дроті (`протокол.вердикт_на_дріт` без кодів правил) → англійський дріт.
     `ремонти=False` — знахідки без тексту ремонту (вибір не ремонтує); `межі` — її межі
@@ -997,6 +1016,7 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
     if в.get("день"):
         вих["day"] = в["день"]
     вих["verdict"] = []
+    ремарки = {}
     for с in суд:
         т = с.get("твій_образ") or {}
         склад = [x.get("н") if isinstance(x, dict) else x for x in (т.get("речі") or [])]
@@ -1031,6 +1051,7 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
             if not о["checklist"]:
                 del о["checklist"]
         if вибір:
+            _ремарки_за_кодом(о, ремарки)
             вих["verdict"].append(о)
             continue
         if isinstance(с.get("вузол"), dict):
@@ -1048,6 +1069,8 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
                                 if v is not None and v != "" and v != []}
                                for x in с["виконання"] if isinstance(x, dict)]
         вих["verdict"].append(о)
+    if ремарки:
+        вих["remarks_by_code"] = ремарки
     н = в.get("набір")
     if isinstance(н, dict):
         набір = {}
