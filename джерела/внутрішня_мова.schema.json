@@ -3484,10 +3484,6 @@
           "description": "the accent colour stands in one slot only and nowhere else: the eye finds no intention (values: colour — the code of the colour or family, hue — the hue in degrees, slot — slot code; on_windows — true when the judgement rests on the windows of colour words, not on a measurement)"
          },
          {
-          "const": "accent_in_declared_focus",
-          "description": "the accent stands in one slot, but that zone is declared the focus, and then it is legitimate as a point (values: slot — slot code)"
-         },
-         {
           "const": "echo_accent_or_declare_focus",
           "description": "repeat the colour in a second zone (shoes, bag, scarf, jewellery), declare the focus, or remove it"
          },
@@ -3604,10 +3600,6 @@
           "description": "match the pair to the leg (a nude in the tone of the skin, or tights in the tone of the pair) so the line continues from the toes, or to the bottom, for a column of colour in the lower third"
          },
          {
-          "const": "high_cut_quiet_edge_keep",
-          "description": "the pair's cut is high, but the edge is matched by lightness to the skin or the tights, so it barely draws a line across the foot: keep the pair (values: dl — the lightness difference between the edge and the neighbouring surface, step — the step threshold, neighbour — skin or tights)"
-         },
-         {
           "const": "high_cut_contrasting_edge",
           "description": "the pair's cut is high and contrasts with the skin or the tights, so the edge draws a line across the foot twice: drop one of the two levers (values: dl — the lightness difference between the edge and the neighbouring surface, step — the step threshold, neighbour — skin or tights)"
          },
@@ -3618,10 +3610,6 @@
          {
           "const": "cut_hidden_by_dense_tights",
           "description": "under dense tights the pair's edge is not visible, so the cut-line axis is off (values: den — the tights' denier, den_band — the day's denier band from and to)"
-         },
-         {
-          "const": "low_cut_keeps_leg_line",
-          "description": "the pair's cut is low, so the line of the leg starts at the toes: keep the pair"
          },
          {
           "const": "high_cut_breaks_leg_line",
@@ -3705,11 +3693,15 @@
          },
          {
           "const": "focus_count_over_ceiling",
-          "description": "the outfit has more focuses than the ceiling: equal focuses put each other out, and the outfit reads busy (values: count — how many focuses, ceiling — the ceiling)"
+          "description": "the outfit has more focuses than the ceiling: equal focuses put each other out, and the outfit reads busy; one colour repeated in several items is one focus (an echo), and a texture alone is not a focus (values: count — how many focuses, ceiling — the ceiling; keep — slot codes of the focus declared by the palette scheme or the focus zone, quiet — slot codes of the other focuses, keep_by — who declared it: scheme, zone or deliberate — your own declared move)"
          },
          {
           "const": "keep_one_focus_quiet_rest",
-          "description": "keep one focus and quieten the rest: lower chroma, a smaller print scale, a smoother texture in the same slot"
+          "description": "keep one focus and quieten the rest with a quieter item in the same slot: lower chroma, a smaller print scale; not by removing every focus — the outfit keeps one"
+         },
+         {
+          "const": "keep_declared_focus_quiet_others",
+          "description": "keep the declared focus as it is and quieten only the other focuses with a quieter item in the same slot; an echo of the kept colour is not a second focus (values: keep — slot codes to keep, quiet — slot codes to quieten)"
          },
          {
           "const": "sprezzatura_gestures_over_one",
