@@ -834,8 +834,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                        "slots — slot codes)",
     "her_item_stands_in_slot": "her own item stands in these slots, and the code does not change it (values: "
                                "slots — slot codes)",
-    "stylist_declared_on_purpose": "the stylist chose these items deliberately for this outfit and said so: "
-                                   "this is her considered decision, not something left unfinished (values: "
+    # ОПИС-1 (рядок 1550): «вона підібрала свідомо, це її обдумане рішення, а не недороблене» — третя
+    # особа й оборона; на картці говорить сама стилістка
+    "stylist_declared_on_purpose": "the stylist chose these items for this outfit on purpose (values: "
                                    "items — the items' names as the card shows them)",
     "action_is_only_her_option": "the outfit is complete as it is: what follows is only an option she may take "
                                  "if she wants more colour, not a task left to her",
@@ -850,6 +851,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "built_from_what_was_found": "built from what was found (values: colours — the shop's words for the "
                                  "colours of the outfit's items)",
     "assortment_gap_not_advice": "this is a gap in the assortment, not advice against her choice",
+    # ОПИС-1 (знахідка менеджера 03.10, рядок 1550): схему, яку вона НЕ обирала (обрала стилістка чи
+    # взято за замовчуванням), «не порада проти твого вибору» називало неправдою — вибору не було
+    "assortment_gap": "this is a gap in the assortment today",
+    "pool_limit": "this is the limit of the selection for her sizes and this occasion",
     "pool_limit_not_advice": "this is the limit of the selection for her sizes and this occasion, not advice "
                              "against her choice",
     # ── КАРТКА ОБРАЗУ: СХЕМА ВЕЛИКИХ ПОВЕРХОНЬ (рядок 133) ───────────────────
