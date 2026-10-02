@@ -7,6 +7,7 @@
 реекспортує кожне ім'я звідси, тож викликачі (`bridge`, показ через Pyodide,
 проби, гейти) не змінюються. Що звідки — карта в шапці `pipeline.py`.
 """
+import json as _json
 import re as _re
 import re as _re_вк
 import внутрішня_мова as _ВМ
@@ -566,9 +567,16 @@ def промпт_вибору(образи, випадок=None, без_фото
 #     свободу приймати зважені рішення.»): мірило вибору — її намір, як його зрозуміла стилістка
 #     («case» кодами — той самий випадок, що в складанні: подія, намір, мета, її слова, нота мовної
 #     моделі); зауваження коду — інформація при образі (`дріт_моделі.вердикт(вибір=True)`: без ваг і
-#     без лічби чекліста), і в «чому» стилістка називає, які з них приймає свідомо.
+#     без лічби чекліста); гейт, який вона приймає свідомо, — полем «accept» (ВИБІР-3).
 #     ДО: правило «not the one with the fewest remarks» стояло, але вхід ніс лічбу passed/failed,
 #     і «чому» спиралось на лічбу зауважень у 23/32 виборах (`проби/виб1_вирва.py`);
+#   · ВИБІР-3 (рядок 963, 02.10.2026): ДО поле «чому» саме просило «which of the code's remarks you
+#     accept on purpose» — і всі 54 причини ЗАМІР-Ш були формулою «I accept …», жодна з 48 без наміру
+#     не називала нічого понад нагоду/реєстр/зауваження. ТЕПЕР «чому» — словами самого образу (задум,
+#     речі й кольори, що його несуть, і як вони відповідають нагоді, дню, наміру); зауваження — лише
+#     інформація; без наміру мірило — нагода, день і задум образу, а не «найтихіший»;
+#   · «accept» (рядок 1040) — гейт обраного образу, прийнятий свідомо, ід знахідки й причиною: доти він
+#     жив прозою «чому», і код відхиляв вибір (`gates_not_repaired`) на користь чужого образу;
 #   · «day» (рядок 195) — вибір судиться й проти її дня, а не лише проти зауважень коду;
 #   · «blockers» — образ із блокером структури код не приймає (`вибір_з_json`) і бере
 #     інший, тож такий вибір марний;
@@ -607,17 +615,25 @@ def промпт_вибору(образи, випадок=None, без_фото
         "Choose ONE outfit — the one you vouch for before her: the one that best serves her intent as you "
         "understood it from «case» (her occasion, «intent», «goal», her own words and «language_model_note») "
         "and her «day».",
-        "The code's remarks are information about each outfit, not a score: weigh what each one means for her "
-        "intent; do not count them and do not choose by how few remarks an outfit has or how mild they are. A "
-        "bolder outfit that serves her intent better wins over a quieter one with fewer remarks.",
+        "Read each outfit first as an idea: what it says, which item carries it, how it meets her occasion and "
+        "her day. When «case» names no intent, judge by the occasion, her day and the outfit's own idea — not "
+        "by which outfit is the quietest or the cleanest.",
+        "The code's remarks are information about each outfit, not a score: weigh what each one means for her; "
+        "do not count them and do not choose by how few remarks an outfit has or how mild they are. A bolder "
+        "outfit that serves her better wins over a quieter one with fewer remarks.",
+        "A finding with «register» «gate» stops the outfit unless you accept it: if the outfit you choose has "
+        "gates, accept each of them in «accept» with why it serves her here. That is your weighed decision and "
+        "not a reason to pass over the outfit.",
         "Do not choose an outfit with blockers in «structure» while there is one without them.",
         "Do not rewrite the outfit: its only allowed change is «remove».",
     ),
     вихід="ВИБІР_V1",
     поля_виходу={
         "обрано": "«id» of the chosen outfit, from «your_outfit»",
-        "чому": "one or two sentences: how this outfit serves her intent as you understood it, and which of "
-                "the code's remarks you accept on purpose and why — not how many remarks it has",
+        "чому": "one or two sentences in the words of the outfit itself: its idea, the items and colours that "
+                "carry it, and how they answer her occasion, her day and her intent — not the code's remarks",
+        "прийнято[].знахідка": "«id» of a «gate» finding of the chosen outfit that you accept on purpose",
+        "прийнято[].чому": "why this outfit is still the right one for her with it",
         "прибрати": "«n» of an item to remove: only when a blocker says two items are of one kind — the "
                     "weaker of the two",
     },
@@ -1640,12 +1656,89 @@ def _слова_образу(о, склад_моделі, склад_картк�
                 день=str((о or {}).get("день") or "").strip() or None, слова_знято=None)
 
 
+# ── ГЕЙТ, ПРИЙНЯТИЙ НА ВИБОРІ, — ПОЛЕМ (ВИБІР-3, рядок 1040, CLAUDE.md п.12 і п.17) ────────────
+# ДО: стилістка обирала о4 і писала в «чому» «I also accept the missing chocolate family», а
+# `_чому_не_можна` бачило гейт без `свідомий` (код прози не читає) — `gates_not_repaired=K-COL-03`,
+# і на картку йшов о1, якого вона не обирала. ТЕПЕР прийняття — `прийнято: [{знахідка, чому}]`
+# над знахідками ОБРАНОГО образу: такий гейт стає оголошеним ходом (той самий, що «виконано:
+# відхилено» на ремонті), і вибір приймається. Без «чому» або над чужою знахідкою — не
+# зараховується і названо в `прийнято_знехтувано`, не мовчки.
+# ПОВТОР — ЛИШЕ КОЛИ ВИБІР ПАДАЄ НА НЕПРИЙНЯТОМУ ГЕЙТІ: модель обрала образ, бачачи гейт, але не
+# прийняла його полем. Один повтор того самого промпта з адресою гейтів (`повторний_виклик`, той
+# самий канал, що повтор формату) дешевший за чужий образ на картці; на решті виборів зайвих
+# викликів нема (рішення власника 27.09: збирання не повільнішає).
+ПОВТОР_ГЕЙТІВ_EN = ("You chose «%s», and it has gates you did not accept: %s. If it is still the right outfit "
+                    "for her, answer again with the same «chosen» and accept each of these gates in «accept» "
+                    "with why; otherwise choose another outfit. Return ONLY one JSON object following the "
+                    "task's answer_schema, without explanations and without ```.")
+
+
+def _прийняті_гейти(о, прийнято):
+    """Образ вердикту + `прийнято` відповіді → `(образ, прийняті, знехтувано)`.
+
+    `образ` — копія, у якій прийняті знахідки несуть `свідомий` (причиною моделі), тож
+    `_чому_не_можна` їх не рахує; `прийняті` — `[{знахідка, правило, чому, речі}]`;
+    `знехтувано` — `[{знахідка, чому}]` кодами причини (п.12)."""
+    за_ід = {str(z.get("ід") or ""): z for z in ((о or {}).get("знахідки") or []) if isinstance(z, dict)}
+    прийняті, знехтувано, бачено = [], [], set()
+    for п in _список(прийнято):
+        ід = str((п or {}).get("знахідка") or "").strip() if isinstance(п, dict) else str(п or "").strip()
+        чому = str((п or {}).get("чому") or "").strip() if isinstance(п, dict) else ""
+        if not ід or ід in бачено:
+            continue
+        бачено.add(ід)
+        if ід not in за_ід:
+            знехтувано.append(dict(знахідка=ід, чому="finding_not_in_chosen_outfit"))
+        elif not чому:
+            знехтувано.append(dict(знахідка=ід, чому="accepted_without_why"))
+        else:
+            z = за_ід[ід]
+            прийняті.append(dict(знахідка=ід, правило=str(z.get("правило") or ""), чому=чому,
+                                 речі=[str(r) for r in (z.get("речі") or []) if r not in (None, "")]))
+    if not прийняті:
+        return о, [], знехтувано
+    чому_за = {п["знахідка"]: п["чому"] for п in прийняті}
+    о = dict(о, знахідки=[(dict(z, свідомий=чому_за[str(z.get("ід") or "")])
+                          if isinstance(z, dict) and str(z.get("ід") or "") in чому_за and not z.get("свідомий")
+                          else z) for z in (о.get("знахідки") or [])])
+    return о, прийняті, знехтувано
+
+
+def прийняти_гейти(вердикт, прийнято):
+    """Гейти, прийняті на виборі, — оголошені й у НОВОМУ суді обраного складу (ВИБІР-3).
+
+    Після вибору склад судиться наново (`міст_відповіді`), і `повнота_набору` лагодить кодом
+    кожен гейт без `свідомий` — тобто міняла б річ, яку стилістка свідомо лишила. Адресат —
+    ПРАВИЛО, як у `_ремонт_гейтів` («оголошений хід лишається оголошеним»): нова нумерація
+    знахідок своя, а речі гейту над цілим образом адресою не годяться. Множник той самий,
+    що «відхилено» на ремонті (`СВІДОМИЙ_МНОЖНИК`); знахідку, уже оголошену, не чіпає."""
+    import розбір_відповідей as _РВ
+    правила = {}
+    for п in (прийнято or []):
+        if isinstance(п, dict) and п.get("правило") and п.get("чому"):
+            правила.setdefault(str(п["правило"]), str(п["чому"]))
+    if not правила or not isinstance(вердикт, dict):
+        return вердикт
+    for о in (вердикт.get("образи") or []):
+        if not isinstance(о, dict):
+            continue
+        о["знахідки"] = [
+            (dict(z, сила_нп=round(float(z.get("сила_нп") or 0) * _РВ.СВІДОМИЙ_МНОЖНИК, 2),
+                  свідомий=правила[str(z.get("правило"))])
+             if (isinstance(z, dict) and z.get("регістр") == "гейт" and not z.get("свідомий")
+                 and str(z.get("правило") or "") in правила) else z)
+            for z in (о.get("знахідки") or [])]
+    return вердикт
+
+
 def вибір_з_json(текст, вердикт, кандидати=None, каталог=None):
     """`ВИБІР_V1` від моделі → обраний образ id-ами, або названа відмова (Т-06, крок 1).
 
     Повертає `{обрано, названо, ід, частини, номери, підпис, день, слова_знято, чому,
     прибрано, знехтувано, замінено, чому_відмова, помилки, розриви, нормалізовано,
-    обрізано, повторний_виклик}`. `названо` — ід образу, який назвала модель; `обрано` —
+    обрізано, повторний_виклик, прийнято, прийнято_знехтувано}`. `прийнято` — гейти обраного
+    образу, які модель прийняла полем (ВИБІР-3, `_прийняті_гейти`); вибір, що впав лише на
+    неприйнятому гейті, несе `повторний_виклик` з адресою гейтів. `названо` — ід образу, який назвала модель; `обрано` —
     той самий ід, лише коли код його ПРИЙНЯВ (Л-4, 26.09.2026): доти `обрано` лишалось і
     на відхиленому виборі, і показ ставив у опис номер і «день» відхиленого образу над
     складом іншого. Підпис, «день» і `розриви` — лише образу, що йде на картку
@@ -1680,7 +1773,8 @@ def вибір_з_json(текст, вердикт, кандидати=None, ка
     за_ном = _за_номером(кандидати)
     р = dict(обрано=None, названо=None, ід=[], частини={}, номери={}, підпис=None, день=None,
              слова_знято=None, чому=None, прибрано=[], знехтувано=[], замінено=None,
-             чому_відмова=None, помилки=[], розриви=[], нормалізовано=[], обрізано=False)
+             чому_відмова=None, помилки=[], розриви=[], нормалізовано=[], обрізано=False,
+             прийнято=[], прийнято_знехтувано=[])
     об, причина, нотатки = _ПР.розбір_за_схемою(текст, "ВИБІР_V1")
     р.update(нормалізовано=нотатки["нормалізовано"], обрізано=нотатки["обрізано"])
     if об is None:
@@ -1713,12 +1807,27 @@ def вибір_з_json(текст, вердикт, кандидати=None, ка
         р["названо"] = str(о.get("ід") or "")
         с = _склад_вибору(о, словник, за_ном, _список(об.get("прибрати")))
         р.update(прибрано=с["прибрано"], знехтувано=с["знехтувано"])
-        _чн = с["чому_ні"] or _чому_не_можна(о, прибирали=bool(с["прибрано"]))
+        # ВИБІР-3: гейти, які стилістка прийняла полем, — оголошені ходи цього образу
+        _о_пр, р["прийнято"], р["прийнято_знехтувано"] = _прийняті_гейти(о, об.get("прийнято"))
+        _чн = с["чому_ні"] or _чому_не_можна(_о_пр, прибирали=bool(с["прибрано"]))
         if _чн:
             р["чому_відмова"] = "choice_not_taken · outfit=%s · %s" % (р["названо"], _чн)
+            if not с["чому_ні"] and _чн.startswith("gates_not_repaired"):
+                _гейти = [str(z.get("ід")) for z in (_о_пр.get("знахідки") or []) if isinstance(z, dict)
+                          and z.get("регістр") == "гейт" and not z.get("свідомий")]
+                р["повторний_виклик"] = _json.dumps(dict(
+                    version=_ПР.ВЕРСІЯ, error="gates_not_accepted", chosen=_ПР.ід_на_дріт(р["названо"]),
+                    gates=[_ПР.ід_на_дріт(г) for г in _гейти], answer=_ПР.НАЗВИ_ВІДПОВІДІ_EN["ВИБІР_V1"],
+                    instead=ПОВТОР_ГЕЙТІВ_EN % (_ПР.ід_на_дріт(р["названо"]),
+                                                ", ".join(_ПР.ід_на_дріт(г) for г in _гейти))),
+                    ensure_ascii=False)
         else:
+            # прийнятий гейт їде далі оголошенням над речами своєї знахідки — у суд нового
+            # складу (×0.6, `_застосувати_свідомі`), в опис і на картку, як хід ітерації 2
+            _нові = _свідомі_з_json([dict(річ=", ".join(п["речі"]), чому=п["чому"]) for п in р["прийнято"]],
+                                    словник, за_ном, склад=с["ід"]) if р["прийнято"] else []
             р.update(обрано=р["названо"], ід=с["ід"], частини=с["частини"],
-                     розриви=_свідомі_з_json(о.get("свідомі"), словник, за_ном, склад=с["ід"]),
+                     розриви=_свідомі_з_json(о.get("свідомі"), словник, за_ном, склад=с["ід"]) + _нові,
                      # рядок 195 → опис: «день» і підпис — лише прийнятого образу
                      **_слова_образу(о, _склад_вибору(о, словник, за_ном)["ід"], с["ід"]))
     if not р["ід"]:

@@ -4355,7 +4355,8 @@ function звітВердиктів(вс, коли){
       + 'називає крок і вирок: `not_schema`/`repair_not_schema`/`choice_not_schema`/'
       + '`description_not_schema` (з `schema=`, `errors=` парами `де=що` через « | », `retry=1`), '
       + '`usable_but_off_schema`, `no_outfit_in_answer` (з `model_said=` — цитатою моделі), '
-      + '`blocks=/with_id=/without_id=`, `iter2_no_outfit`, `choice_rejected`, `remove_not_done`, '
+      + '`blocks=/with_id=/without_id=`, `iter2_no_outfit`, `choice_rejected`, `choice_gates_not_accepted`, '
+      + '`choice_gates_accepted`, `accept_not_taken`, `remove_not_done`, '
       + '`choice_not_complete`, `careful_choice_empty`, `completeness_repair · attempt= · '
       + 'outfit= · items= · complete=yes|no · code_added_slots=`, `no_accepted_outfit · on_card=none '
       + '· fullest= · items= · to_her= · why=`, `code_added=`, `gate_repair_by_code=`, '
@@ -6980,15 +6981,26 @@ function мостуНемаП(){
    (`річ_з_фото.вердикт`) стоїть у репліці стилістки реченням коду й лягає в паспорт, звідки
    модель його переказує на наступних ходах і не суперечить йому. */
 const МАКС_СТОРОНА_ВИМІРУ_П = 128;   // = річ_з_фото.МАКС_СТОРОНА
+/* ПОЛЕ НАВКОЛО РАМКИ МОДЕЛІ (ОЦІНКА-1000, 02.10.2026). Промпт веде модель малювати рамку «tight around the item
+   itself, without background», а код бере тло з країв кадру (`річ_з_фото.маска`: медіана смуги по краях). Із
+   щільною рамкою ці краї — сама річ: тло виходило кольором речі, і міряло те, що від нього відрізняється —
+   жакет хакі з блакитною сорочкою всередині вимірявся як «білий» (#d0d8e3), а річ усередині плями речі
+   «не відділялась від тла» (0.0 %). Тож показ вирізає рамку з полем (12 % її сторін, не за межі фото) і
+   каже, де в кадрі сама рамка: `ядро` в тисячних кадру — код обирає пляму речі за ядром. */
+const ПОЛЕ_РАМКИ_П = 0.12;
 async function пікселіРечіП(ф, рамка){
   try{
     const бл = await (await fetch('data:' + (ф.тип || 'image/jpeg') + ';base64,' + ф.дані)).blob();
     const бм = await createImageBitmap(бл);
     const W = бм.width, H = бм.height;
     const р = рамка || {ліво: 0, верх: 0, право: 1000, низ: 1000};
-    const x0 = Math.round(р.ліво / 1000 * W), y0 = Math.round(р.верх / 1000 * H);
-    const ш = Math.max(1, Math.round((р.право - р.ліво) / 1000 * W));
-    const в = Math.max(1, Math.round((р.низ - р.верх) / 1000 * H));
+    const дx = рамка ? (р.право - р.ліво) * ПОЛЕ_РАМКИ_П : 0, дy = рамка ? (р.низ - р.верх) * ПОЛЕ_РАМКИ_П : 0;
+    const лів = Math.max(0, р.ліво - дx), вер = Math.max(0, р.верх - дy), пра = Math.min(1000, р.право + дx), низ = Math.min(1000, р.низ + дy);
+    const x0 = Math.round(лів / 1000 * W), y0 = Math.round(вер / 1000 * H);
+    const ш = Math.max(1, Math.round((пра - лів) / 1000 * W));
+    const в = Math.max(1, Math.round((низ - вер) / 1000 * H));
+    const ядро = рамка ? {ліво: Math.round((р.ліво - лів) / (пра - лів) * 1000), верх: Math.round((р.верх - вер) / (низ - вер) * 1000),
+                          право: Math.round((р.право - лів) / (пра - лів) * 1000), низ: Math.round((р.низ - вер) / (низ - вер) * 1000)} : null;
     const к = Math.min(1, МАКС_СТОРОНА_ВИМІРУ_П / Math.max(ш, в));
     const w = Math.max(1, Math.round(ш * к)), h = Math.max(1, Math.round(в * к));
     const кан = document.createElement('canvas'); кан.width = w; кан.height = h;
@@ -6998,7 +7010,7 @@ async function пікселіРечіП(ф, рамка){
     const rgba = ктх.getImageData(0, 0, w, h).data;
     const rgb = new Uint8Array(w * h * 3);
     for (let i = 0, j = 0; i < rgba.length; i += 4, j += 3){ rgb[j] = rgba[i]; rgb[j+1] = rgba[i+1]; rgb[j+2] = rgba[i+2]; }
-    return {дані: байтиВБ64урл(rgb), ширина: w, висота: h};
+    return Object.assign({дані: байтиВБ64урл(rgb), ширина: w, висота: h}, ядро ? {ядро} : {});
   }catch(e){
     /* не мовчки: без пікселів вердикт стоїть на слові кольору стилістки, і це сказано в ньому */
     console.warn('пікселі речі з фото не прочитались:', e);
@@ -11997,8 +12009,12 @@ async function зібратиОбразиП(){
              помилок JSON-ом), і просить ще раз. Далі — запасний образ коду, і він
              названий у діагнозі, а не взятий мовчки. */
           if ((в3.вибір||{}).повторний_виклик){
-            ЗБ.діагноз.push('hand_' + рука + ' · choice_not_schema · schema=VYBIR_V1 · errors='
-              + ((в3.вибір.помилки||[]).map(п=>(п.де||'') + '=' + (п.що||'')).join(' | '))
+            /* ВИБІР-3 (рядок 1040): образ обрано, але його гейт не прийнято полем `прийнято` —
+               той самий один повтор, з адресою гейтів, замість чужого образу на картці */
+            ЗБ.діагноз.push('hand_' + рука + (в3.вибір.названо
+              ? ' · choice_gates_not_accepted · outfit=' + в3.вибір.названо + ' · why=' + (в3.вибір.чому_відмова || '')
+              : ' · choice_not_schema · schema=VYBIR_V1 · errors='
+                + ((в3.вибір.помилки||[]).map(п=>(п.де||'') + '=' + (п.що||'')).join(' | ')))
               + ' · retry=1');
             викликів += 1;
             const ст3б = станОбриву();
@@ -12011,6 +12027,10 @@ async function зібратиОбразиП(){
           const вб = в3.вибір || {};
           if (вб.замінено) ЗБ.діагноз.push('hand_' + рука + ' · choice_rejected · why='
             + (вб.чому_відмова || 'unspecified') + ' · taken_outfit=' + вб.замінено);
+          if ((вб.прийнято||[]).length) ЗБ.діагноз.push('hand_' + рука + ' · choice_gates_accepted · outfit='
+            + (вб.обрано || вб.названо) + ' · rules=' + вб.прийнято.map(п=>п.правило).join(','));
+          for (const п of (вб.прийнято_знехтувано||[]))
+            ЗБ.діагноз.push('hand_' + рука + ' · accept_not_taken · finding=' + п.знахідка + ' · why=' + п.чому);
           for (const з of (вб.знехтувано||[]))
             ЗБ.діагноз.push('hand_' + рука + ' · remove_not_done · item=' + з.річ + ' · why=' + з.чому);
           /* ГЕЙТ ВИБОРУ — З ПОЛІВ КОДУ, А НЕ З ЛІЧБИ РЕЧЕЙ (18.09.2026).
