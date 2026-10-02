@@ -401,12 +401,14 @@ def _випадок_кодами(пак, дріт):
     припущення коду, а не її слова», НГ-4); як «її намір» він не йде. На шести живих сценах 02.10 він
     стояв у кожному «case», і кожне «чому» вибору казало «most conventional»."""
     вип = ((пак.get("пакет") or {}).get("випадок") if isinstance(пак.get("пакет"), dict) else None)
-    if not (isinstance(вип, dict) and вип):
-        return дріт.get("case")
-    return {к: v for к, v in _Д.випадок(вип, дріт.get("day")).items()
+    # ЇЇ-ВИБІР (рядок 1413): схема, яку вона обрала пальцем, — її явний вибір, і ремонт із вибором
+    # бачать його в «case» поруч із наміром (`міст_пакет`: `_схема_її`); схеми стилістки чи рангу тут нема
+    її = {"palette_scheme": пак["_схема_її"]} if пак.get("_схема_її") else {}
+    вих = ({к: v for к, v in _Д.випадок(вип, дріт.get("day")).items()
             if v != _ВМ_в.UNKNOWN
             and not (к == "intent" and v == "conventional" and not str(вип.get("намір_слова") or "").strip())
-            } or дріт.get("case")
+            } if isinstance(вип, dict) and вип else None) or дріт.get("case")
+    return dict(вих, **її) if її and isinstance(вих, dict) else вих
 
 
 def _на_дріт(в, обʼєкт, поле, сід_руки, крок, *ще, образи=False):

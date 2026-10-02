@@ -599,6 +599,9 @@ def промпт_вибору(образи, випадок=None, без_фото
         _ЗП.Поле("case.language_model_note", "the language model's note on her words about the event, "
                                              "when they are hard to read without context",
                  як="it explains her words and does not replace them: where they differ, her words win"),
+        _ЗП.Поле("case.palette_scheme", "the palette scheme she chose herself on the palette screen: «scheme», "
+                                        "and «families» — its colour families, each meant for its own large item",
+                 як="her explicit choice: the code's remarks about this scheme carry her wish, not the code's"),
         _ЗП.Поле("day", "her day as facts"),
         _ЗП.Поле("verdict", "your outfits and what the code noticed in each: «your_outfit» — its items, caption "
                             "and «day» (your sentence about her day in it); «structure» — blockers; «checklist» — "
@@ -627,6 +630,9 @@ def промпт_вибору(образи, випадок=None, без_фото
         "A finding with «register» «gate» stops the outfit unless you accept it: if the outfit you choose has "
         "gates, accept each of them in «accept» with why it serves her here. That is your weighed decision and "
         "not a reason to pass over the outfit.",
+        "When «case» has «palette_scheme», she chose that scheme herself: an outfit whose large items carry its "
+        "families answers her own choice. Pass over such an outfit only when her occasion or day clearly asks for "
+        "it; accepting a gate about her scheme needs a reason stronger than her own choice.",
         "Do not choose an outfit with blockers in «structure» while there is one without them.",
         "Do not rewrite the outfit: its only allowed change is «remove».",
     ),
