@@ -857,7 +857,7 @@ def _її_речі(речі):
 # вечір у назві події модель розуміє тим самим ходом; години (`hour`) це не стосується — число
 # лише з її слів.
 _БЕЗ_ЦИТАТИ = ("event", "mood", "question", "question_about", "rest", "quotes", "formality",
-               "reserved_colour", "open_zones", "part_of_day", "stylist_note")
+               "reserved_colour", "open_zones", "part_of_day", "stylist_note", "minute")
 _РЕЧІ_З_ЦИТАТОЮ = ("wants", "vetoes", "retract", "own_items", "beliefs")
 
 
@@ -971,11 +971,18 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     для_числа = lambda ч, поле, код: ч if ч is not None else _ВМ.ключ(поле, код)
     об["година"] = для_числа(в.get("hour"), "part_of_day", в.get("part_of_day"))
     об["темп_c"] = для_числа(в.get("temperature_c"), "weather_feel", в.get("weather_feel"))
+    # ХВИЛИНИ (рядки 933/1135): число `година` ціле, бо рахунки частини дня, світла й погоди йдуть
+    # годинами, а хвилини їдуть окремим полем `хвилини` лише до показу. Без години з її слів
+    # (`hour` не пройшов сторожа) хвилини нічого не значать і не беруться; нова година без
+    # хвилин ходу скидає старі.
+    об["хвилини"] = в.get("minute") if в.get("hour") is not None else None
     об["тривалість_год"] = в.get("duration_h")
     об["ноги_вище_см"] = в.get("legs_above_cm")
     for ім in ("година", "темп_c", "тривалість_год", "ноги_вище_см"):
         if об[ім] is None and є(досі.get(ім)):
             об[ім] = досі[ім]
+    if об["хвилини"] is None and в.get("hour") is None and об["година"] == досі.get("година") and є(досі.get("хвилини")):
+        об["хвилини"] = досі["хвилини"]
     # ── ОШАТНІСТЬ — ЧИСЛО МОВНОЇ МОДЕЛІ ЗАВЖДИ (НП-в крок 2, принцип власника 01.10) ──────
     # Доти смугу давали три джерела: її слова (`formality` з цитатою), смуга події без коду
     # (`event_formality`) і — коли обох нема — пресет плитки в коді (довідник видів, знято в НП-в).
@@ -1502,6 +1509,8 @@ _ПОЛЯ_EN = {
     "activity": "what she will do there",
     "surface": "what is under her feet",
     "hour": "start hour on a 24-hour clock",
+    "minute": "minutes of the start time, only when she names them with the hour (19:30 — 30; half past "
+              "seven in the evening — 30); never without \"hour\"",
     "part_of_day": "part of the day, when no hour is named: from her words, or when the event or a tile "
                    "in \"chosen\" names it or usually takes it (an evening reception, a theatre — evening)",
     "temperature_c": "air temperature, °C",
@@ -1585,7 +1594,7 @@ def _умови_тем():
         "temperature": ("how many degrees it will be", надворі),
         "jewelry": ("which jewellery she wants with THIS look: gold, silver, pearls, ethnic or none",
                     "the occasion is not sport"),
-        "register": ("the style she dresses in: classic, sporty, boho, minimalism and so on", "always"),
+        "register": ("the style she wants THIS look in: classic, sporty, boho, minimalism and so on", "always"),
     }
 
 
@@ -1651,7 +1660,9 @@ def _коди_розмови():
     # МОВА-1 (02.10): `part_of_day` — службове, як ці два, але доти його рядка тут не було: модель не
     # бачила ні опису, ні кодів, і «вдень», «по обіді», «на обід» без години губились (проба
     # `мова1_нечіткі.py`: 0 з 5 таких випадків).
-    for ім in ("reserved_colour", "open_zones", "part_of_day"):
+    # `minute` (рядки 933/1135) — службове так само: стоїть при `hour`, цитати не потребує, бо без години
+    # з її слів шов його не бере (`паспорт_з_шару`).
+    for ім in ("reserved_colour", "open_zones", "part_of_day", "minute"):
         р.append("- %s — %s; %s; without quote" % (ім, _ПОЛЯ_EN[ім], _тип_en(поля[ім])))
     р.append("Advice topics — code: what to invite her to tell · when the topic applies (after your "
              "update, and only while the passport does not know it):")
@@ -1764,8 +1775,12 @@ def _коди_розмови():
     "direct question, and \"ask_code\" is that code. Nothing else is required: never say that the looks "
     "cannot be put together.",
     # П.9 (Р-3, 20.09): драпіровка — лише профіль; про прикраси — лише «які з цим образом».
+    # 936: «в якому стилі зазвичай одягаєшся» — звичка людини, тобто профіль; у розмові про цей вихід
+    # запрошення стосується лише цього виходу й цього образу.
     "Never ask her what suits her face (metal, white, neutrals): that is her profile. About jewellery — "
-    "only which jewellery she wants with this look.",
+    "only which jewellery she wants with this look. Never ask how she usually dresses, her habits, her "
+    "wardrobe or her taste in general: that is her profile too. An invitation is only about THIS outing and "
+    "THIS look, and the \"register\" topic asks which style she wants for this look.",
     # Проєкт нагоди §1.4.5: конфесію й траур проактивно не питати (`profile.ТРАУР_ПОЛІТИКА`).
     "Never ask about her faith, a religious service, mourning or her role at the event.",
 )
@@ -1934,6 +1949,8 @@ def плитки_кодами(сценарій):
     for ключ, поле in (("година", "hour"), ("темп_c", "temperature_c")):
         if _є(с.get(ключ)) and ключ not in типові and isinstance(с.get(ключ), (int, float)):
             вих[поле] = с[ключ]
+    if "hour" in вих and isinstance(с.get("хвилини"), int) and 0 < с["хвилини"] < 60:
+        вих["minute"] = с["хвилини"]
     мк = _ПН.макіяж_канон(с.get("макіяж"))
     if isinstance(мк, dict) and _ВМ.код("makeup_level", мк.get("рівень")):
         вих["makeup"] = {"level": _ВМ.код("makeup_level", мк.get("рівень"))}
@@ -2118,20 +2135,29 @@ def суд_частин(частини, дозволені, обовʼязков
         else:
             шматки.append(ask)
     бракує = [к for к in обовʼязкове if not (ask and ч.get("ask_code") == к)]
-    теми, invite = list(ч.get("invite_topics") or []), ч.get("invite")
-    if invite or теми:
-        чому = ("required_this_turn" if обовʼязкове else "no_topics" if not теми
+    # ОДНА НЕДОЗВОЛЕНА ТЕМА НЕ ЗНІМАЄ ДОЗВОЛЕНИХ (рядок 1001): доти запрошення на [register, jewelry,
+    # movement] при дозволених [jewelry, register] відкидалось цілим, `поради_дані` лишались порожні.
+    # Тепер недозволене відкидається поіменно (запис у `відкинуто`), дозволене лишається; цілим
+    # запрошення відкидається, лише коли дозволених не лишилось.
+    всі_теми, invite = list(ч.get("invite_topics") or []), ч.get("invite")
+    теми = [т for т in всі_теми if т in дозволені]
+    недозволені = [т for т in всі_теми if т not in дозволені]
+    if invite or всі_теми:
+        чому = ("required_this_turn" if обовʼязкове else "no_topics" if not всі_теми
                 else "no_invite_text" if not invite
-                else "too_many_topics" if len(теми) > _ПН.ПОРАД_ЗА_ХІД_МАКС
-                else "topic_not_allowed" if any(т not in дозволені for т in теми)
+                else "too_many_topics" if len(всі_теми) > _ПН.ПОРАД_ЗА_ХІД_МАКС
+                else "topic_not_allowed" if not теми
                 else "question_in_invite" if _ПИТАННЯ.search(invite)
                 else "too_many_sentences" if len([р for р in _РЕЧЕННЯ.split(invite) if р.strip()]) > _ПН.ПОРАДА_РЕЧЕНЬ_МАКС
                 else None)
         if чому:
-            відкинуто.append(dict(частина="invite", чому=чому, теми=теми,
+            відкинуто.append(dict(частина="invite", чому=чому, теми=всі_теми,
                                   дозволені=list(дозволені)))
             теми = []
         else:
+            if недозволені:
+                відкинуто.append(dict(частина="invite_topics", чому="topic_not_allowed", теми=недозволені,
+                                      лишено=теми, дозволені=list(дозволені)))
             шматки.append(invite)
     return " ".join(шматки).strip(), теми, відкинуто, бракує
 
