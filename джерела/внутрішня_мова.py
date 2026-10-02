@@ -1743,10 +1743,17 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "add_layer_or_strong_accessory": "add one layer — a jacket, a cardigan or a vest — or one strong "
                                      "accessory: a belt, a scarf, a striking piece of jewellery",
     "focus_count_over_ceiling": "the outfit has more focuses than the ceiling: equal focuses put each other "
-                                "out, and the outfit reads busy (values: count — how many focuses, ceiling — "
-                                "the ceiling)",
-    "keep_one_focus_quiet_rest": "keep one focus and quieten the rest: lower chroma, a smaller print scale, a "
-                                 "smoother texture in the same slot",
+                                "out, and the outfit reads busy; one colour repeated in several items is one "
+                                "focus (an echo), and a texture alone is not a focus (values: count — how many "
+                                "focuses, ceiling — the ceiling; keep — slot codes of the focus declared by the "
+                                "palette scheme or the focus zone, quiet — slot codes of the other focuses, "
+                                "keep_by — who declared it: scheme, zone or deliberate — your own declared move)",
+    "keep_one_focus_quiet_rest": "keep one focus and quieten the rest with a quieter item in the same slot: lower "
+                                 "chroma, a smaller print scale; not by removing every focus — the outfit keeps one",
+    "keep_declared_focus_quiet_others": "keep the declared focus as it is and quieten only the other focuses with "
+                                        "a quieter item in the same slot; an echo of the kept colour is not a "
+                                        "second focus (values: keep — slot codes to keep, quiet — slot codes to "
+                                        "quieten)",
     "sprezzatura_gestures_over_one": "there is more than one gesture of studied carelessness: the second "
                                      "takes the mark of choice off the first, and they read as untidiness "
                                      "(values: count — how many gestures)",
