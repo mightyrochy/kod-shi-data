@@ -1562,11 +1562,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "range limit for her level; on_windows — true when the judgement "
                                         "rests on the windows of colour words, not on a measurement)",
     "separate_lightness_or_one_loud": "separate the colours' lightness, or keep one loud",
-    "accent_not_from_eyes": "the slot carries the accent, and its hue is not from the family of her eyes "
-                            "(values: slot — slot code, hue — the accent's hue in degrees, eye_arcs — the hue "
-                            "arcs of her eyes)",
-    "accent_in_eye_family": "take the accent from the family of her eyes in this slot (values: slot — slot "
-                            "code, eye_arcs — the hue arcs of her eyes)",
+    "accent_not_from_eyes": "the slot carries the accent, and its hue is not from the family of her eyes; an "
+                            "eye-family accent is the first move in order, not a requirement (values: slot — "
+                            "slot code, hue — the accent's hue in degrees, eye_arcs — the hue arcs of her eyes)",
     "complementary_pair_not_muted": "the outfit is led by a pair of opposite colours, and there are more loud "
                                     "colours than the move allows: one of the two should be muted or small "
                                     "(values: hue_gap — the hue spread in degrees, loud — how many are loud, "
@@ -1645,9 +1643,6 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "budget even though there is no area behind it (values: slot — slot "
                                       "code, chroma — the accessory's chroma, loud_from — the chroma from "
                                       "which a colour counts as loud)",
-    "quieter_accessory_or_quieter_surface": "if the outfit already has a loud surface, take this accessory "
-                                            "quieter, or keep it as the accent and take the loudness off the "
-                                            "larger surface",
     "bag_format_at_scale_edge": "the bag's format is at the edge of the scale, not its middle: both an "
                                 "oversized and a demonstratively small one upset the proportion alike "
                                 "(values: format — large or small)",
@@ -2295,11 +2290,6 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                                    "natural waist, not the hips",
     "accent_surfaces_exact_match": "two accent surfaces match exactly (dE): they pull the eye sideways, not "
                                    "up to the face",
-    "accent_surfaces_same_colour_word": "two accent surfaces are named by the same colour word by two "
-                                        "different shops (values: colour — its colour code): they read as one "
-                                        "colour and pull the eye sideways, not up to the face",
-    "secondary_colour_or_neutral_or_declared_column": "second item in the first one's secondary colour or a "
-                                                      "contrasting neutral; or a declared colour column",
     "sole_glued_not_resoleable": "glued sole: cannot be resoled, so the price spreads over a shorter life",
     "prefer_stitched_when_equal": "when two pairs fit equally, take the stitched one",
     "wear_in_allowed_state": "wear it in one of the allowed states",

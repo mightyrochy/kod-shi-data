@@ -182,7 +182,8 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         "words — and so that their ideas («pole») differ; then improve them. Do not choose by how many remarks "
         "an outfit has or how mild they are: an outfit that answers her better stays with its remarks.",
         "A remark (a finding without «register» «gate») does not by itself drop an outfit or undo a move you "
-        "declared: fix it, or keep the item and say why in «done».",
+        "declared: fix it, or keep the item and say why in «done». A finding without «fix» is information about "
+        "the outfit and asks for no change.",
         "When «case» has «palette_scheme», she chose that scheme herself: keep its families on the large items "
         "of the outfits that carry them, and do not repair her scheme away into neutrals; give a missing family "
         "a large item from «showcase» where one fits her occasion.",
