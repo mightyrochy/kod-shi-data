@@ -117,7 +117,7 @@ def невідомо(v, коди=()):
         "cafe": "кафе", "bar": "бар", "restaurant_casual": "ресторан_районний",
         "restaurant_upscale": "ресторан_високий", "fine_dining": "fine_dining", "club": "клуб",
         "house_party": "домашня_вечірка", "festive_dinner": "святкова_вечеря",
-        "office_corporate": "офіс_корпоративний", "office_creative": "офіс_креативний",
+        "office": "офіс", "office_corporate": "офіс_корпоративний", "office_creative": "офіс_креативний",
         "job_interview": "співбесіда", "conference": "конференція", "presentation": "презентація",
         "theatre": "театр", "opera_premiere": "опера_прем'єра", "museum": "музей",
         "vernissage": "вернісаж", "school_parents_meeting": "школа_батьківські",

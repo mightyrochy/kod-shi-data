@@ -1481,7 +1481,8 @@ _ПРИКЛАДИ_МІСЦЬ_EN = {
     "школа_батьківські": "a school parents' meeting", "театр": "a theatre or a concert", "клуб": "a club",
     "церква_служба": "a church service", "конференція": "a conference", "вернісаж": "a vernissage",
     "святкова_вечеря": "a festive dinner", "похорон": "a funeral", "ресторан_високий": "an upscale restaurant",
-    "опера_прем'єра": "a premiere or a gala night (theatre, opera)", "офіс_корпоративний": "a corporate office",
+    "опера_прем'єра": "a premiere or a gala night (theatre, opera)", "офіс": "an office (kind not named)",
+    "офіс_корпоративний": "a corporate office (strict dress code)",
     "співбесіда": "a job interview", "презентація": "a presentation", "весілля_денне": "a daytime wedding",
     "fine_dining": "fine dining", "весілля_вечірнє": "an evening wedding"}
 
@@ -1669,7 +1670,8 @@ def _коди_розмови():
             # Рядки 238 і 474: підпис плитки «Офіс» на одному з двох офісів не робить цей код загальним
             if ім == "place":
                 р += ["  · %s — kinds of one place, %s: one of them only when her words say which kind; "
-                      "her words name only the %s — no place" % (" | ".join(коди), рід, рід)
+                      "her words name only the %s — %s" % (" | ".join(коди), рід, рід,
+                                                          рід if _ВМ.ключ("place", рід) else "no place")
                       for рід, коди in _ПН_.МІСЦЯ_ПІДВИДИ.items()]
     р.append("Items — lists of objects; each object has \"quote\" — the fragment of her words about this "
              "item, copied letter for letter — and only the attributes she named:")
