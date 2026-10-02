@@ -1685,10 +1685,6 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "shoes_to_leg_or_bottom_tone": "match the pair to the leg (a nude in the tone of the skin, or tights in "
                                    "the tone of the pair) so the line continues from the toes, or to the "
                                    "bottom, for a column of colour in the lower third",
-    "high_cut_quiet_edge_keep": "the pair's cut is high, but the edge is matched by lightness to the skin or "
-                                "the tights, so it barely draws a line across the foot: keep the pair "
-                                "(values: dl — the lightness difference between the edge and the neighbouring "
-                                "surface, step — the step threshold, neighbour — skin or tights)",
     "high_cut_contrasting_edge": "the pair's cut is high and contrasts with the skin or the tights, so the "
                                  "edge draws a line across the foot twice: drop one of the two levers "
                                  "(values: dl — the lightness difference between the edge and the "
@@ -1700,8 +1696,6 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "cut_hidden_by_dense_tights": "under dense tights the pair's edge is not visible, so the cut-line axis is "
                                   "off (values: den — the tights' denier, den_band — the day's denier band "
                                   "from and to)",
-    "low_cut_keeps_leg_line": "the pair's cut is low, so the line of the leg starts at the toes: keep the "
-                              "pair",
     "high_cut_breaks_leg_line": "high cut at mid-foot or ankle cuts the leg line",
     "lower_cut_same_formality_or_nude_edge": "a pair with a lower cut within the same formality interval, or "
                                              "match the edge by lightness to the skin or the tights",
