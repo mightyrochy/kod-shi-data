@@ -792,7 +792,13 @@ def _її_речі(речі):
 # речі), а код звіряє лише одне — що цей уривок справді є в її словах ходу (механіка
 # `цитата_тримає` з #311: підрядок, без словника). Поле без такої цитати в паспорт не йде,
 # і це видно рядком формату #309 у `не_взято_кодом` і в записі виклику шару.
-_БЕЗ_ЦИТАТИ = ("event", "mood", "question", "question_about", "rest", "quotes", "event_formality")
+# `reserved_colour` і `open_zones` (НП-в) — норма події, яку модель розуміє з події, як ошатність:
+# гостя на весіллі не каже «біле не моє», а храм не каже «плечі закрити» — цитати нема й не буде.
+# `part_of_day` (НП-в5, рядок 522 (3)) — так само: «Офіційний вечір» — плитка, а не її слова, і
+# вечір у назві події модель розуміє тим самим ходом; години (`hour`) це не стосується — число
+# лише з її слів.
+_БЕЗ_ЦИТАТИ = ("event", "mood", "question", "question_about", "rest", "quotes", "formality",
+               "reserved_colour", "open_zones", "part_of_day", "stylist_note")
 _РЕЧІ_З_ЦИТАТОЮ = ("wants", "vetoes", "retract", "own_items", "beliefs")
 
 
@@ -852,8 +858,6 @@ def _тримається(в, слова):
                     рядки.append(вигадка_рядком("%s[%d]" % (к, і), {x: y for x, y in р.items() if x != "quote"}, ц))
             if лишити:
                 вих[к] = лишити
-        elif к == "event_formality" and not в.get("event"):
-            рядки.append(вигадка_рядком(к, v, None, "not_taken: no_event_in_turn"))
         elif к in _БЕЗ_ЦИТАТИ or цитата_тримає_(цитати.get(к), слова):
             вих[к] = v
         else:
@@ -896,8 +900,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         типова = ім == "нагода" and джерела_досі.get("нагода") == _ПН.ТИПОВА_НАГОДА_РЕЧІ
         об[ім] = к if к is not None else (досі.get(ім) if є(досі.get(ім)) and not типова else None)
     об["подія"] = _текст(в.get("event")) or _текст(досі.get("подія"))
-    # ВИМІРИ НАГОДИ З РОЗМОВИ (НГ-4): вид, найближчий вид, частини дня, роль, аудиторія, віра,
-    # зарезервований колір, обсяг і що з цього написано. Коди — тими самими переліками, що
+    # ВИМІРИ НАГОДИ З РОЗМОВИ (НГ-4; після НП-в — лише зарезервований колір). Коди — тими самими переліками, що
     # схема; нове значення ходу замінює давнє, чого хід не назвав — лишається з паспорта досі.
     # Розбір і перенос між ходами — `паспорт_нагоди.паспорт_з_json`, ті самі ключі.
     for ім, (поле, перелік, список) in _ПН.ПОЛЯ_ВИМІРІВ_РОЗМОВИ.items():
@@ -914,24 +917,21 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     for ім in ("година", "темп_c", "тривалість_год", "ноги_вище_см"):
         if об[ім] is None and є(досі.get(ім)):
             об[ім] = досі[ім]
-    # ── ПОДІЯ БЕЗ КОДУ НЕ ГИНЕ І СУДИТЬ (М-1, В-1/В-6) ───────────────────────────
-    # «Для походу на концерт»: коду нагоди нема → `подія` жила лише рядком для моделей, а суд
-    # її речей стояв проти «щоденне» [3, 4] і казав «Нагоди ти не назвала». Подія несе свою
-    # смугу (`event_formality`), і вона стає смугою сценарію рівно тоді, коли жодне
-    # визначальне поле (нагода, місце, дрес-код, її ошатність — зі слів чи з форми) смуги не
-    # дає: слово жінки й плитка переважають оцінку перекладача. Смуга з події позначена
-    # `джерело_полів.ошатність = «подія»` і наступним ходом не видає себе за її слова.
+    # ── ОШАТНІСТЬ — ЧИСЛО МОВНОЇ МОДЕЛІ ЗАВЖДИ (НП-в крок 2, принцип власника 01.10) ──────
+    # Доти смугу давали три джерела: її слова (`formality` з цитатою), смуга події без коду
+    # (`event_formality`) і — коли обох нема — пресет плитки в коді (довідник видів, знято в НП-в).
+    # Тепер одне: мовна модель ставить `formality` щоходу як своє розуміння її слів, події й
+    # обраних плиток, і саме це число стає смугою сценарію (`формальність.смуга_ошатності`).
+    # Модель цього ходу числа не дала — лишається попереднє; не було й попереднього — смуги
+    # нема («невідомо»), і код пулу не чистить.
     смуга = lambda ф: [ф["from"], ф["to"]] if isinstance(ф, dict) and "from" in ф else None
-    ош_її = смуга(в.get("formality")) or (досі.get("ошатність") if джерела_досі.get("ошатність") != "подія" else None)
-    ош_події = смуга(в.get("event_formality")) if в.get("event") else досі.get("ошатність_події")
+    ош = смуга(в.get("formality")) or досі.get("ошатність")
     визначальне = any(об.get(к) for к in ("нагода", "місце", "дрес_код")) or any(
         (сценарій or {}).get(к) not in (None, "") for к in _СЦ.ВИЗНАЧАЛЬНІ)
-    з_події = bool(ош_події) and not ош_її and not визначальне
-    # ПОДІЯ БЕЗ КОДУ Й БЕЗ СМУГИ (Ч-5): «звичайного дня» їй код більше не ставить
-    # (`паспорт_нагоди.подія_названа`), тож де вона буде — обовʼязкове питання (`event_place`), а
+    # ПОДІЯ БЕЗ КОДУ Й БЕЗ СМУГИ (Ч-5): де вона буде — обовʼязкове питання (`event_place`), а
     # звіт власника каже, що саме недодав перекладач, а не мовчить
-    подія_без_смуги = bool(_текст(в.get("event"))) and not ош_події and not ош_її and not визначальне
-    об["ошатність"] = ош_її or (ош_події if з_події else None)
+    подія_без_смуги = bool(_текст(в.get("event"))) and not ош and not визначальне
+    об["ошатність"] = ош
     мк = в.get("makeup") or {}
     об["макіяж"] = ({"рівень": _ВМ.ключ("makeup_level", мк.get("level")), "губи": мк.get("lips_hex")}
                     if мк else досі.get("макіяж"))
@@ -1006,16 +1006,17 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     if бажання_коди:
         п["бажання_коди"] = бажання_коди
     п["перекладено_шаром"] = True
-    if з_події:
-        п.setdefault("джерело_полів", {})["ошатність"] = "подія"
-    if ош_події:
-        п["ошатність_події"] = ош_події
     # РЕШТА СКАЗАНОГО (М-1, В-5): те, що не лягло в жодне поле, не гине — їде моделям рядком
     # випадку (`паспорт_нагоди.паспорт_рядком`), її мовою, з позначкою
     решта = [_текст(x) for x in list(досі.get("решта") or []) + [в.get("rest")]]
     решта = list(dict.fromkeys(x for x in решта if x))[-6:]
     if решта:
         п["решта"] = решта
+    # ПОЯСНЕННЯ МОВНОЇ МОДЕЛІ СТИЛІСТЦІ (НП-в6): нове замінює давнє, хід без нього лишає давнє —
+    # як `подія`. Код його не читає: воно їде стилістці (`пакет_моделі.випадок_для_пакета`).
+    пояснення = _текст(в.get("stylist_note")) or _текст(досі.get("пояснення_мови"))
+    if пояснення:
+        п["пояснення_мови"] = пояснення
     if вигадки:
         п["не_взято_кодом"] = list(п.get("не_взято_кодом") or []) + вигадки
     if подія_без_смуги:
@@ -1389,44 +1390,35 @@ import збирач_промптів as _ЗП_Р
 # Рядки полів сценарію англійською (п.12). Коди — ті самі переліки схеми (`внутрішня_мова.
 # СЦЕНАРІЙ`); нагода й місце — з підписами плиток довідника: це слова екрана, за якими модель
 # кладе її слово в код (М-1, В-1).
+# ЩАБЛІ ШКАЛИ ОШАТНОСТІ ДЛЯ МОВНОЇ МОДЕЛІ (НП-в крок 2) — англійською за
+# `формальність.ФОРМАЛЬНІСТЬ_ЯКОРІ` (K-KOH-01): те саме число 1–10, яким код міряє речі
+# (`інтервал_формальності`), тож смуга з її числа й інтервал речі стоять на одній шкалі.
+_ЩАБЛІ_EN = ("1 loungewear at home, 2 athleisure, 3 jeans, T-shirt and sneakers, 4 neat casual, dark denim, "
+             "5 textured jacket, refined knit, loafers, 6 blazer with trousers, sheath dress, "
+             "7 suit without tie, cocktail dress, 8 business suit, 9 tuxedo, evening gown, "
+             "10 white tie, full evening dress")
 _ПОЛЯ_EN = {
     "occasion": "what kind of event it is",
     "place": "where she will be",
     "dress_code": "the dress code, when it is named",
     "event": "the event briefly, in her words",
-    "kind": "the kind of event; other — when no kind fits, and then \"like\" is required",
-    "like": "only with kind other: the listed kind closest to her event in dress and setting",
-    "parts": "the parts of one outing in order, when she named two or three (a ceremony, then a "
-             "banquet; work, then a date); each part is a kind code",
-    "role": "who she is at this event, from what she said about herself or about whose event it is: "
-            "guest — invited; close_family — a relative of the main people; main_person — the event is "
-            "about her (bride, birthday); host — she organises it; speaker — she presents or performs; "
-            "candidate — she is being assessed; worker — she is there for her job; mourner_close — the "
-            "deceased was her family or a close friend; acquaintance — she knew the deceased or the hosts "
-            "only a little",
-    "audience": "who will see her: conservative — bosses, elders, clergy or a formal family "
-                "circle; usual — friends, colleagues as usual",
-    "religious_place": "temple — she will be in a church, monastery, mosque or synagogue, or at a "
-                       "religious service or rite held there (a church wedding, a christening); "
-                       "written_rule_place — a place with a written dress rule (some monasteries, "
-                       "courts, a club with a posted rule)",
-    "reserved_colour": "a colour that belongs to another person at this event, when she says so; "
-                       "near_white — white and ivory belong to the bride",
-    "volume": "how many looks: travel_day — one look for a whole day on the road; one_look — one "
-              "look",
-    "written": "which of these fields she says are written in an invitation or the place's rules",
+    "reserved_colour": "a colour that belongs to another person at this event: near_white — white, "
+                       "ivory and cream belong to the bride when she is not the bride herself",
+    "open_zones": "how many body zones (neckline or back, legs, shoulders) it is appropriate to show "
+                  "at this event: none — church, funeral, interview and other reserved settings; one; two",
     "setting": "indoors, outdoors or mixed",
     "duration_h": "how many hours the event lasts",
-    "movement": "whether she will sit, walk or walk a lot",
+    "movement": "whether she will sit, stand, walk, walk a lot, dance, kneel or do sport",
     "activity": "what she will do there",
     "surface": "what is under her feet",
     "hour": "start hour on a 24-hour clock",
-    "part_of_day": "part of the day, when no hour is named",
+    "part_of_day": "part of the day, when no hour is named: from her words, or when the event or a tile "
+                   "in \"chosen\" itself names it (an evening reception — evening)",
     "temperature_c": "air temperature, °C",
     "weather_feel": "the weather, when no number of degrees is named",
     "precipitation": "rain or snow",
-    "formality": "how dressy, only when she said it herself: 1 home, 3 café, 5 office or theatre by day, "
-                 "7 evening out, 9 ceremony",
+    "formality": ("how dressy this outing is, {from, to} on the 1–10 scale: always present, your estimate "
+                  "from her words, the event and \"chosen\" — %s" % _ЩАБЛІ_EN),
     "intent": "what matters most to her: comfort_first — comfort and freedom of movement; "
               "context_optimal — being appropriate to the event and its level; statement — she wants "
               "to impress; conventional — none of these",
@@ -1443,9 +1435,10 @@ _ПОЛЯ_EN = {
     "mood": "the mood of the look, her words",
     "own_items": "her own items described in words",
     "question": "her question, her words",
-    "event_formality": "the usual dressiness of the event she named, when no occasion or place code fits "
-                       "it: {from, to} on the same scale as formality",
     "rest": "whatever else her new message says that fits no field above, verbatim",
+    "stylist_note": "only when her words about the event are hard to read without context (a local custom, "
+                    "slang, irony, an event the stylist may not know): one or two sentences in English for "
+                    "the stylist on what she means; the stylist gets her own words too. Otherwise unknown",
 }
 _РЕЧІ_EN = {"slot": "part of the look", "item_type": "item type", "fabric": "fabric", "pattern": "pattern",
             "color_class": "colour class", "color_name": "colour name", "zone": "body zone she keeps covered",
@@ -1511,7 +1504,7 @@ _ОБОВʼЯЗКОВЕ_EN = {
     "event_place": ("she named the event, but where it is and how dressy it is are unknown: ask exactly "
                     "that and do not ask about the event again",
                     "the passport has an event, and neither it nor \"chosen\" has occasion, place, "
-                    "dress_code, formality or event_formality"),
+                    "dress_code or formality"),
 }
 assert set(_ОБОВʼЯЗКОВЕ_EN) == set(_ВМ.ОБОВʼЯЗКОВЕ)
 # Межа мовної моделі (п.3 наряду) — англійськими визначеннями кодів `внутрішня_мова.ПОТРЕБИ`.
@@ -1553,7 +1546,9 @@ def _коди_розмови():
     for ім, с in поля.items():
         if _група(ім, с) == "вільні":
             р.append("- %s — %s%s" % (ім, _ПОЛЯ_EN[ім], "; " + _тип_en(с) if с.get("type") == "array" else ""))
-    р.append("- event_formality — %s; without quote" % _ПОЛЯ_EN["event_formality"])
+    р.append("- formality — %s; without quote" % _ПОЛЯ_EN["formality"])
+    for ім in ("reserved_colour", "open_zones"):
+        р.append("- %s — %s; %s; without quote" % (ім, _ПОЛЯ_EN[ім], _тип_en(поля[ім])))
     р.append("Advice topics — code: what to invite her to tell · when the topic applies (after your "
              "update, and only while the passport does not know it):")
     р += ["- %s: %s · %s" % (к, про, коли) for к, (про, коли) in _умови_тем().items()]
@@ -1576,6 +1571,10 @@ def _коди_розмови():
     "\"update\" holds only what her new message changes: new fields and changed values. A new value "
     "replaces the old one; a wish or a limit from before that she takes back goes into \"retract\". "
     "Do not repeat fields that do not change.",
+    # НП-в5 (рядок 520): плитка без розмови — хід без її листа; паспорт тоді потребує числа моделі.
+    "When her new message is unknown, she wrote nothing and only changed the tiles: \"update\" gives "
+    "formality, part_of_day, reserved_colour and open_zones for what \"chosen\" and the passport say now; "
+    "\"need\" is none and \"text\" is one short word.",
     # Сторож М-1 (`_тримається`): поле без дослівного уривка її слів код не бере — тепер уривок
     # може стояти в будь-якій її репліці розмови (`слова_розмови`).
     "Every field with a code or a number and every item stands on her words: \"quote\" is a fragment of "
@@ -1586,16 +1585,21 @@ def _коди_розмови():
     "not infer one field from another.",
     # М-1 В-1 і Ч-5: назва події — опора і для `event`, і для коду нагоди чи місця.
     "An event she names goes into \"event\" and also as the code of \"occasion\" or \"place\" whose label "
-    "names this event or one of its kind, with the name of the event as quote; when no such code exists — "
-    "\"event_formality\" instead.",
-    # НГ-4 (проєкт нагоди §1.3, §0.6–0.7): вид — для кожного виходу; незвичний — `other` + `like`,
-    # нового ключа модель не вигадує. Виміри — лише з її слів; «невідомо» — повноправне значення:
-    # код бере припущення з пресету виду чи `like` і називає його, збирання не блокується (п.9).
-    "Every outing she describes also gets \"kind\", with the name of the event as quote. When no kind "
-    "fits, \"kind\" is other and \"like\" is the listed kind closest to it in dress and setting, on the "
-    "same quote. role, audience, religious_place, reserved_colour, volume, parts and written come only "
-    "from her own words; one she did not mention stays absent — unknown is a valid value: the code "
-    "assumes it from the kind and names the assumption, and the looks are put together anyway.",
+    "names this event or one of its kind, with the name of the event as quote.",
+    # НП-в крок 2: ошатність — число мовної моделі ЗАВЖДИ, без цитати (її слова, подія, плитки);
+    # з нього код рахує смугу й відсів пулу, інших джерел смуги нема.
+    "\"formality\" is always present, without quote: how dressy this outing is, as you understand it "
+    "from all her words, the event and \"chosen\"; she said nothing about it — your best estimate.",
+    # НП-в (принцип власника 01.10: «код має знати те, що може точно порахувати»): видів,
+    # «найближчого виду», ролі, аудиторії, віри, обсягу й частин дня модель коду більше не дає —
+    # стилістка бере подію її словами. Зарезервований колір — рахівне (вето майже-білого).
+    "\"reserved_colour\" and \"open_zones\" are, like formality, your understanding of the event's "
+    "norm, without quote: set them when the event has such a norm (a wedding where she is a guest — "
+    "near_white; a church or a funeral — open_zones none); no norm — leave them absent: unknown is a "
+    "valid value, and the looks are put together anyway.",
+    # НП-в5 (рядок 522 (3)): вечір плитки «Офіційний вечір» — розуміння моделі, не таблиця коду.
+    "\"part_of_day\" may also go without quote when no hour is known and the event or a tile in \"chosen\" "
+    "itself names the part of the day (an evening reception — evening); otherwise leave it absent.",
     # П.14 і п.3 наряду: межа мовної моделі — кодами `need`.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
     "without her items, looks and photos. When \"need\" is not \"none\", do not answer the question in "
@@ -1620,11 +1624,8 @@ def _коди_розмови():
     # П.9 (Р-3, 20.09): драпіровка — лише профіль; про прикраси — лише «які з цим образом».
     "Never ask her what suits her face (metal, white, neutrals): that is her profile. About jewellery — "
     "only which jewellery she wants with this look.",
-    # Проєкт нагоди §1.4.5: конфесію й траур проактивно не питати (`profile.ТРАУР_ПОЛІТИКА`); роль —
-    # лише з її слів.
-    "Never ask about her faith, a religious service, mourning or her role at the event: write them only "
-    "from what she tells herself — whose event it is counts (her grandmother's funeral, her sister's "
-    "wedding).",
+    # Проєкт нагоди §1.4.5: конфесію й траур проактивно не питати (`profile.ТРАУР_ПОЛІТИКА`).
+    "Never ask about her faith, a religious service, mourning or her role at the event.",
 )
 
 СКЕЛЕТ_РОЗМОВИ = {
@@ -1681,12 +1682,11 @@ def _паспорт_прості():
     ОДНА ВІДПОВІДНІСТЬ НА СИСТЕМУ (рядок 279, НГ-4): доти тут стояв другий примірник таблиці
     `паспорт_нагоди.ПОЛЕ_ВИМІРУ`, і розбіжність стерегла лише проба. Тепер він виводиться з неї —
     порядок той самий, тож промпт байт у байт той, що доти. Поза ним — виміри розмови
-    (`ПОЛЯ_ВИМІРІВ_РОЗМОВИ`: їх `паспорт_кодами` пише окремо) і `рух`: ядро тримає три стани
-    (`movement`), а вимір — сім (`event_movement`, рядок 280)."""
+    (`ПОЛЯ_ВИМІРІВ_РОЗМОВИ`: їх `паспорт_кодами` пише окремо). Рух — один перелік `movement`
+    (НП-в, рядок 280), тож окремого зведення для нього нема."""
     import паспорт_нагоди as _ПН
     свої = set(_ПН.ПОЛЯ_ВИМІРІВ_РОЗМОВИ)
-    return tuple((ключ, "movement" if ключ == "рух" else перелік)
-                 for _, перелік, ключ in _ПН.ПОЛЕ_ВИМІРУ if ключ and ключ not in свої)
+    return tuple((ключ, перелік) for _, перелік, ключ in _ПН.ПОЛЕ_ВИМІРУ if ключ and ключ not in свої)
 
 
 _ПАСПОРТ_ЧИСЛА = (("година", "hour"), ("темп_c", "temperature_c"), ("тривалість_год", "duration_h"),
@@ -1722,6 +1722,8 @@ def паспорт_кодами(п):
             вих[поле] = п[ключ]
     if _є(п.get("подія")):
         вих["event"] = str(п["подія"])
+    if _є(п.get("пояснення_мови")):
+        вих["stylist_note"] = str(п["пояснення_мови"])
     for ключ, (поле, перелік, список) in _ПН.ПОЛЯ_ВИМІРІВ_РОЗМОВИ.items():      # НГ-4: те, що вона вже сказала
         if список and isinstance(п.get(ключ), list):
             коди = [к for к in (_ВМ.код(перелік, x) for x in п[ключ]) if к]
@@ -1730,11 +1732,8 @@ def паспорт_кодами(п):
         elif not список and _є(п.get(ключ)) and _ВМ.код(перелік, п[ключ]):
             вих[поле] = _ВМ.код(перелік, п[ключ])
     ош = п.get("ошатність")
-    if isinstance(ош, (list, tuple)) and len(ош) == 2 and дж.get("ошатність") != "подія":
+    if isinstance(ош, (list, tuple)) and len(ош) == 2:
         вих["formality"] = {"from": ош[0], "to": ош[1]}
-    ош_п = п.get("ошатність_події")
-    if isinstance(ош_п, (list, tuple)) and len(ош_п) == 2:
-        вих["event_formality"] = {"from": ош_п[0], "to": ош_п[1]}
     мк = п.get("макіяж") if isinstance(п.get("макіяж"), dict) else {}
     мк_к = {к: v for к, v in (("level", _ВМ.код("makeup_level", мк.get("рівень"))),
                              ("lips_hex", мк.get("губи") if _є(мк.get("губи")) else None)) if v}

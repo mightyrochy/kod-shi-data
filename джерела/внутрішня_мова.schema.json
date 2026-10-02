@@ -699,115 +699,6 @@
      ],
      "description": "подія коротко, її мовою"
     },
-    "kind": {
-     "description": "вид події; other — коли жоден вид не підходить",
-     "enum": [
-      "everyday",
-      "home",
-      "walk",
-      "work",
-      "interview",
-      "school",
-      "conference",
-      "gala",
-      "wedding",
-      "celebration",
-      "funeral",
-      "date",
-      "theatre",
-      "museum",
-      "church",
-      "sport",
-      "travel",
-      "other",
-      "unknown"
-     ]
-    },
-    "like": {
-     "description": "найближчий вид для незвичної події (kind=other)",
-     "enum": [
-      "everyday",
-      "home",
-      "walk",
-      "work",
-      "interview",
-      "school",
-      "conference",
-      "gala",
-      "wedding",
-      "celebration",
-      "funeral",
-      "date",
-      "theatre",
-      "museum",
-      "church",
-      "sport",
-      "travel",
-      "other",
-      "unknown"
-     ]
-    },
-    "parts": {
-     "description": "частини одного виходу по черзі, коли вона назвала дві-три (вінчання, потім банкет)",
-     "type": "array",
-     "items": {
-      "description": "вид частини",
-      "enum": [
-       "everyday",
-       "home",
-       "walk",
-       "work",
-       "interview",
-       "school",
-       "conference",
-       "gala",
-       "wedding",
-       "celebration",
-       "funeral",
-       "date",
-       "theatre",
-       "museum",
-       "church",
-       "sport",
-       "travel",
-       "other",
-       "unknown"
-      ]
-     },
-     "maxItems": 3
-    },
-    "role": {
-     "description": "хто вона на цій події, лише коли сама сказала",
-     "enum": [
-      "guest",
-      "close_family",
-      "main_person",
-      "host",
-      "candidate",
-      "speaker",
-      "worker",
-      "mourner_close",
-      "acquaintance",
-      "unknown"
-     ]
-    },
-    "audience": {
-     "description": "перед ким: conservative — начальство, старші, духовенство",
-     "enum": [
-      "usual",
-      "conservative",
-      "unknown"
-     ]
-    },
-    "religious_place": {
-     "description": "храм чи місце з письмовим правилом одягу",
-     "enum": [
-      "none",
-      "temple",
-      "written_rule_place",
-      "unknown"
-     ]
-    },
     "reserved_colour": {
      "description": "колір, що на цій події належить іншій особі",
      "enum": [
@@ -815,27 +706,14 @@
       "unknown"
      ]
     },
-    "volume": {
-     "description": "скільки образів: travel_day — один образ на переїзд",
+    "open_zones": {
+     "description": "скільки зон тіла (декольте чи спина, ноги, плечі) доречно відкрити на цій події",
      "enum": [
-      "one_look",
-      "travel_day",
+      "none",
+      "one",
+      "two",
       "unknown"
      ]
-    },
-    "written": {
-     "description": "поля, значення яких написано в запрошенні чи правилах місця",
-     "type": "array",
-     "items": {
-      "description": "поле",
-      "enum": [
-       "dress_code",
-       "religious_place",
-       "reserved_colour",
-       "unknown"
-      ]
-     },
-     "uniqueItems": true
     },
     "setting": {
      "description": "у приміщенні, просто неба чи змішано",
@@ -859,11 +737,15 @@
      ]
     },
     "movement": {
-     "description": "сидітиме, ходитиме чи багато ходитиме",
+     "description": "сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, ставатиме на коліна чи займатиметься спортом",
      "enum": [
       "sit",
+      "stand",
       "walk",
       "walk_a_lot",
+      "dance",
+      "kneel",
+      "sport",
       "unknown"
      ]
     },
@@ -972,7 +854,7 @@
        "const": "unknown"
       }
      ],
-     "description": "наскільки ошатно, коли вона сама це сказала: шкала 1–10 (1 дім, 3 кафе, 5 офіс чи театр удень, 7 вечірній вихід, 9 урочистість)"
+     "description": "наскільки ошатний цей вихід, шкала 1–10 (`формальність.ФОРМАЛЬНІСТЬ_ЯКОРІ`): мовна модель ставить завжди — з її слів, події й обраних плиток (НП-в крок 2)"
     },
     "intent": {
      "description": "намір: comfort_first — зручність і свобода руху понад усе; context_optimal — доречність і рівень події понад усе; statement — хоче вразити, заявити про себе; conventional — нічого з цього",
@@ -1124,34 +1006,6 @@
      ],
      "description": "питання, яке вона ставить стилістці"
     },
-    "event_formality": {
-     "oneOf": [
-      {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "from",
-        "to"
-       ],
-       "properties": {
-        "from": {
-         "type": "integer",
-         "minimum": 1,
-         "maximum": 10
-        },
-        "to": {
-         "type": "integer",
-         "minimum": 1,
-         "maximum": 10
-        }
-       }
-      },
-      {
-       "const": "unknown"
-      }
-     ],
-     "description": "звичний рівень ошатності події, яку вона назвала (event), коли її не позначає жоден код occasion чи place: шкала та сама, що в formality"
-    },
     "rest": {
      "oneOf": [
       {
@@ -1162,6 +1016,17 @@
       }
      ],
      "description": "решта її слів цього ходу, що не лягла в жодне поле вище, — дослівно, її мовою"
+    },
+    "stylist_note": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/free_text"
+      },
+      {
+       "const": "unknown"
+      }
+     ],
+     "description": "лише коли її слова про подію важко витлумачити без контексту (місцевий звичай, сленг, іронія, незвична подія): коротке пояснення для стилістки англійською, що вона має на увазі; інакше — невідомо"
     },
     "question_about": {
      "description": "про що її питання: app — про застосунок (екрани, кнопки, кроки, що робити далі); look — про її образ, речі, фото, стиль чи кольори",
@@ -5230,6 +5095,38 @@
           "description": "precipitation: closed shoes, no fabric soles, no suede or nubuck; materials afraid of water stay out of the outfit"
          },
          {
+          "const": "occasion_level",
+          "description": "the occasion's level of formality (values: level — home, everyday, neat, smart, evening, very_smart or ceremonial; up_to — its upper bound on the 1–10 formality scale; rules_out — what this occasion rules out: near_white — white and colours that read as white on photos (cream, pale yellow, pale blue), bright_and_light — bright and light colours; loudness_max — no colour louder than this, loudness = chroma C* × L*/50: deep wine or terracotta ≈ 23–32, bright red, fuchsia, cobalt or mustard ≈ 62–87)"
+         },
+         {
+          "const": "risk_direction",
+          "description": "when the occasion's level cannot be hit exactly, miss it in this direction (values: posture — half_step_over: half a step overdressed, a sign of respect; half_step_under_plus_detail: half a step underdressed plus one quality detail)"
+         },
+         {
+          "const": "level_breakers_up_to_4",
+          "description": "the level is held by fabric, finish and shoes, not by the item's name; at this level nothing is ruled out"
+         },
+         {
+          "const": "level_breakers_up_to_6",
+          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: sports shoes, sports knit, acid-washed denim"
+         },
+         {
+          "const": "level_breakers_up_to_7",
+          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: sneakers, T-shirt, a kimono cardigan as the outer layer, mules and flip-flops, matt suede in shoes"
+         },
+         {
+          "const": "level_breakers_up_to_8",
+          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: knit cardigan, kimono, mules, a block sandal of everyday look, matt cotton and suede, an everyday bag"
+         },
+         {
+          "const": "level_breakers_up_to_10",
+          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: everything daytime — cotton, knit, suede, open everyday shoes, cardigans"
+         },
+         {
+          "const": "high_occasion_floor",
+          "description": "the event's level starts from this number on the 1–10 formality scale: no item sits more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); shoes at the outfit's level or above (values: from)"
+         },
+         {
           "const": "weather_layers",
           "description": "the weather outside and the layers it asks for (values: temperature_c; layers — how many layers on the torso, a half is one more light removable layer; fabrics — fabric codes for this temperature; outer_at_formality — true when the outer layer is held to the outfit's formality too)"
          },
@@ -5892,8 +5789,12 @@
   },
   "movement": {
    "sit": "сидіти",
+   "stand": "стояти",
    "walk": "ходити",
-   "walk_a_lot": "багато ходити"
+   "walk_a_lot": "багато ходити",
+   "dance": "танцювати",
+   "kneel": "ставати на коліна",
+   "sport": "спорт"
   },
   "activity": {
    "children": "діти",
@@ -6386,15 +6287,6 @@
    "usual": "usual",
    "conservative": "conservative"
   },
-  "event_movement": {
-   "sit": "sit",
-   "stand": "stand",
-   "walk": "walk",
-   "walk_long": "walk_long",
-   "dance": "dance",
-   "kneel": "kneel",
-   "sport": "sport"
-  },
   "religious_place": {
    "none": "none",
    "temple": "temple",
@@ -6411,6 +6303,11 @@
   },
   "reserved_colour": {
    "near_white": "near_white"
+  },
+  "open_zones": {
+   "none": "none",
+   "one": "one",
+   "two": "two"
   },
   "recurrence": {
    "once": "once",

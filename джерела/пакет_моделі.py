@@ -475,6 +475,9 @@ import внутрішня_мова as _ВМ_П
                  як="they say more than the code: the outfit answers them"),
         _ЗП.Поле("case.her_other_words", "the rest of what she said, which no field of «case» carries",
                  як="it is part of her case"),
+        _ЗП.Поле("case.language_model_note", "the language model's note on her words about the event, "
+                                             "when they are hard to read without context",
+                 як="it explains her words and does not replace them: where they differ, her words win"),
         _ЗП.Поле("case.shoe_request", "what she asked for about heels: heel or no_heel",
                  як="her own request: take no shoes against it"),
         _ЗП.Поле("case.beliefs", "her own words about what she holds does not suit her",
@@ -1028,6 +1031,10 @@ def випадок_для_пакета(паспорт, рядок, сценар�
             в[_поле + "_слова"] = цитата_поля(паспорт, _поле)
     if [x for x in (паспорт or {}).get("решта") or [] if str(x).strip()]:
         в["решта"] = [str(x).strip() for x in паспорт["решта"] if str(x).strip()]
+    # ПОЯСНЕННЯ МОВНОЇ МОДЕЛІ (НП-в6, принцип власника 01.10): коли її слова про подію важко
+    # тлумачити, мовна модель пише стилістці коротко англійською, що вона має на увазі. Код не читає.
+    if str((паспорт or {}).get("пояснення_мови") or "").strip():
+        в["пояснення_мови"] = str(паспорт["пояснення_мови"]).strip()
     return в
 
 
@@ -1511,9 +1518,9 @@ def пакет_для_моделі(F, каталог, тіло, слоти=("в�
         пакет["слоти_випали"] = _випали
     обмеження = {"по_одній_на_слот": True}
     # ОБОВ'ЯЗКОВІ СЛОТИ ЗА НАГОДОЮ (16.09.2026): те саме, що блокує `структура_образу`.
-    # НГ-2: вимір паспорта (місце дім чи рух спорт), той самий, що в пулі й суді.
+    # НП-в: назване місце чи рух (`сумка_обовʼязкова`), той самий виклик, що в пулі й суді.
     import паспорт_нагоди as _ПН_сл
-    if _ПН_сл.ознаки_нагоди(сценарій)["сумка"]:
+    if _ПН_сл.сумка_обовʼязкова(сценарій):
         обмеження["обов'язкові_слоти"] = ["взуття", "сумка"]
         # ПАЛЬТОВА ЗОНА (рядок 146): нижче +10 °C — і верхній шар, коли цей пул має
         # чим його закрити; свідок той самий, що в блокера `структура_образу`.

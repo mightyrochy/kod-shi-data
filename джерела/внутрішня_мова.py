@@ -129,7 +129,13 @@ def невідомо(v, коди=()):
         "business_formal", "cocktail", "black_tie_optional", "black_tie", "creative_black_tie",
         "white_tie")},
     "setting": {"indoor": "приміщення", "outdoor": "просто неба", "mixed": "змішано"},
-    "movement": {"sit": "сидіти", "walk": "ходити", "walk_a_lot": "багато ходити"},
+    # РУХ — ОДИН ПЕРЕЛІК (НП-в, рядки 280 і 476). Доти ядро знало три стани (тут), а подія — сім
+    # (`event_movement`), і «стояти», «танцювати», «на коліна», «спорт» мовна модель поставити не
+    # могла: у схемі розмови був лише перший. Тепер перелік один — його ставить мовна модель, його
+    # слова проходить enum `протокол.ВИПАДОК` («рух»), його коди читає функціональна модель
+    # (`дріт_моделі`) і сумка (`паспорт_нагоди.РУХ_БЕЗ_СУМКИ`).
+    "movement": {"sit": "сидіти", "stand": "стояти", "walk": "ходити", "walk_a_lot": "багато ходити",
+                 "dance": "танцювати", "kneel": "ставати на коліна", "sport": "спорт"},
     # `photoshoot` (Ч-4): її фотографуватимуть — порада кличе теми мети й макіяжу, як на
     # вечір (`паспорт_нагоди.порада_коду`); доти це читала регулярка «фото|зйомк» у її словах
     "activity": {"children": "діти", "rough_ground": "нерівний_ґрунт", "stroll": "прогулянка",
@@ -317,21 +323,16 @@ def невідомо(v, коди=()):
     "role": {к: к for к in ("guest", "close_family", "main_person", "host", "candidate",
                             "speaker", "worker", "mourner_close", "acquaintance")},
     "audience": {к: к for к in ("usual", "conservative")},
-    # РУХ НА ПОДІЇ — ШИРШЕ, НІЖ `movement` ЯДРА. Ядро знає три стани («сидіти | ходити |
-    # багато ходити», `протокол.ВИПАДОК`), а події різнять ще стояти, танцювати, ставати на
-    # коліна й рухатись спортивно: саме цим театр відрізняється від церкви, а корпоратив від
-    # ювілею (§2.1). Другий перелік, а не розширений перший, — навмисно: код `stand` у полі
-    # `рух` паспорта не пройшов би enum ВИПАДКУ, тобто розширення першого зламало б протокол
-    # на першій же відповіді моделі. Зведення трьох станів ядра в цей перелік —
-    # `паспорт_нагоди.РУХ_ЯДРА_У_ВИМІР`; зведе обидва НГ-2, коли рух почнуть читати правила.
-    "event_movement": {к: к for к in ("sit", "stand", "walk", "walk_long", "dance", "kneel",
-                                      "sport")},
     "religious_place": {к: к for к in ("none", "temple", "written_rule_place")},
     "mourning_closeness": {к: к for к in ("none", "acquaintance", "close")},
     "look_volume": {к: к for к in ("one_look", "travel_day")},
     # Колір, що належить іншій особі цієї події (майже-біле на весіллі гості): окремо від її
     # власного `вето`, бо це звичай події, а не її межа. Її явне слово сильніше (п.9).
     "reserved_colour": {к: к for к in ("near_white",)},
+    # СКІЛЬКИ ВІДКРИТОГО ТІЛА ДОРЕЧНО НА ПОДІЇ (НП-в, рядок 522): зон — декольте чи спина, ноги,
+    # плечі. Ставить мовна модель своїм розумінням події (храм, похорон, співбесіда — none);
+    # число рахує код: ліміт K-KOH-10 (`формальність.ЗОНИ_ПОДІЇ`). Нема — типовий ліміт корпусу.
+    "open_zones": {к: к for к in ("none", "one", "two")},
     "recurrence": {к: к for к in ("once", "regular")},
     # ЩО НАПИСАНО, А НЕ СКАЗАНО (НГ-4): поле, значення якого стоїть у запрошенні чи в письмових
     # правилах місця. Сила `written` (§1.2) — над її словами як факт про подію; її бажання
@@ -446,20 +447,13 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     # Вид — код для стилістки й журналу; виміри — те, що код читатиме (НГ-2…НГ-9). Кожен —
     # парою з цитатою її слів (сторож `_тримається`); чого вона не сказала — поля нема, і це
     # «невідомо», а не здогад: решту код бере з пресету виду чи `like` як назване припущення.
-    "kind": _перелік("event_kind", "вид події; other — коли жоден вид не підходить"),
-    "like": _перелік("event_kind", "найближчий вид для незвичної події (kind=other)"),
-    "parts": _список(_перелік("event_kind", "вид частини"), "частини одного виходу по черзі, "
-                     "коли вона назвала дві-три (вінчання, потім банкет)", maxItems=3),
-    "role": _перелік("role", "хто вона на цій події, лише коли сама сказала"),
-    "audience": _перелік("audience", "перед ким: conservative — начальство, старші, духовенство"),
-    "religious_place": _перелік("religious_place", "храм чи місце з письмовим правилом одягу"),
     "reserved_colour": _перелік("reserved_colour", "колір, що на цій події належить іншій особі"),
-    "volume": _перелік("look_volume", "скільки образів: travel_day — один образ на переїзд"),
-    "written": _список(_перелік("written_field", "поле"), "поля, значення яких написано в "
-                       "запрошенні чи правилах місця", uniqueItems=True),
+    "open_zones": _перелік("open_zones", "скільки зон тіла (декольте чи спина, ноги, плечі) доречно "
+                                         "відкрити на цій події"),
     "setting": _перелік("setting", "у приміщенні, просто неба чи змішано"),
     "duration_h": _число("скільки годин триває подія", minimum=0),
-    "movement": _перелік("movement", "сидітиме, ходитиме чи багато ходитиме"),
+    "movement": _перелік("movement", "сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, "
+                                     "ставатиме на коліна чи займатиметься спортом"),
     "activity": _перелік("activity", "що робитиме: з дітьми, по нерівному ґрунту, прогулянка, "
                                      "багато пішки, фотосесія чи зйомка"),
     "surface": _перелік("surface", "що під ногами"),
@@ -472,8 +466,8 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
         "type": "object", "additionalProperties": False, "required": ["from", "to"],
         "properties": {"from": {"type": "integer", "minimum": 1, "maximum": 10},
                        "to": {"type": "integer", "minimum": 1, "maximum": 10}}}),
-        description="наскільки ошатно, коли вона сама це сказала: шкала 1–10 (1 дім, 3 кафе, "
-                    "5 офіс чи театр удень, 7 вечірній вихід, 9 урочистість)"),
+        description="наскільки ошатний цей вихід, шкала 1–10 (`формальність.ФОРМАЛЬНІСТЬ_ЯКОРІ`): "
+                    "мовна модель ставить завжди — з її слів, події й обраних плиток (НП-в крок 2)"),
     "intent": _перелік("intent", "намір: comfort_first — зручність і свобода руху понад усе; "
                                  "context_optimal — доречність і рівень події понад усе; "
                                  "statement — хоче вразити, заявити про себе; conventional — "
@@ -504,17 +498,18 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     "question": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="питання, яке вона ставить стилістці"),
     # ── ВНУТРІШНЯ МОВА НЕСЕ ВСЕ РЕЧЕННЯ, А НЕ ЛИШЕ ЗАКРИТИЙ ПЕРЕЛІК (М-1, В-1/В-5/В-6) ──
     # «Для походу на концерт»: коду нагоди нема → нагода гинула, а подія не судила нічого.
-    # Подія, якої не позначає жоден код, несе свою смугу (`event_formality`); сказане, що не
-    # лягло в жодне поле, — `rest`; питання — з темою для маршруту (`question_about`); кожне
+    # Сказане, що не лягло в жодне поле, — `rest`; питання — з темою для маршруту (`question_about`); кожне
     # поле з кодом чи числом — з дослівною цитатою її слів (`quotes`), яку звіряє шов.
-    "event_formality": dict(_АБО_НЕВІДОМО({
-        "type": "object", "additionalProperties": False, "required": ["from", "to"],
-        "properties": {"from": {"type": "integer", "minimum": 1, "maximum": 10},
-                       "to": {"type": "integer", "minimum": 1, "maximum": 10}}}),
-        description="звичний рівень ошатності події, яку вона назвала (event), коли її не позначає "
-                    "жоден код occasion чи place: шкала та сама, що в formality"),
     "rest": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="решта її слів цього ходу, що не лягла в жодне "
                                                      "поле вище, — дослівно, її мовою"),
+    # ПОЯСНЕННЯ МОВНОЇ МОДЕЛІ СТИЛІСТЦІ (НП-в6, принцип власника 01.10, сл. 4): «Модель стиліст все
+    # інше отримує у вигляді прямих слів людини, або у вигляді пояснень мовної моделі, якщо прямі
+    # слова мовна модель вважає складними для інтерпретації». Код поля не читає — воно їде стилістці
+    # поруч із її словами (`case.language_model_note`), англійською (CLAUDE.md п.12).
+    "stylist_note": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="лише коли її слова про подію важко "
+                         "витлумачити без контексту (місцевий звичай, сленг, іронія, незвична подія): "
+                         "коротке пояснення для стилістки англійською, що вона має на увазі; інакше — "
+                         "невідомо"),
     "question_about": _перелік("question_about", "про що її питання: app — про застосунок (екрани, "
                                                  "кнопки, кроки, що робити далі); look — про її образ, "
                                                  "речі, фото, стиль чи кольори"),
@@ -2545,6 +2540,33 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                "are a mistake here, not a style (values: temperature_c)",
     "precipitation_shoes_materials": "precipitation: closed shoes, no fabric soles, no suede or nubuck; "
                                      "materials afraid of water stay out of the outfit",
+    # Рядки нагоди брифа (рядок 532): рівень, напрям промаху, що вибиває зі щабля, нижня межа
+    # високої події — доти українськими реченнями в `occasion_rules` промпта складання.
+    "occasion_level": "the occasion's level of formality (values: level — home, everyday, neat, smart, evening, "
+                      "very_smart or ceremonial; up_to — its upper bound on the 1–10 formality scale; rules_out — "
+                      "what this occasion rules out: near_white — white and colours that read as white on photos "
+                      "(cream, pale yellow, pale blue), bright_and_light — bright and light colours; loudness_max — "
+                      "no colour louder than this, loudness = chroma C* × L*/50: deep wine or terracotta ≈ 23–32, "
+                      "bright red, fuchsia, cobalt or mustard ≈ 62–87)",
+    "risk_direction": "when the occasion's level cannot be hit exactly, miss it in this direction (values: "
+                      "posture — half_step_over: half a step overdressed, a sign of respect; "
+                      "half_step_under_plus_detail: half a step underdressed plus one quality detail)",
+    "level_breakers_up_to_4": "the level is held by fabric, finish and shoes, not by the item's name; at this "
+                              "level nothing is ruled out",
+    "level_breakers_up_to_6": "the level is held by fabric, finish and shoes, not by the item's name; out of "
+                              "this level: sports shoes, sports knit, acid-washed denim",
+    "level_breakers_up_to_7": "the level is held by fabric, finish and shoes, not by the item's name; out of "
+                              "this level: sneakers, T-shirt, a kimono cardigan as the outer layer, mules and "
+                              "flip-flops, matt suede in shoes",
+    "level_breakers_up_to_8": "the level is held by fabric, finish and shoes, not by the item's name; out of "
+                              "this level: knit cardigan, kimono, mules, a block sandal of everyday look, matt "
+                              "cotton and suede, an everyday bag",
+    "level_breakers_up_to_10": "the level is held by fabric, finish and shoes, not by the item's name; out of "
+                               "this level: everything daytime — cotton, knit, suede, open everyday shoes, "
+                               "cardigans",
+    "high_occasion_floor": "the event's level starts from this number on the 1–10 formality scale: no item sits "
+                           "more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); "
+                           "shoes at the outfit's level or above (values: from)",
     "weather_layers": "the weather outside and the layers it asks for (values: temperature_c; layers — how many "
                       "layers on the torso, a half is one more light removable layer; fabrics — fabric codes "
                       "for this temperature; outer_at_formality — true when the outer layer is held to the "

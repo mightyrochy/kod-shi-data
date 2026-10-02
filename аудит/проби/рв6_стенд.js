@@ -1296,6 +1296,19 @@ function українськоюОпису(текст){
    питання DOVIDKA_PYTANNIA, none — решта; `text` — «Записала.»; `ask` — лише коли після її оновлення
    сценарію й досі нема (та сама умова, що в шві); `invite` — теми з `advice_topics`, доречні на
    будь-якому стані (прикраси, реєстр), до трьох. Суддя всього цього — код (`суд_частин`), не заглушка. */
+/* Ошатність, яку заглушка ставить за мовну модель (НП-в крок 2): ті самі числа, що доти давав пресет
+   виду (`паспорт_нагоди.ВИДИ_НАГОДИ`) і таблиця місць (`формальність.МІСЦЯ_ДІАПАЗОНИ`), — щоб замір
+   «до/після» на стенді міряв зміну джерела, а не числа. Жива модель (ZHYVA) ставить своє. */
+const СТЕНД_ОШАТНІСТЬ_НАГОДИ = {everyday: [3, 4], home: [1, 2], walk: [2, 4], work: [6, 8], job_interview: [6, 8],
+  school: [4, 5], formal_day: [5, 7], formal_evening: [6, 8], wedding_day: [6, 8], wedding_guest: [7, 9],
+  celebration: [5, 7], mourning: [5, 7], date: [4, 5], theatre: [4, 6], museum: [3, 5], church: [4, 6],
+  sport: [1, 2], travel: [2, 4]};
+const СТЕНД_ОШАТНІСТЬ_МІСЦЯ = {fine_dining: [7, 8], restaurant_upscale: [6, 8], restaurant_casual: [4, 5], bar: [3, 5],
+  cafe: [3, 4], theatre: [4, 6], opera_premiere: [6, 8], office_corporate: [6, 8], office_creative: [3, 5],
+  job_interview: [6, 8], conference: [5, 7], presentation: [6, 8], walk: [2, 4], park: [2, 3], playground: [2, 3],
+  school_parents_meeting: [4, 5], hospital_visit: [3, 5], long_transit: [2, 4], flight: [2, 4], museum: [3, 5],
+  vernissage: [5, 7], house_party: [3, 5], festive_dinner: [5, 7], club: [4, 6], sport: [1, 2], home: [1, 2],
+  church_service: [4, 6], wedding_day: [6, 8], wedding_evening: [7, 9], funeral: [5, 7]};
 function ходомРозмови(текст){
   const д = JSON.parse(текст), слова = String(д.her_new_message || '');
   const лист = (РОЗМОВА_СТЕНДУ || []).find(л => л.вона.trim() === слова.trim());
@@ -1314,8 +1327,41 @@ function ходомРозмови(текст){
   const need = (ДОВІДКА_ПИТАННЯ && слова.trim() === ДОВІДКА_ПИТАННЯ.trim()) ? 'app'
     : ((д.photos || []).length || (питання && /оціни|підійд|личит|поєдну|як тобі/i.test(слова))) ? 'look' : 'none';
   const має = к => в[к] != null || (д.passport || {})[к] != null || (д.chosen || {})[к] != null;
+  /* НП-в крок 2: ошатність ставить мовна модель ЗАВЖДИ — заглушка грає її числом за місцем, інакше
+     за нагодою (з її слів, паспорта чи обраних плиток `chosen`); числа — ті, що доти давав пресет коду */
+  if (!в.formality){
+    const з = к => [в[к], (д.chosen || {})[к], (д.passport || {})[к]].map(x => (x && x.value) || x).find(x => typeof x === 'string');
+    const смуга = СТЕНД_ОШАТНІСТЬ_МІСЦЯ[з('place')] || СТЕНД_ОШАТНІСТЬ_НАГОДИ[з('occasion')] || null;
+    if (смуга) в.formality = {from: смуга[0], to: смуга[1]};
+  }
+  /* НП-в: скільки відкритих зон і чий колір на події — теж розуміння мовної моделі, не пресет коду.
+     Заглушка грає їх за нагодою/місцем: стримані нагоди — `none`, весілля — `one` і біле нареченої
+     (гостею; роль стенда — гостя). Чого нагода не каже — поля нема, і K-KOH-10 бере типовий ліміт. */
+  {
+    const з = к => [в[к], (д.chosen || {})[к], (д.passport || {})[к]].map(x => (x && x.value) || x).find(x => typeof x === 'string');
+    const н = [з('place'), з('occasion')];
+    const весілля = н.some(x => ['wedding_day', 'wedding_evening', 'wedding_guest'].includes(x));
+    if (!в.open_zones){
+      if (н.some(x => ['church', 'church_service', 'funeral', 'mourning', 'job_interview', 'school', 'school_parents_meeting'].includes(x)))
+        в.open_zones = 'none';
+      else if (весілля) в.open_zones = 'one';
+    }
+    if (!в.reserved_colour && весілля) в.reserved_colour = 'near_white';
+    /* НП-в5 (рядок 522 (3)): частину дня, коли години нема, жива модель бере з назви події чи плитки
+       («Офіційний вечір» — evening). Заглушка — так само: підпис обраного коду в словнику кодів
+       (`task.codes`) називає вечір. Година з її слів чи плитки — сильніша, тоді поля нема. */
+    const година = [в.hour, (д.chosen || {}).hour, (д.passport || {}).hour].find(x => typeof x === 'number');
+    if (!в.part_of_day && година === undefined){
+      const підпис = (поле, код) => {
+        const ряд = (((д.task || {}).codes) || []).find(р => р.startsWith('- ' + поле + ' —')) || '';
+        const з_ = код ? new RegExp('\\b' + код + ' \\(([^()]*)\\)').exec(ряд) : null;
+        return з_ ? з_[1] : '';
+      };
+      if (/вечір|вечірн/i.test(підпис('occasion', н[1]) + ' ' + підпис('place', н[0]))) в.part_of_day = 'evening';
+    }
+  }
   const сцена = ['occasion', 'place', 'dress_code', 'formality'].some(має);
-  const ask_code = сцена ? null : (має('event') ? (має('event_formality') ? null : 'event_place') : 'occasion');
+  const ask_code = сцена ? null : (має('event') ? 'event_place' : 'occasion');
   const відповідь = {update: в, need, text: 'Записала.'};
   if (ask_code) Object.assign(відповідь, {ask_code, ask: ask_code === 'event_place'
     ? 'Скажи, де буде ця подія і наскільки вона святкова: без цього образи не зберуться.'
@@ -2241,6 +2287,32 @@ function підсумокМоделі(){
     await стор.click('#чат-мікрофон');           // дотик — стоп, як у жінки
   }
 
+  /* PLYTKA=<ключ нагоди> (НП-в5, рядок 520) — шлях без розмови: «Або заповнити рукою», дотик плитки
+     нагоди (той самий обробник, що в жінки), «Зібрати образи». Друкує ошатність паспорта, рядки звіту
+     «tiles · …» (хід плиток мовної моделі) і знімає сценарій і картки; далі стенд не йде. */
+  if (process.env.PLYTKA){
+    const т0 = Date.now();
+    await стор.click('#сц-рукою-показати');
+    const є = await стор.evaluate(к => { const о = (ДОВІДНИК.нагоди || []).find(о_ => о_.ключ === к);
+      const п = о && [...document.querySelectorAll('#сц-нагода-плитки > *')].find(е => (е.textContent || '').includes(о.підпис));
+      if (п) п.click(); return {підпис: о && о.підпис, плитка: !!п, нагода: document.getElementById('сц-нагода').value}; }, process.env.PLYTKA);
+    console.log('\nPLYTKA · дотик:', JSON.stringify(є));
+    await с(1500);
+    const доЗбору = await стор.evaluate(() => ({ключ_ходу: !!ХІД_ПЛИТОК_П.обіцянка, ошатність: (ПАСПОРТ_П || {}).ошатність || null}));
+    await знімок('plytka_stsenarii', null, true);
+    await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к && typeof к.onclick === 'function') к.onclick(); });
+    await стор.waitForFunction("(typeof ЗБ !== 'undefined' && ЗБ && ЗБ.готово) || " + ВИРАЗ_ЗБОЮ, null, { timeout: 900000 }).catch(() => null);
+    const р = await стор.evaluate(() => ({ошатність: (ПАСПОРТ_П || {}).ошатність, година: (ПАСПОРТ_П || {}).година,
+      джерело_полів: (ПАСПОРТ_П || {}).джерело_полів, плиток: (ЗБ.діагноз || []).filter(д => /^tiles · /.test(д)),
+      карток: (ЗБ.картки || []).filter(Boolean).length, збій: (ЗБ.діагноз || []).filter(д => /fail|error/i.test(д)).slice(0, 5)}));
+    console.log('PLYTKA · до збору:', JSON.stringify(доЗбору), '\nPLYTKA · паспорт після «Зібрати»:', JSON.stringify(р),
+      '\nPLYTKA · за', ((Date.now() - т0) / 1000).toFixed(1), 'с');
+    ф('PLYTKA: плитка без розмови — у паспорті ошатність є числом моделі (хід плиток)',
+      Array.isArray(р.ошатність) && р.ошатність.every(x => typeof x === 'number') && р.плиток.length > 0, р);
+    await знімок('plytka_kartky', null);
+    await браузер.close();
+    process.exit(провалів ? 1 : 0);
+  }
   /* 1. чат заповнює плитки і рядок «Я зрозуміла так» */
   /* з HOLOS=1 текст уже в полі — його продиктували сценою 1д вище */
   if (!ГОЛОС_СТЕНД) await стор.fill('#чат-поле', ЧАТ_ТЕКСТ);
