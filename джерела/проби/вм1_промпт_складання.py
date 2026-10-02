@@ -4,8 +4,8 @@ import json, re, sys
 т = open(sys.argv[1], encoding="utf-8").read()
 П, _ = json.JSONDecoder().raw_decode(т[т.index("{"):])
 КИР = re.compile(r"[А-Яа-яІіЇїЄєҐґ]")
-# поза мірою: речі пулу (слова крамниці), її слова, рядки нагоди (наряд НП-в), назви відхилених речей
-ПОЗА = {"pool", "event", "her_words", "free_text", "quote", "occasion_rules", "she_rejected_items", "beliefs",
+# поза мірою: речі пулу (слова крамниці), її слова, назви відхилених речей; рядки нагоди — заявами з НП-в6 (рядок 532)
+ПОЗА = {"pool", "event", "her_words", "free_text", "quote", "she_rejected_items", "beliefs",
         "mood", "wishes", "her_other_words", "goal_quote", "intent_quote"}
 def чисте(в):
     if isinstance(в, dict):

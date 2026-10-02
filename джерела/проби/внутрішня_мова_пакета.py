@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))));
 import bridge as B, стенд_знімок as СЗ, language_gate as LG
 КИР, ЛАТ = re.compile("[а-яіїєґА-ЯІЇЄҐ]"), re.compile("[A-Za-z]{2}")   # нижче: її слова й слова крамниці — не мова коду
 ЇЇ = {"name", "shop_color", "features", "event", "her_words", "goal_quote", "intent_quote", "her_other_words", "beliefs",
-      "she_refuses", "types", "wishes", "mood", "caption", "day", "items", "case", "occasion_rules"}
+      "she_refuses", "types", "wishes", "mood", "caption", "day", "items", "case"}
 вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), сценарій=СЗ.СЦЕНАРІЇ["офіс·18°C"], випадок="офіс·18°C", сід=3)
 к = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 ід = [рч[0]["id"] for с, рч in к["кандидати"].items() if рч and с in ("верх", "низ", "взуття", "сумка")]
@@ -24,7 +24,7 @@ def листки(в, шлях=""):
             if КИР.search(str(кл)): yield шлях + ".KEY", str(кл)
             yield from листки(v, шлях + "." + str(кл))
     elif isinstance(в, (list, str)): yield from ([(шлях, в)] if isinstance(в, str) else (x for v in в for x in листки(v, шлях + "[]")))
-усього = 0                                                               # «case», «occasion_rules» — наряд НП-в
+усього = 0                                                               # «case» — наряд НП-в
 for назва, текст in ПАКЕТИ.items():
     лл, кир, де = list(листки(json.loads(текст or "{}"))), collections.Counter(), collections.Counter()
     en = {"%s#%d" % (ш, і): т for і, (ш, т) in enumerate(лл) if ЛАТ.search(т) and not КИР.search(т)}

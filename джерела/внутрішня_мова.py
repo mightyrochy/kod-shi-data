@@ -2532,6 +2532,33 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                "are a mistake here, not a style (values: temperature_c)",
     "precipitation_shoes_materials": "precipitation: closed shoes, no fabric soles, no suede or nubuck; "
                                      "materials afraid of water stay out of the outfit",
+    # Рядки нагоди брифа (рядок 532): рівень, напрям промаху, що вибиває зі щабля, нижня межа
+    # високої події — доти українськими реченнями в `occasion_rules` промпта складання.
+    "occasion_level": "the occasion's level of formality (values: level — home, everyday, neat, smart, evening, "
+                      "very_smart or ceremonial; up_to — its upper bound on the 1–10 formality scale; rules_out — "
+                      "what this occasion rules out: near_white — white and colours that read as white on photos "
+                      "(cream, pale yellow, pale blue), bright_and_light — bright and light colours; loudness_max — "
+                      "no colour louder than this, loudness = chroma C* × L*/50: deep wine or terracotta ≈ 23–32, "
+                      "bright red, fuchsia, cobalt or mustard ≈ 62–87)",
+    "risk_direction": "when the occasion's level cannot be hit exactly, miss it in this direction (values: "
+                      "posture — half_step_over: half a step overdressed, a sign of respect; "
+                      "half_step_under_plus_detail: half a step underdressed plus one quality detail)",
+    "level_breakers_up_to_4": "the level is held by fabric, finish and shoes, not by the item's name; at this "
+                              "level nothing is ruled out",
+    "level_breakers_up_to_6": "the level is held by fabric, finish and shoes, not by the item's name; out of "
+                              "this level: sports shoes, sports knit, acid-washed denim",
+    "level_breakers_up_to_7": "the level is held by fabric, finish and shoes, not by the item's name; out of "
+                              "this level: sneakers, T-shirt, a kimono cardigan as the outer layer, mules and "
+                              "flip-flops, matt suede in shoes",
+    "level_breakers_up_to_8": "the level is held by fabric, finish and shoes, not by the item's name; out of "
+                              "this level: knit cardigan, kimono, mules, a block sandal of everyday look, matt "
+                              "cotton and suede, an everyday bag",
+    "level_breakers_up_to_10": "the level is held by fabric, finish and shoes, not by the item's name; out of "
+                               "this level: everything daytime — cotton, knit, suede, open everyday shoes, "
+                               "cardigans",
+    "high_occasion_floor": "the event's level starts from this number on the 1–10 formality scale: no item sits "
+                           "more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); "
+                           "shoes at the outfit's level or above (values: from)",
     "weather_layers": "the weather outside and the layers it asks for (values: temperature_c; layers — how many "
                       "layers on the torso, a half is one more light removable layer; fabrics — fabric codes "
                       "for this temperature; outer_at_formality — true when the outer layer is held to the "
