@@ -25,7 +25,7 @@ for тека in sys.argv[1:]:
             if any(V.слово_називає_тон(V.назва_кольору(н) or "") for н in речі):
                 неправда += 1
         for р in абз:
-            if re.search(r"не ц[еяю]", р):
+            if re.search(r"[Нн]е ц[еяю]", р):
                 дій += 1
                 назва_є += any(f"«{н}»" in р or f"„{н}“" in р for н in речі)
     вп = os.path.join(тека, "вердикти.txt.gz")
