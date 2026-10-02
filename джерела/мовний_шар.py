@@ -1608,13 +1608,6 @@ def _коди_розмови():
     "names this event or one of its kind, with the name of the event as quote. An event with no label of its "
     "own (a family visit, a local custom) takes the code of its nearest kind, and \"stylist_note\" says what "
     "the event really is.",
-    # Рядки 238 і 474 (Ж-1, НГ-4): «в офісі» давало то `office_creative` (підпис плитки «Офіс»), то
-    # `office_corporate` — код вужчий, ніж її слова; суд цитати цього не бачить (п.12: код слів не читає),
-    # тож межу каже правило. Невідомо — чесне значення; подія її словами однаково йде стилістці.
-    "A code is never narrower than her words: \"occasion\" and \"place\" take a code only when her words "
-    "name what that code means, and a label that sounds general does not make its code general. When her "
-    "words fit several codes of the field equally and none is nearer to what she means, the field is "
-    "absent: unknown is a valid value.",
     # Хрестини «спершу церква, потім обід у ресторані» давали нагоду однієї частини й місце іншої — або
     # без місця; «працюю з дому» — то home, то work. Нагода — що вона робить, місце — де; обидва про одне,
     # а кілька частин — про першу названу (одяг вона вдягає на неї), решта лишається в «event».
