@@ -4,7 +4,7 @@
 кожен двома сідами порядку (у турнірі сід ділить і групи). Друкує збіг обраного (Жаккар), частку обраних першими й у
 першій третині свого переліку проти рівного шансу, виклики й секунди. Модель: MODEL=<ід> (+ MODEL_URL, типово LM Studio
 http://127.0.0.1:1234/v1; MODEL_TEMP; THINK=1) — живий замір на ноутбуці; без MODEL — заглушка, що бере ЗГОРИ.
-Прогін: python3 проби/вибір_стабільність.py [список,оцінка,турнір]    (заглушка ~1.5 хв)"""
+Прогін: python3 проби/вибір_стабільність.py [list,assess,tournament]    (заглушка ~1.5 хв)"""
 import json, os, sys, time, urllib.request
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed as Ф, bridge as B, міст_пакет as МП, протокол as ПР, порядок_запиту as ПЗ, уважний_вибір as УВ
@@ -24,7 +24,7 @@ def модель(т):
                                json.dumps(тіло).encode("utf-8"), {"Content-Type": "application/json"})
     return json.load(urllib.request.urlopen(з, timeout=1800))["choices"][0]["message"]["content"] or ""
 def вибір(спосіб, сід):
-    if спосіб != "список": return УВ.прогнати(спосіб, пак, модель, сід)[1]
+    if спосіб != "list": return УВ.прогнати(спосіб, пак, модель, сід)[1]
     пакет = dict(пак["пакет"], пул=ПЗ.перемішати_слоти(пак["пакет"]["пул"], сід))
     місця = {x["н"]: (і, len(р)) for р in пакет["пул"].values() for і, x in enumerate(р)}
     об = ПР.розбір_за_схемою(модель(json.dumps(пакет, ensure_ascii=False)), "ОБРАЗИ_V1")[0] or {}

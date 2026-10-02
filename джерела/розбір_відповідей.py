@@ -87,10 +87,23 @@ import дріт_моделі as _Д
                             "a statement carries names or numbers)",
                  як="do not describe it as an item of the outfit, nor from the photo of another item; you "
                     "may say in one sentence that it is missing"),
+        # ФОТО-1 (02.10.2026, CLAUDE.md п.17): друга половина заміни — лише коли опис назвав річ, а
+        # код знайшов запасні, що пройшли його суд (`заміна_з_фото`); у звичайному виклику поля нема
+        _ЗП.Поле("swap_spares", "the item you named for replacement, your reason, and the spares of the "
+                                "same kind the code checked in its place; every spare has «photos» like "
+                                "the items of the outfit",
+                 як="look at the photos of the spares and choose the one that serves this outfit and her "
+                    "occasion best, or none; describe the outfit with your choice in place — the chosen "
+                    "spare instead of the item — and say in one sentence what you replaced and why; "
+                    "answer «swap» again with «item», «why» and «to»"),
     ),
     правила=(
         "Describe only the items of «outfit»: no suggestions to buy more, no items it does not contain.",
-        "Do not change the outfit: when an item on its photo differs from its name, say so in words.",
+        "Do not change the outfit yourself: when an item on its photo differs from its name, say so in words.",
+        "Only when a photo shows that an item is not what this outfit needs — a clearly different colour, "
+        "another kind of item, or unfit for her occasion — and that matters for this outfit, name that one "
+        "item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in "
+        "doubt, leave «swap» out.",
     ),
     вихід="ОПИС_ВІДПОВІДЬ_V1",
     поля_виходу={
@@ -101,6 +114,13 @@ import дріт_моделі as _Д
         "фото_не_те": "«n» of an item whose photo shows another item, a clearly different color, a "
                       "placeholder or a logo; the same item on a person, from another angle, close up or "
                       "with other clothes in the frame is no reason; when in doubt, leave it out",
+        "заміна.річ": "«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty "
+                      "reason — the usual case",
+        "заміна.чому": "colour — the photo shows a clearly different colour than the code knows; kind — "
+                       "the photo shows another kind of item; occasion — the item on the photo does not "
+                       "suit her occasion",
+        "заміна.на": "only with «swap_spares» in the input: «n» of the spare you choose; leave it out to "
+                     "keep the item",
     },
     межі=("лише_вхід", "для_неї", "без_чисел_тіла"),
     мова_промпту="en",
@@ -146,7 +166,7 @@ def _укладка_опису(канал_3):
 
 def опис_обʼєкт(речі, образ=None, задум=None, випадок=None, свідомі=None, фото_є=True,
                 канал_3=None, палітра=None, день=None, день_образу=None, неповний=None,
-                межі=None, мова_тексту=None, випадок_коди=None):
+                межі=None, мова_тексту=None, випадок_коди=None, заміна_запасні=None):
     """Четвертий виклик: `ОПИС_V1` — обраний образ обʼєктом коду (його перевіряє схема,
     його кладе звіт); моделі його несе `промпт_опису` англійським дротом.
 
@@ -162,6 +182,8 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     в образі нема (рядок 208); без них промпт не несе ні поля, ні його рядка.
     `мова_тексту` — мова вільного тексту відповіді (`завдання.мова`): English з мовним
     шаром, Ukrainian без нього (показ шле `мова_тексту`, як рукам 3–4).
+    `заміна_запасні` — ФОТО-1: `{річ: н, чому, запасні: [речі тими самими полями, що образ]}`, лише
+    в зайвому виклику, коли опис назвав річ для заміни, а код знайшов запасні (`заміна_з_фото`).
     """
     р = []
     for x in (речі or []):
@@ -215,6 +237,8 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     # що в пакеті (`palettes.для_пакета`), і без чисел — з тієї самої причини.
     if палітра:
         об["палітра"] = dict(палітра)
+    if isinstance(заміна_запасні, dict) and заміна_запасні.get("запасні"):
+        об["заміна_запасні"] = заміна_запасні
     об["завдання"] = {"мова": str(мова_тексту or _ЗП.МОВА_EN), "відповідь": ОПИС.вихід}
     return об
 
@@ -270,7 +294,8 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
     """`ОПИС_ВІДПОВІДЬ_V1` → проза для жінки, поради й речі з поганим фото (Т-06, крок 3).
 
     Повертає `{текст, як_носити, фото_не_те, фото_не_ті, фото_не_ті_знято, проза,
-    помилки, повторний_виклик}`. `фото_не_ті` — id каталогу, у які резолвились
+    помилки, повторний_виклик, заміна?}`. `заміна` (ФОТО-1) — пропозиція моделі id-ами
+    (`{річ, чому, на?}`) або `{відмова, сире}`, коли номер не резолвився; рішення — `заміна_з_фото`. `фото_не_ті` — id каталогу, у які резолвились
     номери речей із `фото_не_те`; вони й лягають на картку позначкою під річчю.
     `фото_не_ті_знято` — ті, кому код доказом відмовив (`фото_доведено_коду`),
     разом із причиною: зняття позначки називається, а не робиться мовчки.
@@ -324,6 +349,16 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
                     р["фото_не_ті_знято"].append(dict(id=і, чому=доказ))
                 else:
                     р["фото_не_ті"].append(і)
+        # ФОТО-1 (CLAUDE.md п.17): пропозиція заміни — номери стають id тією самою нумерацією пулу;
+        # що не резолвилось, лишається сирим із відмовою, а не губиться (звіт власника)
+        _зм = об.get("заміна")
+        if isinstance(_зм, dict) and str(_зм.get("річ") or "").strip():
+            _рі = _розпізнати_речі(str(_зм["річ"]), словник, за_ном, поле=True)[0]
+            _на = (_розпізнати_речі(str(_зм["на"]), словник, за_ном, поле=True)[0]
+                   if str(_зм.get("на") or "").strip() else [None])
+            р["заміна"] = (dict(річ=_рі[0], чому=_зм.get("чому"), **({"на": _на[0]} if _на and _на[0] else {}))
+                           if len(_рі) == 1 and _на else
+                           dict(відмова="number_not_resolved", сире=dict(_зм)))
     р["проза"] = "\n".join([р["текст"] or ""] + р["як_носити"]).strip() or None
     if not р["текст"]:
         р["повторний_виклик"] = _ПР.помилка_формату(
