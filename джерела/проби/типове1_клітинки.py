@@ -21,7 +21,7 @@ for т in sys.argv[1:]:
     д = (p or {}).get("day") or {}
     карт = open(os.path.join(т, "картки.txt"), encoding="utf-8").read().split("═══ картка ")[1:]
     рук12 = [к for к in карт if re.match(r"\d з \d · рука [12]", к)]
-    лоф = sum(1 for к in рук12 if re.search(r"лофер|мокасин", к, re.I))
+    лоф = sum(1 for к in рук12 if re.search(r"лофер|мокасин", к.split("\nРазом")[0], re.I))   # перелік речей
     екр = open(os.path.join(т, "текст_екранів.txt"), encoding="utf-8").read().splitlines()
     де = next((екр[і + 1] for і, р in enumerate(екр[:-1]) if р.strip() == "Де"), "—")
     print("%-34s відкрите %2d · тренч %d пальто %2d · day_outing %-5s evening_outing %-5s start_hour %s · "
