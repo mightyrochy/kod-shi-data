@@ -1309,6 +1309,9 @@ const СТЕНД_ОШАТНІСТЬ_МІСЦЯ = {fine_dining: [7, 8], restauran
   school_parents_meeting: [4, 5], hospital_visit: [3, 5], long_transit: [2, 4], flight: [2, 4], museum: [3, 5],
   vernissage: [5, 7], house_party: [3, 5], festive_dinner: [5, 7], club: [4, 6], sport: [1, 2], home: [1, 2],
   church_service: [4, 6], wedding_day: [6, 8], wedding_evening: [7, 9], funeral: [5, 7]};
+/* НГ-5 (рядок 754): частина дня, яку подія зазвичай має без слова «вечір» у назві — заглушка грає правило
+   промпту ходу плиток (театр, концерт, опера — вечір) своєю таблицею, як ошатність — `СТЕНД_ОШАТНІСТЬ_МІСЦЯ`. */
+const СТЕНД_ЧАСТИНА_ДНЯ = {theatre: 'evening', opera_premiere: 'evening', club: 'night', wedding_evening: 'evening'};
 function ходомРозмови(текст){
   const д = JSON.parse(текст), слова = String(д.her_new_message || '');
   const лист = (РОЗМОВА_СТЕНДУ || []).find(л => л.вона.trim() === слова.trim());
@@ -1357,7 +1360,12 @@ function ходомРозмови(текст){
         const з_ = код ? new RegExp('\\b' + код + ' \\(([^()]*)\\)').exec(ряд) : null;
         return з_ ? з_[1] : '';
       };
-      if (/вечір|вечірн/i.test(підпис('occasion', н[1]) + ' ' + підпис('place', н[0]))) в.part_of_day = 'evening';
+      /* «вечірка» (плитка «Свято, вечірка», НГ-5) — вид події, а не частина дня: її `вечір` не ловить */
+      if (/вечір(?!к)|вечірн/i.test(підпис('occasion', н[1]) + ' ' + підпис('place', н[0]))) в.part_of_day = 'evening';
+      /* лише коли промпт справді просить «зазвичай має одну частину дня»: на старому промпті заглушка
+         мовчить, як мовчала б модель, — проба ДО/ПІСЛЯ міряє промпт, а не таблицю стенда */
+      else if (/usually takes one part of the day/.test(текст) && (СТЕНД_ЧАСТИНА_ДНЯ[н[1]] || СТЕНД_ЧАСТИНА_ДНЯ[н[0]]))
+        в.part_of_day = СТЕНД_ЧАСТИНА_ДНЯ[н[1]] || СТЕНД_ЧАСТИНА_ДНЯ[н[0]];
     }
   }
   const сцена = ['occasion', 'place', 'dress_code', 'formality'].some(має);
@@ -2293,10 +2301,43 @@ function підсумокМоделі(){
   if (process.env.PLYTKA){
     const т0 = Date.now();
     await стор.click('#сц-рукою-показати');
+    /* PLYTKA=всі (НГ-5, проба `джерела/проби/нг5_плитки.py`): слова плиток аркуша нагоди й списку «Оціни мій
+       образ», тоді кожна плитка по черзі — що паспорт дістає з ходу плиток без розмови. Збору нема. */
+    if (process.env.PLYTKA === 'всі'){
+      const н = await стор.evaluate(async () => { const пл = () => [...document.querySelectorAll('#сц-нагода-плитки > *')];
+        const слово = е => ((е.querySelector('.н') || {}).textContent || '');
+        try{ малюватиОцінкуП(); }catch(_){}   // список «Оціни» малюється, коли відкривають той екран
+        const р = {аркуш: пл().map(слово), оціни: [...document.querySelectorAll('#оц-нагода option')].map(о => о.textContent),
+                   підсвічено: пл().filter(е => е.classList.contains('вибр')).map(слово), ряди: []};
+        for (const о of (ДОВІДНИК.нагоди || [])){
+          const п = пл().find(е => слово(е) === о.підпис); if (!п) continue;
+          if (document.getElementById('сц-нагода').value !== о.ключ) п.click();
+          const пш = await паспортШаромП().catch(e => ({помилка: String(e)})), пс = пш.паспорт || {};
+          р.ряди.push([о.ключ, JSON.stringify(пс.ошатність || null), пс.година == null ? '—' : пс.година,
+                       ((пс.джерело_полів || {}).година) || '—', пш.помилка || '']); }
+        return р; });
+      console.log('PLYTKA · аркуш · ' + н.аркуш.join(' | ') + '\nPLYTKA · оціни · ' + н.оціни.join(' | ')
+        + '\nPLYTKA · підсвічено без вибору · ' + (н.підсвічено.join(' | ') || '—'));
+      н.ряди.forEach(р_ => console.log('PLYTKA · плитка · ' + р_.join(' · ')));
+      await браузер.close();
+      process.exit(0);
+    }
     const є = await стор.evaluate(к => { const о = (ДОВІДНИК.нагоди || []).find(о_ => о_.ключ === к);
-      const п = о && [...document.querySelectorAll('#сц-нагода-плитки > *')].find(е => (е.textContent || '').includes(о.підпис));
-      if (п) п.click(); return {підпис: о && о.підпис, плитка: !!п, нагода: document.getElementById('сц-нагода').value}; }, process.env.PLYTKA);
+      const п = о && [...document.querySelectorAll('#сц-нагода-плитки > *')].find(е => ((е.querySelector('.н') || {}).textContent || '') === о.підпис);
+      if (п) п.click(); return {підпис: о && о.підпис, плитка: !!п, нагода: document.getElementById('сц-нагода').value,
+        плиток: document.querySelectorAll('#сц-нагода-плитки > *').length,
+        підсвічено: [...document.querySelectorAll('#сц-нагода-плитки > .вибр .н')].map(е => е.textContent)}; }, process.env.PLYTKA);
     console.log('\nPLYTKA · дотик:', JSON.stringify(є));
+    /* Рядок 753: плитки з таким ключем нема (чи ключа нема в довіднику) — падати ОДРАЗУ. Доти стенд тиснув
+       «Зібрати» без сценарію й чекав `ЗБ.готово` до 900 с, а прогін висів без жодного виклику. */
+    if (!є.плитка || є.нагода !== process.env.PLYTKA){
+      ф('PLYTKA: плитка «' + process.env.PLYTKA + '» є на аркуші нагоди і лягла в поле', false, є);
+      await браузер.close();
+      process.exit(1);
+    }
+    /* Курсор лишився там, де був дотик «Або заповнити рукою», — над плиткою аркуша, і знімок ловив її
+       `:hover` (бежева) як «підсвічену» (рядок 752, знімок per_492). Жінка на телефоні курсора не має. */
+    await стор.mouse.move(0, 0);
     await с(1500);
     const доЗбору = await стор.evaluate(() => ({ключ_ходу: !!ХІД_ПЛИТОК_П.обіцянка, ошатність: (ПАСПОРТ_П || {}).ошатність || null}));
     await знімок('plytka_stsenarii', null, true);
