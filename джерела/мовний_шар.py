@@ -1437,8 +1437,9 @@ _ПОЛЯ_EN = {
     "question": "her question, her words",
     "rest": "whatever else her new message says that fits no field above, verbatim",
     "stylist_note": "only when her words about the event are hard to read without context (a local custom, "
-                    "slang, irony, an event the stylist may not know): one or two sentences in English for "
-                    "the stylist on what she means; the stylist gets her own words too. Otherwise unknown",
+                    "slang, irony, an event the stylist may not know, her role at the event, more than one "
+                    "event for the same look): one or two sentences in English for the stylist on what she "
+                    "means; the stylist gets her own words too. Otherwise unknown",
 }
 _РЕЧІ_EN = {"slot": "part of the look", "item_type": "item type", "fabric": "fabric", "pattern": "pattern",
             "color_class": "colour class", "color_name": "colour name", "zone": "body zone she keeps covered",
@@ -1547,7 +1548,10 @@ def _коди_розмови():
         if _група(ім, с) == "вільні":
             р.append("- %s — %s%s" % (ім, _ПОЛЯ_EN[ім], "; " + _тип_en(с) if с.get("type") == "array" else ""))
     р.append("- formality — %s; without quote" % _ПОЛЯ_EN["formality"])
-    for ім in ("reserved_colour", "open_zones"):
+    # МОВА-1 (02.10): `part_of_day` — службове, як ці два, але доти його рядка тут не було: модель не
+    # бачила ні опису, ні кодів, і «вдень», «по обіді», «на обід» без години губились (проба
+    # `мова1_нечіткі.py`: 0 з 5 таких випадків).
+    for ім in ("reserved_colour", "open_zones", "part_of_day"):
         р.append("- %s — %s; %s; without quote" % (ім, _ПОЛЯ_EN[ім], _тип_en(поля[ім])))
     р.append("Advice topics — code: what to invite her to tell · when the topic applies (after your "
              "update, and only while the passport does not know it):")
@@ -1567,6 +1571,12 @@ def _коди_розмови():
     "Read the whole conversation: her new message may refer to what was said before (\"no, darker\", "
     "\"like last time, but without the skirt\", \"what if it rains?\"). Resolve it against "
     "\"conversation\", \"earlier_conversation\" and \"passport\" and write the result into \"update\".",
+    # МОВА-1 (рішення власника 02.10): «люди не завжди розписують нагоду дуже зрозуміло, особливо коли
+    # надиктовують голосом» — модель тлумачить; цитата лишається дослівною (сторож `_тримається`).
+    "Her message may be dictated by voice or written loosely: no punctuation, fillers, slang, dialect or "
+    "surzhyk, irony, times and numbers in words, a correction in mid-sentence. Read what she means: what she "
+    "corrects herself to replaces what she corrected, irony is not a wish, a time in words is an hour. "
+    "\"quote\" still copies her letters exactly as written.",
     # Шов доливає дельту поверх паспорта досі (`паспорт_з_шару`); `retract` знімає бажання й межі.
     "\"update\" holds only what her new message changes: new fields and changed values. A new value "
     "replaces the old one; a wish or a limit from before that she takes back goes into \"retract\". "
@@ -1583,9 +1593,12 @@ def _коди_розмови():
     # K-IO-02: не вигадувати; переліки — закриті (`_норм` кладе чуже в `незнайомі`).
     "Values are only the codes and forms from \"codes\"; a field she said nothing about is absent. Do "
     "not infer one field from another.",
-    # М-1 В-1 і Ч-5: назва події — опора і для `event`, і для коду нагоди чи місця.
+    # М-1 В-1 і Ч-5: назва події — опора і для `event`, і для коду нагоди чи місця; МОВА-1 (02.10): подія
+    # без свого підпису (гостини, місцевий звичай) — код найближчого виду, суть — у `stylist_note`.
     "An event she names goes into \"event\" and also as the code of \"occasion\" or \"place\" whose label "
-    "names this event or one of its kind, with the name of the event as quote.",
+    "names this event or one of its kind, with the name of the event as quote. An event with no label of its "
+    "own (a family visit, a local custom) takes the code of its nearest kind, and \"stylist_note\" says what "
+    "the event really is.",
     # НП-в крок 2: ошатність — число мовної моделі ЗАВЖДИ, без цитати (її слова, подія, плитки);
     # з нього код рахує смугу й відсів пулу, інших джерел смуги нема.
     "\"formality\" is always present, without quote: how dressy this outing is, as you understand it "
@@ -1601,10 +1614,11 @@ def _коди_розмови():
     # НГ-5 (рядок 754): лише «назва каже вечір» мало — плитка «Театр, концерт» вечора не називає, і хід
     # плиток лишав паспорт на типових 11:00 форми. Тепер, як formality, — розуміння події: подія, що
     # зазвичай має одну частину дня, дає її; подія будь-якої пори (свято, побачення) — поля нема.
-    "\"part_of_day\" may also go without quote when no hour is known and the event or a tile in \"chosen\" "
-    "names the part of the day (an evening reception — evening) or the event usually takes one part of the "
-    "day (a theatre, a concert or an opera — evening); an event that happens at any time of day — leave it "
-    "absent.",
+    # МОВА-1 (рядок 860): і з її слів без години («вдень», «по обіді») — поле тепер є у словнику кодів.
+    "\"part_of_day\" goes without quote and only when no hour is known: from her words, or when the event or "
+    "a tile in \"chosen\" names the part of the day (an evening reception — evening) or the event usually "
+    "takes one part of the day (a theatre, a concert or an opera — evening); an event that happens at any "
+    "time of day — leave it absent.",
     # П.14 і п.3 наряду: межа мовної моделі — кодами `need`.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
     "without her items, looks and photos. When \"need\" is not \"none\", do not answer the question in "

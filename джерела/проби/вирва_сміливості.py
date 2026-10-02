@@ -4,7 +4,7 @@
 СМІЛИВА ІДЕЯ = ≥2 з 4 ВИМІРЯНИХ ознак речей образу (hex→CIELAB D65; прикраси й золото/срібло/перли кольором не рахуються): гучний (C*≥40 — поріг коду
 loud_from із промпту вибору), контраст (max L*−min L*≥50), фактура (ОДЯГ, не аксесуар: блиск/сатин/мереживо/оксамит/лак/атлас/принт),
 багатобарвний (≥3 кольорові сектори по 60° серед речей з C*≥15). «Заявлено» (deliberate) і «поза палітрою» (in_arc) до балу не входять.
-Ліміт 40 рядків піднято до 80: п'ять вимірів (вирва, загибель, причини вибору, колір, руки 3–4) читають одні й ті самі вирви."""
+Вага знахідок: з промпту вибору, а коли її нема (після ВИБ-1) — з промпту ремонту за id знахідки; нема ніде → 0 і друкується «нема»."""
 import gzip, json, glob, re, math, collections as K
 Р = "/home/user/kod-shi-data/аудит/перевірки/"
 ТЕК = {"satin", "lace", "guipure", "velvet", "velour", "patent_leather", "atlas", "openwork", "tweed", "boucle"}
@@ -49,10 +49,12 @@ for с, н, р, x in ВИР:
     ап, ао = x["a"]; рп, ро = x["r"]; сп_, со = x["c"]; Д = {i["n"]: i for i in ап["pool"]}; Ц = ЦН[н] = цілі(ап)
     for o in рп["verdict"] + сп_["verdict"]: [Д.setdefault(i["n"], i) for i in o["your_outfit"]["items"]]
     пол = {re.sub(r"\D", "", o["id"]): o["pole"] for o in ао["outfits"]}; ід5 = {o["id"] for o in ро["outfits"]}
-    бал = lambda ns: ознаки([річ(Д[n]) for n in ns if n in Д])[1]; вага = lambda o: sum(f["weight"] for f in o["findings"])
+    бал = lambda ns: ознаки([річ(Д[n]) for n in ns if n in Д])[1]; ВР = {(o["your_outfit"]["id"], f["id"]): f["weight"] for o in рп["verdict"] for f in o["findings"] if "weight" in f}  # після ВИБ-1 вибір ваг не несе → вага з ремонту за id знахідки
+    вг = lambda o, f: (f["weight"], "вибір") if "weight" in f else (ВР[o["your_outfit"]["id"], f["id"]], "ремонт") if (o["your_outfit"]["id"], f["id"]) in ВР else (0, "нема")
+    вага = lambda o: sum(вг(o, f)[0] for f in o["findings"])
     фін = {}  # id ідеї → (бал після ремонту, блокери, обрано, вага, к-сть знахідок, набір речей)
     for o in сп_["verdict"]:
-        ns = [i["n"] for i in o["your_outfit"]["items"]]; ід = max(ро["outfits"], key=lambda q: len(set(q["items"]) & set(ns)) / len(set(q["items"]) | set(ns)))["id"]
+        ЛІЧ.update(("вага", вг(o, f)[1]) for f in o["findings"]); ns = [i["n"] for i in o["your_outfit"]["items"]]; ід = max(ро["outfits"], key=lambda q: len(set(q["items"]) & set(ns)) / len(set(q["items"]) | set(ns)))["id"]
         фін[ід] = (бал(ns), [b.get("code") for b in (o.get("structure") or {}).get("blockers", [])], o["your_outfit"]["id"] == со.get("chosen"), вага(o), len(o["findings"]), ns)
     ч = [Ф for Ф in фін.values() if Ф[2]][0]; б10 = 0; фк = K.Counter()
     for o in рп["verdict"]:
@@ -77,3 +79,4 @@ print("знахідки (частка ідей) сміливі/решта:", {c:
 print("постачання: пул лише «ядро» у", ЛІЧ["пул: ядро/решта", True], "з 30; полюс break недоступний у", ЛІЧ["полюс break недоступний"], "з 30 | колір (одяг):", {г: "речей %d · у зоні %.0f%% · ΔE≤20 до цілі %.0f%% · секторів/слів на вирву %.1f/%.1f" % (v["речей"], 100 * v["у зоні"] / v["речей"], 100 * v["ΔE≤20 до цілі"] / v["речей"], v["секторів"] / 30, v["слів"] / 30) for г, v in КОЛ.items()})
 ГР = [(h, ЦН[н]) for н, _, i in ВИГ for h, о, _ in i if h and о]  # одяг рук 3–4: колір і близькість до цілей слотів схеми тієї ж нагоди
 print("руки 3–4 (вигадані): сміливих %d з %d" % (sum(ознаки(р)[1] >= 2 for _, _, р in ВИГ), len(ВИГ)), [(н, р, ознаки(i)[1]) for н, р, i in ВИГ], "| одяг у зоні %d, ΔE≤20 до цілі %d з %d" % (sum(зона(h) for h, _ in ГР), sum(min(math.dist(лчх(h), лчх(t)) for t in Ц_) <= 20 for h, Ц_ in ГР), len(ГР)))
+print("вага знахідок у промпті вибору (звідки):", {k[1]: v for k, v in ЛІЧ.items() if k[0] == "вага"}, "| вага: нема в даних" if ЛІЧ["вага", "вибір"] + ЛІЧ["вага", "ремонт"] == 0 else "")
