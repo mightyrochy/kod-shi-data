@@ -834,6 +834,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                        "slots — slot codes)",
     "her_item_stands_in_slot": "her own item stands in these slots, and the code does not change it (values: "
                                "slots — slot codes)",
+    "stylist_declared_on_purpose": "the stylist chose these items deliberately for this outfit and said so: "
+                                   "this is her considered decision, not something left unfinished (values: "
+                                   "items — the items' names as the card shows them)",
+    "action_is_only_her_option": "the outfit is complete as it is: what follows is only an option she may take "
+                                 "if she wants more colour, not a task left to her",
     "mark_not_this_and_rebuild": "marking \"not this one\" on this item of the outfit rebuilds the outfit, this "
                                  "time with colour (values: item — the item's name as the card shows it: call "
                                  "the item by this name; slot — the kind of that item, when there is no name)",
@@ -857,17 +862,23 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "big_items_carry_only_some": "the large items of this outfit carry some of these colours and not the "
                                  "others (values: present, missing — colour words)",
     "big_items_all_neutral": "the large items of this outfit are neutral",
+    # СХЕМА-КАРТКА (02.10.2026, рядки 1294, 1404): велика річ іншого кольору — не нейтраль; свідомий
+    # хід стилістки — її рішення; дія під чужою схемою — лише вибір для неї, не доручення
+    "big_items_other_colour": "the large items carry a colour, just not one of this scheme's colours: the outfit "
+                              "is not neutral (values: colours — the shop's words for those items' colours)",
     "accessory_only_echoes_colour": "this accessory has the colour, but it only echoes it here (values: slot "
                                     "— slot code, colour — colour word)",
     "pool_has_big_items_mark_not_this": "the selection has large items of these colours: marking \"not this "
                                         "one\" on the named items rebuilds the outfit (values: colours — "
-                                        "colour words, slots — slot codes)",
+                                        "colour words, slots — slot codes, items — the names of those "
+                                        "items as the card shows them: call them by these names)",
     "colour_can_be_added_as_layer": "these colours can be added as a layer, and such items exist in the "
                                     "selection (values: pairs — pairs {colour, layer}, layer — the slot code "
                                     "of the layer)",
     "needs_separate_top_and_bottom": "these colours need a separate top and bottom instead of a one-piece "
                                      "item: marking \"not this one\" on it rebuilds the outfit (values: "
-                                     "colours — colour words, whole — slot code of the one-piece item)",
+                                     "colours — colour words, whole — slot code of the one-piece item, "
+                                     "item — its name as the card shows it)",
     "big_items_of_colour_elsewhere": "large items of these colours exist in the selection among these slots "
                                      "(values: colours — colour words, slots — slot codes)",
     "big_items_of_colour_not_found": "no large items of these colours were found today for her sizes and this "

@@ -2168,6 +2168,14 @@
           "description": "her own item stands in these slots, and the code does not change it (values: slots — slot codes)"
          },
          {
+          "const": "stylist_declared_on_purpose",
+          "description": "the stylist chose these items deliberately for this outfit and said so: this is her considered decision, not something left unfinished (values: items — the items' names as the card shows them)"
+         },
+         {
+          "const": "action_is_only_her_option",
+          "description": "the outfit is complete as it is: what follows is only an option she may take if she wants more colour, not a task left to her"
+         },
+         {
           "const": "mark_not_this_and_rebuild",
           "description": "marking \"not this one\" on this item of the outfit rebuilds the outfit, this time with colour (values: item — the item's name as the card shows it: call the item by this name; slot — the kind of that item, when there is no name)"
          },
@@ -2212,12 +2220,16 @@
           "description": "the large items of this outfit are neutral"
          },
          {
+          "const": "big_items_other_colour",
+          "description": "the large items carry a colour, just not one of this scheme's colours: the outfit is not neutral (values: colours — the shop's words for those items' colours)"
+         },
+         {
           "const": "accessory_only_echoes_colour",
           "description": "this accessory has the colour, but it only echoes it here (values: slot — slot code, colour — colour word)"
          },
          {
           "const": "pool_has_big_items_mark_not_this",
-          "description": "the selection has large items of these colours: marking \"not this one\" on the named items rebuilds the outfit (values: colours — colour words, slots — slot codes)"
+          "description": "the selection has large items of these colours: marking \"not this one\" on the named items rebuilds the outfit (values: colours — colour words, slots — slot codes, items — the names of those items as the card shows them: call them by these names)"
          },
          {
           "const": "colour_can_be_added_as_layer",
@@ -2225,7 +2237,7 @@
          },
          {
           "const": "needs_separate_top_and_bottom",
-          "description": "these colours need a separate top and bottom instead of a one-piece item: marking \"not this one\" on it rebuilds the outfit (values: colours — colour words, whole — slot code of the one-piece item)"
+          "description": "these colours need a separate top and bottom instead of a one-piece item: marking \"not this one\" on it rebuilds the outfit (values: colours — colour words, whole — slot code of the one-piece item, item — its name as the card shows it)"
          },
          {
           "const": "big_items_of_colour_elsewhere",
