@@ -499,6 +499,23 @@ import внутрішня_мова as _ВМ_П
                  як="keep these roles; an item with «in_arc»: false lies outside the scheme — take it only "
                     "as a declared break in «deliberate», at most one per outfit; a colored item in the "
                     "role «neutral» is a break too"),
+        # СХЕМА-2 (02.10.2026, рядки 1121, 1204): ціль кольору слота — факт, не наказ (БРИФ-1); свобода
+        # вибору речі — її (CLAUDE.md п.17). Поля пише `дріт_моделі.факти_схеми`
+        _ЗП.Поле("person.palette.base", "the base: the colour the outfits are built around, and who chose it "
+                                        "(«chosen_by»: she_chose, stylist_chose, code_default); items of its "
+                                        "family are in «pool»"),
+        _ЗП.Поле("person.palette.kind_colours", "the colour the scheme gives each kind of item, measured by the "
+                                                "code from her palette and the base — the centre of the window "
+                                                "the pool of that kind was cut by: «hex»; «area» — its share of "
+                                                "the outfit's area, %; «echo» — it only echoes one of the large "
+                                                "items; «hue»: free — the scheme sets only its lightness and "
+                                                "mutedness there; «shares_role_with» — kinds in the same role, "
+                                                "where the same colour is a deliberate echo",
+                 як="a measured fact, not an order: an item close to its kind's colour carries the scheme; "
+                    "which item, and how close, is yours"),
+        _ЗП.Поле("person.palette.colour_kinds", "the kinds of item that carry the scheme's colour",
+                 як="an outfit in which none of them carries colour does not keep the scheme: it reads as "
+                    "bland, not calm"),
         _ЗП.Поле("pool", "the catalog items the code let through: in stock, right for this temperature and "
                          "the stated dress code, within her palette's lightness and her refusals; «formality» — "
                          "1 to 10, the scale of the occasion (1 home, 5 office, 9 gala); «L» — lightness 0 to "

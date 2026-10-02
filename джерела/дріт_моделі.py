@@ -815,14 +815,20 @@ def заяви(список):
                                          "pool:композитор_придатні._поза_сценою",
                                          "judge:формальність.нагода_палітра")),
     # цілі кольорів по слотах: пул уже стоїть у вікнах слотів, кожна річ несе `in_arc` і `branch`;
-    # пришпилений hex («hue: fixed») звужував вибір до одного тону на слот поверх цього пулу
+    # пришпилений hex («hue: fixed») звужував вибір до одного тону на слот поверх цього пулу.
+    # СХЕМА-2: сам факт (центр вікна, площа, спільна роль) їде полем `person.palette.kind_colours`,
+    # які види несуть колір — `colour_kinds`, основа — `base` (`факти_схеми`); наказу нема
     **{к: ("K-COL-01", ("pool:палітра_специфікація.поверхи", "pool:композитор_слоти._кандидати_на_слот",
                         "judge:суд_від_моделі.акцент_образу", "judge:колір_світлота.перевірка_value",
-                        "wire:person.palette.scheme", "wire:person.palette.slot_roles"))
+                        "wire:person.palette.scheme", "wire:person.palette.slot_roles",
+                        "wire:person.palette.kind_colours"))
        for к in ("scheme_colours_by_kind", "scheme_no_kind_colours")},
+    "scheme_needs_colour": ("K-PAL-18", ("pool:міст_пакет._пакет_каталогу", "judge:суд_від_моделі.акцент_образу",
+                                         "explain:palettes.повідомлення_схеми_жінці", "wire:person.palette.scheme",
+                                         "wire:person.palette.colour_kinds")),
     **{к: ("K-PAL-18", ("pool:міст_пакет._пакет_каталогу", "judge:суд_від_моделі.акцент_образу",
                         "explain:palettes.повідомлення_схеми_жінці", "wire:person.palette.scheme"))
-       for к in ("scheme_needs_colour", "scheme_one_accent", "scheme_large_items_carry")},
+       for к in ("scheme_one_accent", "scheme_large_items_carry")},
     "base_is_outfit_colour": ("K-PAL-01", ("wire:person.palette.base",)),
     # «виконуй конкретні кольори схеми» — цілей по слотах у промпті більше нема; її слова про барви
     # (`own_colouring_*`) і її вибір (`person.palette`) лишаються
@@ -855,6 +861,35 @@ def _ключ_заяви(x):
     if к == "jewellery_metal":
         return "jewellery_metal@" + str((x.get("values") or {}).get("from"))
     return к
+
+
+# ── ЦІЛЬ КОЛЬОРУ СЛОТА — ФАКТОМ ПАЛІТРИ, А НЕ НАКАЗОМ (СХЕМА-2, 02.10.2026; рядки 1121, 1204) ──
+# БРИФ-1 зняв зі `style_rules` три заяви схеми разом із наказом `hue: fixed`, і разом із наказом
+# пішов сам факт: на якому кольорі стоїть схема по видах речей, які види несуть колір і що основа —
+# колір образу. `person.palette` лишився з ролями слотів (`dominant`, `accent`) і 44 акцентами —
+# тональна схема на м'ятній основі не казала, ЯКОГО кольору верх. ЗАМІР-Д: «схема вийшла» 16 з 30
+# (19 з 30 у ЗАМІР-Ш), ж1 «тональна» — 8 з 10 рук повністю нейтральні. Тепер ті самі значення
+# стоять полями палітри: `kind_colours` (центр вікна слота, частка площі, відлуння, спільна роль;
+# `hue: free` — лише коли схема тону не задає, «fixed» не їде), `colour_kinds` (види, що несуть
+# колір), `base` (основа — колір образу). Рядок поля в промпті — опис, не «keep» (п.17).
+def факти_схеми(правила):
+    """Заяви схеми з рядків брифа → поля `person.palette`: `kind_colours`, `colour_kinds`, `base`.
+    Порожньо, коли рядки схеми не їдуть (рука 2 з вимкненим правилом, траур без схеми)."""
+    вих = {}
+    for x in (правила or []):
+        for з in ((x.get("заява") or []) if isinstance(x, dict) else []):
+            if not isinstance(з, dict):
+                continue
+            в = з.get("values") or {}
+            if з.get("code") == "scheme_colours_by_kind" and isinstance(в.get("kinds"), dict):
+                вих["kind_colours"] = {
+                    вид: {к: v for к, v in ц.items() if not (к == "hue" and v == "fixed")}
+                    for вид, ц in в["kinds"].items() if isinstance(ц, dict)}
+            elif з.get("code") == "scheme_needs_colour" and в.get("colour_kinds"):
+                вих["colour_kinds"] = list(в["colour_kinds"])
+            elif з.get("code") == "base_is_outfit_colour" and в.get("hex"):
+                вих["base"] = {к: v for к, v in (("colour", в["hex"]), ("chosen_by", в.get("chosen_by"))) if v}
+    return вих
 
 
 def заяви_складання(список):
@@ -1313,6 +1348,14 @@ def пакет(п):
             вих["style_rules"] = _заяви
         if _речення:
             вих["occasion_rules"] = _речення
+        _схема = факти_схеми(п["правила"])
+        if _схема and isinstance(вих.get("person"), dict):
+            _пал = вих["person"].setdefault("palette", {})
+            if isinstance(_пал, dict):
+                if not isinstance(_пал.get("base"), dict) and _схема.get("base"):
+                    _пал["base"] = _схема.pop("base")
+                _схема.pop("base", None)
+                _пал.update(_схема)
     if п.get("ноти_слотів"):
         # Ч-10 (рядок 223): нота слота — заяви, і вони стоять під ключем `statements`, бо
         # рівно його шукає збирач промптів (`збирач_промптів.КЛЮЧІ_ЗАЯВ`), щоб положити у
