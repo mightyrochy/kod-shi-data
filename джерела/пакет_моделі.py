@@ -480,7 +480,9 @@ import внутрішня_мова as _ВМ_П
                  як="it explains her words and does not replace them: where they differ, her words win"),
         _ЗП.Поле("case.reserved_colour", "a colour that at this event belongs to another person: near_white — "
                                          "white and colours that read as white in photos (cream, ivory, milky, "
-                                         "pale yellow, pale blue) belong to the bride; she is a guest"),
+                                         "pale yellow, pale blue) belong to the bride, and she is a guest; it "
+                                         "reads as bridal on a large surface and next to her face, while small "
+                                         "jewellery, shoes or a bag barely register"),
         _ЗП.Поле("case.shoe_request", "what she asked for about heels: heel or no_heel",
                  як="her own request: take no shoes against it"),
         _ЗП.Поле("case.beliefs", "her own words about what she holds does not suit her",
