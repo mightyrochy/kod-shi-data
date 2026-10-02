@@ -1700,7 +1700,8 @@ def _коди_розмови():
     # звичну пору: театр увечері — смуга театру (плитка «Театр, концерт» о 20:00).
     "\"formality\" is always present, without quote: how dressy this outing is, taken by the anchors in "
     "\"codes\", not by eye. Start from the usual band of the place she will be at, or of the place nearest to "
-    "her event; that band already holds the usual time of day of the place. Keep it as it is unless her "
+    "her event; that band already holds the usual time of day of the place. This anchor is for the band "
+    "only: whether \"place\" is set follows its own rules. Keep it as it is unless her "
     "words or the event add what its kind does not have; then move the whole band, keeping its width, one "
     "step at most: down — she says it is simple, nothing special; up — she wants to dress up, there are "
     "stakes or a host (an interview, a speech, she is the hostess or the birthday girl, an official "
