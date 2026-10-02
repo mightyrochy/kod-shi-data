@@ -1398,6 +1398,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "sole_grip_unknown_ice": "the card does not say whether the sole grips on ice, and today there is black "
                              "ice (values: item — item name)",
     "no_light_outer_layer_in_catalogue": "no light outer layer for this occasion was found in the catalogue",
+    "headwear_indoors": "the look has a hat and she is going indoors (values: evidence — setting: her "
+                        "answer says indoors; place: the place is an indoor one; items — the hats, "
+                        "with names): it is usually taken off there, so it is only a suggestion to "
+                        "leave it out or keep it as a deliberate accent, not a ban",
+    "headwear_setting_unknown": "the look has a hat, but it is not known whether she will be indoors or "
+                                "outdoors, so the code did not judge it",
     "fabric_season_not_judged_indoors": "the code does not judge fabric seasonality indoors (values: slot — "
                                         "slot code)",
     "long_hem_rain_ground_unknown": "the code does not know whether a long hem touches the wet ground in the "
