@@ -70,7 +70,7 @@ const с = мс => new Promise(р => setTimeout(р, мс));
     нагода: document.getElementById('сц-нагода').value, місце: document.getElementById('сц-місце').value,
     опади: document.getElementById('сц-опади').value, година: document.getElementById('сц-година').value,
     темп: document.getElementById('сц-темп').value,
-    чипи: [...document.querySelectorAll('#сц-вето-інші .чип')].map(ч => ч.textContent.trim()),
+    чипи: ((typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П && ПАСПОРТ_П.вето && ПАСПОРТ_П.вето.типи) || []).map(String),  /* ПОКАЗ-1: чипів на екрані нема — міряємо вето в паспорті */
     зрозуміла: document.getElementById('сц-зрозуміла').textContent,
     стрічка: [...document.querySelectorAll('#чат-стрічка .репліка')].map(р => р.textContent),
     стан: document.getElementById('чат-стан').textContent, поле_закрите: document.getElementById('чат-поле').disabled,
@@ -100,9 +100,7 @@ const с = мс => new Promise(р => setTimeout(р, мс));
   console.log('\n2. справжній bridge._застосувати_паспорт над входом показу:');
   console.log(JSON.stringify(міст, null, 1));
 
-  /* 3. зняти чип «підбори» рукою, сказати ще — межа не повертається */
-  await стор.evaluate(() => [...document.querySelectorAll('#сц-вето-інші .чип')].find(ч => ч.textContent.trim() === 'підбори').click());
-  await с(100);
+  /* 3. сказати ще (чипа «підбори» на екрані нема — ПОКАЗ-1) */
   await стор.fill('#чат-поле', 'і ще: без блиску, все ж без підборів');
   await стор.click('#чат-слати');
   await стор.waitForFunction(() => document.querySelectorAll('#чат-стрічка .репліка').length >= 4, null, { timeout: 120000 });

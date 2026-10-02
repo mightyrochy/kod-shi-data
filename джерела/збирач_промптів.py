@@ -201,6 +201,9 @@ def вибірка(о):
 # кодів; у вердикті `passed` — лічба числом, і вона кодом не є так само.
 КЛЮЧІ_ПУНКТІВ = ("failed", "not_run", "not_run_everywhere", "passed")
 _КОД_ПУНКТУ = _re.compile(r"[a-z][a-z_]*")     # пункт без коду (старий вердикт) їде іменем і в словник не йде
+# Заяви, чиї ЗНАЧЕННЯ теж коди заяв (ФІГ-2, рядок 904): `body_knot` називає умови вузла тіла кодами
+# ребер у `shared`/`own`, і їхні визначення мусять стояти в тому самому словнику виклику.
+ЗНАЧЕННЯ_КОДАМИ = {"body_knot": ("shared", "own")}
 СЛОВНИК_КОДІВ_EN = "statement_codes"
 # Рядок входу, що йде РАЗОМ зі словником — один на виклик, а не фраза в кожному оголошенні.
 РЯДОК_ЗАЯВ_EN = ("\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, "
@@ -216,7 +219,11 @@ def коди_заяв(дані):
         if isinstance(x, str):
             return [x]
         if isinstance(x, dict):
-            return [x["code"]] if isinstance(x.get("code"), str) else [к for к in x if isinstance(к, str)][:1]
+            к = [x["code"]] if isinstance(x.get("code"), str) else [к for к in x if isinstance(к, str)][:1]
+            зн = (x.get("values") if "code" in x else x.get(к[0])) if к else None
+            if к and к[0] in ЗНАЧЕННЯ_КОДАМИ and isinstance(зн, dict):
+                к += [у for п in ЗНАЧЕННЯ_КОДАМИ[к[0]] for у in (зн.get(п) or []) if isinstance(у, str)]
+            return к
         return []
     def _обхід(в):
         if isinstance(в, dict):
