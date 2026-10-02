@@ -77,7 +77,10 @@ _ПРИЧИН_МАКС = 3
         _ЗП.Поле("person", "her colouring as the code measured it: contrast level and light-dark gap "
                            "(L*) of her face; undertone class and where it comes from; eyes, hair, skin "
                            "— colour family, lightness L* 0-100, chroma C*; \"yellow_blue\" — the side of "
-                           "her eyes on that axis (none: not claimable); metal that suits her face",
+                           "her eyes on that axis (none: not claimable); metal that suits her face; "
+                           "\"axes\" — her colouring on two axes: lightness (light / mid_lightness / "
+                           "deep) and clarity (soft / mid_chroma / clear), \"both_lightness_ends\": true "
+                           "when her contrast is high and her darkest and lightest ends both belong to her",
                  треба=True),
         _ЗП.Поле("occasion", "today's occasion as codes, with her wishes, refusals, mood and words as "
                              "the interpreter passed them; a field she did not name is absent",
@@ -243,6 +246,17 @@ def _особа(F, п):
     метал = (п.get("основи_кольорів") or {}).get("метал")
     if метал:
         о["metal"] = _ДМ._МЕТАЛ.get(метал, метал)
+    # ЯСНІСТЬ І СВІТЛОТА — ФАКТОМ, А НЕ ЗДОГАДОМ (рядки 1400–1401, 02.10.2026). Гаму при
+    # нейтральній основі обирає стилістка, а про ясність людини вона бачила лише C* рис —
+    # і C*3 чорного волосся читала як «приглушена»: ПІСЛЯ правки рангу (кольорові основи
+    # рангів 1–2 «середні/насичені») ж3 і ж8 брали графіт і ставили «muted» у 3 з 3
+    # прогонів. Тепер їде та сама вісь, якою код будує палітру (`palettes.осі`: волосся без
+    # тону голосує лише світлотою), і ознака «обидва кінці світлоти» за високого контрасту.
+    import palettes as _ПЛ
+    ос = _ПЛ.осі(F)
+    о["axes"] = {"lightness": ос["коди"]["value"], "clarity": ос["коди"]["chroma"]}
+    if ос.get("обидва_полюси_L"):
+        о["axes"]["both_lightness_ends"] = True
     return о
 
 
