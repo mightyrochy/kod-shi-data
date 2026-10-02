@@ -1291,6 +1291,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_length_unknown_outside_contour": "the cards do not carry the length of the named items, so they are "
                                            "left out of the outfit's shape, counted from the other items "
                                            "(values: slots — slot codes)",
+    "length_word_line_may_split_in_half": "the code knows the length of the outfit's top item only from a word, "
+                                          "and its hem — the outfit's dividing line — may split the field from "
+                                          "shoulders to floor in half (values: slot — slot code; length — the "
+                                          "length word)",
     "dividing_line_item_length_unknown": "the outfit's dividing line is the hem of its top item, and the cards do "
                                          "not carry the length of the named top items, so the line was not "
                                          "judged (values: slots — slot codes)",
@@ -1892,7 +1896,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "near_white_at_guest_wedding": "near-white at someone else's wedding: in photographs it reads as bridal, "
                                    "and cream, ivory, light yellow and pale blue do too (values: lightness, "
                                    "chroma — the item's lightness and chroma, area_pct — its area in the "
-                                   "outfit as a percentage)",
+                                   "outfit as a percentage, near_face_pct — when it frames her face: its "
+                                   "share of a chest-up photograph)",
     "same_silhouette_away_from_white": "the same silhouette in a colour with chroma above or lightness below "
                                        "the named limits, or check the dress code with the couple: all-black "
                                        "or black and white lifts the veto (values: chroma_above, "
@@ -2679,7 +2684,20 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                         "nearest by rank)",
     "body_knot": "most conditions meet at these zones of her body; conditions shared by both zones need ONE "
                  "item for both, since a fix on one zone moves the other; the rest on the first zone is fixed "
-                 "separately (values: zones — per zone: conditions, tension 0 to 1; shared; own)",
+                 "separately (values: zones — per zone: conditions, tension 0 to 1; shared, own — condition "
+                 "codes, defined here too)",
+    # ── УМОВИ ВУЗЛА ТІЛА — КОДИ `body_edge` (ФІГ-2, рядок 904; CLAUDE.md п.12) ──────────────
+    # `body_knot.shared/own` називає ребра гіперграфа кодами, а словник виклику їх не визначав:
+    # модель бачила назви умов без змісту. `one_line` і `volume_anchor` — ті самі заяви вище;
+    # решта п'ять — тут. `збирач_промптів.коди_заяв` бере їх зі значень `body_knot`.
+    "pair_balance": "condition: the balance of her top and bottom halves — volume or structure on the narrower "
+                    "half, a clean line on the wider one",
+    "wearing_minimum": "condition: a woven item needs wearing ease over her body girth at each zone; with less "
+                       "it does not close, and that is not \"fitted\" (knits excluded: their ease may be negative)",
+    "fit_band": "condition: keep one fit from top to bottom of the item, in the skimming band above the wearing "
+                "minimum — less clings, more is a tent",
+    "top_cut": "condition: the cut of the top item — the cuts that score highest on her body",
+    "bottom_cut": "condition: the cut of the bottom item — the cuts that score highest on her body",
     "wish_kinds_first": "she asked for these: put an item of these kinds in every outfit where it fits — such "
                         "items stand first in the pool and carry «for_her_wish» (values: wishes — her words; "
                         "kinds)",

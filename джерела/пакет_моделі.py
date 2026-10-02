@@ -478,6 +478,11 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("case.language_model_note", "the language model's note on her words about the event, "
                                              "when they are hard to read without context",
                  як="it explains her words and does not replace them: where they differ, her words win"),
+        _ЗП.Поле("case.reserved_colour", "a colour that at this event belongs to another person: near_white — "
+                                         "white and colours that read as white in photos (cream, ivory, milky, "
+                                         "pale yellow, pale blue) belong to the bride, and she is a guest; it "
+                                         "reads as bridal on a large surface and next to her face, while small "
+                                         "jewellery, shoes or a bag barely register"),
         _ЗП.Поле("case.shoe_request", "what she asked for about heels: heel or no_heel",
                  як="her own request: take no shoes against it"),
         _ЗП.Поле("case.beliefs", "her own words about what she holds does not suit her",
@@ -1066,6 +1071,16 @@ def випадок_для_пакета(паспорт, рядок, сценар�
     # тлумачити, мовна модель пише стилістці коротко англійською, що вона має на увазі. Код не читає.
     if str((паспорт or {}).get("пояснення_мови") or "").strip():
         в["пояснення_мови"] = str(паспорт["пояснення_мови"]).strip()
+    # ── ЧУЖИЙ КОЛІР ПОДІЇ — ФАКТОМ У ВИПАДКУ (МЕЖІ-1, рядки 1190, 906, 511; K-KOH-08) ──────────
+    # Доти `reserved_colour` мовної моделі діяв пулом (`композитор_придатні`, великі поверхні) і
+    # судом (`формальність.нагода_палітра`), а стилістці їхав лише всередині заяви `occasion_level`,
+    # яку БРИФ-1 зняв як застосовану. Модель складання не знала, що біле тут належить нареченій, і
+    # брала молочний шарф та білі аксесуари, які пул не ріже (рядок 511). Тепер факт стоїть полем
+    # `case.reserved_colour` (код переліку, не наказ): вибір лишається за нею (CLAUDE.md п.17), а
+    # пул понад наявне вето не звужується. Наречена поля не має (#567): роль — зі слів жінки.
+    _рк = (паспорт or {}).get("зарезервований_колір") or (сценарій or {}).get("зарезервований_колір")
+    if _рк in _ВМ_П.ТАБЛИЦЯ["reserved_colour"]:
+        в["зарезервований_колір"] = _рк
     return в
 
 
@@ -1901,6 +1916,9 @@ def _жорстке_відсічення(r, темп_c=None, вето=None, ош
                 # читач на обидва канали однієї межі (K-PER-05).
                 import profile as _PR_в
                 if _PR_в.сенсорний_збіг(w, r):
+                    return "person_veto:%s" % w
+                # «без принта» — кожна неоднотонна річ за полем `візерунок` (МЕЖІ-1, рядок 322)
+                if група == "принти" and _PR_в.візерунок_збіг(w, r):
                     return "person_veto:%s" % w
                 if len(w) >= 3 and w[:max(4, len(w) - 2)] in текст:
                     return "person_veto:%s" % w
