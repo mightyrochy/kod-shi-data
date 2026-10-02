@@ -1281,8 +1281,14 @@ def від_моделі(вхід):
                               ремонти=False, межі=d.get("межі"), вибір=True)
         _вип_к = ((пак.get("пакет") or {}).get("випадок") if isinstance(пак.get("пакет"), dict) else None)
         if isinstance(_вип_к, dict) and _вип_к:
+            # намір `conventional` без її слів — припущення паспорта, а не її намір (`паспорт_нагоди`:
+            # «це припущення коду, а не її слова», НГ-4); у вибір як «її намір» він не йде. На шести
+            # живих сценах 02.10 він стояв у кожному «case», і кожне «чому» казало «most conventional»
             _дріт_вб["case"] = {к: v for к, v in _Д.випадок(_вип_к, _дріт_вб.get("day")).items()
-                                if v != _ВМ_в.UNKNOWN} or _дріт_вб.get("case")
+                                if v != _ВМ_в.UNKNOWN
+                                and not (к == "intent" and v == "conventional"
+                                         and not str(_вип_к.get("намір_слова") or "").strip())
+                                } or _дріт_вб.get("case")
         в["промпт_лише_вибору"] = _json.dumps(
             _ЗП.зібрати(_PL.ВИБІР, _дріт_вб, мова_тексту=d.get("мова_тексту")),
             ensure_ascii=False, separators=(",", ":"))
