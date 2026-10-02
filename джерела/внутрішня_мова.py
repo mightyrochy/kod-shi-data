@@ -835,7 +835,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "her_item_stands_in_slot": "her own item stands in these slots, and the code does not change it (values: "
                                "slots — slot codes)",
     "mark_not_this_and_rebuild": "marking \"not this one\" on the outfit's item in the named slot rebuilds "
-                                 "the outfit, this time with colour (values: slot — slot code)",
+                                 "the outfit, this time with colour (values: slot — slot code; item — the "
+                                 "shop's name of that item, as on the card: name THIS item, not the kind)",
     "scheme_asked_for_shade": "the scheme asked for a colour in the named shade (values: anchor — where the "
                               "shade comes from: eyes, hair, skin; base — the word of her chosen base; "
                               "families — words of colour families when there is no anchor)",
