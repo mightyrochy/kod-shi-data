@@ -12,7 +12,7 @@ import re
 
 КОРІНЬ = pathlib.Path(__file__).resolve().parents[2]
 рядки = (КОРІНЬ / "джерела" / "показ.html").read_text(encoding="utf-8").splitlines()
-поч = next(i for i, р in enumerate(рядки) if "async function записати(поз" in р)
+поч = next(i for i, р in enumerate(рядки) if "async function записатиЯдро(поз" in р)
 кін = next(i for i, р in enumerate(рядки) if i > поч and р.startswith("}"))
 
 глибина = 0
@@ -30,11 +30,12 @@ for i in range(поч, кін):
               % ("у try " if було else "БЕЗ try", i + 1, (що.group(1) if що else "?")))
 
 тіло = "\n".join(рядки[поч:кін])
-print("тіло `записати`: рядків", кін - поч, "· try", тіло.count("try{"),
+print("тіло `записатиЯдро` (ОЦІН-1: `записати` — черга на картку, ядро — те, що було): рядків", кін - поч, "· try", тіло.count("try{"),
       "· записів у сховище", тіло.count("'вердикти','readwrite'"),
       "· повідомлень жінці про невдачу", тіло.count("Не записалось"))
 і_клік = next((i for i, р in enumerate(рядки) if "зап.onclick" in р), None)
 блок = "\n".join(рядки[і_клік:і_клік + 10]) if і_клік is not None else ""
 print("прив'язка кнопки:", рядки[і_клік].strip() if і_клік is not None else "?",
       "· ловить відмову:", "так" if ".catch(" in блок else "НІ",
-      "· каже жінці:", "так" if "не записався" in блок else "НІ")
+      "· каже жінці:", "так" if ("не записався" in блок or ("відмоваЗаписуП" in блок
+      and "Вердикт не записався" in "\n".join(рядки))) else "НІ")
