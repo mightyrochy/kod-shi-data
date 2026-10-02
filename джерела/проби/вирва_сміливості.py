@@ -10,7 +10,9 @@ import gzip, json, glob, re, math, sys, collections as K
 ДАНІ, ФІЛЬТР = (sys.argv[1] if len(sys.argv) > 1 else None), re.compile(sys.argv[2] if len(sys.argv) > 2 else ".")  # ЗАМІР-Ш: тека з <прогін>/вердикти.txt.gz замість ПЕР-492 + ЖП-а; фільтр — за іменем теки
 ТЕК = {"satin", "lace", "guipure", "velvet", "velour", "patent_leather", "atlas", "openwork", "tweed", "boucle"}
 АКС = ("bag", "jewel", "scarf", "belt", "headband", "shoes", "pumps", "loafers", "boots", "sandals", "sneakers", "mules", "flats", "plimsolls", "clutch", "tote", "ring", "kerchief", "hat", "glasses", "tights", "bracelet", "earring", "necklace", "brooch", "bow", "hair")
-дж = lambda с: json.loads(с) if с and с.lstrip()[:1] in ("{", "[") else None
+def дж(с):  # не-JSON (наприклад, виклик language_rewrite з «Text:» після схеми) — не вирва, пропускаємо
+    try: return json.loads(с) if с and с.lstrip()[:1] in ("{", "[") else None
+    except ValueError: return None
 def лчх(h):
     c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]; c = [((x + .055) / 1.055) ** 2.4 if x > .04045 else x / 12.92 for x in c]; f = lambda u: u ** (1 / 3) if u > .008856 else 7.787 * u + 16 / 116
     X, Y, Z = f((.4124 * c[0] + .3576 * c[1] + .1805 * c[2]) / .95047), f(.2126 * c[0] + .7152 * c[1] + .0722 * c[2]), f((.0193 * c[0] + .1192 * c[1] + .9505 * c[2]) / 1.08883)
@@ -62,7 +64,7 @@ for с, н, р, x in ВИР:
         ns = [i["n"] for i in o["your_outfit"]["items"]]; id_ = o["your_outfit"]["id"]; б = бал(ns); Ф = фін.get(id_); п_ = пол.get(re.sub(r"\D", "", id_))
         ЛІЧ["ідей", б >= 2] += 1; ЛІЧ["у5", б >= 2] += id_ in ід5; ПОЛ[п_][0] += 1; ПОЛ[п_][1] += id_ in ід5; ПОЛ[п_][2] += bool(Ф and Ф[2]); ПОЛ[п_][3] += б >= 2
         ЛІЧ["перехід", б >= 2, bool(Ф) and Ф[0] >= 2] += bool(Ф); ВАГ.append((id_ in ід5, вага(o)))
-        for ст in {(s if isinstance(s, str) else next(iter(s))) for f in o["findings"] for s in f["statements"]}: КОД[б >= 2][ст] += 1
+        for ст in {(s if isinstance(s, str) else next(iter(s))) for f in o["findings"] for s in f.get("statements", [])}: КОД[б >= 2][ст] += 1
         if б >= 2: б10 += 1; к = "відсіяна моделлю (10→5)" if not Ф else "блокер структури" if Ф[1] else "ремонт прибрав сміливість" if Ф[0] < 2 else "програла на виборі" if not Ф[2] else "обрана"; ФЕ[к] += 1; фк[к] += 1
     РЯД.append((с, н, р, б10, sum(Ф[0] >= 2 for Ф in фін.values()), ч[0], "|", *[f"{к.split()[0]} {v}" for к, v in фк.items()])); ЛІЧ["обране", ч[0] >= 2] += 1; ЛІЧ["ранг ваги", sorted(Ф[3] for Ф in фін.values()).index(ч[3])] += 1
     ЛІЧ["позиція", [o["your_outfit"]["id"] for o in сп_["verdict"]].index(со["chosen"])] += 1; ЛІЧ["облік зауважень у причині", bool(re.search(r"blocker|remark|finding|tension|fewest|lightest|mildest|lowest|checks?\b|blandness|excess|problems?|gate", со.get("why", ""), re.I))] += 1
