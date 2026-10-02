@@ -1891,7 +1891,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "near_white_at_guest_wedding": "near-white at someone else's wedding: in photographs it reads as bridal, "
                                    "and cream, ivory, light yellow and pale blue do too (values: lightness, "
                                    "chroma — the item's lightness and chroma, area_pct — its area in the "
-                                   "outfit as a percentage)",
+                                   "outfit as a percentage, near_face_pct — when it frames her face: its "
+                                   "share of a chest-up photograph)",
     "same_silhouette_away_from_white": "the same silhouette in a colour with chroma above or lightness below "
                                        "the named limits, or check the dress code with the couple: all-black "
                                        "or black and white lifts the veto (values: chroma_above, "
