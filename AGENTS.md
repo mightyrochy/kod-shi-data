@@ -43,3 +43,55 @@
 - Локальні сервери використовуй через наявні клієнти; перед GPU-роботою
   перевіряй зайнятість. Без інтернету зберігай контрольні точки, без циклів
   повторних хмарних запитів. По завершенні зупиняй запущені тобою фонові роботи.
+
+## Локальний наряд і передача
+
+`джерела/передача.ps1` (PowerShell 7) зберігає записи виконання й докази в
+ігнорованому `.agent-runs/handoffs/`; це не нова дошка. Кожен погоджений наряд
+посилається на `аудит/БЕКЛОГ.md`. Команди викликають явно, без таймерів:
+
+```powershell
+pwsh -File ./джерела/передача.ps1 Prepare -InputFile ./.agent-runs/task.json
+pwsh -File ./джерела/передача.ps1 Quota -Service codex -InputFile ./.agent-runs/quota.json
+pwsh -File ./джерела/передача.ps1 Export -TaskId narrow-task
+pwsh -File ./джерела/передача.ps1 Run -TaskId narrow-task -TimeoutSeconds 180
+pwsh -File ./джерела/передача.ps1 Show -TaskId narrow-task
+pwsh -File ./джерела/передача.ps1 Accept -TaskId narrow-task -InputFile ./.agent-runs/accept.json
+```
+
+- JSON наряду: `id` (латиниця/цифри/дефіс), `goal`, `owner`, `controller`,
+  `approved_by` (джерело явного погодження), `backlog_ref`, `allowed_files[]`
+  (точні відносні файли), `acceptance[]`, `checks[]`, `work_dir`,
+  `baseline_commit`, `service` (`codex`, `claude`, `lm-studio`, `comfyui`),
+  `next_step`; необов'язкові `sandbox` (типово `read-only`, для правок
+  `workspace-write`) та `effort` (типово `high`, вузька проба `medium`).
+- JSON квоти: `source`, `checked_utc`, `valid_until_utc` (явний UTC з `Z`),
+  `status` (`available`, `unknown`, `exhausted`), `windows[]` з `name` і
+  `used_percent` (невідоме — `null`). Записують усі чинні вікна підписки з
+  реального джерела; строк свіжості визначає координатор. Відсутня, застаріла,
+  невідома чи вичерпана квота блокує Run. Claude не має вигаданого залишку.
+  CLI-токени зберігаються окремо. Квоти інших сервісів — лише ручні записи.
+- `Run` запускає Codex рівно раз через `кооперація.ps1`, з Standard
+  `service_tier=default`.
+  Перед запуском — блокування робочої копії, чисте дерево й точний baseline;
+  для правок — окрема гілка, не початкова `C:\Users\Admin\kod-shi-data`.
+  Дозволені файли — межа доручення та перевірки після виконання, не окрема
+  файлова пісочниця. Зміни поза переліком блокують приймання.
+- Для Claude/LM Studio/ComfyUI: `Export`, передати промпт через наявний клієнт
+  вручну, потім `Result -TaskId ID -InputFile evidence.json`. Скрипт їх не
+  запускає і не перевіряє GPU. JSON результату: `actor`, `evidence[]`
+  (шляхи/посилання), `next_step`, `status` (`review`, `blocked`, `failed`,
+  `interrupted`). Джерело доказів і перевірку їхнього змісту підтверджує керівник.
+- Стани: `ready → running → review → accepted`; окремо `blocked`, `failed`,
+  `interrupted`. Завершення виконавця дає лише `review`. `Accept` потребує
+  `actor`, що точно дорівнює `controller`, `checks_passed: true`, `evidence[]`
+  і `next_step`; керівник перечитує докази й зміни. Команди `checks[]` скрипт
+  не виконує. Якщо критерії не виконано, керівник викликає `Reject` із
+  `actor`, `evidence[]` і `next_step`: `review → blocked` із доказами відмови.
+  Невдалий/заблокований наряд продовжують новим явно погодженим ID.
+  `Recover` переводить покинутий `running` у `interrupted`: спершу вручну
+  зупинити/перевірити процеси, передати ті самі поля доказів і
+  `processes_stopped: true`. Живі записані PID блокують Recover. Стійка мітка
+  робочої копії блокує інший запуск навіть після загибелі батьківського процесу;
+  Recover прибирає її після перевірки. Якщо запис кінцевого стану вцілів, але
+  мітка лишилася, Recover зберігає цей стан. Повторів нема.
