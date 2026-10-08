@@ -1538,6 +1538,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "set_with_separate_part": "a set (top and bottom in one item) together with a separate top or bottom is a "
                               "doubling: keep the set, or take half of it and declare that a deliberate move "
                               "(values: slots — codes of the separate slots)",
+    "set_composition_unknown": "a set together with a separate top: the code does not know whether the "
+                               "set's upper half is a layer (jacket, blazer, vest) worn over a top or a top "
+                               "itself, so it does not call this a doubling (values: field — the catalogue-"
+                               "parse field that would tell)",
     "no_shoes": "the outfit has no shoes, and without them it is not ready: add a pair for the occasion",
     "no_bag": "no bag, and the occasion requires one",
     "needs_third_piece": "needs one more piece beyond top, bottom, shoes: outer layer, jewellery, belt, scarf "
