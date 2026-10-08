@@ -890,6 +890,25 @@
       "unknown"
      ]
     },
+    "goal_zones": {
+     "description": "лише коли мета — conceal і вона назвала, ЩО сховати: зони тіла, від яких відвести погляд («сховати живіт» → belly); «не хочу привертати уваги» без зони — поля нема",
+     "type": "array",
+     "items": {
+      "description": "зона тіла",
+      "enum": [
+       "belly",
+       "hips",
+       "bust",
+       "arms",
+       "legs",
+       "shoulders",
+       "neckline",
+       "back",
+       "unknown"
+      ]
+     },
+     "maxItems": 3
+    },
     "makeup": {
      "description": "макіяж на цей вихід",
      "type": "object",
@@ -5987,6 +6006,16 @@
    "shoulders": "плечі",
    "legs": "ноги",
    "belly": "живіт"
+  },
+  "goal_zone": {
+   "belly": "живіт",
+   "hips": "стегна",
+   "bust": "груди",
+   "arms": "руки",
+   "legs": "ноги",
+   "shoulders": "плечі",
+   "neckline": "декольте",
+   "back": "спина"
   },
   "slot": {
    "top": "верх",

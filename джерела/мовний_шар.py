@@ -1590,6 +1590,8 @@ _ПОЛЯ_EN = {
               "unnoticed",
     "goal": "her aim for this outing: flatter — to suit her; conceal — no attention or hiding "
             "something; express — to be looked at",
+    "goal_zones": "only with goal conceal and only when she named what to hide: the body zones to draw "
+                  "the eye away from («сховати живіт» — belly); not wanting attention in general — no field",
     "makeup": "make-up for this outing; lips_hex only when she named a lip colour",
     "jewelry": "jewellery she wants with this look; ethnic — wood, bone, beads; other — without metal",
     "registers": "style registers she described herself with",
