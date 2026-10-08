@@ -1,0 +1,68 @@
+── ПРОМПТ (5113 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- palette_scheme_note — рядок про ОБРАНУ схему на екрані «Палітра»: що це за хід і коли він менш ходовий.
+- palette_stylist_choice — рядок на екрані «Палітра» про те, що вона лишила стилістці: що стилістка обрала під цей вихід і чому, і що обрати інше можна самій.
+
+КОДИ У ЗНАЧЕННЯХ:
+- high — високий.
+- light — світлі.
+- low — низький.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами.
+
+ЗАЯВИ:
+- scheme_tonal — one tone on all items, with small steps of lightness.
+- scheme_analogous — neighbouring hues of the colour wheel.
+- scheme_neutrals_accent — a neutral base and one flash of colour.
+- scheme_muted_complementary — two opposite colours.
+- scheme_triad — three colours on the large items, roughly equal.
+- same_calm_contrast — the contrast stays as calm as her own.
+- native_to_her_soft_contrast — this is the natural home of her soft contrast.
+- both_sides_muted — both sides are muted.
+- same_fabric_reads_flat — works less well when all items are of one fabric: without a difference in textures the outfit reads flat.
+- analogous_close_to_tonal — differs from tonal only slightly: the difference is subtle to the eye, so she may take whichever name she prefers.
+- accent_keep_muted — keep the accent muted.
+- loud_accent_pulls_from_face — a loud colour brings back sharp contrast and starts pulling attention from the face.
+- boldest_everyday_move — on her soft contrast this is the boldest of the everyday moves.
+- second_side_small_patch — take the second side as a small patch.
+- pair_pulls_look_on_itself — otherwise the pair pulls the outfit onto itself.
+- triad_three_families_limit — together with the metal of the jewellery this reaches the limit of three colour families, so the accessories can only repeat one of them.
+- contrast_mismatch — the outfit's contrast is deliberately not her own: the face stays in its window and the rest of the lightness ladder shifts; a "clothes in focus" move, not a "flatter the face" one, hence rarer.
+- contrast_mismatch_levels — the levels of this shift (values: look_level — the outfit's contrast, own_level — her own; codes low, medium, high).
+- rarer_than_everyday — this scheme is less of an everyday one.
+- stylist_chose_scheme — the stylist chose the scheme for this outing: items are picked for it and the accent is checked against it (values: scheme — the scheme's name).
+- stylist_chose_base — the stylist chose the base, the outfit's main colour (values: base — the colour's name; shade — light, dark, absent means medium).
+- why_her_eyes — because it echoes or sets off her eye colour.
+- why_goal_flatter — because the outfit should flatter her.
+- choose_another_if_wants — she can choose another one herself if she wants.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "palette_stylist_choice", "заяви": [{"code": "stylist_chose_scheme", "values": {"scheme": "тональна"}}, {"code": "stylist_chose_base", "values": {"base": "бузковий", "shade": "light"}}, {"code": "why_her_eyes"}, {"code": "why_goal_flatter"}, {"code": "choose_another_if_wants"}]},
+{"н": 2, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_tonal"}, {"code": "native_to_her_soft_contrast"}, {"code": "same_fabric_reads_flat"}]},
+{"н": 3, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_analogous"}, {"code": "same_calm_contrast"}, {"code": "analogous_close_to_tonal"}]},
+{"н": 4, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_neutrals_accent"}, {"code": "accent_keep_muted"}, {"code": "loud_accent_pulls_from_face"}]},
+{"н": 5, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_muted_complementary"}, {"code": "both_sides_muted"}, {"code": "boldest_everyday_move"}, {"code": "second_side_small_patch"}, {"code": "pair_pulls_look_on_itself"}]},
+{"н": 6, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_triad"}, {"code": "rarer_than_everyday"}, {"code": "triad_three_families_limit"}]},
+{"н": 7, "вид": "palette_scheme_note", "заяви": [{"code": "contrast_mismatch"}, {"code": "contrast_mismatch_levels", "values": {"look_level": "high", "own_level": "low"}}]}
+]
+
+── ВІДПОВІДЬ (1262 симв., 25.6 с, HTTP 200) ──
+```json
+{
+  "1": "Я обрала тональну схему з бузковим кольором у світлому відтінку, бо він підкреслює твої очі та має зробити тебе ще гарнішою. Якщо хочеш — можеш обрати іншу.",
+  "2": "Тональна схема дуже личить твоєму м’якому контрасту, але варто пам’ятати: коли всі речі зроблені з однієї тканини, образ виходить трохи плоским.",
+  "3": "Аналогова схема дарує спокійний контраст. Вона майже тональна — різниця ледь помітна, тому ти можеш обрати ту назву, яка тобі більше до вподоби.",
+  "4": "Нейтральний колір у основі та яскравий акцент — це завжди гарно, але не забувай приглушити цей акцент. Інакше він буде занадто різким і відверне увагу від обличчя.",
+  "5": "Приглушені комплементарні кольори з обох боків виглядають дуже сміливо на твоєму м’якому контрасті, але не варто перевантажувати образ. Другий колір краще використати у вигляді маленької вставки.",
+  "6": "Тріадна схема — це рідкісний хід. Вона використовує три кольори приблизно однакової інтенсивності та доповнюється металом прикрас, тому аксесуари можуть повторювати лише один з них.",
+  "7": "Ця схема навмисно порушує твій природний контраст: твоє обличчя залишається у своїй зоні комфорту, а решта кольорів зміщуються. Це більше про те, щоб підкреслити одяг, ніж прикрасити тебе."
+}
+```

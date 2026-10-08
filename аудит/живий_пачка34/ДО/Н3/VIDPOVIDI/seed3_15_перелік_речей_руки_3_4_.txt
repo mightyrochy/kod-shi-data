@@ -1,0 +1,40 @@
+── ПРОМПТ (1631 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk blouse with a structured V-neckline in #ecd0ca, straight fit reaching mid-thigh, soft pastel beige, lightweight woven fabric. Tailored wool-blend blazer in #aeb2ba, single-breasted cut with shoulder padding for definition, hip length, fine melton weave. Minimalist loafers in matte black, rounded toe, slip-on style, smooth leather upper. Thin gold chain necklace and stud earrings in polished yellow metal to add subtle warmth without drawing excessive attention. This outfit creates a clean, unimpeachable silhouette that aligns with her wish for zero questions by prioritizing classic tailoring over trend-driven details. The muted earth tones harmonize with her natural coloring while the structured outer layer provides an authoritative yet professional presence suitable for a serious office environment."}
+
+── ВІДПОВІДЬ (961 симв., 238.8 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Silk blouse",
+        "details": "Structured V-neckline, straight fit reaching mid-thigh, soft pastel beige, lightweight woven fabric",
+        "slot": "top",
+        "color_hex": "#ecd0ca"
+      },
+      {
+        "name": "Wool-blend blazer",
+        "details": "Single-breasted cut with shoulder padding, hip length, fine melton weave",
+        "slot": "outerwear",
+        "color_hex": "#aeb2ba"
+      },
+      {
+        "name": "Loafers",
+        "details": "Matte black, rounded toe, slip-on style, smooth leather upper",
+        "slot": "shoes",
+        "color_hex": "#000000"
+      },
+      {
+        "name": "Gold chain necklace",
+        "details": "Thin gold chain",
+        "slot": "collar_necklace",
+        "color_hex": null
+      },
+      {
+        "name": "Stud earrings",
+        "details": "Polished yellow metal",
+        "slot": "earrings",
+        "color_hex": null
+      }
+    ]
+  }
+}
