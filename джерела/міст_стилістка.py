@@ -43,7 +43,7 @@ import річ_з_фото as _РФ
     вхід=(
         _ЗП.Поле("question", "her question, in her own words", треба=True),
         _ЗП.Поле("items", "her own items from this conversation, as the code sees them: features as "
-                          "codes, formality 1–10; \"verdict\" is the code's verdict on the item for her "
+                          "codes, formality on an internal 1–10 scale; \"verdict\" is the code's verdict on the item for her "
                           "palette and this occasion — statement codes, each defined in \"definitions\"",
                  "do not contradict \"verdict\"",
                  без="She has not shown or described any item yet."),
@@ -61,7 +61,7 @@ import річ_з_фото as _РФ
     вихід="LOOK_ANSWER",
     скелет={"answer": "<text>"},
     поля_виходу={"answer": "your answer to her question"},
-    межі=("лише_вхід", "для_неї", "без_чисел_тіла"),
+    межі=("лише_вхід", "для_неї", "без_чисел_тіла", "без_шкал"),
     мова_промпту="en",
 )
 

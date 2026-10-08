@@ -65,11 +65,12 @@ import дріт_моделі as _Д
                     "work with it"),
         _ЗП.Поле("outfit.items[].set_half", "only this half of a set is in the outfit"),
         _ЗП.Поле("idea", "your caption of this outfit"),
-        _ЗП.Поле("case", "her occasion: its fields as codes, her own words as quotes"),
+        _ЗП.Поле("case", "her occasion: its fields as codes, her own words as quotes; «formality» is an "
+                         "internal 1–10 band, for you only"),
         # рядок 1427 (СУКНЯ-СМУГА 03.10): «the choice is hers» тут стояло про БУДЬ-ЩО, що сперечається з
         # днем, і модель закінчувала ним 45 з 78 карток рук 1–2 — про речі, які обрала сама («сітка…
         # наскільки це важливо в церкві, вирішуєш ти»). Своє рішення стилістка не віддає жінці назад.
-        _ЗП.Поле("day", "her day as facts",
+        _ЗП.Поле("day", "her day as facts; «formality» is the same internal band",
                  як="in the third part of «text» say how this outfit lives through her day; when something "
                     "you chose argues with the day (weather, hours on her feet, the place), say in one plain "
                     "sentence why you still chose it, or what she does about it in the day itself (take the "
@@ -176,7 +177,7 @@ import дріт_моделі as _Д
         "заміна.на": "only with «swap_spares» in the input: «n» of the spare you choose; leave it out to "
                      "keep the item",
     },
-    межі=("лише_вхід", "для_неї", "без_чисел_тіла"),
+    межі=("лише_вхід", "для_неї", "без_чисел_тіла", "без_шкал"),
     мова_промпту="en",
 )
 
