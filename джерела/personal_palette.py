@@ -140,8 +140,8 @@ def родини(F, source="uncontrolled"):
                             голосує="лише світлотою й хромою", дуги=[]))
             continue
         for rel in ВІДНОШЕННЯ:
-            off, w = cs.RELATIONS[rel]
-            центри = [(f["h"] + off) % 360] + ([(f["h"] - off) % 360] if off not in (0, 180) else [])
+            w = cs.RELATIONS[rel][1]
+            центри = cs.центри_відношення(f["h"], rel)      # комплемент — за колом художника
             for c in центри:
                 дуга = cs._arc(c, w)
                 if h_шк is not None:

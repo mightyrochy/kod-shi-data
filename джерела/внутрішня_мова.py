@@ -177,6 +177,12 @@ def невідомо(v, коди=()):
         "gorpcore": "gorpcore", "dramatic": "драматичний", "ukrainian_ethnic": "етно_укр"},
     "zone": {"neckline": "декольте", "back": "спина", "arms": "руки", "shoulders": "плечі",
              "legs": "ноги", "belly": "живіт"},
+    # ЗОНА МЕТИ «ПРИХОВАТИ» (ФОКУС-3, рядок 1520): від якої зони тіла вона хоче відвести погляд
+    # («сховати живіт» → belly). Не межа відкритості (`zone` — «не відкривати»), а напрям уваги:
+    # R-CHEV-08 судить лише речі в цій зоні чи ті, що ведуть до неї погляд (`регістр_уваги`).
+    # Слова — ті самі, що в `zone` і `outfit.зони_речі`, плюс дві зони, яких річ не «відкриває».
+    "goal_zone": {"belly": "живіт", "hips": "стегна", "bust": "груди", "arms": "руки",
+                  "legs": "ноги", "shoulders": "плечі", "neckline": "декольте", "back": "спина"},
     "slot": {
         "top": "верх", "bottom": "низ", "dress": "сукня", "set": "комплект",
         "outerwear": "верхній_шар", "shoes": "взуття", "bag": "сумка", "scarf": "шарф",
@@ -477,6 +483,10 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     "goal": _перелік("goal", "мета на цей вихід: flatter — щоб личило; conceal — не привертати "
                              "уваги чи щось сховати; express — щоб на неї дивились; taller — "
                              "вона хоче довшу лінію, здаватись вищою"),
+    "goal_zones": _список(_перелік("goal_zone", "зона тіла"),
+                          "лише коли мета — conceal і вона назвала, ЩО сховати: зони тіла, від яких "
+                          "відвести погляд («сховати живіт» → belly); «не хочу привертати уваги» без "
+                          "зони — поля нема", maxItems=3),
     "makeup": {"description": "макіяж на цей вихід", "type": "object", "additionalProperties": False,
                "properties": {
                    "level": _перелік("makeup_level", "рівень макіяжу"),
@@ -1538,6 +1548,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "set_with_separate_part": "a set (top and bottom in one item) together with a separate top or bottom is a "
                               "doubling: keep the set, or take half of it and declare that a deliberate move "
                               "(values: slots — codes of the separate slots)",
+    "set_composition_unknown": "a set together with a separate top: the code does not know whether the "
+                               "set's upper half is a layer (jacket, blazer, vest) worn over a top or a top "
+                               "itself, so it does not call this a doubling (values: field — the catalogue-"
+                               "parse field that would tell)",
     "no_shoes": "the outfit has no shoes, and without them it is not ready: add a pair for the occasion",
     "no_bag": "no bag, and the occasion requires one",
     "needs_third_piece": "needs one more piece beyond top, bottom, shoes: outer layer, jewellery, belt, scarf "
@@ -1622,10 +1636,19 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "eye_family_colour_near_face": "an eye-family colour near the face: scarf, top or earrings",
     "loud_elements_over_budget": "there are more loud elements than the ceiling, and the rest of the outfit "
                                  "does not get to be a background; hair and frames count on a par with the "
-                                 "items (values: count — how many are loud, ceiling — the ceiling; face — "
-                                 "which facial features are loud too: hair, glasses)",
-    "keep_one_loud_mute_rest": "keep one loud element as the focus and take the rest as muted versions of the "
-                               "same family, or as neutrals",
+                                 "items, and each item of an echo counts (values: count — how many are loud, "
+                                 "ceiling — the ceiling; face — which facial features are loud too: hair, "
+                                 "glasses; keep — slot codes of the declared loud element with its echo, "
+                                 "quiet — slot codes of the other loud items, keep_by — who declared it: "
+                                 "scheme — the palette scheme's accent, zone — her focus zone, her_wish — "
+                                 "her own choice)",
+    "keep_one_loud_mute_rest": "keep one loud element as the focus and swap each other loud item for a quieter "
+                               "item in the same slot — a muted version of its family, or a neutral when the "
+                               "slot has none; not by removing the item",
+    "keep_declared_loud_quiet_others": "keep the declared loud element as it is, with its echo, and swap only the "
+                                       "other loud items for a quieter item in the same slot — a muted version "
+                                       "of its family, or a neutral when the slot has none; not by removing the "
+                                       "item (values: keep — slot codes to keep, quiet — slot codes to quieten)",
     "accent_orphan": "the accent colour stands in one slot only and nowhere else: the eye finds no intention "
                      "(values: colour — the code of the colour or family, hue — the hue in degrees, slot — "
                      "slot code; on_windows — true when the judgement rests on the windows of colour words, "
@@ -1981,21 +2004,37 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "the colour stayed under the coat (values: temperature_c — the "
                                         "temperature)",
     "move_colour_to_hat_scarf_gloves": "move the colour into the hat, scarf or gloves",
+    # ДОЩ-1 (рядок 1470): K-WEA-01 — дощовий день, а верхнього шару від дощу в образі нема
+    "no_rain_layer_on_rainy_day": "the day is rainy, and no outer layer of the look keeps the rain off — a "
+                                  "trench, a raincoat, a parka, a puffer or a coat; an umbrella is not "
+                                  "counted as a layer (values: precipitation — the "
+                                  "precipitation code, outer_moisture — none when there is no outer layer, "
+                                  "no when its type keeps off neither rain nor cold: a jacket, a bomber, a "
+                                  "vest, a cardigan or a poncho)",
+    "rain_outer_layer_over_look": "an outer layer that keeps off rain — a trench, a raincoat or a parka — over "
+                                  "this look, or keep the look and say why it holds this day",
     "smooth_protected_leather_or_rubber_or_treat": "replace it with smooth protected leather or rubber, or "
                                                    "treat it with a water repellent and accept the risk",
-    "face_contrast_above_her_own": "the contrast near the face is higher than her own: the clothes wear the "
-                                   "person and the face is rubbed out (values: jump — the lightness jump near "
-                                   "the face, own — her own contrast; with_neckline_buffer — the jump with "
-                                   "the neckline buffer; makeup_plus — how much noticeable make-up adds, and "
-                                   "that was not enough)",
+    "face_contrast_above_her_own": "the step of lightness between the item near the face and her skin is larger "
+                                   "than the step her own colouring carries, so the item draws the eye before "
+                                   "the face; this describes the item, not her looks (values: jump — the "
+                                   "lightness jump near the face, own — her own contrast; with_neckline_buffer — "
+                                   "the jump with the neckline buffer; makeup_plus — how much noticeable "
+                                   "make-up adds, and that was not enough)",
+    "light_item_near_deep_skin": "a light or clean item near her deep skin: the step of lightness is larger than "
+                                 "her own colouring carries, and on deep skin such a step is a welcome contrast "
+                                 "that practice recommends (a white shirt on a dark face) — a hint only, nothing "
+                                 "to replace (values: jump — the lightness jump near the face, own — her own "
+                                 "contrast)",
     "face_item_in_lightness_window": "replace the item near the face with one inside the lightness window "
                                      "(values: window — the lightness window from and to)",
     "open_neckline_as_buffer": "an open neckline as a skin buffer",
     "mid_lightness_scarf_or_collar": "a scarf or collar of intermediate lightness",
     "move_dark_item_down": "move the dark item to the bottom: the bottom and the shoes are almost free of "
                            "this rule",
-    "face_contrast_below_her_own": "the contrast near the face is lower than her own, a slight fading "
-                                   "(values: jump — the largest jump near the face, own — her own contrast)",
+    "face_contrast_below_her_own": "the step of lightness near the face is smaller than the step her own "
+                                   "colouring carries: the items sit close to her skin in lightness (values: "
+                                   "jump — the largest jump near the face, own — her own contrast)",
     "lift_face_contrast_with_accessory": "lift the contrast with an accessory without changing the items: a "
                                          "shiny piece of jewellery, a light detail near the face, a lipstick "
                                          "one step stronger, or a print with the spread needed",
@@ -2198,8 +2237,15 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "swap_one_item_to_colour_in_slot": "swap one item, best of all in this slot, for a coloured one from the "
                                        "selection, and keep the rest neutral (values: slot — slot code)",
     "scheme_one_accent_look_has_more": "the scheme promises neutrals and one accent, and the outfit carries "
-                                       "several colour families (values: families — family codes)",
-    "keep_one_coloured_rest_neutral": "keep one item coloured, the rest neutral of the same lightness band",
+                                       "several colour hues; an echo of one hue is one accent, and metal on "
+                                       "jewellery is not a colour (values: families — colour family codes, one "
+                                       "per hue; keep — "
+                                       "slot codes of the declared accent, quiet — slot codes of the other "
+                                       "hues, keep_by — who declared it: scheme — the palette scheme's accent, "
+                                       "her_wish — her own choice)",
+    "keep_one_coloured_rest_neutral": "keep one hue coloured, with its echo, and make the rest neutral of the same "
+                                      "lightness band (values, when the accent is declared: keep — slot codes to "
+                                      "keep coloured, quiet — slot codes to make neutral)",
     "scheme_families_missing_on_big_items": "the scheme promises its colour families on the large items, and "
                                             "the outfit's large items do not carry all of them; an accessory "
                                             "may echo a family but not be its only carrier (values: scheme — "
@@ -2573,10 +2619,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                    "allows, but need not (values: delta_L — what the make-up adds, L*; "
                                    "face_limit_L — the limit with it, L*)",
     # МАК-2 (рядок 258, П-4; R-MUA-02): порада про РІВЕНЬ макіяжу — м'яка, вибір її (п.9)
-    "visible_makeup_helps_low_contrast": "her features are low in contrast, and visible make-up (a defined lip "
-                                         "or eye) is what lifts the face against the clothes near it: for this "
-                                         "occasion it may be suggested softly; nothing in the outfits depends on "
-                                         "it, and what she plans stays hers",
+    "visible_makeup_helps_low_contrast": "her hair, eyes and skin are close in lightness (a soft colouring, a "
+                                         "fact, not a lack); visible make-up (a defined lip or eye) is one "
+                                         "optional way to add a step of lightness near the face for this "
+                                         "occasion: it may be offered softly as a choice; nothing in the outfits "
+                                         "depends on it, and what she plans stays hers",
     "bright_makeup_softer_for_work": "bright make-up is the less usual level for work or an interview, where a "
                                      "visible but moderate one is the usual: a soft remark only, her choice "
                                      "stands and no outfit changes because of it",
@@ -2590,9 +2637,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                "the outfit gets this step for free, so the clothes add no sharp one",
     "own_colouring_vivid": "her own colouring is vivid (her words, not measured): colour is present in the "
                            "outfit as colour, not only as a neutral with an accent",
-    "own_colouring_vivid_low_contrast": "her own colouring is vivid (her words, not measured) and her lightness "
-                                        "contrast is low: neutrals alone dim her — the outfit needs real "
-                                        "colour, with small steps of lightness between the items",
+    "own_colouring_vivid_low_contrast": "her own colouring is vivid (her words, not measured) and her hair, "
+                                        "eyes and skin are close in lightness: neutrals alone repeat little of "
+                                        "her colouring — the outfit carries real colour, with small steps of "
+                                        "lightness between the items",
     "own_colouring_muted": "her own colouring is muted (her words, not measured): clean bright colours pull "
                            "attention from the face — keep everything muted",
     "white_cool": "white and light neutrals are clean and cool (optical white), not milky",
