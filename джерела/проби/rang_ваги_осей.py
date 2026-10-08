@@ -10,7 +10,7 @@ F = cs.features(cs.hx(вх["шкіра"]), cs.hx(вх["волосся"][0]), cs.
 к = _O.контраст_особи(F, "uncontrolled")
 КОНТР = dict(щілина=к.get("value_gap"), value_gap=к.get("value_gap"), рівень=к.get("рівень"))
 НАДІЙ = П.reliability("uncontrolled")
-L_обл = KC.value_обличчя(F)
+L_обл = KC.опора_стрибка(F)          # опора стрибка K-CLR-02 — шкіра, як у суді (рядок 1620)
 # база на межі чутливості контрасту (факт=ліміт) і хроми (C0 біля цілі 12)
 L0, C0, h0 = L_обл - 12.3, 17.0, math.radians(40)
 a0, b0 = C0 * math.cos(h0), C0 * math.sin(h0)
