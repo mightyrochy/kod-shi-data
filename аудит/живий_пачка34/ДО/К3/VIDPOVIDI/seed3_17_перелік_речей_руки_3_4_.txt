@@ -1,0 +1,20 @@
+── ПРОМПТ (1547 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk slip dress with a draped neckline and bias cut for fluid movement, falling to mid-calf length in Midnight Blue (#0F141A) composed of liquid satin.\nLeather Chelsea boots in polished Black (#000000), featuring a sleek ankle shaft and low block heel.\nThis ensemble strikes the perfect balance for an intimate dinner date by combining the romantic elegance of the flowing silk with the grounded sophistication of leather footwear. The deep navy hue conveys confidence and maturity without feeling overly formal, making you feel both comfortable and stunning in a local restaurant setting. It respects your wish for a special occasion while remaining understated enough to not overwhelm the cozy ambiance of a neighborhood venue."}
+
+── ВІДПОВІДЬ (375 симв., 299.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk slip dress",
+      "details": "Draped neckline, bias cut for fluid movement, mid-calf length in liquid satin.",
+      "slot": "dress",
+      "color_hex": "#0F141A"
+    },
+    {
+      "name": "Leather Chelsea boots",
+      "details": "Sleek ankle shaft, low block heel.",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    }
+  ]
+}
