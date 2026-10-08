@@ -1591,8 +1591,14 @@ _ПОЛЯ_EN = {
     "precipitation": "rain or snow",
     "formality": ("how dressy this outing is, {from, to} on the 1–10 scale: always present, taken by the "
                   "anchors from her words, the event and \"chosen\" — steps: %s" % _ЩАБЛІ_EN),
+    # РОЗБІР-0210 А1 В-3 (рядок 1435): «я не хочу щоб вона знов щось сказала» (свекруха, ювілей) мовна модель
+    # клала лише в `stylist_note`, `intent` лишався типовим conventional, і пул діставав дозу «на межі»
+    # (40 речей `branch: edge`, ж1 і ж7). Прикладу неявного наміру — через чужий суд, який вона хоче
+    # пройти, — опис `context_optimal` не мав. Слова тлумачить модель (п.14, п.17), код за словами не вгадує
     "intent": "what matters most to her: comfort_first — comfort and freedom of movement; "
-              "context_optimal — being appropriate to the event and its level; statement — she wants "
+              "context_optimal — being appropriate to the event and its level, also when she says it only "
+              "through someone's judgement she wants to pass (nobody should criticise her look again, the "
+              "hosts or the elders should approve); statement — she wants "
               "to impress, stand out or be noticed, however she words it (all eyes on her, a star, bold, "
               "bright, not like everyone else, tired of grey and safe) — a separate field from goal, "
               "both are set when she says it; conventional — none of these, also when she wants to be "
