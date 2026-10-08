@@ -2169,7 +2169,7 @@ function підсумокМоделі(){
     }
     await ЧАСИ.почекати(тіло.model, разом, (в.текст || '').length, в.тип);
     await route.fulfill({ status: 200, contentType: 'application/json',
-      headers: {'x-model': 'заглушка-рв6', ...(урлФото ? {'x-images-dropped': String(дроп)} : {})},
+      headers: {'x-model': 'stub-rv6', ...(урлФото ? {'x-images-dropped': String(дроп)} : {})},
       body: JSON.stringify({ content: вміст, usage: {input_tokens: 1, output_tokens: 1}, stop_reason: в.стоп || 'end_turn' }) });
   });
 
@@ -2185,6 +2185,18 @@ function підсумокМоделі(){
       && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
   console.log('сторінка піднята за', ч(), '· збірка:', await стор.evaluate(() => ЗБІРКА_ПОКАЗУ),
               '· єдина сторінка:', await стор.evaluate(() => ЄДИНА_СТОРІНКА));
+  /* PLYTKY=1 (рядок 1409) — лічильник ходів мовної моделі за `де` (chat | tiles): скільки разів і яким запитом
+     показ кличе «хід плиток» після ходу розмови. Обгортка глобальної функції, як у `часи_збору.js`; продукт не чіпає. */
+  if (process.env.PLYTKY === '1') await стор.evaluate(() => {
+    window.__ходи = [];
+    const о = window.ходомРозмовиП;
+    window.ходомРозмовиП = function(...а){
+      const з = {де: а[2] || 'chat', t0: performance.now()}; window.__ходи.push(з);
+      const р = о.apply(this, а);
+      Promise.resolve(р).then(в => { з.мс = Math.round(performance.now() - з.t0); з.симв = ((в || {}).запис || {}).символів_промпта || null; });
+      return р;
+    };
+  });
 
   /* ── 0. ЗНАЙОМСТВО — РУКАМИ, ЯК ЙОГО ПРОХОДИТЬ ЖІНКА (v4.1) ──────────────────
      ДО 19.09 ТУТ СТОЯЛО: `КОЛІР = {...}`, `мр-* .value = ...`, `екран(2)` — три
@@ -2487,13 +2499,27 @@ function підсумокМоделі(){
               виміри: Object.keys(в).filter(к => в[к] !== 'unknown' && в[к] !== null && !(Array.isArray(в[к]) && !в[к].length))
                 .map(к => к + '=' + JSON.stringify(в[к]) + ' (' + з[к] + ')'),
               не_взято: п.не_взято_кодом || [], записи: ((ЧАТ_П.filter(х => х.хто === 'ші').pop() || {}).мова_шару || [])
-                .map(з_ => ({need: (з_.частини || {}).need, теми: з_.теми_поради, відкинуто: з_.відкинуто, причина: з_.причина}))};
+                .map(з_ => ({модель: з_.модель, need: (з_.частини || {}).need, теми: з_.теми_поради, відкинуто: з_.відкинуто, причина: з_.причина}))};
     });
     console.log('\nНГ-4 · ВОНА: ' + ЧАТ_ТЕКСТ + '\n   СТИЛІСТКА: ' + р.стилістка + '\n   КАРТКА: ' + р.випадок
       + '\n   ЯДРО: нагода=' + р.нагода + ' місце=' + р.місце + ' дрес_код=' + р.дрес_код
       + '\n   ВИМІРИ: ' + р.виміри.join(' · ') + '\n   НЕ ВЗЯТО: ' + JSON.stringify(р.не_взято)
       + '\n   ЗАПИСИ ШАРУ: ' + JSON.stringify(р.записи));
     console.log('KARTKA · після розмови:', JSON.stringify(await стор.evaluate(КАРТКА_РЯДКИ)));
+    if (process.env.PLYTKY === '1'){
+      await с(3000);          // `хідПлитокУФоніП` чекає 400 мс і кличе модель у фоні
+      const ходи = await стор.evaluate(() => (window.__ходи || []).map(х => ({де: х.де, мс: х.мс, симв: х.симв})));
+      console.log('ХОДИ ПЛИТОК (рядок 1409): ходів розмови ' + ходи.filter(х => х.де === 'chat').length
+        + ' · ходів плиток ' + ходи.filter(х => х.де === 'tiles').length
+        + ' · символів у ході плиток ' + ходи.filter(х => х.де === 'tiles').reduce((a, х) => a + (х.симв || 0), 0)
+        + ' · ' + JSON.stringify(ходи));
+      /* її рука на плитці ПІСЛЯ паспорта: паспорт зі слів застарів, і хід плиток кличеться, як доти (рука важить над паспортом) */
+      const торк = await стор.evaluate(() => { const п = document.querySelector('#сц-нагода-плитки button.плитка:not(.вибр)');
+        if (!п) return null; const назва = (п.querySelector('.н') || п).textContent; п.click(); return назва; });
+      await с(3000);
+      const ходи2 = await стор.evaluate(() => (window.__ходи || []).map(х => ({де: х.де, мс: х.мс, симв: х.симв})));
+      console.log('ХОДИ ПЛИТОК · після дотику до плитки «' + торк + '»: ходів плиток ' + ходи2.filter(х => х.де === 'tiles').length);
+    }
     await знімок('ng4_rozmova', null);
     await знімок('ng4_kartka', '#е-випадок');
     if (ЗНІМКИ) fs.writeFileSync(path.join(ЗНІМКИ, 'ng4_rozmova_seed' + СІД + '.txt'), JSON.stringify(
@@ -2823,6 +2849,18 @@ function підсумокМоделі(){
   /* ЗНІМОК ПАЛІТРИ (рядок 138): саме тут, під смугою, стояв підпис зі словом
      «ші». Кадр — цілий екран, а не смуга: рядок-підпис живе нижче за неї. */
   await знімок('ekran_palitra', '#е-палітра');
+  /* ПАЛІТРА БЕЗ МОВНОЇ МОДЕЛІ (рядок 402): сталий напис «без пояснення словами» — один над схемами, а не по рядку біля кожної */
+  {
+    const нап = await стор.evaluate(() => { const т = (document.getElementById('е-палітра') || {}).innerText || '';
+      return {написів: (т.match(/без пояснення словами/gi) || []).length,
+              рядків_схем: document.querySelectorAll('#пал-рідші .рідший-рядок').length,
+              нота: (document.getElementById('пал-нота') || {}).textContent || ''}; });
+    console.log('1б · написів «без пояснення словами» на екрані «Палітра»: ' + нап.написів
+      + ' · рядків біля схем ' + нап.рядків_схем + ' · нота: ' + JSON.stringify(нап.нота));
+    if (ШАР_ВИМКНЕНО) ф('рядок 402: без мовної моделі напис «без пояснення словами» на екрані «Палітра» один, не по рядку на схему',
+      нап.написів <= 1, нап);
+    if (process.env.DO === 'palitra'){ await браузер.close(); process.exit(провалів ? 1 : 0); }
+  }
 
   /* ── 1в. ТРИ ПИТАННЯ БЕЗ ПОРТРЕТА (PYTANNIA=1, рядок 151) ──────────────────
      Не звірка, а ПРОХІД із вимірами: скільки рекомендованих основ і що каже нота
@@ -4406,6 +4444,20 @@ function підсумокМоделі(){
     await стор.waitForFunction(і => /Записано|Не записалось/i.test(
       (document.getElementById('вст-' + і) || {}).textContent || ''), поз1, {timeout: 120000}).catch(()=>{});
     await с(600);
+    /* РЯДОК 1451: що жінка бачить на картці одразу після «Записати вердикт» — статус і свій коментар */
+    {
+      const після = await стор.evaluate(і => { const бл = document.getElementById('ком-запис-' + і), ст = document.getElementById('вст-' + і);
+        return {статус: ст ? ст.textContent : null, блок_є: !!бл, підпис: бл ? бл.querySelector('summary').textContent : null,
+                текст: бл ? бл.querySelector('p').textContent : null, розгорнуто: бл ? бл.open : null}; }, поз1);
+      console.log('   після запису (рядок 1451): ' + JSON.stringify(після));
+      await стор.evaluate(і => { const бл = document.getElementById('ком-запис-' + і); if (бл) бл.open = false; }, поз1);
+      await знімок('koment_zapysano_poz' + поз1, '#к-' + поз1);
+      await стор.evaluate(і => { const бл = document.getElementById('ком-запис-' + і); if (бл) бл.open = true; }, поз1);
+      await знімок('koment_zapysano_rozghornuto_poz' + поз1, '#к-' + поз1);
+      ф('рядок 1451: після запису під статусом є згорнутий «Твій коментар» з її словами цілими',
+        після.блок_є && після.підпис === 'Твій коментар' && після.текст === КОМЕНТАР_ТЕКСТ, після);
+      if (process.env.DO === 'koment'){ await браузер.close(); process.exit(провалів ? 1 : 0); }
+    }
     const межіПісля = await межіПаспорта();
     const стан = await стор.evaluate(() => ({
       набір: [...НЕ_ЦЯ_П],
@@ -5203,6 +5255,16 @@ function підсумокМоделі(){
     }
   }
   if (process.env.OTSINKA !== '0') await сцена6();
+  /* ЗВІТ ПІСЛЯ «ОЦІНИ МІЙ ОБРАЗ» (рядок 1450). Перший звіт іде зі сцени 4б, до сцени 6, тож відповіді
+     «Оціни мій образ» (`рука: 'оцінка'`) у файлі, який читає діагност, не було — хоч показ їх записує в той самий
+     журнал. Тут файл вивантажується вдруге тією ж кнопкою й лягає на місце першого. */
+  if (process.env.OTSINKA !== '0' && (process.env.КУДИ_ЗВІТ || process.env.ZVIT_OUT)){
+    const [вив6] = await Promise.all([
+      стор.waitForEvent('download', { timeout: 30000 }),
+      стор.evaluate(() => { document.getElementById('ж-файл').click(); })]);
+    fs.writeFileSync(process.env.КУДИ_ЗВІТ || process.env.ZVIT_OUT, fs.readFileSync(await вив6.path(), 'utf8'));
+    console.log('   вердикти (з «Оціни мій образ») → ' + (process.env.КУДИ_ЗВІТ || process.env.ZVIT_OUT));
+  }
 
   /* ── 4и. «УСІ ОБРАЗИ» ПІСЛЯ ПРИМІРЯННЯ: ЧИ СТОЇТЬ У ПЛИТЦІ ПРИМІРЯНИЙ КАДР ──
      Знахідка власника 25.09 (журнал куратора 26.09): «Вкладка „Усі образи“:
