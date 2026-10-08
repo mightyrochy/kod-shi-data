@@ -189,7 +189,7 @@ FOCAL = Template(
     "COMP.FOCAL_COUNT", "STYLISTIC", "constraint", "set", _focal_measure,
     band=lambda hg, p: ("le", p["max"], p["max"], "count"),
     applies=_focal_applies, roles=("all",), reads=("intent",), tier="T3",
-    kb="тема-4 K-COMP-05/K-INT-04 (рівно одна зона макс. інтересу); поріг інтересу 0.7 — SYN")
+    kb="тема-4 K-CRA-02 L558 (рівно один фокус); K-INT-04 (джерела інтересу); поріг інтересу 0.7 — SYN")
 
 
 def _focal_any_measure(hg, bind, p):
