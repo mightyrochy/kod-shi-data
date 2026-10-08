@@ -982,13 +982,13 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "outer_layer_unneeded_warm": "at this temperature an outer layer is unnecessary",
     "colour_from_her_words_not_photo": "the colour was taken from her description, not from a photo (values: "
                                        "colour — how she named it)",
-    "colour_unknown_not_checked": "this item's colour is unknown, as there is no photo and no colour was "
-                                  "named, so the item was not checked against her palette; a colour in words "
+    "colour_unknown_not_checked": "this item's colour is unknown, as neither a photo measured it nor a "
+                                  "colour was named, so the item was not checked against her palette; a colour in words "
                                   "makes the check possible",
     # ── ЇЇ РІЧ НА КАРТЦІ: ЧИМ РЕШТА ОБРАЗУ ЇЇ ПОМʼЯКШУЄ (`річ_з_фото.помʼякшення`) ──
     "her_item_in_every_look": "she chose this item herself, so it stands in every outfit",
-    "colour_unknown_rest_not_matched": "this item's colour is unknown, as there is no photo and she named no "
-                                       "colour, so the rest of the outfit was not matched to it by colour",
+    "colour_unknown_rest_not_matched": "this item's colour is unknown, as neither a photo measured it nor "
+                                       "she named a colour, so the rest of the outfit was not matched to it by colour",
     "near_face_her_neutral_or_palette_colour": "near the face: her neutral or a colour of her palette (a "
                                                "scarf, collar or earrings)",
     "between_item_and_face_mid_lightness": "between the item and the face: an item of intermediate lightness "
@@ -1184,6 +1184,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                        "carries",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
                                          "differ visibly",
+    "cannot_tell_neutral_near_face_temperature": "so the code cannot tell whether a neutral near her face "
+                                                 "matches her temperature",
     "cannot_tell_two_different_whites": "so the code cannot tell whether the outfit has two different whites, "
                                         "cream and optical",
     "cannot_tell_two_loud_colours_clash": "so the code cannot tell whether two loud colours compete for "
@@ -1302,8 +1304,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                   "constant (values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
     "scarf_wraps_head": "the scarf is large enough to wrap the head fully (values: size_cm — its side in cm)",
     "scarf_too_small_to_wrap_head": "the scarf is too small to wrap the head fully: a physical limit, not "
-                                    "taste (values: size_cm — its side in cm, unknown when the card does not "
-                                    "give it)",
+                                    "taste (values: size_cm — its side in cm)",
     "scarf_near_face_way_unknown": "whether she wears this scarf near the face; which top suits her depends "
                                    "on it, since a scarf near the face carries colour there by itself "
                                    "(values: item — item name; ways — codes of wearing ways: neck, hair, "

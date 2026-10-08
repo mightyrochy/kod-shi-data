@@ -211,7 +211,9 @@ def перевірити(схема, об, шлях=""):
               # bool — підклас int у Python: без явного відсіву `True` пройшов би
               # як ціле, і «ітерація: true» стало б валідним вердиктом
               "ціле": lambda v: isinstance(v, int) and not isinstance(v, bool),
-              "число": lambda v: isinstance(v, (int, float)) and not isinstance(v, bool),
+              # inf/NaN — не число вимірювання (рядок 1991): JSON їх не має, а `x != x` ловить NaN
+              "число": lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)
+                                 and v == v and v not in (float("inf"), float("-inf")),
               "логічне": lambda v: isinstance(v, bool)}[т](об)
         if not ок:
             return [_пом(шлях, "тип «%s», а треба «%s»" % (_як_звати(об), т))]
