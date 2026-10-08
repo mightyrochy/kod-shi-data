@@ -12,7 +12,8 @@ print("комплектів: %d · склад:" % len(наб), dict(collections.
 print("  з кодом розбору set_parts (файл поруч):", sum(1 for r in наб if КК.поля(r["id"]).get("set_parts")))
 тмп = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8")
 json.dump({"kj": {"set_parts": [{"item_type": "jacket"}, {"item_type": "skirt"}]},
-           "ks": {"set_parts": [{"item_type": "shirt"}, {"item_type": "trousers"}]}}, тмп); тмп.close()
+           "ks": {"set_parts": [{"item_type": "shirt"}, {"item_type": "trousers"}]},
+           "kb": {"set_parts": [{"item_type": "bodysuit", "slot": "top"}, {"item_type": "trousers", "slot": "bottom"}]}}, тмп); тмп.close()
 os.environ["ROZBIR_KODY"] = тмп.name
 ДОД = [dict(id="i%d" % n, слот=с, назва=с, тип=с) for n, с in enumerate(("взуття", "сумка", "сережки"))]
 def суд(ід, назва):
@@ -23,7 +24,8 @@ def суд(ід, назва):
     return "блокер" if б else ("питання: " + п[0][:40]) if п else "без блокера"
 for ід, назва, що in (("k0", "Світло-зелений костюм зі спідницею міді", "назва без половин"),
                       ("kj", "Костюм чорний", "розбір: jacket + skirt"),
-                      ("ks", "МОДЕЛЬ №905 СІРИЙ", "розбір: shirt + trousers")):
+                      ("ks", "МОДЕЛЬ №905 СІРИЙ", "розбір: shirt + trousers"),
+                      ("kb", "Костюм графітовий", "розбір: bodysuit/top + trousers")):
     print("  %-26s «%s» + блуза → %s" % (що, назва[:22], суд(ід, назва)))
 сл = {"її-ф1": dict(слот="верх", назва="блуза", власна=True, закріплена=True),
       "kp": dict(id="kp", слот="комплект", назва="Костюм двійка штани + піджак сірий"),
