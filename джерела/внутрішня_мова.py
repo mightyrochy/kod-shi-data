@@ -1982,10 +1982,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "temperature)",
     "move_colour_to_hat_scarf_gloves": "move the colour into the hat, scarf or gloves",
     # ДОЩ-1 (рядок 1470): K-WEA-01 — дощовий день, а верхнього шару від дощу в образі нема
-    "no_rain_layer_on_rainy_day": "the day is rainy, and no outer layer of the look keeps the rain off; an "
-                                  "umbrella is not counted as a layer (values: precipitation — the "
+    "no_rain_layer_on_rainy_day": "the day is rainy, and no outer layer of the look keeps the rain off — a "
+                                  "trench, a raincoat, a parka, a puffer or a coat; an umbrella is not "
+                                  "counted as a layer (values: precipitation — the "
                                   "precipitation code, outer_moisture — none when there is no outer layer, "
-                                  "otherwise how its type keeps off rain: partly or no)",
+                                  "no when its type keeps off neither rain nor cold: a jacket, a bomber, a "
+                                  "vest, a cardigan or a poncho)",
     "rain_outer_layer_over_look": "an outer layer that keeps off rain — a trench, a raincoat or a parka — over "
                                   "this look, or keep the look and say why it holds this day",
     "smooth_protected_leather_or_rubber_or_treat": "replace it with smooth protected leather or rubber, or "
