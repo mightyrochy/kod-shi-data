@@ -1,0 +1,36 @@
+── ПРОМПТ (3149 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення (не «личить personally», а «личить особисто»), і не пиши слово літерами двох абеток (не «spідниця», не «structурована» — «спідниця», «структурована»); латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти»; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This sharp olive suit is designed for a somber occasion. It features a fitted dress in a soft olive hue with flutter sleeves and a row of delicate buttons down the front, paired with elegant gold point-toe heels that add a touch of subtle luxury. You can complete the ensemble with a pale mint overcoat if needed for warmth and carry your yellow leather shoulder bag to balance the color palette."},
+{"н": 2, "текст": "Keep the dress buttoned up for a clean, vertical line that elongates your silhouette."},
+{"н": 3, "текст": "Allow the coat's belt to define your waist only when you wear it open or tied."},
+{"н": 4, "текст": "Ilvi Туфлі золоті — Addressed blocker 'no_shoes': selected formal golden dress shoes appropriate for mourning while respecting the silver theme with a metallic tone."},
+{"н": 5, "текст": "Сумка Grace зі шкіри — Addressed blocker 'no_bag': selected a shinning leather bag to carry essentials for the funeral."},
+{"н": 6, "текст": "Пальто м'ятного кольору під пояс — Addressed block 'needs_third_piece' and 'too_few_items': added a coat layer suitable for winter mourning events, bringing item count to 4."},
+{"н": 7, "текст": "Сумка Grace зі шкіри — The bold lemon bag carries the scheme's only required chroma to break the darkness without breaking formality, serving as the sole focal point."},
+{"н": 8, "текст": "Ilvi Туфлі золоті — Addressed blocker 'no_shoes': selected formal golden dress shoes."},
+{"н": 9, "текст": "Сумка Grace зі шкіри — Addressed blocker 'no_bag': selected a shinning leather bag."},
+{"н": 10, "текст": "Пальто м'ятного кольору під пояс — Addressed blocker 'incomplete'/'too_few_items': added a coat layer to complete the winter outfit structure."},
+{"н": 11, "текст": "Пальто м'ятного кольору під пояс — Addressed blocker 'incomplete'/'too_few_items': added a coat layer to complete the winter outfit structure and increase item count."}
+]
+
+── ВІДПОВІДЬ (1859 симв., 118.0 с, HTTP 200) ──
+```json
+{
+  "1": "Цей елегантний оливковий костюм створено для похмурої нагоди. Він складається з приталеної сукні м'якого оливкового відтінку з рукавами-ліхтариками та рядом витончених ґудзиків спереду, доповнених елегантними золотими туфлями-човниками на шпильці, які додають нотку стриманої розкоші. За потреби для тепла можна завершити ансамбль світло-м'ятним пальтом і взяти з собою жовту шкіряну сумку через плече, щоб збалансувати колірну гаму.",
+  "2": "Залиш сукню застебнутою для чистої вертикальної лінії, яка подовжує силует." ,
+  "3": "Дозволь поясу на пальта підкреслити твою талію лише тоді, коли носиш його розстібнутим або зав'язаним.",
+  "4": "Ilvi Туфлі золоті — Усунено обмеження 'no_shoes': обрано офіційні золоті туфлі для жалоби, поважаючи сріблясту тему металевим відтінком." ,
+  "5": "Сумка Grace зі шкіри — Усунено обмеження 'no_bag': обрано блискучу шкіряну сумку для носіння необхідних речей на похорон." ,
+  "6": "Пальто м'ятного кольору під пояс — Усунено обмеження 'needs_third_piece' і 'too_few_items': додано шар пальта, який підходить для зимових жалобних заходів, збільшивши кількість предметів до 4." ,
+  "7": "Сумка Grace зі шкіри — Смілива лимонна сумка несе єдину необхідну хроматичність схеми, щоб розбавити темряву без порушення формальності, слугуючи єдиною фокусною точкою." ,
+  "8": "Ilvi Туфлі золоті — Усунено обмеження 'no_shoes': обрано офіційні золоті туфлі для жалоби." ,
+  "9": "Сумка Grace зі шкіри — Усунено обмеження 'no_bag': обрано блискучу шкіряну сумку." ,
+  "10": "Пальто м'ятного кольору під пояс — Усунено обмеження 'incomplete'/'too_few_items': додано шар пальта, щоб завершити зимову структуру вбрання." ,
+  "11": "Пальто м'ятного кольору під пояс — Усунено обмеження 'incomplete'/'too_few_items': додано шар пальта, щоб завершити зимову структуру вбрання та збільшити кількість предметів."
+}
+```

@@ -1,0 +1,281 @@
+── ПРОМПТ (19030 симв.) ──
+{"version":"1","task":{"role":"You are the stylist. The code checked the outfits you put together for her, and some of them cannot be shown yet: each such outfit has a blocker in «structure». You finish every one of them before she chooses.","rules":["Finish EVERY outfit in «verdict»: clear all of its blockers.","A missing kind of item: add one item for it from «showcase».","Several items of one kind: keep the one that suits the outfit best and remove the others.","Change nothing else: the remaining items, the caption and the day stay as they are.","Name every item by its «n» — in full, exactly as in «verdict» or «showcase».","Return every outfit of «verdict», each under its own «id»."],"limits":["Rely only on the input: do not invent what it does not contain.","The answer is one JSON object following \"answer_schema\", without explanations and without ```."],"language":"English","answer":"OUTFITS_V1","answer_schema":{"version":"1","outfits":[{"id":"<«id» of the outfit, as in «verdict»>","caption":"<string>","pole":"filter_and_rank|anchor_first|tonal_column|ease_the_knot|break|free","items":["<«n» of all items of the finished outfit>"],"day":"<«day» of «your_outfit», unchanged>","deliberate":[{"item":"<string>","why":"<string>"}],"done":[{"finding":"<string>","action":"fixed|declined|partly","why":"<string>"}]}],"needed":[{"kind":"<string>","description":"<string>","type":"<string>","color":"<string>","fabric":"<string>"}]},"input":["\"case\" — her occasion in her and the code's words","\"day\" — her day as facts","\"verdict\" — your outfits and the code's check: «your_outfit» — items with their full descriptions and your caption; «structure.blockers» — what keeps the outfit from being shown: a missing kind of item, or several items of one kind («items» lists them)","\"showcase\" — items that can fill what is missing","\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, or {code: values}; codes are defined in \"statement_codes\""],"statement_codes":{"no_shoes":"the outfit has no shoes, and without them it is not ready: add a pair for the occasion","no_bag":"no bag, and the occasion requires one","needs_third_piece":"needs one more piece beyond top, bottom, shoes: outer layer, jewellery, belt, scarf or hat","too_few_items":"too few items in the outfit for this occasion (values: count — how many there are, minimum — how many are needed at least)","single_item_not_outfit":"one item is not an outfit yet: add at least shoes, or a top or a bottom to a set"}},"case":"траур, похорон, прикраси: срібло","day":{"unknown":["place","start_hour","temperature_c"]},"verdict":[{"your_outfit":{"id":"o1","caption":"Sharp olive suit for mourning","items":[{"n":"#275·28","name":"Сукня оливка","price":1720,"type":"dress_generic","cut":"fitted","fabric":["atlas"],"length":"midi","sleeve":"short","color":"olive","hex":"#71744a","family":"yellow","L":[30,65],"L_from":"word","hem_cm":[22,36],"hem_from":"word","formality":[7,9],"register":"romantic","branch":"core"}],"day":"The fitted olive silk dress anchors the somber day with a soft, romantic texture; the graphite blazer provides necessary structure and silence for the funeral."},"structure":{"ok":false,"blockers":[{"id":"b-o1-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o1-2","code":"no_bag","statements":["no_bag"]},{"id":"b-o1-3","code":"incomplete","statements":["needs_third_piece"]},{"id":"b-o1-4","code":"incomplete","statements":[{"too_few_items":{"count":1,"minimum":4}}]},{"id":"b-o1-5","code":"single_item","statements":["single_item_not_outfit"]}]}},{"your_outfit":{"id":"o2","caption":"Clean lines in graphite grey","items":[{"n":"#140·19","name":"В’язана ажурна сукня з бавовни","price":6580,"type":"dress_generic","cut":"relaxed","fabric":["cotton"],"length":"maxi","sleeve":"sleeveless","pattern":"lace_motif","color":"graphite","hex":"#554a4d","L":[20,45],"L_from":"word","hem_cm":[5,15],"hem_from":"word","formality":[5,7],"register":"romantic","branch":"core"},{"n":"#68·22","name":"Сірий однобортний жакет з поясом","price":6999,"type":"blazer","cut":"fitted","fabric":["woven"],"length":"waist","details":["belt","single_breasted"],"color":"grey","hex":"#474748","L":[30,30],"L_from":"photo_point","hem_cm":[101,107],"hem_from":"word","formality":[5,7],"register":"classic","branch":"core"}],"day":"The fitted graphite dress and double-breasted blazer create a strong, quiet silhouette appropriate for a funeral; the knit cardigan adds a layer of warmth without breaking the solemn code."},"structure":{"ok":false,"blockers":[{"id":"b-o2-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o2-2","code":"no_bag","statements":["no_bag"]}]}},{"your_outfit":{"id":"o3","caption":"Mix of jersey and wool","items":[{"n":"#140·19","name":"В’язана ажурна сукня з бавовни","price":6580,"type":"dress_generic","cut":"relaxed","fabric":["cotton"],"length":"maxi","sleeve":"sleeveless","pattern":"lace_motif","color":"graphite","hex":"#554a4d","L":[20,45],"L_from":"word","hem_cm":[5,15],"hem_from":"word","formality":[5,7],"register":"romantic","branch":"core"},{"n":"#70·06","name":"Жакет CLARK прямого крою з легкої костюмної тканини","price":6900,"type":"blazer","cut":"straight","fabric":["polyester","woven"],"length":"mid_thigh","color":"graphite","hex":"#3e3c44","L":[26,26],"L_from":"photo_point","hem_cm":[82,92],"hem_from":"word","formality":[5,7],"fabric_c":[2,18],"register":"classic","branch":"core"}],"day":"Combining the drape of a jersey dress with the structure of a wool blazer and cotton sweater offers comfort for walking; the silver accessories and grey tones maintain the required solemnity."},"structure":{"ok":false,"blockers":[{"id":"b-o3-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o3-2","code":"no_bag","statements":["no_bag"]}]}},{"your_outfit":{"id":"o4","caption":"Warm camel accents for winter","items":[{"n":"#140·19","name":"В’язана ажурна сукня з бавовни","price":6580,"type":"dress_generic","cut":"relaxed","fabric":["cotton"],"length":"maxi","sleeve":"sleeveless","pattern":"lace_motif","color":"graphite","hex":"#554a4d","L":[20,45],"L_from":"word","hem_cm":[5,15],"hem_from":"word","formality":[5,7],"register":"romantic","branch":"core"},{"n":"#70·06","name":"Жакет CLARK прямого крою з легкої костюмної тканини","price":6900,"type":"blazer","cut":"straight","fabric":["polyester","woven"],"length":"mid_thigh","color":"graphite","hex":"#3e3c44","L":[26,26],"L_from":"photo_point","hem_cm":[82,92],"hem_from":"word","formality":[5,7],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#370·37","name":"Ремінь жіночий Welfare","price":650,"fabric":["leather"],"color":"ginger","hex":"#7e4a2c","family":"orange","in_arc":true,"L":[19,55],"L_from":"word","branch":"core"}],"day":"A graphite dress with a camel belt adds warmth to the cold day, while the black blazer keeps the silhouette formal; the ginger belt creates the only intentional break in the monochrome scheme to provide visual interest."},"structure":{"ok":false,"blockers":[{"id":"b-o4-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o4-2","code":"no_bag","statements":["no_bag"]}]}},{"your_outfit":{"id":"o5","caption":"Mix of jersey and wool","items":[{"n":"#140·19","name":"В’язана ажурна сукня з бавовни","price":6580,"type":"dress_generic","cut":"relaxed","fabric":["cotton"],"length":"maxi","sleeve":"sleeveless","pattern":"lace_motif","color":"graphite","hex":"#554a4d","L":[20,45],"L_from":"word","hem_cm":[5,15],"hem_from":"word","formality":[5,7],"register":"romantic","branch":"core"},{"n":"#70·06","name":"Жакет CLARK прямого крою з легкої костюмної тканини","price":6900,"type":"blazer","cut":"straight","fabric":["polyester","woven"],"length":"mid_thigh","color":"graphite","hex":"#3e3c44","L":[26,26],"L_from":"photo_point","hem_cm":[82,92],"hem_from":"word","formality":[5,7],"fabric_c":[2,18],"register":"classic","branch":"core"}],"day":"Combining the drape of a jersey dress with the structure of a wool blazer and cotton sweater offers comfort for walking; the silver accessories and grey tones maintain the required solemnity."},"structure":{"ok":false,"blockers":[{"id":"b-o5-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o5-2","code":"no_bag","statements":["no_bag"]}]}}],"showcase":[{"n":"#158·07","name":"Мюлі жіночі золоті","price":21850,"type":"mules","fabric":["leather"],"shine":true,"color":"golden","hex":"#d4af37","family":"yellow","in_arc":true,"L":[73,73],"L_from":"photo_point","formality":[4,6],"heel":"unknown","branch":"core"},{"n":"#183·07","name":"Босоніжки жіночі золоті","price":36600,"type":"heeled_sandals","fabric":["leather"],"shine":true,"color":"golden","hex":"#d4af37","family":"yellow","in_arc":true,"L":[73,73],"L_from":"photo_point","formality":[4,6],"heel":"unknown","branch":"core"},{"n":"#10·11","name":"LeBERDES Сандалі жовті","price":3569,"type":"sandals","fabric":"unknown","material":"leather","color":"yellow","hex":"#f6e19c","family":"yellow","in_arc":true,"L":[90,90],"L_from":"photo_point","formality":[2,4],"heel":"unknown","register":"boho","branch":"core"},{"n":"#90·11","name":"Ilvi Туфлі золоті","price":6450,"type":"dress_shoes","fabric":["leather"],"shine":true,"color":"golden","hex":"#c8ac6a","family":"yellow","in_arc":true,"L":[55,88],"L_from":"word","formality":[5,7],"heel":"unknown","branch":"core"},{"n":"#119·10","name":"Слінгбеки жовті TRACY","price":4690,"type":"pumps","fabric":["leather"],"color":"yellow","hex":"#efd056","family":"yellow","in_arc":true,"L":[70,98],"L_from":"word","formality":[6,8],"heel":"unknown","register":"classic","branch":"core"},{"n":"#57·11","name":"LeBERDES Сандалі золоті","price":2979,"type":"sandals","fabric":"unknown","material":"leather","shine":true,"color":"golden","hex":"#d4af37","family":"yellow","in_arc":true,"L":[73,73],"L_from":"photo_point","formality":[2,4],"heel":"unknown","register":"boho","branch":"core"},{"n":"#141·07","name":"Шльопанці жіночі лимонні","price":21200,"type":"sandals","fabric":"unknown","shine":true,"color":"lemon","hex":"#ecda6e","family":"yellow","in_arc":true,"L":[75,98],"L_from":"word","formality":[2,4],"heel":"none","register":"boho","branch":"core"},{"n":"#161·10","name":"Балетки гірчичні BEANS","price":1240,"type":"ballet_flats","fabric":["wool"],"color":"mustard","hex":"#ba9733","family":"yellow","in_arc":true,"L":[48,80],"L_from":"word","formality":[4,6],"fabric_c":[2,18],"heel":"none","register":"classic","branch":"core"},{"n":"#294·03","name":"Сумка жіноча, ATTICO, шкіра, колір жовтий","price":2299,"type":"bag_generic","fabric":["leather"],"color":"yellow","hex":"#efd056","family":"yellow","in_arc":true,"L":[70,98],"L_from":"word","branch":"core"},{"n":"#123·30","name":"Крос-боді у фірмовий принт із золотистим лого","price":3600,"type":"crossbody_bag","fabric":"unknown","pattern":"print_generic","color":"golden","hex":"#c8ac6a","family":"yellow","in_arc":true,"L":[55,88],"L_from":"word","formality":[4,4],"register":"rock","branch":"core"},{"n":"#261·03","name":"Сумка жіноча, ATTICO, шкіра, колір жовтий","price":1599,"type":"bag_generic","fabric":["leather"],"color":"yellow","hex":"#efd056","family":"yellow","in_arc":true,"L":[70,98],"L_from":"word","branch":"core"},{"n":"#112·30","name":"Крос-боді жовтого кольору Serena","price":4300,"type":"crossbody_bag","fabric":["leather"],"pattern":"embroidery","color":"yellow","hex":"#fde47f","family":"yellow","in_arc":true,"L":[91,91],"L_from":"photo_point","formality":[4,4],"register":"boho","branch":"core"},{"n":"#116·30","name":"Сумка Grace зі шкіри","price":16000,"type":"bag_generic","fabric":["leather"],"shine":true,"color":"lemon","hex":"#fef19e","family":"yellow","in_arc":true,"L":[94,94],"L_from":"photo_point","branch":"core"},{"n":"#21·38","name":"Сумка Гірчична","price":2070,"type":"bag_generic","fabric":"unknown","color":"mustard","hex":"#ba9733","family":"yellow","in_arc":true,"L":[48,80],"L_from":"word","branch":"core"},{"n":"#26·20","name":"Жіноча сумка шкіряна жовта","price":1799,"type":"bag_generic","fabric":["leather"],"color":"yellow","hex":"#efd056","family":"yellow","in_arc":true,"L":[70,98],"L_from":"word","branch":"core"},{"n":"#100·30","name":"Шкіряна сумка яскраво-зеленого кольору","price":382,"type":"bag_generic","fabric":["leather"],"color":"green","shop_color":"яскраво-зелений","hex":"#d2ce5a","family":"yellow","in_arc":true,"L":[81,81],"L_from":"photo_point","branch":"core"},{"n":"#191·26","name":"Прямий піджак з коміром та кишенями","price":13500,"type":"blazer","cut":"fitted","fabric":["elastane","woven"],"sleeve":"long","color":"grey","hex":"#877a7d","L":[25,80],"L_from":"word","hem_cm":[66,70],"hem_from":"shop_cm","formality":[5,7],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#287·01","name":"Пальто м'ятного кольору під пояс","price":10099,"type":"coat","fabric":["polyester"],"length":"maxi","color":"green","hex":"#39873a","family":"green","L":[20,80],"L_from":"word","hem_cm":[5,15],"hem_from":"word","formality":[5,9],"fabric_c":[2,18],"register":"classic","branch":"edge","scheme":"muted_complementary"},{"n":"#63·30","name":"Сірий піджак прямого крою в картатий принт","price":4330,"type":"blazer","cut":"fitted","fabric":["cotton","woven"],"length":"mid_thigh","pattern":"check","color":"grey","hex":"#675f5b","L":[41,41],"L_from":"photo_point","hem_cm":[63,67],"hem_from":"shop_cm","formality":[4,7],"register":"classic","branch":"core"},{"n":"#265·12","name":"Пальто-піджак вовна в кольорі графіт","price":2999,"type":"coat","cut":"relaxed","fabric":["polyester"],"length":"midi","details":["double_breasted"],"color":"graphite","hex":"#554a4d","L":[20,45],"L_from":"word","hem_cm":[22,36],"hem_from":"word","formality":[5,7],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#351·29","name":"Піджак жіночий асиметричнийний на запах з поясом демісезонний","price":2699,"type":"blazer","cut":"wrap","fabric":["polyester","woven"],"details":["belt","double_breasted"],"color":"navy","hex":"#1c3c63","family":"blue","L":[10,40],"L_from":"word","hem_cm":[72,81],"hem_from":"shop_cm","formality":[5,7],"register":"classic","branch":"core"},{"n":"#259·01","name":"Парка-пончо кольору хакі","price":4499,"type":"jacket","cut":"relaxed","fabric":["polyester"],"length":"midi","sleeve":"sleeveless","color":"green","hex":"#514936","family":"yellow","L":[31,31],"L_from":"photo_point","hem_cm":[22,36],"hem_from":"word","formality":[2,5],"branch":"core"},{"n":"#332·29","name":"Жилет жіночий утеплений з плащівки з синтепухом демісезонний","price":2699,"type":"vest","cut":"straight","fabric":["polyester"],"length":"mid_thigh","details":["quilted"],"color":"black","hex":"#2d2326","L":[0,30],"L_from":"word","hem_cm":[66,70],"hem_from":"shop_cm","formality":[4,7],"branch":"core"},{"n":"#122·17","name":"Кардиган Хмаринка шоколад","price":3200,"type":"cardigan","cut":"relaxed","fabric":["polyamide","jersey"],"details":["oversize"],"color":"chocolate","hex":"#513827","family":"orange","L":[12,40],"L_from":"word","formality":[3,6],"register":"preppy","branch":"core"},{"n":"#353·12","name":"Пояс до піджака світло-сірий","price":100,"type":"blazer","fabric":["polyester","woven"],"color":"grey","shop_color":"світло-сірий","hex":"#ab9ea1","in_arc":true,"L":[52,80],"L_from":"word","formality":[5,7],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#173·17","name":"Пасок з пір’ям 2 смарагд","price":900,"fabric":["satin"],"shine":true,"color":"emerald","hex":"#2d412d","family":"green","in_arc":true,"L":[12,39],"L_from":"word","register":"romantic","branch":"core"},{"n":"#154·17","name":"Пасок металевий Кільця золото","price":950,"type":"jewelry_generic","fabric":"unknown","shine":true,"color":"golden","hex":"#c8ac6a","family":"yellow","in_arc":true,"L":[55,88],"L_from":"word","branch":"core"},{"n":"#214·05","name":"Пасок шкіряний (Hermes Kelly)","price":2780,"fabric":["leather"],"color":"black","hex":"#1f1c1e","in_arc":true,"L":[11,11],"L_from":"photo_point","branch":"core"},{"n":"#327·37","name":"Ремінь жіночий Welfare","price":750,"fabric":["leather"],"color":"green","hex":"#39873a","family":"green","in_arc":true,"L":[20,80],"L_from":"word","branch":"core"},{"n":"#138·17","name":"Пасок з камінням золото","price":650,"fabric":"unknown","color":"golden","hex":"#c8ac6a","family":"yellow","in_arc":true,"L":[55,88],"L_from":"word","branch":"core"},{"n":"#151·30","name":"Джинсовий ремінь із бантом","price":101,"type":"jeans","fabric":["denim","woven"],"color":"navy","hex":"#33465b","family":"blue","in_arc":true,"L":[29,29],"L_from":"photo_point","formality":[1,4],"register":"workwear","branch":"core"},{"n":"#149·30","name":"Широкий ремінь зі шкіри з металевим декором","price":3600,"cut":"wide","fabric":["leather"],"pattern":"geometric","color":"black","hex":"#1d1b1d","in_arc":true,"L":[10,10],"L_from":"photo_point","branch":"core"},{"n":"#250·25","name":"М'який шарф з вишивкою ручної роботи \"Кролик\" молочний","price":3500,"type":"scarf_generic","fabric":["polyamide"],"pattern":"embroidery","color":"white","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#271·25","name":"Шовкова хустинка з принтом \"Пірʼя\"","price":2700,"type":"kerchief","fabric":["silk"],"pattern":"floral","color":"white","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","register":"romantic","branch":"core"},{"n":"#239·08","name":"Хустка, жовта","price":690,"type":"kerchief","fabric":["cotton"],"pattern":"check","color":"yellow","hex":"#efd056","family":"yellow","in_arc":true,"L":[70,98],"L_from":"word","branch":"core"},{"n":"#392·00","name":"В’язаний палантин із мінімалістичним орнаментом TEREN світла олива + айворі","price":1550,"type":"stole","fabric":["cotton"],"pattern":"print_generic","color":"olive","shop_color":"світла оливка","hex":"#71744a","family":"yellow","in_arc":true,"L":[30,65],"L_from":"word","register":"minimalism","branch":"core"},{"n":"#230·25","name":"Жакардовий двосторонній шарф з графічним мотивом темно-сірий","price":3500,"type":"scarf_generic","fabric":["polyamide"],"pattern":"embroidery","color":"grey","hex":"#505154","in_arc":true,"L":[34,34],"L_from":"photo_point","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#216·25","name":"Хустка з м'якої вовни ягняти молочний","price":2500,"type":"kerchief","fabric":["polyamide"],"color":"white","hex":"#f6f3ea","in_arc":true,"L":[96,96],"L_from":"photo_point","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#171·30","name":"Білий шарф із вишивкою","price":4500,"type":"scarf_generic","fabric":"unknown","pattern":"embroidery","color":"white","hex":"#f0e2e5","in_arc":true,"L":[82,100],"L_from":"word","register":"boho","branch":"core"},{"n":"#256·05","name":"Хустка з принтом (Other Brand)","price":760,"type":"kerchief","fabric":["polyester"],"pattern":"floral","color":"white","hex":"#dceaf4","in_arc":true,"L":[92,92],"L_from":"photo_point","register":"romantic","branch":"core"}]}
+
+── ВІДПОВІДЬ (7791 симв., 285.5 с, HTTP 200) ──
+{
+  "answer": "OUTFITS_V1",
+  "version": "1",
+  "outfits": [
+    {
+      "id": "o1",
+      "caption": "Sharp olive suit for mourning",
+      "pole": "filter_and_rank",
+      "items": [
+        {
+          "n": "#275·28"
+        },
+        {
+          "n": "#90·11"
+        },
+        {
+          "n": "#116·30"
+        },
+        {
+          "n": "#287·01"
+        }
+      ],
+      "day": "The fitted olive silk dress anchors the somber day with a soft, romantic texture; the graphite blazer provides necessary structure and silence for the funeral.",
+      "deliberate": [
+        {
+          "item": "#90·11",
+          "why": "Addressed blocker 'no_shoes': selected formal golden dress shoes appropriate for mourning while respecting the silver theme with a metallic tone."
+        },
+        {
+          "item": "#116·30",
+          "why": "Addressed blocker 'no_bag': selected a shinning leather bag to carry essentials for the funeral."
+        },
+        {
+          "item": "#287·01",
+          "why": "Addressed block 'needs_third_piece' and 'too_few_items': added a coat layer suitable for winter mourning events, bringing item count to 4."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_shoes",
+          "action": "fixed",
+          "why": "Added formal dress shoes."
+        },
+        {
+          "finding": "no_bag",
+          "action": "fixed",
+          "why": "Added a leather handbag."
+        },
+        {
+          "finding": "incomplete",
+          "action": "fixed",
+          "why": "Added an outer layer (coat) to complete the outfit structure and increase item count."
+        }
+      ]
+    },
+    {
+      "id": "o2",
+      "caption": "Clean lines in graphite grey",
+      "pole": "filter_and_rank",
+      "items": [
+        {
+          "n": "#140·19"
+        },
+        {
+          "n": "#68·22"
+        },
+        {
+          "n": "#90·11"
+        },
+        {
+          "n": "#116·30"
+        },
+        {
+          "n": "#287·01"
+        }
+      ],
+      "day": "The fitted graphite dress and double-breasted blazer create a strong, quiet silhouette appropriate for a funeral; the knit cardigan adds a layer of warmth without breaking the solemn code.",
+      "deliberate": [
+        {
+          "item": "#90·11",
+          "why": "Addressed blocker 'no_shoes': selected formal golden dress shoes."
+        },
+        {
+          "item": "#116·30",
+          "why": "Addressed blocker 'no_bag': selected a shinning leather bag."
+        },
+        {
+          "item": "#287·01",
+          "why": "Addressed blocker 'incomplete'/'too_few_items': added a coat layer to complete the winter outfit structure."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_shoes",
+          "action": "fixed",
+          "why": "Added formal dress shoes."
+        },
+        {
+          "finding": "no_bag",
+          "action": "fixed",
+          "why": "Added a leather handbag."
+        },
+        {
+          "finding": "incomplete",
+          "action": "fixed",
+          "why": "Added an outer layer (coat) to complete the outfit structure and increase item count."
+        }
+      ]
+    },
+    {
+      "id": "o3",
+      "caption": "Mix of jersey and wool",
+      "pole": "filter_and_rank",
+      "items": [
+        {
+          "n": "#140·19"
+        },
+        {
+          "n": "#70·06"
+        },
+        {
+          "n": "#90·11"
+        },
+        {
+          "n": "#116·30"
+        },
+        {
+          "n": "#287·01"
+        }
+      ],
+      "day": "Combining the drape of a jersey dress with the structure of a wool blazer and cotton sweater offers comfort for walking; the silver accessories and grey tones maintain the required solemnity.",
+      "deliberate": [
+        {
+          "item": "#90·11",
+          "why": "Addressed blocker 'no_shoes': selected formal golden dress shoes."
+        },
+        {
+          "item": "#116·30",
+          "why": "Addressed blocker 'no_bag': selected a shinning leather bag."
+        },
+        {
+          "item": "#287·01",
+          "why": "Addressed blocker 'incomplete'/'too_few_items': added a coat layer to complete the winter outfit structure."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_shoes",
+          "action": "fixed",
+          "why": "Added formal dress shoes."
+        },
+        {
+          "finding": "no_bag",
+          "action": "fixed",
+          "why": "Added a leather handbag."
+        },
+        {
+          "finding": "incomplete",
+          "action": "fixed",
+          "why": "Added an outer layer (coat) to complete the outfit structure and increase item count."
+        }
+      ]
+    },
+    {
+      "id": "o4",
+      "caption": "Warm camel accents for winter",
+      "pole": "filter_and_rank",
+      "items": [
+        {
+          "n": "#140·19"
+        },
+        {
+          "n": "#70·06"
+        },
+        {
+          "n": "#370·37"
+        },
+        {
+          "n": "#90·11"
+        },
+        {
+          "n": "#116·30"
+        },
+        {
+          "n": "#287·01"
+        }
+      ],
+      "day": "A graphite dress with a camel belt adds warmth to the cold day, while the black blazer keeps the silhouette formal; the ginger belt creates the only intentional break in the monochrome scheme to provide visual interest.",
+      "deliberate": [
+        {
+          "item": "#90·11",
+          "why": "Addressed blocker 'no_shoes': selected formal golden dress shoes."
+        },
+        {
+          "item": "#116·30",
+          "why": "Addressed blocker 'no_bag': selected a shinning leather bag."
+        },
+        {
+          "item": "#287·01",
+          "why": "Addressed blocker 'incomplete'/'too_few_items': added a coat layer to complete the winter outfit structure."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_shoes",
+          "action": "fixed",
+          "why": "Added formal dress shoes."
+        },
+        {
+          "finding": "no_bag",
+          "action": "fixed",
+          "why": "Added a leather handbag."
+        },
+        {
+          "finding": "incomplete",
+          "action": "fixed",
+          "why": "Added an outer layer (coat) to complete the outfit structure and increase item count."
+        }
+      ]
+    },
+    {
+      "id": "o5",
+      "caption": "Mix of jersey and wool",
+      "pole": "filter_and_rank",
+      "items": [
+        {
+          "n": "#140·19"
+        },
+        {
+          "n": "#70·06"
+        },
+        {
+          "n": "#287·01"
+        },
+        {
+          "n": "#90·11"
+        },
+        {
+          "n": "#116·30"
+        }
+      ],
+      "day": "Combining the drape of a jersey dress with the structure of a wool blazer and cotton sweater offers comfort for walking; the silver accessories and grey tones maintain the required solemnity.",
+      "deliberate": [
+        {
+          "item": "#90·11",
+          "why": "Addressed blocker 'no_shoes': selected formal golden dress shoes."
+        },
+        {
+          "item": "#116·30",
+          "why": "Addressed blocker 'no_bag': selected a shinning leather bag."
+        },
+        {
+          "item": "#287·01",
+          "why": "Addressed blocker 'incomplete'/'too_few_items': added a coat layer to complete the winter outfit structure and increase item count."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_shoes",
+          "action": "fixed",
+          "why": "Added formal dress shoes."
+        },
+        {
+          "finding": "no_bag",
+          "action": "fixed",
+          "why": "Added a leather handbag."
+        },
+        {
+          "finding": "incomplete",
+          "action": "fixed",
+          "why": "Added an outer layer (coat) to complete the outfit structure and increase item count."
+        }
+      ]
+    }
+  ],
+  "needed": []
+}
