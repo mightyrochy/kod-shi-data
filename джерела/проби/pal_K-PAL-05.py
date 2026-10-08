@@ -14,7 +14,7 @@
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import pal_вердикт as ПВ
-import pipeline as PL, реєстр_правил as РП
+import pipeline as PL, colorspace as cs, реєстр_правил as РП
 
 вх, r, кат, спец = ПВ.стенд(гілка=0, намір="statement")
 П = спец["палітра_практична"]
@@ -36,8 +36,9 @@ print("вісь ясності %+.2f → палітра %s · контраст �
 for в in (x for x in кат.values() if x.get("слот") == "верх"):
     L, C, h = ПВ.lch(кат, в["id"])
     if L is None or not гучний(L, C, h, в): continue
+    # пара — на колі художника, тією самою мірою, що й суд (КОЛО-1/КОЛО-2), не різницею CIELAB
     н = ПВ.з_каталогу(кат, "низ", lambda L2, C2, h2, з: гучний(L2, C2, h2, з)
-                      and abs((h2 - h + 180) % 360 - 180) >= 150)
+                      and abs((cs.у_коло_художника(h2) - cs.у_коло_художника(h) + 180) % 360 - 180) >= 150)
     if н:
         верх, низ, h1 = в, н, h
         break
