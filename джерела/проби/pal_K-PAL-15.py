@@ -9,7 +9,7 @@ K-COMP-05, тож довільна пара з НІ знахідки не дає
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import pal_вердикт as ПВ
-import palettes as PAL, pipeline as PL
+import palettes as PAL, pipeline as PL, суд_від_моделі as СВ
 
 вх, r, кат, спец = ПВ.стенд(гілка=0, намір="statement", самозвіт={"метал": "золото"})
 рівень = "низький"        # контраст стендової жінки (`palette.контраст_особи`)
@@ -20,9 +20,12 @@ import palettes as PAL, pipeline as PL
 низи = жив("низ") + жив("шарф") + жив("прикраси") + жив("головний_убір")
 решта = [ПВ.взяти(r, кат, с, lambda *a: True) for с in ("взуття", "сумка")]
 незаконна = законна = None
+# Два ГОЛОСИ, не дві речі (ФОКУС-2): тони пари далі за `_СУСІДНІ_ТОНИ`, інакше суд зводить їх в один.
+_т = lambda x: ПВ.lch(кат, x["id"])[2]
 for a in верхи:
     for b in низи:
         if незаконна and законна: break
+        if abs((_т(a) - _т(b) + 180) % 360 - 180) <= СВ._СУСІДНІ_ТОНИ: continue
         т = [ПВ.lch(кат, a["id"])[:2], ПВ.lch(кат, b["id"])[:2]]
         ок, ч = PAL.набір_законний(т, рівень)
         if (ок and законна) or (not ок and незаконна): continue
