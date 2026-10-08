@@ -1687,6 +1687,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "budget even though there is no area behind it (values: slot — slot "
                                       "code, chroma — the accessory's chroma, loud_from — the chroma from "
                                       "which a colour counts as loud)",
+    # ГГ-1 (рядки 1121, 1290): опора, не зауваження — відлуння акценту гучним аксесуаром (K-COMP-05)
+    "accessory_echoes_accent": "a loud accessory in the tone of a loud item of the outfit is the second point of "
+                               "the same accent, not a second accent (values: slot — the accessory's slot code, "
+                               "accent_slot — slot code of the item it echoes)",
     "bag_format_at_scale_edge": "the bag's format is at the edge of the scale, not its middle: both an "
                                 "oversized and a demonstratively small one upset the proportion alike "
                                 "(values: format — large or small)",
