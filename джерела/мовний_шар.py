@@ -894,7 +894,7 @@ def _її_речі(речі):
 # `part_of_day` (НП-в5, рядок 522 (3)) — так само: «Офіційний вечір» — плитка, а не її слова, і
 # вечір у назві події модель розуміє тим самим ходом; години (`hour`) це не стосується — число
 # лише з її слів.
-_БЕЗ_ЦИТАТИ = ("event", "mood", "question", "question_about", "rest", "quotes", "formality",
+_БЕЗ_ЦИТАТИ = ("event", "place_words", "mood", "question", "question_about", "rest", "quotes", "formality",
                "reserved_colour", "open_zones", "part_of_day", "stylist_note", "minute")
 _РЕЧІ_З_ЦИТАТОЮ = ("wants", "vetoes", "retract", "own_items", "beliefs")
 
@@ -1000,6 +1000,11 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
                   or джерела_досі.get(ім) == _ПН.ТИПОВЕ_ПОЛЕ_ФОРМИ)
         об[ім] = к if к is not None else (досі.get(ім) if є(досі.get(ім)) and not типова else None)
     об["подія"] = _текст(в.get("event")) or _текст(досі.get("подія"))
+    # МІСЦЕ СЛОВАМИ (рядки 472, 1434): слова тримаються при своєму місці — нове місце без слів ходу
+    # давніх не бере; чи слова дійдуть до картки, звіряє `паспорт_з_json` з місцем, що стало в паспорт
+    _нове_місце = об.get("місце") != досі.get("місце")
+    об["місце_слова"] = ((_текст(в.get("place_words")) or ("" if _нове_місце else _текст(досі.get("місце_слова"))))
+                         if об.get("місце") else "") or None
     # ВИМІРИ НАГОДИ З РОЗМОВИ (НГ-4; після НП-в — лише зарезервований колір). Коди — тими самими переліками, що
     # схема; нове значення ходу замінює давнє, чого хід не назвав — лишається з паспорта досі.
     # Розбір і перенос між ходами — `паспорт_нагоди.паспорт_з_json`, ті самі ключі.
@@ -1569,6 +1574,8 @@ _ПОЛЯ_EN = {
     "place": "where she will be",
     "dress_code": "the dress code, when it is named",
     "event": "the event briefly, in her words",
+    "place_words": "where she will be, 1–5 words in her language for her scenario card, capitalised (Церква, "
+                   "служба; Школа, випускний сина; Рок-клуб); whenever place is set",
     "reserved_colour": "a colour that belongs to another person at this event: near_white — white, "
                        "ivory and cream belong to the bride when she is not the bride herself",
     "open_zones": "how many body zones (neckline or back, legs, shoulders) it is appropriate to show "
@@ -1995,6 +2002,8 @@ def паспорт_кодами(п):
             вих[поле] = п[ключ]
     if _є(п.get("подія")):
         вих["event"] = str(п["подія"])
+    if _є(п.get("місце_слова")) and "place" in вих:
+        вих["place_words"] = str(п["місце_слова"])
     if _є(п.get("пояснення_мови")):
         вих["stylist_note"] = str(п["пояснення_мови"])
     for ключ, (поле, перелік, список) in _ПН.ПОЛЯ_ВИМІРІВ_РОЗМОВИ.items():      # НГ-4: те, що вона вже сказала
