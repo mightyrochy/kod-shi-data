@@ -109,6 +109,13 @@ import протокол as _ПР
     # рядок 1422 (живий прогін ж8_зима ПІСЛЯ): опис із полем `body` написав «твій зріст 154 см» — межа
     # тепер називає й мірки тіла, не лише світлоту й типи фігури
     "без_чисел_тіла": "Не називай чисел світлоти, мірок тіла чи зросту й типів фігури і не кажи, що мала обмеження.",
+    # ШКАЛА-1 (рядки 1530, 1551): смуга ошатності 1–10 (`case`/`day.formality`, ошатність речі, бал фото)
+    # їде моделі числами (п.12), і опис переказував її жінці — «для 6–8 за шкалою офіційності»
+    # (СУКНЯ-СМУГА ПІСЛЯ ж3_зима), «від 5 до 7 за шкалою офіційності» (ОПИС-1 ПІСЛЯ ж8_зима). Межа
+    # позначає ці числа внутрішніми в кожній задачі, чий текст іде їй (`проби/шкала_внутрішня.py`).
+    "без_шкал": ("Числа шкал у вході (ошатність 1–10 і її смуга, бали, ранги) — лише для тебе: не називай "
+                 "їй ні чисел, ні назви шкали і не кажи «за шкалою»; кажи словами нагоди (буденний вихід, "
+                 "день в офісі, вечір у місті, урочистість) і не згадуй ні коду, ні системи за ними."),
 }
 # Мова відповіді — поле шаблону, а не межа на вибір: українською відповідає кожна задача.
 МОВА = "українська"
@@ -184,6 +191,10 @@ def вибірка(о):
                 "polite plural; in plain human words, without item numbers, ids, hex codes or markdown."),
     "без_чисел_тіла": ("Do not name lightness numbers, body measurements or height in numbers, or body-type "
                       "labels, and do not say you had limits."),
+    "без_шкал": ("Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for "
+                 "you only: never tell her a number or the name of a scale and never say \"on the scale\"; "
+                 "say it in words of the occasion (an everyday outing, an office day, an evening in town, a "
+                 "ceremony), and do not mention any code or system behind them."),
 }
 МОВА_EN = "English"
 ФОРМА_JSON_EN = "The answer is one JSON object following \"answer_schema\", without explanations and without ```."

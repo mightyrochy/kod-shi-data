@@ -760,7 +760,7 @@ def _сцена_для_моделі(суд_):
         "change": [{"id": "<change id from changes>", "text": "<why this change helps her>"}],
         "unknown": [{"text": "<what you cannot judge and what would let you>"}],
     },
-    межі=("лише_вхід", "невідомо", "для_неї", "без_чисел_тіла"),
+    межі=("лише_вхід", "невідомо", "для_неї", "без_чисел_тіла", "без_шкал"),
     мова_промпту="en",
 )
 
