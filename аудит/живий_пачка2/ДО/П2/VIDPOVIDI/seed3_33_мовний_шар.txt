@@ -1,0 +1,79 @@
+── ПРОМПТ (6327 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_code_unknown — рядок у згорнутому блоці «код не знає» на картці образу: чого код не знає — про речі, про неї чи про її день — і що через це лишилось не перевіреним. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- bottom — низ.
+- crossbody — кросбоді.
+- hand — рука.
+- hips — стегна.
+- shoulder — плече.
+- top — верх.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами.
+
+ЗАЯВИ:
+- cannot_tell_lightness_structure — so the code cannot tell which structure of light and dark the outfit carries.
+- no_input_outer_warmth — nobody publishes the warmth of an outer layer as a number, so the code judges whether it is enough for this weather only by the item's type.
+- no_input_down_fill_power — the cards do not carry down quality together with filling weight, so the code does not read the warmth of a down jacket as a number.
+- no_input_filling_loft — the cards do not carry the filling's thickness, so the code does not know how much room it takes under an outer layer.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- length_word_edge_may_land_on_widest — the code knows the item's length only from a word, and its edge may land right on the widest place of the body (values: slot — slot code; length — the length word; level — code of the body level where the edge may land).
+- vertical_balance_not_judged — the code does not judge the ratio of the outfit's top and bottom to her proportions: the sources have too little evidence for it.
+- leg_proportion_template_crotch — the code does not count torso-to-leg proportions: the crotch height comes from a template, not from her; one measurement fixes this.
+- calf_girth_not_measured — her calf girth is unknown, so how the edges of shoes and of a hem land on the calf is not measured; there is a field for it in "Extended measurements".
+- areas_not_measured — the code did not measure how much room each item takes in the outfit, so rules that depend on area give no conclusion.
+- which_white_suits_unknown — which white suits her, optical or cream, cannot be seen from this photo; she can say what looks better near her face.
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- wear_cost_no_duration_surface — the code does not count the wearing cost for the feet: it is unknown how many hours and on what she will walk.
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_code_unknown", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Туфлі із замші на підборах з гострим носком", "lang": "uk"}}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 2, "вид": "card_code_unknown", "заяви": [{"code": "areas_not_measured"}, {"code": "cannot_tell_lightness_structure"}]},
+{"н": 3, "вид": "card_code_unknown", "заяви": [{"code": "which_white_suits_unknown"}]},
+{"н": 4, "вид": "card_code_unknown", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "top", "range": "один розмір"}, {"slot": "bottom", "range": "40–52"}]}}]},
+{"н": 5, "вид": "card_code_unknown", "заяви": [{"code": "length_word_edge_may_land_on_widest", "values": {"slot": "top", "length": {"free_text": "стегно", "lang": "uk"}, "level": "hips"}}]},
+{"н": 6, "вид": "card_code_unknown", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Жіноча сумка тоут шкіряна коричнева", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
+{"н": 7, "вид": "card_code_unknown", "заяви": [{"code": "calf_girth_not_measured"}]},
+{"н": 8, "вид": "card_code_unknown", "заяви": [{"code": "leg_proportion_template_crotch"}]},
+{"н": 9, "вид": "card_code_unknown", "заяви": [{"code": "wear_cost_no_duration_surface"}]},
+{"н": 10, "вид": "card_code_unknown", "заяви": [{"code": "items_register_unknown", "values": {"count": 5}}]},
+{"н": 11, "вид": "card_code_unknown", "заяви": [{"code": "areas_not_measured"}]},
+{"н": 12, "вид": "card_code_unknown", "заяви": [{"code": "vertical_balance_not_judged"}]},
+{"н": 13, "вид": "card_code_unknown", "заяви": [{"code": "no_input_outer_warmth"}]},
+{"н": 14, "вид": "card_code_unknown", "заяви": [{"code": "no_input_down_fill_power"}]},
+{"н": 15, "вид": "card_code_unknown", "заяви": [{"code": "no_input_filling_loft"}]}
+]
+
+── ВІДПОВІДЬ (1902 симв., 55.5 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю розмір твоїх туфель із замші на підборах з гострим носком, бо ти ще не виміряла довжину своєї стопи і я не можу дізнатися довжину устілки взуття.",
+  "2": "Код не може визначити структуру світла й тіні в образі та скільки місця займають речі, бо немає достатньо інформації.",
+  "3": "Я не знаю, який білий колір тобі личить — холодний чи теплий. Ти сама краще знаєш, що виглядає гарно біля твого обличчя.",
+  "4": "Розміри на бирках (один розмір для верху і 40–52 для низу) не означають, як саме річ сидітиме. Щоб це дізнатися, потрібні вимірювання одягу.",
+  "5": "Я знаю лише приблизну довжину твоєї спідниці — стегно. Вона може лягти на найширшу частину твоїх стегон.",
+  "6": "Ти ще не обрала спосіб, як носити свою коричневу шкіряну сумку тоут: в руці, на плечі чи через тіло.",
+  "7": "Я не знаю об’єм твоєї литки, тому не можу сказати, як край одягу або взуття ляже по ній.",
+  "8": "Код не може визначити пропорції твоїх ніг до тулуба. Висота лінії талії взята з шаблону, а для точного вимірювання потрібен один параметр.",
+  "9": "Я не можу порахувати вартість носіння взуття на ноги, бо не знаю, скільки часу ти проведеш у ньому і по якій поверхні ходитимеш.",
+  "10": "Код не зміг визначити стиль п’яти речей з твого образу. На їхніх картках немає потрібних описів.",
+  "11": "Я не знаю, скільки місця займають кожна річ в образі, тому правила, що залежать від площі, нічого не показують.",
+  "12": "Код не може оцінити пропорції верху й низу твого образу до твоєї фігури. Джерел для цього замало.",
+  "13": "Я не знаю, чи достатньо теплої куртки на вулиці, бо код судить лише по типу одягу, а не по цифрам.",
+  "14": "Картка пуховика не містить інформації про якість і щільність утеплювача, тому я не можу оцінити його теплоту в числах.",
+  "15": "Я не знаю товщину наповнювача куртки, тому не можу сказати, скільки місця він займатиме під верхнім одягом."
+}
+```

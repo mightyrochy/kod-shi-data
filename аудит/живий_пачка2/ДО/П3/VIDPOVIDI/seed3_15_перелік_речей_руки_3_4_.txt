@@ -1,0 +1,26 @@
+── ПРОМПТ (1570 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green silk midi dress with a structured A-line silhouette and a subtle V-neckline in hex #035f1c.\nNude velvet pointed-toe pumps at length 8 cm from the ankle in hex #bcaaa4.\nSmall gold drop earrings featuring round hoops measuring 2 cm in diameter in hex #d4af37.\nThis ensemble works because the rich emerald hue provides an elegant contrast to her warm skin tones while the velvet dress fabric offers sophisticated texture perfect for a festive evening. The nude pumps lengthen the silhouette without overwhelming the figure, keeping the focus on the graceful movement of the midi skirt during dancing or mingling. The delicate gold jewelry adds just enough sparkle to celebrate the occasion without competing with the deep color of the gown."}
+
+── ВІДПОВІДЬ (573 симв., 219.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "dress",
+      "details": "Emerald green silk midi dress with a structured A-line silhouette and a subtle V-neckline",
+      "slot": "dress",
+      "color_hex": "#035f1c"
+    },
+    {
+      "name": "shoes",
+      "details": "Nude velvet pointed-toe pumps at length 8 cm from the ankle",
+      "slot": "shoes",
+      "color_hex": "#bcaaa4"
+    },
+    {
+      "name": "earrings",
+      "details": "Small gold drop earrings featuring round hoops measuring 2 cm in diameter",
+      "slot": "earrings",
+      "color_hex": "#d4af37"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+── ПРОМПТ (5090 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- palette_scheme_note — рядок про ОБРАНУ схему на екрані «Палітра»: що це за хід і коли він менш ходовий.
+- palette_stylist_choice — рядок на екрані «Палітра» про те, що вона лишила стилістці: що стилістка обрала під цей вихід і чому, і що обрати інше можна самій.
+
+КОДИ У ЗНАЧЕННЯХ:
+- high — високий.
+- light — світлі.
+- low — низький.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами.
+
+ЗАЯВИ:
+- scheme_tonal — one tone on all items, with small steps of lightness.
+- scheme_analogous — neighbouring hues of the colour wheel.
+- scheme_neutrals_accent — a neutral base and one flash of colour.
+- scheme_muted_complementary — two opposite colours.
+- scheme_triad — three colours on the large items, roughly equal.
+- cleaner_side_against_base — a cleaner colour against a dark or light base.
+- tonal_only_wide_works — on her contrast only a wide tonal scheme works, from dark to light.
+- tonal_narrow_flattens — a narrow one makes an expressive face flat.
+- analogous_needs_jump — build a jump of lightness inside.
+- analogous_flat_on_vivid — without that jump neighbouring hues look flat on an expressive face.
+- light_dark_plus_accent_natural — a light and a dark neutral plus an accent is a natural pair for her expressive contrast: the outfit repeats what is already in the face.
+- contrast_takes_more_colour — her contrast carries more colour than the other levels.
+- cleaner_side_needs_photo — the cleaner side is taken only when the photo gave a reliable answer about the brightness of her features; otherwise it stays muted.
+- triad_three_families_limit — together with the metal of the jewellery this reaches the limit of three colour families, so the accessories can only repeat one of them.
+- contrast_mismatch — the outfit's contrast is deliberately not her own: the face stays in its window and the rest of the lightness ladder shifts; a "clothes in focus" move, not a "flatter the face" one, hence rarer.
+- contrast_mismatch_levels — the levels of this shift (values: look_level — the outfit's contrast, own_level — her own; codes low, medium, high).
+- rarer_than_everyday — this scheme is less of an everyday one.
+- stylist_chose_scheme — the stylist chose the scheme for this outing: items are picked for it and the accent is checked against it (values: scheme — the scheme's name).
+- stylist_chose_base — the stylist chose the base, the outfit's main colour (values: base — the colour's name; shade — light, dark, absent means medium).
+- why_her_contrast — because it keeps her own light-dark contrast of the face.
+- why_first_advice — because it is the first advice for her colouring and this outing asks for nothing else.
+- choose_another_if_wants — she can choose another one herself if she wants.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "palette_stylist_choice", "заяви": [{"code": "stylist_chose_scheme", "values": {"scheme": "нейтрали+акцент"}}, {"code": "stylist_chose_base", "values": {"base": "бузковий", "shade": "light"}}, {"code": "why_first_advice"}, {"code": "why_her_contrast"}, {"code": "choose_another_if_wants"}]},
+{"н": 2, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_neutrals_accent"}, {"code": "light_dark_plus_accent_natural"}]},
+{"н": 3, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_muted_complementary"}, {"code": "cleaner_side_against_base"}, {"code": "contrast_takes_more_colour"}, {"code": "cleaner_side_needs_photo"}]},
+{"н": 4, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_analogous"}, {"code": "analogous_needs_jump"}, {"code": "analogous_flat_on_vivid"}]},
+{"н": 5, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_tonal"}, {"code": "tonal_only_wide_works"}, {"code": "tonal_narrow_flattens"}]},
+{"н": 6, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_triad"}, {"code": "rarer_than_everyday"}, {"code": "triad_three_families_limit"}]},
+{"н": 7, "вид": "palette_scheme_note", "заяви": [{"code": "contrast_mismatch"}, {"code": "contrast_mismatch_levels", "values": {"look_level": "low", "own_level": "high"}}]}
+]
+
+── ВІДПОВІДЬ (1460 симв., 27.6 с, HTTP 200) ──
+```json
+{
+  "1": "Я обрала нейтрали з акцентом, світлий бузковий як основу. Це моя перша порада для тебе, бо вона найкраще підкреслює твій природний контраст і не потребує нічого іншого. Звісно, ти можеш обрати щось інше сама.",
+  "2": "Схема «нейтрали з акцентом» — це поєднання нейтральної основи та одного яскравого кольору, яке добре виглядає на тобі, адже повторює природний контраст у твоєму обличчі.",
+  "3": "Приглушені комплементарні кольори — два протилежні відтінки. Тут я використала темну основу і світлий акцент, бо твій вигляд потребує більше кольору в цілому. Але пам'ятай: чистий бік у такому випадку варто використовувати лише тоді, коли фотографії підтверджують, що він тобі личить.",
+  "4": "Аналогові кольори — це сусідні відтінки на колірному крузі. Щоб вони не виглядали пласкими на твоєму виразному обличчі, потрібно додати трохи світла між ними.",
+  "5": "Тональна схема передбачає використання одного тону з різними ступенями освітлення. На тобі добре працюють лише широкі тональні переходи від темного до світлого, а вузький діапазон може зробити твоє обличчя плоским.",
+  "6": "Триада — це три кольори приблизно однакової інтенсивності на основних предметах одягу. Цей варіант менш поширений, адже разом з металом прикрас він досягає межі трьох колірних сімей.",
+  "7": "Я навмисно використала контраст, який не відповідає твоєму природному — низький у одязі і високий у тебе. Це дозволяє виділити саме вбрання, а не обличчя."
+}
+```
