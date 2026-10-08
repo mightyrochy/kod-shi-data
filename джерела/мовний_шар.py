@@ -1009,6 +1009,14 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
             об[ім] = list(dict.fromkeys(коди))[:3] or (досі.get(ім) if є(досі.get(ім)) else None)
         else:
             об[ім] = _ВМ.ключ(перелік, в.get(поле)) or (досі.get(ім) if є(досі.get(ім)) else None)
+    # ЗОНИ МЕТИ ЖИВУТЬ ЛИШЕ З МЕТОЮ, ЯКУ ВОНИ УТОЧНЮЮТЬ (ФОКУС-3, огляд #616): мета, названа ЦИМ
+    # ходом, без зон цього ходу скидає зони попередніх — «хочу, щоб дивились» (express) чи «просто
+    # не хочу привертати уваги» (conceal без зони) означають увесь образ, а не давній живіт.
+    # Хід, що мети не назвав, зони лишає; зони, названі знову, стоять.
+    # Скидання — порожнім списком: ключі з None шов нижче відкидає, а `[]` `паспорт_з_json` читає
+    # як «поля нема» і давнього не переносить.
+    if _ВМ.ключ("goal", в.get("goal")) and not в.get("goal_zones"):
+        об["мета_зони"] = []
     для_числа = lambda ч, поле, код: ч if ч is not None else _ВМ.ключ(поле, код)
     об["година"] = для_числа(в.get("hour"), "part_of_day", в.get("part_of_day"))
     об["темп_c"] = для_числа(в.get("temperature_c"), "weather_feel", в.get("weather_feel"))
@@ -1574,11 +1582,14 @@ _ПОЛЯ_EN = {
     "minute": "minutes of the start time, only when she names them with the hour (19:30 — 30; half past "
               "seven in the evening — 30); never without \"hour\"",
     "part_of_day": "part of the day, when no hour is named: from her words, or when the event or a tile "
-                   "in \"chosen\" names it or usually takes it (an evening reception, a theatre — evening)",
-    "temperature_c": "air temperature, °C",
+                   "in \"chosen\" names it or usually takes it (an evening reception, a theatre, a New Year "
+                   "party — evening)",
+    # ДОЩ-1 (рядок 1471): градуси — лише названі; сезон свята без числа — `weather_feel` (код → число бере
+    # `внутрішня_мова.ТАБЛИЦЯ`, не модель), і його опора — слово свята в її репліці (сторож `_тримається`).
+    "temperature_c": "air temperature, °C, only when she names the degrees",
     "weather_feel": "the weather, when no number of degrees is named: from her words, or when the season, "
-                    "month or place she names usually takes it (August, a beach by the sea — hot; a winter "
-                    "walk — cold)",
+                    "month, holiday or place she names usually takes it (August, a beach by the sea — hot; a "
+                    "winter walk, a New Year or a Christmas party — cold), with that word as quote",
     "precipitation": "rain or snow",
     "formality": ("how dressy this outing is, {from, to} on the 1–10 scale: always present, taken by the "
                   "anchors from her words, the event and \"chosen\" — steps: %s" % _ЩАБЛІ_EN),
@@ -1590,6 +1601,8 @@ _ПОЛЯ_EN = {
               "unnoticed",
     "goal": "her aim for this outing: flatter — to suit her; conceal — no attention or hiding "
             "something; express — to be looked at",
+    "goal_zones": "only with goal conceal and only when she named what to hide: the body zones to draw "
+                  "the eye away from («сховати живіт» — belly); not wanting attention in general — no field",
     "makeup": "make-up for this outing; lips_hex only when she named a lip colour",
     "jewelry": "jewellery she wants with this look; ethnic — wood, bone, beads; other — without metal",
     "registers": "style registers she described herself with",
@@ -1775,8 +1788,13 @@ def _коди_розмови():
     "HER messages — the new one or an earlier one of hers — copied letter for letter. No such fragment — "
     "no field. Never quote your own lines.",
     # K-IO-02: не вигадувати; переліки — закриті (`_норм` кладе чуже в `незнайомі`).
+    # ДОЩ-1 (рядок 1471): «не виводь поля з поля» модель читала й як «не виводь зиму з новорічного свята» —
+    # `day.unknown` = [start_hour, temperature_c] у ж7 і ж2. Сезон і пору, які несе сама подія, беруть
+    # `weather_feel` і `part_of_day` (м'яке тлумачення, п.14, п.17); число градусів чи година — лише з її слів.
     "Values are only the codes and forms from \"codes\"; a field she said nothing about is absent. Do "
-    "not infer one field from another.",
+    "not infer one field from another. The season and the part of the day that the event she names itself "
+    "carries are her words, not another field: \"weather_feel\" and \"part_of_day\" take them, never "
+    "a number of degrees or an hour.",
     # М-1 В-1 і Ч-5: назва події — опора і для `event`, і для коду нагоди чи місця; МОВА-1 (02.10): подія
     # без свого підпису (гостини, місцевий звичай) — код найближчого виду, суть — у `stylist_note`.
     "An event she names goes into \"event\" and also as the code of \"occasion\" or \"place\" whose label "
@@ -1844,11 +1862,13 @@ def _коди_розмови():
     # плиток лишав паспорт на типових 11:00 форми. Тепер, як formality, — розуміння події: подія, що
     # зазвичай має одну частину дня, дає її; подія будь-якої пори (свято, побачення) — поля нема.
     # МОВА-1 (рядок 860): і з її слів без години («вдень», «по обіді») — поле тепер є у словнику кодів.
+    # ДОЩ-1 (рядок 1471): «новорічний корпоратив у ресторані» лишав `start_hour` невідомим (ж7, ж2) — свято
+    # «будь-якої пори», хоча новорічна вечірка сама каже вечір; тепер вона серед прикладів однієї пори.
     "\"part_of_day\" goes without quote and only when no hour is known: from her words, or when the event or "
     "a tile in \"chosen\" names the part of the day (an evening reception — evening) or the event usually "
-    "takes one part of the day (a theatre, a concert or an opera — evening); a place in her words or in "
-    "\"chosen\" that the code reads as evening by itself (%s) — evening; another event that happens at "
-    "any time of day — leave it absent." % _місця_вечірні_en(),
+    "takes one part of the day (a theatre, a concert, an opera or a New Year party — evening); a place in her "
+    "words or in \"chosen\" that the code reads as evening by itself (%s) — evening; another event that "
+    "happens at any time of day — leave it absent." % _місця_вечірні_en(),
     # П.14 і п.3 наряду: межа мовної моделі — кодами `need`.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
     "without her items, looks and photos. When \"need\" is not \"none\", do not answer the question in "
@@ -1921,7 +1941,7 @@ def _коди_розмови():
     коди=_коди_розмови(),
     вихід="ХІД_РОЗМОВИ",
     скелет=СКЕЛЕТ_РОЗМОВИ,
-    межі=("лише_вхід", "для_неї"),
+    межі=("лише_вхід", "для_неї", "без_шкал"),
     мова_промпту="en",
     сталий_спершу=True,
     наприкінці="Answer her new message: one JSON object following \"answer_schema\" in \"task\".",
