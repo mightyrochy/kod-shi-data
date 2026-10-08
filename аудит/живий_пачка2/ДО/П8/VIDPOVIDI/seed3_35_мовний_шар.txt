@@ -1,0 +1,80 @@
+── ПРОМПТ (6954 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_code_unknown — рядок у згорнутому блоці «код не знає» на картці образу: чого код не знає — про речі, про неї чи про її день — і що через це лишилось не перевіреним. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- bottom — низ.
+- bust — груди.
+- crossbody — кросбоді.
+- hair — волосся.
+- hand — рука.
+- outerwear — верхній шар.
+- shoes — взуття.
+- shoulder — плече.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами.
+
+ЗАЯВИ:
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- item_length_unknown_edge_default — the cards do not carry the length of the named items: the usual edge for such an item was taken, so the code does not know where exactly it lands on the body (values: slots — slot codes).
+- fabric_unknown_ease_below_min_if_woven — the card does not name the item's fabric: if it is not knit, the ease in width at this level is too small to wear it freely (values: level — body level code).
+- leg_proportion_template_crotch — the code does not count torso-to-leg proportions: the crotch height comes from a template, not from her; one measurement fixes this.
+- calf_girth_not_measured — her calf girth is unknown, so how the edges of shoes and of a hem land on the calf is not measured; there is a field for it in "Extended measurements".
+- feature_and_item_indistinguishable — a feature of her face and the item near it are the same colour in the photo, so the code does not know whether the face contrast was read correctly (values: feature — hair, eyes or glasses; item — item name).
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- wear_cost_no_duration_surface — the code does not count the wearing cost for the feet: it is unknown how many hours and on what she will walk.
+- sole_grip_unknown_ice — the card does not say whether the sole grips on ice, and today there is black ice (values: item — item name).
+- outer_edges_coincide_sources_disagree — the edges of the outer layer and the item under it coincide exactly, and the sources disagree about that; the code takes no side (values: items — item names).
+- outer_ease_not_in_feed — the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — item names).
+- outer_shoulder_not_measured — the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_code_unknown", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Чоботи жіночі", "lang": "uk"}}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 2, "вид": "card_code_unknown", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "bottom", "range": "34–46 і XS–XXL"}]}}]},
+{"н": 3, "вид": "card_code_unknown", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "bottom", "range": "34–46 і XS–XXL"}, {"slot": "outerwear", "range": "34–44"}]}}]},
+{"н": 4, "вид": "card_code_unknown", "заяви": [{"code": "feature_and_item_indistinguishable", "values": {"feature": "hair", "item": "outerwear"}}]},
+{"н": 5, "вид": "card_code_unknown", "заяви": [{"code": "item_length_unknown_edge_default", "values": {"slots": ["shoes"]}}]},
+{"н": 6, "вид": "card_code_unknown", "заяви": [{"code": "fabric_unknown_ease_below_min_if_woven", "values": {"level": "bust"}}]},
+{"н": 7, "вид": "card_code_unknown", "заяви": [{"code": "outer_edges_coincide_sources_disagree", "values": {"items": [{"free_text": "Довге чорне пальто зі шліцею", "lang": "uk"}, {"free_text": "БРЮКИ КЛАСИЧНІ З АКЦЕНТОМ", "lang": "uk"}]}}]},
+{"н": 8, "вид": "card_code_unknown", "заяви": [{"code": "outer_ease_not_in_feed", "values": {"items": [{"free_text": "ТОП З АСИМЕТРИЧНИМ ПЛЕЧЕМ НІКОЛЬ ЧОРНИЙ", "lang": "uk"}, {"free_text": "Довге чорне пальто зі шліцею", "lang": "uk"}]}}]},
+{"н": 9, "вид": "card_code_unknown", "заяви": [{"code": "outer_shoulder_not_measured", "values": {"item": {"free_text": "Довге чорне пальто зі шліцею", "lang": "uk"}}}]},
+{"н": 10, "вид": "card_code_unknown", "заяви": [{"code": "sole_grip_unknown_ice", "values": {"item": {"free_text": "Чоботи жіночі", "lang": "uk"}}}]},
+{"н": 11, "вид": "card_code_unknown", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Помаранчевий шкіряний сетчел Sicily", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
+{"н": 12, "вид": "card_code_unknown", "заяви": [{"code": "calf_girth_not_measured"}]},
+{"н": 13, "вид": "card_code_unknown", "заяви": [{"code": "leg_proportion_template_crotch"}]},
+{"н": 14, "вид": "card_code_unknown", "заяви": [{"code": "wear_cost_no_duration_surface"}]},
+{"н": 15, "вид": "card_code_unknown", "заяви": [{"code": "items_register_unknown", "values": {"count": 3}}]}
+]
+
+── ВІДПОВІДЬ (2188 симв., 28.1 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю розмір твоїх чобіт жіночих, бо я не перевіряв його з довжиною твоєї стопи. Також мені невідома довжина устілки цих чобіт і ти ще не вимірювала об’єм своєї литки.",
+  "2": "Я не знаю, як сидить низ твого одягу розмірів 34–46 та XS–XXL. Це просто позначення, а не показник посадки на тобі.",
+  "3": "Не можу сказати, чи добре сидять на тобі низ і верхній шар одягу в таких розмірах: для низу — 34–46 та XS–XXL, для верху — 34–44. Це просто позначення, а не показник посадки.",
+  "4": "Я не знаю, чи правильно я визначив колір твого волосся на фотографії, бо він зливається з кольором верхнього одягу.",
+  "5": "Не можу сказати, де саме закінчуються твої черевики на нозі, тому що довжина цього елемента невідома і я взяв стандартну позицію для такого типу взуття.",
+  "6": "Я не знаю тканину твоєї сукні у зоні грудей. Якщо вона не трикотажна, то може бути замало місця для вільного руху.",
+  "7": "Не можу визначитись, чи правильно збігаються краї довгого чорного пальта зі шліцею та класичних брюк з акцентом — джерела дають різні дані.",
+  "8": "Я не знаю, як зручно один шар одягу лежить на іншому: топ з асиметричним плечем Ніколь чорний і твоє довге чорне пальто зі шліцею. Нема даних про ширину цих речей у розслабленому стані.",
+  "9": "Я не знаю, чи добре сидить верхній одяг на твоїх плечах — я не вимірював ширину плечей довгого чорного пальта зі шліцею.",
+  "10": "Не можу сказати, чи ковзають по льоду твої чоботи жіночі сьогодні, коли ожеледиця. Я просто не знаю про їхню підошву.",
+  "11": "Ти ще не обрала, як носитимеш свій помаранчевий шкіряний сетчел Sicily: в руці, на плечі чи через тіло. Від цього залежить, які правила до нього застосовуються.",
+  "12": "Я не знаю об’єму твоєї литки, тому не можу сказати, як закінчуються краї штанів або чобіт у цій зоні.",
+  "13": "Не можу порахувати пропорції твого тіла: довжина кроку взята з шаблону, а не виміряна на тобі. Це можна виправити одним вимірюванням.",
+  "14": "Я не знаю, скільки часу ти проведеш у взутті і по якій поверхні ходитимеш, тому я не можу порахувати знос твого взуття.",
+  "15": "Не зміг визначити стиль для 3 предметів одягу — на їхніх картках немає відповідних слів."
+}
+```
