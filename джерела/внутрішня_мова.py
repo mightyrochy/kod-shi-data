@@ -177,6 +177,12 @@ def невідомо(v, коди=()):
         "gorpcore": "gorpcore", "dramatic": "драматичний", "ukrainian_ethnic": "етно_укр"},
     "zone": {"neckline": "декольте", "back": "спина", "arms": "руки", "shoulders": "плечі",
              "legs": "ноги", "belly": "живіт"},
+    # ЗОНА МЕТИ «ПРИХОВАТИ» (ФОКУС-3, рядок 1520): від якої зони тіла вона хоче відвести погляд
+    # («сховати живіт» → belly). Не межа відкритості (`zone` — «не відкривати»), а напрям уваги:
+    # R-CHEV-08 судить лише речі в цій зоні чи ті, що ведуть до неї погляд (`регістр_уваги`).
+    # Слова — ті самі, що в `zone` і `outfit.зони_речі`, плюс дві зони, яких річ не «відкриває».
+    "goal_zone": {"belly": "живіт", "hips": "стегна", "bust": "груди", "arms": "руки",
+                  "legs": "ноги", "shoulders": "плечі", "neckline": "декольте", "back": "спина"},
     "slot": {
         "top": "верх", "bottom": "низ", "dress": "сукня", "set": "комплект",
         "outerwear": "верхній_шар", "shoes": "взуття", "bag": "сумка", "scarf": "шарф",
@@ -477,6 +483,10 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     "goal": _перелік("goal", "мета на цей вихід: flatter — щоб личило; conceal — не привертати "
                              "уваги чи щось сховати; express — щоб на неї дивились; taller — "
                              "вона хоче довшу лінію, здаватись вищою"),
+    "goal_zones": _список(_перелік("goal_zone", "зона тіла"),
+                          "лише коли мета — conceal і вона назвала, ЩО сховати: зони тіла, від яких "
+                          "відвести погляд («сховати живіт» → belly); «не хочу привертати уваги» без "
+                          "зони — поля нема", maxItems=3),
     "makeup": {"description": "макіяж на цей вихід", "type": "object", "additionalProperties": False,
                "properties": {
                    "level": _перелік("makeup_level", "рівень макіяжу"),
@@ -1622,10 +1632,19 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "eye_family_colour_near_face": "an eye-family colour near the face: scarf, top or earrings",
     "loud_elements_over_budget": "there are more loud elements than the ceiling, and the rest of the outfit "
                                  "does not get to be a background; hair and frames count on a par with the "
-                                 "items (values: count — how many are loud, ceiling — the ceiling; face — "
-                                 "which facial features are loud too: hair, glasses)",
-    "keep_one_loud_mute_rest": "keep one loud element as the focus and take the rest as muted versions of the "
-                               "same family, or as neutrals",
+                                 "items, and each item of an echo counts (values: count — how many are loud, "
+                                 "ceiling — the ceiling; face — which facial features are loud too: hair, "
+                                 "glasses; keep — slot codes of the declared loud element with its echo, "
+                                 "quiet — slot codes of the other loud items, keep_by — who declared it: "
+                                 "scheme — the palette scheme's accent, zone — her focus zone, her_wish — "
+                                 "her own choice)",
+    "keep_one_loud_mute_rest": "keep one loud element as the focus and swap each other loud item for a quieter "
+                               "item in the same slot — a muted version of its family, or a neutral when the "
+                               "slot has none; not by removing the item",
+    "keep_declared_loud_quiet_others": "keep the declared loud element as it is, with its echo, and swap only the "
+                                       "other loud items for a quieter item in the same slot — a muted version "
+                                       "of its family, or a neutral when the slot has none; not by removing the "
+                                       "item (values: keep — slot codes to keep, quiet — slot codes to quieten)",
     "accent_orphan": "the accent colour stands in one slot only and nowhere else: the eye finds no intention "
                      "(values: colour — the code of the colour or family, hue — the hue in degrees, slot — "
                      "slot code; on_windows — true when the judgement rests on the windows of colour words, "
@@ -2198,8 +2217,15 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "swap_one_item_to_colour_in_slot": "swap one item, best of all in this slot, for a coloured one from the "
                                        "selection, and keep the rest neutral (values: slot — slot code)",
     "scheme_one_accent_look_has_more": "the scheme promises neutrals and one accent, and the outfit carries "
-                                       "several colour families (values: families — family codes)",
-    "keep_one_coloured_rest_neutral": "keep one item coloured, the rest neutral of the same lightness band",
+                                       "several colour hues; an echo of one hue is one accent, and metal on "
+                                       "jewellery is not a colour (values: families — colour family codes, one "
+                                       "per hue; keep — "
+                                       "slot codes of the declared accent, quiet — slot codes of the other "
+                                       "hues, keep_by — who declared it: scheme — the palette scheme's accent, "
+                                       "her_wish — her own choice)",
+    "keep_one_coloured_rest_neutral": "keep one hue coloured, with its echo, and make the rest neutral of the same "
+                                      "lightness band (values, when the accent is declared: keep — slot codes to "
+                                      "keep coloured, quiet — slot codes to make neutral)",
     "scheme_families_missing_on_big_items": "the scheme promises its colour families on the large items, and "
                                             "the outfit's large items do not carry all of them; an accessory "
                                             "may echo a family but not be its only carrier (values: scheme — "

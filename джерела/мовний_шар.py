@@ -1009,6 +1009,14 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
             об[ім] = list(dict.fromkeys(коди))[:3] or (досі.get(ім) if є(досі.get(ім)) else None)
         else:
             об[ім] = _ВМ.ключ(перелік, в.get(поле)) or (досі.get(ім) if є(досі.get(ім)) else None)
+    # ЗОНИ МЕТИ ЖИВУТЬ ЛИШЕ З МЕТОЮ, ЯКУ ВОНИ УТОЧНЮЮТЬ (ФОКУС-3, огляд #616): мета, названа ЦИМ
+    # ходом, без зон цього ходу скидає зони попередніх — «хочу, щоб дивились» (express) чи «просто
+    # не хочу привертати уваги» (conceal без зони) означають увесь образ, а не давній живіт.
+    # Хід, що мети не назвав, зони лишає; зони, названі знову, стоять.
+    # Скидання — порожнім списком: ключі з None шов нижче відкидає, а `[]` `паспорт_з_json` читає
+    # як «поля нема» і давнього не переносить.
+    if _ВМ.ключ("goal", в.get("goal")) and not в.get("goal_zones"):
+        об["мета_зони"] = []
     для_числа = lambda ч, поле, код: ч if ч is not None else _ВМ.ключ(поле, код)
     об["година"] = для_числа(в.get("hour"), "part_of_day", в.get("part_of_day"))
     об["темп_c"] = для_числа(в.get("temperature_c"), "weather_feel", в.get("weather_feel"))
@@ -1590,6 +1598,8 @@ _ПОЛЯ_EN = {
               "unnoticed",
     "goal": "her aim for this outing: flatter — to suit her; conceal — no attention or hiding "
             "something; express — to be looked at",
+    "goal_zones": "only with goal conceal and only when she named what to hide: the body zones to draw "
+                  "the eye away from («сховати живіт» — belly); not wanting attention in general — no field",
     "makeup": "make-up for this outing; lips_hex only when she named a lip colour",
     "jewelry": "jewellery she wants with this look; ethnic — wood, bone, beads; other — without metal",
     "registers": "style registers she described herself with",
