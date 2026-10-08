@@ -1401,7 +1401,7 @@ def порада_коду(сценарій, паспорт_досі=None, сло
          "what to pair the item with (for now it is judged for an ordinary day); if her words "
          "already say it, skip this topic"),
         ("мета", вечір and not ст["мета"],
-         "whether today she wants to draw attention or stay unnoticed (it changes the colours "
+         "whether at this outing she wants to draw attention or stay unnoticed (it changes the colours "
          "near the face and the fit)"),
         ("макіяж", (вечір or _мк_контраст) and not ст["макіяж"],
          "what make-up she plans and the lip colour: a noticeable lipstick adds a step of "
@@ -1413,7 +1413,7 @@ def порада_коду(сценарій, паспорт_досі=None, сло
          "how many degrees it will be: outdoors without a temperature, fabric and layer are chosen blind"),
         ("прикраси", not ст["прикраси"] and ст["нагода"] != "спорт",
          "gold, silver, pearls, ethnic or no jewellery at all — what she wants with THIS look"
-         + ("; her profile says %s suits her, but today can differ" % _метал_профілю if _метал_профілю else "")),
+         + ("; her profile says %s suits her, but this look can differ" % _метал_профілю if _метал_профілю else "")),
         ("реєстр", not ст["реєстр"],
          "the style she dresses in — classic, sport, boho, minimalism: it softly narrows the pool"),
     )

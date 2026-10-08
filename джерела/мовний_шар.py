@@ -1360,8 +1360,10 @@ def промпт_репліки(репліка):
         % р["item_verdicts"]["description"],
         "- added — %s: коротко скажи їй це." % р["added"]["description"],
         "- answer — %s: передай її зміст." % р["answer"]["description"],
+        # Рядок 314: «Записала: … без підборів можеш ще розказати…» — запрошення приліплене до підтвердження.
         "- advice_topics — %s. Усі теми разом — одним м'яким реченням-запрошенням, не переліком "
-        "питань. Коди тем: %s." % (р["advice_topics"]["description"], теми),
+        "питань, окремим реченням після підтвердження: підтвердження закінчується крапкою, запрошення "
+        "починається з великої літери. Коди тем: %s." % (р["advice_topics"]["description"], теми),
         "- required — %s. Коди: %s." % (р["required"]["description"], обов),
         "Поля, якого нема, — нема про що й писати. Коди — не слова для неї: пиши їхній зміст, "
         "самих кодів не пиши."] + заяви + [
@@ -1375,7 +1377,7 @@ def прийняти_репліку(відповідь):
     об, чому_не = _обʼєкт(відповідь)
     т = об.get("text") if isinstance(об, dict) else None
     if isinstance(т, str) and not _ВМ.невідомо(т):
-        return dict(текст=т.strip(), причина=None)
+        return dict(текст=_бульбашка([т]), причина=None)
     return dict(текст="", причина=("text_unknown: %s" % _json_.dumps(т, ensure_ascii=False)
                                    if isinstance(т, str) and т.strip() else "no_text_field") if isinstance(об, dict)
                 else "not_json_object: %s" % (чому_не or type(об).__name__))
@@ -1702,7 +1704,8 @@ def _умови_тем():
     return {
         "occasion": ("where she is going in this item: work, a date, a celebration or every day",
                      "she sent a photo of her item and no occasion, place or event is known"),
-        "goal": ("whether today she wants to draw attention or stay unnoticed", вечір),
+        # Рядок 1441: «today» модель переносила дослівно — «сьогодні» для події в серпні чи суботу
+        "goal": ("whether at this outing she wants to draw attention or stay unnoticed", вечір),
         # МАК-2 (рядок 258): та сама умова, що `face_contrast.порада_з_випадку` у судді тем
         "makeup": ("what make-up she plans and the lip colour",
                    "%s; or profile colouring.contrast is low and the occasion is dressy: occasion %s, place %s, "
@@ -1735,12 +1738,12 @@ _ПОТРЕБИ_EN = {
     "none": "you answer her yourself: she told about her outing, or asked what you know for sure "
             "without her items, looks and photos — what a word or a style term means, general style "
             "knowledge",
-    "app": "a question about this app — its screens, buttons, her saved data, what to do next: the "
-           "helper who sees the app answers",
+    "app": "a question about this app — its screens, buttons, her saved data, what to do next: you "
+           "answer it in your next message, from what the app shows",
     "look": "she wants her items or her look judged (how they look, whether they go together or suit "
-            "her) or asks why a particular item or look was chosen: only the code with the stylist "
-            "answers that confidently",
-    "build": "she asks to put the looks together now: the code does it",
+            "her) or asks why a particular item or look was chosen: you answer it in your next message, "
+            "after the app has checked her items and looks — only that check makes the answer sure",
+    "build": "she asks to put the looks together now: the app does it",
 }
 assert set(_ПОТРЕБИ_EN) == set(_ВМ.ПОТРЕБИ)
 
@@ -1787,7 +1790,8 @@ def _коди_розмови():
     for ім in ("reserved_colour", "open_zones", "part_of_day", "minute"):
         р.append("- %s — %s; %s; without quote" % (ім, _ПОЛЯ_EN[ім], _тип_en(поля[ім])))
     р.append("Advice topics — code: what to invite her to tell · when the topic applies (after your "
-             "update, and only while the passport does not know it):")
+             "update, and only while the passport does not know it; for \"advice_topics\" the code has "
+             "already checked it):")
     р += ["- %s: %s · %s" % (к, про, коли) for к, (про, коли) in _умови_тем().items()]
     р.append("Required questions — code: what to ask · when it applies (after your update):")
     р += ["- %s: %s · %s" % (к, що, коли) for к, (що, коли) in _ОБОВʼЯЗКОВЕ_EN.items()]
@@ -1906,26 +1910,38 @@ def _коди_розмови():
     "words or in \"chosen\" that the code reads as evening by itself (%s) — evening; another event that "
     "happens at any time of day — leave it absent." % _місця_вечірні_en(),
     # П.14 і п.3 наряду: межа мовної моделі — кодами `need`.
+    # Рядок 1438 (розбір 02.10): «You are the stylist» поруч із «only the code with the stylist answers» —
+    # 25 з 39 ходів `need=look` передавали її «стилістові» третьою особою; жінка ж чує одну стилістку.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
-    "without her items, looks and photos. When \"need\" is not \"none\", do not answer the question in "
-    "\"text\" — only say what you recorded; the answer will come from them.",
+    "without her items, looks and photos. When \"need\" is not \"none\", \"text\" neither answers nor "
+    "judges her question — you have not seen the check yet — and only says what you recorded. You are the "
+    "only stylist she talks to: speak of yourself in the first person and never name another stylist, a "
+    "helper, the app or the code as the one who answers her.",
     # Т-18 і п.9: питання до неї — лише через `ask` і `invite`, які судить код (`суд_частин`).
     "\"text\" is your reply to her: briefly what you understood and recorded from her new message, and "
     "your answer when \"need\" is \"none\". \"text\" asks her nothing and has no question marks.",
     # НГ-4, живий стенд 01.10: «записала це в твій паспорт» (слово системи, не її) і «врахую, що образ
     # має бути стриманим перед керівництвом» — аудиторію й частини дня код ще не читає (НГ-9, НГ-12),
     # тож обіцянка була б неправдою; що код зробить із почутим, вирішує код, а не модель розмови.
-    "\"text\" does not mention the passport, codes or fields, and does not promise how the looks will "
-    "take what she said into account.",
+    # Рядок 1439 (розбір 02.10): «до співбесіди чорного не буде», «підберу стриманий образ» — 7 з 67 ходів;
+    # правило «не обіцяй, як буде враховано» модель читала як «не пояснюй», а прогноз писала далі.
+    "\"text\" does not mention the passport, codes or fields. It says only what she told and what you "
+    "understood — what already is, never what will be: no promise or forecast about the looks, the items, "
+    "their colours or how her words will be taken into account; the looks are put together later.",
+    # Рядок 314: підтвердження й запрошення стоять поруч в одній бульбашці — кожне окремим реченням.
+    "\"text\" ends with a full stop: \"invite\" and \"ask\" follow it as separate sentences. A dash "
+    "between words is the long dash «—».",
     # Рядок 1433 (розбір 02.10, ж4_робота_живіт): «який макіяж planуєш» — латинський корінь в українському
     # слові; сторож чату ловить його як факт письма і просить повтор, а промпт каже, як писати одразу.
     "\"text\", \"invite\" and \"ask\" are natural literary Ukrainian: every Ukrainian word in Ukrainian "
     "Cyrillic letters only, with no Latin letter inside it; brand and shop names as she wrote them.",
     # П.9 (20.09, рядки 108 і 114): поради — групою до трьох тем, м'яко, без повторів.
-    "\"invite\" is optional: one soft sentence inviting her to tell about up to three codes from "
-    "\"advice_topics\" whose condition holds after your update and that her new message does not "
-    "already answer, saying she may skip it and the looks will be put together anyway; no question "
-    "marks. \"invite_topics\" are the codes it covers. No invitation while a required question remains.",
+    # Рядок 1441: теми, умову яких код уже бачить, — окремо від тих, що стануть доречні лише з її нових слів.
+    "\"invite\" is optional: one soft sentence, to her as «ти», inviting her to tell about up to three "
+    "codes that her new message does not already answer — from \"advice_topics\", or from "
+    "\"advice_topics_if\" only when her new message makes that topic's condition hold — saying she may "
+    "skip it and the looks will be put together anyway; no question marks. \"invite_topics\" are the "
+    "codes it covers. No invitation while a required question remains.",
     # П.9: обовʼязкове — лише «без чого не зібрати»; збирання не блокується.
     "\"ask\" is only for a code from \"required\" whose condition still holds after your update: one short "
     "direct question, and \"ask_code\" is that code. Nothing else is required: never say that the looks "
@@ -1955,7 +1971,8 @@ def _коди_розмови():
     задача="розмова",
     роль="You are the stylist of a styling app in a live chat with a woman. You understand what she wants "
          "across the whole conversation, write it into her case passport in the app's codes and answer "
-         "her yourself; the code and the stylist step in only where the rules say so.",
+         "her; where the rules say so, the app first checks her items and looks, and you answer from "
+         "that check in your next message.",
     вхід=(
         # Профіль кодами — БЕЗ драпіровки (п.9): метал, білий, нейтралі в розмові не питають і не
         # показують; сталий на всю розмову, тому першим серед даних (кеш).
@@ -1970,7 +1987,9 @@ def _коди_розмови():
         # K-IO-02: плитки — друге джерело полів; її слово сильніше (п.9).
         _ЗП_Р.Поле("chosen", "what she chose with the tiles on the screen, in codes",
                    як="her words override it"),
-        _ЗП_Р.Поле("advice_topics", "advice topic codes not yet offered in this conversation"),
+        # Рядок 1441: умову теми на стані ДО ходу код перевіряє сам — модель лишається судити лише нові
+        _ЗП_Р.Поле("advice_topics", "advice topic codes not yet offered whose condition already holds"),
+        _ЗП_Р.Поле("advice_topics_if", "advice topic codes not yet offered whose condition does not hold yet"),
         _ЗП_Р.Поле("required", "required question codes before her new message"),
         # П-1: речі на фото описує модель із зором окремою задачею, вердикт — код.
         _ЗП_Р.Поле("photos", "ids of photos she attached to her new message",
@@ -2199,6 +2218,26 @@ def теми_відкриті(паспорт, сценарій=None):
     return [к for к in _ВМ.ТЕМИ_ПОРАДИ if _ВМ.ключ("advice_topic", к) not in дані and not знає.get(к)]
 
 
+def теми_за_умовою(паспорт, d):
+    """Відкриті теми поради (`теми_відкриті`), поділені умовою на стані ДО її нового повідомлення:
+    {advice_topics: умова вже правдива, advice_topics_if: стане правдивою лише з її нових слів}.
+
+    Рядок 1441 (розбір 02.10): з одним переліком модель сама звіряла умову кожної теми й 9 разів
+    запросила до теми, умова якої не виконана (температура й рух для театру, клубу, офісу; мета й
+    макіяж для пляжу вдень), — здебільшого на пізніх ходах, де сцена вже стоїть у паспорті. Умову
+    на цьому стані код рахує сам тим самим суддею (`паспорт_нагоди.теми_дозволені`), що й після
+    ходу; суд частин (`суд_частин`) лишається на стані ПІСЛЯ ходу."""
+    import паспорт_нагоди as _ПН
+    п = паспорт if isinstance(паспорт, dict) else {}
+    відкриті = теми_відкриті(п, d.get("сценарій"))
+    є_річ = bool(d.get("фото") or п.get("речі_з_фото"))
+    драп = dict(п.get("драп_сирий") or {}, **(d.get("драп_сирий") or {})) or None
+    зараз = {_ВМ.код("advice_topic", т) for т in _ПН.теми_дозволені(
+        d.get("сценарій") or {}, п, драп=драп, є_річ=є_річ, контраст=контраст_профілю(d.get("профіль")))}
+    return {"advice_topics": [т for т in відкриті if т in зараз],
+            "advice_topics_if": [т for т in відкриті if т not in зараз]}
+
+
 def контраст_профілю(профіль):
     """Рівень контрасту обличчя з кольорів профілю («низький» | «середній» | «високий») або None — той
     самий вимір, що `особа.рівень` пакета (`міст_вхід._features` → `outfit.контраст_особи`, як у
@@ -2223,7 +2262,7 @@ def промпт_розмови(d):
     дані = {"profile": профіль_кодами(d.get("профіль") or {}),
             "earlier_conversation": раніше, "conversation": репліки,
             "passport": паспорт_кодами(паспорт), "chosen": плитки_кодами(d.get("сценарій")),
-            "advice_topics": теми_відкриті(паспорт, d.get("сценарій")), "required": _обовʼязкове_до(d.get("сценарій"), паспорт),
+            **теми_за_умовою(паспорт, d), "required": _обовʼязкове_до(d.get("сценарій"), паспорт),
             "photos": [str(ф.get("ід")) for ф in (d.get("фото") or []) if isinstance(ф, dict) and ф.get("ід")],
             "her_new_message": str(р.get("нове") or "").strip() or U}
     return _json_.dumps(_ЗП_Р.зібрати(РОЗМОВА, дані, мова_тексту="Ukrainian"), ensure_ascii=False)
@@ -2287,6 +2326,20 @@ def _без_питань(текст):
     return " ".join(р for р in речення if not _ПИТАННЯ.search(р)), [р for р in речення if _ПИТАННЯ.search(р)]
 
 
+# Рядок 314: «…без підборів можеш ще розказати… а якщо ні - я підберу сама» — підтвердження й запрошення
+# зліплені без крапки, тире — дефісом. Знаки — форма, не слова (п.12): шматок без знака кінця речення
+# дістає крапку, перш ніж за ним стане наступний, а дефіс чи коротке тире між словами стає «—».
+_КІНЕЦЬ_РЕЧЕННЯ = re.compile(r"[.!?…][»)\"]*$")
+_ТИРЕ = re.compile(r"(?<=\S) [-–] (?=\S)")
+
+
+def _бульбашка(шматки):
+    """Шматки репліки (текст, питання, запрошення) → один текст: кожен — окремим реченням, тире — «—»."""
+    шматки = [_ТИРЕ.sub(" — ", ш.strip()) for ш in шматки if ш and ш.strip()]
+    return " ".join(ш if і == len(шматки) - 1 or _КІНЕЦЬ_РЕЧЕННЯ.search(ш) else ш + "."
+                    for і, ш in enumerate(шматки))
+
+
 def суд_частин(частини, дозволені, обовʼязкове):
     """Частини відповіді моделі → (текст бульбашки, теми запрошення, відкинуто, бракує_обовʼязкового).
 
@@ -2331,7 +2384,7 @@ def суд_частин(частини, дозволені, обовʼязков
                 відкинуто.append(dict(частина="invite_topics", чому="topic_not_allowed", теми=недозволені,
                                       лишено=теми, дозволені=list(дозволені)))
             шматки.append(invite)
-    return " ".join(шматки).strip(), теми, відкинуто, бракує
+    return _бульбашка(шматки), теми, відкинуто, бракує
 
 
 # ══ ЕНДПОЙНТ ════════════════════════════════════════════════════════════════════
