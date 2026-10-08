@@ -1912,7 +1912,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                      "with another register",
     # ── ФОРМАЛЬНІСТЬ, ДРЕС-КОД, НАГОДА, ТРАУР (П-6: K-KOH-02/05/06/08/10, K-SHO-03, K-OCC-01) ──
     "formality_spread_over_limit": "the formality spread between the outfit's items is wider than the "
-                                   "allowance (values: spread — the spread in steps, limit — the allowance; "
+                                   "allowance; the outfit's items show their steps (values: "
                                    "shoes_involved — one of the items of the gap is the shoes; "
                                    "no_prestige_context — an everyday occasion with no norm, where a "
                                    "deliberate high-low does not read)",
@@ -1924,8 +1924,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                           "the gap stays a gap",
     "shoes_register_off_rest": "the shoes set their own level of formality and depart from the rest of the "
                                "outfit by more than the allowance (values: direction — below or above the "
-                               "rest, steps_over — by how many steps over the allowance, limit — the "
-                               "allowance)",
+                               "rest)",
     "shoes_to_outfit_level_or_high_low": "replace the shoes with the level of the rest of the outfit, or keep "
                                          "them as a deliberate high-low if the fit and the rest are flawless "
                                          "(values: direction — up or down)",
@@ -1933,8 +1932,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "asks for (values: direction — below or above, level — the outfit's median "
                                  "level, target — the occasion's target from and to, risk_posture — the risk "
                                  "posture: neutral, half_step_over, half_step_under_plus_detail)",
-    "shift_outfit_level": "shift the outfit's level by the named number of steps (values: steps — how many "
-                          "steps, direction — up or down)",
+    "shift_outfit_level": "shift the outfit's level towards the occasion's steps (values: direction — up or "
+                          "down)",
     "open_zones_over_limit": "more zones of the body are open than the context asks for (values: zones — zone "
                              "codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté "
                              "or back; limit — the limit; evening — an evening context, where the limit is "
@@ -2678,8 +2677,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                                         "treated against water",
     # Рядки нагоди брифа (рядок 532): рівень, напрям промаху, що вибиває зі щабля, нижня межа
     # високої події — доти українськими реченнями в `occasion_rules` промпта складання.
-    "occasion_level": "the occasion's level of formality (values: level — home, everyday, neat, smart, evening, "
-                      "very_smart or ceremonial; up_to — its upper bound on the 1–10 formality scale; rules_out — "
+    "occasion_level": "the occasion's level of formality (values: level — its top step: home, everyday, neat, "
+                      "smart, formal, very_smart or ceremonial; rules_out — "
                       "what this occasion rules out: near_white — white and colours that read as white on photos "
                       "(cream, pale yellow, pale blue), bright_and_light — bright and light colours; loudness_max — "
                       "no colour louder than this, loudness = chroma C* × L*/50: deep wine or terracotta ≈ 23–32, "
@@ -2700,7 +2699,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "level_breakers_up_to_10": "the level is held by fabric, finish and shoes, not by the item's name; out of "
                                "this level: everything daytime — cotton, knit, suede, open everyday shoes, "
                                "cardigans",
-    "high_occasion_floor": "the event's level starts from this number on the 1–10 formality scale: no item sits "
+    "high_occasion_floor": "the event's level starts from this step: no item sits "
                            "more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); "
                            "shoes at the outfit's level or above (values: from)",
     "weather_layers": "the weather outside and the layers it asks for (values: temperature_c; layers — how many "

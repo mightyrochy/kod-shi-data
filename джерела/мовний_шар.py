@@ -1512,10 +1512,8 @@ import збирач_промптів as _ЗП_Р
 # ЩАБЛІ ШКАЛИ ОШАТНОСТІ ДЛЯ МОВНОЇ МОДЕЛІ (НП-в крок 2) — англійською за
 # `формальність.ФОРМАЛЬНІСТЬ_ЯКОРІ` (K-KOH-01): те саме число 1–10, яким код міряє речі
 # (`інтервал_формальності`), тож смуга з її числа й інтервал речі стоять на одній шкалі.
-_ЩАБЛІ_EN = ("1 loungewear at home; 2 athleisure; 3 jeans, T-shirt and sneakers; 4 neat casual, dark denim; "
-             "5 textured jacket, refined knit, loafers; 6 blazer with trousers, sheath dress; "
-             "7 suit without tie, cocktail dress; 8 business suit; 9 tuxedo, evening gown; "
-             "10 white tie, full evening dress")
+import brief as _БР_Щ  # якорі шкали — одні з промптом стилістки (`brief.ЯКОРІ_EN`, НГ-3)
+_ЩАБЛІ_EN = "; ".join("%d %s" % x for x in _БР_Щ.ЯКОРІ_EN)
 
 
 # Слова прикладів — звичайні назви подій, не коди: з кодами місць модель почала ставити `place` у двозначних
