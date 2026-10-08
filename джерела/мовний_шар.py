@@ -1441,7 +1441,7 @@ def прийняти_повідомлення(розмітка, відповід
         пари = [_з_форми(x) for x in об]
         if all(н is not None for н, _ in пари):
             об = {str(н): т for н, т in пари}
-        elif len(об) == len(розмітка or []) and all(isinstance(x, str) for x in об):
+        elif len(об) <= len(розмітка or []) and all(isinstance(x, str) for x in об):
             об = {str(р["н"]): x for р, x in zip(розмітка, об)}
     тексти, без = {}, []
     for р in розмітка or []:
