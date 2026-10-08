@@ -8191,13 +8191,10 @@ async function перейтиДоСтенда(){
 
 /* Службовий режим: збірка, каталог, токени, діагноз — видно лише власнику. */
 let СЛУЖБОВЕ = false;
-function читатиХеш(){
+async function читатиХеш(){
   try{
     const п = розібратиХеш();
-    const а = п.міст, т = п.токен;
-    if (а){ МІСТ_П.адреса = а; localStorage.setItem('міст:адреса', а); }
-    if (т){ МІСТ_П.токен = т; localStorage.setItem('міст:токен', т); }
-    if (!МІСТ_П.адреса && /^https?:$/.test(location.protocol) && location.origin !== 'null') МІСТ_П.адреса = ТИПОВИЙ_МІСТ_П;
+    await підтвердитиАдресуМостаП();
     const с = п.службове;
     if (с != null) localStorage.setItem('міст:службове', с === '0' ? '' : '1');
     СЛУЖБОВЕ = localStorage.getItem('міст:службове') === '1';
@@ -8217,7 +8214,7 @@ function хешПакета(){
 
 let ЗАПУЩЕНО = false;
 async function старт(){
-  читатиХеш();
+  await читатиХеш();
   if (!ЗАПУЩЕНО){
     ЗАПУЩЕНО = true;
     пристрій = await пристрій_Id().catch(()=> 'невідомо');
@@ -8399,6 +8396,15 @@ function службовийРядок(){
    пакет образу, як і було (хешПакета). Латинські псевдоніми t / bridge / model. */
 const ТИПОВИЙ_МІСТ_П = "https://lyusterko-mist.mighty-rochy.workers.dev";
 const ТИПОВА_МОДЕЛЬ_П = "gemini-3.8-flash";
+function автоматичноДозволенаАдресаМостаП(адреса){
+  try{
+    const у = new URL(String(адреса || '').trim());
+    if (!/^https?:$/.test(у.protocol) || у.username || у.password) return false;
+    if (у.hostname === 'localhost' || у.hostname === '127.0.0.1') return true;
+    return у.href.replace(/\/$/, '') === new URL(ТИПОВИЙ_МІСТ_П).href.replace(/\/$/, '');
+  }catch(_){ return false; }
+}
+let непідтвердженийМістП = null;
 function розібратиХеш(){
   let х = (location.hash || "").replace(/^#/, "");
   try{ х = decodeURIComponent(х); }catch(_){}
@@ -8521,17 +8527,55 @@ const МІСТ_П = (function(){
   let а = "", т = "";
   try{
     const п = розібратиХеш();
-    а = п.міст; т = п.токен;
-    if (а) localStorage.setItem("міст:адреса", а);
-    if (т) localStorage.setItem("міст:токен", т);
+    const збереженаАдреса = localStorage.getItem("міст:адреса") || "";
+    const збереженийТокен = localStorage.getItem("міст:токен") || "";
     /* типовий міст — лише на http(s)-походженні: у пісочниці (origin «null») прямий
        виклик без мосту законний і мусить лишитись */
     const на_Pages = /^https?:$/.test(location.protocol) && location.origin !== "null";
-    а = а || localStorage.getItem("міст:адреса") || (на_Pages ? ТИПОВИЙ_МІСТ_П : "");
-    т = т || localStorage.getItem("міст:токен") || "";
+    const безпечнаЗбережена = автоматичноДозволенаАдресаМостаП(збереженаАдреса);
+    const кандидат = п.міст || збереженаАдреса;
+    if (кандидат && !автоматичноДозволенаАдресаМостаП(кандидат)){
+      непідтвердженийМістП = {адреса: кандидат, токен: п.міст ? п.токен : (п.токен || збереженийТокен),
+        зіСховища: !п.міст};
+      а = безпечнаЗбережена ? збереженаАдреса : (на_Pages ? ТИПОВИЙ_МІСТ_П : "");
+      т = безпечнаЗбережена ? збереженийТокен : "";
+    } else {
+      а = кандидат || (на_Pages ? ТИПОВИЙ_МІСТ_П : "");
+      т = п.токен || збереженийТокен;
+      if (п.міст) localStorage.setItem("міст:адреса", п.міст);
+      if (п.токен) localStorage.setItem("міст:токен", п.токен);
+    }
   }catch(_){ }
   return {адреса: а, токен: т};
 })();
+async function підтвердитиАдресуМостаП(){
+  const к = непідтвердженийМістП;
+  if (!к) return;
+  const згода = await new Promise(завершити => {
+    const в = document.createElement('dialog');
+    в.setAttribute('aria-labelledby', 'міст-питання');
+    в.style.cssText = 'max-width:min(34rem,calc(100% - 2rem));border:0;border-radius:18px;padding:24px;color:inherit;background:var(--фон,#fff);box-shadow:0 18px 60px #0008';
+    const з = document.createElement('h2'); з.id = 'міст-питання'; з.textContent = 'Використовувати цю адресу?';
+    const п = document.createElement('p'); п.textContent = 'Адреса: ' + к.адреса;
+    п.style.cssText = 'overflow-wrap:anywhere;line-height:1.5';
+    const д = document.createElement('div'); д.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px';
+    const ні = document.createElement('button'); ні.type = 'button'; ні.textContent = 'Ні';
+    const так = document.createElement('button'); так.type = 'button'; так.textContent = 'Так, використовувати';
+    const відповісти = значення => { в.close(); в.remove(); завершити(значення); };
+    ні.onclick = () => відповісти(false); так.onclick = () => відповісти(true);
+    в.oncancel = подія => { подія.preventDefault(); відповісти(false); };
+    д.append(ні, так); в.append(з, п, д); document.body.appendChild(в); в.showModal();
+  });
+  if (згода){
+    МІСТ_П.адреса = к.адреса; МІСТ_П.токен = к.токен;
+    localStorage.setItem('міст:адреса', к.адреса);
+    if (к.токен) localStorage.setItem('міст:токен', к.токен);
+    else localStorage.removeItem('міст:токен');
+  } else if (к.зіСховища){
+    localStorage.removeItem('міст:адреса'); localStorage.removeItem('міст:токен');
+  }
+  непідтвердженийМістП = null;
+}
 /* `кеш` — вхідні токени, прочитані з кешу провайдера (К-4): міст віддає їх одним іменем
    для обох провайдерів (`worker_джерело.js`), і вони вже НЕ входять у `вхід`. Окремим
    числом, а не всередині входу: інакше «кеш працює» не видно ні у звіті, ні на екрані. */
