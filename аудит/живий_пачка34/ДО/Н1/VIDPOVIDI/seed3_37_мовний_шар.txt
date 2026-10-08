@@ -1,0 +1,26 @@
+── ПРОМПТ (2647 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення (не «личить personally», а «личить особисто»), і не пиши слово літерами двох абеток (не «spідниця», не «structурована» — «спідниця», «структурована»); латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти»; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "The centerpiece of your look is a beige sleeveless midi dress with clean white piping along the seams, featuring a relaxed A-line silhouette that falls gracefully just past the knee. Complementing this soft neutral tone are brown suede knee-high boots with a sturdy platform sole and a discreet back zipper for easy wear. To add a touch of luxury and vintage flair, a gold Chanel brooch adorned with a delicate chain tassel hangs prominently on your chest. Finally, a vibrant emerald green structured clutch with a silver chain strap provides the perfect pop of color to balance the earthy tones of your ensemble."},
+{"н": 2, "текст": "Let the clean lines of the dress define your silhouette, while the rich brown boots ground your height and add stability for standing or dancing."},
+{"н": 3, "текст": "Use the emerald clutch as a bold statement piece that instantly elevates the casual elegance of the beige fabric to a festive occasion."},
+{"н": 4, "текст": "Сумка жіноча LADIES BAG PERLA — added to resolve 'no_bag' blocker while keeping outfit formal enough for a restaurant celebration"},
+{"н": 5, "текст": "Вінтажна позолочена брошка з ланцюжками — The vintage gold brooch adds a festive touch to the neutral dress, breaking the monotony gently."},
+{"н": 6, "текст": "LeBERDES Чоботи зимові — Brown boots ground the lighter tones of the knit and bag, adding warmth to the ensemble."}
+]
+
+── ВІДПОВІДЬ (1372 симв., 80.0 с, HTTP 200) ──
+```json
+{
+  "1": "Центральним елементом твого образу є бежева сукня-міді без рукавів з акуратними білими кантами по швах. Вона має розслаблений силует трапеції, який витончено спадає трохи нижче коліна. Цей м'який нейтральний відтінок доповнюють коричневі замшеві чоботи-ботфорти на стійкій платформі з непомітною задньою блискавкою для зручного взування. Щоб додати нотку розкоші та вінтажного шарму, золота брошка Chanel з витонченим ланцюжком у вигляді кисті прикрашає твою груди. Насамкінець, яскрава смарагдово-зелена структурована сумочка на срібному ланцюжку додає ідеальний колірний акцент, щоб збалансувати земляні тони вбрання.",
+  "2": "Нехай чіткі лінії сукні підкреслюють твою фігуру, а коричневі чоботи створюють стабільність для стояння або танців.",
+  "3": "Використай смарагдову сумочку як сміливий акцентний елемент, який миттєво перетворює невимушену елегантність бежевої тканини на святкову подію.",
+  "4": "Жіноча сумка LADIES BAG PERLA — додана для вирішення блокування 'no_bag', зберігаючи при цьому достатньо формальний вигляд вбрання для ресторанного святкування",
+  "5": "Вінтажна позолочена брошка з ланцюжками — вінтажна золота брошка додає святковий штрих до нейтральної сукні, ніжно розбиваючи монотонність.",
+  "6": "LeBERDES Зимові чоботи — Коричневі чоботи підкреслюють світлі тони в'язаного виробу та сумки, додаючи тепла ансамблю."
+}
+```

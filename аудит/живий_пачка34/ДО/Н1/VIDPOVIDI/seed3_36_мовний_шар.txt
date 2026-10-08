@@ -1,0 +1,69 @@
+── ПРОМПТ (4811 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_code_unknown — рядок у згорнутому блоці «код не знає» на картці образу: чого код не знає — про речі, про неї чи про її день — і що через це лишилось не перевіреним. Це не вада образу й не порада, а чесне «не знаю».
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами.
+
+ЗАЯВИ:
+- no_input_filling_loft — the cards do not carry the filling's thickness, so the code does not know how much room it takes under an outer layer.
+- no_input_down_category_meaning — nobody has checked yet whether a shop's "down jacket" is real down and not synthetic, so the code does not count warmth by the category name.
+- no_input_belt_height_petite — sources advise different heights for the belt of an outer layer on a petite figure, so the code does not advise this.
+- no_input_pocket_type_on_hip — the cards do not say whether an outer layer's hip pockets are patch or slit, so the code does not judge how they lie on the hips.
+- no_input_ease_look_vs_move — the difference between ease "for the look" and ease "for movement" in a woman's coat is not researched yet, so the code does not judge it.
+- no_input_collar_vs_face — the code does not match collar shapes to face shapes: there is no evidence for women, only the men's shirt tradition.
+- no_input_hand_finger_neck_sizes — the code does not check glove, ring and choker sizes against her: it has no palm, finger or neck measurements.
+- no_input_frame_size — the catalogue has no glasses, so the code does not check frame size against her face.
+- no_input_watch_size — the catalogue has no watches, so the code does not check watch size against the wrist.
+- no_input_glove_size — the catalogue has no gloves and the code has no size system for them, so it does not check glove size.
+- no_input_hat_girth — no hat in the catalogue carries a girth in its card, so the code does not check hat size against the head.
+- no_input_hardware_metal — shops do not state the metal of hardware (buckles, clasps, bag fittings), so the code counts metal mixing only by the jewellery.
+- no_input_scarf_chosen_last — the code picks the scarf together with the rest of the items, not last, for what the outfit lacks.
+- no_input_pocket_square — the catalogue has no pocket squares, so the code does not apply rules on their fold and fabric.
+- no_input_lens_prescription — the code does not know the strength of her lenses, so it does not restrict frames for a prescription.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_code_unknown", "заяви": [{"code": "no_input_filling_loft"}]},
+{"н": 2, "вид": "card_code_unknown", "заяви": [{"code": "no_input_down_category_meaning"}]},
+{"н": 3, "вид": "card_code_unknown", "заяви": [{"code": "no_input_belt_height_petite"}]},
+{"н": 4, "вид": "card_code_unknown", "заяви": [{"code": "no_input_pocket_type_on_hip"}]},
+{"н": 5, "вид": "card_code_unknown", "заяви": [{"code": "no_input_ease_look_vs_move"}]},
+{"н": 6, "вид": "card_code_unknown", "заяви": [{"code": "no_input_collar_vs_face"}]},
+{"н": 7, "вид": "card_code_unknown", "заяви": [{"code": "no_input_hand_finger_neck_sizes"}]},
+{"н": 8, "вид": "card_code_unknown", "заяви": [{"code": "no_input_frame_size"}]},
+{"н": 9, "вид": "card_code_unknown", "заяви": [{"code": "no_input_watch_size"}]},
+{"н": 10, "вид": "card_code_unknown", "заяви": [{"code": "no_input_glove_size"}]},
+{"н": 11, "вид": "card_code_unknown", "заяви": [{"code": "no_input_hat_girth"}]},
+{"н": 12, "вид": "card_code_unknown", "заяви": [{"code": "no_input_hardware_metal"}]},
+{"н": 13, "вид": "card_code_unknown", "заяви": [{"code": "no_input_scarf_chosen_last"}]},
+{"н": 14, "вид": "card_code_unknown", "заяви": [{"code": "no_input_pocket_square"}]},
+{"н": 15, "вид": "card_code_unknown", "заяви": [{"code": "no_input_lens_prescription"}]}
+]
+
+── ВІДПОВІДЬ (1625 симв., 75.5 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю, скільки місця під зовнішнім шаром займає наповнювач.",
+  "2": "Не перевіряли ще, чи куртка з пуху в магазині справді з пуху, а не синтетики, тому я не оцінюю її теплоту за назвою категорії.",
+  "3": "Джерела радять різні висоти для пояса на фігурі невисокого зросту, тож я цього не раджу.",
+  "4": "Зовнішній шар не вказує, чи кишені на стегнах клапани чи прорізні, тому я не можу оцінити їхнє розташування на стегнах.",
+  "5": "Нема досліджень щодо різниці між посадкою «для вигляду» та «для руху», тож я цього не оцінюю.",
+  "6": "Я не підбираю форму коміра до форми обличчя: немає даних для жінок, лише традиція сорочок для чоловіків.",
+  "7": "Я не перевіряю розмір рукавичок, кілець і чокерів на тебе: у мене нема вимірів долоні, пальців чи шиї.",
+  "8": "У каталозі немає окулярів, тож я не можу оцінити відповідність розміру оправи твоєму обличчю.",
+  "9": "У каталозі немає годинників, тому я не перевіряю їхній розмір на зап’ясті.",
+  "10": "Нема рукавичок у каталозі й у мене нема системи для визначення їхнього розміру, тож я цього не перевіряю.",
+  "11": "Жоден капелюх у каталозі не має обхвату голови, тому я не можу оцінити відповідність його твоєму розміру.",
+  "12": "Магазини не вказують метал фурнітури (пряжки, застібки, деталі сумки), тож я враховую змішування металів лише по прикрасам.",
+  "13": "Я підбираю шарф разом з іншими речами, а не останньою чергою, щоб доповнити образ.",
+  "14": "У каталозі немає нагрудних хустинок, тож я не застосовую правила щодо їхнього складання та тканини.",
+  "15": "Я не знаю силу твоїх лінз, тому й не обмежую оправи за рецептом."
+}
+```

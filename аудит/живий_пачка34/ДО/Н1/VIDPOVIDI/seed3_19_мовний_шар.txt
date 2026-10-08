@@ -1,0 +1,30 @@
+── ПРОМПТ (2674 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення (не «личить personally», а «личить особисто»), і не пиши слово літерами двох абеток (не «spідниця», не «structурована» — «спідниця», «структурована»); латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти»; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "She wears a tailored wool-blend blazer in Deep Forest Green cut with sharp lapels and worn to hip length, layered over a crisp Italian silk blouse in Ivory featuring a relaxed pleated front and a midi hemline that falls just above the knee. The ensemble is grounded by slim-fit trousers in Charcoal Grey made from structured cotton twill with a straight leg opening and a mid-calf length, paired with polished leather pumps in Burnished Copper with a moderate block heel for stability during a festival. She completes the look with gold-plated hoop earrings that catch the candlelight, a structured clutch bag in textured black suede, and a delicate layered necklace set with small emerald stones to honor the sacred occasion. This outfit works because the deep forest green base aligns perfectly with traditional festive palettes while the copper accents introduce a modern, celebratory warmth suitable for a town hall setting. The natural breathability of the silk blouse and cotton twill ensures comfort throughout the evening festivities without sacrificing the required neat-to-smart dress code, allowing her to move freely among the community."},
+{"н": 2, "текст": "wool-blend blazer"},
+{"н": 3, "текст": "Italian silk blouse"},
+{"н": 4, "текст": "slim-fit trousers"},
+{"н": 5, "текст": "leather pumps"},
+{"н": 6, "текст": "hoop earrings"},
+{"н": 7, "текст": "clutch bag"},
+{"н": 8, "текст": "layered necklace"}
+]
+
+── ВІДПОВІДЬ (1342 симв., 201.6 с, HTTP 200) ──
+```json
+{
+  "1": "Вона одягла приталений блейзер з вовняної суміші кольору глибокий ліс, із загостреними лацканами та довжиною до стегон. Його наділи поверх білої шовкової сорочки італійського виробництва вільного крою з м’якою складкою спереду та середньою довжиною трохи вище коліна. Образ завершили вузькі штани кольору антрацит, пошиті зі структурованого бавовняного твілу із прямим низом і довжиною до середини литки, у парі з лакованими шкіряними туфлями мідно-червоного відтінку на стійкому каблуці для комфорту під час фестивалю. Вона прикрасила образ золотими сережками-кільцями, які ловили світло свічок, структурованою сумочкою з чорної замші та ніжним багатошаровим намистом із невеликими смарагдами на честь священного свята. Цей одяг вдалий, адже глибокий зелений колір ідеально поєднується з традиційними святковими відтінками, а мідні акценти додають сучасне тепле сяйво для урочистої події в міській ратуші. Природна повітропроникність шовкової сорочки та бавовняного твілу забезпечує комфорт протягом усього вечора без шкоди для необхідного охайного дрес-коду, дозволяючи їй вільно пересуватися серед громади.",
+  "2": "блейзер з вовняної суміші",
+  "3": "шовкова сорочка італійського виробництва",
+  "4": "вузькі штани",
+  "5": "шкіряні туфлі",
+  "6": "сережки-кільця",
+  "7": "сумочка",
+  "8": "багатошарове намисто"
+}
+```

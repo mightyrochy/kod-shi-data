@@ -1,0 +1,50 @@
+── ПРОМПТ (2005 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "She wears a tailored wool-blend blazer in Deep Forest Green (#2F4F4F) cut with sharp lapels and worn to hip length, layered over a crisp Italian silk blouse in Ivory (#FFFFF0) featuring a relaxed pleated front and a midi hemline that falls just above the knee. The ensemble is grounded by slim-fit trousers in Charcoal Grey (#36454F) made from structured cotton twill with a straight leg opening and a mid-calf length, paired with polished leather pumps in Burnished Copper (#B87333) with a moderate block heel for stability during a festival. She completes the look with gold-plated hoop earrings that catch the candlelight, a structured clutch bag in textured black suede, and a delicate layered necklace set with small emerald stones to honor the sacred occasion. This outfit works because the deep forest green base aligns perfectly with traditional festive palettes while the copper accents introduce a modern, celebratory warmth suitable for a town hall setting. The natural breathability of the silk blouse and cotton twill ensures comfort throughout the evening festivities without sacrificing the required neat-to-smart dress code, allowing her to move freely among the community."}
+
+── ВІДПОВІДЬ (1198 симв., 203.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "wool-blend blazer",
+      "details": "tailored with sharp lapels and hip length cut",
+      "slot": "outerwear",
+      "color_hex": "#2F4F4F"
+    },
+    {
+      "name": "Italian silk blouse",
+      "details": "relaxed pleated front and midi hemline falling just above the knee",
+      "slot": "top",
+      "color_hex": "#FFFFF0"
+    },
+    {
+      "name": "slim-fit trousers",
+      "details": "structured cotton twill with straight leg opening and mid-calf length",
+      "slot": "bottom",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "leather pumps",
+      "details": "polished with moderate block heel for stability",
+      "slot": "shoes",
+      "color_hex": "#B87333"
+    },
+    {
+      "name": "hoop earrings",
+      "details": "gold-plated and designed to catch candlelight",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "clutch bag",
+      "details": "structured in textured black suede",
+      "slot": "bag",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "layered necklace",
+      "details": "delicate set featuring small emerald stones",
+      "slot": "necklace",
+      "color_hex": null
+    }
+  ]
+}
