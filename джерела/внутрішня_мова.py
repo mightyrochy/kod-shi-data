@@ -2986,6 +2986,8 @@ if _спільні:
     "face_colour_eye_side": "a coloured item near the face lies on the side of the yellow–blue axis her eyes "
                             "give (R-COL-16)",
     "scheme_chosen": "the scheme of the outfit was chosen by her or by the stylist, not by a blind rank of the code",
+    "soft_palette_drama_by_lightness": "a soft palette is made dramatic by lightness contrast, texture and "
+                                       "shine, not by chroma (K-PAL-12)",
     # аксесуари
     "glove_sleeve_length": "glove length and sleeve length are one decision (K-GLV-02)",
     "tights_density": "the density of the tights matches the fabric weight of the day (K-HOS-01)",
@@ -3022,7 +3024,7 @@ if _спільні:
     "B6": "not_same_for_anyone", "B7": "passport_from_talk", "P1": "face_colour_in_windows",
     "P2": "colours_in_her_pairings", "P3": "print_dominant_hers", "P4": "off_palette_has_carrier",
     "P5": "grey_hair_eyes_lead", "P6": "context_keeps_edge_colour", "P7": "face_colour_eye_side",
-    "P8": "scheme_chosen", "A1": "glove_sleeve_length", "A2": "tights_density", "A3": "tights_link",
+    "P8": "scheme_chosen", "P9": "soft_palette_drama_by_lightness", "A1": "glove_sleeve_length", "A2": "tights_density", "A3": "tights_link",
     "A4": "jewelry_scale", "A5": "necklace_off_neckline", "A6": "accessory_edge_placement",
     "A7": "price_per_combinations", "A8": "repairable_shoes", "A9": "refusal_reason_physical",
     "A10": "glasses_in_chroma", "A11": "jewelry_kind_asked", "A12": "accent_surfaces_differ",
