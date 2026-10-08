@@ -1108,8 +1108,11 @@ def прийняти_оцінку(відповідь, суд_):
             сторож.append(dict(де="change[%d]" % н, чому="fix_without_text", що=ід))
             continue
         змінити.append(dict(ід=ід, текст=_текст(з.get("text")), зміна=зміни.get(ід)))
+    # «з зміною» без жодної дійсної зміни — твердження без опори: сторож знімає вердикт (як код поза
+    # переліком), а показ іде в ОДИН повтор із названими ідами (`повтор_вердикту`, перевірка #654, Codex P1)
     if вердикт == "wear_with_change" and not змінити:
         сторож.append(dict(де="verdict", чому="change_missing", що=вердикт))
+        вердикт = None
     не_знаю = [dict(текст=_текст(у.get("text") if isinstance(у, dict) else у))
                for у in (об.get("unknown") if isinstance(об.get("unknown"), list) else [])]
     не_знаю = [у for у in не_знаю if у["текст"]]
@@ -1122,8 +1125,18 @@ def прийняти_оцінку(відповідь, суд_):
 
 
 def повтор_вердикту(суд_, сторож):
-    """Рядок для ОДНОГО повтору, коли `verdict` суперечить гейту: що саме в суді (коди)."""
-    if not any(с.get("чому") == "contradicts_gate" for с in сторож or []):
+    """Рядок для ОДНОГО повтору, коли `verdict` суперечить суду: «як є» проти гейта або «з зміною» без
+    дійсної зміни (`change_missing`) — що саме в суді, кодами."""
+    чому = {с.get("чому") for с in сторож or []}
+    if "change_missing" in чому and "contradicts_gate" not in чому:
+        зміни = [ід_на_дріт(с.get("ід")) for с in суд_.get("зміни") or []]
+        ремонти = [ід_на_дріт(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []
+                   if з.get("ід") and (з.get("ремонт_заяви") or з.get("ремонт"))]
+        return ("Your verdict \"wear_with_change\" has no valid \"change\": verified changes %s; findings "
+                "with a fix %s. Give at least one of these ids in \"change\", or choose another verdict. "
+                "Answer again with the same schema." % (", ".join(str(х) for х in зміни) or "—",
+                                                       ", ".join(str(х) for х in ремонти) or "—"))
+    if "contradicts_gate" not in чому:
         return None
     import дріт_моделі as _ДМ
     гейти = [ід_на_дріт(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []
