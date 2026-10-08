@@ -478,19 +478,22 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
         "type": "object", "additionalProperties": False, "required": ["from", "to"],
         "properties": {"from": {"type": "integer", "minimum": 1, "maximum": 10},
                        "to": {"type": "integer", "minimum": 1, "maximum": 10}}}),
-        description="наскільки ошатний цей вихід, шкала 1–10 (`формальність.ФОРМАЛЬНІСТЬ_ЯКОРІ`): "
-                    "мовна модель ставить завжди — з її слів, події й обраних плиток (НП-в крок 2)"),
+        description="наскільки ошатний цей вихід, шкала 1–10: завжди — з її слів і події"),
     "intent": _перелік("intent", "намір: comfort_first — зручність і свобода руху понад усе; "
                                  "context_optimal — доречність і рівень події понад усе; "
                                  "statement — хоче вразити, заявити про себе; conventional — "
                                  "нічого з цього"),
+    # Рядок 1437: conceal — два наміри, і різнить їх лише goal_zones: без зон — увесь образ не привертає
+    # уваги; із зонами — погляд іде від зон, а решта образу вільна (`регістр_уваги.мета_образу`)
     "goal": _перелік("goal", "мета на цей вихід: flatter — щоб личило; conceal — не привертати "
-                             "уваги чи щось сховати; express — щоб на неї дивились; taller — "
+                             "уваги до всього образу, або відвести погляд від зони тіла (тоді й "
+                             "goal_zones); express — щоб на неї дивились; taller — "
                              "вона хоче довшу лінію, здаватись вищою"),
     "goal_zones": _список(_перелік("goal_zone", "зона тіла"),
-                          "лише коли мета — conceal і вона назвала, ЩО сховати: зони тіла, від яких "
-                          "відвести погляд («сховати живіт» → belly); «не хочу привертати уваги» без "
-                          "зони — поля нема", maxItems=3),
+                          "лише з метою conceal, коли вона хоче відвести погляд від зони тіла («сховати "
+                          "живіт» → belly): мета тоді стосується лише цих зон, а решта образу вільна; "
+                          "коли вона ще й не хоче уваги до себе взагалі — поля нема, увесь образ тихий",
+                          maxItems=3),
     "makeup": {"description": "макіяж на цей вихід", "type": "object", "additionalProperties": False,
                "properties": {
                    "level": _перелік("makeup_level", "рівень макіяжу"),
@@ -500,7 +503,10 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
                                    "кістка, бісер; other — без металу"),
     "registers": _список(_перелік("register", "реєстр стилю"),
                          "реєстри стилю, якими вона сама себе описала", maxItems=2),
-    "wants": _список({"$ref": "#/$defs/thing"}, "чого вона хоче в образі"),
+    # Рядок 1449: «А якщо з чорними ботильйонами?» ставало `wants: black ankle_boots` у 14 з 31 — питання
+    # «а якщо…», «чи піде…» — не бажання, воно в `question`
+    "wants": _список({"$ref": "#/$defs/thing"}, "чого вона хоче в образі — лише те, що вона просить; "
+                                                "річ у питанні («а якщо…», «чи піде…») — не бажання, а question"),
     "vetoes": _список({"$ref": "#/$defs/thing"}, "чого вона не хоче: межі"),
     "retract": _список({"$ref": "#/$defs/thing"}, "межі чи бажання, від яких вона в цих словах "
                                                    "відмовилась"),
@@ -510,7 +516,10 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
                                                    "псує фігуру; з ним не сперечаються"),
     "legs_above_cm": _число("вище скількох см від підлоги не відкривати ноги", minimum=0),
     "mood": _список(_ВІЛЬНИЙ, "настрій образу її словами", maxItems=3),
-    "own_items": _список({"$ref": "#/$defs/own_item"}, "її власні речі, описані словами"),
+    # Рядок 2141: «з моєю блузою з фото» MamayLM не клала нікуди — опис казав лише «описані словами»
+    "own_items": _список({"$ref": "#/$defs/own_item"}, "її власні речі, які вона називає словами: усе, що "
+                                                       "вона зве своїм («моя», «у мене є», «з моєї шафи», "
+                                                       "«з фото»), — кожна річ окремо"),
     "question": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="питання, яке вона ставить стилістці"),
     # ── ВНУТРІШНЯ МОВА НЕСЕ ВСЕ РЕЧЕННЯ, А НЕ ЛИШЕ ЗАКРИТИЙ ПЕРЕЛІК (М-1, В-1/В-5/В-6) ──
     # «Для походу на концерт»: коду нагоди нема → нагода гинула, а подія не судила нічого.
@@ -1116,7 +1125,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "why_her_hair": "because it suits her hair colour",
     "why_her_metal": "because it suits her jewellery metal today or the metal that suits her",
     "why_goal_flatter": "because the outfit should flatter her",
-    "why_goal_conceal": "because the outfit should not draw extra attention",
+    "why_goal_conceal": "because it draws the eye away from the body zone she named, or, when she named "
+                        "none, keeps the whole outfit quiet",
     "why_goal_express": "because the outfit should draw the eye",
     "why_occasion": "because it suits the level and mood of the occasion and place",
     "why_weather": "because it suits the day's weather, season and light",

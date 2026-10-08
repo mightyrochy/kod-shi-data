@@ -53,7 +53,8 @@ import дріт_моделі as _ДМ
     "why_her_hair": "works with the colour of her hair",
     "why_her_metal": "goes with the metal of her jewellery today or the metal that suits her face",
     "why_goal_flatter": "the look should flatter her",
-    "why_goal_conceal": "the look should not draw attention",
+    "why_goal_conceal": "the look draws the eye away from the zones in «goal_zones», or, without them, "
+                        "does not draw attention",
     "why_goal_express": "the look should be noticed",
     "why_occasion": "fits the formality and mood of the occasion and the place",
     "why_weather": "fits the weather, season and light of the day",
