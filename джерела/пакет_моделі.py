@@ -11,7 +11,7 @@ import re
 import json as _json_
 import протокол as _ПР
 import дріт_моделі as _Д
-import формальність as _ФОРМ_ОФ  # смуга офісу без виду — одна на всі промпти (ОФІС-1)
+import brief as _БР_Щ  # щаблі ошатності кодами для стилістки (НГ-3)
 # К-3 (27.09.2026): коди розбору каталогу й рядок особливостей речі. Модуль читає файл
 # розбору поруч із собою (у вантажі показу — поруч у вантажі) і тримає перемикач короткого
 # запису; без файла й без перемикача він мовчить, і запис речі той самий, що доти.
@@ -526,7 +526,7 @@ import внутрішня_мова as _ВМ_П
                     "bland, not calm"),
         _ЗП.Поле("pool", "the catalog items the code let through: in stock, right for this temperature and "
                          "the stated dress code, within her palette's lightness and her refusals; «formality» — "
-                         "1 to 10, the scale of the occasion (1 home, " + _ФОРМ_ОФ.СМУГА_ОФІСУ_EN + ", 9 gala); «L» — lightness 0 to "
+                         "the item's step or steps from…to, the same steps as the occasion: " + _БР_Щ.ЩАБЛІ_EN + "; «L» — lightness 0 to "
                          "100; «hem_cm» — where the hem falls, cm above the floor; «fabric_c» — the °C the "
                          "fabric suits; «L_from», «hem_from» — what the number was read from; «branch» — where "
                          "the colour lies against her palette: core, edge or break; «register» — the item's "
