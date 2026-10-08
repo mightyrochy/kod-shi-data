@@ -155,6 +155,11 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
                                        "many findings of one rule it joins; «declared»: true — your own "
                                        "declared move",
                  як="keep a declared move and repeat it in «deliberate», or change your mind and say why"),
+        # ГГ-1 (рядки 1121, 1290; п.17): опора — інформація, не наказ
+        _ЗП.Поле("verdict[].keep", "what the outfit stands on — her column, an echo of the accent, companions "
+                                   "that hold a colour in her palette: «statements» (codes defined in "
+                                   "\"statement_codes\") and the «items» that carry it; not a finding",
+                 як="information, not an order: when you change an item that carries it, know what goes with it"),
         _ЗП.Поле("verdict[].checklist", "by area, the points the outfit «failed»: «excess» — what is already "
                                         "too much, «blandness» — what is lacking, both weigh the same; "
                                         "«not_run» — points the code did not check; each point is a code "
@@ -196,7 +201,7 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         "When you break a condition deliberately, say so in «deliberate» of the outfit: the item and why.",
         "«needed» — only for an item that is neither in the outfits nor in «showcase».",
         "An outfit of the answer is «your_outfit» after your work, with the same «id» and with «done»; "
-        "«structure», «findings», «checklist» and «knot» stay out of the answer.",
+        "«structure», «findings», «keep», «checklist» and «knot» stay out of the answer.",
     ),
     вихід="ОБРАЗИ_V1",
     поля_виходу=dict(_ПОЛЯ_ОБРАЗІВ, **{
@@ -839,6 +844,30 @@ def _речі_образу(о):
     if not isinstance(о, dict):
         return set()
     return {str(r) for r in (о.get("речі") or о.get("речі_н") or [])}
+
+
+def утрачені_опори(образи, попередній_вердикт):
+    """ГГ-1 (рядки 1121, 1290): на кожен запис образу — опори його образу в попередньому вердикті
+    (пара — найбільший перетин складу номерами, як `повнота_образу.дні_до_ремонту`), яких тепер
+    нема: `[[{правило, заяви, речі, образ}]]`. Опора та сама, коли збігаються правило й код першої
+    заяви: заміна сережок на кольє в тон лишає відлуння. Без попереднього вердикта чи без спільної
+    речі — порожньо: вгадувати пару нема з чого. Нових обчислень суду тут нема — лише звірка."""
+    поп = [о for о in ((попередній_вердикт or {}).get("образи") or []) if isinstance(о, dict)]
+    склад = lambda о: {str(r).split("/")[0] for r in (о.get("речі") or о.get("речі_н") or [])}
+    ключ = lambda x: (x.get("правило"), next((з.get("code") for з in (x.get("заяви") or [])
+                                              if isinstance(з, dict)), None))
+    вих = []
+    for о in образи or []:
+        мій = склад(о) if isinstance(о, dict) else set()
+        пара = max(поп, key=lambda п: len(мій & склад(п)), default=None)
+        if not пара or not (мій & склад(пара)):
+            вих.append([])
+            continue
+        є = {ключ(x) for x in (о.get("опори") or []) if isinstance(x, dict)}
+        вих.append([dict(правило=x.get("правило"), заяви=list(x.get("заяви") or []),
+                         речі=list(x.get("речі") or []), образ=str(пара.get("ід") or ""))
+                    for x in (пара.get("опори") or []) if isinstance(x, dict) and ключ(x) not in є])
+    return вих
 
 
 def _зіставити_образи(відповідь, нові):
@@ -1585,6 +1614,10 @@ def вердикт_v1(образи, варіантів=2, випадок=None, �
             _свід.append(з)
         if _свід:
             зап["свідомі"] = _свід
+        for _к in ("опори", "утрачені_опори"):     # ГГ-1: що тримає образ і що з того втратив ремонт
+            if о.get(_к):
+                зап[_к] = [{к2: v for к2, v in x.items() if к2 in ("правило", "заяви", "речі", "образ")}
+                           for x in о[_к] if isinstance(x, dict)]
         if о.get("чекліст"):
             зап["чекліст"] = о["чекліст"]
         зап["вузол"] = (dict(назва=str(о["вузол"]), чому=str(о.get("рядок_вузла") or ""),
