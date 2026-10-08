@@ -1,0 +1,46 @@
+── ПРОМПТ (1987 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend trench coat, straight tailored cut reaching mid-thigh in length, color#2F4F4F (dark slate gray), heavy woven fabric.\nCotton-blend blouse, relaxed button-down cut with a curved hem sitting at the hip, color#F5DEB3 (wheat), crisp lightweight fabric.\nSlim-fit trousers, tapered leg cut ending just above the ankle in length, color#D3D3D3 (light gray), structured stretch wool fabric.\nLeather loafers, slip-on cut with a low block heel, color#8B4513 (saddle brown), smooth calfskin fabric.\nGold-tone minimalist necklace and structured leather tote bag in color#C0C0C0 (silver).\n\nThis outfit works because the dark slate gray trench coat provides essential protection against the freezing 2°C weather while maintaining a sharp professional silhouette suitable for an office environment. The warm wheat-colored blouse adds a soft, humanizing contrast to the cool outer layers without sacrificing the required formal dress code. The tailored fit of the trousers and the sturdy loafers ensure comfort and mobility for commuting, while the metallic accessories introduce a touch of subtle elegance that elevates the entire ensemble beyond standard uniform attire."}
+
+── ВІДПОВІДЬ (1162 симв., 249.5 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Wool-blend trench coat",
+        "details": "straight tailored cut reaching mid-thigh in length, heavy woven fabric",
+        "slot": "outerwear",
+        "color_hex": "#2F4F4F"
+      },
+      {
+        "name": "Cotton-blend blouse",
+        "details": "relaxed button-down cut with a curved hem sitting at the hip, crisp lightweight fabric",
+        "slot": "top",
+        "color_hex": "#F5DEB3"
+      },
+      {
+        "name": "Slim-fit trousers",
+        "details": "tapered leg cut ending just above the ankle in length, structured stretch wool fabric",
+        "slot": "bottom",
+        "color_hex": "#D3D3D3"
+      },
+      {
+        "name": "Leather loafers",
+        "details": "slip-on cut with a low block heel, smooth calfskin fabric",
+        "slot": "shoes",
+        "color_hex": "#8B4513"
+      },
+      {
+        "name": "Gold-tone minimalist necklace",
+        "details": "",
+        "slot": "jewelry",
+        "color_hex": null
+      },
+      {
+        "name": "structured leather tote bag",
+        "details": "",
+        "slot": "bag",
+        "color_hex": "#C0C0C0"
+      }
+    ]
+  }
+}
