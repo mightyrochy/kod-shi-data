@@ -1337,6 +1337,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # речення про крій і його власну лінію; геометрія знахідки не змінилась.
     "claim_boxy_cut_does_not_follow_waist": "the cut runs straight past the waistline instead of following it",
     "claim_no_waist_no_column": "neither a waist nor an even column: the shape does not read",
+    # РЯДОК 1423 (K-BOD-02 O, тема-4:946): тіло без вузької точки на талії
+    "claim_waist_cinched_on_no_waist": "the outfit pulls in or marks the waist on a figure whose waist is nearly as "
+                                       "wide as her hips: the eye lands on the middle",
+    "claim_no_column_on_no_waist": "on a figure whose waist is nearly as wide as her hips the outfit keeps no even "
+                                   "vertical line: the middle is not quiet",
     "claim_volume_without_anchor": "volume fits the body nowhere, so the body shows nowhere",
     "claim_volume_without_anchor_no_shape": "the outfit's volume touches the body nowhere and no shape reads: "
                                             "there is no waist and the contour leads nowhere",
@@ -2333,6 +2338,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "foreign_registers_over_one_quote": "more than one quote item from registers not hers (registers)",
     "anchor_volume": "anchor the volume: cinch the waist (belt, wrap, tuck), shorten the bottom to the ankle "
                      "or narrow it, or keep one layer fitted",
+    # РЯДОК 1423: ремонт якоря на тілі без талії (O) — не пояс, а щиколотка, зап'ясток, виріз чи вертикаль
+    "anchor_volume_no_waist": "anchor the volume where she is narrow: shorten the bottom to the ankle or narrow "
+                              "it, open the wrist or the neckline, or keep one vertical line (a long open layer, "
+                              "one colour top to bottom); not a belt at the waist",
     "give_contour_direction": "give the contour a direction: narrow the bottom or widen it under a fitted "
                               "top; or cinch the waist so it reads as X",
     "name_fabric_woven_or_knit": "name the item's fabric: woven or knit",
@@ -2341,6 +2350,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "cut_adds_volume_at_level": "a cut that adds volume at this level",
     "follow_waist_or_declared_other_shape": "a cut following the waist (fitted, wrap, sheath, belted); or "
                                             "another shape as a declared choice",
+    "make_column_not_waist": "keep one even vertical line without a step at the waist (a shift, a straight or "
+                             "relaxed top worn out, a long open layer), the eye up to the neckline and down to "
+                             "the legs; no belt at the waist",
     "make_waist_or_declared_column": "make a waist (belt, wrap, peplum, fitted) or a declared column: one "
                                      "even line",
     "remove_weaker_flare": "remove the weaker contour flare (level) with a fitted cut there; keep one volume, "
@@ -2696,6 +2708,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "volume_anchor": "a voluminous outfit keeps one anchor where the body shows: the waist (belt, wrap, tuck) or "
                      "the ankle (a tapered or cropped bottom); volume without an anchor reads as \"the body shows "
                      "nowhere\"",
+    # РЯДОК 1423 (K-SIL-03 × K-BOD-02 O, тема-4:946): тіло без вузької точки на талії
+    "volume_anchor_no_waist": "her waist is nearly as wide as her hips, so a voluminous outfit takes its anchor "
+                              "where she is narrow — the ankle, the wrist, the neckline — or keeps one vertical "
+                              "line (a long open layer, one colour top to bottom); not at the waist: no belt at "
+                              "the natural waist, nothing clinging to or decorating the middle of the torso",
     "one_line": "the contour leaves the body in ONE place below the shoulders: a voluminous top together with a "
                 "voluminous bottom gives two lines, and neither reads",
     "cuts_best_on_her": "the cuts of this kind that score highest on her body, equal among themselves (values: "
