@@ -1596,7 +1596,11 @@ _ПОЛЯ_EN = {
     "weather_feel": "the weather, when no number of degrees is named: from her words, or when the season, "
                     "month, holiday or place she names usually takes it (August, a beach by the sea — hot; a "
                     "winter walk, a New Year or a Christmas party — cold), with that word as quote",
-    "precipitation": "rain or snow; possible_rain when rain is only possible (it may rain, a chance of rain) — not rain",
+    # ОПАДИ-1 (рядок 1881): «увесь день дощ» лишало `опади: невідомо` і в паспорті, і в `day` — опис мовчав про
+    # те, що опади тягнуться з ЇЇ слів про день (як `weather_feel`), і без цитати сторож `_тримається` поле знімає.
+    "precipitation": "the precipitation she says the day brings, in any of her words (rain all day, drizzle, "
+                     "it pours, snow, wet snow), with that word as quote; none when she says it stays dry; "
+                     "possible_rain when rain is only possible (it may rain, a chance of rain) — not rain",
     "formality": ("how dressy this outing is, {from, to} on the 1–10 scale: always present, taken by the "
                   "anchors from her words, the event and \"chosen\" — steps: %s" % _ЩАБЛІ_EN),
     "intent": "what matters most to her: comfort_first — comfort and freedom of movement; "
