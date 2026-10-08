@@ -118,6 +118,7 @@ _ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "
                  "вето": "refusals", "ноги_вище_см": "legs_shown_above_cm", "настрій": "mood",
                  "невідомо": "unknown", "вимоги_людини": "her_words",
                  "мета_слова": "goal_quote", "намір_слова": "intent_quote", "решта": "her_other_words",
+                 "намір_звідки": "intent_source",       # ВИБ-1 (рядок 842): default — припущення коду
                  "пояснення_мови": "language_model_note", "зарезервований_колір": "reserved_colour",
                  # Ч-8 (рядок 191): прохання про каблук — кодом, переконання — її цитатами;
                  # доти обидва їхали прозою коду в `her_words`
@@ -1349,7 +1350,8 @@ def опис(об):
 # Задум кожного полюса — англійською для англійського промпта (ід — з `протокол.ПОЛЮСИ`,
 # задум українською — `пакет_моделі.ЗАДУМ_ПОЛЮСА`, той самий зміст).
 ЗАДУМ_EN = {
-    "фільтр-і-ранг": "the closest fit to the palette windows and the conditions",
+    "фільтр-і-ранг": "the outfit the code's own ranking would put first: the items closest to the palette "
+                     "windows and the day's conditions",
     "якір першим": "the most striking item of the pool, with the outfit built around it",
     "тональна колона": "the most coherent in color: close tones, held together by texture",
     "послабити вузол": "the same outfit with its tightest spot solved by another item",

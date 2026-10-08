@@ -413,6 +413,7 @@ def _випадок_кодами(пак, дріт):
     вих = ({к: v for к, v in _Д.випадок(вип, дріт.get("day")).items()
             if v != _ВМ_в.UNKNOWN
             and not (к == "intent" and v == "conventional" and not str(вип.get("намір_слова") or "").strip())
+            and к != "intent_source"         # мітка припущення — при наміру, якого тут уже нема
             } if isinstance(вип, dict) and вип else None) or дріт.get("case")
     return dict(вих, **її) if її and isinstance(вих, dict) else вих
 
