@@ -1040,9 +1040,10 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # як «поля нема» і давнього не переносить.
     if _ВМ.ключ("goal", в.get("goal")) and not в.get("goal_zones"):
         об["мета_зони"] = []
-    для_числа = lambda ч, поле, код: ч if ч is not None else _ВМ.ключ(поле, код)
-    об["година"] = для_числа(в.get("hour"), "part_of_day", в.get("part_of_day"))
-    об["темп_c"] = для_числа(в.get("temperature_c"), "weather_feel", в.get("weather_feel"))
+    об["година"] = в.get("hour") if в.get("hour") is not None else _ВМ.ключ(
+        "part_of_day", в.get("part_of_day"))
+    об["темп_c"] = в.get("temperature_c")
+    об["погода_відчуття"] = в.get("weather_feel")
     # ХВИЛИНИ (рядки 933/1135): число `година` ціле, бо рахунки частини дня, світла й погоди йдуть
     # годинами, а хвилини їдуть окремим полем `хвилини` лише до показу. Без години з її слів
     # (`hour` не пройшов сторожа) хвилини нічого не значать і не беруться; нова година без
@@ -1050,7 +1051,12 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     об["хвилини"] = в.get("minute") if в.get("hour") is not None else None
     об["тривалість_год"] = в.get("duration_h")
     об["ноги_вище_см"] = в.get("legs_above_cm")
-    for ім in ("година", "темп_c", "тривалість_год", "ноги_вище_см"):
+    # ПОГОДА: градуси й відчуття — ДВА подання одного; хід, що дав котре-небудь, скидає давнє інше
+    # (виправлення «20 °C» на «насправді холодно» не лишає 20 °C керувати фільтрами).
+    _нова_погода = в.get("temperature_c") is not None or в.get("weather_feel") is not None
+    for ім in ("година", "темп_c", "погода_відчуття", "тривалість_год", "ноги_вище_см"):
+        if _нова_погода and ім in ("темп_c", "погода_відчуття"):
+            continue
         if об[ім] is None and є(досі.get(ім)) and джерела_досі.get(ім) != _ПН.ТИПОВЕ_ПОЛЕ_ФОРМИ:
             об[ім] = досі[ім]
     if об["хвилини"] is None and в.get("hour") is None and об["година"] == досі.get("година") and є(досі.get("хвилини")):
@@ -1620,7 +1626,7 @@ _ПОЛЯ_EN = {
     "weather_feel": "the weather, when no number of degrees is named: from her words, or when the season, "
                     "month, holiday or place she names usually takes it (August, a beach by the sea — hot; a "
                     "winter walk, a New Year or a Christmas party — cold), with that word as quote",
-    "precipitation": "rain or snow",
+    "precipitation": "rain or snow; possible_rain when rain is only possible (it may rain, a chance of rain) — not rain",
     "formality": ("how dressy this outing is, {from, to} on the 1–10 scale: always present, taken by the "
                   "anchors from her words, the event and \"chosen\" — steps: %s" % _ЩАБЛІ_EN),
     # РОЗБІР-0210 А1 В-3 (рядок 1435): «я не хочу щоб вона знов щось сказала» (свекруха, ювілей) мовна модель

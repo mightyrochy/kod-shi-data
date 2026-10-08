@@ -846,6 +846,7 @@
      "description": "опади",
      "enum": [
       "none",
+      "possible_rain",
       "rain",
       "sleet",
       "downpour",
@@ -4087,6 +4088,10 @@
           "description": "the day is rainy, and no outer layer of the look keeps the rain off — a trench, a raincoat, a parka, a puffer or a coat; an umbrella is not counted as a layer (values: precipitation — the precipitation code, outer_moisture — none when there is no outer layer, no when its type keeps off neither rain nor cold: a jacket, a bomber, a vest, a cardigan or a poncho)"
          },
          {
+          "const": "possible_rain_layer_to_carry",
+          "description": "rain is only possible, and no outer layer of the look keeps it off — carry a rain layer in case it starts (values: precipitation — the precipitation code)"
+         },
+         {
           "const": "rain_outer_layer_over_look",
           "description": "an outer layer that keeps off rain — a trench, a raincoat or a parka — over this look, or keep the look and say why it holds this day"
          },
@@ -5978,6 +5983,7 @@
   },
   "precipitation": {
    "none": "ні",
+   "possible_rain": "можливий_дощ",
    "rain": "дощ",
    "sleet": "мокрий_сніг",
    "downpour": "злива",

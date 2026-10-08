@@ -825,6 +825,7 @@ def помилка_формату(помилки, відповідь=None):
     "ошатність": або_нуль(список(ЧИСЛО, мін=2, макс=2)),
     "година": або_нуль(ЦІЛЕ),
     "темп_c": або_нуль(ЧИСЛО),
+    "погода_відчуття": або_нуль(слово("frost", "cold", "cool", "warm", "hot")),
     "опади": слово("так", "ні", "невідомо"),
     # K-PER-00 (19.09.2026): чотири члени корпусу + statement стенда. Модель обирає
     # зі слів жінки (`паспорт_нагоди.СХЕМА_ПАСПОРТА` каже, з яких саме).
@@ -921,7 +922,8 @@ _КОДИ_ВМ = lambda поле: слово(*_ВМ.ТАБЛИЦЯ[поле])
 ДЕНЬ = обʼєкт({"activity": _КОДИ_ВМ("activity"), "movement": _КОДИ_ВМ("movement"),
                "place": _КОДИ_ВМ("place"), "setting": _КОДИ_ВМ("setting"),
                "surface": _КОДИ_ВМ("surface"), "dress_code": _КОДИ_ВМ("dress_code"),
-               "duration_h": ЧИСЛО, "temperature_c": ЧИСЛО, "precipitation": _КОДИ_ВМ("precipitation"),
+               "duration_h": ЧИСЛО, "temperature_c": ЧИСЛО,
+               "weather_feel": _КОДИ_ВМ("weather_feel"), "precipitation": _КОДИ_ВМ("precipitation"),
                "wind_ms": ЧИСЛО, "wind": обʼєкт({"free_text": РЯДОК, "lang": РЯДОК}),
                "direct_sun": ЛОГІЧНЕ, "road_salt": ЛОГІЧНЕ, "start_hour": ЦІЛЕ,
                "part_of_day": слово("morning", "day", "evening", "night"), "until_night": ЛОГІЧНЕ,

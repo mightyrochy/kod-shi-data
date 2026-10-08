@@ -142,8 +142,8 @@ def невідомо(v, коди=()):
                  "walking": "ходьба", "photoshoot": "фотосесія"},
     "surface": {"cobblestones": "бруківка", "asphalt": "асфальт", "parquet": "паркет",
                 "carpet": "килим", "grass": "трава", "stairs": "сходи"},
-    "precipitation": {"none": "ні", "rain": "дощ", "sleet": "мокрий_сніг", "downpour": "злива",
-                      "snow": "сніг"},
+    "precipitation": {"none": "ні", "possible_rain": "можливий_дощ", "rain": "дощ",
+                      "sleet": "мокрий_сніг", "downpour": "злива", "snow": "сніг"},
     # ── РЕБРА ГІПЕРГРАФА ТІЛА (П-5, 27.09.2026, CLAUDE.md п.12) ───────────────
     # Доти `brief.ЯРЛИК_РЕБРА` тримала вісім ФРАЗ, які код писав людині («верх і низ
     # не в балансі»), і вони їхали ярликом брифа в діагностику показу й у слід.
@@ -359,18 +359,29 @@ def невідомо(v, коди=()):
 # (виміряно), з одним виправленням: `belt_bag` (поясна сумка) — сумка, а не пояс. Тип без
 # рядка тут — як доти: слота код не знає, і річ без слота не закріплюється.
 СЛОТ_ТИПУ = {
-    "evening_dress": "dress", "cocktail_dress": "dress", "sundress": "dress", "jumpsuit": "dress",
-    "dress_generic": "dress",
-    "ugg_boots": "shoes", "ballet_flats": "shoes", "mules": "shoes", "espadrilles": "shoes",
+    "evening_dress": "dress", "cocktail_dress": "dress", "sheath_dress": "dress",
+    "sundress": "dress", "jumpsuit": "dress", "dress_generic": "dress",
+    "suit": "set", "casual_suit": "set", "two_piece_set": "set",
+    "ugg_boots": "shoes", "over_knee_boots": "shoes", "chelsea_boots": "shoes",
+    "ballet_flats": "shoes", "mules": "shoes", "espadrilles": "shoes", "pumps": "shoes",
     "dress_shoes": "shoes", "moccasins": "shoes", "loafers": "shoes", "sneakers": "shoes",
     "plimsolls": "shoes", "ankle_boots": "shoes", "boots": "shoes", "heeled_sandals": "shoes",
     "sandals": "shoes",
-    "clutch": "bag", "backpack": "bag", "tote": "bag", "belt_bag": "bag", "bag_generic": "bag",
-    "hoodie": "top", "t_shirt": "top", "shirt": "top", "blouse": "top", "cardigan": "top",
-    "sweater": "top", "vest": "top", "top_garment": "top",
+    "clutch": "bag", "backpack": "bag", "tote": "bag", "baguette_bag": "bag", "hobo_bag": "bag",
+    "crossbody_bag": "bag", "bucket_bag": "bag", "belt_bag": "bag", "briefcase": "bag",
+    "saddle_bag": "bag", "bag_generic": "bag",
+    "hoodie": "top", "sportswear": "top", "loungewear": "top", "t_shirt": "top", "shirt": "top",
+    "blouse": "top", "knitwear": "top", "cardigan": "top", "sweater": "top", "bodysuit": "top",
+    "longsleeve": "top", "vest": "top", "top_garment": "top",
     "leggings": "bottom", "jeans": "bottom", "shorts": "bottom", "skirt": "bottom", "trousers": "bottom",
-    "coat": "outerwear", "trench_coat": "outerwear", "jacket": "outerwear",
-    "stole": "scarf", "kerchief": "scarf", "snood": "scarf", "scarf_generic": "scarf",
+    "coat": "outerwear", "trench_coat": "outerwear", "jacket": "outerwear", "blazer": "outerwear",
+    "half_coat": "outerwear", "down_jacket": "outerwear", "fur_coat": "outerwear",
+    "sheepskin_coat": "outerwear", "parka": "outerwear", "raincoat": "outerwear",
+    "rain_cape": "outerwear", "windbreaker": "outerwear", "anorak": "outerwear",
+    "bomber": "outerwear", "poncho": "outerwear",
+    "stole": "scarf", "kerchief": "scarf", "twilly": "scarf", "snood": "scarf", "shawl": "scarf",
+    "bactus_scarf": "scarf", "scarf_generic": "scarf",
+    "headband": "headwear", "bow": "headwear", "hair_clip": "headwear", "hair_tie": "headwear",
     "ring": "ring", "jewelry_generic": "jewelry"}
 
 
@@ -2022,6 +2033,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                   "precipitation code, outer_moisture — none when there is no outer layer, "
                                   "no when its type keeps off neither rain nor cold: a jacket, a bomber, a "
                                   "vest, a cardigan or a poncho)",
+    "possible_rain_layer_to_carry": "rain is only possible, and no outer layer of the look keeps it off — "
+                                     "carry a rain layer in case it starts (values: precipitation — the "
+                                     "precipitation code)",
     "rain_outer_layer_over_look": "an outer layer that keeps off rain — a trench, a raincoat or a parka — over "
                                   "this look, or keep the look and say why it holds this day",
     "smooth_protected_leather_or_rubber_or_treat": "replace it with smooth protected leather or rubber, or "
