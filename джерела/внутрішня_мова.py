@@ -1860,6 +1860,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                          "is a detail — a trim, a charm, a setting — not the surface "
                                          "(values: metal — metal code, items — how many metal items in the "
                                          "outfit)",
+    "named_metal_reads_other_tone_on_frame": "the metal is named, yet the frame reads the item as ANOTHER "
+                                             "metal: the photo model's colour code and the measured colour "
+                                             "agree on a different metal tone, so the name, not the surface, "
+                                             "is in question (values: metal — the named metal code, "
+                                             "frame_tone — the metal tone the frame reads, items — how many "
+                                             "metal items of the outfit read so)",
     "put_solid_metal_near_face": "if metal is to lead the outfit, put a piece that IS metal near the face, "
                                  "not fabric with a metal trim",
     "reduce_to_two_metal_tones": "reduce it to two tones: remove the third or replace it with a two-tone "
