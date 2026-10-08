@@ -1983,19 +1983,26 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "move_colour_to_hat_scarf_gloves": "move the colour into the hat, scarf or gloves",
     "smooth_protected_leather_or_rubber_or_treat": "replace it with smooth protected leather or rubber, or "
                                                    "treat it with a water repellent and accept the risk",
-    "face_contrast_above_her_own": "the contrast near the face is higher than her own: the clothes wear the "
-                                   "person and the face is rubbed out (values: jump — the lightness jump near "
-                                   "the face, own — her own contrast; with_neckline_buffer — the jump with "
-                                   "the neckline buffer; makeup_plus — how much noticeable make-up adds, and "
-                                   "that was not enough)",
+    "face_contrast_above_her_own": "the step of lightness between the item near the face and her skin is larger "
+                                   "than the step her own colouring carries, so the item draws the eye before "
+                                   "the face; this describes the item, not her looks (values: jump — the "
+                                   "lightness jump near the face, own — her own contrast; with_neckline_buffer — "
+                                   "the jump with the neckline buffer; makeup_plus — how much noticeable "
+                                   "make-up adds, and that was not enough)",
+    "light_item_near_deep_skin": "a light or clean item near her deep skin: the step of lightness is larger than "
+                                 "her own colouring carries, and on deep skin such a step is a welcome contrast "
+                                 "that practice recommends (a white shirt on a dark face) — a hint only, nothing "
+                                 "to replace (values: jump — the lightness jump near the face, own — her own "
+                                 "contrast)",
     "face_item_in_lightness_window": "replace the item near the face with one inside the lightness window "
                                      "(values: window — the lightness window from and to)",
     "open_neckline_as_buffer": "an open neckline as a skin buffer",
     "mid_lightness_scarf_or_collar": "a scarf or collar of intermediate lightness",
     "move_dark_item_down": "move the dark item to the bottom: the bottom and the shoes are almost free of "
                            "this rule",
-    "face_contrast_below_her_own": "the contrast near the face is lower than her own, a slight fading "
-                                   "(values: jump — the largest jump near the face, own — her own contrast)",
+    "face_contrast_below_her_own": "the step of lightness near the face is smaller than the step her own "
+                                   "colouring carries: the items sit close to her skin in lightness (values: "
+                                   "jump — the largest jump near the face, own — her own contrast)",
     "lift_face_contrast_with_accessory": "lift the contrast with an accessory without changing the items: a "
                                          "shiny piece of jewellery, a light detail near the face, a lipstick "
                                          "one step stronger, or a print with the spread needed",
@@ -2573,10 +2580,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                    "allows, but need not (values: delta_L — what the make-up adds, L*; "
                                    "face_limit_L — the limit with it, L*)",
     # МАК-2 (рядок 258, П-4; R-MUA-02): порада про РІВЕНЬ макіяжу — м'яка, вибір її (п.9)
-    "visible_makeup_helps_low_contrast": "her features are low in contrast, and visible make-up (a defined lip "
-                                         "or eye) is what lifts the face against the clothes near it: for this "
-                                         "occasion it may be suggested softly; nothing in the outfits depends on "
-                                         "it, and what she plans stays hers",
+    "visible_makeup_helps_low_contrast": "her hair, eyes and skin are close in lightness (a soft colouring, a "
+                                         "fact, not a lack); visible make-up (a defined lip or eye) is one "
+                                         "optional way to add a step of lightness near the face for this "
+                                         "occasion: it may be offered softly as a choice; nothing in the outfits "
+                                         "depends on it, and what she plans stays hers",
     "bright_makeup_softer_for_work": "bright make-up is the less usual level for work or an interview, where a "
                                      "visible but moderate one is the usual: a soft remark only, her choice "
                                      "stands and no outfit changes because of it",
@@ -2590,9 +2598,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                "the outfit gets this step for free, so the clothes add no sharp one",
     "own_colouring_vivid": "her own colouring is vivid (her words, not measured): colour is present in the "
                            "outfit as colour, not only as a neutral with an accent",
-    "own_colouring_vivid_low_contrast": "her own colouring is vivid (her words, not measured) and her lightness "
-                                        "contrast is low: neutrals alone dim her — the outfit needs real "
-                                        "colour, with small steps of lightness between the items",
+    "own_colouring_vivid_low_contrast": "her own colouring is vivid (her words, not measured) and her hair, "
+                                        "eyes and skin are close in lightness: neutrals alone repeat little of "
+                                        "her colouring — the outfit carries real colour, with small steps of "
+                                        "lightness between the items",
     "own_colouring_muted": "her own colouring is muted (her words, not measured): clean bright colours pull "
                            "attention from the face — keep everything muted",
     "white_cool": "white and light neutrals are clean and cool (optical white), not milky",
