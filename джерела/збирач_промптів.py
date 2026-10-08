@@ -116,6 +116,10 @@ import протокол as _ПР
     "без_шкал": ("Числа шкал у вході (ошатність 1–10 і її смуга, бали, ранги) — лише для тебе: не називай "
                  "їй ні чисел, ні назви шкали і не кажи «за шкалою»; кажи словами нагоди (буденний вихід, "
                  "день в офісі, вечір у місті, урочистість) і не згадуй ні коду, ні системи за ними."),
+    # Довідка про застосунок (перевірка #613, Codex P2): вона цитує підписи екрана з «app» («Ошатність» —
+    # назва поля на картці сценарію), тож її межа забороняє лише числа шкал, не назви з інтерфейсу.
+    "без_чисел_шкал": ("Числа шкал у стані (ошатність 1–10 і її смуга, бали, ранги) — лише для тебе: не називай "
+                       "їй чисел і смуги, кажи словами; підписи екрана з «app» називай так, як вони на екрані."),
 }
 # Мова відповіді — поле шаблону, а не межа на вибір: українською відповідає кожна задача.
 МОВА = "українська"
@@ -195,6 +199,9 @@ def вибірка(о):
                  "you only: never tell her a number or the name of a scale and never say \"on the scale\"; "
                  "say it in words of the occasion (an everyday outing, an office day, an evening in town, a "
                  "ceremony), and do not mention any code or system behind them."),
+    "без_чисел_шкал": ("Scale numbers in the state (formality 1–10 and its band, scores, ranks) are internal, for "
+                       "you only: never tell her a number or a band, say it in words; name screen labels from "
+                       "\"app\" exactly as they are on her screen."),
 }
 МОВА_EN = "English"
 ФОРМА_JSON_EN = "The answer is one JSON object following \"answer_schema\", without explanations and without ```."
