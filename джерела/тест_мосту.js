@@ -573,12 +573,12 @@ const пнг = байтів => {
     відповідач = () => new Response(JSON.stringify({status:"failed", steps:[], errors:[{code:"https://errors.example/safety", message:"blocked by safety"}]}), {status:200});
     в = await зап(тілоП("gemini-nano-banana-2.1"));
     сир6 = await в.text();
-    тест("2.1: 200 зі status=failed і errors → 502 з кодом і текстом Google, не порожній успіх",
-         в.status === 502 && /status=failed/.test(сир6) && /blocked by safety/.test(сир6) && /errors\.example\/safety/.test(сир6), [в.status, сир6]);
+    тест("2.1: 200 зі status=failed і errors → 422 (не 502: показ повторює 502 і платить прогони) з кодом і текстом Google, не порожній успіх",
+         в.status === 422 && /status=failed/.test(сир6) && /blocked by safety/.test(сир6) && /errors\.example\/safety/.test(сир6), [в.status, сир6]);
     відповідач = () => new Response(JSON.stringify({status:"completed", steps:[{type:"model_output", content:[]}], usage:{}}), {status:200});
     в = await зап(тілоП("gemini-nano-banana-2.1"));
     сир6 = await в.text();
-    тест("2.1: completed без тексту й картинки → 502 «нема ні тексту, ні картинки»", в.status === 502 && /нема ні тексту, ні картинки/.test(сир6), [в.status, сир6]);
+    тест("2.1: completed без тексту й картинки → 422 «нема ні тексту, ні картинки»", в.status === 422 && /нема ні тексту, ні картинки/.test(сир6), [в.status, сир6]);
     відповідач = () => new Response(JSON.stringify({status:"incomplete", steps:[{type:"model_output", content:[{type:"text", text:"обірвано"}]}], usage:{}}), {status:200});
     в = await зап(тілоП("gemini-nano-banana-2.1"));
     дд = await в.json();
@@ -589,6 +589,23 @@ const пнг = байтів => {
     в = await зап({model:"gemini-nano-banana-2.1", messages:[{role:"user", content:"a"}, {role:"assistant", content:"b"}, {role:"user", content:"c"}]});
     тест("2.1: три повідомлення → 400 до мережі з поясненням, провайдеру нічого не пішло",
          в.status === 400 && /одне повідомлення user/.test(await в.text()) && вихідні.length === 0, [в.status, вихідні.length]);
+
+    /* 400 до мережі НЕ їсть добовий прогін: лічильник (KV) мовчить, поки запит не пішов до Google */
+    {
+      const сховище = {}; let путів = 0;
+      const env6 = {...env, COUNTER:{get: async к => сховище[к] || null, put: async (к, з) => { путів++; сховище[к] = з; }}};
+      const зап6 = тіло => М.fetch(new Request("https://w.workers.dev/", {method:"POST",
+        headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
+        body:JSON.stringify(тіло)}), env6);
+      вихідні.length = 0;
+      відповідач = () => new Response(JSON.stringify({status:"completed", steps:[{type:"model_output", content:[{type:"image", data:"F", mime_type:"image/png"}]}], usage:{}}), {status:200});
+      в = await зап6({model:"gemini-nano-banana-2.1", messages:[{role:"user", content:"a"}, {role:"assistant", content:"b"}]});
+      тест("2.1: 400 на кілька повідомлень — лічильник не чіпано (put 0), x-runs-left відсутній",
+           в.status === 400 && путів === 0 && вихідні.length === 0, [в.status, путів]);
+      в = await зап6({model:"gemini-nano-banana-2.1", messages:[{role:"user", content:"a"}]});
+      тест("2.1: нормальний запит після нього — рівно один прогін списано (put 1, x-runs-left=39)",
+           в.status === 200 && путів === 1 && в.headers.get("x-runs-left") === "39", [в.status, путів, в.headers.get("x-runs-left")]);
+    }
 
     /* Anthropic і текстовий Gemini — без x-route=interactions */
     відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"ок"}], stop_reason:"end_turn", usage:{input_tokens:5, output_tokens:1}}), {status:200});
