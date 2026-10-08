@@ -1984,7 +1984,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "stronger)",
     "darker_quieter_version_of_item": "a darker, quieter version: black, graphite, navy, chocolate, deep "
                                       "burgundy",
-    "chroma_too_high_for_photo_event": "at a photographed event a very high chroma blows out under the flash "
+    "chroma_too_high_for_photo_event": "at a photographed event a very high chroma may blow out under the flash "
                                        "(values: chroma — the item's chroma, ceiling — the ceiling for "
                                        "photographs)",
     "judged_from_item_name": "judged from a word in the item's name, not a catalogue field",
@@ -2124,7 +2124,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "draped_state_unavailable": "draping over the shoulders is unavailable for this item",
     "belt_ties_not_buckles": "the outer layer's belt ties rather than buckles (values: knot — back when the "
                              "coat is worn open, or front)",
-    "knot_placement_buckle_as_detail": "the knot on the named side (in front, slightly off centre), and the "
+    "knot_placement_buckle_as_detail": "the knot on the named side, and the "
                                        "buckle left as a detail, not a fastening (values: knot — back or "
                                        "front)",
     "raise_collar_free_state": "raising the collar is a free fourth state",
