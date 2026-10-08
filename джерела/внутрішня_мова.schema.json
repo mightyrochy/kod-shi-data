@@ -3509,11 +3509,15 @@
          },
          {
           "const": "loud_elements_over_budget",
-          "description": "there are more loud elements than the ceiling, and the rest of the outfit does not get to be a background; hair and frames count on a par with the items (values: count — how many are loud, ceiling — the ceiling; face — which facial features are loud too: hair, glasses)"
+          "description": "there are more loud elements than the ceiling, and the rest of the outfit does not get to be a background; hair and frames count on a par with the items, and each item of an echo counts (values: count — how many are loud, ceiling — the ceiling; face — which facial features are loud too: hair, glasses; keep — slot codes of the declared loud element with its echo, quiet — slot codes of the other loud items, keep_by — who declared it: scheme — the palette scheme's accent, zone — her focus zone, her_wish — her own choice)"
          },
          {
           "const": "keep_one_loud_mute_rest",
-          "description": "keep one loud element as the focus and take the rest as muted versions of the same family, or as neutrals"
+          "description": "keep one loud element as the focus and swap each other loud item for a quieter item in the same slot — a muted version of its family, or a neutral when the slot has none; not by removing the item"
+         },
+         {
+          "const": "keep_declared_loud_quiet_others",
+          "description": "keep the declared loud element as it is, with its echo, and swap only the other loud items for a quieter item in the same slot — a muted version of its family, or a neutral when the slot has none; not by removing the item (values: keep — slot codes to keep, quiet — slot codes to quieten)"
          },
          {
           "const": "accent_orphan",
@@ -4505,11 +4509,11 @@
          },
          {
           "const": "scheme_one_accent_look_has_more",
-          "description": "the scheme promises neutrals and one accent, and the outfit carries several colour families (values: families — family codes)"
+          "description": "the scheme promises neutrals and one accent, and the outfit carries several colour hues; an echo of one hue is one accent, and metal on jewellery is not a colour (values: families — colour family codes, one per hue; keep — slot codes of the declared accent, quiet — slot codes of the other hues, keep_by — who declared it: scheme — the palette scheme's accent, her_wish — her own choice)"
          },
          {
           "const": "keep_one_coloured_rest_neutral",
-          "description": "keep one item coloured, the rest neutral of the same lightness band"
+          "description": "keep one hue coloured, with its echo, and make the rest neutral of the same lightness band (values, when the accent is declared: keep — slot codes to keep coloured, quiet — slot codes to make neutral)"
          },
          {
           "const": "scheme_families_missing_on_big_items",
