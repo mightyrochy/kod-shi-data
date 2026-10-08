@@ -168,6 +168,7 @@ def невідомо(v, коди=()):
     "goal": {"flatter": "лестити", "conceal": "приховати", "express": "експресія",
              "taller": "вище"},
     "makeup_level": {"nude": "нюд", "noticeable": "помітний", "bold": "яскравий"},
+    "makeup_zone": {"lips": "губи"},     # рядок 1978: зона обраного кольору макіяжу (K-MUA-01)
     "jewelry": {"gold": "золото", "silver": "срібло", "pearls": "перли", "ethnic": "етно",
                 "other": "інші", "none": "без прикрас"},
     "register": {
@@ -2432,6 +2433,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_opens_vetoed_zone": "item exposes a zone she keeps covered (zones): her personal limit",
     "hem_above_her_limit": "hem at hem_cm cm from floor, above her limit limit_cm cm",
     "other_item_within_her_coverage": "another item within her coverage",
+    "large_item_repeats_makeup_colour": "a large item repeats the colour of her make-up (zone) at de00 ΔE00: "
+                                        "tone-on-tone with the lips, a slip unless it is the intent",
+    "neighbour_shade_or_declare_tone_on_tone": "take a neighbouring shade of the same hue, or keep it and declare "
+                                               "the tone-on-tone look as deliberate",
     "fabric_formality_vs_cut": "fabric (fabric) is dressier or plainer than the cut (direction: higher|lower)",
     "same_item_fabric_level_or_cut_level": "the same item in fabric of level fabric_level, or the same cut at "
                                            "level cut_level (formality levels)",
