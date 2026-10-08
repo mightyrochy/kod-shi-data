@@ -63,9 +63,14 @@ import дріт_моделі as _Д
         _ЗП.Поле("outfit.items[].set_half", "only this half of a set is in the outfit"),
         _ЗП.Поле("idea", "your caption of this outfit"),
         _ЗП.Поле("case", "her occasion: its fields as codes, her own words as quotes"),
+        # рядок 1427 (СУКНЯ-СМУГА 03.10): «the choice is hers» тут стояло про БУДЬ-ЩО, що сперечається з
+        # днем, і модель закінчувала ним 45 з 78 карток рук 1–2 — про речі, які обрала сама («сітка…
+        # наскільки це важливо в церкві, вирішуєш ти»). Своє рішення стилістка не віддає жінці назад.
         _ЗП.Поле("day", "her day as facts",
-                 як="in the third part of «text» say how this outfit lives through her day; what argues "
-                    "with it — in one gentle sentence, the choice is hers"),
+                 як="in the third part of «text» say how this outfit lives through her day; when something "
+                    "you chose argues with the day (weather, hours on her feet, the place), say in one plain "
+                    "sentence why you still chose it, or what she does about it in the day itself (take the "
+                    "layer off, swap the pair); never hand that decision back to her"),
         _ЗП.Поле("your_day_sentence", "your sentence about her day in this outfit, from the choice",
                  як="a hint, not ready text"),
         _ЗП.Поле("palette", "her palette",
@@ -91,7 +96,7 @@ import дріт_моделі as _Д
         # МАК-2 (рядок 258, П-4): порада про рівень макіяжу — заявами; вибір її (п.9)
         _ЗП.Поле("makeup", "a soft note on the level of her make-up today, as statement codes «code»",
                  як="say it in your own words in one gentle sentence in the third part of «text»: advice "
-                    "only, her choice stands, and nothing in the outfit depends on it"),
+                    "only, nothing in the outfit depends on it; a light «if you like» is enough"),
         # ФОТО-1 (02.10.2026, CLAUDE.md п.17): друга половина заміни — лише коли опис назвав річ, а
         # код знайшов запасні, що пройшли його суд (`заміна_з_фото`); у звичайному виклику поля нема
         _ЗП.Поле("swap_spares", "the item you named for replacement, your reason, and the spares of the "
@@ -105,6 +110,10 @@ import дріт_моделі as _Д
     правила=(
         "Describe only the items of «outfit»: no suggestions to buy more, no items it does not contain.",
         "Do not change the outfit yourself: when an item on its photo differs from its name, say so in words.",
+        # рядок 1427: відповідальність за вибір речі — на стилістці (CLAUDE.md п.17: з поясненням — свідомий вибір)
+        "Every item of «outfit» is your choice: stand behind it. Do not end a doubt with «the choice is yours», "
+        "«it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a "
+        "decision to her only about what she asked for herself: her words in «case», an item marked «hers».",
         "Only when a photo shows that an item is not what this outfit needs — a clearly different colour, "
         "another kind of item, or unfit for her occasion — and that matters for this outfit, name that one "
         "item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in "
