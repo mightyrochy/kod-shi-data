@@ -1291,8 +1291,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                   "constant (values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
     "scarf_wraps_head": "the scarf is large enough to wrap the head fully (values: size_cm — its side in cm)",
     "scarf_too_small_to_wrap_head": "the scarf is too small to wrap the head fully: a physical limit, not "
-                                    "taste (values: size_cm — its side in cm, unknown when the card does not "
-                                    "give it)",
+                                    "taste (values: size_cm — its side in cm)",
     "scarf_near_face_way_unknown": "whether she wears this scarf near the face; which top suits her depends "
                                    "on it, since a scarf near the face carries colour there by itself "
                                    "(values: item — item name; ways — codes of wearing ways: neck, hair, "
