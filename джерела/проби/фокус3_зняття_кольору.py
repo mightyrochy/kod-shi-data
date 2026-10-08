@@ -3,8 +3,7 @@
 (quiet) слот знятої речі / без ремонту; R-CHEV-08 «собою»: слоти речей і чи лишається знахідка при зоні мети.
 Волосся — з `face` вердикта. Запуск із джерела/: python3 проби/фокус3_зняття_кольору.py ../аудит/перевірки/fokus_2/ПІСЛЯ"""
 import json, gzip, glob, os, sys, collections as K
-sys.path.insert(0, "."); import colorspace as cs, palettes as P, внутрішня_мова as ВМ, суд_від_моделі as С
-import регістр_уваги as РУ, суд_ремесло as СР
+sys.path.insert(0, "."); import colorspace as cs, palettes as P, внутрішня_мова as ВМ, суд_від_моделі as С, регістр_уваги as РУ, суд_ремесло as СР
 ЗОНА = {"ж4_робота_живіт": ["живіт"]}   # код `goal_zones`, який мовна модель ставить на «приховати живіт»
 на_мету = getattr(РУ, "на_мету", lambda *x: True)
 хр = lambda i: bool(i.get("hex")) and i.get("color") not in ("golden", "silvery", "pearly") and P._хроматична(cs.hx(i["hex"]))
