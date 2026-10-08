@@ -207,13 +207,18 @@ def промпт_руки(рука, випадок, вимоги="", вибір=
     правила=(
         "One object per item — garment, shoes, bag, accessory, jewelry — in the order of the "
         "description, with its words and hex.",
+        # РЯДОК 1452: модель заповнювала слот, який опис називає непотрібним («no cardigan is needed»,
+        # «tights are not needed»), і показ малював його річчю. Рішення — її, але кодом: `worn`.
+        "A slot the description says is not needed is not an item: give it worn false. One item "
+        "carries one thing — of two alternatives list the first; a note in brackets is not an item.",
     ),
     вихід="ITEM_LIST",
     скелет={"items": [{"name": "<what the item is>",
                        "details": "<its cut, length and fabric>",
                        "slot": "|".join(_ВМ.ТАБЛИЦЯ["slot"]),
                        "color_hex": "<#rrggbb or null>",
-                       "own": "<id from her_items or null>"}]},
+                       "own": "<id from her_items or null>",
+                       "worn": "<true, or false when the description says the outfit goes without it>"}]},
     # `невідомо` тут не стоїть: «or null» уже в скелеті тих двох полів, де відповіді може не бути
     межі=("лише_вхід",),
     мова_промпту="en",
@@ -241,7 +246,9 @@ def речі_переліку(відповідь):
 
     None означає рівно «переліку нема» (не JSON, без «items», порожній) — далі розбір
     прози, як доти. Слот — ключ ядра за таблицею внутрішньої мови; код поза нею лишає
-    `слот` None і `код_слота` як є: річ без слота розбір називає, а не губить мовчки."""
+    `слот` None і `код_слота` як є: річ без слота розбір називає, а не губить мовчки.
+    `носить` False — модель позначила слот непотрібним (`worn` false): далі в образ він не йде,
+    але розбір його називає (`не_потрібні`), а не губить мовчки (рядок 1452)."""
     об, _причина = _ПР.розбір(відповідь)
     if об is None:
         try:
@@ -261,9 +268,11 @@ def речі_переліку(відповідь):
         код = None if _ВМ.невідомо(о.get("slot")) else str(о.get("slot")).strip()
         hx = str(о.get("color_hex") or "").strip()
         own = None if _ВМ.невідомо(о.get("own")) else str(о.get("own")).strip()
+        # РЯДОК 1452: `worn` false — модель сама каже «без цього слота»; відсутнє чи будь-що інше — річ носиться
+        носить = not (о.get("worn") is False or str(о.get("worn")).strip().lower() == "false")
         вих.append(dict(назва=назва, деталі=" ".join(str(о.get("details") or "").split())[:160] or None,
                         слот=_ВМ.ключ("slot", код), код_слота=код,
-                        hex=(hx.lower() if _HEX.match(hx) else None), own=own))
+                        hex=(hx.lower() if _HEX.match(hx) else None), own=own, носить=носить))
     return вих or None
 
 
