@@ -1,0 +1,24 @@
+── ПРОМПТ (1700 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "own": "<id from her_items or null>"}]}, "input": ["\"description\" — the outfit description", "\"her_items\" — her own items; an item of the description that is one of them gets its id in \"own\""]}, "description": "SILK BLENCHEW DRESS, RELAXED SILHOUETTE WITH V-NECK AND SLIT AT THE HIP, CREAM (#f5f1e8), LIGHTWEIGHT DRAPABLE FLOOR LENGTH FOR EVENING GATHERINGS.  \nWHITE LEATHER SLIDE SANDAL, BLOCK HEEL WITH ANKLE BUCKLE STRAP, SOLID COLOR BLACK (#181717) AS SHOWN IN PHOTO.  \n\nThis outfit balances festive elegance with comfort for a birthday party, honoring your wish to wear the white slide sandal as the centerpiece. The cream dress offers smart-formal polish without feeling stiff, while its fluid lines let you move freely through dancing and socializing. At 20°C in an evening setting, there’s no need for outer layers—just the joy of feeling put-together and at ease in your own footwear.", "her_items": [{"id": "її-ф1", "name": "взуття з фото"}]}
+
+── ВІДПОВІДЬ (491 симв., 141.1 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "dress",
+        "details": "Silk Blanche relaxed silhouette with v-neck and slit at the hip, lightweight drapable floor length",
+        "slot": "dress",
+        "color_hex": "#f5f1e8",
+        "own": null
+      },
+      {
+        "name": "shoes",
+        "details": "White leather slide sandal with block heel and ankle buckle strap",
+        "slot": "shoes",
+        "color_hex": "#181717",
+        "own": "її-ф1"
+      }
+    ]
+  }
+}
