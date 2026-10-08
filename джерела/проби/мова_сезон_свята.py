@@ -31,5 +31,6 @@ for підпис, додано in (("відповідь без сезону й �
                        ("weather_feel cold без опори в її словах", {"weather_feel": {"quote": "грудень",
                                                                                    "value": "cold"}})):
     д = день(додано)
-    print("день · %-42s unknown %s · temperature_c %s · start_hour %s · part_of_day %s"
-          % (підпис, д.get("unknown"), д.get("temperature_c"), д.get("start_hour"), д.get("part_of_day")))
+    print("день · %-42s unknown %s · temperature_c %s · weather_feel %s · "
+          "start_hour %s · part_of_day %s" % (підпис, д.get("unknown"),
+          д.get("temperature_c"), д.get("weather_feel"), д.get("start_hour"), д.get("part_of_day")))
