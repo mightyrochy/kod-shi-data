@@ -9,8 +9,11 @@ import bridge as B, pipeline as PL, протокол as P
 вх = json.load(open("стенд_вх.json"))
 d0 = dict(вх, сценарій=dict(нагода="вечірка", місце="ресторан", година=19, темп_c=18, дрес_код="cocktail"),
           випадок="коктейль, ресторан, 19:00")
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["руки"]["1"])["пул"]
-н = lambda с, k: пул[с][k % len(пул[с])]["н"]
+рядки = json.loads(json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["руки"]["1"])["pool"]
+пул = {}
+for р in рядки:
+    пул.setdefault(р["slot"], []).append(р)
+н = lambda с, k: пул[с][k % len(пул[с])]["n"]
 образ = lambda *реч: dict(ід="о", речі=list(реч))
 трійка = [образ(н("верх", 0), н("низ", 0), н("взуття", 0), н("сумка", k)) for k in range(3)]
 решта = [образ(н("верх", k), н("низ", k), н("взуття", k), н("сумка", k)) for k in range(3, 10)]

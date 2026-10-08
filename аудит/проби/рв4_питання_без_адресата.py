@@ -18,9 +18,12 @@ import bridge as B  # noqa: E402
 вх = json.load(open("стенд_вх.json"))
 вх.update(каталог="каталог_brief.xml", без_фото=1, варіантів=3)
 r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
-пул = json.loads(r["B"])["пул"]
+рядки = json.loads(r["руки"]["1"])["pool"]
+пул = {}
+for річ in рядки:
+    пул.setdefault(річ["slot"], []).append(річ)
 def суд(слоти):
-    ядро = [пул[с][0]["н"] for с in слоти if пул.get(с)]
+    ядро = [пул[с][0]["n"] for с in слоти if пул.get(с)]
     відп = json.dumps(dict(версія="1", образи=[dict(ід="о1", підпис="проба РВ-4", речі=ядро)]),
                       ensure_ascii=False)
     return ядро, json.loads(B.виклик("від_моделі", json.dumps(dict(вх, текст_моделі=відп), ensure_ascii=False)))
