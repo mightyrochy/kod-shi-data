@@ -197,8 +197,14 @@ const ПРОВАЙДЕРИ = [
   },
   {
     ім: "gemini", префікс: "gemini-", ключ: "GEMINI_API_KEY",
-    адреса: м => "https://generativelanguage.googleapis.com/v1beta/models/"
-                 + encodeURIComponent(м) + ":generateContent",
+    /* ДВА МАРШРУТИ GOOGLE В ОДНОМУ ПРОВАЙДЕРІ (08.10.2026). Старі моделі (NB2
+       `gemini-3.1-flash-image`, текстові) — `:generateContent`; Nano Banana 2.1
+       і далі — лише `/v1beta/interactions` (див. `через_interactions`). Решта
+       провайдера — ключ, шапка, стеля часу, драбина, заголовки — спільна. */
+    адреса: м => через_interactions(м)
+      ? "https://generativelanguage.googleapis.com/v1beta/interactions"
+      : "https://generativelanguage.googleapis.com/v1beta/models/"
+        + encodeURIComponent(м) + ":generateContent",
     шапка: k => ({"content-type":"application/json", "x-goog-api-key":k}),
     /* ── МИСЛЕННЯ З'ЇДАЄ СТЕЛЮ ВИВОДУ (01.09.2026, спіймано першим живим прогоном) ─
        Flash-моделі Gemini мислять за замовчуванням, і `thoughtsTokenCount`
@@ -236,7 +242,18 @@ const ПРОВАЙДЕРИ = [
        image-модель чесно описує картинку словами. Мислення таким моделям
        не задаємо — воно для них не діє й лише ризикує 400. */
     картинкова: м => /image|nano-banana/i.test(String(м || "")),
-    запит: т => ({
+    запит(т) { return через_interactions(т.model) ? запит_interactions(т) : this.запит_generate(т); },
+    /* Interactions приймає одне повідомлення `user` (`input`); історія в нього —
+       `previous_interaction_id`, якого міст не веде. Багатоповідомленевий запит
+       на такій моделі — чесний 400 до мережі, а не мовчазне склеювання ролей. */
+    перевірити_запит: т => {
+      if (!через_interactions(т.model)) return null;
+      const пов = т.messages || [];
+      return (пов.length === 1 && пов[0].role === "user") ? null
+        : "модель «" + т.model + "» іде через Interactions API: міст передає їй рівно одне повідомлення user, "
+          + "отримано " + пов.length + (пов.length ? " (перше: " + (пов[0].role || "?") + ")" : "");
+    },
+    запит_generate: т => ({
       contents: (т.messages || []).map(п => ({
         // Gemini кличе бік моделі «model», Anthropic — «assistant». Роль
         // важить: без неї модель на третій репліці переказує саму себе.
@@ -306,7 +323,10 @@ const ПРОВАЙДЕРИ = [
       }
       return випало;
     },
-    відповідь: д => {
+    відповідь(д, модель) {
+      return через_interactions(модель) ? відповідь_interactions(д) : this.відповідь_generate(д);
+    },
+    відповідь_generate: д => {
       const к = (д.candidates || [])[0] || {};
       const частини = (к.content || {}).parts || [];
       const текст = частини.map(ч => ч.text || "").filter(Boolean).join("\n");
@@ -351,6 +371,83 @@ const ПРОВАЙДЕРИ = [
   },
 ];
 
+/* ── NANO BANANA 2.1 І ДАЛІ — INTERACTIONS API, А НЕ generateContent (08.10.2026) ──
+   ЩО ВІДОМО (ai.google.dev/gemini-api/docs/nanobanana і /interactions, прочитано 08.10):
+   · модель `gemini-nano-banana-2.1` (GA 06.10); зразки коду для неї — лише
+     `POST /v1beta/interactions`, а `generateContent` Google називає legacy:
+     «all new models … will launch on the Interactions API»;
+   · запит: `{model, input:[{type:"text",text}, {type:"image",mime_type,data}…],
+     response_format:{type:"image"}, generation_config:{max_output_tokens,…}}`;
+   · відповідь: `{status, steps:[{type:"model_output", content:[{type:"text",text} |
+     {type:"image",data,mime_type}]}, …], usage:{total_input_tokens,
+     total_output_tokens, total_thought_tokens, total_cached_tokens,
+     total_tokens}, errors:[{code,message}]}`. Кроки `thought` можуть нести проміжні
+     картинки — їх не беремо, лише `model_output`.
+   НЕ ЗРОБЛЕНО НАВМИСНО: NB2 лишається на generateContent (його гасять пізніше, а
+   шлях працює); перемикача в показі нема — маршрут визначає ім'я моделі.
+   ЩО ТРЕБА ВИМІРЯТИ ЖИВИМ ПРОГОНОМ (з мережею): чи `total_input_tokens` включає
+   кеш (тут, як у `promptTokenCount`, вважаємо, що ТАК), і чи приймає 2.1
+   `temperature` (якщо ні — 400 із цим словом знімає поле сам, `x-temperature:
+   dropped`). Список моделей — РЕГЕКС, а не перелік імен (див. коментар до
+   ПРОВАЙДЕРИ): нове покоління nano-banana піде цим шляхом саме. */
+function через_interactions(м) {
+  return /nano-banana-(?:2\.[1-9]\d*|[3-9])/i.test(String(м || ""));
+}
+
+function запит_interactions(т) {
+  const вхід = [];
+  for (const п of (т.messages || [])) {
+    for (const б of (Array.isArray(п.content) ? п.content : [{type:"text", text:п.content}])) {
+      if (б.type === "image") {
+        if (б.source && б.source.data)
+          вхід.push({type:"image", mime_type: б.source.media_type, data: б.source.data});
+      } else if (б.type === "text") вхід.push({type:"text", text: б.text});
+    }
+  }
+  const темп = температура_тіла(т);
+  return {
+    model: т.model,
+    input: вхід,
+    response_format: {type: "image"},
+    generation_config: Object.assign({max_output_tokens: т.max_tokens},
+                                     темп === null ? {} : {temperature: темп}),
+  };
+}
+
+/* Те саме, що віддає `відповідь_generate`: `content` (text/image у форматі Anthropic),
+   `stop_reason`, `usage`. ПОМИЛКА ПРОВАЙДЕРА НЕ КОВТАЄТЬСЯ (СТАНДАРТ_КОДУ п.14): Interactions
+   може віддати 200 зі `status:"failed"` або `errors` — це `_помилка`, яку воркер перетворює
+   на 502 з текстом Google; порожня відповідь без помилки теж помилка, а не «успіх без картинки». */
+function відповідь_interactions(д) {
+  const статус = String((д && д.status) || "");
+  const вихід = ((д && д.steps) || []).filter(к => к && к.type === "model_output")
+    .flatMap(к => Array.isArray(к.content) ? к.content : []);
+  const текст = вихід.filter(б => б.type === "text" && б.text).map(б => б.text).join("\n");
+  const картинки = вихід.filter(б => б.type === "image" && б.data)
+    .map(б => ({type:"image", source:{type:"base64", media_type: б.mime_type || "image/png", data: б.data}}));
+  const помилки = ((д && д.errors) || []).map(е => ((е && е.code) ? String(е.code).slice(0, 120) + ": " : "") + ((е && е.message) || ""));
+  const збій = ["failed", "cancelled"].includes(статус) || (помилки.length && !текст && !картинки.length)
+    || (статус && !["completed", "incomplete"].includes(статус))
+    || (!текст && !картинки.length);
+  if (збій)
+    return {_помилка: "Interactions API: status=" + (статус || "(нема)")
+                      + (помилки.length ? " · " + помилки.join(" | ").slice(0, 400) : "")
+                      + (!помилки.length && !текст && !картинки.length ? " · у відповіді нема ні тексту, ні картинки" : "")};
+  const u = (д && д.usage) || {};
+  return {
+    content: [...(текст ? [{type:"text", text:текст}] : []), ...картинки],
+    // `incomplete` — Google обірвав вихід (стеля токенів): сторінка читає це як max_tokens.
+    stop_reason: статус === "incomplete" ? "max_tokens" : "end_turn",
+    usage: {input_tokens: Math.max(0, (u.total_input_tokens || 0) - (u.total_cached_tokens || 0)),
+            cache_read_input_tokens: u.total_cached_tokens || 0,
+            // total_output_tokens БЕЗ думок (документований приклад: 7 + 20 + 22 = 49) —
+            // як `candidatesTokenCount`, тож думки додаються, а не рахуються двічі.
+            output_tokens: (u.total_output_tokens || 0) + (u.total_thought_tokens || 0),
+            thinking_tokens: u.total_thought_tokens || 0},
+    _провайдер: "gemini", _причина_сира: статус || null,
+  };
+}
+
 function тип_картинки(т) {
   return /^image\/(jpeg|png|webp)$/i.test(т || "");
 }
@@ -377,7 +474,7 @@ function заголовки(п) {
       "anthropic-ratelimit-tokens-remaining, anthropic-ratelimit-tokens-reset, " +
       "anthropic-ratelimit-input-tokens-remaining, anthropic-ratelimit-output-tokens-remaining, " +
       "retry-after, x-runs-left, x-provider, x-thinking, x-images-dropped, x-model, x-attempts, " +
-      "x-temperature, x-cached-tokens",
+      "x-temperature, x-cached-tokens, x-route",
     "Access-Control-Max-Age": "86400",
   };
 }
@@ -439,6 +536,9 @@ export default {
       await env.COUNTER.put(к, String(було+1), {expirationTtl: 172800});
       лишилось = String(ПРОГОНІВ_НА_ДОБУ - було - 1);
     }
+
+    const неприйнятне = пров.перевірити_запит && пров.перевірити_запит(тіло);
+    if (неприйнятне) return відмова(400, неприйнятне, п);
 
     // Фото за адресою для провайдера, який сам їх не тягне (Gemini)
     const випало_фото = пров.підготувати ? await пров.підготувати(тіло) : 0;
@@ -541,6 +641,9 @@ export default {
     вих.set("x-thinking", думки_стан);
     вих.set("x-images-dropped", String(випало_фото));
     вих.set("x-model", модель_ок);
+    /* ЯКИМ МАРШРУТОМ ПІШОВ ЗАПИТ — заголовком, щоб A/B між NB2 і 2.1 було видно на відповіді. */
+    вих.set("x-route", пров.ім !== "gemini" ? "messages"
+                       : (через_interactions(модель_ок) ? "interactions" : "generateContent"));
     вих.set("x-attempts", спроби.join(" "));
     /* ASCII, як і решта значень (кирилиця в заголовку кидає TypeError ще до мережі):
        «n/a» — тим самим словом, що й `x-runs-left`, коли числа нема. */
@@ -556,7 +659,12 @@ export default {
     let дані;
     try { дані = JSON.parse(сире); }
     catch { return відмова(502, "провайдер віддав не JSON: " + сире.slice(0,300), п); }
-    const наш = пров.відповідь(дані);
+    const наш = пров.відповідь(дані, модель_ок);
+    /* Збій, який провайдер віддав під 200 (Interactions: `status:"failed"`, `errors`), — це 502
+       з його текстом, а не «успіх» без картинки (СТАНДАРТ_КОДУ п.14). */
+    if (наш && наш._помилка)
+      return new Response(JSON.stringify({error:{type:"провайдер", message: наш._помилка}}),
+                          {status:502, headers:вих});
     /* СКІЛЬКИ ВХОДУ ПРИЙШЛО З КЕШУ — ЗАГОЛОВКОМ (К-4). Без нього «кеш працює» лишалось
        би твердженням: тіло читає показ, а ручний огляд і проби дивляться на заголовки.
        ASCII, як і решта значень; `0` — кеш не влучив, і це теж факт. */
