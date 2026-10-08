@@ -1,0 +1,38 @@
+── ПРОМПТ (1720 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk satin blouse, wide collar and voluminous sleeves, deep emerald green (#043927), fluid drape. Wide-leg wool crepe trousers with a high waistline, tapered leg, charcoal grey (#36454F), structured yet soft handfeel. Leather ankle booties, pointed toe, glossy black (#000000), sleek silhouette. Minimalist gold pendant necklace and thin bangle, polished metal, neutral tone. This ensemble works perfectly for a theater evening in the evening because the rich emerald green exudes sophistication while the silk blouse adds a touch of romantic drama under stage lights. The wide-leg trousers provide comfortable ease for standing or moving between seats without sacrificing elegance, and the black boots ground the look with timeless polish. The subtle gold jewelry catches the light as she enters the auditorium, creating a focal point that complements the formal yet artistic atmosphere of the occasion."}
+
+── ВІДПОВІДЬ (803 симв., 269.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk satin blouse",
+      "details": "wide collar and voluminous sleeves, fluid drape",
+      "slot": "top",
+      "color_hex": "#043927"
+    },
+    {
+      "name": "Wool crepe trousers",
+      "details": "high waistline, tapered leg, structured yet soft handfeel",
+      "slot": "bottom",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "Leather ankle booties",
+      "details": "pointed toe, sleek silhouette",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "Gold pendant necklace",
+      "details": "minimalist, polished metal",
+      "slot": "collar_necklace",
+      "color_hex": null
+    },
+    {
+      "name": "Thin bangle",
+      "details": "polished metal",
+      "slot": "bracelet",
+      "color_hex": null
+    }
+  ]
+}

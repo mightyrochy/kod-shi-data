@@ -1,0 +1,85 @@
+── ПРОМПТ (7045 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_code_unknown — рядок у згорнутому блоці «код не знає» на картці образу: чого код не знає — про речі, про неї чи про її день — і що через це лишилось не перевіреним. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- bag — сумка.
+- crossbody — кросбоді.
+- dress — сукня.
+- earrings — сережки.
+- gold — золото.
+- hand — рука.
+- jewelry — прикраси.
+- shoulder — плече.
+- silver — срібло.
+- unknown — unknown.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами.
+
+ЗАЯВИ:
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- cannot_tell_look_contrast_matches_hers — so the code cannot tell whether the outfit's contrast matches her own.
+- cannot_tell_two_accent_surfaces_match — so the code cannot tell whether two accent items match exactly in colour.
+- cannot_tell_lightness_structure — so the code cannot tell which structure of light and dark the outfit carries.
+- cannot_tell_two_neutrals_distinct — so the code cannot tell whether two neutrals of one lightness differ visibly.
+- no_input_outer_warmth — nobody publishes the warmth of an outer layer as a number, so the code judges whether it is enough for this weather only by the item's type.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- vertical_balance_not_judged — the code does not judge the ratio of the outfit's top and bottom to her proportions: the sources have too little evidence for it.
+- leg_proportion_template_crotch — the code does not count torso-to-leg proportions: the crotch height comes from a template, not from her; one measurement fixes this.
+- calf_girth_not_measured — her calf girth is unknown, so how the edges of shoes and of a hem land on the calf is not measured; there is a field for it in "Extended measurements".
+- areas_not_measured — the code did not measure how much room each item takes in the outfit, so rules that depend on area give no conclusion.
+- which_white_suits_unknown — which white suits her, optical or cream, cannot be seen from this photo; she can say what looks better near her face.
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- wear_cost_no_duration_surface — the code does not count the wearing cost for the feet: it is unknown how many hours and on what she will walk.
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- metal_variant_unsettled — which metal is on this item's frame is unsettled: the shop names several metals for the same listing, or contradicts itself, alloy against name (values: items — list of {slot, variants — the shop's metal codes, named — the metal the code took, frame_tone — the tone the item's colour reads as}).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_code_unknown", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Витончений загострений носик візуально…", "lang": "uk"}}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 2, "вид": "card_code_unknown", "заяви": [{"code": "areas_not_measured"}, {"code": "cannot_tell_lightness_structure"}]},
+{"н": 3, "вид": "card_code_unknown", "заяви": [{"code": "areas_not_measured"}, {"code": "cannot_tell_two_neutrals_distinct"}]},
+{"н": 4, "вид": "card_code_unknown", "заяви": [{"code": "which_white_suits_unknown"}]},
+{"н": 5, "вид": "card_code_unknown", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "dress", "range": "39–58 і XS"}]}}]},
+{"н": 6, "вид": "card_code_unknown", "заяви": [{"code": "metal_variant_unsettled", "values": {"items": [{"slot": "earrings", "variants": ["gold", "silver"], "named": "unknown", "frame_tone": "unknown"}]}}]},
+{"н": 7, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "bag", "colour": "хакі"}, {"slot": "jewelry", "colour": "жовтий"}, {"slot": "earrings", "colour": "золотий"}]}}, {"code": "cannot_tell_look_contrast_matches_hers"}]},
+{"н": 8, "вид": "card_code_unknown", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Сумка жіноча Rio", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
+{"н": 9, "вид": "card_code_unknown", "заяви": [{"code": "calf_girth_not_measured"}]},
+{"н": 10, "вид": "card_code_unknown", "заяви": [{"code": "leg_proportion_template_crotch"}]},
+{"н": 11, "вид": "card_code_unknown", "заяви": [{"code": "wear_cost_no_duration_surface"}]},
+{"н": 12, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "jewelry", "colour": "жовтий"}, {"slot": "earrings", "colour": "золотий"}]}}, {"code": "cannot_tell_two_accent_surfaces_match"}]},
+{"н": 13, "вид": "card_code_unknown", "заяви": [{"code": "items_register_unknown", "values": {"count": 4}}]},
+{"н": 14, "вид": "card_code_unknown", "заяви": [{"code": "vertical_balance_not_judged"}]},
+{"н": 15, "вид": "card_code_unknown", "заяви": [{"code": "no_input_outer_warmth"}]}
+]
+
+── ВІДПОВІДЬ (1962 симв., 65.3 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю розмір твого взуття. Також я не можу сказати, який у тебе довжина стопи чи яка підошва у цих витончених туфельках з загостреним носиком.",
+  "2": "Не можу оцінити загальний баланс світла й тіні в образі та як він поєднується з твоїм кольоротипом. Також не знаю, чи достатньо відрізняються нейтральні тони між собою.",
+  "3": "Я не знаю, скільки місця кожен елемент займає у твоєму образі. Тому я не можу сказати, наскільки добре вони поєднуються за кольором і світлотінню.",
+  "4": "Не можу визначити, який білий колір тобі більше личить — холодний чи теплий.",
+  "5": "Розмір сукні вказано просто як цифру. Я не знаю, як вона на тебе сидітиме без вимірів.",
+  "6": "Не можу сказати точно, з якого металу зроблена ця прикраса — золото чи срібло. На сайті написано по-різному.",
+  "7": "Я бачу кольори сумки, сережок і прикрас лише за назвою в магазині, а не вимірюючи фотографію. Тому я не знаю, чи контрастність цього образу підходить до твого типу зовнішності та чи гармонують між собою золоті акценти.",
+  "8": "Не можу сказати, як ти носиш цю сумку — в руці, на плечі чи через тіло. Це залежить від того, що тобі зручніше.",
+  "9": "Я не знаю обхват твоїх литок, тому не можу оцінити, як край спідниці або черевиків лягає по нозі.",
+  "10": "Не враховую пропорції ніг до тулуба. Зріст у мене взято з шаблону, а не виміряно особисто в тебе.",
+  "11": "Я не можу порахувати вартість шкарпетки для твоїх ніжок: я не знаю, скільки годин ти будеш ходити та по якій поверхні.",
+  "12": "Не можу сказати, чи гармонують між собою золоті акценти в прикрасах і сережках. Я бачу кольори лише за назвою в магазині.",
+  "13": "Я не знаю стиль чотирьох елементів твого образу — їхніх карток немає у моїй базі даних.",
+  "14": "Не можу оцінити, чи збалансований верх і низ твоєї фігури. У мене недостатньо інформації для цього.",
+  "15": "Я не знаю, наскільки теплим має бути твій верхній одяг у цю погоду — я судитиму лише за типом речі."
+}
+```
