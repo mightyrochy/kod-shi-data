@@ -1,0 +1,151 @@
+── ПРОМПТ (13444 симв.) ──
+{"version":"1","task":{"role":"You are the stylist. The code checked the outfits you put together for her, and some of them cannot be shown yet: each such outfit has a blocker in «structure». You finish every one of them before she chooses.","rules":["Finish EVERY outfit in «verdict»: clear all of its blockers.","A missing kind of item: add one item for it from «showcase».","Several items of one kind: keep the one that suits the outfit best and remove the others.","Change nothing else: the remaining items, the caption and the day stay as they are.","Name every item by its «n» — in full, exactly as in «verdict» or «showcase».","Return every outfit of «verdict», each under its own «id»."],"limits":["Rely only on the input: do not invent what it does not contain.","The answer is one JSON object following \"answer_schema\", without explanations and without ```."],"language":"English","answer":"OUTFITS_V1","answer_schema":{"version":"1","outfits":[{"id":"<«id» of the outfit, as in «verdict»>","caption":"<string>","pole":"filter_and_rank|anchor_first|tonal_column|ease_the_knot|break|free","items":["<«n» of all items of the finished outfit>"],"day":"<«day» of «your_outfit», unchanged>","deliberate":[{"item":"<string>","why":"<string>"}],"done":[{"finding":"<string>","action":"fixed|declined|partly","why":"<string>"}]}],"needed":[{"kind":"<string>","description":"<string>","type":"<string>","color":"<string>","fabric":"<string>"}]},"input":["\"case\" — her occasion in her and the code's words","\"day\" — her day as facts","\"verdict\" — your outfits and the code's check: «your_outfit» — items with their full descriptions and your caption; «structure.blockers» — what keeps the outfit from being shown: a missing kind of item, or several items of one kind («items» lists them)","\"showcase\" — items that can fill what is missing","\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, or {code: values}; codes are defined in \"statement_codes\""],"statement_codes":{"weather_needs_outerwear":"this weather cannot be met without a coat or a warm jacket (values: temperature_c — the day's temperature as a number, as the code knows it; precipitation — the code of wet precipitation when there is any)","dress_with_separate_bottom":"dress plus a separate bottom doubles the bottom: keep one","several_items_in_one_slot":"several items stand in each of these slots: keep one in each (values: slots — slot codes; without them just \"several items in one slot\")","no_bag":"no bag, and the occasion requires one"}},"case":"робота, офіс, 2 °C","day":{"place":"office","temperature_c":2,"unknown":["start_hour"]},"verdict":[{"your_outfit":{"id":"o1","caption":"Structured Lilac Power Suit","items":[{"n":"#152·04","name":"Костюм з хусткою: піджак приталеного крою; штани прямі, посадка висока (AniNadin)","price":10550,"type":"suit","cut":"straight","fabric":["polyester"],"length":"midi","color":"light_blue","hex":"#baccf0","family":"blue","in_arc":true,"L":[82,82],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":[7,9],"register":"classic","branch":"core"},{"n":"#96·09","name":"Сорочка блакитна KATE SHIRT","price":2500,"type":"shirt","cut":"relaxed","fabric":["cotton","woven"],"color":"light_blue","hex":"#97bfe9","family":"blue","in_arc":false,"L":[76,76],"L_from":"photo_point","formality":[3,6],"register":"preppy","branch":"edge","scheme":"muted_complementary"},{"n":"#378·31","name":"Золота каблучка із діамантами та смарагдом","price":120000,"type":"ring","fabric":"unknown","color":"golden","hex":"#c8ac6a","family":"yellow","in_arc":true,"L":[55,88],"L_from":"word","branch":"core"},{"n":"#294·06","name":"Сумка жіноча Snapshot","price":22300,"type":"bag_generic","fabric":["leather"],"color":"milky","hex":"#d6d0c2","in_arc":true,"L":[84,84],"L_from":"photo_point","branch":"core"},{"n":"#327·09","name":"Больйони кемел поні CODY на шкірі","price":8500,"type":"ankle_boots","fabric":["leather"],"shaft":"ankle","color":"camel","hex":"#b48457","family":"orange","in_arc":false,"L":[59,59],"L_from":"photo_point","formality":[3,5],"heel":"unknown","branch":"edge","scheme":"muted_complementary"}],"day":"The structured lilac suit anchors the office day. A silvery ring near the face adds necessary definition to her low contrast, while taupe ankle boots ground the look and meet the chilly temperature."},"structure":{"ok":false,"blockers":[{"id":"b-o1-1","code":"no_outer_layer","statements":[{"weather_needs_outerwear":{"temperature_c":2}}]}]}},{"your_outfit":{"id":"o2","caption":"Warm Camel Knit Layer","items":[{"n":"#98·26","name":"Трикотажний комбінезон темно-бежевий","price":6675,"type":"jumpsuit","cut":"relaxed","fabric":["polyamide","jersey"],"length":"midi","color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","hem_cm":[21,35],"hem_from":"word","formality":[3,5],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#57·06","name":"Спідниця forte_forte бежева","price":45950,"type":"skirt","cut":"straight","fabric":["silk"],"length":"maxi","color":"beige","hex":"#e0b093","family":"orange","in_arc":true,"L":[75,75],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":[3,8],"branch":"edge","scheme":"muted_complementary"},{"n":"#350·05","name":"Чоботи KELLY замшеві на низьких підборах","price":9800,"type":"boots","fabric":["suede"],"material":"suede","shaft":"knee","color":"beige","hex":"#bda086","family":"orange","in_arc":true,"L":[68,68],"L_from":"photo_point","formality":[4,6],"heel":"yes","heel_height":"low","branch":"core"},{"n":"#164·37","name":"Сумка Синя","price":2070,"type":"bag_generic","fabric":"unknown","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","branch":"core"},{"n":"#204·11","name":"Матеріали та переваги Плащівка з мембраною — надійний захист від вологи, снігу та пронизливого вітру","price":2399,"type":"trench_coat","cut":"relaxed","fabric":["knitted","woven"],"length":"maxi","pattern":"print_generic","details":["hood"],"color":"beige","hex":"#e5d9d5","in_arc":true,"L":[88,88],"L_from":"photo_point","hem_cm":[19,23],"hem_from":"shop_cm","formality":[5,8],"register":"classic","branch":"core"}],"day":"Warm camel and beige tones create a quiet vertical line perfect for a seated office environment. A beige shearling-lined jacket adds necessary warmth for the 2°C temperature without breaking the monochrome flow."},"structure":{"ok":false,"blockers":[{"id":"b-o2-1","code":"kind_twice","items":["#98·26","#57·06"],"statements":["dress_with_separate_bottom"]}]}},{"your_outfit":{"id":"o5","caption":"Olive Knit Oversized Flow","items":[{"n":"#195·06","name":"Комбінезон Haikure джинсовий","price":27500,"type":"jumpsuit","cut":"straight","fabric":["cotton","woven"],"length":"maxi","color":"light_blue","hex":"#dcd9d8","in_arc":true,"L":[87,87],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":[1,4],"register":"workwear","branch":"core"},{"n":"#389·22","name":"В’язаний шарф унісекс з кашеміром сірий","price":2900,"type":"scarf_generic","fabric":["cashmere"],"color":"grey","hex":"#b3abab","in_arc":true,"L":[71,71],"L_from":"photo_point","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#350·05","name":"Чоботи KELLY замшеві на низьких підборах","price":9800,"type":"boots","fabric":["suede"],"material":"suede","shaft":"knee","color":"beige","hex":"#bda086","family":"orange","in_arc":true,"L":[68,68],"L_from":"photo_point","formality":[4,6],"heel":"yes","heel_height":"low","branch":"core"},{"n":"#27·02","name":"Черевики жіночі, ATTICO, нубук, колір коричневий","price":3299,"type":"ankle_boots","fabric":["nubuck"],"material":"nubuck","shaft":"ankle","color":"brown","hex":"#654321","family":"orange","in_arc":true,"L":[32,32],"L_from":"photo_point","formality":[3,5],"heel":"unknown","branch":"edge","scheme":"muted_complementary"}],"day":"Olive green flows down from the waist, creating a long vertical line that visually elongates her straight figure. A grey cashmere scarf adds texture and warmth without adding color noise."},"structure":{"ok":false,"blockers":[{"id":"b-o5-1","code":"kind_twice","items":["#350·05","#27·02"],"statements":[{"several_items_in_one_slot":{"slots":["shoes"]}}]},{"id":"b-o5-2","code":"no_bag","statements":["no_bag"]},{"id":"b-o5-3","code":"no_outer_layer","statements":[{"weather_needs_outerwear":{"temperature_c":2}}]}]}}],"showcase":[{"n":"#163·03","name":"Жіночий зимовий пуховик з качиним пухом і капюшоном Snow Owl (молочний, XL)","price":7480,"type":"jacket","cut":"relaxed","fabric":["polyester"],"length":"midi","sleeve":"long","details":["hood","oversize","quilted"],"color":"milky","shop_color":"молочний чорний","hex":"#e0d9d3","in_arc":true,"L":[87,87],"L_from":"photo_point","hem_cm":[56,60],"hem_from":"shop_cm","formality":[2,5],"branch":"core"},{"n":"#322·35","name":"Пальто діагональ сіре","price":3955,"type":"coat","cut":"straight","fabric":["corduroy"],"length":"midi","color":"grey","hex":"#b7a9ac","in_arc":true,"L":[70,70],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":[5,8],"register":"classic","branch":"core"},{"n":"#383·30","name":"Пальто жіноче зі складками демісезонне","price":3599,"type":"coat","cut":"relaxed","fabric":["polyester"],"length":"midi","sleeve":"long","color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","hem_cm":[62,66],"hem_from":"shop_cm","formality":[5,8],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#391·34","name":"Вовняне пальто-сорочка в гірчично-сіру клітинку","price":4990,"type":"coat","cut":"relaxed","fabric":["polyester"],"length":"mid_thigh","pattern":"check","color":"mustard","hex":"#ba9733","family":"yellow","in_arc":false,"L":[48,80],"L_from":"word","hem_cm":[78,88],"hem_from":"word","formality":[5,6],"fabric_c":[2,18],"register":"classic","branch":"edge","scheme":"muted_complementary"},{"n":"#199·04","name":"Куртка з екошкіри зі вшитим трикотажним каптуром та трикотажними манжетами та кантом по низу виробу, на блискавці, крій вільний (Fendi)","price":4290,"type":"jacket","cut":"relaxed","fabric":["polyester"],"length":"mid_thigh","color":"silvery","hex":"#b5a39e","in_arc":true,"L":[68,68],"L_from":"photo_point","hem_cm":[78,88],"hem_from":"word","formality":[3,5],"branch":"core"},{"n":"#22·03","name":"Жіноче класичне вовняне пальто з англійським коміром та манжетами Stella Polare (гірчичний, 52)","price":10560,"type":"coat","cut":"straight","fabric":["alpaca"],"length":"midi","sleeve":"long","color":"mustard","hex":"#ba9733","family":"yellow","in_arc":false,"L":[48,80],"L_from":"word","hem_cm":[19,23],"hem_from":"shop_cm","formality":[5,8],"fabric_c":[2,18],"register":"classic","branch":"edge","scheme":"muted_complementary"},{"n":"#92·03","name":"Жіноче класичне вовняне пальто з норковим хутром, осінь-весна Ferrucci (гірчичний, L)","price":45980,"type":"coat","cut":"straight","fabric":["cashmere"],"length":"midi","color":"mustard","shop_color":"гірчичний молочний","hex":"#ba9733","family":"yellow","in_arc":false,"L":[48,80],"L_from":"word","hem_cm":[64,68],"hem_from":"shop_cm","formality":[5,8],"fabric_c":[2,18],"register":"classic","branch":"edge","scheme":"muted_complementary"},{"n":"#302·03","name":"Стильне вовняне двобортне пальто без утеплювача з англійським коміром Stella Polare (світлосірий, 44)","price":8690,"type":"coat","cut":"fitted","fabric":["viscose"],"length":"midi","sleeve":"long","details":["double_breasted"],"shop_color":"світлосірий","hex":"#ab9ea1","in_arc":true,"L":[52,80],"L_from":"word","hem_cm":[57,61],"hem_from":"shop_cm","formality":[5,8],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#56·36","name":"Жіноча сумка Welfare","price":2200,"type":"bag_generic","fabric":"unknown","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","branch":"core"},{"n":"#85·31","name":"Сіра шкіряна сумка Loulou","price":42000,"type":"bag_generic","fabric":["leather"],"color":"grey","hex":"#4e4d4f","in_arc":true,"L":[33,33],"L_from":"photo_point","branch":"core"},{"n":"#28·37","name":"Сумка Бузкова геометрія","price":1971,"type":"bag_generic","fabric":"unknown","pattern":"stripes","color":"lilac","hex":"#c2a5cd","family":"purple","in_arc":true,"L":[55,88],"L_from":"word","branch":"core"},{"n":"#8·36","name":"Жіноча сумка Welfare","price":1749,"type":"bag_generic","fabric":"unknown","color":"blue","hex":"#443f52","family":"purple","in_arc":true,"L":[28,28],"L_from":"photo_point","branch":"core"},{"n":"#79·31","name":"Крос-боді з фіолетової шкіри","price":171,"type":"crossbody_bag","fabric":["leather"],"color":"purple","hex":"#845093","family":"purple","in_arc":true,"L":[20,65],"L_from":"word","formality":[4,4],"branch":"core"},{"n":"#88·36","name":"Жіноча сумка Welfare","price":2800,"type":"bag_generic","fabric":"unknown","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","branch":"core"},{"n":"#83·31","name":"Фіолетова шкіряна сумка Beat","price":7500,"type":"bag_generic","fabric":["leather"],"color":"purple","hex":"#845093","family":"purple","in_arc":true,"L":[20,65],"L_from":"word","branch":"core"},{"n":"#72·31","name":"Фіолетова шкіряна сумка","price":6800,"type":"bag_generic","fabric":["leather"],"color":"purple","hex":"#88749f","family":"purple","in_arc":true,"L":[52,52],"L_from":"photo_point","branch":"core"}]}
+
+── ВІДПОВІДЬ (4791 симв., 155.4 с, HTTP 200) ──
+{
+  "version": "1",
+  "outfits": [
+    {
+      "id": "o1",
+      "caption": "Structured Lilac Power Suit",
+      "pole": "no_outer_layer",
+      "items": [
+        {
+          "n": "#322·35",
+          "name": "Пальто діагональ сіре"
+        },
+        {
+          "n": "#152·04",
+          "name": "Костюм з хусткою: піджак приталеного крою; штани прямі, посадка висока (AniNadin)"
+        },
+        {
+          "n": "#96·09",
+          "name": "Сорочка блакитна KATE SHIRT"
+        },
+        {
+          "n": "#378·31",
+          "name": "Золота каблучка із діамантами та смарагдом"
+        },
+        {
+          "n": "#294·06",
+          "name": "Сумка жіноча Snapshot"
+        },
+        {
+          "n": "#327·09",
+          "name": "Больйони кемел поні CODY на шкірі"
+        }
+      ],
+      "day": "The structured lilac suit anchors the office day. A silvery ring near the face adds necessary definition to her low contrast, while taupe ankle boots ground the look and meet the chilly temperature.",
+      "deliberate": [
+        {
+          "item": "#322·35",
+          "why": "Added as outer layer to satisfy the 'weather_needs_outerwear' requirement for 2°C temperature."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_outer_layer",
+          "action": "fixed",
+          "why": "Added a grey corduroy coat to provide necessary warmth for the office occasion at 2°C."
+        }
+      ]
+    },
+    {
+      "id": "o2",
+      "caption": "Warm Camel Knit Layer",
+      "pole": "dress_with_separate_bottom",
+      "items": [
+        {
+          "n": "#57·06",
+          "name": "Спідниця forte_forte бежева"
+        },
+        {
+          "n": "#350·05",
+          "name": "Чоботи KELLY замшеві на низьких підборах"
+        },
+        {
+          "n": "#164·37",
+          "name": "Сумка Синя"
+        },
+        {
+          "n": "#204·11",
+          "name": "Матеріали та переваги Плащівка з мембраною — надійний захист від вологи, снігу та пронизливого вітру"
+        }
+      ],
+      "day": "Warm camel and beige tones create a quiet vertical line perfect for a seated office environment. A beige shearling-lined jacket adds necessary warmth for the 2°C temperature without breaking the monochrome flow.",
+      "deliberate": [
+        {
+          "item": "#57·06",
+          "why": "Kept skirt as part of the 'dress with separate bottom' concept, removing the jumpsuit to avoid duplicating the lower body slot."
+        }
+      ],
+      "done": [
+        {
+          "finding": "kind_twice",
+          "action": "declined",
+          "why": "Removed the jumpsuit (#98·26) because having both a jumpsuit and a separate skirt violates the 'dress_with_separate_bottom' rule; kept only the skirt to define the lower body slot correctly."
+        }
+      ]
+    },
+    {
+      "id": "o5",
+      "caption": "Olive Knit Oversized Flow",
+      "pole": "several_items_in_one_slot|no_bag|no_outer_layer",
+      "items": [
+        {
+          "n": "#195·06",
+          "name": "Комбінезон Haikure джинсовий"
+        },
+        {
+          "n": "#389·22",
+          "name": "В'язаний шарф унісекс з кашеміром сірий"
+        },
+        {
+          "n": "#27·02",
+          "name": "Черевики жіночі, ATTICO, нубук, колір коричневий"
+        },
+        {
+          "n": "#383·30",
+          "name": "Пальто жіноче зі складками демісезонне"
+        },
+        {
+          "n": "#85·31",
+          "name": "Сіра шкіряна сумка Loulou"
+        }
+      ],
+      "day": "Olive green flows down from the waist, creating a long vertical line that visually elongates her straight figure. A grey cashmere scarf adds texture and warmth without adding color noise.",
+      "deliberate": [
+        {
+          "item": "#27·02",
+          "why": "Kept ankle boots for the shoe slot, removing knee boots (#350·05) to resolve 'several_items_in_one_slot'."
+        },
+        {
+          "item": "#383·30",
+          "why": "Added beige coat as outer layer to fix 'no_outer_layer' for 2°C weather."
+        },
+        {
+          "item": "#85·31",
+          "why": "Added grey leather bag to fix 'no_bag' requirement for the office occasion."
+        }
+      ],
+      "done": [
+        {
+          "finding": "kind_twice",
+          "action": "fixed",
+          "why": "Kept ankle boots (#27·02) and removed knee boots (#350·05) to ensure only one type of footwear per 'shoes' slot."
+        },
+        {
+          "finding": "no_bag",
+          "action": "fixed",
+          "why": "Added a grey leather bag to satisfy the occasion requirement for an accessory."
+        },
+        {
+          "finding": "no_outer_layer",
+          "action": "fixed",
+          "why": "Added a beige coat to provide necessary warmth for the 2°C temperature."
+        }
+      ]
+    }
+  ],
+  "needed": []
+}
