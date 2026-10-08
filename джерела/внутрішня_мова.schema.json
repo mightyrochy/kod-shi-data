@@ -649,6 +649,7 @@
       "club",
       "house_party",
       "festive_dinner",
+      "office",
       "office_corporate",
       "office_creative",
       "job_interview",
@@ -2169,7 +2170,7 @@
          },
          {
           "const": "stylist_declared_on_purpose",
-          "description": "the stylist chose these items deliberately for this outfit and said so: this is her considered decision, not something left unfinished (values: items — the items' names as the card shows them)"
+          "description": "the stylist chose these items for this outfit on purpose (values: items — the items' names as the card shows them)"
          },
          {
           "const": "action_is_only_her_option",
@@ -2198,6 +2199,14 @@
          {
           "const": "assortment_gap_not_advice",
           "description": "this is a gap in the assortment, not advice against her choice"
+         },
+         {
+          "const": "assortment_gap",
+          "description": "this is a gap in the assortment today"
+         },
+         {
+          "const": "pool_limit",
+          "description": "this is the limit of the selection for her sizes and this occasion"
          },
          {
           "const": "pool_limit_not_advice",
@@ -2557,7 +2566,7 @@
          },
          {
           "const": "stylist_swapped_item_after_photo",
-          "description": "after seeing the item photos the stylist replaced one item with another of the same kind from her selection; the code checked the outfit again (values: was — what it was, now — what it is now; reason — colour: the photo showed a clearly different colour than the shop named, kind: the photo showed another kind of item, occasion: the item on the photo does not suit her occasion)"
+          "description": "after seeing the item photos the stylist replaced one item with another of the same kind from her selection; the code checked the outfit again (values: was — what it was, now — what it is now, both as the shop names them: name each in a few words of your own — its kind and colour — never quote the shop's name; reason — colour: the photo showed a clearly different colour than the shop named, kind: the photo showed another kind of item, occasion: the item on the photo does not suit her occasion)"
          },
          {
           "const": "code_removed_this_layer",
@@ -2741,15 +2750,15 @@
          },
          {
           "const": "photo_colour_noise_above_match_threshold",
-          "description": "the colour measured from a photo is noisier than the exact match threshold (values: noise, threshold — dE00), so two measured hex values cannot settle an exact match"
+          "description": "the colour measured from a photo is noisier than the exact match threshold (values: noise, threshold — both as colour difference on one scale; numbers for the code, not for her), so two colours measured from photos cannot settle an exact match"
          },
          {
           "const": "photo_colour_noise_above_visible_difference",
-          "description": "the colour measured from a photo is noisier than the difference that reads as visible (values: noise, threshold — dE00), so two measured hex values cannot settle whether two items differ visibly"
+          "description": "the colour measured from a photo is noisier than the difference that reads as visible (values: noise, threshold — both as colour difference on one scale; numbers for the code, not for her), so two colours measured from photos cannot settle whether two items differ visibly"
          },
          {
           "const": "photo_lightness_noise_above_step",
-          "description": "the lightness measured from a photo is noisier than one lightness step (values: noise, step — L*), so two measured hex values cannot settle whether two items sit on one lightness"
+          "description": "the lightness measured from a photo is noisier than one lightness step (values: noise, step — both on the scale from dark to light; numbers for the code, not for her), so two colours measured from photos cannot settle whether two items sit on one lightness"
          },
          {
           "const": "cannot_tell_lightness_structure",
@@ -3060,6 +3069,14 @@
           "description": "neither a waist nor an even column: the shape does not read"
          },
          {
+          "const": "claim_waist_cinched_on_no_waist",
+          "description": "the outfit pulls in or marks the waist on a figure whose waist is nearly as wide as her hips: the eye lands on the middle"
+         },
+         {
+          "const": "claim_no_column_on_no_waist",
+          "description": "on a figure whose waist is nearly as wide as her hips the outfit keeps no even vertical line: the middle is not quiet"
+         },
+         {
           "const": "claim_volume_without_anchor",
           "description": "volume fits the body nowhere, so the body shows nowhere"
          },
@@ -3126,6 +3143,10 @@
          {
           "const": "shoe_cut_irrelevant_leg_covered",
           "description": "the shoe's cut-line decides nothing here: a long bottom covers the leg (values: item — item name)"
+         },
+         {
+          "const": "dress_formality_no_photo_score",
+          "description": "how dressy this dress is, the code does not know: its kind in one word covers both everyday and evening dresses, and there is no dressiness score from its photo (values: items — the dresses)"
          },
          {
           "const": "areas_not_measured",
@@ -3421,11 +3442,7 @@
          },
          {
           "const": "accent_not_from_eyes",
-          "description": "the slot carries the accent, and its hue is not from the family of her eyes (values: slot — slot code, hue — the accent's hue in degrees, eye_arcs — the hue arcs of her eyes)"
-         },
-         {
-          "const": "accent_in_eye_family",
-          "description": "take the accent from the family of her eyes in this slot (values: slot — slot code, eye_arcs — the hue arcs of her eyes)"
+          "description": "the slot carries the accent, and its hue is not from the family of her eyes; an eye-family accent is the first move in order, not a requirement (values: slot — slot code, hue — the accent's hue in degrees, eye_arcs — the hue arcs of her eyes)"
          },
          {
           "const": "complementary_pair_not_muted",
@@ -3538,10 +3555,6 @@
          {
           "const": "accessory_spends_chroma_budget",
           "description": "a loud accessory is not a trimming: its chroma spends from the accent budget even though there is no area behind it (values: slot — slot code, chroma — the accessory's chroma, loud_from — the chroma from which a colour counts as loud)"
-         },
-         {
-          "const": "quieter_accessory_or_quieter_surface",
-          "description": "if the outfit already has a loud surface, take this accessory quieter, or keep it as the accent and take the loudness off the larger surface"
          },
          {
           "const": "bag_format_at_scale_edge",
@@ -4688,14 +4701,6 @@
           "description": "two accent surfaces match exactly (dE): they pull the eye sideways, not up to the face"
          },
          {
-          "const": "accent_surfaces_same_colour_word",
-          "description": "two accent surfaces are named by the same colour word by two different shops (values: colour — its colour code): they read as one colour and pull the eye sideways, not up to the face"
-         },
-         {
-          "const": "secondary_colour_or_neutral_or_declared_column",
-          "description": "second item in the first one's secondary colour or a contrasting neutral; or a declared colour column"
-         },
-         {
           "const": "sole_glued_not_resoleable",
           "description": "glued sole: cannot be resoled, so the price spreads over a shorter life"
          },
@@ -4760,6 +4765,10 @@
           "description": "anchor the volume: cinch the waist (belt, wrap, tuck), shorten the bottom to the ankle or narrow it, or keep one layer fitted"
          },
          {
+          "const": "anchor_volume_no_waist",
+          "description": "anchor the volume where she is narrow: shorten the bottom to the ankle or narrow it, open the wrist or the neckline, or keep one vertical line (a long open layer, one colour top to bottom); not a belt at the waist"
+         },
+         {
           "const": "give_contour_direction",
           "description": "give the contour a direction: narrow the bottom or widen it under a fitted top; or cinch the waist so it reads as X"
          },
@@ -4782,6 +4791,10 @@
          {
           "const": "follow_waist_or_declared_other_shape",
           "description": "a cut following the waist (fitted, wrap, sheath, belted); or another shape as a declared choice"
+         },
+         {
+          "const": "make_column_not_waist",
+          "description": "keep one even vertical line without a step at the waist (a shift, a straight or relaxed top worn out, a long open layer), the eye up to the neckline and down to the legs; no belt at the waist"
          },
          {
           "const": "make_waist_or_declared_column",
@@ -5286,6 +5299,10 @@
          {
           "const": "volume_anchor",
           "description": "a voluminous outfit keeps one anchor where the body shows: the waist (belt, wrap, tuck) or the ankle (a tapered or cropped bottom); volume without an anchor reads as \"the body shows nowhere\""
+         },
+         {
+          "const": "volume_anchor_no_waist",
+          "description": "her waist is nearly as wide as her hips, so a voluminous outfit takes its anchor where she is narrow — the ankle, the wrist, the neckline — or keeps one vertical line (a long open layer, one colour top to bottom); not at the waist: no belt at the natural waist, nothing clinging to or decorating the middle of the torso"
          },
          {
           "const": "one_line",
@@ -5830,6 +5847,7 @@
    "club": "клуб",
    "house_party": "домашня_вечірка",
    "festive_dinner": "святкова_вечеря",
+   "office": "офіс",
    "office_corporate": "офіс_корпоративний",
    "office_creative": "офіс_креативний",
    "job_interview": "співбесіда",

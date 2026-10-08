@@ -106,7 +106,9 @@ import протокол as _ПР
     "невідомо": "Чого не знаєш — «невідомо», null або порожній список, як дозволяє схема.",
     "для_неї": ("Текст для неї — на «ти» і людськими словами: без номерів речей, id, "
                 "hex-кодів і markdown."),
-    "без_чисел_тіла": "Не називай чисел світлоти й типів фігури і не кажи, що мала обмеження.",
+    # рядок 1422 (живий прогін ж8_зима ПІСЛЯ): опис із полем `body` написав «твій зріст 154 см» — межа
+    # тепер називає й мірки тіла, не лише світлоту й типи фігури
+    "без_чисел_тіла": "Не називай чисел світлоти, мірок тіла чи зросту й типів фігури і не кажи, що мала обмеження.",
 }
 # Мова відповіді — поле шаблону, а не межа на вибір: українською відповідає кожна задача.
 МОВА = "українська"
@@ -180,7 +182,8 @@ def вибірка(о):
     # на «ви», хоча українська межа каже «на „ти“» — тож форму звертання названо прямо.
     "для_неї": ("Text for her: address her informally, with the familiar singular \"you\", never the "
                 "polite plural; in plain human words, without item numbers, ids, hex codes or markdown."),
-    "без_чисел_тіла": "Do not name lightness numbers or body-type labels and do not say you had limits.",
+    "без_чисел_тіла": ("Do not name lightness numbers, body measurements or height in numbers, or body-type "
+                      "labels, and do not say you had limits."),
 }
 МОВА_EN = "English"
 ФОРМА_JSON_EN = "The answer is one JSON object following \"answer_schema\", without explanations and without ```."

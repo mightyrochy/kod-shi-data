@@ -182,7 +182,8 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         "words — and so that their ideas («pole») differ; then improve them. Do not choose by how many remarks "
         "an outfit has or how mild they are: an outfit that answers her better stays with its remarks.",
         "A remark (a finding without «register» «gate») does not by itself drop an outfit or undo a move you "
-        "declared: fix it, or keep the item and say why in «done».",
+        "declared: fix it, or keep the item and say why in «done». A finding without «fix» is information about "
+        "the outfit and asks for no change.",
         "When «case» has «palette_scheme», she chose that scheme herself: keep its families on the large items "
         "of the outfits that carry them, and do not repair her scheme away into neutrals; give a missing family "
         "a large item from «showcase» where one fits her occasion.",
@@ -201,6 +202,12 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
     поля_виходу=dict(_ПОЛЯ_ОБРАЗІВ, **{
         "образи[].ід": "«id» of the «your_outfit» you improved",
         "образи[].виконано[].знахідка": "«id» of a finding or a blocker of this outfit",
+        # ОПИС-1 (рядок 1416, CLAUDE.md п.4): «fixed» без визначення модель ставила й тоді, коли
+        # знахідка лишалась (1 501 «fixed» на 02.10, 112 непідтверджених); міра — суд коду
+        "образи[].виконано[].дія": "fixed — the finding is gone from the outfit by the code's check "
+                                   "(you replaced or removed what raised it); partly — it stays but weaker; "
+                                   "declined — you keep it on purpose, with «why». When you are not sure it "
+                                   "is gone, say partly",
     }),
     межі=("лише_вхід",),
     мова_промпту="en",
@@ -1011,6 +1018,15 @@ def перевірити_виконання(попередній_вердикт,
                 continue
             перев, чому, збіг, заява = _чи_зникла(
                 поп, _набір_нового_суду() if набірна else знахідки_нові)
+            if дія == "виправлено" and перев and збіг is not None:
+                # ОПИС-1 (рядок 1416): «виправлено» — лише коли знахідки за мірою коду більше нема.
+                # Послаблена знахідка — це «частково»: код правдою ставить ту дію, яку факт
+                # підтверджує, а заяву моделі лишає в `дія_моделі` для журналу — хибною
+                # стає лише розбіжна частина заяви, а не весь хід.
+                дія = "частково"
+                запис = lambda перев, чому, заява=None, _д=дія: dict(
+                    знахідка=ід_з, перевірено=bool(перев), чому=чому, дія=_д, дія_моделі="виправлено",
+                    **({"заяви": [заява]} if заява else {}))
             if дія == _ДІЯ_ВІДМОВИ:
                 # ОГОЛОШЕНА ВІДМОВА — ХІД, А НЕ ПРОВАЛ. Факт тут не суперечить
                 # заявці: модель і не обіцяла, що знахідка зникне.

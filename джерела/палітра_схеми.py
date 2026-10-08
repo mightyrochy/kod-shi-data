@@ -1126,5 +1126,6 @@ def повідомлення_великих(речі, спец_слоти, за_
                                colours=[слово[р] for р in нема],
                                none_in_catalogue=all((дані.get(р) or {}).get("у_каталозі") == 0
                                                      for р in нема)))
-        заяви.append(_ВМ.заява("assortment_gap_not_advice"))
+        # ОПИС-1 (рядок 1550): «не порада проти твого вибору» — лише коли схему обрала вона сама
+        заяви.append(_ВМ.заява("assortment_gap_not_advice" if обрана is True else "assortment_gap"))
     return _ВМ.повідомлення("card_scheme", *заяви)

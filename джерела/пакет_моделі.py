@@ -11,6 +11,7 @@ import re
 import json as _json_
 import протокол as _ПР
 import дріт_моделі as _Д
+import формальність as _ФОРМ_ОФ  # смуга офісу без виду — одна на всі промпти (ОФІС-1)
 # К-3 (27.09.2026): коди розбору каталогу й рядок особливостей речі. Модуль читає файл
 # розбору поруч із собою (у вантажі показу — поруч у вантажі) і тримає перемикач короткого
 # запису; без файла й без перемикача він мовчить, і запис речі той самий, що доти.
@@ -448,8 +449,10 @@ import внутрішня_мова as _ВМ_П
 ПОЛЯ_ОБРАЗІВ_EN = {
     "образи[].підпис": "3–5 words: the idea of the outfit",
     "образи[].речі": "«n» of the item, in full",
-    "образи[].день": "one sentence, up to 25 words: how this outfit lives through her day; where her wish "
-                     "argues with the day, say so gently — the choice is hers",
+    # рядок 1427: «the choice is hers» — лише про її бажання; за свою річ стилістка каже, чому вона
+    "образи[].день": "one sentence, up to 25 words: how this outfit lives through her day; where something she "
+                     "asked for herself argues with the day, say so gently — that part is hers to decide; where "
+                     "an item you chose argues with the day, say why you still chose it",
     "образи[].свідомо[].річ": "«n» of the item",
     "потрібно[].слот": "the kind of item that is missing, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["slot"]),
     "потрібно[].тип": "its type, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["item_type"]),
@@ -498,6 +501,8 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("day.unknown", "what she has not told about her day: the place, the hour, the weather",
                  як="do not assume a value for it; prefer items that hold either way"),
         _ЗП.Поле("person", "her coloring, palette and body"),
+        # рядок 1423: код фігури без визначення модель читала як ярлик — тепер з ним (O — вертикаль)
+        _ЗП.Поле("person.body.shape", _Д.ФІГУРА_КОДИ_EN),
         _ЗП.Поле("person.palette.slot_roles", "the color role of each kind of item in her palette's scheme",
                  як="keep these roles; an item with «in_arc»: false lies outside the scheme — take it only "
                     "as a declared break in «deliberate», at most one per outfit; a colored item in the "
@@ -521,7 +526,7 @@ import внутрішня_мова as _ВМ_П
                     "bland, not calm"),
         _ЗП.Поле("pool", "the catalog items the code let through: in stock, right for this temperature and "
                          "the stated dress code, within her palette's lightness and her refusals; «formality» — "
-                         "1 to 10, the scale of the occasion (1 home, 5 office, 9 gala); «L» — lightness 0 to "
+                         "1 to 10, the scale of the occasion (1 home, " + _ФОРМ_ОФ.СМУГА_ОФІСУ_EN + ", 9 gala); «L» — lightness 0 to "
                          "100; «hem_cm» — where the hem falls, cm above the floor; «fabric_c» — the °C the "
                          "fabric suits; «L_from», «hem_from» — what the number was read from; «branch» — where "
                          "the colour lies against her palette: core, edge or break; «register» — the item's "

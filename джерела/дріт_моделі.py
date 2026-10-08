@@ -30,6 +30,7 @@ import os as _os
 import re as _re
 
 import внутрішня_мова as _ВМ
+import формальність as _ФОРМ_ОФ  # смуга офісу без виду — одна на всі промпти (ОФІС-1)
 
 U = _ВМ.UNKNOWN
 
@@ -403,7 +404,7 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
     "fe": "what sets this item apart from other items with the same codes",
     "L": "lightness from 0 to 100", "Lf": "where the lightness came from",
     "hm": "hem in cm from the floor", "hf": "where the hem came from",
-    "fo": "formality from 1 to 10, the same scale as the occasion (1 home, 5 office, 9 gala)",
+    "fo": "formality from 1 to 10, the same scale as the occasion (1 home, " + _ФОРМ_ОФ.СМУГА_ОФІСУ_EN + ", 9 gala)",
     "fc": "temperature band of the fabric, °C", "he": "heel", "hs": "heel shape",
     "hh": "heel height",
 }
@@ -624,6 +625,15 @@ def випадок(в, день=None):
     return вих
 
 
+# Коди фігури (`person.body.shape`, `body.shape` опису) — визначення для англійського промпта.
+# O (рядок 1423): маршрут рівного тіла без вузької точки на талії (`fit.C["whr_без_талії"]`,
+# K-BOD-02 тема-4:946); доти код писав «H» і модель вела таке тіло стратегією «створити талію».
+ФІГУРА_КОДИ_EN = ("a routing code of her figure, not a verdict: A — hips wider than shoulders; V — shoulders "
+                  "wider than hips; X — a marked waist; H — a straight contour without a marked waist; HX — "
+                  "a waist on the edge of being marked; O — the waist nearly as wide as the hips: lead the "
+                  "eye along a vertical, up to the face and down to the legs, the middle quiet")
+
+
 def людина(л):
     """ЛЮДИНА пакета → людина кодами: контраст, підтон, палітра (схема, ролі кольору за
     слотами, нейтралі й акценти «код #hex», метал, найдальші, поєднання, прийоми), тіло."""
@@ -647,7 +657,8 @@ def людина(л):
         if т.get("зріст") is not None:
             тіло["height_cm"] = _число(т["зріст"])
         if т.get("ярлик"):
-            тіло["shape"] = т["ярлик"]
+            # «H/X межа» — кодом HX, як у заявах суду (`силует_суд._літери_кодом`)
+            тіло["shape"] = "HX" if т["ярлик"] == "H/X межа" else т["ярлик"]
         if т.get("зони"):
             тіло["zones"] = {{"верх_проти_низу": "top_vs_bottom", "талія_виражена": "waist_defined"}.get(к, к):
                              _число(v) for к, v in т["зони"].items()}
@@ -851,6 +862,7 @@ def заяви(список):
     **{к: ("K-BOD-02", ("judge:силует_суд.відповідність", "wire:person.body.zones"))
        for к in ("pair_wider_zone", "pair_even")},
     "volume_anchor": ("K-SIL-03", ("judge:силует_пропорції.об_єм",)),
+    "volume_anchor_no_waist": ("K-SIL-03", ("judge:силует_пропорції.об_єм",)),
     "one_line": ("K-SIL-01", ("judge:силует_пропорції.конкуренція",)),
 }
 
@@ -1218,6 +1230,21 @@ def опис(об):
                                for x in об["укладка"] if isinstance(x, dict)]
     if об.get("палітра"):
         вих["palette"] = палітра(об["палітра"])
+    # її фігура кодами (рядок 1422): ті самі ключі, що `person.body` пакета складання, + заяви
+    т = об.get("тіло")
+    if isinstance(т, dict) and т:
+        тіло = {}
+        if т.get("зріст") is not None:
+            тіло["height_cm"] = _число(т["зріст"])
+        if т.get("ярлик"):
+            тіло["shape"] = "HX" if т["ярлик"] == "H/X межа" else т["ярлик"]
+        if т.get("зони"):
+            тіло["zones"] = {{"верх_проти_низу": "top_vs_bottom", "талія_виражена": "waist_defined"}.get(к, к):
+                             _число(v) for к, v in т["зони"].items()}
+        if т.get("заяви"):
+            тіло["statements"] = заяви(т["заяви"])
+        if тіло:
+            вих["body"] = тіло
     # ФОТО-1: запасні тієї речі, яку опис назвав для заміни, — тими самими полями, що речі образу
     _зап = об.get("заміна_запасні")
     if isinstance(_зап, dict) and _зап.get("запасні"):

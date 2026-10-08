@@ -39,6 +39,7 @@ import random as _random
 
 import colorspace as cs
 import внутрішня_мова as _ВМ
+import формальність as _ФОРМ_ОФ  # смуга офісу без виду — одна на всі промпти (ОФІС-1)
 import verify as V
 import silhouette as S
 from колір_річ import SLOT_NEAR_FALLBACK, near_слота
@@ -75,7 +76,7 @@ from outfit import ТЕМП_МАПА          # межа «шар зайвий»
     "крій": "from \"списки_речі\".крої or null",
     "довжина": "талія | стегно | міні | коліно | міді | максі or null",
     "принт": "from \"списки_речі\".принти (\"однотонний\" when there is no print)",
-    "ошатність": "integer 1–10: 1 home, 3 café, 5 office, 7 evening out, 9 ceremony",
+    "ошатність": "integer 1–10: 1 home, 3 café, " + _ФОРМ_ОФ.СМУГА_ОФІСУ_EN + ", 7 evening out, 9 ceremony",
     "чия": "моя | хочу купити | невідомо",
     "рамка": {"ліво": "0–1000", "верх": "0–1000", "право": "0–1000", "низ": "0–1000"},
 }
@@ -430,7 +431,7 @@ def _фото_речей():
                 "cut": "<code from codes.cut or null>",
                 "length": "<code from codes.length or null>",
                 "pattern": "<code from codes.pattern>",
-                "formality": "<integer 1–10: 1 home, 3 cafe, 5 office, 7 evening out, 9 ceremony>",
+                "formality": "<integer 1–10: 1 home, 3 cafe, " + _ФОРМ_ОФ.СМУГА_ОФІСУ_EN + ", 7 evening out, 9 ceremony>",
                 "owner": "<code from codes.owner>",
                 "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
             }]},
