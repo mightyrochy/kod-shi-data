@@ -7,15 +7,15 @@ import sys, os, json, tempfile
 ДЖ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "джерела")
 sys.path.insert(0, ДЖ); os.chdir(ДЖ)
 import bridge as B, feed as Ф, протокол as P
-import внутрішня_мова as ВМ
 
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 d0 = dict(вх, каталог=Ф.каталог_на_диску("каталог_brief.xml"), варіантів=10,
           кеш_кольорів=os.path.join(tempfile.gettempdir(), "кеш_проби_коорд.json"))
-рядки = json.loads(json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["руки"]["1"])["pool"]
-пул = {}
-for р in рядки:
-    пул.setdefault(ВМ.ключ("slot", ВМ.СЛОТ_ТИПУ.get(р.get("type"))), []).append(р)
+відп = json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))
+рядки = json.loads(відп["руки"]["1"])["pool"]
+за_н = {р_["n"]: р_ for р_ in рядки}
+пул = {сл: [за_н[ном] for ном in ід if ном in за_н]
+       for сл, ід in відп["порядок_рук"]["1"]["слоти"].items()}
 н = lambda сл, i: пул[сл][i % len(пул[сл])]["n"]
 образи = [dict(ід="о%d" % (i + 1), підпис="проба %d" % (i + 1),
                речі=[н("сукня", i), н("взуття", i), н("сумка", i), н("каблучка", i)])

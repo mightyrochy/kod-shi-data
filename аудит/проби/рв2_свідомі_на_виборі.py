@@ -8,16 +8,16 @@ import sys, os, json, tempfile
 ДЖ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "джерела")
 sys.path.insert(0, ДЖ); os.chdir(ДЖ)
 import bridge as B, feed as Ф
-import внутрішня_мова as ВМ
 
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 d0 = dict(вх, каталог=Ф.каталог_на_диску("каталог_brief.xml"), варіантів=10, ремонт_варіантів=5,
           кеш_кольорів=os.path.join(tempfile.gettempdir(), "кеш_проби_рв2.json"))
 міст = lambda **kw: json.loads(B.виклик("від_моделі", json.dumps(dict(d0, **kw), ensure_ascii=False)))
-рядки = json.loads(json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["руки"]["1"])["pool"]
-пул = {}
-for р in рядки:
-    пул.setdefault(ВМ.ключ("slot", ВМ.СЛОТ_ТИПУ.get(р.get("type"))), []).append(р)
+відп = json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))
+рядки = json.loads(відп["руки"]["1"])["pool"]
+за_н = {р_["n"]: р_ for р_ in рядки}
+пул = {сл: [за_н[ном] for ном in ід if ном in за_н]
+       for сл, ід in відп["порядок_рук"]["1"]["слоти"].items()}
 н = lambda сл, i=0: пул[сл][i]["n"]
 сила = lambda зн: [(z.get("сила_нп"), bool(z.get("свідомий"))) for z in (зн or []) if z.get("правило") == "K-KOH-06"]
 
