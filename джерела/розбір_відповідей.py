@@ -86,7 +86,7 @@ import дріт_моделі as _Д
                                  "and its effect when the code knows one",
                  як="in «how_to_wear» name a way only when it changes something for this outfit — its effect "
                     "matters here (a line across the torso that already has many, a hem it lands on); a way "
-                    "that changes nothing is left out, and a bag is not mentioned at all then"),
+                    "that changes nothing is left out"),
         _ЗП.Поле("your_declared", "numbers of the items you placed deliberately against a condition",
                  як="in «how_to_wear» say what to do with them"),
         _ЗП.Поле("she_refuses", "what she refused",
@@ -123,6 +123,7 @@ import дріт_моделі as _Д
         "with the name, the shop's data or «color» in «text» or «how_to_wear» (no «the name says …, but the "
         "photo …», no «the code»): a clearly different item or colour goes only into «wrong_photos» or «swap».",
         "Say each thing about an item once, and do not state a quality and then doubt it.",
+        "Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).",
         "Only when a photo shows that an item is not what this outfit needs — a clearly different colour, "
         "another kind of item, or unfit for her occasion — and that matters for this outfit, name that one "
         "item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in "
@@ -177,6 +178,12 @@ def _укладка_опису(канал_3):
     к3 = канал_3 or {}
     вих = []
     for о in (к3.get("опції") or [])[:6]:
+        # ОПИС-1 (рядок 1428, K-ACC-12, K-EDG-01): опції сумки (рука / плече / навскоси) однакові для
+        # КОЖНОЇ сумки — образу код не знає, тож чи міняє спосіб щось у ЦЬОМУ образі, сказати не
+        # може. Живий ПІСЛЯ 08.10 з ними в промпті: порада про сумку в кожній картці рук 1–2
+        # («тримай у руці, щоб не додавала діагоналі»). Тому сумка в опис не їде зовсім.
+        if о.get("клас") == "сумка":
+            continue
         опції = []
         наслідки = о.get("наслідок_місця") or {}
         for м in (о.get("допустимі_місця") or []):
