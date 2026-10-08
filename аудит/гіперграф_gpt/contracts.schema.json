@@ -1,0 +1,725 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "lyusterko.interaction/0.1-proposal"
+    },
+    "synthetic": {
+      "type": "boolean"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/node"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/fact"
+      }
+    },
+    "factors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/factor"
+      }
+    },
+    "evaluations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evaluation"
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decision"
+      }
+    },
+    "outfits": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/outfit"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "synthetic",
+    "nodes",
+    "evidence",
+    "facts",
+    "factors",
+    "evaluations",
+    "decisions",
+    "outfits"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "node": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "type": {
+          "enum": [
+            "item_model",
+            "variant",
+            "owned_item",
+            "placement",
+            "body_zone",
+            "person_state",
+            "scene",
+            "intent",
+            "outfit",
+            "rule"
+          ]
+        },
+        "ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "type",
+        "ref"
+      ],
+      "additionalProperties": false
+    },
+    "domain": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "point",
+            "interval",
+            "finite_set",
+            "arc_union",
+            "missing",
+            "conflict"
+          ]
+        },
+        "value": {},
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "coordinate_system": {
+          "type": "string",
+          "minLength": 1
+        },
+        "joint_domain_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "value",
+        "unit",
+        "coordinate_system",
+        "joint_domain_ref"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "interval"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "missing"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "finite_set",
+                  "conflict",
+                  "arc_union"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "array",
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "measurement",
+            "self_report",
+            "merchant_claim",
+            "model_interpretation",
+            "convention",
+            "derived"
+          ]
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "calibration_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lineage": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "source_ref",
+        "source_revision",
+        "method",
+        "calibration_ref",
+        "lineage",
+        "scope"
+      ],
+      "additionalProperties": false
+    },
+    "fact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 1
+        },
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "domain": {
+          "$ref": "#/$defs/domain"
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "epistemic_state": {
+          "enum": [
+            "observed",
+            "inferred",
+            "assumed",
+            "missing",
+            "conflicting"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "subject",
+        "field",
+        "revision",
+        "domain",
+        "evidence_ids",
+        "epistemic_state"
+      ],
+      "additionalProperties": false
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "node_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "symmetric": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "role",
+        "node_ids",
+        "symmetric"
+      ],
+      "additionalProperties": false
+    },
+    "factor": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule_revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evaluator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/binding"
+          }
+        },
+        "scene_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "intent_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "read_set": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "guard_read_set": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "membership_read_set": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "id",
+        "rule_id",
+        "rule_revision",
+        "evaluator",
+        "bindings",
+        "scene_id",
+        "intent_id",
+        "read_set",
+        "guard_read_set",
+        "membership_read_set",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "input_version": {
+      "type": "object",
+      "properties": {
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "ref",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "metric": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": {
+          "$ref": "#/$defs/domain"
+        },
+        "scale_kind": {
+          "enum": [
+            "physical",
+            "ordinal",
+            "predicate",
+            "uncalibrated_proxy"
+          ]
+        },
+        "polarity": {
+          "enum": [
+            "observation",
+            "supports",
+            "concerns",
+            "neutral"
+          ]
+        },
+        "probability_model_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "domain",
+        "scale_kind",
+        "polarity",
+        "probability_model_ref"
+      ],
+      "additionalProperties": false
+    },
+    "evaluation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "factor_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "outfit_revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_versions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/input_version"
+          }
+        },
+        "applicability": {
+          "enum": [
+            "true",
+            "false",
+            "unknown"
+          ]
+        },
+        "execution": {
+          "enum": [
+            "complete",
+            "partial",
+            "not_run",
+            "error",
+            "legacy_opaque"
+          ]
+        },
+        "outcome": {
+          "enum": [
+            "satisfied",
+            "violated",
+            "indeterminate",
+            "supports",
+            "neutral",
+            "mixed",
+            "unknown",
+            "not_applicable",
+            "conflict"
+          ]
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/metric"
+          }
+        },
+        "missing_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "derived_from": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "error_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "factor_id",
+        "outfit_revision",
+        "input_versions",
+        "applicability",
+        "execution",
+        "outcome",
+        "metrics",
+        "missing_refs",
+        "derived_from",
+        "error_code"
+      ],
+      "additionalProperties": false
+    },
+    "decision": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "author": {
+          "enum": [
+            "human",
+            "stylist",
+            "legacy_policy"
+          ]
+        },
+        "state": {
+          "enum": [
+            "proposed",
+            "accepted",
+            "rejected",
+            "withdrawn"
+          ]
+        },
+        "type": {
+          "enum": [
+            "pin",
+            "veto",
+            "accept_deviation",
+            "prefer",
+            "select"
+          ]
+        },
+        "target_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "id",
+        "author",
+        "state",
+        "type",
+        "target_refs",
+        "scope",
+        "reason_ref",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "placement": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "item_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "part_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "covers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "wear_state_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "item_ref",
+        "part_ref",
+        "roles",
+        "covers",
+        "wear_state_ref"
+      ],
+      "additionalProperties": false
+    },
+    "outfit": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scene_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "placements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/placement"
+          }
+        },
+        "membership_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "decision_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "scene_ids",
+        "placements",
+        "membership_revision",
+        "decision_ids"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "title": "Liusterko interaction core — research contract, not accepted product protocol"
+}

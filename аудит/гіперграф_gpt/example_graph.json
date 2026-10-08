@@ -1,0 +1,361 @@
+{
+  "schema_version": "lyusterko.interaction/0.1-proposal",
+  "synthetic": true,
+  "nodes": [
+    {
+      "id": "owned:trousers",
+      "revision": 1,
+      "type": "owned_item",
+      "ref": null
+    },
+    {
+      "id": "variant:top",
+      "revision": 1,
+      "type": "variant",
+      "ref": null
+    },
+    {
+      "id": "p:top",
+      "revision": 1,
+      "type": "placement",
+      "ref": null
+    },
+    {
+      "id": "p:lower",
+      "revision": 1,
+      "type": "placement",
+      "ref": null
+    },
+    {
+      "id": "scene:gallery",
+      "revision": 1,
+      "type": "scene",
+      "ref": null
+    },
+    {
+      "id": "intent:waist",
+      "revision": 1,
+      "type": "intent",
+      "ref": null
+    },
+    {
+      "id": "outfit:1",
+      "revision": 1,
+      "type": "outfit",
+      "ref": null
+    },
+    {
+      "id": "rule:anchor@1",
+      "revision": 1,
+      "type": "rule",
+      "ref": null
+    }
+  ],
+  "evidence": [
+    {
+      "id": "e:user:1",
+      "kind": "self_report",
+      "source_ref": "synthetic:user-utterance-1",
+      "source_revision": "1",
+      "method": "explicit request",
+      "calibration_ref": null,
+      "lineage": [
+        "synthetic"
+      ],
+      "scope": "scene:gallery"
+    },
+    {
+      "id": "e:rule:1",
+      "kind": "convention",
+      "source_ref": "proposal:volume-anchor-example",
+      "source_revision": "1",
+      "method": "hypothesis",
+      "calibration_ref": null,
+      "lineage": [
+        "synthetic"
+      ],
+      "scope": "intent:waist"
+    }
+  ],
+  "facts": [
+    {
+      "id": "fact:upper.volume",
+      "subject": "outfit:1",
+      "field": "upper.volume",
+      "revision": 1,
+      "domain": {
+        "kind": "finite_set",
+        "value": [
+          1
+        ],
+        "unit": "1",
+        "coordinate_system": "declared_predicate",
+        "joint_domain_ref": null
+      },
+      "evidence_ids": [
+        "e:user:1"
+      ],
+      "epistemic_state": "inferred"
+    },
+    {
+      "id": "fact:lower.volume",
+      "subject": "outfit:1",
+      "field": "lower.volume",
+      "revision": 1,
+      "domain": {
+        "kind": "finite_set",
+        "value": [
+          1
+        ],
+        "unit": "1",
+        "coordinate_system": "declared_predicate",
+        "joint_domain_ref": null
+      },
+      "evidence_ids": [
+        "e:user:1"
+      ],
+      "epistemic_state": "inferred"
+    },
+    {
+      "id": "fact:anchor.visible",
+      "subject": "outfit:1",
+      "field": "anchor.visible",
+      "revision": 1,
+      "domain": {
+        "kind": "missing",
+        "value": null,
+        "unit": "1",
+        "coordinate_system": "declared_predicate",
+        "joint_domain_ref": null
+      },
+      "evidence_ids": [
+        "e:user:1"
+      ],
+      "epistemic_state": "missing"
+    },
+    {
+      "id": "fact:intent.waist",
+      "subject": "outfit:1",
+      "field": "intent.waist",
+      "revision": 1,
+      "domain": {
+        "kind": "finite_set",
+        "value": [
+          true
+        ],
+        "unit": "1",
+        "coordinate_system": "declared_predicate",
+        "joint_domain_ref": null
+      },
+      "evidence_ids": [
+        "e:user:1"
+      ],
+      "epistemic_state": "observed"
+    },
+    {
+      "id": "fact:wear:top",
+      "subject": "p:top",
+      "field": "wear_state",
+      "revision": 1,
+      "domain": {
+        "kind": "finite_set",
+        "value": [
+          "as_described"
+        ],
+        "unit": "1",
+        "coordinate_system": "declared_predicate",
+        "joint_domain_ref": null
+      },
+      "evidence_ids": [
+        "e:user:1"
+      ],
+      "epistemic_state": "observed"
+    },
+    {
+      "id": "fact:wear:lower",
+      "subject": "p:lower",
+      "field": "wear_state",
+      "revision": 1,
+      "domain": {
+        "kind": "finite_set",
+        "value": [
+          "as_described"
+        ],
+        "unit": "1",
+        "coordinate_system": "declared_predicate",
+        "joint_domain_ref": null
+      },
+      "evidence_ids": [
+        "e:user:1"
+      ],
+      "epistemic_state": "observed"
+    }
+  ],
+  "factors": [
+    {
+      "id": "factor:anchor:1",
+      "rule_id": "rule:anchor@1",
+      "rule_revision": "1",
+      "evaluator": "volume_anchor_v1",
+      "bindings": [
+        {
+          "role": "upper",
+          "node_ids": [
+            "p:top"
+          ],
+          "symmetric": false
+        },
+        {
+          "role": "lower",
+          "node_ids": [
+            "p:lower"
+          ],
+          "symmetric": false
+        }
+      ],
+      "scene_id": "scene:gallery",
+      "intent_id": "intent:waist",
+      "read_set": [
+        "fact:upper.volume",
+        "fact:lower.volume",
+        "fact:anchor.visible"
+      ],
+      "guard_read_set": [
+        "fact:intent.waist"
+      ],
+      "membership_read_set": [
+        "outfit:1.membership"
+      ],
+      "evidence_ids": [
+        "e:rule:1"
+      ]
+    }
+  ],
+  "evaluations": [
+    {
+      "id": "eval:anchor:1",
+      "factor_id": "factor:anchor:1",
+      "outfit_revision": "1",
+      "input_versions": [
+        {
+          "ref": "fact:upper.volume",
+          "revision": 1
+        },
+        {
+          "ref": "fact:lower.volume",
+          "revision": 1
+        },
+        {
+          "ref": "fact:anchor.visible",
+          "revision": 1
+        },
+        {
+          "ref": "fact:intent.waist",
+          "revision": 1
+        },
+        {
+          "ref": "outfit:1.membership",
+          "revision": 1
+        }
+      ],
+      "applicability": "true",
+      "execution": "partial",
+      "outcome": "unknown",
+      "metrics": [
+        {
+          "name": "unanchored_volume",
+          "domain": {
+            "kind": "interval",
+            "value": [
+              0,
+              1
+            ],
+            "unit": "1",
+            "coordinate_system": "declared_predicate",
+            "joint_domain_ref": null
+          },
+          "scale_kind": "predicate",
+          "polarity": "concerns",
+          "probability_model_ref": null
+        },
+        {
+          "name": "anchored_volume",
+          "domain": {
+            "kind": "interval",
+            "value": [
+              0,
+              1
+            ],
+            "unit": "1",
+            "coordinate_system": "declared_predicate",
+            "joint_domain_ref": null
+          },
+          "scale_kind": "predicate",
+          "polarity": "supports",
+          "probability_model_ref": null
+        }
+      ],
+      "missing_refs": [
+        "fact:anchor.visible"
+      ],
+      "derived_from": [
+        "e:rule:1"
+      ],
+      "error_code": null
+    }
+  ],
+  "decisions": [
+    {
+      "id": "decision:pin:1",
+      "author": "human",
+      "state": "accepted",
+      "type": "pin",
+      "target_refs": [
+        "owned:trousers",
+        "p:lower"
+      ],
+      "scope": "outfit:1",
+      "reason_ref": "e:user:1",
+      "revision": 1
+    }
+  ],
+  "outfits": [
+    {
+      "id": "outfit:1",
+      "revision": "1",
+      "scene_ids": [
+        "scene:gallery"
+      ],
+      "placements": [
+        {
+          "id": "p:top",
+          "item_ref": "variant:top",
+          "part_ref": null,
+          "roles": [
+            "upper"
+          ],
+          "covers": [
+            "torso"
+          ],
+          "wear_state_ref": "fact:wear:top"
+        },
+        {
+          "id": "p:lower",
+          "item_ref": "owned:trousers",
+          "part_ref": null,
+          "roles": [
+            "lower"
+          ],
+          "covers": [
+            "legs"
+          ],
+          "wear_state_ref": "fact:wear:lower"
+        }
+      ],
+      "membership_revision": 1,
+      "decision_ids": [
+        "decision:pin:1"
+      ]
+    }
+  ]
+}

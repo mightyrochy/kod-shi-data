@@ -1,0 +1,26 @@
+INDEPENDENT REVIEW LIMITATIONS
+Review findings returned 2026-10-07 14:41 UTC; delivered with this source handoff on 2026-10-08.
+This is a separate record of the completed independent artifact review. It does not modify the producer's proposal and does not claim a new review or test rerun.
+
+The independent reviewer downloaded the archive and verified 29 manifest hashes and 29 PDF pages. Evidence files reporting 27 checks and 200 comparisons were consistent. The reviewer did NOT independently rerun the tests.
+
+Semantic contract limits:
+- JSON Schema validates shape only. It permits reversed interval endpoints and not_run with satisfied.
+- It does not enforce cross-references, units, roles, unique IDs, or joint domains.
+- The six assertions in contracts.py validate only the positive fixture.
+- The shared-latent check tests q + (1-q) for q in {0,1}; it is not a general joint-domain solver.
+
+Prototype and cache limits:
+- Engine.add overwrites a rule without clearing its cached result or old reverse dependencies.
+- The 200-comparison benchmark uses a fixed 46-factor graph. It does not establish correctness for dynamic creation/removal, revisions, tombstones, or stale asynchronous results.
+- robust_dominates uses zip and silently truncates unequal vectors.
+- Decision matching treats participant sets as unordered.
+- Symmetric canonicalization remains the caller's responsibility.
+
+What the review supports:
+- The mathematical third-order counterexample ab(1-c) and RMSE 0.125 are correct.
+- Interval arithmetic is sound under its declared assumptions.
+- Human benefit and physical-phone performance are not established.
+
+Recommendation:
+Ready for proposal comparison only. Before accepting cache/search behavior, require semantic validators, negative fixtures, one instrumented family, and comparison with full recomputation. Product implementation and acceptance remain separate decisions.
