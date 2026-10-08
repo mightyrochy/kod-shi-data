@@ -314,11 +314,12 @@ class HG:
         return {k: f.verdict for k, f in self.F.items()}
 
     # ── заміна речі з інвалідацією залежних висновків ──
-    def replace(self, slot, new):
+    def replace(self, slot, new, want_diff=True):
         """Замінити річ у слоті (new=None — прибрати). Перебудовуються ЛИШЕ екземпляри,
         що (а) містять стару чи нову річ, (б) є множинними (set/slots), або (в) залежать
-        від видимості, якщо заміна змінила видимість. Повертає дельту вердиктів."""
-        before = self.snapshot()
+        від видимості, якщо заміна змінила видимість. Повертає дельту вердиктів
+        (`want_diff=False` — без знімків, для пробних замін у ремонті й компромісах)."""
+        before = self.snapshot() if want_diff else None
         old = self.items.get(slot)
         vis0 = {x.id for x in self.visible()}
         if new is None:
@@ -346,8 +347,7 @@ class HG:
                 f = self.evaluate(t, b)
                 if f.key not in self.F:
                     self._index(f)
-        after = self.snapshot()
-        return diff(before, after)
+        return diff(before, self.snapshot()) if want_diff else None
 
     def set_ctx(self, field, value, person=False):
         """Змінити поле нагоди (чи особи): перераховуються лише екземпляри шаблонів,
@@ -556,7 +556,7 @@ def repair(hg, key, pool, top=5):
                             new_violations={c: n for c, n in zip(CLASSES, new_v) if n},
                             lost_supports=lost_s, new_unknowns=new_u, gained_supports=gained,
                             target_detail=tdet))
-            hg.replace(x.slot, x)
+            hg.replace(x.slot, x, False)
     res.sort(key=lambda r: (r["rank"], r["inn"]))
     return dict(candidates=res[:top], tried=tried, evals=hg.evals - ev0)
 
@@ -580,23 +580,40 @@ def pareto(variants):
     return uniq
 
 
-def tradeoffs(hg, slots, pool, cap=4):
-    """Варіанти компромісу: усі заміни 0–2 речей у названих слотах (без закріплених),
+def tradeoffs(hg, slots, pool, cap=4, k_per_slot=None):
+    """Варіанти компромісу: заміни 0–2 речей у названих слотах (без закріплених),
     Парето-фронт за `HG.vector()`. Без суми й без «найкращого» — вибір за стилісткою
-    та людиною; кожен варіант несе свій вектор, тож видно, що виграно й що віддано."""
+    та людиною; кожен варіант несе свій вектор, тож видно, що виграно й що віддано.
+
+    `k_per_slot` — «промінь»: спершу всі ОДИНОЧНІ заміни (Σ|пул_слота|), потім пари
+    лише серед k найкращих одиночних кандидатів кожного слота (лексикографічно за
+    вектором). Без променя 2 слоти × 25 = 625 варіантів (~1.2 с CPython, записка §8);
+    з k=5 — 48 + 25·(пари слотів). Ціна названа: пара з двох «посередніх» поодинці
+    речей, що разом дають кращий вектор, променем пропускається."""
     base = {s: hg.items.get(s) for s in slots}
     free = [s for s in slots if base[s] is not None and not base[s].pinned]
     variants = [(hg.vector(), {})]
     ev0 = hg.evals
-    for r in (1, 2):
-        for combo in itertools.combinations(free, r):
-            choices = [[y for y in pool.get(s, ()) if y.id != base[s].id] for s in combo]
-            for ys in itertools.product(*choices):
-                for s, y in zip(combo, ys):
-                    hg.replace(s, y)
-                variants.append((hg.vector(), {s: y.id for s, y in zip(combo, ys)}))
-                for s in combo:
-                    hg.replace(s, base[s])
+    single = {s: [] for s in free}
+    for s in free:
+        for y in pool.get(s, ()):
+            if y.id == base[s].id:
+                continue
+            hg.replace(s, y, False)
+            v = hg.vector()
+            variants.append((v, {s: y.id}))
+            single[s].append((v, y))
+            hg.replace(s, base[s], False)
+    keep = {s: [y for _, y in sorted(single[s], key=lambda vy: (vy[0], vy[1].id))[:k_per_slot]]
+            if k_per_slot else [y for _, y in single[s]] for s in free}
+    for a, b in itertools.combinations(free, 2):
+        for ya in keep[a]:
+            for yb in keep[b]:
+                hg.replace(a, ya, False)
+                hg.replace(b, yb, False)
+                variants.append((hg.vector(), {a: ya.id, b: yb.id}))
+                hg.replace(a, base[a], False)
+                hg.replace(b, base[b], False)
     front = pareto(variants)
     front.sort(key=lambda va: va[0])
     return dict(front=front[:cap], front_size=len(front), variants=len(variants), evals=hg.evals - ev0)

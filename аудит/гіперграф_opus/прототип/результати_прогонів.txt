@@ -1,0 +1,198 @@
+# РЕЗУЛЬТАТИ ПРОГОНІВ прототипу (згенеровано 2026-10-08T07:06Z, гілка claude/hiperhraf-opus від e70c3c3)
+# Усі речі/особи/числа в прикладах — СИНТЕТИКА (SYN). Заміри часу — шумні (спільний CPU сервера).
+
+## python3 приклади.py
+
+== ПРИКЛАД 1. Невідомі дані: портрета й мірок нема, дощ невідомий ==
+   нагода: офіс удень, ошатність [4,6]; намір не названо → conventional (припущення коду)
+   екземплярів гіперребер: 69, оцінок шаблонів: 69
+  [профіль] PERS:V0 B0 U0 S0  PHYS:V0 B0 U1 S0  CONT:V0 B0 U0 S0  STYL:V1 B6 U1 S2  EXPR:V0 B0 U0 S0
+    TENSION   CRA.METAL_ORPHAN       STYL roles={'hardware': ['boots_black_suede']} value=1 margin=-1.0 handles=['boots_black_suede']
+    BORDER    COL.NEAR_MISS          STYL roles={'a': 'coat_camel_open', 'b': 'bag_cognac_word'} value=[0.319144,33.4662] margin=0.0 why=input_spread
+    BORDER    COL.NEAR_MISS          STYL roles={'a': 'boots_black_suede', 'b': 'trousers_navy_wide'} value=[0,18.7459] margin=0.0 why=input_spread
+    BORDER    COMP.ECHO              STYL roles={'a': 'belt_cognac', 'b': 'bag_cognac_word'} value=[0,0.866667] margin=0.0 why=input_spread
+    BORDER    COMP.ECHO              STYL roles={'a': 'coat_camel_open', 'b': 'bag_cognac_word'} value=[0.6,2] margin=0.0 why=input_spread
+    BORDER    COMP.ECHO              STYL roles={'a': 'coat_camel_open', 'b': 'belt_cognac'} value=[1,1.66667] margin=0.0 why=input_spread
+    BORDER    COMP.MATCHY            STYL roles={'echo_cluster': ['bag_cognac_word', 'belt_cognac', 'coat_camel_open', 'knit_oversize']} value=[1,4] margin=0.0 why=input_spread
+    UNKNOWN   COL.CONTRAST_MATCH     STYL roles={'near_face': '7 речей'} value=None margin=None missing=['person.contrast_L', 'person.skin_L']
+    UNKNOWN   WEA.WET_FABRIC         PHYS roles={'x': 'boots_black_suede'} value=[0,1] margin=0.0 missing=['ctx.precip']
+    SUPPORT   COL.WHEEL_COMPLEMENT   STYL roles={'a': 'coat_camel_open', 'b': 'trousers_navy_wide'} value=1 margin=0.5
+    SUPPORT   COMP.FOCAL_PRESENT     STYL roles={'all': '7 речей'} value=1 margin=0.0
+    DECIDED   WEA.WET_FABRIC         ('bag_cognac_word',) без ['ctx.precip'] — питати не треба
+    DECIDED   WEA.WET_FABRIC         ('coat_camel_open',) без ['ctx.precip'] — питати не треба
+   ПОПАРНА МОДЕЛЬ: сума=-0.24, спрацювання=[('COMP.ECHO', ('bag_cognac_word', 'belt_cognac')), ('COL.WHEEL_COMPLEMENT', ('coat_camel_open', 'trousers_navy_wide'))]
+   (вона не бачить: CONTRAST/ANCHOR/FOCAL/METAL — не попарні; невідомий дощ — як «сухо»)
+
+  1a. Сумку зі слова замінено тією самою сумкою, виміряною з фото:
+   інкрементально переоцінено 24 екземплярів (повна побудова — 69)
+    нове   COMP.ECHO ('bag_cognac_photo', 'belt_cognac'): SUPPORT
+    нове   COMP.ECHO ('bag_cognac_photo', 'coat_camel_open'): BORDER
+
+  1b. Пояс прибрано (якоря нема), WHR невідомий:
+   переоцінено 6 екземплярів
+    SIL.VOLUME_ANCHOR: UNKNOWN value=[0.5,1] missing=['person.whr']
+    → питання «обхват талії/стегон» потрібне лише тепер; із поясом рішення не залежало від WHR
+    після мірки WHR 0.70–0.72: ANCHOR → BORDER (переоцінено лише залежні від whr)
+
+== ПРИКЛАД 2. Свідомий стилістичний розрив: два фокуси на театр ==
+   нагода: театр увечері, ошатність [6,8], мряка; намір context_optimal; її слово: «хочу яскраво»
+  [до позицій] PERS:V0 B0 U0 S0  PHYS:V1 B0 U0 S0  CONT:V0 B0 U0 S0  STYL:V1 B3 U0 S1  EXPR:V0 B0 U0 S0
+    TENSION   COMP.FOCAL_COUNT       STYL roles={'all': ['top_red_satin', 'skirt_leopard']} value=2 margin=-1.0 handles=['top_red_satin', 'skirt_leopard']
+    TENSION   WEA.WET_FABRIC         PHYS roles={'x': 'clutch_black_satin'} value=1 margin=-0.5 handles=['clutch_black_satin']
+   стилістка: розрив над COMP.FOCAL_COUNT → ACCEPTED; ліцензія K-KOH-03: {'single': True, 'anchored': False, 'physical_clean': False, 'accepted_breaks': 1}
+   стилістка: розрив над WEA.WET_FABRIC → REJECTED (фізичне не легітимізується стилем)
+   людина: «хочу саме цей клатч» → ACCEPTED; дія = умова (захист від вологи), не ремонт
+  [після позицій] PERS:V0 B0 U0 S0  PHYS:V0 B0 U0 S0  CONT:V0 B0 U0 S0  STYL:V0 B3 U0 S1  EXPR:V0 B0 U0 S0
+
+  2a. Відлуння як якір розриву: сережки замінено червоними емалевими
+   переоцінено 14; ліцензія: {'single': True, 'anchored': True, 'physical_clean': True, 'accepted_breaks': 1}
+
+  2b. Намір змінено на statement (вона: «хочу вразити»):
+   переоцінено 1 екземплярів (лише ті, що читають intent): {('COMP.FOCAL_COUNT', ('*',)): ('VIOLATE', 'OK')}
+   позиція стилістки над FOCAL_COUNT тепер: VOID (ламати вже нічого)
+
+== ПРИКЛАД 3. Закріплена власна річ: її замшеві черевики в дощ ==
+   нагода: офіс, дощ, +8 °C, ошатність [4,6]; її вето: міні; черевики — її фото, закріплені
+   видимі: ['coat_camel_closed', 'own_boots_brown_suede', 'trousers_grey_wool', 'bag_black_silver'] (застебнуте пальто ховає верх)
+  [профіль] PERS:V0 B0 U0 S0  PHYS:V1 B0 U0 S0  CONT:V0 B0 U0 S0  STYL:V1 B3 U0 S0  EXPR:V0 B0 U0 S0
+    TENSION   CRA.METAL_ORPHAN       STYL roles={'hardware': ['own_boots_brown_suede', 'bag_black_silver']} value=2 margin=-2.0 handles=['bag_black_silver']
+    TENSION   WEA.WET_FABRIC         PHYS roles={'x': 'own_boots_brown_suede'} value=1 margin=-0.5 handles=[]
+   позиція над замшею в дощ: ACCEPTED — дія: умова носіння, не заміна (CLAUDE.md п.17)
+   РЕМОНТ CRA.METAL_ORPHAN: ручки=['bag_black_silver']; спробувано 5, оцінок шаблонів 158
+    bag_black_gold         ціль→OK        нові_VIOLATE={} втрачено_SUPPORT=0 здобуто_SUPPORT=[] ранг=(0, 0, 0, 0, 0, 0, 0, 0)
+    bag_brown_gold         ціль→OK        нові_VIOLATE={} втрачено_SUPPORT=0 здобуто_SUPPORT=['COMP.ECHO'] ранг=(0, 0, 0, 0, 0, 0, 0, 0)
+    bag_bordo_suede_gold   ціль→OK        нові_VIOLATE={'PHYSICAL': 1} втрачено_SUPPORT=0 здобуто_SUPPORT=[] ранг=(0, 0, 1, 0, 0, 0, 0, 0)
+    bag_canvas_nometal     ціль→OK        нові_VIOLATE={'PHYSICAL': 1} втрачено_SUPPORT=0 здобуто_SUPPORT=[] ранг=(0, 0, 1, 0, 0, 0, 0, 0)
+    bag_navy_silver        ціль→VIOLATE   нові_VIOLATE={} втрачено_SUPPORT=0 здобуто_SUPPORT=['COL.WHEEL_COMPLEMENT'] ранг=(3, 0, 0, 0, 0, 0, 0, 0)
+   (однаковий ранг = рівноцінні для коду; вибір між ними — стилістки й людини)
+
+  3a. Стан пальта як операція: розстебнути (верх стає видимим біля обличчя)
+   переоцінено 28; змінено: {'COL.CONTRAST_MATCH': ('BORDER', 'OK')}
+   додано екземплярів (нові пари з верхом): 20
+    COL.CONTRAST_MATCH: OK value=[0,11] detail={'outfit_span': '[25,37]', 'person': '[28,36]'}
+
+  3b. Варіанти компромісу, коли чистої сумки в пулі нема (чорна й коричнева із золотом
+      «закінчились»): слоти сумка+низ, Парето за класами, без суми й без SUPPORT
+   варіантів 16, фронт 2, оцінок шаблонів 858
+   вектор = (VIOLATE за PERS/PHYS/CONT/STYL/EXPR, BORDER, UNKNOWN)
+    (0, 0, 0, 1, 0, 1, 0)  {'сумка': 'bag_navy_silver'}
+    (0, 1, 0, 0, 0, 0, 0)  {'сумка': 'bag_bordo_suede_gold', 'низ': 'trousers_navy'}
+
+== ПРИКЛАД 4. Багатосторонній якір об'єму: верх×низ×пояс×тіло ==
+  [профіль] PERS:V0 B0 U0 S0  PHYS:V0 B0 U0 S0  CONT:V0 B0 U0 S0  STYL:V1 B2 U0 S0  EXPR:V0 B0 U0 S0
+    TENSION   SIL.VOLUME_ANCHOR      STYL roles={'silhouette': ['knit_oversize', 'trousers_wide']} value=1 margin=-0.25 handles=['knit_oversize', 'trousers_wide']
+   РЕМОНТ SIL.VOLUME_ANCHOR: спробувано 5, оцінок шаблонів 141
+    blouse_tucked              у слоті верх  ціль→OK        нові_VIOLATE={} ранг=(0, 0, 0, 0, 0, 0, 0, 0) як={'anchors': ['blouse_tucked']}
+    trousers_straight          у слоті низ   ціль→NA        нові_VIOLATE={} ранг=(0, 0, 0, 0, 0, 0, 0, 0) як={}
+    trousers_tapered_cropped   у слоті низ   ціль→OK        нові_VIOLATE={} ранг=(0, 0, 0, 0, 0, 0, 0, 0) як={'anchors': ['trousers_tapered_cropped']}
+    jeans_wide_light           у слоті низ   ціль→VIOLATE   нові_VIOLATE={} ранг=(3, 0, 0, 0, 0, 0, 0, 0) як={'anchors': []}
+    sweater_chunky             у слоті верх  ціль→VIOLATE   нові_VIOLATE={'STYLISTIC': 1} ранг=(3, 0, 0, 0, 1, 0, 0, 0) як={'anchors': []}
+   заміна низу: переоцінено 14 із 28 екземплярів (решта — без змін, бо поза областю)
+
+## python3 порівняння.py
+
+== 1 невідомі дані ==
+  ЗАПРОПОНОВАНА: напруги з ручками [('CRA.METAL_ORPHAN', ['boots_black_suede'])]
+                 без входу [('COL.CONTRAST_MATCH', ['person.contrast_L', 'person.skin_L']), ('WEA.WET_FABRIC', ['ctx.precip'])]
+                 підтримки ['COL.WHEEL_COMPLEMENT', 'COMP.FOCAL_PRESENT']
+  ЧИННИЙ graph.py: вузол напруги = взуття (0.62); вузли: [('взуття', 0.625), ('верхній_шар', 0.438), ('сумка', 0.438), ('пояс', 0.312), ('низ', 0.125), ('верх', 0.062)]
+                   рядок: вузол напруги — «взуття» (0.62, 3 ребер: COL.NEAR_MISS, CRA.METAL_ORPHAN); тримається зв'язкою «взуття» + «низ» — міняти одну річ із неї
+  ПОПАРНА: сума=-0.24 (2 спрацювань); невідоме → 0, множинне/особове — поза моделлю
+
+== 2 свідомий розрив ==
+  ЗАПРОПОНОВАНА: напруги з ручками [('COMP.FOCAL_COUNT', ['top_red_satin', 'skirt_leopard']), ('WEA.WET_FABRIC', ['clutch_black_satin'])]
+                 без входу []
+                 підтримки ['COMP.FOCAL_PRESENT']
+  ЧИННИЙ graph.py: вузол напруги = сумка (0.62); вузли: [('сумка', 0.625), ('верх', 0.5), ('низ', 0.375), ('взуття', 0.125), ('сережки', 0.125)]
+                   рядок: вузол напруги — «сумка» (0.62, 2 ребер: COL.NEAR_MISS, WEA.WET_FABRIC); тримається зв'язкою «сумка» + «взуття» — міняти одну річ із неї
+  ПОПАРНА: сума=0.0 (0 спрацювань); невідоме → 0, множинне/особове — поза моделлю
+
+== 3 власна річ ==
+  ЗАПРОПОНОВАНА: напруги з ручками [('CRA.METAL_ORPHAN', ['bag_black_silver']), ('WEA.WET_FABRIC', [])]
+                 без входу []
+                 підтримки []
+  ЧИННИЙ graph.py: вузол напруги = взуття (1.00); вузли: [('взуття', 1.0), ('сумка', 0.375), ('верхній_шар', 0.25), ('низ', 0.125)]
+                   рядок: вузол напруги — «взуття» (1.00, 4 ребер: COL.NEAR_MISS, CRA.METAL_ORPHAN, WEA.WET_FABRIC); тримається зв'язкою «взуття» + «сумка» — міняти одну річ із неї
+  ПОПАРНА: сума=0.0 (0 спрацювань); невідоме → 0, множинне/особове — поза моделлю
+
+== 4 якір об'єму ==
+  ЗАПРОПОНОВАНА: напруги з ручками [('SIL.VOLUME_ANCHOR', ['knit_oversize', 'trousers_wide'])]
+                 без входу []
+                 підтримки []
+  ЧИННИЙ graph.py: вузол напруги = верх (0.62); вузли: [('верх', 0.625), ('низ', 0.25), ('взуття', 0.125)]
+                   рядок: вузол напруги — «верх» (0.62, 3 ребер: COL.CONTRAST_MATCH, COL.NEAR_MISS, SIL.VOLUME_ANCHOR); тримається зв'язкою «верх» + «взуття» + «низ» — міняти одну річ із неї
+  ПОПАРНА: сума=0.0 (0 спрацювань); невідоме → 0, множинне/особове — поза моделлю
+
+== ВЛАСТИВОСТІ ЧИННОГО graph.py, відтворені на справжньому модулі ==
+  P1 зона з тексту, відмінок: «у стегнах» → ([('K-FIT-03', ['низ'], 0.5)], 'низ', 0.5)
+     те саме, «стегна» в лапках → ([('K-FIT-03', ['низ', 'стегна'], 0.5)], 'низ', 0.25)
+  P2 ребро над 3 із 4 слотів → ([('K-X', ['образ'], 0.5)], None, None)
+  P3 симетричне ребро, нічия → ([('K-SIL-01', ['верх', 'низ'], 0.6)], 'верх', 0.3)
+  P4 мовчання (жодної знахідки) → ([], None, None)
+  P5 «лишити колону» K-COL-01 hint 0.25 (позитив) → ([('K-COL-01', ['верх', 'низ'], 0.25)], 'верх', 0.125)
+  P6 сума різнорідних правил на вузлі → ([('K-COL-06', ['верх', 'низ'], 0.4), ('K-SIL-01', ['верх', 'низ'], 0.6)], 'верх', 0.5)
+
+## python3 перевірки.py 20261008 150
+зерно 20261008 образів 150
+I1 звуковість: {'instances_checked': 5355, 'contradictions': 0, 'by_template': {}, 'border': 284, 'border_all_points_agree': 137}
+I2 інкрементальність: {'steps': 1200, 'mismatches': 0, 'evaluations_saved_vs_full': 27218}
+I3 позиції: {'physical_or_personal_breaks': 157, 'rejected': 157, 'non_violations': 4369, 'void': 4369, 'accepted': 530, 'measurement_unchanged': 530}
+I4 детермінізм: {'outfits': 150, 'identical': 150}
+
+## python3 перевірки.py 7 300
+зерно 7 образів 300
+I1 звуковість: {'instances_checked': 10330, 'contradictions': 0, 'by_template': {}, 'border': 572, 'border_all_points_agree': 241}
+I2 інкрементальність: {'steps': 2400, 'mismatches': 0, 'evaluations_saved_vs_full': 53519}
+I3 позиції: {'physical_or_personal_breaks': 364, 'rejected': 364, 'non_violations': 8877, 'void': 8877, 'accepted': 1039, 'measurement_unchanged': 1039}
+I4 детермінізм: {'outfits': 300, 'identical': 300}
+
+## python3 заміри.py (CPython)
+runtime: CPython 3.13.16 linux
+M1_full_build_ms                 0.767
+M1_instances                     64.3
+M2_incremental_ms                0.493
+M2_incremental_evals             20.2
+M2_full_rebuild_ms               0.719
+M2_full_evals                    64.4
+M3_repair_ms                     25.31
+M3_candidates                    24.0
+M4_tradeoffs_2slots_full_ms      1092.9
+M4_tradeoffs_2slots_full_variants 625
+M4_tradeoffs_2slots_full_front   1
+M4_tradeoffs_2slots_beam5_ms     93.8
+M4_tradeoffs_2slots_beam5_variants 74
+M4_tradeoffs_2slots_beam5_front  1
+M4_tradeoffs_3slots_beam5_ms     193.6
+M4_tradeoffs_3slots_beam5_variants 148
+M4_tradeoffs_3slots_beam5_front  1
+M5_pinned_x_pool_ms              12.9
+M5_pair_instances                872
+M6_naive_combinations            6103515625
+M6_naive_hours_at_M1             1300.4
+
+## Pyodide 0.26.4 у Node 22 (той самий заміри.py + перевірки на 60 образах; runner — pyodide_прогін.mjs: npm i pyodide@0.26.4 у будь-якій теці поза деревом, node pyodide_прогін.mjs <ця_тека>)
+runtime: CPython 3.12.1 emscripten
+M1_full_build_ms                 2.058
+M1_instances                     64.3
+M2_incremental_ms                1.239
+M2_incremental_evals             20.2
+M2_full_rebuild_ms               1.835
+M2_full_evals                    64.4
+M3_repair_ms                     68.21
+M3_candidates                    24.0
+M4_tradeoffs_2slots_full_ms      3358.6
+M4_tradeoffs_2slots_full_variants 625
+M4_tradeoffs_2slots_full_front   1
+M4_tradeoffs_2slots_beam5_ms     246.7
+M4_tradeoffs_2slots_beam5_variants 74
+M4_tradeoffs_2slots_beam5_front  1
+M4_tradeoffs_3slots_beam5_ms     515.1
+M4_tradeoffs_3slots_beam5_variants 148
+M4_tradeoffs_3slots_beam5_front  1
+M5_pinned_x_pool_ms              37.6
+M5_pair_instances                872
+M6_naive_combinations            6103515625
+M6_naive_hours_at_M1             3489.2
+I1 {'instances_checked': 2060, 'contradictions': 0, 'by_template': {}, 'border': 116, 'border_all_points_agree': 51}
+I2 {'steps': 480, 'mismatches': 0, 'evaluations_saved_vs_full': 10405}
+

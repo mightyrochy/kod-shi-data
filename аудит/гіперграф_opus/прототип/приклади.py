@@ -65,7 +65,7 @@ def pairwise_baseline(hg, w=None):
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-def example_1():
+def example_1(build_only=False):
     print("\n== ПРИКЛАД 1. Невідомі дані: портрета й мірок нема, дощ невідомий ==")
     print("   нагода: офіс удень, ошатність [4,6]; намір не названо → conventional (припущення коду)")
     items = [
@@ -86,6 +86,8 @@ def example_1():
     ]
     hg = HG(Ш.ALL, person=dict(contrast_L=None, whr=None),
             ctx=dict(formality=Iv(4, 6), precip=None, intent="conventional"), items=items)
+    if build_only:
+        return hg
     print("   екземплярів гіперребер: %d, оцінок шаблонів: %d" % (len(hg.F), hg.evals))
     show_profile(hg, "профіль")
     show_explain(hg)
@@ -119,7 +121,7 @@ def example_1():
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-def example_2():
+def example_2(build_only=False):
     print("\n== ПРИКЛАД 2. Свідомий стилістичний розрив: два фокуси на театр ==")
     print("   нагода: театр увечері, ошатність [6,8], мряка; намір context_optimal; її слово: «хочу яскраво»")
     items = [
@@ -136,6 +138,8 @@ def example_2():
     ]
     hg = HG(Ш.ALL, person=dict(contrast_L=Iv(30, 40, "protocol_photo"), skin_L=Iv(62, 66), whr=Iv(0.70, 0.72)),
             ctx=dict(formality=Iv(6, 8), precip="yes", intent="context_optimal"), items=items)
+    if build_only:
+        return hg
     show_profile(hg, "до позицій")
     show_explain(hg, kinds=("tensions",))
     fk = [k for k in hg.F if k[0] == "COMP.FOCAL_COUNT"][0]
@@ -182,7 +186,7 @@ def pool_bags():
     ]}
 
 
-def example_3():
+def example_3(build_only=False):
     print("\n== ПРИКЛАД 3. Закріплена власна річ: її замшеві черевики в дощ ==")
     print("   нагода: офіс, дощ, +8 °C, ошатність [4,6]; її вето: міні; черевики — її фото, закріплені")
     items = [
@@ -200,6 +204,8 @@ def example_3():
     hg = HG(Ш.ALL, person=dict(contrast_L=Iv(28, 36, "protocol_photo"), skin_L=Iv(55, 60), whr=Iv(0.76, 0.80),
                                veto_types=["mini"]),
             ctx=dict(formality=Iv(4, 6), precip="yes", intent="conventional"), items=items)
+    if build_only:
+        return hg
     print("   видимі: %s (застебнуте пальто ховає верх)" % [x.id for x in hg.visible()])
     show_profile(hg, "профіль")
     show_explain(hg, kinds=("tensions", "supports"))
@@ -247,7 +253,7 @@ def example_3():
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-def example_4():
+def example_4(build_only=False):
     print("\n== ПРИКЛАД 4. Багатосторонній якір об'єму: верх×низ×пояс×тіло ==")
     items = [
         Item("knit_oversize", "верх", L=Iv(70, 76, "photo"), C=Iv(6, 10), h=Iv(70, 85), colour_word="молочний",
@@ -261,6 +267,8 @@ def example_4():
     ]
     hg = HG(Ш.ALL, person=dict(contrast_L=Iv(40, 50), skin_L=Iv(60, 64), whr=Iv(0.83, 0.86, "tape")),
             ctx=dict(formality=Iv(2, 4), precip="no", intent="conventional"), items=items)
+    if build_only:
+        return hg
     show_profile(hg, "профіль")
     show_explain(hg, kinds=("tensions",))
     ak = [k for k in hg.F if k[0] == "SIL.VOLUME_ANCHOR"][0]

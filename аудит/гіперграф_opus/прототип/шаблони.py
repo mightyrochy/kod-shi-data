@@ -89,8 +89,14 @@ def _form_measure(hg, bind, p):
         return None, ["item.formality"], {}
     if band is None:
         return None, ["ctx.formality"], {}
-    # кроки НИЖЧЕ смуги нагоди: band.lo − верх інтервалу речі (порядкова різниця, не метрика)
-    return Iv(band.lo - fi.hi, band.lo - fi.lo), [], {"item": repr(fi), "occasion": repr(band)}
+    # ОШАТНІСТЬ — МНОЖИННИЙ ДІАПАЗОН, НЕ ЕПІСТЕМІЧНИЙ ІНТЕРВАЛ. «Річ доречна на 5–7» і
+    # «нагода приймає 4–6» — це множини рівнів (тема-5 VIII: |a−b|≤2 ⇔ перетин
+    # [a−1,a+1] і [b−1,b+1]), а не «невідома точка десь між». Перша версія віднімала
+    # їх як невизначеності (Iv(band.lo−fi.hi, band.lo−fi.lo)) — перевірка I1 знайшла
+    # 23 суперечності саме тут. Розрив — точка: на скільки щаблів НАЙВИЩИЙ рівень
+    # речі нижчий за НАЙНИЖЧИЙ рівень нагоди (порядкова різниця, не метрика).
+    gap = max(0.0, band.lo - fi.hi)
+    return Iv(gap), [], {"item": repr(fi), "occasion": repr(band)}
 
 
 FORMALITY = Template(
