@@ -1574,8 +1574,8 @@ _ПОЛЯ_EN = {
     "place": "where she will be",
     "dress_code": "the dress code, when it is named",
     "event": "the event briefly, in her words",
-    "place_words": "where she will be, 1–5 words in her language for her scenario card, capitalised (Церква, "
-                   "служба; Школа, випускний сина; Рок-клуб); whenever place is set",
+    "place_words": "where she will be, 1–5 words for her scenario card, in her language, capitalised (like: "
+                   "Church, service; School, son's graduation; Rock club); whenever place is set",
     "reserved_colour": "a colour that belongs to another person at this event: near_white — white, "
                        "ivory and cream belong to the bride when she is not the bride herself",
     "open_zones": "how many body zones (neckline or back, legs, shoulders) it is appropriate to show "
