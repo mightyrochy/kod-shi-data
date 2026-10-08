@@ -45,6 +45,7 @@ import re as _re
 import протокол as _ПР
 import збирач_промптів as _ЗП
 import внутрішня_мова as _ВМ
+import формальність as _ФОРМ_ОФ  # смуга офісу без виду — одна на всі промпти (ОФІС-1)
 import річ_з_фото as _РФ
 
 # ═══════════ 1. КОДИ ПОЛІВ РЕЧІ (одна таблиця — `внутрішня_мова.ТАБЛИЦЯ`) ═════════
@@ -140,7 +141,7 @@ def _ключ(поле, код, незнайомі, де):
         "cut": "<code from codes.cut or null>",
         "length": "<code from codes.length or null>",
         "pattern": "<code from codes.pattern>",
-        "formality": "<integer 1–10: 1 home, 3 cafe, 5 office, 7 evening out, 9 ceremony>",
+        "formality": "<integer 1–10: 1 home, 3 cafe, " + _ФОРМ_ОФ.СМУГА_ОФІСУ_EN + ", 7 evening out, 9 ceremony>",
         "in_outfit": "<true | false>",
         "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
     }]},
