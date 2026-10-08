@@ -1,0 +1,44 @@
+── ПРОМПТ (1938 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk blouse with a modest high neckline in pale grey #E0E0E0, tailored to an elongated rectangular cut that drapes softly without clinging to the body.\nWide-leg trousers in deep charcoal #36454F, crafted from heavy crepe fabric with a clean straight line falling just above the ankle.\nLoafers with a square toe and a non-slip sole in matte black leather, featuring an invisible heel for steady walking on grass or pavement.\nSilver pendant necklace with a simple loop design that catches light softly without shimmering, paired with silver stud earrings and a silver watch with a slim metal band.\nThis outfit honors the solemnity of the funeral through its restrained palette and structured silhouettes that convey quiet dignity. The choice of silk and crepe ensures comfort while maintaining a polished appearance suitable for formal mourning rites. Silver jewelry serves as her requested tribute, adding a touch of personal tradition that connects her to the memory being honored. The dark tones ground the look, allowing the metallic accents to provide subtle emotional resonance without drawing excessive attention."}
+
+── ВІДПОВІДЬ (993 симв., 249.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blouse",
+      "details": "elongated rectangular cut with a modest high neckline, drapey silk fabric",
+      "slot": "top",
+      "color_hex": "#E0E0E0"
+    },
+    {
+      "name": "trousers",
+      "details": "wide-leg straight line falling just above the ankle, heavy crepe fabric",
+      "slot": "bottom",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "loafers",
+      "details": "square toe with non-slip sole and invisible heel, matte black leather",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "pendant necklace",
+      "details": "simple loop design that catches light softly without shimmering",
+      "slot": "necklace",
+      "color_hex": null
+    },
+    {
+      "name": "stud earrings",
+      "details": "silver studs",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "watch",
+      "details": "slim metal band",
+      "slot": "jewelry",
+      "color_hex": null
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+── ПРОМПТ (1982 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Crisp linen blazer, tailored fit with a relaxed drape through the hips, sand color (#e2ba9f), lightweight woven texture. Silk slip camisole, straight cut hitting at mid-thigh, warm cream tone (#deb295), smooth fluid fabric. Flowy midi skirt, soft pleats starting from natural waistline, honey beige shade (#d8a98c), breathable cotton blend. Pointed-toe heeled mules, slim profile suitable for dancing, terracotta finish (#e2ba9f), leather construction. Gold drop earrings, medium size with subtle sparkle, polished gold alloy, polished metal material. Thin leather clutch, compact rectangular shape, matching sand hue (#e2ba9f), soft supple leather fabric. This outfit works beautifully for a high-end restaurant wedding at 4 PM in warm weather because the breathable linen and silk fabrics ensure comfort without sacrificing elegance. The neutral earth-tone palette harmonizes perfectly with her skin tones while maintaining enough visual interest for a formal occasion. The tailored yet flowing silhouette offers ease of movement on the dance floor, and the pointed heel adds just the right lift to elevate the overall look without feeling restrictive in the heat."}
+
+── ВІДПОВІДЬ (1126 симв., 57.6 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "crisp linen tailored fit with relaxed drape through hips lightweight woven texture",
+      "slot": "outerwear",
+      "color_hex": "#e2ba9f"
+    },
+    {
+      "name": "camisole",
+      "details": "silk slip straight cut hitting at mid-thigh smooth fluid fabric",
+      "slot": "top",
+      "color_hex": "#deb295"
+    },
+    {
+      "name": "skirt",
+      "details": "flowy midi soft pleats starting from natural waistline breathable cotton blend",
+      "slot": "bottom",
+      "color_hex": "#d8a98c"
+    },
+    {
+      "name": "mules",
+      "details": "pointed-toe heeled slim profile suitable for dancing leather construction",
+      "slot": "shoes",
+      "color_hex": "#e2ba9f"
+    },
+    {
+      "name": "earrings",
+      "details": "gold drop medium size with subtle sparkle polished gold alloy polished metal material",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "clutch",
+      "details": "thin leather compact rectangular shape soft supple leather fabric",
+      "slot": "bag",
+      "color_hex": "#e2ba9f"
+    }
+  ]
+}

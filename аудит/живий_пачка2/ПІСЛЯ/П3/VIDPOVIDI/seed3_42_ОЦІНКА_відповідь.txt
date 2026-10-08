@@ -1,0 +1,32 @@
+── ПРОМПТ (5637 симв.) ──
+
+
+{"task": {"role": "You are a stylist. A woman has put an outfit together herself and asks for your view. You see her photos and the code's check of the outfit as a whole.", "rules": ["\"answer\": answer her question first and directly, in one to three sentences.", "\"verdict\": your overall view of whether she should wear the outfit as it is.", "\"works\": what works in the outfit as a whole — colors with each other, colors to her palette, contrast near her face, silhouette. Each point names its items and one \"about\" code.", "Claim a success only where the check supports it: a finding or a failed point against items is not a success for them; a palette success names only items with palette \"in\"; a contrast success needs the passed contrast point.", "\"change\": at most two changes, only ids from \"changes\", her own alternatives first; an empty list when \"changes\" is empty.", "\"unknown\": what you cannot judge, the most important for her question first."], "limits": ["Rely only on the input: do not invent what it does not contain.", "What you do not know is \"unknown\", null or an empty list, as the schema allows.", "Text for her: address her informally, with the familiar singular \"you\", never the polite plural; in plain human words, without item numbers, ids, hex codes or markdown.", "Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.", "Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \"on the scale\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "OUTFIT_REVIEW_V1", "answer_schema": {"answer": "<the answer to her question>", "verdict": "wear_as_is | wear_with_change | do_not_wear | unknown", "works": [{"about": "colors_together | palette | contrast | silhouette | formality | weather", "items": ["<item id>"], "text": "<what works and why>"}], "change": [{"id": "<change id from changes>", "text": "<why this change helps her>"}], "unknown": [{"text": "<what you cannot judge and what would let you>"}]}, "input": ["\"question\" — her question in her words, with its language", "She did not name the occasion: do not judge formality or fitness for an event.", "She did not name the weather: do not judge warmth or weather.", "\"items\" — items on her photos: id is her photo id; color is measured from the photo when color_measured is true; palette is the color's membership in her palette (in, edge, out) and near_face says whether the item is close to her face", "\"outfit\" — ids of the items worn together: the outfit you judge", "\"alternatives\" — ids of her items shown as alternatives, not worn in the outfit", "\"check\" — the code's check of the outfit as a whole: findings (rule, strength, sila_np — weight 0–1, register — gate blocks, remark is said, items, statements — what the code found, fix — how to repair it), structure blockers, and the codes of the checklist points the outfit passed and failed", "\"unknown\" — what the code could not check: inputs she did not give, checklist points not run (codes), and rules about her items that lacked data", "\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, or {code: values}; codes are defined in \"statement_codes\""], "statement_codes": {"no_top_bottom_or_dress": "the outfit has neither of these foundations and no dress to replace them: without them these are accessories, not an outfit (values: missing — the slot codes that are missing)", "no_shoes": "the outfit has no shoes, and without them it is not ready: add a pair for the occasion", "no_bag": "no bag, and the occasion requires one", "needs_third_piece": "needs one more piece beyond top, bottom, shoes: outer layer, jewellery, belt, scarf or hat", "too_few_items": "too few items in the outfit for this occasion (values: count — how many there are, minimum — how many are needed at least)", "single_item_not_outfit": "one item is not an outfit yet: add at least shoes, or a top or a bottom to a set"}}, "question": {"free_text": "Чи поєднуються ці кольори між собою і чи підійдуть вони мені?", "lang": "uk"}, "items": [{"id": "p1", "name": "Jacket", "slot": "top", "color": "olive", "color_measured": false, "palette": "unknown", "near_face": true, "pattern": "solid", "formality": 5}, {"id": "p2", "name": "Pants", "slot": "bottom", "color": "black", "color_measured": true, "palette": "in", "palette_strength": 0.793, "near_face": false, "cut": "tapered", "pattern": "solid", "formality": 5}, {"id": "p2-2", "name": "Pants", "slot": "bottom", "color": "white", "color_measured": true, "palette": "in", "palette_strength": 0.816, "near_face": false, "cut": "tapered", "pattern": "solid", "formality": 5}], "outfit": ["p1"], "alternatives": ["p2", "p2-2"], "check": {"blockers": [{"code": "no_top_and_bottom", "statements": [{"no_top_bottom_or_dress": {"missing": ["bottom"]}}]}, {"code": "no_shoes", "statements": ["no_shoes"]}, {"code": "no_bag", "statements": ["no_bag"]}, {"code": "incomplete", "statements": ["needs_third_piece"]}, {"code": "incomplete", "statements": [{"too_few_items": {"count": 1, "minimum": 5}}]}, {"code": "single_item", "statements": ["single_item_not_outfit"]}]}, "unknown": [{"input": "occasion"}, {"input": "temperature"}, {"input": "color_measure", "items": ["p1"]}]}
+
+── ВІДПОВІДЬ (764 симв., 4.6 с, HTTP 200) ──
+{
+"answer": "Самий верхній елемент — оливкова куртка — чудово поєднується з будь-яким твоям нижнім одягом із твоєї палітри, і в ньому ти виглядатимеш добре. Але зараз це не повний образ, тому його ще потрібно доповнити.",
+"verdict": "wear_with_change",
+"works": [
+{
+"about": "colors_together",
+"items": ["p1"],
+"text": "Оливковий верх виглядає гармонійно разом із будь-яким нижнім одягом із твоєї палітри."
+}
+],
+"change": [
+{
+"id": "add_bottom_pants_from_alternatives",
+"text": "Додай один із варіантів нижнього одягу, наприклад чорні або білі штани з твоєї палітри."
+},
+{
+"id": "add_shoes",
+"text": "Додай пару взуття під ситуацію."
+}
+],
+"unknown": [
+{
+"text": "Частка образу: не відомо, яка це ситуація і який одяг ти маєш в інших випадках, щоб порівняти."
+}
+]
+}

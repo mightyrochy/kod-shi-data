@@ -1,0 +1,24 @@
+── ПРОМПТ (2927 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення (не «личить personally», а «личить особисто»), і не пиши слово літерами двох абеток (не «spідниця», не «structурована» — «спідниця», «структурована»); латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти»; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "You are wearing a sleek maxi slip dress in taupe silk with thin straps that let your shoulders breathe, a deep V-neckline adding length to the torso, and a fluid cut that falls straight over the hips and legs without clinging. Around your neck is a dark beige wool scarf from soft lamb's wool, draped loosely for warmth at the evening date while keeping your neckline open; the thick knit contrasts gently with the shiny satin of the dress and brings a touch of texture near your face. Underfoot are nude suede pumps with a slender stiletto heel that elongate your posture and echo the neutral tone of the outfit without competing, their soft finish matching the cozy feel of the wool. Across your shoulder rests a small crossbody bag in warm terracotta tones, its floral pattern in mustard yellow and deep greens adding a pop of nature-inspired color that complements your skin and matches the autumnal warmth of your evening."},
+{"н": 2, "текст": "Wrap the wool scarf loosely around your neck to keep it off your shoulders for an airy look at the restaurant, letting the warm tones sit near your face."},
+{"н": 3, "текст": "Wear the slip dress as is for a soft, romantic line; if you want to define your waist more clearly, tuck the scarf slightly under your chest to create a subtle break in the silhouette."},
+{"н": 4, "текст": "Keep the suede pumps heel high and pointed so they elongate your legs without breaking the vertical flow of the long dress."},
+{"н": 5, "текст": "Хустка з м'якої вовни ягняти темно-бежева — Added black wool scarf to address 'no_shoes' and 'no_bag' blockers while maintaining the romantic, earthy tone; serves as a warm layer near fire."}
+]
+
+── ВІДПОВІДЬ (1615 симв., 82.2 с, HTTP 200) ──
+```json
+{
+  "1": "Ти одягла елегантну максі-сукню на бретельках з таупового шовку, тонкі лямки дають плечам дихати, глибокий V-подібний виріз візуально подовжує торс, а вільний крій спадає рівно по стегнах і ногах без облягання. На шиї — темно-бежевий вовняний шарф з м'якої вовни ягняти, недбало накинутий для тепла під час вечірнього побачення, залишаючи відкритим виріз; щільне в’язання ніжно контрастує з блискучим атласом сукні та додає текстури біля обличчя. На ногах — нюдові замшеві туфлі на тонкому шпильці, які витягують твою поставу й перегукуються з нейтральним тоном вбрання без зайвої конкуренції, їхнє м’яке оздоблення відповідає затишній атмосфері вовняного шарфа. На плечі — невелика сумка-кросбоді теплих теракотових відтінків, її квітковий візерунок у гірчично-жовтому та глибокому зеленому кольорах додають природний акцент, який підкреслює колір твоєї шкіри й відповідає осінньому настрою вечора.",
+  "2": "Недбало обгорни вовняний шарф навколо шиї, щоб він не закривав плечі та залишав повітряний вигляд у ресторані, дозволяючи теплим тонам бути біля твого обличчя.",
+  "3": "Одягни сукню-сліп як є для м’якого романтичного силуету; якщо хочеш чіткіше підкреслити талію, злегка заправ шарф під груди, щоб створити ледь помітний перехід у фігурі.",
+  "4": "Залиш шпильку туфель на високому й загостреному каблуці, щоб вони витягували ноги без порушення вертикального потоку довгої сукні.",
+  "5": "Хустка з м'якої вовни ягняти темно-бежева — Додала чорний вовняний шарф, щоб усунути блокери 'no_shoes' і 'no_bag', зберігаючи романтичний та природний тон; слугує теплим шаром біля каміна."
+}
+```

@@ -1,0 +1,38 @@
+── ПРОМПТ (1581 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk slip dress with a subtle champagne hue (#F5E6CA), relaxed A-line cut falling to the knee.\n\nNude leather sandals featuring a slender stiletto heel and a low ankle strap.\n\nPearl drop earrings set in gold vermeil, paired with a slim tan leather clutch and a delicate gold chain bracelet.\n\nThis ensemble works because the fluid silk adapts comfortably to the warm 28°C evening air while maintaining an elegant silhouette suitable for a sister's wedding. The champagne color offers a soft, sophisticated alternative to stark white, perfectly aligned with high-end restaurant dress codes without drawing undue attention. Completing the look with neutral tones and metallic accents ensures a cohesive, polished appearance that balances warmth with formal grace."}
+
+── ВІДПОВІДЬ (802 симв., 117.6 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk slip dress",
+      "details": "relaxed A-line cut falling to the knee in fluid silk fabric",
+      "slot": "dress",
+      "color_hex": "#F5E6CA"
+    },
+    {
+      "name": "Leather sandals",
+      "details": "nude leather featuring a slender stiletto heel and a low ankle strap",
+      "slot": "shoes",
+      "color_hex": null
+    },
+    {
+      "name": "Pearl drop earrings",
+      "details": "pearl drops set in gold vermeil",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "Leather clutch",
+      "details": "slim tan leather bag",
+      "slot": "bag",
+      "color_hex": null
+    },
+    {
+      "name": "Gold chain bracelet",
+      "details": "delicate gold chain",
+      "slot": "bracelet",
+      "color_hex": null
+    }
+  ]
+}

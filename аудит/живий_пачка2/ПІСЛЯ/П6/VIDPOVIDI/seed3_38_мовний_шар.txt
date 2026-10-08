@@ -1,0 +1,79 @@
+── ПРОМПТ (4369 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення (не «личить personally», а «личить особисто»), і не пиши слово літерами двох абеток (не «spідниця», не «structурована» — «спідниця», «структурована»); латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти»; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "The core of your look begins with the beige mini dress from The Originals, featuring a structured corset bodice that hugs the waist and a playful, ruffled skirt made of soft satin fabric. You layer over this with a sophisticated grey double-breasted blazer trimmed with crisp white piping and finished with gold buttons to add a touch of architectural edge. Your accessories are warm and tactile, centered on a rich brown suede tote bag with dark leather handles that offers effortless carrying capacity, paired with camel-colored suede loafers featuring a distinctive cut-out detail and a large silver buckle strap. The ensemble is completed by a chunky grey knit beret from Rito and a classic platinum eternity band studded with a row of sparkling diamonds resting on your finger."},
+{"н": 2, "текст": "The ruffles on the mini dress offer comfortable movement for walking through an urban restaurant while maintaining your silhouette's volume at the bottom to balance your broader shoulders."},
+{"н": 3, "текст": "Wear the grey blazer slightly open or casually buttoned to reveal the soft beige of the dress, letting the white piping frame your torso and draw attention vertically toward your face."},
+{"н": 4, "текст": "LeBERDES Туфлі коричневі — Added to resolve the 'no_shoes' blocker; brown suede pumps provide a classic, elegant finish suitable for a district restaurant evening."},
+{"н": 5, "текст": "LeBERDES Туфлі коричневі — The declared orange accent in the shoes is necessary here because the beige dress provides the only warm base, requiring a vibrant pop of color to anchor the 'date' intent and complement her dyed hair."},
+{"н": 6, "текст": "Мінісукня Lucky — A dress is mandatory; this mini dress breaks the scheme's muted tone with its beige hue, acting as a deliberate accent against the grey palette."},
+{"н": 7, "текст": "Трикотажний берет чорно-білий — Headwear is needed to anchor the face; this black beret provides strong contrast for the evening setting and balances the V-shape silhouette."},
+{"н": 8, "текст": "Жіноча сумка Welfare — A bag is mandatory; this brown velvet bag carries the 'orange' family accent, linking to the shoe color role."},
+{"н": 9, "текст": "Платинова каблучка з діамантами — Jewelry is needed for close-up seating; this heavy silver ring contrasts with her skin tone and draws attention to the hands."},
+{"н": 10, "текст": "Сірий піджак двобортного крою з білими вставками — Outer layer needed; this blazer adds structure and volume to the shoulders, balancing the V-shape silhouette."},
+{"н": 11, "текст": "Жіноча сумка Welfare — Bag is mandatory; this brown velvet bag provides a warm neutral that bridges the green and grey tones of the outfit."},
+{"н": 12, "текст": "Сірий піджак двобортного крою з білими вставками — Blazer hem shortened visually or paired with cropped top to fix 'hem_class_on_her_height_differs_from_shop_word' and create a clear step between layers."},
+{"н": 13, "текст": "Жіноча сумка Welfare — Bag chosen for brown velvet base but accessorized with gold chain detail to raise chroma and solve 'accent_role_lost' on the bag slot."}
+]
+
+── ВІДПОВІДЬ (3409 симв., 129.0 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "н": 1,
+    "текст": "Основа вашого образу починається з бежевої мінісукні від The Originals, що має структурований корсетний ліф, який облягає талію, і грайливу спідницю з м’якого сатинового матеріалу. Ви доповнюєте це вишуканим сірим двобортним блейзером із чіткими білими кантами й золотими ґудзиками для створення архітектурного акценту. Ваші аксесуари теплі та тактильні, зосереджені на коричневій замшевій сумці з темними шкіряними ручками, яка забезпечує зручне носіння, у парі з верблюжо-коричневими замшевими лоферами з виразною детальною проріззю й великим срібним ремінцем. Образ завершується об’ємним сірим в’язаним беретом від Rito та класичним платиновим вічним перснем, прикрашеним рядом блискучих діамантів на вашому пальці."
+  },
+  "2": {
+    "н": 2,
+    "текст": "Волани на мінісукні забезпечують комфортний рух під час прогулянки міським рестораном, зберігаючи об’єм силуету внизу для балансування з вашими широкими плечима."
+  },
+  "3": {
+    "н": 3,
+    "текст": "Носіть сірий блейзер трохи розстебнутим або недбало застебнутим, щоб відкрити м’який беж сукні та дозволити білим кантам обрамляти ваш торс і привертати увагу вертикально до вашого обличчя."
+  },
+  "4": {
+    "н": 4,
+    "текст": "Коричневі туфлі LeBERDES — Додано для вирішення блокування 'no_shoes'; коричневі замшеві туфлі забезпечують класичний елегантний фінал, який підходить для вечірнього відпочинку в ресторані."
+  },
+  "5": {
+    "н": 5,
+    "текст": "Коричневі туфлі LeBERDES — Заявлений помаранчевий акцент у взутті необхідний тут, оскільки бежева сукня є єдиною теплою основою, що вимагає яскравого кольорового акценту для закріплення наміру «побачення» та доповнення її фарбованого волосся."
+  },
+  "6": {
+    "н": 6,
+    "текст": "Мінісукня Lucky — Сукня обов’язкова; ця міні-сукня розбавляє приглушені тони схеми своїм бежевим відтінком, діючи як навмисний акцент на сірій палітрі."
+  },
+  "7": {
+    "н": 7,
+    "текст": "Чорно-білий в’язаний берет — Головний убір необхідний для обрамлення обличчя; цей чорний берет забезпечує сильний контраст для вечірнього оточення та балансує силует V-подібної форми."
+  },
+  "8": {
+    "н": 8,
+    "текст": "Жіноча сумка Welfare — Сумка обов’язкова; ця коричнева оксамитова сумка несе акцент «оранжевого» сімейства, пов’язуючи її з кольоровою роллю взуття."
+  },
+  "9": {
+    "н": 9,
+    "текст": "Платинова каблучка з діамантами — Прикраси необхідні для близького розташування; ця важка срібна каблучка контрастує зі шкірою та привертає увагу до рук."
+  },
+  "10": {
+    "н": 10,
+    "текст": "Сірий двобортний блейзер з білими вставками — Зовнішній шар необхідний; цей блейзер додає структуру та об’єм плечам, балансуючи силует V-подібної форми."
+  },
+  "11": {
+    "н": 11,
+    "текст": "Жіноча сумка Welfare — Сумка обов’язкова; ця коричнева оксамитова сумка забезпечує теплий нейтральний колір, який поєднує зелені та сірі тони вбрання."
+  },
+  "12": {
+    "н": 12,
+    "текст": "Сірий двобортний блейзер з білими вставками — Подол блейзера візуально укорочено або поєднано зі зверху-кроп топом для вирішення проблеми 'hem_class_on_her_height_differs_from_shop_word' та створення чіткого переходу між шарами."
+  },
+  "13": {
+    "н": 13,
+    "текст": "Жіноча сумка Welfare — Сумка обрана за коричневу оксамитову основу, але прикрашена золотим ланцюжком для підвищення хроми та вирішення проблеми 'accent_role_lost' у слоті сумки."
+  }
+}
+```

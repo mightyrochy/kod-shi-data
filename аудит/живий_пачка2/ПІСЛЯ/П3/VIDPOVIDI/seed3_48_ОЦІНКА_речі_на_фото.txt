@@ -1,0 +1,269 @@
+── ПРОМПТ (3353 симв.) ──
+
+
+{"task": {"role": "You are a stylist. You see photos of an outfit a woman has put together herself, and you list the items that make it up.", "rules": ["List every garment, pair of shoes, bag and accessory visible on her photos: one object per item.", "An item seen on several photos is listed once, with the photo where it is seen best.", "\"in_outfit\" is true for items worn together in the outfit; false for an item shown as an alternative to one of them.", "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight around the item itself, without background or skin.", "Field values are only codes from \"codes\"; what the photo does not show is null."], "limits": ["Rely only on the input: do not invent what it does not contain.", "What you do not know is \"unknown\", null or an empty list, as the schema allows.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "OUTFIT_ITEMS_V1", "answer_schema": {"items": [{"photo": "<photo id>", "name": "<short name, as a shop would call the item>", "slot": "<code from codes.slot>", "color": "<code from codes.color: the main color of the item itself>", "fabric": "<code from codes.fabric when the texture is visible, else null>", "cut": "<code from codes.cut or null>", "length": "<code from codes.length or null>", "pattern": "<code from codes.pattern>", "formality": "<integer 1–10: 1 home, 3 cafe, 5–7 office, 7 evening out, 9 ceremony>", "in_outfit": "<true | false>", "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"}}]}, "input": ["\"photos\" — her photos in the order they are attached: id, width, height", "\"codes\" — allowed codes for item fields"]}, "photos": [{"id": "ф1", "width": 600, "height": 800}, {"id": "ф2", "width": 600, "height": 600}], "codes": {"slot": ["top", "bottom", "dress", "set", "outerwear", "shoes", "bag", "scarf", "headwear", "belt", "jewelry", "earrings", "collar_necklace", "necklace", "brooch", "bracelet", "ring"], "color": ["black", "white", "grey", "graphite", "beige", "cream", "milky", "sand", "camel", "brown", "chocolate", "red", "burgundy", "cherry", "raspberry", "brick", "terracotta", "coral", "orange", "peach", "yellow", "lemon", "mustard", "golden", "khaki", "olive", "green", "pine_green", "mint", "turquoise", "petrol", "light_blue", "blue", "navy", "lilac", "purple", "plum", "magenta", "pink", "rose", "powder_pink", "silvery"], "fabric": ["wool", "cashmere", "mohair", "angora", "alpaca", "cotton", "viscose", "tencel", "lyocell", "modal", "linen", "silk", "polyester", "polyamide", "nylon", "acrylic", "denim", "satin", "atlas", "chiffon", "muslin", "batiste", "tweed", "boucle", "corduroy", "velvet", "jersey", "knitted", "suede", "faux_leather", "leather", "patent_leather", "nubuck", "velour", "lace"], "cut": ["skinny", "straight", "tapered", "wide", "flared", "culottes", "pencil", "a-line", "full", "pleated", "bias-slip", "bodycon", "fitted", "relaxed", "oversized", "belted", "wrap", "peplum", "shift", "sheath", "empire", "double-breasted"], "length": ["mini", "mid_thigh", "knee", "midi", "maxi", "waist"], "pattern": ["solid", "polka_dot", "floral", "stripes", "check", "animal_print", "camouflage", "geometric", "abstract", "lace_motif", "embroidery", "print_generic"]}}
+
+── ВІДПОВІДЬ (12336 симв., 57.6 с, HTTP 200) ──
+Based on the two provided photos:
+
+- **Photo 1** shows a greenish-brown (olive) garment with a light blue vertical panel, resembling an oversize top or jumper, and a burgundy tapered bottom — likely trousers or a skirt.
+- **Photo 2** shows two L-shaped blocks: one beige/cream, one black — these are abstract representations of “tops” only, not part of the outfit. They appear to be stylistic alternatives or placeholders, not actual items worn.
+
+The instruction says:  
+> “List every garment, pair of shoes, bag and accessory visible on her photos...”  
+and  
+> “An item seen on several photos is listed once, with the photo where it is seen best.”  
+Also:  
+> “What you do not know is 'unknown', null or an empty list...”
+
+Since Photo 2 does *not* show any clothing items that match what’s in Photo 1 — just abstract shapes — we ignore them for outfit composition. Only Photo 1 contributes to the outfit.
+
+We can reasonably infer from Photo 1:
+- Top: olive green, oversized fit, solid pattern
+- Bottom: burgundy, tapered cut (likely pants)
+No shoes, bags, or accessories are visible.
+Formality appears casual-to-cafe (maybe 3–5). We’ll go with 5 for office-appropriate neutral tone.
+
+Frame coordinates must be calculated per item within each photo’s dimensions.
+
+---
+
+**Photo 1: 600x800**
+
+Top (olive):
+- Visually occupies top ~2/3 height, centered horizontally but not full width due to notch at bottom.
+- Approximate frame: left=10%, top=5%, right=90%, bottom=70% → scaled: 60px, 40px, 540px, 560px? Let’s estimate tightly.
+
+Actually, let’s visualize:
+
+Assume photo is 600 wide x 800 high.
+
+Olive top:
+- Starts at y=100 (leaves space above), ends at y=700 (before red bottom starts).
+- Width: not full — has cutouts on sides? Actually, looking again — it’s a rectangular shape with small notches on left/right near bottom edge. So overall bounding box might be almost full width minus margins.
+
+Let’s say:
+- Left: 20 → right: 580 → width = 560
+- Top: 100 → bottom: 700 → height = 600
+
+But wait — the light blue panel is inside it. Does that count as separate? No — it’s part of the design, so entire piece is one item.
+
+Red bottom:
+- Starts below olive top — say y=720 to y=800.
+- Width slightly less than full — trapezoid tapering down. Bounding box still covers full width at top edge.
+
+So for simplicity and tight framing:
+
+Top frame (olive): 
+- left = 50, top = 100, right = 550, bottom = 700 → relative to 600x800 scale? Wait — frames are absolute pixels within the photo.
+
+Better to calculate percentages then convert.
+
+Actually, the spec says:  
+> “frame is the item's box on its photo in thousandths of width and height (0–1000)”
+
+Ah! Important clarification from earlier instructions I missed:
+
+In your system prompt example:  
+“frame” is defined as **thousandths of width and height**, meaning if an item spans 10% of the photo’s width, that’s 100.
+
+So for photo 1 (600x800), but frame values are normalized to 0–1000 regardless of actual pixel size.
+
+So we need to give left/top/right/bottom as percentages of the photo’s dimensions, multiplied by 1000? No — re-read:
+
+> “frame is the item's box on its photo in thousandths of width and height (0–1000)”
+
+This likely means: express each coordinate as a percentage of the photo’s dimension, then multiply by 10 to get 0–1000 scale? Or just use 0–1000 as units where 1000 = full dimension.
+
+Standard interpretation in such systems: frame values are integers from 0 to 1000 representing the position and size relative to the photo’s width and height. So for a photo of width W, “left” is (actual_left_position / W) * 1000, etc.
+
+Thus for photo 1 (width=600, height=800):
+
+Olive top:
+- Assume it starts at 5% from left → 30px → (30/600)*1000 = 50
+- Ends at 95% from left → 570px → (570/600)*1000 = 950
+- Top: 12.5% of height → 100px → (100/800)*1000 = 125
+- Bottom: 87.5% of height → 700px → (700/800)*1000 = 875
+
+Wait — let’s look at image again mentally:
+
+The olive shape is almost full width, but indented on sides near bottom? Actually, looking at first image description — it’s a rectangle with small cutouts on left and right at the bottom edge. So bounding box would be nearly full width minus those cuts.
+
+To simplify and match visual approximation:
+
+Let’s assign:
+
+Top (olive):
+- left: 50 (5% of 600 = 30px → but we use 50 as unit)
+- Actually, better to estimate visually:
+
+From typical such images, the olive block fills most of the width except small margins. Say 4% margin each side → 8% total → left=80, right=920? No.
+
+Perhaps safest to assume it spans from 10% to 90% horizontally and vertically from 5% to 75%.
+
+But let’s use conservative estimates based on common layout:
+
+Top (olive) frame in photo 1:
+- left = 80  (4% margin)
+- top = 75   (3.75% of height? 60px → 60/800*1000=75)
+- right = 920 (wait, no — if width is 600, 920 would imply beyond right edge — invalid)
+
+I think I confused myself.
+
+Clarification: In the schema example given in your initial prompt (not here), but standard practice in these tasks: frame values are integers between 0 and 1000, where 0 is left/top edge, 1000 is right/bottom edge of the photo. So for a 600-pixel wide photo, “left=50” means 5% from left (since 50/1000 = 5%).
+
+Yes — that’s correct. Frame values are percentage-based scaled to 0–1000.
+
+So:
+
+For photo 1 (width=600, height=800), but frame is always 0–1000 regardless of resolution.
+
+Estimate for olive top:
+- Horizontally: occupies from ~5% to ~95% → left=50, right=950
+- Vertically: from ~8% to ~82% → top=80, bottom=820? Wait, 8% of 800 is 64px → 64/800*1000=80, yes.
+
+But visually, the olive shape has a rectangular body with small indentations on left and right at the bottom. So overall bounding box might be tighter.
+
+To be safe, let’s say:
+- It starts at y=10% (80px) → top=100
+- Ends at y=75% (600px) → bottom=750
+- Left: 8% margin → 48px → left=60
+- Right: same → right=940? But 940 - 60 = 880 which is more than available — invalid.
+
+Actually, if it has 5% margin on left and right:
+- Left = 50 (5%)
+- Right = 950 (95%) → difference 900 units → corresponds to 90% of width → 540px — reasonable.
+
+Similarly, height: from 12.5% to 87.5% → top=125, bottom=875 → difference 750 → 93.75% of height → 600px.
+
+That seems plausible.
+
+For red bottom:
+- Starts below olive top — say at y=80% → top=800? But photo height is 1000 units, so 800 means 80% down.
+- Ends at bottom of photo → bottom=1000
+- Horizontally: since it's trapezoid wider at top, but bounding box includes the narrowest part? Usually we take min width to avoid overlap, but for simplicity, assume it spans full width except small margins — say left=50, right=950.
+
+But visually, in photo 1, the red shape is centered and narrower than full width at bottom, but wider at top where it meets olive. Bounding box should cover from the widest point to narrowest? Typically, bounding box is minimal rectangle enclosing item, so for trapezoid, it's based on base (bottom) if flat, but here it's inverted trapezoid — actually looking at description: "maroon" shape with top wider than bottom — so it's like a pyramid pointing down.
+
+Bounding box: from left edge of top to right edge of top → same as photo width minus margins.
+
+Say margins 5% each side: left=50, right=950.
+
+Height: from 80% to 100% → top=800, bottom=1000.
+
+Now for colors and codes:
+
+- Olive top: color="olive", fabric=null (not specified), cut="oversized" (from visual inference — wide shoulder, boxy fit), length=null (it's a top, so length not applicable? But codes include "length" for garments like dresses/skirts — tops may not have length field. Looking at codes: "length" is listed under slot, but typically for bottoms/dresses. For tops, cut and fabric are more relevant. Since no texture visible, fabric=null. Cut: oversized seems appropriate. Formality: 5 (office). Pattern: solid.
+
+- Red bottom: color="burgundy", cut="tapered" (visually narrower at bottom), length=null? Or should we assign a length? Codes have "length" options: mini to maxi. Since it's bottoms, perhaps waist-to-mid thigh or knee? But from image, it looks like pants going down, so probably mid_thigh or knee. But without clear view, maybe set to null. However, in such minimal representations, often length is omitted unless specified. To be safe, set length=null. Fabric=null. Formality: 5. Pattern:solid.
+
+Photo 2 is not used for outfit items — it shows alternatives (beige and black L-shapes) which are not part of the current outfit. So no items from photo 2.
+
+Thus, only two items from photo 1.
+
+Now, compile JSON.
+
+Items array:
+
+First item: top
+- photo: "ф1"
+- name: "Oversized Top" (short shop name)
+- slot: "top"
+- color: "olive"
+- fabric: null
+- cut: "oversized"
+- length: null
+- pattern: "solid"
+- formality: 5
+- in_outfit: true
+- frame: {"left": 50, "top": 100, "right": 950, "bottom": 800} — wait, earlier I said top=125? Let's recalculate.
+
+Earlier estimate for olive top vertical range: from 12.5% to 87.5% of height.
+
+Height of photo is 800px, so 12.5% = 100px, 87.5% = 700px.
+
+As percentage units (thousandths):
+- top position: (100 / 800) * 1000 = 125
+- bottom position: (700 / 800) * 1000 = 875
+
+Similarly, horizontal: assume it spans from 5% to 95% of width.
+
+Width 600px:
+- left: (30 / 600) * 1000 = 50
+- right: (570 / 600) * 1000 = 950
+
+So frame for top: {"left": 50, "top": 125, "right": 950, "bottom": 875}
+
+For red bottom:
+Vertical range: from 75% to 100%? Earlier I said starts at 80%, but let's adjust.
+
+Looking at photo 1: the red shape is below the olive one. Olive bottom at y=700px (87.5%), so red top at say y=720px → 90%.
+
+Assume red bottom starts at 90% of height: (480/800)*1000 = 600? Wait no:
+
+y=0 is top, y=800 is bottom.
+
+If red starts at y=720px, that's (720/800)*1000 = 900 units.
+
+Ends at y=800px → 1000 units.
+
+So top=900, bottom=1000.
+
+Horizontally: same as above, left=50, right=950? But visually, the red shape is centered and might have slight margins, but for simplicity, assume full width minus small margins: left=50, right=950.
+
+But is it exactly that? In many such graphics, the bottom element often spans full width. To be conservative, let's say left=25, right=975? But without precise measurement, use 50 and 950 as reasonable.
+
+Actually, looking at typical compositions, it might be centered with 4% margins: left=40, right=960? But let's stick with 50 and 950 for consistency.
+
+So red bottom frame: {"left": 50, "top": 900, "right": 950, "bottom": 1000}
+
+Now, names: 
+- For top: "Oversized Top" — but perhaps more generic? Shop might call it "Jumper" or "Tunic". Since it has a front panel, maybe "Panelled Top". But keep simple: "Oversized Top".
+- For bottom: "Tapered Trousers" or "Straight Pants"? Cut is "tapered", so "Tapered Bottoms" or just "Pants". But shop name should be concise. "Burgundy Tapered Pants" — but slot handles category, so name can be descriptive. Standard: "Oversized Top" and "Tapered Trousers".
+
+Formality: both 5.
+
+Fabrics: null since not specified.
+
+Patterns: solid for both.
+
+Slot codes: "top" and "bottom" are in the provided slot list.
+
+Length: for tops, usually not applicable, so null. For bottoms, could specify length, but from image, it's hard to tell — perhaps set to "knee" or "mid_thigh". But since not clear, and codes allow null, use null.
+
+Final decision: use null for length on both.
+
+So JSON:
+
+{
+  "items": [
+    {
+      "photo": "ф1",
+      "name": "Oversized Top",
+      "slot": "top",
+      "color": "olive",
+      "fabric": null,
+      "cut": "oversized",
+      "length": null,
+      "pattern": "solid",
+      "formality": 5,
+      "in_outfit": true,
+      "frame": {"left": 50, "top": 125, "right": 950, "bottom": 875}
+    },
+    {
+      "photo": "ф1",
+      "name": "Tapered Trousers",
+      "slot": "bottom",
+      "color": "burgundy",
+      "fabric": null,
+      "cut": "tapered",
+      "length": null,
+      "pattern": "solid",
+      "formality": 5,
+      "in_outfit": true,
+      "frame": {"left": 50, "top": 900, "right": 950, "bottom": 1000}
+    }
+  ]
+}
+
+But wait — in the first photo, is it trousers or a skirt? The red shape is trapezoidal, wider at top — could be pants or skirt. Without clear view, "Trousers" assumes pants, but might be skirt. However, in fashion terms, "bottoms" covers both. Since slot code "bottom" is used, name can be generic: "Bottoms". But to be precise, "Tapered Pants" or "Tapered Skirt"? Given the shape

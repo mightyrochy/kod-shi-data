@@ -1,0 +1,28 @@
+── ПРОМПТ (2616 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення (не «личить personally», а «личить особисто»), і не пиши слово літерами двох абеток (не «spідниця», не «structурована» — «спідниця», «структурована»); латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти»; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A structured wool-blend blazer in midnight blue featuring a sharp notched lapel and single-button closure, tailored with a modern slightly tapered silhouette to elongate the frame. Below it sits a flowing silk crepe midi skirt in oatmeal beige with an A-line cut that flares gently from the waist to just below the knee for professional grace and movement. The ensemble is grounded by pointed-toe leather pumps in polished charcoal grey, offering a comfortable heel height suitable for long days at the office. Completing the look are minimalist gold-tone drop earrings, a slim leather belt matching the skirt tone, and a structured tote bag in soft cognac brown. This outfit works because the combination of deep blue and neutral tones projects authority while remaining approachable and modern. The natural breathability of the wool blend ensures comfort during busy work hours without sacrificing elegance. The balance between the rigid structure of the blazer and the fluidity of the skirt creates a dynamic yet polished aesthetic perfect for a corporate setting. Finally, the classic colors allow her to express her personal style while strictly adhering to professional dress codes."},
+{"н": 2, "текст": "blazer"},
+{"н": 3, "текст": "skirt"},
+{"н": 4, "текст": "shoes"},
+{"н": 5, "текст": "earrings"},
+{"н": 6, "текст": "belt"},
+{"н": 7, "текст": "bag"}
+]
+
+── ВІДПОВІДЬ (1341 симв., 56.0 с, HTTP 200) ──
+```json
+{
+  "1": "Структурований блейзер з вовняної суміші кольору нічного синього відтінку з чітким лацканом і застібкою на одну ґудзик, пошитий із сучасним трохи звуженим силуетом для видовження фігури. Під ним — струмуюча спідниця-міді з шовкового крепдешину кольору вівсяного бежу з А-силуетом, що м’яко розкльошується від талії до трохи нижче коліна для професійної грації й рухливості. Образ завершують загострені шкіряні туфлі на підборах кольору полірованого вугільно-сірого, з комфортною висотою каблука, що ідеальна для довгих робочих днів. Доповнюють образ мінімалістичні золотисті сережки-підвіски, тонкий шкіряний ремінь у колір спідниці та структурована сумка м’якого кольору коньяку. Цей наряд працює тому, що поєднання глибокого синього й нейтральних тонів проєктує авторитетність, залишаючись при цьому доступним і сучасним. Природна повітропроникність вовняної суміші забезпечує комфорт під час робочих годин без шкоди для елегантності. Баланс між жорсткою структурою блейзера та плавністю спідниці створює динамічний, але вишуканий естетичний образ, ідеальний для корпоративного середовища. Насамкінець, класичні кольори дають змогу їй виразити свій особистий стиль, суворо дотримуючись професійних дрес-кодів.",
+  "2": "блейзер",
+  "3": "спідниця",
+  "4": "взуття",
+  "5": "сережки",
+  "6": "ремень",
+  "7": "сумка"
+}
+```

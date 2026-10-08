@@ -1,0 +1,26 @@
+── ПРОМПТ (2628 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення (не «личить personally», а «личить особисто»), і не пиши слово літерами двох абеток (не «spідниця», не «structурована» — «спідниця», «структурована»); латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти»; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Wool blend suit jacket, tailored fit, knee-length hem, deep charcoal grey, matte woven wool with a subtle sheen.\nSilk camisole top, relaxed boxy cut, hip-length hem, warm cream, smooth liquid silk texture.\nHigh-waisted trousers, straight-leg cut, ankle-length hem, dark slate grey, heavy crepe fabric.\nLeather loafers, pointed toe silhouette, mid-calf length, silver metallic finish, genuine leather with rhinestone detailing.\nSilver cufflinks and delicate chain necklace, standard round face shape cut, short drop length, polished sterling silver metal.\nThis outfit honors the occasion of a funeral with its refined monochromatic palette while strictly adhering to her request for silver accessories. The dark charcoal and slate tones provide a somber yet elegant backdrop that allows the silver jewelry to become the focal point of the ensemble. By incorporating a silk camisole, the look balances traditional mourning attire with a touch of personal softness and warmth suitable for the season. Every element from the tailored fit to the specific codes ensures the silhouette flatters her frame without drawing unnecessary attention, creating a respectful and polished appearance."},
+{"н": 2, "текст": "suit jacket"},
+{"н": 3, "текст": "camisole top"},
+{"н": 4, "текст": "trousers"},
+{"н": 5, "текст": "loafers"},
+{"н": 6, "текст": "cufflinks and chain necklace"}
+]
+
+── ВІДПОВІДЬ (1370 симв., 277.6 с, HTTP 200) ──
+```json
+{
+  "1": "Вовняний блейзер з суміші вовни, приталений крій, довжина до коліна, глибокий темно-сірий відтінок, матова тканина з ледь помітним блиском.\nШовкова сорочка на бретельках, вільний боксерський силует, довжина по стегнах, теплий кремовий колір, гладка шовковиста текстура.\nВисокопотані штани прямого крою, довжина до щиколотки, темно-сірий відтінок, щільна креп-тканина.\nШкіряні лофери з загостреним носком, середньої висоти, сріблястий металік, натуральна шкіра з оздобленням у вигляді стразів.\nСрібні запонки та ніжний ланцюжок на шию, стандартна кругла форма обличчя, коротка довжина підвіски, відполірований метал зі стерлінгового срібла.\nЦей образ вшановує подію похорону своїм вишуканим монохромним палітрами, суворо дотримуючись її прохання щодо срібних аксесуарів. Темно-сірий і темно-сизий відтінки створюють похмуре, але елегантне тло, яке дозволяє срібним прикрасам стати центральним акцентом ансамблю. Завдяки шовковій сорочці на бретельках образ збалансовує традиційний траурний одяг із ноткою особистої м’якості та тепла, що підходить для сезону. Кожен елемент від приталеного крою до конкретних деталей гарантує, що силует вигідно підкреслює її фігуру без зайвої уваги, створюючи шанобливий і охайний вигляд.",
+  "2": "блейзер",
+  "3": "сорочка на бретельках",
+  "4": "штани",
+  "5": "лофери",
+  "6": "запонки та ланцюжок на шию"
+}
+```

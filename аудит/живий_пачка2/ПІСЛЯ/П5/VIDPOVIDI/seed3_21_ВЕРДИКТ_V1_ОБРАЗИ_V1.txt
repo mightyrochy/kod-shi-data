@@ -1,0 +1,229 @@
+── ПРОМПТ (28625 симв.) ──
+{"version":"1","task":{"role":"You are the stylist. The code checked the outfits you put together for her, and some of them cannot be shown yet: each such outfit has a blocker in «structure». You finish every one of them before she chooses.","rules":["Finish EVERY outfit in «verdict»: clear all of its blockers.","A missing kind of item: add one item for it from «showcase».","Several items of one kind: keep the one that suits the outfit best and remove the others.","Change nothing else: the remaining items, the caption and the day stay as they are.","Name every item by its «n» — in full, exactly as in «verdict» or «showcase».","Return every outfit of «verdict», each under its own «id»."],"limits":["Rely only on the input: do not invent what it does not contain.","The answer is one JSON object following \"answer_schema\", without explanations and without ```."],"language":"English","answer":"OUTFITS_V1","answer_schema":{"version":"1","outfits":[{"id":"<«id» of the outfit, as in «verdict»>","caption":"<string>","pole":"filter_and_rank|anchor_first|tonal_column|ease_the_knot|break|free","items":["<«n» of all items of the finished outfit>"],"day":"<«day» of «your_outfit», unchanged>","deliberate":[{"item":"<string>","why":"<string>"}],"done":[{"finding":"<string>","action":"fixed|declined|partly","why":"<string>"}]}],"needed":[{"kind":"<string>","description":"<string>","type":"<string>","color":"<string>","fabric":"<string>"}]},"input":["\"case\" — her occasion in her and the code's words","\"day\" — her day as facts","\"verdict\" — your outfits and the code's check: «your_outfit» — items with their full descriptions and your caption; «structure.blockers» — what keeps the outfit from being shown: a missing kind of item, or several items of one kind («items» lists them)","\"showcase\" — items that can fill what is missing","\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, or {code: values}; codes are defined in \"statement_codes\""],"statement_codes":{"no_top_bottom_or_dress":"the outfit has neither of these foundations and no dress to replace them: without them these are accessories, not an outfit (values: missing — the slot codes that are missing)","no_shoes":"the outfit has no shoes, and without them it is not ready: add a pair for the occasion","no_bag":"no bag, and the occasion requires one","too_few_items":"too few items in the outfit for this occasion (values: count — how many there are, minimum — how many are needed at least)","needs_third_piece":"needs one more piece beyond top, bottom, shoes: outer layer, jewellery, belt, scarf or hat"}},"case":"свято, святкова вечеря, 20:00","day":{"place":"festive_dinner","start_hour":20,"part_of_day":"evening","light":"artificial","unknown":["temperature_c"]},"verdict":[{"your_outfit":{"id":"o1","caption":"Festive dinner: structured silhouette in graphite","items":[{"n":"#82·36","name":"Жакет з контрасною підкладою","price":2655,"type":"blazer","cut":"relaxed","fabric":["woven"],"length":"mid_thigh","color":"black","hex":"#212123","L":[13,13],"L_from":"photo_point","hem_cm":[80,90],"hem_from":"word","formality":[5,7],"register":"classic","branch":"core"},{"n":"#346·06","name":"Куртка з екошкіри з підплічниками та паском","price":8900,"type":"jacket","cut":"fitted","fabric":["faux_leather"],"length":"mid_thigh","details":["belt"],"color":"brown","hex":"#6c4b32","family":"orange","L":[15,55],"L_from":"word","hem_cm":[80,90],"hem_from":"word","formality":[2,5],"register":"rock","branch":"edge","scheme":"muted_complementary"}],"day":"A structured blazer balances loose trousers for a formal dinner setting; the leather jacket adds warmth and texture without being too casual, creating a sophisticated high-low mix."},"structure":{"ok":false,"blockers":[{"id":"b-o1-1","code":"no_top_and_bottom","statements":[{"no_top_bottom_or_dress":{"missing":["bottom"]}}]},{"id":"b-o1-2","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o1-3","code":"no_bag","statements":["no_bag"]},{"id":"b-o1-4","code":"incomplete","statements":[{"too_few_items":{"count":2,"minimum":5}}]}]}},{"your_outfit":{"id":"o2","caption":"Chocolate sheath dress with tonal earth tones","items":[{"n":"#272·20","name":"Трикотажна сукня з вставками з сітки","price":5425,"type":"dress_generic","cut":"fitted","fabric":["jersey","jersey"],"length":"maxi","pattern":"lace_motif","color":"black","hex":"#1c181a","L":[9,9],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":[5,5],"register":"romantic","branch":"core"},{"n":"#381·30","name":"Піджак жіночий вкорочений на гудзику демісезонний","price":2499,"type":"blazer","cut":"straight","fabric":["polyester","woven"],"length":"mid_thigh","color":"chocolate","hex":"#654321","family":"orange","L":[32,32],"L_from":"photo_point","hem_cm":[83,92],"hem_from":"shop_cm","formality":[5,7],"register":"classic","branch":"core"}],"day":"A chocolate sheath dress anchors the evening, echoed by matching accessories in varying shades of brown and beige to create a calm, unified visual flow."},"structure":{"ok":false,"blockers":[{"id":"b-o2-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o2-2","code":"no_bag","statements":["no_bag"]}]}},{"your_outfit":{"id":"o3","caption":"Olive trousers and blazer for confident elegance","items":[{"n":"#237·23","name":"Оливкові розкльошені штани з віскозою MH STUDIO","price":6999,"type":"trousers","cut":"fitted","fabric":["polyester"],"color":"olive","hex":"#515436","family":"yellow","L":[35,35],"L_from":"photo_point","formality":[3,7],"branch":"core"},{"n":"#75·23","name":"Чорний жакет в азійському стилі","price":6999,"type":"blazer","cut":"fitted","fabric":["polyester","woven"],"length":"mid_thigh","pattern":"embroidery","color":"black","hex":"#1e1f1d","L":[12,12],"L_from":"photo_point","hem_cm":[80,90],"hem_from":"word","formality":[5,7],"register":"classic","branch":"core"}],"day":"Olive trousers carry the scheme's green accent, paired with a dark blazer to keep the look grounded and formal enough for a festive dinner."},"structure":{"ok":false,"blockers":[{"id":"b-o3-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o3-2","code":"no_bag","statements":["no_bag"]},{"id":"b-o3-3","code":"incomplete","statements":["needs_third_piece"]},{"id":"b-o3-4","code":"incomplete","statements":[{"too_few_items":{"count":2,"minimum":5}}]}]}},{"your_outfit":{"id":"o4","caption":"Black dress with gold jewelry and belt","items":[{"n":"#166·01","name":"Чорна довга сукня з хомутом","price":3599,"type":"dress_generic","cut":"bodycon","fabric":["elastane"],"length":"maxi","sleeve":"sleeveless","color":"black","hex":"#18171a","L":[8,8],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":[7,9],"branch":"core"},{"n":"#215·31","name":"Золоті сережки з підвіскою","price":34170,"type":"jewelry_generic","fabric":"unknown","shine":true,"color":"golden","hex":"#c8ac6a","family":"yellow","in_arc":true,"L":[55,88],"L_from":"word","branch":"core"},{"n":"#295·31","name":"Перлинне намисто зі срібною застібкою","price":84000,"type":"jewelry_generic","fabric":"unknown","shine":true,"color":"pearly","hex":"#dcd5c9","in_arc":true,"L":[86,86],"L_from":"photo_point","branch":"core"},{"n":"#379·12","name":"Пояс до піджака шоколад","price":100,"type":"blazer","fabric":["polyester","woven"],"color":"chocolate","hex":"#513827","family":"orange","in_arc":true,"L":[12,40],"L_from":"word","formality":[5,7],"fabric_c":[2,18],"register":"classic","branch":"core"}],"day":"A long black bodycon dress simplifies the outfit, while a gold necklace and belt add necessary texture and shine for an evening seen under artificial light."},"structure":{"ok":false,"blockers":[{"id":"b-o4-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o4-2","code":"no_bag","statements":["no_bag"]}]}},{"your_outfit":{"id":"o5","caption":"Navy blazer with camel trousers for classic balance","items":[{"n":"#3·12","name":"Піджак вкорочений синій","price":2999,"type":"blazer","cut":"straight","fabric":["polyester","woven"],"length":"midi","details":["single_breasted"],"color":"blue","hex":"#1f2029","L":[13,13],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":[5,7],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#63·26","name":"Штани з вовни ягнят темно-бежеві","price":3700,"type":"trousers","cut":"wide","fabric":["polyamide"],"length":"maxi","color":"beige","hex":"#a78f80","family":"orange","L":[61,61],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":[3,7],"fabric_c":[2,18],"register":"classic","branch":"core"}],"day":"Navy and camel are a classic combination that suits a festive dinner; the fitted blazer balances the wide-leg trousers, ensuring a refined silhouette."},"structure":{"ok":false,"blockers":[{"id":"b-o5-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o5-2","code":"no_bag","statements":["no_bag"]},{"id":"b-o5-3","code":"incomplete","statements":["needs_third_piece"]},{"id":"b-o5-4","code":"incomplete","statements":[{"too_few_items":{"count":2,"minimum":5}}]}]}}],"showcase":[{"n":"#92·20","name":"Джинсові штани","price":8990,"type":"trousers","cut":"relaxed","fabric":["cotton","woven"],"length":"midi","shop_color":"джинс","hex":"#264666","family":"blue","L":[29,29],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":[1,4],"register":"preppy","branch":"core"},{"n":"#132·06","name":"Штани з фактурної екошкіри","price":4500,"type":"trousers","cut":"straight","fabric":["faux_leather"],"length":"midi","pattern":"print_generic","color":"grey","hex":"#928c91","L":[59,59],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":[3,7],"register":"rock","branch":"core"},{"n":"#30·06","name":"Джинси BAGGY з високою посадкою","price":3590,"type":"jeans","cut":"relaxed","fabric":["cotton","woven"],"length":"maxi","color":"graphite","hex":"#494f50","L":[33,33],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":[1,4],"register":"preppy","branch":"core"},{"n":"#25·24","name":"Чорні палаццо із сумішевого льону","price":1546,"type":"trousers","cut":"straight","fabric":["viscose","woven"],"length":"maxi","color":"black","hex":"#2a2b2d","L":[18,18],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":[3,7],"fabric_c":[18,null],"register":"preppy","branch":"core"},{"n":"#111·24","name":"Спідниця-трапеція у клітинку","price":1062,"type":"skirt","cut":"straight","fabric":["polyester"],"length":"midi","pattern":"check","color":"graphite","hex":"#444546","L":[29,29],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":[3,7],"branch":"core"},{"n":"#45·31","name":"Широкі джинси блакитного кольору","price":10350,"type":"jeans","cut":"straight","fabric":["denim","woven"],"length":"midi","color":"light_blue","hex":"#99a2ad","L":[66,66],"L_from":"photo_point","hem_cm":[0,4],"hem_from":"shop_cm","formality":[2,4],"register":"workwear","branch":"core"},{"n":"#24·25","name":"Подовжені жіночі шорти-бермуди виконані з полірованої костюмної тканини в пісочному відтінку","price":200,"type":"shorts","cut":"straight","fabric":["cotton"],"length":"midi","color":"beige","hex":"#bc9662","family":"yellow","L":[64,64],"L_from":"photo_point","hem_cm":[19,25],"hem_from":"shop_cm","formality":[1,4],"register":"classic","branch":"edge","scheme":"tonal"},{"n":"#128·30","name":"Штани жіночі прогулянкові демісезонні","price":1780,"type":"trousers","cut":"straight","fabric":["polyester"],"length":"midi","color":"camel","hex":"#a48675","family":"orange","L":[58,58],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":[3,7],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#1·31","name":"Прямий піджак із вовни на кнопках","price":3600,"type":"blazer","cut":"straight","fabric":["wool","woven"],"length":"mid_thigh","color":"black","hex":"#19181b","L":[8,8],"L_from":"photo_point","hem_cm":[65,69],"hem_from":"shop_cm","formality":[5,7],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#2·16","name":"Котонова сорочка без рукавів чорна","price":2080,"type":"shirt","cut":"straight","fabric":["cotton","woven"],"sleeve":"sleeveless","color":"black","hex":"#1d1c1e","L":[10,10],"L_from":"photo_point","formality":[3,6],"register":"preppy","branch":"core"},{"n":"#4·26","name":"Джемпер з вовни та мохеру на короткий рукав морська хвиля","price":3500,"type":"sweater","cut":"relaxed","fabric":["polyamide","jersey"],"length":"mid_thigh","sleeve":"short","color":"turquoise","hex":"#0d3859","family":"blue","L":[22,22],"L_from":"photo_point","hem_cm":[80,90],"hem_from":"word","formality":[3,6],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#36·28","name":"Боді з сітки , Chocolate","price":1199,"type":"bodysuit","cut":"bodycon","fabric":["polyester"],"color":"chocolate","hex":"#513827","family":"orange","L":[12,40],"L_from":"word","formality":[4,6],"branch":"edge","scheme":"muted_complementary"},{"n":"#15·23","name":"Чорний однобортний прямий жакет з віскозою","price":6999,"type":"blazer","cut":"fitted","fabric":["polyester","woven"],"length":"waist","details":["single_breasted"],"color":"black","hex":"#1c1a1e","L":[10,10],"L_from":"photo_point","hem_cm":[98,104],"hem_from":"word","formality":[5,7],"register":"classic","branch":"core"},{"n":"#57·30","name":"Лонгслів базовий жіночий з віскози демісезонний","price":1300,"type":"longsleeve","cut":"fitted","fabric":["elastane"],"color":"chocolate","hex":"#513827","family":"orange","L":[12,40],"L_from":"word","hem_cm":[73,77],"hem_from":"shop_cm","formality":[3,5],"branch":"edge","scheme":"muted_complementary"},{"n":"#17·22","name":"Боді-майка чорна","price":2400,"type":"bodysuit","cut":"bodycon","fabric":["jersey"],"length":"mid_thigh","color":"black","hex":"#262122","L":[13,13],"L_from":"photo_point","hem_cm":[80,90],"hem_from":"word","formality":[3,4],"branch":"core"},{"n":"#8·30","name":"Лонгслів жіночий теплий напівпрозорий з вовни та мохеру демісезонний","price":1530,"type":"longsleeve","cut":"relaxed","fabric":["polyamide"],"color":"chocolate","hex":"#1c1412","L":[7,7],"L_from":"photo_point","hem_cm":[71,75],"hem_from":"shop_cm","formality":[3,5],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#14·01","name":"Сукня з легкого чорного шифону в квітковий принт","price":6599,"type":"dress_generic","cut":"fitted","fabric":["polyester","woven"],"length":"maxi","pattern":"floral","color":"black","hex":"#2d2326","L":[0,30],"L_from":"word","hem_cm":[5,15],"hem_from":"word","formality":[5,7],"fabric_c":[18,null],"register":"romantic","branch":"core"},{"n":"#203·20","name":"Сукня з контрастною планкою","price":4823,"type":"dress_generic","cut":"relaxed","fabric":["cotton"],"length":"midi","sleeve":"long","color":"black","hex":"#2d2326","L":[0,30],"L_from":"word","hem_cm":[21,35],"hem_from":"word","formality":[5,7],"branch":"core"},{"n":"#209·36","name":"Сукня з розрізом","price":1155,"type":"dress_generic","cut":"bodycon","fabric":["knitted"],"length":"midi","color":"black","hex":"#262325","L":[14,14],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":[5,7],"branch":"core"},{"n":"#38·19","name":"Шовкова сукня з акцентними зав'язками в шоколадному кольорі","price":2590,"type":"dress_generic","fabric":["polyester"],"length":"maxi","sleeve":"short","color":"chocolate","hex":"#513827","family":"orange","L":[12,40],"L_from":"word","hem_cm":[5,15],"hem_from":"word","branch":"core"},{"n":"#23·29","name":"Сукня №1038 шоколад","price":2300,"type":"dress_generic","cut":"bodycon","fabric":["atlas"],"length":"maxi","color":"brown","hex":"#3b2621","family":"red","L":[18,18],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":[7,9],"register":"romantic","branch":"core"},{"n":"#104·34","name":"Джинсова темно-синя сукня міді з вертикальними рельєфами","price":4890,"type":"dress_generic","cut":"fitted","fabric":["cotton","woven"],"length":"midi","sleeve":"sleeveless","color":"navy","hex":"#193b59","family":"blue","L":[24,24],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":[2,4],"register":"preppy","branch":"core"},{"n":"#242·33","name":"Сукня лляна Кантаньєде","price":3350,"type":"dress_generic","cut":"relaxed","fabric":["linen","woven"],"sleeve":"sleeveless","color":"blue","hex":"#005ba3","family":"blue","L":[15,60],"L_from":"word","fabric_c":[18,null],"register":"preppy","branch":"edge","scheme":"muted_complementary"},{"n":"#71·01","name":"Чорна сукня з мережива","price":8299,"type":"dress_generic","cut":"bodycon","fabric":["polyester"],"length":"maxi","pattern":"geometric","color":"black","hex":"#1a141a","L":[7,7],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":[7,9],"branch":"core"},{"n":"#85·15","name":"Босоніжки шкіряні помаранчеві","price":3900,"type":"heeled_sandals","fabric":["leather"],"color":"orange","hex":"#de7a3d","family":"orange","in_arc":true,"L":[45,78],"L_from":"word","formality":[4,6],"heel":"unknown","branch":"core"},{"n":"#437·03","name":"Туфлі човники, ATTICO, шкіра, колір чорний","price":4699,"type":"pumps","fabric":"unknown","shine":true,"heel":true,"branch":"core","found_for":"човники шоколадний шкіра"},{"n":"#436·03","name":"Туфлі човники, ATTICO, шкіра, колір чорний","price":3299,"type":"pumps","fabric":"unknown","branch":"core","found_for":"човники шоколадний шкіра"},{"n":"#438·10","name":"Слінгбеки шкіряні шоколадні HILLARY","price":6300,"type":"pumps","fabric":"unknown","branch":"core","found_for":"човники шоколадний шкіра"},{"n":"#10·11","name":"LeBERDES Туфлі бежеві","price":4550,"type":"dress_shoes","fabric":["suede"],"material":"suede","color":"beige","hex":"#ce9265","family":"orange","in_arc":true,"L":[65,65],"L_from":"photo_point","formality":[5,7],"heel":"unknown","branch":"core"},{"n":"#190·10","name":"Балетки гірчичні BEANS","price":1240,"type":"ballet_flats","fabric":["wool"],"color":"mustard","hex":"#ba9733","family":"yellow","in_arc":true,"L":[48,80],"L_from":"word","formality":[4,6],"fabric_c":[2,18],"heel":"none","register":"classic","branch":"core"},{"n":"#19·15","name":"Кросівки Mjus шкіряні золоті","price":4950,"type":"sneakers","fabric":["leather"],"shaft":"ankle","shine":true,"color":"golden","hex":"#e8c074","family":"yellow","in_arc":true,"L":[80,80],"L_from":"photo_point","formality":[2,4],"heel":"none","register":"streetwear","branch":"core"},{"n":"#152·07","name":"Босоніжки жіночі золоті","price":36600,"type":"heeled_sandals","fabric":["leather"],"shine":true,"color":"golden","hex":"#d4af37","family":"yellow","in_arc":true,"L":[73,73],"L_from":"photo_point","formality":[4,6],"heel":"unknown","branch":"core"},{"n":"#435·10","name":"Слінгбеки анімалістичні поні TRACY FUR","price":6000,"type":"pumps","fabric":"unknown","pattern":"animal_print","heel":true,"branch":"core","found_for":"човники шоколадний шкіра"},{"n":"#62·11","name":"LeBERDES Сандалі золоті","price":2979,"type":"sandals","fabric":"unknown","material":"leather","shine":true,"color":"golden","hex":"#d4af37","family":"yellow","in_arc":true,"L":[73,73],"L_from":"photo_point","formality":[2,4],"heel":"unknown","register":"boho","branch":"core"},{"n":"#191·07","name":"Мюлі жіночі золоті","price":21850,"type":"mules","fabric":["leather"],"shine":true,"color":"golden","hex":"#d4af37","family":"yellow","in_arc":true,"L":[73,73],"L_from":"photo_point","formality":[4,6],"heel":"unknown","branch":"core"},{"n":"#98·11","name":"Ilvi Туфлі золоті","price":6450,"type":"dress_shoes","fabric":["leather"],"shine":true,"color":"golden","hex":"#c8ac6a","family":"yellow","in_arc":true,"L":[55,88],"L_from":"word","formality":[5,7],"heel":"unknown","branch":"core"},{"n":"#442·31","name":"Шкіряний клатч Rose","price":34000,"type":"clutch","fabric":"unknown","branch":"core","found_for":"клатч чорний оксамит"},{"n":"#440·06","name":"Клатч-орігамі GIA з фактурної шкіри","price":5900,"type":"clutch","fabric":"unknown","branch":"core","found_for":"клатч чорний оксамит"},{"n":"#118·31","name":"Сумка зі шкіри Sylvie","price":25260,"type":"bag_generic","fabric":["leather"],"color":"camel","hex":"#d7ad72","family":"yellow","in_arc":true,"L":[73,73],"L_from":"photo_point","branch":"core"},{"n":"#115·31","name":"Плетений кошик із текстильним ремінцем","price":4800,"type":"bag_generic","fabric":"unknown","color":"orange","hex":"#df9962","family":"orange","in_arc":true,"L":[69,69],"L_from":"photo_point","branch":"core"},{"n":"#18·21","name":"Жіноча сумка шкіряна жовта","price":1799,"type":"bag_generic","fabric":["leather"],"color":"yellow","hex":"#efd056","family":"yellow","in_arc":true,"L":[70,98],"L_from":"word","branch":"core"},{"n":"#121·31","name":"Крос-боді у фірмовий принт із золотистим лого","price":3600,"type":"crossbody_bag","fabric":"unknown","pattern":"print_generic","color":"golden","hex":"#c8ac6a","family":"yellow","in_arc":true,"L":[55,88],"L_from":"word","formality":[4,4],"register":"rock","branch":"core"},{"n":"#439·06","name":"Клатч-орігамі GIA шкіряний","price":5900,"type":"clutch","fabric":"unknown","branch":"core","found_for":"клатч чорний оксамит"},{"n":"#21·38","name":"Сумка Гірчична","price":2070,"type":"bag_generic","fabric":"unknown","color":"mustard","hex":"#ba9733","family":"yellow","in_arc":true,"L":[48,80],"L_from":"word","branch":"core"},{"n":"#107·38","name":"Сумка Золота лілія","price":2070,"type":"bag_generic","fabric":["faux_leather"],"color":"golden","hex":"#c8ac6a","family":"yellow","in_arc":true,"L":[55,88],"L_from":"word","register":"rock","branch":"core"},{"n":"#441·31","name":"Клатч Money","price":35000,"type":"clutch","fabric":"unknown","shine":true,"branch":"core","found_for":"клатч чорний оксамит"},{"n":"#252·03","name":"Сумка жіноча, ATTICO, шкіра, колір жовтий","price":1599,"type":"bag_generic","fabric":["leather"],"color":"yellow","hex":"#efd056","family":"yellow","in_arc":true,"L":[70,98],"L_from":"word","branch":"core"},{"n":"#102·31","name":"Помаранчевий шкіряний сетчел Sicily","price":40000,"type":"bag_generic","fabric":["leather"],"color":"orange","hex":"#b0571f","family":"orange","in_arc":true,"L":[47,47],"L_from":"photo_point","branch":"core"},{"n":"#310·01","name":"Чорна куртка з круглим комірцем","price":3899,"type":"jacket","cut":"fitted","fabric":["polyester"],"length":"mid_thigh","sleeve":"three_quarter","color":"black","hex":"#1f1e23","L":[12,12],"L_from":"photo_point","hem_cm":[80,90],"hem_from":"word","formality":[2,5],"branch":"core"},{"n":"#28·04","name":"Жіноче вовняне пальто шоколадного кольору, класичний стиль Stella Polare (коричневий, 42)","price":7920,"type":"coat","cut":"straight","fabric":["wool"],"length":"midi","sleeve":"long","details":["double_breasted"],"color":"brown","shop_color":"коричневий молочний","hex":"#6c4b32","family":"orange","L":[15,55],"L_from":"word","hem_cm":[48,52],"hem_from":"shop_cm","formality":[5,8],"fabric_c":[2,18],"register":"classic","branch":"edge","scheme":"muted_complementary"},{"n":"#320·12","name":"Пуховик (зима) в кольорі чорний","price":2000,"type":"jacket","cut":"relaxed","fabric":["knitted"],"length":"midi","details":["hood","oversize"],"color":"black","hex":"#1e1d20","L":[11,11],"L_from":"photo_point","hem_cm":[64,73],"hem_from":"shop_cm","formality":[2,5],"register":"gorpcore","branch":"core"},{"n":"#123·26","name":"Об'ємний кардиган на ґудзиках темно-сірий","price":5300,"type":"cardigan","cut":"relaxed","fabric":["polyamide","jersey"],"length":"mid_thigh","sleeve":"short","color":"grey","hex":"#484849","L":[31,31],"L_from":"photo_point","hem_cm":[80,90],"hem_from":"word","formality":[3,6],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#72·31","name":"Сірий укорочений жакет на гудзиках","price":8100,"type":"blazer","cut":"fitted","fabric":["elastane","woven"],"length":"waist","color":"grey","hex":"#4f4a4b","L":[32,32],"L_from":"photo_point","hem_cm":[91,95],"hem_from":"shop_cm","formality":[5,7],"register":"classic","branch":"core"},{"n":"#241·35","name":"Подовжений чорний жакет","price":3299,"type":"blazer","cut":"relaxed","fabric":["polyester","woven"],"length":"mid_thigh","color":"black","hex":"#1d181a","L":[9,9],"L_from":"photo_point","hem_cm":[80,90],"hem_from":"word","formality":[5,7],"register":"classic","branch":"core"},{"n":"#271·30","name":"Пальто жіноче укорочене з двобортним коміром демісезонне","price":3900,"type":"coat","cut":"relaxed","fabric":["polyester"],"length":"midi","details":["oversize","double_breasted"],"color":"black","hex":"#17181e","L":[8,8],"L_from":"photo_point","hem_cm":[53,57],"hem_from":"shop_cm","formality":[5,8],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#114·04","name":"Жіноче пальто Stella Polare (чорний, 44)","price":13200,"type":"coat","cut":"straight","fabric":"unknown","length":"midi","details":["belt"],"color":"black","hex":"#1f1e21","L":[11,11],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":[5,8],"register":"classic","branch":"core"},{"n":"#311·37","name":"Ремінь жіночий Welfare","price":750,"fabric":["leather"],"color":"black","hex":"#19181a","in_arc":true,"L":[8,8],"L_from":"photo_point","branch":"core"},{"n":"#355·12","name":"Краватка-пояс вузька чорна","price":150,"fabric":["polyester"],"color":"black","hex":"#151515","in_arc":true,"L":[7,7],"L_from":"photo_point","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#116·18","name":"Пасок з камінням золото","price":650,"fabric":"unknown","color":"golden","hex":"#c8ac6a","family":"yellow","in_arc":true,"L":[55,88],"L_from":"word","branch":"core"},{"n":"#157·18","name":"Пасок з пірʼям тауп","price":900,"fabric":["polyester"],"color":"taupe","hex":"#d2c1b3","in_arc":true,"L":[79,79],"L_from":"photo_point","branch":"core"},{"n":"#135·18","name":"Пасок металевий Кільця золото","price":950,"type":"jewelry_generic","fabric":"unknown","shine":true,"color":"golden","hex":"#c8ac6a","family":"yellow","in_arc":true,"L":[55,88],"L_from":"word","branch":"core"},{"n":"#101·05","name":"Пасок шкіряний (Hermes)","price":2360,"fabric":["leather"],"shine":true,"color":"orange","hex":"#f9842e","family":"orange","in_arc":true,"L":[67,67],"L_from":"photo_point","branch":"core"},{"n":"#178·18","name":"Пасок з пірʼям темний тауп","price":900,"cut":"fitted","fabric":["polyester"],"shop_color":"темний тауп","hex":"#d3c9be","in_arc":true,"L":[81,81],"L_from":"photo_point","branch":"core"},{"n":"#330·22","name":"Стразовий пояс-шнур з наконечниками","price":1200,"fabric":["velvet","woven"],"color":"silvery","hex":"#b5a8ab","in_arc":true,"L":[55,85],"L_from":"word","fabric_c":[2,10],"register":"romantic","branch":"core"},{"n":"#327·26","name":"М'який шарф з вишивкою ручної роботи \"Кролик\" молочний","price":3500,"type":"scarf_generic","fabric":["polyamide"],"pattern":"embroidery","color":"white","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#350·26","name":"Шарф-краватка \"Машинки\" чорна","price":1400,"type":"scarf_generic","fabric":["wool"],"pattern":"print_generic","color":"black","hex":"#2d2326","in_arc":true,"L":[0,30],"L_from":"word","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#313·08","name":"Хустка, жовта","price":690,"type":"kerchief","fabric":["cotton"],"pattern":"check","color":"yellow","hex":"#efd056","family":"yellow","in_arc":true,"L":[70,98],"L_from":"word","branch":"core"},{"n":"#159·31","name":"Сірий шарф із фірмовою монограмою","price":4500,"type":"scarf_generic","fabric":"unknown","pattern":"print_generic","color":"grey","hex":"#aaa8a9","in_arc":true,"L":[69,69],"L_from":"photo_point","branch":"core"},{"n":"#305·26","name":"Жакардовий двосторонній шарф з графічним мотивом темно-сірий","price":3500,"type":"scarf_generic","fabric":["polyamide"],"pattern":"embroidery","color":"grey","hex":"#505154","in_arc":true,"L":[34,34],"L_from":"photo_point","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#31·14","name":"Хустка","price":1699,"type":"kerchief","fabric":["silk"],"pattern":"embroidery","shine":true,"color":"white","hex":"#f9f3f3","in_arc":true,"L":[96,96],"L_from":"photo_point","register":"boho","branch":"core"},{"n":"#291·26","name":"Хустка з м'якої вовни ягняти темно-бежева","price":2500,"type":"kerchief","fabric":["polyamide"],"color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#158·31","name":"Коричневий шарф із необробленим краєм","price":27500,"type":"scarf_generic","fabric":"unknown","color":"brown","hex":"#6c4b32","family":"orange","in_arc":true,"L":[15,55],"L_from":"word","branch":"core"}]}
+
+── ВІДПОВІДЬ (7601 симв., 60.6 с, HTTP 200) ──
+{
+  "answer": "OUTFITS_V1",
+  "outfits": [
+    {
+      "id": "o1",
+      "caption": "Festive dinner: structured silhouette in graphite with brown leather jacket",
+      "pole": "anchor_first",
+      "items": [
+        "#82·36",
+        "#346·06",
+        "#25·24",
+        "#19·15",
+        "#118·31"
+      ],
+      "day": "A structured blazer balances loose trousers for a formal dinner setting; the leather jacket adds warmth and texture without being too casual, creating a sophisticated high-low mix.",
+      "deliberate": [
+        {
+          "item": "#25·24",
+          "why": "Added black palazzo trousers (#25·24) to resolve the 'no_bottom' blocker, completing the top-bottom foundation."
+        },
+        {
+          "item": "#19·15",
+          "why": "Added golden sneakers (#19·15) to resolve the 'no_shoes' blocker. While less formal than pumps, they provide necessary footwear; for a strict evening event, gold pumps or heeled sandals from the showcase would be preferred, but these are available."
+        },
+        {
+          "item": "#118·31",
+          "why": "Added camel bag (#118·31) to resolve the 'no_bag' blocker. Its neutral color bridges the black and brown elements of the outfit."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_top_bottom_or_dress",
+          "action": "fixed",
+          "why": "Added missing bottom item (#25·24)."
+        },
+        {
+          "finding": "no_shoes",
+          "action": "fixed",
+          "why": "Added shoes (#19·15)."
+        },
+        {
+          "finding": "no_bag",
+          "action": "fixed",
+          "why": "Added bag (#118·31)."
+        },
+        {
+          "finding": "too_few_items",
+          "action": "fixed",
+          "why": "Total item count reached 5 (Blazer, Jacket, Trousers, Shoes, Bag), satisfying the minimum requirement."
+        }
+      ]
+    },
+    {
+      "id": "o2",
+      "caption": "Chocolate sheath dress with tonal earth tones",
+      "pole": "anchor_first",
+      "items": [
+        "#272·20",
+        "#381·30",
+        "#10·11",
+        "#440·06",
+        "#31·14"
+      ],
+      "day": "A chocolate sheath dress anchors the evening, echoed by matching accessories in varying shades of brown and beige to create a calm, unified visual flow.",
+      "deliberate": [
+        {
+          "item": "#10·11",
+          "why": "Added beige dress shoes (#10·11) to resolve the 'no_shoes' blocker. Suede provides texture suitable for an evening event."
+        },
+        {
+          "item": "#440·06",
+          "why": "Added origami clutch (#440·06) in textured leather to resolve the 'no_bag' blocker, adding a rock-chic element to the romantic dress."
+        },
+        {
+          "item": "#31·14",
+          "why": "Added white embroidered kerchief (#31·14) as a third piece to resolve the 'too_few_items' constraint and add delicate texture under artificial light."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_shoes",
+          "action": "fixed",
+          "why": "Added shoes (#10·11)."
+        },
+        {
+          "finding": "no_bag",
+          "action": "fixed",
+          "why": "Added bag (#440·06)."
+        },
+        {
+          "finding": "too_few_items",
+          "action": "fixed",
+          "why": "Total item count reached 5 (Dress, Blazer, Shoes, Clutch, Kerchief), satisfying the minimum requirement."
+        }
+      ]
+    },
+    {
+      "id": "o3",
+      "caption": "Olive trousers and blazer for confident elegance",
+      "pole": "anchor_first",
+      "items": [
+        "#237·23",
+        "#75·23",
+        "#436·03",
+        "#118·31",
+        "#350·26"
+      ],
+      "day": "Olive trousers carry the scheme's green accent, paired with a dark blazer to keep the look grounded and formal enough for a festive dinner.",
+      "deliberate": [
+        {
+          "item": "#436·03",
+          "why": "Added black pumps (#436·03) to resolve the 'no_shoes' blocker. Classic black pumps match the blazer and elevate the formality."
+        },
+        {
+          "item": "#118·31",
+          "why": "Added camel bag (#118·31) to resolve the 'no_bag' blocker, introducing warmth to the cool olive/black palette."
+        },
+        {
+          "item": "#350·26",
+          "why": "Added black scarf-necktie (#350·26) as a third piece to resolve the 'too_few_items' constraint and add texture near the neck."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_shoes",
+          "action": "fixed",
+          "why": "Added shoes (#436·03)."
+        },
+        {
+          "finding": "no_bag",
+          "action": "fixed",
+          "why": "Added bag (#118·31)."
+        },
+        {
+          "finding": "too_few_items",
+          "action": "fixed",
+          "why": "Total item count reached 5 (Trousers, Blazer, Shoes, Bag, Scarf), satisfying the minimum requirement."
+        }
+      ]
+    },
+    {
+      "id": "o4",
+      "caption": "Black dress with gold jewelry and belt",
+      "pole": "ease_the_knot",
+      "items": [
+        "#166·01",
+        "#215·31",
+        "#295·31",
+        "#379·12",
+        "#85·15",
+        "#441·31"
+      ],
+      "day": "A long black bodycon dress simplifies the outfit, while a gold necklace and belt add necessary texture and shine for an evening seen under artificial light.",
+      "deliberate": [
+        {
+          "item": "#85·15",
+          "why": "Added orange heeled sandals (#85·15) to resolve the 'no_shoes' blocker. The color adds a pop against the black dress, and the heel ensures formality."
+        },
+        {
+          "item": "#441·31",
+          "why": "Added Money clutch (#441·31) to resolve the 'no_bag' blocker. A metallic/structured bag complements the jewelry and artificial lighting."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_shoes",
+          "action": "fixed",
+          "why": "Added shoes (#85·15)."
+        },
+        {
+          "finding": "no_bag",
+          "action": "fixed",
+          "why": "Added bag (#441·31)."
+        }
+      ]
+    },
+    {
+      "id": "o5",
+      "caption": "Navy blazer with camel trousers for classic balance",
+      "pole": "tonal_column",
+      "items": [
+        "#3·12",
+        "#63·26",
+        "#435·10",
+        "#118·31",
+        "#178·18"
+      ],
+      "day": "Navy and camel are a classic combination that suits a festive dinner; the fitted blazer balances the wide-leg trousers, ensuring a refined silhouette.",
+      "deliberate": [
+        {
+          "item": "#435·10",
+          "why": "Added animal print pumps (#435·10) to resolve the 'no_shoes' blocker. This adds an edgy, festive touch suitable for a dinner party."
+        },
+        {
+          "item": "#118·31",
+          "why": "Added camel bag (#118·31) to resolve the 'no_bag' blocker, extending the camel color of the trousers for a tonal column effect."
+        },
+        {
+          "item": "#178·18",
+          "why": "Added dark taupe belt (#178·18) as a third piece to resolve the 'too_few_items' constraint. It cinches the wide-leg trousers and adds definition."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_shoes",
+          "action": "fixed",
+          "why": "Added shoes (#435·10)."
+        },
+        {
+          "finding": "no_bag",
+          "action": "fixed",
+          "why": "Added bag (#118·31)."
+        },
+        {
+          "finding": "too_few_items",
+          "action": "fixed",
+          "why": "Total item count reached 5 (Blazer, Trousers, Shoes, Bag, Belt), satisfying the minimum requirement."
+        }
+      ]
+    }
+  ],
+  "needed": [
+
+]
+}

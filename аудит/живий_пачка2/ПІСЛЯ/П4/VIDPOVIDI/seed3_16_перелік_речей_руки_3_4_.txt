@@ -1,0 +1,44 @@
+── ПРОМПТ (2034 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer in midnight blue (#0a1f42) featuring a sharp notched lapel and single-button closure, tailored with a modern slightly tapered silhouette to elongate the frame. Below it sits a flowing silk crepe midi skirt in oatmeal beige (#dcc9b6) with an A-line cut that flares gently from the waist to just below the knee for professional grace and movement. The ensemble is grounded by pointed-toe leather pumps in polished charcoal grey (#36454f), offering a comfortable heel height suitable for long days at the office. Completing the look are minimalist gold-tone drop earrings, a slim leather belt matching the skirt tone, and a structured tote bag in soft cognac brown. This outfit works because the combination of deep blue and neutral tones projects authority while remaining approachable and modern. The natural breathability of the wool blend ensures comfort during busy work hours without sacrificing elegance. The balance between the rigid structure of the blazer and the fluidity of the skirt creates a dynamic yet polished aesthetic perfect for a corporate setting. Finally, the classic colors allow her to express her personal style while strictly adhering to professional dress codes."}
+
+── ВІДПОВІДЬ (1031 симв., 101.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured wool-blend with sharp notched lapel, single-button closure, and modern slightly tapered silhouette",
+      "slot": "top",
+      "color_hex": "#0a1f42"
+    },
+    {
+      "name": "skirt",
+      "details": "flowing silk crepe midi skirt with A-line cut flaring gently from waist to just below knee",
+      "slot": "bottom",
+      "color_hex": "#dcc9b6"
+    },
+    {
+      "name": "shoes",
+      "details": "pointed-toe leather pumps with comfortable heel height",
+      "slot": "shoes",
+      "color_hex": "#36454f"
+    },
+    {
+      "name": "earrings",
+      "details": "minimalist gold-tone drop earrings",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "belt",
+      "details": "slim leather belt matching the skirt tone",
+      "slot": "belt",
+      "color_hex": "#dcc9b6"
+    },
+    {
+      "name": "bag",
+      "details": "structured tote bag in soft cognac brown",
+      "slot": "bag",
+      "color_hex": null
+    }
+  ]
+}

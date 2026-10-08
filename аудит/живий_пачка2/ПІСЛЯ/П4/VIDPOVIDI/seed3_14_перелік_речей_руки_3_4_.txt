@@ -1,0 +1,38 @@
+── ПРОМПТ (1717 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured Blazer in a deep charcoal grey (#383838) with a sharp shoulder line and tailored fit, crafted from crisp wool blend.\nHigh-waisted wide-leg trousers in matte navy blue (#1C2841), falling to just above the ankle with a clean pleated front.\nClassic leather pumps in camel brown (#C6956D) with a moderate heel for all-day comfort.\nMinimalist gold bar necklace and stud earrings in polished brass for a subtle accent.\nThis outfit works because the monochromatic base of grey and navy creates a sophisticated, authoritative silhouette suitable for a professional office environment. The wool blend blazer provides the necessary structure to convey competence, while the wide-leg trousers add a touch of modern elegance and fluid movement. The warm camel pumps and gold jewelry introduce just enough visual interest to elevate the look without compromising its sleek, business-ready aesthetic."}
+
+── ВІДПОВІДЬ (876 симв., 5.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "sharp shoulder line and tailored fit cut from crisp wool blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#383838"
+    },
+    {
+      "name": "Trousers",
+      "details": "high-waisted wide-leg with clean pleated front falling to just above the ankle",
+      "slot": "bottom",
+      "color_hex": "#1C2841"
+    },
+    {
+      "name": "Pumps",
+      "details": "classic leather with a moderate heel designed for all-day comfort",
+      "slot": "shoes",
+      "color_hex": "#C6956D"
+    },
+    {
+      "name": "Necklace",
+      "details": "minimalist gold bar design made of polished brass",
+      "slot": "collar_necklace",
+      "color_hex": null
+    },
+    {
+      "name": "Earrings",
+      "details": "stud style made of polished brass",
+      "slot": "earrings",
+      "color_hex": null
+    }
+  ]
+}

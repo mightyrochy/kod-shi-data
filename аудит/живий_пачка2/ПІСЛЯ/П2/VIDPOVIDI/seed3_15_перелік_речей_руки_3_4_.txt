@@ -1,0 +1,38 @@
+── ПРОМПТ (1820 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk blouse with a relaxed drape collar in midnight blue (#001f3f), cut loose through the body and falling just above the hip. Tailored wide-leg trousers in matching midnight blue #001f3f, cut straight and cropped at mid-calf to show off ankle-socks underneath. Leather loafers in deep charcoal grey (#36454F), cut classic penny style with a low block heel for walking across restaurant floors. A thin gold link chain necklace in 18-inch length, featuring small polished beads in metallic gold (#D4AF37). This outfit works perfectly for an evening date at a neighborhood bistro because the monochromatic blue palette feels sophisticated yet intimate without being overly formal. The relaxed silhouette of the blouse provides comfort for lingering conversation while the cropped trousers keep the look modern and grounded. The warm metallic gold jewelry adds just enough sparkle to elevate the ensemble past 19:30 as the restaurant lights dim, striking the ideal balance between polished and approachable."}
+
+── ВІДПОВІДЬ (867 симв., 93.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk blouse",
+      "details": "relaxed drape collar, cut loose through the body with fabric falling just above the hip",
+      "slot": "top",
+      "color_hex": "#001f3f"
+    },
+    {
+      "name": "Tailored wide-leg trousers",
+      "details": "cut straight and cropped at mid-calf",
+      "slot": "bottom",
+      "color_hex": "#001f3f"
+    },
+    {
+      "name": "Leather loafers",
+      "details": "classic penny style with a low block heel",
+      "slot": "shoes",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "Ankle-socks",
+      "details": "visible underneath cropped trousers",
+      "slot": "socks",
+      "color_hex": null
+    },
+    {
+      "name": "Gold link chain necklace",
+      "details": "18-inch length featuring small polished beads",
+      "slot": "necklace",
+      "color_hex": "#D4AF37"
+    }
+  ]
+}

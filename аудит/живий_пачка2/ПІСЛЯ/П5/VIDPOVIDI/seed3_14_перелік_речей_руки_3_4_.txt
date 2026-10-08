@@ -1,0 +1,38 @@
+── ПРОМПТ (1679 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk midi blouse, relaxed silhouette, knee-length hem, cream, hex code #F5F5DC.\nTailored wool-blend trousers, straight leg cut, ankle length, charcoal gray, hex code #36454F.\nLeather pump shoes, classic pointed-toe style, calf-high heel, midnight blue, hex code #191970.\nPearl stud earrings and a delicate gold chain necklace.\n\nThis ensemble strikes the perfect balance between solemnity and celebration suitable for a religious feast or festive dinner at 8 PM. The soft cream blouse adds a touch of gentle elegance against the dark trousers, creating a refined contrast that looks sophisticated after sunset. While the weather rules suggest no outer layer needed, the fabric choices provide enough warmth for an evening setting without feeling heavy. The minimalist accessories ensure the focus remains on your presence and the significance of the occasion."}
+
+── ВІДПОВІДЬ (744 симв., 86.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Blouse",
+      "details": "Silk midi relaxed silhouette knee-length hem",
+      "slot": "top",
+      "color_hex": "#F5F5DC"
+    },
+    {
+      "name": "Trousers",
+      "details": "Tailored wool-blend straight leg cut ankle length",
+      "slot": "bottom",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "Shoes",
+      "details": "Leather pump classic pointed-toe style calf-high heel",
+      "slot": "shoes",
+      "color_hex": "#191970"
+    },
+    {
+      "name": "Earrings",
+      "details": "Pearl stud",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "Necklace",
+      "details": "Delicate gold chain",
+      "slot": "necklace",
+      "color_hex": null
+    }
+  ]
+}

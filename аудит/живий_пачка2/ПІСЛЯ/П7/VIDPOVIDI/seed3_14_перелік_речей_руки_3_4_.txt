@@ -1,0 +1,38 @@
+── ПРОМПТ (2048 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool blend suit jacket, tailored fit, knee-length hem, deep charcoal grey (#3b3b40), matte woven wool with a subtle sheen.\nSilk camisole top, relaxed boxy cut, hip-length hem, warm cream (#f5f1e8), smooth liquid silk texture.\nHigh-waisted trousers, straight-leg cut, ankle-length hem, dark slate grey (#3c3d40), heavy crepe fabric.\nLeather loafers, pointed toe silhouette, mid-calf length, silver metallic finish (#c0c0c0), genuine leather with rhinestone detailing.\nSilver cufflinks and delicate chain necklace, standard round face shape cut, short drop length, polished sterling silver metal.\nThis outfit honors the occasion of a funeral with its refined monochromatic palette while strictly adhering to her request for silver accessories. The dark charcoal and slate tones provide a somber yet elegant backdrop that allows the silver jewelry to become the focal point of the ensemble. By incorporating a silk camisole, the look balances traditional mourning attire with a touch of personal softness and warmth suitable for the season. Every element from the tailored fit to the specific hex codes ensures the silhouette flatters her frame without drawing unnecessary attention, creating a respectful and polished appearance."}
+
+── ВІДПОВІДЬ (962 симв., 246.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "suit jacket",
+      "details": "tailored fit, knee-length hem, matte woven wool with a subtle sheen",
+      "slot": "outerwear",
+      "color_hex": "#3b3b40"
+    },
+    {
+      "name": "camisole top",
+      "details": "relaxed boxy cut, hip-length hem, smooth liquid silk texture",
+      "slot": "top",
+      "color_hex": "#f5f1e8"
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted, straight-leg cut, ankle-length hem, heavy crepe fabric",
+      "slot": "bottom",
+      "color_hex": "#3c3d40"
+    },
+    {
+      "name": "loafers",
+      "details": "pointed toe silhouette, mid-calf length, genuine leather with rhinestone detailing",
+      "slot": "shoes",
+      "color_hex": "#c0c0c0"
+    },
+    {
+      "name": "cufflinks and chain necklace",
+      "details": "standard round face shape cut, short drop length, polished sterling silver metal",
+      "slot": "jewelry",
+      "color_hex": null
+    }
+  ]
+}
