@@ -2242,6 +2242,15 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                           "item of the outfit carries colour: that is an unfulfilled scheme, "
                                           "not a calm outfit (values: scheme — scheme code, measured — how "
                                           "many items were measured)",
+    "scheme_tonal_tone_not_on_large_items": "the tonal scheme promises one tone on all items with small "
+                                            "lightness steps, and none of the outfit's measured large items "
+                                            "carries that tone: a coloured accessory alone is not a tonal "
+                                            "outfit (values: scheme — scheme code, large_measured — how many "
+                                            "large items were measured, on_tone — slot codes of the items that "
+                                            "do carry the tone)",
+    "swap_large_item_to_scheme_tone": "swap one large item, best of all in this slot, for one in the scheme's "
+                                      "tone from the selection, a lightness step away from the others (values: "
+                                      "slot — slot code)",
     "swap_one_item_to_colour_in_slot": "swap one item, best of all in this slot, for a coloured one from the "
                                        "selection, and keep the rest neutral (values: slot — slot code)",
     "scheme_one_accent_look_has_more": "the scheme promises neutrals and one accent, and the outfit carries "
