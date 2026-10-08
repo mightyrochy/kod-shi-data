@@ -395,11 +395,10 @@ def прийняти(розмітка, відповідь):
              "словах нема — нема й поля: код його не бере. Подію, яку вона назвала, пиши в event — "
              "і ще кодом: occasion чи place, у підписі якого стоїть ця подія чи подія того самого "
              "роду, парою, де quote — назва події з її слів (назва події — опора і для event, і для "
-             "цього коду). Коли такого коду в переліках нема — замість нього event_formality. Вид події — "
-             "ще й кодом kind на тій самій цитаті; жоден вид не підходить — kind other і like, "
-             "найближчий вид. Усе, "
+             "цього коду). Коли такого коду в переліках нема — код найближчої за родом нагоди чи місця. Усе, "
              "що вона сказала і що не лягло в жодне поле, — у rest дослівно. Питання — у question, а "
-             "про що воно — у question_about."),
+             "про що воно — у question_about; річ, про яку вона питає («а якщо…», «чи піде…»), — не "
+             "бажання і в wants не йде."),
     "verdict_comment": dict(
         роль="Ти — перекладачка в застосунку-стилістці. Ти перекладаєш коментар жінки до образу "
              "у внутрішню мову застосунку — JSON із кодами. Рішень не приймаєш.",
@@ -411,6 +410,14 @@ def прийняти(розмітка, відповідь):
         # «слова дали те саме, що кнопки» вимірювало б переписаний дотик, а не її слова
         межа="КОНТЕКСТ.tapped — лише щоб зрозуміти її слова: поле, про яке вона нічого не сказала, "
              "з натиснутого не переписуй."),
+    # ДОПИТ ОЦІНКИ — ЛИШЕ ПИТАННЯ (рядок 1449): уточнення до оцінки («А якщо з чорними ботильйонами?»)
+    # ішло повним промптом сценарію — ~11 тис. знаків на одне питання, — а показ бере з відповіді лише
+    # `question`; решта полів давала шум (`wants: black ankle_boots` у 14 з 31).
+    "question": dict(
+        роль="Ти — перекладачка в застосунку-стилістці. Жінка ставить стилістці питання про свій "
+             "образ. Ти переносиш його у внутрішню мову застосунку — JSON. На питання не відповідаєш.",
+        вхід="її питання",
+        поля={к: _ВМ.СЦЕНАРІЙ[к] for к in ("question", "question_about")}),
 }
 _ОБʼЄКТИ = {"thing": ("«річ»", _ВМ.РІЧ_У_СЛОВАХ), "own_item": ("«її річ»", _ВМ.ЇЇ_РІЧ)}
 
@@ -477,6 +484,12 @@ def _коди_довідника(поле):
     return "коди: " + ", ".join(вих)
 
 
+def _типи_речей():
+    """«коди: blazer (блейзер), jacket (куртка), …» — тип речі з внутрішнім словом коду (рядок 1449: «жакет»
+    у коментарі ставав пальтом чи кардиганом у 6 з 31 — голий англійський код `jacket` читався як «жакет»)."""
+    return "коди: " + ", ".join("%s (%s)" % (к, с) for к, с in _ВМ.ТАБЛИЦЯ["item_type"].items() if к != U)
+
+
 def _рядок_поля(ім, с, група=""):
     """«- <поле> — <опис>; <яке значення>» — рядок переліку полів у промпті; у групі «вільні»
     рядок без форми, коли її вже сказав заголовок групи (рядок її мовою)."""
@@ -519,7 +532,8 @@ def промпт_входу(вид, слова, контекст=None):
                 if к == "quote":
                     continue
                 рядки.append("- %s — %s; %s" % (к, с.get("description", ""),
-                             ("коди ті самі, що в %s" % вже[к]) if вже.get(к) and "enum" in с else _тип(с)))
+                             ("коди ті самі, що в %s" % вже[к]) if вже.get(к) and "enum" in с
+                             else _типи_речей() if к == "item_type" else _тип(с)))
                 вже.setdefault(к, назва)
     # МЕЖА — ОСТАННЬОЮ ПЕРЕД СЛОВАМИ (вимір MamayLM-4B 25.09: з межею вгорі й «unknown або
     # не пиши» мала модель заповнила всі 30 полів вигаданим). Пропущене поле — це "unknown".
@@ -1637,20 +1651,27 @@ _ПОЛЯ_EN = {
               "bright, not like everyone else, tired of grey and safe) — a separate field from goal, "
               "both are set when she says it; conventional — none of these, also when she wants to be "
               "unnoticed",
-    "goal": "her aim for this outing: flatter — to suit her; conceal — no attention or hiding "
-            "something; express — to be looked at",
-    "goal_zones": "only with goal conceal and only when she named what to hide: the body zones to draw "
-                  "the eye away from («сховати живіт» — belly); not wanting attention in general — no field",
+    # Рядок 1437: «conceal — no attention or hiding something» — два наміри одним кодом; розводить їх
+    # goal_zones, і код читає це так само (`регістр_уваги.мета_образу`)
+    "goal": "her aim for this outing: flatter — to suit her; conceal — either no attention to her whole "
+            "look, or drawing the eye away from a body zone (then also goal_zones); express — to be looked at",
+    "goal_zones": "only with goal conceal, when she wants to draw the eye away from a body zone («сховати "
+                  "живіт» — belly): the goal then concerns only these zones, and the rest of the look is free; "
+                  "when she also wants no attention to herself at all — no field, the whole look is quiet",
     "makeup": "make-up for this outing; lips_hex only when she named a lip colour",
     "jewelry": "jewellery she wants with this look; ethnic — wood, bone, beads; other — without metal",
     "registers": "style registers she described herself with",
-    "wants": "what she wants in the look",
+    "wants": "what she asks for in the look; an item in her question («а якщо…», «чи піде…») is not a "
+             "wish — it stays in question",
     "vetoes": "what she does not want: limits",
     "retract": "wishes or limits from before that she now takes back",
     "beliefs": "what, in her view, does not suit her or spoils her figure; never argued with",
     "legs_above_cm": "cm from the floor above which her legs stay covered",
     "mood": "the mood of the look, her words",
-    "own_items": "her own items described in words",
+    # Рядок 2141: «образ із моєю блузою з фото» MamayLM не клала в own_items — опис казав лише «described
+    # in words», і блуза до коду не дійшла: промпт П-1 ніс лише фото
+    "own_items": "her own items she names: everything she calls hers («моя», «у мене є», «з моєї шафи», "
+                 "the item in her photo) — each item separately, also when she sent a photo",
     "question": "her question, her words",
     "rest": "whatever else her new message says that fits no field above, verbatim",
     "stylist_note": "only when her words about the event are hard to read without context (a local custom, "
@@ -1771,7 +1792,8 @@ def _коди_розмови():
             р.append("- %s — %s" % (ім, _ПОЛЯ_EN[ім]))
     for к, с in _ВМ.РІЧ_У_СЛОВАХ.items():
         if к != "quote":
-            р.append("  · %s — %s; %s" % (к, _РЕЧІ_EN[к], _тип_en(с)))
+            р.append("  · %s — %s; %s" % (к, _РЕЧІ_EN[к], ("codes: " + _типи_речей()[len("коди: "):])
+                                           if к == "item_type" else _тип_en(с)))
     р.append("- own_items — %s: objects with quote, name — the item in her words, status — %s, and the "
              "item attributes she named (not zone or feature)"
              % (_ПОЛЯ_EN["own_items"], _тип_en(_ВМ.ЇЇ_РІЧ["status"])[len("codes: "):].replace(", ", " | ")))

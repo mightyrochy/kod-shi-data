@@ -879,7 +879,7 @@
        "const": "unknown"
       }
      ],
-     "description": "наскільки ошатний цей вихід, шкала 1–10 (`формальність.ФОРМАЛЬНІСТЬ_ЯКОРІ`): мовна модель ставить завжди — з її слів, події й обраних плиток (НП-в крок 2)"
+     "description": "наскільки ошатний цей вихід, шкала 1–10: завжди — з її слів і події"
     },
     "intent": {
      "description": "намір: comfort_first — зручність і свобода руху понад усе; context_optimal — доречність і рівень події понад усе; statement — хоче вразити, заявити про себе; conventional — нічого з цього",
@@ -892,7 +892,7 @@
      ]
     },
     "goal": {
-     "description": "мета на цей вихід: flatter — щоб личило; conceal — не привертати уваги чи щось сховати; express — щоб на неї дивились; taller — вона хоче довшу лінію, здаватись вищою",
+     "description": "мета на цей вихід: flatter — щоб личило; conceal — не привертати уваги до всього образу, або відвести погляд від зони тіла (тоді й goal_zones); express — щоб на неї дивились; taller — вона хоче довшу лінію, здаватись вищою",
      "enum": [
       "flatter",
       "conceal",
@@ -902,7 +902,7 @@
      ]
     },
     "goal_zones": {
-     "description": "лише коли мета — conceal і вона назвала, ЩО сховати: зони тіла, від яких відвести погляд («сховати живіт» → belly); «не хочу привертати уваги» без зони — поля нема",
+     "description": "лише з метою conceal, коли вона хоче відвести погляд від зони тіла («сховати живіт» → belly): мета тоді стосується лише цих зон, а решта образу вільна; коли вона ще й не хоче уваги до себе взагалі — поля нема, увесь образ тихий",
      "type": "array",
      "items": {
       "description": "зона тіла",
@@ -985,7 +985,7 @@
      "maxItems": 2
     },
     "wants": {
-     "description": "чого вона хоче в образі",
+     "description": "чого вона хоче в образі — лише те, що вона просить; річ у питанні («а якщо…», «чи піде…») — не бажання, а question",
      "type": "array",
      "items": {
       "$ref": "#/$defs/thing"
@@ -1033,7 +1033,7 @@
      "maxItems": 3
     },
     "own_items": {
-     "description": "її власні речі, описані словами",
+     "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо",
      "type": "array",
      "items": {
       "$ref": "#/$defs/own_item"
@@ -2704,7 +2704,7 @@
          },
          {
           "const": "why_goal_conceal",
-          "description": "because the outfit should not draw extra attention"
+          "description": "because it draws the eye away from the body zone she named, or, when she named none, keeps the whole outfit quiet"
          },
          {
           "const": "why_goal_express",

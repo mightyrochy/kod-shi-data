@@ -598,6 +598,8 @@ def промпт_вибору(образи, випадок=None, без_фото
                  як="they say more than the code"),
         _ЗП.Поле("case.intent_quote", "her own words behind «intent»",
                  як="they say more than the code"),
+        _ЗП.Поле("case.goal_zones", "with goal conceal: the body zones she wants to draw the eye away from",
+                 як="the goal is about these zones only, not about the whole look"),
         _ЗП.Поле("case.her_words", "what she asked for in her own words"),
         _ЗП.Поле("case.her_other_words", "the rest of what she said, which no field of «case» carries",
                  як="it is part of her case"),
