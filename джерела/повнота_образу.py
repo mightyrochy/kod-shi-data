@@ -608,6 +608,12 @@ def промпт_вибору(образи, випадок=None, без_фото
                             "by area, the points the code noticed as not met; each point is a code defined in "
                             "\"statement_codes\"; «your_declared» — your declared deliberate moves",
                  треба=True),
+        # ГГ-1 (рядки 1121, 1290; п.17): утрачена опора — інформація, не лічба
+        _ЗП.Поле("verdict[].lost_supports", "what this outfit stood on before your repair and no longer does — "
+                                            "a column, an echo of the accent, companions that held a colour in "
+                                            "her palette: «statements» (codes defined in \"statement_codes\") "
+                                            "and the «items» that carried it",
+                 як="information, not a score: weigh what the outfit lost against what it gained"),
         _ЗП.Поле("remarks_by_code", "the code's remarks on the outfits, by remark code (each code is defined in "
                                     "\"statement_codes\"): for each code, every outfit it stands on — «outfit», "
                                     "«id» of the remark, «items», «values»; «register» «gate» — a gate",
