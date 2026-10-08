@@ -1350,6 +1350,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # РЯДОК 1423 (K-BOD-02 O, тема-4:946): тіло без вузької точки на талії
     "claim_waist_cinched_on_no_waist": "the outfit pulls in or marks the waist on a figure whose waist is nearly as "
                                        "wide as her hips: the eye lands on the middle",
+    # РЯДОК 1541 (K-BOD-02 O, тема-4:946): деталь на талії кодом речі (`силует_пропорції.деталь_талії`)
+    "claim_waist_detail_on_no_waist": "an item carries a detail at the waist on a figure whose waist is nearly as "
+                                      "wide as her hips: the eye lands on the middle (values: detail — belt, "
+                                      "belt_item, wrap, peplum or elastic_waist)",
     "claim_no_column_on_no_waist": "on a figure whose waist is nearly as wide as her hips the outfit keeps no even "
                                    "vertical line: the middle is not quiet",
     "claim_volume_without_anchor": "volume fits the body nowhere, so the body shows nowhere",
@@ -1691,6 +1695,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "budget even though there is no area behind it (values: slot — slot "
                                       "code, chroma — the accessory's chroma, loud_from — the chroma from "
                                       "which a colour counts as loud)",
+    # ГГ-1 (рядки 1121, 1290): опора, не зауваження — відлуння акценту гучним аксесуаром (K-COMP-05)
+    "accessory_echoes_accent": "a loud accessory in the tone of a loud item of the outfit is the second point of "
+                               "the same accent, not a second accent (values: slot — the accessory's slot code, "
+                               "accent_slot — slot code of the item it echoes)",
     "bag_format_at_scale_edge": "the bag's format is at the edge of the scale, not its middle: both an "
                                 "oversized and a demonstratively small one upset the proportion alike "
                                 "(values: format — large or small)",
