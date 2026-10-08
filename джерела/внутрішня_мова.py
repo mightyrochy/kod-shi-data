@@ -1350,6 +1350,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # РЯДОК 1423 (K-BOD-02 O, тема-4:946): тіло без вузької точки на талії
     "claim_waist_cinched_on_no_waist": "the outfit pulls in or marks the waist on a figure whose waist is nearly as "
                                        "wide as her hips: the eye lands on the middle",
+    # РЯДОК 1541 (K-BOD-02 O, тема-4:946): деталь на талії кодом речі (`силует_пропорції.деталь_талії`)
+    "claim_waist_detail_on_no_waist": "an item carries a detail at the waist on a figure whose waist is nearly as "
+                                      "wide as her hips: the eye lands on the middle (values: detail — belt, "
+                                      "belt_item, wrap, peplum or elastic_waist)",
     "claim_no_column_on_no_waist": "on a figure whose waist is nearly as wide as her hips the outfit keeps no even "
                                    "vertical line: the middle is not quiet",
     "claim_volume_without_anchor": "volume fits the body nowhere, so the body shows nowhere",
