@@ -5,8 +5,8 @@
 скільки речей піде на картку, і де звіт каже «модель не написала день». Запуск з будь-якої теки:
 python3 джерела/проби/den_neobovyazkovyi_195.py"""
 import json, os, sys
-import внутрішня_мова as ВМ
 sys.path.insert(0, (_К := os.path.dirname(os.path.dirname(os.path.abspath(__file__))))); os.chdir(_К); import bridge as B
+import внутрішня_мова as ВМ
 дж, мст = (lambda x: json.dumps(x, ensure_ascii=False)), (lambda е, x: json.loads(B.виклик(е, json.dumps(x, ensure_ascii=False))))
 п = dict(подія="прогулянка з собаками в парку", нагода="прогулянка", місце="парк", формат="просто неба", рух="багато ходити",
          темп_c=18, опади="ні", година=14, бажання=[], вето=dict(типи=[], тканини=[], принти=[], кольори=[], зони=[]))
