@@ -2546,6 +2546,22 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                      "loudness inside this kind: they stand after the quiet ones for conceal "
                                      "and before them for express, and an item she chose herself does not "
                                      "move (values: goal — goal code; moved, of — how many items of the kind)",
+    # ── R-CHEV-08 за метою образу (`регістр_уваги.знахідка_уваги`, рядок 1650) ─────────
+    "colour_holds_attention_goal_conceal": "the item's colour holds attention, and her goal for this outing is "
+                                           "conceal (values: loudness — the colour's loudness, ceiling — the "
+                                           "ceiling, area_pct — its area in the outfit as a percentage, when "
+                                           "known)",
+    "item_draws_eye_by_itself_goal_conceal": "the item draws the eye not by its colour but by itself, and her "
+                                             "goal for this outing is conceal (values: witnesses — what draws "
+                                             "the eye: open_zone, festive_trim, shine; zones — the zones it "
+                                             "opens; shine_class — the class of its shine)",
+    "same_item_without_trim_shine_or_more_closed": "the same item without trim, without shine, or more closed",
+    "nothing_holds_attention_goal_express": "nothing in the outfit holds attention — no colour, trim, shine or "
+                                            "open zone — and her goal for this outing is express (values: "
+                                            "loudness — the loudest item's loudness, ceiling — the ceiling)",
+    "louder_colour_one_slot_accent": "a louder colour in one slot — an accent, not the whole outfit (values: "
+                                     "slot — the slot the palette scheme gives the accent, when it names one)",
+    "or_item_draws_eye_by_itself": "or an item that draws the eye by itself: trim, shine, a more open cut",
     # ── траурний регістр спорожнив слот (`композитор_збирання`, рядок 154) ──────────
     "kind_empty_after_mourning_register": "for this kind the catalogue holds no item dark and quiet enough, "
                                          "without festive trim; the kind stays empty because a light or a "
