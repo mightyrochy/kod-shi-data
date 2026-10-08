@@ -1349,6 +1349,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                           "and its hem — the outfit's dividing line — may split the field from "
                                           "shoulders to floor in half (values: slot — slot code; length — the "
                                           "length word)",
+    "measured_dividing_line_depends_on_size":
+        "the shop's declared length puts the outfit's dividing line, the hem of its top item, near the "
+        "middle of the field from shoulders to floor, and which size she takes decides whether it splits "
+        "that field in half: the shop gives one length per size and her size is not known "
+        "(values: slot — slot code)",
     "dividing_line_item_length_unknown": "the outfit's dividing line is the hem of its top item, and the cards do "
                                          "not carry the length of the named top items, so the line was not "
                                          "judged (values: slots — slot codes)",

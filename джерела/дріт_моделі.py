@@ -427,7 +427,7 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
 # (шкала формальності, світлота, смуга тканини), нота стоїть тут, а не в прозі поля `pool`:
 # так вона теж платиться раз на пакет і стоїть рівно там, де модель шукає ключ.
 ЗНАЧЕННЯ_КЛЮЧІВ = {
-    "pr": "price", "ty": "kind of item", "cu": "cut", "fb": "fabric", "ma": "material",
+    "pr": "price", "ty": "kind of item", "cu": "cut — in the cut words of the item's own kind, the same as `cuts_best_on_her`; several joined with | when the shop word fits several of them", "fb": "fabric", "ma": "material",
     "le": "length", "sv": "sleeve", "sf": "shaft", "pt": "pattern", "dt": "details",
     "si": "shine", "nk": "neckline", "vm": "vamp", "mt": "metal", "mw": "metal is the body "
     "of the item or only its hardware", "dc": "decoration", "sk": "kind of set it is sold as",
