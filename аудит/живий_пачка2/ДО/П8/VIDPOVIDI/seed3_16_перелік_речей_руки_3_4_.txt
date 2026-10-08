@@ -1,0 +1,44 @@
+── ПРОМПТ (1821 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Long wool blend coat, straight cut to mid-calf length, stone gray (#808080), heavy wool with a fine merino blend.  \nSilk blouse, relaxed boxy cut ending just at the waistline, crisp ivory (#FFFFF0), smooth pure silk.  \nWide-leg tailored trousers, cropped at ankle bone length, charcoal slate (#36454F), structured cotton twill with stretch.  \nMinimalist leather pumps, pointed toe design, medium height, matte black (#000000), genuine calfskin leather.  \nSimple gold bar necklace and thin hoop earrings in 18k yellow gold finish.  \n\nThis outfit is ideal for an office setting on a chilly two-degree day, where the wool coat provides essential warmth without feeling bulky under the tailored wool trousers. The silk blouse adds a touch of professional elegance while the ivory tone brightens the overall look against the darker outer layers. Wide-leg pants offer comfortable movement for a busy workday, and the minimalist accessories keep the focus on clean lines and sophisticated texture contrast."}
+
+── ВІДПОВІДЬ (1047 симв., 218.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Coat",
+      "details": "Long straight cut to mid-calf length, heavy wool with a fine merino blend",
+      "slot": "outerwear",
+      "color_hex": "#808080"
+    },
+    {
+      "name": "Blouse",
+      "details": "Relaxed boxy cut ending just at the waistline, smooth pure silk",
+      "slot": "top",
+      "color_hex": "#FFFFF0"
+    },
+    {
+      "name": "Trousers",
+      "details": "Wide-leg tailored cropped at ankle bone length, structured cotton twill with stretch",
+      "slot": "bottom",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "Pumps",
+      "details": "Minimalist pointed toe design, medium height, genuine calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "Necklace",
+      "details": "Simple gold bar in 18k yellow gold finish",
+      "slot": "necklace",
+      "color_hex": null
+    },
+    {
+      "name": "Earrings",
+      "details": "Thin hoop in 18k yellow gold finish",
+      "slot": "earrings",
+      "color_hex": null
+    }
+  ]
+}
