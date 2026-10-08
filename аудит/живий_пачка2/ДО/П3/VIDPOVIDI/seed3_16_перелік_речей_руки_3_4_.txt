@@ -1,0 +1,32 @@
+── ПРОМПТ (1671 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk slip dress with a draped neckline and straight cut, midi length, midnight blue, #191970, smooth liquid silk.\nPointed stiletto pumps with a slim heel and closed toe, ankle height, charcoal grey, #36454F, polished calfskin leather.\nGold vermeil chandelier earrings and a delicate diamond solitaire ring, small scale, yellow gold #FFD700, lightweight metal alloy.\n\nThis outfit balances the sacred reverence of a church service with the celebratory energy of a festive dinner through its rich color palette and luxurious fabrics. The deep midnight blue of the slip dress offers an elegant contrast that stands out beautifully against typical liturgical settings while maintaining modesty. The sleek silhouette and sophisticated gold accents provide a timeless elegance that respects the solemn occasion without sacrificing style for the evening meal."}
+
+── ВІДПОВІДЬ (737 симв., 221.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk slip dress",
+      "details": "draped neckline, straight cut, midi length, smooth liquid silk fabric",
+      "slot": "dress",
+      "color_hex": "#191970"
+    },
+    {
+      "name": "Pointed stiletto pumps",
+      "details": "slim heel, closed toe, ankle height, polished calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "Gold vermeil chandelier earrings",
+      "details": "small scale, lightweight metal alloy",
+      "slot": "earrings",
+      "color_hex": "#FFD700"
+    },
+    {
+      "name": "Diamond solitaire ring",
+      "details": "delicate, small scale, yellow gold setting",
+      "slot": "ring",
+      "color_hex": "#FFD700"
+    }
+  ]
+}

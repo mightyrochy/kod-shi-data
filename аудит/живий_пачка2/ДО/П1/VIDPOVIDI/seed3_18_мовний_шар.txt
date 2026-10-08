@@ -1,0 +1,26 @@
+── ПРОМПТ (2636 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення (не «личить personally», а «личить особисто»), і не пиши слово літерами двох абеток (не «spідниця», не «structурована» — «спідниця», «структурована»); латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти»; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Silk-blend midi shift dress with a subtle botanical print, relaxed A-line cut falling to mid-calf, color Sage Green, lightweight woven fabric.\nStrapless silk slip top worn underneath for added elegance, fluid draping silhouette reaching the hip, color Cream, fine chiffon material.\nLeather-look flat sandals with a rounded toe and slender ankle strap, minimalist profile, color Terracotta, smooth synthetic leather.\nDelicate gold chain necklace with a small geometric pendant, 40cm length, polished brass finish; thin leather wrist cuff bracelet matching the sandal strap, brown tone, soft supple skin.\nThis ensemble balances your wish for casual comfort with the formal expectations of a wedding guest through sophisticated silhouettes and rich earth tones that harmonize perfectly with the warm 28 °C weather. The breathable natural-fiber blend ensures you remain cool and comfortable throughout the long reception while the elegant cut respects the semi-formal district restaurant setting. Accessory choices are understated yet polished, providing just enough sparkle without overpowering the relaxed atmosphere of a family gathering."},
+{"н": 2, "текст": "Silk-blend midi shift dress"},
+{"н": 3, "текст": "Strapless silk slip top"},
+{"н": 4, "текст": "Leather-look flat sandals"},
+{"н": 5, "текст": "Gold chain necklace"},
+{"н": 6, "текст": "Leather wrist cuff bracelet"}
+]
+
+── ВІДПОВІДЬ (1373 симв., 230.0 с, HTTP 200) ──
+```json
+{
+  "1": "Шовкова сукня міді-трапеція з ледь помітним рослинним принтом, вільний А-силует до середини литки, колір Салатовий, легка ткана матерія. Безрукавний шовковий топ-сліп під нею для додаткової елегантності, плавна драпірована силуетна лінія на рівні стегон, колір Кремовий, тонка шифонова матерія. Шкіряні сандалії без каблуків з округлим носком і тонким ремінцем навколо щиколотки, мінімалістичний профіль, колір Терракотовий, гладка штучна шкіра. Делікатний золотий ланцюжок з маленьким геометричним кулоном, довжина 40 см, відполірована латунна обробка; тонкий шкіряний браслет-наручник у кольорі ремінця сандалій, коричневий відтінок, м'яка еластична шкіра. Цей ансамбль поєднує твоє бажання до невимушеного комфорту з формальними очікуваннями гостя на весіллі завдяки вишуканим силуетам і насиченим земляним тонам, які чудово гармоніюють із теплою 28 °C погодою. Дихаючий бленд натуральних волокон забезпечує тобі прохолоду та комфорт протягом усього довгого прийому, а елегантний крій поважає напівформальну обстановку ресторану в центрі міста. Аксесуари стримані, але вишукані, надаючи достатньо блиску без перевантаження невимушеної атмосфери сімейного зібрання.",
+  "2": "Шовкова сукня міді-трапеція",
+  "3": "Безрукавний шовковий топ-сліп",
+  "4": "Шкіряні сандалії без каблуків",
+  "5": "Золотий ланцюжок",
+  "6": "Шкіряний браслет-наручник"
+}
+```
