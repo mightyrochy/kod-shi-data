@@ -13,6 +13,7 @@ import sys
 
 sys.path.insert(0, ".")
 import bridge as B  # noqa: E402
+import внутрішня_мова as ВМ
 
 НОВІ = ("K-EYE-01", "K-WCH-01", "K-GLV-01", "K-HAT-01", "K-ACC-04")
 вх = json.load(open("стенд_вх.json"))
@@ -21,7 +22,7 @@ r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=Fals
 рядки = json.loads(r["руки"]["1"])["pool"]
 пул = {}
 for річ in рядки:
-    пул.setdefault(річ["slot"], []).append(річ)
+    пул.setdefault(ВМ.ключ("slot", ВМ.СЛОТ_ТИПУ.get(річ.get("type"))), []).append(річ)
 def суд(слоти):
     ядро = [пул[с][0]["n"] for с in слоти if пул.get(с)]
     відп = json.dumps(dict(версія="1", образи=[dict(ід="о1", підпис="проба РВ-4", речі=ядро)]),

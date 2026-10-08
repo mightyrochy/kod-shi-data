@@ -9,18 +9,17 @@ import bridge as B
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 сц = dict(нагода="щоденне", місце="парк", година=15, темп_c=10)
 річ = dict(ід="ф1", фото="ф1", назва="світлі джинси кльош", слот="низ", колір=None, чия="моя", закріплена=True)
-д = dict(вх, сценарій=сц, паспорт=dict(сц, речі_з_фото=[річ]), варіантів=10, бюджет_символів=120000, без_фото=1, пакети=1)
-пул = json.loads(B.виклик("запити", json.dumps(д, ensure_ascii=False)))["пакети"]["1"]["pool"]
-її = [r for r in пул if r.get("name") == річ["назва"]]
+д = dict(вх, сценарій=сц, паспорт=dict(сц, речі_з_фото=[річ]), варіантів=10, бюджет_символів=120000, без_фото=1)
+пул = json.loads(B.виклик("запити", json.dumps(д, ensure_ascii=False)))["пакети"]["1"]["пул"]
+її = [r for с in пул.values() for r in с if r.get("назва") == річ["назва"]]
 print("у пулі складання: %s" % (json.dumps(її[0], ensure_ascii=False) if її else "нема"))
-за_слотом = lambda с: [r for r in пул if r.get("slot") == с]
-н = lambda с, k: за_слотом(с)[k % len(за_слотом(с))]["n"]
-образи = [dict(ід="о%d" % (і + 1), підпис="беж", день="Парк.", речі=[її[0]["n"], н("верх", і), н("взуття", і), н("сумка", і)]) for і in range(3)]
+н = lambda с, k: пул[с][k % len(пул[с])]["н"]
+образи = [dict(ід="о%d" % (і + 1), підпис="беж", день="Парк.", речі=[її[0]["н"], н("верх", і), н("взуття", і), н("сумка", і)]) for і in range(3)]
 в = json.loads(B.виклик("від_моделі", json.dumps(dict(д, текст_моделі=json.dumps(dict(версія="1", образи=образи), ensure_ascii=False)), ensure_ascii=False)))
 пр = json.loads(в["промпт_ремонту"])
 о1 = пр["verdict"][0]   # П-2: англійський дріт
 hex_ї = [r.get("hex") for r in о1["your_outfit"]["items"] if r.get("name") == річ["назва"]]
-кол = [з["what"][:90] for з in о1.get("findings") or [] if її[0]["n"] in (з.get("items") or [])]
+кол = [str(з.get("statements"))[:90] for з in о1.get("findings") or [] if її[0]["н"] in (з.get("items") or [])]
 print("у промпті ремонту о1: hex її речі %s · знахідок над її номером %d%s" % (hex_ї, len(кол), (": " + " | ".join(кол[:3])) if кол else ""))
 сирі = sorted(glob.glob("../аудит/тести/сирі_2026-09-25/**/*ПАКЕТ_V1*.gz", recursive=True))
 з808 = sum(1 for ф in сирі if re.search(r'"назва":\s*"світлі джинси кльош"[^}]*"#808080"', gzip.open(ф, "rt", encoding="utf-8").read()))

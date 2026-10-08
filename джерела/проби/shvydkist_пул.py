@@ -12,6 +12,7 @@
 """
 import json, time, hashlib, gzip, os, shutil, tempfile
 import bridge as B
+import внутрішня_мова as ВМ
 
 # База ПЕРЕЗНЯТА на origin/main 65ce695 (18.09.2026): хеш і лічба — звідти,
 # часи лишаються ті, що були до правок швидкості, бо ×N міряє саме їх.
@@ -29,7 +30,7 @@ try:
         рядки = json.loads(вих["руки"]["1"])["pool"]
         пул = {}
         for р in рядки:
-            пул.setdefault(р["slot"], []).append(р)
+            пул.setdefault(ВМ.ключ("slot", ВМ.СЛОТ_ТИПУ.get(р.get("type"))), []).append(р)
         рядок = json.dumps({с: [r["n"] for r in v] for с, v in пул.items()}, ensure_ascii=False)
         хеш, речей = hashlib.sha256(рядок.encode()).hexdigest()[:16], sum(len(v) for v in пул.values())
         хеш_до, речей_до, час_до = ДО[гілка]
