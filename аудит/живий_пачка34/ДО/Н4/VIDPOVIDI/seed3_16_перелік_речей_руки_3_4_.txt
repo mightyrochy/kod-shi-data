@@ -1,0 +1,46 @@
+── ПРОМПТ (1924 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer with a structured lapel, sharp cut, cropped length hitting at the hip, charcoal gray (#36454F), wool crepe blend; silk blouse with a relaxed collar, fluid drape, knee-length hem in the cut, ivory white (#FFFFF0), lightweight woven cotton and silk.  \nPencil skirt with a slight stretch, A-line silhouette from the waist, midi length ending just below the knee, midnight blue (#191970), high-twist wool gabardine; minimalist pointed-toe leather pumps, moderate heel height, nude tone (#E2C6AA), smooth calfskin leather.  \nThin gold-link bracelet on the right wrist and small hoop earrings in polished brass to add subtle shine without overpowering the professional aesthetic.  \n\nThis outfit works because the monochromatic base of gray and navy creates a polished, cohesive look that exudes confidence in an office environment. The structured blazer provides the necessary authority for work settings while the soft silk blouse adds comfort and approachability. Neutral tones like ivory and nude keep the ensemble timeless and versatile, allowing her to focus on performance rather than distraction."}
+
+── ВІДПОВІДЬ (1162 симв., 198.1 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Blazer",
+        "details": "structured lapel, sharp cut, cropped length hitting at the hip, wool crepe blend",
+        "slot": "outerwear",
+        "color_hex": "#36454F"
+      },
+      {
+        "name": "Silk blouse",
+        "details": "relaxed collar, fluid drape, knee-length hem in the cut, lightweight woven cotton and silk",
+        "slot": "top",
+        "color_hex": "#FFFFF0"
+      },
+      {
+        "name": "Pencil skirt",
+        "details": "slight stretch, A-line silhouette from the waist, midi length ending just below the knee",
+        "slot": "bottom",
+        "color_hex": "#191970"
+      },
+      {
+        "name": "Pointed-toe leather pumps",
+        "details": "moderate heel height, smooth calfskin leather",
+        "slot": "shoes",
+        "color_hex": "#E2C6AA"
+      },
+      {
+        "name": "Gold-link bracelet",
+        "details": "thin, right wrist",
+        "slot": "bracelet",
+        "color_hex": null
+      },
+      {
+        "name": "Hoop earrings",
+        "details": "small, polished brass",
+        "slot": "earrings",
+        "color_hex": null
+      }
+    ]
+  }
+}

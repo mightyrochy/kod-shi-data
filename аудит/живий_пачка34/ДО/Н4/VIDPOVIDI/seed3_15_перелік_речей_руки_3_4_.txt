@@ -1,0 +1,38 @@
+── ПРОМПТ (1906 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer in a fluid drape cut, knee-length, charcoal gray (#36454F), crepe wool blend.\nSilk blouse with a relaxed collar and drop shoulder seam, hip length, ivory white (#FFFFF0), lightweight silk chiffon.\nWide-leg trousers with a high rise and tapered ankle opening, full length, slate blue (#4A5D6C), structured stretch twill.\nBlock heel pumps with a sculpted silhouette, mid-height, oxblood red (#9B111E), patent leather.\nGold hoop earrings in 3cm diameter and a slim pearl necklace, medium scale, solid gold plated and freshwater cultured pearls.\nThis ensemble works because the sharp lines of the blazer provide professional authority while the fluid silk blouse adds necessary softness for a modern office environment. The deep charcoal base balances her warm skin undertones without overpowering her complexion, creating a sophisticated and polished look suitable for client meetings or internal workdays. The wide-leg trousers offer comfortable movement during long hours at a desk, while the oxblood shoes introduce a subtle pop of color that complements her natural hair shade."}
+
+── ВІДПОВІДЬ (955 симв., 194.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "fluid drape cut, knee-length, crepe wool blend",
+      "slot": "outerwear",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed collar and drop shoulder seam, hip length, lightweight silk chiffon",
+      "slot": "top",
+      "color_hex": "#FFFFF0"
+    },
+    {
+      "name": "trousers",
+      "details": "wide-leg with high rise and tapered ankle opening, full length, structured stretch twill",
+      "slot": "bottom",
+      "color_hex": "#4A5D6C"
+    },
+    {
+      "name": "pumps",
+      "details": "block heel with sculpted silhouette, mid-height, patent leather",
+      "slot": "shoes",
+      "color_hex": "#9B111E"
+    },
+    {
+      "name": "earrings",
+      "details": "gold hoop in 3cm diameter and slim pearl necklace medium scale solid gold plated and freshwater cultured pearls",
+      "slot": "jewelry",
+      "color_hex": null
+    }
+  ]
+}
