@@ -531,7 +531,7 @@ function мостПриміркиЗаглушка(w){
        ОКРЕМИМИ викликами повідомлень пачками по `ПИТАНЬ_НА_ВИКЛИК_П`, однакове питання
        пам'ятається, картка малює лише текст шару, звіт несе коди й текст. Без шару — ні
        речень, ні блоку, ні фраз коду. Міст і модель — заглушки контракту `мова`. */
-    const база = "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1";
+    const база = "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1";
     const питання = n => Array.from({length: n}, (_, і) => ({правило: "K-REG-03",
       повідомлення: {kind: "card_code_unknown", statements: [{code: "items_register_unknown", values: {count: і + 1}}]}}));
     {
@@ -627,7 +627,7 @@ function мостПриміркиЗаглушка(w){
        ні опис, ні «як носити», повтор теж, — а сторож П-3 цього не побачив, бо виняток Ч-7
        «слово стояло у вході» знімав із рахунку КОЖНЕ слово відповіді (вхід тут сам
        англійський). Заглушка шару грає рівно це: вертає вхід як є. */
-    const база = "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1";
+    const база = "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1";
     const ОПИС_EN = "A lace blouse in turquoise sits close to the body and keeps the line clean.";
     const НОСИТИ_EN = "Wear the bag on your shoulder rather than in your hand.";
     {
@@ -686,7 +686,7 @@ function мостПриміркиЗаглушка(w){
   {
     /* ПЕР-536: шар переклав опис українською, але з «баскa» (латинська «a») — повтор слав
        англійський вхід наново. Тепер повтор несе ЇЇ український текст і `виправ` зі словами. */
-    const база = "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1";
+    const база = "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1";
     const ОПИС_EN = "Pleated blouse with a short loose peplum.";
     const ОПИС_UK = "Плісерована блуза. Низ — коротка вільна баскa, складки дрібні.";
     for (const [чому, повтор] of [["повтор виправив слово", "Плісерована блуза. Низ — коротка вільна баска, складки дрібні."],
@@ -723,7 +723,7 @@ function мостПриміркиЗаглушка(w){
        хід (оновлення, `need`, частини відповіді); паспорт складає код, частини судить код (п.9), і
        в бульбашку йде текст після суду. Другий виклик (перекладач репліки) — лише коли зміст дає
        код: відповідь стилістки, вердикт речі, обовʼязкове. Python і модель — заглушки контракту. */
-    const база = "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1";
+    const база = "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1";
     const {w, d, помилки} = сторінка({url: база});
     await пауза(300);
     const $ = id => d.getElementById(id);
@@ -820,7 +820,7 @@ function мостПриміркиЗаглушка(w){
        Тепер — `містП('річ_з_фото', {опис_фото: 'промпт'|'відповідь'})`: модель із зором дістає
        фото й промпт, «чия» — з `own_items` перекладу (сирих слів вона не бачить), нечитана
        відповідь — один повтор із причиною, і обидві спроби — у запис репліки для звіту. */
-    const {w, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1"});
+    const {w, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1"});
     await пауза(300);
     const міст = [], модель = [];
     let відповідей = 0;
@@ -883,17 +883,17 @@ function мостПриміркиЗаглушка(w){
     тест("без токена на https-походженні збирання не стартує і каже, як відкрити посилання (#токен)",
          /токен/.test($("зб-статус").textContent) && !$("зб-пуск").disabled, $("зб-статус").textContent);
     тест("жодного виклику моделі не було", помилки.length === 0, помилки);
-    w.location.hash = "#міст=https://m.workers.dev&т=tok-b2";
+    w.location.hash = "#міст=http://localhost:8787&т=tok-b2";
     await пауза(400);
     тест("hashchange: адреса й токен підхоплені без перезавантаження",
-         w.eval("МІСТ_П.адреса") === "https://m.workers.dev" && w.eval("МІСТ_П.токен") === "tok-b2"
+         w.eval("МІСТ_П.адреса") === "http://localhost:8787" && w.eval("МІСТ_П.токен") === "tok-b2"
          && w.localStorage.getItem("міст:токен") === "tok-b2", w.eval("JSON.stringify(МІСТ_П)"));
     тест("…і екрани введення після hashchange не сховано", $("е-профіль").style.display !== "none", null);
   }
 
   розділ("2в. КОЛЬОРИ З ПОРТРЕТА — СТОРІНКА КЛИЧЕ МОДЕЛЬ САМА");
   {
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     тест("кнопка «Зчитати кольори з портрета» є, ручний шлях під розкривачем", !!$("кол-зчитати") && !!$("кол-копія"), null);
@@ -974,7 +974,7 @@ function мостПриміркиЗаглушка(w){
 
   розділ("2ґ. РОЗМІР ЗАПИТУ КОД ЗНАЄ ДО ВІДПРАВКИ (413 прогону власника 25.09, наряд Л-2)");
   {
-    const {w} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1"});
+    const {w} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1"});
     await пауза(300);
     /* Полотно й `fetch` до data: — заглушками, як у 2г: перевіряється АРИФМЕТИКА
        вміщення, а не растеризація. Кожне зменшення дає рівно половину символів,
@@ -1072,7 +1072,7 @@ function мостПриміркиЗаглушка(w){
 
   розділ("2д. ЧЕРГА ВИКЛИКІВ: не більше ОДНОЧАСНО_П у польоті, старти розведені паузою (429 на прогоні 17:33)");
   {
-    const {w} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1"});
+    const {w} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1"});
     await пауза(300);
     let уПольоті = 0, максимум = 0;
     const старти = [];
@@ -1628,7 +1628,7 @@ function мостПриміркиЗаглушка(w){
        жінка. Python не піднімається: `містП` — заглушка, яка повторює контракт
        `bridge.паспорт`; сам розбір міряють гейти §126. */
     /* шлях БЕЗ мовного шару (виклик 0 і латки, як до 25.09); шлях шару — розділ 1е */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -1796,7 +1796,7 @@ function мостПриміркиЗаглушка(w){
        повідомлень. Python не піднімається: `містП` — заглушка, яка повторює
        контракт `bridge.паспорт`; сам розбір міряють гейти §126. */
     /* шлях БЕЗ мовного шару (виклик 0 і латки, як до 25.09); шлях шару — розділ 1е */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -1945,7 +1945,7 @@ function мостПриміркиЗаглушка(w){
        казати різне. Бік осі береться КОДОМ (`осі_коди.hue` мосту), а слово на екрані —
        сталий напис показу: з 27.09.2026 (Ч-3, п.12) код слів для людини не пише, а показ
        на них не гілкується. */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#deb295', волосся:'#f1dbaa', очі:'#759087', кільце:null, точки:null}");
@@ -2315,7 +2315,7 @@ function мостПриміркиЗаглушка(w){
        Питання до помічниці не мають ставати вимогами до образу й не мають їхати
        історією у виклик 0. */
     /* шлях БЕЗ мовного шару (виклик 0 і латки, як до 25.09); шлях шару — розділ 1е */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     тест("поле ші стоїть у панелі внизу", !!$("чат-поле") && $("чат-поле").closest("#ніг") !== null, null);
@@ -2565,7 +2565,7 @@ function мостПриміркиЗаглушка(w){
        по рядку розгортає редактор рівно під ним — і рівно один за раз. Форми,
        поки нема чого правити, людина не бачить узагалі; хто хоче почати рукою,
        має «Або заповнити рукою». Батарея міряє саме це. */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -2871,7 +2871,7 @@ function мостПриміркиЗаглушка(w){
        картку разом із дужками. Тут батарея проганяє всі чотири руки на
        заглушках моста й дивиться на записані картки. */
     /* шлях БЕЗ мовного шару (виклик 0 і латки, як до 25.09); шлях шару — розділ 1е */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -2989,7 +2989,7 @@ function мостПриміркиЗаглушка(w){
        шаблон заміни. Друге: етап виклику переліку писав у `відповідь_сира` прозу руки, і
        «назвала 6 → на картці 5» не було чим звірити (розбір 2/8, В-5). Третє: мова вільного
        тексту відповіді їде в міст за шаром (без шару — Ukrainian). */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -3054,7 +3054,7 @@ function мостПриміркиЗаглушка(w){
   {
     /* З ШАРОМ (типово — та сама модель, що складає): назву ВИГАДАНОЇ речі й її речі з фото пише
        функціональна модель внутрішньою мовою, тож їх перекладає шар; назву крамниці — ні. */
-    const {w, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1"});
+    const {w, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1"});
     await пауза(300);
     const надіслано = [];
     w._мова = async (т_) => { надіслано.push(Object.assign({}, т_));
@@ -3081,7 +3081,7 @@ function мостПриміркиЗаглушка(w){
        картку їхав цей найповніший кандидат із рядком «лиши по одній у кожному слоті» і
        з описом. Тепер рука без прийнятого образу — збій: ні речей, ні опису, а причина
        й кандидат — у діагнозі руки. */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -3329,6 +3329,7 @@ function мостПриміркиЗаглушка(w){
     w.eval("містП = async (ім, дані)=> (ім === 'вердикт'"
          + " ? [{правило:'K-COL-01', напруга:0.82, носитиму:false}] : {помилка:'інших викликів заглушка не знає'});");
     const записати4 = async () => {
+      w.eval("document.getElementById('пр-згода').checked = true"); // колір і драпіровка йдуть у файл лише за згодою (рядок 1980)
       for (let п = 0; п < 4; п++){
         w.eval("відповідь(" + п + ").верд = 'вдягну як є'; відповідь(" + п + ").річ = 'так, це вона';"
              + " відповідь(" + п + ").для_мене = 'саме моє'; відповідь(" + п + ").коментар = '';");
@@ -3693,7 +3694,7 @@ function мостПриміркиЗаглушка(w){
        показ шле в міст (сцену — лише названу), що в модель (фото обох викликів), у якому
        порядку картка, що панелі помічниці на екрані нема, і що вердикт лягає в журнал з
        усіма етапами. Python цього шляху міряють проби `проби/шлях_оцінка_*.py`. */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -3906,7 +3907,7 @@ function мостПриміркиЗаглушка(w){
                        "Yes, they go together.": "Так, ці кольори поєднуються."};
   розділ("20б. «ОЦІНИ МІЙ ОБРАЗ» З МОВНИМ ШАРОМ: ЇЇ ПИТАННЯ — ПЕРЕКЛАДАЧЕВІ, ТЕКСТ КАРТКИ — МОВНІЙ МОДЕЛІ");
   {
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1&модель_мови=mamay-test"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=mamay-test"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -3956,7 +3957,7 @@ function мостПриміркиЗаглушка(w){
        складало паспорт — стилістка казала «нагоди ти не назвала» й «образи зберу й так». Тепер
        коди ходу розмови (М-5: `need: look`, і нічого, крім питання та її речей) ведуть хід на екран
        оцінки з тими самими фото й словами; паспорт не складається. */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://m.workers.dev&т=tok-a1&модель_мови=mamay-test"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=mamay-test"});
     await пауза(300);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -4066,6 +4067,7 @@ function мостПриміркиЗаглушка(w){
          + " чат:[{хто:'людина', текст:'йду на весілля'}],"
          + " вхід:{в:'ВХІД-V1', слова:'йду на весілля', мірки:{зріст:180}}};"
          + "ДРАП.білий='холодний';");
+    w.eval("document.getElementById('пр-згода').checked = true");
     w.eval("відповідь(0).верд = 'вдягну як є'; відповідь(0).річ = 'так, це вона';"
          + " відповідь(0).для_мене = 'саме моє'; відповідь(0).коментар = '';");
     await w.eval("записати(0)");
@@ -4084,6 +4086,14 @@ function мостПриміркиЗаглушка(w){
          JSON.parse(зап0.етапи).діагноз_прогону);
     тест("драпіровка теж зі знімка: профіль після карток перезняли, вердикт лишився своїм",
          зап0.драп_білий === "теплий", зап0.драп_білий);
+    /* рядок 1980: без згоди (галочка в профілі) колір і драпіровка у вердикт не йдуть */
+    w.eval("document.getElementById('пр-згода').checked = false");
+    await w.eval("записати(0)");
+    const безЗгоди = await w.eval("усіВердикти().then(в => в[0])");
+    тест("без згоди вердикт пишеться без кольору й драпіровки",
+         безЗгоди.драп_білий == null && !(безЗгоди.вхід_прогону || {}).колір && (безЗгоди.вхід_прогону || {}).слова === "йду на побачення",
+         [безЗгоди.драп_білий, безЗгоди.вхід_прогону]);
+    w.eval("document.getElementById('пр-згода').checked = true");
     /* ПОЛОМКА стоїть лише в руки 2 — тож її звіряємо на своїй картці. */
     w.eval("відповідь(1).верд = 'не вдягну'; відповідь(1).річ = 'так, це вона'; відповідь(1).для_мене = 'просто гарний';");
     await w.eval("записати(1)");
