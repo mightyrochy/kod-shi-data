@@ -79,7 +79,8 @@ import дріт_моделі as _Д
                          "meet on her body",
                  як="in the third part of «text» say in one or two sentences what this outfit does for her "
                     "figure — which line it draws, where it sets the eye (shoulders, waist, hips, legs, "
-                    "height), with the items that do it; when an item of the outfit works against these "
+                    "height), with the items that do it; speak of what the outfit does, never of what her "
+                    "body lacks or what should be hidden; when an item of the outfit works against these "
                     "statements, say so gently, the choice is hers; never name the shape code, a body type "
                     "or a number"),
         _ЗП.Поле("body.shape", _Д.ФІГУРА_КОДИ_EN),
