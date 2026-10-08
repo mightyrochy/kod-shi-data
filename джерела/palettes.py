@@ -1591,7 +1591,9 @@ def повідомлення_схеми_жінці(речі, спец_слоти
         "card_scheme", чия, просила,
         _ВМ.заява("shade_not_in_catalogue_at_all" if порожньо else "shade_not_found_for_her"),
         _ВМ.заява("built_from_what_was_found", colours=_на_чому(речі, за_ід)),
-        _ВМ.заява("assortment_gap_not_advice" if порожньо else "pool_limit_not_advice"))
+        # ОПИС-1 (рядок 1550): «не порада проти твого вибору» — лише коли схему обрала вона сама
+        _ВМ.заява(("assortment_gap" if порожньо else "pool_limit")
+                  + ("_not_advice" if обрана is True else "")))
 
 def _її_річ_несе(речі, за_ід, просить):
     """(назва, чи з фото) її закріпленої речі, що несе одну з сімей `просить`, або None.

@@ -30,6 +30,7 @@ import os as _os
 import re as _re
 
 import внутрішня_мова as _ВМ
+import формальність as _ФОРМ_ОФ  # смуга офісу без виду — одна на всі промпти (ОФІС-1)
 
 U = _ВМ.UNKNOWN
 
@@ -403,7 +404,7 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
     "fe": "what sets this item apart from other items with the same codes",
     "L": "lightness from 0 to 100", "Lf": "where the lightness came from",
     "hm": "hem in cm from the floor", "hf": "where the hem came from",
-    "fo": "formality from 1 to 10, the same scale as the occasion (1 home, 5 office, 9 gala)",
+    "fo": "formality from 1 to 10, the same scale as the occasion (1 home, " + _ФОРМ_ОФ.СМУГА_ОФІСУ_EN + ", 9 gala)",
     "fc": "temperature band of the fabric, °C", "he": "heel", "hs": "heel shape",
     "hh": "heel height",
 }
