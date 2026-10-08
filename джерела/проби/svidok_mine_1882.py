@@ -9,10 +9,10 @@ import inspect, json, os, sys
 import річ_з_фото as Р
 В = json.dumps({"items": [
     {"photo": "ф1", "name": "yellow shirt", "slot": "top", "color": "yellow", "cut": "relaxed", "pattern": "solid",
-     "formality": 5, "owner": "mine", "frame": {"left": 0, "top": 160, "right": 698, "bottom": 643}},
+     "formality": "neat", "owner": "mine", "frame": {"left": 0, "top": 160, "right": 698, "bottom": 643}},
     {"photo": "ф1", "name": "yellow pants", "slot": "bottom", "color": "yellow", "cut": "wide", "length": "maxi",
-     "pattern": "solid", "formality": 5, "owner": "mine", "frame": {"left": 328, "top": 537, "right": 640, "bottom": 950}},
-    {"photo": "ф1", "name": "black shoes", "slot": "shoes", "color": "black", "formality": 5, "owner": "mine",
+     "pattern": "solid", "formality": "neat", "owner": "mine", "frame": {"left": 328, "top": 537, "right": 640, "bottom": 950}},
+    {"photo": "ф1", "name": "black shoes", "slot": "shoes", "color": "black", "formality": "neat", "owner": "mine",
      "frame": {"left": 304, "top": 928, "right": 591, "bottom": 969}}]})
 ФОТО = [{"ід": "ф1", "ширина": 600, "висота": 900}]
 БЛУЗА = [{"name": {"free_text": "блуза з фото", "lang": "uk"}, "slot": "top", "status": "has", "quote": "з моєю блузою з фото"}]
