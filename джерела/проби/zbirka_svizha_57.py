@@ -7,22 +7,25 @@
 подвійних екранувань 24». CI обидва кроки робив окремо й був зелений.
 ПІСЛЯ: збірка розпаковує обидва каталоги й чистить фід тією самою функцією,
 що й CI (`чистка_каталогу.забезпечити_чистим`), і перший прогін зелений."""
-import sys, os, re, pathlib, subprocess, tempfile
+import sys, os, re, shutil, pathlib, subprocess, tempfile
 _КОРІНЬ = pathlib.Path(__file__).resolve().parent.parent
 
-# СВІЖЕ СЕРЕДОВИЩЕ = НЕМА РОЗПАКОВАНИХ КОПІЙ. Архіви (`.gz`) — джерело, їх не
-# чіпаємо; прибираємо рівно те, що з них колись розпакували (усі ці шляхи в
-# `.gitignore`, тож у свіжому checkout їх і не буває).
-прибрано = []
-for ш in (_КОРІНЬ / "каталог_повний.xml", _КОРІНЬ / "каталог_brief.xml",
-          _КОРІНЬ.parent / "каталог_повний.xml", _КОРІНЬ / "каталог_збагачення.json"):
-    if ш.exists():
-        ш.unlink(); прибрано.append(ш.name)
-print("прибрано розпакованих копій: %s" % (", ".join(прибрано) or "нема (дерево вже свіже)"))
+# СВІЖЕ СЕРЕДОВИЩЕ = КОПІЯ ДЕРЕВА БЕЗ РОЗПАКОВАНИХ КАТАЛОГІВ, А НЕ ВИДАЛЕННЯ З РОБОЧОГО (рядок 2740).
+# Доти проба `unlink`-ала `джерела/каталог_повний.xml` і `каталог_brief.xml` прямо в робочому
+# дереві й будувала там; паралельна лічба проб (NYTOK=6) у ці хвилини читала зниклий фід —
+# шість червоних `FileNotFoundError`, що на NYTOK=2 зеленіли. Тепер збірка йде у власній
+# тимчасовій копії (архіви `.gz` — джерело, розпакованих копій у копії нема, як у свіжому
+# checkout), а робоче дерево проба не чіпає.
+кореневий = pathlib.Path(tempfile.mkdtemp(prefix="svizha_57_"))
+тека = кореневий / _КОРІНЬ.name
+shutil.copytree(_КОРІНЬ, тека, ignore=shutil.ignore_patterns(
+    "node_modules", "__pycache__", "каталог_повний.xml", "каталог_brief.xml", "каталог_збагачення.json"))
+shutil.copy(_КОРІНЬ.parent / "каталог_повний.xml.gz", кореневий / "каталог_повний.xml.gz")
+print("збірка у власній копії дерева без розпакованих каталогів (робоче дерево не чіпано)")
 
 вихід = os.path.join(tempfile.mkdtemp(), "index_проба.html")
 r = subprocess.run([sys.executable, "build_артефакт.py", ".", вихід, "показ-повний"],
-                   cwd=_КОРІНЬ, capture_output=True, text=True, timeout=1800,
+                   cwd=тека, capture_output=True, text=True, timeout=1800,
                    env=dict(os.environ, LYUSTERKO_CATALOG="повний"))
 вив = r.stdout + r.stderr
 чистка = next((s.strip() for s in вив.splitlines() if "каталог почищено" in s), None)
@@ -32,4 +35,5 @@ print("речей: %s" % (речей.group(1) if речей else "—"))
 print("чистка: %s" % (чистка or "рядка про чистку нема"))
 if r.returncode:
     print("причина відмови: %s" % вив.strip().splitlines()[-1][:200])
+shutil.rmtree(кореневий, ignore_errors=True)
 assert r.returncode == 0 and чистка and речей, "перший прогін у свіжому дереві не зелений"
