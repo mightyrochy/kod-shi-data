@@ -1544,7 +1544,8 @@ def ознаки_сміливості(речі):
         if not isinstance(о, dict):
             continue
         тк = о.get("тканина")
-        тк = {_ВМ.код("fabric", x) or x for x in (тк if isinstance(тк, (list, tuple)) else [тк]) if x}
+        тк = {_ВМ.код("fabric", x.strip()) or x.strip()               # обʼєкт: «бавовна · трикотаж»; дріт: список кодів
+              for у in (тк if isinstance(тк, (list, tuple)) else [тк]) if у for x in str(у).split("·") if x.strip()}
         if слот in _ОДЯГ_СЛОТИ and (о.get("блиск") or о.get("візерунок") or тк & _ФАКТУРИ_СМІЛИВІ):
             фактура = True
         hx = str(о.get("hex") or "").lstrip("#")
