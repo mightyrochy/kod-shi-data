@@ -2142,6 +2142,7 @@ def шукати_словами(каталог, фраза, n=5, темп_c=None
     оцінені.sort(key=lambda x: (-x[0], str(x[1].get("id"))))
     if сід is not None:
         import random
-        random.Random("%s·словами" % сід).shuffle(оцінені)
+        from семплер import сіль
+        random.Random("%s·%s" % (сід, сіль("wish_words"))).shuffle(оцінені)
         оцінені.sort(key=lambda x: -x[0])
     return [r for б, r in оцінені[:n]]
