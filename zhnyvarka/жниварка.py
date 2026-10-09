@@ -2721,6 +2721,20 @@ def _не_спати():
         pass
 
 
+def _зібрана(шлях):
+    """`--продовжити`: крамниця зібрана, лише коли файл читається й жнива не впали на винятку.
+
+    Файл, що ЛИШЕ ІСНУЄ, не доказ: обрив посеред запису дає битий gzip, а збій крамниці пишеться
+    як порожній результат зі `стан: ВИНЯТОК` — обидва мають пройти знову, не лишитись «зібраними».
+    """
+    try:
+        with gzip.open(шлях, "rt", encoding="utf-8") as f:
+            д = json.load(f)
+        return isinstance(д.get("прийняті"), list) and not str((д.get("діаг") or {}).get("стан", "")).startswith("ВИНЯТОК")
+    except (OSError, EOFError, ValueError, AttributeError):
+        return False
+
+
 def main(argv=None):
     global ОПИС_СИМВОЛІВ
     for потік in (sys.stdout, sys.stderr):
@@ -2785,7 +2799,7 @@ def main(argv=None):
         магазини = кошики[i - 1]
     if a.продовжити:
         було = len(магазини)
-        магазини = [м for м in магазини if not os.path.exists(os.path.join(сирі, "%s.json.gz" % м["домен"]))]
+        магазини = [м for м in магазини if not _зібрана(os.path.join(сирі, "%s.json.gz" % м["домен"]))]
         print("продовження: пропущено %d магазинів, що вже зібрані" % (було - len(магазини)), flush=True)
     # 06.09: 45 карткових магазинів × 20 хв = 15 годин заради 750 речей. Базова стеля коротка,
     # а продуктивні магазини продовжують себе самі (≥30 речей за 5 хв, тверда межа 3×).
@@ -2813,8 +2827,10 @@ def main(argv=None):
                                              запитів=0, знайдено=0, прийнято=0, відхилено=collections.Counter(),
                                              стан="ВИНЯТОК: %s" % str(e)[:120], час=0, версія=ВЕРСІЯ)
         діаг["відхилено"] = dict(діаг["відхилено"])
-        with gzip.open(os.path.join(сирі, "%s.json.gz" % м["домен"]), "wt", encoding="utf-8") as f:
+        шлях_м = os.path.join(сирі, "%s.json.gz" % м["домен"])
+        with gzip.open(шлях_м + ".tmp", "wt", encoding="utf-8") as f:       # tmp + replace: обрив не лишає півфайла
             json.dump(dict(діаг=діаг, прийняті=прийн, відхилені=відх), f, ensure_ascii=False)
+        os.replace(шлях_м + ".tmp", шлях_м)
         return м["домен"]
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, a.потоки)) as пул:
         list(пул.map(один, магазини))
