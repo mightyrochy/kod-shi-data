@@ -1223,6 +1223,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                                  "matches her temperature",
     "cannot_tell_two_different_whites": "so the code cannot tell whether the outfit has two different whites, "
                                         "cream and optical",
+    "cannot_tell_accessory_spends_chroma": "so the code cannot tell whether a loud accessory spends the budget "
+                                           "of loud colours next to another loud item",
+    "cannot_tell_chroma_budget_exceeded": "so the code cannot tell whether the outfit has more loud colours "
+                                          "than its budget allows",
+    "cannot_tell_colour_families_over_limit": "so the code cannot tell whether the outfit holds more than three "
+                                              "colour families",
     "cannot_tell_two_loud_colours_clash": "so the code cannot tell whether two loud colours compete for "
                                           "attention",
     "cannot_tell_items_intensity_match": "so the code cannot tell whether the outfit's items match in colour "
