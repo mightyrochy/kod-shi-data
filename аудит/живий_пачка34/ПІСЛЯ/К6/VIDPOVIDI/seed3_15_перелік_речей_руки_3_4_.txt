@@ -1,0 +1,13 @@
+── ПРОМПТ (1887 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black velvet opera coat, relaxed fit extending to mid-calf, #000000, soft woven velvet.\nSilk crepe bodysuit with a structured shoulder seam and subtle sheen, empire waist length, #2a1b15, fluid silk crepe de Chine.\nTailored wide-leg trousers in a drapey wool blend that hit just above the ankle, full leg length, #3e302c, heavy matte wool.\nPointed-toe satin pumps with a 8cm stiletto heel, classic silhouette, #cfaa9f, glossy Italian satin.\nDelicate drop earrings with oxidized silver and pale citrine stones, minimalistic design, sterling silver with natural stone accent.\nThis ensemble bridges the warmth of her skin tones with deep, rich neutrals that command attention on stage without overpowering the performance itself. The velvet coat adds a layer of dramatic texture suitable for an evening theater setting while the silk bodysuit ensures comfort and movement throughout the show. The wide-leg trousers elongate the 168cm frame elegantly, creating a powerful silhouette, while the pointed heels refine the posture for standing or dancing under stage lights."}
+
+── ВІДПОВІДЬ (782 симв., 308.0 с, HTTP 200) ──
+{
+"items": [
+{"name": "Opera coat", "details": "Relaxed fit extending to mid-calf with soft woven velvet texture", "slot": "outerwear", "color_hex": "#000000"},
+{"name": "Bodysuit", "details": "Silk crepe de Chine with structured shoulder seam and empire waist length", "slot": "dress", "color_hex": "#2a1b15"},
+{"name": "Trousers", "details": "Tailored wide-leg in heavy matte wool blend hitting just above the ankle", "slot": "bottom", "color_hex": "#3e302c"},
+{"name": "Pumps", "details": "Pointed-toe satin with 8cm stiletto heel and classic silhouette", "slot": "shoes", "color_hex": "#cfaa9f"},
+{"name": "Earrings", "details": "Delicate drop style with oxidized silver and pale citrine stones in minimalistic sterling silver design", "slot": "earrings", "color_hex": null}
+]
+}
