@@ -1,0 +1,51 @@
+── ПРОМПТ (5361 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_code_unknown — рядок у згорнутому блоці «код не знає» на картці образу: чого код не знає — про речі, про неї чи про її день — і що через це лишилось не перевіреним. Це не вада образу й не порада, а чесне «не знаю».
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами.
+
+ЗАЯВИ:
+- no_input_hand_finger_neck_sizes — the code does not check glove, ring and choker sizes against her: it has no palm, finger or neck measurements.
+- no_input_frame_size — the catalogue has no glasses, so the code does not check frame size against her face.
+- no_input_watch_size — the catalogue has no watches, so the code does not check watch size against the wrist.
+- no_input_glove_size — the catalogue has no gloves and the code has no size system for them, so it does not check glove size.
+- no_input_hat_girth — no hat in the catalogue carries a girth in its card, so the code does not check hat size against the head.
+- no_input_hardware_metal — shops do not state the metal of hardware (buckles, clasps, bag fittings), so the code counts metal mixing only by the jewellery.
+- no_input_scarf_chosen_last — the code picks the scarf together with the rest of the items, not last, for what the outfit lacks.
+- no_input_pocket_square — the catalogue has no pocket squares, so the code does not apply rules on their fold and fabric.
+- no_input_lens_prescription — the code does not know the strength of her lenses, so it does not restrict frames for a prescription.
+- no_input_facial_feature_scale — the code does not read the scale and direction of her facial features from the photo, so it does not size jewellery to them.
+- no_input_stone_clarity_band_width — the cards do not carry stone clarity or band width, so the code counts the visibility of jewellery only roughly: visible or not.
+- no_input_brooch_weight — the cards do not carry brooch weights, so the code does not know whether a brooch pulls a thin fabric.
+- no_input_hat_brim_vs_cheekbones — the cards do not carry brim width and the code has no face width, so it does not match brims to cheekbones.
+- no_input_shoes_formality_outlier_rule — the corpus has no separate rule on shoes dressier or more casual than the rest of the outfit; the neighbouring rule on shoe dressiness does the same check.
+- no_input_toe_shape — the cards do not carry the toe shape of shoes, so the code does not know how it changes the pair's dressiness.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_code_unknown", "заяви": [{"code": "no_input_hand_finger_neck_sizes"}]},
+{"н": 2, "вид": "card_code_unknown", "заяви": [{"code": "no_input_frame_size"}]},
+{"н": 3, "вид": "card_code_unknown", "заяви": [{"code": "no_input_watch_size"}]},
+{"н": 4, "вид": "card_code_unknown", "заяви": [{"code": "no_input_glove_size"}]},
+{"н": 5, "вид": "card_code_unknown", "заяви": [{"code": "no_input_hat_girth"}]},
+{"н": 6, "вид": "card_code_unknown", "заяви": [{"code": "no_input_hardware_metal"}]},
+{"н": 7, "вид": "card_code_unknown", "заяви": [{"code": "no_input_scarf_chosen_last"}]},
+{"н": 8, "вид": "card_code_unknown", "заяви": [{"code": "no_input_pocket_square"}]},
+{"н": 9, "вид": "card_code_unknown", "заяви": [{"code": "no_input_lens_prescription"}]},
+{"н": 10, "вид": "card_code_unknown", "заяви": [{"code": "no_input_facial_feature_scale"}]},
+{"н": 11, "вид": "card_code_unknown", "заяви": [{"code": "no_input_stone_clarity_band_width"}]},
+{"н": 12, "вид": "card_code_unknown", "заяви": [{"code": "no_input_brooch_weight"}]},
+{"н": 13, "вид": "card_code_unknown", "заяви": [{"code": "no_input_hat_brim_vs_cheekbones"}]},
+{"н": 14, "вид": "card_code_unknown", "заяви": [{"code": "no_input_shoes_formality_outlier_rule"}]},
+{"н": 15, "вид": "card_code_unknown", "заяви": [{"code": "no_input_toe_shape"}]}
+]
+
+── ВІДПОВІДЬ (0 симв., 6.4 с, HTTP 599) ──
+ПОМИЛКА: {"error":{"message":"Error: read ECONNRESET"}}
