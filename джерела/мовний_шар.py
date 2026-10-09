@@ -1838,7 +1838,10 @@ _ПОЛЯ_EN = {
     "movement": "whether she will sit, stand, walk, walk a lot, dance, kneel or do sport",
     "activity": "what she will do there",
     "surface": "what is under her feet",
-    "hour": "start hour on a 24-hour clock",
+    # Рядок 3454 (живі 13, №6): «субота ввечері» → `hour: 19` з цитатою — «час словами — година» правила мови
+    # читалось і про пору дня без годинника; година — лише її час на годиннику, пора без нього — `part_of_day`.
+    "hour": "start hour on a 24-hour clock, only when she names a clock time; a part of the day alone "
+            "(evening, morning) is part_of_day, never hour",
     "minute": "minutes of the start time, only when she names them with the hour (19:30 — 30; half past "
               "seven in the evening — 30); never without \"hour\"",
     "part_of_day": "part of the day, when no hour is named: from her words, or when the event or a tile "
@@ -2100,12 +2103,24 @@ def _коди_розмови():
     # надиктовують голосом» — модель тлумачить; цитата лишається дослівною (сторож `_тримається`).
     "Her message may be dictated by voice or written loosely: no punctuation, fillers, slang, dialect or "
     "surzhyk, irony, times and numbers in words, a correction in mid-sentence. Read what she means: what she "
-    "corrects herself to replaces what she corrected, irony is not a wish, a time in words is an hour. "
+    "corrects herself to replaces what she corrected, irony is not a wish, a clock time in words is an hour; "
+    "a part of the day without a clock time is part_of_day, never an hour. "
     "\"quote\" still copies her letters exactly as written.",
     # Шов доливає дельту поверх паспорта досі (`паспорт_з_шару`); `retract` знімає бажання й межі.
-    "\"update\" holds only what her new message changes: new fields and changed values. A new value "
-    "replaces the old one; a wish or a limit from before that she takes back goes into \"retract\". "
-    "Do not repeat fields that do not change.",
+    # МОВА-ХІД-ПОЛЯ (рядки 3451, 3453, 3456, живі 13): перший хід MamayLM клав на фразу одне поле — «мінус
+    # п'ятнадцять і сніг» лише `weather_feel: frost` (0 з 4 сідів з `temperature_c` і `precipitation`, живі 12 —
+    # 4 з 4), «пішки» — без `movement` (0 з 5), «вечірка в ресторані» — без `place`, «взуття — замшеві чоботи» —
+    # без `wants`. Код їх не губив (повтор записаних відповідей кодом — ті самі поля); описи цих полів між живими
+    # 12 і 13 не мінялись, а промпт виріс на 1,6 тис. знаків правил тексту й меж. «holds only» читалось як «мало
+    # полів»: тепер правило велить пройти її лист частинами, кожна частина — усі свої поля, без фраз-прикладів
+    # (урок #304) — лише які частини яких полів.
+    "\"update\" holds every field her new message fills or changes, and only those. Go through her "
+    "message part by part: one phrase often fills several fields, each with its own quote — degrees and "
+    "snow or rain said together are temperature_c and precipitation; how she gets there (on foot, a long "
+    "way) is movement; the place where the event is (a restaurant, an office, a café) is place, also inside "
+    "the phrase that names the event; an item she names for this outing goes into wants or own_items. A "
+    "new value replaces the old one; a wish or a limit from before that she takes back goes into "
+    "\"retract\". Do not repeat fields that do not change.",
     # НП-в5 (рядок 520): плитка без розмови — хід без її листа; паспорт тоді потребує числа моделі.
     "When her new message is unknown, she wrote nothing and only changed the tiles: \"update\" gives "
     "formality, part_of_day, reserved_colour and open_zones for what \"chosen\" and the passport say now; "
@@ -2264,7 +2279,8 @@ def _коди_розмови():
 )
 
 СКЕЛЕТ_РОЗМОВИ = {
-    "update": "object — only the fields her new message changes, each in its form from \"codes\"",
+    "update": "object — every field her new message fills or changes (one phrase may fill several), each in its "
+              "form from \"codes\"",
     "need": " | ".join(_ВМ.ПОТРЕБИ),
     "text": "your reply to her",
     "invite_topics": ["advice topic codes your invitation covers, up to three"],
