@@ -1,0 +1,38 @@
+── ПРОМПТ (1811 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Evening silk camisole with a flowing capelet neckline in ivory (#fafaf6), midi length, smooth mulberry silk.\nTailored wide-leg trousers in charcoal gray (#36454f), ankle length, fine wool crepe.\nStiletto heels in polished copper metallic (#b87333), sharp pointed toe, leather construction.\nGold-drop earrings and a slender diamond solitaire ring to catch the theater spotlight without overwhelming the silhouette.\n\nThis outfit works because the soft ivory silk against the dramatic charcoal creates an elegant, high-contrast look perfect for a late-evening theatrical performance. The capelet neckline adds a touch of romantic drama suited to the evening dress code while keeping the lines modern and clean. Metallic copper footwear bridges the warm skin tones and cool trousers, ensuring the ensemble feels cohesive under stage lights. Finally, minimal jewelry keeps the focus on your natural features, allowing the architecture of the clothes to speak volumes in the dark theater setting."}
+
+── ВІДПОВІДЬ (835 симв., 177.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Evening silk camisole with capelet neckline",
+      "details": "Ivory (#fafaf6), midi length, smooth mulberry silk.",
+      "slot": "top",
+      "color_hex": "#fafaf6"
+    },
+    {
+      "name": "Tailored wide-leg trousers",
+      "details": "Charcoal gray (#36454f), ankle length, fine wool crepe.",
+      "slot": "bottom",
+      "color_hex": "#36454f"
+    },
+    {
+      "name": "Stiletto heels",
+      "details": "Polished copper metallic (#b87333), sharp pointed toe, leather construction.",
+      "slot": "shoes",
+      "color_hex": "#b87333"
+    },
+    {
+      "name": "Gold-drop earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "Diamond solitaire ring",
+      "details": "",
+      "slot": "ring",
+      "color_hex": null
+    }
+  ]
+}

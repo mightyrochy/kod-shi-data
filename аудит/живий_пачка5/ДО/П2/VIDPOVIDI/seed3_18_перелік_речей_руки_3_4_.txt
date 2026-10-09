@@ -1,0 +1,38 @@
+── ПРОМПТ (2119 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet Blouse, tailored collar with a subtle V-neckline, deep emerald green (#043927), rich woven velvet.\nHigh-waisted Wide-leg Trousers, fluid drape with a gentle pleat at the front, charcoal slate grey (#36454F), soft matte crepe.\nStructured Clutch Purse, rigid geometric shape with polished hardware, metallic champagne gold (#F7E7CE), smooth leather.\nPointed-Toe Stilettos, sleek silhouette with a moderate heel height, burnished rose gold (#B06D62), calfskin leather.\nPearl Drop Earrings, round cultured pearls suspended from simple hooks, iridescent white to soft pink gradient (#FFEFF5), freshwater pearl and 18k gold-plated brass.\n\nThis ensemble transitions effortlessly from the afternoon arrival to the evening performance, balancing structured elegance with fluid comfort suitable for a long night in a theater setting. The deep emerald top commands attention under stage lighting while the charcoal trousers provide a grounded, sophisticated backdrop that lets accessories pop without competing for focus. Soft textures like the velvet and matte crepe create a luxurious tactile contrast that feels intimate yet polished for an artistic occasion. Finally, the touch of champagne gold hardware ties the cool tones together, adding warmth and glamour appropriate for a special night out."}
+
+── ВІДПОВІДЬ (982 симв., 178.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Velvet Blouse",
+      "details": "tailored collar with a subtle V-neckline, deep rich woven velvet",
+      "slot": "top",
+      "color_hex": "#043927"
+    },
+    {
+      "name": "High-waisted Wide-leg Trousers",
+      "details": "fluid drape with a gentle pleat at the front, soft matte crepe",
+      "slot": "bottom",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "Structured Clutch Purse",
+      "details": "rigid geometric shape with polished hardware, smooth leather",
+      "slot": "bag",
+      "color_hex": "#F7E7CE"
+    },
+    {
+      "name": "Pointed-Toe Stilettos",
+      "details": "sleek silhouette with a moderate heel height, calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#B06D62"
+    },
+    {
+      "name": "Pearl Drop Earrings",
+      "details": "round cultured pearls suspended from simple hooks, iridescent white to soft pink gradient",
+      "slot": "earrings",
+      "color_hex": "#FFEFF5"
+    }
+  ]
+}
