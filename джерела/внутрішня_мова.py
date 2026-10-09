@@ -411,6 +411,15 @@ def код_або_невідомо(поле, ключ_ядра):
     return код(поле, ключ_ядра) or UNKNOWN
 
 
+def градуси_заяви(темп_c, відчуття=None, поле="temperature_c"):
+    """Погода дня в значеннях заяви суду: `{поле: темп_c}` — її градуси як є; `{"weather_feel": код}` —
+    коли градусів вона не казала (рядок 3500): тоді `темп_c` — число коду з `ТАБЛИЦЯ["weather_feel"]`, воно
+    лишається порогам суду, а заява не дає картці сказати «при −10 °C» на її «мороз». Код поза таблицею — "unknown"."""
+    if відчуття not in (None, ""):
+        return {"weather_feel": відчуття if ключ("weather_feel", відчуття) is not None else UNKNOWN}
+    return {поле: темп_c}
+
+
 # Поля бажання кодами (`мовний_шар._ключі_речі`) → таблиця коду, у порядку фрази `_фраза`
 _БАЖАННЯ_ПОЛЯ = (("тип", "item_type"), ("слот", "slot"), ("колір", "color_name"), ("клас_кольору", "color_class"),
                  ("тканина", "fabric"), ("візерунок", "pattern"), ("довжина", "length"), ("ознака", "feature"))
@@ -1889,14 +1898,17 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "size_by_insole_measure": "take the number by the insole measurement from the card, not by the usual "
                               "size; a pair that cannot be tried on is not raised in rank for size",
     "smooth_sole_on_ice": "a fully smooth sole at black-ice temperatures is a plain no for winter (values: "
-                          "temperature_c — the day's temperature)",
+                          "temperature_c — the day's temperature"
+                          "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "deep_multidirectional_tread": "a sole with a deep multidirectional tread",
     "summer_accessory_no_warmth": "the accessory's summer material gives no warmth in the cold: it can be "
                                   "worn, it just does not warm (values: material — material code, "
-                                  "temperature_c — the day's temperature)",
+                                  "temperature_c — the day's temperature"
+                                  "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "winter_form_of_slot": "the winter form of this slot: felt, wool, cashmere, lined leather",
     "winter_accessory_too_hot": "the accessory's winter material is not worn in the heat (values: material — "
-                                "material code, temperature_c — the day's temperature)",
+                                "material code, temperature_c — the day's temperature"
+                                "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "summer_form_of_slot": "the summer form of this slot",
     "necklace_on_neckline_edge": "the necklace sits on the edge of the neckline: there it competes with the "
                                  "fabric instead of framing the face (values: gap_cm — the gap between the "
@@ -2119,24 +2131,28 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                   "temperature by the layer map (values: direction — too_few or too_many, "
                                   "temperature_c — the temperature, layers — how much warmth the layers give, "
                                   "needed — how much the map asks for; partial_warmth_items — how many layers "
-                                  "warm only partly, like a trench)",
+                                  "warm only partly, like a trench"
+                                  "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "layers_to_temperature_map": "bring the layers to the day's map, in the band's fabrics",
     "outer_layer_only_partly_warm_for_frost": "in this band the warmth is carried by the coat itself, and "
                                               "this outer layer is only partly warm by its type — a jacket, "
                                               "a bomber, a vest, a cardigan or a poncho (values: "
                                               "temperature_c — the temperature, outer_type — its type code, "
-                                              "warmth_share — how much of a layer it counts as)",
+                                              "warmth_share — how much of a layer it counts as"
+                                              "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "warmer_coat_not_a_fourth_item": "a warmer coat — insulated, or wool — instead of this one, rather than a "
                                      "fourth item under it; a scarf, a hat and mittens close the rest",
     "cold_accessories_carry_no_colour": "in hard frost mostly the outer layer and the accessories are "
                                         "visible, and the hat, the scarf and the mittens are quiet here: all "
                                         "the colour stayed under the coat (values: temperature_c — the "
-                                        "temperature)",
+                                        "temperature"
+                                        "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "move_colour_to_hat_scarf_gloves": "move the colour into the hat, scarf or gloves",
     # рядок 3161а: K-WEA-01 — нижче −8 °C у образі нема ні шапки, ні шарфа
     "frost_head_neck_uncovered": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay "
                                  "open, and no outer layer covers them (values: temperature_c — the "
-                                 "temperature)",
+                                 "temperature"
+                                 "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "add_warm_hat_and_scarf": "add a warm hat and a scarf (wool, cashmere, knit); they also carry the colour",
     # рядок 3161а: опора стилістці в мороз — шари на торсі й тепло голови та шиї
     "frost_layers_and_cold_accessories": "hard frost: the layer map asks for this many layers on the torso — "
@@ -2445,7 +2461,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "fabric_out_of_season": "the item's fabric reads out of season: the day is warmer or colder than its "
                             "band, which is semantics rather than a thermometer (values: temperature_c — the "
                             "day's temperature, band — the fabric's band from and to, direction — warmer or "
-                            "colder, fabrics — fabric codes)",
+                            "colder, fabrics — fabric codes"
+                            "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "same_item_in_day_band_fabric": "the same item in a fabric of the day's band, or the same colour and cut "
                                     "without the seasonal fabric",
     # ── П-6 хвиля 5: посадка, край, поділ, носіння, розмір аксесуарів, погода, інтерес — що і як полагодити ──
@@ -2489,7 +2506,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "easier",
     "long_day_items_unbearable": "over a long day (hours) items in these slots become unbearable in their own "
                                  "way: they demand attention while worn",
-    "shoe_type_outside_temp_band": "shoe type outside the day's temperature band (temp_c)",
+    "shoe_type_outside_temp_band": "shoe type outside the day's temperature band (temp_c"
+                                   "; weather_feel — instead of temp_c when she named no degrees, the weather as she put it)",
     "take_from_day_band": "take from the day's band: types, or density den (DEN)",
     "tights_den_off_day_band": "the tights' denier is outside the day's band (values: den — the denier, band "
                                "— the day's band; need — denser or thinner)",
