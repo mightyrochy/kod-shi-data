@@ -4436,7 +4436,7 @@ function звітВердиктів(вс, коли){
       + '`items_source=separate_call|prose_parse`, `chosen_not_an_outfit · blockers=`, '
       + '`her_item_not_in_outfit`, `code_unknown=`, `repeat_from_hand_N · what=`, '
       + '`day_sentence_missing=`, `read_with_normalisation=`, `truncated_at_output_ceiling · '
-      + 'max_tokens=`, `description_*` (фото, повтор, форма, мова), `language_rewrite`, '
+      + 'max_tokens=`, `json_unclosed_below_ceiling`, `description_*` (фото, повтор, форма, мова), `language_rewrite`, '
       + '`language_verdict=`, `photo_mismatch_*`, `failed: <виняток>`. Кидки поза мостами теж коди: '
       + '`model · http= · <межі> · body=`, `answer_truncated_at_output_ceiling`, '
       + '`bridge_token_missing`, `image_without_size`, `canvas_gave_no_jpeg`, `pyodide_loader_failed`, '
@@ -12249,9 +12249,12 @@ async function зібратиОбразиП(){
           .filter(н => !(обрив && /JSON обірвався/.test(н)));
         if (норм.length) ЗБ.діагноз.push('hand_' + рука + ' · ' + крокН
           + ' · read_with_normalisation=' + норм.join(' | '));
+        /* стеля — лише коли міст сказав max_tokens (`вхідний.обрізано`); JSON, який модель сама
+           не закрила, — `json_unclosed_below_ceiling` (рядок 3458) */
         if (обрив)
-          ЗБ.діагноз.push('hand_' + рука + ' · ' + крокН + ' · truncated_at_output_ceiling · max_tokens='
-            + МАКС_ТОКЕНІВ_П + ((вд || {}).відповідь_обрізано
+          ЗБ.діагноз.push('hand_' + рука + ' · ' + крокН + (((вхідний || {}).обрізано)
+              ? ' · truncated_at_output_ceiling · max_tokens=' + МАКС_ТОКЕНІВ_П
+              : ' · json_unclosed_below_ceiling') + ((вд || {}).відповідь_обрізано
               ? ' · whole_outfits_judged=' + вд.відповідь_обрізано.цілих_образів + ' · unfinished=dropped'
               : ' · read=closed_only'));
         if ((вд || {}).k_var_01_прогону && !повторПрогону) повторПрогону = вд.k_var_01_прогону;
