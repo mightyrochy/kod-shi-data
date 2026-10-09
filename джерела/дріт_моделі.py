@@ -646,6 +646,10 @@ def випадок(в, день=None):
             continue
         if день and к in _ВИПАДОК_У_ДНІ and _ВИПАДОК_У_ДНІ[к] in день:
             continue
+        # подія, якої вона не називала (`випадок_для_пакета`: «невідомо», рядок 1445), не їде: нагода
+        # й місце стоять поруч кодами
+        if к == "подія" and isinstance(v, str) and _ВМ.невідомо(v):
+            continue
         ключ = _ПОЛЯ_ВИПАДКУ[к]
         if к == "нагода":
             v = код("occasion", v)
@@ -676,11 +680,15 @@ def випадок(в, день=None):
         elif к == "макіяж" and isinstance(v, dict):
             v = {кк: vv for кк, vv in (("level", код("makeup_level", v.get("рівень"))), ("lips", v.get("губи"))) if vv}
         elif к == "вето" and isinstance(v, dict):
+            # МЕЖА НА ОДИН СЛОТ — ОБʼЄКТОМ {code, only_on} (рядок 2730): слот, на якому код її тримає
+            # (`випадок.вето.слоти`); межа без слота — голим кодом, про весь образ
+            сл = v.get("слоти") or {}
+            на = lambda x, c: ({"code": c, "only_on": [код("slot", s) for s in сл[x]]} if сл.get(x) else c)
             v = {кк: vv for кк, vv in (
                 ("types", [_межа_типу(x) for x in (v.get("типи") or [])]),
-                ("fabrics", [код("fabric", x) for x in (v.get("тканини") or [])]),
-                ("prints", [код("pattern", x) for x in (v.get("принти") or [])]),
-                ("colors", [код("color_class", x) if _ВМ.код("color_class", x) else код("color_name", x)
+                ("fabrics", [на(x, код("fabric", x)) for x in (v.get("тканини") or [])]),
+                ("prints", [на(x, код("pattern", x)) for x in (v.get("принти") or [])]),
+                ("colors", [на(x, код("color_class", x) if _ВМ.код("color_class", x) else код("color_name", x))
                             for x in (v.get("кольори") or [])]),
                 ("zones", [код("zone", x) for x in (v.get("зони") or [])])) if vv}
             if not v:
@@ -1326,8 +1334,10 @@ def опис(об):
     рч = []
     for x in (о.get("речі") or []):
         р = {"n": x.get("н"), "name": x.get("назва")}
+        # колір — кодом, слово крамниці — окремо, як у пулі (`колір_код`, рядок 1445): доти «Сірий» і
+        # «світло сірий» стояли в `color` поруч із `light_blue` сусідньої речі
         for ключ, v in (("set_half", _з(_ЧАСТИНА, x.get("частина"))), ("shop", x.get("магазин")),
-                        ("color", код("color_name", x.get("колір")) if x.get("колір") else None),
+                        ("color", колір_код(x.get("колір"))[0]), ("shop_color", колір_код(x.get("колір"))[1]),
                         ("hex", x.get("hex")), ("photos", x.get("фото_номери")), ("no_photo", True if x.get("без_кадру") else None),
                         ("hers", True if x.get("її_річ") else None)):
             if v not in (None, "", []):
@@ -1379,7 +1389,7 @@ def опис(об):
     if isinstance(_зап, dict) and _зап.get("запасні"):
         вих["swap_spares"] = {"item": _зап.get("річ"), "why": _зап.get("чому"), "spares": [
             {к: v for к, v in (("n", x.get("н")), ("name", x.get("назва")), ("shop", x.get("магазин")),
-                               ("color", код("color_name", x.get("колір")) if x.get("колір") else None),
+                               ("color", колір_код(x.get("колір"))[0]), ("shop_color", колір_код(x.get("колір"))[1]),
                                ("hex", x.get("hex")), ("photos", x.get("фото_номери")))
              if v not in (None, "", [])} for x in _зап["запасні"]]}
     return вих
@@ -1475,7 +1485,8 @@ def пакет(п):
     # код, що вже стоїть у `case.refusals`, у `she_refuses` не повторюється.
     _відм = (вих.get("case") or {}).get(_ПОЛЯ_ВИПАДКУ["вето"])     # той самий ключ, що пише `випадок`
     if вих.get("she_refuses") and isinstance(_відм, dict):
-        _вже = {x for v in _відм.values() if isinstance(v, list) for x in v}
+        # межа на один слот (`{code, only_on}`) межі на весь образ не знімає
+        _вже = {x for v in _відм.values() if isinstance(v, list) for x in v if not isinstance(x, dict)}
         _лишок = [x for x in вих["she_refuses"] if x not in _вже]
         if _лишок:
             вих["she_refuses"] = _лишок

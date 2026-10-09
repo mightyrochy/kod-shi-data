@@ -49,8 +49,9 @@ import дріт_моделі as _Д
         # ПРОЗА-КАРТОК-2 (рядок 1123): річ без кадру лишалась без кольору («широкі штани в картатий
         # принт»), хоч крамниця його знає, — колір речі без фото береться звідси, без посилання на джерело
         _ЗП.Поле("outfit", "the chosen outfit: its items with number «n», name and shop, and the shop's data on "
-                           "their color («color», «hex») — a hint for reading the photo and the colour of an "
-                           "item that has no photo; never a source you cite to her",
+                           "their color («color» as a code, «shop_color» — the shop's own word when it says more, "
+                           "«hex») — a hint for reading the photo and the colour of an item that has no photo; "
+                           "never a source you cite to her",
                  треба=True),
         _ЗП.Поле("outfit.items[].photos",
                  "the numbers of this item's photos: every photo stands under its own label «Photo N:» "

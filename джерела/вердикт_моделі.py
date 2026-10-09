@@ -128,7 +128,7 @@ import збирач_промптів as _ЗП
 import внутрішня_мова as _ВМ
 
 # Підписи полів відповіді ОБРАЗИ_V1 — спільні для складання й ремонту (`пакет_моделі`).
-from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБРАЗІВ
+from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБРАЗІВ, РЯДОК_РІЧ_ДВІЧІ as _РЯДОК_РІЧ_ДВІЧІ
 
 РЕМОНТ = _ЗП.Оголошення(
     задача="ремонт",
@@ -195,7 +195,7 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         "For every finding with «register» «gate» — an entry in «done» of its outfit: «finding» is its «id».",
         "One item of each kind: an item of a kind the outfit already has replaces it; a missing kind is added "
         "without removing other items. An outfit has a dress, a set, or a top and a bottom.",
-        "One item stands in at most two outfits of the set; her own item does not count.",
+        _РЯДОК_РІЧ_ДВІЧІ,
         "Take items only from this verdict (any «your_outfit») or from «showcase»; name each by its «n» in "
         "full; half of a set — the same «n» with «/top» or «/bottom».",
         "When you break a condition deliberately, say so in «deliberate» of the outfit: the item and why.",

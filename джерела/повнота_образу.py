@@ -13,7 +13,7 @@ import re as _re_вк
 import внутрішня_мова as _ВМ
 import протокол as _ПР
 import збирач_промптів as _ЗП
-from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей, скелет_схеми, _річ_пулу
+from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей, скелет_схеми, _річ_пулу, ПОЛЯ_МЕЖІ_НА_СЛОТ
 from розбір_відповідей import _словник_речей, _за_номером, _розпізнати_речі, _запис_образу, _свідомі_з_json, \
     _список
 from суд_від_моделі import СЛОТИ_БЛОКЕРА, _ЧОМУ_БЛОКЕРА, _сім_я_слота, структура_образу, склад_комплекту
@@ -594,6 +594,7 @@ def промпт_вибору(образи, випадок=None, без_фото
         _ЗП.Поле("case", "her case: the occasion and event, her «intent» and «goal», her words, wishes, mood "
                          "and refusals",
                  як="this is what she wants; the choice answers it"),
+        *ПОЛЯ_МЕЖІ_НА_СЛОТ,
         _ЗП.Поле("case.goal_quote", "her own words behind «goal»",
                  як="they say more than the code"),
         _ЗП.Поле("case.intent_quote", "her own words behind «intent»",
