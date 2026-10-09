@@ -22,6 +22,8 @@ def лічба(тека):
 
 
 пари = list(zip(sys.argv[1::2], sys.argv[2::2]))
+if not пари:
+    sys.exit("потрібні пари тек записів стенда: <тека ДО> <тека ПІСЛЯ> [...]")
 до, після = collections.Counter(), collections.Counter()
 for а, б in пари:
     for тека, сума in ((а, до), (б, після)):

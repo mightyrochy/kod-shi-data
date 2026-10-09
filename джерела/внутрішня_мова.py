@@ -880,7 +880,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # Назви схем і слова кольорів — ВІЛЬНИЙ ТЕКСТ, і це свідомо: схему жінка щойно бачила
     # тим самим словом на плитці палітри, а колір речі — тим самим словом крамниці, що в
     # підписі на картці. Перекладачка ці слова не міняє, вона лише будує з них речення.
-    "scheme_chosen_by_her": "she chose this palette scheme herself (values: scheme — the scheme's name)",
+    # рядок 2813: «she chose» MamayLM переписала як «Я обрала палітру…» — стилістка присвоїла вибір
+    # жінки; визначення каже, хто обрав і хто ні, обома сторонами
+    "scheme_chosen_by_her": "she, the woman, chose this palette scheme herself with her own tap; the stylist "
+                            "did not choose it (values: scheme — the scheme's name)",
     "scheme_chosen_by_stylist": "the stylist chose this outfit's palette scheme for her (values: scheme — the "
                                 "scheme's name)",
     "scheme_taken_by_code": "this outfit's palette scheme was taken by default; she did not choose it "
@@ -912,8 +915,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                    "items — the items' names as the card shows them)",
     "action_is_only_her_option": "the outfit is complete as it is: what follows is only an option she may take "
                                  "if she wants more colour, not a task left to her",
-    "mark_not_this_and_rebuild": "marking \"not this one\" on this item of the outfit rebuilds the outfit, this "
-                                 "time with colour (values: item — the item's name as the card shows it: call "
+    # рядок 2813: «вирішила замінити срібну каблучку… на іншу» — можливість для неї шар написав як
+    # уже зроблену заміну; визначення каже, що не зроблено нічого
+    "mark_not_this_and_rebuild": "an option for her, nothing has been changed yet: if she marks \"not this "
+                                 "one\" on this item of the outfit, the outfit is rebuilt, this time with colour (values: item — the item's name as the card shows it: call "
                                  "the item by this name; slot — the kind of that item, when there is no name)",
     "scheme_asked_for_shade": "the scheme asked for a colour in the named shade (values: anchor — where the "
                               "shade comes from: eyes, hair, skin; base — the word of her chosen base; "
@@ -1243,6 +1248,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                                  "matches her temperature",
     "cannot_tell_two_different_whites": "so the code cannot tell whether the outfit has two different whites, "
                                         "cream and optical",
+    "cannot_tell_accessory_spends_chroma": "so the code cannot tell whether a loud accessory spends the budget "
+                                           "of loud colours next to another loud item",
+    "cannot_tell_chroma_budget_exceeded": "so the code cannot tell whether the outfit has more loud colours "
+                                          "than its budget allows",
+    "cannot_tell_colour_families_over_limit": "so the code cannot tell whether the outfit holds more than three "
+                                              "colour families",
     "cannot_tell_two_loud_colours_clash": "so the code cannot tell whether two loud colours compete for "
                                           "attention",
     "cannot_tell_items_intensity_match": "so the code cannot tell whether the outfit's items match in colour "
