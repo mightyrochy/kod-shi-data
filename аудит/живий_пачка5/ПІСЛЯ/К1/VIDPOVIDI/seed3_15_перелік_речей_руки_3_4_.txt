@@ -1,0 +1,32 @@
+── ПРОМПТ (1823 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk slip blouse with a subtle sheen, tailored to a relaxed fit with a slight drop-shoulder silhouette, Ivory White (#FFFFF0), lightweight woven silk.  \nWide-leg trousers with a high waistline and soft pleats at the front, flowing length just above the ankle, Champagne Gold (#F7E7CE), fluid viscose blend.  \nStrappy leather sandals with a modest heel in a rounded toe, Mocha Brown (#967240), smooth calfskin leather.  \nClutch bag featuring an embossed texture and a long chain strap, Antique Brass (#B5A642), genuine leather with metal hardware.  \n\nThis ensemble strikes the perfect balance between celebratory elegance and comfortable grace for a district-level restaurant gathering. The warm champagne and mocha tones complement the festive atmosphere of a sacred occasion while remaining understated enough for an adult dinner setting. The fluid fabrics allow for easy movement during conversation, ensuring she feels confident throughout the evening without feeling restricted by stiff formalwear."}
+
+── ВІДПОВІДЬ (673 симв., 238.5 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "slip blouse",
+      "details": "relaxed fit with slight drop-shoulder silhouette",
+      "slot": "top",
+      "color_hex": "#FFFFF0"
+    },
+    {
+      "name": "trousers",
+      "details": "high waistline with soft front pleats and flowing length above the ankle",
+      "slot": "bottom",
+      "color_hex": "#F7E7CE"
+    },
+    {
+      "name": "sandals",
+      "details": "strappy design with modest heel and rounded toe",
+      "slot": "shoes",
+      "color_hex": "#967240"
+    },
+    {
+      "name": "clutch bag",
+      "details": "embossed texture with long chain strap",
+      "slot": "bag",
+      "color_hex": "#B5A642"
+    }
+  ]
+}
