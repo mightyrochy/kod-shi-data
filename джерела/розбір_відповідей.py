@@ -57,11 +57,18 @@ import дріт_моделі as _Д
                  "the numbers of this item's photos: every photo stands under its own label «Photo N:» "
                  "among the blocks placed before this object; under a label with «not delivered» or "
                  "«not available» there is no image",
-                 як="describe what you see on the photos, not the name; from each photo take only the named "
-                    "item — the other clothes in the frame are not part of the outfit and are not mentioned; "
+                 як="describe what you see on the photos, not the name; from each photo take only the item of "
+                    "its «kind» — a belt, a bag or jewelry is often shown worn with a blouse or a dress: describe "
+                    "the belt, not the blouse; the other clothes in the frame are not part of the outfit and are "
+                    "not mentioned; "
                     "never take for an item a photo under another number, and when all of its photos are "
                     "not delivered, describe it by its name and «color»",
                  без="There are no item photos: describe the items by their names; leave «wrong_photos» empty."),
+        # рядок 3457 (ЖИВІ-13 №8 рука 2): «Пасок Базовий блакитний» описано блузою з фото пояса — опис
+        # ішов за кадром, а не за річчю; рід речі кодом каже, ЩО на кадрі описувати
+        _ЗП.Поле("outfit.items[].kind", "what the item is, as a code (belt, top, dress, shoes, bag…); «type» — "
+                                        "its narrower type when the code knows it",
+                 як="«about_items» describes the item of this «kind» and nothing else from its photo"),
         _ЗП.Поле("outfit.items[].no_photo", "this item has no photo of its own among the others",
                  як="describe it by its name and «color»; do not take another item's photo for it"),
         _ЗП.Поле("outfit.items[].hers", "her own item from her photo, not a product",
@@ -168,7 +175,7 @@ import дріт_моделі as _Д
         # рядок 3161(б): річ за річчю — полем `про_речі` з номером, а не рядком прози: модель називала
         # у «named» усі номери, а текст пропускав пальто чи піджак і описував штани, яких нема
         "про_речі[].н": "«n» of the item of «outfit»: one entry for every item of «outfit», in its order",
-        "про_речі[].текст": "prose for her about this one item: what it is, cut, length, color in words, "
+        "про_речі[].текст": "prose for her about this one item of its «kind»: what it is, cut, length, color in words, "
                             "fabric, in one or two sentences, as its photo and data show",
         "текст": "prose for her after the items: (1) optional, only when it adds something — how the "
                  "shoes, the outer layer and the accessories go with the rest, in one or two sentences; "
@@ -246,7 +253,7 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     """Четвертий виклик: `ОПИС_V1` — обраний образ обʼєктом коду (його перевіряє схема,
     його кладе звіт); моделі його несе `промпт_опису` англійським дротом.
 
-    `речі` — `[{н, назва, слот, частина?, магазин, колір?, hex?, фото, фото_номери}]`, як
+    `речі` — `[{н, назва, слот, тип?, частина?, магазин, колір?, hex?, фото, фото_номери}]`, як
     віддає `bridge.опис`. Скільки фото (рішення власника 02.09.2026): речей — усі, що в
     образі; на річ — одне-двоє. Тому річ і несе `фото_номери`: без них модель не
     знає, котре зображення чиє, і описує чуже взуття. Адреса фото (`фото`) у промпт
@@ -265,7 +272,7 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     р = []
     for x in (речі or []):
         з = dict(н=str(x.get("н") or x.get("id") or ""), назва=str(x.get("назва") or ""))
-        for к in ("слот", "частина", "магазин", "колір", "hex"):
+        for к in ("слот", "тип", "частина", "магазин", "колір", "hex"):
             if x.get(к):
                 з[к] = str(x[к])
         ном = [int(n) for n in (x.get("фото_номери") or [])]
