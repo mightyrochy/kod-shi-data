@@ -71,7 +71,10 @@ for с, н, р, x in ВИР:
         ЛІЧ["перехід", б >= 2, bool(Ф) and Ф[0] >= 2] += bool(Ф); ВАГ.append((id_ in ід5, вага(o)))
         for ст in {(s if isinstance(s, str) else next(iter(s))) for f in o["findings"] for s in f.get("statements", [])}: КОД[б >= 2][ст] += 1
         if б >= 2: б10 += 1; к = "відсіяна моделлю (10→5)" if not Ф else "блокер структури" if Ф[1] else "ремонт прибрав сміливість" if Ф[0] < 2 else "програла на виборі" if not Ф[2] else "обрана"; ФЕ[к] += 1; фк[к] += 1
-    РЯД.append((с, н, р, б10, sum(Ф[0] >= 2 for Ф in фін.values()), ч[0], "|", *[f"{к.split()[0]} {v}" for к, v in фк.items()])); ЛІЧ["обране", ч[0] >= 2] += 1; ЛІЧ["ранг ваги", sorted(Ф[3] for Ф in фін.values()).index(ч[3])] += 1
+    обрані_ознаки, обраний_бал, _ = ознаки([річ(Д[n]) for n in ч[5] if n in Д])
+    назва = " + ".join(Д[n].get("name") or n for n in ч[5] if n in Д)
+    озн = ", ".join(f"{к}={'так' if v else 'ні'}" for к, v in обрані_ознаки.items())
+    РЯД.append((с, н, р, б10, sum(Ф[0] >= 2 for Ф in фін.values()), ч[0], "|", назва, "|", озн, "| бал", обраний_бал, "|", *[f"{к.split()[0]} {v}" for к, v in фк.items()])); ЛІЧ["обране", ч[0] >= 2] += 1; ЛІЧ["ранг ваги", sorted(Ф[3] for Ф in фін.values()).index(ч[3])] += 1
     ЛІЧ["позиція", [o["your_outfit"]["id"] for o in сп_["verdict"]].index(со["chosen"])] += 1; ЛІЧ["облік зауважень у причині", bool(re.search(r"blocker|remark|finding|tension|fewest|lightest|mildest|lowest|checks?\b|blandness|excess|problems?|gate", со.get("why", ""), re.I))] += 1
     най = bool(re.search(r"fewest|milder|mildest|lightest|only light|lowest tension", со.get("why", ""), re.I)); ЛІЧ["твердить найменше"] += най; ЛІЧ["…але не найменше ні вагою ні числом"] += най and ч[3] > min(Ф[3] for Ф in фін.values()) and ч[4] > min(Ф[4] for Ф in фін.values())
     for o in ао["outfits"]:  # ВИРВА-968: оголошений хід складання → ремонт лишив у п'ятірці / змінив річ / відсіяв образ
@@ -82,7 +85,7 @@ for с, н, р, x in ВИР:
         пр = [Д[n] for ns in наб for n in ns if n in Д and Д[n].get("hex") and річ(Д[n])[1] and Д[n].get("color") not in ("golden", "silvery")]; сек = lambda h: "н" if math.hypot(*лчх(h)[1:]) < 15 else int(math.degrees(math.atan2(лчх(h)[2], лчх(h)[1])) % 360 // 60)
         КОЛ[гр]["речей"] += len(пр); КОЛ[гр]["у зоні"] += sum(зона(d["hex"]) for d in пр); КОЛ[гр]["ΔE≤20 до цілі"] += sum(min((math.dist(лчх(d["hex"]), лчх(t)) for t in Ц), default=99) <= 20 for d in пр)
         КОЛ[гр]["секторів"] += len({сек(d["hex"]) for d in пр}); КОЛ[гр]["слів"] += len({d.get("color") for d in пр})
-print("сер. нагода рука | сміливих у 10 | у 5 | бал обраного (0–4) | що сталося зі сміливими з 10"); [print(*r) for r in РЯД]
+print("сер. нагода рука | сміливих у 10 | у 5 | бал обраного (0–4) | назва й ознаки обраного | що сталося зі сміливими з 10"); [print(*r) for r in РЯД]
 print("ідей смілива/решта", ЛІЧ["ідей", True], ЛІЧ["ідей", False], "| у5:", ЛІЧ["у5", True], ЛІЧ["у5", False], "| обране смілива:", ЛІЧ["обране", True], "з", len(ВИР), "| перехід (було,стало):", {(a, b): ЛІЧ["перехід", a, b] for a in (0, 1) for b in (0, 1)}, "\nзагибель сміливих R1:", dict(ФЕ))
 print("полюс: ідей/у5/обрано/сміливих:", {p: tuple(v) for p, v in ПОЛ.items()}, "| вага знахідок у5/відсіяні: %.2f/%.2f" % tuple(sum(w for k, w in ВАГ if k == b) / sum(1 for k, _ in ВАГ if k == b) for b in (True, False)))
 print("вибір: ранг ваги обраного (0=найлегший):", sorted((k[1], v) for k, v in ЛІЧ.items() if k[0] == "ранг ваги"), "| позиція у списку:", sorted((k[1], v) for k, v in ЛІЧ.items() if k[0] == "позиція"), "| облік зауважень у причині:", ЛІЧ["облік зауважень у причині", True], "з", len(ВИР), "| «найменше»:", ЛІЧ["твердить найменше"], "із них хибно:", ЛІЧ["…але не найменше ні вагою ні числом"])
