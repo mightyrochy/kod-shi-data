@@ -142,8 +142,8 @@ def невідомо(v, коди=()):
                  "walking": "ходьба", "photoshoot": "фотосесія"},
     "surface": {"cobblestones": "бруківка", "asphalt": "асфальт", "parquet": "паркет",
                 "carpet": "килим", "grass": "трава", "stairs": "сходи"},
-    "precipitation": {"none": "ні", "rain": "дощ", "sleet": "мокрий_сніг", "downpour": "злива",
-                      "snow": "сніг"},
+    "precipitation": {"none": "ні", "possible_rain": "можливий_дощ", "rain": "дощ",
+                      "sleet": "мокрий_сніг", "downpour": "злива", "snow": "сніг"},
     # ── РЕБРА ГІПЕРГРАФА ТІЛА (П-5, 27.09.2026, CLAUDE.md п.12) ───────────────
     # Доти `brief.ЯРЛИК_РЕБРА` тримала вісім ФРАЗ, які код писав людині («верх і низ
     # не в балансі»), і вони їхали ярликом брифа в діагностику показу й у слід.
@@ -359,18 +359,29 @@ def невідомо(v, коди=()):
 # (виміряно), з одним виправленням: `belt_bag` (поясна сумка) — сумка, а не пояс. Тип без
 # рядка тут — як доти: слота код не знає, і річ без слота не закріплюється.
 СЛОТ_ТИПУ = {
-    "evening_dress": "dress", "cocktail_dress": "dress", "sundress": "dress", "jumpsuit": "dress",
-    "dress_generic": "dress",
-    "ugg_boots": "shoes", "ballet_flats": "shoes", "mules": "shoes", "espadrilles": "shoes",
+    "evening_dress": "dress", "cocktail_dress": "dress", "sheath_dress": "dress",
+    "sundress": "dress", "jumpsuit": "dress", "dress_generic": "dress",
+    "suit": "set", "casual_suit": "set", "two_piece_set": "set",
+    "ugg_boots": "shoes", "over_knee_boots": "shoes", "chelsea_boots": "shoes",
+    "ballet_flats": "shoes", "mules": "shoes", "espadrilles": "shoes", "pumps": "shoes",
     "dress_shoes": "shoes", "moccasins": "shoes", "loafers": "shoes", "sneakers": "shoes",
     "plimsolls": "shoes", "ankle_boots": "shoes", "boots": "shoes", "heeled_sandals": "shoes",
     "sandals": "shoes",
-    "clutch": "bag", "backpack": "bag", "tote": "bag", "belt_bag": "bag", "bag_generic": "bag",
-    "hoodie": "top", "t_shirt": "top", "shirt": "top", "blouse": "top", "cardigan": "top",
-    "sweater": "top", "vest": "top", "top_garment": "top",
+    "clutch": "bag", "backpack": "bag", "tote": "bag", "baguette_bag": "bag", "hobo_bag": "bag",
+    "crossbody_bag": "bag", "bucket_bag": "bag", "belt_bag": "bag", "briefcase": "bag",
+    "saddle_bag": "bag", "bag_generic": "bag",
+    "hoodie": "top", "sportswear": "top", "loungewear": "top", "t_shirt": "top", "shirt": "top",
+    "blouse": "top", "knitwear": "top", "cardigan": "top", "sweater": "top", "bodysuit": "top",
+    "longsleeve": "top", "vest": "top", "top_garment": "top",
     "leggings": "bottom", "jeans": "bottom", "shorts": "bottom", "skirt": "bottom", "trousers": "bottom",
-    "coat": "outerwear", "trench_coat": "outerwear", "jacket": "outerwear",
-    "stole": "scarf", "kerchief": "scarf", "snood": "scarf", "scarf_generic": "scarf",
+    "coat": "outerwear", "trench_coat": "outerwear", "jacket": "outerwear", "blazer": "outerwear",
+    "half_coat": "outerwear", "down_jacket": "outerwear", "fur_coat": "outerwear",
+    "sheepskin_coat": "outerwear", "parka": "outerwear", "raincoat": "outerwear",
+    "rain_cape": "outerwear", "windbreaker": "outerwear", "anorak": "outerwear",
+    "bomber": "outerwear", "poncho": "outerwear",
+    "stole": "scarf", "kerchief": "scarf", "twilly": "scarf", "snood": "scarf", "shawl": "scarf",
+    "bactus_scarf": "scarf", "scarf_generic": "scarf",
+    "headband": "headwear", "bow": "headwear", "hair_clip": "headwear", "hair_tie": "headwear",
     "ring": "ring", "jewelry_generic": "jewelry"}
 
 
@@ -993,13 +1004,13 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "outer_layer_unneeded_warm": "at this temperature an outer layer is unnecessary",
     "colour_from_her_words_not_photo": "the colour was taken from her description, not from a photo (values: "
                                        "colour — how she named it)",
-    "colour_unknown_not_checked": "this item's colour is unknown, as there is no photo and no colour was "
-                                  "named, so the item was not checked against her palette; a colour in words "
+    "colour_unknown_not_checked": "this item's colour is unknown, as neither a photo measured it nor a "
+                                  "colour was named, so the item was not checked against her palette; a colour in words "
                                   "makes the check possible",
     # ── ЇЇ РІЧ НА КАРТЦІ: ЧИМ РЕШТА ОБРАЗУ ЇЇ ПОМʼЯКШУЄ (`річ_з_фото.помʼякшення`) ──
     "her_item_in_every_look": "she chose this item herself, so it stands in every outfit",
-    "colour_unknown_rest_not_matched": "this item's colour is unknown, as there is no photo and she named no "
-                                       "colour, so the rest of the outfit was not matched to it by colour",
+    "colour_unknown_rest_not_matched": "this item's colour is unknown, as neither a photo measured it nor "
+                                       "she named a colour, so the rest of the outfit was not matched to it by colour",
     "near_face_her_neutral_or_palette_colour": "near the face: her neutral or a colour of her palette (a "
                                                "scarf, collar or earrings)",
     "between_item_and_face_mid_lightness": "between the item and the face: an item of intermediate lightness "
@@ -1094,15 +1105,18 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "code_swapped_item_from_stylist_look": "the named item was replaced with another one from the same "
                                            "selection (values: was — what it was, now — what it is now)",
     # ОПИС-1 (рядок 980): шар вставляв назву крамниці в речення цілком («замінила «Літні туфлі, ATTICO,
-    # шкіра, колір кольоровий» на …», ж7_ювілей_свекрухи 02.10) — назва тут дані, а не слова для неї
+    # шкіра, колір кольоровий» на …», ж7_ювілей_свекрухи 02.10) — назва тут дані, а не слова для неї.
+    # ПРОЗА-КАРТОК-2 (рядок 980): підстава не казала, ЧИЄ фото й що саме інше, — і речення губило
+    # іменник («на знімку виявився зовсім інший, ніж указана крамницею», 2 з 4 карток ПЕР-531)
     "stylist_swapped_item_after_photo": "after seeing the item photos the stylist replaced one item with "
                                         "another of the same kind from her selection; the code checked the "
-                                        "outfit again (values: was — what it was, now — what it is now, both "
-                                        "as the shop names them: name each in a few words of your own — its "
-                                        "kind and colour — never quote the shop's name; "
-                                        "reason — colour: the photo showed a clearly different colour than "
-                                        "the shop named, kind: the photo showed another kind of item, "
-                                        "occasion: the item on the photo does not suit her occasion)",
+                                        "outfit again (values: was — the item she took out, now — the item "
+                                        "in its place, both as the shop names them: name each in a few words "
+                                        "of your own — its kind and its colour — never quote the shop's name; "
+                                        "reason — what the photo of «was» showed: colour — its colour there is "
+                                        "clearly not the one the shop named (say that it is the colour that "
+                                        "differs), kind — it is another kind of item, occasion — it does not "
+                                        "suit her occasion)",
     "code_removed_this_layer": "the layer named above is exactly the one removed from the stylist's outfit",
     "set_already_has_top_and_bottom": "the set already has its own top and bottom, so a separate item there "
                                       "would be a second one in the same place (values: slot — slot code)",
@@ -1200,6 +1214,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                        "carries",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
                                          "differ visibly",
+    "cannot_tell_neutral_near_face_temperature": "so the code cannot tell whether a neutral near her face "
+                                                 "matches her temperature",
     "cannot_tell_two_different_whites": "so the code cannot tell whether the outfit has two different whites, "
                                         "cream and optical",
     "cannot_tell_two_loud_colours_clash": "so the code cannot tell whether two loud colours compete for "
@@ -1318,8 +1334,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                   "constant (values: place — " + _МІСЦЯ_ОПЦІЙ + ")",
     "scarf_wraps_head": "the scarf is large enough to wrap the head fully (values: size_cm — its side in cm)",
     "scarf_too_small_to_wrap_head": "the scarf is too small to wrap the head fully: a physical limit, not "
-                                    "taste (values: size_cm — its side in cm, unknown when the card does not "
-                                    "give it)",
+                                    "taste (values: size_cm — its side in cm)",
     "scarf_near_face_way_unknown": "whether she wears this scarf near the face; which top suits her depends "
                                    "on it, since a scarf near the face carries colour there by itself "
                                    "(values: item — item name; ways — codes of wearing ways: neck, hair, "
@@ -1364,6 +1379,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                           "and its hem — the outfit's dividing line — may split the field from "
                                           "shoulders to floor in half (values: slot — slot code; length — the "
                                           "length word)",
+    "measured_dividing_line_depends_on_size":
+        "the shop's declared length puts the outfit's dividing line, the hem of its top item, near the "
+        "middle of the field from shoulders to floor, and which size she takes decides whether it splits "
+        "that field in half: the shop gives one length per size and her size is not known "
+        "(values: slot — slot code)",
     "dividing_line_item_length_unknown": "the outfit's dividing line is the hem of its top item, and the cards do "
                                          "not carry the length of the named top items, so the line was not "
                                          "judged (values: slots — slot codes)",
@@ -1887,11 +1907,21 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                          "is a detail — a trim, a charm, a setting — not the surface "
                                          "(values: metal — metal code, items — how many metal items in the "
                                          "outfit)",
+    "named_metal_reads_other_tone_on_frame": "the metal is named, yet the frame reads the item as ANOTHER "
+                                             "metal: the photo model's colour code and the measured colour "
+                                             "agree on a different metal tone, so the name, not the surface, "
+                                             "is in question (values: metal — the named metal code, "
+                                             "frame_tone — the metal tone the frame reads, items — how many "
+                                             "metal items of the outfit read so)",
     "put_solid_metal_near_face": "if metal is to lead the outfit, put a piece that IS metal near the face, "
                                  "not fabric with a metal trim",
     "reduce_to_two_metal_tones": "reduce it to two tones: remove the third or replace it with a two-tone "
                                  "item, or leave it in one small item far from the face",
     "she_asked_no_jewellery": "she asked for no jewellery, yet the outfit has some",
+    "she_asked_jewellery_none_in_outfit": "she asked for jewellery with this outfit, yet the outfit has none "
+                                          "(values: wish — the code of the jewellery she asked for)",
+    "add_jewellery_she_asked_for": "add the jewellery she asked for near the face (values: wish — the code "
+                                   "of the jewellery she asked for)",
     "remove_jewellery_her_decision": "remove the jewellery: her decision for today",
     "she_wanted_non_metal_jewellery": "she wanted jewellery that is not metal, and a metal one leads (values: "
                                       "lead — the code of the leading metal, wanted — pearls, ethnic or "
@@ -2011,7 +2041,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "stronger)",
     "darker_quieter_version_of_item": "a darker, quieter version: black, graphite, navy, chocolate, deep "
                                       "burgundy",
-    "chroma_too_high_for_photo_event": "at a photographed event a very high chroma blows out under the flash "
+    "chroma_too_high_for_photo_event": "at a photographed event a very high chroma may blow out under the flash "
                                        "(values: chroma — the item's chroma, ceiling — the ceiling for "
                                        "photographs)",
     "judged_from_item_name": "judged from a word in the item's name, not a catalogue field",
@@ -2049,6 +2079,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                   "precipitation code, outer_moisture — none when there is no outer layer, "
                                   "no when its type keeps off neither rain nor cold: a jacket, a bomber, a "
                                   "vest, a cardigan or a poncho)",
+    "possible_rain_layer_to_carry": "rain is only possible, and no outer layer of the look keeps it off — "
+                                     "carry a rain layer in case it starts (values: precipitation — the "
+                                     "precipitation code)",
     "rain_outer_layer_over_look": "an outer layer that keeps off rain — a trench, a raincoat or a parka — over "
                                   "this look, or keep the look and say why it holds this day",
     "smooth_protected_leather_or_rubber_or_treat": "replace it with smooth protected leather or rubber, or "
@@ -2151,7 +2184,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "draped_state_unavailable": "draping over the shoulders is unavailable for this item",
     "belt_ties_not_buckles": "the outer layer's belt ties rather than buckles (values: knot — back when the "
                              "coat is worn open, or front)",
-    "knot_placement_buckle_as_detail": "the knot on the named side (in front, slightly off centre), and the "
+    "knot_placement_buckle_as_detail": "the knot on the named side, and the "
                                        "buckle left as a detail, not a fastening (values: knot — back or "
                                        "front)",
     "raise_collar_free_state": "raising the collar is a free fourth state",
@@ -2272,6 +2305,15 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                           "item of the outfit carries colour: that is an unfulfilled scheme, "
                                           "not a calm outfit (values: scheme — scheme code, measured — how "
                                           "many items were measured)",
+    "scheme_tonal_tone_not_on_large_items": "the tonal scheme promises one tone on all items with small "
+                                            "lightness steps, and none of the outfit's measured large items "
+                                            "carries that tone: a coloured accessory alone is not a tonal "
+                                            "outfit (values: scheme — scheme code, large_measured — how many "
+                                            "large items were measured, on_tone — slot codes of the items that "
+                                            "do carry the tone)",
+    "swap_large_item_to_scheme_tone": "swap one large item, best of all in this slot, for one in the scheme's "
+                                      "tone from the selection, a lightness step away from the others (values: "
+                                      "slot — slot code)",
     "swap_one_item_to_colour_in_slot": "swap one item, best of all in this slot, for a coloured one from the "
                                        "selection, and keep the rest neutral (values: slot — slot code)",
     "scheme_one_accent_look_has_more": "the scheme promises neutrals and one accent, and the outfit carries "
@@ -3023,6 +3065,8 @@ if _спільні:
     "face_colour_eye_side": "a coloured item near the face lies on the side of the yellow–blue axis her eyes "
                             "give (R-COL-16)",
     "scheme_chosen": "the scheme of the outfit was chosen by her or by the stylist, not by a blind rank of the code",
+    "soft_palette_drama_by_lightness": "a soft palette is made dramatic by lightness contrast, texture and "
+                                       "shine, not by chroma (K-PAL-12)",
     # аксесуари
     "glove_sleeve_length": "glove length and sleeve length are one decision (K-GLV-02)",
     "tights_density": "the density of the tights matches the fabric weight of the day (K-HOS-01)",
@@ -3059,7 +3103,7 @@ if _спільні:
     "B6": "not_same_for_anyone", "B7": "passport_from_talk", "P1": "face_colour_in_windows",
     "P2": "colours_in_her_pairings", "P3": "print_dominant_hers", "P4": "off_palette_has_carrier",
     "P5": "grey_hair_eyes_lead", "P6": "context_keeps_edge_colour", "P7": "face_colour_eye_side",
-    "P8": "scheme_chosen", "A1": "glove_sleeve_length", "A2": "tights_density", "A3": "tights_link",
+    "P8": "scheme_chosen", "P9": "soft_palette_drama_by_lightness", "A1": "glove_sleeve_length", "A2": "tights_density", "A3": "tights_link",
     "A4": "jewelry_scale", "A5": "necklace_off_neckline", "A6": "accessory_edge_placement",
     "A7": "price_per_combinations", "A8": "repairable_shoes", "A9": "refusal_reason_physical",
     "A10": "glasses_in_chroma", "A11": "jewelry_kind_asked", "A12": "accent_surfaces_differ",
