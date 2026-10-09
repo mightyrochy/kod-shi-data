@@ -28,7 +28,7 @@ for слово in sys.argv[2:]:
         д = z.get('фото') or o.get('group_id') or o['id']
         if д in бачені: continue
         бачені.add(д)
-        кадри = ФФ.кадри_речі(o, сп.get(o.get('магазин')) or {}, хо, z.get('фото'))
+        кадри = ФФ.кадри_речі(o, сп.get(o.get('магазин')) or {}, хо, z.get('кадр_кольору') or z.get('фото'))
         if кадри: видно.append((o, z, k, кадри[0]))
         if len(видно) >= 12: break
     if not видно: print('%-14s — жодного кадру' % слово); continue
