@@ -26,12 +26,12 @@ print("чисел temperature, написаних у показ.html: %d (має
 print("ендпойнт `паспорт`: вибірка поруч із промптом = %s" % json.dumps(пасп.get("вибірка"), ensure_ascii=False))
 print("перелік ВИБІРКИ: " + json.dumps(ЗП.ВИБІРКИ, ensure_ascii=False) + " · типова: " + ЗП.ВИБІРКА_ТИПОВА)
 
-# оголошення задач: чия вибірка не типова — видно тут, а не в показі
-свої = [(ім, м.group(1)) for ім in sorted(os.listdir(os.path.dirname(ТУТ))) if ім.endswith(".py")
-        for м in re.finditer(r"(\w+) = _?ЗП_?\.Оголошення\(",
-                             io.open(os.path.join(os.path.dirname(ТУТ), ім), encoding="utf-8").read())]
-print("оголошень задач: %d · усі на типовій вибірці (%s): «стабільна» (0) — слово власника"
-      % (len(свої), json.dumps(ЗП.вибірка(ЗП.ВИБІРКА_ТИПОВА))))
+# оголошення задач: чия вибірка не типова — видно тут, а не в показі (рядок 175: виклик 0 — «стабільна»)
+тексти = {ім: io.open(os.path.join(os.path.dirname(ТУТ), ім), encoding="utf-8").read()
+          for ім in sorted(os.listdir(os.path.dirname(ТУТ))) if ім.endswith(".py")}
+свої = [ім for ім, т in тексти.items() for _ in re.finditer(r"\w+ = _?ЗП_?\.Оголошення\(", т)]
+нетипові = sorted(ім for ім in set(свої) if re.search(r'^\s*вибірка="(?!типова)\w+"', тексти[ім], re.M))
+print("оголошень задач: %d · не на типовій: %s" % (len(свої), ", ".join(нетипові) or "жодного"))
 вади = ([] if пасп.get("вибірка") else ["ендпойнт `паспорт` не віддає вибірку"]) \
       + (["у показі лишилось «вибірка || {}»"] if без_вибірки else []) \
       + (["число temperature написане в показі"] if чисел_у_показі else []) \

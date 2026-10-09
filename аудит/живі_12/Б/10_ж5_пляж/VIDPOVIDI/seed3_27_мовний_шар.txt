@@ -1,0 +1,32 @@
+── ПРОМПТ (3624 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This celebration outfit begins with a chocolate-brown sleeveless linen dress that falls to your ankles, offering a soft and relaxed silhouette perfect for a breezy evening. Over it, you wear a dark olive green long-line vest with a structured V-neck and a belt detail at the waist, which adds shape without adding bulk. The look is finished with vibrant red accessories: a pair of strappy platform sandals with a sleek ankle strap and gold hardware, plus a matching red top featuring sheer mesh sleeves, a feathered hem, and a satin belt that catches the light.\n\nThe combination works because the deep brown of the dress grounds your outfit while the olive vest echoes the earthy tones in your palette. The pop of red from the sandals and the festive top brings warmth and energy, especially fitting for a beach dinner where you might want to feel special without feeling overdressed. Together, these pieces balance comfort with elegance, allowing you to enjoy the evening in style."},
+{"н": 2, "текст": "Layer the olive vest over your dress to add definition to your silhouette while keeping the relaxed vibe of the linen fabric."},
+{"н": 3, "текст": "Let the red sandals breathe by wearing them without socks to match the open-toe summer setting."},
+{"н": 4, "текст": "Пасок з пір’ям декольте червоний — Red belt keeps its edge near the face for drama, echoing the shoes rather than competing with them."},
+{"н": 5, "текст": "Пасок з пір’ям декольте червоний — The red belt is placed near the face as an intentional accent that echoes the color of the shoes, creating visual continuity rather than cluttering the neckline."},
+{"н": 6, "текст": "Жіночий офісний жилет великого розміру, Пасок з пір’ям декольте червоний — The distinct chromatic gap between the green vest and red belt serves a deliberate purpose: it separates the structured layers while maintaining the overall festive harmony required for the event."}
+]
+
+── ВІДПОВІДЬ (1943 симв., 56.6 с, HTTP 200) ──
+```json
+{
+  "1": "Цей святковий образ починається з шоколадно-коричневої сукні без рукавів із льону, що сягає щиколоток і дарує м’який та розслаблений силует, який чудово підійде для вечора. Зверху ви одягли темно-оливковий довгий жилет з V-подібним вирізом та деталями пояса на талії, що додають форму без зайвого об’єму. Образ завершується яскравими червоними аксесуарами: пара ремінних платформних сандалів зі стильною застібкою на щиколотці та золотою фурнітурою, а також відповідний червоний топ з прозорими сітчастими рукавами, пір’яним подолом і атласним поясом, що ловить світло.\n\nКомбінація працює тому, що глибокий коричневий колір сукні підкреслює ваш образ, а оливковий жилет перегукується з земляними тонами у вашій палітрі. Червоний акцент від сандалів та святкового верху додає тепла й енергії, особливо доречно для вечері на пляжі, де ви можете відчути себе особливою без надмірної урочистості. Разом ці речі поєднують комфорт з елегантністю, дозволяючи вам насолодитися вечором зі смаком.",
+  "2": "Одягніть оливковий жилет поверх сукні, щоб підкреслити вашу фігуру та зберегти розслаблений вигляд лляної тканини.",
+  "3": "Дозвольте червоним сандалям «дихати», одягнувши їх без шкарпеток, що відповідає літньому відкритому взуттю.",
+  "4": "Червоний пасок з пір’ям біля декольте — Червоний пасок залишається на видному місці поблизу обличчя для драматизму, перегукуючись із взуттям замість того, щоб конкурувати з ним.",
+  "5": "Червоний пасок з пір’ям біля декольте — Червоний пасок розміщено поблизу обличчя як навмисний акцент, що перегукується з кольором взуття, створюючи візуальну цілісність замість того, щоб захаращувати лінію шиї.",
+  "6": "Жіночий офісний жилет великого розміру, Червоний пасок з пір’ям біля декольте — Різкий хроматичний контраст між оливковим жилетом і червоним поясом має цілеспрямовану мету: він розділяє структуровані шари та підтримує загальну святкову гармонію, необхідну для події."
+}
+```

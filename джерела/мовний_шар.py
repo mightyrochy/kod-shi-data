@@ -1009,6 +1009,14 @@ def вигадка_рядком(поле, сказала, цитата, зроб
                _json_.dumps(str(цитата), ensure_ascii=False) if цитата else "none", зробив))
 
 
+def невзяте_рядком(поле, сказала):
+    """Рядок звіту про поле ходу, яке код прочитав як «невідомо» (рядок 3191: `goal_zones: "none"` губилось
+    без сліду) — будова `вигадка_рядком`, кодами: `unknown_value · step=layer · field=<поле> ·
+    model_said=<json> · code=not_taken`."""
+    return ("unknown_value · step=layer · field=%s · model_said=%s · code=not_taken"
+            % (поле, _json_.dumps(сказала, ensure_ascii=False)))
+
+
 def _тримається(в, слова):
     """Внутрішня мова ходу → (лише поля й речі, чия цитата стоїть у її словах; рядки звіту).
 
@@ -1046,7 +1054,7 @@ def _тримається(в, слова):
 
 
 def паспорт_з_шару(внутрішня, сценарій, вето_чипів=None, паспорт_досі=None, драп=None, фото=None,
-                   речі_з_фото=None, слова_ходу="", частини=None, контраст=None):
+                   речі_з_фото=None, слова_ходу="", частини=None, контраст=None, не_взято=None):
     """Внутрішня мова одного ходу → паспорт ядра, теми поради й обов'язкове.
 
     ДЕЛЬТА, А НЕ ПОВНИЙ ПАСПОРТ: перекладач переказує лише цей хід. Чого він не почув —
@@ -1228,6 +1236,10 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         п["пояснення_мови"] = пояснення
     if вигадки:
         п["не_взято_кодом"] = list(п.get("не_взято_кодом") or []) + вигадки
+    # ПОЛЕ ХОДУ, ЯКЕ КОД ПРОЧИТАВ ЯК «НЕВІДОМО» (рядок 3191): доти лишалось лише в записі виклику, а знімок і
+    # звіт власника (`не_взято_кодом` → діагноз) казали «нічого не загублено».
+    if не_взято:
+        п["не_взято_кодом"] = list(п.get("не_взято_кодом") or []) + [str(р) for р in не_взято]
     if подія_без_смуги:
         п["не_взято_кодом"] = list(п.get("не_взято_кодом") or []) + [
             "event_without_scene · event=%s · required=event_place · verdict_vs_occasion=no_input"
@@ -1810,8 +1822,11 @@ _ПОЛЯ_EN = {
     "makeup": "make-up for this outing; lips_hex only when she named a lip colour",
     "jewelry": "jewellery she wants with this look; ethnic — wood, bone, beads; other — without metal",
     "registers": "style registers she described herself with",
-    "wants": "what she asks for in the look; an item in her question («а якщо…», «чи піде…») is not a "
-             "wish — it stays in question",
+    # Рядок 3190 (живі 12, А/06): «взуття — замшеві чоботи» не лягло ні в wants, ні в own_items — код і
+    # стилістка про чоботи не знали, і суд замші під дощем (п.17) не мав на чому стояти.
+    "wants": "what she asks for in the look, and also an item she names as what she will wear on this outing "
+             "(«взуття — …», «піду в …») when she does not call it hers — with every attribute she named, its "
+             "fabric too; an item in her question («а якщо…», «чи піде…») is not a wish — it stays in question",
     "vetoes": "what she does not want: limits",
     "retract": "wishes or limits from before that she now takes back",
     "beliefs": "what, in her view, does not suit her or spoils her figure; never argued with",
@@ -1942,8 +1957,9 @@ def _коди_розмови():
                       "her words name only the %s — %s" % (" | ".join(коди), рід, рід,
                                                           рід if _ВМ.ключ("place", рід) else "no place")
                       for рід, коди in _ПН_.МІСЦЯ_ПІДВИДИ.items()]
-    р.append("Items — lists of objects; each object has \"quote\" — the fragment of her words about this "
-             "item, copied letter for letter — and only the attributes she named:")
+    р.append("Items — lists of objects; every item she names goes into one of them, none is left out; each "
+             "object has \"quote\" — the fragment of her words about this item, copied letter for letter — and "
+             "only the attributes she named:")
     for ім in _РЕЧІ_З_ЦИТАТОЮ:
         if ім != "own_items":
             р.append("- %s — %s" % (ім, _ПОЛЯ_EN[ім]))
@@ -2187,6 +2203,14 @@ def _коди_розмови():
         # П-1: речі на фото описує модель із зором окремою задачею, вердикт — код.
         _ЗП_Р.Поле("photos", "ids of photos she attached to her new message",
                    як="another model looks at them and the code judges the items: do not describe or judge them"),
+        # Рядок 3170 (живі 12, А/07): битий JSON ходу одразу йшов шляхом виклику 0, і подія губилась. Тепер —
+        # ОДИН повтор тим самим промптом із причиною кодом (як виклик 0 і фото — `format_error`); поле є лише
+        # на повторі, тож сталий початок промпта (кеш) той самий.
+        _ЗП_Р.Поле("format_error", "your previous answer to this same message could not be read: "
+                                   "not_json_object — it was not one valid JSON object; no_text_field — it had "
+                                   "neither \"text\" nor \"ask\"",
+                   як="answer again: only one JSON object following \"answer_schema\", every string a valid "
+                      "JSON string"),
         _ЗП_Р.Поле("her_new_message", "her new message", треба=True),
     ),
     правила=РОЗМОВА_ПРАВИЛА,
@@ -2445,9 +2469,14 @@ def контраст_профілю(профіль):
     return о.get("рівень") if о.get("доступно") else None
 
 
+# Причини відповіді ходу, на які показ робить ОДИН повтор (рядок 3170) — коди `прийняти_розмову.причина`
+# до двокрапки; у промпт їде сам код, опис — у рядку поля `format_error` оголошення.
+ПРИЧИНИ_ПОВТОРУ = ("not_json_object", "no_text_field")
+
+
 def промпт_розмови(d):
     """Промпт ходу розмови зі входу ендпойнта: {розмова: {нове, історія}, сценарій, паспорт?,
-    драп_сирий?, фото?, профіль?} → текст промпта (JSON шаблону збирача, стала частина спершу)."""
+    драп_сирий?, фото?, профіль?, помилка_формату?} → текст промпта (JSON шаблону збирача, стала частина спершу)."""
     import паспорт_нагоди as _ПН
     р = d.get("розмова") if isinstance(d.get("розмова"), dict) else {}
     паспорт = d.get("паспорт") if isinstance(d.get("паспорт"), dict) else {}
@@ -2459,6 +2488,8 @@ def промпт_розмови(d):
             **теми_за_умовою(паспорт, d),
             "required": _обовʼязкове_до(d.get("сценарій"), паспорт),
             "photos": [str(ф.get("ід")) for ф in (d.get("фото") or []) if isinstance(ф, dict) and ф.get("ід")],
+            "format_error": next((к for к in ПРИЧИНИ_ПОВТОРУ
+                                  if str(d.get("помилка_формату") or "").split(":")[0] == к), None),
             "her_new_message": str(р.get("нове") or "").strip() or U}
     return _json_.dumps(_ЗП_Р.зібрати(РОЗМОВА, дані, мова_тексту="Ukrainian"), ensure_ascii=False)
 
@@ -2536,8 +2567,9 @@ def _незакритий(відповідь):
 
 
 def прийняти_розмову(відповідь):
-    """Відповідь моделі розмови → dict(внутрішня, частини, незнайомі, невідомо, заглушки, причина,
-    перенесено).
+    """Відповідь моделі розмови → dict(внутрішня, частини, незнайомі, невідомо, не_взято, заглушки, причина,
+    перенесено). `не_взято` — рядки звіту (`невзяте_рядком`) на кожне поле з `невідомо`: шов кладе їх
+    у `не_взято_кодом` паспорта (рядок 3191).
 
     `внутрішня` — оновлення паспорта, розібране ТИМ САМИМ шляхом, що переклад сценарію
     (`прийняти_вхід("scenario", …)`: пари → поле й уривок у `quotes`, коди поза переліком — у
@@ -2591,6 +2623,7 @@ def прийняти_розмову(відповідь):
     причина = None if частини.get("text") or частини.get("ask") else "no_text_field"
     текст, зняте = _без_питань(частини.get("text"))
     return dict(внутрішня=в, частини=частини, незнайомі=незнайомі, невідомо=р["невідомо"],
+                не_взято=[невзяте_рядком(к, оновлення.get(к)) for к in р["невідомо"]],
                 заглушки=_заглушки(об), причина=причина, текст=текст,
                 перенесено=["update.%s" % к for к in перенесено] + ["update.%s" % к for к in р.get("перенесено") or ()]
                 + незакрито,
@@ -2702,7 +2735,7 @@ def мова(вхід):
       · {коментар_з: внутрішня мова коментаря до образу, паспорт?} → `паспорт_з_коментаря`
         (С-2: межі й бажання коментаря — у паспорт сценарію, відкинуті речі — у «не ця»);
       · {паспорт_з: внутрішня, сценарій, вето?, паспорт?, драп_сирий?, фото_речей?,
-        речі_з_фото?, слова_ходу?, слова_розмови?, частини?, профіль?} → `паспорт_з_шару` + рядки випадку
+        речі_з_фото?, слова_ходу?, слова_розмови?, частини?, профіль?, не_взято?} → `паспорт_з_шару` + рядки випадку
         (з `частини` — ще й суд частин ходу розмови: `текст`, `відкинуто`, `бракує_обовʼязкового`);
         `профіль` — кольори людини: з них контраст обличчя для теми «макіяж» (МАК-2);
       · {репліка} → {промпт, вибірка}; {репліка, відповідь_моделі} → `прийняти_репліку`;
@@ -2737,7 +2770,8 @@ def мова(вхід):
                            речі_з_фото=d.get("речі_з_фото"),
                            слова_ходу=(d.get("слова_розмови") or d.get("слова_ходу") or ""),
                            частини=(d.get("частини") if isinstance(d.get("частини"), dict) else None),
-                           контраст=контраст_профілю(d.get("профіль")))
+                           контраст=контраст_профілю(d.get("профіль")),
+                           не_взято=(d.get("не_взято") if isinstance(d.get("не_взято"), list) else None))
         return дамп(dict(р, випадок=_ПН.паспорт_рядком(р["паспорт"]),
                          випадок_людині=_ПН.паспорт_рядком_людині(р["паспорт"]),
                          # ШМАТКИ З КЛЮЧАМИ — поруч із рядком (Л-9): показ вішає піктограму
