@@ -2288,7 +2288,8 @@ def промпт_розмови(d):
     дані = {"profile": профіль_кодами(d.get("профіль") or {}),
             "earlier_conversation": раніше, "conversation": репліки,
             "passport": паспорт_кодами(паспорт), "chosen": плитки_кодами(d.get("сценарій")),
-            **теми_за_умовою(паспорт, d), "required": _обовʼязкове_до(d.get("сценарій"), паспорт),
+            **теми_за_умовою(паспорт, d),
+            "required": _обовʼязкове_до(d.get("сценарій"), паспорт),
             "photos": [str(ф.get("ід")) for ф in (d.get("фото") or []) if isinstance(ф, dict) and ф.get("ід")],
             "her_new_message": str(р.get("нове") or "").strip() or U}
     return _json_.dumps(_ЗП_Р.зібрати(РОЗМОВА, дані, мова_тексту="Ukrainian"), ensure_ascii=False)
