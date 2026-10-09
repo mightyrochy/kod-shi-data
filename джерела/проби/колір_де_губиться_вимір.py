@@ -15,7 +15,7 @@ B.виклик("запити", json.dumps(dict(вх, сценарій=СЗ.СЦ�
 Л = K.Counter()
 for r in кат:
     нв, з = КР.не_вимір(r), зб.get(r["id"]) or {}
-    if not нв or нв["свідок"] != "слово крамниці" or з.get("версія") != 2 or not (з.get("колір_основний") or {}).get("hex"):
+    if not нв or нв["свідок"] != "shop_word" or з.get("версія") != 2 or not (з.get("колір_основний") or {}).get("hex"):
         continue
     сп = r.get("колір_спір") or {}
     у = float(з.get("впевненість") or 0)
