@@ -203,6 +203,14 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         "of the outfits that carry them, and do not repair her scheme away into neutrals; give a missing family "
         "a large item from «showcase» where one fits her occasion.",
         "For every finding with «register» «gate» — an entry in «done» of its outfit: «finding» is its «id».",
+        # ОПИС-1 (рядок 1416, CLAUDE.md п.4): «fixed» без визначення модель ставила й тоді, коли
+        # знахідка лишалась (1 501 «fixed» на 02.10, 112 непідтверджених); міра — суд коду.
+        # ПРАВИЛОМ, НЕ ПІДПИСОМ ЛИСТКА (рядок 3240): підпис стояв за переліком («fixed|declined|partly
+        # — fixed — the finding…»), і qwen3.5-9b переписувала його в «action» цілим (живі 13 А/08,
+        # останні ремонти рук 1–2: 27 із 64 дій), тож «declined» з ід знахідки губився в тексті.
+        "«action» in «done» is one word: fixed — the finding is gone from the outfit by the code's check "
+        "(you replaced or removed what raised it); partly — it stays but weaker; declined — you keep it on "
+        "purpose, with «why». When you are not sure it is gone, say partly.",
         "One item of each kind: an item of a kind the outfit already has replaces it; a missing kind is added "
         "without removing other items. An outfit has a dress, a set, or a top and a bottom.",
         _РЯДОК_РІЧ_ДВІЧІ,
@@ -221,12 +229,6 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         "образи[].виконано[].знахідка": "«id» of a finding or a blocker of this outfit",
         # рядок 3160: хід адресує знахідку кодом — речі мало, на ній стоять і чужі знахідки
         "образи[].свідомо[].знахідка": "«id» of the finding of this outfit that this move answers",
-        # ОПИС-1 (рядок 1416, CLAUDE.md п.4): «fixed» без визначення модель ставила й тоді, коли
-        # знахідка лишалась (1 501 «fixed» на 02.10, 112 непідтверджених); міра — суд коду
-        "образи[].виконано[].дія": "fixed — the finding is gone from the outfit by the code's check "
-                                   "(you replaced or removed what raised it); partly — it stays but weaker; "
-                                   "declined — you keep it on purpose, with «why». When you are not sure it "
-                                   "is gone, say partly",
     }),
     межі=("лише_вхід",),
     мова_промпту="en",

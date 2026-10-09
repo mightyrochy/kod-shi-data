@@ -1528,6 +1528,10 @@ def повнота_набору(вердикт, кандидати=None, кат�
         "A missing kind of item: add one item for it from «showcase».",
         "Several items of one kind: keep the one that suits the outfit best and remove the others.",
         "Change nothing else: the remaining items, the caption and the day stay as they are.",
+        # рядок 3240: тут лише блокери, знахідки назвати нема чого — «deliberate» несло пояснення
+        # доданої речі («Added shoes to complete the outfit») і йшло в суд ходом без коду
+        "Leave «deliberate» empty: an item you add for a blocker is not a deliberate move, and the moves "
+        "you declared before stay as they were.",
         "Name every item by its «n» — in full, exactly as in «verdict» or «showcase».",
         "Return exactly ONE outfit.",
     ),
@@ -1560,6 +1564,10 @@ def повнота_набору(вердикт, кандидати=None, кат�
         "A missing kind of item: add one item for it from «showcase».",
         "Several items of one kind: keep the one that suits the outfit best and remove the others.",
         "Change nothing else: the remaining items, the caption and the day stay as they are.",
+        # рядок 3240: тут лише блокери, знахідки назвати нема чого — «deliberate» несло пояснення
+        # доданої речі («Added shoes to complete the outfit») і йшло в суд ходом без коду
+        "Leave «deliberate» empty: an item you add for a blocker is not a deliberate move, and the moves "
+        "you declared before stay as they were.",
         "Name every item by its «n» — in full, exactly as in «verdict» or «showcase».",
         "Return every outfit of «verdict», each under its own «id».",
     ),
@@ -1572,6 +1580,45 @@ def повнота_набору(вердикт, кандидати=None, кат�
     межі=("лише_вхід",),
     мова_промпту="en",
 )
+
+
+def _з_ходами_кодом(свідомо, х):
+    """`свідомо` відповіді ремонту повноти + ходи образу вердикта `х`, які вже адресують знахідку
+    кодом (`правило`), — без повторів (рядок 3240).
+
+    ЧОМУ. Ремонт повноти бачить лише блокери, знахідок у його вердикті нема, тож назвати
+    знахідку модель там не може: її «deliberate» — пояснення доданої речі («Added shoes to
+    complete the outfit»). Доти така відповідь ЗАМІНЮВАЛА оголошення образу, і хід, який
+    ремонт адресував ід знахідки («declined» з «чому» → `правило`), до вибору й суду не
+    доходив: живі 13 А/08 рука 1 — 7 таких ходів у ремонті, 0 у суді. Хід без коду,
+    який відповідь не повторила, лишається замінним, як доти."""
+    вих = [с for с in (свідомо or []) if isinstance(с, dict)]
+    є = {(str(с.get("річ") or ""), str(с.get("правило") or "")) for с in вих}
+    for с in (х.get("свідомі") or []):
+        if isinstance(с, dict) and с.get("правило") and (str(с.get("річ") or ""), str(с["правило"])) not in є:
+            вих.append(dict(річ=с.get("річ"), чому=с.get("чому"), правило=str(с["правило"])))
+    return вих
+
+
+def донести_ходи_кодом(відповідь, попередній):
+    """Ремонт повноти ПІСЛЯ вибору (`ПОВНОТА`) — ті самі ходи кодом, що `злити_з_неторканими`
+    дає ремонту до вибору: образ відповіді, що має пару у вердикті за «ід» (або єдиний з
+    єдиним), несе й ходи пари з `правило`. None — коли донести нічого (відповідь тоді
+    лишається тим самим текстом)."""
+    обр = [о for о in ((відповідь or {}).get("образи") or []) if isinstance(о, dict)]
+    поп = [о for о in ((попередній or {}).get("образи") or []) if isinstance(о, dict)]
+    if not обр or not поп:
+        return None
+    за_ід = {str(о.get("ід") or ""): о for о in поп}
+    змінено = False
+    for о in обр:
+        х = за_ід.get(str(о.get("ід") or "")) or (поп[0] if len(обр) == len(поп) == 1 else None)
+        if х is None:
+            continue
+        нові = _з_ходами_кодом(о.get("свідомо"), х)
+        if len(нові) != len([с for с in (о.get("свідомо") or []) if isinstance(с, dict)]):
+            о["свідомо"], змінено = нові, True
+    return відповідь if змінено else None
 
 
 def злити_з_неторканими(відповідь, попередній):
@@ -1605,14 +1652,19 @@ def злити_з_неторканими(відповідь, попередні�
     for j, х in enumerate(поп):
         # «Change nothing else» (`ПОВНОТА_ВСІ`): підпис, «день» і оголошення образу, яких
         # відповідь не повторила, — ті самі, що у вердикті; оголошення про річ, якої в
-        # складі вже нема, розбір знімає сам (`_свідомі_з_json(склад=…)`).
+        # складі вже нема, розбір знімає сам (`_свідомі_з_json(склад=…)`). Код знахідки
+        # (`правило`) їде з оголошенням (рядок 3240): без нього хід далі не послаблює нічого.
         був = {к: v for к, v in dict(
             підпис=х.get("підпис"), речі=list(х.get("речі") or []), день=х.get("день"),
-            свідомо=[dict(річ=с.get("річ"), чому=с.get("чому")) for с in (х.get("свідомі") or [])
+            свідомо=[dict(річ=с.get("річ"), чому=с.get("чому"),
+                          **({"правило": str(с["правило"])} if с.get("правило") else {}))
+                     for с in (х.get("свідомі") or [])
                      if isinstance(с, dict) and (с.get("річ") or с.get("чому"))]).items() if v}
         if j in пари:
             вих.append(dict(був, **{к: v for к, v in обр[пари[j]].items() if v and к != "ід"},
                             ід=str(х.get("ід") or "")))
+            if обр[пари[j]].get("свідомо"):
+                вих[-1]["свідомо"] = _з_ходами_кодом(обр[пари[j]]["свідомо"], х)
             continue
         вих.append(dict(був, ід=str(х.get("ід") or "")))
     вих += [о for к, о in enumerate(обр) if к not in пари.values()]
