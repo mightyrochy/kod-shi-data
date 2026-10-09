@@ -676,11 +676,15 @@ def випадок(в, день=None):
         elif к == "макіяж" and isinstance(v, dict):
             v = {кк: vv for кк, vv in (("level", код("makeup_level", v.get("рівень"))), ("lips", v.get("губи"))) if vv}
         elif к == "вето" and isinstance(v, dict):
+            # МЕЖА НА ОДИН СЛОТ — ОБʼЄКТОМ {code, only_on} (рядок 2730): слот, на якому код її тримає
+            # (`випадок.вето.слоти`); межа без слота — голим кодом, про весь образ
+            сл = v.get("слоти") or {}
+            на = lambda x, c: ({"code": c, "only_on": [код("slot", s) for s in сл[x]]} if сл.get(x) else c)
             v = {кк: vv for кк, vv in (
                 ("types", [_межа_типу(x) for x in (v.get("типи") or [])]),
-                ("fabrics", [код("fabric", x) for x in (v.get("тканини") or [])]),
-                ("prints", [код("pattern", x) for x in (v.get("принти") or [])]),
-                ("colors", [код("color_class", x) if _ВМ.код("color_class", x) else код("color_name", x)
+                ("fabrics", [на(x, код("fabric", x)) for x in (v.get("тканини") or [])]),
+                ("prints", [на(x, код("pattern", x)) for x in (v.get("принти") or [])]),
+                ("colors", [на(x, код("color_class", x) if _ВМ.код("color_class", x) else код("color_name", x))
                             for x in (v.get("кольори") or [])]),
                 ("zones", [код("zone", x) for x in (v.get("зони") or [])])) if vv}
             if not v:
@@ -1468,7 +1472,8 @@ def пакет(п):
     # код, що вже стоїть у `case.refusals`, у `she_refuses` не повторюється.
     _відм = (вих.get("case") or {}).get(_ПОЛЯ_ВИПАДКУ["вето"])     # той самий ключ, що пише `випадок`
     if вих.get("she_refuses") and isinstance(_відм, dict):
-        _вже = {x for v in _відм.values() if isinstance(v, list) for x in v}
+        # межа на один слот (`{code, only_on}`) межі на весь образ не знімає
+        _вже = {x for v in _відм.values() if isinstance(v, list) for x in v if not isinstance(x, dict)}
         _лишок = [x for x in вих["she_refuses"] if x not in _вже]
         if _лишок:
             вих["she_refuses"] = _лишок
