@@ -1251,12 +1251,21 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         дозволені = [к for к in (_ВМ.код("advice_topic", т) for т in _ПН.теми_дозволені(
             сценарій or {}, dict(п, поради_дані=дані), драп=драп_поради,
             є_річ=bool(фото or п.get("речі_з_фото")), контраст=контраст)) if к]
-        текст, теми, відкинуто, бракує, питанням = суд_частин(частини, дозволені, обовʼязкове)
-        п["поради_дані"] = дані + [_ВМ.ключ("advice_topic", т) for т in теми]
+        текст, теми, відкинуто, бракує, питанням, показані = суд_частин(
+            частини, дозволені, обовʼязкове, дані=[_ВМ.код("advice_topic", т) for т in дані])
+        # прочитане — дане (рядок 2840): у `поради_дані` лягає кожна знана тема з показаного запрошення
+        п["поради_дані"] = дані + [к for к in dict.fromkeys(_ВМ.ключ("advice_topic", т) for т in показані)
+                                   if к and к not in дані]
         п["розмову_вела"] = "мовна модель"
+        # ЩО КОД НЕ ЗАПИСАВ (рядок 3164): поле ходу, яке сторож зняв (`вигадки`), — кодом поля. Репліка моделі
+        # про нього («Я врахую») розходиться з паспортом, тож показ тоді кличе перекладача репліки з тим,
+        # що код справді записав, і цим переліком (`not_recorded`), а не показує її текст.
+        не_записано = [к for к in (внутрішня or {}) if к != "quotes" and (
+            к not in в or (к in _РЕЧІ_З_ЦИТАТОЮ and len(в.get(к) or []) < len(внутрішня.get(к) or [])))]
         return dict(паспорт=п, теми_поради=теми, обовʼязкове=обовʼязкове, записано=в, вигадки=вигадки,
                     текст=текст, відкинуто=відкинуто, бракує_обовʼязкового=бракує, дозволені=дозволені,
-                    запрошення_питанням=питанням)
+                    запрошення_питанням=питанням, не_записано=не_записано if вигадки else [],
+                    запрошення=str(частини.get("invite") or "") if показані else "")
     # ХТО ВІВ РОЗМОВУ (М-5, пункт B7 чекліста) не губиться, коли шов перезбирає паспорт без нових слів
     # (плитки перед збиранням, `паспортШаромП`): останній хід розмови склала мовна модель
     if досі.get("розмову_вела"):
@@ -1380,6 +1389,10 @@ def _заяви_словником(вжиті):
 # Число, hex і слово крамниці кодами не є (у таблиці їх нема) і лишаються як є.
 # ОДИН КОД У КІЛЬКОХ ПОЛЯХ (`knee` — і довжина, і рівень тіла) віддає обидва слова через
 # «/»: контекст заяви в моделі є, а мовчазно вибрати за неї одне поле код не може.
+# КОД, ЧИЄ ЯДРО — ЧИСЛО, СЛОВАМИ НЕ ВИЗНАЧАЄТЬСЯ (рядок 2844): `weather_feel` у таблиці — код → градуси
+# для правил (мороз — −8 °C). Заява тепер несе відчуття замість вигаданого числа, і «− 8» з таблиці
+# в промпт не їде (доти `w.replace` падав на float — шар картки лишався без рядка); код стоїть як є,
+# а що він — погода її словами — каже визначення заяви.
 def _коди_значень(значення, знайдені):
     """Рекурсивно: усі рядки в `значення`, які є кодами `ВМ.ТАБЛИЦЯ`, → {код: слова}."""
     if isinstance(значення, dict):
@@ -1389,7 +1402,7 @@ def _коди_значень(значення, знайдені):
         for v in значення:
             _коди_значень(v, знайдені)
     elif isinstance(значення, str):
-        слова = sorted({м[значення] for м in _ВМ.ТАБЛИЦЯ.values() if значення in м})
+        слова = sorted({м[значення] for м in _ВМ.ТАБЛИЦЯ.values() if isinstance(м.get(значення), str)})
         if слова:
             знайдені[значення] = " / ".join(w.replace("_", " ") for w in слова)
 
@@ -1439,19 +1452,51 @@ def промпт_репліки(репліка):
         "питань, окремим реченням після підтвердження: підтвердження закінчується крапкою, запрошення "
         "починається з великої літери. Коди тем: %s." % (р["advice_topics"]["description"], теми),
         "- required — %s. Коди: %s." % (р["required"]["description"], обов),
+        # Рядок 3164: «Я зрозуміла… Я врахую» при вето, яке не лягло. Не записане не підтверджується.
+        "- not_recorded — %s: коротко й прямо скажи, що цього ти не записала, і що вона може написати це "
+        "ще раз своїми словами; не кажи, що врахуєш, і не питай. Коди: %s." % (
+            р["not_recorded"]["description"],
+            "; ".join("%s — %s" % (о["const"], о["description"]) for о in р["not_recorded"]["items"]["oneOf"]
+                      if о["const"] in ((репліка or {}).get("not_recorded") or ()))),
         "Поля, якого нема, — нема про що й писати. Коди — не слова для неї: пиши їхній зміст, "
         "самих кодів не пиши."] + заяви + [
         "", "Відповідь — лише JSON-об'єкт з одним ключем text — репліка стилістки.", "",
         "РЕПЛІКА:", _json_.dumps(репліка or {}, ensure_ascii=False)])
 
 
-def прийняти_репліку(відповідь):
-    """Відповідь перекладача репліки → dict(текст, причина). Текст — ЛИШЕ з поля `text`
-    (урок #310: чужий текст приносить у чат примітки й міркування моделі)."""
+def суд_репліки(текст, репліка):
+    """(текст, відкинуто) — суд ФОРМИ репліки перекладача (рядок 2843), як `_без_питань` на одному виклику:
+    питати її може лише код. Без `required` речень-питань нема; з `required` — одне, ОСТАННЄ (промпт ставить
+    його після підтвердження). Знята решта — рядком у `відкинуто`. Запрошення поради перекладач не пише:
+    його пише модель ходу, і судить `суд_частин` (`прийняти_репліку`, `запрошення`)."""
+    р = репліка if isinstance(репліка, dict) else {}
+    стеля = 1 if р.get("required") else 0
+    речення = [x for x in _РЕЧЕННЯ.split(текст or "") if x.strip()]
+    питання = [і for і, x in enumerate(речення) if _ПИТАННЯ.search(x)]
+    зняти = set(питання[:len(питання) - стеля])
+    відкинуто = [dict(частина="reply_text", чому="question_not_allowed" if not стеля else "too_many_questions",
+                      зняте=[речення[і] for і in sorted(зняти)])] if зняти else []
+    return " ".join(x for і, x in enumerate(речення) if і not in зняти), відкинуто
+
+
+def прийняти_репліку(відповідь, репліка=None, запрошення=""):
+    """Відповідь перекладача репліки → dict(текст, причина, відкинуто, запрошення_питанням). Текст — ЛИШЕ з
+    поля `text` (урок #310: чужий текст приносить у чат примітки й міркування моделі); форму судить
+    `суд_репліки` за тим, що код дав у `репліка` (рядок 2843).
+    ЗАПРОШЕННЯ ПОРАДИ — ТЕ, ЩО ПРИЙНЯВ СУД ЧАСТИН (рядок 2843). Доти другий виклик віддавав перекладачеві
+    `advice_topics`, і той писав запрошення сам — повз суд форми (скільки питань, «Можна не відповідати»), а
+    в `поради_дані` лягали теми, яких у його словах могло й не бути. Тепер `запрошення` — текст `invite`
+    моделі ходу, який `суд_частин` прийняв і чиї теми вже лягли в `поради_дані`; він стає окремим реченням
+    після репліки перекладача, а `запрошення_питанням` ставить сталий напис показу."""
     об, чому_не = _обʼєкт(відповідь)
     т = об.get("text") if isinstance(об, dict) else None
     if isinstance(т, str) and not _ВМ.невідомо(т):
-        return dict(текст=_бульбашка([т]), причина=None)
+        т, відкинуто = суд_репліки(_бульбашка([т]), репліка)
+        if т.strip():
+            з = str(запрошення or "").strip()
+            return dict(текст=_бульбашка([т, з]), причина=None, відкинуто=відкинуто,
+                        запрошення_питанням=bool(з) and bool(_ПИТАННЯ.search(з)))
+        return dict(текст="", причина="only_questions", відкинуто=відкинуто)
     return dict(текст="", причина=("text_unknown: %s" % _json_.dumps(т, ensure_ascii=False)
                                    if isinstance(т, str) and т.strip() else "no_text_field") if isinstance(об, dict)
                 else "not_json_object: %s" % (чому_не or type(об).__name__))
@@ -1684,13 +1729,20 @@ _ПОЛЯ_EN = {
     "occasion": "what kind of event it is",
     "place": "where she will be",
     "dress_code": "the dress code, when it is named",
-    "event": "the event briefly, in her words",
+    # Рядок 3165 (живі 12, А/07): «"yoga and coffee with a friend"» — подія англійською й у власних лапках;
+    # подія йде на картку випадку, тож — її слова з листа, її мовою, лише скорочені
+    "event": "the event briefly: her own words from her message, in her language, shortened only by leaving "
+             "words out",
     "place_words": "where she will be, 1–5 words for her scenario card, in her language, capitalised (like: "
-                   "Church, service; School, son's graduation; Rock club); whenever place is set",
+                   "Church, service; School, son's graduation; Rock club); whenever place is set, and never instead of "
+                   "it: the code of the place goes into place",
     "reserved_colour": "a colour that belongs to another person at this event: near_white — white, "
                        "ivory and cream belong to the bride when she is not the bride herself",
+    # Рядок 3167 (живі 12, К7р): «відкритого не хочу» — сід 5 з 3 поклав межу в goal_zones (зона мети
+    # «приховати»), код узяв «none» як невідомо, і пряма заборона загубилась; опис знав лише норму події
     "open_zones": "how many body zones (neckline or back, legs, shoulders) it is appropriate to show "
-                  "at this event: none — church, funeral, interview and other reserved settings; one; two",
+                  "at this event: none — church, funeral, interview and other reserved settings; one; two. Her own "
+                  "limit on how much of her body she shows sets it too",
     "setting": "indoors, outdoors or mixed",
     "duration_h": "how many hours the event lasts",
     "movement": "whether she will sit, stand, walk, walk a lot, dance, kneel or do sport",
@@ -1753,7 +1805,8 @@ _ПОЛЯ_EN = {
             "it is intent context_optimal",
     "goal_zones": "only with goal conceal, when she wants to draw the eye away from a body zone («сховати "
                   "живіт» — belly): the goal then concerns only these zones, and the rest of the look is free; "
-                  "when she also wants no attention to herself at all — no field, the whole look is quiet",
+                  "when she also wants no attention to herself at all — no field, the whole look is quiet. Never for "
+                  "how much skin she shows: that is open_zones",
     "makeup": "make-up for this outing; lips_hex only when she named a lip colour",
     "jewelry": "jewellery she wants with this look; ethnic — wood, bone, beads; other — without metal",
     "registers": "style registers she described herself with",
@@ -1852,14 +1905,19 @@ _ОБОВʼЯЗКОВЕ_EN = {
 assert set(_ОБОВʼЯЗКОВЕ_EN) == set(_ВМ.ОБОВʼЯЗКОВЕ)
 # Межа мовної моделі (п.3 наряду) — англійськими визначеннями кодів `внутрішня_мова.ПОТРЕБИ`.
 _ПОТРЕБИ_EN = {
+    # Рядок 3162 (живі 12, А/06): «general style knowledge» модель читала як дозвіл радити — «замша не
+    # боїться води» на «замшеві чоботи, увесь день дощ»; що пасує погоді й нагоді, знає перевірка коду
     "none": "you answer her yourself: she told about her outing, or asked what you know for sure "
-            "without her items, looks and photos — what a word or a style term means, general style "
-            "knowledge",
+            "without her items, looks and photos — what a word or a style term means",
     "app": "a question about this app — its screens, buttons, her saved data, what to do next: you "
            "answer it in your next message, from what the app shows",
-    "look": "she wants her items or her look judged (how they look, whether they go together or suit "
-            "her) or asks why a particular item or look was chosen: you answer it in your next message, "
-            "after the app has checked her items and looks — only that check makes the answer sure",
+    # Рядок 3163 (живі 12, А/02, А/03): «йду на роботу пішки, … відкритого не хочу» — без питання, а
+    # need=look у 2 з 2 сідів; стилістка відповідала на непитання й вигадувала «куртку» і «Мінськ»
+    "look": "her new message itself asks to judge her items or her look (how they look, whether they go "
+            "together or suit her) or asks why a particular item or look was chosen: you answer it in your "
+            "next message, after the app has checked her items and looks — only that check makes the answer "
+            "sure. Telling about her outing, its weather and her wishes or limits for the look asks nothing: "
+            "that is none",
     "build": "she asks to put the looks together now: the app does it",
 }
 assert set(_ПОТРЕБИ_EN) == set(_ВМ.ПОТРЕБИ)
@@ -1870,8 +1928,11 @@ def _коди_розмови():
     формою значення, ознаки речі, теми поради з умовою, обовʼязкові питання, коди `need`."""
     import паспорт_нагоди as _ПН_
     поля = {ім: с for ім, с in _ВМ.СЦЕНАРІЙ.items() if ім not in _БЕЗ_У_РОЗМОВІ}
+    # Рядок 3165 (живі 12, А/07): «"quote": "\"йога…\", \"value\": "everyday"» — цитата в екранованих лапках
+    # ламала JSON, хід ішов шляхом main (виклик 0), і нагода губилась; промпт сам несе лапки екранованими
     р = ["Fields with a code or a number — each is a JSON object {\"quote\": the fragment of her words "
-         "it stands on, copied letter for letter, \"value\": its value}:"]
+         "it stands on, copied letter for letter, \"value\": its value}; \"quote\" is a plain JSON string of "
+         "her letters, with no quotation marks or backslashes of its own around them:"]
     for ім, с in поля.items():
         if _група(ім, с) == "пари":
             р.append("- %s — %s; %s" % (ім, _ПОЛЯ_EN[ім], _довідник_en(ім) if ім in _ГРУПИ_ДОВІДНИКА else _тип_en(с)))
@@ -2011,10 +2072,13 @@ def _коди_розмови():
     # НП-в (принцип власника 01.10: «код має знати те, що може точно порахувати»): видів,
     # «найближчого виду», ролі, аудиторії, віри, обсягу й частин дня модель коду більше не дає —
     # стилістка бере подію її словами. Зарезервований колір — рахівне (вето майже-білого).
+    # Рядок 3167: її власна межа відкритого — теж сюди (ліміт K-KOH-10), а не в зони мети.
     "\"reserved_colour\" and \"open_zones\" are, like formality, your understanding of the event's "
     "norm, without quote: set them when the event has such a norm (a wedding where she is a guest — "
     "near_white; a church or a funeral — open_zones none); no norm — leave them absent: unknown is a "
-    "valid value, and the looks are put together anyway.",
+    "valid value, and the looks are put together anyway. When she herself limits how much of her body she "
+    "shows (nothing open or bare), \"open_zones\" takes her limit — none, or one when she allows a single "
+    "zone — also without quote, and it overrides the event's norm.",
     # НП-в5 (рядок 522 (3)): вечір плитки «Офіційний вечір» — розуміння моделі, не таблиця коду.
     # НГ-5 (рядок 754): лише «назва каже вечір» мало — плитка «Театр, концерт» вечора не називає, і хід
     # плиток лишав паспорт на типових 11:00 форми. Тепер, як formality, — розуміння події: подія, що
@@ -2032,27 +2096,38 @@ def _коди_розмови():
     # 25 з 39 ходів `need=look` передавали її «стилістові» третьою особою; жінка ж чує одну стилістку.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
     "without her items, looks and photos. When \"need\" is not \"none\", \"text\" neither answers nor "
-    "judges her question — you have not seen the check yet — and only says what you recorded. You are the "
+    "judges her question — you have not seen the check yet — and only says what you recorded. Whether an "
+    "item, a material, a colour or a cut suits the weather, the event or her is never sure without that "
+    "check: never advise or judge it in \"text\" yourself. You are the "
     "only stylist she talks to: speak of yourself in the first person and never name another stylist, a "
     "helper, the app or the code as the one who answers her.",
     # Т-18 і п.9: питання до неї — лише через `ask` і `invite`, які судить код (`суд_частин`).
+    # Рядок 3162: «your answer» модель додавала й тоді, коли вона нічого не питала, — порадою від себе.
     "\"text\" is your reply to her: briefly what you understood and recorded from her new message, and "
-    "your answer when \"need\" is \"none\". \"text\" asks her nothing and has no question marks.",
+    "your answer when she asked something and \"need\" is \"none\"; when she asked nothing, nothing "
+    "more — no advice of your own. \"text\" asks her nothing and has no question marks.",
     # НГ-4, живий стенд 01.10: «записала це в твій паспорт» (слово системи, не її) і «врахую, що образ
     # має бути стриманим перед керівництвом» — аудиторію й частини дня код ще не читає (НГ-9, НГ-12),
     # тож обіцянка була б неправдою; що код зробить із почутим, вирішує код, а не модель розмови.
     # Рядок 1439 (розбір 02.10): «до співбесіди чорного не буде», «підберу стриманий образ» — 7 з 67 ходів;
     # правило «не обіцяй, як буде враховано» модель читала як «не пояснюй», а прогноз писала далі.
+    # Рядок 3163 (живі 12, А/05): «Зафіксувала прогулянку в офісній обстановці» при місці null — текст
+    # казав записаним те, чого в `update` не було.
     "\"text\" does not mention the passport, codes or fields. It says only what she told and what you "
-    "understood — what already is, never what will be: no promise or forecast about the looks, the items, "
+    "understood — what already is, never what will be: nothing that is not in \"update\" or the passport, "
+    "no promise or forecast about the looks, the items, "
     "their colours or how her words will be taken into account; the looks are put together later.",
     # Рядок 314: підтвердження й запрошення стоять поруч в одній бульбашці — кожне окремим реченням.
     "\"text\" ends with a full stop: \"invite\" and \"ask\" follow it as separate sentences. A dash "
     "between words is the long dash «—».",
     # Рядок 1433 (розбір 02.10, ж4_робота_живіт): «який макіяж planуєш» — латинський корінь в українському
     # слові; сторож чату ловить його як факт письма і просить повтор, а промпт каже, як писати одразу.
+    # Рядок 3163 (живі 12, А/03–А/05): «чи хочете ви», «вам», «Розкажіть», «Де саме ви працюєте?» — межа
+    # `для_неї` англійською («familiar singular») стоїть у кінці довгого промпта; тут — самі форми.
     "\"text\", \"invite\" and \"ask\" are natural literary Ukrainian: every Ukrainian word in Ukrainian "
-    "Cyrillic letters only, with no Latin letter inside it; brand and shop names as she wrote them.",
+    "Cyrillic letters only, with no Latin letter inside it; brand and shop names as she wrote them. They "
+    "speak to her as «ти» (ти, тебе, тобі, твій, хочеш, розкажи), never as «ви» (ви, вам, ваш, хочете, "
+    "розкажіть).",
     # П.9 (20.09, рядки 108 і 114): поради — групою до трьох тем, м'яко, без повторів.
     # Рядок 1441: теми, умову яких код уже бачить, — окремо від тих, що стануть доречні лише з її нових слів.
     "\"invite\" is optional: one soft sentence, to her as «ти», inviting her to tell about up to three "
@@ -2549,12 +2624,14 @@ def _бульбашка(шматки):
                     for і, ш in enumerate(шматки))
 
 
-def суд_частин(частини, дозволені, обовʼязкове):
+def суд_частин(частини, дозволені, обовʼязкове, дані=()):
     """Частини відповіді моделі → (текст бульбашки, теми запрошення, відкинуто, бракує_обовʼязкового,
-    запрошення_питанням).
+    запрошення_питанням, показані).
 
     `дозволені` — теми поради, які код дозволяє на стані ПІСЛЯ ходу (`теми_дозволені`);
-    `обовʼязкове` — обовʼязкові коди на тому самому стані. Відкинуте не губиться мовчки: кожен
+    `обовʼязкове` — обовʼязкові коди на тому самому стані; `дані` — коди тем, які в цій розмові вже
+    пропонували (`поради_дані`). `показані` — коди тем, які вона ПРОЧИТАЄ в запрошенні (дозволені й
+    ні): усі лягають у `поради_дані`. Відкинуте не губиться мовчки: кожен
     рядок `відкинуто` — {частина, чому} кодами, і він їде в запис виклику (звіт власника)."""
     import паспорт_нагоди as _ПН
     ч = частини or {}
@@ -2574,24 +2651,35 @@ def суд_частин(частини, дозволені, обовʼязков
     # movement] при дозволених [jewelry, register] відкидалось цілим, `поради_дані` лишались порожні.
     # Тепер недозволене відкидається поіменно (запис у `відкинуто`), дозволене лишається; цілим
     # запрошення відкидається, лише коли дозволених не лишилось.
+    # ТЕКСТ ЗАПРОШЕННЯ НЕСЕ ВСІ СВОЇ ТЕМИ (рядок 2840). Код слів не править (п.12): запрошення або йде цілим,
+    # або не йде. Доти цілим ішло й тоді, коли частина тем недозволена, а в `поради_дані` лягали лише дозволені:
+    # Д3 живого пачки 5 — «Розкажи про мету…, чи плануєш прикраси та яка очікується температура?» при
+    # дозволених [makeup, jewelry, register]; мету й температуру вона прочитала, а код їх «не пропонував» і
+    # міг запропонувати знову — повтор після ігнорування (п.9). Тепер: тема, яку вже пропонували (`дані`), —
+    # повтор у самому тексті, і запрошення відкидається цілим (`topic_repeated`); решта недозволених
+    # лишається в тексті (рядок 1001) і разом із дозволеними повертається `показані` — у `поради_дані`.
     всі_теми, invite = list(ч.get("invite_topics") or []), ч.get("invite")
     теми = [т for т in всі_теми if т in дозволені]
     недозволені = [т for т in всі_теми if т not in дозволені]
+    повтори = [т for т in недозволені if т in set(дані or ())]
+    показані = []
     if invite or всі_теми:
         чому = ("required_this_turn" if обовʼязкове else "no_topics" if not всі_теми
                 else "no_invite_text" if not invite
                 else "too_many_topics" if len(всі_теми) > _ПН.ПОРАД_ЗА_ХІД_МАКС
+                else "topic_repeated" if повтори
                 else "topic_not_allowed" if not теми
                 else "too_many_sentences" if len([р for р in _РЕЧЕННЯ.split(invite) if р.strip()]) > _ПН.ПОРАДА_РЕЧЕНЬ_МАКС
                 else None)
         if чому:
             відкинуто.append(dict(частина="invite", чому=чому, теми=всі_теми,
-                                  дозволені=list(дозволені)))
+                                  дозволені=list(дозволені), **({"повтори": повтори} if повтори else {})))
             теми = []
         else:
+            показані = list(всі_теми)
             if недозволені:
                 відкинуто.append(dict(частина="invite_topics", чому="topic_not_allowed", теми=недозволені,
-                                      лишено=теми, дозволені=list(дозволені)))
+                                      лишено=теми, дозволені=list(дозволені), показано=True))
             шматки.append(invite)
     # ЗАПРОШЕННЯ ПИТАННЯМ — ПОРАДА, А НЕ ВІДКИНУТЕ (рядок 2814). Живий пачки 5: у всіх 13 повних прогонах і в обох
     # розмовних MamayLM писала `invite` питанням («Чи плануєте ви багато ходити?»), суд відкидав його цілим
@@ -2600,7 +2688,7 @@ def суд_частин(частини, дозволені, обовʼязков
     # обовʼязковим питанням. Що відповідати не мусить, каже сталий напис показу під бульбашкою — його ставить
     # `запрошення_питанням`; запрошення без «?» модель і так пише з «можна й ні».
     питанням = bool(теми) and bool(_ПИТАННЯ.search(invite or ""))
-    return _бульбашка(шматки), теми, відкинуто, бракує, питанням
+    return _бульбашка(шматки), теми, відкинуто, бракує, питанням, показані
 
 
 # ══ ЕНДПОЙНТ ════════════════════════════════════════════════════════════════════
@@ -2657,7 +2745,7 @@ def мова(вхід):
                          випадок_шматки=_ПН.паспорт_шматками_людині(р["паспорт"])))
     if d.get("репліка") is not None:
         if d.get("відповідь_моделі") is not None:
-            return дамп(прийняти_репліку(d["відповідь_моделі"]))
+            return дамп(прийняти_репліку(d["відповідь_моделі"], d["репліка"], d.get("запрошення") or ""))
         return дамп(dict(промпт=промпт_репліки(d["репліка"]), вибірка=ВИБІРКА))
     if d.get("розмітка_повідомлень") is not None:
         return дамп(прийняти_повідомлення(d["розмітка_повідомлень"], d.get("відповідь_моделі")))

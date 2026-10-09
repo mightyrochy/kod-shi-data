@@ -4,6 +4,7 @@
 СМІЛИВА ІДЕЯ = ≥2 з 4 ВИМІРЯНИХ ознак речей образу (hex→CIELAB D65; прикраси й золото/срібло/перли кольором не рахуються): гучний (C*≥40 — поріг коду
 loud_from із промпту вибору), контраст (max L*−min L*≥50), фактура (ОДЯГ, не аксесуар: блиск/сатин/мереживо/оксамит/лак/атлас/принт),
 багатобарвний (≥3 кольорові сектори по 60° серед речей з C*≥15). «Заявлено» (deliberate) і «поза палітрою» (in_arc) до балу не входять.
+Одяг — річ із типом, не з переліку АКС: без типу (пояс #269·19) код не дає слота, тож і мірило не рахує її одягом (рядок 2701).
 Вага знахідок: з промпту вибору, а коли її нема (після ВИБ-1) — з промпту ремонту за id знахідки; нема ніде → 0 і друкується «нема»."""
 import gzip, json, glob, re, math, sys, collections as K
 Р = "/home/user/kod-shi-data/аудит/перевірки/"
@@ -24,7 +25,7 @@ def ознаки(р):  # р: [(hex|None, одяг?, фактура?)] → (оз�
     return о, sum(о.values()), с
 def річ(d):
     fb = d.get("fabric") if isinstance(d.get("fabric"), list) else [d.get("fabric")]
-    return (None if d.get("color") in ("golden", "silvery", "pearly") or re.search("jewel|ring|brooch", d.get("type") or "") else d.get("hex"), not any(a in (d.get("type") or "x") for a in АКС), bool(d.get("shine") or d.get("pattern") or set(fb) & ТЕК))
+    return (None if d.get("color") in ("golden", "silvery", "pearly") or re.search("jewel|ring|brooch", d.get("type") or "") else d.get("hex"), bool(d.get("type")) and not any(a in d["type"] for a in АКС), bool(d.get("shine") or d.get("pattern") or set(fb) & ТЕК))
 зона = lambda h: math.hypot(*лчх(h)[1:]) < 15 or 60 <= math.degrees(math.atan2(лчх(h)[2], лчх(h)[1])) % 360 < 180  # нейтраль або жовто-зелено-блакитний сектор
 цілі = lambda п: re.findall(r'(?:"hex": "|\\n\s+[а-яіїє\' ]+: )(#[0-9a-f]{6})', json.dumps([s for s in п.get("style_rules", []) if "хема" in json.dumps(s, ensure_ascii=False) or "scheme_colours_by_kind" in json.dumps(s)] + [((п.get("person") or {}).get("palette") or {}).get("kind_colours")], ensure_ascii=False))  # СХЕМА-2: ціль слота — `person.palette.kind_colours`
 def зібрати(сп):  # потік викликів → вирви: асемблі → ремонт (за набором речей) → вибір (за перетином із відповіддю ремонту)
