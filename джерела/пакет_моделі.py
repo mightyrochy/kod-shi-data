@@ -466,7 +466,12 @@ import внутрішня_мова as _ВМ_П
 # правила (Р2-2а, `правило_руки2`) дістала ту саму задачу без нього, а не іншу.
 РЯДОК_ТРЕТЬОЇ_РЕЧІ = ("Besides the top and the bottom (or the dress) — at least one outer layer, piece of "
                       "jewelry, belt, scarf or hat; 5–7 items in all, 4–6 with a dress.")
-РЯДКИ_ЗАДАЧІ_ЗА_ПРАВИЛОМ = {"K-CRA-01": РЯДОК_ТРЕТЬОЇ_РЕЧІ}
+# Квота однієї речі на набір (K-VAR-01, рядок 1446). Суд набору (`вердикт_моделі._повтор_слота`,
+# квота max(2, ⌈образів·`частка_речі_набору`⌉) — для 5–10 образів два) судив її, а складання про неї
+# не знало: 67 знахідок `variety_kind_one_item … keep_at_most: 2` у 39 прогонах розбору 02.10, які
+# виправляв лише ремонт. Те саме речення стоїть у правилах ремонту (`вердикт_моделі.РЕМОНТ`).
+РЯДОК_РІЧ_ДВІЧІ = "One item stands in at most two outfits of the set; her own item does not count."
+РЯДКИ_ЗАДАЧІ_ЗА_ПРАВИЛОМ = {"K-CRA-01": РЯДОК_ТРЕТЬОЇ_РЕЧІ, "K-VAR-01": РЯДОК_РІЧ_ДВІЧІ}
 
 СКЛАДАННЯ = _ЗП.Оголошення(
     задача="складання",
@@ -612,8 +617,11 @@ import внутрішня_мова as _ВМ_П
     правила=(
         "One item of each kind; an outfit has a dress, a set, or a top and a bottom.",
         РЯДОК_ТРЕТЬОЇ_РЕЧІ,
-        "Do not state how an item fits: «pool» has no garment measurements, and a size is a number on the "
-        "shop's scale — the fit needs trying on.",
+        РЯДОК_РІЧ_ДВІЧІ,
+        # В-13 (рядок 1446): «pool has no garment measurements» стояло поруч із «hem_cm» — довжиною від
+        # підлоги, тобто виміром; заборона — про посадку, не про числа пулу
+        "Do not state how an item fits her: a size is a number on the shop's scale and «hem_cm» says only "
+        "where the hem falls — the fit needs trying on.",
         "When you break a condition or take an item outside the palette on purpose, say so in «deliberate» "
         "of the outfit: the item and why.",
         "When an outfit needs an item «pool» does not have, say so in «needed».",
