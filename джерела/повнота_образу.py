@@ -626,6 +626,11 @@ def промпт_вибору(образи, випадок=None, без_фото
                                     "«id» of the remark, «items», «values»; «register» «gate» — a gate",
                  як="a remark that stands on every outfit does not tell them apart"),
         _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination"),
+        # рядок 2663: опора образу, якого ремонт прибрав цілком, — на рівні набору
+        _ЗП.Поле("set.lost_supports", "what an outfit you dropped or replaced whole in your repair stood on: "
+                                      "«outfit» — its id before the repair, «statements» (codes defined in "
+                                      "\"statement_codes\") and the «items» that carried it",
+                 як="information, not a score: weigh what the set lost against what it gained"),
         _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
         _ЗП.Поле("she_refuses", "what she refused",
                  як="do not choose an outfit that breaks it while there is one that does not"),
