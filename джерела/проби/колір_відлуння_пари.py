@@ -6,7 +6,7 @@
 («~» — колір-вікно слова), hex, Δ CIELAB / Δ коло; межа ±15° (Δ коло 12–18) і сусідні сектори, що були «так».
 Запуск із джерела/: python3 проби/колір_відлуння_пари.py"""
 import json, sys, random, collections as K; sys.path.insert(0, ".")
-import bridge as B, стенд_знімок as СЗ, colorspace as cs, колір_річ as КР, аксесуари_структура as АС, palettes as PS
+import bridge as B, стенд_знімок as СЗ, colorspace as cs, колір_річ as КР, колір_спільне as КС, аксесуари_структура as АС, palettes as PS
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 B.виклик("запити", json.dumps(dict(вх, сценарій=СЗ.СЦЕНАРІЇ["офіс·18°C"], випадок="офіс"), ensure_ascii=False))
 кат = [r for r in B.каталог_останнього_пакета() if (АС._C_речі(r) or 0) >= 40]
@@ -17,7 +17,7 @@ h = lambda r: cs.lch(tuple(r["lab"]))[2]
 Л, П, С = K.Counter(), K.defaultdict(list), K.Counter()
 for a in ОД:
     for b in АК:
-        до, піс = КР.поруч_за_тоном(a, b, 45.0), КР.відношення(a, b, "same_hue")
+        до, піс = КС.поруч_за_тоном(a, b, 45.0), КР.відношення(a, b, "same_hue")
         одне = bool(a.get("колір_ім")) and a.get("колір_ім") == b.get("колір_ім")
         for гр in ("усі",) + (("одне слово",) if одне else ()):
             Л["%-11s %-8s → %-8s" % (гр, до, піс)] += 1
