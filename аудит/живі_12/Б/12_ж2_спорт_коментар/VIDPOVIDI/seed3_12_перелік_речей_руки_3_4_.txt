@@ -1,0 +1,29 @@
+── ПРОМПТ (1860 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Soft cotton tank top in sage green (#8FBC8F), loose relaxed fit, cropped length, breathable jersey knit.\nHigh-waisted straight-leg denim jeans in dark indigo (#191970), mid-thigh to ankle length, classic twill fabric with slight stretch.\nMinimalist leather sneakers in creamy beige (#F5F5DC), rounded toe design, durable rubber sole for park walks or cafe hopping.\n\nThis outfit strikes the perfect balance between comfort and style for an everyday yoga session followed by coffee with a friend. The loose tank top and stretchy jeans allow for full range of motion during your practice while maintaining a put-together look for social time. Neutral tones like sage green and cream keep the ensemble relaxed yet refined, suitable for both grassy park trails and cozy cafe seating."}
+
+── ВІДПОВІДЬ (633 симв., 94.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "tank top",
+      "details": "soft cotton loose relaxed fit cropped length breathable jersey knit",
+      "slot": "top",
+      "color_hex": "#8FBC8F",
+      "worn": true
+    },
+    {
+      "name": "denim jeans",
+      "details": "high-waisted straight-leg mid-thigh to ankle length classic twill fabric with slight stretch",
+      "slot": "bottom",
+      "color_hex": "#191970",
+      "worn": true
+    },
+    {
+      "name": "leather sneakers",
+      "details": "minimalist rounded toe design durable rubber sole",
+      "slot": "shoes",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    }
+  ]
+}

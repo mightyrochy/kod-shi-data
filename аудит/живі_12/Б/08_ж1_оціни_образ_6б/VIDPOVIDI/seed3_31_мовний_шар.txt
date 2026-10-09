@@ -1,0 +1,40 @@
+── ПРОМПТ (4671 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This silvery jacket has a soft, wool-like texture that feels cozy for the office, with a high stand-up collar and an asymmetrical front closure. It features a drawstring waist that defines your figure when tied, creating a clean silhouette without needing a belt. The white trousers are made of a crisp linen-blend fabric, falling straight from a high rise with visible seam pockets for structure. Their light weight keeps the look airy while maintaining a professional edge.\n\nThe black loafers have an open mesh upper and a low buckle strap that adds a playful detail to your feet; their flat sole offers comfort for hours in the office without sacrificing style.\nThe green handbag has a sleek rectangular shape with top handles and a detachable shoulder strap, perfect for slipping documents or a laptop case into its main zippered compartment.\n\nThe ensemble works because it balances structure with softness—the tailored lines of the jacket and trousers create a professional silhouette, while the light blue blouse adds a gentle tonal accent suitable for office work. Your defined waist is highlighted by the jacket's drawstring, drawing attention to your figure without emphasizing any areas you wish to soften.\n\nThrough your day, this outfit adapts easily: wear the blazer fully buttoned for meetings and open when temperatures rise, let the loose blouse peek through for a relaxed vibe during breaks, or swap the loafers for heels in the evening if needed. It remains appropriate from morning arrivals to late-afternoon work."},
+{"н": 2, "текст": "Wear the jacket tied at the waist to accentuate your shape and keep the look polished for meetings."},
+{"н": 3, "текст": "Let the light blue blouse show slightly when you take off the jacket during warmer parts of the day."},
+{"н": 4, "текст": "Keep the green bag on top handles or across the body depending on how much space you carry."},
+{"н": 5, "текст": "Шкіряна прямокутна сумка крос-боді — Added as a black leather tote bag (correcting the previous color error to match the 'black' requirement in the blocker list and completing the missing accessory slot)"},
+{"н": 6, "текст": "Жакет-пальто — Using this silvery blazer as the anchor piece establishes immediate professionalism despite its neutral tone; it carries the office requirement well."},
+{"н": 7, "текст": "Блуза блакитна MIRAGE — The fitted light blue blouse acts as a deliberate break from the neutral base, adding a pop of color that matches her eyes while maintaining office appropriateness."},
+{"н": 8, "текст": "Шкіряна прямокутна сумка крос-боді — Added to satisfy the 'no_bag' blocker and reach the minimum item count for an office outfit."},
+{"н": 9, "текст": "Балетки жіночі, ATTICO, шкіра/текстиль, колір чорний — Added to satisfy the 'no_shoes' blocker and complete the footwear requirement."},
+{"н": 10, "текст": "Ремінь жіночий Welfare — Added as a third piece to meet the minimum item count of 5 for a structured office look."}
+]
+
+── ВІДПОВІДЬ (2949 симв., 120.7 с, HTTP 200) ──
+```json
+{
+  "1": "Ця срібляста куртка має м’яку, вовняну текстуру, яка відчувається затишно для офісу, з високим стоячим коміром і асиметричним переднім застібанням. Вона має шнурок на талії, який підкреслює твою фігуру при зав’язуванні, створюючи чистий силует без потреби в ремені. Білі штани виготовлені з хрусткої тканини льону-міксу, що вільно спадають від високої талії зі швами на кишенях для структури. Їхня легка вага робить образ повітряним, зберігаючи при цьому професійний вигляд.\n\nЧорні лофери мають відкритий сітчастий верх і низький ремінець з пряжкою, який додає грайливу деталь твоїм ногам; їхня плоска підошва забезпечує комфорт протягом багатьох годин в офісі без шкоди для стилю.\n\nЗелена сумка має елегантну прямокутну форму з верхніми ручками та регульованим плечовим ременем, ідеально підходить для документів або чохла для ноутбука у її основному відділенні на блискавці.\n\nЦей ансамбль працює тому, що він поєднує структуру з м’якістю — продумані лінії куртки та штанів створюють професійний силует, а блакитна блуза додає ніжний тональний акцент, який підходить для офісної роботи. Твоя визначена талія виділяється завдяки шнурку на куртці, привертаючи увагу до твоєї фігури без зайвого акцентування будь-яких зон, які ти хочеш пом’якшити.\n\nПротягом дня цей образ легко адаптується: носи блейзер повністю застебнутим для зустрічей і розстібни його, коли температура підніметься; дай вільно виглядати блакитній блузі під час перерв або заміни лофери на підбори ввечері, якщо потрібно. Він залишається доречним від ранкового приходу до пізнього післяобіднього робочого дня.",
+  "2": "Зав’яжи куртку на талії, щоб підкреслити свою фігуру і зберегти вигляд охайним для зустрічей.",
+  "3": "Дай блакитній блузі трохи виглядати, коли ти знімеш куртку в тепліші частини дня.",
+  "4": "Носи зелену сумку на верхніх ручках або через тіло залежно від того, скільки речей ти носиш.",
+  "5": "Шкіряна прямокутна сумка крос-боді — Додано як чорний шкіряний тоут (виправляючи попередню помилку з кольором відповідно до списку обмежень і заповнюючи відсутній аксесуар)",
+  "6": "Жакет-пальто — Використання цього сріблястого блейзера в якості основного елемента одразу встановлює професіоналізм, незважаючи на його нейтральний тон; він добре відповідає вимогам офісу.",
+  "7": "Блуза блакитна MIRAGE — Приталена світло-блакитна блузка служить навмисним контрастом до нейтральної основи, додаючи нотку кольору, який підходить твоїм очам, зберігаючи при цьому відповідність офісу.",
+  "8": "Шкіряна прямокутна сумка крос-боді — Додано для задоволення обмеження 'no_bag' і досягнення мінімальної кількості предметів для офісного образу.",
+  "9": "Балетки жіночі, ATTICO, шкіра/текстиль, колір чорний — Додані для задоволення обмеження 'no_shoes' і завершення вимоги до взуття.",
+  "10": "Ремінь жіночий Welfare — Додано як третій елемент, щоб відповідати мінімальній кількості предметів у 5 для структурованого офісного вигляду."
+}
+```

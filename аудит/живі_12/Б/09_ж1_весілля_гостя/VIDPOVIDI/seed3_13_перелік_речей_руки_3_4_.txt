@@ -1,0 +1,43 @@
+── ПРОМПТ (2089 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk-blend crepe blazer, tailored fit, elbow length, #d8a98c, lightweight woven fabric\nHigh-waisted wide-leg trousers, relaxed cut, full ankle length, #deb295, soft cotton twill fabric\nStructured pointed-toe pumps, sleek silhouette, 8cm heel height, #759087, glossy leather finish\nGold-fill drop earrings, medium size, round shape, #f1dbaa, polished metal alloy\nDelicate chain necklace, small link style, long length, #d9bf88, fine gold-plated brass\n\nThis ensemble strikes the perfect balance between elegance and comfort for a wedding guest enjoying an evening walk. The structured blazer provides a refined silhouette while the flowing trousers allow ease of movement, ensuring you remain poised through dancing or strolling. Earthy tones complement your natural complexion with warmth, and the metallic accessories add a touch of celebratory sparkle without appearing overly severe. The combination of neat textures and graceful lines ensures you meet formal dress codes while feeling relaxed outdoors."}
+
+── ВІДПОВІДЬ (1040 симв., 229.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk-blend crepe blazer",
+      "details": "tailored fit, elbow length, lightweight woven fabric",
+      "slot": "outerwear",
+      "color_hex": "#d8a98c",
+      "worn": true
+    },
+    {
+      "name": "High-waisted wide-leg trousers",
+      "details": "relaxed cut, full ankle length, soft cotton twill fabric",
+      "slot": "bottom",
+      "color_hex": "#deb295",
+      "worn": true
+    },
+    {
+      "name": "Structured pointed-toe pumps",
+      "details": "sleek silhouette, 8cm heel height, glossy leather finish",
+      "slot": "shoes",
+      "color_hex": "#759087",
+      "worn": true
+    },
+    {
+      "name": "Gold-fill drop earrings",
+      "details": "medium size, round shape, polished metal alloy",
+      "slot": "earrings",
+      "color_hex": "#f1dbaa",
+      "worn": true
+    },
+    {
+      "name": "Delicate chain necklace",
+      "details": "small link style, long length, fine gold-plated brass",
+      "slot": "necklace",
+      "color_hex": "#d9bf88",
+      "worn": true
+    }
+  ]
+}

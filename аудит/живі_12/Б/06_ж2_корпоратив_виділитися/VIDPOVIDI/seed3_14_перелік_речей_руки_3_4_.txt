@@ -1,0 +1,36 @@
+── ПРОМПТ (2256 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet slip dress, fluid silhouette, floor-length, #2A1B3D, deep midnight purple velvet.\nTailored cropped blazer, structured shoulder cut, hip-length, #504060, soft charcoal grey wool blend.\nStrappy stiletto sandals, pointed toe, ankle-height, #8B7E9D, dusty rose leather with a hidden heel for comfort.\nChunky geometric earrings, sculptural shape, earlobe-hugging length, #C0A0E0, antique silver metal with sapphire blue stone accents.\n\nThis ensemble balances your desire to stand out with the relaxed vibe of a casual restaurant by pairing a rich, color-blocked dress with a modern, structured blazer that adds an edge without being formal. The deep midnight purple and dusty rose tones create a sophisticated gradient that ensures you are seen as requested, while the sculptural earrings draw immediate attention to your face. The floor length offers elegance for the celebration occasion, but the cropped jacket and stylish sandals keep the look breathable and appropriate for a warm evening atmosphere. Every piece aligns with your wish to be memorable by combining bold color choices with clean, contemporary silhouettes that define the cocktail dress code perfectly."}
+
+── ВІДПОВІДЬ (890 симв., 217.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "velvet slip dress",
+      "details": "fluid silhouette floor-length deep midnight purple velvet",
+      "slot": "dress",
+      "color_hex": "#2A1B3D",
+      "worn": true
+    },
+    {
+      "name": "cropped blazer",
+      "details": "structured shoulder cut hip-length soft charcoal grey wool blend",
+      "slot": "outerwear",
+      "color_hex": "#504060",
+      "worn": true
+    },
+    {
+      "name": "strappy stiletto sandals",
+      "details": "pointed toe ankle-height dusty rose leather with a hidden heel for comfort",
+      "slot": "shoes",
+      "color_hex": "#8B7E9D",
+      "worn": true
+    },
+    {
+      "name": "chunky geometric earrings",
+      "details": "sculptural shape earlobe-hugging length antique silver metal with sapphire blue stone accents",
+      "slot": "earrings",
+      "color_hex": "#C0A0E0",
+      "worn": true
+    }
+  ]
+}
