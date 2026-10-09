@@ -7,4 +7,6 @@ gzip -c $S/знімки/модель_виклики.json > $D/модель_ви�
 tar czf $D/відповіді.tar.gz -C $S VIDPOVIDI
 cp $S/знімки/kartka_poz*_ruka1_* $S/знімки/kartka_poz*_ruka2_* $S/знімки/ekran_scenariyi_seed3.png $S/знімки/ekran_palitra_seed3.png $D/ 2>/dev/null
 cp $S/знімки/ekran_znaiomstvo_3_fihura_seed3.png $D/ 2>/dev/null
+# PLYTKA=…: знімки плитки й карток (рядок 1456) і окремі файли вердиктів, якщо прогін їх поклав
+cp $S/знімки/plytka_* $D/ 2>/dev/null
 echo "$1: $(du -sk $D | cut -f1) КБ"

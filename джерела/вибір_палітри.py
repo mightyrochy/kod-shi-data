@@ -70,6 +70,40 @@ _ВАГА = {"ядро": "core", "звичайна": "usual", "на_межі": "
 _ТОН_РИСИ_С_МІН = 8.0     # та сама межа, з якої `палітра_специфікація` бере тон риси якорем дуг
 _ПРИЧИН_МАКС = 3
 
+
+# ── ОЧІ Й ОСНОВА — ФАКТОМ, А НЕ ЗАЯВОЮ (рядок 1421; CLAUDE.md п.9, п.14) ──────
+# ЩО БУЛО. Причину `why_her_eyes` («перегукується з кольором очей або відтіняє його») модель
+# ставила основі, не бачивши, чи основа справді стоїть до очей у такому відношенні, а суддя
+# брав будь-який код із переліку: розбір 02.10 — 7 з 39 прогонів (ж4 темно-карі очі → «хвоя
+# перегукується з кольором твоїх очей»; ж5 жовто-карі → хвоя, хакі), і мовна модель казала
+# жінці неправду про її очі.
+# ЩО ТЕПЕР. Код міряє відношення кожної основи переліку до очей двома ходами K-PAL-02 (повтор
+# кольору очей) і комплементу кола художника (K-COL-03 §4, п.18): `echo` — та сама сім'я тону
+# (`palettes.сім_я_тону`; нейтраль — до нейтральних очей), `set_off` — тон основи в дузі
+# комплементу тону очей (`cs.доповнення` ± ширина `RELATIONS["complementary"]`). Модель бачить
+# це полем `eyes` основи, а суддя (`прийняти`) знімає `why_her_eyes` з основи без відношення —
+# у `відхилено` кодом. Сам вибір основи лишається її: знято лише неправдиву причину.
+# ДЕ ЛАМАЄТЬСЯ: сім'ї `СІМ_Ї` перетинаються й мають межі T3; темно-карі очі (ж4: C*16)
+# — помаранчева сім'я, тож їхній «повтор» — коричневий і кемел, а не чорний.
+def _до_очей(о, F):
+    """Відношення основи переліку до очей: "echo" / "set_off" / None (див. коментар вище)."""
+    import colorspace as _cs
+    import palettes as _ПЛ
+    р = F.get("очі") or {}
+    if р.get("L") is None:
+        return None
+    тон_очей = р.get("h") is not None and float(р.get("C") or 0) >= _ТОН_РИСИ_С_МІН
+    if о["ахром"] or not о.get("hex"):
+        return "echo" if о["ахром"] and not тон_очей else None
+    if not тон_очей:
+        return None
+    h = _cs.lch(_cs.hx(о["hex"]))[2]
+    с = _ПЛ.сім_я_тону(float(р["h"]) % 360)
+    if с and о.get("сім_я") == с[0]:
+        return "echo"
+    д = abs((h - _cs.доповнення(float(р["h"])) + 180.0) % 360.0 - 180.0)
+    return "set_off" if д <= _cs.RELATIONS["complementary"][1] else None
+
 ВИБІР = _ЗП.Оголошення(
     задача="вибір_палітри",
     роль="You are the stylist of the Lyusterko styling app. She left the colour scheme and the base "
@@ -93,7 +127,9 @@ _ПРИЧИН_МАКС = 3
         _ЗП.Поле("bases", "base colours (the main colour of the look) advised for her, in the code's "
                           "order: rank, id, colour code, family, temperature, lightness L*, saturation "
                           "band (any: a neutral fits every band), \"fit\" 0-1 — how the code scored it "
-                          "for her face", треба=True),
+                          "for her face; \"eyes\" — how the base relates to her eye colour: echo (the "
+                          "same colour family), set_off (opposite her eyes on the artist's colour wheel); "
+                          "absent — no relation to her eyes", треба=True),
         _ЗП.Поле("fixed", "what she chose herself", "keep it and build around it",
                  без="She chose none of it herself."),
         _ЗП.Поле("reason_codes", "the only codes you may give as reasons, with their meaning",
@@ -105,7 +141,8 @@ _ПРИЧИН_МАКС = 3
         "the jewellery and her words are yours to weigh. Any listed option is allowed, a rarer one too.",
         "\"saturation\" is the band of the look's colours: a colour base keeps its own band; with a "
         "neutral base choose it.",
-        "One to three reasons for each choice, only codes from \"reason_codes\".",
+        "One to three reasons for each choice, only codes from \"reason_codes\". why_her_eyes for a "
+        "base only when that base has \"eyes\".",
     ),
     вихід="PALETTE_CHOICE",
     скелет={"scheme": "<code>", "scheme_reasons": ["<code>"], "base": "<id>",
@@ -207,6 +244,7 @@ def перелік(вхід):
                            L=int(ч[2]), сім_я=о.get("сім_я"), темп=ч[1], бал=о.get("бал")))
     for і, о in enumerate(основи):
         о["ранг"] = і + 1
+        о["очі"] = _до_очей(о, F)
     пер = dict(схеми=схеми, основи=основи, її=її, особа=_особа(F, п), намір=намір,
                випадок=_випадок(d, (вхід or {}).get("вимоги")), помилка=None)
     if len(_ПАМ_ЯТЬ) >= 4:
@@ -282,7 +320,7 @@ def _основа_дротом(о):
                        else _ДМ._СІМ_Я.get(о["сім_я"], о["сім_я"])),
             "temperature": _ТЕМП_ОСНОВИ.get(о["темп"], о["темп"]), "lightness": о["L"],
             "saturation": ("any" if о["ахром"] else _ГАМА_КОД.get(о["смуга"], о["смуга"])),
-            "fit": round(float(о.get("бал") or 0), 2)}
+            "fit": round(float(о.get("бал") or 0), 2), **({"eyes": о["очі"]} if о.get("очі") else {})}
 
 
 def _її_основа_дротом(база):
@@ -403,6 +441,10 @@ def прийняти(вхід, відповідь=None, без_моделі=None
         о = next((x for x in пер["основи"] if x["id"] == str(об.get("base") or "").strip()), None)
         if о:
             обрала["base"], причини["base"] = ХТО_СТИЛІСТКА, _причини(об.get("base_reasons"), відхилено)
+            if "why_her_eyes" in причини["base"] and not о.get("очі"):
+                # рядок 1421: основа до очей не стоїть ні повтором, ні комплементом — причина неправдива
+                причини["base"].remove("why_her_eyes")
+                відхилено.append("reason_not_in_data:why_her_eyes · base_eyes=none · taken=none")
         else:
             відхилено.append("base_outside_list:%s · taken=none" % (об.get("base") or "none"))
     обрала.setdefault("base", ХТО_ВОНА if "base" not in лишила else ХТО_КОД)

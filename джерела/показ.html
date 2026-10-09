@@ -1199,7 +1199,7 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
     <div class="слот-зріст" id="ф-зріст"></div>
   </div>
   <div class="підпис-фото"><span>На повний зріст — для приміряння</span><span>Портрет — для кольорів</span></div>
-  <p class="підказка">Фото лишаються на цьому телефоні. Щойно додаси портрет, кольори зчитаються самі.</p>
+  <p class="підказка">Щойно додаси портрет, кольори зчитаються самі.</p>
   </div>
   </div>
 
@@ -2873,6 +2873,7 @@ function позначитиНеЦюП(ід, поз){
   НЕ_ЦЯ_П.add(ід);
   const в = відповідь(поз);
   if (!в.замінити.includes(ід)) в.замінити = [...в.замінити, ід];
+  в.зміна = (в.зміна || 0) + 1;
   const сел = '[data-id="' + ід.replace(/"/g, '\\"') + '"]';
   document.querySelectorAll('#картки button.замін' + сел).forEach(кн=>{
     кн.classList.add('вибр'); if (кн.parentElement) кн.parentElement.classList.add('замінити'); });
@@ -3452,6 +3453,7 @@ async function записатиЯдро(поз, авто){
      `знімокПрогонуП`). `зн` — або знімок цього прогону, або `null`, і тоді
      поля не підмінюються поточним станом: у файлі стоїть названа причина. */
   const зн = знімокКарткиП();
+  const згода = !!(($('пр-згода') || {}).checked);
   /* коди вердикту — з одного місця на обидві картки (`поляВердиктуП`, КВ-1) */
   const пв = поляВердиктуП(в);
   /* Копія знімається ДО складання запису: `toDataURL` асинхронний за природою
@@ -3513,6 +3515,8 @@ async function записатиЯдро(поз, авто){
     мова_не_перекладено: (к.мова_не_перекладено || []),
     /* тексти, які шар урізав і після повтору (рядок 1426): на картці — довший із двох перекладів */
     мова_урізано: (к.мова_урізано || []),
+    /* тексти, де повтор шару відкинуто як зіпсований (ПРОЗА-КАРТОК-2б, рядок 2540): на картці — перший переклад */
+    мова_повтор_відкинуто: (к.мова_повтор_відкинуто || []),
     /* зайва латинка, знята з тексту після повтору (ВМ-3в): ключ → слова */
     латиниця_знята: (к.латиниця_знята || {}),
     ...((к.примірка || {}).мова_шару ? {мова_шару_примірки: к.примірка.мова_шару} : {}),
@@ -3611,6 +3615,8 @@ async function записатиЯдро(поз, авто){
     схема_у_пулі: (((к.схема_жінці_звіт||{}).у_пулі) ?? null),
     схема_у_каталозі: (((к.схема_жінці_звіт||{}).у_каталозі) ?? null),
     схема_підміна: (((к.схема_жінці_звіт||{}).підміна || {}).просили || ''),
+    /* рядок 1455: колір образу знає лише слово крамниці (центр вікна слова, не вимір) */
+    схема_за_словом: (((к.схема_жінці_звіт||{}).за_словом) ? 'так' : ''),
     коментар: (в.коментар||'').trim(),
     /* ЧИ КОМЕНТАР НАДИКТОВАНО (рядок 167, слово власника 24.09). Звіт без стелі:
        «своїми словами» голосом і «своїми словами» з клавіатури — це різні тексти
@@ -3703,10 +3709,10 @@ async function записатиЯдро(поз, авто){
     збірка: П.збірка || '?', каталог: П.каталог || '?',
     /* драпіровка — теж зі знімка: вона живе в профілі, і жінка могла перезняти
        її після карток (той самий рід вади, що з паспортом вище) */
-    драп_білий: ((зн && зн.драп) ? зн.драп.білий : ДРАП.білий),
-    драп_метал: ((зн && зн.драп) ? зн.драп.метал : ДРАП.метал),
-    драп_нейтралі: ((зн && зн.драп) ? зн.драп.нейтралі : ДРАП.нейтралі),
-    самозвіт_барви: ((зн && зн.драп) ? зн.драп.барви : ДРАП.барви),
+    драп_білий: згода ? ((зн && зн.драп) ? зн.драп.білий : ДРАП.білий) : null,
+    драп_метал: згода ? ((зн && зн.драп) ? зн.драп.метал : ДРАП.метал) : null,
+    драп_нейтралі: згода ? ((зн && зн.драп) ? зн.драп.нейтралі : ДРАП.нейтралі) : null,
+    самозвіт_барви: згода ? ((зн && зн.драп) ? зн.драп.барви : ДРАП.барви) : null,
     джерело: 'показ-v3', пристрій,
     час: new Date().toISOString(),
     /* ── РЕЧІ ОБРАЗУ ПОЛЯМИ, А НЕ САМИМИ ID (рядок 134) ──────────────────────
@@ -3751,7 +3757,7 @@ async function записатиЯдро(поз, авто){
        за порядком, і дописувати туди обʼєкт на півекрана означало б міняти
        його формат заради читача, який цим аркушем не користується. У файлі це
        спільне прогону — стоїть раз, а не в кожній із чотирьох рук. */
-    вхід_прогону: ((зн && зн.вхід) || null),
+    вхід_прогону: згода ? ((зн && зн.вхід) || null) : безКольорівБезЗгодиП(зн && зн.вхід),
     /* ── ВПАЛА РУКА ЇДЕ У ФАЙЛ (ділянка 6/8, 26.09.2026) ────────────────────
        Доти гілка `к.збій` у `рендерКартку` ховала кнопку запису, і на цьому все
        кінчалось: рука, яка не дійшла до кінця, у журналі не з'являлась ЗОВСІМ.
@@ -3915,12 +3921,13 @@ async function записатиЗбоїРукП(){
 async function малюватиКалібруванняП(){
   const е = $('зб-калібрування'); if (!е) return;
   try{
-    const записи = (await усіВердикти()).reduce((а,з)=>а.concat(з.ребра||[]), []);
+    /* подія — номер запису журналу (рядок 1996): той самий образ двох днів — дві події, не одна */
+    const записи = (await усіВердикти()).reduce((а,з,і)=>а.concat((з.ребра||[]).map(р=>Object.assign({}, р, {подія: і}))), []);
     if (!записи.length){ е.style.display = 'none'; return; }
     const к = await містП('вердикт', {записи});
     const рядки = Object.keys(к).sort().map(п=>{
       const з = к[п];
-      return п + ': ' + з.тір + (з.різниця == null ? ''
+      return п + ': ' + з.тір + (з.різниця == null ? (з.контроль === false ? ' · нема порівняння' : '')
         : ' · різниця часток «ні» ' + з.різниця
           + ' (образів з ребром ' + з.образів_з + ', без ' + з.образів_без + ')');
     });
@@ -4022,6 +4029,8 @@ const ШАПКА = ['дата','профіль','рука','ітерацій','�
   'пара_руки',
   /* `заміна_фото` (ФОТО-1, 02.10.2026) — у кінець тим самим правилом */
   'заміна_фото',
+  /* `схема_за_словом` (рядок 1455) — у кінець: «вийшла» стоїть лише на слові крамниці */
+  'схема_за_словом',
   /* `свідомі_ід` (СТЕНД-2, рядок 1250) — у кінець тим самим правилом: id речей кожного ходу колонки `свідомі`,
      хід у хід (id речі ходу через «+», ходи через «; »), щоб стенд звіряв хід з річчю картки за id, а не за коренем слова */
   'свідомі_ід'];
@@ -4850,6 +4859,15 @@ function знімокПрогонуП(зб){
                  нейтралі: ДРАП.нейтралі, барви: ДРАП.барви},
           діагноз: (з.діагноз || [])};
 }
+/* без згоди колір (шкіра, волосся, очі) у вхід прогону не йде: знімок лишається повним (це локальний стан),
+   а ЗАПИС вердикту (`записатиЯдро`, `записатиОцінкуП`) вилучає колір за станом галочки на мить запису */
+function безКольорівБезЗгодиП(вхід){
+  if (!вхід || typeof вхід !== 'object') return вхід || null;
+  const копія = Object.assign({}, вхід);
+  /* вхід прогону має колір і вкладеним (`колір`), і розкладеним (оцінка власного образу: `вхідОцінкиП`) */
+  for (const к of ['колір', 'шкіра', 'волосся', 'очі', 'очі_кільце', 'драп', 'драп_сирий']) delete копія[к];
+  return копія;
+}
 /* Знімок ЦІЄЇ картки: свій прогін, коли він є; інакше — назване «нема». */
 function знімокКарткиП(){
   return (П && П.знімок && П.знімок.в === 'ЗНІМОК-ПРОГОНУ-V1') ? П.знімок : null;
@@ -5128,6 +5146,8 @@ function застосуватиСценарій(з){
      Це єдина точка, через яку проходять і новий сценарій, і відновлення
      збереженого, — отже й скидання одне. */
   НЕ_ЦЯ_П.clear(); малюватиНеЦяП(); ВЖЕ_БУЛИ_П.clear();
+  /* сліди викликів розмови теж належать сценарію: інакше записи другого сценарію несуть виклики першого (рядок 1982) */
+  ВИКЛИКИ_РОЗМОВИ_П = [];
   ПОЛЯ_ВИПАДКУ.forEach(і=>{ const е = $(і); if (!е) return;
     const v = з.поля && з.поля[і];
     е.value = (v != null) ? v : (ТИПОВІ_ПОЛЯ_ВИПАДКУ[і] != null ? ТИПОВІ_ПОЛЯ_ВИПАДКУ[і] : ''); });
@@ -5450,8 +5470,11 @@ function немаМірок(){
 }
 
 async function перемкнути(ід){
+  if (!(await дочекатисьЧатуП())) return;
   await писатиАктивний(); await зберегтиЧернетку();
   АКТИВНИЙ = ід; await писатиКв('активний', ід);
+  ВИКЛИКИ_РОЗМОВИ_П = [];
+  ОЦ = {фото: [], опади: '', іде: false, ід: null, етапи: null, результат: null};
   await читатиАктивний();
   фотоПрофіль(); малюватиДрап(); малюватиСвотчі(); малюватиСмугу();
   await відновитиВипадок();
@@ -5461,12 +5484,19 @@ async function перемкнути(ід){
 }
 
 async function створитиПрофіль(){
+  if (!(await дочекатисьЧатуП())) return;
   await писатиАктивний(); await зберегтиЧернетку();
   const ід = новийІд();
   ПРОФІЛІ.push({ід, назва: 'профіль ' + (ПРОФІЛІ.length + 1)});
   АКТИВНИЙ = ід;
   КОЛІР = {шкіра:null,волосся:null,очі:null,кільце:null,точки:null};
   ДРАП = {білий:null,метал:null,нейтралі:null,барви:null};
+  $('пр-імʼя').value = '';
+  $('пр-згода').checked = false;
+  $('мр-зріст').value = '';
+  for (const [поле] of ПОЛЯ_ОБХВАТІВ.concat(ПОЛЯ_АКСЕСУАРНИХ)) $(поле).value = '';
+  ВИКЛИКИ_РОЗМОВИ_П = [];
+  ОЦ = {фото: [], опади: '', іде: false, ід: null, етапи: null, результат: null};
   ПРОФІЛЬ_СТВОРЕНО = false;
   await писатиКв('профілі', ПРОФІЛІ);
   await писатиКв('активний', ід);
@@ -6214,7 +6244,7 @@ ONBOARDING — three steps, once, while there is no profile yet. Step 1 {step_ab
 
 PROFILE (tab) — rows, each showing what is already there: {row_photo} (portrait and full length), {row_colours} (three swatches: skin, hair, eyes), {row_name} (and consent), {step_face} (her answers), {row_girths} (four numbers and height), {row_extra} (all optional: high hip, knee, calf and ankle refine the fit on the legs and hips; foot length in mm and head girth in cm check shoe and hat sizes), {row_people} ({whose_profile} switches between people and {new_profile} adds one: several people can use one phone, each with her own data). A tap on a row opens its editor as a sheet with the same fields as in onboarding. What is still missing for building is labelled in gold.
 
-CASE — the main screen; the one main thing on it is the chat. Before the chat starts, under the question {where_going} there is a letter sheet: she writes into it, as to a friend, where she is going, when, what the weather is, what she wants and does not want; below it are three example beads (a tap puts the example into the field without sending it) and {fill_by_hand} (shows an empty case card). From her words the stylist builds the case passport: event, occasion, place, formality, hour, temperature, precipitation, requirements and limits. The messages form a thread, and under the last answer lies the case card with rows: {row_occasion} ({occasions}), {row_place} ({places}), {row_formality} (a 1–10 scale: 1 home, 3 café, 5 office or theatre by day, 7 evening out, 9 ceremony; a manual choice overrides occasion and place), {row_when} (hour, temperature, {precipitation}, wind, de-icing chemicals on the roads), {row_makeup} ({makeup_levels}; for the last two also a lip colour — noticeable makeup gives the outfit one more step of contrast near the face, bold makeup already holds the focus on the face; {stylist_chooses} hands this decision to the code on purpose; the lip colour is chosen from a ladder of shades split into those recommended for her and the rest, each with its reason, next to {own_shade} and {stylist_chooses} for the colour itself), {row_jewelry} ({jewelry} or {stylist_chooses}: the code matches gold and silver against the metal of the items and removes the opposite metal from the pick, no jewellery removes jewellery altogether, and pearls cannot be told from ethnic pieces because shops do not say so — the code says this in its report), {row_dont_want} ({zones} — a hard limit, not a wish: the code removes such items from the pick itself; limits the stylist heard in her words go here too — items, fabrics, prints, colours: the card row names only what the code actually holds, which is colours and what she refused in her own words, and the rest of what was heard is shown in the sheet, where a tap removes something heard by mistake) and {row_palette} (opens a separate screen). A tap on a row opens its editor as a sheet with tiles and lists; after a manual edit the passport is rebuilt from the whole chat before building. Grey values are defaults: she has not chosen there. The card also has the question {all_right} ({yes} confirms, {fix} returns to the field), the button {build} (it needs read colours, four girths and height, and an occasion or a description in her own words; the button says what is missing, and a hint with {to_profile} appears at the top of the screen) and {save_case} (into the library, with a name; an opened saved case can be updated with {update} or saved with {save_as_new}). When the stylist does not know something (for example, how formal), quick-answer beads from the reference tables appear above the field, and a tap sends the answer.
+CASE — the main screen; the one main thing on it is the chat. Before the chat starts, under the question {where_going} there is a letter sheet: she writes into it, as to a friend, where she is going, when, what the weather is, what she wants and does not want; below it are three example beads (a tap puts the example into the field without sending it) and {fill_by_hand} (shows an empty case card). From her words the stylist builds the case passport: event, occasion, place, formality, hour, temperature, precipitation, requirements and limits. The messages form a thread, and under the last answer lies the case card with rows: {row_occasion} ({occasions}), {row_place} ({places}), {row_formality} (a 1–10 scale: 1 home, 3 café, 5–7 office, 4–6 theatre by day, 7 evening out, 9 ceremony; a manual choice overrides occasion and place), {row_when} (hour, temperature, {precipitation}, wind, de-icing chemicals on the roads), {row_makeup} ({makeup_levels}; for the last two also a lip colour — noticeable makeup gives the outfit one more step of contrast near the face, bold makeup already holds the focus on the face; {stylist_chooses} hands this decision to the code on purpose; the lip colour is chosen from a ladder of shades split into those recommended for her and the rest, each with its reason, next to {own_shade} and {stylist_chooses} for the colour itself), {row_jewelry} ({jewelry} or {stylist_chooses}: the code matches gold and silver against the metal of the items and removes the opposite metal from the pick, no jewellery removes jewellery altogether, and pearls cannot be told from ethnic pieces because shops do not say so — the code says this in its report), {row_dont_want} ({zones} — a hard limit, not a wish: the code removes such items from the pick itself; limits the stylist heard in her words go here too — items, fabrics, prints, colours: the card row names only what the code actually holds, which is colours and what she refused in her own words, and the rest of what was heard is shown in the sheet, where a tap removes something heard by mistake) and {row_palette} (opens a separate screen). A tap on a row opens its editor as a sheet with tiles and lists; after a manual edit the passport is rebuilt from the whole chat before building. Grey values are defaults: she has not chosen there. The card also has the question {all_right} ({yes} confirms, {fix} returns to the field), the button {build} (it needs read colours, four girths and height, and an occasion or a description in her own words; the button says what is missing, and a hint with {to_profile} appears at the top of the screen) and {save_case} (into the library, with a name; an opened saved case can be updated with {update} or saved with {save_as_new}). When the stylist does not know something (for example, how formal), quick-answer beads from the reference tables appear above the field, and a tap sends the answer.
 ITEM PHOTOS: next to {send}, both in the letter sheet and in the chat field, there is a photo button — she can add one or several photos of an item (her own, or one she is thinking of buying) and ask whether it suits her and what to wear it with; a photo without words means exactly that question. The photo is shown as a thumbnail in her message; it stays on the phone with the case draft and is saved with the case in the library; a model receives it only within a call. The stylist names the item (what it is, colour, cut, length, fabric, whose it is), and the code measures its colour from the photo itself and decides whether the item suits her — it suits, it suits with a condition (for example, away from the face, with her neutral near the face), or another one would be better — and why; the stylist only retells this verdict. If she has not named an occasion, the item is judged for an ordinary day, and this is said. {build} puts the item from the photo into every outfit and picks the rest around it; on the card it stands with its photo and the mark {your_item} (or {item_from_photo}), without a shop or price, and {total} does not count it. An item that does not suit her can still be built with — the card says in one line what softens it.
 AN ITEM IN WORDS: she can also describe her own item without a photo; the stylist adds it to the case, and the code puts it into every outfit in the same way. Its colour then comes from her words, not from a measurement, and the card says so in the list of what the code does not know. Such a sentence, or a wish for an outfit with that item, written on any other screen, the code itself puts into the case chat and says it was added to the case; other questions outside the case do not go into building.
 VOICE: next to the photo button there is a microphone — here in the chat and on the outfit card under the verdict field. The first tap starts recording and the second stops it; while she speaks, the text appears in the field at once and is appended to what is already written, so she can correct it by hand. It goes nowhere by itself: {send} sends the message, {record_verdict} records the verdict. The voice is recognised not by Lyusterko but by the browser's service (Google in Chrome, Apple on iPhone), and the sound goes to it; only the text it returns lands in the field. Where recognition is unavailable or the microphone is blocked, the button says so and suggests the microphone on the phone's keyboard, which types into the same field. The owner's report shows that a comment or a message was dictated.
@@ -7049,7 +7079,34 @@ async function оцінитиРечіЗФотоП(){
   return {вердикти: вих, збої};
 }
 
+/* Рядок 1982: запит до моделі пише в поточні ПАСПОРТ_П/ЧАТ_П/чернетку, тож перемикання профілю ЧЕКАЄ його кінця
+   (`дочекатисьЧатуП` у `перемкнути` і `створитиПрофіль`): відповідь лягає у свій профіль і зберігається, а не
+   потрапляє в чужий. */
+let ЧАТ_ЗАПИТ_П = null;
+async function дочекатисьЧатуП(){
+  /* оцінка власного образу теж живе в глобальному `ОЦ` і пише в нього після кожного очікування моделі */
+  if (ОЦ && ОЦ.іде){
+    const ст = $('чат-стан');
+    if (ст) ст.textContent = 'Стилістка ще оцінює образ — перемкни профіль, коли вона закінчить.';
+    малюватиСмугу();
+    return false;
+  }
+  if (!ЧАТ_ЗАПИТ_П) return true;
+  /* запит може стояти в повторах моделі десятки секунд: чекаємо недовго, далі — відмова з рядком, а не завис */
+  const кінець = await Promise.race([ЧАТ_ЗАПИТ_П.then(()=>true, ()=>true), new Promise(ok=>setTimeout(()=>ok(false), 8000))]);
+  if (!кінець){
+    const ст = $('чат-стан');
+    if (ст) ст.textContent = 'Стилістка ще відповідає — перемкни профіль, коли вона закінчить.';
+    малюватиСмугу();
+  }
+  return кінець;
+}
 async function слатиЧатП(){
+  const р = слатиЧатЯдроП();
+  ЧАТ_ЗАПИТ_П = р;
+  try{ await р; }finally{ if (ЧАТ_ЗАПИТ_П === р) ЧАТ_ЗАПИТ_П = null; }
+}
+async function слатиЧатЯдроП(){
   const поле = $('чат-поле'), ст = $('чат-стан'), кн = $('чат-слати');
   if (!поле || поле.disabled) return;
   const текст = (поле.value||'').trim();
@@ -7300,7 +7357,7 @@ const ГОЛОС_ЗАБОРОНЕНО = 'Мікрофон закритий дл�
 function привʼязатиГолос(о){
   const кнопка = о.кнопка, поле = о.поле, нота = о.нота;
   if (!кнопка || !поле) return null;
-  let розп = null, слухає = false, база = '', сама_стала = false;
+  let розп = null, слухає = false, база = '', сама_стала = false, фінальних = 0, чекаєЗапису = false;
   const сказати = т => { if (нота) нота.textContent = т || ''; };
   const намалювати = ()=>{
     кнопка.classList.toggle('слухає', слухає);
@@ -7314,7 +7371,7 @@ function привʼязатиГолос(о){
     if (!х) return база;
     return база && !/\s$/.test(база) ? база + ' ' + х : база + х;
   };
-  const покласти = т => {
+  const покласти = (т, завершено) => {
     /* Картку могли перемалювати під час диктування — тоді поле відʼєднане від
        документа, і писати в нього означало б губити текст мовчки. */
     if (!поле.isConnected){ стати(true); return; }
@@ -7326,11 +7383,19 @@ function привʼязатиГолос(о){
     /* Помилка в позначці НЕ валить диктування — але й не ковтається мовчки
        (CLAUDE.md п.14): текст жінки дорожчий за позначку, а зникла позначка,
        про яку ніхто не сказав, — це наступна вада у звіті власника. */
-    if (о.після) try{ о.після(поле.value); }catch(e){
+    чекаєЗапису = !завершено;
+    if (завершено && о.після) try{ о.після(поле.value); }catch(e){
       console.warn('голос: позначка «надиктовано» не проставилась: ' + String(e).slice(0, 140)); }
   };
   const стати = тихо => {
     const був = розп; розп = null; слухає = false;
+    /* зупинка (рукою чи самого розпізнавача) після лише проміжних гіпотез: те, що лежить у полі, — її слова,
+       тож запис («надиктовано», «не ця», переклад) робимо тут, один раз */
+    if (чекаєЗапису){
+      чекаєЗапису = false;
+      if (о.після && поле.isConnected && (поле.value || '').trim()) try{ о.після(поле.value); }catch(e){
+        console.warn('голос: позначка «надиктовано» не проставилась: ' + String(e).slice(0, 140)); }
+    }
     if (ГОЛОС_АКТИВНИЙ === сесія) ГОЛОС_АКТИВНИЙ = null;
     if (був) try{ був.stop(); }catch(e){}
     намалювати();
@@ -7342,6 +7407,7 @@ function привʼязатиГолос(о){
     if (ГОЛОС_АКТИВНИЙ && ГОЛОС_АКТИВНИЙ !== сесія) ГОЛОС_АКТИВНИЙ.стати();
     база = поле.value || '';
     сама_стала = true;
+    фінальних = 0; чекаєЗапису = false;
     try{
       розп = new Клас();
     }catch(e){ розп = null; сказати(ГОЛОС_НЕМА); return; }
@@ -7353,7 +7419,13 @@ function привʼязатиГолос(о){
        у continuous вони накопичуються, і читання лише останнього губило б початок.
        Як з них скласти текст — `зібратиДиктування` (Android віддає наростаючі
        гіпотези, настільний Chrome — сегменти, iOS — ще й повтор останнього). */
-    розп.onresult = п => покласти(зібратиДиктування(п.results || []));
+    розп.onresult = п => {
+      const результати = Array.from(п.results || []);
+      /* проміжні гіпотези лише оновлюють поле; запис («не ця», переклад) — на кожній НОВІЙ фінальній */
+      const фін = результати.filter(р => !!(р && р.isFinal)).length;
+      покласти(зібратиДиктування(результати), фін > фінальних);
+      фінальних = Math.max(фінальних, фін);
+    };
     /* iOS Safari зупиняє розпізнавання САМ (тиша, перемикання вкладки). Текст
        уже в полі й лишається там: `база` переїжджає на нього, тож наступний
        дотик ДОПИСУЄ, а не затирає. */
@@ -7647,7 +7719,7 @@ function заповнитиСписки(){
      раз, різниці не було; відколи довідник оновлюється живим ендпойнтом
      (Т-08 крок 3), другий прогін мовчки знімав би і збереження випадку, і
      прапорець `ВИПАДОК_ЗМІНЕНО_П`. Один обробник — одна правда. */
-  ['сц-місце','сц-дрес'].forEach(і=>{ $(і).onchange = зберегтиВипадок; });
+  ['сц-місце','сц-дрес'].forEach(і=>{ $(і).onchange = ()=>{ зберегтиВипадок(); }; });
   оновитиДіапазон();
 }
 
@@ -8265,13 +8337,12 @@ async function перейтиДоСтенда(){
 
 /* Службовий режим: збірка, каталог, токени, діагноз — видно лише власнику. */
 let СЛУЖБОВЕ = false;
-function читатиХеш(){
+async function читатиХеш(){
   try{
     const п = розібратиХеш();
-    const а = п.міст, т = п.токен;
-    if (а){ МІСТ_П.адреса = а; localStorage.setItem('міст:адреса', а); }
-    if (т){ МІСТ_П.токен = т; localStorage.setItem('міст:токен', т); }
-    if (!МІСТ_П.адреса && /^https?:$/.test(location.protocol) && location.origin !== 'null') МІСТ_П.адреса = ТИПОВИЙ_МІСТ_П;
+    /* hashchange: адреса й токен з нового хеша проходять ту саму перевірку, що й при завантаженні */
+    const м = обчислитиМістП(); МІСТ_П.адреса = м.адреса; МІСТ_П.токен = м.токен;
+    await підтвердитиАдресуМостаП();
     const с = п.службове;
     if (с != null) localStorage.setItem('міст:службове', с === '0' ? '' : '1');
     СЛУЖБОВЕ = localStorage.getItem('міст:службове') === '1';
@@ -8291,7 +8362,7 @@ function хешПакета(){
 
 let ЗАПУЩЕНО = false;
 async function старт(){
-  читатиХеш();
+  await читатиХеш();
   if (!ЗАПУЩЕНО){
     ЗАПУЩЕНО = true;
     пристрій = await пристрій_Id().catch(()=> 'невідомо');
@@ -8369,7 +8440,7 @@ async function старт(){
     ['мр-зріст','мр-плечі','мр-груди','мр-талія','мр-стегна']
       .forEach(і=>{ const е = $(і); if (е) е.oninput = малюватиВирізку; });
     ['сц-місце','сц-дрес','сц-година','сц-темп','сц-вітер','сц-опади',
-     'сц-реагенти'].forEach(і=>{ const е = $(і); if (е) е.onchange = зберегтиВипадок; });
+     'сц-реагенти'].forEach(і=>{ const е = $(і); if (е) е.onchange = ()=>{ зберегтиВипадок(); }; });
     /* Дотик до години чи градусів знімає з них мітку «типово» (В-2) — на `input`, а не
        лише на `change`: дотик є дотик, навіть якщо число лишилось те саме. */
     Object.keys(ПОЛЯ_ТИПОВІ_ЧИСЛА).forEach(і=>{ const е = $(і);
@@ -8474,6 +8545,15 @@ function службовийРядок(){
    пакет образу, як і було (хешПакета). Латинські псевдоніми t / bridge / model. */
 const ТИПОВИЙ_МІСТ_П = "https://lyusterko-mist.mighty-rochy.workers.dev";
 const ТИПОВА_МОДЕЛЬ_П = "gemini-3.8-flash";
+function автоматичноДозволенаАдресаМостаП(адреса){
+  try{
+    const у = new URL(String(адреса || '').trim());
+    if (!/^https?:$/.test(у.protocol) || у.username || у.password) return false;
+    if (у.hostname === 'localhost' || у.hostname === '127.0.0.1') return true;
+    return у.href.replace(/\/$/, '') === new URL(ТИПОВИЙ_МІСТ_П).href.replace(/\/$/, '');
+  }catch(_){ return false; }
+}
+let непідтвердженийМістП = null;
 function розібратиХеш(){
   let х = (location.hash || "").replace(/^#/, "");
   try{ х = decodeURIComponent(х); }catch(_){}
@@ -8592,21 +8672,63 @@ const МАКС_ТОКЕНІВ_П = 4000;
    із промптом свого ендпойнта (як мовний шар: `вибірка` в відповіді `мова`);
    тут — типова, спільна для всіх решти. */
 const ВИБІРКА_П = __ВИБІРКА_ПОКАЗУ__;
-const МІСТ_П = (function(){
+function обчислитиМістП(){
   let а = "", т = "";
   try{
     const п = розібратиХеш();
-    а = п.міст; т = п.токен;
-    if (а) localStorage.setItem("міст:адреса", а);
-    if (т) localStorage.setItem("міст:токен", т);
+    const збереженаАдреса = localStorage.getItem("міст:адреса") || "";
+    const збереженийТокен = localStorage.getItem("міст:токен") || "";
     /* типовий міст — лише на http(s)-походженні: у пісочниці (origin «null») прямий
        виклик без мосту законний і мусить лишитись */
     const на_Pages = /^https?:$/.test(location.protocol) && location.origin !== "null";
-    а = а || localStorage.getItem("міст:адреса") || (на_Pages ? ТИПОВИЙ_МІСТ_П : "");
-    т = т || localStorage.getItem("міст:токен") || "";
+    const безпечнаЗбережена = автоматичноДозволенаАдресаМостаП(збереженаАдреса);
+    const кандидат = п.міст || збереженаАдреса;
+    if (кандидат && !автоматичноДозволенаАдресаМостаП(кандидат)){
+      непідтвердженийМістП = {адреса: кандидат, токен: п.міст ? п.токен : (п.токен || збереженийТокен),
+        зіСховища: !п.міст};
+      а = безпечнаЗбережена ? збереженаАдреса : (на_Pages ? ТИПОВИЙ_МІСТ_П : "");
+      /* токен без збереженої адреси належить типовому мосту (типовий міст не зберігається):
+         відкат на нього токена не губить, «Ні» лишає чат робочим; токен, збережений до
+         чужої адреси, на інший міст не йде */
+      т = (безпечнаЗбережена || !збереженаАдреса) ? збереженийТокен : "";
+    } else {
+      а = кандидат || (на_Pages ? ТИПОВИЙ_МІСТ_П : "");
+      т = п.токен || збереженийТокен;
+      if (п.міст) localStorage.setItem("міст:адреса", п.міст);
+      if (п.токен) localStorage.setItem("міст:токен", п.токен);
+    }
   }catch(_){ }
   return {адреса: а, токен: т};
-})();
+}
+const МІСТ_П = обчислитиМістП();
+async function підтвердитиАдресуМостаП(){
+  const к = непідтвердженийМістП;
+  if (!к) return;
+  const згода = await new Promise(завершити => {
+    const в = document.createElement('dialog');
+    в.setAttribute('aria-labelledby', 'міст-питання');
+    в.style.cssText = 'max-width:min(34rem,calc(100% - 2rem));border:0;border-radius:18px;padding:24px;color:inherit;background:var(--фон,#fff);box-shadow:0 18px 60px #0008';
+    const з = document.createElement('h2'); з.id = 'міст-питання'; з.textContent = 'Використовувати цю адресу?';
+    const п = document.createElement('p'); п.textContent = 'Адреса: ' + к.адреса;
+    п.style.cssText = 'overflow-wrap:anywhere;line-height:1.5';
+    const д = document.createElement('div'); д.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px';
+    const ні = document.createElement('button'); ні.type = 'button'; ні.textContent = 'Ні';
+    const так = document.createElement('button'); так.type = 'button'; так.textContent = 'Так, використовувати';
+    const відповісти = значення => { в.close(); в.remove(); завершити(значення); };
+    ні.onclick = () => відповісти(false); так.onclick = () => відповісти(true);
+    в.oncancel = подія => { подія.preventDefault(); відповісти(false); };
+    д.append(ні, так); в.append(з, п, д); document.body.appendChild(в); в.showModal();
+  });
+  if (згода){
+    МІСТ_П.адреса = к.адреса; МІСТ_П.токен = к.токен;
+    localStorage.setItem('міст:адреса', к.адреса);
+    if (к.токен) localStorage.setItem('міст:токен', к.токен);
+    else localStorage.removeItem('міст:токен');
+  } else if (к.зіСховища){
+    localStorage.removeItem('міст:адреса'); localStorage.removeItem('міст:токен');
+  }
+  непідтвердженийМістП = null;
+}
 /* `кеш` — вхідні токени, прочитані з кешу провайдера (К-4): міст віддає їх одним іменем
    для обох провайдерів (`worker_джерело.js`), і вони вже НЕ входять у `вхід`. Окремим
    числом, а не всередині входу: інакше «кеш працює» не видно ні у звіті, ні на екрані. */
@@ -9177,7 +9299,8 @@ async function мовоюКарткуП(к, де){
   const безВідповіді = (м.записи[0] || {}).без_відповіді || [];
   const своїТ = ключ => своїВходуП(т[ключ]);
   const дозволені = словаКарткиП(к);
-  const залишкиТ = ключ => латинськіЗалишкиП(м.тексти[ключ], new Set([...своїТ(ключ), ...дозволені]));
+  const законніТ = ключ => new Set([...своїТ(ключ), ...дозволені]);
+  const залишкиТ = ключ => латинськіЗалишкиП(м.тексти[ключ], законніТ(ключ));
   /* ПОВТОР ІЗ ТОЧНИМИ СЛОВАМИ (ПРОЗА-1, 02.10.2026, рядок 970). ЩО БУЛО: текст, який шар уже переклав
      українською, але з кількома словами не кирилицею («баскa», «structурована»), ішов у повтор
      ВХІДНИМ англійським — і модель перекладала все наново, з тим самим ризиком. ЩО ТЕПЕР: такий
@@ -9197,9 +9320,17 @@ async function мовоюКарткуП(к, де){
     Object.assign(м.тексти, м2.тексти);
     const урізано = урізанеПісляПовторуП(м, м2, повтор.filter(ключ => !(ключ in виправ)));
     if (урізано.length) к.мова_урізано = [...new Set((к.мова_урізано || []).concat(урізано))];
+    /* ПОВТОР, ЩО ЗІПСУВАВ ТЕКСТ, НЕ ЗАМІНЮЄ ПЕРШОГО (ПРОЗА-КАРТОК-2, рядок 2245): повтор мав переписати
+       лише слова з `виправ`, а повернув кашу («Эос образ, який обрала для твоёго побачення сьгоди…») —
+       перший переклад був чистий. Тепер повтор, у якому з'явились нові чужі слова чи битi літери або
+       якому бракує більше слів першого перекладу, ніж мало змінитись (`повторЗіпсувавП`), відкидається:
+       лишається перший, а відрізок із залишком знімається з нього нижче, як доти. */
     Object.keys(виправ).forEach(ключ => {
       if (!String(м.тексти[ключ] || '').trim() || чужоюМовоюП(м.тексти[ключ], своїТ(ключ))
-          || (м2.записи[0] && (м2.записи[0].без_відповіді || []).includes(ключ))) м.тексти[ключ] = перший[ключ]; });
+          || (м2.записи[0] && (м2.записи[0].без_відповіді || []).includes(ключ))
+          || повторЗіпсувавП(перший[ключ], м.тексти[ключ], виправ[ключ], законніТ(ключ))){
+        if (м.тексти[ключ] !== перший[ключ]) к.мова_повтор_відкинуто = [...new Set((к.мова_повтор_відкинуто || []).concat([ключ]))];
+        м.тексти[ключ] = перший[ключ]; } });
     м.записи = м.записи.concat(м2.записи);
   }
   const н = Object.assign({}, м.тексти);
@@ -9212,11 +9343,11 @@ async function мовоюКарткуП(к, де){
   const знята = {};
   Object.keys(т).forEach(ключ => {
     if (свідомі_(ключ) || лишились.includes(ключ)) return;
-    const вона = латинськіЗалишкиП(н[ключ], new Set([...своїТ(ключ), ...дозволені]));
+    const вона = латинськіЗалишкиП(н[ключ], законніТ(ключ));
     if (!вона.length) return;
     знята[ключ] = вона;
     if (/\.назва$/.test(ключ)){ лишились.push(ключ); return; }
-    н[ключ] = безЗайвоїЛатинкиП(н[ключ], new Set([...своїТ(ключ), ...дозволені]));
+    н[ключ] = безЗайвоїЛатинкиП(н[ключ], законніТ(ключ));
     if (ключ === 'опис' && !н[ключ]) лишились.push(ключ);
   });
   if (Object.keys(знята).length) к.латиниця_знята = Object.assign(к.латиниця_знята || {}, знята);
@@ -9465,6 +9596,21 @@ function безЗайвоїЛатинкиП(т, свої){
     return шматки ? шматки + кінець : '';
   }).filter(Boolean).join(' ')).filter(рядок => рядок.trim()).join('\n');
 }
+/* ── ЛАТИНСЬКА НАЗВА — ЗАКОННА ЛИШЕ З КОДІВ КАТАЛОГУ (ПРОЗА-КАРТОК-2б, рядок 2541) ──────────────
+   Бренд речі й крамниця (`словаКарткиП`) — слова, які код сам поклав у картку. Латинка з великої літери
+   в англійському джерелі («for Monday at the office») ознакою регістру від бренду не відрізняється, тож
+   законною не є: лишається залишком, іде в повтор і знімається, як будь-яке чуже слово (п.12). Бренд з
+   лого на фото, якого в даних речі нема, теж залишок; зіпсований повтор його не замінює (нижче). */
+/* Повтор із `виправ` мав переписати лише названі слова, решту лишити слово в слово. Він зіпсував
+   текст, коли в ньому з'явились чужі слова чи биті літери, яких не було в першому перекладі, або коли
+   з першого зникло більше слів, ніж мало змінитись (названі + чверть тексту на відмінки й порядок). */
+function повторЗіпсувавП(перший, повтор, виправ, законні){
+  const було = new Set(латинськіЗалишкиП(перший, законні));
+  if (латинськіЗалишкиП(повтор, законні).some(с => !було.has(с))) return true;
+  const слова = словаП(перший), є = new Set(словаП(повтор));
+  const зникло = слова.filter(с => !є.has(с)).length;
+  return зникло > (виправ || []).length + Math.ceil(слова.length / 4);
+}
 /* слова картки, що прийшли з каталогу (не з моделі): назва речі каталогу, назва, як її написала крамниця, і крамниця.
    ЩО БУЛО (ПРОЗА-1, рядок 992): `х.назва` — очищена назва без бренда, а стилістка в `свідомі` пише назву крамниці
    («Сумка Жіноча Багет Cromia PERLA»): бренд із неї сторож ВМ-3в рахував залишком, і повтор з `виправ` був марним
@@ -9475,6 +9621,7 @@ function словаКарткиП(к){
     if (!х) return;
     if (!х.вигадана && !х.власна){
       словаП(х.назва).forEach(с => свої.add(с.toLowerCase()));
+      словаП(х.бренд).forEach(с => свої.add(с.toLowerCase()));
       словаП(х.назва_крамниці).forEach(с => свої.add(с.toLowerCase()));
     }
     словаП(х.крамниця).forEach(с => свої.add(с.toLowerCase()));
@@ -9588,6 +9735,8 @@ async function ходомРозмовиП(нове, фото, де){
     if ((р2.невідомо || []).length) запис.невідомо = р2.невідомо;
     if ((р2.заглушки || []).length) запис.заглушки = р2.заглушки;
     if ((р2.відкинуто || []).length) запис.відкинуто = р2.відкинуто;
+    /* частини ходу, які модель вклала в `update` (рядок 2420): її коди, лише з іншого місця */
+    if ((р2.перенесено || []).length) запис.перенесено = р2.перенесено;
     if (р2.причина) Object.assign(запис, {причина: р2.причина, відповідь_моделі: відповідь});
   }catch(e){
     запис.причина = 'layer_failed: ' + String((e && e.message) || e);
@@ -11369,7 +11518,8 @@ async function записатиОцінкуП(){
   if (!р) return;
   if (!в.верд){ ст.textContent = 'Обери відповідь на «Вдягнеш?»'; return; }
   const с = р.суд || {}, образ = new Set(с.образ || []);
-  const вх = вхідОцінкиП();
+  const згода = !!(($('пр-згода') || {}).checked);
+  const вх = згода ? вхідОцінкиП() : безКольорівБезЗгодиП(вхідОцінкиП());
   const запис = {
     дата: new Date().toISOString().slice(0, 10), профіль: вх.імʼя || 'безіменна', рука: 'оцінка', пул: '—',
     модель: р.модель || МОДЕЛЬ_П || '?', склад: (с.образ || []).join('+') || '—', підпис: '',
@@ -11383,7 +11533,8 @@ async function записатиОцінкуП(){
     прогін: 'оц-' + ОЦ.ід,
     знахідки_коду: ((с.суд || {}).findings || []).slice(), питання_коду: [],
     збірка: ЗБІРКА_ПОКАЗУ, каталог: КАТАЛОГ_ПІДПИС_П,
-    драп_білий: ДРАП.білий, драп_метал: ДРАП.метал, драп_нейтралі: ДРАП.нейтралі, самозвіт_барви: ДРАП.барви,
+    драп_білий: згода ? ДРАП.білий : null, драп_метал: згода ? ДРАП.метал : null,
+    драп_нейтралі: згода ? ДРАП.нейтралі : null, самозвіт_барви: згода ? ДРАП.барви : null,
     джерело: 'показ-v3', пристрій, час: new Date().toISOString(),
     коментар: (в.коментар || '').trim(), коментар_голосом: !!в.коментар_голосом && !!(в.коментар || '').trim(),
     /* що вона питала й що прочитала на картці — поруч із сирою відповіддю моделі (`текст`) */
@@ -11415,7 +11566,8 @@ async function записатиОцінкуП(){
    ставила — запис несе крок, на якому стало (`оцінка_помилка`), і всі етапи до нього. */
 async function записатиЗбійОцінкиП(){
   try{
-    const вх = вхідОцінкиП();
+    const згода = !!(($('пр-згода') || {}).checked);
+    const вх = згода ? вхідОцінкиП() : безКольорівБезЗгодиП(вхідОцінкиП());
     const запис = {дата: new Date().toISOString().slice(0, 10), профіль: вх.імʼя || 'безіменна', рука: 'оцінка',
       пул: '—', модель: МОДЕЛЬ_П || '?', склад: '—', підпис: '', текст: '', опис: '', вердикт_людини: '',
       позиція: 1, розклад: 'оцінка·' + ОЦ.ід, прогін: 'оц-' + ОЦ.ід,
@@ -12496,7 +12648,9 @@ async function зібратиОбразиП(){
                 малюватиТокениП();
                 const в4б = await відМоделіРуки(зОбривом(ст4б, {...вхОпису, текст_моделі:т4б}));
                 if ((в4б.опис||{}).текст){ т4 = т4б; в4 = в4б; }
-                if ((в4б.опис||{}).текст && (в4б.опис.названо_поза_образом||[]).length)
+                if ((в4б.опис||{}).текст && !(в4б.опис.названо_поза_образом||[]).length)
+                  ЗБ.діагноз.push('hand_' + рука + ' · description_retry_succeeded · card=retry_text');
+                else if ((в4б.опис||{}).текст)
                   ЗБ.діагноз.push('hand_' + рука + ' · description_named_not_in_outfit_after_retry='
                     + в4б.опис.названо_поза_образом.join(' | ') + ' · card=retry_text');
                 else ЗБ.діагноз.push('hand_' + рука + ' · description_unparsed_after_retry · errors='
@@ -13067,6 +13221,9 @@ async function зібратиОбразиП(){
         if ((картка.мова_урізано || []).length)
           ЗБ.діагноз.push('hand_' + рука + ' · layer · cut_after_retry=' + картка.мова_урізано.join(',')
             + ' · on_card=longer');
+        if ((картка.мова_повтор_відкинуто || []).length)
+          ЗБ.діагноз.push('hand_' + рука + ' · layer · retry_discarded=' + картка.мова_повтор_відкинуто.join(',')
+            + ' · on_card=first');
         if (Object.keys(картка.латиниця_знята || {}).length)
           ЗБ.діагноз.push('hand_' + рука + ' · layer · latin_cut=' + Object.keys(картка.латиниця_знята).map(
             ключ => ключ + ':' + картка.латиниця_знята[ключ].join('|')).join(','));
