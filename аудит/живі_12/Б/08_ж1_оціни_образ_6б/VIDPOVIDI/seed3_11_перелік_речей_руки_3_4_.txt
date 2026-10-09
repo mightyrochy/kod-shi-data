@@ -1,0 +1,43 @@
+── ПРОМПТ (1935 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wool-blend blazer with a sharp single-breasted cut and notch lapels in #deb295, paired with a lightweight crepe blouse featuring a relaxed boxy fit and a subtle button-down front in #e2ba9f, finished with straight-leg trousers that hit at the ankle in a clean #759087 tone made from breathable twill fabric. The ensemble is grounded by minimalist leather loafers with a slight heel in a deep brown shade of #5c4d3b and simple gold hoop earrings that complement the warm undertones of her complexion without overpowering the professional aesthetic. This outfit works because the neutral palette harmonizes perfectly with her natural skin and hair tones while maintaining a polished office-appropriate silhouette, and the mix of structured outerwear with soft inner layers balances authority with approachability for a standard workday environment."}
+
+── ВІДПОВІДЬ (1086 симв., 229.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "structured wool-blend blazer",
+      "details": "sharp single-breasted cut with notch lapels in breathable wool-blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#deb295",
+      "worn": true
+    },
+    {
+      "name": "lightweight crepe blouse",
+      "details": "relaxed boxy fit with subtle button-down front in lightweight crepe fabric",
+      "slot": "top",
+      "color_hex": "#e2ba9f",
+      "worn": true
+    },
+    {
+      "name": "straight-leg trousers",
+      "details": "anble-length cut in breathable twill fabric",
+      "slot": "bottom",
+      "color_hex": "#759087",
+      "worn": true
+    },
+    {
+      "name": "minimalist leather loafers",
+      "details": "slight heel in minimalist leather with a polished finish",
+      "slot": "shoes",
+      "color_hex": "#5c4d3b",
+      "worn": true
+    },
+    {
+      "name": "gold hoop earrings",
+      "details": "simple gold hoops designed to complement skin tones without overpowering the look",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

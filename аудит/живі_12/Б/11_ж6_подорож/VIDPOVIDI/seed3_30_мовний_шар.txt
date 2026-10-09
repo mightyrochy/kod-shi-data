@@ -1,0 +1,32 @@
+── ПРОМПТ (3824 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "You are wearing a romantic burgundy dress made of sheer chiffon, featuring a high neck with delicate ruffles cascading down the front and voluminous sleeves that give an elegant silhouette. The skirt flows softly from the waist in tiers of gentle pleats, ending mid-calf for effortless movement.\n\nPaired with this dreamy look are striking cherry-red mules embellished with a sparkling crystal strap across the instep, adding just the right amount of glamour to transition seamlessly from travel days to evening dinners. Completing your ensemble is a structured ginger tote bag crafted from fine textured leather, offering practical carrying space while maintaining a polished aesthetic that anchors your outfit.\n\nThis outfit works beautifully for your travels and city adventures because the fluid lines of the dress balance the width across your shoulders while drawing attention down through your torso and legs. The rich burgundy shade acts as a warm neutral against your skin, while the bright red shoes echo the depth in the fabric without competing with it. You get both comfort and sophistication ready to go, whether you’re hopping on a plane or strolling through urban streets."},
+{"н": 2, "текст": "Tuck in any longer blouses before adding your jacket if needed for layered styling."},
+{"н": 3, "текст": "Keep jewelry minimal with gold-toned pieces to complement the warm undertones of your outfit."},
+{"н": 4, "текст": "Сумка жіноча, ATTICO, екошкіра, колір рудий — Added bag to resolve 'no_bag' blocker; ginger faux leather complements red tones."},
+{"н": 5, "текст": "Сукня із бордового шифону з жабо, Червоні мюлі на підборах декоровані кристалами, Сумка жіноча, ATTICO, екошкіра, колір рудий — Although the code notes a coordination imbalance due to color proximity, the outfit still serves her intent by layering high-fashion drama (crystal heels) with romantic texture, creating a bold visual statement suitable for evening city travel."},
+{"н": 6, "текст": "Сукня із бордового шифону з жабо — Burgundy dress is chosen as the primary anchor despite the green theme to offer variety in occasion wear."}
+]
+
+── ВІДПОВІДЬ (2123 симв., 43.6 с, HTTP 200) ──
+```json
+{
+  "1": "Ти одягла романтичну вишнево-бордову сукню, пошиту з прозорого шифону. Вона має високий комір із ніжними воланами, що спадають спереду, та пишні рукави, які створюють елегантний силует. Спідниця м’яко розходиться від талії в яруси легких складок і закінчується трохи нижче коліна для безпроблемного руху.\n\nДо цього чарівного образу підібрані ефектні вишнево-червоні туфлі на підборах, прикрашені блискучим кришталевим ремінцем через ногу. Вони додають потрібну кількість гламуру для безперешкодного переходу від подорожей до вечірніх вечерь. Завершує твій ансамбль структурована сумка-тоут кольору імбиру, виготовлена з якісної текстурованої шкіри, яка пропонує практичне місце для речей і зберігає елегантний естетичний вигляд, що доповнює твій образ.\n\nЦей наряд чудово підходить для подорожей та міських пригод, адже плавні лінії сукні збалансовують ширину плечей, водночас привертаючи увагу вниз по торсу і ногах. Багатий вишнево-бордовий відтінок діє як теплий нейтральний колір на твоїй шкірі, а яскраві червоні туфлі підкреслюють глибину тканини без конкуренції з нею. Ти отримуєш комфорт і елегантність одразу ж, чи то сідаєш у літак, чи прогулюєшся міськими вулицями.",
+  "2": "Заправ будь-які довші блузи перед додаванням піджака, якщо це потрібно для багатошарового стилю.",
+  "3": "Зберігай мінімальну кількість прикрас із золотистими виробами, щоб доповнити теплі тони твого образу.",
+  "4": "Сумка жіноча, ATTICO, екошкіра, колір рудий — Додала сумку для вирішення блокування 'no_bag'; сумка з екошкіри кольору імбиру доповнює червоні тони.",
+  "5": "Сукня із бордового шифону з жабо, Червоні мюлі на підборах декоровані кристалами, Сумка жіноча, ATTICO, екошкіра, колір рудий — Хоч код і зазначає дисбаланс у координації через близькість кольорів, образ все одно відповідає твоєму задуму, поєднуючи високу моду (туфлі з кристалами) та романтичну текстуру, створюючи сміливу візуальну заяву для вечірніх міських подорожей.",
+  "6": "Сукня із бордового шифону з жабо — Бордова сукня обрана як основний елемент попри зелену тему, щоб запропонувати різноманітність у святковому одязі."
+}
+```

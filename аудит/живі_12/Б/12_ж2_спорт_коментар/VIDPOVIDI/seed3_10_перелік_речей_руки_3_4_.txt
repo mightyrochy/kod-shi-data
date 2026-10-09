@@ -1,0 +1,36 @@
+── ПРОМПТ (2152 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A relaxed linen-blend cropped jacket in a warm beige (#e8dcb5), featuring dropped shoulders and a kimono-style sleeve cut for ease of movement. Underneath, a soft oatmeal-colored ribbed knit top (#dcd6c2) with a straight neckline and medium length that allows the jacket to sit comfortably over it. A pair of high-waisted dark grey technical jersey pants (#5e6163), offering a wide-leg cut that flows freely without restricting leg extension during poses. The ensemble is grounded by minimalist white leather sneakers with a cushioned sole, chosen for their flexibility and support on grassy or uneven park surfaces. This outfit respects her refusal of restrictive fabrics while accommodating the transition from a morning yoga session in the park to a casual coffee date at a nearby cafe; the breathable materials keep her cool under the mid-morning sun without needing an outer layer at this temperature. The neutral earth tones complement her skin and hair naturally, creating a cohesive look that feels effortless yet intentionally styled for an everyday active setting."}
+
+── ВІДПОВІДЬ (789 симв., 53.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "cropped jacket",
+      "details": "relaxed linen-blend with dropped shoulders and kimono-style sleeves",
+      "slot": "outerwear",
+      "color_hex": "#e8dcb5",
+      "worn": true
+    },
+    {
+      "name": "ribbed knit top",
+      "details": "soft oatmeal-colored with straight neckline and medium length",
+      "slot": "top",
+      "color_hex": "#dcd6c2",
+      "worn": true
+    },
+    {
+      "name": "technical jersey pants",
+      "details": "high-waisted dark grey with wide-leg cut",
+      "slot": "bottom",
+      "color_hex": "#5e6163",
+      "worn": true
+    },
+    {
+      "name": "leather sneakers",
+      "details": "minimalist white with cushioned sole",
+      "slot": "shoes",
+      "color_hex": "#ffffff",
+      "worn": true
+    }
+  ]
+}
