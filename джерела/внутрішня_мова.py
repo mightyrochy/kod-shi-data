@@ -1228,6 +1228,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "outfit",
     "cannot_tell_two_accent_surfaces_match": "so the code cannot tell whether two accent items match exactly "
                                              "in colour",
+    # КОЛІР-ВІКНО-СУД (рядки 3080, 3081): вікно слова по обидва боки межі прийому палітри чи інтересу
+    "cannot_tell_item_off_palette": "so the code cannot tell whether the item's colour lies outside her palette",
+    "cannot_tell_colour_from_eyes": "so the code cannot tell whether the colour comes from the family of her eyes",
+    "cannot_tell_colour_block": "so the code cannot tell how many colour families the big items carry",
+    "cannot_tell_item_carries_interest": "so the code cannot tell whether the item's colour is strong enough "
+                                         "to carry interest",
     # ОПИС-1 (рядок 1254, K-COL-06): одиниці «dE00», «hex», «L*» у визначеннях шар повторював у реченні
     # для неї («розкид близько 11,5 dE00 … за двома виміряними hex»), сторож латиниці (П-3) знімав
     # речення, і питання «код не знає» лишалось без тексту — 9 питань у 8 прогонах 02.10. Зміст той
