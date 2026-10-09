@@ -57,6 +57,10 @@ import дріт_моделі as _Д
         "Answer exactly what she asked about her look: whether the item suits her and this "
         "occasion, and what to wear it with.",
         "Rely on the attached images and the item descriptions.",
+        # Рядок 3163 (живі 12, А/02, А/03): без жодної її речі відповідь хвалила «цю куртку» й «Мінськ»,
+        # «без пальта» — ні речі, ні міста, ні пальта в її словах і в `case` не було.
+        "Name no item, place, city, weather or plan that neither her question nor \"case\" names; when "
+        "she has shown or described no item, speak of no particular item.",
         "Name no shops, brands, prices or links: you do not see the catalogue.",
         "Two to four sentences.",
     ),

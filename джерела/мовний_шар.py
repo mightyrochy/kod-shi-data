@@ -1684,13 +1684,20 @@ _ПОЛЯ_EN = {
     "occasion": "what kind of event it is",
     "place": "where she will be",
     "dress_code": "the dress code, when it is named",
-    "event": "the event briefly, in her words",
+    # Рядок 3165 (живі 12, А/07): «"yoga and coffee with a friend"» — подія англійською й у власних лапках;
+    # подія йде на картку випадку, тож — її слова з листа, її мовою, лише скорочені
+    "event": "the event briefly: her own words from her message, in her language, shortened only by leaving "
+             "words out",
     "place_words": "where she will be, 1–5 words for her scenario card, in her language, capitalised (like: "
-                   "Church, service; School, son's graduation; Rock club); whenever place is set",
+                   "Church, service; School, son's graduation; Rock club); whenever place is set, and never instead of "
+                   "it: the code of the place goes into place",
     "reserved_colour": "a colour that belongs to another person at this event: near_white — white, "
                        "ivory and cream belong to the bride when she is not the bride herself",
+    # Рядок 3167 (живі 12, К7р): «відкритого не хочу» — сід 5 з 3 поклав межу в goal_zones (зона мети
+    # «приховати»), код узяв «none» як невідомо, і пряма заборона загубилась; опис знав лише норму події
     "open_zones": "how many body zones (neckline or back, legs, shoulders) it is appropriate to show "
-                  "at this event: none — church, funeral, interview and other reserved settings; one; two",
+                  "at this event: none — church, funeral, interview and other reserved settings; one; two. Her own "
+                  "limit on how much of her body she shows sets it too",
     "setting": "indoors, outdoors or mixed",
     "duration_h": "how many hours the event lasts",
     "movement": "whether she will sit, stand, walk, walk a lot, dance, kneel or do sport",
@@ -1753,7 +1760,8 @@ _ПОЛЯ_EN = {
             "it is intent context_optimal",
     "goal_zones": "only with goal conceal, when she wants to draw the eye away from a body zone («сховати "
                   "живіт» — belly): the goal then concerns only these zones, and the rest of the look is free; "
-                  "when she also wants no attention to herself at all — no field, the whole look is quiet",
+                  "when she also wants no attention to herself at all — no field, the whole look is quiet. Never for "
+                  "how much skin she shows: that is open_zones",
     "makeup": "make-up for this outing; lips_hex only when she named a lip colour",
     "jewelry": "jewellery she wants with this look; ethnic — wood, bone, beads; other — without metal",
     "registers": "style registers she described herself with",
@@ -1852,14 +1860,19 @@ _ОБОВʼЯЗКОВЕ_EN = {
 assert set(_ОБОВʼЯЗКОВЕ_EN) == set(_ВМ.ОБОВʼЯЗКОВЕ)
 # Межа мовної моделі (п.3 наряду) — англійськими визначеннями кодів `внутрішня_мова.ПОТРЕБИ`.
 _ПОТРЕБИ_EN = {
+    # Рядок 3162 (живі 12, А/06): «general style knowledge» модель читала як дозвіл радити — «замша не
+    # боїться води» на «замшеві чоботи, увесь день дощ»; що пасує погоді й нагоді, знає перевірка коду
     "none": "you answer her yourself: she told about her outing, or asked what you know for sure "
-            "without her items, looks and photos — what a word or a style term means, general style "
-            "knowledge",
+            "without her items, looks and photos — what a word or a style term means",
     "app": "a question about this app — its screens, buttons, her saved data, what to do next: you "
            "answer it in your next message, from what the app shows",
-    "look": "she wants her items or her look judged (how they look, whether they go together or suit "
-            "her) or asks why a particular item or look was chosen: you answer it in your next message, "
-            "after the app has checked her items and looks — only that check makes the answer sure",
+    # Рядок 3163 (живі 12, А/02, А/03): «йду на роботу пішки, … відкритого не хочу» — без питання, а
+    # need=look у 2 з 2 сідів; стилістка відповідала на непитання й вигадувала «куртку» і «Мінськ»
+    "look": "her new message itself asks to judge her items or her look (how they look, whether they go "
+            "together or suit her) or asks why a particular item or look was chosen: you answer it in your "
+            "next message, after the app has checked her items and looks — only that check makes the answer "
+            "sure. Telling about her outing, its weather and her wishes or limits for the look asks nothing: "
+            "that is none",
     "build": "she asks to put the looks together now: the app does it",
 }
 assert set(_ПОТРЕБИ_EN) == set(_ВМ.ПОТРЕБИ)
@@ -1870,8 +1883,11 @@ def _коди_розмови():
     формою значення, ознаки речі, теми поради з умовою, обовʼязкові питання, коди `need`."""
     import паспорт_нагоди as _ПН_
     поля = {ім: с for ім, с in _ВМ.СЦЕНАРІЙ.items() if ім not in _БЕЗ_У_РОЗМОВІ}
+    # Рядок 3165 (живі 12, А/07): «"quote": "\"йога…\", \"value\": "everyday"» — цитата в екранованих лапках
+    # ламала JSON, хід ішов шляхом main (виклик 0), і нагода губилась; промпт сам несе лапки екранованими
     р = ["Fields with a code or a number — each is a JSON object {\"quote\": the fragment of her words "
-         "it stands on, copied letter for letter, \"value\": its value}:"]
+         "it stands on, copied letter for letter, \"value\": its value}; \"quote\" is a plain JSON string of "
+         "her letters, with no quotation marks or backslashes of its own around them:"]
     for ім, с in поля.items():
         if _група(ім, с) == "пари":
             р.append("- %s — %s; %s" % (ім, _ПОЛЯ_EN[ім], _довідник_en(ім) if ім in _ГРУПИ_ДОВІДНИКА else _тип_en(с)))
@@ -2011,10 +2027,13 @@ def _коди_розмови():
     # НП-в (принцип власника 01.10: «код має знати те, що може точно порахувати»): видів,
     # «найближчого виду», ролі, аудиторії, віри, обсягу й частин дня модель коду більше не дає —
     # стилістка бере подію її словами. Зарезервований колір — рахівне (вето майже-білого).
+    # Рядок 3167: її власна межа відкритого — теж сюди (ліміт K-KOH-10), а не в зони мети.
     "\"reserved_colour\" and \"open_zones\" are, like formality, your understanding of the event's "
     "norm, without quote: set them when the event has such a norm (a wedding where she is a guest — "
     "near_white; a church or a funeral — open_zones none); no norm — leave them absent: unknown is a "
-    "valid value, and the looks are put together anyway.",
+    "valid value, and the looks are put together anyway. When she herself limits how much of her body she "
+    "shows (nothing open or bare), \"open_zones\" takes her limit — none, or one when she allows a single "
+    "zone — also without quote, and it overrides the event's norm.",
     # НП-в5 (рядок 522 (3)): вечір плитки «Офіційний вечір» — розуміння моделі, не таблиця коду.
     # НГ-5 (рядок 754): лише «назва каже вечір» мало — плитка «Театр, концерт» вечора не називає, і хід
     # плиток лишав паспорт на типових 11:00 форми. Тепер, як formality, — розуміння події: подія, що
@@ -2032,27 +2051,38 @@ def _коди_розмови():
     # 25 з 39 ходів `need=look` передавали її «стилістові» третьою особою; жінка ж чує одну стилістку.
     "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
     "without her items, looks and photos. When \"need\" is not \"none\", \"text\" neither answers nor "
-    "judges her question — you have not seen the check yet — and only says what you recorded. You are the "
+    "judges her question — you have not seen the check yet — and only says what you recorded. Whether an "
+    "item, a material, a colour or a cut suits the weather, the event or her is never sure without that "
+    "check: never advise or judge it in \"text\" yourself. You are the "
     "only stylist she talks to: speak of yourself in the first person and never name another stylist, a "
     "helper, the app or the code as the one who answers her.",
     # Т-18 і п.9: питання до неї — лише через `ask` і `invite`, які судить код (`суд_частин`).
+    # Рядок 3162: «your answer» модель додавала й тоді, коли вона нічого не питала, — порадою від себе.
     "\"text\" is your reply to her: briefly what you understood and recorded from her new message, and "
-    "your answer when \"need\" is \"none\". \"text\" asks her nothing and has no question marks.",
+    "your answer when she asked something and \"need\" is \"none\"; when she asked nothing, nothing "
+    "more — no advice of your own. \"text\" asks her nothing and has no question marks.",
     # НГ-4, живий стенд 01.10: «записала це в твій паспорт» (слово системи, не її) і «врахую, що образ
     # має бути стриманим перед керівництвом» — аудиторію й частини дня код ще не читає (НГ-9, НГ-12),
     # тож обіцянка була б неправдою; що код зробить із почутим, вирішує код, а не модель розмови.
     # Рядок 1439 (розбір 02.10): «до співбесіди чорного не буде», «підберу стриманий образ» — 7 з 67 ходів;
     # правило «не обіцяй, як буде враховано» модель читала як «не пояснюй», а прогноз писала далі.
+    # Рядок 3163 (живі 12, А/05): «Зафіксувала прогулянку в офісній обстановці» при місці null — текст
+    # казав записаним те, чого в `update` не було.
     "\"text\" does not mention the passport, codes or fields. It says only what she told and what you "
-    "understood — what already is, never what will be: no promise or forecast about the looks, the items, "
+    "understood — what already is, never what will be: nothing that is not in \"update\" or the passport, "
+    "no promise or forecast about the looks, the items, "
     "their colours or how her words will be taken into account; the looks are put together later.",
     # Рядок 314: підтвердження й запрошення стоять поруч в одній бульбашці — кожне окремим реченням.
     "\"text\" ends with a full stop: \"invite\" and \"ask\" follow it as separate sentences. A dash "
     "between words is the long dash «—».",
     # Рядок 1433 (розбір 02.10, ж4_робота_живіт): «який макіяж planуєш» — латинський корінь в українському
     # слові; сторож чату ловить його як факт письма і просить повтор, а промпт каже, як писати одразу.
+    # Рядок 3163 (живі 12, А/03–А/05): «чи хочете ви», «вам», «Розкажіть», «Де саме ви працюєте?» — межа
+    # `для_неї` англійською («familiar singular») стоїть у кінці довгого промпта; тут — самі форми.
     "\"text\", \"invite\" and \"ask\" are natural literary Ukrainian: every Ukrainian word in Ukrainian "
-    "Cyrillic letters only, with no Latin letter inside it; brand and shop names as she wrote them.",
+    "Cyrillic letters only, with no Latin letter inside it; brand and shop names as she wrote them. They "
+    "speak to her as «ти» (ти, тебе, тобі, твій, хочеш, розкажи), never as «ви» (ви, вам, ваш, хочете, "
+    "розкажіть).",
     # П.9 (20.09, рядки 108 і 114): поради — групою до трьох тем, м'яко, без повторів.
     # Рядок 1441: теми, умову яких код уже бачить, — окремо від тих, що стануть доречні лише з її нових слів.
     "\"invite\" is optional: one soft sentence, to her as «ти», inviting her to tell about up to three "
