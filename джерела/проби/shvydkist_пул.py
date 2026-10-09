@@ -26,8 +26,11 @@ try:
         t = time.perf_counter()
         вих = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
         дт = time.perf_counter() - t
-        пул = json.loads(вих["B"])["пул"]
-        рядок = json.dumps({с: [r["н"] for r in v] for с, v in пул.items()}, ensure_ascii=False)
+        рядки = json.loads(вих["руки"]["1"])["pool"]
+        за_н = {р_["n"]: р_ for р_ in рядки}
+        пул = {сл: [за_н[ном] for ном in ід if ном in за_н]
+               for сл, ід in вих["порядок_рук"]["1"]["слоти"].items()}
+        рядок = json.dumps({с: [r["n"] for r in v] for с, v in пул.items()}, ensure_ascii=False)
         хеш, речей = hashlib.sha256(рядок.encode()).hexdigest()[:16], sum(len(v) for v in пул.values())
         хеш_до, речей_до, час_до = ДО[гілка]
         той_самий = (хеш == хеш_до and речей == речей_до)

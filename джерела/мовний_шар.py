@@ -781,6 +781,7 @@ def прийняти_вхід(вид, відповідь, ід_речей=None):
         return dict(внутрішня={}, незнайомі=[], невідомо=[], заглушки=[],
                     причина="not_json_object: %s" % (чому_не or type(об).__name__))
     в = ВИДИ_ВХОДУ[вид]
+    об, на_своє = _на_своє_поле(об) if вид == "scenario" else (об, [])
     поля, незнайомі, невідомо = в["поля"], [], []
     внутрішня, цитати = {}, {}
     for к, v in об.items():
@@ -805,7 +806,8 @@ def прийняти_вхід(вид, відповідь, ід_речей=None):
         внутрішня["about_items"] = [р for р in внутрішня["about_items"] if р["id"] in ід_речей]
         if not внутрішня["about_items"]:
             del внутрішня["about_items"]
-    return dict(внутрішня=внутрішня, незнайомі=незнайомі, невідомо=невідомо, заглушки=_заглушки(об), причина=None)
+    return dict(внутрішня=внутрішня, незнайомі=незнайомі, невідомо=невідомо, заглушки=_заглушки(об), причина=None,
+                перенесено=на_своє)
 
 
 # ══ ШОВ: ВНУТРІШНЯ МОВА → ПАСПОРТ ЯДРА ═════════════════════════════════════════
@@ -837,7 +839,12 @@ def _текст(x):
     коли там «невідомо» чи заглушка (М-2: на кожному рівні — і в паспорті досі, записаному
     до цієї правки, «unknown» не доїде до неї як її слова)."""
     т = x.get("free_text") if isinstance(x, dict) else x
-    return "" if not isinstance(т, str) or _порожнє(т) else т.strip()
+    return "" if not isinstance(т, str) or _порожнє(т) else _ЛАПКИ_ДОВКОЛА.sub(r"\1", т.strip())
+
+
+# Подія в лапках (рядок 2383, Н4: `event: "\"робочий день в офісі\""`) — модель взяла в лапки її слова; лапки
+# довкола всього тексту — форма, не її слово, і на картку не їдуть
+_ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?)\s*["»“”]$')
 
 
 def _фраза(р):
@@ -1070,9 +1077,10 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # як «поля нема» і давнього не переносить.
     if _ВМ.ключ("goal", в.get("goal")) and not в.get("goal_zones"):
         об["мета_зони"] = []
-    для_числа = lambda ч, поле, код: ч if ч is not None else _ВМ.ключ(поле, код)
-    об["година"] = для_числа(в.get("hour"), "part_of_day", в.get("part_of_day"))
-    об["темп_c"] = для_числа(в.get("temperature_c"), "weather_feel", в.get("weather_feel"))
+    об["година"] = в.get("hour") if в.get("hour") is not None else _ВМ.ключ(
+        "part_of_day", в.get("part_of_day"))
+    об["темп_c"] = в.get("temperature_c")
+    об["погода_відчуття"] = в.get("weather_feel")
     # ХВИЛИНИ (рядки 933/1135): число `година` ціле, бо рахунки частини дня, світла й погоди йдуть
     # годинами, а хвилини їдуть окремим полем `хвилини` лише до показу. Без години з її слів
     # (`hour` не пройшов сторожа) хвилини нічого не значать і не беруться; нова година без
@@ -1080,7 +1088,12 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     об["хвилини"] = в.get("minute") if в.get("hour") is not None else None
     об["тривалість_год"] = в.get("duration_h")
     об["ноги_вище_см"] = в.get("legs_above_cm")
-    for ім in ("година", "темп_c", "тривалість_год", "ноги_вище_см"):
+    # ПОГОДА: градуси й відчуття — ДВА подання одного; хід, що дав котре-небудь, скидає давнє інше
+    # (виправлення «20 °C» на «насправді холодно» не лишає 20 °C керувати фільтрами).
+    _нова_погода = в.get("temperature_c") is not None or в.get("weather_feel") is not None
+    for ім in ("година", "темп_c", "погода_відчуття", "тривалість_год", "ноги_вище_см"):
+        if _нова_погода and ім in ("темп_c", "погода_відчуття"):
+            continue
         if об[ім] is None and є(досі.get(ім)) and джерела_досі.get(ім) != _ПН.ТИПОВЕ_ПОЛЕ_ФОРМИ:
             об[ім] = досі[ім]
     if об["хвилини"] is None and в.get("hour") is None and об["година"] == досі.get("година") and є(досі.get("хвилини")):
@@ -1659,29 +1672,47 @@ _ПОЛЯ_EN = {
                    "party — evening)",
     # ДОЩ-1 (рядок 1471): градуси — лише названі; сезон свята без числа — `weather_feel` (код → число бере
     # `внутрішня_мова.ТАБЛИЦЯ`, не модель), і його опора — слово свята в її репліці (сторож `_тримається`).
-    "temperature_c": "air temperature, °C, only when she names the degrees",
-    "weather_feel": "the weather, when no number of degrees is named: from her words, or when the season, "
+    # ГРАДУСИ-1 (рядок 2381, живий пачки 3+4 К7): «на вулиці мінус п'ятнадцять і сніг» MamayLM записала
+    # `weather_feel: cold` без числа (ДО того ж сценарію — `temperature_c: -15`): таблиця коду дала +2 °C, картка
+    # писала «+2 °C», і рука 1 взяла розстебнуте пальто на −15. Опис казав «лише коли називає градуси», але не
+    # казав, що градуси словами — теж градуси і що тоді число іде САМЕ сюди, а не у відчуття; `frost` не мав межі.
+    "temperature_c": "air temperature, °C, as a number, whenever she names the degrees — in digits or in words "
+                     "(«мінус п'ятнадцять» is -15, «плюс двадцять» is 20), with those words as quote; named "
+                     "degrees always go here and never only into weather_feel",
+    "weather_feel": "the weather, only when she names no number of degrees: from her words, or when the season, "
                     "month, holiday or place she names usually takes it (August, a beach by the sea — hot; a "
-                    "winter walk, a New Year or a Christmas party — cold), with that word as quote",
-    "precipitation": "rain or snow",
+                    "winter walk, a New Year or a Christmas party — cold), with that word as quote; frost — a hard "
+                    "frost, about -10 °C and colder",
+    # ОПАДИ-1 (рядок 1881): «увесь день дощ» лишало `опади: невідомо` і в паспорті, і в `day` — опис мовчав про
+    # те, що опади тягнуться з ЇЇ слів про день (як `weather_feel`), і без цитати сторож `_тримається` поле знімає.
+    "precipitation": "the precipitation she says the day brings, in any of her words (rain all day, drizzle, "
+                     "it pours, snow, wet snow), with that word as quote; none when she says it stays dry; "
+                     "possible_rain when rain is only possible (it may rain, a chance of rain) — not rain",
     "formality": ("how dressy this outing is, {from, to} on the 1–10 scale: always present, taken by the "
                   "anchors from her words, the event and \"chosen\" — steps: %s" % _ЩАБЛІ_EN),
     # РОЗБІР-0210 А1 В-3 (рядок 1435): «я не хочу щоб вона знов щось сказала» (свекруха, ювілей) мовна модель
     # клала лише в `stylist_note`, `intent` лишався типовим conventional, і пул діставав дозу «на межі»
     # (40 речей `branch: edge`, ж1 і ж7). Прикладу неявного наміру — через чужий суд, який вона хоче
     # пройти, — опис `context_optimal` не мав. Слова тлумачить модель (п.14, п.17), код за словами не вгадує
-    "intent": "what matters most to her: comfort_first — comfort and freedom of movement; "
-              "context_optimal — being appropriate to the event and its level, also when she says it only "
-              "through someone's judgement she wants to pass (nobody should criticise her look again, the "
-              "hosts or the elders should approve); statement — she wants "
-              "to impress, stand out or be noticed, however she words it (all eyes on her, a star, bold, "
-              "bright, not like everyone else, tired of grey and safe) — a separate field from goal, "
-              "both are set when she says it; conventional — none of these, also when she wants to be "
-              "unnoticed",
+    # НАМІР-ТЕМПЕРАТУРА (рядки 2380, 2385, живий пачки 3+4 Н1 і Н3): «головне щоб без претензій» MamayLM двічі з
+    # двох клала `context_optimal` у `goal` (а в `intent` — conventional чи statement), «щоб до мене не було жодних
+    # питань» — `goal: conceal`. Хвіст опису statement «a separate field from goal, both are set» читався як «став
+    # обидва поля»; про те, що код наміру живе лише тут, опис мовчав. Рішення менеджера (рядок 2385): «без
+    # претензій / без питань» — бездоганна доречність `context_optimal`, не «приховати» (воно — про тіло й увагу).
+    "intent": "what matters most to her — its codes go only here, never into goal: comfort_first — comfort and "
+              "freedom of movement; context_optimal — being appropriate to the event and its level, also when "
+              "she says it only through someone's judgement she wants to pass (nobody should criticise her look "
+              "or find fault with it, no remarks and no questions to her, the hosts or the elders should "
+              "approve); statement — she wants to impress, stand out or be noticed, however she words it (all "
+              "eyes on her, a star, bold, bright, not like everyone else, tired of grey and safe); conventional "
+              "— none of these, also when she wants to be unnoticed",
     # Рядок 1437: «conceal — no attention or hiding something» — два наміри одним кодом; розводить їх
     # goal_zones, і код читає це так само (`регістр_уваги.мета_образу`)
-    "goal": "her aim for this outing: flatter — to suit her; conceal — either no attention to her whole "
-            "look, or drawing the eye away from a body zone (then also goal_zones); express — to be looked at",
+    "goal": "how she wants to be seen in this look — only its own codes, never an intent code: flatter — to suit "
+            "her; conceal — either no attention to her whole look, or drawing the eye away from a body zone (then "
+            "also goal_zones); express — to be looked at, set together with intent statement when she wants to "
+            "stand out. Passing someone's judgement (no remarks, no criticism, no questions to her) is not conceal: "
+            "it is intent context_optimal",
     "goal_zones": "only with goal conceal, when she wants to draw the eye away from a body zone («сховати "
                   "живіт» — belly): the goal then concerns only these zones, and the rest of the look is free; "
                   "when she also wants no attention to herself at all — no field, the whole look is quiet",
@@ -2323,8 +2354,65 @@ def промпт_розмови(d):
 _ЧАСТИНИ = ("need", "text", "invite_topics", "invite", "ask_code", "ask")
 
 
+# ── КОД МЕТИ Й НАМІРУ — НА СВОЄМУ ПОЛІ (рядок 2380) ──────────────────────────────────────
+# ЩО БУЛО. Живий пачки 3+4, Н1 (MamayLM, «головне щоб без претензій, вона завжди до чогось чіпляється»): модель
+# розмови ДВІЧІ з двох (ДО і ПІСЛЯ) поклала `context_optimal` у `goal`, а в `intent` — інший код на тому самому
+# уривку: ДО `conventional`, ПІСЛЯ `statement` (її ж `text`: «не привернути зайвої уваги»). `goal` такого коду не
+# знає — він ішов у `незнайомі`, а `intent` приймався як є: намір statement, доза «на межі» 0 → 273 і картка
+# «сміливий вибір» жінці, що боїться зауважень. Так само хід плиток Н1 (seed3_06) і Н3 (seed3_10).
+# ЩО СТАЛО. Переліки мети й наміру не перетинаються, тож код одного з них на полі іншого — значення ТОГО поля,
+# чий це код: шов ставить пару {quote, value} туди, де цей код живе (слів не читає — лише коди переліків, п.12).
+# Значення, що стояло на тому полі, тоді поступається: того самого уривка не можуть нести два наміри, а
+# вибраний з чужого переліку код модель брала навмисно — у записаних ходах саме він збігався з її `text`.
+# Обидва коди не на своїх полях — міняються місцями. Що перенесено — у `перенесено` (`goal->intent`).
+_СУСІДИ_КОДІВ = (("goal", "intent"), ("intent", "goal"))
+
+
+def _на_своє_поле(оновлення):
+    """(оновлення сценарію з кодом мети чи наміру на своєму полі, перенесене кодами `поле->поле`). Кличе
+    `прийняти_вхід("scenario")` — і для перекладача сценарію, і для `update` ходу розмови."""
+    чужі = {}
+    for поле, сусід in _СУСІДИ_КОДІВ:
+        if поле in оновлення:
+            знач, _ = _пара(поле, {}, оновлення[поле])
+            if isinstance(знач, str) and not _ВМ.ключ(поле, _код(знач)) and _ВМ.ключ(сусід, _код(знач)):
+                чужі[поле] = сусід
+    if not чужі:
+        return оновлення, []
+    куди = set(чужі.values())
+    нове = {к: в for к, в in оновлення.items() if к not in чужі}
+    for поле, сусід in чужі.items():
+        нове[сусід] = оновлення[поле]
+    цит = оновлення.get("quotes")
+    if isinstance(цит, dict):           # верхній `quotes`: уривок іде за полем, а не лишається під старим ключем
+        нова_цит = {к: в for к, в in цит.items() if к not in чужі and к not in куди}
+        нова_цит.update({сусід: цит[поле] for поле, сусід in чужі.items() if поле in цит})
+        нове["quotes"] = нова_цит
+    return нове, ["%s->%s" % кс for кс in чужі.items()]
+
+
+# ── НЕЗАКРИТИЙ ОБ'ЄКТ ХОДУ (рядок 2383) ───────────────────────────────────────────────────
+# Н4 6б, хід після фото (seed3_48): модель вклала частини ходу в `update` (форма рядка 2420) і забула закрити
+# зовнішній об'єкт — «Expecting ',' delimiter», хід ішов шляхом main замість оцінки. Бракує лише закривних
+# дужок у кінці: шов дописує їх (до двох) і читає — форма, не слова; у `перенесено` — `unclosed_object_read`.
+НЕЗАКРИТИЙ_ОБʼЄКТ = "unclosed_object_read"
+
+
+def _незакритий(відповідь):
+    """JSON-об'єкт відповіді, якому бракує до двох закривних «}» у кінці, або None."""
+    т = re.sub(r"^```(?:json)?\s*|\s*```$", "", str(відповідь or "").strip())
+    for н in (1, 2):
+        try:
+            об = _json_.loads(т + "}" * н)
+        except ValueError:
+            continue
+        return об if isinstance(об, dict) else None
+    return None
+
+
 def прийняти_розмову(відповідь):
-    """Відповідь моделі розмови → dict(внутрішня, частини, незнайомі, невідомо, заглушки, причина).
+    """Відповідь моделі розмови → dict(внутрішня, частини, незнайомі, невідомо, заглушки, причина,
+    перенесено).
 
     `внутрішня` — оновлення паспорта, розібране ТИМ САМИМ шляхом, що переклад сценарію
     (`прийняти_вхід("scenario", …)`: пари → поле й уривок у `quotes`, коди поза переліком — у
@@ -2332,10 +2420,28 @@ def прийняти_розмову(відповідь):
     гілки оцінки й довідки показу. `частини` — сирі частини відповіді; судить їх шов (`суд_частин`).
     Не JSON чи без `text` — причина, і хід іде шляхом main (як відмова перекладача доти)."""
     об, чому_не = _обʼєкт(відповідь)
+    незакрито = []
+    if not isinstance(об, dict):
+        об, незакрито = _незакритий(відповідь), [НЕЗАКРИТИЙ_ОБʼЄКТ]
     if not isinstance(об, dict):
         return dict(внутрішня={}, частини={}, незнайомі=[], невідомо=[], заглушки=[],
                     причина="not_json_object: %s" % (чому_не or type(об).__name__))
     оновлення = об.get("update") if isinstance(об.get("update"), dict) else {}
+    # ── ЧАСТИНИ ХОДУ, ВКЛАДЕНІ В `update` (рядок 2420) ─────────────────────────────────────
+    # ЩО БУЛО. Живий прогін пачки 2 (MamayLM, сцена 6б «фото + оціни мій образ»): у 15 з 15
+    # записаних ходів модель ПОЗНАЧИЛА `need: look`, але в 11 поклала `need` і `text` усередину
+    # `update`. Код читав їх лише поруч з `update`: там — пусто, тож «no_text_field», хід ішов
+    # шляхом main (виклик 0) і замість оцінки складався паспорт сценарію. Провалювались рівно
+    # вкладені відповіді; ті 4, де частини стояли поруч, відкрили оцінку.
+    # ЩО СТАЛО. Коди частин (`_ЧАСТИНИ`) — не поля сценарію (переліки `внутрішня_мова.СЦЕНАРІЙ`
+    # цих імен не мають), тож частина, яку модель поклала в `update`, і є її частиною ходу: код
+    # бере ЇЇ код звідти, де вона його написала, сам нічого не розпізнає (п.12, п.14). Частина,
+    # що стоїть і поруч, сильніша — вкладена тоді лишається незнайомою. Перенесене — у звіт
+    # (`перенесено`), щоб формат моделі було видно.
+    перенесено = [к for к in _ЧАСТИНИ if к in оновлення and к not in об]
+    if перенесено:
+        об = dict(об, **{к: оновлення[к] for к in перенесено})
+        оновлення = {к: в for к, в in оновлення.items() if к not in перенесено}
     р = прийняти_вхід("scenario", _json_.dumps(оновлення, ensure_ascii=False))
     незнайомі = list(р["незнайомі"]) + ["%s" % к for к in об if к not in _ЧАСТИНИ + ("update",)]
     частини = {}
@@ -2361,6 +2467,8 @@ def прийняти_розмову(відповідь):
     текст, зняте = _без_питань(частини.get("text"))
     return dict(внутрішня=в, частини=частини, незнайомі=незнайомі, невідомо=р["невідомо"],
                 заглушки=_заглушки(об), причина=причина, текст=текст,
+                перенесено=["update.%s" % к for к in перенесено] + ["update.%s" % к for к in р.get("перенесено") or ()]
+                + незакрито,
                 відкинуто=[dict(частина="text", чому="question_in_text", зняте=зняте)] if зняте else [])
 
 
