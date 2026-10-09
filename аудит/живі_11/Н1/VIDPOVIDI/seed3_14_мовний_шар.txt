@@ -1,0 +1,32 @@
+── ПРОМПТ (3178 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Soft ivory silk blouse with a relaxed but structured fit, straight hemline reaching mid-thigh, woven silk.\nTailored high-waisted midi skirt with a subtle A-line silhouette just above the knee, solid color matching the blouse, fine cotton-blend twill.\nPointed-toe heeled pumps with a moderate 7cm heel and a closed toe, sleek metallic silver finish reflecting light, polished leather.\nDelicate gold-toned drop earrings with small pearl drops and a slender chain necklace resting at the collarbone, brushed metal and natural stone accents.\n\nThis outfit strikes the perfect balance between neatness and occasion-appropriate elegance without appearing overly formal or demanding attention, aligning perfectly with her wish for a low-key yet impressive look. The neutral palette of soft ivories and muted silvers complements her warm skin tones naturally while maintaining a cohesive, effortless aesthetic suitable for a district restaurant setting. By choosing fluid fabrics like silk and twill alongside a structured cut, the ensemble offers the comfort and freedom of movement she desires, ensuring she feels at ease throughout the event. Ultimately, the simplicity of the lines speaks for itself, effectively avoiding any need for her to explain or defend her appearance, allowing her to simply be present."},
+{"н": 2, "текст": "Silk Blouse"},
+{"н": 3, "текст": "Midi Skirt"},
+{"н": 4, "текст": "Heeled Pumps"},
+{"н": 5, "текст": "Earrings"},
+{"н": 6, "текст": "Necklace"}
+]
+
+── ВІДПОВІДЬ (1456 симв., 198.0 с, HTTP 200) ──
+```json
+{
+  "1": "М'який кремовий шовковий блузон з вільним, але структурованим кроєм, прямим подолом до середини стегна, тканий шовк.\nПошита спідниця-олівець міді високої талії з ледь помітним силуетом А трохи вище колін, однотонна в тон блузону, тонка бавовняно-сумішева саржа.\nТуфлі на підборах із загостреним носком і середнім 7-сантиметровим каблуком та закритим мисом, гладка металева срібляста обробка, що відбиває світло, полірована шкіра.\nДелікатні золотисті сережки з підвісками у вигляді перлів і тонкий ланцюжок на шиї біля ключиці, матові металеві та натуральні акценти з каменю.\n\nЦей образ чудово поєднує охайність і доречну для випадку елегантність без надмірної офіційності чи нав'язливості, що повністю відповідає її бажанню мати стриманий, але вражаючий вигляд. Нейтральна палітра м'яких кремових відтінків та приглушеного срібла природно доповнюють її теплий колір шкіри, зберігаючи цілісну та безтурботну естетику, яка підходить для ресторану в районі. Обираючи такі тканини як шовк і саржа разом зі структурованим кроєм, ансамбль пропонує комфорт і свободу рухів, яких вона бажає, гарантуючи, що їй буде зручно протягом усього заходу. Зрештою, простота ліній говорить сама за себе, ефективно уникаючи будь-якої потреби пояснювати чи виправдовувати свій зовнішній вигляд, дозволяючи їй просто бути присутньою.",
+  "2": "Шовковий блузон",
+  "3": "Спідниця міді",
+  "4": "Туфлі на підборах",
+  "5": "Сережки",
+  "6": "Ланцюжок"
+}
+```
