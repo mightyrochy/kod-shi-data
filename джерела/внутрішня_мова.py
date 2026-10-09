@@ -2967,6 +2967,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "done_blocker_stands": "the structural blocker still stands in the new check (values: blocker — blocker code)",
     "done_outfit_not_checked": "the outfit did not reach the check: there is nothing to verify",
     "done_unknown_id": "the previous verdict has no finding or blocker with this id",
+    "done_finding_of_other_outfit": "this finding belongs to another outfit, not to this one: it is not "
+                                    "checked here (values: outfit — the outfit it belongs to)",
 })
 
 
