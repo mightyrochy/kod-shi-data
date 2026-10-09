@@ -1,0 +1,38 @@
+── ПРОМПТ (1626 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer cut classic with a defined waist, length hitting mid-thigh, color #e8d6d8, fabric fine wool blend. Straight-leg trousers cut with a slight rise, length full trouser with a hem just grazing the shoe, color #ece9e4, fabric crisp cotton twill. Pointed-toe pumps cut sleek with a moderate heel height, length standard instep, color #c2b0b5, leather smooth finish. Gold hoop earrings and a delicate pendant necklace add subtle polish to the ensemble. This outfit works perfectly for a park stroll as the breathable natural fabrics keep her comfortable in varying temperatures while the neutral palette harmonizes beautifully with her warm skin tones and cool eyes. The structured silhouette provides a balanced, effortless elegance suitable for an occasion that blends casual movement with intentional style."}
+
+── ВІДПОВІДЬ (892 симв., 157.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "Classic cut with a defined waist, mid-thigh length, fine wool blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#e8d6d8"
+    },
+    {
+      "name": "Trousers",
+      "details": "Straight-leg cut with a slight rise, full trouser length with a hem grazing the shoe, crisp cotton twill fabric",
+      "slot": "bottom",
+      "color_hex": "#ece9e4"
+    },
+    {
+      "name": "Pumps",
+      "details": "Pointed-toe cut sleek with moderate heel height, standard instep length, smooth leather finish",
+      "slot": "shoes",
+      "color_hex": "#c2b0b5"
+    },
+    {
+      "name": "Hoop earrings",
+      "details": "Gold hoop",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "Pendant necklace",
+      "details": "Delicate pendant",
+      "slot": "necklace",
+      "color_hex": null
+    }
+  ]
+}

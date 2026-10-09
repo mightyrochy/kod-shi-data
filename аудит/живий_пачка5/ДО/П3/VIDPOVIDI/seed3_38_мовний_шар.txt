@@ -1,0 +1,25 @@
+── ПРОМПТ (3247 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Here is the outfit you chose for your walk through the park:\n\nThe base of your look is a light blue and white striped shirt-dress from The Originals. It features a classic collar, long sleeves with gentle volume, and a relaxed silhouette that flows down to your knees. This piece brings a fresh, cool tone perfect for the spring air.\nLayered over it is a cream-colored cardigan by Likeangel made of a soft, open-knit fabric. The design features delicate geometric patterns on the shoulders and cuffs, creating a lightweight outer layer that adds texture without adding heaviness. A white belt ties your waist cinch.\nOn your feet are white leather perforated sneakers from Attico. These shoes feature silver eyelets and a flexible sole, offering an easy, breathable step for strolling on the grass.\nThe third piece is a white snakeskin-effect handbag from Attico with gold hardware. It sits small and structured at your side to hold your essentials while you explore.\n\nThis ensemble works because the soft textures of the knit cardigan and linen dress match the relaxed nature of your park walk, while the cool light blue of the dress grounds your cream tones. The neutral palette stays fresh against the green surroundings, and the silver metal in your bag echoes the natural highlights of a sunny day.\nYou are wearing this as you asked: a conventional look for a leisurely outing."},
+{"н": 2, "текст": "Сумка жіноча, ATTICO, екошкіра, колір білий — White leather bag complements the white shirt and keeps the look cohesive and uncluttered."}
+]
+
+── ВІДПОВІДЬ (1617 симв., 98.2 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "н": 1,
+    "текст": "Ось образ, який ти обрала для прогулянки парком:\n\nВ основі твого образу — світло-блакитна та біла смугаста сукня-сорочка від The Originals. Вона має класичний комірець, довгі рукави з легким об’ємом і вільний силует, який спадає до колін. Ця річ дарує свіжий прохолодний тон, що чудово підходить для весняного повітря.\nЗверху надіта кремова кардиган від Likeangel із м'якої трикотажної тканини з відкритим плетінням. Вона має ніжні геометричні візерунки на плечах і манжетах, створюючи легкий верхній шар, який додає текстури без зайвої ваги. Білий ремінь підкреслює талію.\nНа ногах — білі шкіряні перфоровані кросівки від Attico. Вони мають сріблясті люверси й гнучку підошву, що забезпечує легкий і дихаючий крок для прогулянки травою.\nТретій елемент — біла сумка з ефектом зміїної шкіри від Attico із золотистими деталями. Вона невелика та структурована й зручно лежить на боці, щоб ти могла взяти з собою необхідні речі під час прогулянки.\n\nЦей ансамбль працює тому, що м'які текстури трикотажної кардигану та лляної сукні гармонують із невимушеною атмосферою твоєї паркової прогулянки, а прохолодний світло-блакитний колір сукні підкреслює кремові тони. Нейтральна палітра залишається свіжою на тлі зеленого оточення, а сріблястий метал у сумці перегукується з природними відблисками сонячного дня.\nТи одягнена так, як просила: це класичний образ для спокійної прогулянки."
+  },
+  "2": {
+    "н": 2,
+    "текст": "Сумка жіноча, ATTICO, екошкіра, колір білий — Біла шкіряна сумка доповнює білу сорочку та зберігає образ цілісним і не перевантаженим."
+  }
+}
+```

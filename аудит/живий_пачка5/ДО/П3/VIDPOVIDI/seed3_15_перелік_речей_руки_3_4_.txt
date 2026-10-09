@@ -1,0 +1,26 @@
+── ПРОМПТ (1770 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Outfit Text for Park Stroll in +20°C Weather\nFlared midi dress featuring a relaxed A-line silhouette and hitting mid-calf, rendered in a fresh mint green with hex #98FF98, woven from a breathable organic cotton-linen blend.\nMinimalist leather sandals with a 75mm heel crafted from saddle brown leather with hex #A68A64, offering a secure strap closure for easy walking.\nSmall rectangular gold-tone sunglasses in champagne gold with hex #F0E68C and an ultra-lightweight acetate frame to shield against the sun without adding bulk.\nThis ensemble works perfectly because the linen-cotton fabric keeps her cool and comfortable while navigating the grassy park paths on a warm day. The flared cut of the dress flows effortlessly in any breeze, allowing for a carefree and elegant movement through nature. A touch of gold jewelry and sunglasses provides a stylish yet effortless polish that honors both the relaxed outdoor setting and the special occasion."}
+
+── ВІДПОВІДЬ (636 симв., 157.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Flared midi dress",
+      "details": "relaxed A-line silhouette hitting mid-calf, breathable organic cotton-linen blend fabric",
+      "slot": "dress",
+      "color_hex": "#98FF98"
+    },
+    {
+      "name": "Minimalist leather sandals",
+      "details": "75mm heel, secure strap closure for easy walking",
+      "slot": "shoes",
+      "color_hex": "#A68A64"
+    },
+    {
+      "name": "Small rectangular gold-tone sunglasses",
+      "details": "ultra-lightweight acetate frame designed to shield against the sun without adding bulk",
+      "slot": "glasses",
+      "color_hex": "#F0E68C"
+    }
+  ]
+}
