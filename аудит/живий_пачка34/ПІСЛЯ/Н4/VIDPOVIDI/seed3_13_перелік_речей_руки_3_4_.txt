@@ -1,0 +1,38 @@
+── ПРОМПТ (1686 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured blazer in a soft stone gray (#C0C0C0) with a relaxed but defined shoulder line, crafted from breathable cotton-linen blend. Below it sits a fluid midi skirt in a matching muted taupe (#8F8E82), featuring an A-line cut that flows gently from the waist to just below the knee. On her feet are pointed-toe flats in polished tan leather (#D2B48C) with a low block heel for all-day comfort. A delicate gold pendant necklace and minimalist hoop earrings add a touch of refined elegance without overwhelming the neat office aesthetic. This outfit works because the neutral palette harmonizes perfectly with her warm skin tone while the textured fabrics provide subtle depth suitable for a creative yet professional workplace. The silhouette balances structure from the blazer with movement in the skirt, offering both polish and ease for a midday work environment."}
+
+── ВІДПОВІДЬ (909 симв., 150.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured blazer with relaxed but defined shoulder line crafted from breathable cotton-linen blend",
+      "slot": "outerwear",
+      "color_hex": "#C0C0C0"
+    },
+    {
+      "name": "skirt",
+      "details": "fluid midi skirt with A-line cut that flows gently from the waist to just below the knee",
+      "slot": "bottom",
+      "color_hex": "#8F8E82"
+    },
+    {
+      "name": "flats",
+      "details": "pointed-toe flats with a low block heel crafted from polished leather for all-day comfort",
+      "slot": "shoes",
+      "color_hex": "#D2B48C"
+    },
+    {
+      "name": "necklace",
+      "details": "delicate gold pendant necklace",
+      "slot": "collar_necklace",
+      "color_hex": null
+    },
+    {
+      "name": "earrings",
+      "details": "minimalist hoop earrings",
+      "slot": "earrings",
+      "color_hex": null
+    }
+  ]
+}

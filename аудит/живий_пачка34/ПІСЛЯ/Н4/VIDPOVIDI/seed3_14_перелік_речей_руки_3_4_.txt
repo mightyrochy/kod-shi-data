@@ -1,0 +1,44 @@
+── ПРОМПТ (1573 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer in a tailored wide-leg cut, knee-length, #85C2BE soft pastel blue, lightweight wool blend.\nPencil skirt, midi length hitting just below the knee, #85C2BE matching pastel blue, structured cotton twill.\nOxford shirt with relaxed darts to the waist, hip-length, crisp white, poplin fabric.\n loafers with a low block heel, rounded toe, taupe leather #D3C6B7.\n Minimalist gold hoop earrings and a slim watch with a black strap.\nThis ensemble balances professional polish with a touch of modern ease for a midday office setting. The matching pastel blue separates create a cohesive, elongating silhouette that feels sharp yet approachable. Lightweight fabrics ensure comfort through the afternoon without sacrificing the neat dress code she requested."}
+
+── ВІДПОВІДЬ (979 симв., 155.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "Tailored wide-leg cut, knee-length, lightweight wool blend",
+      "slot": "outerwear",
+      "color_hex": "#85C2BE"
+    },
+    {
+      "name": "Pencil skirt",
+      "details": "Midi length hitting just below the knee, structured cotton twill",
+      "slot": "bottom",
+      "color_hex": "#85C2BE"
+    },
+    {
+      "name": "Oxford shirt",
+      "details": "Relaxed darts to the waist, hip-length, crisp white poplin fabric",
+      "slot": "top",
+      "color_hex": "#FFFFFF"
+    },
+    {
+      "name": "Loafers",
+      "details": "Low block heel, rounded toe, taupe leather",
+      "slot": "shoes",
+      "color_hex": "#D3C6B7"
+    },
+    {
+      "name": "Hoop earrings",
+      "details": "Minimalist gold hoop",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "Watch",
+      "details": "Slim watch with a black strap",
+      "slot": "jewelry",
+      "color_hex": "#000000"
+    }
+  ]
+}
