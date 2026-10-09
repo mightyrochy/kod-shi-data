@@ -1,0 +1,38 @@
+── ПРОМПТ (1680 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A fluid silk blouse with a subtle draping neckline and soft lavender hue (#D8CDD6), paired with high-waisted tailored wide-leg trousers in charcoal grey (#36454F).\nStiletto pumps finished in glossy black leather (#000000) to elongate the silhouette.\nGold geometric drop earrings and a structured clutch in metallic champagne (#F7E7CE) add refined glamour.\nThis ensemble perfectly balances elegance with comfort for an evening restaurant date at 19:30, where the neutral palette keeps you looking polished without overpowering the warm lighting. The flowy cut of the blouse ensures ease of movement during conversation, while the sophisticated grey and gold tones fit the semi-formal dining atmosphere seamlessly. As the weather is mild enough for a light jacket to be optional, this breathable fabric combination keeps you cool yet stylish throughout the night."}
+
+── ВІДПОВІДЬ (829 симв., 207.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "fluid silk blouse",
+      "details": "subtle draping neckline, soft lavender hue",
+      "slot": "top",
+      "color_hex": "#D8CDD6"
+    },
+    {
+      "name": "high-waisted tailored wide-leg trousers",
+      "details": "charcoal grey tone",
+      "slot": "bottom",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "Stiletto pumps",
+      "details": "glossy black leather finish to elongate silhouette",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "Gold geometric drop earrings",
+      "details": "refined glamour accessory",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "structured clutch",
+      "details": "metallic champagne finish for refined glamour",
+      "slot": "bag",
+      "color_hex": "#F7E7CE"
+    }
+  ]
+}

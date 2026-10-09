@@ -1,0 +1,40 @@
+── ПРОМПТ (1799 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cream silk blouse with a relaxed, drop-shoulder cut and straight length ending mid-hip, color #e0bd9a, fabric woven with a subtle sheen.\n\nOlive green wide-leg trousers in a high-rise waist and fluid drape that fall to the ankle, color #556b2f, fabric of soft crepe.\n\nNude leather block-heel pumps with a rounded toe, color matching skin tone #d9b48f, smooth calfskin material.\n\nGold-plated huggable hoop earrings in medium weight and small delicate signet ring, both in solid gold-tone metal.\n\nThis ensemble balances the relaxed dress code of a local restaurant with sophisticated colors that harmonize with her warm complexion, avoiding anything too formal yet remaining polished for an evening date. The fluid fabrics allow movement during dinner while the neutral cream and olive palette creates a flattering contrast against her hair and skin tones. It respects the late hour with modest coverage but maintains elegance through texture and fit rather than ornate details."}
+
+── ВІДПОВІДЬ (997 симв., 204.6 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Blouse",
+        "details": "Relaxed, drop-shoulder cut with straight length ending mid-hip; woven silk fabric with a subtle sheen",
+        "slot": "top",
+        "color_hex": "#e0bd9a"
+      },
+      {
+        "name": "Trousers",
+        "details": "High-rise waist wide-leg cut with fluid drape falling to the ankle; soft crepe fabric",
+        "slot": "bottom",
+        "color_hex": "#556b2f"
+      },
+      {
+        "name": "Pumps",
+        "details": "Block-heel heels with a rounded toe; smooth calfskin material",
+        "slot": "shoes",
+        "color_hex": "#d9b48f"
+      },
+      {
+        "name": "Earrings",
+        "details": "Medium weight huggable hoop shape; solid gold-tone metal",
+        "slot": "earrings",
+        "color_hex": null
+      },
+      {
+        "name": "Ring",
+        "details": "Small delicate signet design; solid gold-tone metal",
+        "slot": "ring",
+        "color_hex": null
+      }
+    ]
+  }
+}
