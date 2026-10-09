@@ -646,6 +646,10 @@ def випадок(в, день=None):
             continue
         if день and к in _ВИПАДОК_У_ДНІ and _ВИПАДОК_У_ДНІ[к] in день:
             continue
+        # подія, якої вона не називала (`випадок_для_пакета`: «невідомо», рядок 1445), не їде: нагода
+        # й місце стоять поруч кодами
+        if к == "подія" and isinstance(v, str) and _ВМ.невідомо(v):
+            continue
         ключ = _ПОЛЯ_ВИПАДКУ[к]
         if к == "нагода":
             v = код("occasion", v)
@@ -1323,8 +1327,10 @@ def опис(об):
     рч = []
     for x in (о.get("речі") or []):
         р = {"n": x.get("н"), "name": x.get("назва")}
+        # колір — кодом, слово крамниці — окремо, як у пулі (`колір_код`, рядок 1445): доти «Сірий» і
+        # «світло сірий» стояли в `color` поруч із `light_blue` сусідньої речі
         for ключ, v in (("set_half", _з(_ЧАСТИНА, x.get("частина"))), ("shop", x.get("магазин")),
-                        ("color", код("color_name", x.get("колір")) if x.get("колір") else None),
+                        ("color", колір_код(x.get("колір"))[0]), ("shop_color", колір_код(x.get("колір"))[1]),
                         ("hex", x.get("hex")), ("photos", x.get("фото_номери")), ("no_photo", True if x.get("без_кадру") else None),
                         ("hers", True if x.get("її_річ") else None)):
             if v not in (None, "", []):
@@ -1376,7 +1382,7 @@ def опис(об):
     if isinstance(_зап, dict) and _зап.get("запасні"):
         вих["swap_spares"] = {"item": _зап.get("річ"), "why": _зап.get("чому"), "spares": [
             {к: v for к, v in (("n", x.get("н")), ("name", x.get("назва")), ("shop", x.get("магазин")),
-                               ("color", код("color_name", x.get("колір")) if x.get("колір") else None),
+                               ("color", колір_код(x.get("колір"))[0]), ("shop_color", колір_код(x.get("колір"))[1]),
                                ("hex", x.get("hex")), ("photos", x.get("фото_номери")))
              if v not in (None, "", [])} for x in _зап["запасні"]]}
     return вих
