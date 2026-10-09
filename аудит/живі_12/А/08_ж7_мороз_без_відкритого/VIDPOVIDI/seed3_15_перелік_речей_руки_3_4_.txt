@@ -1,0 +1,36 @@
+── ПРОМПТ (2277 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend coat in charcoal gray (#36454F), tailored with a straight silhouette and hip-length cut that offers coverage while allowing free movement. A crisp button-down blouse in ivory (#FFFFF0) featuring a classic pointed collar and midi length, crafted from smooth cotton-poplin for professional polish without bulk. Dark slate blue wool trousers (#2D3748) with a relaxed yet fitted straight-leg cut, ankle-length hem, and a medium-weight fabric suitable for extreme cold. Leather ankle boots in deep oxblood (#601B1B) with a low block heel, mid-calf height, and lined with shearling to provide warmth against the frosty -15 °C conditions. This ensemble works because the heavy wool layers effectively insulate against the biting winter wind while maintaining a polished, authoritative silhouette essential for a workday on foot. The neutral color palette ensures versatility and professionalism, allowing her to focus on her tasks without distraction from overly bold patterns or bright hues. The specific choice of shearling-lined boots honors the need for physical warmth during walking in sub-zero temperatures, directly addressing the weather constraints mentioned in her brief."}
+
+── ВІДПОВІДЬ (979 симв., 191.0 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "wool-blend coat",
+      "details": "tailored with a straight silhouette and hip-length cut that offers coverage while allowing free movement",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "button-down blouse",
+      "details": "classic pointed collar and midi length, crafted from smooth cotton-poplin for professional polish without bulk",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "wool trousers",
+      "details": "relaxed yet fitted straight-leg cut, ankle-length hem, and a medium-weight fabric suitable for extreme cold",
+      "slot": "bottom",
+      "color_hex": "#2D3748",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "low block heel, mid-calf height, and lined with shearling to provide warmth",
+      "slot": "shoes",
+      "color_hex": "#601B1B",
+      "worn": true
+    }
+  ]
+}
