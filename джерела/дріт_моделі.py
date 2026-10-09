@@ -1281,6 +1281,13 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
                 {к2: v for к2, v in (("outfit", x.get("образ")), ("statements", заяви(x.get("заяви"))),
                                      ("items", [_номер(r) for r in (x.get("речі") or [])])) if v}
                 for x in н["утрачені_опори"] if isinstance(x, dict)]
+        # ВИРВА-СМІЛИВІСТЬ (рядки 841, 886; п.17): сміливі образи з ознаками й доза — лише ремонтові,
+        # що лишає 5 з 10; вибір одного обирає за її наміром без дози
+        с = н.get("сміливі")
+        if isinstance(с, dict) and с.get("образи") and not вибір:
+            набір["bold"] = {"outfits": [{"id": x.get("ід"), "signs": list(x.get("ознаки") or [])}
+                                         for x in с["образи"] if isinstance(x, dict)],
+                             "keep_at_least": с.get("лишити")}
         if н.get("знахідки"):
             набір["findings"] = [_знахідка(z, None, ремонти) for z in н["знахідки"]]
             if вибір:
