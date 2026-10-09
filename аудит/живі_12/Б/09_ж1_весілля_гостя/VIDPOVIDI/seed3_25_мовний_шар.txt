@@ -1,0 +1,84 @@
+── ПРОМПТ (7908 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_code_unknown — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- bag — сумка.
+- crossbody — кросбоді.
+- cut — cut / крій.
+- hand — рука.
+- length — довжина.
+- pattern — візерунок.
+- set — комплект.
+- shoes — взуття.
+- shoulder — плече.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки.
+
+ЗАЯВИ:
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_look_contrast_matches_hers — so the code cannot tell whether the outfit's contrast matches her own.
+- cannot_tell_lightness_structure — so the code cannot tell which structure of light and dark the outfit carries.
+- cannot_tell_items_intensity_match — so the code cannot tell whether the outfit's items match in colour saturation.
+- no_input_hand_finger_neck_sizes — the code does not check glove, ring and choker sizes against her: it has no palm, finger or neck measurements.
+- no_input_frame_size — the catalogue has no glasses, so the code does not check frame size against her face.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- leg_proportion_template_crotch — the code does not count torso-to-leg proportions: the crotch height comes from a template, not from her; one measurement fixes this.
+- calf_girth_not_measured — her calf girth is unknown, so how the edges of shoes and of a hem land on the calf is not measured; there is a field for it in "Extended measurements".
+- areas_not_measured — the code did not measure how much room each item takes in the outfit, so rules that depend on area give no conclusion.
+- which_white_suits_unknown — which white suits her, optical or cream, cannot be seen from this photo; she can say what looks better near her face.
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- wear_cost_no_duration_surface — the code does not count the wearing cost for the feet: it is unknown how many hours and on what she will walk.
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- photo_shared_by_other_products — the photo the code measured the item on stands on several other products of this shop, so the measurement may belong to another item (values: count — on how many products; items — items: slot — slot code, shop — the shop, unknown — what the code does not know about it: colour, cut, length, fabric, pattern, shine).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_code_unknown", "заяви": [{"code": "photo_shared_by_other_products", "values": {"count": 153, "items": [{"slot": "shoes", "shop": "giardini-shoes.com", "unknown": ["cut", "length", "pattern"]}]}}]},
+{"н": 2, "вид": "card_code_unknown", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Лофери замшеві білі", "lang": "uk"}}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 3, "вид": "card_code_unknown", "заяви": [{"code": "areas_not_measured"}, {"code": "cannot_tell_lightness_structure"}]},
+{"н": 4, "вид": "card_code_unknown", "заяви": [{"code": "which_white_suits_unknown"}]},
+{"н": 5, "вид": "card_code_unknown", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "set", "range": "XXS–XXXL"}]}}]},
+{"н": 6, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "bag", "colour": "зелений"}, {"slot": "shoes", "colour": "білий"}]}}, {"code": "cannot_tell_items_intensity_match"}]},
+{"н": 7, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "bag", "colour": "зелений"}]}}, {"code": "cannot_tell_item_holds_scheme_hue"}]},
+{"н": 8, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "bag", "colour": "зелений"}, {"slot": "shoes", "colour": "білий"}]}}, {"code": "cannot_tell_look_contrast_matches_hers"}]},
+{"н": 9, "вид": "card_code_unknown", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Жіноча сумка замшева через плече зелена", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
+{"н": 10, "вид": "card_code_unknown", "заяви": [{"code": "calf_girth_not_measured"}]},
+{"н": 11, "вид": "card_code_unknown", "заяви": [{"code": "leg_proportion_template_crotch"}]},
+{"н": 12, "вид": "card_code_unknown", "заяви": [{"code": "wear_cost_no_duration_surface"}]},
+{"н": 13, "вид": "card_code_unknown", "заяви": [{"code": "items_register_unknown", "values": {"count": 2}}]},
+{"н": 14, "вид": "card_code_unknown", "заяви": [{"code": "no_input_hand_finger_neck_sizes"}]},
+{"н": 15, "вид": "card_code_unknown", "заяви": [{"code": "no_input_frame_size"}]}
+]
+
+── ВІДПОВІДЬ (2107 симв., 24.0 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю, чи належить вимірювання цього взуття до іншого товару з магазину giardini-shoes.com: воно використовується на 153 інших продуктах і я не можу визначити його крій, довжину та візерунок.",
+  "2": "Я не знаю твій розмір ноги, тому не перевірила чи підійдуть ці білі замшеві лофери. Також на картці взуття немає інформації про довжину устілки.",
+  "3": "Не можу визначити структуру світла й тіні цього образу та скільки місця займають його елементи, бо не вимірювала площу кожного предмета одягу.",
+  "4": "Я не знаю, який білий колір тобі личить більше — оптичний чи кремовий. Ти можеш подивитися на себе у дзеркало та вирішити сама.",
+  "5": "Набір доступний від XXS до XXXL, але я не можу сказати, як він сидітиме на твоїй фігурі без вимірювань одягу.",
+  "6": "Я знаю лише колір сумки та взуття з назви магазину: сумка зелена, а взуття біле. Я також не можу сказати, чи достатньо насичені кольори цього образу для тебе.",
+  "7": "Зелений колір сумки — це просто слово з магазину, тому я не знаю, чи відповідає він обраній палітрі відтінків.",
+  "8": "Я не можу сказати, чи контрастність цього образу підходить саме тобі. Я бачу лише кольори на фотографії.",
+  "9": "Ти ще не вирішила, як носитимеш цю зелену замшеву сумку через плече: в руці, на плечі чи через тіло. Від способу носіння залежать правила для цього предмета одягу.",
+  "10": "Я не знаю обхват твоєї литки, тому не можу сказати, як край взуття та поділ штанів ляжуть по твоїй гомілці.",
+  "11": "Не враховую пропорції тулуба до ніг: висота паху взята з шаблону, а не з твоїх вимірювань. Щоб це виправити, потрібно зробити одне вимірювання.",
+  "12": "Я не можу порахувати вартість носіння взуття на ногах, бо не знаю, скільки годин ти будеш ходити та по якій поверхні.",
+  "13": "Два предмети одягу я не змогла визначити за стилем: їх картки не містять потрібних слів.",
+  "14": "Я не перевіряла розміри рукавичок, кілець і чокерів на твоїй руці та шиї. У мене немає вимірювань долоні, пальців чи шиї.",
+  "15": "У каталозі немає окулярів, тому я не можу перевірити, чи підійде розмір оправи твоєму обличчю."
+}
+```
