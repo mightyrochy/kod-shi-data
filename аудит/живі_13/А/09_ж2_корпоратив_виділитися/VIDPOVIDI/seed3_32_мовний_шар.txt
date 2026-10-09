@@ -1,0 +1,30 @@
+── ПРОМПТ (3715 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This is a tailored graphite blazer with a structured lapel and a subtle houndstooth texture, offering a sophisticated silhouette that balances the softness of your dress underneath.\nThe olive green wrap dress features voluminous puffed sleeves with ruffled cuffs, a V-neckline, and a gathered waist that creates a flattering A-line silhouette falling to the mid-calf.\nThese are pointed-toe pumps in brown suede, featuring a distinctive curved stiletto heel and a sleek strap detail across the vamp for an elegant profile.\nThis wide headband is upholstered in pale fabric and densely encrusted with multi-faceted crystals in shades of emerald, lime, gold, and iridescent hues for maximum shine.\nA cross-body bag with a rich mustard yellow canvas strap and flap, accented by body and floral motifs in green, red, and cream woven into the front panel.\nYou are wearing a graphite blazer layered over an olive green wrap dress with puffed sleeves. The brown suede pumps offer a tonal, grounded finish that connects to your skin and hair, while the mustard bag adds a warm pop of color near the hand. To finish the look, the statement headband with its cluster of emerald, gold, and amber stones brings a celebratory sparkle without feeling overwhelming against the softer tones of your outfit."},
+{"н": 2, "текст": "Start by letting the blazer fall naturally, but if you find it feels too structured for the evening's relaxed vibe, simply slip it off and let the wrap dress breathe on its own."},
+{"н": 3, "текст": "If you want to play with the boldness of your accessories, you can tuck the headband in at a side angle to create an asymmetrical focal point."},
+{"н": 4, "текст": "Сумка Гірчична — The occasion (high-end restaurant, cocktail dress code) and her goal to stand out require an accessory; she currently has no bag in this look."},
+{"н": 5, "текст": "LeBERDES Туфлі коричневі — Suede dress shoes add a soft texture to the formal ensemble, keeping the tone elevated but comfortable for seated dining."}
+]
+
+── ВІДПОВІДЬ (1972 симв., 125.8 с, HTTP 200) ──
+```json
+{
+  "1": "Це приталений графітовий блейзер з чітким лацканом і ледь помітним візерунком гусячої лапки, що створює вишуканий силует, який гармонійно поєднується з ніжністю вашої сукні під ним.\nОливкова обтична сукня має пишні рукави-ліхтарики з воланами на манжетах, V-подібний виріз і зібрану талію, що формує привабливий силует трапеції до середини литки.\nЦе туфлі-човники на шпильці коричневого кольору із замші, з виразною заокругленою підбором і елегантною деталлю ремінця через носок для стильного вигляду.\nЦей широкий обруч оздоблений світлою тканиною та рясно прикрашений багатогранними кристалами відтінків смарагдового, лаймового, золотого й райдужних тонів для максимального блиску.\nСумка на плече з ремінцем і клапаном насичено-гірчичного кольору, оздоблена вишивкою у вигляді тіла та квіткових мотивів зеленого, червоного й кремового кольорів, вплетених у передню панель.\nВи одягли графітовий блейзер поверх оливкової обтичної сукні з рукавами-ліхтариками. Коричневі туфлі із замші створюють тональний і стриманий фінал, що гармонує зі шкірою та волоссям, а гірчична сумка додає теплий колір біля руки. Щоб завершити образ, обруч з пучком смарагдових, золотих й бурштинових каменів приносить святковий блиск без надмірності на тлі м’яких тонів вашого вбрання.",
+  "2": "Почніть із того, щоб дозволити блейзеру вільно спадати, але якщо ви відчуваєте, що він занадто структурований для невимушеної атмосфери вечора, просто зніміть його та дайте обтичній сукні дихати самостійно.",
+  "3": "Якщо хочете підкреслити сміливість аксесуарів, можете прибрати обруч набік, щоб створити асиметричний акцентний елемент.",
+  "4": "Сумка Гірчична — Подія (вишуканий ресторан, коктейльний дрес-код) та її бажання виділитися потребують аксесуар; зараз у неї немає сумки в цьому образі.",
+  "5": "LeBERDES Туфлі коричневі — Замшеве взуття на підборах додає м’яку текстуру до формального ансамблю, зберігаючи тон вишуканим і комфортним для сидіння за столом."
+}
+```
