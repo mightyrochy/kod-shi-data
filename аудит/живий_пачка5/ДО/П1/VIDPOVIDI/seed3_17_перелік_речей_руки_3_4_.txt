@@ -1,0 +1,34 @@
+── ПРОМПТ (1882 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black velvet column gown reaching mid-calf, floor-length sheath cut, deep obsidian hex #1a1a1a, rich crushed velvet fabric.\nSilver strappy evening sandals with a sleek block heel, ankle-grazing length, cool metallic silver hex #c0c0c0, polished leather and crystal-embellished sole.\nGold drop earrings featuring geometric filigree, medium drop length, bright antique gold hex #d4af37, lightweight gilded metal; a slender pearl choker necklace with a single freshwater pearl pendant, tight collarbone length, classic white hex #f8f8f8, lustrous cultured pearl and 18k vermeil setting.\nThis ensemble transitions perfectly from the afternoon arrival to the evening performance, offering the dramatic elegance of velvet under theater lighting while maintaining comfort for a standing show. The cool silver footwear complements the dark dress without competing for attention, allowing the rich texture of the gown to remain the focal point. Delicate gold accessories add a touch of refined luxury appropriate for the formal setting without overwhelming the silhouette."}
+
+── ВІДПОВІДЬ (948 симв., 321.1 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Column Gown",
+        "details": "Floor-length sheath cut made of rich crushed velvet fabric",
+        "slot": "dress",
+        "color_hex": "#1a1a1a"
+      },
+      {
+        "name": "Evening Sandals",
+        "details": "Strappy design with a sleek block heel and ankle-grazing length, featuring a polished leather upper and crystal-embellished sole",
+        "slot": "shoes",
+        "color_hex": "#c0c0c0"
+      },
+      {
+        "name": "Drop Earrings",
+        "details": "Geometric filigree design with medium drop length made of lightweight gilded metal",
+        "slot": "earrings",
+        "color_hex": "#d4af37"
+      },
+      {
+        "name": "Pearl Choker Necklace",
+        "details": "Tight collarbone-length necklace featuring a single freshwater pearl pendant in an 18k vermeil setting",
+        "slot": "collar_necklace",
+        "color_hex": "#f8f8f8"
+      }
+    ]
+  }
+}

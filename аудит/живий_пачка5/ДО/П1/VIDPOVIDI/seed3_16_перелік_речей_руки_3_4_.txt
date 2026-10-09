@@ -1,0 +1,32 @@
+── ПРОМПТ (1845 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet blazer with a structured, slightly cropped cut that hits at the hip, in deep emerald green (#05363f), woven from heavy-weight silk faille to hold its shape. High-waisted wide-leg trousers featuring a fluid drape and ankle-length hem, in charcoal slate (#2f3438), crafted from stretch wool crepe for movement and comfort. Pointed-toe stiletto pumps with a sleek silhouette, in polished black leather (#000000), sized for a comfortable stride. A delicate pendant necklace in silver-toned metal (#c0c0c0) to catch the stage lights without overpowering. This outfit works because the rich emerald velvet adds a touch of classic theatre glamour while the dark trousers provide a modern, sleek contrast suitable for an evening performance. The structured blazer balances the fluidity of the wide legs, creating a silhouette that feels both elegant and grounded on stage. The monochromatic base with the jewel-tone accent ensures she remains a focal point under dramatic lighting without feeling out of place in the formal venue."}
+
+── ВІДПОВІДЬ (737 симв., 318.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured, slightly cropped cut hitting at the hip, heavy-weight silk faille fabric",
+      "slot": "outerwear",
+      "color_hex": "#05363f"
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg with fluid drape and ankle-length hem, stretch wool crepe fabric",
+      "slot": "bottom",
+      "color_hex": "#2f3438"
+    },
+    {
+      "name": "pumps",
+      "details": "pointed-toe stiletto with sleek silhouette, polished leather",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "necklace",
+      "details": "delicate pendant in silver-toned metal",
+      "slot": "jewelry",
+      "color_hex": "#c0c0c0"
+    }
+  ]
+}
