@@ -1,0 +1,26 @@
+── ПРОМПТ (1620 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silky cowl-neck gown with fluid bias-cut draping at mid-thigh length, deep indigo (#0F1E3B), liquid crepe.  \nHeeled sandals with a stiletto and thin ankle strap in polished gunmetal metallic leather (#2C2F35).  \nPearl drop earrings with 8mm baroque pearls and gold vermeil hooks, hex code #FFD700 for the metal accent.  \n\nThis outfit balances theatrical drama with refined evening elegance, perfectly suited for a performance at the theater where subtle movement is highlighted by the fluid fabric's bias cut. The deep indigo hue grounds the look against her warm skin tones while the metallic shoes add a sharp, modern edge to the classic silhouette. As a single-shoulder design, it complements the occasion without overwhelming the body, allowing your natural shape to shine under the stage lights."}
+
+── ВІДПОВІДЬ (549 симв., 183.6 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "cowl-neck gown",
+      "details": "Silky bias-cut draping at mid-thigh length with fluid movement",
+      "slot": "dress",
+      "color_hex": "#0F1E3B"
+    },
+    {
+      "name": "heeled sandals",
+      "details": "Stiletto heel with thin ankle strap in polished metallic leather",
+      "slot": "shoes",
+      "color_hex": "#2C2F35"
+    },
+    {
+      "name": "pearl drop earrings",
+      "details": "8mm baroque pearls with gold vermeil hooks",
+      "slot": "earrings",
+      "color_hex": "#FFD700"
+    }
+  ]
+}

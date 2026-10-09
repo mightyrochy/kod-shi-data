@@ -1,0 +1,23 @@
+── ПРОМПТ (3436 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Your base is a sleeveless black dress with a fitted bodice that flares at the waist into a peplum, resting above an A-line skirt that ends at the knee. Over it, you wear a floor-length black coat with long sleeves and a clean, open front, providing warmth and structure for your evening out. On your feet are white leather slip-ons featuring all-over perforations for breathability and sleek metal eyelets that catch the light. You carry a slouchy brown leather hobo bag with a wide top opening and a sturdy handle to hold your essentials comfortably. To finish the look, you wear silver huggies holding large, irregular white pearls that add softness and shine, paired with an open gold ring displaying a tiny pearl and a dark onyx stone for contrast."},
+{"н": 2, "текст": "The sheer black dress looks dramatic enough to stand on its own against the artificial theatre light without feeling too revealing."},
+{"н": 3, "текст": "Жіноча сумка Welfare — Added to resolve the 'no_bag' blocker; the occasion (evening performance) requires a handbag, and this ginger bag complements the loafers in outfit o1 while providing the missing accessory slot here."},
+{"н": 4, "текст": "Приталена сукня з вовни та шовку — The dress is black but functions as the monochromatic base; its 'dress_generic' type ensures fit via trying on, not measurement."},
+{"н": 5, "текст": "Сережки \"Pure\" — Earrings anchor the face and provide a secondary metal echo, balancing the single ring accent."},
+{"н": 6, "текст": "Літні туфлі, ATTICO, шкіра, колір білий — The outfit lacked shoes (#77·30 dress + #284·01 jacket). Added #6·02 (Літні туфлі, white) from showcase to satisfy the 'no_shoes' blocker. White provides a clean contrast for the evening performance."}
+]
+
+── ВІДПОВІДЬ (841 симв., 35.3 с, HTTP 200) ──
+```json
+{
+  "н": 1,
+  "текст": "Твоя основа — це безрукавне чорне плаття з приталеним верхом, який розширюється на талії в пеплум, що лежить над спідницею-трапецією довжиною до коліна. Зверху ти одягнена у підлогу чорний пальта з довгими рукавами і чистим, відкритим передом, яке дарує тепло й структуру для твого вечірнього виходу. На ногах — білі шкіряні сліпони з перфорацією по всій поверхні для повітропроникності та елегантними металевими люверсами, що ловлять світло. Ти тримаєш у руках мішкувату коричневу сумку-хобо зі шкіри з широким верхом і зручною ручкою, щоб комфортно носити свої необхідні речі. Щоб завершити образ, ти одягла срібні сережки-конго з великими нерівними білими перлами, які додають м’якості та блиску, у поєднанні з відкритим золотим кільцем із маленькою перловою вставкою і темним оніксом для контрасту."
+}
+```

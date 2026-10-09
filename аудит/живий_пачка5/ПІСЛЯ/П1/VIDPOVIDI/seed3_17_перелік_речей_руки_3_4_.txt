@@ -1,0 +1,32 @@
+── ПРОМПТ (1758 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green velvet blazer with a single-button closure and notched lapels in a structured tailoring fit.\nHigh-waisted wide-leg wool trousers that fall straight to the ankle crease in a deep forest green shade (#043927).\nHeeled slingback pumps featuring a 75mm stiletto heel and a pointed toe finished in glossy black patent leather (#000000).\nA pair of diamond-encrusted drop earrings with silver settings that catch the stage lights.\n\nThis ensemble transforms an ordinary evening into a commanding theatrical experience, perfectly balancing elegance with dramatic flair suitable for a performance venue. The rich emerald tone of the blazer mirrors the forest green trousers to create a sophisticated monochromatic base that elongates the silhouette without feeling restrictive. Strategic use of black accessories grounds the vibrant color palette while the diamond earrings add the necessary sparkle expected at an 8 PM theater event."}
+
+── ВІДПОВІДЬ (774 симв., 185.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "single-button closure with notched lapels in a structured tailoring fit",
+      "slot": "outerwear",
+      "color_hex": "#043927"
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg that fall straight to the ankle crease in deep forest green shade",
+      "slot": "bottom",
+      "color_hex": "#043927"
+    },
+    {
+      "name": "pumps",
+      "details": "heeled slingback featuring a 75mm stiletto heel and a pointed toe finished in glossy patent leather",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "earrings",
+      "details": "diamond-encrusted drop earrings with silver settings",
+      "slot": "earrings",
+      "color_hex": null
+    }
+  ]
+}
