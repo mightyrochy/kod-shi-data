@@ -34,14 +34,14 @@ const пост = (тіло) => new Promise(рез => {
 /* слот кожного номера — з пулу самого промпта: інакше «взуття+сумка» довелось би вгадувати з назви */
 function слотиПулу(промпт){
   const м = {}; let об = null; try { об = JSON.parse(промпт); } catch (_) { return м; }
-  for (const [слот, речі] of Object.entries(об.пул || {})) for (const р of речі || []) м[р.н] = слот;
+  for (const [слот, речі] of Object.entries(об.пул || об.pool || {})) for (const р of речі || []) м[р.н || р.n] = слот;
   return м;
 }
 /* назви пулу — щоб повтор називався річчю, а не номером (питання власника про
    скаргу тестувальниці «Ір»: «одні й ті самі кеди 3+ разів») */
 function назвиПулу(промпт){
   const м = {}; let об = null; try { об = JSON.parse(промпт); } catch (_) { return м; }
-  for (const речі of Object.values(об.пул || {})) for (const р of речі || []) м[р.н] = р.назва || '';
+  for (const речі of Object.values(об.пул || об.pool || {})) for (const р of речі || []) м[р.н || р.n] = р.назва || р.name || '';
   return м;
 }
 (async () => {
