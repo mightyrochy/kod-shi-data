@@ -242,8 +242,13 @@ def _вітрина_ремонту(образи, кандидати, скіль�
     # МЕЖА ЛИШАЄТЬСЯ ТА САМА, що стерегла композитор: ламати можна лише далеко від
     # обличчя. Верх, сукня й верхній шар не пропонуються ніколи — там колір біля
     # обличчя вирішує (K-CLR-02), і розрив коштував би головного правила системи.
+    # ТОЙ САМИЙ ПОРІГ, ЩО В КОМПОЗИТОРІ (рядок 945): доти тут відсікались лише чотири імена,
+    # і вузол «пояс» (0.2), «шарф» чи «сережки» (1.0) — колір біля обличчя за `NEAR_МІН`
+    # K-CLR-02 — ставав слотом розриву. Тепер далеко = вага `SLOT_NEAR_FALLBACK` < `NEAR_МІН`.
+    import колір_річ as _КР
     _далеко = [(с, n) for с, n in вузли.most_common()
-               if с not in ("верх", "сукня", "комплект", "верхній_шар")]
+               if с not in ("верх", "сукня", "комплект", "верхній_шар")
+               and _КР.SLOT_NEAR_FALLBACK.get(с, 1.0) < _КР.NEAR_МІН]
     if _далеко:
         # слот — вузол напруги в найбільшій кількості образів і далеко від обличчя, тож
         # колірні правила біля обличчя тут не діють; оголошений розрив судиться мʼякше
@@ -593,6 +598,8 @@ def промпт_вибору(образи, випадок=None, без_фото
                  як="they say more than the code"),
         _ЗП.Поле("case.intent_quote", "her own words behind «intent»",
                  як="they say more than the code"),
+        _ЗП.Поле("case.goal_zones", "with goal conceal: the body zones she wants to draw the eye away from",
+                 як="the goal is about these zones only, not about the whole look"),
         _ЗП.Поле("case.her_words", "what she asked for in her own words"),
         _ЗП.Поле("case.her_other_words", "the rest of what she said, which no field of «case» carries",
                  як="it is part of her case"),

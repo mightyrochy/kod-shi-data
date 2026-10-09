@@ -113,7 +113,7 @@ _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "
 _ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
                  "тривалість_год": "duration_h", "рух": "movement", "дрес_код": "dress_code",
                  "ошатність": "formality", "година": "start_hour", "темп_c": "temperature_c",
-                 "опади": "precipitation", "намір": "intent", "мета": "goal", "макіяж": "makeup",
+                 "опади": "precipitation", "намір": "intent", "мета": "goal", "мета_зони": "goal_zones", "макіяж": "makeup",
                  "прикраси": "jewelry", "реєстр_людини": "her_registers", "бажання": "wishes",
                  "вето": "refusals", "ноги_вище_см": "legs_shown_above_cm", "настрій": "mood",
                  "невідомо": "unknown", "вимоги_людини": "her_words",
@@ -140,7 +140,8 @@ def код(поле, v):
         return None
     if isinstance(v, str) and _ВМ.невідомо(v):
         return U
-    return _ВМ.код(поле, v) or _ВМ.код(поле, str(v).replace(" ", "_")) or v
+    # дефіс — та сама межа слова, що пробіл: реєстр речі «спорт-шик» проти ключа `спорт_шик` (рядок 1445)
+    return _ВМ.код(поле, v) or _ВМ.код(поле, str(v).replace(" ", "_").replace("-", "_")) or v
 
 
 def _з(мапа, v):
@@ -631,6 +632,8 @@ def випадок(в, день=None):
             v = код("precipitation", v)
         elif к == "мета":
             v = код("goal", v)
+        elif к == "мета_зони":
+            v = [код("goal_zone", x) for x in v]
         elif к == "прикраси":
             v = код("jewelry", v)
         elif к == "намір":
