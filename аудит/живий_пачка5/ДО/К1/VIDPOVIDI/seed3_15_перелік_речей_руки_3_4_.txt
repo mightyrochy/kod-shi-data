@@ -1,0 +1,32 @@
+── ПРОМПТ (1676 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green velvet midi skirt, A-line cut falling mid-calf, #50C878 fabric.\nCream silk camisole blouse, relaxed bodice with a subtle wrap front, #FDF5E6 fabric.\nSilver metallic pointed-toe pumps, sleek silhouette reaching mid-calf height, #C0C0C0 fabric.\nPearl drop earrings and a delicate gold chain necklace, classic shapes with soft luster, mixed metals and cultured pearl materials.\nThis ensemble strikes the perfect balance between festive celebration and refined dinner etiquette suitable for a local restaurant setting at 8:00 PM. The emerald green velvet provides a rich, celebratory texture that stands out against the creamy silk while remaining elegant enough for a sacred occasion like a feast day. Metallic shoes add a touch of sparkle appropriate for evening events without overpowering the sophisticated silhouette of the skirt and blouse."}
+
+── ВІДПОВІДЬ (771 симв., 218.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Midi skirt",
+      "details": "A-line cut, velvet fabric, emerald green color",
+      "slot": "bottom",
+      "color_hex": "#50C878"
+    },
+    {
+      "name": "Camisole blouse",
+      "details": "Relaxed bodice with subtle wrap front, silk fabric, cream color",
+      "slot": "top",
+      "color_hex": "#FDF5E6"
+    },
+    {
+      "name": "Pointed-toe pumps",
+      "details": "Sleek silhouette reaching mid-calf height, metallic fabric, silver color",
+      "slot": "shoes",
+      "color_hex": "#C0C0C0"
+    },
+    {
+      "name": "Pearl drop earrings and gold chain necklace",
+      "details": "Classic shapes with soft luster, mixed metals and cultured pearl materials",
+      "slot": "jewelry",
+      "color_hex": null
+    }
+  ]
+}
