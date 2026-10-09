@@ -10,6 +10,7 @@ import ast, sys, collections as K; sys.path.insert(0, "."); import status, verif
 ЛЕКС = set(V.ЛЕКСИКОН) | set(V.ФОРМИ.values())
 ОСНОВИ = tuple(V.ФОРМИ)
 ПОЛЯ = {"колір_назва", "колір_ім", "колір_назва_фото", "колір_назва_крамниці", "слово", "колір_слово"}
+КОШИК_А = ("внутрішня_мова",)   # коди → ядро: вже внутрішня мова, слів не читає (п.12) — не рахувати
 МЕЖА = ("фід", "feed", "verify", "жнива", "каталог", "чистка", "звірка", "таблиця_каталогу", "річ_з_фото")
 ЗАКІНЧЕННЯ = ("", "ий", "ій", "а", "я", "е", "є", "і", "ого", "ої", "им", "их", "ові")
 def слово_кольору(s):   # слово лексикону чи його форма: основа `ФОРМИ` + закінчення прикметника
@@ -22,6 +23,7 @@ for м in sorted(status.МОДУЛІ_ПРОДУКТУ):
     except OSError: continue
     докс = {id(в.body[0].value) for в in ast.walk(дерево) if isinstance(в, (ast.Module, ast.FunctionDef, ast.ClassDef))
             and в.body and isinstance(в.body[0], ast.Expr) and isinstance(в.body[0].value, ast.Constant)}
+    if м.startswith(КОШИК_А): continue
     бік = "межа" if м.startswith(МЕЖА) else "правила й показ"
     for в in ast.walk(дерево):
         if isinstance(в, ast.Constant) and isinstance(в.value, str) and id(в) not in докс and слово_кольору(в.value):
