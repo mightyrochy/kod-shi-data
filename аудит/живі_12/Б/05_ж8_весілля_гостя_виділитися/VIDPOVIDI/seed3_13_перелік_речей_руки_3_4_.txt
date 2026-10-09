@@ -1,0 +1,29 @@
+── ПРОМПТ (1939 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green velvet midi dress, A-line silhouette, floor-length hemline, deep emerald hue (#054f2f), plush woven fabric.\nStrappy open-toe heels, pointed toe design, ankle height, bright cobalt blue shade (#0047ab), smooth leather material.\nGold geometric pendant necklace and drop earrings, medium link chain length, polished brass finish (#D4AF37), solid metal construction.\n\nThis striking combination works because the deep emerald velvet immediately grabs attention while the A-line cut provides the comfort and freedom of movement she values most. The unexpected pop of cobalt blue on the heels adds a playful, bold twist that ensures the wearer stands out against a typical wedding guest ensemble. Finally, the gold jewelry ties the rich colors together with a touch of elegance, perfectly fulfilling her goal to be memorable without sacrificing ease."}
+
+── ВІДПОВІДЬ (665 симв., 297.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "velvet midi dress",
+      "details": "A-line silhouette, floor-length hemline, plush woven fabric",
+      "slot": "dress",
+      "color_hex": "#054f2f",
+      "worn": true
+    },
+    {
+      "name": "strappy open-toe heels",
+      "details": "pointed toe design, ankle height, smooth leather material",
+      "slot": "shoes",
+      "color_hex": "#0047ab",
+      "worn": true
+    },
+    {
+      "name": "geometric pendant necklace and drop earrings",
+      "details": "medium link chain length, solid metal construction, polished brass finish",
+      "slot": "jewelry",
+      "color_hex": "#D4AF37",
+      "worn": true
+    }
+  ]
+}
