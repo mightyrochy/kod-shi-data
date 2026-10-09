@@ -275,7 +275,7 @@ def _кандидати(т):
     образів замість обʼєкта з полем `образи`) перетворювалась у ПЕРШИЙ образ, а
     решта девʼять зникали без жодного слова. Це рівно та тиха втрата, проти якої
     цей модуль і написаний. Тепер масив розбирається цілим і дістає імʼя
-    («JSON, але не обʼєкт»), а зріз лишається останньою спробою для відповіді,
+    (`json_not_object`), а зріз лишається останньою спробою для відповіді,
     обгорнутої прозою.
     """
     м = _У_ДУЖКАХ.search(т)
@@ -287,8 +287,21 @@ def _кандидати(т):
         yield т[a:b + 1]
 
 
+# Причини невдалого розбору — КОДИ, не фрази (п.12, кошик В): внутрішня мова, що не ламається від
+# локалізації. Споживачі — повторний виклик (`помилка_формату`, англійським дротом код розкладають
+# `_ПОМИЛКИ_EN`), `прийняти_розмову.причина` і звіт власника; слова для людини дає мовна модель.
+#   empty_answer · no_json_object[(prose)] · invalid_json(line=L,col=C) · json_not_object(<тип>)
+КОД_ТИПУ = {str: "string", bool: "boolean", int: "integer", float: "number",
+             list: "list", tuple: "list", type(None): "null"}
+
+
+def причина_не_json(е):
+    """`json.JSONDecodeError` → `invalid_json(line=L,col=C)`: місце обриву числами, без слів бібліотеки."""
+    return "invalid_json(line=%d,col=%d)" % (е.lineno, е.colno)
+
+
 def розбір(текст):
-    """→ (обʼєкт, причина). Одна з двох завжди None.
+    """→ (обʼєкт, причина-код). Одна з двох завжди None.
 
     ЧОМУ ПРИЧИНА, А НЕ ЛИШЕ ПРОВАЛ. Це той самий урок, що вже полагоджено в
     `pipeline.паспорт_з_json` (Т-09, 11.09.2026): невдалий розбір без назви
@@ -300,11 +313,11 @@ def розбір(текст):
     """
     т = str(текст or "").strip()
     if not т:
-        return None, "порожня відповідь"
-    # ПРОЗА ЗАМІСТЬ JSON — найчастіший провал, і він має зватись своїм імʼям, а не
+        return None, "empty_answer"
+    # ПРОЗА ЗАМІСТЬ JSON — найчастіший провал, і він має зватись своїм кодом, а не
     # «Expecting value: line 1 column 1» від розбирача.
     if "{" not in т and not т.startswith("["):
-        return None, "у відповіді нема JSON-обʼєкта (проза без дужок)"
+        return None, "no_json_object(prose)"
     причина = None
     for сир in _кандидати(т):
         # ЛОВИМО ValueError, А НЕ Exception. `json.JSONDecodeError` — підклас
@@ -315,12 +328,13 @@ def розбір(текст):
         try:
             об = _json_.loads(сир)
         except ValueError as e:
-            причина = причина or "не JSON (%s)" % str(e)[:60]
+            причина = причина or (причина_не_json(e) if isinstance(e, _json_.JSONDecodeError)
+                                  else "invalid_json")
             continue
         if isinstance(об, dict):
             return об, None
-        return None, "JSON, але не обʼєкт (%s)" % _як_звати(об)
-    return None, причина or "у відповіді нема JSON-обʼєкта"
+        return None, "json_not_object(%s)" % КОД_ТИПУ.get(type(об), type(об).__name__)
+    return None, причина or "no_json_object"
 
 
 def розібрати_json(текст):
@@ -1820,10 +1834,11 @@ _ПОМИЛКИ_EN = (
     (r"^у списку (\d+), а більше за (\d+) не можна$", lambda м: "the list has %s, at most %s allowed" % м.groups()),
     (r"^ключ «(.+)» не рядок$", lambda м: "key «%s» is not a string" % м.group(1)),
     (r"^ключа нема, а він обовʼязковий$|^обовʼязковий$", lambda м: "a required key is missing"),
-    (r"^порожня відповідь$", lambda м: "the answer is empty"),
-    (r"^у відповіді нема JSON-обʼєкта.*$", lambda м: "the answer has no JSON object"),
-    (r"^не JSON \((.*)\)$", lambda м: "not JSON (%s)" % м.group(1)),
-    (r"^JSON, але не обʼєкт \((.+)\)$", lambda м: "JSON, but not an object (%s)" % _ТИПИ_EN.get(м.group(1), м.group(1))),
+    (r"^empty_answer$", lambda м: "the answer is empty"),
+    (r"^no_json_object.*$", lambda м: "the answer has no JSON object"),
+    (r"^invalid_json\(line=(\d+),col=(\d+)\)$", lambda м: "not JSON (line %s, column %s)" % м.groups()),
+    (r"^invalid_json$", lambda м: "not JSON"),
+    (r"^json_not_object\((.+)\)$", lambda м: "JSON, but not an object (%s)" % м.group(1)),
     (r"^відповідь переписала вхідний вердикт.*$",
      lambda м: "the answer copies the input verdict: that is the input, not the outfits of the answer"),
     (r"^несе поля суду коду.*$",

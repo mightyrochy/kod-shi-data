@@ -278,7 +278,8 @@ def _обʼєкти_злито(т):
 # в запис виклику й діагноз звіту власника. Тепер — коди, а після двокрапки лише сирі дані (текст помилки
 # розбору, числа): `input_form_read` — текст знайдено у вхідній формі {н, текст}/{n, text};
 # `invalid_escape_read` — недійсний екран «\н» прочитано як «\n»; `not_json: <чому>` — відповідь не JSON;
-# `not_json_object: <чому>` — не JSON-об'єкт; `texts_missing: N/M` — N текстів із M без відповіді;
+# `not_json_object: <чому>` — не JSON-об'єкт (`<чому>` — код `протокол.розбір`: `empty_answer`,
+# `no_json_object(prose)`, `invalid_json(line=L,col=C)`, `json_not_object(<тип>)`); `texts_missing: N/M` — N текстів із M без відповіді;
 # `no_text_field` — нема поля `text`; `text_unknown: <значення>` — `text` каже «невідомо».
 ФОРМА_ВХОДУ = "input_form_read"
 
