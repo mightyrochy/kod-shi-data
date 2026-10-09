@@ -1,0 +1,61 @@
+── ПРОМПТ (5132 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- palette_scheme_note — рядок про ОБРАНУ схему на екрані «Палітра»: що це за хід і коли він менш ходовий.
+- palette_default_scheme — рядок на екрані «Палітра» про схему й основу, які вона лишила стилістці, поки стилістка їх не обрала або не змогла обрати: за чим тоді збирається образ і скільки схем радить стилістка.
+
+КОДИ У ЗНАЧЕННЯХ:
+- medium — середній.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки.
+
+ЗАЯВИ:
+- scheme_tonal — one tone on all items, with small steps of lightness.
+- scheme_analogous — neighbouring hues of the colour wheel.
+- scheme_neutrals_accent — a neutral base and one flash of colour.
+- scheme_muted_complementary — two opposite colours.
+- scheme_triad — three colours on the large items, roughly equal.
+- tonal_needs_wide_range — take a wider range of lightness, from dark to light.
+- tonal_narrow_one_blot — a too narrow tonal scheme reads as one blot on her contrast.
+- analogous_needs_step — keep a visible step of lightness between neighbouring hues.
+- analogous_same_light_merges — at equal lightness neighbouring hues merge.
+- contrast_holds_stronger_accent — her contrast holds a more visible accent too — just not a loud one.
+- keep_one_side_muted — keep at least one of the sides muted.
+- two_clean_sides_argue — two clean sides argue with each other.
+- triad_three_families_limit — together with the metal of the jewellery this reaches the limit of three colour families, so the accessories can only repeat one of them.
+- contrast_mismatch — the outfit's contrast is deliberately not her own: the face stays in its window and the rest of the lightness ladder shifts; a "clothes in focus" move, not a "flatter the face" one, hence rarer.
+- contrast_mismatch_levels — the levels of this shift (values: look_level — the outfit's contrast, own_level — her own; codes low, medium, high).
+- rarer_than_everyday — this scheme is less of an everyday one.
+- stylist_will_choose — until she chooses, the stylist picks the scheme and base for her occasion.
+- schemes_advised_count — how many schemes the stylist advises for this outfit (values: count — a number).
+- rarer_schemes_count — how many schemes are rarer; they can be chosen too (values: count — a number).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "palette_default_scheme", "заяви": [{"code": "stylist_will_choose"}, {"code": "schemes_advised_count", "values": {"count": 4}}, {"code": "rarer_schemes_count", "values": {"count": 2}}]},
+{"н": 2, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_neutrals_accent"}, {"code": "contrast_holds_stronger_accent"}]},
+{"н": 3, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_tonal"}, {"code": "tonal_needs_wide_range"}, {"code": "tonal_narrow_one_blot"}]},
+{"н": 4, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_analogous"}, {"code": "analogous_needs_step"}, {"code": "analogous_same_light_merges"}]},
+{"н": 5, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_muted_complementary"}, {"code": "keep_one_side_muted"}, {"code": "two_clean_sides_argue"}]},
+{"н": 6, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_triad"}, {"code": "rarer_than_everyday"}, {"code": "triad_three_families_limit"}]},
+{"н": 7, "вид": "palette_scheme_note", "заяви": [{"code": "contrast_mismatch"}, {"code": "contrast_mismatch_levels", "values": {"look_level": "medium", "own_level": "medium"}}]}
+]
+
+── ВІДПОВІДЬ (1159 симв., 27.8 с, HTTP 200) ──
+```json
+{
+  "1": "Поки ти не обереш, я підберу схему та основу для твоєї нагоди. Я раджу тобі чотири варіанти, два з яких — менш поширені.",
+  "2": "Ця схема базується на нейтральній основі з яскравим акцентом і дозволяє образові мати сильніший контраст, ніж зазвичай у тебе.",
+  "3": "Тональна схема потребує ширшого діапазону світлості від темного до світлого. Занадто вузька тональна схема може виглядати як монотонний колір на твоєму контрасті.",
+  "4": "Аналогічна схема вимагає помітного переходу у світлоті між сусідніми кольорами, інакше вони можуть злитися при однаковій яскравості.",
+  "5": "Приглушена комплементарна схема потребує збереження хоча б однієї сторони в приглушених тонах. Два чистих боки можуть конфліктувати між собою.",
+  "6": "Ця тріадна схема — не надто звичний вибір, адже разом із металом ювелірних виробів вона досягає межі у три кольорові гами, тому аксесуари зможуть повторювати лише один із них.",
+  "7": "Контраст цього образу навмисно не відповідає твоєму звичайному: обличчя залишається в своїй зоні світлоті, а решта сходинки яскравості зміщуються. Це рішення робить акцент на одязі, а не підкреслює риси обличчя."
+}
+```
