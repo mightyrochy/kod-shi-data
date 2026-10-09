@@ -1,0 +1,50 @@
+── ПРОМПТ (2126 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cream wool-blend blazer in a structured single-breasted cut with notch lapels, length ending at the hip line, color #e2ba9f.\nPeach silk blouse with a relaxed fit and rounded neckline, cropped slightly above the waist, color #d8a98c.\nHigh-rise straight-leg trousers in soft linen blend, ankle length with a gentle taper, color #deb295.\nPolished leather pumps with a moderate heel and almond toe, classic silhouette, color #e2ba9f.\nGold-plated stud earrings and a minimalist chain necklace to add subtle everyday–neat polish.\n\nThis outfit works because the cream and peach palette harmonizes beautifully with her skin tones while maintaining a professional yet approachable vibe for the office. The mix of structured wool and fluid silk balances comfort and elegance, perfect for a long workday in warm weather. Subtle metallic accents like the gold jewelry add just enough shine to feel dressed up without being overwhelming. Every piece is tailored to flatter her specific proportions, creating a silhouette that looks polished and confident."}
+
+── ВІДПОВІДЬ (1170 симв., 291.0 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured single-breasted cut with notch lapels, hip length",
+      "slot": "outerwear",
+      "color_hex": "#e2ba9f",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed fit with rounded neckline and cropped length above the waist",
+      "slot": "top",
+      "color_hex": "#d8a98c",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-rise straight-leg ankle length with gentle taper in soft linen blend",
+      "slot": "bottom",
+      "color_hex": "#deb295",
+      "worn": true
+    },
+    {
+      "name": "shoes",
+      "details": "polished leather pumps with moderate heel and almond toe, classic silhouette",
+      "slot": "shoes",
+      "color_hex": "#e2ba9f",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "gold-plated studs for subtle everyday polish",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "minimalist chain to add subtle everyday polish",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
