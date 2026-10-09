@@ -158,7 +158,13 @@ def невідомо(v, коди=()):
     "part_of_day": {"morning": 9, "day": 13, "evening": 20, "night": 23},
     # Погода без числа → число, яке бере код (температура — вхід теплової функції й воріт
     # тканини, і доти це число вгадувала модель виклику 0).
-    "weather_feel": {"frost": -8.0, "cold": 2.0, "cool": 10.0, "warm": 20.0, "hot": 28.0},
+    # МОРОЗ — ВСЕРЕДИНІ СМУГИ «НИЖЧЕ −8 °C», НЕ НА ЇЇ КРАЮ (рядок 3451). Тут стояло −8,0 — нижня
+    # межа смуги «−8…+2» (`outfit.ТЕМП_МАПА`), тоді як усі правила морозу питають «< −8»
+    # (`суд_погода.ГЛИБОКИЙ_ХОЛОД_C`: гейт нетеплого верхнього шару, шапка й шарф; опора
+    # стилістці `brief` «frost_layers_and_cold_accessories»). Тож «мороз» без градусів судився як
+    # +1 °C: ЖИВІ-13 №8 (−15 °C, сніг; число загублене) — сукня + бомбер без шапки лише двома
+    # репліками. −10 — середина звичного «морозу» (−5…−15); градусів вона й далі не читає.
+    "weather_feel": {"frost": -10.0, "cold": 2.0, "cool": 10.0, "warm": 20.0, "hot": 28.0},
     "intent": {к: к for к in ("conventional", "statement", "comfort_first", "context_optimal")},
     # ── ЧЕТВЕРТА МЕТА: «ВИЩЕ» (28.09.2026, рішення власника «10 а», звіт Research П8) ──
     # Вертикаль — ОКРЕМА вісь від уваги: «щоб личило» / «не привертати» / «щоб дивились»
@@ -2135,7 +2141,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "frost_layers_and_cold_accessories": "hard frost: the layer map asks for this many layers on the torso — "
                                          "a warm layer under the coat counts — and a warm hat and scarf are "
                                          "part of the warmth and the main carriers of colour (values: "
-                                         "temperature_c — the temperature, layers — layers the map asks for)",
+                                         "temperature_c — the temperature, layers — layers the map asks for"
+                                         "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     # ДОЩ-1 (рядок 1470): K-WEA-01 — дощовий день, а верхнього шару від дощу в образі нема
     "no_rain_layer_on_rainy_day": "the day is rainy, and no outer layer of the look keeps the rain off — a "
                                   "trench, a raincoat, a parka, a puffer or a coat; an umbrella is not "
@@ -2826,7 +2833,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                       "the nearer the end of the period, the softer this limit",
     "cold_outer_layer_counts": "in this cold the outer layer is part of the outfit, not an addition: its colour "
                                "and formality are judged with the rest; open shoes, thin tights and bare ankles "
-                               "are a mistake here, not a style (values: temperature_c)",
+                               "are a mistake here, not a style (values: temperature_c"
+                               "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "precipitation_shoes_materials": "precipitation: closed shoes, no fabric soles, no suede or nubuck; "
                                      "materials afraid of water stay out of the outfit",
     "precipitation_water_shy_materials_with_condition": "precipitation: closed shoes, no fabric soles; suede, "
@@ -2859,7 +2867,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "high_occasion_floor": "the event's level starts from this step: no item sits "
                            "more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); "
                            "shoes at the outfit's level or above (values: from)",
-    "weather_layers": "the weather outside and the layers it asks for (values: temperature_c; layers — how many "
+    "weather_layers": "the weather outside and the layers it asks for (values: temperature_c"
+                      "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; layers — how many "
                       "layers on the torso, a half is one more light removable layer; fabrics — fabric codes "
                       "for this temperature; outer_at_formality — true when the outer layer is held to the "
                       "outfit's formality too)",
