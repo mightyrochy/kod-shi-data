@@ -68,7 +68,7 @@
 
 <div class="блок">
   <b>п6 · повний каталог</b>
-  <p>Тягне каталог_повний.xml з raw.githubusercontent (~10 МБ) і звіряє з 10 009 898 Б.</p>
+  <p>Тягне каталог_повний.xml з raw.githubusercontent (~10 МБ) і звіряє з content-length відповіді.</p>
   <button id="катал" class="друг">Тягнути повний каталог</button>
 </div>
 
@@ -88,7 +88,7 @@ const ПРОБИ = [
   {id:'п3_фрагмент',      назва:'Розпакування payload-фрагмента (gzip+base64url → картки)'},
   {id:'п4_сховище',       назва:'IndexedDB: лічильник відкриттів (персистентність origin)'},
   {id:'п5_фото_людини',   назва:'Фото людини через file input (локальний рендер)'},
-  {id:'п6_каталог',       назва:'Доставка каталог_повний.xml (10 009 898 Б)'},
+  {id:'п6_каталог',       назва:'Доставка каталог_повний.xml'},
 ];
 
 // Реальні SKU зі стенд-каталогу, три різні магазини.
@@ -104,7 +104,6 @@ const ЗРАЗКИ = [
 // Той самий payload, стиснутий заздалегідь (json 582 Б → 555 Б).
 const ФРАГМЕНТ_ЗРАЗОК = 'H4sIAKHBkmoC_22RzUrDQBSFXyXM2mRmkqat3QiiO1cKbkTKmIxppG1CfnQhhVaFuhDUTQUR9RG0WPtfX-HOG3mHLAR1M8w958zMd--cExiSGoEXeIZHuIMHc5-RNQJjeFcD1YUZvGn7C1Z6C2MTnRUs4QNDaI9UXw1I7eCcoIY2DIv8K4Y-YaRLQ_XUJR5eqlsDFhiaoTAwYIwL7i70LTBVfVPL6gKTEzQNDA6xWqku6jdahYUBX5ie4FVowEIjXGECC3yzkWVxWqM0bAVWIOM8sbyoReMk8nMvS6nrMsaoy3jFpmnYipuSuk6lEOq8zq2TONjglWqZVdd5tUw6a797uoc5NjLGjhBPXcMbol1pDt3WCuZI0scTE5gaXkMmvPI_X-FZx4nglue3LT8Mwkw0I0-KdhoLT6YFeH7UDL0f_pb0Q0EdxmyH2qZtOm7ZdB1uncmj-C_sjtzc3t3a3jPgqfg51dNzg8n_TMfiNErCTKaNqHjeygXN42YkfOoJTRdQu1TCAdolh3M94zpzsQscGukcdr4B6yLpj0YCAAA';
 
-const КАТАЛОГ_БАЙТ = 10009898;
 const КАТАЛОГ_URL = 'https://raw.githubusercontent.com/mightyrochy/kod-shi-data/main/' +
                     encodeURIComponent('каталог_повний.xml');
 
@@ -246,8 +245,10 @@ document.getElementById('катал').addEventListener('click', async ()=>{
     const б = (await r.arrayBuffer()).byteLength;
     clearTimeout(т);
     const с = ((performance.now()-п0)/1000).toFixed(1);
-    const звірка = б === КАТАЛОГ_БАЙТ ? 'ЗБІГ зі звіркою' : 'РОЗБІЖНІСТЬ проти 10 009 898 Б';
-    if (r.ok) звіт('п6_каталог','✓','ок','HTTP '+r.status+' · '+б+' Б за '+с+' с · '+звірка);
+    const заявлено = Number(r.headers.get('content-length'));
+    const збіг = Number.isFinite(заявлено) && заявлено === б;
+    const звірка = заявлено ? (збіг ? 'ЗБІГ із content-length' : 'РОЗБІЖНІСТЬ із content-length '+заявлено+' Б') : 'content-length відсутній';
+    if (r.ok) звіт('п6_каталог',збіг?'✓':'◐',збіг?'ок':'част','HTTP '+r.status+' · '+б+' Б за '+с+' с · '+звірка);
     else звіт('п6_каталог','◐','част','HTTP '+r.status+' · '+б+' Б');
   }catch(e){ clearTimeout(т); звіт('п6_каталог','✗','стіна', String(e).slice(0,140)); }
 });

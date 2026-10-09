@@ -293,12 +293,29 @@ const ПРОВАЙДЕРИ = [
           if (б.type === "image" && б.source && б.source.type === "url") блоки.push(б);
       }
       const тягнути = async б => {
+        const ctrl = new AbortController();
+        const таймер = setTimeout(() => ctrl.abort(), 20000);
         try {
-          const в = await fetch(б.source.url, {headers: {"accept": "image/*"}});
+          const в = await fetch(б.source.url, {headers: {"accept": "image/*"}, signal: ctrl.signal});
           const тип = (в.headers.get("content-type") || "").split(";")[0].trim();
           if (!в.ok || !тип_картинки(тип)) return null;
-          const байти = new Uint8Array(await в.arrayBuffer());
-          if (байти.length > СТЕЛЯ_ФОТО) return null;
+          const довжина = Number(в.headers.get("content-length"));
+          if (Number.isFinite(довжина) && довжина > СТЕЛЯ_ФОТО) {
+            await в.body?.cancel();
+            return null;
+          }
+          const читач = в.body?.getReader();
+          if (!читач) return null;
+          const шматки = []; let розмір = 0;
+          while (true) {
+            const {done, value} = await читач.read();
+            if (done) break;
+            розмір += value.byteLength;
+            if (розмір > СТЕЛЯ_ФОТО) { await читач.cancel(); return null; }
+            шматки.push(value);
+          }
+          const байти = new Uint8Array(розмір); let зсув = 0;
+          for (const шматок of шматки) { байти.set(шматок, зсув); зсув += шматок.byteLength; }
           /* СИГНАТУРА, НЕ ЗАГОЛОВОК (04.09.2026): content-type крамниці бреше, а
              Gemini на чужі байти відповідає 400 «Unable to process input image»
              і валить увесь виклик. GIF Gemini не приймає взагалі; < 1 КБ — заглушка. */
@@ -306,8 +323,16 @@ const ПРОВАЙДЕРИ = [
           if (!справжній || байти.length < 1024) return null;
           return {б, тип: справжній, байти};
         } catch (_) { return null; }
+        finally { clearTimeout(таймер); }
       };
-      const здобуті = await Promise.all(блоки.map(тягнути));
+      const здобуті = new Array(блоки.length);
+      let наступний = 0;
+      await Promise.all(Array.from({length: Math.min(4, блоки.length)}, async () => {
+        while (наступний < блоки.length) {
+          const i = наступний++;
+          здобуті[i] = await тягнути(блоки[i]);
+        }
+      }));
       let разом = 0;
       /* ФОТО-513: кадр, що не дійшов, ЛИШАЄ СВОЄ МІСЦЕ — текстом «not delivered». Доти він просто
          зникав із запиту, і модель, яка лічить зображення, віддавала наступній речі чужий кадр. */
@@ -567,11 +592,14 @@ export default {
       const ctrl = new AbortController();
       const таймер = setTimeout(() => ctrl.abort(), стеля_с * 1000);
       try {
-        return await fetch(пров.адреса(модель), {
+        const відповідь = await fetch(пров.адреса(модель), {
           method:"POST", headers:пров.шапка(ключ),
           body:JSON.stringify(пров.запит(Object.assign({}, тіло, {model: модель}))),
           signal: ctrl.signal,
         });
+        const тіло_байти = await відповідь.arrayBuffer();
+        return new Response(тіло_байти, {status: відповідь.status,
+          statusText: відповідь.statusText, headers: відповідь.headers});
       } catch (e) {
         // стеля часу або мережа — синтетична відповідь, щоб драбина йшла далі
         return new Response("міст: провайдер не відповів за " + стеля_с + " с (" + String(e).slice(0, 80) + ")",
