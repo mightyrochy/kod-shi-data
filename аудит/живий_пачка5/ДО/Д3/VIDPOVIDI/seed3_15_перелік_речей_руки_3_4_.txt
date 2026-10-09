@@ -1,0 +1,44 @@
+── ПРОМПТ (1742 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A sharp tailored wool blazer in Slate Blue (#3F5D7C) with a structured lapel and single-button closure, paired with wide-leg trousers in matching Midnight Navy (#1B263B) that hit just below the ankle; underneath, a crisp silk camisole blouse in Off-White (#F5F5F0), and on her feet, sleek pointed-toe pumps in glossy Black Leather (#000000). To complete the ensemble, she adds a minimalist gold hoop earring set and a structured leather tote bag in Dark Charcoal (#36454F) that balances professional polish with approachable warmth. This outfit works perfectly for her transition from a formal workday to an evening stroll, as the cool tones convey authority and sophistication while the soft fabrics and relaxed trouser silhouette ensure comfort during walks. The neutral base colors allow for easy coordination, making it a versatile choice that respects both the professional setting and her desire for effortless movement."}
+
+── ВІДПОВІДЬ (879 симв., 261.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "wool blazer",
+      "details": "sharp tailored structured lapel single-button closure",
+      "slot": "outerwear",
+      "color_hex": "#3F5D7C"
+    },
+    {
+      "name": "wide-leg trousers",
+      "details": "matching hitting just below the ankle",
+      "slot": "bottom",
+      "color_hex": "#1B263B"
+    },
+    {
+      "name": "silk camisole blouse",
+      "details": "crisp",
+      "slot": "top",
+      "color_hex": "#F5F5F0"
+    },
+    {
+      "name": "pumps",
+      "details": "sleek pointed-toe glossy leather",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "earring set",
+      "details": "minimalist gold hoop",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "tote bag",
+      "details": "structured leather",
+      "slot": "bag",
+      "color_hex": "#36454F"
+    }
+  ]
+}

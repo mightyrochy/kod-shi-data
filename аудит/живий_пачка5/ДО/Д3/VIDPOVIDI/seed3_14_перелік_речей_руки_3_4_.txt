@@ -1,0 +1,44 @@
+── ПРОМПТ (1861 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer in midnight blue, sharp cut with notched lapels, hip length, cotton gabardine\nSilk blouse in ivory, relaxed collar and dropped shoulders, midi length, soft woven silk\nTailored trousers in charcoal grey, straight leg, ankle length, heavy wool crepe\nLeather loafers in chestnut brown, classic cap-toe design, medium heel, smooth calfskin\nGold geometric pendant necklace and thin hoop earrings in polished brass\n\nThis outfit strikes a sophisticated balance between professional readiness and personal ease for her workday stroll. The cool tones of the navy blazer and grey trousers create an authoritative silhouette that commands respect in an office setting without feeling rigid or stiff. Introducing the ivory silk blouse adds a necessary touch of softness and warmth, allowing the wearer to transition smoothly from meetings to a relaxed evening walk after hours. The chestnut loafers provide practical comfort for walking while maintaining an elevated aesthetic that complements both her skin undertones and hair color perfectly."}
+
+── ВІДПОВІДЬ (982 симв., 258.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "sharp cut with notched lapels, hip length, cotton gabardine",
+      "slot": "outerwear",
+      "color_hex": "#191970"
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed collar and dropped shoulders, midi length, soft woven silk",
+      "slot": "top",
+      "color_hex": "#FFFFF0"
+    },
+    {
+      "name": "trousers",
+      "details": "straight leg, ankle length, heavy wool crepe",
+      "slot": "bottom",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "loafers",
+      "details": "classic cap-toe design, medium heel, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#9D806E"
+    },
+    {
+      "name": "necklace",
+      "details": "gold geometric pendant in polished brass",
+      "slot": "jewelry",
+      "color_hex": "#FFD700"
+    },
+    {
+      "name": "earrings",
+      "details": "thin hoop in polished brass",
+      "slot": "earrings",
+      "color_hex": "#FFD700"
+    }
+  ]
+}
