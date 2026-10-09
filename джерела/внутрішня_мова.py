@@ -1079,15 +1079,18 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "code_swapped_item_from_stylist_look": "the named item was replaced with another one from the same "
                                            "selection (values: was — what it was, now — what it is now)",
     # ОПИС-1 (рядок 980): шар вставляв назву крамниці в речення цілком («замінила «Літні туфлі, ATTICO,
-    # шкіра, колір кольоровий» на …», ж7_ювілей_свекрухи 02.10) — назва тут дані, а не слова для неї
+    # шкіра, колір кольоровий» на …», ж7_ювілей_свекрухи 02.10) — назва тут дані, а не слова для неї.
+    # ПРОЗА-КАРТОК-2 (рядок 980): підстава не казала, ЧИЄ фото й що саме інше, — і речення губило
+    # іменник («на знімку виявився зовсім інший, ніж указана крамницею», 2 з 4 карток ПЕР-531)
     "stylist_swapped_item_after_photo": "after seeing the item photos the stylist replaced one item with "
                                         "another of the same kind from her selection; the code checked the "
-                                        "outfit again (values: was — what it was, now — what it is now, both "
-                                        "as the shop names them: name each in a few words of your own — its "
-                                        "kind and colour — never quote the shop's name; "
-                                        "reason — colour: the photo showed a clearly different colour than "
-                                        "the shop named, kind: the photo showed another kind of item, "
-                                        "occasion: the item on the photo does not suit her occasion)",
+                                        "outfit again (values: was — the item she took out, now — the item "
+                                        "in its place, both as the shop names them: name each in a few words "
+                                        "of your own — its kind and its colour — never quote the shop's name; "
+                                        "reason — what the photo of «was» showed: colour — its colour there is "
+                                        "clearly not the one the shop named (say that it is the colour that "
+                                        "differs), kind — it is another kind of item, occasion — it does not "
+                                        "suit her occasion)",
     "code_removed_this_layer": "the layer named above is exactly the one removed from the stylist's outfit",
     "set_already_has_top_and_bottom": "the set already has its own top and bottom, so a separate item there "
                                       "would be a second one in the same place (values: slot — slot code)",
