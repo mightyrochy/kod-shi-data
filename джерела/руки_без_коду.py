@@ -29,6 +29,8 @@ import збирач_промптів as _ЗП
 import протокол as _ПР
 import внутрішня_мова as _ВМ
 import річ_з_фото as _РФ
+import brief as _БР
+from пакет_моделі import ПОЛЯ_МЕЖІ_НА_СЛОТ as _ПОЛЯ_МЕЖІ_НА_СЛОТ
 
 # ═══════════ 1. ДАНІ РУКИ: ФАКТИ, КОЛІР, ЇЇ РЕЧІ ════════════════════════════════════
 def _hex_список(v):
@@ -128,7 +130,13 @@ def її_речі(речі_паспорта):
     задача="рука_без_коду",
     роль="You are a personal stylist. Put together one outfit for her case.",
     вхід=(
-        _ЗП.Поле("case", "her occasion: where, when, the weather, the dress code, her wishes", треба=True),
+        # рядок 1445: `case` — кодами (`випадок_кодами`), коли є паспорт; без нього — рядок входу
+        _ЗП.Поле("case", "her case: the occasion, where and when, the weather, the dress code, her wishes and "
+                         "refusals — as codes, her own words as quotes", треба=True,
+                 як="do not take an item that goes against her refusals or her words"),
+        _ЗП.Поле("case.her_words", "what she asked for in her own words", як="meet every point"),
+        _ЗП.Поле("case.formality", "the level of dress she named: " + _БР.ЩАБЛІ_EN),
+        *_ПОЛЯ_МЕЖІ_НА_СЛОТ,
         _ЗП.Поле("photo_of_her", "a photo of her is attached", як="fit the outfit to her"),
         _ЗП.Поле("person", "facts about her from her photo and measurements, without conclusions: colors "
                            "in hex (one per measurement), sizes in cm"),
@@ -162,6 +170,44 @@ def її_речі(речі_паспорта):
 
 ЗАГЛУШКА_ОПИСУ = "__ПРОЗА__"
 ЗАГЛУШКА_ЗАУВАЖЕНЬ = "__ЗАУВАЖЕННЯ__"
+
+
+# Поля випадку пакета, яких рядок рук 3–4 не ніс (`паспорт_нагоди.паспорт_рядком`): нота мовної моделі,
+# чужий колір події, зони мети, «невідомо»; губи — лише «колір губ названо», без hex
+_НЕ_В_РЯДКУ = ("language_model_note", "reserved_colour", "goal_zones", "unknown", "intent", "intent_source")
+
+
+def випадок_кодами(паспорт, рядок, сценарій=None, вимоги=""):
+    """Випадок рук 3–4 кодами — ті самі факти, що рядок `паспорт_рядком`, полями (рядок 1445, п.12).
+
+    ЩО ЦЕ МІНЯЄ. Доти руки 3–4 діставали в англійському промпті `case` українським рядком коду
+    («робочий день в офісі, робота, ошатність: neat–formal. Хоче: кеди, білий. Не хоче: …») і
+    `requirements` — рядками переказу полів. Тепер `case` — той самий випадок пакета, що в рук 1–2
+    (`пакет_моделі.випадок_для_пакета` → `дріт_моделі.випадок`), без `day`: факти дня, які рядок
+    ніс словами (місце, формат, рух, тривалість, година, температура, опади), стоять у ньому
+    полями, дія й поверхня — кодами поруч. Її слова — цитатами (`her_words`, `goal_quote`…).
+    ЛОГІКА РУК ТА САМА (п.1) — лише мова: того, чого рядок не ніс, тут нема. Наміру кодом нема
+    (рука 3 має його в `person.intent`, рука 4 — ні); ошатність, оцінена з події чи форми, — не
+    її слово й не йде; її ошатність — кодом щабля (`brief.щабель_код`), не числом 1–10.
+    Паспорта нема (стенд, CLI) — None: тоді `case` лишається рядком входу, як доти."""
+    if not isinstance(паспорт, dict) or not паспорт:
+        return None
+    import пакет_моделі as _ПМ, дріт_моделі as _Д, паспорт_нагоди as _ПН
+    в = _ПМ.випадок_для_пакета(паспорт, рядок, сценарій=сценарій, вимоги=вимоги)
+    ош = в.pop("ошатність", None)
+    вих = {к: v for к, v in _Д.випадок(в).items() if v != _ВМ.UNKNOWN and к not in _НЕ_В_РЯДКУ}
+    if isinstance(вих.get("makeup"), dict):
+        вих["makeup"] = {к: v for к, v in вих["makeup"].items() if к != "lips"} or None
+        if not вих["makeup"]:
+            вих.pop("makeup")
+    if (isinstance(ош, (list, tuple)) and len(ош) == 2
+            and (паспорт.get("джерело_полів") or {}).get("ошатність") not in ("подія", _ПН.ТИПОВЕ_ПОЛЕ_ФОРМИ)):
+        вих["formality"] = list(dict.fromkeys(_БР.щабель_код(float(x)) for x in ош))
+    for ключ, ім in (("activity", "активність"), ("surface", "поверхня")):
+        к = _ВМ.код(ключ, паспорт.get(ім)) if паспорт.get(ім) else None
+        if к:
+            вих[ключ] = к
+    return вих
 
 
 def промпт_руки(рука, випадок, вимоги="", вибір=None, речі_паспорта=None, факти=None,

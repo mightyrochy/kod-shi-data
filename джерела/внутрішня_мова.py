@@ -405,6 +405,31 @@ def код_або_невідомо(поле, ключ_ядра):
     return код(поле, ключ_ядра) or UNKNOWN
 
 
+# Поля бажання кодами (`мовний_шар._ключі_речі`) → таблиця коду, у порядку фрази `_фраза`
+_БАЖАННЯ_ПОЛЯ = (("тип", "item_type"), ("слот", "slot"), ("колір", "color_name"), ("клас_кольору", "color_class"),
+                 ("тканина", "fabric"), ("візерунок", "pattern"), ("довжина", "length"), ("ознака", "feature"))
+
+
+def бажання_кодом(б):
+    """Її бажання (`паспорт.бажання_коди`: ключі ядра) → коди через кому: «sneakers, white».
+
+    ЧОМУ НЕ ФРАЗА (рядок 1445, CLAUDE.md п.12). Фраза бажання (`мовний_шар._фраза`) — ті самі ключі
+    ядра українськими словами, і в англійському промпті стилістки стояло `"wishes": ["кеди, білий"]`,
+    а речі пулу несли `for_her_wish: "кеди, білий"`. Ці коди — ті самі, що в полях речей пулу.
+    Слот — лише коли типу нема (тип його вже несе), клас кольору — лише без назви кольору. Ключ
+    поза таблицею не їде. Нема жодного коду — ""."""
+    if not isinstance(б, dict):
+        return ""
+    вих = []
+    for к, поле in _БАЖАННЯ_ПОЛЯ:
+        if (к == "слот" and б.get("тип")) or (к == "клас_кольору" and б.get("колір")):
+            continue
+        c = код(поле, б.get(к)) if б.get(к) else None
+        if c and c not in вих:
+            вих.append(c)
+    return ", ".join(вих)
+
+
 def вільний(текст, мова="uk", межа=None):
     """Вільний текст внутрішньою мовою: назва речі чи слово крамниці — дані, а не фраза коду.
     Та сама форма `{free_text, lang}`, що в `РІЧ_КАТАЛОГУ.name` і в заявах Ч-1. `межа` —
@@ -2896,8 +2921,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "top_cut": "condition: the cut of the top item — the cuts that score highest on her body",
     "bottom_cut": "condition: the cut of the bottom item — the cuts that score highest on her body",
     "wish_kinds_first": "she asked for these: put an item of these kinds in every outfit where it fits — such "
-                        "items stand first in the pool and carry «for_her_wish» (values: wishes — her words; "
-                        "kinds)",
+                        "items stand first in the pool and carry «for_her_wish» (values: wishes — her wishes as "
+                        "codes, the same as in «case.wishes»; kinds)",
     "wish_is_a_class": "a wish is a class of items, not one item: take one item «for_her_wish» in at most this "
                        "many outfits of the set, the rest from other items of the class; her own item is not a "
                        "repeat (values: max_outfits)",
