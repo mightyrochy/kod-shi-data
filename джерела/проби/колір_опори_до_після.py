@@ -7,7 +7,7 @@
 аксесуар», що ДО, — «так» / «ні» / «невідомо», окремо пари ОДНОГО слова кольору; (а) образів з опорою з 40 (суд — копія).
 Запуск із джерела/: python3 проби/колір_опори_до_після.py"""
 import json, gzip, random, sys, collections as K
-sys.path.insert(0, "."); from суд_ремесло import ДУГА_ВІДЛУННЯ; import bridge as B, fit as ПС, colorspace as cs, pipeline as PL, стенд_знімок as СЗ
+sys.path.insert(0, "."); ДУГА_ВІДЛУННЯ = 45.0; import bridge as B, fit as ПС, colorspace as cs, pipeline as PL, стенд_знімок as СЗ
 import колір_річ as КР, аксесуари_структура as АС, verify as V, фід_збагачення as ФЗ, колір_простір_риси as КП
 вх0 = json.load(open("стенд_вх.json", encoding="utf-8")); зб = json.load(gzip.open("каталог_збагачення.json.gz"))
 T = ПС.тіло(float(вх0["зріст"]), {k: float(v) for k, v in вх0["обхвати"].items()}); F = cs.features(cs.hx(вх0["шкіра"]), cs.hx(вх0["волосся"][0]), cs.hx(вх0["очі"]))

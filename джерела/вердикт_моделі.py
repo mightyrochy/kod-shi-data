@@ -129,7 +129,7 @@ import збирач_промптів as _ЗП
 import внутрішня_мова as _ВМ
 
 # Підписи полів відповіді ОБРАЗИ_V1 — спільні для складання й ремонту (`пакет_моделі`).
-from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБРАЗІВ
+from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБРАЗІВ, РЯДОК_РІЧ_ДВІЧІ as _РЯДОК_РІЧ_ДВІЧІ
 
 РЕМОНТ = _ЗП.Оголошення(
     задача="ремонт",
@@ -204,7 +204,7 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         "For every finding with «register» «gate» — an entry in «done» of its outfit: «finding» is its «id».",
         "One item of each kind: an item of a kind the outfit already has replaces it; a missing kind is added "
         "without removing other items. An outfit has a dress, a set, or a top and a bottom.",
-        "One item stands in at most two outfits of the set; her own item does not count.",
+        _РЯДОК_РІЧ_ДВІЧІ,
         "Take items only from this verdict (any «your_outfit») or from «showcase»; name each by its «n» in "
         "full; half of a set — the same «n» with «/top» or «/bottom».",
         "When you break a condition deliberately, say so in «deliberate» of the outfit: the item and why.",
@@ -871,21 +871,59 @@ def утрачені_опори(образи, попередній_вердик�
     заяви: заміна сережок на кольє в тон лишає відлуння. Без попереднього вердикта чи без спільної
     речі — порожньо: вгадувати пару нема з чого. Нових обчислень суду тут нема — лише звірка."""
     поп = [о for о in ((попередній_вердикт or {}).get("образи") or []) if isinstance(о, dict)]
-    склад = lambda о: {str(r).split("/")[0] for r in (о.get("речі") or о.get("речі_н") or [])}
-    ключ = lambda x: (x.get("правило"), next((з.get("code") for з in (x.get("заяви") or [])
-                                              if isinstance(з, dict)), None))
     вих = []
     for о in образи or []:
-        мій = склад(о) if isinstance(о, dict) else set()
-        пара = max(поп, key=lambda п: len(мій & склад(п)), default=None)
-        if not пара or not (мій & склад(пара)):
+        пара = _пара_образу(о, поп)
+        if not пара:
             вих.append([])
             continue
-        є = {ключ(x) for x in (о.get("опори") or []) if isinstance(x, dict)}
-        вих.append([dict(правило=x.get("правило"), заяви=list(x.get("заяви") or []),
-                         речі=list(x.get("речі") or []), образ=str(пара.get("ід") or ""))
-                    for x in (пара.get("опори") or []) if isinstance(x, dict) and ключ(x) not in є])
+        є = {_ключ_опори(x) for x in (о.get("опори") or []) if isinstance(x, dict)}
+        вих.append([_утрачена(x, пара) for x in (пара.get("опори") or [])
+                    if isinstance(x, dict) and _ключ_опори(x) not in є])
     return вих
+
+
+def опори_зниклих_образів(образи, попередній_вердикт):
+    """Рядок 2663: опори образів попереднього вердикта, які не стали парою ЖОДНОМУ новому образу
+    (ремонт замінив чи прибрав образ цілком), — `[{правило, заяви, речі, образ}]` для `набір`.
+
+    `утрачені_опори` шукає пару кожному НОВОМУ образу, тож опора образу, що зник, нікому не
+    діставалась, і вибір її не бачив (живий ПІСЛЯ П3: відлуння o11 — ремонт прибрав o11,
+    `lost_supports` порожньо). Опора не втрачена, коли будь-який новий образ несе опору з тим самим
+    ключем (правило, код першої заяви) над хоч однією з її речей: відлуння переїхало, не зникло."""
+    поп = [о for о in ((попередній_вердикт or {}).get("образи") or []) if isinstance(о, dict)]
+    нові = [о for о in (образи or []) if isinstance(о, dict)]
+    пари = {id(п) for п in (_пара_образу(о, поп) for о in нові) if п}
+    живі = [(_ключ_опори(x), {str(r).split("/")[0] for r in (x.get("речі") or [])})
+            for о in нові for x in (о.get("опори") or []) if isinstance(x, dict)]
+    return [_утрачена(x, п) for п in поп if id(п) not in пари
+            for x in (п.get("опори") or []) if isinstance(x, dict)
+            and not any(к == _ключ_опори(x) and р & {str(r).split("/")[0] for r in (x.get("речі") or [])}
+                        for к, р in живі)]
+
+
+def _склад_номерами(о):
+    """Номери речей образу без «/частини» — для пари за перетином складу."""
+    return {str(r).split("/")[0] for r in (о.get("речі") or о.get("речі_н") or [])}
+
+
+def _ключ_опори(x):
+    """Опора та сама, коли збігаються правило й код першої заяви."""
+    return (x.get("правило"), next((з.get("code") for з in (x.get("заяви") or [])
+                                    if isinstance(з, dict)), None))
+
+
+def _пара_образу(о, поп):
+    """Образ попереднього вердикта з найбільшим перетином складу; без спільної речі — None."""
+    мій = _склад_номерами(о) if isinstance(о, dict) else set()
+    пара = max(поп, key=lambda п: len(мій & _склад_номерами(п)), default=None)
+    return пара if пара and (мій & _склад_номерами(пара)) else None
+
+
+def _утрачена(x, пара):
+    """Опора `x` образу `пара` у формі `ОПОРА_ВЕРДИКТУ` з адресою старого образу."""
+    return dict(правило=x.get("правило"), заяви=list(x.get("заяви") or []),
+                речі=list(x.get("речі") or []), образ=str(пара.get("ід") or ""))
 
 
 def _зіставити_образи(відповідь, нові):
@@ -1751,6 +1789,10 @@ def вердикт_v1(образи, варіантів=2, випадок=None, �
     _коорд = координація_набору(образи)
     if _коорд:
         набір["координація"] = _коорд
+    # рядок 2663: опори образів, які ремонт прибрав цілком, — вибору на рівні набору
+    _зниклі = опори_зниклих_образів(образи, попередній_вердикт) if попередній_вердикт else []
+    if _зниклі:
+        набір["утрачені_опори"] = _зниклі
     # ВИРВА-СМІЛИВІСТЬ (рядки 841, 886; п.17): сміливі образи й доза — ремонтові під її сміливим наміром
     _смл = сміливі_набору([(з["ід"], о) for з, о in zip(обр, [о for о in (образи or [])
                                                               if isinstance(о, dict) and "речі_н" in о])],

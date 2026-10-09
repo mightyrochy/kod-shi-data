@@ -1,0 +1,124 @@
+── ЗАПИТ
+{"task": {"role": "You read one shop item and write its fields as codes, each backed by a quote from the item's own text.", "rules": ["Parse only the item named in \"name\". The description may also hold blocks about other items, delivery or payment: ignore them.", "Every field is a pair. \"quote\": the shortest words of this item's name, description or params that state the value, copied letter for letter in the shop's language, not translated or retold. \"value\": one code from that field's list.", "No words state it: quote \"\" and value \"unknown\". Never infer a value from what items of this type usually are.", "A quote that only names the item type supports slot and item_type and nothing else: not sleeve, neckline, length, cut, fabric or any other field.", "\"not_applicable\": the field does not exist for this kind of item; quote \"\".", "\"no\" and \"none\": the text says the feature is absent; they need a quote like any value.", "\"set_parts\": only for an item sold as a set, one entry per part; otherwise [].", "\"color_main\": the colour of this item, not of other colour variants on sale; other colours the text names for this item go to \"color_extra\".", "\"metal_where\": the metal is the body of the item or only its hardware.", "\"veto\": about this item; \"yes\" when the feature is there, \"no\" when the text says it is not.", "\"features\": the nuances the codes do not carry, one fragment each: shade as the shop names it, texture and weave, fibre content and weight, fit, construction, fastenings, hardware, trim, heel and sole. Each fragment: \"quote\" as above, \"value\" the same in plain English, 2-6 words, no codes. Up to 30 words in all. No marketing or judgement, brand or model name, price, size or measurements; [] when the text gives nothing beyond the codes."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "CATALOG_PARSE_V3", "answer_schema": {"slot": {"quote": "<quote>", "value": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|unknown — place of the item in an outfit"}, "item_type": {"quote": "<quote>", "value": "evening_dress|cocktail_dress|suit|sheath_dress|sundress|blazer|over_knee_boots|chelsea_boots|ugg_boots|ballet_flats|mules|espadrilles|pumps|dress_shoes|moccasins|loafers|sneakers|plimsolls|ankle_boots|boots|heeled_sandals|sandals|clutch|backpack|tote|baguette_bag|hobo_bag|crossbody_bag|bucket_bag|belt_bag|briefcase|saddle_bag|hoodie|sportswear|loungewear|leggings|jeans|t_shirt|shirt|blouse|knitwear|cardigan|sweater|shorts|jumpsuit|skirt|trousers|coat|trench_coat|jacket|vest|top_garment|stole|kerchief|twilly|snood|shawl|bactus_scarf|ring|headband|bow|hair_clip|hair_tie|scarf_generic|jewelry_generic|bag_generic|dress_generic|two_piece_set|casual_suit|bodysuit|longsleeve|half_coat|down_jacket|fur_coat|sheepskin_coat|parka|raincoat|rain_cape|windbreaker|anorak|bomber|poncho|unknown — item type"}, "set_kind": {"quote": "<quote>", "value": "suit|casual_suit|set|jewelry_set|not_a_set|unknown — whether the item is sold as a set, and which"}, "set_parts": [{"slot": {"quote": "<quote>", "value": "<a code from the \"slot\" list> — place of this part of the set"}, "item_type": {"quote": "<quote>", "value": "<a code from the \"item_type\" list> — type of this part of the set"}}], "fabric": {"quote": "<quote>", "value": "wool|cashmere|mohair|angora|alpaca|cotton|viscose|tencel|lyocell|modal|linen|silk|polyester|polyamide|nylon|acrylic|elastane|stretch|denim|satin|atlas|chiffon|muslin|batiste|tweed|boucle|corduroy|velvet|jersey|knitted|suede|faux_leather|leather|patent_leather|nubuck|velour|lace|guipure|openwork|woven|not_applicable|unknown — fabric of the item"}, "material": {"quote": "<quote>", "value": "leather|suede|faux_leather|patent_leather|velour|nubuck|not_applicable|unknown — upper material of shoes, bag or belt"}, "cut": {"quote": "<quote>", "value": "skinny|straight|tapered|wide|flared|culottes|pencil|a-line|full|pleated|bias-slip|bodycon|fitted|regular|relaxed|oversized|belted|wrap|peplum|shift|sheath|empire|double-breasted|not_applicable|unknown — cut"}, "length": {"quote": "<quote>", "value": "mini|mid_thigh|knee|midi|maxi|waist|not_applicable|unknown — length"}, "sleeve": {"quote": "<quote>", "value": "sleeveless|straps|cap|short|elbow|three_quarter|long|not_applicable|unknown — sleeve"}, "neckline": {"quote": "<quote>", "value": "round|v_neck|deep_v|square|boat|halter|one_shoulder|off_shoulder|strapless|turtleneck|stand_collar|shirt_collar|cowl|not_applicable|unknown — neckline"}, "vamp": {"quote": "<quote>", "value": "low|high|not_applicable|unknown — how high the shoe covers the foot"}, "shaft": {"quote": "<quote>", "value": "ankle|calf|knee|thigh|not_applicable|unknown — where the boot shaft ends"}, "heel": {"present": {"quote": "<quote>", "value": "yes|no|not_applicable|unknown — is there a heel"}, "shape": {"quote": "<quote>", "value": "thin|block|wedge|platform|not_applicable|unknown — heel shape"}, "height": {"quote": "<quote>", "value": "flat|low|mid|high|not_applicable|unknown — heel height"}}, "metal": {"quote": "<quote>", "value": "gold|rose_gold|white_gold|silver|steel|brass|bronze|copper|platinum|none|unknown — metal of the item"}, "metal_where": {"quote": "<quote>", "value": "body|hardware|both|none|unknown — metal is the body of the item or only its hardware"}, "color_main": {"quote": "<quote>", "value": "black|white|grey|graphite|beige|cream|milky|sand|taupe|camel|latte|cocoa|brown|chocolate|red|burgundy|cherry|raspberry|brick|terracotta|ginger|coral|orange|peach|yellow|lemon|mustard|golden|khaki|olive|green|pine_green|mint|turquoise|petrol|light_blue|denim_blue|blue|navy|lilac|purple|plum|magenta|fuchsia|pink|rose|powder_pink|silvery|pearly|creamy|mocha|powder|soft_pink|emerald|electric_blue|unknown — colour of the item itself"}, "color_extra": [{"quote": "<quote>", "value": "black|white|grey|graphite|beige|cream|milky|sand|taupe|camel|latte|cocoa|brown|chocolate|red|burgundy|cherry|raspberry|brick|terracotta|ginger|coral|orange|peach|yellow|lemon|mustard|golden|khaki|olive|green|pine_green|mint|turquoise|petrol|light_blue|denim_blue|blue|navy|lilac|purple|plum|magenta|fuchsia|pink|rose|powder_pink|silvery|pearly|creamy|mocha|powder|soft_pink|emerald|electric_blue|unknown — other colours the text names for this item"}], "color_why": {"quote": "<quote>", "value": "one_color|two_colors|print_colors|trim|hardware|lining|variants|unknown — why there are several colours"}, "pattern": {"quote": "<quote>", "value": "solid|polka_dot|floral|stripes|check|animal_print|camouflage|geometric|abstract|lace_motif|embroidery|print_generic|unknown — pattern"}, "decor": [{"quote": "<quote>", "value": "sequins|rhinestones|beads|pearls|tulle|feathers|lurex|glitter|metallic|embroidery|lace_trim|ruffles|bow|fringe|chain|studs|cutouts|none|unknown — decoration"}], "veto": {"stripes": {"quote": "<quote>", "value": "yes|no|unknown — stripes on the item"}, "big_print": {"quote": "<quote>", "value": "yes|no|unknown — big print on the item"}, "print": {"quote": "<quote>", "value": "yes|no|unknown — any print on the item"}, "shine": {"quote": "<quote>", "value": "yes|no|unknown — shine of fabric or trim"}, "oversize": {"quote": "<quote>", "value": "yes|no|unknown — oversized volume"}, "tight": {"quote": "<quote>", "value": "yes|no|unknown — tight fit"}}, "features": [{"quote": "<quote>", "value": "<a nuance of this item in plain English>"}]}, "input": ["\"name\" — the shop's name of the item", "\"description\" — the shop's description", "\"params\" — fields of the shop card: key and value"]}, "name": "Світшот смужка з чорним манжетом", "description": "Опис:", "params": {"колір": "Молочний[Чорна смужка]", "розміри": "L нема, M нема, S нема, XL нема, XS нема, XXL нема", "категорія_магазину": "Худі та світшот демі", "~тип": "Худі та світшот демі", "~бренд": "Wear Me", "~теги": "2024, casual, New_winter_24, Зима, Осінь", "~size": "XS, S, M, L, XL, XXL", "~color": "Молочний[Чорна смужка]", "~material": "Двунитка"}}
+
+── ВІДПОВІДЬ
+{
+  "slot": {
+    "quote": "Світшот",
+    "value": "top"
+  },
+  "item_type": {
+    "quote": "Худі та світшот демі",
+    "value": "hoodie"
+  },
+  "set_kind": {
+    "quote": "",
+    "value": "not_a_set"
+  },
+  "set_parts": [],
+  "fabric": {
+    "quote": "Двунитка",
+    "value": "knitted"
+  },
+  "material": {
+    "quote": "",
+    "value": "unknown"
+  },
+  "cut": {
+    "quote": "",
+    "value": "not_applicable"
+  },
+  "length": {
+    "quote": "",
+    "value": "not_applicable"
+  },
+  "sleeve": {
+    "quote": "",
+    "value": "unknown"
+  },
+  "neckline": {
+    "quote": "",
+    "value": "unknown"
+  },
+  "vamp": {
+    "quote": "",
+    "value": "not_applicable"
+  },
+  "shaft": {
+    "quote": "",
+    "value": "not_applicable"
+  },
+  "heel": {
+    "present": {
+      "quote": "",
+      "value": "unknown"
+    },
+    "shape": {
+      "quote": "",
+      "value": "unknown"
+    },
+    "height": {
+      "quote": "",
+      "value": "unknown"
+    }
+  },
+  "metal": {
+    "quote": "",
+    "value": "none"
+  },
+  "metal_where": {
+    "quote": "",
+    "value": "both"
+  },
+  "color_main": {
+    "quote": "Молочний",
+    "value": "white"
+  },
+  "color_extra": [
+    {
+      "quote": "Чорна смужка",
+      "value": "black"
+    }
+  ],
+  "color_why": {
+    "quote": "",
+    "value": "two_colors"
+  },
+  "pattern": {
+    "quote": "",
+    "value": "stripes"
+  },
+  "decor": [],
+  "veto": {
+    "stripes": {
+      "quote": "Смужка",
+      "value": "yes"
+    },
+    "big_print": {
+      "quote": "",
+      "value": "unknown"
+    },
+    "print": {
+      "quote": "",
+      "value": "unknown"
+    },
+    "shine": {
+      "quote": "",
+      "value": "unknown"
+    },
+    "oversize": {
+      "quote": "",
+      "value": "unknown"
+    },
+    "tight": {
+      "quote": "",
+      "value": "unknown"
+    }
+  },
+  "features": [
+    {
+      "quote": "",
+      "value": "with black trim"
+    }
+  ]
+}

@@ -466,7 +466,19 @@ import внутрішня_мова as _ВМ_П
 # правила (Р2-2а, `правило_руки2`) дістала ту саму задачу без нього, а не іншу.
 РЯДОК_ТРЕТЬОЇ_РЕЧІ = ("Besides the top and the bottom (or the dress) — at least one outer layer, piece of "
                       "jewelry, belt, scarf or hat; 5–7 items in all, 4–6 with a dress.")
-РЯДКИ_ЗАДАЧІ_ЗА_ПРАВИЛОМ = {"K-CRA-01": РЯДОК_ТРЕТЬОЇ_РЕЧІ}
+# Квота однієї речі на набір (K-VAR-01, рядок 1446). Суд набору (`вердикт_моделі._повтор_слота`,
+# квота max(2, ⌈образів·`частка_речі_набору`⌉) — для 5–10 образів два) судив її, а складання про неї
+# не знало: 67 знахідок `variety_kind_one_item … keep_at_most: 2` у 39 прогонах розбору 02.10, які
+# виправляв лише ремонт. Те саме речення стоїть у правилах ремонту (`вердикт_моделі.РЕМОНТ`).
+РЯДОК_РІЧ_ДВІЧІ = "One item stands in at most two outfits of the set; her own item does not count."
+# Межа на один слот у `case.refusals` (рядок 2730): `{code, only_on}` — один рядок опису на три
+# списки (збирач зводить однакові рядки), і лише коли така межа в пакеті є. Спільне для складання,
+# ремонту й вибору (`повнота_образу.ВИБІР`, звідки ремонт бере поля «case.*»).
+ПОЛЯ_МЕЖІ_НА_СЛОТ = tuple(
+    _ЗП.Поле("case.refusals.%s[].only_on" % к, "the kinds of item this refusal is about",
+             як="it holds for these kinds only; a refusal without «only_on» holds for the whole outfit")
+    for к in ("colors", "prints", "fabrics"))
+РЯДКИ_ЗАДАЧІ_ЗА_ПРАВИЛОМ = {"K-CRA-01": РЯДОК_ТРЕТЬОЇ_РЕЧІ, "K-VAR-01": РЯДОК_РІЧ_ДВІЧІ}
 
 СКЛАДАННЯ = _ЗП.Оголошення(
     задача="складання",
@@ -474,6 +486,7 @@ import внутрішня_мова as _ВМ_П
     вхід=(
         _ЗП.Поле("case", "her case: the occasion, her words, wishes, mood and refusals",
                  як="do not take an item that goes against her refusals or her words"),
+        *ПОЛЯ_МЕЖІ_НА_СЛОТ,
         _ЗП.Поле("case.goal_quote", "her own words behind «goal»",
                  як="they say more than the code: the outfit answers them"),
         _ЗП.Поле("case.intent_quote", "her own words behind «intent»",
@@ -612,8 +625,11 @@ import внутрішня_мова as _ВМ_П
     правила=(
         "One item of each kind; an outfit has a dress, a set, or a top and a bottom.",
         РЯДОК_ТРЕТЬОЇ_РЕЧІ,
-        "Do not state how an item fits: «pool» has no garment measurements, and a size is a number on the "
-        "shop's scale — the fit needs trying on.",
+        РЯДОК_РІЧ_ДВІЧІ,
+        # В-13 (рядок 1446): «pool has no garment measurements» стояло поруч із «hem_cm» — довжиною від
+        # підлоги, тобто виміром; заборона — про посадку, не про числа пулу
+        "Do not state how an item fits her: a size is a number on the shop's scale and «hem_cm» says only "
+        "where the hem falls — the fit needs trying on.",
         "When you break a condition or take an item outside the palette on purpose, say so in «deliberate» "
         "of the outfit: the item and why.",
         "When an outfit needs an item «pool» does not have, say so in «needed».",
@@ -1055,6 +1071,22 @@ def випадок_для_пакета(паспорт, рядок, сценар�
     if isinstance(в.get("вето"), dict) and (паспорт or {}):
         _тв = вето_чинне(паспорт)
         в["вето"] = {к: list(_тв.get(к) or []) for к in в["вето"] if к in _ПР.ВИПАДОК["поля"]["вето"]["поля"]}
+        # СЛОТ МЕЖІ ЇДЕ З НЕЮ (рядок 2730). Пул ріже межу кольору, принта чи тканини лише на її слоті
+        # (`вето_тверде.слоти`, `_жорстке_відсічення`), а стилістка діставала саме слово — і
+        # `refusals.prints: [print_generic]` після «взуття не моє, хочу без принта» читала як «без
+        # принта на весь образ». Слот — лише слову, яке стоїть у своєму списку.
+        _сл = {w: list(сл) for w, сл in (_тв.get("слоти") or {}).items()
+               if сл and any(w in (в["вето"].get(г) or []) for г in ("кольори", "принти", "тканини"))}
+        if _сл:
+            в["вето"]["слоти"] = _сл
+    # ── БАЖАННЯ — КОДАМИ, НЕ ФРАЗОЮ КОДУ (рядок 1445, CLAUDE.md п.12) ──────────────────
+    # `бажання` паспорта — фрази `мовний_шар._фраза` (ключі ядра українськими словами), і в англійському
+    # промпті стояло `"wishes": ["кеди, білий"]`. Ті самі речі паспорт несе полями (`бажання_коди`):
+    # тут вони стають кодами (`внутрішня_мова.бажання_кодом`), тими ж, що в `for_her_wish` речей пулу.
+    # Паспорт без кодів (виклик 0 без шару: бажання — слова моделі продукту) — як доти.
+    _бк = [_ВМ_П.бажання_кодом(б) for б in ((паспорт or {}).get("бажання_коди") or []) if isinstance(б, dict)]
+    if в.get("бажання") and any(_бк):
+        в["бажання"] = list(dict.fromkeys(б for б in _бк if б))
     # ── ЧИСЛО, ЯКОГО ВОНА НЕ НАЗИВАЛА, НЕ ЇДЕ Й ПОЛЕМ (В-2, розбір 1/8) ──────────
     # `паспорт_рядком` замовчування форми вже не несе, але руки 1–2 читають не лише
     # рядок: `випадок.темп_c` і `випадок.година` стоять тут окремими полями. Прохід
@@ -1066,9 +1098,18 @@ def випадок_для_пакета(паспорт, рядок, сценар�
         в.pop(_к, None)
     сц = сценарій or {}
     if not str(в.get("подія") or "").strip():
-        в["подія"] = ", ".join(str(сц.get(к) or "").replace("_", " ").strip()
-                               for к in ("нагода", "місце")
-                               if str(сц.get(к) or "").strip()) or str(рядок or "")
+        # ПОДІЮ, ЯКОЇ ВОНА НЕ НАЗИВАЛА, КОД НЕ СКЛАДАЄ СЛОВАМИ (рядок 1445, п.12). Доти тут стояло «робота,
+        # офіс корпоративний» — ключі нагоди й місця українською, і стилістка читала їх у `case.event` як
+        # її подію (ж3_зима, ж8_зима розбору 02.10). Тепер подія — «невідомо» (дріт її не везе), а нагода
+        # й місце сценарію, яких паспорт не несе, стають полями випадку — кодами на дроті.
+        for _к in ("нагода", "місце"):
+            _v = сц.get(_к)
+            if _v and not в.get(_к) and _v in (поля[_к].get("значення") or (_v,)):
+                в[_к] = _v
+        _зі_сценарію = ", ".join(str(сц.get(к) or "").replace("_", " ").strip()
+                                 for к in ("нагода", "місце") if str(сц.get(к) or "").strip())
+        в["подія"] = НЕВІДОМО if (_зі_сценарію or not str(рядок or "").strip()) else str(рядок)
+        рядок = рядок or _зі_сценарію
     в["рядок"] = str(рядок or в["подія"])
     # ── `her_words` НЕСЕ ЛИШЕ ТЕ, ЧОГО НЕ НЕСЕ ЖОДНЕ ПОЛЕ ВИПАДКУ (рядок 170) ──
     # Переказ полів («Хоче: …», «Не хоче: …», «Настрій: …», «Прикраси…») знімається: ті самі
