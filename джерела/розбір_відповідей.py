@@ -16,7 +16,7 @@ import паспорт_нагоди as _ПН   # `жінці()` — зверта�
 
 
 # ОПИС — ЗАДАЧА ЗБИРАЧА (`збирач_промптів`, слово власника 25.09.2026), АНГЛІЙСЬКОЮ (П-2,
-# 26.09.2026, CLAUDE.md п.12: «промпти функціональної моделі — англійською»). Оголошення
+# 26.09.2026, аудит/ПРОДУКТ.md п.12: «промпти функціональної моделі — англійською»). Оголошення
 # побудовано наново під задачу; дані — ті самі поля `ОПИС_V1`, перекладені в коди
 # (`дріт_моделі.опис`). Рядок кожного поля йде в промпт лише тоді, коли поле є.
 # ЧОМУ ЦІ РЯДКИ (для людей; моделі це не потрібно):
@@ -90,7 +90,7 @@ import дріт_моделі as _Д
                     "from her only when an item of this outfit carries it (call no other colour farthest "
                     "from her); a combination she can put together — optional, and only from the items of "
                     "this outfit, never by adding an item; not as a list"),
-        # РЯДОК 1422 (K-BOD-02, K-SIL-03; CLAUDE.md п.4): її фігура кодами — ті самі, що в брифі складання.
+        # РЯДОК 1422 (K-BOD-02, K-SIL-03; аудит/ПРОДУКТ.md п.4): її фігура кодами — ті самі, що в брифі складання.
         # П.17 (рядок 1427, #599): річ образу — вибір стилістки; річ проти фігури — пояснити, рішення не віддавати
         _ЗП.Поле("body", "her figure as the code measured it: height, shape code, zones, and statements — the cuts "
                          "that sit best on her, where a voluminous outfit takes its anchor, where most conditions "
@@ -114,7 +114,7 @@ import дріт_моделі as _Д
         _ЗП.Поле("she_refuses", "what she refused",
                  як="do not advise an item that breaks it and do not call it a compromise; when such an "
                     "item is in the outfit, tell her so plainly"),
-        # Ч-1 (CLAUDE.md п.12): the code no longer writes this as a sentence — it sends the
+        # Ч-1 (аудит/ПРОДУКТ.md п.12): the code no longer writes this as a sentence — it sends the
         # same statement codes the language model turns into the card line; codes are English
         # by construction, so this English prompt carries them as they are.
         _ЗП.Поле("missing", "what this outfit lacks, as statement codes «code» (with «values» where "
@@ -125,7 +125,7 @@ import дріт_моделі as _Д
         _ЗП.Поле("makeup", "a soft note on the level of her make-up today, as statement codes «code»",
                  як="say it in your own words in one gentle sentence in the last part of «text»: advice "
                     "only, nothing in the outfit depends on it; a light «if you like» is enough"),
-        # ФОТО-1 (02.10.2026, CLAUDE.md п.17): друга половина заміни — лише коли опис назвав річ, а
+        # ФОТО-1 (02.10.2026, аудит/ПРОДУКТ.md п.17): друга половина заміни — лише коли опис назвав річ, а
         # код знайшов запасні, що пройшли його суд (`заміна_з_фото`); у звичайному виклику поля нема
         _ЗП.Поле("swap_spares", "the item you named for replacement, your reason, and the spares of the "
                                 "same kind the code checked in its place; every spare has «photos» like "
@@ -152,7 +152,7 @@ import дріт_моделі as _Д
         "else a frame shows, a photo you could not see, or the name and shop data you went by — the card "
         "already shows her the photos and says under an item when it has none.",
         "Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).",
-        # рядок 1427: відповідальність за вибір речі — на стилістці (CLAUDE.md п.17: з поясненням — свідомий вибір)
+        # рядок 1427: відповідальність за вибір речі — на стилістці (аудит/ПРОДУКТ.md п.17: з поясненням — свідомий вибір)
         "Every item of «outfit» is your choice: stand behind it. Do not end a doubt with «the choice is yours», "
         "«it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a "
         "decision to her only about what she asked for herself: her words in «case», an item marked «hers».",
@@ -207,7 +207,7 @@ def _укладка_опису(канал_3):
     означало б дати вибір без ціни. Ворота формату («лише в приміщенні») ідуть
     останнім рядком опцій — це умова вибору, і модель мусить її бачити.
 
-    ВМ-3б (рядок 541, CLAUDE.md п.12): поруч із фразами — `заяви` (ті самі опції й ворота
+    ВМ-3б (рядок 541, аудит/ПРОДУКТ.md п.12): поруч із фразами — `заяви` (ті самі опції й ворота
     кодами, `аксесуари_структура.опції_заявами`; команди верхнього шару — їхні заяви й заяви
     ремонту). На дріт опису (`дріт_моделі.опис`) їдуть заяви; фрази лишаються звітові.
     """
@@ -289,7 +289,7 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         об["укладка"] = укл
     if випадок:
         об["випадок"] = str(випадок)
-    # ВМ-3б (рядок 541, CLAUDE.md п.12): той самий випадок ПОЛЯМИ (`пакет_моделі.випадок_для_пакета`)
+    # ВМ-3б (рядок 541, аудит/ПРОДУКТ.md п.12): той самий випадок ПОЛЯМИ (`пакет_моделі.випадок_для_пакета`)
     # — моделі він їде кодами (`дріт_моделі.випадок`), а рядок `випадок` лишається звітові. Межі
     # тут не їдуть: у опису вони окремим полем `межі` (ВМ-1, рядок 401).
     if isinstance(випадок_коди, dict) and випадок_коди.get("подія"):
@@ -309,7 +309,7 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         об["межі"] = _межі
     # МАК-2 (рядок 258, П-4): порада про рівень макіяжу — ЗАЯВИ коду; опис — єдиний текст, який
     # жінка читає цілком, тож порада, що жила лише в брифі складання, до неї не доходила
-    # ФІГУРА (рядок 1422, CLAUDE.md п.4 — третє місце правила K-BOD-02/K-SIL-03, пояснення жінці):
+    # ФІГУРА (рядок 1422, аудит/ПРОДУКТ.md п.4 — третє місце правила K-BOD-02/K-SIL-03, пояснення жінці):
     # бриф складання ніс крої, якір і вузол тіла, а опис — ні, і в 22 з 24 прогонів ж4–ж8 рука 1
     # не казала про тіло ні слова. Тепер опис дістає ті самі коди; речення пише модель (п.12).
     if isinstance(тіло, dict) and тіло:
@@ -364,7 +364,7 @@ def фото_доведено_коду(запис):
     річ (`feed.слот`). Без другої умови доказом стала б і каблучка ж-07624, чий
     опис починається «Сукня темно-зеленого кольору» при впевненості 1.0.
 
-    БЕЗ ВХОДУ — ЧЕСНО (CLAUDE.md п.4): речі без жнив, з «річ не видно» або з
+    БЕЗ ВХОДУ — ЧЕСНО (аудит/ПРОДУКТ.md п.4): речі без жнив, з «річ не видно» або з
     описом, який у слот не ліг, доказу не мають — позначка моделі проходить як є.
     ВИМІРЯНО 19.09.2026 на почищеному фіді, речі з фото: каталог_повний — доказ
     у 8 239 із 12 405 (66.4 %), решта без доказу (1 000 — опис назвав інший слот,
@@ -377,7 +377,7 @@ def фото_доведено_коду(запис):
     return ("на першому кадрі vision-модель описала %s — це та сама річ" % r["слот"])
 
 
-# ОПИС-1 (рядок 1429, CLAUDE.md п.4 і п.12): повтор опису, що назвав річ поза образом. Код слів
+# ОПИС-1 (рядок 1429, аудит/ПРОДУКТ.md п.4 і п.12): повтор опису, що назвав річ поза образом. Код слів
 # прози не читає: він звіряє лише номери з поля `названо`, яке модель заповнює сама, і повертає
 # їй її ж слова («що») тих записів, у яких номера речі образу нема.
 ПОВТОР_НАЗВАНОГО_EN = ("Your «text» or «how_to_wear» names things that are not items of «outfit»: %s. "
@@ -491,7 +491,7 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
                     р["фото_не_ті_знято"].append(dict(id=і, чому=доказ))
                 else:
                     р["фото_не_ті"].append(і)
-        # ФОТО-1 (CLAUDE.md п.17): пропозиція заміни — номери стають id тією самою нумерацією пулу;
+        # ФОТО-1 (аудит/ПРОДУКТ.md п.17): пропозиція заміни — номери стають id тією самою нумерацією пулу;
         # що не резолвилось, лишається сирим із відмовою, а не губиться (звіт власника)
         _зм = об.get("заміна")
         if isinstance(_зм, dict) and str(_зм.get("річ") or "").strip():
