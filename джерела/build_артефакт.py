@@ -429,7 +429,13 @@ def _стрип(шлях):
             вих.append(т)
     код = tokenize.untokenize(вих).decode("utf-8")
     код = _без_докстрінгів(код)
-    return ("\n".join(р for р in код.splitlines() if р.strip()) + "\n").encode("utf-8")
+    рядки_літералів = set()
+    for т in tokenize.generate_tokens(io.StringIO(код).readline):
+        if т.type == token.STRING and т.start[0] != т.end[0]:
+            рядки_літералів.update(range(т.start[0], т.end[0] + 1))
+    рядки = (р for номер, р in enumerate(код.splitlines(), 1)
+             if р.strip() or номер in рядки_літералів)
+    return ("\n".join(рядки) + "\n").encode("utf-8")
 
 
 def _без_докстрінгів(код):
@@ -899,12 +905,6 @@ def _зібрати_zip_показу(джерело, повний=False, кат�
     with zipfile.ZipFile(буф, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         for м in sorted(треба):
             _покласти(z, м + ".py", _стрип(os.path.join(джерело, м + ".py")), імена)
-        if повний:
-            # Каталог їде тим самим вантажем: тягнути його окремим fetch на
-            # Pages можна, але тоді сторінка має ДВА джерела свіжості й може
-            # зібрати образ зі старого каталогу, не сказавши цього.
-            ф = _фід_показу(джерело)
-            _покласти_файл(z, os.path.join(джерело, ф), ф, імена)
     return буф.getvalue(), імена
 
 

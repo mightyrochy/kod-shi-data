@@ -846,6 +846,7 @@
      "description": "опади",
      "enum": [
       "none",
+      "possible_rain",
       "rain",
       "sleet",
       "downpour",
@@ -2432,7 +2433,7 @@
          },
          {
           "const": "colour_unknown_not_checked",
-          "description": "this item's colour is unknown, as there is no photo and no colour was named, so the item was not checked against her palette; a colour in words makes the check possible"
+          "description": "this item's colour is unknown, as neither a photo measured it nor a colour was named, so the item was not checked against her palette; a colour in words makes the check possible"
          },
          {
           "const": "her_item_in_every_look",
@@ -2440,7 +2441,7 @@
          },
          {
           "const": "colour_unknown_rest_not_matched",
-          "description": "this item's colour is unknown, as there is no photo and she named no colour, so the rest of the outfit was not matched to it by colour"
+          "description": "this item's colour is unknown, as neither a photo measured it nor she named a colour, so the rest of the outfit was not matched to it by colour"
          },
          {
           "const": "near_face_her_neutral_or_palette_colour",
@@ -2596,7 +2597,7 @@
          },
          {
           "const": "stylist_swapped_item_after_photo",
-          "description": "after seeing the item photos the stylist replaced one item with another of the same kind from her selection; the code checked the outfit again (values: was — what it was, now — what it is now, both as the shop names them: name each in a few words of your own — its kind and colour — never quote the shop's name; reason — colour: the photo showed a clearly different colour than the shop named, kind: the photo showed another kind of item, occasion: the item on the photo does not suit her occasion)"
+          "description": "after seeing the item photos the stylist replaced one item with another of the same kind from her selection; the code checked the outfit again (values: was — the item she took out, now — the item in its place, both as the shop names them: name each in a few words of your own — its kind and its colour — never quote the shop's name; reason — what the photo of «was» showed: colour — its colour there is clearly not the one the shop named (say that it is the colour that differs), kind — it is another kind of item, occasion — it does not suit her occasion)"
          },
          {
           "const": "code_removed_this_layer",
@@ -2797,6 +2798,10 @@
          {
           "const": "cannot_tell_two_neutrals_distinct",
           "description": "so the code cannot tell whether two neutrals of one lightness differ visibly"
+         },
+         {
+          "const": "cannot_tell_neutral_near_face_temperature",
+          "description": "so the code cannot tell whether a neutral near her face matches her temperature"
          },
          {
           "const": "cannot_tell_two_different_whites",
@@ -3028,7 +3033,7 @@
          },
          {
           "const": "scarf_too_small_to_wrap_head",
-          "description": "the scarf is too small to wrap the head fully: a physical limit, not taste (values: size_cm — its side in cm, unknown when the card does not give it)"
+          "description": "the scarf is too small to wrap the head fully: a physical limit, not taste (values: size_cm — its side in cm)"
          },
          {
           "const": "scarf_near_face_way_unknown",
@@ -3077,6 +3082,10 @@
          {
           "const": "length_word_line_may_split_in_half",
           "description": "the code knows the length of the outfit's top item only from a word, and its hem — the outfit's dividing line — may split the field from shoulders to floor in half (values: slot — slot code; length — the length word)"
+         },
+         {
+          "const": "measured_dividing_line_depends_on_size",
+          "description": "the shop's declared length puts the outfit's dividing line, the hem of its top item, near the middle of the field from shoulders to floor, and which size she takes decides whether it splits that field in half: the shop gives one length per size and her size is not known (values: slot — slot code)"
          },
          {
           "const": "dividing_line_item_length_unknown",
@@ -3839,6 +3848,10 @@
           "description": "the metal is named, yet the measurement found no cluster of its tone on the surface of the outfit's items: on the frame the metal is a detail — a trim, a charm, a setting — not the surface (values: metal — metal code, items — how many metal items in the outfit)"
          },
          {
+          "const": "named_metal_reads_other_tone_on_frame",
+          "description": "the metal is named, yet the frame reads the item as ANOTHER metal: the photo model's colour code and the measured colour agree on a different metal tone, so the name, not the surface, is in question (values: metal — the named metal code, frame_tone — the metal tone the frame reads, items — how many metal items of the outfit read so)"
+         },
+         {
           "const": "put_solid_metal_near_face",
           "description": "if metal is to lead the outfit, put a piece that IS metal near the face, not fabric with a metal trim"
          },
@@ -3849,6 +3862,14 @@
          {
           "const": "she_asked_no_jewellery",
           "description": "she asked for no jewellery, yet the outfit has some"
+         },
+         {
+          "const": "she_asked_jewellery_none_in_outfit",
+          "description": "she asked for jewellery with this outfit, yet the outfit has none (values: wish — the code of the jewellery she asked for)"
+         },
+         {
+          "const": "add_jewellery_she_asked_for",
+          "description": "add the jewellery she asked for near the face (values: wish — the code of the jewellery she asked for)"
          },
          {
           "const": "remove_jewellery_her_decision",
@@ -4028,7 +4049,7 @@
          },
          {
           "const": "chroma_too_high_for_photo_event",
-          "description": "at a photographed event a very high chroma blows out under the flash (values: chroma — the item's chroma, ceiling — the ceiling for photographs)"
+          "description": "at a photographed event a very high chroma may blow out under the flash (values: chroma — the item's chroma, ceiling — the ceiling for photographs)"
          },
          {
           "const": "judged_from_item_name",
@@ -4085,6 +4106,10 @@
          {
           "const": "no_rain_layer_on_rainy_day",
           "description": "the day is rainy, and no outer layer of the look keeps the rain off — a trench, a raincoat, a parka, a puffer or a coat; an umbrella is not counted as a layer (values: precipitation — the precipitation code, outer_moisture — none when there is no outer layer, no when its type keeps off neither rain nor cold: a jacket, a bomber, a vest, a cardigan or a poncho)"
+         },
+         {
+          "const": "possible_rain_layer_to_carry",
+          "description": "rain is only possible, and no outer layer of the look keeps it off — carry a rain layer in case it starts (values: precipitation — the precipitation code)"
          },
          {
           "const": "rain_outer_layer_over_look",
@@ -4248,7 +4273,7 @@
          },
          {
           "const": "knot_placement_buckle_as_detail",
-          "description": "the knot on the named side (in front, slightly off centre), and the buckle left as a detail, not a fastening (values: knot — back or front)"
+          "description": "the knot on the named side, and the buckle left as a detail, not a fastening (values: knot — back or front)"
          },
          {
           "const": "raise_collar_free_state",
@@ -4537,6 +4562,14 @@
          {
           "const": "scheme_promised_accent_all_neutral",
           "description": "the scheme promises neutrals and an accent, and not one measured item of the outfit carries colour: that is an unfulfilled scheme, not a calm outfit (values: scheme — scheme code, measured — how many items were measured)"
+         },
+         {
+          "const": "scheme_tonal_tone_not_on_large_items",
+          "description": "the tonal scheme promises one tone on all items with small lightness steps, and none of the outfit's measured large items carries that tone: a coloured accessory alone is not a tonal outfit (values: scheme — scheme code, large_measured — how many large items were measured, on_tone — slot codes of the items that do carry the tone)"
+         },
+         {
+          "const": "swap_large_item_to_scheme_tone",
+          "description": "swap one large item, best of all in this slot, for one in the scheme's tone from the selection, a lightness step away from the others (values: slot — slot code)"
          },
          {
           "const": "swap_one_item_to_colour_in_slot",
@@ -5731,6 +5764,10 @@
           "description": "the scheme of the outfit was chosen by her or by the stylist, not by a blind rank of the code"
          },
          {
+          "const": "soft_palette_drama_by_lightness",
+          "description": "a soft palette is made dramatic by lightness contrast, texture and shine, not by chroma (K-PAL-12)"
+         },
+         {
           "const": "glove_sleeve_length",
           "description": "glove length and sleeve length are one decision (K-GLV-02)"
          },
@@ -6002,6 +6039,7 @@
   },
   "precipitation": {
    "none": "ні",
+   "possible_rain": "можливий_дощ",
    "rain": "дощ",
    "sleet": "мокрий_сніг",
    "downpour": "злива",

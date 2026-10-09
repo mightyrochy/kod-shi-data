@@ -19,7 +19,7 @@ print("у пулі складання: %s" % (json.dumps(її[0], ensure_ascii=F
 пр = json.loads(в["промпт_ремонту"])
 о1 = пр["verdict"][0]   # П-2: англійський дріт
 hex_ї = [r.get("hex") for r in о1["your_outfit"]["items"] if r.get("name") == річ["назва"]]
-кол = [з["what"][:90] for з in о1.get("findings") or [] if її[0]["н"] in (з.get("items") or [])]
+кол = [str(з.get("statements"))[:90] for з in о1.get("findings") or [] if її[0]["н"] in (з.get("items") or [])]
 print("у промпті ремонту о1: hex її речі %s · знахідок над її номером %d%s" % (hex_ї, len(кол), (": " + " | ".join(кол[:3])) if кол else ""))
 сирі = sorted(glob.glob("../аудит/тести/сирі_2026-09-25/**/*ПАКЕТ_V1*.gz", recursive=True))
 з808 = sum(1 for ф in сирі if re.search(r'"назва":\s*"світлі джинси кльош"[^}]*"#808080"', gzip.open(ф, "rt", encoding="utf-8").read()))
