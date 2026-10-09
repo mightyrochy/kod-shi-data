@@ -1081,8 +1081,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "no_other_combination_take_another_top": "the selection has no other combination today: take another top "
                                              "or remove the outer layer",
     "needs_coat_none_in_pool": "this weather needs a coat or a warm jacket, and the selection for this "
-                               "occasion has none today: she takes her own (values: temperature_c — the day's "
-                               "temperature as the code knows it; precipitation — code of wet precipitation, "
+                               "occasion has none today: she takes her own (values: temperature_c — the degrees she named; "
+                               "weather_feel — instead of temperature_c when she named no degrees, the "
+                               "weather as she put it; precipitation — code of wet precipitation, "
                                "when there is any)",
     "catalogue_has_none_for_case": "the catalogue has no needed item for this case, so the outfit stays "
                                    "incomplete; a gap in the catalogue, not in the display (values: missing — "
@@ -1090,8 +1091,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "code_added_to_empty_slots": "the stylist left these places of the outfit empty and the code filled them; "
                                  "the outfit is not ready without them (values: slots — slot codes)",
     "weather_needs_outerwear": "this weather cannot be met without a coat or a warm jacket (values: "
-                               "temperature_c — the day's temperature as a number, as the code knows it; "
-                               "precipitation — the code of wet precipitation when there is any)",
+                               "temperature_c — the degrees she named; weather_feel — instead of temperature_c when "
+                               "she named no degrees, the weather as she put it; precipitation — the code of wet precipitation when there is any)",
     # ── КАРТКА ОБРАЗУ: ЧОМУ БІЛЯ РЕЧІ НЕМА ЗНІМКА ────────────────────────────
     "item_added_by_code": "this item was picked by the selection, not by the stylist",
     "no_photo_feed_gave_none": "the shop gave no photo of this item in the feed",
