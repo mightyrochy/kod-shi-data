@@ -155,7 +155,8 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
                                        "the code's repair, or the key of its text in «fixes»; «merged» — how "
                                        "many findings of one rule it joins; «declared»: true — your own "
                                        "declared move",
-                 як="keep a declared move and repeat it in «deliberate», or change your mind and say why"),
+                 як="keep a declared move by naming this finding's «id» in «deliberate», or change your mind "
+                    "and say why"),
         # ГГ-1 (рядки 1121, 1290; п.17): опора — інформація, не наказ
         _ЗП.Поле("verdict[].keep", "what the outfit stands on — her column, an echo of the accent, companions "
                                    "that hold a colour in her palette: «statements» (codes defined in "
@@ -207,7 +208,9 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         _РЯДОК_РІЧ_ДВІЧІ,
         "Take items only from this verdict (any «your_outfit») or from «showcase»; name each by its «n» in "
         "full; half of a set — the same «n» with «/top» or «/bottom».",
-        "When you break a condition deliberately, say so in «deliberate» of the outfit: the item and why.",
+        "When you break a condition deliberately, say so in «deliberate» of the outfit: the item, the «id» of "
+        "the finding it answers, and why. The code weighs only the finding you name there; a move without "
+        "a finding's «id» weakens nothing.",
         "«needed» — only for an item that is neither in the outfits nor in «showcase».",
         "An outfit of the answer is «your_outfit» after your work, with the same «id» and with «done»; "
         "«structure», «findings», «keep», «checklist» and «knot» stay out of the answer.",
@@ -216,6 +219,8 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
     поля_виходу=dict(_ПОЛЯ_ОБРАЗІВ, **{
         "образи[].ід": "«id» of the «your_outfit» you improved",
         "образи[].виконано[].знахідка": "«id» of a finding or a blocker of this outfit",
+        # рядок 3160: хід адресує знахідку кодом — речі мало, на ній стоять і чужі знахідки
+        "образи[].свідомо[].знахідка": "«id» of the finding of this outfit that this move answers",
         # ОПИС-1 (рядок 1416, CLAUDE.md п.4): «fixed» без визначення модель ставила й тоді, коли
         # знахідка лишалась (1 501 «fixed» на 02.10, 112 непідтверджених); міра — суд коду
         "образи[].виконано[].дія": "fixed — the finding is gone from the outfit by the code's check "
@@ -413,7 +418,9 @@ def знахідки_вердикту(знахідки, образ, ном=None)
             # вище лишається звіту: там він пояснює одну суть над кількома речами).
             **({"заяви": list(z["заяви"])} if z.get("заяви") else {}),
             **({"ремонт_заяви": list(z["ремонт_заяви"])} if z.get("ремонт_заяви") else {}),
-            **({"злито": int(z["злито"])} if z.get("злито", 1) > 1 else {})))
+            **({"злито": int(z["злито"])} if z.get("злито", 1) > 1 else {}),
+            # рядок 3160: межа паспорта ходом стилістки не слабшає — ні в суді, ні на «відхилено»
+            **({"межа_паспорта": True} if z.get("межа_паспорта") else {})))
     return рядки_схеми, вето
 
 
@@ -1158,7 +1165,10 @@ def перевірити_виконання(попередній_вердикт,
                 if чому_моделі:
                     перев, чому = True, "відхилено свідомо: %s" % чому_моделі[:120]
                     заява = _ВМ.заява("done_declined_accepted", why=чому_моделі[:120])
-                    if збіг and збіг.get("ід") and not збіг.get("свідомий"):
+                    # Межа паспорта (її власна чи норма події) ходом не слабшає (рядок 3160, п.9):
+                    # хід лишається її словами у звіті, знахідка — повною силою.
+                    if (збіг and збіг.get("ід") and not збіг.get("свідомий")
+                            and not збіг.get("межа_паспорта")):
                         # Знахідка набору послаблюється В НАБОРІ, не в образі: у
                         # `зап["знахідки"]` образу її нема, і покласти її туди
                         # означало б написати оголошений хід у нікуди.
@@ -1756,8 +1766,12 @@ def вердикт_v1(образи, варіантів=2, випадок=None, �
                 # поверталась до повної сили, ремонт бачив огріх, а жінка не чула
                 # «це задум». Тепер джерело істини одне — `образ.свідомі` вердикта,
                 # і в ньому обидва способи оголосити хід.
+                # АДРЕСА — КОД ЗНАХІДКИ, НЕ ЇЇ РЕЧІ (рядок 3160): вибір і опис судять цей образ
+                # наново, і хід над «регістр, 7 речей» без коду послабив би там будь-яку знахідку
+                # над будь-якою з цих речей (K-KOH-10 над светром — живий 12 А/08)
                 _відмови = [dict(річ=", ".join(str(r) for r in (z.get("речі") or []) if r),
-                                 чому=str(пос[str(z.get("ід") or "")]))
+                                 чому=str(пос[str(z.get("ід") or "")]),
+                                 знахідка=str(z.get("ід") or ""), правило=str(z.get("правило") or ""))
                             for z in (о.get("знахідки") or [])
                             if str(z.get("ід") or "") in пос and not z.get("свідомий")]
             виконання = вик["образи"].get(зап["ід"])
@@ -1775,7 +1789,7 @@ def вердикт_v1(образи, варіантів=2, випадок=None, �
                   + (_свідомі_з_json(_відмови, _слов_в, _ном_в) if _відмови else [])):
             if not isinstance(с, dict) or not с.get("текст"):
                 continue
-            з = dict({k: str(с[k]) for k in ("річ", "чому") if с.get(k)},
+            з = dict({k: str(с[k]) for k in ("річ", "чому", "знахідка", "правило") if с.get(k)},
                      текст=str(с.get("текст") or ""))
             # Той самий хід, названий двома способами (поле `свідомо` і «відхилено»
             # над знахідкою тієї ж речі), — один рядок, а не два: жінка читає їх.

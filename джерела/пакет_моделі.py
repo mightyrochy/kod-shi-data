@@ -531,8 +531,9 @@ import внутрішня_мова as _ВМ_П
                                               "common slip. An item with «in_arc»: false lies outside the "
                                               "scheme's hues, and so does a coloured item in the role "
                                               "«neutral»",
-                 як="a fact of the scheme, not an order: the code's check weakens its remarks on an item "
-                    "named in «deliberate» and reads an unnamed one outside the scheme as a slip"),
+                 як="a fact of the scheme, not an order: take an item outside it on purpose and say why in "
+                    "«deliberate»; the code's check still remarks on it, and the verdict lets you keep that "
+                    "remark as your move by its «id»"),
         # ВИБ-1 / рядок 842: намір `conventional` без її слів поставив сам паспорт — це мітка, що так
         _ЗП.Поле("case.intent_source", "default — she named no intent, and «intent» is the code's assumption, "
                                        "not her words"),
@@ -638,6 +639,8 @@ import внутрішня_мова as _ВМ_П
     поля_виходу=dict(ПОЛЯ_ОБРАЗІВ_EN, **{
         # поле другої ітерації (відповідь на вердикт): у першій його нема чим заповнити
         "образи[].виконано[].знахідка": "only in an answer to a verdict; here «done» is an empty list",
+        # рядок 3160: знахідок ще нема — хід без ід знахідки нічого не послаблює
+        "образи[].свідомо[].знахідка": "only in an answer to a verdict; here leave it out",
     }),
     межі=("лише_вхід",),
     мова_промпту="en",
