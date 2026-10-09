@@ -1,0 +1,44 @@
+── ПРОМПТ (2057 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored blazer in slate blue (#2c3e50) with a structured lapel and cropped length, crafted from wool crepe for structure against the wind. Underneath, a soft blouse in ivory (#fffff0) made of fine poplin with a relaxed fit and a button placket that reaches mid-thigh when worn alone. A midi skirt in charcoal grey (#36454f) featuring an A-line silhouette and knee-to-calf length, constructed from stable cotton twill to handle damp conditions. On feet, ankle boots in polished dark cognac brown (#6f4e37) with a block heel and water-resistant leather upper, reaching just above the ankle bone. The ensemble is finished with minimal gold-plated stud earrings in 18k finish and a simple silk scarf in beige (#f5f5dc) tied loosely around the neck to add warmth without bulk. This outfit works because the muted earth tones and cool greys create a polished, professional look suitable for an office environment while remaining comfortable for walking. The choice of wool crepe and cotton twill ensures the clothing holds its shape in potentially rainy weather without looking stiff or overly formal. The ankle boots provide necessary protection from puddles while maintaining a chic silhouette that balances the slightly heavier outer layers."}
+
+── ВІДПОВІДЬ (1149 симв., 237.0 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored with structured lapel and cropped length, crafted from wool crepe",
+      "slot": "outerwear",
+      "color_hex": "#2c3e50"
+    },
+    {
+      "name": "blouse",
+      "details": "soft with relaxed fit and button placket reaching mid-thigh when worn alone, made of fine poplin",
+      "slot": "top",
+      "color_hex": "#fffff0"
+    },
+    {
+      "name": "skirt",
+      "details": "midi featuring A-line silhouette and knee-to-calf length, constructed from stable cotton twill",
+      "slot": "bottom",
+      "color_hex": "#36454f"
+    },
+    {
+      "name": "boots",
+      "details": "ankle with block heel and water-resistant leather upper reaching just above the ankle bone, polished",
+      "slot": "shoes",
+      "color_hex": "#6f4e37"
+    },
+    {
+      "name": "earrings",
+      "details": "minimal studs in 18k gold-plated finish",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "scarf",
+      "details": "simple silk tied loosely around the neck to add warmth without bulk",
+      "slot": "scarf",
+      "color_hex": "#f5f5dc"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+── ПРОМПТ (1938 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured white linen blend blouse with a relaxed fit and rolled sleeves, cut slightly loose at the hips for breathability, in crisp white (#FFFFFF).\nA charcoal grey wide-leg wool-cotton stretch trouser that falls straight from the hip to a clean hem just above the shoe line, in dark matte grey (#36454F).\nSimple black leather loafers with a low block heel for comfortable all-day walking on wet pavement, in sleek black (#000000).\nA lightweight water-resistant trench coat in olive green that ends mid-thigh to shield legs from rain without adding bulk, in earthy olive (#556B2F).\nThis ensemble balances professional polish with practical comfort for a rainy commute, as the linen blouse and stretch trousers allow movement during the walk while the trench coat ensures she stays dry. The neutral palette of grey and black pairs effortlessly with the statement olive accent, adhering to a smart office dress code without feeling overly formal. By choosing natural fibers like wool-cotton and water-resistant outer layers, the outfit handles the unexpected weather forecast while maintaining a polished silhouette."}
+
+── ВІДПОВІДЬ (828 симв., 238.0 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blouse",
+      "details": "relaxed fit with rolled sleeves and loose hip cut for breathability, white linen blend fabric",
+      "slot": "top",
+      "color_hex": "#FFFFFF"
+    },
+    {
+      "name": "trouser",
+      "details": "wide-leg wool-cotton stretch fabric falling straight from hip to clean hem above shoe line",
+      "slot": "bottom",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "shoes",
+      "details": "leather loafers with low block heel, sleek design for comfortable walking on wet pavement",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "coat",
+      "details": "lightweight water-resistant trench ending mid-thigh to shield legs from rain, olive green fabric",
+      "slot": "outerwear",
+      "color_hex": "#556B2F"
+    }
+  ]
+}

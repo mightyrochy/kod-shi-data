@@ -17,7 +17,7 @@ while IFS='|' read -r ID WJ TXT X; do
     ( cd $REPO && timeout 2400 node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 $SITE C:/tmp/pyodide 3 > $D/лог.txt 2>&1 )
     RC=$?; SEC=$(( $(date +%s) - S ))
     for kv in $X; do unset ${kv%%=*}; done
-    [ $RC -eq 0 ] && break
+    [ $RC -le 1 ] && break
     echo "$ID спроба $TRY rc=$RC $SEC с" >> $T/out/$ET/done.txt
   done
   echo "$ID rc=$RC ${SEC}с $(date +%T)" >> $T/out/$ET/done.txt
