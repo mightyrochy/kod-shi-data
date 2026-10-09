@@ -4,9 +4,9 @@
 Друкує на руку: намір, сміливі образи кодом (ід:ознаки), дозу «лишити», скільки з них ремонт ДО справді лишив, і чи доза
 була б виконана ДО. Річ дроту → опис коду: type→слот (`СЛОТ_ТИПУ`), fabric/shine/pattern/color/hex — ті самі поля."""
 import gzip, json, glob, re, sys
-sys.path.insert(0, "/home/user/kod-shi-data/джерела")
+import os; sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import внутрішня_мова as В, вердикт_моделі as ВМ
-Т = sys.argv[1] if len(sys.argv) > 1 else "/home/user/kod-shi-data/аудит/перевірки/vyrva_968"
+Т = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../аудит/перевірки/vyrva_968")
 Ф = re.compile(sys.argv[2] if len(sys.argv) > 2 else ".")
 дж = lambda с: (json.loads(с) if с and с.lstrip()[:1] == "{" else None)
 def опис(i):  # річ дроту → (слот ядра, опис з ключами `_річ_пулу`)
