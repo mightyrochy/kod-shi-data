@@ -1,0 +1,451 @@
+── ПРОМПТ (17592 симв.) ──
+{"version":"1","task":{"role":"You are the stylist. The code checked the outfits you put together for her, and some of them cannot be shown yet: each such outfit has a blocker in «structure». You finish every one of them before she chooses.","rules":["Finish EVERY outfit in «verdict»: clear all of its blockers.","A missing kind of item: add one item for it from «showcase».","Several items of one kind: keep the one that suits the outfit best and remove the others.","Change nothing else: the remaining items, the caption and the day stay as they are.","Name every item by its «n» — in full, exactly as in «verdict» or «showcase».","Return every outfit of «verdict», each under its own «id»."],"limits":["Rely only on the input: do not invent what it does not contain.","The answer is one JSON object following \"answer_schema\", without explanations and without ```."],"language":"English","answer":"OUTFITS_V1","answer_schema":{"version":"1","outfits":[{"id":"<«id» of the outfit, as in «verdict»>","caption":"<string>","pole":"filter_and_rank|anchor_first|tonal_column|ease_the_knot|break|free","items":["<«n» of all items of the finished outfit>"],"day":"<«day» of «your_outfit», unchanged>","deliberate":[{"item":"<string>","why":"<string>"}],"done":[{"finding":"<string>","action":"fixed|declined|partly","why":"<string>"}]}],"needed":[{"kind":"<string>","description":"<string>","type":"<string>","color":"<string>","fabric":"<string>"}]},"input":["\"case\" — her occasion in her and the code's words","\"day\" — her day as facts","\"verdict\" — your outfits and the code's check: «your_outfit» — items with their full descriptions and your caption; «structure.blockers» — what keeps the outfit from being shown: a missing kind of item, or several items of one kind («items» lists them)","\"showcase\" — items that can fill what is missing","\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, or {code: values}; codes are defined in \"statement_codes\""],"statement_codes":{"no_shoes":"the outfit has no shoes, and without them it is not ready: add a pair for the occasion","no_bag":"no bag, and the occasion requires one","too_few_items":"too few items in the outfit for this occasion (values: count — how many there are, minimum — how many are needed at least)"}},"case":"свято, святкова вечеря, -8 °C","day":{"place":"festive_dinner","temperature_c":-8,"unknown":["start_hour"]},"verdict":[{"your_outfit":{"id":"o1","caption":"Warm olive festive dinner look","items":[{"n":"#166·08","name":"Бавовняна сукня з асиметричним низом Ленокс","price":4232,"type":"dress_generic","cut":"a-line","fabric":["cotton"],"length":"midi","color":"olive","hex":"#615a25","family":"yellow","L":[38,38],"L_from":"photo_point","hem_cm":[22,36],"hem_from":"word","formality":["smart","very_smart"],"register":"dramatic","branch":"core"},{"n":"#307·00","name":"Бомбер із фактурною в'язкою SENS шоколад","price":3950,"type":"jacket","fabric":["viscose"],"length":"midi","details":["oversize"],"color":"chocolate","hex":"#513827","family":"orange","L":[12,40],"L_from":"word","hem_cm":[22,36],"hem_from":"word","formality":["home","neat"],"register":"streetwear","branch":"core"}],"day":"Olive dress anchors the festive dinner; the oversized chocolate bomber handles -8°C warmth while keeping a relaxed silhouette."},"structure":{"ok":false,"blockers":[{"id":"b-o1-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o1-2","code":"no_bag","statements":["no_bag"]},{"id":"b-o1-3","code":"incomplete","statements":[{"too_few_items":{"count":2,"minimum":4}}]}]}},{"your_outfit":{"id":"o2","caption":"Rich burgundy party look","items":[{"n":"#109·01","name":"Перламутрова сукня максі","price":6999,"type":"dress_generic","cut":"bodycon","fabric":["polyester"],"length":"maxi","shine":true,"color":"purple","hex":"#845093","family":"purple","L":[20,65],"L_from":"word","hem_cm":[5,15],"hem_from":"word","formality":["smart","very_smart"],"branch":"edge","scheme":"muted_complementary"},{"n":"#388·35","name":"Довге пальто з поясом","price":5790,"type":"coat","fabric":["polyester"],"length":"maxi","details":["belt"],"color":"chocolate","hex":"#4d3426","family":"orange","L":[24,24],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":["neat","formal"],"register":"classic","branch":"core"}],"day":"A pearl maxi dress serves as the striking anchor for the celebration; the thick chocolate coat and boots provide essential warmth against the cold."},"structure":{"ok":false,"blockers":[{"id":"b-o2-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o2-2","code":"no_bag","statements":["no_bag"]}]}},{"your_outfit":{"id":"o3","caption":"Sophisticated brown festive set","items":[{"n":"#281·37","name":"Жакет у смужку","price":2555,"type":"blazer","cut":"fitted","fabric":["woven"],"length":"mid_thigh","pattern":"stripes","color":"grey","hex":"#5c5d5b","L":[39,39],"L_from":"photo_point","hem_cm":[82,92],"hem_from":"word","formality":["neat","smart"],"register":"classic","branch":"core"},{"n":"#59·32","name":"Джинси звуженого крою з потертостями на середній посадці","price":2610,"type":"jeans","cut":"skinny","fabric":["elastane","woven"],"length":"mini","color":"graphite","hex":"#554a4d","L":[32,32],"L_from":"photo_point","hem_cm":[17,21],"hem_from":"shop_cm","formality":["home","everyday"],"register":"preppy","branch":"core"},{"n":"#240·17","name":"Черевики осінні чорні з натуральної шкіри Крейзі","price":4200,"type":"ankle_boots","fabric":["leather"],"material":"leather","shaft":"ankle","color":"black","hex":"#232427","in_arc":true,"L":[14,14],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#308·08","name":"Легка куртка-жакет з матовою фактурою Амальфі","price":4720,"type":"jacket","cut":"fitted","fabric":["polyester"],"length":"mid_thigh","color":"brown","hex":"#8f6e49","family":"yellow","L":[49,49],"L_from":"photo_point","hem_cm":[82,92],"hem_from":"word","formality":"neat","register":"classic","branch":"core"}],"day":"A monochromatic brown outfit suitable for a festive dinner; the thick coat and boots are essential layers against the -8°C temperature."},"structure":{"ok":false,"blockers":[{"id":"b-o3-1","code":"no_bag","statements":["no_bag"]},{"id":"b-o3-2","code":"incomplete","statements":[{"too_few_items":{"count":4,"minimum":5}}]}]}}],"showcase":[{"n":"#190·06","name":"Чоботи жіночі коричневі","price":18700,"type":"boots","fabric":["suede"],"shaft":"knee","color":"brown","hex":"#3b2421","family":"red","in_arc":true,"L":[17,17],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#436·02","name":"Черевики жіночі, REMONTE, шкіра/екошкіра, колір бордовий","price":5950,"type":"ankle_boots","fabric":"unknown","heel":true,"branch":"core","found_for":"босоніжки бордовий сатин"},{"n":"#435·40","name":"Чоботи бордові","price":10658,"type":"boots","fabric":"unknown","shine":true,"branch":"core","found_for":"босоніжки бордовий сатин"},{"n":"#437·02","name":"Напівчеревики жіночі, RIEKER, шкіра/екошкіра, колір бордовий","price":4450,"type":"ankle_boots","fabric":"unknown","branch":"core","found_for":"босоніжки бордовий сатин"},{"n":"#91·32","name":"Чоботи із замші червоного кольору","price":8500,"type":"boots","fabric":["suede"],"material":"suede","shaft":"knee","color":"red","hex":"#6c3130","family":"red","in_arc":true,"L":[28,28],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#126·02","name":"Черевики жіночі, ATTICO, нубук, колір коричневий","price":3799,"type":"ankle_boots","fabric":["nubuck"],"material":"nubuck","shaft":"ankle","color":"brown","hex":"#46211c","family":"red","in_arc":true,"L":[18,18],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#237·05","name":"Черевики THEA з анатомічним мисом утеплені","price":6800,"type":"ankle_boots","fabric":["leather"],"material":"leather","shaft":"ankle","color":"chocolate","hex":"#5e3c31","family":"red","in_arc":true,"L":[29,29],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#9·02","name":"Черевики жіночі, ATTICO, нубук, колір коричневий","price":3599,"type":"ankle_boots","fabric":["nubuck"],"material":"nubuck","shaft":"ankle","color":"brown","hex":"#58342f","family":"red","in_arc":true,"L":[26,26],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#434·17","name":"Чоботи осінні бордові з натурального спилку-замші","price":7100,"type":"boots","fabric":"unknown","heel":true,"branch":"core","found_for":"босоніжки бордовий сатин"},{"n":"#92·02","name":"Черевики жіночі, ATTICO, шкіра, колір коричневий","price":3199,"type":"ankle_boots","fabric":["nubuck"],"material":"nubuck","shaft":"ankle","color":"brown","hex":"#4b2721","family":"red","in_arc":true,"L":[20,20],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#60·02","name":"Черевики жіночі, ATTICO, нубук, колір коричневий","price":3799,"type":"ankle_boots","fabric":["nubuck"],"material":"nubuck","shaft":"ankle","color":"brown","hex":"#4c2821","family":"red","in_arc":true,"L":[21,21],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#164·02","name":"Черевики жіночі, ATTICO, нубук, колір темно-коричневий","price":3899,"type":"ankle_boots","fabric":["nubuck"],"material":"nubuck","shaft":"ankle","color":"brown","hex":"#401f19","family":"red","in_arc":true,"L":[16,16],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#256·06","name":"Сумка жіноча Bambino Chaîne","price":56850,"type":"bag_generic","fabric":["leather"],"shine":true,"color":"red","hex":"#862a35","family":"red","in_arc":true,"L":[32,32],"L_from":"photo_point","branch":"core"},{"n":"#19·39","name":"Сумка Рожево-сливова","price":2070,"type":"bag_generic","fabric":["faux_leather"],"color":"pink","shop_color":"рожево-сливова","hex":"#8d243b","family":"red","in_arc":true,"L":[32,32],"L_from":"photo_point","register":"rock","branch":"core"},{"n":"#7·38","name":"Жіноча сумка Welfare","price":2600,"type":"bag_generic","fabric":"unknown","color":"pink","hex":"#bb948a","family":"red","in_arc":true,"L":[65,65],"L_from":"photo_point","branch":"core"},{"n":"#100·32","name":"Поясна сумка з червоної шкіри з лого","price":606,"type":"belt_bag","fabric":["leather"],"color":"red","hex":"#b1373d","family":"red","in_arc":true,"L":[42,42],"L_from":"photo_point","formality":"home","branch":"core"},{"n":"#26·21","name":"Жіноча сумка тоут шкіряна коричнева","price":2799,"type":"tote","fabric":["leather"],"color":"brown","hex":"#82645b","family":"red","in_arc":true,"L":[45,45],"L_from":"photo_point","formality":"everyday","branch":"core"},{"n":"#102·32","name":"Сумка Soho зі шкіри","price":22000,"type":"bag_generic","fabric":["leather"],"color":"cherry","hex":"#a91928","family":"red","in_arc":true,"L":[37,37],"L_from":"photo_point","branch":"core"},{"n":"#219·06","name":"Сумка жіноча червона","price":48600,"type":"bag_generic","fabric":["leather"],"color":"red","hex":"#b21b2c","family":"red","in_arc":true,"L":[39,39],"L_from":"photo_point","branch":"core"},{"n":"#341·02","name":"Сумка жіноча, ATTICO, шкіра, колір помаранчевий","price":2199,"type":"bag_generic","fabric":["leather"],"color":"terracotta","hex":"#d35e44","family":"red","in_arc":true,"L":[54,54],"L_from":"photo_point","branch":"core"},{"n":"#328·35","name":"Піджак прямого крою в синьому кольорі","price":4390,"type":"blazer","cut":"straight","fabric":["polyester","woven"],"length":"maxi","color":"navy","hex":"#1c3c63","family":"blue","L":[10,40],"L_from":"word","hem_cm":[5,15],"hem_from":"word","formality":["neat","smart"],"register":"classic","branch":"core"},{"n":"#262·08","name":"Куртка синя","price":4900,"type":"jacket","cut":"relaxed","fabric":["knitted"],"length":"midi","shine":true,"details":["quilted"],"color":"blue","hex":"#4f5c70","family":"blue","L":[39,39],"L_from":"photo_point","hem_cm":[22,36],"hem_from":"word","formality":["home","neat"],"branch":"core"},{"n":"#191·37","name":"Куртка-пальто Глорія чорна","price":3255,"type":"jacket","cut":"straight","fabric":["knitted"],"length":"maxi","color":"black","hex":"#2d2326","L":[0,30],"L_from":"word","hem_cm":[5,15],"hem_from":"word","formality":"neat","register":"classic","branch":"core"},{"n":"#81·32","name":"Зелена шкіряна куртка з биркою","price":13400,"type":"jacket","fabric":["cotton"],"color":"green","hex":"#39873a","family":"green","L":[20,80],"L_from":"word","hem_cm":[81,85],"hem_from":"shop_cm","formality":["home","neat"],"branch":"edge","scheme":"muted_complementary"},{"n":"#27·17","name":"Тренч оливковий вкорочений","price":3700,"type":"trench_coat","cut":"straight","fabric":["woven"],"length":"mid_thigh","color":"olive","hex":"#71744a","family":"yellow","L":[30,65],"L_from":"word","hem_cm":[82,92],"hem_from":"word","formality":["neat","formal"],"register":"classic","branch":"core"},{"n":"#269·11","name":"Матеріали та переваги Плащівка з мембраною — захист від снігу, дощу, мокрого снігу та холодного вітру","price":2999,"type":"trench_coat","cut":"fitted","fabric":["woven"],"length":"midi","pattern":"print_generic","details":["hood"],"color":"chocolate","hex":"#513827","family":"orange","L":[12,40],"L_from":"word","hem_cm":[22,36],"hem_from":"word","formality":["neat","formal"],"register":"classic","branch":"core"},{"n":"#212·08","name":"Джинсовий бомбер з накладними кишенями Люсьєна","price":5310,"type":"jacket","cut":"relaxed","fabric":["viscose","woven"],"length":"mid_thigh","color":"graphite","hex":"#484342","L":[29,29],"L_from":"photo_point","hem_cm":[82,92],"hem_from":"word","formality":["home","everyday"],"register":"preppy","branch":"core"},{"n":"#330·11","name":"Тренч класичний довгий табак","price":3999,"type":"trench_coat","cut":"fitted","fabric":["polyester","woven"],"length":"maxi","sleeve":"long","color":"graphite","hex":"#5f4f48","L":[35,35],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":["neat","formal"],"register":"classic","branch":"core"},{"n":"#104·18","name":"Пасок з пірʼям червоний","price":900,"fabric":["polyester"],"pattern":"embroidery","shine":true,"color":"red","hex":"#d40047","family":"red","in_arc":true,"L":[25,60],"L_from":"word","register":"boho","branch":"core"},{"n":"#78·18","name":"Пасок Базовий червоний","price":450,"cut":"belted","fabric":["leather"],"color":"red","hex":"#ff0000","family":"red","in_arc":true,"L":[53,53],"L_from":"photo_point","branch":"core"},{"n":"#65·18","name":"Пасок з пірʼям бордо","price":900,"fabric":["polyester"],"shine":true,"color":"burgundy","hex":"#6d151a","family":"red","in_arc":true,"L":[23,23],"L_from":"photo_point","branch":"core"},{"n":"#118·18","name":"Пасок Базовий фуксія","price":450,"fabric":["silk"],"shine":true,"color":"fuchsia","hex":"#cb4771","family":"red","in_arc":true,"L":[29,71],"L_from":"word","branch":"core"},{"n":"#335·38","name":"Ремінь жіночий Welfare","price":750,"fabric":["leather"],"color":"burgundy","hex":"#6f2331","family":"red","in_arc":true,"L":[12,40],"L_from":"word","branch":"core"},{"n":"#252·04","name":"Пасок шкіряний (Hermes)","price":2360,"fabric":["leather"],"color":"red","hex":"#e4481d","family":"red","in_arc":true,"L":[53,53],"L_from":"photo_point","branch":"core"},{"n":"#136·18","name":"Пасок Базовий пудра","price":450,"fabric":"unknown","color":"powder","hex":"#d4a0a0","family":"red","in_arc":true,"L":[71,71],"L_from":"photo_point","branch":"core"},{"n":"#90·18","name":"Пасок з пір’ям декольте червоний","price":900,"fabric":["polyester"],"shine":true,"color":"red","hex":"#d40047","family":"red","in_arc":true,"L":[25,60],"L_from":"word","branch":"core"},{"n":"#142·15","name":"Базовий обруч Еліна рожевий","price":900,"type":"headband","fabric":"unknown","color":"pink","hex":"#d5b3ad","family":"red","in_arc":true,"L":[76,76],"L_from":"photo_point","branch":"core"},{"n":"#184·15","name":"Базовий обруч фуксія","price":900,"type":"headband","fabric":"unknown","color":"fuchsia","hex":"#cb4771","family":"red","in_arc":true,"L":[29,71],"L_from":"word","branch":"core"},{"n":"#155·15","name":"Обруч Келлі зі стразами червоний","price":1050,"type":"headband","fabric":"unknown","shine":true,"color":"red","hex":"#d40047","family":"red","in_arc":true,"L":[25,60],"L_from":"word","branch":"core"},{"n":"#123·15","name":"Обруч Белла зі стразами лавандовий","price":5586,"type":"headband","fabric":"unknown","shine":true,"color":"lilac","shop_color":"лавандовий","hex":"#bc9794","family":"red","in_arc":true,"L":[66,66],"L_from":"photo_point","branch":"core"},{"n":"#114·15","name":"Обруч Бетті зі стразами та перлинами пудровий","price":1800,"type":"headband","fabric":"unknown","shine":true,"color":"powder_pink","hex":"#d0999c","family":"red","in_arc":true,"L":[68,68],"L_from":"photo_point","branch":"core"},{"n":"#178·32","name":"Рожева заколка з лого","price":4000,"type":"hair_clip","fabric":"unknown","shine":true,"color":"pink","hex":"#ef9db7","family":"red","in_arc":true,"L":[55,92],"L_from":"word","branch":"core"},{"n":"#173·15","name":"Базовий обруч червоний","price":900,"type":"headband","fabric":"unknown","color":"red","hex":"#d40047","family":"red","in_arc":true,"L":[25,60],"L_from":"word","branch":"core"},{"n":"#199·15","name":"Обруч Офелія зі стразами рожевий","price":1680,"type":"headband","fabric":"unknown","shine":true,"color":"pink","hex":"#ef9db7","family":"red","in_arc":true,"L":[55,92],"L_from":"word","branch":"core"}]}
+
+── ВІДПОВІДЬ (11617 симв., 115.2 с, HTTP 200) ──
+{
+  "answer": "OUTFITS_V1",
+  "version": "1",
+  "outfits": [
+    {
+      "id": "o1",
+      "caption": "Warm olive festive dinner look with ankle boots and red tote",
+      "pole": "anchor_first",
+      "items": [
+        {
+          "n": "#166·08",
+          "name": "Бавовняна сукня з асиметричним низом Ленокс",
+          "price": 4232,
+          "type": "dress_generic",
+          "cut": "a-line",
+          "fabric": [
+            "cotton"
+          ],
+          "length": "midi",
+          "color": "olive",
+          "hex": "#615a25",
+          "family": "yellow",
+          "L": [
+            38,
+            38
+          ],
+          "L_from": "photo_point",
+          "hem_cm": [
+            22,
+            36
+          ],
+          "hem_from": "word",
+          "formality": [
+            "smart",
+            "very_smart"
+          ],
+          "register": "dramatic",
+          "branch": "core"
+        },
+        {
+          "n": "#307·00",
+          "name": "Бомбер із фактурною в'язкою SENS шоколад",
+          "price": 3950,
+          "type": "jacket",
+          "fabric": [
+            "viscose"
+          ],
+          "length": "midi",
+          "details": [
+            "oversize"
+          ],
+          "color": "chocolate",
+          "hex": "#513827",
+          "family": "orange",
+          "L": [
+            12,
+            40
+          ],
+          "L_from": "word",
+          "hem_cm": [
+            22,
+            36
+          ],
+          "hem_from": "word",
+          "formality": [
+            "home",
+            "neat"
+          ],
+          "register": "streetwear",
+          "branch": "core"
+        },
+        {
+          "n": "#237·05",
+          "name": "Черевики THEA з анатомічним мисом утеплені",
+          "price": 6800,
+          "type": "ankle_boots",
+          "fabric": [
+            "leather"
+          ],
+          "material": "leather",
+          "shaft": "ankle",
+          "color": "chocolate",
+          "hex": "#5e3c31",
+          "family": "red",
+          "in_arc": true,
+          "L": [
+            29,
+            29
+          ],
+          "L_from": "photo_point",
+          "formality": [
+            "everyday",
+            "neat"
+          ],
+          "heel": "unknown",
+          "branch": "core"
+        },
+        {
+          "n": "#26·21",
+          "name": "Жіноча сумка тоут шкіряна коричнева",
+          "price": 2799,
+          "type": "tote",
+          "fabric": [
+            "leather"
+          ],
+          "color": "brown",
+          "hex": "#82645b",
+          "family": "red",
+          "in_arc": true,
+          "L": [
+            45,
+            45
+          ],
+          "L_from": "photo_point",
+          "formality": "everyday",
+          "branch": "core"
+        }
+      ],
+      "day": "Olive dress anchors the festive dinner; the oversized chocolate bomber handles -8°C warmth while keeping a relaxed silhouette. Added ankle boots and brown tote.",
+      "deliberate": [
+        {
+          "item": "#237·05",
+          "why": "Added ankle boots to satisfy the 'no_shoes' blocker, choosing chocolate leather for warmth and formality compatibility."
+        },
+        {
+          "item": "#26·21",
+          "why": "Added a brown leather tote to satisfy the 'no_bag' blocker, matching the neutral tones of the outfit."
+        }
+      ],
+      "done": [
+        {
+          "finding": "b-o1-1",
+          "action": "fixed",
+          "why": "Added ankle boots (#237·05) to resolve the no_shoes blocker."
+        },
+        {
+          "finding": "b-o1-2",
+          "action": "fixed",
+          "why": "Added brown leather tote (#26·21) to resolve the no_bag blocker."
+        },
+        {
+          "finding": "b-o1-3",
+          "action": "partly",
+          "why": "Original count was 2; minimum needed 4. Now items count is 4 (dress, bomber, boots, bag). The item counts match the requirement."
+        }
+      ]
+    },
+    {
+      "id": "o2",
+      "caption": "Rich burgundy party look with ankle boots and red tote",
+      "pole": "anchor_first",
+      "items": [
+        {
+          "n": "#109·01",
+          "name": "Перламутрова сукня максі",
+          "price": 6999,
+          "type": "dress_generic",
+          "cut": "bodycon",
+          "fabric": [
+            "polyester"
+          ],
+          "length": "maxi",
+          "shine": true,
+          "color": "purple",
+          "hex": "#845093",
+          "family": "purple",
+          "L": [
+            20,
+            65
+          ],
+          "L_from": "word",
+          "hem_cm": [
+            5,
+            15
+          ],
+          "hem_from": "word",
+          "formality": [
+            "smart",
+            "very_smart"
+          ],
+          "branch": "edge",
+          "scheme": "muted_complementary"
+        },
+        {
+          "n": "#388·35",
+          "name": "Довге пальто з поясом",
+          "price": 5790,
+          "type": "coat",
+          "fabric": [
+            "polyester"
+          ],
+          "length": "maxi",
+          "details": [
+            "belt"
+          ],
+          "color": "chocolate",
+          "hex": "#4d3426",
+          "family": "orange",
+          "L": [
+            24,
+            24
+          ],
+          "L_from": "photo_point",
+          "hem_cm": [
+            5,
+            15
+          ],
+          "hem_from": "word",
+          "formality": [
+            "neat",
+            "formal"
+          ],
+          "register": "classic",
+          "branch": "core"
+        },
+        {
+          "n": "#237·05",
+          "name": "Черевики THEA з анатомічним мисом утеплені",
+          "price": 6800,
+          "type": "ankle_boots",
+          "fabric": [
+            "leather"
+          ],
+          "material": "leather",
+          "shaft": "ankle",
+          "color": "chocolate",
+          "hex": "#5e3c31",
+          "family": "red",
+          "in_arc": true,
+          "L": [
+            29,
+            29
+          ],
+          "L_from": "photo_point",
+          "formality": [
+            "everyday",
+            "neat"
+          ],
+          "heel": "unknown",
+          "branch": "core"
+        },
+        {
+          "n": "#26·21",
+          "name": "Жіноча сумка тоут шкіряна коричнева",
+          "price": 2799,
+          "type": "tote",
+          "fabric": [
+            "leather"
+          ],
+          "color": "brown",
+          "hex": "#82645b",
+          "family": "red",
+          "in_arc": true,
+          "L": [
+            45,
+            45
+          ],
+          "L_from": "photo_point",
+          "formality": "everyday",
+          "branch": "core"
+        }
+      ],
+      "day": "A pearl maxi dress serves as the striking anchor for the celebration; the thick chocolate coat and boots provide essential warmth against the cold. Added ankle boots and brown tote.",
+      "deliberate": [
+        {
+          "item": "#237·05",
+          "why": "Added ankle boots to satisfy the 'no_shoes' blocker, choosing chocolate leather for warmth."
+        },
+        {
+          "item": "#26·21",
+          "why": "Added a brown leather tote to satisfy the 'no_bag' blocker."
+        }
+      ],
+      "done": [
+        {
+          "finding": "b-o2-1",
+          "action": "fixed",
+          "why": "Added ankle boots (#237·05) to resolve the no_shoes blocker."
+        },
+        {
+          "finding": "b-o2-2",
+          "action": "fixed",
+          "why": "Added brown leather tote (#26·21) to resolve the no_bag blocker."
+        }
+      ]
+    },
+    {
+      "id": "o3",
+      "caption": "Sophisticated brown festive set with bag and fitted blazer",
+      "pole": "filter_and_rank",
+      "items": [
+        {
+          "n": "#281·37",
+          "name": "Жакет у смужку",
+          "price": 2555,
+          "type": "blazer",
+          "cut": "fitted",
+          "fabric": [
+            "woven"
+          ],
+          "length": "mid_thigh",
+          "pattern": "stripes",
+          "color": "grey",
+          "hex": "#5c5d5b",
+          "L": [
+            39,
+            39
+          ],
+          "L_from": "photo_point",
+          "hem_cm": [
+            82,
+            92
+          ],
+          "hem_from": "word",
+          "formality": [
+            "neat",
+            "smart"
+          ],
+          "register": "classic",
+          "branch": "core"
+        },
+        {
+          "n": "#59·32",
+          "name": "Джинси звуженого крою з потертостями на середній посадці",
+          "price": 2610,
+          "type": "jeans",
+          "cut": "skinny",
+          "fabric": [
+            "elastane",
+            "woven"
+          ],
+          "length": "mini",
+          "color": "graphite",
+          "hex": "#554a4d",
+          "L": [
+            32,
+            32
+          ],
+          "L_from": "photo_point",
+          "hem_cm": [
+            17,
+            21
+          ],
+          "hem_from": "shop_cm",
+          "formality": [
+            "home",
+            "everyday"
+          ],
+          "register": "preppy",
+          "branch": "core"
+        },
+        {
+          "n": "#240·17",
+          "name": "Черевики осінні чорні з натуральної шкіри Крейзі",
+          "price": 4200,
+          "type": "ankle_boots",
+          "fabric": [
+            "leather"
+          ],
+          "material": "leather",
+          "shaft": "ankle",
+          "color": "black",
+          "hex": "#232427",
+          "in_arc": true,
+          "L": [
+            14,
+            14
+          ],
+          "L_from": "photo_point",
+          "formality": [
+            "everyday",
+            "neat"
+          ],
+          "heel": "unknown",
+          "branch": "core"
+        },
+        {
+          "n": "#308·08",
+          "name": "Легка куртка-жакет з матовою фактурою Амальфі",
+          "price": 4720,
+          "type": "jacket",
+          "cut": "fitted",
+          "fabric": [
+            "polyester"
+          ],
+          "length": "mid_thigh",
+          "color": "brown",
+          "hex": "#8f6e49",
+          "family": "yellow",
+          "L": [
+            49,
+            49
+          ],
+          "L_from": "photo_point",
+          "hem_cm": [
+            82,
+            92
+          ],
+          "hem_from": "word",
+          "formality": "neat",
+          "register": "classic",
+          "branch": "core"
+        },
+        {
+          "n": "#100·32",
+          "name": "Поясна сумка з червоної шкіри з лого",
+          "price": 606,
+          "type": "belt_bag",
+          "fabric": [
+            "leather"
+          ],
+          "color": "red",
+          "hex": "#b1373d",
+          "family": "red",
+          "in_arc": true,
+          "L": [
+            42,
+            42
+          ],
+          "L_from": "photo_point",
+          "formality": "home",
+          "branch": "core"
+        }
+      ],
+      "day": "A monochromatic brown outfit suitable for a festive dinner; the thick coat and boots are essential layers against the -8°C temperature. Added a red belt bag to satisfy the 'no_bag' blocker.",
+      "deliberate": [
+        {
+          "item": "#100·32",
+          "why": "Added a red leather belt bag to satisfy the 'no_bag' blocker, adding a pop of color while maintaining formality."
+        }
+      ],
+      "done": [
+        {
+          "finding": "b-o3-1",
+          "action": "fixed",
+          "why": "Added red leather belt bag (#100·32) to resolve the no_bag blocker."
+        },
+        {
+          "finding": "b-o3-2",
+          "action": "partly",
+          "why": "Original count was 4; minimum needed 5. Now items count is 5 (blazer, jeans, boots, jacket, bag). The item counts match the requirement."
+        }
+      ]
+    }
+  ],
+  "needed": []
+}

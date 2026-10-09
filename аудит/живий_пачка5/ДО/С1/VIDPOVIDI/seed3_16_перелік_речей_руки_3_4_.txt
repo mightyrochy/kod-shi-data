@@ -1,0 +1,38 @@
+── ПРОМПТ (1996 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wine-red velvet wrap coat, longline silhouette reaching mid-calf, deep crimson (#800020), heavy woven wool blend for insulation.  \nSilk-blend lace overlay blouse, relaxed fit with a high neck and 3/4 sleeves, midnight blue (#191970), soft drapey fabric that adds warmth without bulk.  \nTailored high-waist wide-leg trousers in stretch wool crepe, full length to the ankle, charcoal gray (#36454F), structured yet comfortable for standing or dancing.  \nBlack leather ankle boots with a 6cm heel, pointed toe, glossy finish, waterproof leather suitable for cold winter streets.  \nA faux-fur stole draped over the shoulders, ivory white (#FFFFF0) to brighten the ensemble, long pile synthetic fur for extra warmth.  \n\nThis outfit works because the deep jewel tones create an elegant, festive atmosphere perfect for a holy or celebratory dinner while ensuring warmth at -8 °C through layered textures. The combination of velvet, silk, wool, and leather provides both insulation and sophisticated visual interest without looking bulky under a coat. The wide-leg silhouette offers ease of movement and comfort throughout the evening, allowing her to enjoy the occasion gracefully."}
+
+── ВІДПОВІДЬ (979 симв., 273.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "wrap coat",
+      "details": "longline silhouette reaching mid-calf, deep crimson color, heavy woven wool blend for insulation",
+      "slot": "outerwear",
+      "color_hex": "#800020"
+    },
+    {
+      "name": "blouse",
+      "details": "silk-blend lace overlay, relaxed fit with high neck and 3/4 sleeves, soft drapey fabric",
+      "slot": "top",
+      "color_hex": "#191970"
+    },
+    {
+      "name": "trousers",
+      "details": "tailored high-waist wide-leg, full length to the ankle, structured yet comfortable",
+      "slot": "bottom",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "ankle boots",
+      "details": "black leather with 6cm heel, pointed toe, glossy finish, waterproof",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "stole",
+      "details": "faux-fur draped over shoulders, long pile synthetic for extra warmth",
+      "slot": "set",
+      "color_hex": "#FFFFF0"
+    }
+  ]
+}
