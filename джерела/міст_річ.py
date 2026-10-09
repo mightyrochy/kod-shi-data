@@ -75,7 +75,11 @@ def річ_з_фото(вхід):
     вердикт = _РФ.суд_у_виклику(dict(річ, вимір=вимір), F, T, сцен, п,
                                 source=d.get("source") or "uncontrolled",
                                 intent=(d.get("намір") or "conventional"))
-    return _json.dumps(dict(ід=ід, вимір=вимір, вердикт=вердикт), ensure_ascii=False, default=str)
+    # КОДИ СЛОТА Й ВИДУ РЕЧІ — внутрішньою мовою (п.12): репліка називає річ кодами, не словом
+    _ВМ = _РФ._ВМ
+    коди = dict(slot=_ВМ.код_або_невідомо("slot", річ.get("слот")),
+                item_type=(річ.get("вид") or _ВМ.UNKNOWN))
+    return _json.dumps(dict(ід=ід, вимір=вимір, вердикт=вердикт, коди=коди), ensure_ascii=False, default=str)
 
 
 def судження(d):
