@@ -144,7 +144,7 @@ def невідомо(v, коди=()):
                 "carpet": "килим", "grass": "трава", "stairs": "сходи"},
     "precipitation": {"none": "ні", "possible_rain": "можливий_дощ", "rain": "дощ",
                       "sleet": "мокрий_сніг", "downpour": "злива", "snow": "сніг"},
-    # ── РЕБРА ГІПЕРГРАФА ТІЛА (П-5, 27.09.2026, CLAUDE.md п.12) ───────────────
+    # ── РЕБРА ГІПЕРГРАФА ТІЛА (П-5, 27.09.2026, аудит/ПРОДУКТ.md п.12) ───────────────
     # Доти `brief.ЯРЛИК_РЕБРА` тримала вісім ФРАЗ, які код писав людині («верх і низ
     # не в балансі»), і вони їхали ярликом брифа в діагностику показу й у слід.
     # Тепер ярлик — код: ключ ядра лишається тим самим ідентифікатором ребра
@@ -158,7 +158,13 @@ def невідомо(v, коди=()):
     "part_of_day": {"morning": 9, "day": 13, "evening": 20, "night": 23},
     # Погода без числа → число, яке бере код (температура — вхід теплової функції й воріт
     # тканини, і доти це число вгадувала модель виклику 0).
-    "weather_feel": {"frost": -8.0, "cold": 2.0, "cool": 10.0, "warm": 20.0, "hot": 28.0},
+    # МОРОЗ — ВСЕРЕДИНІ СМУГИ «НИЖЧЕ −8 °C», НЕ НА ЇЇ КРАЮ (рядок 3451). Тут стояло −8,0 — нижня
+    # межа смуги «−8…+2» (`outfit.ТЕМП_МАПА`), тоді як усі правила морозу питають «< −8»
+    # (`суд_погода.ГЛИБОКИЙ_ХОЛОД_C`: гейт нетеплого верхнього шару, шапка й шарф; опора
+    # стилістці `brief` «frost_layers_and_cold_accessories»). Тож «мороз» без градусів судився як
+    # +1 °C: ЖИВІ-13 №8 (−15 °C, сніг; число загублене) — сукня + бомбер без шапки лише двома
+    # репліками. −10 — середина звичного «морозу» (−5…−15); градусів вона й далі не читає.
+    "weather_feel": {"frost": -10.0, "cold": 2.0, "cool": 10.0, "warm": 20.0, "hot": 28.0},
     "intent": {к: к for к in ("conventional", "statement", "comfort_first", "context_optimal")},
     # ── ЧЕТВЕРТА МЕТА: «ВИЩЕ» (28.09.2026, рішення власника «10 а», звіт Research П8) ──
     # Вертикаль — ОКРЕМА вісь від уваги: «щоб личило» / «не привертати» / «щоб дивились»
@@ -268,7 +274,7 @@ def невідомо(v, коди=()):
     # Куди йде її питання (М-1, 8/8): app — довідці про застосунок, look — стилістці з фото й
     # речами. Ключа ядра нема — маршрут веде показ, тож код лишається кодом.
     "question_about": {"app": "app", "look": "look"},
-    # ХТО ВІДПОВІДАЄ НА ХІД РОЗМОВИ (М-5, CLAUDE.md п.14) — межа мовної моделі кодами; визначення
+    # ХТО ВІДПОВІДАЄ НА ХІД РОЗМОВИ (М-5, аудит/ПРОДУКТ.md п.14) — межа мовної моделі кодами; визначення
     # кожного коду — `ПОТРЕБИ` нижче. Код маршруту, не ключ ядра: відповідність тотожна, як у
     # `question_about`.
     "need": {"none": "none", "app": "app", "look": "look", "build": "build"},
@@ -413,7 +419,7 @@ _БАЖАННЯ_ПОЛЯ = (("тип", "item_type"), ("слот", "slot"), ("к�
 def бажання_кодом(б):
     """Її бажання (`паспорт.бажання_коди`: ключі ядра) → коди через кому: «sneakers, white».
 
-    ЧОМУ НЕ ФРАЗА (рядок 1445, CLAUDE.md п.12). Фраза бажання (`мовний_шар._фраза`) — ті самі ключі
+    ЧОМУ НЕ ФРАЗА (рядок 1445, аудит/ПРОДУКТ.md п.12). Фраза бажання (`мовний_шар._фраза`) — ті самі ключі
     ядра українськими словами, і в англійському промпті стилістки стояло `"wishes": ["кеди, білий"]`,
     а речі пулу несли `for_her_wish: "кеди, білий"`. Ці коди — ті самі, що в полях речей пулу.
     Слот — лише коли типу нема (тип його вже несе), клас кольору — лише без назви кольору. Ключ
@@ -566,7 +572,7 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     # ПОЯСНЕННЯ МОВНОЇ МОДЕЛІ СТИЛІСТЦІ (НП-в6, принцип власника 01.10, сл. 4): «Модель стиліст все
     # інше отримує у вигляді прямих слів людини, або у вигляді пояснень мовної моделі, якщо прямі
     # слова мовна модель вважає складними для інтерпретації». Код поля не читає — воно їде стилістці
-    # поруч із її словами (`case.language_model_note`), англійською (CLAUDE.md п.12).
+    # поруч із її словами (`case.language_model_note`), англійською (аудит/ПРОДУКТ.md п.12).
     "stylist_note": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="лише коли її слова про подію важко "
                          "витлумачити без контексту (місцевий звичай, сленг, іронія, незвична подія): "
                          "коротке пояснення для стилістки англійською, що вона має на увазі; інакше — "
@@ -645,7 +651,7 @@ _ЗСУВ = lambda опис: _перелік("direction", опис)
 _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "description": о} for к, о in описи.items()]}
 
 # РЕПЛІКА СТИЛІСТКИ ВНУТРІШНЬОЮ МОВОЮ: що вирішив код, — вихідний перекладач робить із
-# цього ОДИН текст (поле `text`). Тем поради — до трьох за хід (CLAUDE.md п.9).
+# цього ОДИН текст (поле `text`). Тем поради — до трьох за хід (аудит/ПРОДУКТ.md п.9).
 РЕПЛІКА = {
     "recorded": {"description": "що записано з її слів цього ходу (поля сценарію кодами)",
                  "type": "object"},
@@ -658,7 +664,7 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                                              "verdict": {"$ref": "#/$defs/screen_message"}},
                               "required": ["verdict"]},
                              "вердикт про кожну її річ з фото: заяви кодами"),
-    # ДОДАНЕ ДО СЦЕНАРІЮ — КОДАМИ (М-1, CLAUDE.md п.12): доти показ писав це фразою
+    # ДОДАНЕ ДО СЦЕНАРІЮ — КОДАМИ (М-1, аудит/ПРОДУКТ.md п.12): доти показ писав це фразою
     # («Додала до сценарію: «…» — твоя річ, вона стане в кожен образ.»)
     "added": {"description": "що додано до сценарію з її слів, сказаних поза екраном сценарію: "
                              "own_items — її речі (її словами), які стоять у кожному образі; wish — "
@@ -717,7 +723,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "ask": {"type": "string", "description": "одне коротке пряме питання про `ask_code`"},
 }
 
-# ══ ПОВІДОМЛЕННЯ ЖІНЦІ ПОЗА РОЗМОВОЮ (Ч-1, CLAUDE.md п.12) ═════════════════════
+# ══ ПОВІДОМЛЕННЯ ЖІНЦІ ПОЗА РОЗМОВОЮ (Ч-1, аудит/ПРОДУКТ.md п.12) ═════════════════════
 # ЩО БУЛО. На шляху РОЗМОВИ кошик В прибрано (М-1, #363): код віддає поля репліки
 # кодами, речення пише мовна модель. Поза розмовою — на картці образу й на екрані
 # «Палітра» — код досі САМ складав українські фрази: `палітра_схеми.ЛЮДСЬКА_НОТА`,
@@ -769,7 +775,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "card_added_by_code": "рядок на картці образу про те, що в ньому зробив ДОБІР, а не стилістка: "
                           "речі, докладені в порожні місця, і речі, зняті або замінені, "
                           "бо з ними образ не проходив перевірку (ярус 4)",
-    # ФОТО-1 (02.10.2026, CLAUDE.md п.17): крок опису бачив фото речей і замінив одну річ запасною того
+    # ФОТО-1 (02.10.2026, аудит/ПРОДУКТ.md п.17): крок опису бачив фото речей і замінив одну річ запасною того
     # самого слота, яку код перевірив тим самим судом (`заміна_з_фото`)
     "card_item_swapped": "рядок на картці образу: стилістка, побачивши фото речей, замінила одну річ "
                          "іншою того самого роду з її добору — що замінила і чому",
@@ -802,7 +808,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
 # ЗАЯВИ: код → ЩО САМЕ сказано. Це ВИЗНАЧЕННЯ для моделі, не готова фраза. Числа й назви
 # приїжджають у `values` і в визначенні названі як «(values: …)».
 #
-# АНГЛІЙСЬКОЮ Й ОДНИМ СЛОВНИКОМ НА ОБИДВІ МОДЕЛІ (Ч-7, 27.09.2026, рядок 157 дошки, CLAUDE.md п.12).
+# АНГЛІЙСЬКОЮ Й ОДНИМ СЛОВНИКОМ НА ОБИДВІ МОДЕЛІ (Ч-7, 27.09.2026, рядок 157 дошки, аудит/ПРОДУКТ.md п.12).
 # ЩО БУЛО. Словників було два: український (`ЗАЯВИ`) — мовній моделі, англійський (`ЗАЯВИ_EN`,
 # П-6) — функціональній. Український розходився з власною шапкою: 108 значень із 693 були не
 # визначенням, а ГОТОВИМ реченням для жінки — на «ти» й наказом («біля обличчя постав свою
@@ -1203,7 +1209,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "schemes_advised_count": "how many schemes the stylist advises for this outfit (values: count — a number)",
     "rarer_schemes_count": "how many schemes are rarer; they can be chosen too (values: count — a number)",
     "choose_another_if_wants": "she can choose another one herself if she wants",
-    # ══ «КОД НЕ ЗНАЄ» НА КАРТЦІ (Ч-2, 27.09.2026, CLAUDE.md п.12) ══════════════
+    # ══ «КОД НЕ ЗНАЄ» НА КАРТЦІ (Ч-2, 27.09.2026, аудит/ПРОДУКТ.md п.12) ══════════════
     # Доти кожне питання цього блоку було ФРАЗОЮ коду (`суть` знахідки), і жінка читала її
     # з сирими ключами всередині: «вимоги коду «business_casual»», «вимір людини
     # «довжина_стопи_мм»». Тепер місце, що народжує питання, віддає ЗАЯВИ кодами
@@ -2136,7 +2142,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "frost_layers_and_cold_accessories": "hard frost: the layer map asks for this many layers on the torso — "
                                          "a warm layer under the coat counts — and a warm hat and scarf are "
                                          "part of the warmth and the main carriers of colour (values: "
-                                         "temperature_c — the temperature, layers — layers the map asks for)",
+                                         "temperature_c — the temperature, layers — layers the map asks for"
+                                         "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     # ДОЩ-1 (рядок 1470): K-WEA-01 — дощовий день, а верхнього шару від дощу в образі нема
     "no_rain_layer_on_rainy_day": "the day is rainy, and no outer layer of the look keeps the rain off — a "
                                   "trench, a raincoat, a parka, a puffer or a coat; an umbrella is not "
@@ -2766,7 +2773,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "scheme_accent_absent_in_pool": "not one item of the accent kinds carries a colour in the arc of the "
                                     "scheme: do not pretend the outfit keeps it — a shortage of stock, not a "
                                     "choice against her (values: kinds — kind codes; scheme — scheme code)",
-    # ── ПРАВИЛА СТИЛЮ ПРОМПТА СКЛАДАННЯ РУК 1–2 (ВМ-1, 01.10.2026; CLAUDE.md п.12) ─────────
+    # ── ПРАВИЛА СТИЛЮ ПРОМПТА СКЛАДАННЯ РУК 1–2 (ВМ-1, 01.10.2026; аудит/ПРОДУКТ.md п.12) ─────────
     # Доти `style_rules` їхали в англійський промпт складання українськими реченнями брифа
     # (`brief.бриф`, ребра `hypergraph`, рядки схеми `міст_пакет`): ~3 200 кириличних літер. Тепер
     # кожен рядок брифа несе поруч `заява` — код звідси зі значеннями (числа, коди, hex), а
@@ -2827,7 +2834,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                       "the nearer the end of the period, the softer this limit",
     "cold_outer_layer_counts": "in this cold the outer layer is part of the outfit, not an addition: its colour "
                                "and formality are judged with the rest; open shoes, thin tights and bare ankles "
-                               "are a mistake here, not a style (values: temperature_c)",
+                               "are a mistake here, not a style (values: temperature_c"
+                               "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "precipitation_shoes_materials": "precipitation: closed shoes, no fabric soles, no suede or nubuck; "
                                      "materials afraid of water stay out of the outfit",
     "precipitation_water_shy_materials_with_condition": "precipitation: closed shoes, no fabric soles; suede, "
@@ -2860,7 +2868,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "high_occasion_floor": "the event's level starts from this step: no item sits "
                            "more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); "
                            "shoes at the outfit's level or above (values: from)",
-    "weather_layers": "the weather outside and the layers it asks for (values: temperature_c; layers — how many "
+    "weather_layers": "the weather outside and the layers it asks for (values: temperature_c"
+                      "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; layers — how many "
                       "layers on the torso, a half is one more light removable layer; fabrics — fabric codes "
                       "for this temperature; outer_at_formality — true when the outer layer is held to the "
                       "outfit's formality too)",
@@ -2937,7 +2946,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                  "item for both, since a fix on one zone moves the other; the rest on the first zone is fixed "
                  "separately (values: zones — per zone: conditions, tension 0 to 1; shared, own — condition "
                  "codes, defined here too)",
-    # ── УМОВИ ВУЗЛА ТІЛА — КОДИ `body_edge` (ФІГ-2, рядок 904; CLAUDE.md п.12) ──────────────
+    # ── УМОВИ ВУЗЛА ТІЛА — КОДИ `body_edge` (ФІГ-2, рядок 904; аудит/ПРОДУКТ.md п.12) ──────────────
     # `body_knot.shared/own` називає ребра гіперграфа кодами, а словник виклику їх не визначав:
     # модель бачила назви умов без змісту. `one_line` і `volume_anchor` — ті самі заяви вище;
     # решта п'ять — тут. `збирач_промптів.коди_заяв` бере їх зі значень `body_knot`.
@@ -3012,7 +3021,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
 })
 
 
-# ── ПОРУШЕННЯ ГЕЙТА МОВИ ДЛЯ ПЕРЕПИСУ (ВМ-3б, 01.10.2026; рядок 542 дошки, CLAUDE.md п.12) ──────
+# ── ПОРУШЕННЯ ГЕЙТА МОВИ ДЛЯ ПЕРЕПИСУ (ВМ-3б, 01.10.2026; рядок 542 дошки, аудит/ПРОДУКТ.md п.12) ──────
 # ЩО БУЛО. Повтор мови (`вердикт_моделі.мова_повтор`) віз моделі український шаблон: наказ,
 # формат, «фото» і `порушення` словами гейта (`language_gate.АНТИ`: `суть`, `дозволено`) —
 # ~1 350 знаків кирилиці від коду на виклик. ЩО ТЕПЕР. На дроті — код порушення
@@ -3076,7 +3085,7 @@ if _спільні:
 ЗАЯВИ.update(ПОРУШЕННЯ_МОВИ)
 
 
-# ── ПУНКТИ ЧЕКЛІСТІВ СУДУ ОБРАЗУ (ВМ-2, 01.10.2026; рядок 483 дошки, CLAUDE.md п.12) ─────────
+# ── ПУНКТИ ЧЕКЛІСТІВ СУДУ ОБРАЗУ (ВМ-2, 01.10.2026; рядок 483 дошки, аудит/ПРОДУКТ.md п.12) ─────────
 # ЩО БУЛО. Пункти чекліста (`суд_чеклісти`: надлишок 1–20, прісність B1–B7, палітра P1–P8,
 # аксесуари A1–A14) їхали в англійські промпти ремонту й вибору ІМЕНАМИ ПУНКТІВ — українськими
 # фразами коду («рівно один фокус», «метал один, або свідомий мікс із повтором»): кошик В п.12,
