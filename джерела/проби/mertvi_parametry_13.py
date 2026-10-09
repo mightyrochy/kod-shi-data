@@ -28,9 +28,13 @@ def нечитані(текст):
 лічба, рядків = {"мертвий": 0, "прогалина": 0, "страховка": 0}, 0
 print("модуль.функція · параметр · клас · викликачів · передають (перші три)")
 for м in sorted(status.МОДУЛІ_ПРОДУКТУ):
-    # модуль, якого на БАЗІ ще не було (народжений пізніше), не має «ДО»: нечитаних там не лічимо
-    зріз = subprocess.run(["git", "show", "%s:джерела/%s.py" % (БАЗА, м)], capture_output=True, text=True)
-    до = нечитані(зріз.stdout) if зріз.returncode == 0 else set()
+    # модуль, якого на БАЗІ ще не було (народжений пізніше), не має «ДО»; нечитаний зріз бази — не «нема»:
+    # `ls-tree` читає дерево (rc≠0 → зріз недоступний, стоп), порожній вивід — шляху на базі справді нема
+    дер = subprocess.run(["git", "ls-tree", БАЗА, "--", "джерела/%s.py" % м], capture_output=True, text=True)
+    if дер.returncode:
+        sys.exit("зріз бази %s нечитаний (%s): git fetch --unshallow" % (БАЗА, дер.stderr.strip()[:80]))
+    до = (нечитані(subprocess.run(["git", "show", "%s:джерела/%s.py" % (БАЗА, м)], capture_output=True,
+                                  text=True, check=True).stdout) if дер.stdout.strip() else set())
     після = нечитані(open("джерела/%s.py" % м, encoding="utf-8").read())
     for ф, п in sorted(до):
         клас = "страховка" if (ф, "_" + п) in після else "прогалина" if (ф, п) in після else "мертвий"

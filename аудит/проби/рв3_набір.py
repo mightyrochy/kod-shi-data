@@ -4,13 +4,12 @@ import os, sys; sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(
 чи знає про них перевірка виконання (Т-05), і скільки коштує `риси_образу`.
 Запуск із теки `джерела`: python3 ../аудит/проби/рв3_набір.py  (каталог_повний, ~1–2 хв)"""
 import json, re, sys, time
-sys.path.insert(0, os.path.join(sys.path[0], "проби")); from пул_слотами import пул_слотами  # noqa: E402
 import bridge as B, pipeline as PL, протокол as P
 
 вх = json.load(open("стенд_вх.json"))
 d0 = dict(вх, сценарій=dict(нагода="вечірка", місце="ресторан", година=19, темп_c=18, дрес_код="cocktail"),
           випадок="коктейль, ресторан, 19:00")
-пул = пул_слотами(json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["руки"]["1"])
+пул = json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["пакети"]["1"]["пул"]
 н = lambda с, k: пул[с][k % len(пул[с])]["н"]
 образ = lambda *реч: dict(ід="о", речі=list(реч))
 трійка = [образ(н("верх", 0), н("низ", 0), н("взуття", 0), н("сумка", k)) for k in range(3)]

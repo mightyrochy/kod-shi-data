@@ -6,13 +6,12 @@
 import sys, os, json, tempfile
 ДЖ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "джерела")
 sys.path.insert(0, ДЖ); os.chdir(ДЖ)
-sys.path.insert(0, os.path.join(ДЖ, "проби")); from пул_слотами import пул_слотами  # noqa: E402
 import bridge as B, feed as Ф, протокол as P
 
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 d0 = dict(вх, каталог=Ф.каталог_на_диску("каталог_brief.xml"), варіантів=10,
           кеш_кольорів=os.path.join(tempfile.gettempdir(), "кеш_проби_коорд.json"))
-пул = пул_слотами(json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["руки"]["1"])
+пул = json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["пакети"]["1"]["пул"]
 н = lambda сл, i: пул[сл][i % len(пул[сл])]["н"]
 образи = [dict(ід="о%d" % (i + 1), підпис="проба %d" % (i + 1),
                речі=[н("сукня", i), н("взуття", i), н("сумка", i), н("каблучка", i)])
