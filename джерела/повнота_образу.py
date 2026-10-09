@@ -13,7 +13,8 @@ import re as _re_вк
 import внутрішня_мова as _ВМ
 import протокол as _ПР
 import збирач_промптів as _ЗП
-from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей, скелет_схеми, _річ_пулу, ПОЛЯ_МЕЖІ_НА_СЛОТ
+from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей, скелет_схеми, _річ_пулу, ПОЛЯ_МЕЖІ_НА_СЛОТ, \
+    РЯДОК_ЛИШЕ_НОМЕР
 from розбір_відповідей import _словник_речей, _за_номером, _розпізнати_речі, _запис_образу, _свідомі_з_json, \
     _список
 from суд_від_моделі import СЛОТИ_БЛОКЕРА, _ЧОМУ_БЛОКЕРА, _сім_я_слота, структура_образу, склад_комплекту
@@ -1532,13 +1533,14 @@ def повнота_набору(вердикт, кандидати=None, кат�
         # доданої речі («Added shoes to complete the outfit») і йшло в суд ходом без коду
         "Leave «deliberate» empty: an item you add for a blocker is not a deliberate move, and the moves "
         "you declared before stay as they were.",
-        "Name every item by its «n» — in full, exactly as in «verdict» or «showcase».",
+        "Take every item from «verdict» or «showcase».",
+        РЯДОК_ЛИШЕ_НОМЕР,
         "Return exactly ONE outfit.",
     ),
     вихід="ОБРАЗИ_V1",
     поля_виходу={
         "образи[].ід": "«id» of the outfit you finished",
-        "образи[].речі": "«n» of all items of the finished outfit",
+        "образи[].речі": "«n» of each item of the finished outfit, alone",
         "образи[].день": "«day» of «your_outfit», unchanged",
     },
     межі=("лише_вхід",),
@@ -1568,13 +1570,14 @@ def повнота_набору(вердикт, кандидати=None, кат�
         # доданої речі («Added shoes to complete the outfit») і йшло в суд ходом без коду
         "Leave «deliberate» empty: an item you add for a blocker is not a deliberate move, and the moves "
         "you declared before stay as they were.",
-        "Name every item by its «n» — in full, exactly as in «verdict» or «showcase».",
+        "Take every item from «verdict» or «showcase».",
+        РЯДОК_ЛИШЕ_НОМЕР,
         "Return every outfit of «verdict», each under its own «id».",
     ),
     вихід="ОБРАЗИ_V1",
     поля_виходу={
         "образи[].ід": "«id» of the outfit, as in «verdict»",
-        "образи[].речі": "«n» of all items of the finished outfit",
+        "образи[].речі": "«n» of each item of the finished outfit, alone",
         "образи[].день": "«day» of «your_outfit», unchanged",
     },
     межі=("лише_вхід",),
