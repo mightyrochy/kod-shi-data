@@ -13,9 +13,9 @@
 import json, time, hashlib, gzip, os, shutil, tempfile
 import bridge as B
 
-# База ПЕРЕЗНЯТА на origin/main 4fdb3fb (09.10.2026): хеш і лічба — звідти (пул 411 речей після хвиль
-# п.12/п.17, обидві гілки збігаються); часи ті ж. Перезнімати після КОЖНОГО злиття, що рухає пул.
-ДО = {None: ("98b1bb409a588c39", 411, 26.1), 0: ("98b1bb409a588c39", 411, 6.5)}
+# База ПЕРЕЗНЯТА на origin/main 65ce695 (18.09.2026): хеш і лічба — звідти,
+# часи лишаються ті, що були до правок швидкості, бо ×N міряє саме їх.
+ДО = {None: ("1b076c40b316bf35", 370, 23.5), 0: ("723a40c200c3b59f", 377, 18.2)}
 шлях = os.path.join(tempfile.gettempdir(), "shvydkist_каталог.xml")
 with gzip.open("../каталог_повний.xml.gz", "rb") as г, open(шлях, "wb") as в:
     shutil.copyfileobj(г, в)
@@ -26,8 +26,11 @@ try:
         t = time.perf_counter()
         вих = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
         дт = time.perf_counter() - t
-        пул = вих["пакети"]["1"]["пул"]
-        рядок = json.dumps({с: [r["н"] for r in v] for с, v in пул.items()}, ensure_ascii=False)
+        рядки = json.loads(вих["руки"]["1"])["pool"]
+        за_н = {р_["n"]: р_ for р_ in рядки}
+        пул = {сл: [за_н[ном] for ном in ід if ном in за_н]
+               for сл, ід in вих["порядок_рук"]["1"]["слоти"].items()}
+        рядок = json.dumps({с: [r["n"] for r in v] for с, v in пул.items()}, ensure_ascii=False)
         хеш, речей = hashlib.sha256(рядок.encode()).hexdigest()[:16], sum(len(v) for v in пул.values())
         хеш_до, речей_до, час_до = ДО[гілка]
         той_самий = (хеш == хеш_до and речей == речей_до)

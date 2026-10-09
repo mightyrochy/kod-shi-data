@@ -11,8 +11,12 @@ import bridge as B, feed as Ф, протокол as P
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 d0 = dict(вх, каталог=Ф.каталог_на_диску("каталог_brief.xml"), варіантів=10,
           кеш_кольорів=os.path.join(tempfile.gettempdir(), "кеш_проби_коорд.json"))
-пул = json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["пакети"]["1"]["пул"]
-н = lambda сл, i: пул[сл][i % len(пул[сл])]["н"]
+відп = json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))
+рядки = json.loads(відп["руки"]["1"])["pool"]
+за_н = {р_["n"]: р_ for р_ in рядки}
+пул = {сл: [за_н[ном] for ном in ід if ном in за_н]
+       for сл, ід in відп["порядок_рук"]["1"]["слоти"].items()}
+н = lambda сл, i: пул[сл][i % len(пул[сл])]["n"]
 образи = [dict(ід="о%d" % (i + 1), підпис="проба %d" % (i + 1),
                речі=[н("сукня", i), н("взуття", i), н("сумка", i), н("каблучка", i)])
           for i in range(5)]

@@ -35,11 +35,15 @@
                       хоч «Change nothing else» її про це не просило (рядок 150 дошки,
                       доповідь ноутбука 25.09: прикрас 4 → 1, сумок 2 → 1). У «usi» НЕ
                       входить: вона міряє один крок, і на інших формах її не видно.
+     vkladeno       — ХІД РОЗМОВИ з `need: look`: `need`, `text` і решту частин модель кладе
+                      ВСЕРЕДИНУ `update` (рядок 2420: MamayLM так відповів у 11 з 16 живих
+                      прогонів пачки 2 на сцені 6б «фото + оціни мій образ»). У «usi» НЕ входить —
+                      вмикається лише своїм ім'ям.
    Повтор формату слабка модель провалює ТАК САМО: це і є «повтор дасть те саме».
    Без SLABKA стенд байт-у-байт той самий. */
 const ФОРМИ = ['obrizano', 'latynytsia', 'masyv', 'nomery', 'vidpovid', 'obraz_u_vybori',
   'ekho', 'ryadky', 'opys_obrazom', 'prybraty'];
-const ОКРЕМІ = ['ekho_remont', 'pvn_aksesuary'];   // лише своїм ім'ям, не в «usi» (див. шапку)
+const ОКРЕМІ = ['ekho_remont', 'pvn_aksesuary', 'vkladeno'];   // лише своїм ім'ям, не в «usi» (див. шапку)
 const УВІМКНЕНІ = new Set(String(process.env.SLABKA || '').split(',').map(с => с.trim())
   .filter(Boolean).flatMap(с => (с === 'usi' ? ФОРМИ : [с])));
 for (const ф of УВІМКНЕНІ) if (!ФОРМИ.includes(ф) && !ОКРЕМІ.includes(ф))
@@ -136,6 +140,13 @@ function образиСлабко(об, промпт, пул) {
 function зіпсувати(відповісти, в, промпт) {
   if (!УВІМКНЕНІ.size) return в;
   const об = першийОбʼєкт(промпт || ''), тип = типВиклику(об);
+  if (УВІМКНЕНІ.has('vkladeno') && об && об.task && об.task.answer === 'ХІД_РОЗМОВИ') {
+    const х = JSON.parse(в.текст || '{}');
+    if (х.need !== 'look') return в;
+    const {update, ...частини} = х;
+    return {тип: в.тип + ' · слабка: vkladeno', стоп: 'end_turn',
+            текст: JSON.stringify({update: Object.assign({}, update, частини)})};
+  }
   if (!тип) return в;
   const пул = (тип === 'пакет') ? пулЗаВидами(об) : null;
   if (тип === 'пакет')
