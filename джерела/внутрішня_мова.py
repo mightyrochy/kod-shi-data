@@ -1888,6 +1888,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "reduce_to_two_metal_tones": "reduce it to two tones: remove the third or replace it with a two-tone "
                                  "item, or leave it in one small item far from the face",
     "she_asked_no_jewellery": "she asked for no jewellery, yet the outfit has some",
+    "she_asked_jewellery_none_in_outfit": "she asked for jewellery with this outfit, yet the outfit has none "
+                                          "(values: wish — the code of the jewellery she asked for)",
+    "add_jewellery_she_asked_for": "add the jewellery she asked for near the face (values: wish — the code "
+                                   "of the jewellery she asked for)",
     "remove_jewellery_her_decision": "remove the jewellery: her decision for today",
     "she_wanted_non_metal_jewellery": "she wanted jewellery that is not metal, and a metal one leads (values: "
                                       "lead — the code of the leading metal, wanted — pearls, ethnic or "
