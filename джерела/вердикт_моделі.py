@@ -7,6 +7,7 @@
 реекспортує кожне ім'я звідси, тож викликачі (`bridge`, показ через Pyodide,
 проби, гейти) не змінюються. Що звідки — карта в шапці `pipeline.py`.
 """
+import math
 import re as _re_ід
 import протокол as _ПР
 import ід_правил as _ід_правил
@@ -168,6 +169,14 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         _ЗП.Поле("not_run_everywhere", "by area, the checklist points the code did not check in any outfit; "
                                        "each point is a code defined in \"statement_codes\""),
         _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination, findings about the set"),
+        # ВИРВА-СМІЛИВІСТЬ (рядки 841, 886; п.17): доза сміливого за її наміром — і на кроці 10→5
+        _ЗП.Поле("set.bold", "her «intent» asks to stand out; these outfits the code measured as bold, "
+                             "with two or more «signs»: loud_colour — a colour of high chroma, "
+                             "light_dark_contrast — light and dark items far apart, garment_texture — "
+                             "shine, print or a rich fabric on a garment, three_hue_families — three or "
+                             "more colour families",
+                 як="keep at least «keep_at_least» of them among the outfits you return, the ones that "
+                    "answer her occasion best, and do not repair their signs away"),
         _ЗП.Поле("set.not_done", "gate findings that still stand in the new check and are not named in «done»",
                  як="give each an entry in «done» of its outfit, or drop the outfit"),
         _ЗП.Поле("showcase", "items you have not taken yet: for missing kinds of items, for kinds where the set "
@@ -1502,8 +1511,83 @@ def координація_набору(образи):
     return вих
 
 
+# ── СМІЛИВІ ОБРАЗИ НАБОРУ І ДОЗА ПІД ЇЇ СМІЛИВИЙ НАМІР (ВИРВА-СМІЛИВІСТЬ, рядки 841, 886; п.17) ──
+# ЩО БУЛО. Пул під сміливим наміром несе дозу (`семплер._частками_гілок`), але ремонт, що лишає
+# 5 з 10, не бачив, які з образів сміливі: на `vyrva_968 pislia_vyd` (statement, 6 вирв) зі 7
+# сміливих ідей у п'ятірку дійшли 2 (`проби/вирва_сміливості.py`), хоча правило ремонту вже
+# казало «обирай за її наміром, не за лічбою зауважень». Сміливі ідеї несуть більше зауважень
+# (accent_orphan 0.57 на ідею проти 0.08, off_palette_colour_near_face 0.29 проти 0.03), і без
+# виміру сміливості модель читала їх як вади.
+# ЩО СТАЛО. Код міряє ті самі чотири ознаки, що мірило (одяг і аксесуари; метали й прикраси
+# кольором не рахуються): гучний колір (C* ≥ `hi_C`, K-COL-02), контраст світлоти (розмах L* ≥ 50),
+# фактура на одязі (блиск, візерунок, сатин/мереживо/оксамит…), три й більше тонових сектори по 60°
+# серед кольорових (C* ≥ 15). Образ із двома ознаками — сміливий. Під сміливим наміром (`statement`,
+# `fashion_forward`, `editorial`) без мети «приховати» ремонт дістає ці образи з ознаками й дозу
+# `лишити` — помітну частку (2 з 5, 1 з 2). Без наміру й під «приховати» поля нема: доза без наміру
+# — у пулі, «приховати» — без дози. Обирає й далі стилістка: доза — для образів, що відповідають
+# її нагоді, а ознаки — інформація.
+_ОДЯГ_СЛОТИ = frozenset({"верх", "низ", "сукня", "комплект", "верхній_шар"})
+_ПРИКРАСИ_СЛОТИ = frozenset({"прикраси", "сережки", "кольє", "намисто", "брошка", "браслет", "каблучка"})
+_МЕТАЛИ = frozenset({"golden", "silvery", "pearly"})
+_ФАКТУРИ_СМІЛИВІ = frozenset({"satin", "lace", "guipure", "velvet", "velour", "patent_leather", "atlas",
+                              "openwork", "tweed", "boucle"})
+СМІЛИВІСТЬ = dict(розмах_L=50.0, хрома_кольору=15.0, секторів=3, ознак=2, частка=0.4)
+
+
+def ознаки_сміливості(речі):
+    """Ознаки сміливості образу кодами (`loud_colour`, `light_dark_contrast`, `garment_texture`,
+    `three_hue_families`) з речей `[(слот, опис речі пулу)]`; річ без hex дає лише фактуру."""
+    import colorspace as _cs
+    import реєстр_константи as _РК
+    lab, фактура = [], False
+    for слот, о in речі:
+        if not isinstance(о, dict):
+            continue
+        тк = о.get("тканина")
+        тк = {_ВМ.код("fabric", x) or x for x in (тк if isinstance(тк, (list, tuple)) else [тк]) if x}
+        if слот in _ОДЯГ_СЛОТИ and (о.get("блиск") or о.get("візерунок") or тк & _ФАКТУРИ_СМІЛИВІ):
+            фактура = True
+        hx = str(о.get("hex") or "").lstrip("#")
+        if (len(hx) != 6 or слот in _ПРИКРАСИ_СЛОТИ
+                or (_ВМ.код("color_name", о.get("колір")) or о.get("колір")) in _МЕТАЛИ):
+            continue
+        try:
+            lab.append(_cs.to_lab(tuple(int(hx[i:i + 2], 16) for i in (0, 2, 4))))
+        except ValueError:
+            continue
+    C = [math.hypot(a, b) for _, a, b in lab]
+    сектори = {int(math.degrees(math.atan2(b, a)) % 360 // 60)
+               for (_, a, b), c in zip(lab, C) if c >= СМІЛИВІСТЬ["хрома_кольору"]}
+    return [к for к, так in (
+        ("loud_colour", max(C, default=0.0) >= _РК.REGISTRY["hi_C"]["val"]),
+        ("light_dark_contrast", bool(lab) and max(L for L, _, _ in lab) - min(L for L, _, _ in lab)
+         >= СМІЛИВІСТЬ["розмах_L"]),
+        ("garment_texture", фактура),
+        ("three_hue_families", len(сектори) >= СМІЛИВІСТЬ["секторів"])) if так]
+
+
+def сміливі_набору(записи, намір=None, мета=None, варіантів=2):
+    """`набір.сміливі` — {образи: [{ід, ознаки}], лишити: N} під сміливим наміром без мети «приховати»;
+    інакше чи без жодного сміливого образу — None. `записи` — пари (ід, запис `_вердикти_образів`)."""
+    import реєстр_намір as _РН
+    if (str(намір or "").strip().lower().replace("-", "_") not in _РН.сміливі_наміри()
+            or мета in ("приховати", "conceal")):
+        return None
+    сміливі = []
+    for ід, о in записи:
+        описи, слоти = о.get("описи_н") or {}, о.get("слоти_н") or {}
+        озн = ознаки_сміливості([(слоти.get(н), описи.get(н)) for н in (о.get("речі_н") or [])])
+        if len(озн) >= СМІЛИВІСТЬ["ознак"]:
+            сміливі.append(dict(ід=ід, ознаки=озн))
+    if not сміливі:
+        return None
+    return dict(образи=сміливі, лишити=min(len(сміливі),
+                                           max(1, int(round(int(варіантів or 1) * СМІЛИВІСТЬ["частка"])))))
+
+
 def вердикт_v1(образи, варіантів=2, випадок=None, кандидати=None, ітерація=1,
-               мова=None, реєстри=None, попередній_вердикт=None, відповідь_моделі=None):
+               мова=None, реєстри=None, попередній_вердикт=None, відповідь_моделі=None,
+               намір=None, мета=None):
     """Другий виклик: вердикт коду над образами моделі — один обʼєкт `ВЕРДИКТ_V1`.
 
     `образи` — записи `bridge._вердикти_образів`: по одному на образ моделі, уже з
@@ -1666,6 +1750,12 @@ def вердикт_v1(образи, варіантів=2, випадок=None, �
     _коорд = координація_набору(образи)
     if _коорд:
         набір["координація"] = _коорд
+    # ВИРВА-СМІЛИВІСТЬ (рядки 841, 886; п.17): сміливі образи й доза — ремонтові під її сміливим наміром
+    _смл = сміливі_набору([(з["ід"], о) for з, о in zip(обр, [о for о in (образи or [])
+                                                              if isinstance(о, dict) and "речі_н" in о])],
+                          намір=намір, мета=мета, варіантів=варіантів)
+    if _смл:
+        набір["сміливі"] = _смл
     if вик and вик["невиконано"]:
         набір["невиконано"] = вик["невиконано"]
     if набір:
