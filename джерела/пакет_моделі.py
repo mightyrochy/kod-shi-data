@@ -478,6 +478,9 @@ import внутрішня_мова as _ВМ_П
                  як="they say more than the code: the outfit answers them"),
         _ЗП.Поле("case.intent_quote", "her own words behind «intent»",
                  як="they say more than the code: the outfit answers them"),
+        _ЗП.Поле("case.goal_zones", "with goal conceal: the body zones she wants to draw the eye away from",
+                 як="the goal is about these zones only: keep them quiet and let the rest of the look "
+                    "draw the eye"),
         _ЗП.Поле("case.her_other_words", "the rest of what she said, which no field of «case» carries",
                  як="it is part of her case"),
         _ЗП.Поле("case.language_model_note", "the language model's note on her words about the event, "
@@ -1122,6 +1125,11 @@ def випадок_для_пакета(паспорт, рядок, сценар�
     _рк = (паспорт or {}).get("зарезервований_колір") or (сценарій or {}).get("зарезервований_колір")
     if _рк in _ВМ_П.ТАБЛИЦЯ["reserved_colour"]:
         в["зарезервований_колір"] = _рк
+    # ЗОНИ МЕТИ «ПРИХОВАТИ» (рядок 1437): без них стилістка бачила лише `goal: conceal` поруч із «і ще хочу
+    # приховати живіт» і приглушувала ВЕСЬ образ; із ними — знає, що мета стосується зон, а решта образу вільна
+    _зм = [з for з in ((паспорт or {}).get("мета_зони") or []) if з in _ВМ_П.ТАБЛИЦЯ["goal_zone"].values()]
+    if в.get("мета") == "приховати" and _зм:
+        в["мета_зони"] = _зм
     return в
 
 
