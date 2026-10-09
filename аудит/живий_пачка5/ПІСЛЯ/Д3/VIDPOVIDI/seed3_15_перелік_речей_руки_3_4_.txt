@@ -1,0 +1,38 @@
+── ПРОМПТ (1837 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Business Blazer, sharp tailoring with a single vent, classic navy blue (#1B2A45), heavy wool blend.\nSilk Crisp Shirt, relaxed fit with a dropped shoulder, off-white (#F5F5F0), 100% mulberry silk.\nWide-Leg Trousers, fluid drape with an elasticated waist, soft olive green (#808269), crepe fabric.\nLeather Loafers, square toe with a low block heel, polished espresso brown (#3B2F2F), smooth calfskin.\nGold Geometric Stud Earrings, medium gauge with geometric cut, burnished gold (#D4AF37), solid 14k yellow gold.\nThis ensemble strikes the perfect balance between professional authority and effortless wanderlust, allowing for a seamless transition from the office to an evening stroll. The fluid lines of the trousers paired with the structured blazer create a modern silhouette that moves comfortably while maintaining a polished appearance. Neutral tones grounded by the deep olive green provide sophistication without feeling rigid, making you feel confident whether you are signing documents or exploring the city."}
+
+── ВІДПОВІДЬ (981 симв., 287.6 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Business Blazer",
+      "details": "sharp tailoring with a single vent, classic navy blue heavy wool blend",
+      "slot": "outerwear",
+      "color_hex": "#1B2A45"
+    },
+    {
+      "name": "Silk Crisp Shirt",
+      "details": "relaxed fit with a dropped shoulder, off-white 100% mulberry silk",
+      "slot": "top",
+      "color_hex": "#F5F5F0"
+    },
+    {
+      "name": "Wide-Leg Trousers",
+      "details": "fluid drape with an elasticated waist, soft olive green crepe fabric",
+      "slot": "bottom",
+      "color_hex": "#808269"
+    },
+    {
+      "name": "Leather Loafers",
+      "details": "square toe with a low block heel, polished espresso brown smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#3B2F2F"
+    },
+    {
+      "name": "Gold Geometric Stud Earrings",
+      "details": "medium gauge with geometric cut, burnished gold solid 14k yellow gold",
+      "slot": "earrings",
+      "color_hex": "#D4AF37"
+    }
+  ]
+}
