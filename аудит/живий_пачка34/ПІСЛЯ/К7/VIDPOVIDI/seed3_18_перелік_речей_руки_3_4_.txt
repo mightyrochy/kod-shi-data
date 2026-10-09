@@ -1,0 +1,32 @@
+── ПРОМПТ (2189 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tweed blazer with a classic notched lapel and single-breasted closure in a charcoal grey shade (hex #36454F) cut for a tailored straight silhouette that falls just below the hip to maintain professional polish.\n\nWool-blend skirt hitting mid-calf length, featuring an A-line shape that flatters without being restrictive, rendered in a deep forest green (hex #228B22) to add a subtle pop of color against the neutral jacket.\n\nCashmere crew-neck turtleneck with a soft ribbed texture and a rounded neckline, chosen for its warmth at 2 °C, available in an oat milk beige (hex #EFEBE9) that bridges the gap between the cool tones of the outer layers.\n\nWool-blend ankle boots with a low stacked heel and a closed toe design, finished in black leather (hex #000000) to ground the outfit and provide practical traction for chilly conditions.\n\nThis ensemble works by balancing professional sophistication with cozy warmth suitable for a workplace commute or casual outing on a cold day. The tweed blazer immediately signals a business-appropriate dress code while the rich green skirt adds personal style that prevents the look from feeling overly stiff. Layering the lightweight cashmere knit underneath ensures she stays comfortably warm without adding bulk, allowing the fitted silhouette of the skirt and blazer to define her shape clearly against the crisp winter air."}
+
+── ВІДПОВІДЬ (750 симв., 210.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Tweed blazer",
+      "details": "Classic notched lapel with single-breasted closure, tailored straight silhouette falling just below the hip",
+      "slot": "outerwear",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "Wool-blend skirt",
+      "details": "Mid-calf length, A-line shape, non-restrictive cut",
+      "slot": "bottom",
+      "color_hex": "#228B22"
+    },
+    {
+      "name": "Cashmere crew-neck turtleneck",
+      "details": "Soft ribbed texture with rounded neckline",
+      "slot": "top",
+      "color_hex": "#EFEBE9"
+    },
+    {
+      "name": "Wool-blend ankle boots",
+      "details": "Low stacked heel, closed toe design",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    }
+  ]
+}

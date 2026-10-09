@@ -1,0 +1,25 @@
+── ПРОМПТ (3187 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Tweed blazer with a classic notched lapel and single-breasted closure in a charcoal grey shade cut for a tailored straight silhouette that falls just below the hip to maintain professional polish.\n\nWool-blend skirt hitting mid-calf length, featuring an A-line shape that flatters without being restrictive, rendered in a deep forest green to add a subtle pop of color against the neutral jacket.\n\nCashmere crew-neck turtleneck with a soft ribbed texture and a rounded neckline, chosen for its warmth at 2 °C, available in an oat milk beige that bridges the gap between the cool tones of the outer layers.\n\nWool-blend ankle boots with a low stacked heel and a closed toe design, finished in black leather to ground the outfit and provide practical traction for chilly conditions.\n\nThis ensemble works by balancing professional sophistication with cozy warmth suitable for a workplace commute or casual outing on a cold day. The tweed blazer immediately signals a business-appropriate dress code while the rich green skirt adds personal style that prevents the look from feeling overly stiff. Layering the lightweight cashmere knit underneath ensures she stays comfortably warm without adding bulk, allowing the fitted silhouette of the skirt and blazer to define her shape clearly against the crisp winter air."},
+{"н": 2, "текст": "Tweed blazer"},
+{"н": 3, "текст": "Wool-blend skirt"},
+{"н": 4, "текст": "Cashmere crew-neck turtleneck"},
+{"н": 5, "текст": "Wool-blend ankle boots"}
+]
+
+── ВІДПОВІДЬ (1484 симв., 265.5 с, HTTP 200) ──
+```json
+{
+  "1": "Твідовий блейзер з класичним лацканом і однобортною застібкою в темно-сірому відтінку крою для елегантного прямого силуету, що закінчується трохи нижче стегон, щоб зберегти професійний вигляд.\n\nВовняна спідниця довжини до середини литки з А-силуетом, який підкреслює фігуру без надмірної обтяжливості, виконана в глибокому лісовому зеленому кольорі для додавання ледь помітного акценту проти нейтрального жакета.\n\nКашеміровий гольф з круглим вирізом і м’якою ребристою текстурою, обраний за його тепло при 2 °C, доступний у бежевому відтінку «вівсяного молока», який поєднує прохолодні тони верхніх шарів.\n\nВовняні черевики до щиколотки з низьким стійким каблуком і закритою шкарпеткою, виконані зі шкіри чорного кольору для завершення образу та забезпечення практичного зчеплення в холодну погоду.\n\nЦей ансамбль поєднує професійну вишуканість із затишним теплом, підходящим як для робочого шляху на роботу, так і для неформального відпочинку в прохолодний день. Твідовий блейзер одразу сигналізує про діловий дрес-код, а багата зелена спідниця додає особистий стиль, який запобігає надмірній скутості образу. Надягання легкого кашемірового светра під низ забезпечує комфортне тепло без зайвого об’єму, дозволяючи приталеному силуету спідниці та блейзера чітко окреслювати її фігуру на свіжому зимовому повітрі.",
+  "2": "Твідовий блейзер",
+  "3": "Вовняна спідниця",
+  "4": "Кашеміровий гольф з круглим вирізом",
+  "5": "Вовняні черевики до щиколотки"
+}
+```

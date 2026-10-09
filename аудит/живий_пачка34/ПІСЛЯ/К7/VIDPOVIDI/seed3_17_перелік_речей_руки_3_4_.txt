@@ -1,0 +1,38 @@
+── ПРОМПТ (1947 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend coat in slate blue (#3e4f62), structured fit with a tailored shoulder seam, hip-length at 68 cm, heavy gabardine fabric for wind resistance. Cashmere blouse in cream (#fdfbf7), relaxed boxy cut with dropped shoulders, midi length ending at mid-thigh, soft drape knit. High-waisted wide-leg trousers in charcoal flannel (#333842), straight leg opening at ankle, full 100 cm length, warm brushed cotton blend. Leather Chelsea boots in dark brown (#5d4037), mid-calf shaft width 10 cm, flat stacked heel 3 cm, waterproof nubuck upper. Silk scarf in rust red (#e66a4c), rectangular large size 90x90 cm, lightweight woven jacquard for color accent. This ensemble balances professional sharpness with warm comfort for a chilly two-degree day, using layered textures to trap heat while the structured coat creates a polished silhouette. The neutral base of slate and cream allows the rust scarf to add a personal pop of energy suitable for both work meetings and casual evening walks. Each piece prioritizes warmth through heavy natural fibers without sacrificing the clean lines required for a business-appropriate appearance."}
+
+── ВІДПОВІДЬ (1016 симв., 211.6 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "coat",
+      "details": "Wool-blend, structured fit with tailored shoulder seam, hip-length (68 cm), heavy gabardine fabric",
+      "slot": "outerwear",
+      "color_hex": "#3e4f62"
+    },
+    {
+      "name": "blouse",
+      "details": "Cashmere, relaxed boxy cut with dropped shoulders, midi length (mid-thigh), soft drape knit",
+      "slot": "top",
+      "color_hex": "#fdfbf7"
+    },
+    {
+      "name": "trousers",
+      "details": "High-waisted wide-leg, straight leg opening at ankle, 100 cm length, warm brushed cotton blend",
+      "slot": "bottom",
+      "color_hex": "#333842"
+    },
+    {
+      "name": "boots",
+      "details": "Leather Chelsea, mid-calf shaft (10 cm width), flat stacked heel (3 cm), waterproof nubuck upper",
+      "slot": "shoes",
+      "color_hex": "#5d4037"
+    },
+    {
+      "name": "scarf",
+      "details": "Silk, rectangular large size (90x90 cm), lightweight woven jacquard",
+      "slot": "scarf",
+      "color_hex": "#e66a4c"
+    }
+  ]
+}
