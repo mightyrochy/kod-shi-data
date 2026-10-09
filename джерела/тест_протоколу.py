@@ -649,7 +649,7 @@ _вф = _РФ1.речі_з_відповіді_фото(json.dumps({"items": [
     {"photo": "ф1", "name": "skirt", "slot": "bottom", "color": "khaki", "fabric": "faux_leather", "cut": "a-line",
      "length": "mini", "pattern": "solid", "formality": 6, "owner": "mine", "frame": {"left": 100, "top": 200, "right": 800, "bottom": 900}},
     {"photo": "ф1", "name": "boots", "slot": "shoes", "color": "mocha", "owner": "unknown"}]}), _ф,
-    власні=[{"quote": "моя спідниця", "status": "has"}])
+    власні=[{"quote": "моя спідниця", "slot": "bottom", "status": "has"}])   # без слота «mine» — «невідомо» (Codex на #676)
 _р1, _р2 = _вф["речі_з_фото"]
 звірка("речі з фото: коди → слова словника, рамка → «ліво/верх», ід ставить код; чужий код названо, не вгадано",
        (_р1["ід"], _р1["слот"], _р1["колір"], _р1["довжина"], _р1["принт"], _р1["чия"], _р1["рамка"]["ліво"])
