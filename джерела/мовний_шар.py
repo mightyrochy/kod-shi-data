@@ -1708,13 +1708,19 @@ _ПОЛЯ_EN = {
     # `weather_feel: cold` без числа (ДО того ж сценарію — `temperature_c: -15`): таблиця коду дала +2 °C, картка
     # писала «+2 °C», і рука 1 взяла розстебнуте пальто на −15. Опис казав «лише коли називає градуси», але не
     # казав, що градуси словами — теж градуси і що тоді число іде САМЕ сюди, а не у відчуття; `frost` не мав межі.
-    "temperature_c": "air temperature, °C, as a number, whenever she names the degrees — in digits or in words "
-                     "(«мінус п'ятнадцять» is -15, «плюс двадцять» is 20), with those words as quote; named "
-                     "degrees always go here and never only into weather_feel",
-    "weather_feel": "the weather, only when she names no number of degrees: from her words, or when the season, "
-                    "month, holiday or place she names usually takes it (August, a beach by the sea — hot; a "
-                    "winter walk, a New Year or a Christmas party — cold), with that word as quote; frost — a hard "
-                    "frost, about -10 °C and colder",
+    # МОВА-ГРАДУСИ (рядок 2990, живі 11 К7): з тим описом MamayLM на «мінус п'ятнадцять і сніг» двічі писала
+    # лише `weather_feel: frost` з цитатою числа. Межа `frost` у градусах («about -10 °C and colder») сама вела
+    # число у відчуття: −15 холодніше за −10 — отже frost. Тепер у відчутті жодного числа нема, а обидва описи
+    # несуть ту саму пару-шаблон «мінус N → -N» у формі відповіді; конкретного числа в шаблоні нема (урок #304).
+    "temperature_c": "air temperature, °C, as a number, whenever she names the degrees — in digits or in words: "
+                     "«мінус N» → {\"quote\": \"мінус N\", \"value\": -N}, and «N градусів морозу» is -N too; "
+                     "«плюс N» → {\"quote\": \"плюс N\", \"value\": N}, and «N градусів тепла» is N too; "
+                     "named degrees always go here, and weather_feel then stays absent",
+    "weather_feel": "the weather in words, only when her words hold no number of degrees (a number of degrees, "
+                    "«мінус N» included, is temperature_c and never weather_feel): from her words, or when the "
+                    "season, month, holiday or place she names usually takes it (August, a beach by the sea — "
+                    "hot; a winter walk, a New Year or a Christmas party — cold), with that word as quote; "
+                    "frost — she speaks of a hard frost, cold — of cold",
     # ОПАДИ-1 (рядок 1881): «увесь день дощ» лишало `опади: невідомо` і в паспорті, і в `day` — опис мовчав про
     # те, що опади тягнуться з ЇЇ слів про день (як `weather_feel`), і без цитати сторож `_тримається` поле знімає.
     "precipitation": "the precipitation she says the day brings, in any of her words (rain all day, drizzle, "
@@ -2416,9 +2422,11 @@ def _на_своє_поле(оновлення):
             знач, _ = _пара(поле, {}, оновлення[поле])
             if isinstance(знач, str) and not _ВМ.ключ(поле, _код(знач)) and _ВМ.ключ(сусід, _код(знач)):
                 чужі[поле], перебиває[поле] = сусід, сильніший
-    # сусід зі своїм кодом, що лишається на місці, — сильніший за чужий код, коли пара не перебиває
+    # сусід зі своїм кодом, що лишається на місці, — сильніший за чужий код, коли пара не перебиває;
+    # сусід без власного коду (ключа нема, «unknown», порожнє) місце віддає
     чужі = {поле: сусід for поле, сусід in чужі.items()
-            if перебиває[поле] or сусід not in оновлення or сусід in чужі}
+            if перебиває[поле] or сусід in чужі
+            or сусід not in оновлення or _порожнє(_пара(сусід, {}, оновлення[сусід])[0])}
     if not чужі:
         return оновлення, []
     куди = set(чужі.values())
