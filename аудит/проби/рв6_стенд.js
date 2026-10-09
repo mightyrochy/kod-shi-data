@@ -1735,6 +1735,11 @@ function відповісти(текст) {
       length: ДОВЖИНА_КОД[р.довжина] || null, pattern: р.принт === 'однотонний' ? 'solid' : кодВМ('pattern', р.принт),
       formality: р.ошатність ?? null, owner: р.чия === 'моя' ? 'mine' : р.чия === 'хочу купити' ? 'want_to_buy' : 'unknown',
       frame: р.рамка ? {left: р.рамка.ліво, top: р.рамка.верх, right: р.рамка.право, bottom: р.рамка.низ} : null}));
+    /* FOTO_NE_NAZVALA=pusto|bez_slota (рядок 2382): мовна модель РЕЧІ НЕ НАЗВАЛА — порожній перелік або річ без
+       назви й слота (як у живому К5); без змінної — як доти */
+    const не_назвала = process.env.FOTO_NE_NAZVALA;
+    if (не_назвала === 'pusto') items.length = 0;
+    if (не_назвала === 'bez_slota') items.forEach(х => Object.assign(х, {name: null, slot: null, color: null, formality: null, owner: 'unknown'}));
     return {тип: 'речі з фото PHOTO_ITEMS (П-1), речей ' + items.length, текст: JSON.stringify({items})};
   }
   if (об && об.task && об.task.answer === 'ITEM_LIST') {
