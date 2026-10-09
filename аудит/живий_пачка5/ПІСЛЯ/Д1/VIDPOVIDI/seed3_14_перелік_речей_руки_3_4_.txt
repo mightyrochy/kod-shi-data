@@ -1,0 +1,26 @@
+── ПРОМПТ (1724 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk blend sheath midi dress, fluid silhouette reaching mid-calf, deep emerald green (#043927), lustrous woven fabric.  \nPointed-toe leather pumps, classic narrow cut with a moderate heel, polished black (#000000), smooth grain finish.  \nStructured wool-blend blazer, tailored fit ending at the hip, charcoal grey (#36454F), heavy worsted weave.  \n\nThis ensemble balances neat-formal elegance with practicality for potential rain, as the blazer provides essential protection against chill while the silk dress ensures a refined silhouette under artificial restaurant lighting. The deep emerald hue anchors the look in sophistication without overpowering the subdued evening atmosphere of a neighborhood dining venue. Completing the set with black leather shoes ties the darker tones together seamlessly, allowing the outfit to transition effortlessly from a wet street outside to an upscale table inside."}
+
+── ВІДПОВІДЬ (540 симв., 199.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "sheath midi dress",
+      "details": "fluid silhouette reaching mid-calf, lustrous woven fabric",
+      "slot": "dress",
+      "color_hex": "#043927"
+    },
+    {
+      "name": "pumps",
+      "details": "classic narrow cut with a moderate heel, polished smooth grain finish",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "blazer",
+      "details": "tailored fit ending at the hip, heavy worsted weave",
+      "slot": "outerwear",
+      "color_hex": "#36454F"
+    }
+  ]
+}

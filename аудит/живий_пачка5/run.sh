@@ -18,10 +18,11 @@ while IFS='|' read -r ID WJ TXT X; do
     RC=$?; SEC=$(( $(date +%s) - S ))
     for kv in $X; do unset ${kv%%=*}; done
     [ $RC -le 1 ] && break
+    cp $D/лог.txt $T/out/$ET/${ID}_спроба${TRY}_rc${RC}.лог.txt 2>/dev/null
     echo "$ID спроба $TRY rc=$RC $SEC с" >> $T/out/$ET/done.txt
   done
   echo "$ID rc=$RC ${SEC}с $(date +%T)" >> $T/out/$ET/done.txt
-  OUT=$W/аудит/живий_пачка5/$ET; mkdir -p $OUT; rm -rf $OUT/$ID; cp -r $D $OUT/$ID
+  OUT=$W/аудит/живий_пачка5/$ET; mkdir -p $OUT; rm -rf $OUT/$ID; cp -r $D $OUT/$ID; cp $T/out/$ET/${ID}_спроба*.лог.txt $OUT/ 2>/dev/null
   cp $T/proksi.log $T/run.sh $W/аудит/живий_пачка5/ 2>/dev/null
   ( cd $W && git add аудит/живий_пачка5 >/dev/null 2>&1 && git commit -qm "живий-пачка5: $ET $ID rc=$RC ${SEC}с
 

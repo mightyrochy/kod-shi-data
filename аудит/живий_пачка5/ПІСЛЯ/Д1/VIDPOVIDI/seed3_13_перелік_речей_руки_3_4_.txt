@@ -1,0 +1,40 @@
+── ПРОМПТ (1711 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk camisole dress, relaxed cut, knee-length, color #deb295 with subtle tonal variations.\nTwill trench coat, structured fit to the hip, medium length reaching mid-thigh, waterproof fabric in a deep charcoal tone.\nLeather ankle boots, pointed toe, black finish for durability against rain.\nGold geometric drop earrings and a slim leather clutch to complete the ensemble.\n\nThis outfit balances the required neat-formal dress code with the practical need for protection against possible rain. The structured trench coat provides a sophisticated outer layer without adding bulk, allowing the soft silk of the dress to remain visible at the neckline and hem. Dark footwear grounds the light skin tones while keeping feet dry, ensuring comfort throughout the dinner. Overall, the palette draws attention to her warm complexion while offering complete versatility for changing weather conditions."}
+
+── ВІДПОВІДЬ (813 симв., 199.3 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "silk camisole dress",
+        "details": "relaxed cut, knee-length",
+        "slot": "dress",
+        "color_hex": "#deb295"
+      },
+      {
+        "name": "twill trench coat",
+        "details": "structured fit to the hip, medium length reaching mid-thigh",
+        "slot": "outerwear",
+        "color_hex": "#36454f"
+      },
+      {
+        "name": "leather ankle boots",
+        "details": "pointed toe",
+        "slot": "shoes",
+        "color_hex": "#000000"
+      },
+      {
+        "name": "geometric drop earrings",
+        "details": null,
+        "slot": "earrings",
+        "color_hex": "#ffd700"
+      },
+      {
+        "name": "leather clutch",
+        "details": "slim",
+        "slot": "bag",
+        "color_hex": null
+      }
+    ]
+  }
+}
