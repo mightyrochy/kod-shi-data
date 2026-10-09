@@ -658,6 +658,36 @@ else if (МОДЕЛЬ_ЖИВА) console.log('МОДЕЛЬ ЖИВА: ' + МОДЕ
   + (process.env.THINK ? ' · думання ЛИШЕНО' : ' · reasoning_effort=none')
   + (process.env.JSON_MODE ? ' · json_object на протокольних викликах' : '')
   + (ТЕКА_ВІДПОВІДЕЙ ? ' · відповіді → ' + ТЕКА_ВІДПОВІДЕЙ : ''));
+/* ЗАМІР-886 (рядок 886): PRAVYLA=rechennia — ті самі заяви коду, але кожна з визначенням на місці
+   («means»), без словника `task.statement_codes`: формат правил на ТИХ САМИХ паспортах і коді.
+   Лише складання (`ПАКЕТ_V1→ОБРАЗИ_V1`): сміливі ідеї народжуються там (раунд 1), а ремонт реченнями
+   росте 84→139 тис. знаків і не влазить у контекст локальної моделі. Запис сторінки (вердикти) лишається
+   кодами — перетворення лише на шві, тож порівнювати відповіді, не промпти. */
+const ПРАВИЛА_РЕЧЕННЯМИ = process.env.PRAVYLA === 'rechennia';
+if (ПРАВИЛА_РЕЧЕННЯМИ) console.log('ПРАВИЛА РЕЧЕННЯМИ (PRAVYLA=rechennia): у складанні коди заяв → визначення на місці, без statement_codes');
+const КЛЮЧІ_ЗАЯВ_СТЕНДУ = new Set(['statements', 'fix', 'style_rules', 'failed', 'not_run', 'not_run_everywhere', 'passed', 'shared', 'own']);
+function правилаРеченнями(текст){
+  let о; try { о = JSON.parse(текст); } catch (_) { return текст; }
+  const сл = о && о.task && о.task.statement_codes;
+  if (!сл || typeof сл !== 'object') return текст;
+  const заява = x => {
+    if (typeof x === 'string') return сл[x] ? {code: x, means: сл[x]} : x;
+    const к = x && typeof x === 'object' && !Array.isArray(x) ? Object.keys(x) : [];
+    return к.length === 1 && сл[к[0]] ? {code: к[0], means: сл[к[0]], values: обхід(x[к[0]])} : обхід(x);
+  };
+  const обхід = в => Array.isArray(в) ? в.map(обхід)
+    : (в && typeof в === 'object') ? Object.fromEntries(Object.entries(в).map(([к, v]) =>
+        [к, КЛЮЧІ_ЗАЯВ_СТЕНДУ.has(к) ? (Array.isArray(v) ? v.map(заява)
+          : (v && typeof v === 'object') ? Object.fromEntries(Object.entries(v).map(([кк, vv]) => [кк, Array.isArray(vv) ? vv.map(заява) : vv]))
+          : v) : обхід(v)]))
+    : в;
+  const {statement_codes, ...задача} = о.task;
+  задача.input = (задача.input || []).filter(р => !/^"statements" and "fix"/.test(р))
+    .map(р => р.replace(/codes are defined in "statement_codes"/g, 'each code comes with what it «means»')
+               .replace(/codes defined in "statement_codes"/g, 'codes, each with what it «means»')
+               .replace(/(a )?code defined in "statement_codes"/g, 'a code with what it «means»'));
+  return JSON.stringify(обхід(Object.assign({}, о, {task: задача})));
+}
 /* Назвати виклик так само, як його називає заглушка: інакше в друку прогону не
    видно, ЯКИЙ саме промпт модель завалила. Ті самі ознаки, що у `відповісти`. */
 function типПромпту(текст){
@@ -861,6 +891,10 @@ async function кадрБазою(url, сире){
 }
 async function живоюМоделлю(тіло, тип){
   let фотоНеДійшло = 0; /* локально: виклики йдуть паралельно, глобальний лічильник їх мішав (КАДР-870) */
+  if (ПРАВИЛА_РЕЧЕННЯМИ && тип === 'ПАКЕТ_V1→ОБРАЗИ_V1')
+    тіло = Object.assign({}, тіло, {messages: (тіло.messages || []).map(м => Object.assign({}, м,
+      {content: Array.isArray(м.content) ? м.content.map(б => б.type === 'text' ? Object.assign({}, б, {text: правилаРеченнями(б.text || '')}) : б)
+                                         : правилаРеченнями(String(м.content == null ? '' : м.content))}))});
   /* ZHYVA=… — інший транспорт, той самий шов і той самий журнал (наряд Ж-1) */
   if (КЛОД_ШВОМ) return клодомCLI(тіло, тип);
   const повідомлення = [];
