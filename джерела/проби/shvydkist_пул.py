@@ -10,13 +10,14 @@
 МІСЦІ, і пул на почищеному інший (3d285c6a49652675) — інваріант же про КОД, не про збірку.
 Запуск: PYTHONPATH=. python3 проби/shvydkist_пул.py
 """
-import json, time, hashlib, gzip, os, shutil, tempfile
+import json, time, hashlib, gzip, os, shutil, tempfile, sys
 import bridge as B
 
-# База ПЕРЕЗНЯТА на origin/main 65ce695 (18.09.2026): хеш і лічба — звідти,
-# часи лишаються ті, що були до правок швидкості, бо ×N міряє саме їх.
-ДО = {None: ("1b076c40b316bf35", 370, 23.5), 0: ("723a40c200c3b59f", 377, 18.2)}
-шлях = os.path.join(tempfile.gettempdir(), "shvydkist_каталог.xml")
+# База ПЕРЕЗНЯТА на origin/main 2c265b7d (09.10.2026): хеш і лічба — звідти, часи — там само.
+# Паралельні запуски не ділять файл: каталог розпаковується в власну теку.
+ДО = {None: ("9ba54830f567757c", 481, 30.1), 0: ("9ba54830f567757c", 481, 7.6)}
+тека = tempfile.mkdtemp(prefix="shvydkist_")
+шлях = os.path.join(тека, "каталог.xml")
 with gzip.open("../каталог_повний.xml.gz", "rb") as г, open(шлях, "wb") as в:
     shutil.copyfileobj(г, в)
 розбіжних = 0
@@ -40,6 +41,7 @@ try:
                  "ТОЙ САМИЙ ПУЛ" if той_самий else "⚠ ПУЛ РОЗІЙШОВСЯ",
                  час_до, дт, час_до / дт if дт else 0.0))
 finally:
-    os.path.exists(шлях) and os.unlink(шлях)
+    shutil.rmtree(тека, ignore_errors=True)
 print("інваріант: %s (розбіжних гілок %d із %d)"
       % ("тримається" if not розбіжних else "ПОРУШЕНО", розбіжних, len(ДО)))
+sys.exit(1 if розбіжних else 0)
