@@ -1,0 +1,134 @@
+── ПРОМПТ (18358 симв.) ──
+{"version":"1","task":{"role":"You are the stylist. The code checked the outfits you put together for her, and some of them cannot be shown yet: each such outfit has a blocker in «structure». You finish every one of them before she chooses.","rules":["Finish EVERY outfit in «verdict»: clear all of its blockers.","A missing kind of item: add one item for it from «showcase».","Several items of one kind: keep the one that suits the outfit best and remove the others.","Change nothing else: the remaining items, the caption and the day stay as they are.","Name every item by its «n» — in full, exactly as in «verdict» or «showcase».","Return every outfit of «verdict», each under its own «id»."],"limits":["Rely only on the input: do not invent what it does not contain.","The answer is one JSON object following \"answer_schema\", without explanations and without ```."],"language":"English","answer":"OUTFITS_V1","answer_schema":{"version":"1","outfits":[{"id":"<«id» of the outfit, as in «verdict»>","caption":"<string>","pole":"filter_and_rank|anchor_first|tonal_column|ease_the_knot|break|free","items":["<«n» of all items of the finished outfit>"],"day":"<«day» of «your_outfit», unchanged>","deliberate":[{"item":"<string>","why":"<string>"}],"done":[{"finding":"<string>","action":"fixed|declined|partly","why":"<string>"}]}],"needed":[{"kind":"<string>","description":"<string>","type":"<string>","color":"<string>","fabric":"<string>"}]},"input":["\"case\" — her occasion in her and the code's words","\"day\" — her day as facts","\"verdict\" — your outfits and the code's check: «your_outfit» — items with their full descriptions and your caption; «structure.blockers» — what keeps the outfit from being shown: a missing kind of item, or several items of one kind («items» lists them)","\"showcase\" — items that can fill what is missing","\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, or {code: values}; codes are defined in \"statement_codes\""],"statement_codes":{"no_shoes":"the outfit has no shoes, and without them it is not ready: add a pair for the occasion","too_few_items":"too few items in the outfit for this occasion (values: count — how many there are, minimum — how many are needed at least)","no_bag":"no bag, and the occasion requires one"}},"case":"ювілей, свято, ресторан районний, ошатність: neat–formal. Намір її словами: «головне щоб без претензій, вона завжди до чогось чіпляється»","day":{"place":"restaurant_casual","formality":{"from":"neat","to":"formal"},"unknown":["start_hour","temperature_c"]},"verdict":[{"your_outfit":{"id":"o1","caption":"Sophisticated grey coat and linen suit","items":[{"n":"#291·33","name":"Пальто двобортне сіре","price":3550,"type":"coat","cut":"straight","fabric":["polyester"],"length":"maxi","details":["double_breasted"],"color":"grey","hex":"#877a7d","in_arc":true,"L":[25,80],"L_from":"word","hem_cm":[5,15],"hem_from":"word","formality":["neat","formal"],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#88·34","name":"Штани лляні Ньюрі жакардові","price":2450,"type":"trousers","cut":"straight","fabric":["linen","woven"],"length":"maxi","pattern":"check","color":"silvery","hex":"#ae9e8f","family":"yellow","in_arc":true,"L":[66,66],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":["home","smart"],"fabric_c":[18,null],"register":"preppy","branch":"core"},{"n":"#56·32","name":"Двобортний піджак у дрібний принт","price":7000,"type":"blazer","cut":"fitted","fabric":["elastane","woven"],"length":"mid_thigh","pattern":"polka_dot","details":["double_breasted"],"color":"silvery","hex":"#a5a3a8","in_arc":true,"L":[67,67],"L_from":"photo_point","hem_cm":[64,68],"hem_from":"shop_cm","formality":["neat","smart"],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#382·07","name":"Сумка жіноча червона","price":29100,"type":"bag_generic","fabric":["polyester"],"color":"red","hex":"#d40047","family":"red","in_arc":false,"L":[25,60],"L_from":"word","branch":"break"}]},"structure":{"ok":false,"blockers":[{"id":"b-o1-1","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o1-2","code":"incomplete","statements":[{"too_few_items":{"count":4,"minimum":5}}]}]}},{"your_outfit":{"id":"o2","caption":"Light pink cardigan and mint hat look","items":[{"n":"#319·38","name":"Ремінь жіночий Welfare","price":700,"fabric":["leather"],"color":"khaki","hex":"#707050","family":"yellow","in_arc":true,"L":[23,70],"L_from":"word","branch":"core"},{"n":"#242·37","name":"Сарафан міні з розрізом","price":211,"type":"sundress","cut":"fitted","fabric":"unknown","length":"midi","pattern":"polka_dot","color":"powder","shop_color":"темна пудра","hex":"#d8afae","family":"red","in_arc":false,"L":[59,91],"L_from":"word","hem_cm":[22,36],"hem_from":"word","formality":["everyday","neat"],"branch":"edge","scheme":"muted_complementary","below_band":"item_at_band_floor_photo_below"},{"n":"#65·15","name":"Берет класичний з кашеміром м'ятний","price":2500,"fabric":["cashmere"],"color":"mint","hex":"#9dcdaf","family":"green","in_arc":true,"L":[65,92],"L_from":"word","fabric_c":[2,18],"register":"classic","branch":"core","below_band":"untyped_photo_below_band"},{"n":"#100·03","name":"Літні туфлі, RIEKER, екошкіра/текстиль, колір білий","price":2275,"type":"dress_shoes","fabric":["faux_leather"],"color":"white","hex":"#e8e7ec","in_arc":true,"L":[92,92],"L_from":"photo_point","formality":["neat","smart"],"heel":"unknown","register":"rock","branch":"core"}],"day":"A romantic and playful look for the celebration; the orange skirt and beige dress create a warm, cohesive palette. The pink accessories add a soft contrast to the face."},"structure":{"ok":false,"blockers":[{"id":"b-o2-1","code":"no_bag","statements":["no_bag"]}]}},{"your_outfit":{"id":"o3","caption":"Beige satin dress with burgundy shoes","items":[{"n":"#128·19","name":"Сукня Максі сатин беж","price":1600,"type":"dress_generic","cut":"bodycon","fabric":["polyester","woven"],"length":"midi","shine":true,"color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","hem_cm":[16,20],"hem_from":"shop_cm","formality":["smart","very_smart"],"register":"romantic","branch":"core"},{"n":"#16·11","name":"LeBERDES Туфлі бордові","price":4950,"type":"dress_shoes","fabric":["patent_leather"],"material":"patent_leather","shine":true,"color":"burgundy","hex":"#5b2828","family":"red","in_arc":false,"L":[23,23],"L_from":"photo_point","formality":["neat","smart"],"heel":"unknown","branch":"edge","scheme":"muted_complementary"},{"n":"#384·38","name":"Ремінь жіночий Welfare","price":750,"fabric":["leather"],"color":"black","hex":"#19181a","in_arc":true,"L":[8,8],"L_from":"photo_point","branch":"core"}],"day":"Ideal for the evening; the beige satin dress is soft and flattering, while the burgundy shoes add depth. The silver jewelry echoes the cool tones of her eyes against the warm skin."},"structure":{"ok":false,"blockers":[{"id":"b-o3-1","code":"no_bag","statements":["no_bag"]}]}}],"showcase":[{"n":"#25·17","name":"Туфлі Doves бежеві","price":11450,"type":"dress_shoes","fabric":["leather"],"material":"leather","color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","formality":["neat","smart"],"heel":"unknown","branch":"core"},{"n":"#161·06","name":"Кеди шкіряні із замшевими вставками","price":4500,"type":"plimsolls","fabric":["suede"],"material":"suede","shaft":"ankle","color":"beige","hex":"#d5cdc5","in_arc":true,"L":[83,83],"L_from":"photo_point","formality":["home","everyday"],"heel":"none","branch":"core","below_band":"item_below_band"},{"n":"#33·06","name":"Чоботи SAFARI замшеві вкорочені з відкритим мисом","price":7900,"type":"boots","fabric":["suede"],"material":"suede","shaft":"knee","color":"beige","hex":"#cbb69f","family":"yellow","in_arc":true,"L":[75,75],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#90·14","name":"Балетки шкіряні пудрові","price":3250,"type":"ballet_flats","fabric":["leather"],"color":"powder_pink","hex":"#e2b7c4","family":"red","in_arc":false,"L":[65,92],"L_from":"word","formality":["everyday","neat"],"heel":"none","register":"romantic","branch":"edge","scheme":"triad"},{"n":"#168·07","name":"Чоботи жіночі коричневі","price":18700,"type":"boots","fabric":["suede"],"shaft":"knee","color":"brown","hex":"#3b2421","family":"red","in_arc":false,"L":[17,17],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"break"},{"n":"#19·14","name":"Мокасини замшеві джинсові","price":4130,"type":"moccasins","fabric":["denim","woven"],"shop_color":"джинс","hex":"#51799d","family":"blue","in_arc":true,"L":[14,85],"L_from":"word","formality":["home","everyday"],"heel":"none","register":"preppy","branch":"core","below_band":"item_below_band"},{"n":"#106·10","name":"Сабо рожеві YUMY","price":3150,"type":"mules","fabric":["leather"],"color":"pink","hex":"#efb2cf","family":"red","in_arc":false,"L":[79,79],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"edge","scheme":"triad","below_band":"item_at_band_floor_photo_below"},{"n":"#10·03","name":"Черевики жіночі, ATTICO, нубук, колір темно-коричневий","price":3899,"type":"ankle_boots","fabric":["nubuck"],"material":"nubuck","shaft":"ankle","color":"brown","hex":"#401f19","family":"red","in_arc":false,"L":[16,16],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"break","below_band":"item_below_band"},{"n":"#284·37","name":"Жилет на запах","price":437,"type":"vest","cut":"fitted","fabric":["batiste"],"length":"mid_thigh","sleeve":"sleeveless","color":"beige","hex":"#b78a6d","family":"orange","in_arc":true,"L":[61,61],"L_from":"photo_point","hem_cm":[82,92],"hem_from":"word","formality":["everyday","smart"],"branch":"core"},{"n":"#99·28","name":"Oversize-пончо з вовни ягнят сіре","price":11680,"type":"coat","cut":"relaxed","fabric":["polyamide"],"length":"midi","sleeve":"sleeveless","details":["oversize"],"color":"grey","hex":"#929498","in_arc":true,"L":[61,61],"L_from":"photo_point","hem_cm":[22,36],"hem_from":"word","formality":["neat","formal"],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#222·34","name":"Кардиган лляний Провіденс","price":2350,"type":"cardigan","cut":"relaxed","fabric":["linen","woven"],"length":"knee","sleeve":"long","details":["belt","oversize"],"color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","hem_cm":[44,52],"hem_from":"word","formality":["home","neat"],"fabric_c":[18,null],"register":"preppy","branch":"core"},{"n":"#20·04","name":"Жіноче вовняне пальто casual з англійським коміром і поясом Bella Bicchi (персиковий, 48)","price":16940,"type":"coat","fabric":["polyester"],"details":["belt"],"color":"peach","hex":"#ea9885","family":"red","in_arc":false,"L":[71,71],"L_from":"photo_point","hem_cm":[12,16],"hem_from":"shop_cm","formality":["neat","formal"],"fabric_c":[2,18],"register":"classic","branch":"edge","scheme":"muted_complementary"},{"n":"#299·31","name":"Жилет жіночий напіввовняний з округлою горловиною демісезонний","price":1380,"type":"vest","cut":"straight","fabric":["wool","woven"],"length":"mid_thigh","color":"beige","hex":"#b19e8e","family":"orange","in_arc":true,"L":[66,66],"L_from":"photo_point","hem_cm":[78,82],"hem_from":"shop_cm","formality":["everyday","smart"],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#267·31","name":"Пальто жіноче зі складками демісезонне","price":3599,"type":"coat","cut":"relaxed","fabric":["polyester"],"length":"midi","sleeve":"long","color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","hem_cm":[69,73],"hem_from":"shop_cm","formality":["neat","formal"],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#32·08","name":"Куртка з коміром, бежева","price":4190,"type":"jacket","cut":"relaxed","fabric":["cotton"],"length":"mid_thigh","details":["oversize"],"color":"beige","hex":"#c09b65","family":"yellow","in_arc":true,"L":[66,66],"L_from":"photo_point","hem_cm":[82,92],"hem_from":"word","formality":["home","neat"],"branch":"edge","scheme":"triad","below_band":"item_below_band"},{"n":"#331·01","name":"Тренч світло-зелений котоновий","price":7999,"type":"trench_coat","cut":"straight","fabric":["cotton","woven"],"length":"midi","color":"green","shop_color":"світло-зелений","hex":"#a99972","family":"yellow","in_arc":true,"L":[64,64],"L_from":"photo_point","hem_cm":[22,36],"hem_from":"word","formality":["everyday","formal"],"register":"classic","branch":"core"},{"n":"#211·19","name":"Пасок Базовий світла олива","price":450,"fabric":"unknown","color":"olive","shop_color":"світла олива","hex":"#71744a","family":"yellow","in_arc":true,"L":[30,65],"L_from":"word","branch":"core"},{"n":"#204·19","name":"Пасок з пірʼям смарагд","price":900,"cut":"fitted","fabric":["polyester"],"color":"emerald","hex":"#006400","family":"green","in_arc":true,"L":[36,36],"L_from":"photo_point","branch":"core"},{"n":"#178·19","name":"Пасок з пірʼям кобальт","price":900,"fabric":["polyester"],"color":"green","hex":"#39873a","family":"green","in_arc":true,"L":[50,50],"L_from":"photo_point","branch":"core"},{"n":"#283·38","name":"Ремінь жіночий Welfare","price":800,"fabric":["leather"],"color":"khaki","hex":"#707050","family":"yellow","in_arc":true,"L":[23,70],"L_from":"word","branch":"core"},{"n":"#192·19","name":"Пасок Базовий смарагд","price":450,"fabric":["leather"],"color":"emerald","hex":"#006400","family":"green","in_arc":true,"L":[36,36],"L_from":"photo_point","branch":"core"},{"n":"#167·19","name":"Пасок з пір’ям 2 смарагд","price":900,"fabric":["satin"],"shine":true,"color":"emerald","hex":"#2d412d","family":"green","in_arc":true,"L":[12,39],"L_from":"word","register":"romantic","branch":"core"},{"n":"#352·38","name":"Ремінь жіночий Welfare","price":460,"fabric":["leather"],"color":"khaki","hex":"#707050","family":"yellow","in_arc":true,"L":[23,70],"L_from":"word","branch":"core"},{"n":"#252·38","name":"Ремінь жіночий Welfare","price":750,"fabric":["leather"],"color":"green","hex":"#39873a","family":"green","in_arc":true,"L":[20,80],"L_from":"word","branch":"core"},{"n":"#247·13","name":"Шовкова хустка \"незалежна\"","price":899,"type":"kerchief","fabric":["silk"],"pattern":"print_generic","shine":true,"color":"light_blue","hex":"#7abadd","in_arc":false,"L":[55,90],"L_from":"word","branch":"edge","scheme":"analogous"},{"n":"#238·28","name":"Жакардовий двосторонній шарф з графічним мотивом темно-сірий","price":3500,"type":"scarf_generic","fabric":["polyamide"],"pattern":"embroidery","color":"grey","hex":"#505154","in_arc":true,"L":[34,34],"L_from":"photo_point","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#330·37","name":"Шарф мелка клітинка кашемір","price":455,"type":"scarf_generic","fabric":["cashmere"],"pattern":"check","color":"beige","hex":"#f5f5dc","family":"yellow","in_arc":true,"L":[96,96],"L_from":"photo_point","fabric_c":[2,18],"register":"quiet_luxury","branch":"core","below_band":"untyped_photo_below_band"},{"n":"#245·05","name":"Хустка з принтом (Other Brand)","price":760,"type":"kerchief","fabric":["polyester"],"pattern":"floral","color":"white","hex":"#dceaf4","in_arc":true,"L":[92,92],"L_from":"photo_point","register":"romantic","branch":"core"},{"n":"#107·32","name":"Сірий шарф із фірмовою монограмою","price":4500,"type":"scarf_generic","fabric":"unknown","pattern":"print_generic","color":"grey","hex":"#aaa8a9","in_arc":true,"L":[69,69],"L_from":"photo_point","branch":"core","below_band":"untyped_photo_below_band"},{"n":"#217·05","name":"Стрічка-твіллі (Other Brand)","price":150,"type":"twilly","fabric":["polyester"],"pattern":"floral","color":"mint","hex":"#7bc897","family":"green","in_arc":true,"L":[75,75],"L_from":"photo_point","register":"romantic","branch":"edge","scheme":"neutrals_plus_accent"},{"n":"#294·08","name":"Хустка, жовта","price":690,"type":"kerchief","fabric":["cotton"],"pattern":"check","color":"yellow","hex":"#efd056","family":"yellow","in_arc":true,"L":[70,98],"L_from":"word","branch":"core","below_band":"untyped_photo_below_band"},{"n":"#215·28","name":"Хустка з м'якої вовни ягняти молочний","price":2500,"type":"kerchief","fabric":["polyamide"],"color":"white","hex":"#f6f3ea","in_arc":true,"L":[96,96],"L_from":"photo_point","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#8·38","name":"Жіноча сумка Welfare","price":1549,"type":"bag_generic","fabric":"unknown","color":"green","hex":"#39873a","family":"green","in_arc":true,"L":[20,80],"L_from":"word","branch":"core"},{"n":"#58·38","name":"Жіноча сумка Welfare","price":1800,"type":"bag_generic","fabric":"unknown","color":"green","hex":"#39873a","family":"green","in_arc":true,"L":[20,80],"L_from":"word","branch":"core"},{"n":"#184·22","name":"Жіноча сумка замшева через плече зелена","price":4249,"type":"crossbody_bag","fabric":["suede"],"color":"green","hex":"#39873a","family":"green","in_arc":true,"L":[20,80],"L_from":"word","formality":"everyday","branch":"core"},{"n":"#295·06","name":"Клатч-орігамі GIA шкіряний з анімалістичним принтом","price":5900,"type":"clutch","fabric":["leather"],"pattern":"animal_print","color":"khaki","hex":"#5d6a4e","family":"green","in_arc":true,"L":[43,43],"L_from":"photo_point","formality":"formal","branch":"core"},{"n":"#355·14","name":"Сумка жіноча LADIES BAG PERLA","price":5450,"type":"bag_generic","fabric":["leather"],"color":"green","hex":"#39873a","family":"green","in_arc":true,"L":[20,80],"L_from":"word","branch":"core"},{"n":"#64·32","name":"Шкіряний зелений клатч Rockstud","price":18500,"type":"clutch","fabric":["leather"],"color":"green","hex":"#39873a","family":"green","in_arc":true,"L":[20,80],"L_from":"word","formality":"formal","branch":"core"},{"n":"#103·22","name":"Жіноча сумка з нубуку зелена","price":2199,"type":"bag_generic","fabric":["nubuck"],"color":"green","hex":"#39873a","family":"green","in_arc":true,"L":[20,80],"L_from":"word","branch":"core"},{"n":"#23·22","name":"Жіноча сумка солом'яна зелена","price":999,"type":"bag_generic","fabric":["faux_leather"],"color":"green","hex":"#c5d8aa","family":"green","in_arc":true,"L":[84,84],"L_from":"photo_point","register":"rock","branch":"core","below_band":"untyped_photo_below_band"}]}
+
+── ВІДПОВІДЬ (3960 симв., 48.6 с, HTTP 200) ──
+{
+  "answer": "OUTFITS_V1",
+  "outfits": [
+    {
+      "id": "o1",
+      "caption": "Sophisticated grey coat, linen suit, blazer with red bag and beige loafers",
+      "pole": "anchored_tonal_column",
+      "items": [
+        {
+          "n": "#291·33",
+          "name": "Пальто двобортне сіре"
+        },
+        {
+          "n": "#88·34",
+          "name": "Штани лляні Ньюрі жакардові"
+        },
+        {
+          "n": "#56·32",
+          "name": "Двобортний піджак у дрібний принт"
+        },
+        {
+          "n": "#382·07",
+          "name": "Сумка жіноча червона"
+        },
+        {
+          "n": "#90·14",
+          "name": "Балетки шкіряні пудрові"
+        }
+      ],
+      "day": "ювілей, свято, ресторан районний, ошатність: neat–formal",
+      "deliberate": [
+        {
+          "item": "#90·14",
+          "why": "Added to resolve 'no_shoes' blocker; provides appropriate formality for the occasion."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_shoes: missing shoes in outfit o1",
+          "action": "fixed",
+          "why": "Added '#90·14 Balloetki skiriane pudrovі' to complete the footwear requirement."
+        },
+        {
+          "finding": "incomplete: too few items (count=4, minimum=5)",
+          "action": "fixed",
+          "why": "Addressed by adding the missing shoe item in the previous step, bringing the count to 5."
+        }
+      ]
+    },
+    {
+      "id": "o2",
+      "caption": "Light pink cardigan, mint hat look with beige bag and white dress shoes",
+      "pole": "anchored_tonal_column",
+      "items": [
+        {
+          "n": "#319·38",
+          "name": "Ремінь жіночий Welfare"
+        },
+        {
+          "n": "#242·37",
+          "name": "Сарафан міні з розрізом"
+        },
+        {
+          "n": "#65·15",
+          "name": "Берет класичний з кашеміром м'ятний"
+        },
+        {
+          "n": "#100·03",
+          "name": "Літні туфлі, RIEKER, екошкіра/текстиль, колір білий"
+        },
+        {
+          "n": "#295·06",
+          "name": "Клатч-орігамі GIA шкіряний з анімалістичним принтом"
+        }
+      ],
+      "day": "A romantic and playful look for the celebration; the orange skirt and beige dress create a warm, cohesive palette. The pink accessories add a soft contrast to the face.",
+      "deliberate": [
+        {
+          "item": "#295·06",
+          "why": "Added to resolve 'no_bag' blocker; selected formal clutch matching the festive occasion."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_bag: missing bag in outfit o2",
+          "action": "fixed",
+          "why": "Added '#295·06 Клатч-орігамі GIA шкіряний з анімалістичним принтом' to satisfy the formal requirement."
+        }
+      ]
+    },
+    {
+      "id": "o3",
+      "caption": "Beige satin dress with burgundy shoes, black belt and green crossbody bag",
+      "pole": "anchored_tonal_column",
+      "items": [
+        {
+          "n": "#128·19",
+          "name": "Сукня Максі сатин беж"
+        },
+        {
+          "n": "#16·11",
+          "name": "LeBERDES Туфлі бордові"
+        },
+        {
+          "n": "#384·38",
+          "name": "Ремінь жіночий Welfare"
+        },
+        {
+          "n": "#295·06",
+          "name": "Клатч-орігамі GIA шкіряний з анімалістичним принтом"
+        }
+      ],
+      "day": "Ideal for the evening; the beige satin dress is soft and flattering, while the burgundy shoes add depth. The silver jewelry echoes the cool tones of her eyes against the warm skin.",
+      "deliberate": [
+        {
+          "item": "#295·06",
+          "why": "Added to resolve 'no_bag' blocker; formal clutch complements the evening wear."
+        }
+      ],
+      "done": [
+        {
+          "finding": "no_bag: missing bag in outfit o3",
+          "action": "fixed",
+          "why": "Added '#295·06 Клатч-орігамі GIA шкіряний з анімалістичним принтом' to complete the ensemble."
+        }
+      ]
+    }
+  ],
+  "needed": []
+}

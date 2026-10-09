@@ -1,0 +1,34 @@
+── ПРОМПТ (1801 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored blazer in a deep midnight blue with notched lapels, structured shoulders, elbow-length sleeves, matte wool blend; high-waisted wide-leg trousers in charcoal heather with a straight rise and ankle length, fluid drape, soft gabardine; pointed-toe pumps in oxblood leather with a moderate heel and closed toe; drop earrings featuring an oval black onyx stone set in polished gold vermeil. This ensemble works because the rich, dark tones provide the requested \"neat–formal\" elegance suitable for a restaurant district milestone celebration without appearing overly expensive or demanding. The structured silhouette offers a confident, standout presence that satisfies her desire to make a clear statement while avoiding any clingy or uncomfortable details she typically rejects. By pairing classic tailoring with bold color blocking and dramatic jewelry, the look feels both sophisticated and distinctly hers, perfectly balancing occasion-appropriateness with personal flair."}
+
+── ВІДПОВІДЬ (830 симв., 299.7 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "blazer",
+        "details": "tailored cut with notched lapels, structured shoulders, elbow-length sleeves in matte wool blend fabric",
+        "slot": "outerwear",
+        "color_hex": "#001a33"
+      },
+      {
+        "name": "trousers",
+        "details": "high-waisted wide-leg straight rise ankle length with fluid drape in soft gabardine fabric",
+        "slot": "bottom",
+        "color_hex": "#36454F"
+      },
+      {
+        "name": "pumps",
+        "details": "pointed-toe closed toe moderate heel in leather",
+        "slot": "shoes",
+        "color_hex": "#7f1212"
+      },
+      {
+        "name": "drop earrings",
+        "details": "oval black onyx stone set in polished gold vermeil",
+        "slot": "earrings",
+        "color_hex": null
+      }
+    ]
+  }
+}

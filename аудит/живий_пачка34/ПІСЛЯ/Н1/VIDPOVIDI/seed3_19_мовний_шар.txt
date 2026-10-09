@@ -1,0 +1,29 @@
+── ПРОМПТ (3463 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Blazer tailored in a soft charcoal grey wool with a slightly relaxed shoulder cut and single-breasted buttons, Silk chiffon blouse in ivory with a subtle satin sheen, cut loose at the bust to drape elegantly while keeping a refined neck line, High-waisted midi skirt in stretch velvet with an A-line silhouette that skims the hips without clinging, length falling just below the knee for modest elegance, color deep emerald green, Stiletto pumps in polished leather matching the emerald of the skirt, pointed toe for a modern touch but low enough height to feel secure and unpretentious, Gold-plated stud earrings with a small sphere design, delicate yet substantial enough to catch the light without drawing aggressive attention, Simple pearl drop earrings on thin wire chains that add a classic finish without appearing too flashy or trying too hard, color lustrous white, This outfit strikes the perfect balance between festive occasion-wear and understated comfort, ensuring she feels celebrated without feeling burdened by overly restrictive clothing. The combination of structured wool and fluid silk creates an interesting texture contrast that looks intentional but effortless, directly addressing her fear of seeming like she is trying too hard. By choosing deep emerald green and neutral ivory instead of loud prints or excessive sparkle, the ensemble exudes a sense of calm confidence rather than anxiety. It satisfies the neat-formal dress code of a neighborhood restaurant while allowing her to move freely and avoid any feeling of being \"caught out\" by an uncomfortable fit."},
+{"н": 2, "текст": "Blazer"},
+{"н": 3, "текст": "Blouse"},
+{"н": 4, "текст": "Skirt"},
+{"н": 5, "текст": "Shoes"},
+{"н": 6, "текст": "Jewelry"},
+{"н": 7, "текст": "Jewelry"}
+]
+
+── ВІДПОВІДЬ (1751 симв., 219.0 с, HTTP 200) ──
+```json
+{
+  "1": "Піджак приталеного крою з м’якої сіро-вугільної вовни зі злегка розслабленим плечем і однобортними ґудзиками, Шовкова шифонова блузка кольору слонової кістки з ледь помітним атласним блиском, вільного крою в зоні грудей для елегантного драпірування при вишуканому вирізі горловини, Спідниця-міді із завищеною талією на стрейчевому оксамиті з силуетом «сонце», що ледь торкається стегон без облягання, довжина трохи нижче колін для скромної елегантності, глибокий смарагдовий зелений колір, Туфлі-шпильки на підборах із полірованої шкіри в тон спідниці, загострений носок для сучасного акценту, але достатньо низька висота каблука, щоб почуватися безпечно і невимушено, Золоті сережки-гвоздики з маленьким сферичним дизайном, ніжні, але досить масивні, щоб ловити світло без надмірної уваги, Прості перлинні підвіски на тонких ланцюжках, які додають класичного фіналу, не виглядаючи занадто помітно або нав’язливо, колір — блискучий білий. Цей образ ідеально поєднує святковий одяг для особливих випадків з невимушеним комфортом, забезпечуючи їй відчуття свята без надмірного тиску від обмежувального одягу. Комбінація структурованої вовни та плинного шовку створює цікавий контраст текстур, який виглядає навмисним, але невимушеним, прямо відповідаючи її страху здатися такою, що намагається надто сильно. Обираючи глибокий смарагдовий зелений і нейтральну слонову кістку замість гучних принтів або зайвого блиску, ансамбль випромінює спокійну впевненість, а не тривогу. Він задовольняє охайний-формальний дрес-код ресторану в районі, дозволяючи їй вільно рухатися і уникати відчуття «заскоченої» через незручний крій.",
+  "2": "Піджак",
+  "3": "Блузка",
+  "4": "Спідниця",
+  "5": "Взуття",
+  "6": "Прикраси",
+  "7": "Прикраси"
+}
+```
