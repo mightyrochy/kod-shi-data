@@ -1,0 +1,38 @@
+── ПРОМПТ (1894 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk Blouse, relaxed fit with a V-neckline, color #e2ba9f, fluid woven silk.  \nTailored Wide-Leg Trousers, straight cut at the ankle, length hitting mid-calf, color #d8a98c, crisp cotton blend.  \nLeather Block Heels, pointed toe with a moderate heel height, color #deb295, smooth genuine leather.  \nGold Hoop Earrings, medium size with matte finish, 18-karat gold plating.  \nA structured Clutch Bag, rectangular silhouette, interior lining in charcoal, textured lambskin exterior in #d8a98c.  \n\nThis outfit balances the warmth of a restaurant evening with the sophistication required for a date night in a regional setting. The fluid silk blouse softens the structured lines of the wide-leg trousers while creating a harmonious tonal palette that complements her warm skin undertones. A single layer is chosen to provide effortless elegance without overheating at 8:00 PM, and the neutral earth tones allow the subtle contrast between her hair and eyes to stand out. The addition of gold jewelry ties the ensemble together with a touch of luxury suitable for the occasion."}
+
+── ВІДПОВІДЬ (929 симв., 273.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk Blouse",
+      "details": "relaxed fit with a V-neckline, fluid woven silk",
+      "slot": "top",
+      "color_hex": "#e2ba9f"
+    },
+    {
+      "name": "Tailored Wide-Leg Trousers",
+      "details": "straight cut at the ankle, length hitting mid-calf, crisp cotton blend",
+      "slot": "bottom",
+      "color_hex": "#d8a98c"
+    },
+    {
+      "name": "Leather Block Heels",
+      "details": "pointed toe with a moderate heel height, smooth genuine leather",
+      "slot": "shoes",
+      "color_hex": "#deb295"
+    },
+    {
+      "name": "Gold Hoop Earrings",
+      "details": "medium size with matte finish, 18-karat gold plating",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "Clutch Bag",
+      "details": "rectangular silhouette, interior lining in charcoal, textured lambskin exterior",
+      "slot": "bag",
+      "color_hex": "#d8a98c"
+    }
+  ]
+}

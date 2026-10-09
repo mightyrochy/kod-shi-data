@@ -1,0 +1,38 @@
+── ПРОМПТ (1795 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured silk blouse with a sharp collar, tailored to a relaxed straight cut that hits just above the hip bone, in a deep charcoal gray (#36454F), made from heavy-fluid silk. Slim-fit wide-leg trousers with a slight drape, elongating the silhouette and falling to the ankle, in a matching dark slate blue (#2C3E50), crafted from fine wool blend. Pointed-toe stiletto pumps in a polished black leather (#1C1C1C), offering a sleek height without being overwhelming. Minimalist gold hoop earrings and a slim velvet clutch in bronze to add subtle warmth against the cool tones. This outfit works because the monochromatic base creates an effortlessly elegant elongation perfect for a neighborhood restaurant setting. The structured collar adds a touch of sophistication suitable for a date, while the fluid fabrics ensure comfort during an evening dinner. The slight contrast between the charcoal and slate blue keeps the look interesting without breaking the cohesive color story."}
+
+── ВІДПОВІДЬ (874 симв., 276.0 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Structured silk blouse",
+      "details": "sharp collar, relaxed straight cut hitting just above the hip bone, made from heavy-fluid silk",
+      "slot": "top",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "Slim-fit wide-leg trousers",
+      "details": "slight drape elongating the silhouette, falling to the ankle, made from fine wool blend",
+      "slot": "bottom",
+      "color_hex": "#2C3E50"
+    },
+    {
+      "name": "Pointed-toe stiletto pumps",
+      "details": "polished leather offering sleek height",
+      "slot": "shoes",
+      "color_hex": "#1C1C1C"
+    },
+    {
+      "name": "Minimalist gold hoop earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "Slim velvet clutch",
+      "details": "",
+      "slot": "bag",
+      "color_hex": "#A0522D"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+── ПРОМПТ (5391 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- palette_scheme_note — рядок про ОБРАНУ схему на екрані «Палітра»: що це за хід і коли він менш ходовий.
+- palette_default_scheme — рядок на екрані «Палітра» про схему й основу, які вона лишила стилістці, поки стилістка їх не обрала або не змогла обрати: за чим тоді збирається образ і скільки схем радить стилістка.
+
+КОДИ У ЗНАЧЕННЯХ:
+- high — високий.
+- low — низький.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами.
+
+ЗАЯВИ:
+- scheme_tonal — one tone on all items, with small steps of lightness.
+- scheme_analogous — neighbouring hues of the colour wheel.
+- scheme_neutrals_accent — a neutral base and one flash of colour.
+- scheme_muted_complementary — two opposite colours.
+- scheme_triad — three colours on the large items, roughly equal.
+- same_calm_contrast — the contrast stays as calm as her own.
+- native_to_her_soft_contrast — this is the natural home of her soft contrast.
+- both_sides_muted — both sides are muted.
+- same_fabric_reads_flat — works less well when all items are of one fabric: without a difference in textures the outfit reads flat.
+- analogous_close_to_tonal — differs from tonal only slightly: the difference is subtle to the eye, so she may take whichever name she prefers.
+- accent_keep_muted — keep the accent muted.
+- loud_accent_pulls_from_face — a loud colour brings back sharp contrast and starts pulling attention from the face.
+- boldest_everyday_move — on her soft contrast this is the boldest of the everyday moves.
+- second_side_small_patch — take the second side as a small patch.
+- pair_pulls_look_on_itself — otherwise the pair pulls the outfit onto itself.
+- triad_three_families_limit — together with the metal of the jewellery this reaches the limit of three colour families, so the accessories can only repeat one of them.
+- contrast_mismatch — the outfit's contrast is deliberately not her own: the face stays in its window and the rest of the lightness ladder shifts; a "clothes in focus" move, not a "flatter the face" one, hence rarer.
+- contrast_mismatch_levels — the levels of this shift (values: look_level — the outfit's contrast, own_level — her own; codes low, medium, high).
+- rarer_than_everyday — this scheme is less of an everyday one.
+- stylist_will_choose — until she chooses, the stylist picks the scheme and base for her occasion.
+- schemes_advised_count — how many schemes the stylist advises for this outfit (values: count — a number).
+- rarer_schemes_count — how many schemes are rarer; they can be chosen too (values: count — a number).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "palette_default_scheme", "заяви": [{"code": "stylist_will_choose"}, {"code": "schemes_advised_count", "values": {"count": 4}}, {"code": "rarer_schemes_count", "values": {"count": 2}}]},
+{"н": 2, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_tonal"}, {"code": "native_to_her_soft_contrast"}, {"code": "same_fabric_reads_flat"}]},
+{"н": 3, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_analogous"}, {"code": "same_calm_contrast"}, {"code": "analogous_close_to_tonal"}]},
+{"н": 4, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_neutrals_accent"}, {"code": "accent_keep_muted"}, {"code": "loud_accent_pulls_from_face"}]},
+{"н": 5, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_muted_complementary"}, {"code": "both_sides_muted"}, {"code": "boldest_everyday_move"}, {"code": "second_side_small_patch"}, {"code": "pair_pulls_look_on_itself"}]},
+{"н": 6, "вид": "palette_scheme_note", "заяви": [{"code": "scheme_triad"}, {"code": "rarer_than_everyday"}, {"code": "triad_three_families_limit"}]},
+{"н": 7, "вид": "palette_scheme_note", "заяви": [{"code": "contrast_mismatch"}, {"code": "contrast_mismatch_levels", "values": {"look_level": "high", "own_level": "low"}}]}
+]
+
+── ВІДПОВІДЬ (1131 симв., 19.3 с, HTTP 200) ──
+```json
+{
+  "1": "Доки ти не обереш, я підберу схему та основу для твоєї нагоди. Я раджу тобі чотири варіанти, два з них — менш поширені.",
+  "2": "Тональна схема пасує до твого м’якого контрасту якнайкраще, але пам’ятай: коли всі речі одного матеріалу, образ може здаватися плоским.",
+  "3": "Аналогова схема дасть тобі спокійний контраст. Вона дуже близька до тональної — різниця ледь помітна, тому ти сама вирішуй, яку назву їй віддати.",
+  "4": "Схема з нейтральною основою та яскравим акцентом: тримай акцент приглушеним, інакше він забере увагу з обличчя.",
+  "5": "Приглушена комплементарна схема — обидві сторони приглушені. Це найсміливіший хід для твого м’якого контрасту: візьми другу сторону як невелику вставку, інакше пара забере на себе весь образ.",
+  "6": "Тріадна схема — це менш звичний варіант. Вона обмежує тебе до трьох кольорових сімейств разом із металом прикрас: аксесуари можуть повторювати лише один із них.",
+  "7": "Контрастність образу навмисно не твоя, а висока — це переміщує драбину світлості. Це хід «у фокусі одягу», а не для того, щоб підкреслити обличчя, тому він рідше використовується."
+}
+```
