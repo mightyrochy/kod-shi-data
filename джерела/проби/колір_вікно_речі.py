@@ -3,7 +3,7 @@
 (точка, як судили доти) проти всього вікна («так / ні / невідомо»): нейтраль K-COL-06 (`нейтраль_меж`), у вікнах палітри
 K-PAL-09/10 (`у_вікнах_меж`), тон у дузі очей K-PAL-02/13 (`у_дугах_меж`), хрома інтересу K-INT-04/K-CRA-02
 (`суд_інтерес.хрома_інтересу`), «у палітрі» кандидата заміни (`річ_з_фото.членство_вікна`); і пари вікон тканинних речей
-K-COL-06 — `distinct` з kL=2 (R-COL-11) проти kL=1. Запуск із джерела/: python3 проби/колір_вікно_речі.py"""
+K-COL-06 — `distinct_fabric` (kL=2, R-COL-11) проти `distinct` (kL=1). Запуск із джерела/: python3 проби/колір_вікно_речі.py"""
 import sys, random, collections as K; sys.path.insert(0, "."); sys.path.insert(0, "проби")
 import pal_вердикт as ПВ, колір_річ as КР, colorspace as cs, суд_від_моделі as СВ, суд_інтерес as СІ, річ_з_фото as РФ
 import колір_простір_стеля as КС
@@ -24,7 +24,7 @@ for x in слова:
 Л["речей-слів"] = len(слова); rnd = random.Random(11)
 тк = [x for x in слова if КС.тканинна_пара(x.get("текстура"), x.get("текстура"))[0] == 2]
 for _ in range(3000 if len(тк) > 1 else 0):
-    a, b = rnd.sample(тк, 2); д2 = КР.відношення(a, b, "distinct")
-    a1, b1 = dict(a, текстура=None), dict(b, текстура=None)
-    Л["пари тканинних вікон distinct: kL=1 %s → kL=2 %s" % (КР.відношення(a1, b1, "distinct"), д2)] += 1
+    a, b = rnd.sample(тк, 2)
+    Л["пари тканинних вікон: distinct (kL=1) %s → distinct_fabric (kL=2) %s" % (
+        КР.відношення(a, b, "distinct"), КР.відношення(a, b, "distinct_fabric"))] += 1
 for к_, v in sorted(Л.items()): print("  %-58s %5d" % (к_, v))
