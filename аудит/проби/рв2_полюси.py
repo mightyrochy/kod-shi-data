@@ -8,7 +8,7 @@ import bridge as B, протокол as P
 
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 п = json.loads(json.loads(B.виклик("запити", json.dumps(dict(вх, варіантів=10), ensure_ascii=False)))["руки"]["1"])
-іди = [x["ід"] for x in п["полюси"]]
+іди = [x["id"] for x in п["poles"]]
 print("ПАКЕТ_V1.полюси[].ід =", іди)
 print("enum ОБРАЗИ_V1.полюс   =", P.ПОЛЮСИ)
 print("ід поза enum:", [i for i in іди if i not in P.ПОЛЮСИ])
