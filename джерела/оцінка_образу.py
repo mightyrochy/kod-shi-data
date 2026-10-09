@@ -108,7 +108,9 @@ def _ключ(поле, код, незнайомі, де):
 # ═══════════ 2. ЗАДАЧА «РЕЧІ»: ЩО НА ЇЇ ФОТО ════════════════════════════════════
 # ЧОМУ ЦІ РЯДКИ (для людей; моделі це не потрібно):
 #   · «in_outfit» — вона може показати поруч річ, яку думає вдягти НАТОМІСТЬ (другі туфлі):
-#     такою річчю код не судить образ, а пробує її як зміну (крок 4 шапки);
+#     такою річчю код не судить образ, а пробує її як зміну (крок 4 шапки); «unknown» — кадр цього
+#     не показує (рядок 1431: дві пари поруч на тлі — модель читала то кремові «в образі», то чорні,
+#     23 з 78, і зміна «чорні → кремові» йшла жінці як «твоя річ з фото»): така річ — її варіант;
 #   · «frame» — колір міряє код пікселями в межах рамки (`річ_з_фото.виміряти`), тож рамка
 #     мусить обіймати саму річ, без тла й шкіри;
 #   · одна річ на кількох фото — один запис: інакше образ мав би дві однакові сукні, і
@@ -126,7 +128,8 @@ def _ключ(поле, код, незнайомі, де):
         "List every garment, pair of shoes, bag and accessory visible on her photos: one object per item.",
         "An item seen on several photos is listed once, with the photo where it is seen best.",
         "\"in_outfit\" is true for items worn together in the outfit; false for an item shown as an "
-        "alternative to one of them.",
+        "alternative to one of them; \"unknown\" when the photo does not show which of them she wears "
+        "(two pairs side by side, nothing on her).",
         "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
         "around the item itself, without background or skin.",
         "Field values are only codes from \"codes\"; what the photo does not show is null.",
@@ -142,7 +145,7 @@ def _ключ(поле, код, незнайомі, де):
         "length": "<code from codes.length or null>",
         "pattern": "<code from codes.pattern>",
         "formality": "<integer 1–10: 1 home, 3 cafe, " + _ФОРМ_ОФ.СМУГА_ОФІСУ_EN + ", 7 evening out, 9 ceremony>",
-        "in_outfit": "<true | false>",
+        "in_outfit": "<true | false | unknown>",
         "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
     }]},
     межі=("лише_вхід", "невідомо"),
@@ -171,6 +174,18 @@ def _ціле(v, мін, макс):
     except (TypeError, ValueError):
         return None
     return ч if мін <= ч <= макс else None
+
+
+def _в_образі(о):
+    """`in_outfit` речі моделі → True / False / None («unknown» чи null: кадр не показує, чи вона її
+    вдягає). Без поля — True, як доти: модель, що не сказала «запасна», назвала річ образу."""
+    if "in_outfit" not in о:
+        return True
+    v = о["in_outfit"]
+    с = str(v).strip().lower()
+    if v is False or с == "false":
+        return False
+    return None if v is None or с in ("unknown", "null", "none", "") else True
 
 
 def речі_з_відповіді(відповідь, фото):
@@ -210,7 +225,7 @@ def речі_з_відповіді(відповідь, фото):
                  принт=_ключ("pattern", о.get("pattern"), вих["незнайомі"], де),
                  ошатність=_ціле(о.get("formality"), 1, 10),
                  чия="невідомо",
-                 в_образі=(о.get("in_outfit") is not False and str(о.get("in_outfit")).lower() != "false"),
+                 в_образі=_в_образі(о),
                  рамка=_рамка(о.get("frame")))
         лічба[ф] = лічба.get(ф, 0) + 1
         р["ід"] = ф if лічба[ф] == 1 else "%s·%d" % (ф, лічба[ф])
@@ -245,7 +260,7 @@ def скласти(речі):
         if not сл:
             конфлікти.append(dict(річ=р["ід"], чому="no_slot"))
             continue
-        if not р.get("в_образі", True):
+        if р.get("в_образі", True) is False:
             запасні.append(р["ід"])
             continue
         хто = sorted(і for і, с in слоти.items() if займають_одне(сл, с))
@@ -672,13 +687,17 @@ def речі_для_моделі(суд_):
     return вих
 
 
+# ЗАУВАЖЕННЯ — ІНФОРМАЦІЯ, НЕ ЛІЧИЛЬНИК (рядок 1431, CLAUDE.md п.17). Доти зміна несла моделі
+# `weight_before`/`weight_after` — суму сил знахідок до й після, — а поле `changes` казало «lowers the total
+# weight of findings»; жінка читала «помітно зменшить кількість зауважень», «зате з'явиться невелике нове
+# зауваження» (≥14 прогонів розбору 02.10). Сума лишається там, де вона робота коду, — у відборі змін
+# (`зміни`) і в звіті власника; моделі — лише ЯКІ знахідки зміна знімає й додає, тобто що в образі зміниться.
 def зміни_для_моделі(суд_):
     """Перевірені зміни → внутрішня мова: що замінити, чим (її річ за ідом або річ крамниці з
-    назвою й ціною), вага знахідок до й після, які правила зміна знімає."""
+    назвою й ціною) і які знахідки зміна знімає й додає — без сум і ваг."""
     вих = []
     for с in суд_.get("зміни") or []:
-        з = {"id": с["ід"], "replace": [с["ціль"]], "weight_before": суд_.get("суд", {}).get("weight"),
-             "weight_after": с.get("сума"), "removes": с.get("знято") or [], "adds": с.get("додано") or []}
+        з = {"id": с["ід"], "replace": [с["ціль"]], "removes": с.get("знято") or [], "adds": с.get("додано") or []}
         if с["звідки"] == "own":
             з["with_own"] = с["нова"]
         else:
@@ -712,6 +731,11 @@ def _сцена_для_моделі(суд_):
 #   · «unknown» — чого не можна судити: без нагоди — ошатності, без погоди — тепла (В-5, В-6);
 #   · рядка «не відсилай до інших екранів» тут нема навмисно: відсилання робила ДОВІДКА про
 #     застосунок, якої в цьому виклику нема (В-8, В-12), а заборона без причини — шум.
+# Рядок 1431 (п.17, п.21): «зменшить кількість зауважень», «зайвий акцент, який знайшла клітинка» — суд
+# коду жінка чула як лічильник і як дійову особу. Знахідки — те, що модель знає про образ, а не рахунок.
+_БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, not a score: never count findings or remarks, "
+                   "never say a change lowers, removes or adds them, and never mention the check, the code or "
+                   "a system; say what changes in the outfit itself, in plain words.")
 ОЦІНКА = _ЗП.Оголошення(
     задача="оцінка",
     роль="You are a stylist. A woman has put an outfit together herself and asks for your view. "
@@ -734,8 +758,11 @@ def _сцена_для_моделі(суд_):
                           "code found, fix — how to repair it), structure blockers, and the codes of the "
                           "checklist points the outfit passed and failed",
                  треба=True),
+        _ЗП.Поле("worn_unknown", "her items for which the photo does not show whether she wears them or "
+                                 "shows them as an alternative: the code put the first of them in the outfit"),
         _ЗП.Поле("changes", "changes the code has verified: each replaces one outfit item with her "
-                            "alternative or a shop item and lowers the total weight of findings"),
+                            "alternative or a shop item; removes and adds — the findings it takes away and "
+                            "brings"),
         _ЗП.Поле("unknown", "what the code could not check: inputs she did not give, checklist points "
                             "not run (codes), and rules about her items that lacked data"),
     ),
@@ -747,9 +774,15 @@ def _сцена_для_моделі(суд_):
         "Claim a success only where the check supports it: a finding or a failed point against items is "
         "not a success for them; a palette success names only items with palette \"in\"; a contrast "
         "success needs the passed contrast point.",
-        "\"change\": at most two changes, only ids from \"changes\", her own alternatives first; an "
-        "empty list when \"changes\" is empty.",
+        # рядок 1431: «wear_with_change» з порожнім «change» — 10 карток у 7 прогонах: зміни крамниці не
+        # знайшлось, а ремонт знахідки («додай шар чи сильний аксесуар») модель назвати не могла
+        "\"change\": at most two, her own alternatives first: ids from \"changes\"; when no change in "
+        "\"changes\" helps, the id of a finding in \"check\" whose \"fix\" she can do herself, and "
+        "\"text\" says that fix. \"wear_with_change\" only with at least one \"change\".",
+        "An item in \"worn_unknown\" is one of her options: speak of it as her choice between them, not "
+        "as what she is wearing.",
         "\"unknown\": what you cannot judge, the most important for her question first.",
+        _БЕЗ_ЛІЧИЛЬНИКА,
     ),
     вихід="OUTFIT_REVIEW_V1",
     скелет={
@@ -757,7 +790,8 @@ def _сцена_для_моделі(суд_):
         "verdict": "wear_as_is | wear_with_change | do_not_wear | unknown",
         "works": [{"about": "colors_together | palette | contrast | silhouette | formality | weather",
                    "items": ["<item id>"], "text": "<what works and why>"}],
-        "change": [{"id": "<change id from changes>", "text": "<why this change helps her>"}],
+        "change": [{"id": "<change id from changes, or finding id from check>",
+                    "text": "<why this change helps her>"}],
         "unknown": [{"text": "<what you cannot judge and what would let you>"}],
     },
     межі=("лише_вхід", "невідомо", "для_неї", "без_чисел_тіла", "без_шкал"),
@@ -885,6 +919,7 @@ def перевірка_для_моделі(суд_):
         "Keep to what you already told her unless the check contradicts it.",
         "Claim only what the check does not contradict; suggest replacing an item only with ids from "
         "\"changes\" and name the item in words.",
+        _БЕЗ_ЛІЧИЛЬНИКА,
     ),
     вихід="OUTFIT_FOLLOWUP_V1",
     скелет={"answer": "<the answer to her new question>"},
@@ -960,6 +995,9 @@ def дані_оцінки(суд_, питання=None):
         "changes": зміни_для_моделі(суд_),
         "unknown": невідоме_для_моделі(суд_),
     }
+    не_видно = [р["ід"] for р in суд_.get("речі") or [] if р.get("в_образі", True) is None]
+    if не_видно:
+        дані["worn_unknown"] = не_видно
     if питання and not _ВМ.невідомо((питання or {}).get("free_text") if isinstance(питання, dict) else питання):
         дані["question"] = питання if isinstance(питання, dict) else {"free_text": str(питання), "lang": "uk"}
     if нагода:
@@ -1050,18 +1088,31 @@ def прийняти_оцінку(відповідь, суд_):
             continue
         вдало.append(dict(про=про, речі=речі, текст=текст))
     зміни = {с["ід"]: с for с in суд_.get("зміни") or []}
+    # РЕМОНТ ЗНАХІДКИ — ТЕЖ «ЩО ЗМІНИТИ» (рядок 1431): знахідка суду з ремонтом, який вона зробить сама
+    # («додай шар чи сильний аксесуар»), стоїть у «change» своїм ідом; речі для неї нема, тож показ малює
+    # лише текст. Знахідка без ремонту зміною не стає.
+    ремонти = {з.get("ід") for з in (суд_.get("суд") or {}).get("findings") or []
+               if з.get("ід") and (з.get("ремонт_заяви") or з.get("ремонт"))}
     змінити = []
     for н, з in enumerate(об.get("change") if isinstance(об.get("change"), list) else []):
         if not isinstance(з, dict):
             continue
         ід = ід_з_дроту(str(з.get("id") or ""))
-        if ід not in зміни:
+        if ід not in зміни and ід not in ремонти:
             сторож.append(dict(де="change[%d]" % н, чому="change_not_verified", що=ід, текст=_текст(з.get("text"))))
             continue
         if len(змінити) >= 2 or any(с["ід"] == ід for с in змінити):
             сторож.append(dict(де="change[%d]" % н, чому="over_two_or_repeat", що=ід))
             continue
-        змінити.append(dict(ід=ід, текст=_текст(з.get("text")), зміна=зміни[ід]))
+        if ід not in зміни and not _текст(з.get("text")):
+            сторож.append(dict(де="change[%d]" % н, чому="fix_without_text", що=ід))
+            continue
+        змінити.append(dict(ід=ід, текст=_текст(з.get("text")), зміна=зміни.get(ід)))
+    # «з зміною» без жодної дійсної зміни — твердження без опори: сторож знімає вердикт (як код поза
+    # переліком), а показ іде в ОДИН повтор із названими ідами (`повтор_вердикту`, перевірка #654, Codex P1)
+    if вердикт == "wear_with_change" and not змінити:
+        сторож.append(dict(де="verdict", чому="change_missing", що=вердикт))
+        вердикт = None
     не_знаю = [dict(текст=_текст(у.get("text") if isinstance(у, dict) else у))
                for у in (об.get("unknown") if isinstance(об.get("unknown"), list) else [])]
     не_знаю = [у for у in не_знаю if у["текст"]]
@@ -1074,8 +1125,18 @@ def прийняти_оцінку(відповідь, суд_):
 
 
 def повтор_вердикту(суд_, сторож):
-    """Рядок для ОДНОГО повтору, коли `verdict` суперечить гейту: що саме в суді (коди)."""
-    if not any(с.get("чому") == "contradicts_gate" for с in сторож or []):
+    """Рядок для ОДНОГО повтору, коли `verdict` суперечить суду: «як є» проти гейта або «з зміною» без
+    дійсної зміни (`change_missing`) — що саме в суді, кодами."""
+    чому = {с.get("чому") for с in сторож or []}
+    if "change_missing" in чому and "contradicts_gate" not in чому:
+        зміни = [ід_на_дріт(с.get("ід")) for с in суд_.get("зміни") or []]
+        ремонти = [ід_на_дріт(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []
+                   if з.get("ід") and (з.get("ремонт_заяви") or з.get("ремонт"))]
+        return ("Your verdict \"wear_with_change\" has no valid \"change\": verified changes %s; findings "
+                "with a fix %s. Give at least one of these ids in \"change\", or choose another verdict. "
+                "Answer again with the same schema." % (", ".join(str(х) for х in зміни) or "—",
+                                                       ", ".join(str(х) for х in ремонти) or "—"))
+    if "contradicts_gate" not in чому:
         return None
     import дріт_моделі as _ДМ
     гейти = [ід_на_дріт(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []

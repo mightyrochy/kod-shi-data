@@ -11,7 +11,7 @@ import re
 import json as _json_
 import протокол as _ПР
 import дріт_моделі as _Д
-import формальність as _ФОРМ_ОФ  # смуга офісу без виду — одна на всі промпти (ОФІС-1)
+import brief as _БР_Щ  # щаблі ошатності кодами для стилістки (НГ-3)
 # К-3 (27.09.2026): коди розбору каталогу й рядок особливостей речі. Модуль читає файл
 # розбору поруч із собою (у вантажі показу — поруч у вантажі) і тримає перемикач короткого
 # запису; без файла й без перемикача він мовчить, і запис речі той самий, що доти.
@@ -58,7 +58,7 @@ import фід_слот as _ФС  # назва_суду: один власник 
 # показали. Тепер ід бере протокол, а цей словник лише каже, ЩО кожен означає;
 # полюс без задуму в пакет не їде (вільний дописується нижче своїм рядком).
 ЗАДУМ_ПОЛЮСА = {
-    "фільтр-і-ранг": "найточніше влучання у вікна й умови",
+    "фільтр-і-ранг": "образ, який першим поставило б ранжування коду: речі, найближчі до вікон палітри й умов дня",
     "якір першим": "найвиразніша річ пулу, образ будується навколо неї (K-COMP-02)",
     "тональна колона": "найузгодженіший за кольором, близькі тони, тримається текстурою",
     "послабити вузол": "той самий образ, але вузьке місце розв'язане іншою річчю",
@@ -503,10 +503,22 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("person", "her coloring, palette and body"),
         # рядок 1423: код фігури без визначення модель читала як ярлик — тепер з ним (O — вертикаль)
         _ЗП.Поле("person.body.shape", _Д.ФІГУРА_КОДИ_EN),
-        _ЗП.Поле("person.palette.slot_roles", "the color role of each kind of item in her palette's scheme",
-                 як="keep these roles; an item with «in_arc»: false lies outside the scheme — take it only "
-                    "as a declared break in «deliberate», at most one per outfit; a colored item in the "
-                    "role «neutral» is a break too"),
+        # БРИФ-1 / рядок 905 (рішення менеджера: факти, не накази): доти «keep these roles … take it only as
+        # a declared break, at most one per outfit». Тепер — що роль означає і як код читає річ поза схемою;
+        # тримати роль чи розірвати її — вибір стилістки (CLAUDE.md п.17)
+        _ЗП.Поле("person.palette.slot_roles", "the color role of each kind of item in her palette's scheme: "
+                                              "dominant — holds the largest field of the outfit; secondary — "
+                                              "a step of lightness next to it; accent — carries the chroma, "
+                                              "on a small area; neutral — no hue of its own. The areas go "
+                                              "dominant > secondary > accent; too much accent is the most "
+                                              "common slip. An item with «in_arc»: false lies outside the "
+                                              "scheme's hues, and so does a coloured item in the role "
+                                              "«neutral»",
+                 як="a fact of the scheme, not an order: the code's check weakens its remarks on an item "
+                    "named in «deliberate» and reads an unnamed one outside the scheme as a slip"),
+        # ВИБ-1 / рядок 842: намір `conventional` без її слів поставив сам паспорт — це мітка, що так
+        _ЗП.Поле("case.intent_source", "default — she named no intent, and «intent» is the code's assumption, "
+                                       "not her words"),
         # СХЕМА-2 (02.10.2026, рядки 1121, 1204): ціль кольору слота — факт, не наказ (БРИФ-1); свобода
         # вибору речі — її (CLAUDE.md п.17). Поля пише `дріт_моделі.факти_схеми`
         _ЗП.Поле("person.palette.base", "the base: the colour the outfits are built around, and who chose it "
@@ -526,7 +538,7 @@ import внутрішня_мова as _ВМ_П
                     "bland, not calm"),
         _ЗП.Поле("pool", "the catalog items the code let through: in stock, right for this temperature and "
                          "the stated dress code, within her palette's lightness and her refusals; «formality» — "
-                         "1 to 10, the scale of the occasion (1 home, " + _ФОРМ_ОФ.СМУГА_ОФІСУ_EN + ", 9 gala); «L» — lightness 0 to "
+                         "the item's step or steps from…to, the same steps as the occasion: " + _БР_Щ.ЩАБЛІ_EN + "; «L» — lightness 0 to "
                          "100; «hem_cm» — where the hem falls, cm above the floor; «fabric_c» — the °C the "
                          "fabric suits; «L_from», «hem_from» — what the number was read from; «branch» — where "
                          "the colour lies against her palette: core, edge or break; «register» — the item's "
@@ -1084,6 +1096,14 @@ def випадок_для_пакета(паспорт, рядок, сценар�
     for _поле in ("мета", "намір"):
         if цитата_поля(паспорт or {}, _поле):
             в[_поле + "_слова"] = цитата_поля(паспорт, _поле)
+    # ── ТИПОВИЙ НАМІР — ПРИПУЩЕННЯМ, А НЕ ЇЇ СЛОВОМ (ВИБ-1, рядок 842) ──────────────────────
+    # `conventional` паспорт ставить сам, коли вона наміру не назвала («припущення коду, а не її
+    # слова», `паспорт_нагоди.виміри_нагоди`). У вибір він уже не їде (`міст_відповіді._випадок_кодами`),
+    # а в «case» складання їхав голим `intent: conventional` — як її намір. Поле лишається (пул і
+    # доза «на межі» стоять саме на цьому припущенні), але поруч — мітка `намір_звідки`: default.
+    # Її слова про намір — цитата `намір_слова` (НАМІР-1): тоді мітки нема, це її намір.
+    if в.get("намір") == "conventional" and not str((паспорт or {}).get("намір_слова") or "").strip():
+        в["намір_звідки"] = "default"
     if [x for x in (паспорт or {}).get("решта") or [] if str(x).strip()]:
         в["решта"] = [str(x).strip() for x in паспорт["решта"] if str(x).strip()]
     # ПОЯСНЕННЯ МОВНОЇ МОДЕЛІ (НП-в6, принцип власника 01.10): коли її слова про подію важко

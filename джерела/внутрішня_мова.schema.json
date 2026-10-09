@@ -700,6 +700,17 @@
      ],
      "description": "подія коротко, її мовою"
     },
+    "place_words": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/free_text"
+      },
+      {
+       "const": "unknown"
+      }
+     ],
+     "description": "де вона буде, кількома словами для картки"
+    },
     "reserved_colour": {
      "description": "колір, що на цій події належить іншій особі",
      "enum": [
@@ -3917,7 +3928,7 @@
          },
          {
           "const": "formality_spread_over_limit",
-          "description": "the formality spread between the outfit's items is wider than the allowance (values: spread — the spread in steps, limit — the allowance; shoes_involved — one of the items of the gap is the shoes; no_prestige_context — an everyday occasion with no norm, where a deliberate high-low does not read)"
+          "description": "the formality spread between the outfit's items is wider than the allowance; the outfit's items show their steps (values: shoes_involved — one of the items of the gap is the shoes; no_prestige_context — an everyday occasion with no norm, where a deliberate high-low does not read)"
          },
          {
           "const": "raise_lowest_item_or_declared_high_low",
@@ -3929,7 +3940,7 @@
          },
          {
           "const": "shoes_register_off_rest",
-          "description": "the shoes set their own level of formality and depart from the rest of the outfit by more than the allowance (values: direction — below or above the rest, steps_over — by how many steps over the allowance, limit — the allowance)"
+          "description": "the shoes set their own level of formality and depart from the rest of the outfit by more than the allowance (values: direction — below or above the rest)"
          },
          {
           "const": "shoes_to_outfit_level_or_high_low",
@@ -3941,7 +3952,7 @@
          },
          {
           "const": "shift_outfit_level",
-          "description": "shift the outfit's level by the named number of steps (values: steps — how many steps, direction — up or down)"
+          "description": "shift the outfit's level towards the occasion's steps (values: direction — up or down)"
          },
          {
           "const": "open_zones_over_limit",
@@ -4908,6 +4919,14 @@
           "description": "another item within her coverage"
          },
          {
+          "const": "large_item_repeats_makeup_colour",
+          "description": "a large item repeats the colour of her make-up (zone) at de00 ΔE00: tone-on-tone with the lips, a slip unless it is the intent"
+         },
+         {
+          "const": "neighbour_shade_or_declare_tone_on_tone",
+          "description": "take a neighbouring shade of the same hue, or keep it and declare the tone-on-tone look as deliberate"
+         },
+         {
           "const": "fabric_formality_vs_cut",
           "description": "fabric (fabric) is dressier or plainer than the cut (direction: higher|lower)"
          },
@@ -5217,7 +5236,7 @@
          },
          {
           "const": "occasion_level",
-          "description": "the occasion's level of formality (values: level — home, everyday, neat, smart, evening, very_smart or ceremonial; up_to — its upper bound on the 1–10 formality scale; rules_out — what this occasion rules out: near_white — white and colours that read as white on photos (cream, pale yellow, pale blue), bright_and_light — bright and light colours; loudness_max — no colour louder than this, loudness = chroma C* × L*/50: deep wine or terracotta ≈ 23–32, bright red, fuchsia, cobalt or mustard ≈ 62–87)"
+          "description": "the occasion's level of formality (values: level — its top step: home, everyday, neat, smart, formal, very_smart or ceremonial; rules_out — what this occasion rules out: near_white — white and colours that read as white on photos (cream, pale yellow, pale blue), bright_and_light — bright and light colours; loudness_max — no colour louder than this, loudness = chroma C* × L*/50: deep wine or terracotta ≈ 23–32, bright red, fuchsia, cobalt or mustard ≈ 62–87)"
          },
          {
           "const": "risk_direction",
@@ -5245,7 +5264,7 @@
          },
          {
           "const": "high_occasion_floor",
-          "description": "the event's level starts from this number on the 1–10 formality scale: no item sits more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); shoes at the outfit's level or above (values: from)"
+          "description": "the event's level starts from this step: no item sits more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); shoes at the outfit's level or above (values: from)"
          },
          {
           "const": "weather_layers",
@@ -6003,6 +6022,9 @@
    "nude": "нюд",
    "noticeable": "помітний",
    "bold": "яскравий"
+  },
+  "makeup_zone": {
+   "lips": "губи"
   },
   "jewelry": {
    "gold": "золото",

@@ -168,6 +168,7 @@ def невідомо(v, коди=()):
     "goal": {"flatter": "лестити", "conceal": "приховати", "express": "експресія",
              "taller": "вище"},
     "makeup_level": {"nude": "нюд", "noticeable": "помітний", "bold": "яскравий"},
+    "makeup_zone": {"lips": "губи"},     # рядок 1978: зона обраного кольору макіяжу (K-MUA-01)
     "jewelry": {"gold": "золото", "silver": "срібло", "pearls": "перли", "ethnic": "етно",
                 "other": "інші", "none": "без прикрас"},
     "register": {
@@ -449,6 +450,9 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     "place": _перелік("place", "місце — де вона буде"),
     "dress_code": _перелік("dress_code", "дрес-код, коли його названо"),
     "event": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="подія коротко, її мовою"),
+    # МІСЦЕ СЛОВАМИ (рядки 472, 1434): ключ місця поза сімома плитками (церква, школа, похорон…) людині не
+    # показується (п.12) — рядок «Де» картки сценарію пише цими словами мовної моделі, при коді `place`
+    "place_words": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="де вона буде, кількома словами для картки"),
     # ── ВИМІРИ НАГОДИ З РОЗМОВИ (НГ-4, проєкт §1.2–1.3, §2) ──────────────────────────
     # Вид — код для стилістки й журналу; виміри — те, що код читатиме (НГ-2…НГ-9). Кожен —
     # парою з цитатою її слів (сторож `_тримається`); чого вона не сказала — поля нема, і це
@@ -1912,7 +1916,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                      "with another register",
     # ── ФОРМАЛЬНІСТЬ, ДРЕС-КОД, НАГОДА, ТРАУР (П-6: K-KOH-02/05/06/08/10, K-SHO-03, K-OCC-01) ──
     "formality_spread_over_limit": "the formality spread between the outfit's items is wider than the "
-                                   "allowance (values: spread — the spread in steps, limit — the allowance; "
+                                   "allowance; the outfit's items show their steps (values: "
                                    "shoes_involved — one of the items of the gap is the shoes; "
                                    "no_prestige_context — an everyday occasion with no norm, where a "
                                    "deliberate high-low does not read)",
@@ -1924,8 +1928,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                           "the gap stays a gap",
     "shoes_register_off_rest": "the shoes set their own level of formality and depart from the rest of the "
                                "outfit by more than the allowance (values: direction — below or above the "
-                               "rest, steps_over — by how many steps over the allowance, limit — the "
-                               "allowance)",
+                               "rest)",
     "shoes_to_outfit_level_or_high_low": "replace the shoes with the level of the rest of the outfit, or keep "
                                          "them as a deliberate high-low if the fit and the rest are flawless "
                                          "(values: direction — up or down)",
@@ -1933,8 +1936,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "asks for (values: direction — below or above, level — the outfit's median "
                                  "level, target — the occasion's target from and to, risk_posture — the risk "
                                  "posture: neutral, half_step_over, half_step_under_plus_detail)",
-    "shift_outfit_level": "shift the outfit's level by the named number of steps (values: steps — how many "
-                          "steps, direction — up or down)",
+    "shift_outfit_level": "shift the outfit's level towards the occasion's steps (values: direction — up or "
+                          "down)",
     "open_zones_over_limit": "more zones of the body are open than the context asks for (values: zones — zone "
                              "codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté "
                              "or back; limit — the limit; evening — an evening context, where the limit is "
@@ -2432,6 +2435,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_opens_vetoed_zone": "item exposes a zone she keeps covered (zones): her personal limit",
     "hem_above_her_limit": "hem at hem_cm cm from floor, above her limit limit_cm cm",
     "other_item_within_her_coverage": "another item within her coverage",
+    "large_item_repeats_makeup_colour": "a large item repeats the colour of her make-up (zone) at de00 ΔE00: "
+                                        "tone-on-tone with the lips, a slip unless it is the intent",
+    "neighbour_shade_or_declare_tone_on_tone": "take a neighbouring shade of the same hue, or keep it and declare "
+                                               "the tone-on-tone look as deliberate",
     "fabric_formality_vs_cut": "fabric (fabric) is dressier or plainer than the cut (direction: higher|lower)",
     "same_item_fabric_level_or_cut_level": "the same item in fabric of level fabric_level, or the same cut at "
                                            "level cut_level (formality levels)",
@@ -2678,8 +2685,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                                         "treated against water",
     # Рядки нагоди брифа (рядок 532): рівень, напрям промаху, що вибиває зі щабля, нижня межа
     # високої події — доти українськими реченнями в `occasion_rules` промпта складання.
-    "occasion_level": "the occasion's level of formality (values: level — home, everyday, neat, smart, evening, "
-                      "very_smart or ceremonial; up_to — its upper bound on the 1–10 formality scale; rules_out — "
+    "occasion_level": "the occasion's level of formality (values: level — its top step: home, everyday, neat, "
+                      "smart, formal, very_smart or ceremonial; rules_out — "
                       "what this occasion rules out: near_white — white and colours that read as white on photos "
                       "(cream, pale yellow, pale blue), bright_and_light — bright and light colours; loudness_max — "
                       "no colour louder than this, loudness = chroma C* × L*/50: deep wine or terracotta ≈ 23–32, "
@@ -2700,7 +2707,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "level_breakers_up_to_10": "the level is held by fabric, finish and shoes, not by the item's name; out of "
                                "this level: everything daytime — cotton, knit, suede, open everyday shoes, "
                                "cardigans",
-    "high_occasion_floor": "the event's level starts from this number on the 1–10 formality scale: no item sits "
+    "high_occasion_floor": "the event's level starts from this step: no item sits "
                            "more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); "
                            "shoes at the outfit's level or above (values: from)",
     "weather_layers": "the weather outside and the layers it asks for (values: temperature_c; layers — how many "

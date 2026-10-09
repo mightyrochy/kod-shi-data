@@ -23,6 +23,8 @@ import json as _json
 import протокол as _ПР
 import збирач_промптів as _ЗП
 import річ_з_фото as _РФ
+import brief as _БР  # щаблі ошатності кодами (НГ-3)
+import дріт_моделі as _Д
 
 ЗОВНІШНІ_ВХОДИ = {
     "питання": "вхід із показу (`стилісткаП`): її питання про образ — вільний текст від перекладача "
@@ -43,7 +45,7 @@ import річ_з_фото as _РФ
     вхід=(
         _ЗП.Поле("question", "her question, in her own words", треба=True),
         _ЗП.Поле("items", "her own items from this conversation, as the code sees them: features as "
-                          "codes, formality on an internal 1–10 scale; \"verdict\" is the code's verdict on the item for her "
+                          "codes, formality as a step: " + _БР.ЩАБЛІ_EN + "; \"verdict\" is the code's verdict on the item for her "
                           "palette and this occasion — statement codes, each defined in \"definitions\"",
                  "do not contradict \"verdict\"",
                  без="She has not shown or described any item yet."),
@@ -86,7 +88,7 @@ def _річ(р):
         if к:
             о[поле] = к
     if р.get("ошатність") is not None:
-        о["formality"] = р["ошатність"]
+        о["formality"] = _Д.ошатність_словом(р["ошатність"])   # щабель, не число 1–10 (НГ-3)
     пов = (р.get("вердикт") or {}).get("повідомлення")
     if пов:
         о["verdict"] = {"statements": пов["statements"], "definitions": _РФ._словник_заяв(пов)}
