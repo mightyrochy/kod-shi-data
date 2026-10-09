@@ -1252,6 +1252,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                            "of loud colours next to another loud item",
     "cannot_tell_chroma_budget_exceeded": "so the code cannot tell whether the outfit has more loud colours "
                                           "than its budget allows",
+    "cannot_tell_accent_muted_on_low_contrast": "so the code cannot tell whether the single accent colour is "
+                                                "muted enough for her low contrast",
+    "cannot_tell_item_side_near_face": "so the code cannot tell whether the item near the face lies on the "
+                                       "yellow-blue side opposite to her eyes",
+    "cannot_tell_accent_role_chroma": "so the code cannot tell whether the item is colourful enough for the "
+                                      "accent role the palette scheme gave its slot",
     "cannot_tell_colour_families_over_limit": "so the code cannot tell whether the outfit holds more than three "
                                               "colour families",
     "cannot_tell_two_loud_colours_clash": "so the code cannot tell whether two loud colours compete for "
