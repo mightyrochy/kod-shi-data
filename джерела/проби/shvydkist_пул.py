@@ -13,9 +13,9 @@
 import json, time, hashlib, gzip, os, shutil, tempfile, sys
 import bridge as B
 
-# База ПЕРЕЗНЯТА на origin/main 2c265b7d (09.10.2026): хеш і лічба — звідти, часи — там само.
+# База ПЕРЕЗНЯТА на голові пачки 16 (15bd5b9e, 09.10.2026; main e417eb12 мав 486 / 0c428d40dae02571): хеш і лічба — звідти, часи — там само.
 # Паралельні запуски не ділять файл: каталог розпаковується в власну теку.
-ДО = {None: ("9ba54830f567757c", 481, 30.1), 0: ("9ba54830f567757c", 481, 7.6)}
+ДО = {None: ("2ccb82fa9d1aff32", 493, 26.5), 0: ("2ccb82fa9d1aff32", 493, 6.0)}
 тека = tempfile.mkdtemp(prefix="shvydkist_")
 шлях = os.path.join(тека, "каталог.xml")
 with gzip.open("../каталог_повний.xml.gz", "rb") as г, open(шлях, "wb") as в:
