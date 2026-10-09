@@ -1,0 +1,50 @@
+── ПРОМПТ (2172 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer, tailored fit, knee-length, Midnight Blue (#0A1A3A), structured wool blend.\nPencil skirt, straight cut, midi length, Charcoal Grey (#36454F), heavy crepe.\nSilk blouse, classic collar, hip-length, Ivory White (#FFFFF0), soft satin weave.\nOxford shoes, pointed toe, low heel, Oxidized Black (#1C1C1C), polished leather.\nLeather belt, thin buckle, matching shoe color, Black (#000000), smooth calfskin.\nStructured tote bag, medium size, Dark Slate Grey (#2F4F4F), durable canvas with leather trim.\n\nThis ensemble works because the deep Midnight Blue blazer commands professional respect while the ivory silk blouse keeps the look fresh and approachable for a work environment. The charcoal midi skirt provides a classic silhouette that is both authoritative and comfortable enough for long hours, ensuring you feel poised from morning to evening. Finally, the polished black Oxford shoes and matching leather accessories ground the outfit in timeless elegance, creating a cohesive head-to-toe look that adheres strictly to professional dress codes without sacrificing personal style."}
+
+── ВІДПОВІДЬ (1077 симв., 222.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "tailored fit, knee-length, structured wool blend",
+      "slot": "outerwear",
+      "color_hex": "#0A1A3A",
+      "worn": true
+    },
+    {
+      "name": "Pencil skirt",
+      "details": "straight cut, midi length, heavy crepe",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Silk blouse",
+      "details": "classic collar, hip-length, soft satin weave",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "Oxford shoes",
+      "details": "pointed toe, low heel, polished leather",
+      "slot": "shoes",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    },
+    {
+      "name": "Leather belt",
+      "details": "thin buckle, smooth calfskin",
+      "slot": "belt",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Structured tote bag",
+      "details": "medium size, durable canvas with leather trim",
+      "slot": "bag",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    }
+  ]
+}

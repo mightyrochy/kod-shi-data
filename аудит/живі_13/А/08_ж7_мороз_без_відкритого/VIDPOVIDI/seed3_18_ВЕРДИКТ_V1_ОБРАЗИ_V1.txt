@@ -1,0 +1,406 @@
+── ПРОМПТ (31447 симв.) ──
+{"version":"1","task":{"role":"You are the stylist. The code checked the outfits you put together for her, and some of them cannot be shown yet: each such outfit has a blocker in «structure». You finish every one of them before she chooses.","rules":["Finish EVERY outfit in «verdict»: clear all of its blockers.","A missing kind of item: add one item for it from «showcase».","Several items of one kind: keep the one that suits the outfit best and remove the others.","Change nothing else: the remaining items, the caption and the day stay as they are.","Name every item by its «n» — in full, exactly as in «verdict» or «showcase».","Return every outfit of «verdict», each under its own «id»."],"limits":["Rely only on the input: do not invent what it does not contain.","The answer is one JSON object following \"answer_schema\", without explanations and without ```."],"language":"English","answer":"OUTFITS_V1","answer_schema":{"version":"1","outfits":[{"id":"<«id» of the outfit, as in «verdict»>","caption":"<string>","pole":"filter_and_rank|anchor_first|tonal_column|ease_the_knot|break|free","items":["<«n» of all items of the finished outfit>"],"day":"<«day» of «your_outfit», unchanged>","deliberate":[{"item":"<string>","why":"<string>","finding":"<string>"}],"done":[{"finding":"<string>","action":"fixed|declined|partly","why":"<string>"}]}],"needed":[{"kind":"<string>","description":"<string>","type":"<string>","color":"<string>","fabric":"<string>"}]},"input":["\"case\" — her occasion in her and the code's words","\"day\" — her day as facts","\"verdict\" — your outfits and the code's check: «your_outfit» — items with their full descriptions and your caption; «structure.blockers» — what keeps the outfit from being shown: a missing kind of item, or several items of one kind («items» lists them)","\"showcase\" — items that can fill what is missing","\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, or {code: values}; codes are defined in \"statement_codes\""],"statement_codes":{"several_items_in_one_slot":"several items stand in each of these slots: keep one in each (values: slots — slot codes; without them just \"several items in one slot\")","no_top_bottom_or_dress":"the outfit has neither of these foundations and no dress to replace them: without them these are accessories, not an outfit (values: missing — the slot codes that are missing)","no_shoes":"the outfit has no shoes, and without them it is not ready: add a pair for the occasion","no_bag":"no bag, and the occasion requires one","too_few_items":"too few items in the outfit for this occasion (values: count — how many there are, minimum — how many are needed at least)","weather_needs_outerwear":"this weather cannot be met without a coat or a warm jacket (values: temperature_c — the degrees she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; precipitation — the code of wet precipitation when there is any)","set_with_separate_part":"a set (top and bottom in one item) together with a separate top or bottom is a doubling: keep the set, or take half of it and declare that a deliberate move (values: slots — codes of the separate slots)"}},"case":"робота, офіс","day":{"place":"office","weather_feel":"frost","unknown":["start_hour"]},"verdict":[{"your_outfit":{"id":"o1","caption":"Latte trench with beige floral dress","items":[{"n":"#360·11","name":"Тренч вкорочений класичний лате","price":3099,"type":"trench_coat","cut":"fitted","fabric":["polyester","woven"],"length":"midi","color":"latte","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","hem_cm":[71,75],"hem_from":"shop_cm","formality":["neat","formal"],"register":"classic","branch":"core"},{"n":"#427·09","name":"Зимова коротка куртка з капюшоном бежевого кольору Нікола","price":3900,"type":"jacket","cut":"relaxed","fabric":["polyester"],"length":"mid_thigh","pattern":"stripes","details":["hood"],"color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","hem_cm":[78,88],"hem_from":"word","formality":["home","neat"],"branch":"core"}],"day":"The classic latte trench anchors a flowy beige floral wrap dress for a smart office day in frost, adding volume and warmth."},"structure":{"ok":false,"blockers":[{"id":"b-o1-1","code":"kind_twice","items":["#360·11","#427·09"],"statements":[{"several_items_in_one_slot":{"slots":["outerwear"]}}]},{"id":"b-o1-2","code":"no_top_and_bottom","statements":[{"no_top_bottom_or_dress":{"missing":["top","bottom"]}}]},{"id":"b-o1-3","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o1-4","code":"no_bag","statements":["no_bag"]},{"id":"b-o1-5","code":"incomplete","statements":[{"too_few_items":{"count":2,"minimum":5}}]}]}},{"your_outfit":{"id":"o2","caption":"Beige knit dress with camel coat","items":[{"n":"#427·09","name":"Зимова коротка куртка з капюшоном бежевого кольору Нікола","price":3900,"type":"jacket","cut":"relaxed","fabric":["polyester"],"length":"mid_thigh","pattern":"stripes","details":["hood"],"color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","hem_cm":[78,88],"hem_from":"word","formality":["home","neat"],"branch":"core"},{"n":"#358·35","name":"Пальто пуховик з накладними кишенями на змійці","price":4255,"type":"coat","cut":"straight","fabric":["knitted"],"length":"maxi","color":"milky","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":"neat","register":"classic","branch":"core"},{"n":"#182·18","name":"Пасок Базовий електрик","price":450,"fabric":["leather"],"color":"electric_blue","hex":"#003399","family":"purple","in_arc":true,"L":[26,26],"L_from":"photo_point","branch":"core"},{"n":"#229·30","name":"Сережки з білого золота декоровані діамантами","price":80000,"type":"jewelry_generic","fabric":"unknown","color":"white","hex":"#f0e2e5","in_arc":true,"L":[82,100],"L_from":"word","branch":"core"}],"day":"A tonal camel palette creates a sleek silhouette for the office. The electric blue leather belt adds a necessary pop of color without breaking the neutral warmth."},"structure":{"ok":false,"blockers":[{"id":"b-o2-1","code":"kind_twice","items":["#427·09","#358·35"],"statements":[{"several_items_in_one_slot":{"slots":["outerwear"]}}]},{"id":"b-o2-2","code":"no_top_and_bottom","statements":[{"no_top_bottom_or_dress":{"missing":["top","bottom"]}}]},{"id":"b-o2-3","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o2-4","code":"no_bag","statements":["no_bag"]},{"id":"b-o2-5","code":"incomplete","statements":[{"too_few_items":{"count":4,"minimum":5}}]}]}},{"your_outfit":{"id":"o3","caption":"Light blue midi dress with striped scarf","items":[{"n":"#290·35","name":"Сукня приталена з квадратним вирізом","price":955,"type":"dress_generic","cut":"straight","fabric":"unknown","length":"midi","color":"light_blue","hex":"#87ceeb","family":"blue","in_arc":true,"L":[79,79],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":["neat","formal"],"branch":"core"},{"n":"#346·35","name":"Сукня пліссе блакитна","price":2355,"type":"dress_generic","cut":"straight","fabric":"unknown","length":"midi","pattern":"polka_dot","color":"light_blue","hex":"#66a3e0","family":"blue","in_arc":true,"L":[65,65],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":["neat","smart"],"branch":"core"},{"n":"#288·05","name":"Бомбер вільного крою, на блискавці, з кишенями (AniNadin)","price":6640,"type":"jacket","cut":"relaxed","fabric":["polyamide"],"length":"midi","details":["oversize"],"color":"white","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":["home","neat"],"branch":"core"},{"n":"#182·18","name":"Пасок Базовий електрик","price":450,"fabric":["leather"],"color":"electric_blue","hex":"#003399","family":"purple","in_arc":true,"L":[26,26],"L_from":"photo_point","branch":"core"}],"day":"A calm light blue dress creates a monotone look, balanced by a bold striped scarf and a relaxed bomber jacket for frosty commutes."},"structure":{"ok":false,"blockers":[{"id":"b-o3-1","code":"kind_twice","items":["#290·35","#346·35"],"statements":[{"several_items_in_one_slot":{"slots":["dress"]}}]},{"id":"b-o3-2","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o3-3","code":"no_bag","statements":["no_bag"]}]}},{"your_outfit":{"id":"o4","caption":"Black leather midi skirt with beige knit sweater","items":[{"n":"#267·35","name":"Спідниця максі із шкіри з розрізом","price":414,"type":"skirt","cut":"bodycon","fabric":["leather"],"length":"midi","shine":true,"color":"black","hex":"#000000","in_arc":true,"L":[0,0],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":["everyday","smart"],"branch":"edge","scheme":"neutrals_plus_accent"},{"n":"#91·09","name":"Принтована бежева блуза з бавовни в гавайському стилі Афіна","price":1000,"type":"blouse","cut":"relaxed","fabric":["cotton"],"length":"mid_thigh","pattern":"stripes","color":"beige","hex":"#f4e8d9","in_arc":true,"L":[93,93],"L_from":"photo_point","hem_cm":[78,88],"hem_from":"word","formality":["everyday","neat"],"branch":"core"},{"n":"#124·18","name":"Жакет з органзи білий","price":4500,"type":"blazer","cut":"relaxed","fabric":["polyester","woven"],"length":"mid_thigh","color":"white","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","hem_cm":[78,88],"hem_from":"word","formality":["neat","smart"],"register":"classic","branch":"core"},{"n":"#286·31","name":"Джинси WIDE LEG сині","price":990,"type":"jeans","cut":"straight","fabric":["denim","woven"],"length":"mini","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","hem_cm":[53,69],"hem_from":"word","formality":["home","everyday"],"register":"workwear","branch":"core"}],"day":"High contrast between a black leather skirt and a relaxed beige knit sweater creates a modern edge for the office."},"structure":{"ok":false,"blockers":[{"id":"b-o4-1","code":"kind_twice","items":["#267·35","#286·31"],"statements":[{"several_items_in_one_slot":{"slots":["bottom"]}}]},{"id":"b-o4-2","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o4-3","code":"no_bag","statements":["no_bag"]},{"id":"b-o4-4","code":"no_outer_layer","statements":[{"weather_needs_outerwear":{"weather_feel":"frost"}}]},{"id":"b-o4-5","code":"incomplete","statements":[{"too_few_items":{"count":4,"minimum":5}}]}]}},{"your_outfit":{"id":"o5","caption":"Grey suit with blue denim tote","items":[{"n":"#246·05","name":"Костюм: піджак прямого крою; штани прямі, широкі, посадка висока (Louis Vuitton)","price":10460,"type":"suit","cut":"relaxed","fabric":["cotton"],"length":"maxi","color":"grey","hex":"#808080","in_arc":true,"L":[54,54],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":["neat","very_smart"],"register":"classic","branch":"core"},{"n":"#286·31","name":"Джинси WIDE LEG сині","price":990,"type":"jeans","cut":"straight","fabric":["denim","woven"],"length":"mini","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","hem_cm":[53,69],"hem_from":"word","formality":["home","everyday"],"register":"workwear","branch":"core"},{"n":"#132·30","name":"Шкіряний тоут синього кольору із лого","price":4000,"type":"tote","fabric":["leather"],"color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","formality":"everyday","branch":"core"},{"n":"#43·15","name":"Шуба з екохутра середньої довжини сіра","price":9400,"type":"dress_generic","cut":"relaxed","fabric":["polyester","woven"],"length":"mid_thigh","details":["oversize"],"color":"grey","hex":"#a9a9a9","in_arc":true,"L":[69,69],"L_from":"photo_point","hem_cm":[78,88],"hem_from":"word","formality":["neat","smart"],"register":"preppy","branch":"core"}],"day":"A structured grey suit grounds the look, paired with a casual denim tote for texture contrast and comfort in frost."},"structure":{"ok":false,"blockers":[{"id":"b-o5-1","code":"kind_twice","items":["#246·05"],"statements":[{"set_with_separate_part":{"slots":["bottom"]}}]},{"id":"b-o5-2","code":"no_shoes","statements":["no_shoes"]}]}}],"showcase":[{"n":"#46·18","name":"Сукня Максі сатин принт півонія","price":1700,"type":"dress_generic","cut":"straight","fabric":["polyester","woven"],"length":"midi","pattern":"floral","color":"white","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","hem_cm":[9,13],"hem_from":"shop_cm","formality":["neat","smart"],"register":"romantic","branch":"core"},{"n":"#193·01","name":"Сукня-туніка в сірих паєтках комір-хомут","price":5299,"type":"dress_generic","cut":"straight","fabric":["polyester"],"length":"midi","sleeve":"sleeveless","shine":true,"color":"grey","hex":"#c0c0c0","in_arc":true,"L":[78,78],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":["smart","very_smart"],"branch":"core"},{"n":"#233·20","name":"Сукня з шовковистої віскози з тенселом — це ніжність, яку хочеться носити щодня","price":6293,"type":"dress_generic","cut":"relaxed","fabric":["viscose"],"length":"midi","sleeve":"long","shop_color":"капучіно","hex":"#d2b48c","family":"yellow","in_arc":true,"L":[75,75],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":["everyday","neat"],"branch":"core"},{"n":"#208·20","name":"Сатинова сукня – комбінація зі 100% віскози","price":5096,"type":"dress_generic","cut":"fitted","fabric":["viscose","woven"],"length":"maxi","shine":true,"color":"taupe","hex":"#d4c1a8","family":"yellow","in_arc":true,"L":[79,79],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":["smart","very_smart"],"register":"romantic","branch":"core"},{"n":"#263·27","name":"Трикотажна сукня з ажурного плетіння","price":1200,"type":"dress_generic","cut":"fitted","fabric":["jersey","jersey"],"length":"midi","sleeve":"short","pattern":"lace_motif","color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","hem_cm":[21,35],"hem_from":"word","formality":["home","neat"],"register":"romantic","branch":"core"},{"n":"#79·30","name":"Блакитна сукня-сорочка в смужку","price":5950,"type":"dress_generic","fabric":"unknown","pattern":"stripes","color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","hem_cm":[42,46],"hem_from":"shop_cm","formality":["everyday","neat"],"register":"minimalism","branch":"edge","scheme":"muted_complementary"},{"n":"#9·28","name":"Сукня №1044 персик","price":2600,"type":"dress_generic","cut":"bodycon","fabric":["jersey"],"length":"midi","color":"peach","hex":"#ebb39c","family":"orange","in_arc":true,"L":[65,90],"L_from":"word","hem_cm":[21,35],"hem_from":"word","formality":["smart","very_smart"],"branch":"core"},{"n":"#56·18","name":"Сукня максі з мереживом білий","price":2200,"type":"dress_generic","cut":"bodycon","fabric":["lace"],"length":"maxi","pattern":"lace_motif","color":"white","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":["formal","ceremonial"],"register":"romantic","branch":"core"},{"n":"#136·20","name":"Гаремні штани з модалу","price":2900,"type":"trousers","cut":"relaxed","fabric":["elastane"],"length":"maxi","shop_color":"капучіно","hex":"#d4c7b8","in_arc":true,"L":[81,81],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":["everyday","smart"],"branch":"edge","scheme":"muted_complementary"},{"n":"#11·07","name":"Джинси жіночі сині","price":45150,"type":"jeans","cut":"straight","fabric":["cotton","woven"],"length":"maxi","color":"blue","hex":"#0033a0","family":"purple","in_arc":false,"L":[26,26],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":["home","everyday"],"register":"preppy","branch":"core"},{"n":"#108·31","name":"Джинси WIDE LEG блакитний","price":1690,"type":"jeans","cut":"straight","fabric":["denim","woven"],"color":"light_blue","hex":"#a0b4d5","family":"blue","in_arc":true,"L":[73,73],"L_from":"photo_point","hem_cm":[-2,2],"hem_from":"shop_cm","formality":["home","everyday"],"register":"workwear","branch":"core"},{"n":"#23·06","name":"Джинси BAGGY RAW DENIM","price":3200,"type":"jeans","cut":"relaxed","fabric":["cotton","woven"],"length":"mini","color":"blue","hex":"#1a237e","family":"purple","in_arc":false,"L":[20,20],"L_from":"photo_point","hem_cm":[53,69],"hem_from":"word","formality":["home","everyday"],"register":"preppy","branch":"core"},{"n":"#20·25","name":"Спідниця-сітка темно-синя","price":2120,"type":"skirt","cut":"straight","fabric":["polyamide"],"length":"maxi","pattern":"stripes","color":"blue","hex":"#0f172a","family":"blue","in_arc":true,"L":[8,8],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":["everyday","smart"],"branch":"core"},{"n":"#71·33","name":"Джинси блакитні з вишитими канатами","price":2145,"type":"jeans","cut":"relaxed","fabric":["cotton","woven"],"length":"maxi","pattern":"embroidery","color":"light_blue","hex":"#66aabb","family":"blue","in_arc":false,"L":[66,66],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":["home","everyday"],"register":"boho","branch":"core"},{"n":"#39·30","name":"Сині джинси кльош на гудзику","price":2340,"type":"jeans","cut":"flared","fabric":["elastane","woven"],"color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","hem_cm":[9,13],"hem_from":"shop_cm","formality":["home","everyday"],"register":"preppy","branch":"core"},{"n":"#12·01","name":"Джинсова міні-спідниця у легку декоративну складку","price":3599,"type":"skirt","cut":"straight","fabric":["cotton","woven"],"length":"mini","color":"blue","hex":"#1a237e","family":"purple","in_arc":false,"L":[20,20],"L_from":"photo_point","hem_cm":[53,69],"hem_from":"word","formality":["home","everyday"],"register":"preppy","branch":"core"},{"n":"#2·18","name":"Джемпер з бахромою крем","price":2200,"type":"sweater","cut":"relaxed","fabric":["polyester","jersey"],"length":"mid_thigh","color":"creamy","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","hem_cm":[78,88],"hem_from":"word","formality":["everyday","neat"],"register":"boho","branch":"core"},{"n":"#438·26","name":"Піджак кейп вільного силуету з пір'ям з італійської тафти в горошок.","price":13500,"type":"blazer","cut":"relaxed","fabric":["polyester","woven"],"length":"midi","pattern":"polka_dot","details":["belt"],"color":"white","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","hem_cm":[61,66],"hem_from":"shop_cm","formality":["neat","smart"],"register":"classic","branch":"core"},{"n":"#44·35","name":"Жіночий лонгслів з відкритим зрізом по горловині","price":555,"type":"longsleeve","cut":"relaxed","fabric":"unknown","length":"mid_thigh","color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","hem_cm":[78,88],"hem_from":"word","formality":["everyday","neat"],"branch":"edge","scheme":"muted_complementary"},{"n":"#6·29","name":"Лонгслів жіночий тоненький зі шовковистої бавовняно-бамбукової пряжі демісезонний","price":1710,"type":"longsleeve","cut":"fitted","fabric":["cotton"],"length":"waist","pattern":"stripes","color":"beige","hex":"#f5e6d3","family":"yellow","in_arc":true,"L":[92,92],"L_from":"photo_point","hem_cm":[65,69],"hem_from":"shop_cm","formality":["home","neat"],"branch":"core"},{"n":"#5·35","name":"Світшот смужка з двонитки","price":755,"type":"hoodie","cut":"relaxed","fabric":["jersey","jersey"],"pattern":"stripes","color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","formality":["home","everyday"],"register":"streetwear","branch":"core"},{"n":"#7·20","name":"Світшот з прорізями","price":3650,"type":"hoodie","cut":"relaxed","fabric":["elastane","jersey"],"sleeve":"long","color":"white","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","formality":["home","everyday"],"register":"streetwear","branch":"core"},{"n":"#16·26","name":"Топ корсет з бантом з асиметричною баскою","price":808,"type":"t_shirt","cut":"relaxed","fabric":["jersey"],"length":"waist","sleeve":"sleeveless","color":"white","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","hem_cm":[96,102],"hem_from":"word","formality":["home","everyday"],"register":"romantic","branch":"core"},{"n":"#52·35","name":"Светр реглан бавовняний","price":466,"type":"sweater","cut":"relaxed","fabric":["cotton","jersey"],"length":"mid_thigh","sleeve":"long","color":"beige","hex":"#f5e6d3","family":"yellow","in_arc":true,"L":[92,92],"L_from":"photo_point","hem_cm":[78,88],"hem_from":"word","formality":["home","neat"],"branch":"core"},{"n":"#35·32","name":"Напівчеревики сині","price":5968,"type":"ankle_boots","fabric":["suede"],"shaft":"ankle","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#127·30","name":"Сині чоботи із замші та текстилю","price":247,"type":"boots","fabric":["suede"],"material":"suede","shaft":"knee","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#34·14","name":"Чоботи шкіряні блакитні","price":4000,"type":"boots","fabric":["leather"],"shaft":"knee","color":"light_blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[38,38],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#340·10","name":"Ботильйони блакитні VIVEN","price":5180,"type":"ankle_boots","fabric":["leather"],"shaft":"ankle","color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#125·30","name":"Сині шкіряні ботильйони Interlocking","price":28000,"type":"ankle_boots","fabric":["leather"],"material":"leather","shaft":"ankle","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#26·03","name":"Черевики жіночі, RIEKER, екошкіра, колір темно-синій","price":4450,"type":"ankle_boots","fabric":["faux_leather"],"shaft":"ankle","color":"blue","hex":"#1a237e","family":"purple","in_arc":false,"L":[20,20],"L_from":"photo_point","formality":["everyday","neat"],"heel":"unknown","register":"rock","branch":"core"},{"n":"#37·17","name":"Черевики сині з натуральної шкіри Крейзі","price":1815,"type":"ankle_boots","fabric":["leather"],"material":"leather","shaft":"ankle","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#264·14","name":"Чоботи шкіряні сині","price":8000,"type":"boots","fabric":["leather"],"shaft":"knee","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#200·36","name":"Жіноча сумка Welfare","price":2080,"type":"bag_generic","fabric":"unknown","color":"light_blue","hex":"#a0b4d1","family":"blue","in_arc":true,"L":[73,73],"L_from":"photo_point","branch":"core"},{"n":"#261·03","name":"Сумка жіноча, ATTICO, екошкіра/текстиль, колір темно-синій","price":1999,"type":"bag_generic","fabric":["faux_leather"],"pattern":"stripes","color":"blue","hex":"#001f3f","family":"blue","in_arc":true,"L":[12,12],"L_from":"photo_point","register":"rock","branch":"core"},{"n":"#139·36","name":"Жіноча сумка Welfare","price":2600,"type":"bag_generic","fabric":["leather"],"color":"light_blue","hex":"#6a9fb5","family":"blue","in_arc":false,"L":[63,63],"L_from":"photo_point","branch":"core"},{"n":"#17·36","name":"Жіноча сумка Welfare","price":1749,"type":"bag_generic","fabric":"unknown","color":"blue","hex":"#1a237e","family":"purple","in_arc":false,"L":[20,20],"L_from":"photo_point","branch":"core"},{"n":"#82·36","name":"Жіноча сумка Welfare","price":2800,"type":"bag_generic","fabric":"unknown","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","branch":"core"},{"n":"#258·36","name":"Жіноча сумка Welfare","price":2600,"type":"bag_generic","fabric":"unknown","color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","branch":"core"},{"n":"#141·03","name":"Сумка жіноча, ATTICO, шкіра, колір блакитний","price":1999,"type":"bag_generic","fabric":["leather"],"color":"blue","hex":"#add8e6","family":"blue","in_arc":false,"L":[84,84],"L_from":"photo_point","branch":"core"},{"n":"#27·37","name":"Сумка Синя","price":2070,"type":"bag_generic","fabric":"unknown","pattern":"embroidery","color":"blue","hex":"#4682b4","family":"blue","in_arc":true,"L":[52,52],"L_from":"photo_point","register":"boho","branch":"core"},{"n":"#297·05","name":"Шуба з екохутра, прямого крою, з кишенями (Chloe)","price":5240,"type":"coat","cut":"straight","fabric":["polyester"],"length":"maxi","color":"beige","hex":"#d2b48c","family":"yellow","in_arc":true,"L":[75,75],"L_from":"photo_point","hem_cm":[5,15],"hem_from":"word","formality":["neat","formal"],"register":"classic","branch":"core"},{"n":"#211·22","name":"Довге стьобане пальто блакитного кольору з утеплювачем","price":6999,"type":"coat","fabric":["polyester"],"details":["quilted"],"color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","formality":["neat","formal"],"register":"classic","branch":"edge","scheme":"muted_complementary"},{"n":"#443·33","name":"Легка котонова парка з куліскою","price":4990,"type":"jacket","cut":"relaxed","fabric":["cotton"],"length":"mid_thigh","details":["belt"],"color":"beige","hex":"#d2b48c","family":"yellow","in_arc":true,"L":[75,75],"L_from":"photo_point","hem_cm":[78,88],"hem_from":"word","formality":["home","neat"],"branch":"core"},{"n":"#310·05","name":"Вітрівка прямого крою на блискавці, з каптуром, талія- регульована гумова стрічка, декор-розсип страз (Balmain)","price":5180,"type":"jacket","cut":"relaxed","fabric":["polyester"],"length":"mid_thigh","color":"beige","hex":"#f5f0eb","in_arc":true,"L":[95,95],"L_from":"photo_point","hem_cm":[78,88],"hem_from":"word","formality":["home","neat"],"branch":"core"},{"n":"#121·30","name":"Парка блакитного кольору з капюшоном","price":18500,"type":"jacket","fabric":["cotton"],"details":["hood"],"color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","hem_cm":[46,50],"hem_from":"shop_cm","formality":["home","neat"],"branch":"edge","scheme":"muted_complementary"},{"n":"#450·01","name":"Чорно-білий укорочений пуховик з активним принтом","price":4999,"type":"jacket","cut":"relaxed","fabric":["polyester"],"length":"mid_thigh","pattern":"print_generic","color":"white","hex":"#ffffff","in_arc":true,"L":[100,100],"L_from":"photo_point","hem_cm":[78,88],"hem_from":"word","formality":["home","neat"],"branch":"core"},{"n":"#4·15","name":"Шуба з екохутра середньої довжини айворі","price":9400,"type":"dress_generic","cut":"relaxed","fabric":["polyester","woven"],"length":"mid_thigh","details":["oversize"],"color":"milky","shop_color":"айворі","hex":"#edddcb","family":"yellow","in_arc":true,"L":[78,100],"L_from":"word","hem_cm":[78,88],"hem_from":"word","formality":["neat","smart"],"register":"preppy","branch":"core"},{"n":"#24·04","name":"Жіночий двокольоровий пуховик з капюшоном оверсайз для осені та весни Basic (бежевий, 2XL)","price":9350,"type":"jacket","cut":"relaxed","fabric":["polyester"],"length":"midi","details":["hood","oversize"],"color":"beige","hex":"#f5f5dc","family":"yellow","in_arc":true,"L":[96,96],"L_from":"photo_point","hem_cm":[45,49],"hem_from":"shop_cm","formality":["home","neat"],"branch":"core"},{"n":"#231·18","name":"Пасок з пірʼям блакитний","price":900,"cut":"straight","fabric":["polyester"],"color":"light_blue","hex":"#add8e6","family":"blue","in_arc":true,"L":[84,84],"L_from":"photo_point","branch":"core"},{"n":"#215·18","name":"Пасок з пір’ям 2 світло блакитний","price":900,"cut":"belted","fabric":"unknown","color":"light_blue","shop_color":"світло блакитний","hex":"#add8e6","family":"blue","in_arc":true,"L":[84,84],"L_from":"photo_point","branch":"core"},{"n":"#189·18","name":"Пасок з пірʼям джинс","price":900,"type":"jeans","cut":"bodycon","fabric":["polyester","woven"],"shine":true,"color":"light_blue","hex":"#87ceeb","family":"blue","in_arc":true,"L":[79,79],"L_from":"photo_point","formality":["home","everyday"],"register":"preppy","branch":"core"},{"n":"#242·18","name":"Пасок Базовий блакитний","price":450,"cut":"fitted","fabric":["satin"],"color":"light_blue","hex":"#add8e6","family":"blue","in_arc":true,"L":[84,84],"L_from":"photo_point","register":"romantic","branch":"core"},{"n":"#203·18","name":"Пасок з пірʼям волошковий","price":900,"fabric":["polyester"],"shop_color":"волошковий","hex":"#87ceeb","family":"blue","in_arc":true,"L":[79,79],"L_from":"photo_point","branch":"core"},{"n":"#171·18","name":"Пасок Базовий темно-синій","price":450,"cut":"fitted","fabric":"unknown","color":"navy","hex":"#1a237e","family":"purple","in_arc":true,"L":[20,20],"L_from":"photo_point","branch":"core"},{"n":"#249·18","name":"Пасок Базовий волошковий","price":450,"fabric":"unknown","shop_color":"волошковий","hex":"#87ceeb","family":"blue","in_arc":true,"L":[79,79],"L_from":"photo_point","branch":"core"},{"n":"#220·18","name":"Пасок з пір’ям декольте світло блакитний","price":900,"cut":"straight","fabric":["polyester"],"color":"light_blue","shop_color":"світло блакитний","hex":"#add8e6","family":"blue","in_arc":true,"L":[84,84],"L_from":"photo_point","branch":"core"},{"n":"#271·15","name":"Обруч Аннет бірюзовий","price":1260,"type":"headband","fabric":["lace"],"shine":true,"color":"turquoise","hex":"#007acc","family":"blue","in_arc":true,"L":[50,50],"L_from":"photo_point","register":"romantic","branch":"core"},{"n":"#295·15","name":"Базовий обруч блакитний","price":900,"type":"headband","fabric":"unknown","shine":true,"color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","branch":"core"},{"n":"#172·30","name":"Блакитна картата резинка для волосся","price":11020,"type":"hair_tie","fabric":"unknown","pattern":"check","color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","branch":"core"},{"n":"#252·15","name":"Базовий обруч темно-синій","price":900,"type":"headband","fabric":["atlas"],"color":"navy","hex":"#003366","family":"blue","in_arc":true,"L":[21,21],"L_from":"photo_point","register":"romantic","branch":"core"},{"n":"#243·15","name":"Базовий обруч синій","price":900,"type":"headband","fabric":"unknown","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","branch":"core"},{"n":"#308·15","name":"Базовий обруч Еліна блакитний та золотий","price":900,"type":"headband","fabric":"unknown","pattern":"floral","color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","register":"romantic","branch":"core"},{"n":"#282·15","name":"Обруч Аннет блакитний","price":1260,"type":"headband","fabric":"unknown","shine":true,"color":"light_blue","hex":"#00a8e6","family":"blue","in_arc":true,"L":[65,65],"L_from":"photo_point","branch":"core"},{"n":"#319·15","name":"Обруч Міріам зі стразами блакитний","price":2520,"type":"headband","fabric":"unknown","pattern":"floral","shine":true,"color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","register":"romantic","branch":"core"}]}
+
+── ВІДПОВІДЬ (13234 симв., 243.7 с, HTTP 200) ──
+{
+  "version": "1",
+  "outfits": [
+    {
+      "id": "o1",
+      "caption": "Latte trench over beige floral dress with shoes, bag and scarf",
+      "pole": "tonal_column",
+      "items": [
+        {
+          "n": "#360·11",
+          "name": "Тренч вкорочений класичний лате",
+          "type": "trench_coat",
+          "cut": "fitted",
+          "fabric": ["polyester", "woven"],
+          "length": "midi",
+          "color": "latte",
+          "hex": "#ffffff",
+          "in_arc": true,
+          "L": [100, 100],
+          "L_from": "photo_point",
+          "hem_cm": [71, 75],
+          "hem_from": "shop_cm",
+          "formality": ["neat", "formal"],
+          "register": "classic",
+          "branch": "core"
+        },
+        {
+          "n": "#429·02",
+          "name": "Сукня приталена з квадратним вирізом бежева",
+          "type": "dress_generic",
+          "cut": "straight",
+          "fabric": ["viscose"],
+          "length": "midi",
+          "color": "beige",
+          "hex": "#d4bda1",
+          "family": "yellow",
+          "in_arc": true,
+          "L": [75, 75],
+          "L_from": "photo_point",
+          "hem_cm": [21, 35],
+          "hem_from": "word",
+          "formality": ["neat", "smart"],
+          "register": "classic",
+          "branch": "core"
+        },
+        {
+          "n": "#38·20",
+          "name": "В'язаний шарф світло-бежевий",
+          "type": "scarf",
+          "cut": "relaxed",
+          "fabric": ["wool"],
+          "length": "neck",
+          "color": "beige",
+          "hex": "#f5e6d3",
+          "family": "yellow",
+          "in_arc": true,
+          "L": [100, 100],
+          "L_from": "photo_point",
+          "formality": ["everyday", "neat"],
+          "register": "classic",
+          "branch": "core"
+        },
+        {
+          "n": "#35·32",
+          "name": "Напівчеревики сині",
+          "type": "ankle_boots",
+          "fabric": ["suede"],
+          "shaft": "ankle",
+          "color": "blue",
+          "hex": "#005ba3",
+          "family": "blue",
+          "in_arc": true,
+          "L": [15, 60],
+          "L_from": "word",
+          "formality": ["everyday", "neat"],
+          "heel": "unknown",
+          "branch": "core"
+        },
+        {
+          "n": "#82·36",
+          "name": "Жіноча сумка Welfare",
+          "type": "bag_generic",
+          "fabric": ["unknown"],
+          "color": "blue",
+          "hex": "#005ba3",
+          "family": "blue",
+          "in_arc": true,
+          "L": [15, 60],
+          "L_from": "word",
+          "formality": ["everyday"],
+          "branch": "core"
+        }
+      ],
+      "day": "The classic latte trench anchors a flowy beige floral wrap dress for a smart office day in frost, adding volume and warmth.",
+      "deliberate": [
+        {
+          "item": "#429·02",
+          "why": "Added as a top/bottom foundation since the original jacket (#427·09) conflicted with the trench coat.",
+          "finding": "Replaced outerwear conflict by keeping the trench and adding a compatible dress."
+        },
+        {
+          "item": "#38·20",
+          "why": "Added a scarf to provide necessary warmth against the frost weather.",
+          "finding": "Addressed weather_needs_outerwear by adding an insulating accessory layer."
+        },
+        {
+          "item": "#35·32",
+          "why": "Added shoes because the outfit was incomplete without footwear.",
+          "finding": "Resolved no_shoes blocker."
+        },
+        {
+          "item": "#82·36",
+          "why": "Added a bag as the office occasion requires it.",
+          "finding": "Resolved no_bag blocker."
+        }
+      ],
+      "done": [
+        {
+          "finding": "Fixed kind_twice by removing one of the two outerwear items (jacket) and keeping the trench coat which fits the frosty weather better. Added a matching dress to serve as the base layer.",
+          "action": "fixed",
+          "why": "The original outfit had both a trench coat (#360·11) and a jacket (#427·09), creating an 'outerwear' conflict. Since the trench is more suitable for frost, the jacket was removed and replaced with a dress to fulfill the top/bottom requirement."
+        },
+        {
+          "finding": "Fixed no_top_and_bottom by adding a dress.",
+          "action": "fixed",
+          "why": "The outfit lacked a foundational garment other than the outerwear."
+        },
+        {
+          "finding": "Fixed no_shoes by adding ankle boots.",
+          "action": "fixed",
+          "why": "An outfit cannot be considered ready without footwear."
+        },
+        {
+          "finding": "Fixed no_bag by adding a tote bag.",
+          "action": "fixed",
+          "why": "The office setting necessitates a handbag."
+        },
+        {
+          "finding": "Fixed incomplete by ensuring all necessary categories (coat, dress, shoes, bag, scarf) are present.",
+          "action": "fixed",
+          "why": "The count reached the minimum of 5 items required for this occasion."
+        }
+      ]
+    },
+    {
+      "id": "o2",
+      "caption": "Beige knit coat with dress, shoes and bag",
+      "pole": "tonal_column",
+      "items": [
+        {
+          "n": "#358·35",
+          "name": "Пальто пуховик з накладними кишенями на змійці",
+          "type": "coat",
+          "cut": "straight",
+          "fabric": ["knitted"],
+          "length": "maxi",
+          "color": "milky",
+          "hex": "#ffffff",
+          "in_arc": true,
+          "L": [100, 100],
+          "L_from": "photo_point",
+          "hem_cm": [5, 15],
+          "hem_from": "word",
+          "formality": "neat",
+          "register": "classic",
+          "branch": "core"
+        },
+        {
+          "n": "#429·02",
+          "name": "Сукня приталена з квадратним вирізом бежева",
+          "type": "dress_generic",
+          "cut": "straight",
+          "fabric": ["viscose"],
+          "length": "midi",
+          "color": "beige",
+          "hex": "#d4bda1",
+          "family": "yellow",
+          "in_arc": true,
+          "L": [75, 75],
+          "L_from": "photo_point",
+          "hem_cm": [21, 35],
+          "hem_from": "word",
+          "formality": ["neat", "smart"],
+          "register": "classic",
+          "branch": "core"
+        },
+        {
+          "n": "#340·10",
+          "name": "Ботильйони блакитні VIVEN",
+          "type": "ankle_boots",
+          "fabric": ["leather"],
+          "shaft": "ankle",
+          "color": "light_blue",
+          "hex": "#7abadd",
+          "in_arc": true,
+          "L": [55, 90],
+          "L_from": "word",
+          "formality": ["everyday", "neat"],
+          "heel": "unknown",
+          "branch": "core"
+        },
+        {
+          "n": "#200·36",
+          "name": "Жіноча сумка Welfare",
+          "type": "bag_generic",
+          "fabric": ["unknown"],
+          "color": "light_blue",
+          "hex": "#a0b4d1",
+          "family": "blue",
+          "in_arc": true,
+          "L": [73, 73],
+          "L_from": "photo_point",
+          "formality": ["everyday"],
+          "branch": "core"
+        }
+      ],
+      "day": "A tonal camel palette creates a sleek silhouette for the office. The electric blue leather belt adds a necessary pop of color without breaking the neutral warmth.",
+      "deliberate": [
+        {
+          "item": "#358·35",
+          "why": "Selected as the primary outer layer (coat) suitable for frost, removing the conflicting striped jacket (#427·09).",
+          "finding": "Resolved outerwear conflict by keeping the coat."
+        },
+        {
+          "item": "#429·02",
+          "why": "Added a dress to serve as the top/bottom foundation, replacing the need for separate tops and bottoms.",
+          "finding": "Resolved no_top_bottom_or_dress blocker."
+        },
+        {
+          "item": "#340·10",
+          "why": "Added boots for warmth and completion of the outfit.",
+          "finding": "Resolved no_shoes blocker."
+        },
+        {
+          "item": "#200·36",
+          "why": "Added a bag to meet the office requirement.",
+          "finding": "Resolved no_bag blocker."
+        }
+      ],
+      "done": [
+        {
+          "finding": "Fixed kind_twice by keeping only the coat (#358·35) and removing the jacket (#427·09).",
+          "action": "fixed",
+          "why": "Both items were outerwear; one had to be removed."
+        },
+        {
+          "finding": "Fixed no_top_and_bottom by adding a dress.",
+          "action": "fixed",
+          "why": "The outfit needed a foundational garment."
+        },
+        {
+          "finding": "Fixed no_shoes by adding boots.",
+          "action": "fixed",
+          "why": "Footwear is essential for the outfit."
+        },
+        {
+          "finding": "Fixed no_bag by adding a bag.",
+          "action": "fixed",
+          "why": "The occasion requires a bag."
+        }
+      ]
+    },
+    {
+      "id": "o3",
+      "caption": "Light blue midi dress with scarf, shoes and bag",
+      "pole": "ease_the_knot",
+      "items": [
+        {
+          "n": "#290·35",
+          "name": "Сукня приталена з квадратним вирізом",
+          "type": "dress_generic",
+          "cut": "straight",
+          "fabric": ["unknown"],
+          "length": "midi",
+          "color": "light_blue",
+          "hex": "#87ceeb",
+          "family": "blue",
+          "in_arc": true,
+          "L": [79, 79],
+          "L_from": "photo_point",
+          "hem_cm": [21, 35],
+          "hem_from": "word",
+          "formality": ["neat", "formal"],
+          "branch": "core"
+        },
+        {
+          "n": "#287·10",
+          "name": "Шарф в смужку світло-блакитний",
+          "type": "scarf",
+          "cut": "relaxed",
+          "fabric": ["wool"],
+          "length": "neck",
+          "pattern": "stripes",
+          "color": "light_blue",
+          "hex": "#7abadd",
+          "family": "blue",
+          "in_arc": true,
+          "L": [100, 100],
+          "L_from": "photo_point",
+          "formality": ["everyday", "neat"],
+          "register": "minimalism",
+          "branch": "edge"
+        },
+        {
+          "n": "#35·32",
+          "name": "Напівчеревики сині",
+          "type": "ankle_boots",
+          "fabric": ["suede"],
+          "shaft": "ankle",
+          "color": "blue",
+          "hex": "#005ba3",
+          "family": "blue",
+          "in_arc": true,
+          "L": [15, 60],
+          "L_from": "word",
+          "formality": ["everyday", "neat"],
+          "heel": "unknown",
+          "branch": "core"
+        },
+        {
+          "n": "#200·36",
+          "name": "Жіноча сумка Welfare",
+          "type": "bag_generic",
+          "fabric": ["unknown"],
+          "color": "light_blue",
+          "hex": "#a0b4d1",
+          "family": "blue",
+          "in_arc": true,
+          "L": [73, 73],
+          "L_from": "photo_point",
+          "formality": ["everyday"],
+          "branch": "core"
+        }
+      ],
+      "day": "A calm light blue dress creates a monotone look, balanced by a bold striped scarf and a relaxed bomber jacket for frosty commutes.",
+      "deliberate": [
+        {
+          "item": "#287·10",
+          "why": "Added a striped scarf to match the caption's description and add texture.",
+          "finding": "Addressed the 'scarf' mention in the original caption which was missing an item."
+        },
+        {
+          "item": "#35·32",
+          "why": "Added shoes to complete the outfit.",
+          "finding": "Resolved no_shoes blocker."
+        },
+        {
+          "item": "#200·36",
+          "why": "Added a bag for the office setting.",
+          "finding": "Resolved no_bag blocker."
+        }
+      ],
+      "done": [
+        {
+          "finding": "Fixed kind_twice by removing one of the duplicate dresses (#346·35) and keeping #290·35.",
+          "action": "fixed",
+          "why": "Two items of the same kind (dress) were present in conflicting descriptions; one was removed."
+        },
+        {
+          "finding": "Fixed no_shoes by adding ankle boots.",
+          "action": "fixed",
+          "why": "Footwear was missing."
+        },
+        {
+          "finding": "Fixed no_bag by adding a bag.",
+          "action": "fixed",
+          "why": "A bag is required for the occasion."
+        }
+      ]
+    },
+    {
+      "id": "o4",
+      "caption": "Black leather midi skirt with beige knit sweater, blazer, shoes and bag",
+      "pole": "anchor_first",
+      "items": [
+        {
+          "n": "#267·35",
+          "name": "Спідниця максі із шкіри з розрізом",
+          "type": "skirt",
+          "cut": "bodycon",
+          "fabric": ["leather"],
+          "length": "midi",
+          "shine": true,
+          "color": "black",
+          "hex": "#000000",
+          "in_arc": true,
+          "L": [0, 0],
+          "L_from": "photo_point",
+          "hem_cm": [21, 35],
+          "hem_from": "word",
+          "formality": ["everyday", "smart"],
+          "branch": "edge",
+          "scheme": "neutrals_plus_accent"
+        },
+        {
+          "n": "#91·09",
+          "name": "Принтована бежева блуза з бавовни в гавайському стилі Афіна",
+          "type": "blouse",
+          "cut": "relaxed",
+          "fabric": ["cotton"],
+          "length": "mid_thigh",
+

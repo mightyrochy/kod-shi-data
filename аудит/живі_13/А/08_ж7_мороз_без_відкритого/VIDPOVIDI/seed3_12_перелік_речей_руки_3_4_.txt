@@ -1,0 +1,43 @@
+── ПРОМПТ (2287 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored wool blend blazer in deep charcoal #2b2d32 with a straight silhouette and cropped length at the hip, finished with smooth matte fabric that drapes cleanly.\nHigh-waisted wide-leg trousers in matching #2b2d32 charcoal wool with a relaxed fit through the thigh tapering slightly at the ankle, featuring a mid-calf length to balance proportions.\nMinimalist leather loafers in warm taupe #c1a89e with a low block heel for all-day comfort and a professional finish.\nDelicate gold bar necklace in 14k yellow gold with a simple solitaire pendant resting just above the collarbone.\nStructured clutch bag in black smooth calfskin with silver hardware to hold essentials without bulk.\nThis ensemble works because the monochromatic charcoal base creates a streamlined, authoritative silhouette perfect for the workplace while the wide-leg cut allows ease of movement throughout the day. The subtle warmth of the taupe shoes and gold jewelry softens the formality of the suit, preventing the look from feeling too severe or cold. Finally, the tailored yet relaxed fit ensures the outfit respects her specific proportions without clinging, offering a polished appearance that exudes confidence and competence."}
+
+── ВІДПОВІДЬ (1010 симв., 218.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored wool blend with straight silhouette and cropped length at the hip, smooth matte fabric",
+      "slot": "outerwear",
+      "color_hex": "#2b2d32",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg with relaxed fit through thigh tapering at ankle and mid-calf length",
+      "slot": "bottom",
+      "color_hex": "#2b2d32",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "minimalist leather with low block heel",
+      "slot": "shoes",
+      "color_hex": "#c1a89e",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate gold bar with simple solitaire pendant resting above collarbone",
+      "slot": "necklace",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "bag",
+      "details": "structured clutch with silver hardware",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}
