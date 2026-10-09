@@ -13,12 +13,14 @@ import sys
 
 sys.path.insert(0, ".")
 import bridge as B  # noqa: E402
+sys.path.insert(0, "проби")
+from пул_слотами import пул_слотами  # noqa: E402
 
 НОВІ = ("K-EYE-01", "K-WCH-01", "K-GLV-01", "K-HAT-01", "K-ACC-04")
 вх = json.load(open("стенд_вх.json"))
 вх.update(каталог="каталог_brief.xml", без_фото=1, варіантів=3)
 r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
-пул = json.loads(r["B"])["пул"]
+пул = пул_слотами(r["B"])
 def суд(слоти):
     ядро = [пул[с][0]["н"] for с in слоти if пул.get(с)]
     відп = json.dumps(dict(версія="1", образи=[dict(ід="о1", підпис="проба РВ-4", речі=ядро)]),

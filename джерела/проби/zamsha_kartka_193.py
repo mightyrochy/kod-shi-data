@@ -4,14 +4,8 @@
 модулі main 08ea31d (git show у тимчасову теку), ПІСЛЯ — чинні. (2) Рядок жінці на картці з замшевими
 уггами ж-10655 і сумкою ж-07782: −8 °C сніг, +16 °C дощ, +16 °C сухо; і без замші (контроль).
 Запуск із `джерела`: PYTHONPATH=. python3 проби/zamsha_kartka_193.py"""
-import json, subprocess, sys, tempfile, os
-if len(sys.argv) == 1:
-    тека = tempfile.mkdtemp()
-    for ф in ("верхнє_догляд.py", "верхнє_реєстр.py", "міст_відповіді.py"):
-        open(os.path.join(тека, ф), "wb").write(subprocess.check_output(["git", "show", "08ea31d:джерела/" + ф]))
-    subprocess.run([sys.executable, __file__, тека], check=True)
-    sys.argv.append("")
-sys.path.insert(0, sys.argv[1] or "."); М = "ДО   " if sys.argv[1] else "ПІСЛЯ"
+import json, sys, os
+sys.path.insert(0, "."); М = "ПІСЛЯ"
 import bridge as B, сценарій as СЦ, верхнє_догляд as ВД
 рядки, розійшлись = [], 0
 for т, о, р in [(-2, "сніг", None), (3, "сніг", None), (-2, "мокрий_сніг", None), (3, "мокрий_сніг", None),
@@ -20,6 +14,9 @@ for т, о, р in [(-2, "сніг", None), (3, "сніг", None), (-2, "мокр
     розійшлись += в != а
     рядки.append("%+d°C %s%s: верх %s / акс %s" % (т, о or "сухо", "" if р is None else " рук.%s" % р, "так" if в else "ні", "так" if а else "ні"))
 print("%s · сіль: %s\n        розбіжностей верх ≠ аксесуари: %d з %d" % (М, " · ".join(рядки), розійшлись, len(рядки)))
+# Ч-1 (п.12): рядок жінці — заяви кодами (`повідомлення.statements`), не готова фраза
+рядок = lambda x: " + ".join("%s%s" % (з["code"], з.get("values") or "") for з in
+                             (((x or {}).get("повідомлення") or {}).get("statements") or [])) or "—"
 дж = lambda x: json.dumps(x, ensure_ascii=False)
 вх0 = json.load(open("стенд_вх.json", encoding="utf-8"))
 for т, о in [(-8, "сніг"), (16, "дощ"), (16, None)]:
@@ -28,4 +25,4 @@ for т, о in [(-8, "сніг"), (16, "дощ"), (16, None)]:
     for ід in (["ж-10655@emmeliedelage.com", "ж-07782@miraton.ua"], [к["взуття"][0]["id"], к["сумка"][0]["id"]]):
         r = json.loads(B.виклик("від_моделі", дж(dict(вх, ід=[к["сукня"][0]["id"]] + ід))))
         print("%s · %+d°C %s · %s: %s" % (М, т, о or "сухо", "замша" if ід[0].startswith("ж-10655") else "контроль",
-                                          (r.get("матеріал_жінці") or {}).get("рядок") or "—"))
+                                          рядок(r.get("матеріал_жінці"))))

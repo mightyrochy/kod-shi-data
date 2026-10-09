@@ -7,13 +7,14 @@
 import sys, os, json, tempfile
 ДЖ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "джерела")
 sys.path.insert(0, ДЖ); os.chdir(ДЖ)
+sys.path.insert(0, os.path.join(ДЖ, "проби")); from пул_слотами import пул_слотами  # noqa: E402
 import bridge as B, feed as Ф
 
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 d0 = dict(вх, каталог=Ф.каталог_на_диску("каталог_brief.xml"), варіантів=10, ремонт_варіантів=5,
           кеш_кольорів=os.path.join(tempfile.gettempdir(), "кеш_проби_рв2.json"))
 міст = lambda **kw: json.loads(B.виклик("від_моделі", json.dumps(dict(d0, **kw), ensure_ascii=False)))
-пул = json.loads(json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["руки"]["1"])["пул"]
+пул = пул_слотами(json.loads(B.виклик("запити", json.dumps(d0, ensure_ascii=False)))["руки"]["1"])
 н = lambda сл, i=0: пул[сл][i]["н"]
 сила = lambda зн: [(z.get("сила_нп"), bool(z.get("свідомий"))) for z in (зн or []) if z.get("правило") == "K-KOH-06"]
 

@@ -3,7 +3,7 @@
 # каталогу стенда повз K-MAT-04-A), а «годинник» стояв без жодного виробника.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "джерела"))
-import feed, bridge, outfit as O
+import feed, bridge, суд_блиск as O  # ПОРЯДОК_ТІЛА живе в суд_блиск після поділу `outfit`
 
 # composer ставить ці слоти сам — у фіді їх нема й не має бути (composer.py:69,82)
 ВІД_КОМПОЗИТОРА = {"комплект", "колготи", "шкарпетки"}

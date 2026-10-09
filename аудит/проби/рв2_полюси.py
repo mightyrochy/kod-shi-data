@@ -8,9 +8,13 @@ import bridge as B, протокол as P
 
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 п = json.loads(json.loads(B.виклик("запити", json.dumps(dict(вх, варіантів=10), ensure_ascii=False)))["руки"]["1"])
-іди = [x["ід"] for x in п["полюси"]]
-print("ПАКЕТ_V1.полюси[].ід =", іди)
-print("enum ОБРАЗИ_V1.полюс   =", P.ПОЛЮСИ)
-print("ід поза enum:", [i for i in іди if i not in P.ПОЛЮСИ])
-об = dict(версія="1", образи=[dict(ід="о1", речі=["#1·00"], полюс=іди[1])])
-print("відповідь із полюсом «%s»: помилки схеми %s" % (іди[1], P.перевірити(P.СХЕМИ["ОБРАЗИ_V1"], об)))
+# П-2: пакет несе ід полюсів англійським дротом (`poles[].id`), відповідь — `outfits[].pole`
+іди = [x["id"] for x in п["poles"]]
+дозволені = set(P.ЗНАЧЕННЯ_ВІДПОВІДІ_EN["полюс"].values())
+print("ПАКЕТ_V1.poles[].id =", іди)
+print("enum OUTFITS_V1.pole =", sorted(дозволені))
+print("ід поза enum:", [i for i in іди if i not in дозволені])
+сх = P.СХЕМИ["ОБРАЗИ_V1"]
+for ід in іди:
+    об = P.з_дроту_en(dict(version="1", outfits=[dict(id="o1", items=["#1·00"], pole=ід)]), сх)
+    print("відповідь із полюсом «%s»: помилки схеми %s" % (ід, P.перевірити(сх, об)))

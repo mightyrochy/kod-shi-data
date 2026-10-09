@@ -9,6 +9,8 @@ import ast, os, re, subprocess, sys
 os.chdir(os.path.dirname(ДЖ)); sys.path.insert(0, ДЖ)
 import status
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "399181f"
+if subprocess.run(["git", "cat-file", "-e", БАЗА + "^{commit}"], capture_output=True).returncode:
+    sys.exit("база %s недосяжна (неглибокий клон): git fetch --unshallow" % БАЗА)
 
 def нечитані(текст):
     """{(функція, параметр)} тим самим правилом, що `аудит/проби/рв6_стандарт.py`."""
@@ -26,8 +28,9 @@ def нечитані(текст):
 лічба, рядків = {"мертвий": 0, "прогалина": 0, "страховка": 0}, 0
 print("модуль.функція · параметр · клас · викликачів · передають (перші три)")
 for м in sorted(status.МОДУЛІ_ПРОДУКТУ):
-    до = нечитані(subprocess.run(["git", "show", "%s:джерела/%s.py" % (БАЗА, м)],
-                                 capture_output=True, text=True, check=True).stdout)
+    # модуль, якого на БАЗІ ще не було (народжений пізніше), не має «ДО»: нечитаних там не лічимо
+    зріз = subprocess.run(["git", "show", "%s:джерела/%s.py" % (БАЗА, м)], capture_output=True, text=True)
+    до = нечитані(зріз.stdout) if зріз.returncode == 0 else set()
     після = нечитані(open("джерела/%s.py" % м, encoding="utf-8").read())
     for ф, п in sorted(до):
         клас = "страховка" if (ф, "_" + п) in після else "прогалина" if (ф, п) in після else "мертвий"

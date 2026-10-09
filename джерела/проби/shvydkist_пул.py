@@ -26,7 +26,7 @@ try:
         t = time.perf_counter()
         вих = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
         дт = time.perf_counter() - t
-        пул = json.loads(вих["B"])["пул"]
+        пул = вих["пакети"]["1"]["пул"]
         рядок = json.dumps({с: [r["н"] for r in v] for с, v in пул.items()}, ensure_ascii=False)
         хеш, речей = hashlib.sha256(рядок.encode()).hexdigest()[:16], sum(len(v) for v in пул.values())
         хеш_до, речей_до, час_до = ДО[гілка]
