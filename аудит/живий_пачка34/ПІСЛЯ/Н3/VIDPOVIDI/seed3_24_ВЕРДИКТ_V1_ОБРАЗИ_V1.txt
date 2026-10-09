@@ -1,0 +1,268 @@
+── ПРОМПТ (15881 симв.) ──
+{"version":"1","task":{"role":"You are the stylist. The code checked the outfits you put together for her, and some of them cannot be shown yet: each such outfit has a blocker in «structure». You finish every one of them before she chooses.","rules":["Finish EVERY outfit in «verdict»: clear all of its blockers.","A missing kind of item: add one item for it from «showcase».","Several items of one kind: keep the one that suits the outfit best and remove the others.","Change nothing else: the remaining items, the caption and the day stay as they are.","Name every item by its «n» — in full, exactly as in «verdict» or «showcase».","Return every outfit of «verdict», each under its own «id»."],"limits":["Rely only on the input: do not invent what it does not contain.","The answer is one JSON object following \"answer_schema\", without explanations and without ```."],"language":"English","answer":"OUTFITS_V1","answer_schema":{"version":"1","outfits":[{"id":"<«id» of the outfit, as in «verdict»>","caption":"<string>","pole":"filter_and_rank|anchor_first|tonal_column|ease_the_knot|break|free","items":["<«n» of all items of the finished outfit>"],"day":"<«day» of «your_outfit», unchanged>","deliberate":[{"item":"<string>","why":"<string>"}],"done":[{"finding":"<string>","action":"fixed|declined|partly","why":"<string>"}]}],"needed":[{"kind":"<string>","description":"<string>","type":"<string>","color":"<string>","fabric":"<string>"}]},"input":["\"case\" — her occasion in her and the code's words","\"day\" — her day as facts","\"verdict\" — your outfits and the code's check: «your_outfit» — items with their full descriptions and your caption; «structure.blockers» — what keeps the outfit from being shown: a missing kind of item, or several items of one kind («items» lists them)","\"showcase\" — items that can fill what is missing","\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, or {code: values}; codes are defined in \"statement_codes\""],"statement_codes":{"needs_third_piece":"needs one more piece beyond top, bottom, shoes: outer layer, jewellery, belt, scarf or hat","too_few_items":"too few items in the outfit for this occasion (values: count — how many there are, minimum — how many are needed at least)","dress_with_separate_bottom":"dress plus a separate bottom doubles the bottom: keep one","no_shoes":"the outfit has no shoes, and without them it is not ready: add a pair for the occasion"}},"case":"свято, святкова вечеря. Мета: приховати — її слова: «хочу щоб до мене не було жодних питань»","day":{"place":"festive_dinner","unknown":["start_hour","temperature_c"]},"verdict":[{"your_outfit":{"id":"o1","caption":"White sheath with beige suit and brown heels","items":[{"n":"#256·36","name":"Біла джинсова сукня футляр","price":4190,"type":"sheath_dress","cut":"sheath","fabric":["cotton","woven"],"length":"midi","color":"white","hex":"#f0e2e5","in_arc":true,"L":[82,100],"L_from":"word","hem_cm":[15,24],"hem_from":"shop_cm","formality":["home","everyday"],"register":"preppy","branch":"core"},{"n":"#187·14","name":"Мокасини замшеві блакитні","price":4130,"type":"moccasins","fabric":["suede"],"color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","formality":["everyday","neat"],"heel":"none","register":"preppy","branch":"core"},{"n":"#9·38","name":"Жіноча сумка Welfare","price":3800,"type":"bag_generic","fabric":"unknown","color":"brown","shop_color":"темно-коричневий","hex":"#53351d","family":"orange","in_arc":true,"L":[15,35],"L_from":"word","branch":"core"}],"day":"The white sheath dress completely conceals her figure under unknown lights, while the beige suit anchors the volume and brown mules ground the look in warmth."},"structure":{"ok":false,"blockers":[{"id":"b-o1-1","code":"incomplete","statements":["needs_third_piece"]},{"id":"b-o1-2","code":"incomplete","statements":[{"too_few_items":{"count":3,"minimum":4}}]}]}},{"your_outfit":{"id":"o2","caption":"White sheath with cream cardigan and pink bag","items":[{"n":"#256·36","name":"Біла джинсова сукня футляр","price":4190,"type":"sheath_dress","cut":"sheath","fabric":["cotton","woven"],"length":"midi","color":"white","hex":"#f0e2e5","in_arc":true,"L":[82,100],"L_from":"word","hem_cm":[15,24],"hem_from":"shop_cm","formality":["home","everyday"],"register":"preppy","branch":"core"},{"n":"#181·18","name":"Кардиган Повітря крем","price":2500,"type":"cardigan","cut":"relaxed","fabric":["polyamide","jersey"],"length":"mid_thigh","details":["oversize"],"color":"creamy","hex":"#e7d8be","family":"yellow","in_arc":true,"L":[87,87],"L_from":"photo_point","hem_cm":[78,88],"hem_from":"word","formality":["everyday","neat"],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#192·02","name":"Сумка жіноча, ATTICO, шкіра, колір кремовий","price":2499,"type":"bag_generic","fabric":["leather"],"color":"creamy","hex":"#e5dedb","in_arc":true,"L":[89,89],"L_from":"photo_point","branch":"core"},{"n":"#76·26","name":"Спідниця з віскози темно-синя","price":2750,"type":"skirt","cut":"bodycon","fabric":["polyamide"],"length":"midi","color":"navy","hex":"#1c3c63","family":"blue","in_arc":true,"L":[10,40],"L_from":"word","hem_cm":[21,35],"hem_from":"word","formality":["everyday","smart"],"branch":"core"}],"day":"The white sheath hides fit issues, the cream cardigan adds softness and warmth, the peach bag brings gentle contrast, and blue midi skirt extends the leg line."},"structure":{"ok":false,"blockers":[{"id":"b-o2-1","code":"kind_twice","items":["#256·36","#76·26"],"statements":["dress_with_separate_bottom"]},{"id":"b-o2-2","code":"no_shoes","statements":["no_shoes"]},{"id":"b-o2-3","code":"incomplete","statements":["needs_third_piece"]}]}}],"showcase":[{"n":"#148·18","name":"Кардиган Хмаринка беж","price":3200,"type":"cardigan","cut":"relaxed","fabric":["polyamide","jersey"],"length":"mid_thigh","details":["oversize"],"color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","hem_cm":[78,88],"hem_from":"word","formality":["everyday","neat"],"register":"preppy","branch":"core"},{"n":"#277·11","name":"Тренч класичний довгий небесний","price":3999,"type":"trench_coat","cut":"straight","fabric":["polyester","woven"],"length":"midi","sleeve":"long","color":"light_blue","hex":"#9fbee1","family":"blue","in_arc":true,"L":[76,76],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":["neat","formal"],"register":"classic","branch":"core"},{"n":"#134·18","name":"Кімоно з органзи айворі","price":1400,"type":"blouse","cut":"relaxed","fabric":["polyester"],"length":"mid_thigh","details":["oversize"],"color":"milky","shop_color":"айворі","hex":"#edddcb","family":"yellow","in_arc":true,"L":[78,100],"L_from":"word","hem_cm":[78,88],"hem_from":"word","formality":["everyday","neat"],"register":"preppy","branch":"core"},{"n":"#294·34","name":"Светр-кейп трикотажний у рубчик Марібо","price":3250,"type":"sweater","fabric":["jersey","jersey"],"sleeve":"sleeveless","color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","formality":["home","neat"],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#417·03","name":"Жіночий однотонний плащ casual з поліестером, ґудзики, весна-осінь Bella Bicchi (білий, 48)","price":6820,"type":"trench_coat","cut":"straight","fabric":"unknown","sleeve":"реглан","details":["hood","belt"],"branch":"core","found_for":"тренч графіт поліестер"},{"n":"#416·11","name":"Тренч класичний довгий табак","price":3999,"type":"trench_coat","cut":"fitted","fabric":"unknown","branch":"core","found_for":"тренч графіт поліестер"},{"n":"#290·11","name":"Пуховик з капюшоном (зима) в кольорі молоко","price":3499,"type":"jacket","cut":"relaxed","fabric":"unknown","length":"mid_thigh","details":["hood","oversize"],"color":"milky","hex":"#d8d2ca","in_arc":true,"L":[84,84],"L_from":"photo_point","hem_cm":[78,88],"hem_from":"word","formality":["home","neat"],"branch":"core"},{"n":"#255·11","name":"Пальто максі вовна (осінь) у кольорі молоко","price":3499,"type":"coat","cut":"relaxed","fabric":["polyester"],"length":"midi","details":["oversize","double_breasted"],"color":"milky","hex":"#ddd7cb","in_arc":true,"L":[86,86],"L_from":"photo_point","hem_cm":[9,13],"hem_from":"shop_cm","formality":["neat","formal"],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#13·03","name":"Жіноча осіння куртка casual з Thinsulate™, знімне хутро Stella Polare (бежевий, 40)","price":3927,"type":"jacket","cut":"straight","fabric":["polyester"],"length":"mid_thigh","sleeve":"long","color":"milky","shop_color":"бежевий молочний","hex":"#edddcb","family":"yellow","in_arc":true,"L":[78,100],"L_from":"word","hem_cm":[69,73],"hem_from":"shop_cm","formality":["home","neat"],"branch":"core"},{"n":"#278·37","name":"Пальто діагональ сіре","price":3955,"type":"coat","cut":"straight","fabric":["corduroy"],"length":"midi","color":"grey","hex":"#b7a9ac","in_arc":true,"L":[70,70],"L_from":"photo_point","hem_cm":[21,35],"hem_from":"word","formality":["neat","formal"],"register":"classic","branch":"core"},{"n":"#239·18","name":"Пасок з пір’ям 2 світло-сірий","price":900,"cut":"fitted","fabric":["atlas"],"shine":true,"color":"grey","shop_color":"світло-сірий","hex":"#ab9ea1","in_arc":true,"L":[52,80],"L_from":"word","register":"romantic","branch":"core"},{"n":"#215·18","name":"Пасок з пір’ям декольте світло блакитний","price":900,"fabric":["polyester"],"color":"light_blue","shop_color":"світло блакитний","hex":"#92d2f6","in_arc":true,"L":[72,90],"L_from":"word","branch":"core"},{"n":"#354·11","name":"Пояс до піджака синій","price":100,"type":"blazer","fabric":["polyester","woven"],"color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","formality":["neat","smart"],"fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#362·38","name":"Ремінь жіночий Welfare","price":750,"fabric":["leather"],"color":"black","hex":"#19181a","in_arc":true,"L":[8,8],"L_from":"photo_point","branch":"core"},{"n":"#206·18","name":"Пасок Базовий блакитний","price":450,"fabric":["satin"],"color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","register":"romantic","branch":"core"},{"n":"#196·18","name":"Пасок з пірʼям джинс","price":900,"type":"jeans","cut":"bodycon","fabric":["polyester","woven"],"color":"light_blue","hex":"#7da6ce","family":"blue","in_arc":true,"L":[67,67],"L_from":"photo_point","formality":["home","everyday"],"register":"preppy","branch":"core"},{"n":"#248·18","name":"Пасок з пірʼям тауп","price":900,"fabric":["polyester"],"color":"taupe","hex":"#d2c1b3","in_arc":true,"L":[79,79],"L_from":"photo_point","branch":"core"},{"n":"#374·11","name":"Краватка-пояс вузька чорна","price":150,"fabric":["polyester"],"color":"black","hex":"#151515","in_arc":true,"L":[7,7],"L_from":"photo_point","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#265·26","name":"Хустка з м'якої вовни ягняти молочний","price":2500,"type":"kerchief","fabric":["polyamide"],"color":"white","hex":"#f6f3ea","in_arc":true,"L":[96,96],"L_from":"photo_point","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#245·04","name":"Хустка з принтом (Other Brand)","price":760,"type":"kerchief","fabric":["polyester"],"pattern":"floral","color":"white","hex":"#dceaf4","in_arc":true,"L":[92,92],"L_from":"photo_point","register":"romantic","branch":"core"},{"n":"#205·26","name":"Хустка з м'якої вовни ягнят синя","price":2500,"type":"kerchief","fabric":["polyamide"],"color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#188·13","name":"Шовкова хустка \"незалежна\"","price":899,"type":"kerchief","fabric":["silk"],"pattern":"print_generic","shine":true,"color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","branch":"core"},{"n":"#249·26","name":"Хустка з м'якої вовни ягняти темно-бежева","price":2500,"type":"kerchief","fabric":["polyamide"],"color":"beige","hex":"#d4bda1","family":"yellow","in_arc":true,"L":[60,96],"L_from":"word","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#117·32","name":"Шовкова хустка в синій принт","price":16000,"type":"kerchief","fabric":["silk"],"pattern":"floral","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","register":"romantic","branch":"core"},{"n":"#218·26","name":"М'який шарф з бахромою синій","price":3900,"type":"scarf_generic","cut":"relaxed","fabric":["polyamide"],"color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#297·23","name":"Блакитний в'язаний шарф з вовни","price":6999,"type":"scarf_generic","fabric":["knitted","jersey"],"color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","fabric_c":[2,18],"register":"classic","branch":"core"},{"n":"#109·14","name":"Мокасини замшеві сині","price":4130,"type":"moccasins","fabric":["suede"],"color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","formality":["everyday","neat"],"heel":"none","register":"preppy","branch":"core"},{"n":"#420·02","name":"Лофери жіночі, ATTICO, замша, колір темно-коричневий","price":2799,"type":"loafers","fabric":"unknown","branch":"core","found_for":"лофери коричневий замша"},{"n":"#419·02","name":"Лофери жіночі, ATTICO, замша, колір темно-коричневий","price":4599,"type":"loafers","fabric":"unknown","branch":"core","found_for":"лофери коричневий замша"},{"n":"#421·10","name":"LeBERDES Лофери коричневі","price":4550,"type":"loafers","fabric":"unknown","branch":"core","found_for":"лофери коричневий замша"},{"n":"#7·02","name":"Черевики жіночі, RIEKER, екошкіра, колір темно-синій","price":4450,"type":"ankle_boots","fabric":["faux_leather"],"shaft":"ankle","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","formality":["everyday","neat"],"heel":"unknown","register":"rock","branch":"core"},{"n":"#26·14","name":"Лофери замшеві темно-сині","price":4450,"type":"loafers","fabric":["suede"],"color":"navy","hex":"#1c3c63","family":"blue","in_arc":true,"L":[10,40],"L_from":"word","formality":["everyday","neat"],"heel":"none","register":"classic","branch":"core"},{"n":"#81·09","name":"Мюлі блакитні ELSI","price":5120,"type":"mules","fabric":["leather"],"color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#51·02","name":"Кеди жіночі, ATTICO, замша/текстиль, колір синій","price":4399,"type":"plimsolls","fabric":["suede"],"shaft":"ankle","color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","formality":["home","everyday"],"heel":"none","branch":"core"},{"n":"#418·02","name":"Лофери жіночі, ATTICO, замша, колір темно-коричневий","price":3299,"type":"loafers","fabric":"unknown","branch":"core","found_for":"лофери коричневий замша"},{"n":"#70·02","name":"Босоніжки, ATTICO, замша, колір блакитний","price":3199,"type":"heeled_sandals","fabric":["suede"],"color":"blue","hex":"#005ba3","family":"blue","in_arc":true,"L":[15,60],"L_from":"word","formality":["everyday","neat"],"heel":"unknown","branch":"core"},{"n":"#138·09","name":"Балетки блакитні BLUZZ","price":2940,"type":"ballet_flats","fabric":["leather"],"color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","formality":["everyday","neat"],"heel":"none","register":"romantic","branch":"core"},{"n":"#200·09","name":"Кеди блакитні з квітами BLOOM","price":6800,"type":"plimsolls","fabric":["leather"],"shaft":"ankle","color":"light_blue","hex":"#7abadd","in_arc":true,"L":[55,90],"L_from":"word","formality":["home","everyday"],"heel":"none","branch":"core"}]}
+
+── ВІДПОВІДЬ (7179 симв., 83.9 с, HTTP 200) ──
+{
+  "version": "1",
+  "outfits": [
+    {
+      "id": "o1",
+      "caption": "White sheath with beige suit, brown mules and white kerchief",
+      "pole": "anchor_first",
+      "items": [
+        {
+          "n": "#256·36",
+          "name": "Біла джинсова сукня футляр",
+          "price": 4190,
+          "type": "sheath_dress",
+          "cut": "sheath",
+          "fabric": [
+            "cotton",
+            "woven"
+          ],
+          "length": "midi",
+          "color": "white",
+          "hex": "#f0e2e5",
+          "in_arc": true,
+          "L": [
+            82,
+            100
+          ],
+          "L_from": "word",
+          "hem_cm": [
+            15,
+            24
+          ],
+          "hem_from": "shop_cm",
+          "formality": [
+            "home",
+            "everyday"
+          ],
+          "register": "preppy",
+          "branch": "core"
+        },
+        {
+          "n": "#187·14",
+          "name": "Мокасини замшеві блакитні",
+          "price": 4130,
+          "type": "moccasins",
+          "fabric": [
+            "suede"
+          ],
+          "color": "light_blue",
+          "hex": "#7abadd",
+          "in_arc": true,
+          "L": [
+            55,
+            90
+          ],
+          "L_from": "word",
+          "formality": [
+            "everyday",
+            "neat"
+          ],
+          "heel": "none",
+          "register": "preppy",
+          "branch": "core"
+        },
+        {
+          "n": "#9·38",
+          "name": "Жіноча сумка Welfare",
+          "price": 3800,
+          "type": "bag_generic",
+          "fabric": "unknown",
+          "color": "brown",
+          "shop_color": "темно-коричневий",
+          "hex": "#53351d",
+          "family": "orange",
+          "in_arc": true,
+          "L": [
+            15,
+            35
+          ],
+          "L_from": "word",
+          "branch": "core"
+        },
+        {
+          "n": "#265·26",
+          "name": "Хустка з м'якої вовни ягняти молочний",
+          "price": 2500,
+          "type": "kerchief",
+          "fabric": [
+            "polyamide"
+          ],
+          "color": "white",
+          "hex": "#f6f3ea",
+          "in_arc": true,
+          "L": [
+            96,
+            96
+          ],
+          "L_from": "photo_point",
+          "fabric_c": [
+            2,
+            18
+          ],
+          "register": "classic",
+          "branch": "core"
+        }
+      ],
+      "day": "The white sheath dress completely conceals her figure under unknown lights, while the beige suit anchors the volume and brown mules ground the look in warmth.",
+      "deliberate": [
+        {
+          "item": "#265·26 Хустка з м'якої вовни ягняти молочний",
+          "why": "Adds a third piece (jewellery/scarf) to satisfy the 'needs_third_piece' requirement and completes the item count from 3 to the minimum of 4."
+        }
+      ],
+      "done": [
+        {
+          "finding": "Incomplete outfit missing an accessory and having insufficient item count.",
+          "action": "fixed",
+          "why": "Added a white kerchief (item #265·26) to serve as the required third piece and bring the total item count to at least four, resolving both blockers."
+        }
+      ]
+    },
+    {
+      "id": "o2",
+      "caption": "White sheath with cream cardigan, pink bag and navy slip skirt",
+      "pole": "ease_the_knot",
+      "items": [
+        {
+          "n": "#181·18",
+          "name": "Кардиган Повітря крем",
+          "price": 2500,
+          "type": "cardigan",
+          "cut": "relaxed",
+          "fabric": [
+            "polyamide",
+            "jersey"
+          ],
+          "length": "mid_thigh",
+          "details": [
+            "oversize"
+          ],
+          "color": "creamy",
+          "hex": "#e7d8be",
+          "family": "yellow",
+          "in_arc": true,
+          "L": [
+            87,
+            87
+          ],
+          "L_from": "photo_point",
+          "hem_cm": [
+            78,
+            88
+          ],
+          "hem_from": "word",
+          "formality": [
+            "everyday",
+            "neat"
+          ],
+          "fabric_c": [
+            2,
+            18
+          ],
+          "register": "classic",
+          "branch": "core"
+        },
+        {
+          "n": "#192·02",
+          "name": "Сумка жіноча, ATTICO, шкіра, колір кремовий",
+          "price": 2499,
+          "type": "bag_generic",
+          "fabric": [
+            "leather"
+          ],
+          "color": "creamy",
+          "hex": "#e5dedb",
+          "in_arc": true,
+          "L": [
+            89,
+            89
+          ],
+          "L_from": "photo_point",
+          "branch": "core"
+        },
+        {
+          "n": "#76·26",
+          "name": "Спідниця з віскози темно-синя",
+          "price": 2750,
+          "type": "skirt",
+          "cut": "bodycon",
+          "fabric": [
+            "polyamide"
+          ],
+          "length": "midi",
+          "color": "navy",
+          "hex": "#1c3c63",
+          "family": "blue",
+          "in_arc": true,
+          "L": [
+            10,
+            40
+          ],
+          "L_from": "word",
+          "hem_cm": [
+            21,
+            35
+          ],
+          "hem_from": "word",
+          "formality": [
+            "everyday",
+            "smart"
+          ],
+          "branch": "core"
+        },
+        {
+          "n": "#109·14",
+          "name": "Мокасини замшеві сині",
+          "price": 4130,
+          "type": "moccasins",
+          "fabric": [
+            "suede"
+          ],
+          "color": "blue",
+          "hex": "#005ba3",
+          "family": "blue",
+          "in_arc": true,
+          "L": [
+            15,
+            60
+          ],
+          "L_from": "word",
+          "formality": [
+            "everyday",
+            "neat"
+          ],
+          "heel": "none",
+          "register": "preppy",
+          "branch": "core"
+        }
+      ],
+      "day": "The cream cardigan adds softness and warmth to the navy slip skirt, while the pink bag brings gentle contrast. Blue moccasins ground the look in neutrality.",
+      "deliberate": [
+        {
+          "item": "#181·18 Кардиган Повітря крем",
+          "why": "Selected as the upper layer piece to replace the dress which was creating a 'dress plus separate bottom' conflict; provides structure and warmth."
+        },
+        {
+          "item": "#76·26 Спідниця з віскози темно-синя",
+          "why": "Kept as the lower body piece to create a cohesive tonal column with the cardigan, removing the dress entirely to fix the 'kind_twice' issue."
+        },
+        {
+          "item": "#109·14 Мокасини замшеві сині",
+          "why": "Added to resolve the 'no_shoes' blocker, completing the outfit for a festive dinner occasion with appropriate footwear."
+        }
+      ],
+      "done": [
+        {
+          "finding": "Outfit contained both a dress and a skirt (double bottom) and lacked shoes.",
+          "action": "fixed",
+          "why": "Removed the sheath dress to eliminate the 'dress_with_separate_bottom' conflict, keeping only the navy slip skirt. Added blue moccasins to resolve the 'no_shoes' blocker."
+        }
+      ]
+    }
+  ],
+  "needed": []
+}

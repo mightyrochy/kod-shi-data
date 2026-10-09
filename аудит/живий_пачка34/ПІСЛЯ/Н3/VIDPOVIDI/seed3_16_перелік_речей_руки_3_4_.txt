@@ -1,0 +1,40 @@
+── ПРОМПТ (2137 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk camisole with a modest high neckline and slight gathering at the waist, floor-length cut in a rich midnight blue hue (#0B1D37), composed of smooth crepe silk for fluid movement.\nTailored wool-blend trousers with a wide-leg silhouette and clean straight hem, mid-calf length in deep charcoal gray (#2F3542), made from structured yet soft wool blend fabric.\nPointed-toe pumps with a moderate heel height, sharp architectural lines, finished in polished black leather (#000000) to elongate the leg without drawing undue attention.\nMinimalist gold bar earrings with a low profile and a delicate skin-toned silk scarf tied loosely at the neck to soften the outfit's severity subtly.\n\nThis ensemble succeeds by projecting an air of effortless authority that requires no explanation, translating her desire for zero questions into a look of polished simplicity rather than elaborate fashion statements. The dark, grounded color palette creates a unified silhouette that feels intentional and secure, while the softness of the silk contrasts the structure of the wool to ensure comfort without sacrificing dignity. Every element is chosen to be understated enough to avoid distraction yet refined enough to command immediate respect, allowing her presence to speak for itself without needing verbal defense or scrutiny."}
+
+── ВІДПОВІДЬ (1046 симв., 196.3 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Silk camisole",
+        "details": "high neckline with slight gathering at the waist, floor-length cut in smooth crepe silk fabric",
+        "slot": "top",
+        "color_hex": "#0B1D37"
+      },
+      {
+        "name": "Trousers",
+        "details": "tailored wide-leg silhouette with clean straight hem, mid-calf length in structured yet soft wool blend fabric",
+        "slot": "bottom",
+        "color_hex": "#2F3542"
+      },
+      {
+        "name": "Pumps",
+        "details": "pointed-toe design with moderate heel height, sharp architectural lines in polished leather",
+        "slot": "shoes",
+        "color_hex": "#000000"
+      },
+      {
+        "name": "Earrings",
+        "details": "minimalist gold bar design with low profile",
+        "slot": "earrings",
+        "color_hex": null
+      },
+      {
+        "name": "Scarf",
+        "details": "delicate skin-toned silk fabric tied loosely at the neck",
+        "slot": "scarf",
+        "color_hex": null
+      }
+    ]
+  }
+}

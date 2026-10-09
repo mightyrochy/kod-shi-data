@@ -1,0 +1,44 @@
+── ПРОМПТ (1834 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Crimple-free silk blouse in ivory (#f2dcd6), structured with a high collar and elbow-length sleeves; tailored wide-leg trousers in charcoal grey (#3a3a40), high-waisted with a straight cut that ends mid-calf.\n\nLeather ankle boots in black (#000000), sleek pointed-toe design with a 5 cm block heel.\n\nMinimalist gold stud earrings in pale champagne (#f7f2eb), a slim silk scarf tied loosely at the waist in soft peach (#ffdab9), and a structured leather clutch in dark brown (#654321).\n\nThis ensemble ensures she arrives with zero questions by combining timeless, modest silhouettes with luxurious fabrics that drape perfectly over her curves without clinging. The high collar and structured blouse provide an elegant barrier that feels polished rather than revealing, while the neutral color palette centers attention on her poise rather than specific body features. Warm tones in the accessories introduce just enough festive warmth for the holiday dinner without breaking the sophisticated mystery she desires."}
+
+── ВІДПОВІДЬ (958 симв., 194.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Crimple-free silk blouse",
+      "details": "structured with a high collar and elbow-length sleeves",
+      "slot": "top",
+      "color_hex": "#f2dcd6"
+    },
+    {
+      "name": "Tailored wide-leg trousers",
+      "details": "high-waisted with a straight cut that ends mid-calf",
+      "slot": "bottom",
+      "color_hex": "#3a3a40"
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "sleek pointed-toe design with a 5 cm block heel",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "Minimalist gold stud earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": "#f7f2eb"
+    },
+    {
+      "name": "Slim silk scarf",
+      "details": "tied loosely at the waist",
+      "slot": "scarf",
+      "color_hex": "#ffdab9"
+    },
+    {
+      "name": "Structured leather clutch",
+      "details": "",
+      "slot": "bag",
+      "color_hex": "#654321"
+    }
+  ]
+}
