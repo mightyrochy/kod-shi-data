@@ -1,0 +1,29 @@
+── ПРОМПТ (3976 симв.) ──
+
+{"task": {"role": "You see photos of clothing items that a woman sent. Describe each item on them.", "rules": ["One object per item on the photos — garment, shoes, bag, accessory, jewelry; an item seen on several photos is listed once, with the photo where it is seen best.", "\"frame\" is the item's box on its photo in thousandths of the width and height (0–1000), tight around the item itself, without background, skin or other items.", "Field values are codes from \"codes\"; what the photo does not show is null.", "A photo of one of her items often shows other items too — a shop photo on a model, the outfit she wore for the shot: those are not hers, their owner is \"unknown\". Only an item her words name is \"mine\"."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "PHOTO_ITEMS", "answer_schema": {"items": [{"photo": "<photo id>", "name": "<short English name, as a shop would call the item>", "slot": "<code from codes.slot>", "color": "<code from codes.color: the main color of the item itself>", "fabric": "<code from codes.fabric when the texture is visible, else null>", "cut": "<code from codes.cut or null>", "length": "<code from codes.length or null>", "pattern": "<code from codes.pattern>", "formality": "<code from codes.formality: the occasion step the item suits — home (loungewear at home; athleisure) < everyday (jeans, T-shirt and sneakers; neat casual, dark denim) < neat (textured jacket, refined knit, loafers; blazer with trousers, sheath dress) < smart (suit without tie, cocktail dress) < formal (business suit) < very_smart (tuxedo, evening gown) < ceremonial (white tie, full evening dress)>", "owner": "<code from codes.owner>", "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"}}]}, "input": ["\"photos\" — her photos in the order they are attached: id, width, height", "\"her_items_in_words\" — her own items as she described them in words; an item on a photo that is one of those with status \"has\" has owner \"mine\"", "\"codes\" — allowed codes of the item fields"]}, "photos": [{"id": "ф1", "width": 500, "height": 700}], "her_items_in_words": [{"slot": "shoes", "status": "has", "quote": "взуття з фото"}], "codes": {"slot": ["top", "bottom", "dress", "set", "outerwear", "shoes", "bag", "scarf", "headwear", "belt", "jewelry", "earrings", "collar_necklace", "necklace", "brooch", "bracelet", "ring"], "color": ["black", "white", "grey", "graphite", "beige", "cream", "milky", "sand", "camel", "brown", "chocolate", "red", "burgundy", "cherry", "raspberry", "brick", "terracotta", "coral", "orange", "peach", "yellow", "lemon", "mustard", "golden", "khaki", "olive", "green", "pine_green", "mint", "turquoise", "petrol", "light_blue", "blue", "navy", "lilac", "purple", "plum", "magenta", "pink", "rose", "powder_pink", "silvery"], "fabric": ["wool", "cashmere", "mohair", "angora", "alpaca", "cotton", "viscose", "tencel", "lyocell", "modal", "linen", "silk", "polyester", "polyamide", "nylon", "acrylic", "denim", "satin", "atlas", "chiffon", "muslin", "batiste", "tweed", "boucle", "corduroy", "velvet", "jersey", "knitted", "suede", "faux_leather", "leather", "patent_leather", "nubuck", "velour", "lace"], "owner": ["mine", "want_to_buy", "unknown"], "cut": ["skinny", "straight", "tapered", "wide", "flared", "culottes", "pencil", "a-line", "full", "pleated", "bias-slip", "bodycon", "fitted", "relaxed", "oversized", "belted", "wrap", "peplum", "shift", "sheath", "empire", "double-breasted"], "length": ["waist", "mid_thigh", "mini", "knee", "midi", "maxi"], "pattern": ["solid", "polka_dot", "floral", "stripes", "check", "animal_print", "camouflage", "geometric", "abstract", "lace_motif", "embroidery", "print_generic"], "formality": ["home", "everyday", "neat", "smart", "formal", "very_smart", "ceremonial"]}}
+
+── ВІДПОВІДЬ (441 симв., 8.4 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "photo": "ф1",
+        "name": "Sandals",
+        "slot": "shoes",
+        "color": "white",
+        "fabric": "leather",
+        "cut": null,
+        "length": null,
+        "pattern": "solid",
+        "formality": "everyday",
+        "owner": "mine",
+        "frame": {
+          "left": 0,
+          "top": 750,
+          "right": 1000,
+          "bottom": 1000
+        }
+      }
+    ]
+  }
+}
