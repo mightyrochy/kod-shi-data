@@ -1,0 +1,38 @@
+── ПРОМПТ (2211 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured cotton tee, relaxed fit, hip length, soft ivory, 100% organic cotton\nOversized linen blend jacket, dropped shoulder cut, mid-thigh length, sage green, lightweight woven\nWide-leg trousers, straight leg from knee, ankle length, charcoal grey, breathable twill\nMinimalist flat sandals, open toe design, arch-length style, terracotta red, smooth leather with hex code #E2725B\nThis ensemble strikes the perfect balance for a casual coffee date with a best friend, blending comfort with a chic, effortless vibe. The oversized jacket adds a stylish layer that can be easily removed if the temperature rises, while the wide-leg trousers offer ease of movement throughout the day. Sneakers or the selected flat sandals ensure you stay grounded and comfortable without any heels, perfectly respecting your wish for low-heeled footwear and avoiding the specific print restriction on your shoes. The neutral palette of ivory, charcoal, and sage creates a sophisticated yet relaxed look that feels just right for an everyday outing."}
+
+── ВІДПОВІДЬ (902 симв., 183.8 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Structured cotton tee",
+        "details": "Relaxed fit, hip length, soft ivory, 100% organic cotton",
+        "slot": "top",
+        "color_hex": "#FFFFF0",
+        "worn": true
+      },
+      {
+        "name": "Oversized linen blend jacket",
+        "details": "Dropped shoulder cut, mid-thigh length, lightweight woven",
+        "slot": "outerwear",
+        "color_hex": "#9DC183",
+        "worn": true
+      },
+      {
+        "name": "Wide-leg trousers",
+        "details": "Straight leg from knee, ankle length, breathable twill",
+        "slot": "bottom",
+        "color_hex": "#36454F",
+        "worn": true
+      },
+      {
+        "name": "Minimalist flat sandals",
+        "details": "Open toe design, arch-length style, smooth leather",
+        "slot": "shoes",
+        "color_hex": "#E2725B",
+        "worn": true
+      }
+    ]
+  }
+}

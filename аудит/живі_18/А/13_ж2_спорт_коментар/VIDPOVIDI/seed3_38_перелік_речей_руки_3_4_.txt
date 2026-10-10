@@ -1,0 +1,36 @@
+── ПРОМПТ (2008 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored beige linen-blend shirt dress with a relaxed A-line silhouette and a length that ends mid-calf in a solid #d1ab86 shade.\nWhite chunky knit sneakers with a flat sole and a wide toe box.\nSimple gold stud earrings and a thin leather belt in matching #e0bd9a to cinch the waist without adding heels.\nThis outfit works perfectly for an everyday hangout because the casual linen texture of the dress balances effortlessly with the sporty comfort of chunky sneakers, adhering strictly to her request for no heels and avoiding any shoe prints. The solid color palette in warm earth tones complements her skin and hair naturally while offering easy movement for walking or sitting at a cafe. It strikes the right balance between looking put-together for a friend's gathering and staying relaxed enough for an ordinary day out."}
+
+── ВІДПОВІДЬ (721 симв., 177.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "tailored beige linen-blend shirt dress",
+      "details": "relaxed A-line silhouette, mid-calf length, solid shade #d1ab86",
+      "slot": "dress",
+      "color_hex": "#d1ab86",
+      "worn": true
+    },
+    {
+      "name": "White chunky knit sneakers",
+      "details": "flat sole, wide toe box",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Simple gold stud earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "thin leather belt",
+      "details": "matching shade #e0bd9a",
+      "slot": "belt",
+      "color_hex": "#e0bd9a",
+      "worn": true
+    }
+  ]
+}

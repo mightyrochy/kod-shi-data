@@ -1,0 +1,29 @@
+── ПРОМПТ (1910 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A soft cotton slip dress with a relaxed drape, midi length, sand color (#F4E7D9), lightweight jersey.\nCanvas espadrille wedge sandals, flat sole, terracotta color (#E2725B).\nSmall structured crossbody bag in tan leather, medium size.\n\nThis ensemble strikes the perfect balance for a casual day out with friends, offering effortless comfort without sacrificing style. The neutral tones create a harmonious base that feels warm and inviting during pleasant weather. The slip dress's fluid fabric moves naturally with you, while the wedge sandals add just enough elevation to feel polished yet relaxed. This look honors your desire for simplicity by avoiding any outer layers or stiff structures, keeping the focus on easy elegance."}
+
+── ВІДПОВІДЬ (583 симв., 168.6 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "slip dress",
+      "details": "soft cotton with a relaxed drape and midi length made of lightweight jersey",
+      "slot": "dress",
+      "color_hex": "#F4E7D9",
+      "worn": true
+    },
+    {
+      "name": "canvas espadrille wedge sandals",
+      "details": "flat sole with a terracotta color",
+      "slot": "shoes",
+      "color_hex": "#E2725B",
+      "worn": true
+    },
+    {
+      "name": "structured crossbody bag",
+      "details": "medium size in tan leather",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

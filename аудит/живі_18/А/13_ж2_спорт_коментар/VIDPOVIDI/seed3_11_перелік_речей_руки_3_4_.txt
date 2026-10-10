@@ -1,0 +1,43 @@
+── ПРОМПТ (1997 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Casual cotton-blend tee with a relaxed boxy cut falling just below the hip bone in a soft earthy tan (#d1ab86), paired with wide-leg linen trousers that drape from the natural waist and end mid-calf in a warm sand shade (#e0bd9a). Finish the look with sleek leather ankle boots in a matching neutral tone (#d9b48f) featuring a low block heel for comfort during long walks, accessorized with a minimalist gold bar necklace and simple hoop earrings. This outfit works perfectly for an everyday coffee outing because the loose silhouettes create a comfortable ease without looking sloppy, while the warm earth tones harmonize beautifully with her complexion and hair color. The breathable natural fabrics keep you cool in the pleasant weather, making this a practical yet stylish choice for a relaxed day out with a friend."}
+
+── ВІДПОВІДЬ (889 симв., 167.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "cotton-blend tee",
+      "details": "relaxed boxy cut falling just below the hip bone",
+      "slot": "top",
+      "color_hex": "#d1ab86",
+      "worn": true
+    },
+    {
+      "name": "wide-leg linen trousers",
+      "details": "draping from the natural waist and ending mid-calf",
+      "slot": "bottom",
+      "color_hex": "#e0bd9a",
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "sleek design with a low block heel for comfort",
+      "slot": "shoes",
+      "color_hex": "#d9b48f",
+      "worn": true
+    },
+    {
+      "name": "gold bar necklace",
+      "details": "minimalist",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "hoop earrings",
+      "details": "simple design",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
