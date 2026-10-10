@@ -2313,6 +2313,10 @@ _ПОМИЛКИ_EN = (
     (r"^invalid_json\(line=(\d+),col=(\d+)\)$", lambda м: "not JSON (line %s, column %s)" % м.groups()),
     (r"^invalid_json$", lambda м: "not JSON"),
     (r"^json_not_object\((.+)\)$", lambda м: "JSON, but not an object (%s)" % м.group(1)),
+    # рядок 4590: образи за схемою, а жоден номер — не «n» пулу (`міст_відповіді`)
+    (r"^items_not_in_pool\((.*)\)$",
+     lambda м: "no item is an «n» of «pool» written exactly as given, the «·» included"
+               + (" (written: %s)" % м.group(1) if м.group(1) else "")),
     (r"^відповідь переписала вхідний вердикт.*$",
      lambda м: "the answer copies the input verdict: that is the input, not the outfits of the answer"),
     (r"^несе поля суду коду.*$",
