@@ -578,6 +578,8 @@ import внутрішня_мова as _ВМ_П
         # записі, і рядок тоді в промпт не йде (`збирач_промптів.зібрати`).
         _ЗП.Поле("pool_keys", "the keys the items of «pool» use, what each means, and defaults for omitted values",
                  як="read every item of «pool» by these keys; restore every absent key that has an `absent =` default"),
+        _ЗП.Поле("pool[].kind", "the kind of an item the shop gives no type for: a belt, a hat, «Shoes»",
+                 як="take it as the item's kind; do not guess a kind from the name"),
         _ЗП.Поле("pool[].two_piece", "a set sold as one item",
                  як="it is a whole outfit, like a dress: add no top or bottom to it; take one half only "
                     "when you must, with «deliberate», naming it «n»/top or «n»/bottom"),
