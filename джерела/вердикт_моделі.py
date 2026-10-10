@@ -129,12 +129,37 @@ def вага_питання(z):
 #   · «образ відповіді — your_outfit після роботи, без полів суду» — Т-7: модель переписувала
 #     вердикт назад замість відповіді (`протокол._без_ехо`).
 # Приклад-номер («#412·29») не стоїть ніде (розбір 3/8, вада 1; «жодних прикладів-фраз»).
+import dataclasses as _dc
 import збирач_промптів as _ЗП
 import внутрішня_мова as _ВМ
 
 # Підписи полів відповіді ОБРАЗИ_V1 — спільні для складання й ремонту (`пакет_моделі`).
 from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБРАЗІВ, РЯДОК_РІЧ_ДВІЧІ as _РЯДОК_РІЧ_ДВІЧІ, \
     РЯДОК_ЛИШЕ_НОМЕР as _РЯДОК_ЛИШЕ_НОМЕР
+
+# РЕМОНТ-2 (рядок 4291): правила «done» — іменами, щоб ремонт без гейтів (`оголошення_ремонту`) дістав ту саму
+# задачу без них, а не іншу.
+_РЯДОК_ЗАУВАЖЕННЯ = ("A remark (a finding without «register» «gate») is information about the outfit: it does not "
+                     "by itself drop an outfit or undo a move you declared. Change an item for a remark only when "
+                     "that makes the outfit answer her case better; a remark needs no entry in «done». A finding "
+                     "without «fix» asks for no change.")
+_РЯДОК_DONE = ("«done» of an outfit: one entry for each «id» in «gates» of this outfit, and nothing else — a remark "
+               "gets no entry, whether you changed an item for it or not. An outfit without «gates» has an empty "
+               "«done».")
+_РЯДОК_ACTION = ("«action» in «done» is one word: fixed — the finding is gone from the outfit by the code's check "
+                 "(you replaced or removed what raised it); partly — it stays but weaker; declined — you keep it "
+                 "on purpose, with «why». When you are not sure it is gone, say partly. «why» goes with declined "
+                 "only: fixed and partly the code checks by fact.")
+_РЯДОК_ОБРАЗ_ВІДПОВІДІ = ("An outfit of the answer is «your_outfit» after your work, with the same «id» and with "
+                          "«done»; «structure», «findings», «keep», «checklist» and «knot» stay out of the answer.")
+_РЯДОК_КІНЕЦЬ = ("Write the answer object itself: it begins with {\"version\" and ends with the brace that closes "
+                 "it, right after «needed». Do not put it under «answer»; after that brace the answer is over.")
+# Без гейтів у вердикті — ті самі правила без «done»
+_БЕЗ_ГЕЙТІВ = {
+    _РЯДОК_ЗАУВАЖЕННЯ: _РЯДОК_ЗАУВАЖЕННЯ.replace("; a remark needs no entry in «done»", ""),
+    _РЯДОК_DONE: None, _РЯДОК_ACTION: None,
+    _РЯДОК_ОБРАЗ_ВІДПОВІДІ: _РЯДОК_ОБРАЗ_ВІДПОВІДІ.replace(" and with «done»", ""),
+}
 
 РЕМОНТ = _ЗП.Оголошення(
     задача="ремонт",
@@ -155,6 +180,9 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
                  треба=True),
         _ЗП.Поле("verdict[].structure.blockers", "what keeps the outfit from being shown",
                  як="each must disappear: change an item or drop the outfit"),
+        # РЕМОНТ-2 (рядок 4291): гейти образу — переліком «id»; на них і лише на них стоїть «done»
+        _ЗП.Поле("verdict[].gates", "the «id» of this outfit's findings with «register» «gate»",
+                 як="each must disappear; each gets one entry in «done» of this outfit"),
         _ЗП.Поле("verdict[].findings", "what the code found: «register» «gate» must disappear (no «register» — "
                                        "a remark: information about the outfit, not a score); «fix» — "
                                        "the code's repair, or the key of its text in «fixes»; «merged» — how "
@@ -180,9 +208,11 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
                              "with two or more «signs»: loud_colour — a colour of high chroma, "
                              "light_dark_contrast — light and dark items far apart, garment_texture — "
                              "shine, print or a rich fabric on a garment, three_hue_families — three or "
-                             "more colour families",
+                             "more colour families; «not_measured» — outfits with an item whose colour the "
+                             "code does not know, so it could not measure them",
                  як="keep at least «keep_at_least» of them among the outfits you return, the ones that "
-                    "answer her occasion best, and do not repair their signs away"),
+                    "answer her occasion best, and do not repair their signs away; an outfit of "
+                    "«not_measured» you judge by its items yourself, and it counts when you find it bold"),
         _ЗП.Поле("set.not_done", "gate findings that still stand in the new check and are not named in «done»",
                  як="give each an entry in «done» of its outfit, or drop the outfit"),
         _ЗП.Поле("showcase", "items you have not taken yet: for missing kinds of items, for kinds where the set "
@@ -207,15 +237,13 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         "ideas («pole») differ. Read every outfit of «verdict» before you choose: its place in «verdict» is "
         "only the order they were put together and says nothing about her. Do not choose by how many remarks "
         "an outfit has or how mild they are: an outfit that answers her better stays with its remarks.",
-        "«outfits» of the answer are exactly the outfits named in «chosen», in that order, each improved.",
+        "«outfits» of the answer are exactly the outfits named in «chosen», in that order, each improved; an "
+        "outfit you did not choose is not written.",
         # СТЕЛЯ-РЕМОНТУ (рядок 3640; аудит/ПРОДУКТ.md п.17): «fix it, or keep the item and say why in «done»»
         # модель читала як «запис на кожне зауваження»: у 47 записаних відповідях ремонту — 942 записи
         # «done», 56 % символів, і 8 із 8 обривів об стелю 4000 т. — такі; «fixed» стояв і над речами,
         # яких ремонт не міняв. Зауваження — інформація: міняти річ — лише з вагомою причиною її випадку.
-        "A remark (a finding without «register» «gate») is information about the outfit: it does not by itself "
-        "drop an outfit or undo a move you declared. Change an item for a remark only when that makes the "
-        "outfit answer her case better; a remark needs no entry in «done». A finding without «fix» asks for "
-        "no change.",
+        _РЯДОК_ЗАУВАЖЕННЯ,
         "When «case» has «palette_scheme», she chose that scheme herself: keep its families on the large items "
         "of the outfits that carry them, and do not repair her scheme away into neutrals; give a missing family "
         "a large item from «showcase» where one fits her occasion.",
@@ -223,18 +251,13 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         # запис на кожне зауваження — у 65 відповідях заміру ГГ-1 3 627 записів «done» над зауваженнями
         # проти 70 над гейтами, 54 % символів виводу, 36 обривів об стелю 4000 т. Що річ замінено, код
         # бачить і так (новий суд), а зауваження — інформація, не пункт звіту.
-        "«done» of an outfit: one entry for each finding of this outfit with «register» «gate», and nothing "
-        "else — a remark gets no entry, whether you changed an item for it or not; «finding» is the "
-        "finding's «id». An outfit without «gate» findings has an empty «done».",
+        _РЯДОК_DONE,
         # ОПИС-1 (рядок 1416, аудит/ПРОДУКТ.md п.4): «fixed» без визначення модель ставила й тоді, коли
         # знахідка лишалась (1 501 «fixed» на 02.10, 112 непідтверджених); міра — суд коду.
         # ПРАВИЛОМ, НЕ ПІДПИСОМ ЛИСТКА (рядок 3240): підпис стояв за переліком («fixed|declined|partly
         # — fixed — the finding…»), і qwen3.5-9b переписувала його в «action» цілим (живі 13 А/08,
         # останні ремонти рук 1–2: 27 із 64 дій), тож «declined» з ід знахідки губився в тексті.
-        "«action» in «done» is one word: fixed — the finding is gone from the outfit by the code's check "
-        "(you replaced or removed what raised it); partly — it stays but weaker; declined — you keep it on "
-        "purpose, with «why». When you are not sure it is gone, say partly. «why» goes with declined only: "
-        "fixed and partly the code checks by fact.",
+        _РЯДОК_ACTION,
         "One item of each kind: an item of a kind the outfit already has replaces it; a missing kind is added "
         "without removing other items. An outfit has a dress, a set, or a top and a bottom.",
         _РЯДОК_РІЧ_ДВІЧІ,
@@ -244,19 +267,23 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         "the finding it answers, and why. The code weighs only the finding you name there; a move without "
         "a finding's «id» weakens nothing.",
         "«needed» — only for an item that is neither in the outfits nor in «showcase».",
-        "An outfit of the answer is «your_outfit» after your work, with the same «id» and with «done»; "
-        "«structure», «findings», «keep», «checklist» and «knot» stay out of the answer.",
+        _РЯДОК_ОБРАЗ_ВІДПОВІДІ,
         # РЕМОНТ-1 (рядок 4291): правило кінця відповіді складання й опису (рядок 4025) — і тут. Ремонт писав
         # {"answer": {…}} у 56/65 відповідей і далі переписував дані промпту: «fixes», «set», «showcase»
         # (16/65 — вітрину з «price», «hex», «L») до стелі виводу.
-        _ЗП.КІНЕЦЬ_ВІДПОВІДІ_EN,
+        # РЕМОНТ-2 (рядок 4291): БЕЗ ІМЕН КЛЮЧІВ. «write nothing after it — no «answer_schema», «input»,
+        # «statement_codes»…» `КІНЕЦЬ_ВІДПОВІДІ_EN` qwen3.5-9b читала як перелік того, що дописати: у 17 з 28
+        # відповідей заміру РЕМОНТ-1 після «needed» стоїть «input» (у 10 — `null`, у 7 — увесь `task.input`,
+        # 9–12,7 тис. симв.), і 7 з 13 обрізаних об стелю 4000 т. обрізано саме на ньому (до правила, у заміру ГГ-1,
+        # «input» не писала жодна з 33). Тут кінець названо місцем — дужка після «needed», — а не переліком.
+        _РЯДОК_КІНЕЦЬ,
     ),
     вихід="ОБРАЗИ_V1",
     поля_виходу=dict(_ПОЛЯ_ОБРАЗІВ, **{
         "обрано[].ід": "«id» of an outfit of «verdict» you keep",
         "обрано[].чому": "what in «case» this outfit answers, a few words",
         "образи[].ід": "«id» of the «your_outfit» you improved",
-        "образи[].виконано[].знахідка": "«id» of a «gate» finding of this outfit",
+        "образи[].виконано[].знахідка": "an «id» from «gates» of this outfit",
         "образи[].виконано[].чому": "only with declined: why you keep it, one sentence",
         # рядок 3160: хід адресує знахідку кодом — речі мало, на ній стоять і чужі знахідки
         "образи[].свідомо[].знахідка": "«id» of the finding of this outfit that this move answers",
@@ -264,6 +291,23 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
     межі=("лише_вхід",),
     мова_промпту="en",
 )
+
+
+def оголошення_ремонту(дріт):
+    """`РЕМОНТ` для вердикта на дроті (`дріт_моделі.вердикт`) — або, коли жоден образ не несе «gates», він же без
+    «done»: без правил «done» і «action» і без поля в скелеті (`протокол.ПОЛЯ_НА_ПРОХАННЯ`).
+
+    РЕМОНТ-2 (рядок 4291, аудит/ПРОДУКТ.md п.17). Замір РЕМОНТ-1 (28 входів, qwen3.5-9b): у 18 з 28 вердиктів гейтів
+    нема зовсім, а модель писала «done» на кожну знахідку — 1 422 записи над зауваженнями проти 21 над гейтом, 13 з
+    27 відповідей обрізано об стелю 4000 т. Правило «лише над гейтом» вона не виконувала: гейт відрізняло одне поле
+    «register» усередині знахідки, а поле «done» у скелеті просило запису. Тепер гейти образу стоять переліком
+    «gates», а без гейтів поля «done» у відповіді нема."""
+    if any(о.get("gates") for о in (дріт or {}).get("verdict") or [] if isinstance(о, dict)):
+        return РЕМОНТ
+    return _dc.replace(РЕМОНТ, правила=tuple(_БЕЗ_ГЕЙТІВ.get(р, р) for р in РЕМОНТ.правила
+                                             if _БЕЗ_ГЕЙТІВ.get(р, р) is not None),
+                       поля_виходу={к: v for к, v in РЕМОНТ.поля_виходу.items()
+                                    if not к.startswith("образи[].виконано")})
 
 
 # ── СИРИЙ ID КРАМНИЦІ В ТЕКСТІ ЗНАХІДКИ (розбір 3/8, вада 1) ────────────────
@@ -1677,22 +1721,43 @@ def ознаки_сміливості(речі):
 
 
 def сміливі_набору(записи, намір=None, мета=None, варіантів=2):
-    """`набір.сміливі` — {образи: [{ід, ознаки}], лишити: N} під сміливим наміром без мети «приховати»;
-    інакше чи без жодного сміливого образу — None. `записи` — пари (ід, запис `_вердикти_образів`)."""
+    """`набір.сміливі` — {образи: [{ід, ознаки}], лишити: N, не_виміряно: [ід]} під сміливим наміром без мети
+    «приховати»; інакше чи без жодного сміливого й невиміряного образу — None. `записи` — пари (ід, запис
+    `_вердикти_образів`). `не_виміряно` — образи без двох ознак, у яких колір хоч однієї речі невідомий
+    (`_колір_невідомий`): стилістка судить їх сама, і доза рахує їх разом зі сміливими."""
     import реєстр_намір as _РН
     if (str(намір or "").strip().lower().replace("-", "_") not in _РН.сміливі_наміри()
             or мета in ("приховати", "conceal")):
         return None
-    сміливі = []
+    сміливі, невиміряні = [], []
     for ід, о in записи:
         описи, слоти = о.get("описи_н") or {}, о.get("слоти_н") or {}
-        озн = ознаки_сміливості([(слоти.get(н), описи.get(н)) for н in (о.get("речі_н") or [])])
+        пари = [(слоти.get(н), описи.get(н)) for н in (о.get("речі_н") or [])]
+        озн = ознаки_сміливості(пари)
         if len(озн) >= СМІЛИВІСТЬ["ознак"]:
             сміливі.append(dict(ід=ід, ознаки=озн))
-    if not сміливі:
+        elif any(_колір_невідомий(сл, оп) for сл, оп in пари):
+            # РЕМОНТ-2 (рядок 4491, аудит/ПРОДУКТ.md п.4): колір речі невідомий — образ не виміряно, а не «не сміливий».
+            # Доти такий образ мовчки випадав із «bold», і доза вказувала на виміряні: у заміру РЕМОНТ-1 3 з 5 пар
+            # під statement «порушили» дозу, обравши «Magenta velvet cocktail sheath» чи «Red lipstick suit», у
+            # речах яких hex нема (0–3 з 5–6, рядок 4350).
+            невиміряні.append(ід)
+    if not сміливі and not невиміряні:
         return None
-    return dict(образи=сміливі, лишити=min(len(сміливі),
-                                           max(1, int(round(int(варіантів or 1) * СМІЛИВІСТЬ["частка"])))))
+    вих = dict(образи=сміливі, лишити=min(len(сміливі) + len(невиміряні),
+                                          max(1, int(round(int(варіантів or 1) * СМІЛИВІСТЬ["частка"])))))
+    if невиміряні:
+        вих["не_виміряно"] = невиміряні
+    return вих
+
+
+def _колір_невідомий(слот, опис):
+    """Річ, колір якої міг би дати ознаку сміливості (не прикраса, не метал), без hex — код її кольору не бачить."""
+    if слот in _ПРИКРАСИ_СЛОТИ or not isinstance(опис, dict):
+        return False
+    if (_ВМ.код("color_name", опис.get("колір")) or опис.get("колір")) in _МЕТАЛИ:
+        return False
+    return len(str(опис.get("hex") or "").lstrip("#")) != 6
 
 
 def вердикт_v1(образи, варіантів=2, випадок=None, кандидати=None, ітерація=1,

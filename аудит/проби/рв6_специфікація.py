@@ -56,11 +56,11 @@ r = міст("запити")
 руки = r["руки"]
 пак = r["пакети"]["1"]       # український образ пакета; на дроті (`руки`) — англійський
 ф("рука 1 — один JSON-обʼєкт ПАКЕТ_V1, валідний за схемою", P.перевірити(P.СХЕМИ["ПАКЕТ_V1"], пак) == [], "%d символів" % len(руки["1"]))
-# Схема відповіді й вимоги їдуть у `task` дроту (`task.answer_schema`, `task.rules`), а число образів — `outfits_wanted`.
+# Вимоги їдуть у `task` дроту (`task.rules`), схема відповіді — останнім ключем (`answer_schema`, СКЛАДАННЯ-СТЕЛЯ-33), число образів — `outfits_wanted`.
 в1 = json.loads(руки["1"])
 ф("завдання пакета: 10 образів, відповідь ОБРАЗИ_V1, схема відповіді й вимоги — у самому пакеті",
   пак["завдання"].get("образів") == 10 and пак["завдання"].get("відповідь") == "ОБРАЗИ_V1"
-  and в1.get("outfits_wanted") == 10 and в1["task"].get("answer") == "OUTFITS_V1" and bool(в1["task"].get("answer_schema")) and bool(в1["task"].get("rules")),
+  and в1.get("outfits_wanted") == 10 and в1["task"].get("answer") == "OUTFITS_V1" and bool(в1.get("answer_schema")) and list(в1)[-1] == "answer_schema" and bool(в1["task"].get("rules")),
   "вимог %d" % len(в1["task"].get("rules") or []))
 ф("правила — список {код, рядок}, полюси — список", isinstance(пак.get("правила"), list) and isinstance(пак.get("полюси"), list),
   "правил %d" % len(пак["правила"]), "полюсів %d" % len(пак["полюси"]))
