@@ -1,0 +1,29 @@
+── ПРОМПТ (2112 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "High-neck zip-up windbreaker in heather navy, relaxed regular fit with dropped shoulders extending to mid-thigh, ocean blue (#0A5B8C), ripstop nylon.\nElastic waist athletic pants with drawstring closure and side pockets, straight cut tapering slightly at the ankle to just above the shoe line, graphite charcoal (#2D3436), brushed polyester blend.\nMinimalist running sneaker with a smooth upper and low-profile sole, crisp white leather (#FFFFFF).\nThis ensemble works because the technical windbreaker provides essential protection against chill during active movement while maintaining a breathable, lightweight feel appropriate for sports. The neutral graphite tones of the pants create a versatile canvas that allows the sporty vibe to shine without visual clutter from patterns. Finally, the clean white sneakers ground the outfit, offering a classic athletic finish that respects her refusal to wear any prints on her footwear."}
+
+── ВІДПОВІДЬ (691 симв., 191.0 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "zip-up windbreaker",
+      "details": "high-neck relaxed regular fit with dropped shoulders extending to mid-thigh made of ripstop nylon",
+      "slot": "outerwear",
+      "color_hex": "#0A5B8C",
+      "worn": true
+    },
+    {
+      "name": "athletic pants",
+      "details": "elastic waist with drawstring closure and side pockets, straight cut tapering slightly at the ankle",
+      "slot": "bottom",
+      "color_hex": "#2D3436",
+      "worn": true
+    },
+    {
+      "name": "running sneaker",
+      "details": "smooth upper with a low-profile sole made of leather",
+      "slot": "shoes",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    }
+  ]
+}
