@@ -1,0 +1,36 @@
+── ПРОМПТ (1966 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green velvet wrap dress with a bias cut that cinches at the waist and falls to mid-calf length in color #043d22 made from heavy non-drape fabric. Black suede ankle boots with a moderate heel block shape in color #0f0f0f. Gold drop earrings and a matching gold clutch bag in metal finishes and leather texture respectively. This ensemble works because the deep emerald shade provides a regal contrast to her warm skin tones while the velvet fabric catches the candlelight at an upscale restaurant. The wrap silhouette offers a flattering fit that honors her specific measurements without feeling restrictive, ensuring comfort throughout the celebration. The black boots add necessary warmth against the frosty weather and anchor the vibrant dress appropriately for an evening event."}
+
+── ВІДПОВІДЬ (738 симв., 197.0 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Emerald green velvet wrap dress",
+      "details": "Bias cut that cinches at the waist, mid-calf length, heavy non-drape fabric",
+      "slot": "dress",
+      "color_hex": "#043d22",
+      "worn": true
+    },
+    {
+      "name": "Black suede ankle boots",
+      "details": "Moderate heel block shape",
+      "slot": "shoes",
+      "color_hex": "#0f0f0f",
+      "worn": true
+    },
+    {
+      "name": "Gold drop earrings",
+      "details": "Metal finish",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Gold clutch bag",
+      "details": "Metal finish with leather texture",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

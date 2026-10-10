@@ -1,0 +1,45 @@
+── ПРОМПТ (2577 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk blend tunic with a subtle sheen, relaxed drape cut, calf-length, color #C8A29F (dusty rose), flowing rayon-wool fabric.  \nWool-blend structured wide-leg trousers, high-waisted tailored fit, full length reaching the ankle, color #E6DCCD (warm oat), heavy tweed with fine herringbone weave.  \nLeather pointed-toe pumps with a modest heel, sleek silhouette, color #5F4B40 (rich espresso), smooth calfskin leather.  \nFaux fur stole with a soft shearling texture, oversized wrap cut, long drape to mid-thigh, color #8DA399 (muted sage-gray), plush synthetic faux fur fabric.  \nPearl-droplet pendant necklace with an 18k gold vermeil chain, delicate minimalist design, color #F5F5DC (cream-white on pale gold), lustrous freshwater cultured pearls and polished brass alloy.  \n\nThis ensemble balances the frosty weather with warmth through layered textures like tweed, heavy wool, and a plush faux fur stole, ensuring comfort without sacrificing elegance. The dusty rose and warm oat tones create a sophisticated, neutral palette that feels celebratory yet restrained for an upscale restaurant setting. The structured trousers and pointed-toe pumps provide a poised silhouette appropriate for a traditional celebration (svято) while allowing ease of movement. Finally, the subtle metallic jewelry adds just enough shine to reflect the festive mood without overwhelming the cozy, wintry atmosphere."}
+
+── ВІДПОВІДЬ (1251 симв., 199.5 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Silk blend tunic",
+        "details": "Relaxed drape cut, calf-length flowing rayon-wool fabric",
+        "slot": "top",
+        "color_hex": "#C8A29F",
+        "worn": true
+      },
+      {
+        "name": "Wool-blend structured wide-leg trousers",
+        "details": "High-waisted tailored fit, full length reaching the ankle heavy tweed with fine herringbone weave",
+        "slot": "bottom",
+        "color_hex": "#E6DCCD",
+        "worn": true
+      },
+      {
+        "name": "Leather pointed-toe pumps",
+        "details": "Modest heel sleek silhouette smooth calfskin leather",
+        "slot": "shoes",
+        "color_hex": "#5F4B40",
+        "worn": true
+      },
+      {
+        "name": "Faux fur stole",
+        "details": "Oversized wrap cut, long drape to mid-thigh plush synthetic faux fur fabric",
+        "slot": "outerwear",
+        "color_hex": "#8DA399",
+        "worn": true
+      },
+      {
+        "name": "Pearl-droplet pendant necklace",
+        "details": "18k gold vermeil chain delicate minimalist design lustrous freshwater cultured pearls and polished brass alloy",
+        "slot": "necklace",
+        "color_hex": "#F5F5DC",
+        "worn": true
+      }
+    ]
+  }
+}
