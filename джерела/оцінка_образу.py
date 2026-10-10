@@ -122,7 +122,10 @@ def _ключ(поле, код, незнайомі, де):
 #     ніг і тіла лежать угорі кадру, і qwen читала їх «Sweater Top», «L-shaped top», «jeans» — взуттям
 #     у 2 з 9 записаних викликів ЖИВІ-12…17. Правило каже, з чого читати слот (підошва й носок, виріз
 #     і рукави, дві холоші), а не «де річ у кадрі»: речі, розкладені без неї, теж мають свій слот;
-#   · «name» — англійською (п.12): назву жінці пише мовна модель, функціональна — внутрішньою мовою.
+#   · «name» — англійською (п.12): назву жінці пише мовна модель, функціональна — внутрішньою мовою;
+#   · рамка «на око» і «відповідь — одразу обʼєкт» (рядок 4286): Ж19 №15, `OTSINKA_F2=L` — 13 265 симв.
+#     роздумів «Left: ~200 (if 600px wide)…» про пікселі рамок без JSON, у стелю 4000 т. за 110,8 с; другий
+#     виклик тієї ж сцени — 3 328 симв. опису перед JSON. Рамку код і так міряє в тисячних (`_рамка`).
 РЕЧІ = _ЗП.Оголошення(
     задача="оцінка_речі",
     роль="You are a stylist. You see photos of an outfit a woman has put together herself, and you "
@@ -141,8 +144,10 @@ def _ключ(поле, код, незнайомі, де):
         "toe, boots also a shaft rising from them; a top or outerwear has a neckline, shoulders and sleeves "
         "or straps; trousers have two legs; a skirt hangs from the waist in one piece.",
         "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
-        "around the item itself, without background or skin.",
+        "around the item itself, without background or skin; estimate it by eye as shares of the photo — "
+        "no pixel calculations.",
         "Field values are only codes from \"codes\"; what the photo does not show is null.",
+        "Start the answer with the JSON object itself: no description or reasoning before it.",
     ),
     вихід="OUTFIT_ITEMS_V1",
     скелет={"items": [{
