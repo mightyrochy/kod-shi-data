@@ -1,0 +1,31 @@
+── ПРОМПТ (2172 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A stretchy, ribbed tank top in a deep emerald green (#04692E) crafted from high-recovery performance knit, offering freedom of movement for flow transitions.\nMatching wide-leg pants with a soft elastic waistband in the same emerald shade (#04692E), made from breathable mesh-blend jersey that drapes fluidly without clinging too tightly to muscles.\nA pair of minimal strappy slides in matte black (#1C1C1C) featuring flat soles and smooth synthetic leather, ensuring comfort upon waking while respecting the no-heel request.\nThis ensemble works perfectly for an early morning yoga session because the monochromatic green tone creates a calming, cohesive look that feels grounded before the day begins. The performance fabrics wick away sweat and maintain their shape during bends, while the flat shoes prioritize stability over height. Finally, the lack of heels and tight prints keeps the outfit breathable and distraction-free, aligning with your specific wishes for comfort and simplicity."}
+
+── ВІДПОВІДЬ (750 симв., 167.4 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "ribbed tank top",
+        "details": "stretchy ribbed cut from high-recovery performance knit offering freedom of movement",
+        "slot": "top",
+        "color_hex": "#04692E",
+        "worn": true
+      },
+      {
+        "name": "wide-leg pants",
+        "details": "soft elastic waistband wide-leg cut from breathable mesh-blend jersey draping fluidly",
+        "slot": "bottom",
+        "color_hex": "#04692E",
+        "worn": true
+      },
+      {
+        "name": "strappy slides",
+        "details": "minimal strappy design with flat soles and smooth synthetic leather ensuring comfort",
+        "slot": "shoes",
+        "color_hex": "#1C1C1C",
+        "worn": true
+      }
+    ]
+  }
+}

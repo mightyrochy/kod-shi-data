@@ -1,0 +1,42 @@
+── ПРОМПТ (4493 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація. Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_scheme — рядок на картці образу про обіцянку схеми палітри.
+- no_photo_reason — рядок біля речі на картці: чому в неї нема знімка.
+
+КОДИ У ЗНАЧЕННЯХ:
+- shoes — взуття.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+"not this one" у заявах — кнопка на речі на картці; на екрані вона підписана «замінити»: називай її саме так, у лапках.
+
+ЗАЯВИ:
+- scheme_chosen_by_stylist — the stylist chose this outfit's palette scheme for her (values: scheme — the scheme's name).
+- scheme_rests_on_colour — the scheme rests on a colour.
+- colour_to_be_carried_by_slots — the colour was to be carried by these slots of the outfit (values: slots — slot codes).
+- look_came_out_all_neutral — but this outfit came out all neutral.
+- coloured_items_in_pool_exist — coloured items for this scheme exist in the selection.
+- stylist_declared_on_purpose — the stylist chose these items for this outfit on purpose (values: items — the items' names as the card shows them).
+- action_is_only_her_option — the outfit is complete as it is: what follows is only an option she may take if she wants more colour, not a task left to her.
+- mark_not_this_and_rebuild — an option for her, nothing has been changed yet: if she marks "not this one" on this item of the outfit, the outfit is rebuilt, this time with colour (values: item — the item's name as the card shows it: call the item by this name; slot — the kind of that item, when there is no name).
+- no_photo_frames_did_not_open — the shop did give photos of this item in the feed, but none of them opened, and why exactly is unknown.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_scheme", "заяви": [{"code": "scheme_chosen_by_stylist", "values": {"scheme": "нейтрали+акцент"}}, {"code": "scheme_rests_on_colour"}, {"code": "colour_to_be_carried_by_slots", "values": {"slots": ["shoes"]}}, {"code": "look_came_out_all_neutral"}, {"code": "stylist_declared_on_purpose", "values": {"items": [{"free_text": "Сумка жіноча Dakota Satchel", "lang": "uk"}]}}, {"code": "coloured_items_in_pool_exist"}, {"code": "action_is_only_her_option"}, {"code": "mark_not_this_and_rebuild", "values": {"slot": "shoes", "item": {"free_text": "Лофери шкіряні чорно-коричневі", "lang": "uk"}}}]},
+{"н": 2, "вид": "no_photo_reason", "заяви": [{"code": "no_photo_frames_did_not_open"}]}
+]
+
+── ВІДПОВІДЬ (584 симв., 124.0 с, HTTP 200) ──
+```json
+{
+  "1": "Я обрала для цього образу палітру «нейтрали+акцент», бо вона базується на кольорі. Я розраховувала, що він проявиться у взутті, але вийшов цілком нейтральний образ. Я навмисно підібрала сумку жіночу Dakota Satchel, адже є інші речі з кольором для цієї палітри. Поки що твій образ завершений так, як є: якщо захочеш більше кольору, ти можеш замінити лофери шкіряні чорно-коричневі — тоді я переберу добір заново, цього разу з урахуванням кольору.",
+  "2": "У магазину були фотографії цієї речі в стрічці, але жодна не відкрилася. Чому саме так — мені невідомо."
+}
+```
