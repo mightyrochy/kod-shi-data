@@ -70,18 +70,25 @@ import дріт_моделі as _Д
                                         "its narrower type when the code knows it",
                  як="«about_items» describes the item of this «kind» and nothing else from its photo"),
         # рядок 3656 (ЖИВІ-14 №11 рука 1): кадр «кемел» пальта — сірий (галерея іншого кольору моделі); код це знав
-        # (R-FEED-01 за кнопкою картки), модель — ні, і правило «опиши, як на фото» тягнуло її проти речі
-        _ЗП.Поле("outfit.items[].photo_colour", "the colour the code sees on this item's photo when it is not the "
-                                                "item's «color»: the shop showed another colour of it on the photo",
-                 як="the item is «color»: give it that colour, not the photo's; this is no reason for "
-                    "«wrong_photos» or «swap» — the card already tells her about the photo"),
+        # (R-FEED-01 за кнопкою картки), модель — ні, і правило «опиши, як на фото» тягнуло її проти речі.
+        # Рядок 4282 (ЖИВІ-19 №13 рука 2): другий колір поруч — `photo_colour: green` біля `color: purple` —
+        # модель переказувала жінці («Колір тут здається зеленим, але ми обираємо його як фіолетовий»). Розлад
+        # розвʼязує код (`фід_кадр_колір.рішення` → колір речі), тож річ несе ОДИН колір, а кадр — лише позначку
+        _ЗП.Поле("outfit.items[].photo_other_colour", "the shop's photos of this item show another colour of the "
+                                                      "same model; the item itself is «color»",
+                 як="give it «color» and say nothing about the colour on its photos — no «looks …, but …»; this "
+                    "is no reason for «wrong_photos» or «swap»: the card already tells her about the photo"),
         _ЗП.Поле("outfit.items[].no_photo", "this item has no photo of its own among the others",
                  як="describe it by its name and «color»; do not take another item's photo for it"),
         _ЗП.Поле("outfit.items[].hers", "her own item from her photo, not a product",
                  як="do not offer to buy it and do not mention a price or a shop; say how the other items "
                     "work with it"),
         _ЗП.Поле("outfit.items[].set_half", "only this half of a set is in the outfit"),
-        _ЗП.Поле("idea", "your caption of this outfit"),
+        # Рядок 4282: «idea» і «your_day_sentence» — підпис і речення моделі про день зі складання й
+        # вибору, писані до ремонту й заміни: ЖИВІ-19 №11 рука 2 — «Softened by Scarf» без шарфа (зі складу
+        # складання лишились 2 речі з 6), №13 рука 2 — «oversized grey cardigan» при пальті, ЖИВІ-18 №12
+        # рука 1 — «black skirt», «implied blazer layer». Код слів прози не читає (п.12) і звірити їх зі
+        # складом не може, тож опис їх більше не дістає: склад — лише «outfit» кодами, день — «day» фактами.
         _ЗП.Поле("case", "her occasion: its fields as codes, her own words as quotes; «formality» is an "
                          "internal 1–10 band, for you only"),
         # рядок 1427 (СУКНЯ-СМУГА 03.10): «the choice is hers» тут стояло про БУДЬ-ЩО, що сперечається з
@@ -92,8 +99,6 @@ import дріт_моделі as _Д
                     "you chose argues with the day (weather, hours on her feet, the place), say in one plain "
                     "sentence why you still chose it, or what she does about it in the day itself (take the "
                     "layer off, swap the pair); never hand that decision back to her"),
-        _ЗП.Поле("your_day_sentence", "your sentence about her day in this outfit, from the choice",
-                 як="a hint, not ready text"),
         # ОПИС-1 (рядок 1428, K-PAL-11/14/15): «найдальші» й «комбінація» доти йшли в КОЖЕН опис —
         # 22 картки з «найдальшими» (і на похороні — «маленька оливкова чи зелена деталь»), 33 з 77
         # описів радили додати річ, якої в образі нема. Тепер лише те, що стосується речей образу.
@@ -105,6 +110,8 @@ import дріт_моделі as _Д
                     "this outfit, never by adding an item; not as a list"),
         # РЯДОК 1422 (K-BOD-02, K-SIL-03; аудит/ПРОДУКТ.md п.4): її фігура кодами — ті самі, що в брифі складання.
         # П.17 (рядок 1427, #599): річ образу — вибір стилістки; річ проти фігури — пояснити, рішення не віддавати
+        # рядок 4282 (ЖИВІ-4281 №13 рука 1, `seed3_48`): «cuts_best_on_her: belted» при вільному светрі без
+        # пояса — «tuck in just the front hem slightly over your belt»; «що з цим робити» — лише речами образу
         _ЗП.Поле("body", "her figure as the code measured it: height, shape code, zones, and statements — the cuts "
                          "that sit best on her, where a voluminous outfit takes its anchor, where most conditions "
                          "meet on her body",
@@ -112,13 +119,16 @@ import дріт_моделі as _Д
                     "figure — which line it draws, where it sets the eye (shoulders, waist, hips, legs, "
                     "height), with the items that do it; speak of what the outfit does, never of what her "
                     "body lacks or what should be hidden; when an item of the outfit works against these "
-                    "statements, say so gently and say why you chose it anyway or what to do with it; never "
-                    "name the shape code, a body type or a number"),
+                    "statements, say so gently and say why you chose it anyway or what to do with it — only "
+                    "with the items of «outfit»; «cuts» are cuts of an item, not items to add («belted» — a top "
+                    "with its own belt, never a belt she puts on); never name the shape code, a body type or a "
+                    "number"),
         _ЗП.Поле("body.shape", _Д.ФІГУРА_КОДИ_EN),
         # ОПИС-1 (рядок 1428, K-ACC-12, K-EDG-01): у кожної сумки є три способи (рука, плече, навскоси),
         # і «Як це носити» доти щоразу казало про сумку — 69 рядків із 337, «діагональ» — 39 карток
-        _ЗП.Поле("ways_to_wear", "ways the items can be worn: each statement is one way — its place, "
-                                 "and its effect when the code knows one",
+        _ЗП.Поле("ways_to_wear", "ways the items can be worn: «item» — «n» of the item of «outfit» (none — the "
+                                 "whole outfit); each statement is one way — its place, and its effect when the "
+                                 "code knows one",
                  як="in «how_to_wear» name a way only when it changes something for this outfit — its effect "
                     "matters here (a line across the torso that already has many, a hem it lands on); a way "
                     "that changes nothing is left out"),
@@ -188,8 +198,11 @@ import дріт_моделі as _Д
                  "shoes, the outer layer and the accessories go with the rest, in one or two sentences; "
                  "(2) why it works — 3–4 sentences, taking from «day», «palette», «makeup» and «missing» "
                  "only what matters most for this outfit and her occasion",
+        # рядок 4282 (ЖИВІ-19 №11 рука 2): «Tuck the blazer in slightly» без адресата — переклад дописав «у штани»
+        # при спідниці; порада, що кладе річ у, під чи на іншу, називає й ту, і обидві — речі образу
         "як_носити": "one piece of advice per line, at most three, each changing how the outfit looks or "
-                     "lives through her day",
+                     "lives through her day; advice that puts an item into, under or over another names that "
+                     "other item too, and both are items of «outfit»",
         "названо[].н": "«n» of the item of «outfit» that «text» or «how_to_wear» names; a thing that is "
                        "not an item of «outfit» has no «n» — and should not be named at all",
         "названо[].що": "every garment, shoe, bag, jewelry or accessory that «text» or «how_to_wear» names — "
@@ -210,7 +223,7 @@ import дріт_моделі as _Д
 )
 
 
-def _укладка_опису(канал_3):
+def _укладка_опису(канал_3, речі=None):
     """ТРЕТІЙ КАНАЛ КОРПУСУ ПОЛЕМ `укладка` (K-CRA-11 + K-CHN-01, Т-06 крок 2).
 
     `accessory.команди_розкладки` віддає ОПЦІЇ з названими компромісами (хустка:
@@ -224,9 +237,26 @@ def _укладка_опису(канал_3):
     ВМ-3б (рядок 541, аудит/ПРОДУКТ.md п.12): поруч із фразами — `заяви` (ті самі опції й ворота
     кодами, `аксесуари_структура.опції_заявами`; команди верхнього шару — їхні заяви й заяви
     ремонту). На дріт опису (`дріт_моделі.опис`) їдуть заяви; фрази лишаються звітові.
+
+    Рядок 4282: `речі` — речі образу (`н`, `назва`); з ними запис несе `н` речі, якої стосується (дріт
+    кладе його в `item` замість назви українською, п.12), а запис про річ поза образом не їде. Канал 3
+    називає річ тим самим рядком, що узяв з неї (`назва`, інакше `id`), тож це звірка ключа, а не слів.
+    Команда без речі стосується образу цілого — `н` вона не несе.
     """
     к3 = канал_3 or {}
     вих = []
+    за_ключем = {}
+    for x in (речі or []):
+        for к in (x.get("н"), x.get("назва")):
+            if к:
+                за_ключем.setdefault(str(к), str(x.get("н")))
+
+    def _номер(річ):
+        """(`н` речі образу або None, чи лишити запис): річ поза образом — не лишати."""
+        if річ is None or not речі:
+            return None, True
+        н = за_ключем.get(str(річ))
+        return н, н is not None
     for о in (к3.get("опції") or [])[:6]:
         # ОПИС-1 (рядок 1428, K-ACC-12, K-EDG-01): опції сумки (рука / плече / навскоси) однакові для
         # КОЖНОЇ сумки — образу код не знає, тож чи міняє спосіб щось у ЦЬОМУ образі, сказати не
@@ -241,14 +271,18 @@ def _укладка_опису(канал_3):
             опції.append(("%s — %s" % (м, н[:100])) if н else str(м))
         if о.get("ворота_формату"):
             опції.append(str(о["ворота_формату"])[:110])
-        if опції:
+        н, лишити = _номер(о.get("річ"))
+        if опції and лишити:
             вих.append(dict(річ=str(о.get("річ") or о.get("клас") or "річ")[:60], опції=опції,
+                            **({"н": н} if н else {}),
                             **({"заяви": list(о["опції_заяви"])} if о.get("опції_заяви") else {})))
     for c in (к3.get("команди") or [])[:5]:
         суть = str(c.get("суть") or "").strip()
-        if суть:
+        н, лишити = _номер((c.get("речі") or [None])[0])
+        if суть and лишити:
             з = list(c.get("заяви") or []) + list(c.get("ремонт_заяви") or [])
             вих.append(dict(річ=str((c.get("речі") or ["образ"])[0])[:60], опції=[суть[:140]],
+                            **({"н": н} if н else {}),
                             **({"заяви": з} if з else {})))
     return вих
 
@@ -298,7 +332,7 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     свід = [str(с).strip() for с in (свідомі or []) if str(с or "").strip()]
     if свід:
         об["свідомі"] = свід[:4]
-    укл = _укладка_опису(канал_3)
+    укл = _укладка_опису(канал_3, р)
     if укл:
         об["укладка"] = укл
     if випадок:
