@@ -1,0 +1,38 @@
+── ПРОМПТ (2219 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Evening cocktail dress with a dramatic floor-length silhouette and a bold ruby-red sapphire hex #D8003C, crafted from fluid silk crepe that drapes elegantly without clinging too tightly.\nStrappy metallic gold sandals featuring an exaggerated platform heel to elongate the leg line while ensuring comfort for standing throughout the evening.\nStatement drop earrings in oxidized silver with dangling citrine stones and a slim velvet choker to add layers of texture and contrast to the neckline.\nThis outfit works because the deep red color immediately draws the eye, fulfilling her wish to stand out at the casual celebration where most guests will be in darker or neutral tones. The metallic heel adds a playful yet elevated touch suitable for a restaurant setting without being overly formal, striking the perfect balance between approachable and memorable. The combination of flowing fabric with structured jewelry creates a dynamic silhouette that ensures she is remembered for her confidence and style rather than just her attire alone."}
+
+── ВІДПОВІДЬ (1034 симв., 305.8 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Evening cocktail dress",
+        "details": "dramatic floor-length silhouette crafted from fluid silk crepe that drapes elegantly without clinging too tightly",
+        "slot": "dress",
+        "color_hex": "#D8003C",
+        "worn": true
+      },
+      {
+        "name": "Strappy metallic gold sandals",
+        "details": "exaggerated platform heel designed to elongate the leg line while ensuring comfort for standing throughout the evening",
+        "slot": "shoes",
+        "color_hex": "#FFD700",
+        "worn": true
+      },
+      {
+        "name": "Statement drop earrings",
+        "details": "oxidized silver with dangling citrine stones",
+        "slot": "earrings",
+        "color_hex": null,
+        "worn": true
+      },
+      {
+        "name": "Slim velvet choker",
+        "details": "velvet texture contrasting the neckline to add layers of texture and contrast",
+        "slot": "accessory",
+        "color_hex": null,
+        "worn": true
+      }
+    ]
+  }
+}

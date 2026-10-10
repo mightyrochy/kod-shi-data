@@ -1,0 +1,36 @@
+── ПРОМПТ (3049 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured black-and-white contrast blazer in sharp tailoring with gold-toned metallic threading woven into the lapel, cut cropped to hit at the waist for a bold silhouette, length hitting exactly at the hip bone to emphasize the torso, fabric of heavyweight Italian bouclé mixed with silk faille to ensure movement while holding structure.\nA high-neck midi slip dress in deep forest green with a subtle crushed velvet texture, cut bias-cut to drape fluidly over the hips, length falling just below the knee to elongate the legs, fabric of matte micro-suede that catches light differently as you walk to create an ever-shifting play of shadow.\nStiletto heels in clear acrylic encasing a vibrant crimson latex heel, cut high and slender for maximum elevation without compromising balance, length extending up to three inches to shift posture forward, material of transparent polycarbonate frame with flexible synthetic rubber sole.\nChunky geometric hoop earrings in oxidized silver with an asymmetrical design where one side features dangling onyx stones that swing freely with every turn of the head, cut wide and irregular to dominate the ear profile, length reaching just past the jawline but stopping short of the collarbone, material of sterling silver plating over lightweight hollow cores.\nThis outfit works by leveraging high-contrast textures and an unexpected color palette that immediately commands attention in a casual restaurant setting without breaking cocktail dress code etiquette. The structured yet fluid silhouette allows for confident movement and freedom, aligning perfectly with her wish to stand out and be memorable through dynamic visual interest rather than mere formality. Every element from the metallic threads in the blazer to the swinging earrings creates kinetic energy that ensures she remains the focal point of any room she enters."}
+
+── ВІДПОВІДЬ (1316 симв., 302.5 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured black-and-white contrast with sharp tailoring, gold-toned metallic threading woven into lapel, cropped cut hitting at waist and hip bone emphasizing torso, heavyweight Italian bouclé mixed with silk faille fabric",
+      "slot": "outerwear",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "slip dress",
+      "details": "high-neck midi slip in deep forest green with subtle crushed velvet texture, bias-cut draping over hips, matte micro-suede fabric catching light differently as you walk",
+      "slot": "dress",
+      "color_hex": "#0A321D",
+      "worn": true
+    },
+    {
+      "name": "stiletto heels",
+      "details": "clear acrylic enclosing vibrant crimson latex heel, high and slender cut for maximum elevation without compromising balance, transparent polycarbonate frame with flexible synthetic rubber sole",
+      "slot": "shoes",
+      "color_hex": "#DC143C",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "chunky geometric hoop in oxidized silver with asymmetrical design, one side featuring dangling onyx stones swinging freely, wide and irregular cut reaching just past jawline",
+      "slot": "earrings",
+      "color_hex": "#708090",
+      "worn": true
+    }
+  ]
+}
