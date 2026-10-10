@@ -2814,11 +2814,17 @@ def прийняти_розмову(відповідь):
     if речення:
         # Коди `about` — ті самі, що в `update`: поле, яке шов переніс на своє (`weather_feel->precipitation`,
         # `goal_zones->open_zones`), і в реченні про нього стоїть уже на своєму місці (рядок 3741: ЖИВІ-14 №3 —
-        # дощ записано опадами, а речення про `weather_feel` суд знімав як «не про записане»).
+        # дощ записано опадами, а речення про `weather_feel` суд знімав як «не про записане»). Поле, яке модель
+        # написала в `update`, а код не взяв (невідомо чи код поза переліком; `not_taken`, рядок 3653), — теж про її
+        # лист, не тема поради чи обіцянка: слід лишається в `не_взято` чи `незнайомі`, а речення не знімається.
         на_своє = dict(x.split("->", 1) for x in р.get("перенесено") or () if "->" in x)
+        не_взяв = set(р["невідомо"]) | {re.split(r"[\[=]", x, 1)[0] for x in р["незнайомі"] if isinstance(x, str)}
         частини["text"] = _бульбашка([р_ for р_, _ in речення])
-        частини["text_parts"] = [dict(about=list(dict.fromkeys(на_своє.get(к, к) for к in п)), says=р_)
-                                 for р_, п in речення]
+        частини["text_parts"] = []
+        for р_, п in речення:
+            п = list(dict.fromkeys(на_своє.get(к, к) for к in п))
+            нв = [к for к in п if к in оновлення and к in не_взяв]
+            частини["text_parts"].append(dict(about=п, says=р_, **({"not_taken": нв} if нв else {})))
     теми = [_код(т) for т in (об.get("invite_topics") or []) if isinstance(т, str)] \
         if isinstance(об.get("invite_topics"), list) else []
     частини["invite_topics"] = [т for т in dict.fromkeys(теми) if т]
@@ -2909,7 +2915,8 @@ def _текст_до_показу(частини, записано):
         лишено = []
         for р in речення:
             коди = list((р or {}).get("about") or [])
-            чуже = [к for к in коди if к != ПРО_ЇЇ_ПИТАННЯ and к not in записано]
+            чуже = [к for к in коди if к != ПРО_ЇЇ_ПИТАННЯ and к not in записано
+                    and к not in ((р or {}).get("not_taken") or ())]
             if коди and not чуже:
                 лишено.append(р.get("says"))
             else:
