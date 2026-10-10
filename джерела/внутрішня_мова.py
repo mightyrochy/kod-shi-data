@@ -2637,7 +2637,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_removable_no_metric_drops": "the item can go: without it no metric of the look drops",
     "remove_this_item": "remove this item",
     # ── оцінка її власного образу з фото: чого на кадрі не знайшлось (Ч-8, рядок 197) ──
-    "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one)",
+    "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one; "
+                                "`items_without_photo`: items were named but not on which of her photos, so none could be "
+                                "read — say this, not that her photos hold no items)",
     "review_items_not_recognized": "items are visible in the frames, but none of them could be matched "
                                    "to a place in the outfit (values: why — the reason, when there is one)",
     # ── НОТИ СЛОТІВ ПУЛУ (Ч-10, 28.09.2026, рядок 223; доти цілі речення коду в
