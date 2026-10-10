@@ -1,0 +1,36 @@
+── ПРОМПТ (2314 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wool-blend blazer, single-breasted cut with sharp lapels, color #2C3E50 (dark midnight blue), fabric that feels crisp yet warm.\nHigh-waisted wide-leg trousers, flowing silhouette from hip to ankle, color #1A1A1A (charcoal black), fabric composed of fine wool and silk blend for fluid movement.\nPointed-toe pumps with a 3-inch heel, sleek design following the line of the foot, color #D4AF37 (metallic gold), leather finish that catches the candlelight without reflecting it harshly.\nPearl drop earrings, classic teardrop shape, lustrous white pearl set in platinum wire, length reaching just below the jawline to elongate the neck against the high collar of the blazer.\nThis outfit works because the dark, structured layers provide necessary insulation against the frosty weather while maintaining an elegant silhouette suitable for a festive dinner. The subtle metallic gold accents introduce warmth and celebration without compromising the serious tone required by the occasion's dress code. Her specific wish for coverage is honored by the tailored outer layer, ensuring she feels confident and comfortable in the cold."}
+
+── ВІДПОВІДЬ (937 симв., 225.5 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Structured wool-blend blazer",
+      "details": "Single-breasted cut with sharp lapels; crisp yet warm fabric",
+      "slot": "outerwear",
+      "color_hex": "#2C3E50",
+      "worn": true
+    },
+    {
+      "name": "High-waisted wide-leg trousers",
+      "details": "Flowing silhouette from hip to ankle; fine wool and silk blend fabric for fluid movement",
+      "slot": "bottom",
+      "color_hex": "#1A1A1A",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe pumps",
+      "details": "3-inch heel, sleek design following the line of the foot; leather finish",
+      "slot": "shoes",
+      "color_hex": "#D4AF37",
+      "worn": true
+    },
+    {
+      "name": "Pearl drop earrings",
+      "details": "Classic teardrop shape, lustrous white pearl set in platinum wire; length reaching just below the jawline",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

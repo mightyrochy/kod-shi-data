@@ -1,0 +1,38 @@
+── ПРОМПТ (2127 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk slip dress with a relaxed silhouette and mid-thigh length in color #d1ab86 featuring a woven satin fabric\nCashmere bolero jacket with a tailored fit reaching just below the elbow in shade #e0bd9a made from soft knit material\nStrappy evening sandals with a moderate heel height in deep bronze tone #745a3b crafted from glossy leather\nGold drop earrings with a simple geometric shape in metallic finish #664f34 made of polished brass\n\nThis ensemble balances elegance and comfort for a frosty festive dinner, keeping her warm with the cashmere bolero while maintaining a fluid silhouette through the slip dress. The harmonious pairing of earthy tones like bronze and soft beige creates a sophisticated look that stands out against the cool winter backdrop without appearing too heavy. By adhering to her preference for warmth and avoiding restrictive styles, this outfit allows her to move freely and feel confident throughout the celebration."}
+
+── ВІДПОВІДЬ (865 симв., 223.5 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Silk slip dress",
+        "details": "relaxed silhouette mid-thigh length woven satin fabric",
+        "slot": "dress",
+        "color_hex": "#d1ab86",
+        "worn": true
+      },
+      {
+        "name": "Cashmere bolero jacket",
+        "details": "tailored fit reaching just below the elbow soft knit material",
+        "slot": "outerwear",
+        "color_hex": "#e0bd9a",
+        "worn": true
+      },
+      {
+        "name": "Strappy evening sandals",
+        "details": "moderate heel height glossy leather",
+        "slot": "shoes",
+        "color_hex": "#745a3b",
+        "worn": true
+      },
+      {
+        "name": "Gold drop earrings",
+        "details": "simple geometric shape polished brass",
+        "slot": "earrings",
+        "color_hex": "#664f34",
+        "worn": true
+      }
+    ]
+  }
+}
