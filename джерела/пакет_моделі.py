@@ -447,14 +447,23 @@ import внутрішня_мова as _ВМ_П
 
 # Підписи полів відповіді ОБРАЗИ_V1 — спільні для складання й ремонту (`вердикт_моделі.РЕМОНТ`).
 # Шляхи — полями СХЕМИ; англійськими ключами дроту їх робить збирач (`протокол.шлях_en`).
+# РЯДОК 3530: «in full» qwen3.5-9b читала як «річ повністю» й переписувала в «items» цілий рядок
+# пулу («#88·24 Olive midi skirt polyester … in_arc unknown») чи обʼєкт {n, name, …} — відповідь
+# роздувалась до стелі виводу й обривалась (ЖИВІ-13 №9: 13 942 симв., закрився 1 образ). Тепер
+# підпис і правило кажуть «лише номер» із прикладом; код крамниці 99 не видано жодній (найбільший —
+# 42), тож скопійований приклад не стане чужою річчю, а піде в невірні пари.
+ПРИКЛАД_НОМЕРА = "#12·99"
+РЯДОК_ЛИШЕ_НОМЕР = ("Write every item as its «n» alone, exactly as given (half of a set: «n»/top or «n»/bottom): "
+                    "\"%s\" — never \"%s Olive midi skirt …\" and never an object {\"n\": …}; the code "
+                    "already knows every field of the item." % (ПРИКЛАД_НОМЕРА, ПРИКЛАД_НОМЕРА))
 ПОЛЯ_ОБРАЗІВ_EN = {
     "образи[].підпис": "3–5 words: the idea of the outfit",
-    "образи[].речі": "«n» of the item, in full",
+    "образи[].речі": "«n» of the item alone, e.g. \"%s\"" % ПРИКЛАД_НОМЕРА,
     # рядок 1427: «the choice is hers» — лише про її бажання; за свою річ стилістка каже, чому вона
     "образи[].день": "one sentence, up to 25 words: how this outfit lives through her day; where something she "
                      "asked for herself argues with the day, say so gently — that part is hers to decide; where "
                      "an item you chose argues with the day, say why you still chose it",
-    "образи[].свідомо[].річ": "«n» of the item",
+    "образи[].свідомо[].річ": "«n» of the item alone",
     "потрібно[].слот": "the kind of item that is missing, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["slot"]),
     "потрібно[].тип": "its type, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["item_type"]),
     "потрібно[].колір": "its color, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["color_name"]),
@@ -561,7 +570,7 @@ import внутрішня_мова as _ВМ_П
                          "fabric suits; «L_from», «hem_from» — what the number was read from; «branch» — where "
                          "the colour lies against her palette: core, edge or break; «register» — the item's "
                          "style language",
-                 як="take items only from here and name each by its «n» in full; fitness for the "
+                 як="take items only from here and name each by its «n» alone; fitness for the "
                     "occasion, taste and the unity of the outfit are yours", треба=True),
         # К-3: короткий запис речі (перемикач `короткий_запис`) пише часті поля короткими
         # ключами, а що кожен означає — цей рядок. Платиться раз на пакет замість того, щоб
@@ -634,6 +643,7 @@ import внутрішня_мова as _ВМ_П
         "When you break a condition or take an item outside the palette on purpose, say so in «deliberate» "
         "of the outfit: the item and why.",
         "When an outfit needs an item «pool» does not have, say so in «needed».",
+        РЯДОК_ЛИШЕ_НОМЕР,
     ),
     вихід="ОБРАЗИ_V1",
     поля_виходу=dict(ПОЛЯ_ОБРАЗІВ_EN, **{
