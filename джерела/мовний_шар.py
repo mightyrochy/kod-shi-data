@@ -2078,9 +2078,19 @@ _ПОЛЯ_EN = {
             "(evening, morning) is part_of_day, never hour",
     "minute": "minutes of the start time, only when she names them with the hour (19:30 — 30; half past "
               "seven in the evening — 30); never without \"hour\"",
-    "part_of_day": "part of the day, when no hour is named: from her words, or when the event or a tile "
-                   "in \"chosen\" names it or usually takes it (an evening reception, a theatre, a New Year "
-                   "party — evening)",
+    # НП-в5 (рядок 522 (3)): вечір плитки «Офіційний вечір» — розуміння моделі, не таблиця коду.
+    # НГ-5 (рядок 754): лише «назва каже вечір» мало — плитка «Театр, концерт» вечора не називає, і хід
+    # плиток лишав паспорт на типових 11:00 форми. Тепер, як formality, — розуміння події: подія, що
+    # зазвичай має одну частину дня, дає її; подія будь-якої пори (свято, побачення) — поля нема.
+    # МОВА-1 (рядок 860): і з її слів без години («вдень», «по обіді») — поле тепер є у словнику кодів.
+    # ДОЩ-1 (рядок 1471): «новорічний корпоратив у ресторані» лишав `start_hour` невідомим (ж7, ж2) — свято
+    # «будь-якої пори», хоча новорічна вечірка сама каже вечір; тепер вона серед прикладів однієї пори.
+    # МОВА-ХІД-ТОНШЕ (рядок 3491): окреме правило ходу слово в слово повторювало цей опис; його місця вечора —
+    # тепер тут (`_коди_розмови` доставляє перелік коду, `_місця_вечірні_en`)
+    "part_of_day": "part of the day, only when no hour is known: from her words, or when the event or a tile "
+                   "in \"chosen\" names it or usually takes it (an evening reception, a theatre, a concert, an "
+                   "opera or a New Year party — evening; a place the code reads as evening by itself, %s — "
+                   "evening); an event that happens at any time of day — absent",
     # ДОЩ-1 (рядок 1471): градуси — лише названі; сезон свята без числа — `weather_feel` (код → число бере
     # `внутрішня_мова.ТАБЛИЦЯ`, не модель), і його опора — слово свята в її репліці (сторож `_тримається`).
     # ГРАДУСИ-1 (рядок 2381, живий пачки 3+4 К7): «на вулиці мінус п'ятнадцять і сніг» MamayLM записала
@@ -2105,8 +2115,8 @@ _ПОЛЯ_EN = {
     "precipitation": "the precipitation she says the day brings, in any of her words (rain all day, drizzle, "
                      "it pours, snow, wet snow), with that word as quote; none when she says it stays dry; "
                      "possible_rain when rain is only possible (it may rain, a chance of rain) — not rain",
-    "formality": ("how dressy this outing is, {from, to} on the 1–10 scale: always present, taken by the "
-                  "anchors from her words, the event and \"chosen\" — steps: %s" % _ЩАБЛІ_EN),
+    # МОВА-ХІД-ТОНШЕ (рядок 3491): «завжди, без цитати, за якорями» каже правило ходу — тут лише щаблі
+    "formality": "how dressy this outing is, {from, to} on the 1–10 scale — steps: %s" % _ЩАБЛІ_EN,
     # РОЗБІР-0210 А1 В-3 (рядок 1435): «я не хочу щоб вона знов щось сказала» (свекруха, ювілей) мовна модель
     # клала лише в `stylist_note`, `intent` лишався типовим conventional, і пул діставав дозу «на межі»
     # (40 речей `branch: edge`, ж1 і ж7). Прикладу неявного наміру — через чужий суд, який вона хоче
@@ -2157,8 +2167,7 @@ _ПОЛЯ_EN = {
     # Рядок 2141: «образ із моєю блузою з фото» MamayLM не клала в own_items — опис казав лише «described
     # in words», і блуза до коду не дійшла: промпт П-1 ніс лише фото
     "own_items": "her own items she names: everything she calls hers («моя», «у мене є», «з моєї шафи», "
-                 "the item in her photo) — each item separately, also when she sent a photo, with the codes of what "
-                 "she says about it: slot, item type, fabric, colour",
+                 "the item in her photo) — each item separately, also when she sent a photo",
     "question": "her question, her words",
     "rest": "whatever else her new message says that fits no field above, verbatim",
     "stylist_note": "only when her words about the event are hard to read without context (a local custom, "
@@ -2198,17 +2207,30 @@ def _довідник_en(поле):
     return "codes: " + _коди_довідника(поле)[len("коди: "):]
 
 
+def _коди_полем(поле, ключі):
+    """«код | код …» — внутрішні ключі переліку `поле` його кодами."""
+    return " | ".join(к for к in (_ВМ.код(поле, x) for x in ключі) if к)
+
+
+# СЦЕНИ УМОВ ПОРАДИ (МОВА-ХІД-ТОНШЕ, рядок 3491): «вечірня сцена» стояла в умовах `goal` і `makeup` двічі слово в
+# слово, «надворі» — в `movement` і `temperature`; тепер кожна визначена раз рядком словника, умови її називають.
+def _сцени_умов():
+    """{назва сцени: коли вона є} — ті самі множини, що `паспорт_нагоди.порада_коду`."""
+    import паспорт_нагоди as _ПН
+    return {"an evening scene": "hour 18 or later, or occasion %s, or place %s, or activity photoshoot" % (
+                _коди_полем("occasion", _ПН._ВЕЧІРНІ_НАГОДИ), _коди_полем("place", _ПН._ВЕЧІРНІ_МІСЦЯ)),
+            "outdoors": "setting outdoor or mixed, or place %s" % _коди_полем("place", _ПН._ПРОСТО_НЕБА_МІСЦЯ)}
+
+
 # ТЕМИ ПОРАДИ З УМОВОЮ — тією самою, за якою код їх дозволяє (`паспорт_нагоди.порада_коду`), кодами
 # внутрішньої мови: модель обирає теми на стані після свого оновлення, код судить той самий стан.
 def _умови_тем():
-    """{тема: (про що запросити, коли тема доречна)} — сталі рядки словника кодів ходу."""
+    """{тема: (про що запросити, коли тема доречна)} — сталі рядки словника кодів ходу; сцени — `_сцени_умов`."""
     import паспорт_нагоди as _ПН
     import face_contrast as _KC
     import формальність as _ФОРМ
-    коди = lambda поле, ключі: " | ".join(к for к in (_ВМ.код(поле, x) for x in ключі) if к)
-    вечір = ("an evening scene: hour 18 or later, or occasion %s, or place %s, or activity photoshoot"
-             % (коди("occasion", _ПН._ВЕЧІРНІ_НАГОДИ), коди("place", _ПН._ВЕЧІРНІ_МІСЦЯ)))
-    надворі = "outdoors: setting outdoor or mixed, or place %s" % коди("place", _ПН._ПРОСТО_НЕБА_МІСЦЯ)
+    коди = _коди_полем
+    вечір, надворі = "an evening scene", "outdoors"
     return {
         "occasion": ("where she is going in this item: work, a date, a celebration or every day",
                      "she sent a photo of her item and no occasion, place or event is known"),
@@ -2298,11 +2320,12 @@ def _коди_розмови():
                                            if к == "item_type" else _тип_en(с)))
     # Рядок 3310 (живі 12, Б/01–03): «одягну своє взуття з фото» — 3 з 3 сідів поле `shoes{…}` поза переліком із
     # вигаданими `ankle_boots, black` (на фото — біла сандаля): поле її речей одне, ознаки речі з фото — лише її слова
-    р.append("- own_items — %s: objects with quote, name — the item in her words, status — %s, and the "
-             "item attributes she named (not zone or feature). It is the only field for her items: there is no "
-             "field per part of the look. An item in her photo has only what her words say about it — its part of "
-             "the look, and its type, colour or fabric only when she names them: the photo is looked at by another "
-             "model" % (_ПОЛЯ_EN["own_items"], _тип_en(_ВМ.ЇЇ_РІЧ["status"])[len("codes: "):].replace(", ", " | ")))
+    # МОВА-ХІД-ТОНШЕ (рядок 3491): «лише ознаки з її слів» стояло тричі — в описі поля, у формі й у реченні про
+    # фото; тепер раз, з фото поруч.
+    р.append("- own_items — %s: objects with quote, name — the item in her words, status — %s, and only the "
+             "attributes her words name (not zone or feature), also for an item in her photo: the photo is looked "
+             "at by another model. It is the only field for her items: there is no field per part of the look"
+             % (_ПОЛЯ_EN["own_items"], _тип_en(_ВМ.ЇЇ_РІЧ["status"])[len("codes: "):].replace(", ", " | ")))
     р.append("Fields in her words — a string in her language, without quote:")
     for ім, с in поля.items():
         if _група(ім, с) == "вільні":
@@ -2316,10 +2339,12 @@ def _коди_розмови():
     # `minute` (рядки 933/1135) — службове так само: стоїть при `hour`, цитати не потребує, бо без години
     # з її слів шов його не бере (`паспорт_з_шару`).
     for ім in ("reserved_colour", "open_zones", "part_of_day", "minute"):
-        р.append("- %s — %s; %s; without quote" % (ім, _ПОЛЯ_EN[ім], _тип_en(поля[ім])))
+        опис = _ПОЛЯ_EN[ім] % _місця_вечірні_en() if ім == "part_of_day" else _ПОЛЯ_EN[ім]
+        р.append("- %s — %s; %s; without quote" % (ім, опис, _тип_en(поля[ім])))
     р.append("Advice topics — code: what to invite her to tell · when the topic applies (after your "
              "update, and only while the passport does not know it; for \"advice_topics\" the code has "
              "already checked it):")
+    р += ["  · %s — %s" % (сцена, коли) for сцена, коли in _сцени_умов().items()]
     р += ["- %s: %s · %s" % (к, про, коли) for к, (про, коли) in _умови_тем().items()]
     р.append("Required questions — code: what to ask · when it applies (after your update):")
     р += ["- %s: %s · %s" % (к, що, коли) for к, (що, коли) in _ОБОВʼЯЗКОВЕ_EN.items()]
@@ -2389,13 +2414,13 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     "\"need\" is none and \"text\" is one short word.",
     # Сторож М-1 (`_тримається`): поле без дослівного уривка її слів код не бере — тепер уривок
     # може стояти в будь-якій її репліці розмови (`слова_розмови`).
-    "Every field with a code or a number and every item stands on her words: \"quote\" is a fragment of "
-    "HER messages — the new one or an earlier one of hers — copied letter for letter. No such fragment — "
-    "no field. Never quote your own lines.",
     # Рядок 3317 (в) (живі 12, Б/10): `place.quote = "Набережна"` — слово з власного `place_words` моделі, а вона
     # написала «на набережній»; сторож (`_тримається`) звіряє уривок літера в літеру, і місце не взялось.
-    "\"quote\" keeps her word forms exactly as she wrote them, endings and case included; a word in your own "
-    "place_words, event or text is your wording, never a quote.",
+    # МОВА-ХІД-ТОНШЕ (рядок 3491): два правила про цитату — одним, ті самі вимоги.
+    "Every field with a code or a number and every item stands on her words: \"quote\" is a fragment of "
+    "HER messages — the new one or an earlier one of hers — copied letter for letter: it keeps her word "
+    "forms, endings and case included. No such fragment — no field. Never quote your own lines, place_words, "
+    "event or text.",
     # K-IO-02: не вигадувати; переліки — закриті (`_норм` кладе чуже в `незнайомі`).
     # ДОЩ-1 (рядок 1471): «не виводь поля з поля» модель читала й як «не виводь зиму з новорічного свята» —
     # `day.unknown` = [start_hour, temperature_c] у ж7 і ж2. Сезон і пору, які несе сама подія, беруть
@@ -2443,13 +2468,15 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # вечеря. Без цього речення — 2, 3, 4, 8 з 40 (розкид — вибір між сусідніми прикладами: парк 2–3 | прогулянка 2–4);
     # «лише місце першим» — 1 і 2, але корпоратив у ресторані й випускний у школі падали до 4–5; «свято — приклад
     # свята, де б не було» — 2 і 5, і ДН у кафе ставав 5–7.
+    # МОВА-ХІД-ТОНШЕ (рядок 3491): «приклади — лише для смуги, не place чи occasion» знято — те саме каже заголовок
+    # якорів у «codes» («examples for the band only, not codes»).
     "\"formality\" is always present, without quote: how dressy this outing is, taken by the anchors in "
     "\"codes\", not by eye. A named dress code — exactly its band from the dress-code bands. Otherwise start "
     "from the usual band of the example nearest to what kind of event it is — not to how important it is to "
     "her. Pick it by the place her words name, or, when she names none, by what she will be doing: a walk "
     "in a park — a park; a celebration with guests in a restaurant or a hall (a corporate party, an "
-    "anniversary, a graduation, a banquet) — a festive dinner. The example already holds the usual time of day and the usual stakes of such an event. The examples "
-    "are for the band only and do not decide \"place\" or \"occasion\". Keep that band and its width. Move "
+    "anniversary, a graduation, a banquet) — a festive dinner. The example already holds the usual time of day "
+    "and the usual stakes of such an event. Keep that band and its width. Move "
     "the whole band one step — never more, never twice — only for one of these, said in her words: down — "
     "she says it is simple, nothing special; up — she says she wants to dress up; she herself is the centre "
     "of the event and its example does not already say so (she gives a speech or a toast, she is the hostess, "
@@ -2463,29 +2490,17 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # «найближчого виду», ролі, аудиторії, віри, обсягу й частин дня модель коду більше не дає —
     # стилістка бере подію її словами. Зарезервований колір — рахівне (вето майже-білого).
     # Рядок 3167: її власна межа відкритого — теж сюди (ліміт K-KOH-10), а не в зони мети.
+    # МОВА-ХІД-ТОНШЕ (рядок 3491): приклади норм (весілля, церква, похорон) несуть описи полів у «codes».
     "\"reserved_colour\" and \"open_zones\" are, like formality, your understanding of the event's "
-    "norm, without quote: set them when the event has such a norm (a wedding where she is a guest — "
-    "near_white; a church or a funeral — open_zones none); no norm — leave them absent: unknown is a "
-    "valid value, and the looks are put together anyway. When she herself limits how much of her body she "
-    "shows (nothing open or bare), \"open_zones\" takes her limit — none, or one when she allows a single "
-    "zone — also without quote, and it overrides the event's norm.",
-    # НП-в5 (рядок 522 (3)): вечір плитки «Офіційний вечір» — розуміння моделі, не таблиця коду.
-    # НГ-5 (рядок 754): лише «назва каже вечір» мало — плитка «Театр, концерт» вечора не називає, і хід
-    # плиток лишав паспорт на типових 11:00 форми. Тепер, як formality, — розуміння події: подія, що
-    # зазвичай має одну частину дня, дає її; подія будь-якої пори (свято, побачення) — поля нема.
-    # МОВА-1 (рядок 860): і з її слів без години («вдень», «по обіді») — поле тепер є у словнику кодів.
-    # ДОЩ-1 (рядок 1471): «новорічний корпоратив у ресторані» лишав `start_hour` невідомим (ж7, ж2) — свято
-    # «будь-якої пори», хоча новорічна вечірка сама каже вечір; тепер вона серед прикладів однієї пори.
-    "\"part_of_day\" goes without quote and only when no hour is known: from her words, or when the event or "
-    "a tile in \"chosen\" names the part of the day (an evening reception — evening) or the event usually "
-    "takes one part of the day (a theatre, a concert, an opera or a New Year party — evening); a place in her "
-    "words or in \"chosen\" that the code reads as evening by itself (%s) — evening; another event that "
-    "happens at any time of day — leave it absent." % _місця_вечірні_en(),
+    "norm, without quote; no such norm — leave them absent: the looks are put together anyway. When she limits "
+    "how much of her body she shows (none, or one when she allows a single zone), her limit overrides the "
+    "event's norm.",
     # П.14 і п.3 наряду: межа мовної моделі — кодами `need`.
     # Рядок 1438 (розбір 02.10): «You are the stylist» поруч із «only the code with the stylist answers» —
     # 25 з 39 ходів `need=look` передавали її «стилістові» третьою особою; жінка ж чує одну стилістку.
-    "\"need\" says who answers her this turn (see \"codes\"). Answer yourself only what you know for sure "
-    "without her items, looks and photos. When \"need\" is not \"none\", \"text\" neither answers nor "
+    # МОВА-ХІД-ТОНШЕ (рядок 3491): «відповідай сама лише певне без її речей» — дослівно опис `none` у «codes».
+    "\"need\" says who answers her this turn (see \"codes\"). When \"need\" is not \"none\", \"text\" neither "
+    "answers nor "
     "judges her question — you have not seen the check yet — and only says what you recorded. Whether an "
     "item, a material, a colour or a cut suits the weather, the event or her is never sure without that "
     "check: never advise or judge it in \"text\" yourself. You are the "
@@ -2504,10 +2519,10 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # воно (`about`), і суд показує лише речення про записане цього ходу чи про її питання (`суд_частин`).
     # Рядок 3740: «Whatever you want her to tell goes into invite» робило з `invite` канал того, що хоче знати
     # модель (`invite_topics: [occasion, …]` 3 з 3 у К7), а не поради зі списку тем.
-    "\"text\" is a list of its sentences, in order: \"says\" — one sentence; \"about\" — the codes of "
-    "the \"update\" fields it tells about, or \"her_question\" when it is about what she asked. The app "
-    "shows her only the sentences whose codes are all in this turn's \"update\" or are \"her_question\". "
-    "The advice topics are offered in \"invite\", never in \"text\".",
+    # МОВА-ХІД-ТОНШЕ (рядок 3491): форму речення {about, says} каже `answer_schema` (`СКЕЛЕТ_РОЗМОВИ`) — тут лише те,
+    # що з нею робить код.
+    "The app shows her only the sentences of \"text\" whose \"about\" codes are all in this turn's "
+    "\"update\" or are \"her_question\". The advice topics are offered in \"invite\", never in \"text\".",
     # НГ-4, живий стенд 01.10: «записала це в твій паспорт» (слово системи, не її) і «врахую, що образ
     # має бути стриманим перед керівництвом» — аудиторію й частини дня код ще не читає (НГ-9, НГ-12),
     # тож обіцянка була б неправдою; що код зробить із почутим, вирішує код, а не модель розмови.
@@ -2524,9 +2539,8 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     "their colours or how her words will be taken into account; the looks are put together later. "
     "A sentence about a recorded field restates it and adds nothing: no praise or judgement of it, no "
     "\"because\", no consequence.",
-    # Рядок 314: підтвердження й запрошення стоять поруч в одній бульбашці — кожне окремим реченням.
-    "Each sentence of \"text\" ends with a full stop: \"invite\" and \"ask\" follow it as separate sentences. A dash "
-    "between words is the long dash «—».",
+    # Рядок 314: підтвердження й запрошення — окремими реченнями, тире — «—». МОВА-ХІД-ТОНШЕ (рядок 3491): правило
+    # знято — крапку між шматками й довге тире ставить код (`_бульбашка`), слів не читаючи (п.12).
     # Рядок 1433 (розбір 02.10, ж4_робота_живіт): «який макіяж planуєш» — латинський корінь в українському
     # слові; сторож чату ловить його як факт письма і просить повтор, а промпт каже, як писати одразу.
     # Рядок 3163 (живі 12, А/03–А/05): «чи хочете ви», «вам», «Розкажіть», «Де саме ви працюєте?» — межа
@@ -2541,18 +2555,20 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # увесь `advice_topics_if` (уже записані `movement`, `temperature`) і `occasion` з `required` — тобто питала,
     # що хоче знати сама. У 5 з 9 `invite` нема, хоч `update` уже заповнив `required` («while a required
     # question remains» вона читала за `required` до її слів). Тепер `invite` — порада п.9, а не питання.
-    "\"invite\" is advice, not your question: an offer to tell about up to three advice topics, which she "
-    "may ignore. Its codes come only from \"advice_topics\", or from \"advice_topics_if\" when her new "
-    "message makes that topic's condition hold — never a topic whose field your \"update\" fills or the "
-    "passport knows, never a code from \"required\". \"required\" is what was required before her new message: a code "
-    "your \"update\" fills no longer remains. While one remains, its question goes into \"ask\" and "
-    "\"invite\" is empty; otherwise, whenever such advice codes are left, \"invite\" is exactly one soft "
-    "sentence to her as «ти» about up to three of them, saying she may skip it and the looks will be put "
-    "together anyway; no question marks. \"invite_topics\" are exactly the codes it covers.",
     # П.9: обовʼязкове — лише «без чого не зібрати»; збирання не блокується.
-    "\"ask\" is only for a code from \"required\" whose condition still holds after your update: one short "
-    "direct question, and \"ask_code\" is that code. Nothing else is required: never say that the looks "
-    "cannot be put together.",
+    # МОВА-ХІД-ТОНШЕ (рядок 3491): правила `invite` і `ask` — одним. Скільки тем, які дозволені, повтор, одне речення,
+    # обовʼязкове питання лише з `required` — судить код (`суд_частин`: `too_many_topics`, `topic_not_allowed`,
+    # `topic_repeated`, `too_many_sentences`, `not_required_after_turn`) і ремонтує форму поради (`ремонт_поради`);
+    # лишилось те, без чого модель не знає, звідки брати теми, коли питати замість поради й що порада
+    # обовʼязкова, коли теми лишились (рядок 3740: без цього `invite` порожнє в 9 з 12).
+    "\"invite\" is advice, not your question. Its codes come only from \"advice_topics\", or from "
+    "\"advice_topics_if\" when her new message makes that condition hold — never a topic your \"update\" fills "
+    "or the passport knows, never a code from \"required\". \"required\" is what was required before her new "
+    "message: a code your \"update\" fills no longer remains. While one remains, \"ask\" is one short direct "
+    "question about it, \"ask_code\" is that code, and \"invite\" is empty; otherwise, whenever such advice "
+    "codes are left, \"invite\" is one soft sentence to her as «ти» about up to three of them, saying she may "
+    "skip it and the looks will be put together anyway; \"invite_topics\" are exactly its codes. Nothing else "
+    "is required: never say that the looks cannot be put together.",
     # П.9 (Р-3, 20.09): драпіровка — лише профіль; про прикраси — лише «які з цим образом».
     # 936: «в якому стилі зазвичай одягаєшся» — звичка людини, тобто профіль; у розмові про цей вихід
     # запрошення стосується лише цього виходу й цього образу.
@@ -2603,11 +2619,10 @@ _ПРАВИЛО_ПРОФІЛЮ = (
         # Рядок 3170 (живі 12, А/07): битий JSON ходу одразу йшов шляхом виклику 0, і подія губилась. Тепер —
         # ОДИН повтор тим самим промптом із причиною кодом (як виклик 0 і фото — `format_error`); поле є лише
         # на повторі, тож сталий початок промпта (кеш) той самий.
-        _ЗП_Р.Поле("format_error", "your previous answer to this same message could not be read: "
-                                   "not_json_object — it was not one valid JSON object; no_text_field — it had "
-                                   "neither \"text\" nor \"ask\"",
-                   як="answer again: only one JSON object following \"answer_schema\", every string a valid "
-                      "JSON string"),
+        _ЗП_Р.Поле("format_error", "why your previous answer to this same message could not be read: "
+                                   "not_json_object — not one valid JSON object; no_text_field — neither "
+                                   "\"text\" nor \"ask\"",
+                   як="answer again: one JSON object, every string a valid JSON string"),
         _ЗП_Р.Поле("her_new_message", "her new message", треба=True),
     ),
     правила=РОЗМОВА_ПРАВИЛА,
