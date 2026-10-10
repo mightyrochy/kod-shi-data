@@ -28,7 +28,7 @@ for ф in sorted(ф for ф in git("ls-tree", "-r", "--name-only", Г, ":/" + Т)
     речей += "own_items" in в; трим += bool(т_.get("own_items"))
     запрошень += bool(ч.get("invite")); показано += bool(теми)
     print(сц[:2], сц[3:26], "| hour моделі:", сире(u.get("hour")), "пора:", сире(u.get("part_of_day")), "→ година:",
-          п.get("година"), "| подія:", М._текст(в.get("event")), "| місце:", п.get("місце"), "слова:",
+          п.get("година"), "пора:", п.get("пора"), "| подія:", М._текст(в.get("event")), "| місце:", п.get("місце"), "слова:",
           п.get("місце_слова") or (слід[0] if слід else None), "| own_items:", "—" if "own_items" not in в else
           ("тримається" if т_.get("own_items") else "знято: " + str([x.get("name") for x in в["own_items"]])[:70])
           + " · у паспорті %s" % [(р.get("назва"), р.get("вид"), р.get("матеріал")) for р in п.get("речі_з_фото") or []]
