@@ -1795,6 +1795,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                      "(values: colour — the code of the colour or family, hue — the hue in degrees, slot — "
                      "slot code; on_windows — true when the judgement rests on the windows of colour words, "
                      "not on a measurement)",
+    # ГГ-1 (рядки 2660, 2662): опора, не зауваження — акцент, що відлунює у другій зоні (K-COMP-05)
+    "accent_echoed": "the accent colour is repeated in separated zones within the ceiling: the outfit holds the "
+                     "colour as an intention, not as noise (values: colour — the code of the colour or family, "
+                     "hue — the hue in degrees, zones — in how many zones; on_windows — true when a carrier's "
+                     "colour is the window of a colour word, wholly within the echo arc)",
     "echo_accent_or_declare_focus": "repeat the colour in a second zone (shoes, bag, scarf, jewellery), "
                                     "declare the focus, or remove it",
     "accent_echo_over_ceiling": "the accent colour is repeated in too many zones: the repetition stops "
