@@ -1726,6 +1726,15 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "colour_step_below_min": "the lightness step between the outfit's colours is below the threshold (values: "
                              "step_min — the step threshold in L*; on_windows — true when the judgement rests "
                              "on the windows of colour words, not on a measurement)",
+    # рядок 3440: K-COL-01 «один рівень» — доти дріт віз лише прозу коду `what`.
+    "one_lightness_level_reads_flat": "all the outfit's items sit on one level of lightness, so the outfit "
+                                      "reads flat (values: spread — the L* range inside that level; "
+                                      "step_min — the step threshold in L*)",
+    "add_second_lightness_step": "add a second step of lightness: shoes, bag or a layer at least this far "
+                                 "from the outfit's mass (values: step — ΔL* from the mass)",
+    "or_lean_on_texture_contrast": "or lean on texture contrast: the items carry different texture labels, "
+                                   "and whether the difference is visible the code does not measure "
+                                   "(values: textures — how many different labels)",
     "more_than_one_loud_colour": "the outfit has more than one loud colour (values: loud_from — the chroma "
                                  "from which a colour counts as loud)",
     "lightness_range_off_her_contrast": "the outfit's lightness range does not suit her contrast: too wide "
