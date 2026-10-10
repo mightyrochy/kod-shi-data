@@ -1,0 +1,76 @@
+── ПРОМПТ (7700 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_code_unknown — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- bottom — низ.
+- hips — стегна.
+- outerwear — верхній шар.
+- shoes — взуття.
+- top — верх.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки.
+
+ЗАЯВИ:
+- colour_word_not_photo — the colour of the named items comes from a word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_look_follows_her_combinations — so the code cannot tell whether the outfit's colours follow the logic of her combinations.
+- cannot_tell_accent_echoed — so the code cannot tell whether the accent colour repeats elsewhere in the outfit.
+- cannot_tell_item_off_palette — so the code cannot tell whether the item's colour lies outside her palette.
+- cannot_tell_item_carries_interest — so the code cannot tell whether the item's colour is strong enough to carry interest.
+- cannot_tell_two_different_whites — so the code cannot tell whether the outfit has two different whites, cream and optical.
+- cannot_tell_chroma_budget_exceeded — so the code cannot tell whether the outfit has more loud colours than its budget allows.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- length_word_edge_may_land_on_widest — the code knows the item's length only from a word, and its edge may land right on the widest place of the body (values: slot — slot code; length — the length word; level — code of the body level where the edge may land).
+- outer_ease_not_in_feed — the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — item names).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- cut_from_photo_shop_differs — the cut was read from the photo, and the shop names another one (values: items — the items: slot — slot code, shop — the cut by the shop, photo — the cut from the photo; the cut names are in English, retell them in her language).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_code_unknown", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "LeBERDES Лофери", "lang": "uk"}}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 2, "вид": "card_code_unknown", "заяви": [{"code": "cannot_tell_two_different_whites"}]},
+{"н": 3, "вид": "card_code_unknown", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "bottom", "range": "34–36"}]}}]},
+{"н": 4, "вид": "card_code_unknown", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "bottom", "range": "34–36"}, {"slot": "outerwear", "range": "42–56"}]}}]},
+{"н": 5, "вид": "card_code_unknown", "заяви": [{"code": "cut_from_photo_shop_differs", "values": {"items": [{"slot": "outerwear", "shop": "oversized", "photo": "relaxed"}]}}]},
+{"н": 6, "вид": "card_code_unknown", "заяви": [{"code": "length_word_edge_may_land_on_widest", "values": {"slot": "top", "length": {"free_text": "стегно", "lang": "uk"}, "level": "hips"}}]},
+{"н": 7, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "top", "colour": "темно-синій"}]}}, {"code": "cannot_tell_item_carries_interest"}]},
+{"н": 8, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "top", "colour": "темно-синій"}]}}, {"code": "cannot_tell_item_holds_scheme_hue"}]},
+{"н": 9, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "bottom", "colour": "червоний"}]}}, {"code": "cannot_tell_item_holds_scheme_hue"}]},
+{"н": 10, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "shoes", "colour": "червоний"}]}}, {"code": "cannot_tell_item_holds_scheme_hue"}]},
+{"н": 11, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "top", "colour": "темно-синій"}]}}, {"code": "cannot_tell_item_off_palette"}]},
+{"н": 12, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "bottom", "colour": "червоний"}, {"slot": "shoes", "colour": "червоний"}]}}, {"code": "cannot_tell_look_follows_her_combinations"}]},
+{"н": 13, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "top", "colour": "темно-синій"}]}}, {"code": "cannot_tell_chroma_budget_exceeded"}]},
+{"н": 14, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "shoes", "colour": "червоний"}, {"slot": "bottom", "colour": "червоний"}]}}, {"code": "cannot_tell_accent_echoed"}]},
+{"н": 15, "вид": "card_code_unknown", "заяви": [{"code": "outer_ease_not_in_feed", "values": {"items": [{"free_text": "Піджак Architect темно-синій", "lang": "uk"}, {"free_text": "Жіноче вовняне пальто оверсайз з…", "lang": "uk"}]}}]}
+]
+
+── ВІДПОВІДЬ (1989 симв., 50.4 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю, чи підійдуть тобі ці лофери LeBERDES за розміром. Я ще не перевіряла їхній розмір на твою ногу і не знаю довжину устілки.",
+  "2": "Не можу сказати, чи поєднуються кольори цього образу з обраною палітрою.",
+  "3": "Я не знаю, як сидітиме низ 34–36 розміру на тобі. Розмір — це лише позначення, а не точна відповідність твоїй фігурі.",
+  "4": "Не можу сказати, чи добре сяде верхній шар і низ 34–36 розміру та верхній одяг 42–56 розміру на тобі. Розмір — це лише позначення, а не точна відповідність твоїй фігурі.",
+  "5": "Здається, що крій цього піджака в магазині інший, ніж той, який я бачу на фото: «oversized» замість «relaxed».",
+  "6": "Не можу сказати точно, де закінчиться верх. Його довжина лише приблизно позначена як стегно і може припасти саме на найширшу частину твоїх стегон.",
+  "7": "Я не знаю, чи достатньо виразний темно-синій колір цього верху для образу. Також я не можу сказати, чи відповідає він обраній палітрі.",
+  "8": "Не можу сказати, чи підходить темно-синій колір цього верху до обраної палітри за відтінком. Я знаю його лише зі слова.",
+  "9": "Я не знаю, чи поєднується червоний низ з обраною палітрою за відтінком. Знаю про нього тільки зі слова.",
+  "10": "Не можу сказати, чи підходить червоне взуття до обраної палітри за відтінком. Я знаю його лише зі слова.",
+  "11": "Я не знаю, чи лежить темно-синій колір цього верху поза твоєю палітрою. Знаю про нього тільки зі слова.",
+  "12": "Не можу сказати, чи поєднуються кольори низу та взуття з твоїми улюбленими комбінаціями. Я знаю їх лише зі слів «червоний».",
+  "13": "Я не знаю, чи перевищує темно-синій колір цього верху ліміт яскравих кольорів для образу. Знаю про нього тільки зі слова.",
+  "14": "Не можу сказати, чи повторюється червоний колір взуття та низу десь ще в образі. Я знаю їх лише зі слів «червоний».",
+  "15": "Я не знаю, як лежатимуть один на одному піджак Architect темно-синій і вовняне пальто оверсайз з… Немає інформації про ширину цих речей."
+}
+```

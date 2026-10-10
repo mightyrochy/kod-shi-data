@@ -1,0 +1,36 @@
+── ПРОМПТ (2035 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Elegant silk slip dress with a high neckline and a subtle bias-cut drape that flows into a midi length, emerald green (#049936), fluid satin weave for a luxurious sheen.\nPointed-toe stiletto pumps in metallic gold (#FFD700), sleek silhouette with a polished finish to catch the candlelight.\nDelicate chandelier earrings in crystal and rose gold tone that swing gently, paired with a slim gold cuff bracelet on the wrist.\nThis ensemble works because the deep emerald hue anchors your presence while the metallic accents create a striking contrast that ensures you stand out in the dim restaurant lighting. The fluid cut of the dress allows for effortless movement during conversation, while the elegant silhouette respects the cocktail dress code without overwhelming your casual surroundings. Every piece is chosen to amplify your desire to be memorable, transforming a simple gathering into an unforgettable moment where you naturally take center stage."}
+
+── ВІДПОВІДЬ (773 симв., 238.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "silk slip dress",
+      "details": "high neckline with subtle bias-cut drape flowing to midi length, fluid satin weave",
+      "slot": "dress",
+      "color_hex": "#049936",
+      "worn": true
+    },
+    {
+      "name": "pointed-toe stiletto pumps",
+      "details": "sleek silhouette with polished finish",
+      "slot": "shoes",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "chandelier earrings",
+      "details": "crystal and rose gold tone, swinging design",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "gold cuff bracelet",
+      "details": "slim fit on wrist",
+      "slot": "bracelet",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}
