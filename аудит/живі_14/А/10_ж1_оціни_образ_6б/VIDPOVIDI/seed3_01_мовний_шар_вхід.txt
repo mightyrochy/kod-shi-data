@@ -1,0 +1,87 @@
+── ПРОМПТ (11548 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти перекладаєш слова жінки про її вихід у внутрішню мову застосунку — JSON із кодами. Рішень про образ не приймаєш, на питання не відповідаєш: її питання лише переносиш у поле question.
+
+Вхід — її слова цього ходу; КОНТЕКСТ.offered_topics — теми, про які стилістка щойно запрошувала її розповісти (коди тем поради).
+
+Поле з кодом чи числом — JSON-об'єкт із двома ключами: спершу quote — уривок її слів із блоку СЛОВА, на якому воно стоїть, переписаний літера в літеру; потім value — його значення, як сказано в рядку поля. Такі поля:
+- occasion — нагода — що це за подія; коди: everyday (Звичайний день), work (Робота), date (Побачення), celebration (Свято, вечірка), wedding_guest (Весілля, я гостя), wedding_day (Весілля вдень), mourning (Траур), formal_evening (Офіційний вечір), formal_day (Офіційний захід удень), walk (Прогулянка), theatre (Театр, концерт), job_interview (Співбесіда), sport (Спорт, активність), home (Вдома), travel (Подорож), church (Церква), school (Школа), museum (Музей, виставка)
+- place — місце — де вона буде; коди: home (Вдома), park (Надворі: вулиця, парк, набережна), walk (прогулянка), playground (дитячий майданчик), cafe (кафе), bar (бар), restaurant_casual (Заклад: кафе, ресторан, бар), restaurant_upscale (ресторан високий), fine_dining (fine dining), club (клуб), house_party (домашня вечірка), festive_dinner (Урочистий зал: банкет, весілля, вечірка), office (Офіс), office_corporate (офіс корпоративний), office_creative (офіс креативний), job_interview (співбесіда), conference (конференція), presentation (презентація), theatre (Зал: театр, кіно, концерт, музей, конференція), opera_premiere (опера прем'єра), museum (музей), vernissage (вернісаж), school_parents_meeting (школа батьківські), hospital_visit (лікарня візит), long_transit (У дорозі: транспорт, переліт), flight (подорож переліт), sport (спорт), church_service (церква служба), wedding_day (весілля денне), wedding_evening (весілля вечірнє), funeral (похорон)
+- dress_code — дрес-код, коли його названо; коди: casual, smart_casual, dressy_casual, business_casual, semi_formal, festive, business_formal, cocktail, black_tie_optional, black_tie, creative_black_tie, white_tie
+- setting — у приміщенні, просто неба чи змішано; коди: indoor, outdoor, mixed
+- duration_h — скільки годин триває подія; число
+- movement — сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, ставатиме на коліна чи займатиметься спортом; коди: sit, stand, walk, walk_a_lot, dance, kneel, sport
+- activity — що робитиме: з дітьми, по нерівному ґрунту, прогулянка, багато пішки, фотосесія чи зйомка; коди: children, rough_ground, stroll, walking, photoshoot
+- surface — що під ногами; коди: cobblestones, asphalt, parquet, carpet, grass, stairs
+- hour — година початку за 24-годинним годинником; ціле 0–23
+- temperature_c — температура повітря, °C; число
+- weather_feel — погода без числа градусів; коди: frost, cold, cool, warm, hot
+- precipitation — опади; коди: none, possible_rain, rain, sleet, downpour, snow
+- intent — намір: comfort_first — зручність і свобода руху понад усе; context_optimal — доречність і рівень події понад усе; statement — хоче вразити, заявити про себе; conventional — нічого з цього; коди: conventional, statement, comfort_first, context_optimal
+- goal — мета на цей вихід: flatter — щоб личило; conceal — не привертати уваги до всього образу, або відвести погляд від зони тіла (тоді й goal_zones); express — щоб на неї дивились; taller — вона хоче довшу лінію, здаватись вищою; коди: flatter, conceal, express, taller
+- goal_zones — лише з метою conceal, коли вона хоче відвести погляд від зони тіла («сховати живіт» → belly): мета тоді стосується лише цих зон, а решта образу вільна; коли вона ще й не хоче уваги до себе взагалі — поля нема, увесь образ тихий; список (до 3); елемент — коди: belly, hips, bust, arms, legs, shoulders, neckline, back
+- makeup — макіяж на цей вихід; об'єкт {level — коди: nude, noticeable, bold; lips_hex — рядок #rrggbb}
+- jewelry — прикраси, які вона хоче з цим образом; ethnic — дерево, кістка, бісер; other — без металу; коди: gold, silver, pearls, ethnic, other, none
+- registers — реєстри стилю, якими вона сама себе описала; список (до 2); елемент — коди: classic, minimalism, preppy, streetwear, workwear, sport_chic, romantic, boho, rock, quiet_luxury, gorpcore, dramatic, ukrainian_ethnic
+- legs_above_cm — вище скількох см від підлоги не відкривати ноги; число
+
+Речі — списки об'єктів (опис об'єктів нижче); у кожної речі свій quote:
+- wants — чого вона хоче в образі — лише те, що вона просить; річ у питанні («а якщо…», «чи піде…») — не бажання, а question; список; елемент — об'єкт «річ»
+- vetoes — чого вона не хоче: межі; список; елемент — об'єкт «річ»
+- retract — межі чи бажання, від яких вона в цих словах відмовилась; список; елемент — об'єкт «річ»
+- beliefs — її переконання: що, на її думку, їй не личить чи псує фігуру; з ним не сперечаються; список; елемент — об'єкт «річ»
+- own_items — її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; список; елемент — об'єкт «її річ»
+
+Поля її словами — рядок її мовою, без quote і без коду:
+- event — подія коротко, її мовою
+- place_words — де вона буде, кількома словами для картки
+- mood — настрій образу її словами; список (до 3); елемент — рядок її мовою
+- question — питання, яке вона ставить стилістці
+- rest — решта її слів цього ходу, що не лягла в жодне поле вище, — дослівно, її мовою
+- stylist_note — лише коли її слова про подію важко витлумачити без контексту (місцевий звичай, сленг, іронія, незвична подія): коротке пояснення для стилістки англійською, що вона має на увазі; інакше — невідомо
+
+Поля без quote:
+- reserved_colour — колір, що на цій події належить іншій особі; коди: near_white
+- open_zones — скільки зон тіла (декольте чи спина, ноги, плечі) доречно відкрити на цій події; коди: none, one, two
+- minute — хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30); ціле 0–59
+- part_of_day — частина доби, коли години не названо; коди: morning, day, evening, night
+- formality — наскільки ошатний цей вихід, шкала 1–10: завжди — з її слів і події; об'єкт {from — ціле 1–10; to — ціле 1–10}
+- question_about — про що її питання: app — про застосунок (екрани, кнопки, кроки, що робити далі); look — про її образ, речі, фото, стиль чи кольори; коди: app, look
+
+Об'єкт «річ» — JSON-об'єкт: спершу quote — уривок її слів про цю річ із блоку СЛОВА, переписаний літера в літеру; далі лише ознаки, які вона назвала:
+- slot — частина образу; коди: top, bottom, dress, set, outerwear, shoes, bag, scarf, headwear, belt, tights, socks, jewelry, earrings, collar_necklace, necklace, brooch, bracelet, ring, glasses
+- item_type — тип речі; коди: evening_dress (вечірня_сукня), cocktail_dress (коктейльна_сукня), suit (костюм), sheath_dress (футляр), sundress (сарафан), blazer (блейзер), over_knee_boots (ботфорти), chelsea_boots (челсі), ugg_boots (уггі), ballet_flats (балетки), mules (мюлі), espadrilles (еспадрильї), pumps (човники), dress_shoes (туфлі), moccasins (мокасини), loafers (лофери), sneakers (кросівки), plimsolls (кеди), ankle_boots (черевики), boots (чоботи), heeled_sandals (босоніжки), sandals (сандалі), clutch (клатч), backpack (рюкзак), tote (шопер), baguette_bag (багет), hobo_bag (хобо), crossbody_bag (кросбоді), bucket_bag (бакет), belt_bag (поясна), briefcase (портфель), saddle_bag (сідло), hoodie (худі), sportswear (спортивний), loungewear (домашнє), leggings (легінси), jeans (джинси), t_shirt (футболка), shirt (сорочка), blouse (блуза), knitwear (трикотаж), cardigan (кардиган), sweater (светр), shorts (шорти), jumpsuit (комбінезон), skirt (спідниця), trousers (штани), coat (пальто), trench_coat (тренч), jacket (куртка), vest (жилет), top_garment (топ), stole (палантин), kerchief (хустка), twilly (твіллі), snood (снуд), shawl (шаль), bactus_scarf (бактус), ring (каблучка), headband (обруч), bow (бант), hair_clip (заколка), hair_tie (резинка), scarf_generic (шарф_без_уточнення), jewelry_generic (прикраса_без_уточнення), bag_generic (сумка_без_уточнення), dress_generic (сукня_без_уточнення), two_piece_set (комплект), casual_suit (костюм_повсякденний), bodysuit (боді), longsleeve (лонгслів), half_coat (півпальто), down_jacket (пуховик), fur_coat (шуба), sheepskin_coat (дублянка), parka (парка), raincoat (плащ), rain_cape (дощовик), windbreaker (вітровка), anorak (анорак), bomber (бомбер), poncho (пончо)
+- fabric — тканина; коди: wool, cashmere, mohair, angora, alpaca, cotton, viscose, tencel, lyocell, modal, linen, silk, polyester, polyamide, nylon, acrylic, elastane, stretch, denim, satin, atlas, chiffon, muslin, batiste, tweed, boucle, corduroy, velvet, jersey, knitted, suede, faux_leather, leather, patent_leather, nubuck, velour, lace, guipure, openwork, woven
+- pattern — візерунок; коди: solid, polka_dot, floral, stripes, check, animal_print, camouflage, geometric, abstract, lace_motif, embroidery, print_generic
+- color_class — клас кольору; коди: dark, light, bright, pastel, muted
+- color_name — назва кольору; коди: black, white, grey, graphite, beige, cream, milky, sand, taupe, camel, latte, cocoa, brown, chocolate, red, burgundy, cherry, raspberry, brick, terracotta, ginger, coral, orange, peach, yellow, lemon, mustard, golden, khaki, olive, green, pine_green, mint, turquoise, petrol, light_blue, denim_blue, blue, navy, lilac, purple, plum, magenta, fuchsia, pink, rose, powder_pink, silvery, pearly, creamy, mocha, powder, soft_pink, emerald, electric_blue
+- zone — зона тіла, яку не відкривати; коди: neckline, back, arms, shoulders, legs, belly
+- feature — ознака речі; коди: heels, large_print
+- length — довжина речі; коди: mini, mid_thigh, knee, midi, maxi, waist
+
+Об'єкт «її річ» — JSON-об'єкт: спершу quote — уривок її слів про цю річ із блоку СЛОВА, переписаний літера в літеру; далі лише ознаки, які вона назвала:
+- name — річ її словами; рядок її мовою
+- status — has — ця річ буде в образі; maybe — не певна; not_wanted — цієї своєї речі не хоче; коди: has, maybe, not_wanted
+- slot — частина образу; коди ті самі, що в «річ»
+- item_type — тип речі; коди ті самі, що в «річ»
+- fabric — тканина; коди ті самі, що в «річ»
+- pattern — візерунок; коди ті самі, що в «річ»
+- color_class — клас кольору; коди ті самі, що в «річ»
+- color_name — назва кольору; коди ті самі, що в «річ»
+- length — довжина речі; коди ті самі, що в «річ»
+
+Межа: пиши лише поля, про які в її словах є опора. Поля, про яке вона не сказала нічого, у відповіді нема — це й є "unknown". Не вигадуй і не виводь одне поле з іншого; значення — лише коди з переліків; вільний текст — мовою її слів.
+Кожне поле з кодом чи числом і кожна річ стоять на її словах: quote — уривок із блоку СЛОВА, переписаний літера в літеру, без переказу й без свого. Уривка для поля в її словах нема — нема й поля: код його не бере. Подію, яку вона назвала, пиши в event — і ще кодом: occasion чи place, у підписі якого стоїть ця подія чи подія того самого роду, парою, де quote — назва події з її слів (назва події — опора і для event, і для цього коду). Коли такого коду в переліках нема — код найближчої за родом нагоди чи місця. Усе, що вона сказала і що не лягло в жодне поле, — у rest дослівно. Питання — у question, а про що воно — у question_about; річ, про яку вона питає («а якщо…», «чи піде…»), — не бажання і в wants не йде.
+
+Відповідь — лише JSON-об'єкт.
+
+СЛОВА:
+Чи поєднуються ці кольори між собою і чи підійдуть вони мені?
+
+── ВІДПОВІДЬ (135 симв., 5.6 с, HTTP 200) ──
+```json
+{
+  "question": "Чи поєднуються ці кольори між собою і чи підійдуть вони мені?",
+  "question_about": "look",
+  "rest": ""
+}
+```
