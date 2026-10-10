@@ -1,0 +1,50 @@
+── ПРОМПТ (2605 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Outer layer: Wool-cashmere blend parka, relaxed fit with dropped shoulders, length extending to mid-thigh, color slate blue (#5D6E78), fabric weight suitable for heavy insulation. Base layer: Heavyweight merino wool turtleneck sweater, crew neck with ribbed hem, length hitting the waist, color charcoal grey (#36454F), fabric offering natural odor resistance and warmth. Bottoms: Dark denim jeans, straight-leg cut that skims the thigh without squeezing, length cropped slightly above the ankle to allow boot wear, color deep black (#0A0E11), fabric with a subtle brushed interior for comfort in cold. Footwear: Suede Chelsea boots, mid-calf height with a low block heel, rounded toe design, color rich mahogany (#4E2621), fabric treated with water-resistant coating. Accessories: Leather gloves with sheepskin lining, classic five-finger design, color dark brown (#3F2820), and a wool beanie with a folded brim, ribbed cuff, color forest green (#1B4D3E). This outfit balances your request for an everyday-to-neat aesthetic while strictly adhering to the harsh -15 °C winter conditions, ensuring you remain warm enough for walking in snow without compromising style. The dark monochromatic base with a muted blue outer layer creates a refined, neat silhouette appropriate for daytime errands or casual meetings in severe weather. Every textile selected prioritizes thermal retention and wind protection, while the tailored lengths of the jeans and boots prevent fabric from freezing directly against your skin during movement."}
+
+── ВІДПОВІДЬ (1431 симв., 344.1 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Wool-cashmere blend parka",
+      "details": "Relaxed fit with dropped shoulders, length extending to mid-thigh, suitable for heavy insulation",
+      "slot": "outerwear",
+      "color_hex": "#5D6E78",
+      "worn": true
+    },
+    {
+      "name": "Heavyweight merino wool turtleneck sweater",
+      "details": "Crew neck with ribbed hem, length hitting the waist, offering natural odor resistance and warmth",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Dark denim jeans",
+      "details": "Straight-leg cut that skims the thigh without squeezing, length cropped slightly above the ankle to allow boot wear, fabric with a subtle brushed interior for comfort in cold",
+      "slot": "bottoms",
+      "color_hex": "#0A0E11",
+      "worn": true
+    },
+    {
+      "name": "Suede Chelsea boots",
+      "details": "Mid-calf height with a low block heel, rounded toe design, treated with water-resistant coating",
+      "slot": "shoes",
+      "color_hex": "#4E2621",
+      "worn": true
+    },
+    {
+      "name": "Leather gloves",
+      "details": "Sheepskein lining, classic five-finger design",
+      "slot": "accessory",
+      "color_hex": "#3F2820",
+      "worn": true
+    },
+    {
+      "name": "Wool beanie",
+      "details": "Folded brim, ribbed cuff",
+      "slot": "headwear",
+      "color_hex": "#1B4D3E",
+      "worn": true
+    }
+  ]
+}

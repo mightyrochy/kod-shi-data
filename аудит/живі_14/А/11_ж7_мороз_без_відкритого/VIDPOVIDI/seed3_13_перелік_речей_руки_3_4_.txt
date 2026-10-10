@@ -1,0 +1,50 @@
+── ПРОМПТ (2637 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Faux shearling coat in a structured oversized cut reaching mid-thigh, color #d4c5b2, fabric: soft nappa leather and plush synthetic fur blend.\nHigh-neck merino wool turtleneck sweater with a relaxed drape fit, length hitting just below the hips, color #e8dcc9, fabric: 100% virgin wool.\nSlim-fit straight-leg trousers made of heavy-weight dark denim to resist snow accumulation, length finishing at the ankle bone, color #2b2d35, fabric: 14oz raw indigo cotton with a light stone wash.\nChunky combat boot style sneakers designed for walking on packed snow, sole patterned for deep grip, height reaching mid-calf, color #ffffff with #000000 rubber accents, fabric: waterproof nylon upper and EVA foam cushioning.\nGold-tone stud choker necklace to add a subtle metallic contrast against the muted winter palette, color #f4d03f, metal: recycled 14k gold plated brass.\nTote bag in quilted faux leather with magnetic closure for essential warmers, shape is slouchy rectangle, color #c2b296, fabric: vegan leather with cotton lining.\nThis ensemble bridges the gap between everyday comfort and neat refinement while providing critical insulation against the -15°C freezing temperatures and snow. The heavy denim offers durability against harsh winter conditions without looking too severe for a midday outing, balancing the warmth of the shearling coat with breathable wool next to the skin. Subtle metallic jewelry adds a touch of elegance requested in \"oshatnist\" (imposing/elegant) style without compromising on functionality for walking in snowy weather."}
+
+── ВІДПОВІДЬ (1632 симв., 340.6 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Faux shearling coat",
+      "details": "Structured oversized cut reaching mid-thigh, fabric: soft nappa leather and plush synthetic fur blend",
+      "slot": "outerwear",
+      "color_hex": "#d4c5b2",
+      "worn": true
+    },
+    {
+      "name": "Merino wool turtleneck sweater",
+      "details": "High-neck relaxed drape fit, length hitting just below the hips, fabric: 100% virgin wool",
+      "slot": "top",
+      "color_hex": "#e8dcc9",
+      "worn": true
+    },
+    {
+      "name": "Slim-fit straight-leg trousers",
+      "details": "Heavy-weight dark denim to resist snow accumulation, length finishing at the ankle bone, fabric: 14oz raw indigo cotton with a light stone wash",
+      "slot": "bottom",
+      "color_hex": "#2b2d35",
+      "worn": true
+    },
+    {
+      "name": "Chunky combat boot style sneakers",
+      "details": "Designed for walking on packed snow, sole patterned for deep grip, height reaching mid-calf, fabric: waterproof nylon upper and EVA foam cushioning with rubber accents",
+      "slot": "shoes",
+      "color_hex": "#ffffff",
+      "worn": true
+    },
+    {
+      "name": "Gold-tone stud choker necklace",
+      "details": "Subtle metallic contrast against the muted winter palette, metal: recycled 14k gold plated brass",
+      "slot": "collar_necklace",
+      "color_hex": "#f4d03f",
+      "worn": true
+    },
+    {
+      "name": "Tote bag",
+      "details": "Quilted faux leather with magnetic closure, shape is slouchy rectangle, fabric: vegan leather with cotton lining",
+      "slot": "bag",
+      "color_hex": "#c2b296",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+── ПРОМПТ (7536 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_code_unknown — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- bag — сумка.
+- belt — пояс.
+- bottom — низ.
+- crossbody — кросбоді.
+- hand — рука.
+- necklace — намисто.
+- outerwear — верхній шар.
+- shoes — взуття.
+- shoulder — плече.
+- top — верх.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки.
+
+ЗАЯВИ:
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- colour_word_not_photo — the colour of the named items comes from a word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_look_contrast_matches_hers — so the code cannot tell whether the outfit's contrast matches her own.
+- cannot_tell_look_follows_her_combinations — so the code cannot tell whether the outfit's colours follow the logic of her combinations.
+- cannot_tell_accent_echoed — so the code cannot tell whether the accent colour repeats elsewhere in the outfit.
+- cannot_tell_two_accent_surfaces_match — so the code cannot tell whether two accent items match exactly in colour.
+- cannot_tell_item_off_palette — so the code cannot tell whether the item's colour lies outside her palette.
+- cannot_tell_colour_from_eyes — so the code cannot tell whether the colour comes from the family of her eyes.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- sole_grip_unknown_ice — the card does not say whether the sole grips on ice, and today there is black ice (values: item — item name).
+- outer_ease_not_in_feed — the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — item names).
+- outer_shoulder_not_measured — the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "belt", "colour": "бузковий"}]}}, {"code": "cannot_tell_item_holds_scheme_hue"}]},
+{"н": 2, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "bag", "colour": "фіолетовий"}]}}, {"code": "cannot_tell_item_holds_scheme_hue"}]},
+{"н": 3, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "belt", "colour": "бузковий"}]}}, {"code": "cannot_tell_item_off_palette"}]},
+{"н": 4, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "necklace", "colour": "молочний"}, {"slot": "belt", "colour": "бузковий"}, {"slot": "top", "colour": "бежевий"}, {"slot": "bag", "colour": "фіолетовий"}, {"slot": "bottom", "colour": "сірий"}, {"slot": "shoes", "colour": "бежевий"}, {"slot": "outerwear", "colour": "сірий"}]}}, {"code": "cannot_tell_look_contrast_matches_hers"}]},
+{"н": 5, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "belt", "colour": "бузковий"}, {"slot": "bag", "colour": "фіолетовий"}]}}, {"code": "cannot_tell_look_follows_her_combinations"}]},
+{"н": 6, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "belt", "colour": "бузковий"}, {"slot": "bag", "colour": "фіолетовий"}]}}, {"code": "cannot_tell_colour_from_eyes"}]},
+{"н": 7, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "belt", "colour": "бузковий"}, {"slot": "bag", "colour": "фіолетовий"}]}}, {"code": "cannot_tell_accent_echoed"}]},
+{"н": 8, "вид": "card_code_unknown", "заяви": [{"code": "outer_ease_not_in_feed", "values": {"items": [{"free_text": "Подовжений двобортний жакет", "lang": "uk"}, {"free_text": "Пряме пальто чорна ялинка з блиском", "lang": "uk"}]}}]},
+{"н": 9, "вид": "card_code_unknown", "заяви": [{"code": "outer_shoulder_not_measured", "values": {"item": {"free_text": "Пряме пальто чорна ялинка з блиском", "lang": "uk"}}}]},
+{"н": 10, "вид": "card_code_unknown", "заяви": [{"code": "sole_grip_unknown_ice", "values": {"item": {"free_text": "Чоботи шкіряні бежеві", "lang": "uk"}}}]},
+{"н": 11, "вид": "card_code_unknown", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Фіолетова шкіряна сумка", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
+{"н": 12, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "belt", "colour": "бузковий"}, {"slot": "bag", "colour": "фіолетовий"}]}}, {"code": "cannot_tell_two_accent_surfaces_match"}]}
+]
+
+── ВІДПОВІДЬ (1392 симв., 79.1 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю, чи підходить бузковий пояс до твого образу.",
+  "2": "Колір фіолетової сумки я визначила за назвою з картки, а не по фотографії. Не можу сказати, чи відповідає він обраній палітрі.",
+  "3": "Я знаю лише колір пояса — бузковий. Не впевнена, що цей відтінок у твоїй палітрі.",
+  "4": "Кольори всіх речей я визначила за назвами з карток. Я не можу сказати, чи контраст цього образу тобі личить.",
+  "5": "Я знаю кольори пояса і сумки — бузковий та фіолетовий відповідно. Не впевнена, що вони поєднуються між собою у твоїй системі комбінацій.",
+  "6": "Кольори пояса і сумки я визначила за назвами з карток. Я не знаю, чи підходять ці кольори до відтінку очей.",
+  "7": "Я знаю кольори пояса і сумки — бузковий та фіолетовий відповідно. Не можу сказати, чи повторюється акцентний колір в іншому місці образу.",
+  "8": "Немає інформації про ширину подовженого жакета та чорного пальто з блиском. Я не знаю, чи зручно носити їх разом.",
+  "9": "Я не можу сказати, чи підходить ширина плечей у чорного пальта з блиском.",
+  "10": "Немає інформації про те, як шкіряні бежеві чоботи поводяться на льоду. Сьогодні ожеледиця.",
+  "11": "Ти ще не вирішила, як носити фіолетову сумку — в руці, на плечі чи через тіло.",
+  "12": "Я знаю кольори пояса і сумки — бузковий та фіолетовий відповідно. Не можу сказати, чи точно збігаються ці два акцентні предмети за кольором."
+}
+```
