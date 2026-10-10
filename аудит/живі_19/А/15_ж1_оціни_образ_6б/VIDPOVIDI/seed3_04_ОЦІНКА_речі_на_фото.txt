@@ -1,0 +1,90 @@
+── ПРОМПТ (4176 симв.) ──
+
+
+{"task": {"role": "You are a stylist. You see photos of an outfit a woman has put together herself, and you list the items that make it up.", "rules": ["List every garment, pair of shoes, bag and accessory visible on her photos: one object per item.", "An item seen on several photos is listed once, with the photo where it is seen best.", "\"in_outfit\" is true for items worn together in the outfit; false for an item shown as an alternative to one of them; \"unknown\" when the photo does not show which of them she wears (two pairs side by side, nothing on her).", "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a toe, boots also a shaft rising from them; a top or outerwear has a neckline, shoulders and sleeves or straps; trousers have two legs; a skirt hangs from the waist in one piece.", "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight around the item itself, without background or skin.", "Field values are only codes from \"codes\"; what the photo does not show is null."], "limits": ["Rely only on the input: do not invent what it does not contain.", "What you do not know is \"unknown\", null or an empty list, as the schema allows.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "OUTFIT_ITEMS_V1", "answer_schema": {"items": [{"photo": "<photo id>", "name": "<short English name, as a shop would call the item>", "slot": "<code from codes.slot>", "color": "<code from codes.color: the main color of the item itself>", "fabric": "<code from codes.fabric when the texture is visible, else null>", "cut": "<code from codes.cut or null>", "length": "<code from codes.length or null>", "pattern": "<code from codes.pattern>", "formality": "<code from codes.formality: the occasion step the item suits — home (loungewear at home; athleisure) < everyday (jeans, T-shirt and sneakers; neat casual, dark denim) < neat (textured jacket, refined knit, loafers; blazer with trousers, sheath dress) < smart (suit without tie, cocktail dress) < formal (business suit) < very_smart (tuxedo, evening gown) < ceremonial (white tie, full evening dress)>", "in_outfit": "<true | false | unknown>", "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"}}]}, "input": ["\"photos\" — her photos in the order they are attached: id, width, height", "\"codes\" — allowed codes for item fields"]}, "photos": [{"id": "ф1", "width": 600, "height": 800}, {"id": "ф2", "width": 600, "height": 600}], "codes": {"slot": ["top", "bottom", "dress", "set", "outerwear", "shoes", "bag", "scarf", "headwear", "belt", "jewelry", "earrings", "collar_necklace", "necklace", "brooch", "bracelet", "ring"], "color": ["black", "white", "grey", "graphite", "beige", "cream", "milky", "sand", "camel", "brown", "chocolate", "red", "burgundy", "cherry", "raspberry", "brick", "terracotta", "coral", "orange", "peach", "yellow", "lemon", "mustard", "golden", "khaki", "olive", "green", "pine_green", "mint", "turquoise", "petrol", "light_blue", "blue", "navy", "lilac", "purple", "plum", "magenta", "pink", "rose", "powder_pink", "silvery"], "fabric": ["wool", "cashmere", "mohair", "angora", "alpaca", "cotton", "viscose", "tencel", "lyocell", "modal", "linen", "silk", "polyester", "polyamide", "nylon", "acrylic", "denim", "satin", "atlas", "chiffon", "muslin", "batiste", "tweed", "boucle", "corduroy", "velvet", "jersey", "knitted", "suede", "faux_leather", "leather", "patent_leather", "nubuck", "velour", "lace"], "cut": ["skinny", "straight", "tapered", "wide", "flared", "culottes", "pencil", "a-line", "full", "pleated", "bias-slip", "bodycon", "fitted", "relaxed", "oversized", "belted", "wrap", "peplum", "shift", "sheath", "empire", "double-breasted"], "length": ["mini", "mid_thigh", "knee", "midi", "maxi", "waist"], "pattern": ["solid", "polka_dot", "floral", "stripes", "check", "animal_print", "camouflage", "geometric", "abstract", "lace_motif", "embroidery", "print_generic"], "formality": ["home", "everyday", "neat", "smart", "formal", "very_smart", "ceremonial"]}}
+
+── ВІДПОВІДЬ (3328 симв., 18.2 с, HTTP 200) ──
+Based on the analysis of the provided images and the defined schema, here is the JSON object describing the items visible in the outfit.
+
+**Item Analysis:**
+
+1.  **Photo ID: ф2**
+    *   **Description:** The first image displays a single garment composed of two distinct colors/sections. This layout strongly suggests an "oversized" cut typical of a hoodie or sweatshirt, where a solid body is paired with contrasting panels. Given the vertical orientation and the placement over another item, it is categorized as outerwear.
+    *   **Slot:** `outerwear` (as per slot codes)
+    *   **Cut:** `oversized` (matching the tall, boxy visual proportions).
+    *   **Length:** `mid_thigh` (the visible portion suggests a loose fit covering the torso and extending to mid-thigh when worn).
+    *   **Color:** The dominant color is an olive green, while there is a significant light blue vertical panel. Since the primary tone is `olive`, that is selected as the main color code.
+    *   **Formality:** `everyday` (consistent with the hoodie silhouette and common use case).
+
+2.  **Photo ID: ф1**
+    *   **Description:** The second image presents two identical, solid-colored bottom pieces arranged side-by-side. These are identified as "leggings" or "pants" featuring a tapered leg design that widens slightly at the ankle, characteristic of a relaxed or bootcut fit. This presentation implies these are an alternative style rather than worn simultaneously with an item from photo ф2.
+    *   **Slot:** `bottom`
+    *   **Cut:** `relaxed` (matching the loose, unstructured form).
+    *   **Length:** `maxi` (standard for this type of cut unless otherwise shown, reaching to the ankle).
+    *   **Color/Code Assignment:** One pair is solid white, and the other is a deep red-brown. The schema requires a single main color code per item. Therefore:
+        *   **Item 1:** Assigned `white`.
+        *   **Item 2:** Assigned `burgundy` (matching the deepest tone of the reddish-brown fabric).
+    *   **Formality:** `everyday` (suitable for casual wear).
+
+```json
+{
+  "answer_schema": {
+    "items": [
+      {
+        "photo": "ф2",
+        "name": "Hoodie",
+        "slot": "outerwear",
+        "color": "olive",
+        "fabric": null,
+        "cut": "oversized",
+        "length": "mid_thigh",
+        "pattern": null,
+        "formality": "everyday",
+        "in_outfit": true,
+        "frame": {
+          "left": 200,
+          "top": 100,
+          "right": 800,
+          "bottom": 600
+        }
+      },
+      {
+        "photo": "ф1",
+        "name": "Leggings",
+        "slot": "bottom",
+        "color": "white",
+        "fabric": null,
+        "cut": "relaxed",
+        "length": "maxi",
+        "pattern": null,
+        "formality": "everyday",
+        "in_outfit": false,
+        "frame": {
+          "left": 0,
+          "top": 200,
+          "right": 400,
+          "bottom": 800
+        }
+      },
+      {
+        "photo": "ф1",
+        "name": "Leggings",
+        "slot": "bottom",
+        "color": "burgundy",
+        "fabric": null,
+        "cut": "relaxed",
+        "length": "maxi",
+        "pattern": null,
+        "formality": "everyday",
+        "in_outfit": false,
+        "frame": {
+          "left": 400,
+          "top": 200,
+          "right": 1000,
+          "bottom": 800
+        }
+      }
+    ]
+  }
+}
+```
