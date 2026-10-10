@@ -13,9 +13,8 @@ git = lambda *а: subprocess.run(["git", "-c", "core.quotepath=false", *а], cap
 бачено, з = set(), {}
 for г in ("origin/claude/zhyvi-13", "origin/claude/zhyvi-14"):
     for ф in git("ls-tree", "-r", "--name-only", г, "--", "../аудит/").split("\n"):
-        if not re.search(r"/VIDPOVIDI/.*(ОБРАЗИ_V1|повтор_формату)", ф):
-            continue
-        пр, _, в = git("show", "%s:%s" % (г, ф)).partition("\n── ВІДПОВІДЬ")
+        пр, _, в = git("show", "%s:%s" % (г, ф)).partition("\n── ВІДПОВІДЬ") if re.search(
+            r"/VIDPOVIDI/.*(ОБРАЗИ_V1|повтор_формату)", ф) else ("", "", "")
         в = в.partition("\n")[2].strip()
         if "OUTFITS_V1" not in пр or not в or hashlib.md5(в.encode()).digest() in бачено:
             continue
