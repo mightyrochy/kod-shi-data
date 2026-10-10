@@ -2149,7 +2149,8 @@ _ПОЛЯ_EN = {
     # Рядок 2141: «образ із моєю блузою з фото» MamayLM не клала в own_items — опис казав лише «described
     # in words», і блуза до коду не дійшла: промпт П-1 ніс лише фото
     "own_items": "her own items she names: everything she calls hers («моя», «у мене є», «з моєї шафи», "
-                 "the item in her photo) — each item separately, also when she sent a photo",
+                 "the item in her photo) — each item separately, also when she sent a photo, with the codes of what "
+                 "she says about it: slot, item type, fabric, colour",
     "question": "her question, her words",
     "rest": "whatever else her new message says that fits no field above, verbatim",
     "stylist_note": "only when her words about the event are hard to read without context (a local custom, "
