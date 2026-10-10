@@ -1265,6 +1265,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "cannot_tell_colour_block": "so the code cannot tell how many colour families the big items carry",
     "cannot_tell_item_carries_interest": "so the code cannot tell whether the item's colour is strong enough "
                                          "to carry interest",
+    # МОВА-КОДИ-5 (рядок 4250): R-PRN-03 без виміру світлоти двох речей одного мотиву — доти лише фраза коду
+    "cannot_tell_print_motif_value_difference": "so the code cannot tell whether two items of one print motif "
+                                                "differ in lightness",
     # ОПИС-1 (рядок 1254, K-COL-06): одиниці «dE00», «hex», «L*» у визначеннях шар повторював у реченні
     # для неї («розкид близько 11,5 dE00 … за двома виміряними hex»), сторож латиниці (П-3) знімав
     # речення, і питання «код не знає» лишалось без тексту — 9 питань у 8 прогонах 02.10. Зміст той
@@ -3280,6 +3283,19 @@ def заява(код, **значення):
     if код not in ЗАЯВИ:
         raise KeyError("заява поза словником ЗАЯВИ: %r" % (код,))
     return dict(code=код, values=значення) if значення else dict(code=код)
+
+
+def суть_кодом(заяви, речі=()):
+    """`суть` знахідки внутрішньою мовою (п.12, рядок 4250): коди її заяв через « + » (як їх друкує
+    звіт, `показ.html: питанняКодомП`) і id речей у дужках, без слів. Це діагноз у звіті власника,
+    ярлик сліду правил і ключ дедуплікації (правило, суть): дві знахідки одного правила над різними
+    речами чи з різних причин не зливаються. Речення пише мовна модель із самих `заяви`."""
+    коди = [з.get("code") if isinstance(з, dict) else з for з in заяви or ()]
+    for к in коди:
+        if к not in ЗАЯВИ:
+            raise KeyError("заява поза словником ЗАЯВИ: %r" % (к,))
+    ід = [str(x) for x in dict.fromkeys(речі or ()) if x is not None and str(x).strip()]
+    return " + ".join(коди) + (" [%s]" % ", ".join(ід) if ід else "")
 
 
 def повідомлення(вид, *заяви):
