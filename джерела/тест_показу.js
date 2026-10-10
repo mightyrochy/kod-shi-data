@@ -563,7 +563,7 @@ function мостПриміркиЗаглушка(w){
     w.eval("містП = (...а) => window._міст(...а); модельМовиП = (...а) => window._модель(...а);");
     const м = (к_, код) => ({kind: к_, statements: [{code: код}]});
     const к = {рука: "1", текст: "", опис: "", як_носити: [], питання: [], неповний: "",
-               схема_жінці: м("card_scheme", "scheme_chosen_by_her"), дібрав_код: м("card_added_by_code", "item_outside_chosen_scheme"),
+               схема_жінці: м("card_scheme", "scheme_chosen_by_her"), дібрав_код: м("card_added_by_selection", "item_outside_chosen_scheme"),
                речі: [{id: "ж-1@a", назва: "Сукня", слот: "сукня", ціна: 1000},
                       {id: "ж-2@a", назва: "Пальто", слот: "пальто", ціна: 2000, додав_код: true,
                        чому_додав: м("item_source", "item_outside_chosen_scheme")}]};
@@ -575,7 +575,7 @@ function мостПриміркиЗаглушка(w){
          && /layer_failed: .*599/.test((к.мова_шару || []).find(з => з.де === "hand_1").причина), [викликів, к.мова_шару]);
     викликів = 0; впаде = 2;
     const к2 = {рука: "1", текст: "", опис: "", як_носити: [], питання: [], неповний: "",
-                схема_жінці: м("card_scheme", "scheme_taken_by_code"), дібрав_код: м("card_added_by_code", "item_failed_check_unnamed"),
+                схема_жінці: м("card_scheme", "scheme_taken_by_default"), дібрав_код: м("card_added_by_selection", "item_failed_check_unnamed"),
                 речі: [{id: "ж-1@a", назва: "Сукня", слот: "сукня", ціна: 1000},
                        {id: "ж-2@a", назва: "Пальто", слот: "пальто", ціна: 2000, додав_код: true,
                         чому_додав: м("item_source", "item_failed_check_unnamed")}]};
@@ -596,7 +596,7 @@ function мостПриміркиЗаглушка(w){
          && /Пальто: Звідки ця річ — без пояснення словами/.test(бс.textContent), бс && бс.textContent);
     викликів = 0; впаде = 0;
     await w.eval("(к => мовоюКарткуП(к, 'hand_1'))")(Object.assign({}, к2, {
-      схема_жінці: м("card_scheme", "scheme_taken_by_code"), дібрав_код: м("card_added_by_code", "item_failed_check_unnamed"),
+      схема_жінці: м("card_scheme", "scheme_taken_by_default"), дібрав_код: м("card_added_by_selection", "item_failed_check_unnamed"),
       речі: [к2.речі[0], Object.assign({}, к2.речі[1], {чому_додав: м("item_source", "item_failed_check_unnamed")})]}));
     тест("набір заяв, що дав написи, у пам'ять не пішов: той самий набір удруге питає модель",
          викликів === 1, викликів);
@@ -613,7 +613,7 @@ function мостПриміркиЗаглушка(w){
        речень, ні блоку, ні фраз коду. Міст і модель — заглушки контракту `мова`. */
     const база = "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1";
     const питання = n => Array.from({length: n}, (_, і) => ({правило: "K-REG-03",
-      повідомлення: {kind: "card_code_unknown", statements: [{code: "items_register_unknown", values: {count: і + 1}}]}}));
+      повідомлення: {kind: "card_unchecked", statements: [{code: "items_register_unknown", values: {count: і + 1}}]}}));
     {
       const {w, d, помилки} = сторінка({url: база});
       await чекатиСтарт(w);
@@ -632,7 +632,7 @@ function мостПриміркиЗаглушка(w){
       /* рядок 1447: питання `для_всіх` (заяви без значень — однакові на кожній картці) шар не пише */
       const к = {рука: "1", речі: [], опис: "", як_носити: [], неповний: "", текст: "",
                  питання: питання(20).concat([{правило: "K-WCH-01", для_всіх: 1,
-                   повідомлення: {kind: "card_code_unknown", statements: [{code: "no_input_watch_size"}]}}])};
+                   повідомлення: {kind: "card_unchecked", statements: [{code: "no_input_watch_size"}]}}])};
       await w.eval("(к => мовоюКарткуП(к, 'hand_1'))")(к);
       тест("20 питань + напис розкривача — двома викликами (15 + 6), ключами «питання.N» і «кнопка»; `для_всіх` у шар не йде",
            виклики.length === 2 && виклики[0].length === 15 && виклики[1].length === 6
@@ -684,10 +684,10 @@ function мостПриміркиЗаглушка(w){
       w._модель = async () => "{}";
       w.eval("містП = (...а) => window._міст(...а); модельМовиП = (...а) => window._модель(...а);");
       const колір = (код, і) => ({правило: "K-COL-06", на_розгортання: 1, речі: ["р" + і],
-        повідомлення: {kind: "card_code_unknown", statements: [{code: код}]}});
+        повідомлення: {kind: "card_unchecked", statements: [{code: код}]}});
       const к = {рука: "1", речі: [], опис: "", як_носити: [], неповний: "", текст: "",
                  питання: питання(3).concat([колір("cannot_tell_two_different_whites", 3), колір("cannot_tell_two_neutrals_distinct", 4),
-                   {правило: "площа", для_всіх: 1, повідомлення: {kind: "card_code_unknown", statements: [{code: "areas_not_measured"}]}}])};
+                   {правило: "площа", для_всіх: 1, повідомлення: {kind: "card_unchecked", statements: [{code: "areas_not_measured"}]}}])};
       await w.eval("(к => мовоюКарткуП(к, 'hand_1'))")(к);
       тест("збирання: шар пише 3 питання й напис, питань `на_розгортання` у виклику нема",
            виклики.length === 1 && виклики[0].join() === "питання.0,питання.1,питання.2,кнопка", виклики);

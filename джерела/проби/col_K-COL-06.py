@@ -62,7 +62,7 @@ q = next(x for x in (вм2.get("питання") or []) if x.get("правило
 коди = [с.get("code") for с in ((q.get("повідомлення") or {}).get("statements") or [])]
 print("   доїхало до жінки: канал «питання» · %s · коди %s"
       % ((q.get("повідомлення") or {}).get("kind"), коди))
-assert (q.get("повідомлення") or {}).get("kind") == "card_code_unknown", q
+assert (q.get("повідомлення") or {}).get("kind") == "card_unchecked", q
 assert "cannot_tell_two_different_whites" in коди, коди
 assert set(ід2) <= set(q.get("речі") or []), q
 print("   бракує: %s" % z2["бракує"][:88])

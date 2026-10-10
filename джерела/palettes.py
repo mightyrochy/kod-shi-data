@@ -1615,7 +1615,7 @@ def повідомлення_схеми_жінці(речі, спец_слоти
     if підміна:
         return _ВМ.повідомлення(
             "card_scheme",
-            _ВМ.заява("scheme_not_in_code_substituted",
+            _ВМ.заява("scheme_not_in_set_substituted",
                       asked=str(підміна.get("просили") or "").replace("_", " "),
                       given=str(підміна.get("дісталось") or "").replace("_", " ") or _ВМ.UNKNOWN),
             _ВМ.заява("not_a_refusal_of_her_choice"))
@@ -1629,7 +1629,7 @@ def повідомлення_схеми_жінці(речі, спец_слоти
             "card_scheme",
             _ВМ.заява("mourning_funeral" if спец_слоти["_траур"] == "похорон" else "mourning_period"),
             # СХЕМУ ОБРАЛА СТИЛІСТКА (рядок 1405): доти тут стояло «взяв код» і на її схемі
-            *([_ВМ.заява("scheme_chosen_by_stylist" if обрана == "стилістка" else "scheme_taken_by_code",
+            *([_ВМ.заява("scheme_chosen_by_stylist" if обрана == "стилістка" else "scheme_taken_by_default",
                          scheme=_сх)] if _сх else []),
             _ВМ.заява("scheme_asks_no_colour_in_mourning"))
     # СЛУЖБА В ЦЕРКВІ (рядок 1405): нейтральний образ — доречний, вибачатись нема за що
@@ -1656,7 +1656,7 @@ def повідомлення_схеми_жінці(речі, спец_слоти
         return _ВМ.повідомлення(
             "card_scheme",
             _ВМ.заява("scheme_chosen_by_stylist" if обрана == "стилістка" else
-                      "scheme_chosen_by_her" if обрана else "scheme_taken_by_code", scheme=схема),
+                      "scheme_chosen_by_her" if обрана else "scheme_taken_by_default", scheme=схема),
             _ВМ.заява("scheme_tonal_tone_not_on_large_items",
                       scheme=_ВМ.код_або_невідомо("palette_scheme", "тональна"),
                       large_measured=тт["великих_виміряно"],
@@ -1680,7 +1680,7 @@ def повідомлення_схеми_жінці(речі, спец_слоти
     # П-7: `обрана` — тристан: True (вона), «стилістка» (`вибір_палітри`: схему, яку вона лишила
     # стилістці, обрала модель), False (ранг коду) — і заява про те, чия це схема, своя на кожен
     чия = _ВМ.заява("scheme_chosen_by_stylist" if обрана == "стилістка" else
-                    "scheme_chosen_by_her" if обрана else "scheme_taken_by_code", scheme=схема)
+                    "scheme_chosen_by_her" if обрана else "scheme_taken_by_default", scheme=схема)
     # ── КОЛІР СХЕМИ НЕСЕ ЇЇ РІЧ З ФОТО (рядок 152) ──────────────────────────
     # Річ, яку вона принесла, стоїть у кожному образі й може нести колір схеми, навіть
     # коли вимір читає її приглушеною нейтраллю (м'ятні штани: C* 6, тон 115°). Тоді

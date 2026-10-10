@@ -781,7 +781,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "no_photo_reason": "рядок біля речі на картці: чому в неї нема знімка",
     "item_source": "рядок біля речі на картці: звідки вона в образі",
     "card_incomplete": "рядок на картці образу про те, чого в ньому нема",
-    "card_added_by_code": "рядок на картці образу про те, що в ньому зробив ДОБІР, а не стилістка: "
+    "card_added_by_selection": "рядок на картці образу про те, що в ньому зробив ДОБІР, а не стилістка: "
                           "речі, докладені в порожні місця, і речі, зняті або замінені, "
                           "бо з ними образ не проходив перевірку (ярус 4)",
     # ФОТО-1 (02.10.2026, аудит/ПРОДУКТ.md п.17): крок опису бачив фото речей і замінив одну річ запасною того
@@ -791,7 +791,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     # Рядки 1447, 1604 (09.10.2026): у визначеннях заяв цього блоку «the code» — сама перевірка
     # образу; доти модель робила з нього підмет («Код не знає…», 215 речень на 02.10), і жінка
     # читала «код» як дійову особу (п.21). Хто «знає» — сказано тут, у визначенні виду.
-    "card_code_unknown": "рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось "
+    "card_unchecked": "рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось "
                          "не перевіреним — про речі, про неї чи про її день — і чого для цього "
                          "бракує. «the code» у визначеннях його заяв — це перевірка образу, яку "
                          "робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») "
@@ -895,7 +895,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "rarer_than_everyday": "this scheme is less of an everyday one",
     "colour_families_at_once": "how many colour families the scheme holds at once (values: families — a "
                                "number)",
-    "code_does_not_advise_here": "for this outing the stylist does not advise it by itself",
+    "stylist_does_not_advise_here": "for this outing the stylist does not advise it by itself",
     "no_catalogue_filter_yet": "there is no selection for this scheme yet: if she chooses it, no items are "
                                "picked, and this is said in a line instead of silence",
     # ── КАРТКА ОБРАЗУ: ЧИ ВИЙШЛА ОБІЦЯНКА СХЕМИ ПАЛІТРИ (рядки 127, 133, 145) ──
@@ -908,9 +908,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                             "did not choose it (values: scheme — the scheme's name)",
     "scheme_chosen_by_stylist": "the stylist chose this outfit's palette scheme for her (values: scheme — the "
                                 "scheme's name)",
-    "scheme_taken_by_code": "this outfit's palette scheme was taken by default; she did not choose it "
+    "scheme_taken_by_default": "this outfit's palette scheme was taken by default; she did not choose it "
                             "(values: scheme — the scheme's name)",
-    "scheme_not_in_code_substituted": "the named scheme is not in today's set, so the outfit was built by "
+    "scheme_not_in_set_substituted": "the named scheme is not in today's set, so the outfit was built by "
                                       "another one (values: asked — the one she asked for, given — the one it "
                                       "was built by)",
     "not_a_refusal_of_her_choice": "this is not a refusal of her choice: the scheme simply does not exist "
@@ -1110,13 +1110,16 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "catalogue_has_none_for_case": "the catalogue has no needed item for this case, so the outfit stays "
                                    "incomplete; a gap in the catalogue, not in the display (values: missing — "
                                    "code of what is missing)",
-    "code_added_to_empty_slots": "the stylist left these places of the outfit empty and the code filled them; "
-                                 "the outfit is not ready without them (values: slots — slot codes)",
+    # КАРТКА-СЛОВА (рядок 3657): «the code filled them» модель переносила дослівно — «а код їх
+    # заповнив» (ЖИВІ-14 №11 рука 2), і жінка читала «код» дійовою особою (п.21)
+    "selection_filled_empty_slots": "the stylist left these places of the outfit empty and the selection "
+                                    "filled them with items from the catalogue; the outfit is not ready "
+                                    "without them (values: slots — slot codes)",
     "weather_needs_outerwear": "this weather cannot be met without a coat or a warm jacket (values: "
                                "temperature_c — the degrees she named; weather_feel — instead of temperature_c when "
                                "she named no degrees, the weather as she put it; precipitation — the code of wet precipitation when there is any)",
     # ── КАРТКА ОБРАЗУ: ЧОМУ БІЛЯ РЕЧІ НЕМА ЗНІМКА ────────────────────────────
-    "item_added_by_code": "this item was picked by the selection, not by the stylist",
+    "item_added_by_selection": "this item was picked by the selection, not by the stylist",
     "no_photo_feed_gave_none": "the shop gave no photo of this item in the feed",
     "no_photo_shop_forbids": "the shop does not allow its photos to be shown on other sites",
     "no_photo_shop_placeholder": "the shop put a placeholder instead of the item's photo in the feed",
@@ -1153,9 +1156,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # носиш.») і дописував її до повідомлення добору через `"%s %s"` — тобто в рядок ішов
     # `repr` словника внутрішньої мови, і жінка читала його на картці. Тепер ярус віддає
     # заяви, і повідомлення в полі лишається ОДНЕ.
-    "code_removed_item_from_stylist_look": "the named item was removed from the stylist's outfit (values: "
+    "selection_removed_item_from_stylist_look": "the named item was removed from the stylist's outfit (values: "
                                            "item — the item's name)",
-    "code_swapped_item_from_stylist_look": "the named item was replaced with another one from the same "
+    "selection_swapped_item_from_stylist_look": "the named item was replaced with another one from the same "
                                            "selection (values: was — what it was, now — what it is now)",
     # ОПИС-1 (рядок 980): шар вставляв назву крамниці в речення цілком («замінила «Літні туфлі, ATTICO,
     # шкіра, колір кольоровий» на …», ж7_ювілей_свекрухи 02.10) — назва тут дані, а не слова для неї.
@@ -1170,7 +1173,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "clearly not the one the shop named (say that it is the colour that "
                                         "differs), kind — it is another kind of item, occasion — it does not "
                                         "suit her occasion)",
-    "code_removed_this_layer": "the layer named above is exactly the one removed from the stylist's outfit",
+    "selection_removed_this_layer": "the layer named above is exactly the one removed from the stylist's outfit",
     "set_already_has_top_and_bottom": "the set already has its own top and bottom, so a separate item there "
                                       "would be a second one in the same place (values: slot — slot code)",
     "two_items_one_slot_not_worn": "two items in one place of an outfit are not worn",
@@ -1222,7 +1225,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # Доти кожне питання цього блоку було ФРАЗОЮ коду (`суть` знахідки), і жінка читала її
     # з сирими ключами всередині: «вимоги коду «business_casual»», «вимір людини
     # «довжина_стопи_мм»». Тепер місце, що народжує питання, віддає ЗАЯВИ кодами
-    # (`заяви` знахідки), міст складає з них повідомлення виду `card_code_unknown`, а речення
+    # (`заяви` знахідки), міст складає з них повідомлення виду `card_unchecked`, а речення
     # пише мовна модель. `суть` лишилась діагнозом суду для звіту власника (`етапи`).
     # ── колір лише словом, а не вимір (`колір_річ.без_входу_кольору`) ──────────
     "colour_word_shop": "the code knows the colour of the named items only from the shop's word, not from "
