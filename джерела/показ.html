@@ -871,6 +871,9 @@ button.як-слово{background:none;border:0;padding:0;font:inherit;color:var
    майже та сама, тож рядок не стрибає. */
 .річ .замін{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--межа-темна);
   border-radius:999px;color:var(--олівець);font-size:12.5px;line-height:1.2;padding:6px 10px;white-space:nowrap;clip-path:none}
+/* ціль дотику ≥44 px невидимо (рядок 4122): видима кнопка ~29 px, висота й ритм рядків не міняються */
+.річ .замін{position:relative}
+.річ .замін::after{content:"";position:absolute;left:-6px;right:-6px;top:50%;height:44px;transform:translateY(-50%)}
 .річ .замін svg{width:14px;height:14px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .річ.замінити .замін{background:var(--чорнило);border-color:var(--чорнило);color:var(--полотно);font-weight:600}
 /* смужка збоку — псевдоелементом, а не відступом рядка: мініатюра при позначенні не зсувається */
@@ -2554,7 +2557,14 @@ function відновитиСтанКарткиП(поз, з, ключ){
                                                     : (поле === 'верд' || поле === 'для_мене' || поле === 'річ') && в[поле] === ч.dataset.з);
     });
   });
-  к.querySelectorAll('button.замін').forEach(кн => { if (в.замінити.includes(кн.dataset.id)) виглядКнопкиЗаміниП(кн, true); });
+  /* Позначка з запису — та сама, що після тапу: річ у наборі сценарію, рядок і фото з `.замінити`; інакше напис «на заміну»
+     обіцяв би заміну, якої не буде, а наступний тап додавав би позначку замість зняти (рядок 4121). */
+  const позначені = в.замінити.filter(ід => к.querySelector('button.замін[data-id="' + ід.replace(/"/g, '\\"') + '"]'));
+  позначені.forEach(ід => НЕ_ЦЯ_П.add(ід));
+  к.querySelectorAll('button.замін').forEach(кн => { if (НЕ_ЦЯ_П.has(кн.dataset.id)){
+    виглядКнопкиЗаміниП(кн, true); if (кн.parentElement) кн.parentElement.classList.add('замінити'); } });
+  к.querySelectorAll('.ф').forEach(ф => { if (НЕ_ЦЯ_П.has(ф.dataset.id)) ф.classList.add('замінити'); });
+  if (позначені.length){ ЗАМІНУ_ВЖЕ_РОЗУМІЄ_П = true; малюватиНеЦяП(); }
   const та = $('ком-' + поз); if (та){ та.value = в.коментар; ростиПолеП(та); }
   оновитиПолеВердиктуП(поз);
   const ст = $('вст-' + поз); if (ст) ст.textContent = 'Записано.';
