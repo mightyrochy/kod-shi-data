@@ -1,0 +1,22 @@
+── ПРОМПТ (1800 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured blazer, relaxed cut, hip length, charcoal gray (#3e4a50), wool blend with stretch.\n\nHigh-top sneaker, chunky rubber sole, flat heel, crisp white (#ffffff), technical knit fabric.\n\nThis look balances the structured formality of the requested blazer with the fluid movement needed for morning yoga at +20 °C weather. The relaxed cut and stretch fabrics allow freedom of motion while maintaining a polished silhouette suitable for an active occasion. By pairing the jacket with flat, printed-free sneakers, the outfit respects her refusal against heels while keeping the overall aesthetic sporty and effortless."}
+
+── ВІДПОВІДЬ (404 симв., 104.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Structured blazer",
+      "details": "relaxed cut, hip length, wool blend with stretch",
+      "slot": "outerwear",
+      "color_hex": "#3e4a50",
+      "worn": true
+    },
+    {
+      "name": "High-top sneaker",
+      "details": "chunky rubber sole, flat heel, technical knit fabric",
+      "slot": "shoes",
+      "color_hex": "#ffffff",
+      "worn": true
+    }
+  ]
+}

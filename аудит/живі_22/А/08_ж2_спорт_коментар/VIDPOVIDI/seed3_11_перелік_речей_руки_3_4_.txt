@@ -1,0 +1,29 @@
+── ПРОМПТ (2072 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Lightweight breathable athletic top with a relaxed dropped-shoulder cut extending to mid-hip, colored in #d1ab86, made of moisture-wicking nylon-spandex blend.\nHigh-waisted yoga leggings featuring a compression fit through the thigh and tapering ankle, finished at 85cm length, solid #e0bd9a tone, constructed from stretchy recycled polyester mesh.\nMinimalist slip-on training sneaker with an ultra-thin flexible sole and flat strap closure, white leather upper, neutral earth-tone laces in #745a3b.\nThe look works because the loose top provides freedom of movement for deep stretches while the supportive leggings stay secure during flow sequences. The muted earth-toned palette complements her warm skin and dark hair without distracting from the physical practice. Since the early morning yoga session takes place above 20°C, no outer layer is needed to maintain comfort and breathability."}
+
+── ВІДПОВІДЬ (785 симв., 182.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "athletic top",
+      "details": "relaxed dropped-shoulder cut extending to mid-hip made of moisture-wicking nylon-spandex blend",
+      "slot": "top",
+      "color_hex": "#d1ab86",
+      "worn": true
+    },
+    {
+      "name": "yoga leggings",
+      "details": "high-waisted compression fit through the thigh and tapering ankle finished at 85cm length constructed from stretchy recycled polyester mesh",
+      "slot": "bottom",
+      "color_hex": "#e0bd9a",
+      "worn": true
+    },
+    {
+      "name": "training sneaker",
+      "details": "minimalist slip-on with ultra-thin flexible sole and flat strap closure white leather upper with neutral earth-tone laces",
+      "slot": "shoes",
+      "color_hex": "#745a3b",
+      "worn": true
+    }
+  ]
+}
