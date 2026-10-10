@@ -1439,7 +1439,13 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         типова = ((ім == "нагода" and джерела_досі.get("нагода") == _ПН.ТИПОВА_НАГОДА_РЕЧІ)
                   or джерела_досі.get(ім) == _ПН.ТИПОВЕ_ПОЛЕ_ФОРМИ)
         об[ім] = к if к is not None else (досі.get(ім) if є(досі.get(ім)) and not типова else None)
-    об["подія"] = _текст(в.get("event")) or _текст(досі.get("подія"))
+    # ПОДІЯ — УРИВОК НАГОДИ (рядок 4060, ЖИВІ-16 №11, ЖИВІ-18 №5): «Новорічна вечірка в ресторані» модель дала
+    # `occasion` з цим уривком, а `event` — ні; промпт каже, що назва події — опора і для event, і для коду. Без
+    # `event` ходу й події досі подією стає її уривок нагоди, що втримався (`quotes.occasion`) — її слова як є,
+    # код їх не читає (п.12); доти `case.event` такого випадку був порожній
+    цит = в.get("quotes") if isinstance(в.get("quotes"), dict) else {}
+    об["подія"] = (_текст(в.get("event")) or _текст(досі.get("подія"))
+                   or (_текст(цит.get("occasion")) if "occasion" in в else None))
     # МІСЦЕ СЛОВАМИ (рядки 472, 1434): слова тримаються при своєму місці — нове місце без слів ходу
     # давніх не бере; чи слова дійдуть до картки, звіряє `паспорт_з_json` з місцем, що стало в паспорт
     _нове_місце = об.get("місце") != досі.get("місце")
@@ -2117,12 +2123,17 @@ def _місця_вечірні_en():
 
 _ПОЛЯ_EN = {
     "occasion": "what kind of event it is",
-    "place": "where she will be",
+    # Рядок 4206 (ЖИВІ-18 №5): «Новорічна вечірка в ресторані» — `occasion` з цим уривком, а `place` — ні (Ж17 — так):
+    # правило ходу каже «place, also inside the phrase that names the event», а опис поля, на який модель дивиться,
+    # заповнюючи, — ні; код місця з назви не читає (п.12), тож лише модель
+    "place": "where she will be, also when only the phrase that names the event says it",
     "dress_code": "the dress code, when it is named",
     # Рядок 3165 (живі 12, А/07): «"yoga and coffee with a friend"» — подія англійською й у власних лапках;
     # подія йде на картку випадку, тож — її слова з листа, її мовою, лише скорочені
+    # Рядок 4209 (ЖИВІ-18 №13): «Йога зранку, потім кава з подругою» — `event` «кава з подругою», `occasion` everyday:
+    # йога випала з усього, що бачать руки 3–4 (`case` — подія й нагода); у Ж17 лишилась нагодою sport
     "event": "the event briefly: her own words from her message, in her language, shortened only by leaving "
-             "words out",
+             "words out; when she names several parts of her day, every part stays",
     "place_words": "where she will be, 1–5 words for her scenario card, in her language, capitalised (like: "
                    "Church, service; School, son's graduation; Rock club); whenever place is set, and never instead of "
                    "it: the code of the place goes into place",
@@ -2135,13 +2146,18 @@ _ПОЛЯ_EN = {
                   "limit on how much of her body she shows sets it too",
     "setting": "indoors, outdoors or mixed",
     "duration_h": "how many hours the event lasts",
-    "movement": "whether she will sit, stand, walk, walk a lot, dance, kneel or do sport",
+    # Рядок 4209: `activity` кодів спорту не має (діти, нерівний ґрунт, прогулянка, ходьба, фотосесія) — спорт її дня
+    # несе `movement: sport`, і руки 3–4 бачать його в `case` (`руки_без_коду.випадок_кодами`, `рух`)
+    "movement": "whether she will sit, stand, walk, walk a lot, dance, kneel or do sport — also when sport is only "
+                "one part of her day",
     "activity": "what she will do there",
     "surface": "what is under her feet",
     # Рядок 3454 (живі 13, №6): «субота ввечері» → `hour: 19` з цитатою — «час словами — година» правила мови
     # читалось і про пору дня без годинника; година — лише її час на годиннику, пора без нього — `part_of_day`.
+    # Рядок 4204 (ЖИВІ-18 №7–8): «субота ввечері» → `hour` 19 / «ввечері» → 18 і без `part_of_day` — шов
+    # `_година_при_порі` тепер ловить і це, а опис називає пору з днем тижня
     "hour": "start hour on a 24-hour clock, only when she names a clock time; a part of the day alone "
-            "(evening, morning) is part_of_day, never hour",
+            "(evening, morning, also with a weekday) is part_of_day, never hour",
     "minute": "minutes of the start time, only when she names them with the hour (19:30 — 30; half past "
               "seven in the evening — 30); never without \"hour\"",
     # НП-в5 (рядок 522 (3)): вечір плитки «Офіційний вечір» — розуміння моделі, не таблиця коду.
@@ -3043,12 +3059,32 @@ def _її_річ_на_слоті(оновлення):
 # її слова порою дня. Шов лишає пору, а година й хвилини не беруться (слів не читає — лише які поля стоять, п.12);
 # у `перенесено` — `hour->part_of_day`. Справжня година (о 16:00 — ЖИВІ-12/13/14) у записаних ходах пори поруч не
 # має ні разу; коли матиме, пора дня — м'якше, але правдиве, а вигадана година — ні.
+# ГОДИНА БЕЗ ЦИФРИ В УРИВКУ (рядок 4204, ЖИВІ-18 №7–8): та сама вигадана година вже й без пори поруч —
+# `hour {quote: «субота ввечері», value: 19}`, `{quote: «ввечері», value: 18}` (Ж13–Ж18 — 12 ходів), а також
+# `{quote: «надворі мороз», value: 23}` (Ж16 №11) і `{quote: "", value: 9}` на «йога зранку» (Ж17 №13). Справжня
+# година в записаних ходах ЖИВІ-12…18 — щоразу з цифрою («о 16:00»). Тож година, чий уривок цифри не має, — пора дня,
+# яку модель записала годиною: шов ставить `part_of_day` тієї години (`сценарій._частина_доби`), година й хвилини не
+# беруться. Код дивиться лише, чи є в уривку цифра — число, не слово (п.12). Година без уривку — як була (її знімає
+# сторож `_тримається`). Ціна: година словами («о сьомій вечора») стає порою «вечір» — м'якше, але правдиве.
 def _година_при_порі(оновлення):
-    """(оновлення без `hour` і `minute`, коли той самий хід дав і `part_of_day`, перенесене кодами)."""
-    if "hour" not in оновлення or _порожнє(_пара("hour", {}, оновлення["hour"])[0]) \
-            or not _ВМ.ключ("part_of_day", _код(_пара("part_of_day", {}, оновлення.get("part_of_day"))[0])):
+    """(оновлення без `hour` і `minute`, коли той самий хід дав і `part_of_day` або уривок години не має цифри — тоді
+    з `part_of_day` цієї години; перенесене кодами)."""
+    година, уривок = _пара("hour", {}, оновлення.get("hour"))
+    if "hour" not in оновлення or _порожнє(година):
         return оновлення, []
-    return {к: в for к, в in оновлення.items() if к not in ("hour", "minute")}, ["hour->part_of_day"]
+    без_години = {к: в for к, в in оновлення.items() if к not in ("hour", "minute")}
+    if _ВМ.ключ("part_of_day", _код(_пара("part_of_day", {}, оновлення.get("part_of_day"))[0])):
+        return без_години, ["hour->part_of_day"]
+    цит = оновлення.get("quotes")
+    уривок = уривок if уривок is not None else цит.get("hour") if isinstance(цит, dict) else None
+    try:
+        г = int(float(година))
+    except (TypeError, ValueError):
+        return оновлення, []
+    if уривок is None or re.search(r"\d", str(уривок)) or not 0 <= г <= 23:
+        return оновлення, []
+    import сценарій as _СЦ
+    return dict(без_години, part_of_day=_СЦ._частина_доби(г)), ["hour->part_of_day"]
 
 
 def _на_своє_поле(оновлення):
