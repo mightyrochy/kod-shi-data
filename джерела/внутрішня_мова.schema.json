@@ -2855,6 +2855,14 @@
           "description": "the shop gave only photos of other products in the feed"
          },
          {
+          "const": "no_photo_item_invented",
+          "description": "this item was invented by the model (hands 3-4): there is no shop and no feed behind it, so no photo exists"
+         },
+         {
+          "const": "no_photo_reason_not_given",
+          "description": "the item has no photo and the code holds no reason why"
+         },
+         {
           "const": "unchecked_in_this_look",
           "description": "behind this button is the list of what stays unchecked in this outfit: what could not be verified for lack of data about the items, about her or about her day"
          },
@@ -4732,7 +4740,7 @@
          },
          {
           "const": "outer_length_state_chosen_for_warmth",
-          "description": "length and state chosen for warmth, not proportion"
+          "description": "length and state chosen for warmth, not proportion (values: temperature_c — the degrees; share — from 0 to 1, how much of the voice of the proportion rules the heat takes away, 1 is all of it; suppressed_rules — ids of the proportion rules that lost their voice in this outfit, empty when none of them applied)"
          },
          {
           "const": "fill_power_without_fill_weight",
