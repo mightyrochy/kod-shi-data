@@ -1,0 +1,29 @@
+── ПРОМПТ (1969 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk slip dress with a cowl neckline and a high-low hemline, color #d9b48f, fluid satin fabric.\nStrappy platform sandals with a metallic gold finish and a thick heel for added height and stability.\nChunky statement earrings in oxidized silver with asymmetrical geometric shapes to draw attention to the face.\nThis outfit works because it uses flowing, luminous silk to create an effortless silhouette that contrasts beautifully with her warm skin tones. The high-low hemline adds modern movement while the dramatic earrings ensure she stands out as requested without needing a heavy outer layer in the restaurant's casual celebration setting. Every element prioritizes making a bold visual statement while maintaining a sense of easy comfort for dancing or mingling throughout the evening."}
+
+── ВІДПОВІДЬ (602 симв., 203.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk slip dress",
+      "details": "cowl neckline, high-low hemline, fluid satin fabric",
+      "slot": "dress",
+      "color_hex": "#d9b48f",
+      "worn": true
+    },
+    {
+      "name": "Strappy platform sandals",
+      "details": "metallic gold finish, thick heel for height and stability",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Chunky statement earrings",
+      "details": "oxidized silver, asymmetrical geometric shapes",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

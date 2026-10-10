@@ -1,0 +1,34 @@
+── ПРОМПТ (4336 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація. Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A light grey merino wool sweater with a soft ribbed texture, designed for effortless style in the fall season.\nHigh-waisted flare trousers in a deep plum shade that add width to your lower body and create an elegant silhouette.\nBrown ballet flats covered in shimmering beads with a small buckle strap, perfect for moving through a restaurant without losing grace.\nA structured beige clutch with a polished metal clasp, offering just the right amount of detail for a special evening.\nA patterned scarf from AniNadin in green tones that adds personality and a touch of color to your neck or shoulders.\nYour plum trousers and grey sweater create a beautiful, sophisticated vertical line that feels both relaxed and refined. The ballet flats ground the look in comfort while letting your silhouette speak for itself."},
+{"н": 2, "текст": "Tuck your sweater into the high-waisted trousers to emphasize your defined waist and keep the hem clean."},
+{"н": 3, "текст": "Сумка жіноча Big Bambino — no_bag + needs_third_piece: added a milky white clutch for an evening dinner, elevating the casual tone slightly while keeping comfort."},
+{"н": 4, "текст": "Хустка з принтом (AniNadin) — needs_third_piece + too_few_items: added a green kerchief as an accent layer to introduce pattern and color contrast."},
+{"н": 5, "текст": "Джемпер жіночий тонкий фктурний з вовною мериноса демісезонний, Штани кльош із високою посадкою SIENA темна слива, Балетки жіночі коричневі, Сумка жіноча Big Bambino, Хустка з принтом (AniNadin) — Although the 'cocktail' dress code gate suggests a dress or sheath, this outfit accepts it by using elevated materials like mohair jersey and leather accessories, plus structured elements like the maxi trousers and belt, to meet the event's formal level while remaining comfortable for movement in a restaurant setting."},
+{"н": 6, "текст": "Штани кльош із високою посадкою SIENA темна слива — single_item_not_outfit: added trousers to pair with the jacket."},
+{"н": 7, "текст": "Сумка жіноча Big Bambino — no_bag + needs_third_piece: added milky white clutch to elevate the preppy vibe to cocktail-appropriate elegance."}
+]
+
+── ВІДПОВІДЬ (2112 симв., 95.1 с, HTTP 200) ──
+```json
+{
+  "1": "Легкий сірий вовняний светр з мериносової шерсті з м’якою ребристою текстурою, розроблений для безпроблемного стилю в осінній сезон.\nВисокопосаджені кльошові штани глибокого сливового відтінку, які додають ширину твоїй нижній частині тіла та створюють елегантний силует.\nКоричневі балетки, покриті блискучими намистинами з маленьким ремінцем-пряжкою, ідеальні для пересування рестораном без втрати грації.\nСтруктурована бежева клатч із полірованою металевою застібкою, що пропонує саме ту кількість деталей для особливого вечора.\nHустка з принтом від AniNadin у зелених тонах, яка додає особистості та нотку кольору до твоєї шиї чи плечей.\nТвої сливові штани та сірий светр створюють чудову вишукану вертикальну лінію, що поєднує в собі розслабленість і витонченість. Балетки роблять образ комфортним, дозволяючи твоїй фігурі говорити сама за себе.",
+  "2": "Заправ светр у високопосаджені штани, щоб підкреслити тонку талію та зберегти чистий край подолу.",
+  "3": "Жіноча сумка Big Bambino — no_bag + needs_third_piece: додала молочно-білу клатч для вечірньої вечері, трохи підвищивши невимушений тон, зберігаючи при цьому комфорт.",
+  "4": "Хустка з принтом (AniNadin) — needs_third_piece + too_few_items: додала зелений хустинку як акцентний шар для введення візерунка та контрасту кольорів.",
+  "5": "Тонкий джемпер жіночий фктурний з вовною мериноса демісезонний, Штани кльош із високою посадкою SIENA темна слива, Коричневі балетки жіночі, Жіноча сумка Big Bambino, Хустка з принтом (AniNadin) — Хоча дрес-код «коктейль» передбачає сукню або футляр, цей образ відповідає йому за допомогою піднятих матеріалів, таких як мохер трикотаж і шкіряні аксесуари, а також структурованих елементів, таких як максі штани та пояс, щоб досягти формального рівня події, залишаючись при цьому комфортним для пересування в ресторані.",
+  "6": "Штани кльош із високою посадкою SIENA темна слива — single_item_not_outfit: додала штани до куртки.",
+  "7": "Жіноча сумка Big Bambino — no_bag + needs_third_piece: додала молочно-білу клатч, щоб підняти преппі-віб на рівень елегантності коктейлю."
+}
+```
