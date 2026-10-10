@@ -292,12 +292,13 @@ _HEX = _re.compile(r"^#[0-9a-fA-F]{6}$")
 
 def _слот_за_назвою(код):
     """Ключ ядра за кодом слота від моделі — з прийомом ЇЇ ЗАПИСУ коду (рядок 3655): регістр, пробіл чи дефіс
-    замість «_» і однина/множина («bottoms» — це `bottom`). Інший код — не слот: `слот` None, код лишається як
+    замість «_» і однина/множина («bottoms» — це `bottom`, «accessories» — `accessory`). Інший код — не слот: `слот` None, код лишається як
     є і йде у звіт (`без_слота`). Сенс слів («jacket» — `outerwear`?) тут не вгадується: це вже логіка рук."""
     if _ВМ.невідомо(код):
         return None
     к = _re.sub(r"[\s\-]+", "_", str(код).strip().lower())
-    for в in (к, к[:-1] if к.endswith("s") else None, к[:-2] if к.endswith("es") else None, к + "s"):
+    for в in (к, к[:-1] if к.endswith("s") else None, к[:-2] if к.endswith("es") else None,
+              к[:-3] + "y" if к.endswith("ies") else None, к + "s"):
         if в and _ВМ.ключ("slot", в) is not None:
             return _ВМ.ключ("slot", в)
     return None
