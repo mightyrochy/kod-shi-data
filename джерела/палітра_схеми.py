@@ -1147,7 +1147,7 @@ def повідомлення_великих(речі, спец_слоти, за_
     _св = {str(і) for і in (свідомі or ())}
     _св_великі = [і for сл, і in (пл.get("великі") or ()) if str(і) in _св]
     заяви = [_ВМ.заява("scheme_chosen_by_stylist" if обрана == "стилістка" else     # П-7: тристан
-                       "scheme_chosen_by_her" if обрана else "scheme_taken_by_code", scheme=схема),
+                       "scheme_chosen_by_her" if обрана else "scheme_taken_by_default", scheme=схема),
              _ВМ.заява("scheme_big_surfaces_equal", count=len(сім_ї),
                        families=[слово[с["роль"]] for с in сім_ї])]
     бракує = [с["роль"] for с in сім_ї if с["роль"] not in є]

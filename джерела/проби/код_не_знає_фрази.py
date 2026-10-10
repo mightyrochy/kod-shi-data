@@ -2,7 +2,7 @@
 """Ч-2 (аудит/ПРОДУКТ.md п.12, кошик В): ЩО ЙДЕ В БЛОК КАРТКИ «код не знає». Той самий шлях, що в
 показі: `запити` → `від_моделі` → `в.питання`; 9 сценаріїв стенда × 6 форм образу × 3 зсуви
 пулу. Лічить: питання; фрази коду людині (`суть` там, де заяв кодами нема) — різні й шаблони
-(«…»→«…», числа→N); питання кодами (`повідомлення` виду card_code_unknown); коди заяв поза
+(«…»→«…», числа→N); питання кодами (`повідомлення` виду card_unchecked); коди заяв поза
 словником `внутрішня_мова.ЗАЯВИ`. Запуск із `джерела`: python3 проби/код_не_знає_фрази.py"""
 import sys, os, re, json, collections
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
@@ -22,14 +22,14 @@ for назва, сц in СЦ.items():
         for з in (0, 2, 5):
             ід = [к[с][з]["id"] for с in ф if len(к.get(с) or []) > з]
             п_ += json.loads(B.виклик("від_моделі", json.dumps(dict(вх, ід=ід), ensure_ascii=False))).get("питання") or []
-кодами = [п for п in п_ if ((п.get("повідомлення") or {}).get("kind") == "card_code_unknown")]
+кодами = [п for п in п_ if ((п.get("повідомлення") or {}).get("kind") == "card_unchecked")]
 фрази = [str(п.get("суть")) for п in п_ if п not in кодами]
 шаблон = lambda с: re.sub(r"\d+(?:[.,]\d+)?", "N", re.sub(r"«[^«»]*»", "«…»", с))
 заяви = collections.Counter(з.get("code") for п in кодами for з in п["повідомлення"].get("statements") or [])
 print("питань у «код не знає»: %d (правил %d)" % (len(п_), len({п.get("правило") for п in п_})))
 print("фразами коду людині: %d · різних фраз %d · шаблонів %d · правил %d"
       % (len(фрази), len(set(фрази)), len({шаблон(ф) for ф in фрази}), len({п.get("правило") for п in п_ if п not in кодами})))
-print("кодами (card_code_unknown): %d · різних кодів заяв %d · поза словником ЗАЯВИ: %s"
+print("кодами (card_unchecked): %d · різних кодів заяв %d · поза словником ЗАЯВИ: %s"
       % (len(кодами), len(заяви), sorted(к for к in заяви if к not in ВМ.ЗАЯВИ) or "—"))
 for пр, n in collections.Counter(п.get("правило") for п in п_ if п not in кодами).most_common(12):
     print("  ще фразою: %-10s %4d  %s" % (пр, n, next(шаблон(str(п.get("суть"))) for п in п_ if п.get("правило") == пр)[:110]))

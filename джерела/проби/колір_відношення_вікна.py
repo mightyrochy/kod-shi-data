@@ -9,9 +9,9 @@ import json, random, sys, collections as K; sys.path.insert(0, ".")
 import bridge as B, colorspace as cs, стенд_знімок as СЗ, колір_річ as КР, колір_відношення as КВ
 вх0 = json.load(open("стенд_вх.json", encoding="utf-8")); Л, П, рп = K.Counter(), [], random.Random(3)
 def тверде(f):                                      # кодування без розмиття = межі колір_річ (Р2а, K-PAL-05, RELATIONS)
-    б = (КВ.СІГМА_МЕЖІ, КВ.СІГМА_СВІТЛОТИ); КВ.СІГМА_МЕЖІ = КВ.СІГМА_СВІТЛОТИ = 0.0
+    б = (КВ.СІГМА_МЕЖІ, КВ.СІГМА_СВІТЛОТИ, КВ.ВІКНА_ΔH); КВ.СІГМА_МЕЖІ = КВ.СІГМА_СВІТЛОТИ = 0.0; КВ.ВІКНА_ΔH = {}
     try: return f()
-    finally: КВ.СІГМА_МЕЖІ, КВ.СІГМА_СВІТЛОТИ = б
+    finally: КВ.СІГМА_МЕЖІ, КВ.СІГМА_СВІТЛОТИ, КВ.ВІКНА_ΔH = б
 кошик = lambda с: "ядро" if с[0] >= 0.95 else "поза" if с[1] <= 0.05 else "край"
 КЛ = ("same_hue", "adjacent", "near_hue", "analogous", "square", "triadic", "split", "complementary")
 опис = lambda x: "%-30s %s" % ((x.get("назва") or "")[:30], cs.hex_з_lab(x["lab"]) if not КР.не_вимір(x) else "~" + (x.get("колір_ім") or "?"))

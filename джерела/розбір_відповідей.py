@@ -69,6 +69,12 @@ import дріт_моделі as _Д
         _ЗП.Поле("outfit.items[].kind", "what the item is, as a code (belt, top, dress, shoes, bag…); «type» — "
                                         "its narrower type when the code knows it",
                  як="«about_items» describes the item of this «kind» and nothing else from its photo"),
+        # рядок 3656 (ЖИВІ-14 №11 рука 1): кадр «кемел» пальта — сірий (галерея іншого кольору моделі); код це знав
+        # (R-FEED-01 за кнопкою картки), модель — ні, і правило «опиши, як на фото» тягнуло її проти речі
+        _ЗП.Поле("outfit.items[].photo_colour", "the colour the code sees on this item's photo when it is not the "
+                                                "item's «color»: the shop showed another colour of it on the photo",
+                 як="the item is «color»: give it that colour, not the photo's; this is no reason for "
+                    "«wrong_photos» or «swap» — the card already tells her about the photo"),
         _ЗП.Поле("outfit.items[].no_photo", "this item has no photo of its own among the others",
                  як="describe it by its name and «color»; do not take another item's photo for it"),
         _ЗП.Поле("outfit.items[].hers", "her own item from her photo, not a product",
@@ -167,6 +173,7 @@ import дріт_моделі as _Д
         "another kind of item, or unfit for her occasion — and that matters for this outfit, name that one "
         "item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in "
         "doubt, leave «swap» out.",
+        _ЗП.КІНЕЦЬ_ВІДПОВІДІ_EN,
     ),
     вихід="ОПИС_ВІДПОВІДЬ_V1",
     поля_виходу={
@@ -253,7 +260,7 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     """Четвертий виклик: `ОПИС_V1` — обраний образ обʼєктом коду (його перевіряє схема,
     його кладе звіт); моделі його несе `промпт_опису` англійським дротом.
 
-    `речі` — `[{н, назва, слот, тип?, частина?, магазин, колір?, hex?, фото, фото_номери}]`, як
+    `речі` — `[{н, назва, слот, тип?, частина?, магазин, колір?, hex?, кадр_колір?, фото, фото_номери}]`, як
     віддає `bridge.опис`. Скільки фото (рішення власника 02.09.2026): речей — усі, що в
     образі; на річ — одне-двоє. Тому річ і несе `фото_номери`: без них модель не
     знає, котре зображення чиє, і описує чуже взуття. Адреса фото (`фото`) у промпт
@@ -272,7 +279,7 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     р = []
     for x in (речі or []):
         з = dict(н=str(x.get("н") or x.get("id") or ""), назва=str(x.get("назва") or ""))
-        for к in ("слот", "тип", "частина", "магазин", "колір", "hex"):
+        for к in ("слот", "тип", "частина", "магазин", "колір", "hex", "кадр_колір"):
             if x.get(к):
                 з[к] = str(x[к])
         ном = [int(n) for n in (x.get("фото_номери") or [])]
@@ -528,7 +535,7 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
     р["проза"] = "\n".join([р["текст"] or ""] + р["як_носити"]).strip() or None
     if not р["текст"]:
         р["повторний_виклик"] = _ПР.помилка_формату(
-            р["помилки"][:8] or [dict(де="текст", що="обовʼязковий")],
+            р["помилки"][:8] or [dict(де="текст", що="required_missing")],
             відповідь="ОПИС_ВІДПОВІДЬ_V1")
     elif р.get("названо_поза_образом") or р.get("не_описано"):
         _поза, _не = р.get("названо_поза_образом") or [], р.get("не_описано") or []
@@ -1345,6 +1352,7 @@ def _речі_структурою(структ):
         речі.append(c)
     return dict(речі=речі, без_кольору=[], без_слота=без_слота, надлишок=надлишок, не_потрібні=не_потрібні,
                 перелік_моделі=dict(названо=len(структ), не_потрібних=len(не_потрібні),
+                                    без_слота=[str(б["код"]) for б in без_слота],
                                     джерело="окремий виклик ITEM_LIST, слот кодом"),
                 чому=None if речі else ("кожна річ переліку позначена непотрібною" if не_потрібні
                                         else "речі є, але жодна не має слота з таблиці внутрішньої мови"))
