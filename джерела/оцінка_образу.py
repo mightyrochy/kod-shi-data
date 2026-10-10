@@ -117,7 +117,12 @@ def _ключ(поле, код, незнайомі, де):
 #     мусить обіймати саму річ, без тла й шкіри;
 #   · одна річ на кількох фото — один запис: інакше образ мав би дві однакові сукні, і
 #     `перевірити_від_моделі` бачив би «слот двічі»;
-#   · ошатність — кодом щабля, як у `річ_з_фото.СХЕМА_РЕЧІ`: число шкали ставить код.
+#   · ошатність — кодом щабля, як у `річ_з_фото.СХЕМА_РЕЧІ`: число шкали ставить код;
+#   · «slot» — з форми самої речі (рядок 4100): на фото 2 сцени 6 стенда дві пари ботильйонів без
+#     ніг і тіла лежать угорі кадру, і qwen читала їх «Sweater Top», «L-shaped top», «jeans» — взуттям
+#     у 2 з 9 записаних викликів ЖИВІ-12…17. Правило каже, з чого читати слот (підошва й носок, виріз
+#     і рукави, дві холоші), а не «де річ у кадрі»: речі, розкладені без неї, теж мають свій слот;
+#   · «name» — англійською (п.12): назву жінці пише мовна модель, функціональна — внутрішньою мовою.
 РЕЧІ = _ЗП.Оголошення(
     задача="оцінка_речі",
     роль="You are a stylist. You see photos of an outfit a woman has put together herself, and you "
@@ -132,6 +137,9 @@ def _ключ(поле, код, незнайомі, де):
         "\"in_outfit\" is true for items worn together in the outfit; false for an item shown as an "
         "alternative to one of them; \"unknown\" when the photo does not show which of them she wears "
         "(two pairs side by side, nothing on her).",
+        "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a "
+        "toe, boots also a shaft rising from them; a top or outerwear has a neckline, shoulders and sleeves "
+        "or straps; trousers have two legs; a skirt hangs from the waist in one piece.",
         "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
         "around the item itself, without background or skin.",
         "Field values are only codes from \"codes\"; what the photo does not show is null.",
@@ -139,7 +147,7 @@ def _ключ(поле, код, незнайомі, де):
     вихід="OUTFIT_ITEMS_V1",
     скелет={"items": [{
         "photo": "<photo id>",
-        "name": "<short name, as a shop would call the item>",
+        "name": "<short English name, as a shop would call the item>",
         "slot": "<code from codes.slot>",
         "color": "<code from codes.color: the main color of the item itself>",
         "fabric": "<code from codes.fabric when the texture is visible, else null>",
