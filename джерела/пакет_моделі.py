@@ -630,9 +630,15 @@ import внутрішня_мова as _ВМ_П
                  як="do not invent them and do not fill their place with a variation of an outfit you "
                     "already made"),
         _ЗП.Поле("register_rules", "the corpus rule behind each register label of the items"),
-        _ЗП.Поле("outfits_wanted", "how many outfits to put together", треба=True),
+        _ЗП.Поле("outfits_wanted", "how many outfits to put together: exactly this many", треба=True),
     ),
     правила=(
+        # СКІЛЬКИ ОБРАЗІВ — ПРАВИЛОМ, НЕ ЛИШЕ ПОЛЕМ (рядок 3681): число стояло тільки ключем після пулу, і
+        # слабка модель ходила колом по задумах — 13, 20 і 33 образи замість 10 у 3 з 26 записаних
+        # відповідей ЖИВІ-11/12 (33 — по 7 на кожен задум, 4 107 т. до стелі, 190 с). Код бере перші
+        # «outfits_wanted» (`міст_відповіді`), тож решта — лише час виводу (аудит/ПРОДУКТ.md п.21)
+        "Put together exactly «outfits_wanted» outfits and end the answer there: an idea of «poles» gives one "
+        "outfit, «free» as many as its «outfits», and the code reads no outfit past «outfits_wanted».",
         "One item of each kind; an outfit has a dress, a set, or a top and a bottom.",
         РЯДОК_ТРЕТЬОЇ_РЕЧІ,
         РЯДОК_РІЧ_ДВІЧІ,
