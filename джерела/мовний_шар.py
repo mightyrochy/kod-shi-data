@@ -168,8 +168,13 @@ U = _ВМ.UNKNOWN
 # Слово пише шар: у промпт ідуть лише вжиті коди з внутрішнім словом ядра (як `_типи_речей`). Ярлик «hex» і дужки
 # навколо значення йдуть разом із ним: «graphite (hex #2C2F33)» — один колір, а не два. Колір, якому коду нема
 # («невідомо»), знімається, як доти знімав показ.
-_HEX_У_ТЕКСТІ = re.compile(r"\(\s*(?:\bhex\b\s*(?:code\s*)?[:=]?\s*)?#([0-9a-fA-F]{6})\b\s*\)"
-                           r"|(?:\bhex\b\s*(?:code\s*)?[:=]?\s*)?#([0-9a-fA-F]{6})\b", re.I)
+# Ярлик перед hex («color», «colour code:», «code») і дужки за ним теж ловляться: коли hex знімається без коду, а
+# в дужках її назва, лишається сама назва — «color #8fbc8f (sage green)» → «sage green»; доти перекладач отримував
+# «color (sage green)» і писав «колір (салатовий)» (рядок 4511). Hex з кодом ярлик і дужки лишає як доти.
+_HEX_У_ТЕКСТІ = re.compile(r"(?P<ярлик>\b(?:colou?r|code)\b(?:\s+code\b)?\s*[:=]?\s*)?"
+                           r"(?P<hx>\(\s*(?:\bhex\b\s*(?:code\s*)?[:=]?\s*)?#([0-9a-fA-F]{6})\b\s*\)"
+                           r"|(?:\bhex\b\s*(?:code\s*)?[:=]?\s*)?#([0-9a-fA-F]{6})\b)"
+                           r"(?P<дужки>\s*\(([^()\n]*)\))?", re.I)
 _КОД_КОЛЬОРУ = re.compile(r"\[colour: ([a-z_]+)\]")
 
 
@@ -220,10 +225,12 @@ def кольори_кодом(текст):
     """Текст із hex → той самий текст, де кожен hex (з ярликом і дужками) — «[colour: <код>]» або нічого.
     Hex, біля якого вже стоїть її назва кольору, знімається без коду (`_колір_названо`)."""
     def код(м):
-        if _колір_названо(м.string, м.start(), м.end()):
-            return ""
-        к = _код_кольору(м.group(1) or м.group(2))
-        return "[colour: %s]" % к if к else ""
+        ярлик, дужки = м.group("ярлик") or "", м.group("дужки") or ""
+        if _колір_названо(м.string, м.start("hx"), м.end("hx")):
+            назва = (м.group(6) or "").strip()
+            return назва if re.search(r"[^\W\d_]", назва) else ярлик + дужки
+        к = _код_кольору(м.group(3) or м.group(4))
+        return ярлик + ("[colour: %s]" % к if к else "") + дужки
     if not _HEX_У_ТЕКСТІ.search(str(текст or "")):
         return текст
     return re.sub(r"[ \t]{2,}", " ", _HEX_У_ТЕКСТІ.sub(код, str(текст or ""))).replace(" ,", ",")
@@ -1760,6 +1767,12 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         п["поради_дані"] = дані + [к for к in dict.fromkeys(_ВМ.ключ("advice_topic", т) for т in показані)
                                    if к and к not in дані]
         п["розмову_вела"] = "мовна модель"
+        # ПОРАДИ НЕМА ЗОВСІМ (рядок 4621, ЖИВІ-21 і ЖИВІ-22: 7 з 7 перших ходів — `invite` порожнє при дозволених
+        # темах і без обовʼязкового). Правило промпту велить запросити, щойно дозволені теми лишились, а модель мовчала,
+        # і жінка не чула поради п.9 жодного разу. Брак поради — та сама вада форми, що й зіпсована: повторний запит.
+        if частини.get("need", "none") == "none" and дозволені and not обовʼязкове \
+                and not частини.get("invite") and not частини.get("invite_topics"):
+            відкинуто.append(dict(частина="invite", чому="no_invite", теми=[], дозволені=list(дозволені)))
         # знята за формою порада — на повторний запит (рядок 3930, `ремонт_поради`)
         ремонт = ремонт_поради(відкинуто, обовʼязкове, дозволені, частини)
         # ЩО КОД НЕ ЗАПИСАВ (рядок 3164): поле ходу, яке сторож зняв (`вигадки`), — кодом поля. Репліка моделі
@@ -2650,9 +2663,15 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # ШКАЛА-2 (рядок 1132): «працюю з дому» — то home, то work; «на кожен день в університет» — то everyday, то
     # school; «театр на прем'єру» — то theatre, то opera_premiere (смуга 4–6 проти 6–8). Нагода — рід заняття
     # (робота вдома — робота, навчання — школа), «щодня» — частота, а не рід; місце — те, що названо її словами.
+    # Рядок 4622 (ЖИВІ-22 №8, seed3_01): «йога зранку, потім кава з подругою» — «перша названа частина» — йога, тож
+    # `occasion: sport`, `event` з уривком «йога зранку», `movement` нема, а кава й кафе — лише в `place_words`
+    # (код його не читає, п.12): рука 2 збирала на йогу. ДО правки рядка 4362 (ЖИВІ-20, ЖИВІ-21) ця сама модель
+    # давала `everyday`, кафе й повну подію. Спорт частини дня — рух (рядок 4362), а нагода й місце — про решту дня.
     "\"occasion\" is what she will be doing and \"place\" is where she will be; both describe the same "
     "part of her day, never the occasion of one part and the place of another. When her day has several "
-    "parts, both describe the part she names first, and \"event\" keeps all of them. \"occasion\" is the "
+    "parts, both describe the first part she names that is not a sport: a sport part (yoga, a run, a workout) is "
+    "movement sport, and occasion is sport only when sport is all her day; \"event\" keeps all the parts, "
+    "its quote too. \"occasion\" is the "
     "kind of what she does, not how often or where: working is work even at home (place home); studying at "
     "a school, a university or courses is school, also every day. \"place\" is the place her words name: "
     "a premiere or a show at a theatre is theatre; opera_premiere only when her words name an opera.",
@@ -2791,7 +2810,7 @@ _ПРАВИЛО_ПРОФІЛЮ = (
               "form from \"codes\"",
     "need": " | ".join(_ВМ.ПОТРЕБИ),
     "text": [{"about": ["codes of the \"update\" fields this sentence tells about, or her_question"],
-              "says": "one sentence of your reply to her, to her as «ти»"}],
+              "says": "one sentence of your reply to her, to her as «ти», never a lone word"}],
     "invite_topics": ["advice topic codes your invitation covers, up to three"],
     "invite": "one soft invitation sentence to her as «ти», or empty",
     "ask_code": " | ".join(_ВМ.ОБОВʼЯЗКОВЕ) + ", or empty",
@@ -3394,6 +3413,11 @@ def _бульбашка(шматки):
 # ділить `says` за розділовими знаками, як `too_many_sentences` поради, і показує перше речення; решта — у `відкинуто`
 # (`extra_sentence`) з кодами `about`. Друге речення-переказ («Надворі мороз.», №5) теж іде у `відкинуто`: краще
 # недоказати записане, ніж показати питання, якого п.9 не дозволяє.
+# ОДНЕ СЛОВО — НЕ РЕЧЕННЯ ПРО ЗАПИСАНЕ (рядок 4620, ЖИВІ-22 №1 і №5, `VIDPOVIDI/seed3_01`). «Зрозуміла. Це святкова
+# вечірка в ресторані, надворі мороз.» — модель відокремила крапкою слово-згоду, і бульбашкою першого ходу стало саме
+# «Зрозуміла.», а переказ трьох записаних полів пішов у `відкинуто`. Шматок з одного слова (без пробілу всередині)
+# не може переказати жодного поля з `about` — форма, не слова (п.12): показується перший шматок із кількох слів, а
+# шматок з одного слова — лише коли інших нема (хід плиток: «text is one short word»); решта — `extra_sentence`.
 ПРО_ЇЇ_ПИТАННЯ = "her_question"
 
 
@@ -3425,7 +3449,9 @@ def _текст_до_показу(частини, записано):
             чуже = [к for к in коди if к != ПРО_ЇЇ_ПИТАННЯ and к not in записано
                     and к not in ((р or {}).get("not_taken") or ())]
             if коди and not чуже:
-                перше, *далі = [x for x in _РЕЧЕННЯ.split(р.get("says") or "") if x.strip()] or [""]
+                шматки = [x for x in _РЕЧЕННЯ.split(р.get("says") or "") if x.strip()] or [""]
+                перше = next((x for x in шматки if len(x.split()) > 1), шматки[0])
+                далі = [x for x in шматки if x is not перше]
                 лишено.append(перше)
                 if далі:
                     відкинуто.append(dict(частина="text", чому="extra_sentence", про=коди, зняте=" ".join(далі)))
@@ -3519,6 +3545,7 @@ def суд_частин(частини, дозволені, обовʼязков
     "topic_repeated": "it offered again a topic she was already offered in this conversation",
     "no_invite_text": "it named topics but had no sentence",
     "no_topics": "it had a sentence but named no topic codes",
+    "no_invite": "your answer had no invitation, though these advice topics apply now",
 }
 
 
@@ -3533,8 +3560,9 @@ def ремонт_поради(відкинуто, обовʼязкове, доз
 
 ПОРАДА = _ЗП_Р.Оголошення(
     задача="порада",
-    роль="You are the stylist of a styling app in a live chat with a woman. The app did not show her your "
-         "invitation to tell more about this outing: it broke a rule of the app. Write it again within the rules.",
+    роль="You are the stylist of a styling app in a live chat with a woman. The app did not show her an "
+         "invitation to tell more about this outing: yours broke a rule of the app or was missing. Write it within "
+         "the rules.",
     вхід=(
         _ЗП_Р.Поле("advice_topics", "the advice topics you may invite her to tell about now — code: what to "
                                     "invite her to tell", треба=True),
