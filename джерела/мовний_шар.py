@@ -2210,12 +2210,19 @@ def _коди_розмови():
     # Рядок 3741 (ЖИВІ-14 №1, №2, №11): перелік частин назвав рух, погоду, місце й річ, а саму подію — ні: «йду на
     # роботу пішки» цілим уривком лягло в `movement`, `occasion` 0 з 3 (ЖИВІ-13 — 3 з 3), і код перепитував «куди».
     # «Кожна — зі своєю цитатою» вело межу відкритого (`open_zones` — без цитати) на `goal_zones` з цитатою (3 з 3).
+    # Рядок 3931 (ЖИВІ-15 №1, сід 5): «йду на роботу пішки» знову цілим уривком лише в `movement` (Ж15 occasion 2 з 3,
+    # Ж14 0 з 3) — «each with its own quote» модель читала як «уривок — одному полю». Код бере один уривок під двома
+    # полями (`_тримається`, `проби/мова_к7_одна_цитата.py`), тож правило каже це прямо.
+    # Рядок 3720 (ЖИВІ-12 К7, 4 з 4): `place=walk` з цитатою «на вулиці мінус п'ятнадцять і сніг» — вулицю з мови
+    # про погоду й дорогу на роботу модель брала за місце, і картка під «Робота» йшла від «Прогулянки» [2,4].
     "\"update\" holds every field her new message fills or changes, and only those. Go through her "
-    "message part by part: one phrase often fills several fields, each with its own quote — the outing "
-    "itself (work, a party, a trip) is occasion, also when the same phrase says how she gets there; degrees and "
-    "snow or rain said together are temperature_c and precipitation; how she gets there (on foot, a long "
-    "way) is movement; the place where the event is (a restaurant, an office, a café) is place, also inside "
-    "the phrase that names the event; an item she names for this outing goes into wants or own_items; her "
+    "message part by part: one phrase often fills several fields, and the same fragment of her words may be "
+    "the quote of each of them — the outing itself (work, a party, a trip) is occasion, also when the same "
+    "phrase says how she gets there: such a phrase gives both occasion and movement, never movement alone; "
+    "degrees and snow or rain said together are temperature_c and precipitation; how she gets there (on foot, "
+    "a long way) is movement; the place where the event is (a restaurant, an office, a café) is place, also "
+    "inside the phrase that names the event; her way to the outing and the street in her words about the "
+    "weather are never place; an item she names for this outing goes into wants or own_items; her "
     "limit on how much of her body she shows is open_zones, never goal_zones. A "
     "new value replaces the old one; a wish or a limit from before that she takes back goes into "
     "\"retract\". Do not repeat fields that do not change.",
