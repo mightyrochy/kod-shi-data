@@ -1,0 +1,32 @@
+── ПРОМПТ (4109 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This black slip dress features a fitted sheath silhouette with thin spaghetti straps that sit gracefully on the shoulders. It has a clean, bodycon fit through the bust and torso before flaring into an A-line skirt that falls just above the floor.\nThese ballet flats are crafted from a thick, mustard-colored felted fabric with a soft, textured surface. They have a classic pointed toe shape and a low flat heel for comfortable all-day wear.\nA structured shoulder bag in a dusty rose pink tone made from smooth faux leather. It features a long adjustable strap, silver hardware details, and a rectangular silhouette that sits close to the body.\nA narrow silk twilly scarf in a deep red base with a white swirling pattern near one edge. It is long and tapered, designed to be worn as an accessory that can be tied at the neck or worn over shoulders.\nI have selected a black slip dress as your foundation because its fitted sheath shape creates one clean vertical line, accentuating your defined waist and leading the eye naturally from your shoulders down to your ankles. The mustard ballet flats provide a cozy anchor that balances the sleekness of the gown with an everyday ease perfect for dancing or moving around a casual restaurant. A dusty pink bag introduces a gentle contrast to your monochrome base without overpowering it, while the vibrant red scarf serves as your expressive focal point. This combination allows you to stand out confidently and expressively at your celebration."},
+{"н": 2, "текст": "Tuck the wide end of the patterned scarf diagonally across your chest to draw the eye upward and emphasize your neckline."},
+{"н": 3, "текст": "Жіноча сумка Welfare рожева — no_bag; needs_third_piece; too_few_items"},
+{"н": 4, "текст": "Твіллі \"День Незалежності\" — needs_third_piece"},
+{"н": 5, "текст": "Жіноча сумка Welfare рожева, Твіллі \"День Незалежності\" — The two red print items work together to satisfy the goal of being memorable, echoing each other as a unified visual statement rather than competing accents."},
+{"н": 6, "текст": "Жіноча сумка Welfare рожева — no_bag"}
+]
+
+── ВІДПОВІДЬ (2070 симв., 95.2 с, HTTP 200) ──
+```json
+{
+  "1": "Ця чорна шовкова сукня має облягаючий силует-футляр із тонкими бретелями, які елегантно лягають на плечі. Вона щільно прилягає до тіла в зоні бюсту та торсу, а потім розширюється у спідницю А-силуету, що закінчується трохи вище підлоги.\nЦі балетки зроблені зі щільної тканини кольору гірчиці з м’якою текстурованою поверхнею. Вони мають класичну загострену форму носка та низький плоский каблук для комфортної шкарпетки протягом усього дня.\nСтруктурована сумка на плече в приглушеному рожевому кольорі, виготовлена з гладкої штучної шкіри. Вона має довгий регульований ремінь, срібні деталі та прямокутну форму, що щільно прилягає до тіла.\nВузький шовковий твіллі шарф на темно-червоному фоні з білим завихреним візерунком поблизу одного краю. Він довгий і звужений, призначений для носіння як аксесуар, який можна зав’язати навколо шиї або носити через плечі.\nЯ обрала чорну шовкову сукню в якості основи, оскільки її облягаючий силует-футляр створює одну чисту вертикальну лінію, підкреслюючи твою тонку талію і природно направляє погляд від плечей до щиколоток. Гірчичні балетки надають затишну основу, яка збалансовує елегантність сукні повсякденною легкістю, що чудово підходить для танців або пересування в неформальному ресторані. Пильно-рожева сумка додає ніжний контраст до твого монохромного образу без його переваження, а яскравий червоний шарф слугує твоєю виразною акцентною деталлю. Ця комбінація дозволяє тобі впевнено та виразно вирізнятися на святкуванні.",
+  "2": "Загорни широкий кінець візерункового шарфа навскіс через груди, щоб привернути увагу до верху і підкреслити твою лінію шиї.",
+  "3": "Жіноча сумка Welfare рожева — no_bag; needs_third_piece; too_few_items",
+  "4": "Твіллі \"День Незалежності\" — needs_third_piece",
+  "5": "Жіноча сумка Welfare рожева, Твіллі \"День Незалежності\" — Два червоних візерункових вироби гармонійно працюють разом, щоб досягти мети бути незабутньою. Вони перегукуються один з одним як єдина візуальна заява, а не конкуруючі акценти.",
+  "6": "Жіноча сумка Welfare рожева — no_bag"
+}
+```

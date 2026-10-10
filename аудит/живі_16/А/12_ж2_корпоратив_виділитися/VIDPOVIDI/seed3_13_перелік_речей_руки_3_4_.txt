@@ -1,0 +1,38 @@
+── ПРОМПТ (2137 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green velvet midi slip dress, relaxed bias cut hitting mid-calf, #059669, soft woven velvet that drapes fluidly over the curves.\nPointed-toe stiletto pumps in polished metallic gold with a slender heel, almond shape, #FFD700, high-gloss lacquered leather for a sleek finish.\nTiny crystal drop earrings and a slim pearl bracelet, intricate filigree design, silver tone, sterling silver metal to add delicate sparkle.\n\nThis outfit works because the deep emerald velvet immediately draws the eye, fulfilling her wish to stand out at this casual restaurant celebration while maintaining cocktail-appropriate elegance. The fluid cut of the slip dress ensures freedom of movement and comfort, allowing her to dance and socialize without restriction as she seeks to express herself. Adding the metallic gold shoes and crystal jewelry creates a striking contrast that elevates the look, ensuring she is memorable in a setting where she wants to be noticed."}
+
+── ВІДПОВІДЬ (909 симв., 216.1 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "slip dress",
+        "details": "relaxed bias cut midi hitting mid-calf, fluid woven velvet",
+        "slot": "dress",
+        "color_hex": "#059669",
+        "worn": true
+      },
+      {
+        "name": "stiletto pumps",
+        "details": "pointed-toe almond shape with slender heel, high-gloss lacquered leather",
+        "slot": "shoes",
+        "color_hex": "#FFD700",
+        "worn": true
+      },
+      {
+        "name": "drop earrings",
+        "details": "tiny crystal drops with intricate filigree design, sterling silver metal",
+        "slot": "earrings",
+        "color_hex": null,
+        "worn": true
+      },
+      {
+        "name": "bracelet",
+        "details": "slim pearl bracelet with intricate filigree design, sterling silver metal",
+        "slot": "bracelet",
+        "color_hex": null,
+        "worn": true
+      }
+    ]
+  }
+}

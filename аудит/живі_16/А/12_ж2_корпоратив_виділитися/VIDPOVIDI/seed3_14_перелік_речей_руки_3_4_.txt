@@ -1,0 +1,31 @@
+── ПРОМПТ (2150 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet one-shoulder mini dress, draped silhouette, cobalt blue (#064E8F), heavy velvet weave.\nOpen-toe strappy sandals, slim heel, metallic silver (#C0C0C0), glossy leather.\nGold geometric clutch, rigid structure, antique gold (#D4AF37), structured microfiber with chain strap.\n\nThis ensemble works because the rich velvet texture and dramatic one-shoulder cut immediately command attention in a casual restaurant setting, perfectly aligning with the cocktail dress code while honoring the request to stand out. The striking cobalt blue contrasts beautifully against warm indoor lighting, ensuring she is noticed from the moment she enters, whereas the metallic silver shoes add a modern, playful spark that prevents the look from feeling too heavy for a celebration. Finally, the gold clutch ties the color palette together with elegant accents, completing an outfit that balances bold expression with sophisticated style without relying on excessive layers or trends."}
+
+── ВІДПОВІДЬ (645 симв., 217.0 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Velvet one-shoulder mini dress",
+        "details": "draped silhouette, heavy velvet weave",
+        "slot": "dress",
+        "color_hex": "#064E8F",
+        "worn": true
+      },
+      {
+        "name": "Open-toe strappy sandals",
+        "details": "slim heel, glossy leather",
+        "slot": "shoes",
+        "color_hex": "#C0C0C0",
+        "worn": true
+      },
+      {
+        "name": "Gold geometric clutch",
+        "details": "rigid structure, structured microfiber with chain strap",
+        "slot": "bag",
+        "color_hex": "#D4AF37",
+        "worn": true
+      }
+    ]
+  }
+}
