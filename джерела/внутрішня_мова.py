@@ -2632,12 +2632,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                        "(values: models — how many distinct models)",
     # ── верхній шар: температурні ворота двобічні (`композитор_збирання`) ─────────────
     "outer_layer_kept_despite_warmth": "the outer layer stays although the temperature band alone would not "
-                                      "ask for it (values: temperature_c — °C of the scene; held_by — "
+                                      "ask for it (values: temperature_c — °C she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; held_by — "
                                       "dress_code when the dressiness band or the dress code holds it, "
                                       "weather_or_outdoors when rain, wind or the street below +22 °C does)",
     "outer_layer_removed_by_temperature": "the outer layer was removed by the temperature band: it asks for "
                                          "one layer on the torso, so the empty kind is not a gap in the "
-                                         "catalogue (values: temperature_c — °C of the scene)",
+                                         "catalogue (values: temperature_c — °C she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     # ── прикраси з цим образом (`композитор_збирання`, `композитор_слоти`) ───────────
     "jewellery_kind_dropped_by_her_word": "this jewellery kind was dropped from the outfit because she asked "
                                           "for no jewellery: her decision about today, neither a gap in the "
