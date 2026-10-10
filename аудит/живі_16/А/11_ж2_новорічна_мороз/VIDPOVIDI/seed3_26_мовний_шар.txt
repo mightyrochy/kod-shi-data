@@ -1,0 +1,64 @@
+── ПРОМПТ (7116 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_unchecked — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+- card_unknowns_toggle — напис на кнопці, що розгортає на картці образу згорнутий перелік того, що в цьому образі лишилось не перевіреним: кілька слів, без числа, без крапки в кінці; лічбу рядків екран допише сам.
+
+КОДИ У ЗНАЧЕННЯХ:
+- bag — сумка.
+- crossbody — кросбоді.
+- hand — рука.
+- set — комплект.
+- shoes — взуття.
+- shoulder — плече.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+
+ЗАЯВИ:
+- unchecked_in_this_look — behind this button is the list of what stays unchecked in this outfit: what could not be verified for lack of data about the items, about her or about her day.
+- colour_word_not_photo — the colour of the named items comes from a word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- cannot_tell_look_follows_her_combinations — so the code cannot tell whether the outfit's colours follow the logic of her combinations.
+- cannot_tell_complementary_pair_leads — so the code cannot tell whether a pair of opposite colours leads the outfit.
+- cannot_tell_accessory_spends_chroma — so the code cannot tell whether a loud accessory spends the budget of loud colours next to another loud item.
+- cannot_tell_chroma_budget_exceeded — so the code cannot tell whether the outfit has more loud colours than its budget allows.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- outer_ease_not_in_feed — the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — item names).
+- front_v_depth_no_body_input — the code computed the depth of the outer layer's neckline, but has nothing to apply it to: it does not know her under-bust girth or neck length (values: item — item name).
+- outer_shoulder_not_measured — the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "set", "colour": "зелений"}, {"slot": "bag", "colour": "зелений"}, {"slot": "shoes", "colour": "бордовий"}]}}, {"code": "cannot_tell_look_follows_her_combinations"}]},
+{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "set", "colour": "зелений"}, {"slot": "shoes", "colour": "бордовий"}, {"slot": "bag", "colour": "зелений"}]}}, {"code": "cannot_tell_complementary_pair_leads"}]},
+{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "set", "colour": "зелений"}, {"slot": "bag", "colour": "зелений"}, {"slot": "shoes", "colour": "бордовий"}]}}, {"code": "cannot_tell_chroma_budget_exceeded"}]},
+{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "outer_ease_not_in_feed", "values": {"items": [{"free_text": "Жіноче вовняне пальто Comfortemp®…", "lang": "uk"}]}}]},
+{"н": 5, "вид": "card_unchecked", "заяви": [{"code": "front_v_depth_no_body_input", "values": {"item": {"free_text": "Жіноче вовняне пальто Comfortemp®…", "lang": "uk"}}}]},
+{"н": 6, "вид": "card_unchecked", "заяви": [{"code": "outer_shoulder_not_measured", "values": {"item": {"free_text": "Жіноче вовняне пальто Comfortemp®…", "lang": "uk"}}}]},
+{"н": 7, "вид": "card_unchecked", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Жіноча сумка через плече замшева зелена", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
+{"н": 8, "вид": "card_unchecked", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "bag", "colour": "зелений"}, {"slot": "set", "colour": "зелений"}, {"slot": "shoes", "colour": "бордовий"}]}}, {"code": "cannot_tell_accessory_spends_chroma"}]},
+{"н": 9, "вид": "card_unchecked", "заяви": [{"code": "items_register_unknown", "values": {"count": 3}}]},
+{"н": 10, "вид": "card_unknowns_toggle", "заяви": [{"code": "unchecked_in_this_look"}]}
+]
+
+── ВІДПОВІДЬ (1682 симв., 93.4 с, HTTP 200) ──
+```json
+{
+  "1": "За цим рядком — список того, що не перевірено в образі: я не можу звірити кольори сукні-комплекту, сумки та туфель з фотографією. Також я не знаю, чи поєднуються їхні кольори з твоїми комбінаціями.",
+  "2": "За цим рядком — список того, що не перевірено в образі: я не можу звірити кольори сукні-комплекту, туфель та сумки з фотографією. Також я не знаю, чи веде образ пара протилежних кольорів.",
+  "3": "За цим рядком — список того, що не перевірено в образі: я не можу звірити кольори сукні-комплекту, сумки та туфель з фотографією. Також я не знаю, чи перевищено ліміт яскравих кольорів у цьому образі.",
+  "4": "За цим рядком — список того, що не перевірено в образі: я не можу визначити, як вільно лежить твоє вовняне пальто Comfortemp® на інших речах.",
+  "5": "За цим рядком — список того, що не перевірено в образі: я не знаю глибину вирізу твого вовняного пальта Comfortemp®, бо мені бракує даних про об’єм під грудьми та довжину шиї.",
+  "6": "За цим рядком — список того, що не перевірено в образі: я не можу оцінити ширину плечей твого вовняного пальта Comfortemp®.",
+  "7": "За цим рядком — список того, що не перевірено в образі: ти ще не вирішила, як носитимеш свою зелену замшеву сумку через плече. Чи буде вона у руці, на плечі чи через тіло?",
+  "8": "За цим рядком — список того, що не перевірено в образі: я не можу звірити кольори твоєї зеленої сумки та сукні-комплекту з фотографією. Також я не знаю, чи витрачає сумка весь ліміт яскравих кольорів поруч із іншим яскравим предметом.",
+  "9": "За цим рядком — список того, що не перевірено в образі: у трьох предметів немає стилю на картках.",
+  "10": "Щось тут лишилось неперевіреним."
+}
+```
