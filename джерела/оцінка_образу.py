@@ -79,11 +79,17 @@ def коди_речей():
                       if ключ in _РФ.ПРИНТИ or ключ == "solid"]
     # ошатність — кодом щабля, як нагода; число шкали ставить код (`brief.число_щабля`, рядок 2100)
     вих["formality"] = list(_БР.ЧИСЛО_ЩАБЛЯ)
+    # вид речі (рядок 4602) — той самий закритий перелік, що в задачі «речі з фото» (`річ_з_фото`)
+    вих["item_type"] = list(_ВМ.ТАБЛИЦЯ["item_type"])
     return вих
 
 
 # Код `причина`, коли речі названо, а фото ні (два фото й жодна річ без `photo`): див. `речі_з_відповіді`.
 ФОТО_НЕ_НАЗВАНО = "items_without_photo"
+# Код у `нотатки` речей: «запасна» без речі образу на її місці читається «кадр не показує» (`речі_з_відповіді`).
+ЗАПАСНА_БЕЗ_ОПОРИ = "alternative_without_worn_item"
+# Код у `нотатки` речей: слот моделі розійшовся з видом (`kind`), і слот узято з виду (`речі_з_відповіді`).
+СЛОТ_З_ВИДУ = "slot_from_kind"
 
 
 def _ключ(поле, код, незнайомі, де):
@@ -127,6 +133,10 @@ def _ключ(поле, код, незнайомі, де):
 #     у 2 з 9 записаних викликів ЖИВІ-12…17. Правило каже, з чого читати слот (підошва й носок, виріз
 #     і рукави, дві холоші), а не «де річ у кадрі»: речі, розкладені без неї, теж мають свій слот;
 #   · «name» — англійською (п.12): назву жінці пише мовна модель, функціональна — внутрішньою мовою;
+#   · «kind» — вид речі кодом `item_type` (рядок 4602), і СЛОТ БЕРЕТЬСЯ З НЬОГО (`внутрішня_мова.СЛОТ_ТИПУ`), а не
+#     зі «slot» моделі: ЖИВІ-22 №6 (`OTSINKA_F2=L`) — дві пари ботильйонів ф2 названо «Trousers (light/dark)» зі
+#     слотом bottom, і обидві стали «низом»; Ж18 №10 — куртку ф1 картка звала «сарафан». Вид — одне слово з
+#     переліку на ту саму форму, що й правило слота; модель оцінки бачить його в «items» (`kind`);
 #   · рамка «на око» і «відповідь — одразу обʼєкт» (рядок 4286): Ж19 №15, `OTSINKA_F2=L` — 13 265 симв.
 #     роздумів «Left: ~200 (if 600px wide)…» про пікселі рамок без JSON, у стелю 4000 т. за 110,8 с; другий
 #     виклик тієї ж сцени — 3 328 симв. опису перед JSON. Рамку код і так міряє в тисячних (`_рамка`).
@@ -144,6 +154,7 @@ def _ключ(поле, код, незнайомі, де):
         "\"in_outfit\" is true for items worn together in the outfit; false for an item shown as an "
         "alternative to one of them; \"unknown\" when the photo does not show which of them she wears "
         "(two pairs side by side, nothing on her).",
+        "\"kind\" is the item's exact kind from \"codes.item_type\", read from its own shape like \"slot\".",
         "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a "
         "toe, boots also a shaft rising from them; a top or outerwear has a neckline, shoulders and sleeves "
         "or straps; trousers have two legs; a skirt hangs from the waist in one piece.",
@@ -157,6 +168,7 @@ def _ключ(поле, код, незнайомі, де):
     скелет={"items": [{
         "photo": "<photo id>",
         "name": "<short English name, as a shop would call the item>",
+        "kind": "<code from codes.item_type: the exact kind of the item, or null>",
         "slot": "<code from codes.slot>",
         "color": "<code from codes.color: the main color of the item itself>",
         "fabric": "<code from codes.fabric when the texture is visible, else null>",
@@ -227,7 +239,12 @@ def речі_з_відповіді(відповідь, фото):
                 вих["незнайомі"].append("items[%d]: фото «%s» у виклику не було" % (н, ф))
                 continue
         де = "items[%d]" % н
-        р = dict(фото=ф,
+        вид = str(о.get("kind") or "").strip()
+        if вид and вид not in _ВМ.ТАБЛИЦЯ["item_type"]:
+            if not _ВМ.невідомо(вид):
+                вих["незнайомі"].append("%s.kind: код «%s» поза переліком" % (де, вид))
+            вид = ""
+        р = dict(фото=ф, вид=вид or None,
                  назва=(" ".join(str(о.get("name") or "").split())[:80] or None),
                  слот=_ключ("slot", о.get("slot"), вих["незнайомі"], де),
                  колір=_ключ("color", о.get("color"), вих["незнайомі"], де),
@@ -239,10 +256,29 @@ def речі_з_відповіді(відповідь, фото):
                  чия="невідомо",
                  в_образі=_в_образі(о),
                  рамка=_рамка(о.get("frame")))
+        # слот — з виду, коли вид у таблиці (рядок 4602): розбіжність зі «slot» моделі — кодом у `нотатки`
+        слот_виду = _ВМ.ключ("slot", _ВМ.СЛОТ_ТИПУ.get(вид)) if вид else None
+        if слот_виду and слот_виду != р["слот"]:
+            вих["нотатки"].append("%s: %s.slot=%s kind=%s" % (СЛОТ_З_ВИДУ, де, о.get("slot"), вид))
+            р["слот"] = слот_виду
         лічба[ф] = лічба.get(ф, 0) + 1
         р["ід"] = ф if лічба[ф] == 1 else "%s·%d" % (ф, лічба[ф])
         вих["речі"].append(р)
     вих["без_речей"] = [ф for ф in фото_ід if not лічба.get(ф)]
+    # ЗАПАСНА БЕЗ РЕЧІ, ЯКІЙ ВОНА ЗАПАСНА (рядок 4600): «false — річ, показана НАТОМІСТЬ іншої», а на її місці
+    # (`займають_одне`) жодної речі образу нема — сказане не має опори. ЖИВІ-22 №5 6б: повтор формату дав
+    # `in_outfit: false` усім чотирьом речам, образ лишився порожнім (`no_item_with_slot`) і картки не було.
+    # Така річ — «кадр не показує» (None, як «unknown»): перша на своєму місці стає в образ, друга на тому ж
+    # місці лишається запасною (`скласти`), і модель оцінки бачить обидві у `worn_unknown`.
+    без_опори = []
+    for р in вих["речі"]:
+        if р["в_образі"] is False and р["слот"] and not any(
+                х is not р and х["в_образі"] is not False and займають_одне(х["слот"], р["слот"])
+                for х in вих["речі"]):
+            р["в_образі"] = None
+            без_опори.append(р["ід"])
+    if без_опори:
+        вих["нотатки"].append("%s: %s" % (ЗАПАСНА_БЕЗ_ОПОРИ, ",".join(без_опори)))
     # РЯДОК 4201: два фото, а модель назвала речі й не сказала, на якому (Ж18 seed3_02) — це не «на кадрах нема речей»,
     # а вада форми відповіді. Причина кодом (п.12) вмикає повтор формату в показі; після нього — заява з `why`.
     if not вих["речі"] and без_фото and без_фото == len(об["items"]):
@@ -640,6 +676,9 @@ def зміни(d, F, T, сцен, речі, образ, запасні, о0, п�
             for _с, r in кандидати[:КРАМНИЦЯ_НА_ЦІЛЬ]:
                 с = _спроба(ціль, r["id"], r.get("слот") or сл, dict(r), "shop")
                 if с:
+                    # вид речі крамниці кодом (рядок 4202): без нього модель писала «заміни штани на
+                    # спідницю-плісе», а картка показувала штани — текст про один вид, річ іншого
+                    с["вид"] = _ВМ.код("item_type", r.get("тип"))
                     крамні.append(с)
     свої.sort(key=lambda с: с["дельта"])
     крамні.sort(key=lambda с: с["дельта"])
@@ -693,7 +732,11 @@ def _виміри(речі, пікселі, пікселі_фото, шкіра)
         if not isinstance(р, dict) or not р.get("ід"):
             continue
         р = dict(р)
-        if пікселі.get(р["ід"]):
+        # БЕЗ РАМКИ — НЕ КАДР ЧУЖИХ РЕЧЕЙ (рядок 4601, п.18): показ без рамки ріже ціле фото, і на фото з кількома
+        # речами вимір брав переважний колір кадру — ЖИВІ-22 №6: светр хакі й бордові штани ф1 обидва #82896e
+        # (хакі), «бордове» йшло в суд хакі. Колір речі — вимір, коли маска певна, а маски однієї речі на кадрі
+        # кількох нема. Без рамки міряється лише річ, сама на своєму фото; інакше — слово стилістки, без `lab`.
+        if пікселі.get(р["ід"]) and (р.get("рамка") or лічба.get(р.get("фото")) == 1):
             р["вимір"] = _РФ.виміряти(пікселі[р["ід"]], слово_моделі=р.get("колір"),
                                       шкіра_hex=шкіра, рамка=р.get("рамка"))
         if (р.get("вимір") or {}).get("спір") and пікселі_фото.get(р["ід"]):
@@ -773,7 +816,7 @@ def речі_для_моделі(суд_):
     for р in суд_.get("речі") or []:
         вим = р.get("вимір") or {}
         п = р.get("палітра") or {}
-        з = {"id": р["ід"], "name": р.get("назва"), "slot": _код("slot", р.get("слот")),
+        з = {"id": р["ід"], "name": р.get("назва"), "kind": р.get("вид"), "slot": _код("slot", р.get("слот")),
              "color": _код("color_name", вим.get("слово") or р.get("колір")),
              "color_measured": bool(вим.get("lab")),
              # рядок 3460: слово стилістки, з яким вимір розійшовся, — інформація суду, не мовчання
@@ -804,7 +847,8 @@ def зміни_для_моделі(суд_):
         else:
             в = с.get("річ") or {}
             з["with_shop"] = {к: v for к, v in {"name": {"free_text": в.get("назва") or "", "lang": "uk"},
-                                                  "price": в.get("ціна"), "shop": в.get("крамниця"),
+                                                  "kind": с.get("вид"), "price": в.get("ціна"),
+                                                  "shop": в.get("крамниця"),
                                                   "slot": _код("slot", в.get("слот"))}.items() if v}
         вих.append(з)
     return вих
@@ -863,6 +907,8 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
                           "code found, fix — how to repair it), structure blockers, and the codes of the "
                           "checklist points the outfit passed and failed",
                  треба=True),
+        _ЗП.Поле("supported", "what works in the outfit by the code's check: an about code with the ids of the "
+                              "outfit items the check supports it for"),
         _ЗП.Поле("worn_unknown", "her items for which the photo does not show whether she wears them or "
                                  "shows them as an alternative: the code put the first of them in the outfit"),
         _ЗП.Поле("changes", "changes the code has verified: each replaces one outfit item with her "
@@ -876,11 +922,15 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
         "\"verdict\": your overall view of whether she should wear the outfit as it is.",
         "\"works\": what works in the outfit as a whole — colors with each other, colors to her palette, "
         "contrast near her face, silhouette. Each point names its items and one \"about\" code.",
+        # рядок 4603: «Що вдало» є завжди — коли суд хоч щось підтримує, хоч один пункт стоїть на цьому
+        "\"works\" has at least one point when \"supported\" is not empty, and every point is one of "
+        "\"supported\": its \"about\" and only items listed with it.",
         # ОЦІНКА-3321 (п.12): що саме названо в тексті, код знає лише з ід — слів він не читає
         "Every point lists in \"items\" the ids of all her items its \"text\" speaks about, and the \"text\" "
         "names no garment, color or accessory that is not one of those items: a thing that is not in "
         "\"items\" of the input does not exist for her. A shop item of a change is shown to her beside "
-        "your \"text\" with its own name: do not name it, say why the change helps her.",
+        "your \"text\" with its own name: do not name it — when you speak of its kind, it is its "
+        "\"kind\" — and say why the change helps her.",
         # КАРТКА-СЛОВА (рядок 3658): «your white top (id p2-3)» — шар переклав «(артикул р2-3)», і жінка
         # читала ід на картці (ЖИВІ-14 №10); заборона ідів у межі «для неї» стоїть далеко від «text» зміни
         "Ids live only in \"id\" and \"items\": a \"text\" never writes one, not even in brackets; "
@@ -1110,6 +1160,9 @@ def дані_оцінки(суд_, питання=None):
         "changes": зміни_для_моделі(суд_),
         "unknown": невідоме_для_моделі(суд_),
     }
+    опори = опори_вдалого(суд_)
+    if опори:
+        дані["supported"] = опори
     не_видно = [р["ід"] for р in суд_.get("речі") or [] if р.get("в_образі", True) is None]
     if не_видно:
         дані["worn_unknown"] = не_видно
@@ -1164,10 +1217,57 @@ def _суперечить(про, речі, суд_):
         не_її = [і for і in речі if ((за_ід.get(і) or {}).get("палітра") or {}).get("стан") != "у палітрі"]
         if не_її:
             return "palette_not_in:%s" % ",".join(не_її)
+    if про == "colors_together":
+        # кольори разом — лише між виміряними кольорами (рядок 4601): річ без виміру (рамки нема чи вимір не
+        # певний) суд кольору не проходила, і «пасують» про неї не має під собою перевірки
+        за_ід = {р["ід"]: р for р in суд_.get("речі") or []}
+        без = [і for і in речі if not ((за_ід.get(і) or {}).get("вимір") or {}).get("lab")]
+        if без:
+            return "color_not_measured:%s" % ",".join(без)
     if про == "contrast" and not any(п.get("стан") == "пройдено" and "K-CLR-02" in (п.get("правила") or [])
                                      for п in суд_.get("пункти") or []):
         return "no_check:K-CLR-02"
     return None
+
+
+def опори_вдалого(суд_):
+    """«Що вдало», яке суд коду підтримує: [{about, items}] — для кожного `about` ті речі образу, проти яких
+    нема знахідки його сім'ї (палітра — лише речі «у палітрі», контраст — речі біля обличчя), і саме таке
+    твердження `_суперечить` пропустив би. Порожньо — суд не підтримує жодного «вдало».
+
+    ЧОМУ (рядок 4603). Правило промпта «claim a success only where the check supports it» модель читала, а
+    вибирати опору мусила сама: ЖИВІ-22 №5 і №6 — кожне «вдало» картки 6 сторож зняв (палітра з хакі «на межі»,
+    контраст проти проваленого K-CLR-02, «кольори разом» проти K-COL-01), і картка йшла без «Що вдало». Тепер
+    опори стоять у вході кодами, а пункт поза ними — один повтор (`повтор_вдалого`)."""
+    образ = list(суд_.get("образ") or [])
+    за_ід = {р["ід"]: р for р in суд_.get("речі") or []}
+    знахідки = [з for з in (суд_.get("суд") or {}).get("findings") or []
+                if з.get("регістр") in ("гейт", "репліка") and (з.get("сила_нп") or 0) > 0]
+    вих = []
+    for про, префікси in ПРО.items():
+        речі = образ
+        if про == "palette":
+            речі = [і for і in образ if ((за_ід.get(і) or {}).get("палітра") or {}).get("стан") == "у палітрі"]
+        elif про == "contrast":
+            речі = [і for і in образ if (за_ід.get(і) or {}).get("біля_обличчя")]
+        влучені = {і for з in знахідки if str(з.get("правило") or "").startswith(префікси) for і in з.get("речі") or []}
+        речі = [і for і in речі if і not in влучені]
+        if про == "colors_together":
+            речі = [і for і in речі if ((за_ід.get(і) or {}).get("вимір") or {}).get("lab")]
+        if len(речі) >= (2 if про == "colors_together" else 1) and _суперечить(про, речі, суд_) is None:
+            вих.append({"about": про, "items": речі})
+    return вих
+
+
+def повтор_вдалого(суд_, картка):
+    """Рядок для ОДНОГО повтору, коли на картці нема «що вдало», а суд його підтримує (`опори_вдалого`)."""
+    опори = опори_вдалого(суд_)
+    if not опори or not картка or (картка.get("вдало") or []):
+        return None
+    return ("Your \"works\" has no point the check supports. The check supports: %s. Give at least one "
+            "\"works\" point with one of these \"about\" codes and only its ids in \"items\". Answer again "
+            "with the same schema." % "; ".join("%s — %s" % (о["about"], ", ".join(ід_на_дріт(і) for і in о["items"]))
+                                                 for о in опори))
 
 
 def прийняти_оцінку(відповідь, суд_):
