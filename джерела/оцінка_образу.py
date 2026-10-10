@@ -82,6 +82,10 @@ def коди_речей():
     return вих
 
 
+# Код `причина`, коли речі названо, а фото ні (два фото й жодна річ без `photo`): див. `речі_з_відповіді`.
+ФОТО_НЕ_НАЗВАНО = "items_without_photo"
+
+
 def _ключ(поле, код, незнайомі, де):
     """Код моделі → ключ ядра через таблицю; код поза переліком — None і рядок у `незнайомі`."""
     if _ВМ.невідомо(код):
@@ -117,7 +121,12 @@ def _ключ(поле, код, незнайомі, де):
 #     мусить обіймати саму річ, без тла й шкіри;
 #   · одна річ на кількох фото — один запис: інакше образ мав би дві однакові сукні, і
 #     `перевірити_від_моделі` бачив би «слот двічі»;
-#   · ошатність — кодом щабля, як у `річ_з_фото.СХЕМА_РЕЧІ`: число шкали ставить код.
+#   · ошатність — кодом щабля, як у `річ_з_фото.СХЕМА_РЕЧІ`: число шкали ставить код;
+#   · «slot» — з форми самої речі (рядок 4100): на фото 2 сцени 6 стенда дві пари ботильйонів без
+#     ніг і тіла лежать угорі кадру, і qwen читала їх «Sweater Top», «L-shaped top», «jeans» — взуттям
+#     у 2 з 9 записаних викликів ЖИВІ-12…17. Правило каже, з чого читати слот (підошва й носок, виріз
+#     і рукави, дві холоші), а не «де річ у кадрі»: речі, розкладені без неї, теж мають свій слот;
+#   · «name» — англійською (п.12): назву жінці пише мовна модель, функціональна — внутрішньою мовою.
 РЕЧІ = _ЗП.Оголошення(
     задача="оцінка_речі",
     роль="You are a stylist. You see photos of an outfit a woman has put together herself, and you "
@@ -132,6 +141,9 @@ def _ключ(поле, код, незнайомі, де):
         "\"in_outfit\" is true for items worn together in the outfit; false for an item shown as an "
         "alternative to one of them; \"unknown\" when the photo does not show which of them she wears "
         "(two pairs side by side, nothing on her).",
+        "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a "
+        "toe, boots also a shaft rising from them; a top or outerwear has a neckline, shoulders and sleeves "
+        "or straps; trousers have two legs; a skirt hangs from the waist in one piece.",
         "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
         "around the item itself, without background or skin.",
         "Field values are only codes from \"codes\"; what the photo does not show is null.",
@@ -139,7 +151,7 @@ def _ключ(поле, код, незнайомі, де):
     вихід="OUTFIT_ITEMS_V1",
     скелет={"items": [{
         "photo": "<photo id>",
-        "name": "<short name, as a shop would call the item>",
+        "name": "<short English name, as a shop would call the item>",
         "slot": "<code from codes.slot>",
         "color": "<code from codes.color: the main color of the item itself>",
         "fabric": "<code from codes.fabric when the texture is visible, else null>",
@@ -196,6 +208,7 @@ def речі_з_відповіді(відповідь, фото):
         вих["без_речей"] = фото_ід
         return вих
     лічба = {}
+    без_фото = 0
     for н, о in enumerate(об["items"]):
         if not isinstance(о, dict):
             вих["незнайомі"].append("items[%d]: не обʼєкт" % н)
@@ -205,6 +218,7 @@ def речі_з_відповіді(відповідь, фото):
             if len(фото_ід) == 1 and not ф:
                 ф = фото_ід[0]           # одне фото — модель могла його не назвати
             else:
+                без_фото += not ф
                 вих["незнайомі"].append("items[%d]: фото «%s» у виклику не було" % (н, ф))
                 continue
         де = "items[%d]" % н
@@ -224,6 +238,10 @@ def речі_з_відповіді(відповідь, фото):
         р["ід"] = ф if лічба[ф] == 1 else "%s·%d" % (ф, лічба[ф])
         вих["речі"].append(р)
     вих["без_речей"] = [ф for ф in фото_ід if not лічба.get(ф)]
+    # РЯДОК 4201: два фото, а модель назвала речі й не сказала, на якому (Ж18 seed3_02) — це не «на кадрах нема речей»,
+    # а вада форми відповіді. Причина кодом (п.12) вмикає повтор формату в показі; після нього — заява з `why`.
+    if not вих["речі"] and без_фото and без_фото == len(об["items"]):
+        вих["причина"] = ФОТО_НЕ_НАЗВАНО
     return вих
 
 

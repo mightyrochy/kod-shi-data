@@ -1131,6 +1131,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "no_photo_shop_forbids": "the shop does not allow its photos to be shown on other sites",
     "no_photo_shop_placeholder": "the shop put a placeholder instead of the item's photo in the feed",
     "no_photo_other_items_only": "the shop gave only photos of other products in the feed",
+    # рядок 4109 (п.12): ці дві стояли в `показ.html` готовими фразами для звіту власника
+    "no_photo_item_invented": "this item was invented by the model (hands 3-4): there is no shop and no feed "
+                              "behind it, so no photo exists",
+    "no_photo_reason_not_given": "the item has no photo and the code holds no reason why",
     # Ф-143 (27.09.2026): ЄДИНА заява цієї сім'ї, яку народжує не фід, а БРАУЗЕР. Решта
     # чотирьох — свідчення про фід, і їх код знає офлайн, ще до картки. Ця постає тоді,
     # коли фід знімки дав, вони пройшли весь відбір `фід_фото.кадри_речі`, — і жоден з
@@ -2336,7 +2340,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                   "names of the items)",
     "open_neckline_on_top_or_one_high_neck": "an item with an open neckline on top (a cardigan, a jacket, a "
                                              "V-neck), or keep only one high neckline",
-    "outer_length_state_chosen_for_warmth": "length and state chosen for warmth, not proportion",
+    "outer_length_state_chosen_for_warmth": "length and state chosen for warmth, not proportion (values: "
+                                           "temperature_c — the degrees; share — from 0 to 1, how much of "
+                                           "the voice of the proportion rules the heat takes away, 1 is all of "
+                                           "it; suppressed_rules — ids of the proportion rules that lost "
+                                           "their voice in this outfit, empty when none of them applied)",
     "fill_power_without_fill_weight": "fill power without fill weight is no warmth measure",
     "ask_fill_weight_or_ignore_fill_power": "ask for the weight of the filling, or do not use fill power in "
                                             "the decision at all",
@@ -2637,7 +2645,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_removable_no_metric_drops": "the item can go: without it no metric of the look drops",
     "remove_this_item": "remove this item",
     # ── оцінка її власного образу з фото: чого на кадрі не знайшлось (Ч-8, рядок 197) ──
-    "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one)",
+    "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one; "
+                                "`items_without_photo`: items were named but not on which of her photos, so none could be "
+                                "read — say this, not that her photos hold no items)",
     "review_items_not_recognized": "items are visible in the frames, but none of them could be matched "
                                    "to a place in the outfit (values: why — the reason, when there is one)",
     # ── НОТИ СЛОТІВ ПУЛУ (Ч-10, 28.09.2026, рядок 223; доти цілі речення коду в
