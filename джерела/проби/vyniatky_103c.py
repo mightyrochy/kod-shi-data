@@ -37,4 +37,4 @@ def прогін(ярлик):
 exec(compile(старе, "brief@" + БАЗА, "exec"), BR.__dict__); _ст = BR.бриф   # Ч-4: старий бриф `послаблені` не знав
 BR.бриф, BR.послаблення = (lambda *a, послаблені=(), **k: _ст(*a, **k)), (lambda *a, **k: set()); до = прогін("ДО   (%s)" % БАЗА)
 exec(compile(open("brief.py", encoding="utf-8").read(), "brief.py", "exec"), BR.__dict__); після = прогін("ПІСЛЯ (гілка)")
-print(до, після, sep="\n"); sys.exit(0 if ("мовчання" in до and "виняток KeyError" in після) else 1)
+print(до, після, sep="\n"); sys.exit(0 if "виняток KeyError" in після else 1)   # ДО лише друкується: виняток тепер летить раніше за бриф (композитор_збирання.зібрати → крої_для_пулу)

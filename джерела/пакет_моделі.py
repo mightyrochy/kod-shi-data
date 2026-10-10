@@ -221,7 +221,7 @@ def _поля_групи(r, _мітка):
                 халява=("халява до %s" % ХАЛЯВА_СЛОВОМ.get(r.get("халява"), r["халява"]))
                        if r.get("халява") else "",
                 деталі=" · ".join(_дет),
-                крій=("крій %s" % (_О.крій_для_моделі(r) or r["крій"])) if r.get("крій") else "",
+                крій=("крій %s" % _О.крій_для_моделі(r)) if _О.крій_для_моделі(r) else "",
                 тканина=("тканина %s" % r["тканина"]) if r.get("тканина") else "",
                 зона=r.get("зона") or "",
                 альт=("може стати також: %s" % ", ".join(r["слоти_альт"]))
@@ -447,14 +447,23 @@ import внутрішня_мова as _ВМ_П
 
 # Підписи полів відповіді ОБРАЗИ_V1 — спільні для складання й ремонту (`вердикт_моделі.РЕМОНТ`).
 # Шляхи — полями СХЕМИ; англійськими ключами дроту їх робить збирач (`протокол.шлях_en`).
+# РЯДОК 3530: «in full» qwen3.5-9b читала як «річ повністю» й переписувала в «items» цілий рядок
+# пулу («#88·24 Olive midi skirt polyester … in_arc unknown») чи обʼєкт {n, name, …} — відповідь
+# роздувалась до стелі виводу й обривалась (ЖИВІ-13 №9: 13 942 симв., закрився 1 образ). Тепер
+# підпис і правило кажуть «лише номер» із прикладом; код крамниці 99 не видано жодній (найбільший —
+# 42), тож скопійований приклад не стане чужою річчю, а піде в невірні пари.
+ПРИКЛАД_НОМЕРА = "#12·99"
+РЯДОК_ЛИШЕ_НОМЕР = ("Write every item as its «n» alone, exactly as given (half of a set: «n»/top or «n»/bottom): "
+                    "\"%s\" — never \"%s Olive midi skirt …\" and never an object {\"n\": …}; the code "
+                    "already knows every field of the item." % (ПРИКЛАД_НОМЕРА, ПРИКЛАД_НОМЕРА))
 ПОЛЯ_ОБРАЗІВ_EN = {
     "образи[].підпис": "3–5 words: the idea of the outfit",
-    "образи[].речі": "«n» of the item, in full",
+    "образи[].речі": "«n» of the item alone, e.g. \"%s\"" % ПРИКЛАД_НОМЕРА,
     # рядок 1427: «the choice is hers» — лише про її бажання; за свою річ стилістка каже, чому вона
     "образи[].день": "one sentence, up to 25 words: how this outfit lives through her day; where something she "
                      "asked for herself argues with the day, say so gently — that part is hers to decide; where "
                      "an item you chose argues with the day, say why you still chose it",
-    "образи[].свідомо[].річ": "«n» of the item",
+    "образи[].свідомо[].річ": "«n» of the item alone",
     "потрібно[].слот": "the kind of item that is missing, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["slot"]),
     "потрібно[].тип": "its type, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["item_type"]),
     "потрібно[].колір": "its color, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["color_name"]),
@@ -561,7 +570,7 @@ import внутрішня_мова as _ВМ_П
                          "fabric suits; «L_from», «hem_from» — what the number was read from; «branch» — where "
                          "the colour lies against her palette: core, edge or break; «register» — the item's "
                          "style language",
-                 як="take items only from here and name each by its «n» in full; fitness for the "
+                 як="take items only from here and name each by its «n» alone; fitness for the "
                     "occasion, taste and the unity of the outfit are yours", треба=True),
         # К-3: короткий запис речі (перемикач `короткий_запис`) пише часті поля короткими
         # ключами, а що кожен означає — цей рядок. Платиться раз на пакет замість того, щоб
@@ -569,6 +578,8 @@ import внутрішня_мова as _ВМ_П
         # записі, і рядок тоді в промпт не йде (`збирач_промптів.зібрати`).
         _ЗП.Поле("pool_keys", "the keys the items of «pool» use, what each means, and defaults for omitted values",
                  як="read every item of «pool» by these keys; restore every absent key that has an `absent =` default"),
+        _ЗП.Поле("pool[].kind", "the kind of an item the shop gives no type for: a belt, a hat, «Shoes»",
+                 як="take it as the item's kind; do not guess a kind from the name"),
         _ЗП.Поле("pool[].two_piece", "a set sold as one item",
                  як="it is a whole outfit, like a dress: add no top or bottom to it; take one half only "
                     "when you must, with «deliberate», naming it «n»/top or «n»/bottom"),
@@ -621,9 +632,15 @@ import внутрішня_мова as _ВМ_П
                  як="do not invent them and do not fill their place with a variation of an outfit you "
                     "already made"),
         _ЗП.Поле("register_rules", "the corpus rule behind each register label of the items"),
-        _ЗП.Поле("outfits_wanted", "how many outfits to put together", треба=True),
+        _ЗП.Поле("outfits_wanted", "how many outfits to put together: exactly this many", треба=True),
     ),
     правила=(
+        # СКІЛЬКИ ОБРАЗІВ — ПРАВИЛОМ, НЕ ЛИШЕ ПОЛЕМ (рядок 3681): число стояло тільки ключем після пулу, і
+        # слабка модель ходила колом по задумах — 13, 20 і 33 образи замість 10 у 3 з 26 записаних
+        # відповідей ЖИВІ-11/12 (33 — по 7 на кожен задум, 4 107 т. до стелі, 190 с). Код бере перші
+        # «outfits_wanted» (`міст_відповіді`), тож решта — лише час виводу (аудит/ПРОДУКТ.md п.21)
+        "Put together exactly «outfits_wanted» outfits and end the answer there: an idea of «poles» gives one "
+        "outfit, «free» as many as its «outfits», and the code reads no outfit past «outfits_wanted».",
         "One item of each kind; an outfit has a dress, a set, or a top and a bottom.",
         РЯДОК_ТРЕТЬОЇ_РЕЧІ,
         РЯДОК_РІЧ_ДВІЧІ,
@@ -634,6 +651,8 @@ import внутрішня_мова as _ВМ_П
         "When you break a condition or take an item outside the palette on purpose, say so in «deliberate» "
         "of the outfit: the item and why.",
         "When an outfit needs an item «pool» does not have, say so in «needed».",
+        РЯДОК_ЛИШЕ_НОМЕР,
+        _ЗП.КІНЕЦЬ_ВІДПОВІДІ_EN,
     ),
     вихід="ОБРАЗИ_V1",
     поля_виходу=dict(ПОЛЯ_ОБРАЗІВ_EN, **{
@@ -898,7 +917,7 @@ def _річ_пулу(r, ном):
             ("ціна", r.get("ціна") or None),
             ("тип", (r.get("тип") or r.get("тип_верхнього") or "").replace("_без_уточнення", "")),
             # ОДНА МОВА КРОЮ ДЛЯ МОДЕЛІ (рядок 2032): крої слота, не сире слово — як `cuts_best_on_her`
-            ("крій", _О.крій_для_моделі(r) or r.get("крій")),
+            ("крій", _О.крій_для_моделі(r)),
             ("гілка", r.get("гілка") or "ядро"),
             ("тканина", r.get("тканина")),
             # ЇЇ РІЧ ПІДПИСАНА НЕ КЛЮЧЕМ КАТАЛОГУ (розбір 3/8, вада 4): матеріал

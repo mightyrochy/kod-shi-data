@@ -203,6 +203,15 @@ def вибірка(о):
 }
 МОВА_EN = "English"
 ФОРМА_JSON_EN = "The answer is one JSON object following \"answer_schema\", without explanations and without ```."
+# КІНЕЦЬ ВІДПОВІДІ — ПРАВИЛОМ ЗАДАЧІ (рядок 4025): у «task» ключ «answer» несе ім'я схеми, а за ним ідуть
+# «answer_schema», «input», «statement_codes». Стилістка пише {"answer": {…відповідь…} і далі продовжує той самий
+# обʼєкт задачі — переписує решту його ключів: ЖИВІ-16 №11 рука 1, складання — 9 образів, потім «answer_schema»,
+# «input», «statement_codes» (14 667 симв.) до стелі 4000 т.; №13 рука 1, опис — {"answer_schema": {…}, "input": […]};
+# Ж15 №12 — те саме без стелі. Ехо — лише час виводу і обрив, коли стеля ближче. Правило називає початок і кінець
+# відповіді й ключі, які доти тягнули ехо; спершу — складання й опис, де ехо записане.
+КІНЕЦЬ_ВІДПОВІДІ_EN = ("Write the answer object itself: it begins with {\"version\" and ends with the brace that "
+                       "closes it. Do not put it under «answer» or «answer_schema», and write nothing after it — no "
+                       "«answer_schema», «input», «statement_codes» or any other part of «task» or of the data.")
 # Ключі шаблону: український → англійський (ті самі розділи, той самий порядок).
 КЛЮЧІ_EN = {"версія": "version", "завдання": "task", "роль": "role", "вхід": "input",
             "правила": "rules", "межі": "limits", "мова": "language", "відповідь": "answer",

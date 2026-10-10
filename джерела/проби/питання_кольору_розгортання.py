@@ -13,7 +13,7 @@ JS = """async () => { const в = [];
       р.ключ === 'кнопка' ? 'Чого я ще не звірила' : 'Речення ' + р.ключ.split('.')[1]])), без_відповіді: []};
     return {промпт: '', розмітка: []}; };
   модельМовиП = async () => '{}';
-  const п = (код, р) => ({правило: 'K-COL-06', повідомлення: {kind: 'card_code_unknown', statements: [{code: код}]}, ...р});
+  const п = (код, р) => ({правило: 'K-COL-06', повідомлення: {kind: 'card_unchecked', statements: [{code: код}]}, ...р});
   const к = {рука: '1', речі: [], опис: '', як_носити: [], неповний: '', текст: '', питання: [
     п('items_register_unknown', {}), п('cannot_tell_two_different_whites', {на_розгортання: 1}),
     п('cannot_tell_lightness_structure', {на_розгортання: 1}), п('areas_not_measured', {для_всіх: 1})]};
