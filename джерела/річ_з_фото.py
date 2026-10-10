@@ -192,6 +192,9 @@ def коди_полів():
     вих["length"] = list(_довжини_кодів())
     вих["pattern"] = [к for к, ключ in _ВМ.ТАБЛИЦЯ["pattern"].items() if ключ in ПРИНТИ or ключ == "solid"]
     вих["formality"] = list(_БР.ЧИСЛО_ЩАБЛЯ)
+    # вид речі (рядок 4283): без нього вердикт її речі їхав у репліку з `item_type: "unknown"`, і
+    # перекладачка добирала вид сама — білі сандалі ставали «туфлями-човниками» (Ж19 №7)
+    вих["item_type"] = list(_ВМ.ТАБЛИЦЯ["item_type"])
     return вих
 
 
@@ -406,7 +409,10 @@ def речі_з_json(сирі, фото=None, досі=None, словами=None
 #   · «name» — англійською, внутрішньою мовою (п.12, рядок 4107): без мови в полі qwen писала назву
 #     мовою її цитати й збивалась — «Сандалия на массивном каблуке», «шлепанці на платформі з ремінцем»
 #     (ЖИВІ-17 №6–7), і ця назва лягала в паспорт. Українською її пише мовна модель: картка — `мовоюКарткуП`,
-#     вердикт у репліці — `{free_text, lang: "en"}` (`розмоваШаромП`), шлях main — `мовоюП`.
+#     вердикт у репліці — `{free_text, lang: "en"}` (`розмоваШаромП`), шлях main — `мовоюП`;
+#   · «kind» — вид речі кодом `item_type` (рядок 4283): назву жінці пише мовна модель, а вид у вердикт
+#     репліки (`міст_річ` → `item_type`) — лише з цього коду. Без нього шар ЖИВІ-19 №6–8 назвав
+#     «white leather sandals» тричі, а репліка казала «туфлі-човники», «туфлі», «взуття».
 ФОТО_РЕЧЕЙ = None      # оголошення будується ліниво (`_фото_речей`): збирач імпортує протокол
 
 
@@ -445,6 +451,7 @@ def _фото_речей():
                 "photo": "<photo id>",
                 "name": "<short English name, as a shop would call the item>",
                 "slot": "<code from codes.slot>",
+                "kind": "<code from codes.item_type: the exact kind of the item, or null>",
                 "color": "<code from codes.color: the main color of the item itself>",
                 "fabric": "<code from codes.fabric when the texture is visible, else null>",
                 "cut": "<code from codes.cut or null>",
@@ -508,7 +515,10 @@ def речі_з_відповіді_фото(відповідь, фото, дос
             незнайомі.append("items[%d]: не обʼєкт" % н)
             continue
         р = {"фото": о.get("photo"), "назва": о.get("name"), "ошатність": о.get("formality"),
-             "чия": ключ_поля("owner", о.get("owner")) or "невідомо"}
+             "вид": о.get("kind"), "чия": ключ_поля("owner", о.get("owner")) or "невідомо"}
+        if о.get("kind") is not None and str(о.get("kind")).strip() not in _ВМ.ТАБЛИЦЯ["item_type"] \
+                and not _ВМ.невідомо(о.get("kind")):
+            незнайомі.append("items[%d].kind: код «%s» поза переліком" % (н, о.get("kind")))
         for поле, ключ in _ПОЛЯ_ФОТО:
             р[ключ] = ключ_поля(поле, о.get(поле))
             if р[ключ] is None and not __import__("внутрішня_мова").невідомо(о.get(поле)):
