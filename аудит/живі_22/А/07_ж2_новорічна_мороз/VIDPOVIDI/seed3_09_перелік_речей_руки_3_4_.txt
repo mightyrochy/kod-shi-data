@@ -1,0 +1,36 @@
+── ПРОМПТ (2036 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk satin sheath dress, knee-length, emerald green (#0f5132), fluid woven fabric; tailored wool-blend blazer, cropped at the waist, charcoal gray (#36454f), structured weave; pointed-toe pumps, stiletto heel, deep burgundy (#5a181a), leather; pearl drop earrings, 18mm diameter, white, lustrous nacre.\n\nThis ensemble balances the upscaling atmosphere of a New Year's restaurant dinner with the frosty weather outside by keeping a chic outer layer while ensuring warmth through sophisticated fabrics. The emerald dress anchors the look in festive tradition, while the charcoal blazer adds a modern, structured edge that bridges smart and formal dress codes without looking outdated. Finishing touches like the burgundy shoes echo holiday richness, and the pearl earrings add a timeless touch of elegance suitable for a celebration with family or colleagues."}
+
+── ВІДПОВІДЬ (678 симв., 315.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "knee-length fluid woven fabric",
+      "slot": "dress",
+      "color_hex": "#0f5132",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "cropped at the waist structured weave",
+      "slot": "outerwear",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "pointed-toe stiletto heel",
+      "slot": "shoes",
+      "color_hex": "#5a181a",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "drop 18mm diameter lustrous nacre",
+      "slot": "earrings",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    }
+  ]
+}

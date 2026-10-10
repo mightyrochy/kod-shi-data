@@ -1,0 +1,49 @@
+── ПРОМПТ (6865 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти перекладаєш коментар жінки до образу у внутрішню мову застосунку — JSON із кодами. Рішень не приймаєш.
+
+Вхід — її коментар до образу; КОНТЕКСТ.items — речі цього образу (id, slot, name); КОНТЕКСТ.tapped — що вона натиснула на картці (wear, mine, aspects зі знаком sign: plus — що вдалось, minus — що заважає) і на яке питання картки писала (question).
+
+Поля внутрішньої мови:
+- wear — чи вдягне вона цей образ, за її словами: as_is — так, як є; one_change — якщо змінити одну річ; no — ні; коди: as_is, one_change, no
+- mine — чи це її образ, за її словами: mine — саме її; pretty — гарний, але не її; not_mine — не її; коди: mine, pretty, not_mine
+- reasons — що їй заважає в образі: colour — колір; cut — фасон: крій, посадка, довжина, силует; combination — як речі поєднуються між собою; style — стиль, настрій, «не я»; occasion — доречність для нагоди чи місця; weather — погода, сезон; comfort — зручність: взуття, рух, тканина; price — ціна; photo — з фото не видно чи не зрозуміло, яка річ насправді; on_me — не певна, як це буде саме на ній; want_to_try — хоче спробувати, попри сумнів; список; елемент — коди: colour, cut, combination, style, occasion, weather, comfort, price, photo, on_me, want_to_try
+- good — що в образі вдалось чи їй подобається; коди ті самі, що в reasons; список; елемент — коди: colour, cut, combination, style, occasion, weather, comfort, price, photo, on_me, want_to_try
+- about_items — речі образу, про які вона сказала; список; елемент — об'єкт {id — рядок; opinion — коди: like, dislike; reasons — список; елемент — коди: colour, cut, combination, style, occasion, weather, comfort, price, photo, on_me, want_to_try}
+- shift — куди, за її словами, зсунути наступний образ цього виходу; об'єкт {formality — коди: more, less; warmth — коди: more, less; attention — коди: more, less}
+- wants — чого вона хотіла б натомість; список; елемент — об'єкт «річ»
+- vetoes — чого вона не хоче; список; елемент — об'єкт «річ»
+- note — решта сказаного, що не лягає в поля вище; рядок її мовою
+
+Об'єкт «річ» — JSON-об'єкт: спершу quote — уривок її слів про цю річ із блоку СЛОВА, переписаний літера в літеру; далі лише ознаки, які вона назвала:
+- slot — частина образу; коди: top, bottom, dress, set, outerwear, shoes, bag, scarf, headwear, belt, tights, socks, jewelry, earrings, collar_necklace, necklace, brooch, bracelet, ring, glasses, gloves, watch, swimwear, underwear, accessory
+- item_type — тип речі; коди: evening_dress (вечірня_сукня), cocktail_dress (коктейльна_сукня), suit (костюм), sheath_dress (футляр), sundress (сарафан), blazer (блейзер), over_knee_boots (ботфорти), chelsea_boots (челсі), ugg_boots (уггі), ballet_flats (балетки), mules (мюлі), espadrilles (еспадрильї), pumps (човники), dress_shoes (туфлі), moccasins (мокасини), loafers (лофери), sneakers (кросівки), plimsolls (кеди), ankle_boots (черевики), boots (чоботи), heeled_sandals (босоніжки), sandals (сандалі), clutch (клатч), backpack (рюкзак), tote (шопер), baguette_bag (багет), hobo_bag (хобо), crossbody_bag (кросбоді), bucket_bag (бакет), belt_bag (поясна), briefcase (портфель), saddle_bag (сідло), hoodie (худі), sportswear (спортивний), loungewear (домашнє), leggings (легінси), jeans (джинси), t_shirt (футболка), shirt (сорочка), blouse (блуза), knitwear (трикотаж), cardigan (кардиган), sweater (светр), shorts (шорти), jumpsuit (комбінезон), skirt (спідниця), trousers (штани), coat (пальто), trench_coat (тренч), jacket (куртка), vest (жилет), top_garment (топ), stole (палантин), kerchief (хустка), twilly (твіллі), snood (снуд), shawl (шаль), bactus_scarf (бактус), ring (каблучка), headband (обруч), bow (бант), hair_clip (заколка), hair_tie (резинка), scarf_generic (шарф_без_уточнення), jewelry_generic (прикраса_без_уточнення), bag_generic (сумка_без_уточнення), dress_generic (сукня_без_уточнення), two_piece_set (комплект), casual_suit (костюм_повсякденний), bodysuit (боді), longsleeve (лонгслів), half_coat (півпальто), down_jacket (пуховик), fur_coat (шуба), sheepskin_coat (дублянка), parka (парка), raincoat (плащ), rain_cape (дощовик), windbreaker (вітровка), anorak (анорак), bomber (бомбер), poncho (пончо)
+- fabric — тканина; коди: wool, cashmere, mohair, angora, alpaca, cotton, viscose, tencel, lyocell, modal, linen, silk, polyester, polyamide, nylon, acrylic, elastane, stretch, denim, satin, atlas, chiffon, muslin, batiste, tweed, boucle, corduroy, velvet, jersey, knitted, suede, faux_leather, leather, patent_leather, nubuck, velour, lace, guipure, openwork, woven
+- pattern — візерунок; коди: solid, polka_dot, floral, stripes, check, animal_print, camouflage, geometric, abstract, lace_motif, embroidery, print_generic
+- color_class — клас кольору; коди: dark, light, bright, pastel, muted
+- color_name — назва кольору; коди: black, white, grey, graphite, beige, cream, milky, sand, taupe, camel, latte, cocoa, brown, chocolate, red, burgundy, cherry, raspberry, brick, terracotta, ginger, coral, orange, peach, yellow, lemon, mustard, golden, khaki, olive, green, pine_green, mint, turquoise, petrol, light_blue, denim_blue, blue, navy, lilac, purple, plum, magenta, fuchsia, pink, rose, powder_pink, silvery, pearly, creamy, mocha, powder, soft_pink, emerald, electric_blue
+- zone — зона тіла, яку не відкривати; коди: neckline, back, arms, shoulders, legs, belly
+- feature — ознака речі; коди: heels, large_print
+- length — довжина речі; коди: mini, mid_thigh, knee, midi, maxi, waist
+
+Межа: пиши лише поля, про які в її словах є опора. Поля, про яке вона не сказала нічого, у відповіді нема — це й є "unknown". Не вигадуй і не виводь одне поле з іншого; значення — лише коди з переліків; вільний текст — мовою її слів.
+КОНТЕКСТ.tapped — лише щоб зрозуміти її слова: поле, про яке вона нічого не сказала, з натиснутого не переписуй. Те, без чого вона хоче образ, — межа у vetoes, навіть коли вона каже це як бажання: кодом самої цієї ознаки, візерунка («без принта» — pattern print_generic, не solid), тканини, кольору чи речі, зі слотом, коли вона його назвала, і без типу речі з образу; коду заперечення нема. У wants — лише те, що вона хоче мати, і лише з quote — уривком її слів, де вона це назвала: без нього код бажання не бере. У reasons — лише коди аспектів; ознака речі, що їй заважає (підбори, принт), — межа у vetoes.
+
+Відповідь — лише JSON-об'єкт.
+
+СЛОВА:
+Колір мій, а жакет я б носила й окремо, з джинсами
+
+КОНТЕКСТ:
+{"tapped": {"question": "as_is.mine", "wear": "as_is", "mine": "mine"}, "items": [{"id": "м-001", "slot": "dress", "name": {"free_text": "приталена сукня-футляр", "lang": "uk"}}, {"id": "м-002", "slot": "outerwear", "name": {"free_text": "піджак", "lang": "uk"}}, {"id": "м-003", "slot": "shoes", "name": {"free_text": "туфлі-човники", "lang": "uk"}}, {"id": "м-004", "slot": "earrings", "name": {"free_text": "сережки", "lang": "uk"}}]}
+
+── ВІДПОВІДЬ (154 симв., 5.9 с, HTTP 200) ──
+```json
+{
+  "wear": "as_is",
+  "mine": "mine",
+  "about_items": [
+    {"id": "м-002", "opinion": "like"},
+    {"id": "м-001", "opinion": "like"}
+  ]
+}
+```

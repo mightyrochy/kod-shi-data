@@ -1,0 +1,50 @@
+── ПРОМПТ (2448 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined camel wool-blend sheath dress, midi length, soft almond color (#D6C8AA), with a subtle herringbone texture that resists static in cold air.\nOver this base, add an emerald green velvet tuxedo jacket, tailored to the waist but left unbuttoned for breathability, featuring silk satin lapels and two-button closure.\nOn the feet, classic black leather loafers with a modest stacked heel, polished to a soft shine to contrast the matte fabrics above.\nFinish the look with gold-plated geometric earrings that catch indoor chandelier light, a thin silk scarf tied loosely at the neck for warmth, and a single strand of pearl necklace to echo the New Year theme without overwhelming the silhouette.\n\nThis outfit works perfectly for an upscale New Year's party in frosty weather because the velvet jacket provides necessary insulation while maintaining the sharp elegance required by the formal dress code. The dark jewel-tone outer layer creates a striking visual contrast against the warm camel base, ensuring she stands out without sacrificing comfort in the cold restaurant setting. The choice of structured tailoring and high-quality natural fabrics like wool and silk ensures the ensemble remains sophisticated and dignified throughout the evening celebration."}
+
+── ВІДПОВІДЬ (1134 симв., 319.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "camel wool-blend midi length with subtle herringbone texture",
+      "slot": "dress",
+      "color_hex": "#D6C8AA",
+      "worn": true
+    },
+    {
+      "name": "tuxedo jacket",
+      "details": "emerald green velvet tailored to waist with silk satin lapels and two-button closure",
+      "slot": "outerwear",
+      "color_hex": "#508364",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "black leather classic cut with modest stacked heel and polished shine",
+      "slot": "shoes",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "geometric design gold-plated to catch light",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "thin silk tied loosely at the neck",
+      "slot": "scarf",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "single strand of pearls",
+      "slot": "necklace",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    }
+  ]
+}

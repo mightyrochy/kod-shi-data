@@ -1,0 +1,78 @@
+── ПРОМПТ (8324 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_unchecked — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- bag — сумка.
+- belt — пояс.
+- outerwear — верхній шар.
+- set — комплект.
+- shoes — взуття.
+- top — верх.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+
+ЗАЯВИ:
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_item_off_palette — so the code cannot tell whether the item's colour lies outside her palette.
+- cannot_tell_item_carries_interest — so the code cannot tell whether the item's colour is strong enough to carry interest.
+- photo_colour_noise_above_visible_difference — the colour measured from a photo is noisier than the difference that reads as visible (values: noise, threshold — both as colour difference on one scale; numbers for the code, not for her), so two colours measured from photos cannot settle whether two items differ visibly.
+- cannot_tell_two_neutrals_distinct — so the code cannot tell whether two neutrals of one lightness differ visibly.
+- cannot_tell_accent_role_chroma — so the code cannot tell whether the item is colourful enough for the accent role the palette scheme gave its slot.
+- cannot_tell_items_intensity_match — so the code cannot tell whether the outfit's items match in colour saturation.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- item_length_unknown_edge_default — the cards do not carry the length of the named items: the usual edge for such an item was taken, so the code does not know where exactly it lands on the body (values: slots — slot codes).
+- shoe_cut_irrelevant_leg_covered — the shoe's cut-line decides nothing here: a long bottom covers the leg (values: item — item name).
+- outer_shoulder_not_measured — the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- cut_from_photo_shop_differs — the cut was read from the photo, and the shop names another one (values: items — the items: slot — slot code, shop — the cut by the shop, photo — the cut from the photo; the cut names are in English, retell them in her language).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "item_length_unknown_edge_default", "values": {"slots": ["set", "shoes"]}}]},
+{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "outer_shoulder_not_measured", "values": {"item": {"free_text": "Вовняне сіре пальто в клітинку…", "lang": "uk"}}}]},
+{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Черевики замшеві карамельні ROUX на флісі", "lang": "uk"}}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "shoe_cut_irrelevant_leg_covered", "values": {"item": {"free_text": "Черевики замшеві карамельні ROUX на флісі", "lang": "uk"}}}]},
+{"н": 5, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "belt", "colour": "смарагд"}, {"slot": "bag", "colour": "зелений"}, {"slot": "shoes", "colour": "кемел"}]}}, {"code": "cannot_tell_two_neutrals_distinct"}]},
+{"н": 6, "вид": "card_unchecked", "заяви": [{"code": "photo_colour_noise_above_visible_difference", "values": {"noise": 11.5, "threshold": 6}}, {"code": "cannot_tell_two_neutrals_distinct"}]},
+{"н": 7, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "top", "range": "38–50 і S"}, {"slot": "set", "range": "40–52"}]}}]},
+{"н": 8, "вид": "card_unchecked", "заяви": [{"code": "cut_from_photo_shop_differs", "values": {"items": [{"slot": "set", "shop": "wide", "photo": "fitted"}]}}]},
+{"н": 9, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "outerwear", "range": "36–44"}]}}]},
+{"н": 10, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "belt", "colour": "смарагд"}, {"slot": "shoes", "colour": "кемел"}, {"slot": "bag", "colour": "зелений"}]}}, {"code": "cannot_tell_items_intensity_match"}]},
+{"н": 11, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "belt", "colour": "смарагд"}, {"slot": "shoes", "colour": "кемел"}, {"slot": "bag", "colour": "зелений"}]}}, {"code": "cannot_tell_item_carries_interest"}]},
+{"н": 12, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "shoes", "colour": "кемел"}]}}, {"code": "cannot_tell_accent_role_chroma"}]},
+{"н": 13, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "belt", "colour": "смарагд"}]}}, {"code": "cannot_tell_item_holds_scheme_hue"}]},
+{"н": 14, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "shoes", "colour": "кемел"}]}}, {"code": "cannot_tell_item_holds_scheme_hue"}]},
+{"н": 15, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "belt", "colour": "смарагд"}]}}, {"code": "cannot_tell_item_off_palette"}]}
+]
+
+── ВІДПОВІДЬ (1626 симв., 85.9 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю, де саме на тобі закінчується комплект і взуття.",
+  "2": "Не можу сказати, чи підходить ширина плечей вовняного сірого пальто в клітинку.",
+  "3": "Я ще не перевірила розмір черевиків замшевих карамельних ROUX на флісі з довжиною твоєї стопи. Також я не знаю ні твою довжину стопи, ні довжину устілки в цих черевиках.",
+  "4": "Черевики замшеві карамельні ROUX на флісі закривають ногу, тому їхній фасон тут не має значення.",
+  "5": "Я не можу сказати, чи відрізняються зелений пояс і сумка смарагдового кольору від кемелових черевиків.",
+  "6": "Різниця в кольорі між речами на фото менша за похибку вимірювання. Тому я не знаю, чи відрізняються нейтральні кольори один від одного.",
+  "7": "Я не можу сказати, як саме сидять блузка розмірів 38–50 і S та комплект розмірів 40–52 на тобі.",
+  "8": "На фото здається, що крій комплекту приталений, а в магазині його називають широким.",
+  "9": "Я не знаю, як саме сидить верхній шар розміру 36–44 на тобі.",
+  "10": "Не можу сказати, чи достатньо насичені зелений пояс і сумка смарагдового кольору та кемелові черевики для образу.",
+  "11": "Я не знаю, чи вистачає яскравості зеленому поясу, сумці смарагдового кольору та кемеловим черевикам, щоб привернути увагу в образі.",
+  "12": "Не можу сказати, чи достатньо насичені кемелові черевики для акцентної ролі у твоєму образі.",
+  "13": "Я не знаю, чи відповідає смарагдовий колір пояса кольоровій гамі твого образу.",
+  "14": "Не можу сказати, чи відповідають кемелові черевики кольоровій гамі твого образу.",
+  "15": "Я не знаю, чи лежить смарагдовий колір пояса за межами твоєї палітри."
+}
+```
