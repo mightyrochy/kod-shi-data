@@ -173,6 +173,7 @@ import дріт_моделі as _Д
         "another kind of item, or unfit for her occasion — and that matters for this outfit, name that one "
         "item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in "
         "doubt, leave «swap» out.",
+        _ЗП.КІНЕЦЬ_ВІДПОВІДІ_EN,
     ),
     вихід="ОПИС_ВІДПОВІДЬ_V1",
     поля_виходу={

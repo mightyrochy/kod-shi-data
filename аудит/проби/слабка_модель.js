@@ -43,11 +43,14 @@
                       PALETTE_CHOICE) модель кладе в {"answer": {…}} — ім'я задачі в промпті стоїть
                       у полі «answer» (рядок 3370: живі ЖИВІ-12 Б/01–03, шар фото, 4 з 5 відповідей).
                       Повтор — так само. У «usi» НЕ входить — вмикається лише своїм ім'ям.
+     mitka          — проза рук 3–4 починається міткою задачі з промпту («OUTFIT_TEXT» рядком, як
+                      ЖИВІ-16 №13 `seed3_08`; «OUTFIT_TEXT:» — ЖИВІ-15 №11): рядок 4022, на картці
+                      перекладач робив з неї «ОБРАЗ». У «usi» НЕ входить — вмикається лише своїм ім'ям.
    Повтор формату слабка модель провалює ТАК САМО: це і є «повтор дасть те саме».
    Без SLABKA стенд байт-у-байт той самий. */
 const ФОРМИ = ['obrizano', 'latynytsia', 'masyv', 'nomery', 'vidpovid', 'obraz_u_vybori',
   'ekho', 'ryadky', 'opys_obrazom', 'prybraty'];
-const ОКРЕМІ = ['ekho_remont', 'pvn_aksesuary', 'vkladeno', 'obgortka'];   // лише своїм ім'ям, не в «usi» (див. шапку)
+const ОКРЕМІ = ['ekho_remont', 'pvn_aksesuary', 'vkladeno', 'obgortka', 'mitka'];   // лише своїм ім'ям, не в «usi» (див. шапку)
 const УВІМКНЕНІ = new Set(String(process.env.SLABKA || '').split(',').map(с => с.trim())
   .filter(Boolean).flatMap(с => (с === 'usi' ? ФОРМИ : [с])));
 for (const ф of УВІМКНЕНІ) if (!ФОРМИ.includes(ф) && !ОКРЕМІ.includes(ф))
@@ -158,6 +161,8 @@ function зіпсувати(відповісти, в, промпт) {
     if (!х || typeof х !== 'object' || Array.isArray(х)) return в;
     return {тип: в.тип + ' · слабка: obgortka', стоп: 'end_turn', текст: JSON.stringify({answer: х}, null, 2)};
   }
+  if (УВІМКНЕНІ.has('mitka') && об && об.task && об.task.answer === 'OUTFIT_TEXT')
+    return {тип: в.тип + ' · слабка: mitka', стоп: 'end_turn', текст: 'OUTFIT_TEXT\n' + String(в.текст || '')};
   if (!тип) return в;
   const пул = (тип === 'пакет') ? пулЗаВидами(об) : null;
   if (тип === 'пакет')
@@ -247,6 +252,14 @@ async function підсумок(стор) {
       + ' · речей ' + х.речей + ' · викликів ' + х.викликів + ' · «Чому цей образ»: ' + (х.чому ? 'є' : 'нема')
       + ' · «Як це носити»: ' + JSON.stringify(х.носити).slice(0, 120)
       + ' · «фото не те»: ' + х.фото_не_те + (х.рядки.length ? ' · рядки: ' + JSON.stringify(х.рядки) : ''));
+  /* mitka: початок тексту образу карток рук 3–4 (`.текст-образу`) — чи мітка задачі дійшла до неї */
+  if (УВІМКНЕНІ.has('mitka'))
+    for (const х of await стор.evaluate(() => (((typeof П !== 'undefined' && П) || {}).картки || [])
+      .map((к, п) => { const т = (document.getElementById('к-' + п) || document.createElement('div')).querySelector('.текст-образу');
+        return {рука: к.рука, перший: т ? т.textContent : ''}; })
+      .filter(х => х.рука === '3' || х.рука === '4')))
+      console.log('   рука ' + х.рука + ' · текст картки починається: «' + х.перший.trim().slice(0, 60) + '»'
+        + ' · мітка на картці: ' + (/^\s*(OUTFIT_TEXT|ОБРАЗ)/.test(х.перший) ? 'Є' : 'нема'));
   const дійшло = к.filter(х => (х.рука === '1' || х.рука === '2') && !х.збій && х.речей >= 2).length;
   console.log('СЛАБКА: рук з каталогом до картки ' + дійшло + ' з 2');
   for (const р of діагноз) console.log('   · ' + String(р).slice(0, 260));
