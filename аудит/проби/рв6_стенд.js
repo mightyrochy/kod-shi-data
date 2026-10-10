@@ -658,6 +658,8 @@ const ЖИВИЙ_ШАР = !ШАР_ВИМКНЕНО && !!(МОДЕЛЬ_МОВИ_�
 const АДРЕСА_МОДЕЛІ = (process.env.MODEL_URL || 'http://127.0.0.1:1234/v1').replace(/\/+$/, '');
 const ТЕКА_ВІДПОВІДЕЙ = process.env.VIDPOVIDI || null;
 const ТЕМПЕРАТУРА = ('MODEL_TEMP' in process.env) ? Number(process.env.MODEL_TEMP) : null;
+const ТЕМПЕРАТУРА_МОВИ = ('MODEL_TEMP_MOVA' in process.env) ? Number(process.env.MODEL_TEMP_MOVA) : null;
+const ВИБІРКА_ЗАПИТУ = require(path.join(__dirname, 'вибірка_запиту.js'));
 const ЖУРНАЛ_МОДЕЛІ = [];
 if (ТЕКА_ВІДПОВІДЕЙ) fs.mkdirSync(ТЕКА_ВІДПОВІДЕЙ, {recursive: true});
 if (КЛОД_ШВОМ) console.log('МОДЕЛЬ ЖИВА (claude -p, підписка): ' + КЛОД + ' · ' + КЛОД_БІН
@@ -929,15 +931,11 @@ async function живоюМоделлю(тіло, тип){
     }
     повідомлення.push({role: м.role === 'assistant' ? 'assistant' : 'user', content: зміст});
   }
-  const запит = {model: ((/^мовний шар/.test(тип) && МОДЕЛЬ_МОВИ_СТЕНДУ && !ШАР_ВИМКНЕНО)
-                         ? МОДЕЛЬ_МОВИ_СТЕНДУ : МОДЕЛЬ_ЖИВА), messages: повідомлення,
+  const мовний = /^мовний шар/.test(тип) && !!МОДЕЛЬ_МОВИ_СТЕНДУ && !ШАР_ВИМКНЕНО;
+  const запит = {model: мовний ? МОДЕЛЬ_МОВИ_СТЕНДУ : МОДЕЛЬ_ЖИВА, messages: повідомлення,
                  max_tokens: тіло.max_tokens || 4000, stream: false};
-  if (ТЕМПЕРАТУРА !== null && !Number.isNaN(ТЕМПЕРАТУРА)) запит.temperature = ТЕМПЕРАТУРА;
-  /* М-2: вибірку, яку сторінка сама поклала в тіло (мовний шар — `мовний_шар.ВИБІРКА`,
-     температура 0), стенд пересилає як є — інакше LM Studio брала б свою, і вимір був би
-     про налаштування LM Studio, а не про продукт. MODEL_TEMP сильніша: це свідомий дослід. */
-  else if (typeof тіло.temperature === 'number') запит.temperature = тіло.temperature;
-  if (typeof тіло.seed === 'number') запит.seed = тіло.seed;
+  /* Рядок 4108: температуру й сід мовної моделі веде `вибірка_запиту.js` (сід стенда доходить до MODEL_MOVA) */
+  Object.assign(запит, ВИБІРКА_ЗАПИТУ(тіло, мовний, {сід: СІД, темп: ТЕМПЕРАТУРА, темпМови: ТЕМПЕРАТУРА_МОВИ}));
   if (!process.env.THINK) запит.reasoning_effort = 'none';
   if (process.env.JSON_MODE && ЧЕКАЄ_JSON(тип)) запит.response_format = {type: 'json_object'};
   const почато = Date.now();
