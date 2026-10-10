@@ -534,12 +534,13 @@ def _ранг_крою(r, ярус):
 def причина_рангу_крою(r, ярус):
     """Код, чому ранг крою такий: `cut_in_body_tier` / `cut_below_body_tier` (0 / 2) або причина
     нейтральності — `no_body_tier`, `cut_unknown` (слова нема), `cut_word_outside_slot` (слово
-    поза кроями слота, перекладу нема), `cut_not_scored` (крій слота, якого простір не оцінив),
+    поза кроями слота, перекладу нема), `cut_word_of_other_part` (слово про іншу частину речі,
+    рядок 3712), `cut_not_scored` (крій слота, якого простір не оцінив),
     `cut_word_straddles_tier` (слово лягає на кілька кроїв, і ярус тіла їх розводить)."""
     if not ярус:
         return "no_body_tier"
     кр, прич = O.крої_слота(r)
-    if прич in ("cut_unknown", "cut_word_outside_slot"):
+    if прич in ("cut_unknown", "cut_word_outside_slot", "cut_word_of_other_part"):
         return прич
     if any(к not in ярус["оцінені"] for к in кр):
         return "cut_not_scored"
