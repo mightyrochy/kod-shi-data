@@ -2146,11 +2146,16 @@ def _коди_розмови():
     # 12 і 13 не мінялись, а промпт виріс на 1,6 тис. знаків правил тексту й меж. «holds only» читалось як «мало
     # полів»: тепер правило велить пройти її лист частинами, кожна частина — усі свої поля, без фраз-прикладів
     # (урок #304) — лише які частини яких полів.
+    # Рядок 3741 (ЖИВІ-14 №1, №2, №11): перелік частин назвав рух, погоду, місце й річ, а саму подію — ні: «йду на
+    # роботу пішки» цілим уривком лягло в `movement`, `occasion` 0 з 3 (ЖИВІ-13 — 3 з 3), і код перепитував «куди».
+    # «Кожна — зі своєю цитатою» вело межу відкритого (`open_zones` — без цитати) на `goal_zones` з цитатою (3 з 3).
     "\"update\" holds every field her new message fills or changes, and only those. Go through her "
-    "message part by part: one phrase often fills several fields, each with its own quote — degrees and "
+    "message part by part: one phrase often fills several fields, each with its own quote — the outing "
+    "itself (work, a party, a trip) is occasion, also when the same phrase says how she gets there; degrees and "
     "snow or rain said together are temperature_c and precipitation; how she gets there (on foot, a long "
     "way) is movement; the place where the event is (a restaurant, an office, a café) is place, also inside "
-    "the phrase that names the event; an item she names for this outing goes into wants or own_items. A "
+    "the phrase that names the event; an item she names for this outing goes into wants or own_items; her "
+    "limit on how much of her body she shows is open_zones, never goal_zones. A "
     "new value replaces the old one; a wish or a limit from before that she takes back goes into "
     "\"retract\". Do not repeat fields that do not change.",
     # НП-в5 (рядок 520): плитка без розмови — хід без її листа; паспорт тоді потребує числа моделі.
@@ -2263,18 +2268,21 @@ def _коди_розмови():
     "helper, the app or the code as the one who answers her.",
     # Т-18 і п.9: питання до неї — лише через `ask` і `invite`, які судить код (`суд_частин`).
     # Рядок 3162: «your answer» модель додавала й тоді, коли вона нічого не питала, — порадою від себе.
+    # Рядок 3740 (ЖИВІ-14): «invites her to tell nothing» поруч із «тему поради вона не бачить» MamayLM читала як
+    # «поради не пропонуй» — запрошення в першому ході 3 з 12 (ЖИВІ-13 — 9 з 9). Тему в `text` і так знімає суд
+    # за `about` (`_текст_до_показу`), тож заборони в `text` досить «не питає».
     "\"text\" is your reply to her: briefly what you understood and recorded from her new message, and "
     "your answer when she asked something and \"need\" is \"none\"; when she asked nothing, nothing "
-    "more — no advice of your own. \"text\" asks her nothing, invites her to tell nothing and has no "
-    "question marks.",
+    "more — no advice of your own. \"text\" asks her nothing and has no question marks.",
     # Рядок 3452 (ЖИВІ-13 №1, №2, №7, №9): «Розкажи про стиль…», «Я запропоную тобі прикраси та стиль…» ішли
     # повз суд запрошення через `text`: код бачив лише «?». Тепер кожне речення `text` несе коди того, про що
     # воно (`about`), і суд показує лише речення про записане цього ходу чи про її питання (`суд_частин`).
+    # Рядок 3740: «Whatever you want her to tell goes into invite» робило з `invite` канал того, що хоче знати
+    # модель (`invite_topics: [occasion, …]` 3 з 3 у К7), а не поради зі списку тем.
     "\"text\" is a list of its sentences, in order: \"says\" — one sentence; \"about\" — the codes of "
     "the \"update\" fields it tells about, or \"her_question\" when it is about what she asked. The app "
-    "shows her only the sentences whose codes are all in this turn's \"update\" or are \"her_question\": "
-    "a sentence about anything else — an advice topic, a promise, what you will offer or pick — she never "
-    "sees. Whatever you want her to tell goes into \"invite\", its codes into \"invite_topics\".",
+    "shows her only the sentences whose codes are all in this turn's \"update\" or are \"her_question\". "
+    "The advice topics are offered in \"invite\", never in \"text\".",
     # НГ-4, живий стенд 01.10: «записала це в твій паспорт» (слово системи, не її) і «врахую, що образ
     # має бути стриманим перед керівництвом» — аудиторію й частини дня код ще не читає (НГ-9, НГ-12),
     # тож обіцянка була б неправдою; що код зробить із почутим, вирішує код, а не модель розмови.
@@ -2299,11 +2307,14 @@ def _коди_розмови():
     "розкажіть).",
     # П.9 (20.09, рядки 108 і 114): поради — групою до трьох тем, м'яко, без повторів.
     # Рядок 1441: теми, умову яких код уже бачить, — окремо від тих, що стануть доречні лише з її нових слів.
-    "\"invite\" is optional: one soft sentence, to her as «ти», inviting her to tell about up to three "
-    "codes that her new message does not already answer — from \"advice_topics\", or from "
-    "\"advice_topics_if\" only when her new message makes that topic's condition hold — saying she may "
+    # Рядок 3740: «invite is optional» поруч із новими заборонами для `text` модель брала як «можна без нього» —
+    # у 9 з 12 перших ходів ЖИВІ-14 `invite` порожнє чи нема, хоч `advice_topics` мали теми. Що запрошення не
+    # блокує й не повторюється, тримає код (`суд_частин`, `поради_дані`), не «optional» моделі.
+    "\"invite\": whenever \"advice_topics\" has codes her new message does not already answer, one soft "
+    "sentence, to her as «ти», inviting her to tell about up to three of them — or about a code from "
+    "\"advice_topics_if\" when her new message makes that topic's condition hold — saying she may "
     "skip it and the looks will be put together anyway; no question marks. \"invite_topics\" are the "
-    "codes it covers. No invitation while a required question remains.",
+    "codes it covers. No invitation while a required question remains; otherwise \"invite\" is empty.",
     # П.9: обовʼязкове — лише «без чого не зібрати»; збирання не блокується.
     "\"ask\" is only for a code from \"required\" whose condition still holds after your update: one short "
     "direct question, and \"ask_code\" is that code. Nothing else is required: never say that the looks "
@@ -2670,8 +2681,15 @@ _ЧАСТИНИ = ("need", "text", "invite_topics", "invite", "ask_code", "ask")
 # опадів теж не перетинаються, тож код опадів на полі відчуття — опади з тією самою цитатою (і навпаки). На
 # відміну від мети й наміру, відчуття й опади — два різні факти дня: власний код сусіднього поля лишається, а
 # чужий тоді — у `незнайомі`, як доти.
+# ЇЇ МЕЖА ВІДКРИТОГО НА ЗОНАХ МЕТИ (рядок 3741, ЖИВІ-14 №1, №2, №11). «Відкритого не хочу» MamayLM у 3 з 3 сідів
+# писала `goal_zones: {quote, value: "none"}` (ЖИВІ-13 — `open_zones` 3 з 3): «none» — не зона тіла, код брав його
+# як невідомо (`unknown_value · field=goal_zones`), і пряма межа губилась. «none» — код `open_zones`, а переліки
+# зон мети й кількості відкритих зон не перетинаються: шов ставить пару на `open_zones`, як погоду на опади; власний
+# код `open_zones` лишається сильнішим. Перелік зон мети — `goal_zone`: таблиця поля `goal_zones` не має, тож
+# «свого» коду там шов не бачить і переносить лише код, який знає `open_zones`.
 _СУСІДИ_КОДІВ = (("goal", "intent", True), ("intent", "goal", True),
-                 ("weather_feel", "precipitation", False), ("precipitation", "weather_feel", False))
+                 ("weather_feel", "precipitation", False), ("precipitation", "weather_feel", False),
+                 ("goal_zones", "open_zones", False))
 
 
 # ЇЇ РІЧ НА КЛЮЧІ СВОГО СЛОТА (рядок 3310, живі 12 Б/01–03). «Одягну своє взуття з фото» MamayLM у 3 з 3 сідів
@@ -2794,8 +2812,19 @@ def прийняти_розмову(відповідь):
             частини[к] = " ".join(т.split())
     речення = _речення_тексту(об.get("text"))
     if речення:
-        частини["text"] = _бульбашка([р for р, _ in речення])
-        частини["text_parts"] = [dict(about=п, says=р) for р, п in речення]
+        # Коди `about` — ті самі, що в `update`: поле, яке шов переніс на своє (`weather_feel->precipitation`,
+        # `goal_zones->open_zones`), і в реченні про нього стоїть уже на своєму місці (рядок 3741: ЖИВІ-14 №3 —
+        # дощ записано опадами, а речення про `weather_feel` суд знімав як «не про записане»). Поле, яке модель
+        # написала в `update`, а код не взяв (невідомо чи код поза переліком; `not_taken`, рядок 3653), — теж про її
+        # лист, не тема поради чи обіцянка: слід лишається в `не_взято` чи `незнайомі`, а речення не знімається.
+        на_своє = dict(x.split("->", 1) for x in р.get("перенесено") or () if "->" in x)
+        не_взяв = set(р["невідомо"]) | {re.split(r"[\[=]", x, 1)[0] for x in р["незнайомі"] if isinstance(x, str)}
+        частини["text"] = _бульбашка([р_ for р_, _ in речення])
+        частини["text_parts"] = []
+        for р_, п in речення:
+            п = list(dict.fromkeys(на_своє.get(к, к) for к in п))
+            нв = [к for к in п if к in оновлення and к in не_взяв]
+            частини["text_parts"].append(dict(about=п, says=р_, **({"not_taken": нв} if нв else {})))
     теми = [_код(т) for т in (об.get("invite_topics") or []) if isinstance(т, str)] \
         if isinstance(об.get("invite_topics"), list) else []
     частини["invite_topics"] = [т for т in dict.fromkeys(теми) if т]
@@ -2805,7 +2834,12 @@ def прийняти_розмову(відповідь):
     в = р["внутрішня"]
     if частини.get("need") in ("app", "look"):
         в["question_about"] = частини["need"]
-    причина = None if частини.get("text") or частини.get("ask") else "no_text_field"
+    # ПИТАННЯ, НА ЯКЕ ВІДПОВІДАЄ НЕ ВОНА (рядок 3742, ЖИВІ-14 №10): при `need` app чи look її бульбашку пише код
+    # (оцінка образу чи перекладач із відповіддю стилістки або помічниці), а `text` каже лише записане — коли
+    # не записано нічого, речень нема. MamayLM на фото з «оціни мій образ» двічі дала `need: look` і
+    # `text: [{"about": []}]`; код рахував це битим форматом (`no_text_field`), і репліка йшла в сценарій.
+    причина = None if частини.get("text") or частини.get("ask") or частини.get("need") in ("app", "look") \
+        else "no_text_field"
     текст, зняте, не_про_записане = _текст_до_показу(частини, в)
     return dict(внутрішня=в, частини=частини, незнайомі=незнайомі, невідомо=р["невідомо"],
                 не_взято=[невзяте_рядком(к, оновлення.get(к)) for к in р["невідомо"]],
@@ -2881,7 +2915,8 @@ def _текст_до_показу(частини, записано):
         лишено = []
         for р in речення:
             коди = list((р or {}).get("about") or [])
-            чуже = [к for к in коди if к != ПРО_ЇЇ_ПИТАННЯ and к not in записано]
+            чуже = [к for к in коди if к != ПРО_ЇЇ_ПИТАННЯ and к not in записано
+                    and к not in ((р or {}).get("not_taken") or ())]
             if коди and not чуже:
                 лишено.append(р.get("says"))
             else:
