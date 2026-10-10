@@ -1,0 +1,29 @@
+── ПРОМПТ (2331 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Light-weight breathable tunic top in a soft heather grey (hex: #cccccc), boxy relaxed fit, falling to mid-thigh length for high mobility, made of a stretch-perfect cotton-linen blend. High-waisted flowing yoga pants in a deep olive green (hex: #4b5320), straight leg cut that widens slightly at the hem, reaching full ankle length, crafted from an opaque performance fabric with moisture-wicking properties. Minimalist leather slide sandals in a warm cognac brown (hex: #8f7145), flat sole for stability on varied cafe floors, constructed of smooth supple calf leather.\n\nThis outfit works because it perfectly balances the physical requirements of morning yoga with the relaxed atmosphere of a casual café meeting. The grey tunic allows for unrestricted movement and deep stretches while providing enough coverage to remain comfortable during cool early-morning air. The olive pants are designed specifically for athletic flexibility without sacrificing style, keeping the silhouette clean and elongated. Finally, the flat sandals respect her refusal against heels while grounding the look with a natural tone that complements her skin tones perfectly."}
+
+── ВІДПОВІДЬ (772 симв., 188.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Tunic top",
+      "details": "Light-weight breathable, boxy relaxed fit, falling to mid-thigh length, stretch-perfect cotton-linen blend",
+      "slot": "top",
+      "color_hex": "#cccccc",
+      "worn": true
+    },
+    {
+      "name": "Yoga pants",
+      "details": "High-waisted flowing, straight leg cut that widens slightly at the hem, reaching full ankle length, opaque performance fabric with moisture-wicking properties",
+      "slot": "bottom",
+      "color_hex": "#4b5320",
+      "worn": true
+    },
+    {
+      "name": "Leather slide sandals",
+      "details": "Minimalist, flat sole for stability, constructed of smooth supple calf leather",
+      "slot": "shoes",
+      "color_hex": "#8f7145",
+      "worn": true
+    }
+  ]
+}

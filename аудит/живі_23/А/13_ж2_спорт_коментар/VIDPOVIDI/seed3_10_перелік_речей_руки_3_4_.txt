@@ -1,0 +1,29 @@
+── ПРОМПТ (1943 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Lightweight athletic tank, cropped cut above the ribcage, color #e0bd9a, breathable micro-mesh knit fabric.\nHigh-waisted yoga leggings, full-length with a subtle wide band at the waist for support, color #745a3b, four-way stretch technical cotton blend.\nMinimalist canvas slip-on sneakers, relaxed fit shape, color #d1ab86, soft suede upper and rubber sole.\nThis outfit balances comfort and style perfectly for a morning yoga session followed by a cafe visit. The neutral earth-tone palette coordinates seamlessly with warm skin tones while maintaining an effortless aesthetic. Practical activewear fabrics ensure ease of movement during practice, and the simple silhouette allows for a smooth transition from exercise to social setting without needing to change."}
+
+── ВІДПОВІДЬ (691 симв., 149.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Lightweight athletic tank",
+      "details": "cropped cut above the ribcage, breathable micro-mesh knit fabric",
+      "slot": "top",
+      "color_hex": "#e0bd9a",
+      "worn": true
+    },
+    {
+      "name": "High-waisted yoga leggings",
+      "details": "full-length with a subtle wide band at the waist for support, four-way stretch technical cotton blend",
+      "slot": "bottom",
+      "color_hex": "#745a3b",
+      "worn": true
+    },
+    {
+      "name": "Minimalist canvas slip-on sneakers",
+      "details": "relaxed fit shape, soft suede upper and rubber sole",
+      "slot": "shoes",
+      "color_hex": "#d1ab86",
+      "worn": true
+    }
+  ]
+}
