@@ -1,0 +1,36 @@
+── ПРОМПТ (2274 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green velvet cape, straight cut with a wide collar extending to mid-thigh length, hex color #04594c, heavy velvet fabric.\nSilk slip dress, A-line silhouette reaching just above the knee, hex color #e8f5e9, smooth silk fabric.\nHeeled ankle boot, pointed toe and slim stiletto heel, hex color #1a237e, glossy patent leather fabric.\nGold baroque clutch, rectangular shape with a chain strap, hex color #ff6f00, metallic gold-finish hard plastic fabric.\n\nThis ensemble embraces the celebration's upscale restaurant atmosphere while responding to the frosty weather with a luxurious emerald cape that offers warmth without compromising elegance. The deep green velvet contrasts beautifully against her warm complexion and golden hair tones, creating a striking focal point for the festive occasion. The knee-length dress maintains modest yet sophisticated proportions, perfectly balanced by the height-elongating effect of the dark heeled boots. Finally, the metallic gold clutch ties the color palette together, adding a touch of sparkle that honors the celebratory spirit of the evening."}
+
+── ВІДПОВІДЬ (883 симв., 185.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "emerald green velvet cape",
+      "details": "straight cut with a wide collar extending to mid-thigh length, heavy velvet fabric",
+      "slot": "outerwear",
+      "color_hex": "#04594c",
+      "worn": true
+    },
+    {
+      "name": "silk slip dress",
+      "details": "A-line silhouette reaching just above the knee, smooth silk fabric",
+      "slot": "dress",
+      "color_hex": "#e8f5e9",
+      "worn": true
+    },
+    {
+      "name": "heeled ankle boot",
+      "details": "pointed toe and slim stiletto heel, glossy patent leather fabric",
+      "slot": "shoes",
+      "color_hex": "#1a237e",
+      "worn": true
+    },
+    {
+      "name": "gold baroque clutch",
+      "details": "rectangular shape with a chain strap, metallic gold-finish hard plastic fabric",
+      "slot": "bag",
+      "color_hex": "#ff6f00",
+      "worn": true
+    }
+  ]
+}
