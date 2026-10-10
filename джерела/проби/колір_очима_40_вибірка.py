@@ -9,7 +9,7 @@ B.виклик("запити",json.dumps(dict(вх,сценарій=СЗ.СЦЕ�
 G=K.defaultdict(list)
 for r in кат:
     нв=КР.не_вимір(r); з=зб.get(r["id"]) or {}
-    if not нв or нв["свідок"]!="слово крамниці" or з.get("версія")!=2 or not (з.get("колір_основний") or {}).get("hex"): continue
+    if not нв or нв["свідок"]!="shop_word" or з.get("версія")!=2 or not (з.get("колір_основний") or {}).get("hex"): continue
     сп=r.get("колір_спір") or {}
     if сп.get("чому")!="згода свідків нижча за поріг": continue
     сирий=ФЗ._lab_з_hex(з["колір_основний"]["hex"])

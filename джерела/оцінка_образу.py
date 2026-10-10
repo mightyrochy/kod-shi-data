@@ -817,6 +817,11 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
         "\"verdict\": your overall view of whether she should wear the outfit as it is.",
         "\"works\": what works in the outfit as a whole — colors with each other, colors to her palette, "
         "contrast near her face, silhouette. Each point names its items and one \"about\" code.",
+        # ОЦІНКА-3321 (п.12): що саме названо в тексті, код знає лише з ід — слів він не читає
+        "Every point lists in \"items\" the ids of all her items its \"text\" speaks about, and the \"text\" "
+        "names no garment, color or accessory that is not one of those items: a thing that is not in "
+        "\"items\" of the input does not exist for her. A shop item of a change is shown to her beside "
+        "your \"text\" with its own name: do not name it, say why the change helps her.",
         "Claim a success only where the check supports it: a finding or a failed point against items is "
         "not a success for them; a palette success names only items with palette \"in\"; a contrast "
         "success needs the passed contrast point.",
@@ -837,6 +842,7 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
         "works": [{"about": "colors_together | palette | contrast | silhouette | formality | weather",
                    "items": ["<item id>"], "text": "<what works and why>"}],
         "change": [{"id": "<change id from changes, or finding id from check>",
+                    "items": ["<id of her item the text speaks about>"],
                     "text": "<why this change helps her>"}],
         "unknown": [{"text": "<what you cannot judge and what would let you>"}],
     },
@@ -997,7 +1003,7 @@ def прийняти_допит(відповідь):
         сира = str(відповідь or "").strip()
         if len(сира) >= 20 and "{" not in сира and "[" not in сира[:1] and "```" not in сира:
             т, проза = _текст(сира), True
-    return dict(відповідь=т, проза=проза, причина=(None if т else (причина or "нема поля «answer»")), нотатки=нотатки)
+    return dict(відповідь=т, проза=проза, причина=(None if т else (причина or "no_answer_field")), нотатки=нотатки)
 
 
 def невідоме_для_моделі(суд_):
@@ -1067,6 +1073,13 @@ def _текст(v):
     return " ".join(str(v or "").split())
 
 
+def _названі(v):
+    """Поле «items» відповіді моделі → ід оцінки (список або один рядок; порожнє — [])."""
+    if isinstance(v, str):
+        v = [v]
+    return [ід_з_дроту(str(і)) for і in v] if isinstance(v, list) else []
+
+
 def _суперечить(про, речі, суд_):
     """Чому твердження «вдало» (`про`, речі) суперечить суду коду, або None."""
     нема = {б.get("input") for б in суд_.get("без_входу") or []}
@@ -1104,9 +1117,10 @@ def прийняти_оцінку(відповідь, суд_):
     «answer» сторож не бачить, і це сказано у звіті полем `сторож_межа`."""
     об, причина, нотатки = _ПР.розбір_останній(відповідь, ("answer", "verdict"))
     if not isinstance(об, dict):
-        return dict(картка=None, сторож=[], причина=причина or "відповідь не JSON-обʼєкт", нотатки=нотатки)
+        return dict(картка=None, сторож=[], причина=причина or "no_json_object", нотатки=нотатки)
     сторож = []
     образ = set(суд_.get("образ") or [])
+    запасні = set(суд_.get("запасні") or [])
     вердикт = об.get("verdict") if об.get("verdict") in ВЕРДИКТИ else None
     if об.get("verdict") not in (None, "") and вердикт is None:
         сторож.append(dict(де="verdict", чому="code_outside_list", що=об.get("verdict")))
@@ -1118,15 +1132,20 @@ def прийняти_оцінку(відповідь, суд_):
         if not isinstance(п, dict):
             continue
         про = п.get("about") if п.get("about") in ПРО else None
-        речі = [ід_з_дроту(str(і)) for і in (п.get("items") or []) if ід_з_дроту(str(і)) in образ]
+        названі = _названі(п.get("items"))
+        речі = [і for і in названі if і in образ]
         текст = _текст(п.get("text"))
         if not текст:
             continue
         if про is None:
             сторож.append(dict(де="works[%d]" % н, чому="about_outside_list", що=п.get("about"), текст=текст))
             continue
-        if not речі and п.get("items"):
-            сторож.append(dict(де="works[%d]" % н, чому="items_not_in_outfit", що=п.get("items"), текст=текст))
+        # ОЦІНКА-3321 (п.12): текст «що вдало» говорить про річ, якої в образі нема (її ід — поза образом), —
+        # запис не йде жінці: слів код не читає, а ід, за якими модель назвала речі, читає. Одного ід поза
+        # образом досить: решта ід не каже, чи не про ту саму річ текст
+        поза = [і for і in названі if і not in образ]
+        if поза:
+            сторож.append(dict(де="works[%d]" % н, чому="items_not_in_outfit", що=поза, текст=текст))
             continue
         чому = _суперечить(про, речі or list(образ), суд_)
         if чому:
@@ -1147,13 +1166,21 @@ def прийняти_оцінку(відповідь, суд_):
         if ід not in зміни and ід not in ремонти:
             сторож.append(dict(де="change[%d]" % н, чому="change_not_verified", що=ід, текст=_текст(з.get("text"))))
             continue
+        # та сама межа для «що змінити»: її речі, про які текст, — з образу чи з її запасних; ід поза ними —
+        # запис знято (без дійсної зміни «wear_with_change» піде в повтор — `change_missing` нижче)
+        названі = _названі(з.get("items"))
+        поза = [і for і in названі if і not in образ and і not in запасні]
+        if поза:
+            сторож.append(dict(де="change[%d]" % н, чому="items_not_in_outfit", що=поза, ід=ід,
+                               текст=_текст(з.get("text"))))
+            continue
         if len(змінити) >= 2 or any(с["ід"] == ід for с in змінити):
             сторож.append(dict(де="change[%d]" % н, чому="over_two_or_repeat", що=ід))
             continue
         if ід not in зміни and not _текст(з.get("text")):
             сторож.append(dict(де="change[%d]" % н, чому="fix_without_text", що=ід))
             continue
-        змінити.append(dict(ід=ід, текст=_текст(з.get("text")), зміна=зміни.get(ід)))
+        змінити.append(dict(ід=ід, речі=названі, текст=_текст(з.get("text")), зміна=зміни.get(ід)))
     # «з зміною» без жодної дійсної зміни — твердження без опори: сторож знімає вердикт (як код поза
     # переліком), а показ іде в ОДИН повтор із названими ідами (`повтор_вердикту`, перевірка #654, Codex P1)
     if вердикт == "wear_with_change" and not змінити:
@@ -1165,7 +1192,7 @@ def прийняти_оцінку(відповідь, суд_):
     картка = dict(відповідь=_текст(об.get("answer")), вердикт=вердикт, вдало=вдало,
                   змінити=змінити, не_знаю=не_знаю)
     return dict(картка=картка, сторож=сторож,
-                причина=(None if картка["відповідь"] else "порожнє «answer»"), нотатки=нотатки,
+                причина=(None if картка["відповідь"] else "empty_answer_field"), нотатки=нотатки,
                 сторож_межа="сторож звіряє коди тверджень (about, items, id зміни, verdict) із судом "
                             "коду; слів «answer» і «text» код не читає (аудит/ПРОДУКТ.md п.12)")
 
@@ -1178,10 +1205,12 @@ def повтор_вердикту(суд_, сторож):
         зміни = [ід_на_дріт(с.get("ід")) for с in суд_.get("зміни") or []]
         ремонти = [ід_на_дріт(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []
                    if з.get("ід") and (з.get("ремонт_заяви") or з.get("ремонт"))]
+        її = [ід_на_дріт(і) for і in (суд_.get("образ") or []) + (суд_.get("запасні") or [])]
+        поза = (" Ids in \"items\" are only her items: %s." % ", ".join(її)) if "items_not_in_outfit" in чому else ""
         return ("Your verdict \"wear_with_change\" has no valid \"change\": verified changes %s; findings "
-                "with a fix %s. Give at least one of these ids in \"change\", or choose another verdict. "
+                "with a fix %s. Give at least one of these ids in \"change\", or choose another verdict.%s "
                 "Answer again with the same schema." % (", ".join(str(х) for х in зміни) or "—",
-                                                       ", ".join(str(х) for х in ремонти) or "—"))
+                                                       ", ".join(str(х) for х in ремонти) or "—", поза))
     if "contradicts_gate" not in чому:
         return None
     import дріт_моделі as _ДМ
