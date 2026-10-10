@@ -851,6 +851,10 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
         "names no garment, color or accessory that is not one of those items: a thing that is not in "
         "\"items\" of the input does not exist for her. A shop item of a change is shown to her beside "
         "your \"text\" with its own name: do not name it, say why the change helps her.",
+        # КАРТКА-СЛОВА (рядок 3658): «your white top (id p2-3)» — шар переклав «(артикул р2-3)», і жінка
+        # читала ід на картці (ЖИВІ-14 №10); заборона ідів у межі «для неї» стоїть далеко від «text» зміни
+        "Ids live only in \"id\" and \"items\": a \"text\" never writes one, not even in brackets; "
+        "name her item by its kind and colour.",
         "Claim a success only where the check supports it: a finding or a failed point against items is "
         "not a success for them; a palette success names only items with palette \"in\"; a contrast "
         "success needs the passed contrast point.",

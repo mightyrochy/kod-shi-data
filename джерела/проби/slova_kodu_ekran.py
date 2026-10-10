@@ -28,7 +28,7 @@ def показ(текст):
 def мова(текст):
     п = {"__file__": "внутрішня_мова.py"}; exec(compile(текст, "внутрішня_мова.py", "exec"), п)
     хвіст = текст.split(БЛОК_П9)[1] if БЛОК_П9 in текст else ""
-    свої = set(re.findall(r'"([a-z_0-9]+)":', хвіст)) | {"card_code_unknown"}
+    свої = set(re.findall(r'"([a-z_0-9]+)":', хвіст)) | {"card_unchecked"}
     return [("внутрішня_мова:%s" % к, " ".join(з.split("(значення:")[0].split())[:108])
             for д in ("ВИДИ_ПОВІДОМЛЕНЬ", "ЗАЯВИ") for к, з in (п.get(д) or {}).items()
             if к not in свої and СЛОВО.search(str(з).split("(значення:")[0])]
