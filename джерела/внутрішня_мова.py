@@ -3097,6 +3097,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "type_label_mechanism": "a typology label used as a MECHANISM rather than a vocabulary bridge. Instead: "
                             "the bridge translated into axes — the label outside, the axes inside (R-TYP-05)",
 }
+# ід правил у дужках — довідка для читача коду; на дріт вони не йдуть (Р-1, проба мова_046): визначення
+# коду, що їде моделі, закінчується словами «натомість», а не «(R-NVB-02)».
+import re as _re_
+ПОРУШЕННЯ_МОВИ = {к: _re_.sub(r"\s*\((?:[RK]-[A-Z]+-[A-Z0-9]+(?:, )?)+\)\s*$", "", в) for к, в in ПОРУШЕННЯ_МОВИ.items()}
 _спільні = set(ПОРУШЕННЯ_МОВИ) & set(ЗАЯВИ)
 if _спільні:
     raise KeyError("код порушення мови збігся з кодом заяви: %s" % sorted(_спільні))
