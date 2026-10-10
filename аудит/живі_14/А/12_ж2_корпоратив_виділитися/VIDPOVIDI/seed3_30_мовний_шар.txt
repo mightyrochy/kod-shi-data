@@ -1,0 +1,56 @@
+── ПРОМПТ (5766 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_code_unknown — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+- card_unknowns_toggle — напис на кнопці, що розгортає на картці образу згорнутий перелік того, що в цьому образі лишилось не перевіреним: кілька слів, без числа, без крапки в кінці; лічбу рядків екран допише сам.
+
+КОДИ У ЗНАЧЕННЯХ:
+- bag — сумка.
+- crossbody — кросбоді.
+- dress — сукня.
+- hand — рука.
+- shoes — взуття.
+- shoulder — плече.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки.
+
+ЗАЯВИ:
+- unchecked_in_this_look — behind this button is the list of what stays unchecked in this outfit: what could not be verified for lack of data about the items, about her or about her day.
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- colour_word_not_photo — the colour of the named items comes from a word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- cannot_tell_accent_echoed — so the code cannot tell whether the accent colour repeats elsewhere in the outfit.
+- cannot_tell_item_off_palette — so the code cannot tell whether the item's colour lies outside her palette.
+- cannot_tell_colour_from_eyes — so the code cannot tell whether the colour comes from the family of her eyes.
+- cannot_tell_accessory_spends_chroma — so the code cannot tell whether a loud accessory spends the budget of loud colours next to another loud item.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "shoes", "colour": "шоколадний"}, {"slot": "bag", "colour": "бордовий"}]}}, {"code": "cannot_tell_colour_from_eyes"}]},
+{"н": 2, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "dress", "colour": "фіолетовий"}, {"slot": "bag", "colour": "бордовий"}]}}, {"code": "cannot_tell_item_off_palette"}]},
+{"н": 3, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "bag", "colour": "бордовий"}, {"slot": "dress", "colour": "фіолетовий"}]}}, {"code": "cannot_tell_accent_echoed"}]},
+{"н": 4, "вид": "card_code_unknown", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "сумка Марсала абстракція", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
+{"н": 5, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "bag", "colour": "бордовий"}, {"slot": "dress", "colour": "фіолетовий"}]}}, {"code": "cannot_tell_accessory_spends_chroma"}]},
+{"н": 6, "вид": "card_code_unknown", "заяви": [{"code": "items_register_unknown", "values": {"count": 2}}]},
+{"н": 7, "вид": "card_unknowns_toggle", "заяви": [{"code": "unchecked_in_this_look"}]}
+]
+
+── ВІДПОВІДЬ (930 симв., 55.1 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю кольору твоїх туфель-човників і сумки — код знає його лише зі слів крамниці, а не з вимірювання фото. Також я не можу сказати, чи підходить колір цих речей до відтінку твоїх очей.",
+  "2": "Код знає кольори твоєї сукні та сумки лише зі слів крамниці, а не з вимірювання фото. Тому я не знаю, чи лежить їхній колір поза межами твоєї палітри.",
+  "3": "Я не можу сказати, чи повторюється акцентний колір у твоїй сукні та сумці.",
+  "4": "Ти ще не обрала спосіб носіння своєї сумки Марсала абстракція. Вона може бути в руці, на плечі або через тіло — ти вирішуєш сама.",
+  "5": "Я не знаю, чи твоя сумка бордового кольору забирає надто багато яскравих відтінків поруч з іншим яскравим предметом одягу.",
+  "6": "Код не визначив стиль двох предметів твого образу.",
+  "7": "За цим рядком — список того, що в цьому образі ще потребує перевірки: чого бракує даних про речі, про тебе або про твій день."
+}
+```

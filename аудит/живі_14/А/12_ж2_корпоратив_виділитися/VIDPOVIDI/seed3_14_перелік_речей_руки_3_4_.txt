@@ -1,0 +1,36 @@
+── ПРОМПТ (2079 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk slip dress with a draped neckline, empire waist, midi length, deep emerald green (#043927), fluid georgette.  \nOversized structured blazer in sharp tailoring, single-button closure, cropped at the hip, matte black (#1a1a1a), heavy wool blend with subtle sheen.  \nPointed-toe stiletto heels with a slender heel, elongated vamp, glossy navy blue (#001f3f), smooth calfskin leather.  \nDelicate gold chain necklace with a single geometric pendant, 18k yellow gold plating.  \n\nThis outfit works because the deep emerald silk immediately draws the eye while the structured black blazer adds an unexpected, bold architectural edge that defies traditional cocktail attire. The contrast between the fluid silhouette of the slip dress and the rigid lines of the blazer creates a dynamic tension that ensures you stand out in a crowded restaurant setting. By refusing neutral tones for rich color and mixing textures, every glance lingers on your confident choice to express rather than simply conform."}
+
+── ВІДПОВІДЬ (875 симв., 173.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk slip dress",
+      "details": "draped neckline, empire waist, midi length, fluid georgette fabric",
+      "slot": "dress",
+      "color_hex": "#043927",
+      "worn": true
+    },
+    {
+      "name": "Oversized structured blazer",
+      "details": "sharp tailoring, single-button closure, cropped at the hip, heavy wool blend with subtle sheen",
+      "slot": "outerwear",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe stiletto heels",
+      "details": "slender heel, elongated vamp, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#001f3f",
+      "worn": true
+    },
+    {
+      "name": "Delicate gold chain necklace",
+      "details": "single geometric pendant, 18k yellow gold plating",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
