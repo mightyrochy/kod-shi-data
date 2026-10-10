@@ -22,7 +22,7 @@ def пул(п):
     МП._КЕШ_ПАКЕТА.clear(); B.виклик("запити", json.dumps(вх, ensure_ascii=False))
     кан = [p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")][0]["кандидати"]
     в = {с: sum(1 for r in р if (r.get("візерунок") or "solid") != "solid") for с, р in кан.items() if isinstance(р, list)}
-    return "%d (взуття %d)" % (sum(в.values()), в.get("shoes", 0))
+    return "%d (взуття %d)" % (sum(в.values()), в.get("взуття", 0))
 print("без меж: речей із візерунком у пулі", пул({"перекладено_шаром": True, "вето": {}}))
 for н, де, k in ХОДИ:
     р = МШ.прийняти_розмову(відповідь(н))

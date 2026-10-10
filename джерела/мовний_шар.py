@@ -428,10 +428,12 @@ def прийняти(розмітка, відповідь):
         # КВ-1: дотик пояснює слова («так, через колір»), але поля не заповнює — інакше
         # «слова дали те саме, що кнопки» вимірювало б переписаний дотик, а не її слова
         # Рядок 3319 (живі 12, Б/12): «хочу без каблука і без принта» → `wants` з вигаданим `no_heels` і типом
-        # речі з образу; `vetoes` порожні, і `паспорт_з_коментаря` (межі лише з `vetoes`) нічого не долив
+        # речі з образу; `vetoes` порожні, і `паспорт_з_коментаря` (межі лише з `vetoes`) нічого не долив.
+        # Рядок 3659 (живі 14, А/13): «без принта» — у `wants` кодом `solid`; приклад називає код самого принта
         межа="КОНТЕКСТ.tapped — лише щоб зрозуміти її слова: поле, про яке вона нічого не сказала, "
              "з натиснутого не переписуй. Те, без чого вона хоче образ, — межа у vetoes, навіть коли вона "
-             "каже це як бажання: кодом самої цієї ознаки, візерунка, тканини, кольору чи речі, зі слотом, "
+             "каже це як бажання: кодом самої цієї ознаки, візерунка («без принта» — pattern print_generic, "
+             "не solid), тканини, кольору чи речі, зі слотом, "
              "коли вона його назвала, і без типу речі з образу; коду заперечення нема. У wants — лише те, що "
              "вона хоче мати."),
     # ДОПИТ ОЦІНКИ — ЛИШЕ ПИТАННЯ (рядок 1449): уточнення до оцінки («А якщо з чорними ботильйонами?»)
@@ -854,6 +856,10 @@ def _пара(поле, с, v):
 # читає (п.12): `no_<код>` — форма коду, яку дописала модель, і `<код>` звіряється з переліком тієї самої ознаки.
 # Така ознака стає межею зі своїм уривком і слотом (без типу речі: межа на тип прибрала б увесь тип); бажання без
 # жодної іншої ознаки, крім слота й типу, — лише носій заперечення, і його нема. У `перенесено` — `wants->vetoes`.
+# ОДНОТОННЕ В БАЖАННІ — МЕЖА ПРИНТА (рядок 3659, живі 14 А/13). Те саме «без принта» перекладач кладе в `wants` кодом
+# `solid` (`pattern: solid`; живі 12 — у `feature`): у паспорт ішло бажання «взуття, однотонний», а межа принтів
+# лишалась порожня. `solid` — код відсутності візерунка, тож бажати однотонне й не хотіти принта — одне: межа
+# `print_generic` на слот запису (зі слотом його типу; без обох — на весь образ), як `no_<код>`.
 _ЗАПЕРЕЧЕННЯ = re.compile(r"(?:no|non|not|without)_(.+)")
 
 
@@ -864,8 +870,10 @@ def _заперечене_в_межі(об):
     if not isinstance(сп, list):
         return об, []
     def код_межі(к, x):
+        if к in ("pattern", "feature") and isinstance(x, str) and _код(x) == "solid":
+            return "pattern", "print_generic"
         з = _ЗАПЕРЕЧЕННЯ.fullmatch(_код(x)) if isinstance(x, str) else None
-        return з.group(1) if з and з.group(1) in (_ВМ.РІЧ_У_СЛОВАХ[к].get("enum") or ()) else None
+        return (к, з.group(1)) if з and з.group(1) in (_ВМ.РІЧ_У_СЛОВАХ[к].get("enum") or ()) else None
     лишити, межі = [], []
     for сире in сп:
         р = _річ_з_пари(сире)
@@ -879,8 +887,8 @@ def _заперечене_в_межі(об):
             коди = [код_межі(к, x) for x in значення]
             if not any(коди):
                 continue
-            нові += [{п: в for п, в in (("quote", р.get("quote")), ("slot", р.get("slot")), (к, x)) if в}
-                     for x in коди if x]
+            слот = р.get("slot") or _ВМ.СЛОТ_ТИПУ.get(_код(р.get("item_type")) if isinstance(р.get("item_type"), str) else "")
+            нові += [{п: в for п, в in (("quote", р.get("quote")), ("slot", слот), x) if в} for x in коди if x]
             інші = [x for x, кд in zip(значення, коди) if not кд]
             if інші:
                 решта[к] = інші if isinstance(знач, list) else інші[0]
@@ -1992,11 +2000,13 @@ _ПОЛЯ_EN = {
              "(«взуття — …», «піду в …») when she does not call it hers — with every attribute she named, its "
              "fabric too; an item in her question («а якщо…», «чи піде…») is not a wish — it stays in question",
     # Рядок 3319 (живі 12, Б/12): «хочу без каблука і без принта» лягло в бажання з вигаданим кодом `no_heels`, а
-    # межі лишились порожні; заперечення коду в переліках нема — межа пишеться кодом самої ознаки
+    # межі лишились порожні; заперечення коду в переліках нема — межа пишеться кодом самої ознаки. Рядок 3510 (живі
+    # 13, А/07): «без принта на взутті» — у межі бажане (`pattern: solid` і всі типи взуття через «|»); приклад
+    # називає код самого принта
     "vetoes": "what she does not want: limits. Whatever she wants the look without — an item, a feature, a "
               "pattern, a fabric, a colour — is a limit, also when she says it as a wish: written with the code of "
-              "that very thing, with the part of the look when she names it; no code means «without», there is "
-              "no wish with a negated code",
+              "that very thing («без принта» — pattern print_generic, not solid), with the part of the look when "
+              "she names it; no code means «without», there is no wish with a negated code",
     "retract": "wishes or limits from before that she now takes back",
     "beliefs": "what, in her view, does not suit her or spoils her figure; never argued with",
     "legs_above_cm": "cm from the floor above which her legs stay covered",
