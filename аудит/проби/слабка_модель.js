@@ -39,11 +39,15 @@
                       ВСЕРЕДИНУ `update` (рядок 2420: MamayLM так відповів у 11 з 16 живих
                       прогонів пачки 2 на сцені 6б «фото + оціни мій образ»). У «usi» НЕ входить —
                       вмикається лише своїм ім'ям.
+     obgortka       — відповідь задачі без схеми (PHOTO_ITEMS, OUTFIT_ITEMS_V1, ITEM_LIST,
+                      PALETTE_CHOICE) модель кладе в {"answer": {…}} — ім'я задачі в промпті стоїть
+                      у полі «answer» (рядок 3370: живі ЖИВІ-12 Б/01–03, шар фото, 4 з 5 відповідей).
+                      Повтор — так само. У «usi» НЕ входить — вмикається лише своїм ім'ям.
    Повтор формату слабка модель провалює ТАК САМО: це і є «повтор дасть те саме».
    Без SLABKA стенд байт-у-байт той самий. */
 const ФОРМИ = ['obrizano', 'latynytsia', 'masyv', 'nomery', 'vidpovid', 'obraz_u_vybori',
   'ekho', 'ryadky', 'opys_obrazom', 'prybraty'];
-const ОКРЕМІ = ['ekho_remont', 'pvn_aksesuary', 'vkladeno'];   // лише своїм ім'ям, не в «usi» (див. шапку)
+const ОКРЕМІ = ['ekho_remont', 'pvn_aksesuary', 'vkladeno', 'obgortka'];   // лише своїм ім'ям, не в «usi» (див. шапку)
 const УВІМКНЕНІ = new Set(String(process.env.SLABKA || '').split(',').map(с => с.trim())
   .filter(Boolean).flatMap(с => (с === 'usi' ? ФОРМИ : [с])));
 for (const ф of УВІМКНЕНІ) if (!ФОРМИ.includes(ф) && !ОКРЕМІ.includes(ф))
@@ -146,6 +150,13 @@ function зіпсувати(відповісти, в, промпт) {
     const {update, ...частини} = х;
     return {тип: в.тип + ' · слабка: vkladeno', стоп: 'end_turn',
             текст: JSON.stringify({update: Object.assign({}, update, частини)})};
+  }
+  if (УВІМКНЕНІ.has('obgortka') && об && об.task
+      && ['PHOTO_ITEMS', 'OUTFIT_ITEMS_V1', 'ITEM_LIST', 'PALETTE_CHOICE'].includes(об.task.answer)) {
+    let х = null;
+    try { х = JSON.parse(String(в.текст || '').replace(/^\s*```(?:json)?\s*|\s*```\s*$/g, '')); } catch (_) {}
+    if (!х || typeof х !== 'object' || Array.isArray(х)) return в;
+    return {тип: в.тип + ' · слабка: obgortka', стоп: 'end_turn', текст: JSON.stringify({answer: х}, null, 2)};
   }
   if (!тип) return в;
   const пул = (тип === 'пакет') ? пулЗаВидами(об) : null;
