@@ -236,7 +236,6 @@ def фокуси(E, intent="conventional", спец=None, фокус=None):
             import колір_річ as _КР
             return [_КР.без_входу_кольору(
                 "K-CRA-02", [(e,) for e in мож],
-                "K-CRA-02 лічить фокуси, а хрома вікна слова лежить по обидва боки порога інтересу",
                 перевірка="cannot_tell_item_carries_interest")]
         return []
     return [фокуси_знахідка(гр, intent)]
