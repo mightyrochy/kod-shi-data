@@ -646,6 +646,37 @@ def вітрина(d, ід):
             for х in (р if isinstance(р, list) else []) if isinstance(х, dict) and х.get("id")}
 
 
+def _виміри(речі, пікселі, пікселі_фото, шкіра):
+    """Речі з фото → копії з `вимір`; річ, чия рамка міряє слово стилістки лише на ІНШОМУ фото
+    виклику (`річ_з_фото.фото_за_словом`), переходить на те фото з новим ід.
+
+    `пікселі` — {ід речі: кадр її рамки на її фото}; `пікселі_фото` — {ід речі: {ід фото: кадр
+    тієї самої рамки на іншому фото}}. Перенос названо полями `ід_моделі`/`фото_моделі`, а не
+    мовчанням; спір, що лишився (жодне інше фото не згодне), іде моделі як `color_named`.
+    Новий ід — наступний на тому фото (`ф1·3`): ід інших речей не зсуваються, а модель читає
+    «p1-3» як річ фото 1 — те фото, де річ справді є."""
+    вих, лічба = [], {}
+    for р in речі or []:
+        if isinstance(р, dict) and р.get("ід"):
+            лічба[р.get("фото")] = лічба.get(р.get("фото"), 0) + 1
+    for р in речі or []:
+        if not isinstance(р, dict) or not р.get("ід"):
+            continue
+        р = dict(р)
+        if пікселі.get(р["ід"]):
+            р["вимір"] = _РФ.виміряти(пікселі[р["ід"]], слово_моделі=р.get("колір"),
+                                      шкіра_hex=шкіра, рамка=р.get("рамка"))
+        if (р.get("вимір") or {}).get("спір") and пікселі_фото.get(р["ід"]):
+            ф, вим = _РФ.фото_за_словом(пікселі_фото[р["ід"]], р.get("колір"), шкіра_hex=шкіра,
+                                        рамка=р.get("рамка"))
+            if ф:
+                лічба[ф] = лічба.get(ф, 0) + 1
+                р.update(ід_моделі=р["ід"], фото_моделі=р["фото"], фото=ф, вимір=вим,
+                         ід=ф if лічба[ф] == 1 else "%s·%d" % (ф, лічба[ф]))
+        вих.append(р)
+    return вих
+
+
 def суд(d):
     """Її речі з фото → образ, вимір, суд цілим, перевірені зміни, «без входу» — усе кодами.
 
@@ -659,20 +690,12 @@ def суд(d):
     палітра = _ПЛ.палітра_практична(F, source=d.get("source") or "uncontrolled",
                                     intent=сцен.get("intent") or "conventional")
     шкіра = (F.get("шкіра") or {}).get("hex")
-    пікселі = d.get("пікселі") or {}
-    речі = []
-    for р in d.get("речі") or []:
-        if not isinstance(р, dict) or not р.get("ід"):
-            continue
-        р = dict(р)
-        if пікселі.get(р["ід"]):
-            р["вимір"] = _РФ.виміряти(пікселі[р["ід"]], слово_моделі=р.get("колір"),
-                                      шкіра_hex=шкіра, рамка=р.get("рамка"))
+    речі = _виміри(d.get("речі"), d.get("пікселі") or {}, d.get("пікселі_фото") or {}, шкіра)
+    for р in речі:
         lab = (р.get("вимір") or {}).get("lab")
         р["біля_обличчя"] = _РФ.біля_обличчя(р.get("слот"))
         if lab:
             р["палітра"] = _РФ.членство_в_палітрі(lab, палітра)
-        речі.append(р)
     за_ід = {р["ід"]: р for р in речі}
     образ, запасні, конфлікти = скласти(речі)
     драп = d.get("драп") or None
@@ -723,6 +746,8 @@ def речі_для_моделі(суд_):
         з = {"id": р["ід"], "name": р.get("назва"), "slot": _код("slot", р.get("слот")),
              "color": _код("color_name", вим.get("слово") or р.get("колір")),
              "color_measured": bool(вим.get("lab")),
+             # рядок 3460: слово стилістки, з яким вимір розійшовся, — інформація суду, не мовчання
+             "color_named": (_код("color_name", р.get("колір")) if вим.get("спір") else None),
              "palette": _ПАЛІТРА_КОД.get(п.get("стан"), "unknown"),
              "palette_strength": п.get("сила"), "near_face": bool(р.get("біля_обличчя")),
              "fabric": _код("fabric", р.get("матеріал")), "cut": р.get("крій"),
@@ -797,9 +822,10 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
         _ЗП.Поле("weather", "the weather she named",
                  без="She did not name the weather: do not judge warmth or weather."),
         _ЗП.Поле("items", "items on her photos: id is her photo id; color is measured from the photo "
-                          "when color_measured is true; palette is the color's membership in her "
-                          "palette (in, edge, out) and near_face says whether the item is close to her "
-                          "face", треба=True),
+                          "when color_measured is true; color_named, when present, is the color the item "
+                          "list named and the measurement disagreed with: look at the photo before you speak "
+                          "about that color; palette is the color's membership in her palette (in, edge, "
+                          "out) and near_face says whether the item is close to her face", треба=True),
         _ЗП.Поле("outfit", "ids of the items worn together: the outfit you judge", треба=True),
         _ЗП.Поле("alternatives", "ids of her items shown as alternatives, not worn in the outfit"),
         _ЗП.Поле("check", "the code's check of the outfit as a whole: findings (rule, strength, sila_np — "
