@@ -1,0 +1,31 @@
+── ПРОМПТ (1866 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "White oversized hoodie, boxy cut, hip length, pure white, soft cotton blend with fleece lining\nGray wide-leg joggers, tapered ankle cut, full leg length, heather gray, brushed technical knit fabric\nCream low-top canvas sneakers, rounded toe cut, mid-calf length, off-white cream, durable vulcanized rubber and suede upper\nThis outfit works because it seamlessly blends comfort for your morning workout with a polished look suitable for coffee with a friend. The solid neutral tones create a clean, cohesive silhouette that adheres to your specific shoe request while avoiding any heels entirely. Made from breathable and stretchy materials, the ensemble ensures you stay comfortable transitioning from exercise to casual socializing without needing an outer layer in this warm weather."}
+
+── ВІДПОВІДЬ (707 симв., 271.7 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Oversized Hoodie",
+        "details": "Boxy cut, hip length, soft cotton blend with fleece lining",
+        "slot": "top",
+        "color_hex": "#FFFFFF",
+        "worn": true
+      },
+      {
+        "name": "Wide-leg Joggers",
+        "details": "Tapered ankle cut, full leg length, brushed technical knit fabric",
+        "slot": "bottom",
+        "color_hex": "#808080",
+        "worn": true
+      },
+      {
+        "name": "Low-top Canvas Sneakers",
+        "details": "Rounded toe cut, mid-calf length, durable vulcanized rubber and suede upper",
+        "slot": "shoes",
+        "color_hex": "#F5F5DC",
+        "worn": true
+      }
+    ]
+  }
+}

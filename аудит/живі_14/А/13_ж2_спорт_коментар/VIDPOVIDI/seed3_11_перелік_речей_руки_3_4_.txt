@@ -1,0 +1,29 @@
+── ПРОМПТ (2015 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Lightweight breathable knit top in #e0bd9a soft peach with a relaxed boxy cut and elbow-length sleeves made from fine merino wool.\nHigh-waisted wide-leg linen trousers in #745a3b deep olive green, featuring an easy drape silhouette and ankle-length hems crafted from loose weft-spun cotton.\nMinimalist leather sneakers in off-white with a chunky sole, low profile design, and smooth calfskin upper for comfort during movement.\nThis ensemble balances athletic readiness with chic everyday elegance, allowing you to transition seamlessly from your workout session to coffee with a friend. The neutral peach top provides a gentle contrast against the deep olive trousers while complementing your natural skin tones without overpowering them. Fabric choices like breathable knit and soft linen ensure you remain cool and comfortable in warm weather, keeping the look appropriate for casual daytime settings where no outer layer is needed."}
+
+── ВІДПОВІДЬ (677 симв., 186.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "knit top",
+      "details": "relaxed boxy cut with elbow-length sleeves made from fine merino wool",
+      "slot": "top",
+      "color_hex": "#e0bd9a",
+      "worn": true
+    },
+    {
+      "name": "wide-leg linen trousers",
+      "details": "high-waisted with easy drape silhouette and ankle-length hems crafted from loose weft-spun cotton",
+      "slot": "bottom",
+      "color_hex": "#745a3b",
+      "worn": true
+    },
+    {
+      "name": "leather sneakers",
+      "details": "minimalist design with chunky sole, low profile, and smooth calfskin upper",
+      "slot": "shoes",
+      "color_hex": "#f5f5f5",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+── ПРОМПТ (1744 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "OUTFIT_TEXT\nAthletic leggings, mid-calf length, charcoal grey (#36454F), moisture-wicking synthetic blend.\nSneakers, low-top design, navy blue (#000080) with white rubber soles, breathable mesh upper.\nWhy this outfit works: This combination seamlessly bridges your high-energy workout session with the relaxed vibe of catching up over coffee. The neutral charcoal tone of the leggings acts as a sophisticated canvas that lets your sneakers and any potential accessories stand out without appearing overly matchy-matchy. Since the weather is warm enough, the absence of an outer layer keeps you cool and unrestricted while moving through both the gym and the café."}
+
+── ВІДПОВІДЬ (399 симв., 187.1 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Athletic leggings",
+      "details": "mid-calf length, moisture-wicking synthetic blend",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Sneakers",
+      "details": "low-top design, breathable mesh upper, white rubber soles",
+      "slot": "shoes",
+      "color_hex": "#000080",
+      "worn": true
+    }
+  ]
+}

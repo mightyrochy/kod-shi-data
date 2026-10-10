@@ -1,0 +1,31 @@
+── ПРОМПТ (2099 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A breathable moisture-wicking sports bra in a solid charcoal grey (#3a3f44) with a wide scoop neckline and racerback cut for support.\nA lightweight high-neck longline cycling jersey in an olive drab (#5e6b4d), loose-fitting in length to reach mid-thigh, made of quick-dry synthetic fabric to manage sweat during movement.\nA pair of sleek black running sneakers with zero heel lift and a solid matte finish (#000000), constructed from durable mesh and rubber for grip.\nThis outfit works because it seamlessly transitions from active movement to casual coffee without requiring a change of clothes, adhering strictly to her refusal of heels by choosing flat, stable footwear that complements the sporty aesthetic. The solid dark color palette keeps the look cohesive and modern, while the functional fabrics ensure comfort during both the workout portion and the relaxed social time afterward. It respects her desire for simplicity and practicality while still feeling intentional and stylish for a casual daytime event."}
+
+── ВІДПОВІДЬ (737 симв., 269.1 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "sports bra",
+        "details": "breathable moisture-wicking with wide scoop neckline and racerback cut",
+        "slot": "top",
+        "color_hex": "#3a3f44",
+        "worn": true
+      },
+      {
+        "name": "cycling jersey",
+        "details": "lightweight high-neck longline loose-fitting mid-thigh length made of quick-dry synthetic fabric",
+        "slot": "top",
+        "color_hex": "#5e6b4d",
+        "worn": true
+      },
+      {
+        "name": "running sneakers",
+        "details": "sleek zero heel lift solid matte finish constructed from durable mesh and rubber",
+        "slot": "shoes",
+        "color_hex": "#000000",
+        "worn": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,80 @@
+── ПРОМПТ (8166 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_code_unknown — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+- card_unknowns_toggle — напис на кнопці, що розгортає на картці образу згорнутий перелік того, що в цьому образі лишилось не перевіреним: кілька слів, без числа, без крапки в кінці; лічбу рядків екран допише сам.
+
+КОДИ У ЗНАЧЕННЯХ:
+- bag — сумка.
+- belt — пояс.
+- crossbody — кросбоді.
+- dress — сукня.
+- hand — рука.
+- hips — стегна.
+- shoes — взуття.
+- shoulder — плече.
+- top — верх.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки.
+
+ЗАЯВИ:
+- unchecked_in_this_look — behind this button is the list of what stays unchecked in this outfit: what could not be verified for lack of data about the items, about her or about her day.
+- colour_word_model — the code knows the colour of the named items only from the model's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- colour_word_not_photo — the colour of the named items comes from a word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_lightness_structure — so the code cannot tell which structure of light and dark the outfit carries.
+- cannot_tell_two_neutrals_distinct — so the code cannot tell whether two neutrals of one lightness differ visibly.
+- cannot_tell_accent_role_chroma — so the code cannot tell whether the item is colourful enough for the accent role the palette scheme gave its slot.
+- cannot_tell_items_intensity_match — so the code cannot tell whether the outfit's items match in colour saturation.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- length_word_edge_may_land_on_widest — the code knows the item's length only from a word, and its edge may land right on the widest place of the body (values: slot — slot code; length — the length word; level — code of the body level where the edge may land).
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- cut_from_shop_photo_differs — the cut was taken from the shop's word, and the photo shows another one (values: items — the items: slot — slot code, shop — the cut by the shop, photo — the cut from the photo; the cut names are in English, retell them in her language).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_code_unknown", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Туфлі Casadei коричневі", "lang": "uk"}}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 2, "вид": "card_code_unknown", "заяви": [{"code": "cannot_tell_lightness_structure"}]},
+{"н": 3, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "dress", "colour": "чорний"}, {"slot": "top", "colour": "чорний"}]}}, {"code": "cannot_tell_two_neutrals_distinct"}]},
+{"н": 4, "вид": "card_code_unknown", "заяви": [{"code": "cannot_tell_two_neutrals_distinct"}]},
+{"н": 5, "вид": "card_code_unknown", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "dress", "range": "XXS–XXL"}, {"slot": "top", "range": "S–XL"}]}}]},
+{"н": 6, "вид": "card_code_unknown", "заяви": [{"code": "cut_from_shop_photo_differs", "values": {"items": [{"slot": "dress", "shop": "sheath", "photo": "fitted"}]}}]},
+{"н": 7, "вид": "card_code_unknown", "заяви": [{"code": "length_word_edge_may_land_on_widest", "values": {"slot": "top", "length": {"free_text": "стегно", "lang": "uk"}, "level": "hips"}}]},
+{"н": 8, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "dress", "colour": "чорний"}, {"slot": "top", "colour": "чорний"}, {"slot": "bag", "colour": "бежевий"}, {"slot": "shoes", "colour": "коричневий"}]}}, {"code": "cannot_tell_items_intensity_match"}]},
+{"н": 9, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "bag", "colour": "бежевий"}]}}, {"code": "cannot_tell_accent_role_chroma"}]},
+{"н": 10, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_not_photo", "values": {"items": [{"slot": "belt", "colour": "бежевий"}]}}, {"code": "cannot_tell_accent_role_chroma"}]},
+{"н": 11, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_model", "values": {"items": [{"slot": "shoes", "colour": "коричневий"}]}}, {"code": "cannot_tell_item_holds_scheme_hue"}]},
+{"н": 12, "вид": "card_code_unknown", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "сумка Пісочна із широким ременем", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
+{"н": 13, "вид": "card_code_unknown", "заяви": [{"code": "items_register_unknown", "values": {"count": 3}}]},
+{"н": 14, "вид": "card_unknowns_toggle", "заяви": [{"code": "unchecked_in_this_look"}]}
+]
+
+── ВІДПОВІДЬ (1963 симв., 55.7 с, HTTP 200) ──
+```json
+{
+  "1": "Я не звірила розмір твоїх туфель Casadei коричневих з довжиною твоєї стопи, бо я й досі не знаю її. Також на картці взуття немає інформації про довжину устілки.",
+  "2": "Я не можу сказати, яка структура світла і тіні у цьому образі.",
+  "3": "Колір твоєї чорної сукні та чорного топу я знаю лише зі слів моделі, а не з вимірювання фотографії. Тому я не впевнена, чи відрізняються два нейтральні кольори за світлотою.",
+  "4": "Я не можу сказати, чи відрізняються два нейтральні кольори за світлотою.",
+  "5": "Розмір твого одягу на бирці — це просто цифра, а не показник посадки. Я не знаю, як саме сидять твоя сукня та топ без вимірювань цих речей.",
+  "6": "На картці вказано футлярний крій для твоєї сукні, але на фото вона здається приталеною.",
+  "7": "Я знаю довжину твого топу лише зі слів — стегно. Її край може лягти прямо на найширшому місці твоїх стегон.",
+  "8": "Колір твоєї чорної сукні, чорного топу, бежевої сумки та коричневих туфель я знаю лише зі слів моделі, а не з вимірювання фотографії. Тому я не можу сказати, чи достатньо насичені кольори речей в образі.",
+  "9": "Колір твоєї бежевої сумки я знаю лише зі слів моделі, а не з вимірювання фотографії. Я не можу сказати, чи підходить її колір для акцентної ролі у палітрі.",
+  "10": "Колір твого бежевого пояса я знаю лише зі слів моделі, а не з вимірювання фотографії. Я не можу сказати, чи підходить його колір для акцентної ролі у палітрі.",
+  "11": "Я знаю колір твоїх коричневих туфель лише зі слів моделі, і я не впевнена, чи відповідає він обраній кольоровій схемі.",
+  "12": "Ти ще не вирішила, як носитимеш свою сумку Пісочну із широким ременем — у руці, на плечі чи через тіло. Від цього залежать правила її носіння.",
+  "13": "Я не можу визначити стиль трьох речей в образі: їхні картки не містять потрібних слів.",
+  "14": "За цим рядком — список того, що ще потрібно перевірити у твоєму образі: інформації про речі, тебе чи твій день поки недостатньо."
+}
+```

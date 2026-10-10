@@ -1,0 +1,38 @@
+── ПРОМПТ (4851 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A zip-up knit cardigan in a rich chocolate-brown hue. It has a structured collar and ribbed trim at the cuffs and hem, creating a polished outer layer.\nA neutral beige A-line skirt with a defined waist and functional belt loops. The fabric is smooth and matte, offering a clean backdrop for your accessories.\nClassic dark brown loafers featuring a low block heel and a polished leather finish. They offer comfort and stability for walking on city streets or pavement.\nA burgundy leather belt with a silver-toned rectangular buckle. The strap is smooth and features the Welfare brand logo stamped in relief on the inner side.\nA structured burgundy handbag made from a soft, grainy leather. It features a distinctive top handle, a flap closure secured by a magnetic catch, and an attached shoulder strap with gold-tone hardware.\nI picked this ensemble to give you a grounded, sophisticated look for your coffee meet-up that still lets you move effortlessly. The chocolate-brown zip cardigan provides a cozy layer that warms up your cool-toned base without being heavy, while the neutral beige skirt keeps the silhouette clean and elongated. The burgundy belt adds a subtle point of interest right at your waist, which is perfect for defining your figure, and the matching burgundy bag anchors the look with depth."},
+{"н": 2, "текст": "Start wearing the cardigan fully zipped to keep the jacket cropped and defined as you walk into your friend's place."},
+{"н": 3, "текст": "Once you're settled, unbutton the top few snaps to open the coat and reveal the beige top underneath."},
+{"н": 4, "текст": "Ремінь жіночий Welfare — Added to resolve the 'no_top_bottom_or_dress' blocker by providing a foundation piece (belted top layer) and fulfilling the item count requirement."},
+{"н": 5, "текст": "Лофери жіночі Tamaris — The green ballet flats were removed entirely, solving the duplicate shoes and leg-line issues simultaneously."},
+{"н": 6, "текст": "Кардиган, Спідниця з гульфіком із замш діагоналі, Лофери жіночі Tamaris, Бордова сумка Le Grand Bambino — Kept the classic register as dominant; the romantic elements are now quiet accessories (headband) rather than competing"},
+{"н": 7, "текст": "Кардиган, Спідниця з гульфіком із замш діагоналі, Лофери жіночі Tamaris, Бордова сумка Le Grand Bambino — The outfit is not default formula because of the bold beige/brown contrast and texture mix of suede and jersey."},
+{"н": 8, "текст": "Кардиган, Спідниця з гульфіком із замш діагоналі, Лофери жіночі Tamaris — Kept the classic register as dominant; the romantic elements are now quiet accessories (headband) rather than competing"},
+{"н": 9, "текст": "Кардиган, Спідниця з гульфіком із замш діагоналі, Лофери жіночі Tamaris — The outfit is not default formula because of the bold beige/brown contrast and texture mix of suede and jersey."}
+]
+
+── ВІДПОВІДЬ (2772 симв., 104.0 с, HTTP 200) ──
+```json
+{
+  "1": "Вовняний кардиган на блискавку насиченого шоколадно-коричневого кольору. Він має структурований комір і рубчасті манжети та низ, створюючи вишуканий верхній шар.\nНейтральна бежева спідниця А-силуету з чіткою лінією талії та функціональними шлевками для ременя. Тканина гладка й матова, пропонуючи чистий фон для твоїх аксесуарів.\nКласичні темно-коричневі лофери на невисокому блочному підборі з полірованою шкіряною обробкою. Вони забезпечують комфорт і стійкість при ходьбі міськими вулицями чи тротуарами.\nБордовий ремінь зі шкіри з сріблясто-тонованою прямокутною пряжкою. Ремінець гладкий і має тиснення логотипу бренду Welfare на внутрішній стороні.\nСтруктурована бордова сумка, виготовлена з м’якої зернистої шкіри. Вона вирізняється характерним верхом-ручкою, клапаном із магнітним закриттям і прикріпленим плечовим ременем зі золотистими деталями.\nЯ підібрала цей ансамбль, щоб створити для тебе стриманий, вишуканий образ на зустріч з подругою, який дозволить тобі вільно рухатися. Шоколадно-коричневий кардиган на блискавку забезпечує затишний шар, що зігріває твій прохолодний базовий колір без зайвої ваги, а бежева спідниця А-силуету зберігає силует чистим і видовженим. Бордовий ремінь додає ледь помітну родзинку на талії, що чудово підкреслює твою фігуру, а відповідна бордова сумка завершує образ глибиною.",
+  "2": "Спочатку одягни кардиган повністю застебнутим, щоб зберегти його кроєм і визначеністю, коли ти йтимеш до подруги.",
+  "3": "Коли влаштуєшся, розстібни кілька верхніх кнопок, щоб відкрити піджак і показати бежевий топ знизу.",
+  "4": "Ремінь жіночий Welfare — Доданий для вирішення блокування 'no_top_bottom_or_dress' шляхом надання базового елемента (ременя) та виконання вимоги щодо кількості речей.",
+  "5": "Лофери жіночі Tamaris — Зелені балетки були повністю прибрані, що одночасно вирішило проблему дублювання взуття та лінії ніг.",
+  "6": "Кардиган, Спідниця з гульфіком із замші діагоналі, Лофери жіночі Tamaris, Бордова сумка Le Grand Bambino — Збережено домінантний класичний стиль; романтичні елементи тепер є тихими аксесуарами (головка) замість того, щоб конкурувати.",
+  "7": "Кардиган, Спідниця з гульфіком із замші діагоналі, Лофери жіночі Tamaris, Бордова сумка Le Grand Bambino — Образ не є типовою формулою через сміливий бежево-коричневий контраст і поєднання текстур замші та джерсі.",
+  "8": "Кардиган, Спідниця з гульфіком із замші діагоналі, Лофери жіночі Tamaris — Збережено домінантний класичний стиль; романтичні елементи тепер є тихими аксесуарами (головка) замість того, щоб конкурувати.",
+  "9": "Кардиган, Спідниця з гульфіком із замші діагоналі, Лофери жіночі Tamaris — Образ не є типовою формулою через сміливий бежево-коричневий контраст і поєднання текстур замші та джерсі."
+}
+```

@@ -1,0 +1,26 @@
+── ПРОМПТ (3608 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A cozy black textured bomber jacket with a full-length zipper, wide voluminous sleeves, and ribbed cuffs and hem that create a cropped silhouette.\nVibrant pink leather plimsolls featuring a bold black star on the side, gold lettering, and a classic white distressed sole for added character.\nAn elegant grey tailored blazer with a slim fit, notched lapels, and a single-button closure, paired with matching straight-leg trousers for a structured silhouette.\nKhaki pinstripe wide-leg trousers with a relaxed high-waisted fit, subtle vertical stripes, and a comfortable waistband that elongates the leg line.\nA chic beige leather phone case wallet with a minimalist flap design and silver hardware for carrying your essentials securely.\nYou start your day with a sharp grey tailored blazer and matching trousers that define your X shape, creating an elegant vertical line. Over the top of this polished look, you slip into a cozy black textured bomber jacket with wide sleeves, adding volume to your shoulders while keeping the waist clean. The outfit is finished with vibrant pink plimsolls that bring an energetic splash of color, and a soft beige leather phone case rests comfortably in your hand."},
+{"н": 2, "текст": "Tuck the pink cardigan into your wide-leg trousers to cinch your waist and highlight your defined figure."},
+{"н": 3, "текст": "Піджак класичний приталений сірий — The grey blazer provides a structured silhouette and a different shape (V or H) than the body's X shape, acting as an anchor piece that changes the outfit's overall geometry when layered over the soft sweater."}
+]
+
+── ВІДПОВІДЬ (1541 симв., 87.4 с, HTTP 200) ──
+```json
+{
+  "1": "Затишний чорний стьобаний бомбер з повною блискавкою, широкими об’ємними рукавами та ребристими манжетами й подолом, що створюють укорочений силует.\nЯскраві рожеві шкіряні кеди зі сміливою чорною зіркою на боці, золотим написом і класичною білою потертою підошвою для додаткового характеру.\nЕлегантний сірий приталений піджак з лацканами та однією ґудзиком у поєднанні з відповідними прямими брюками для структурованого силуету.\nХакі штани в широку смужку з розслабленим високим поясом, ледь помітними вертикальними смужками та зручним поясом, що видовжує лінію ноги.\nШикарний бежевий шкіряний чохол-гаманець для телефону з мінімалістичним клапаном і срібною фурнітурою для безпечного носіння необхідних речей.\nТи починаєш свій день із чіткого сірого приталеного піджака та відповідних штанів, які визначають твою фігуру у формі X, створюючи елегантну вертикальну лінію. Зверху цього вишуканого образу ти одягаєш затишний чорний стьобаний бомбер з широкими рукавами, додаючи об’єм плечам і зберігаючи чисту талію. Образ завершено яскравими рожевими кедами, які приносять енергійний сплеск кольору, а м’який бежевий шкіряний чохол для телефону зручно лежить у твоїй руці.",
+  "2": "Заправ рожевий кардиган у широкі штани, щоб підкреслити талію та виділити твою фігуру.",
+  "3": "Сірий приталений класичний піджак — Сірий піджак створює структурований силует і іншу форму (V або H), ніж форма тіла у формі X, діючи як основна деталь, яка змінює загальну геометрію образу, коли його одягають поверх м’якого светра."
+}
+```
