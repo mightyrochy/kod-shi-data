@@ -1,0 +1,29 @@
+── ПРОМПТ (2042 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "OUTFIT_TEXT\nSporty tank top, relaxed fit, mid-thigh length, vibrant tangerine color (#FF8C42), breathable mesh cotton blend.\nHigh-waisted athletic leggings, slim tapered cut, full length, deep charcoal heather (#36454F), moisture-wicking performance fabric.\nChunky platform sneakers with white soles and bold black branding, sporty silhouette, durable rubber outsole, mixed textile and synthetic upper.\nThis outfit works because the relaxed tank and high-waisted leggings provide the essential comfort and freedom of movement required for a sports outing with friends. The vibrant tangerine color adds an energetic pop that matches the active occasion while the deep charcoal keeps the look grounded and versatile. Finally, the chunky platform sneakers fulfill her specific wish for stylish footwear that can handle both athletic activities and casual hangouts."}
+
+── ВІДПОВІДЬ (687 симв., 201.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "tank top",
+      "details": "relaxed fit, mid-thigh length, breathable mesh cotton blend",
+      "slot": "top",
+      "color_hex": "#FF8C42",
+      "worn": true
+    },
+    {
+      "name": "athletic leggings",
+      "details": "high-waisted, slim tapered cut, full length, moisture-wicking performance fabric",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "chunky platform sneakers",
+      "details": "white soles with bold black branding, sporty silhouette, durable rubber outsole, mixed textile and synthetic upper",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
