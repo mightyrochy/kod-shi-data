@@ -1,0 +1,36 @@
+── ПРОМПТ (2115 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Oversized ribbed long-sleeve top in soft heather grey (#dcdcdc), relaxed fit with dropped shoulders, lightweight cotton-knit blend. High-waisted wide-leg linen trousers in sand beige (#f5f0e1), flowing ankle length with a natural drape, breathable woven linen. Minimalist canvas sneakers in oat white (#faf9f6), low-profile sole and round toe, durable canvas upper. Delicate gold hoop earrings in polished brass, small enough to catch the morning light.\n\nThis outfit works because it balances comfort and style for your morning yoga session and cafe meetup, offering freedom of movement while looking effortlessly chic. The neutral tones complement your warm skin undertones and create a cohesive look that transitions seamlessly from stretchy practice to cozy coffee time. By choosing sneakers instead of heels, you honor your request for ease without sacrificing elegance, making it perfect for standing or walking between activities."}
+
+── ВІДПОВІДЬ (870 симв., 289.0 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Oversized ribbed long-sleeve top",
+      "details": "relaxed fit with dropped shoulders, lightweight cotton-knit blend",
+      "slot": "top",
+      "color_hex": "#dcdcdc",
+      "worn": true
+    },
+    {
+      "name": "High-waisted wide-leg linen trousers",
+      "details": "flowing ankle length with a natural drape, breathable woven linen",
+      "slot": "bottom",
+      "color_hex": "#f5f0e1",
+      "worn": true
+    },
+    {
+      "name": "Minimalist canvas sneakers",
+      "details": "low-profile sole and round toe, durable canvas upper",
+      "slot": "shoes",
+      "color_hex": "#faf9f6",
+      "worn": true
+    },
+    {
+      "name": "Delicate gold hoop earrings",
+      "details": "polished brass, small enough to catch the morning light",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

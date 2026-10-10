@@ -1,0 +1,36 @@
+── ПРОМПТ (2146 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Flared crop top, relaxed fit ending at the hip bone, soft sunset orange (#FFA54F), breathable modal knit.\nHigh-waisted wide-leg trousers, tapered ankle cut reaching just above the shoe line, deep moss green (#5D766C), sustainable hemp-blend twill.\nMinimalist slide sandals, flat heel, smooth cream leather (#F5F5DC).\nSmall geometric pendant necklace in brushed silver.\n\nThis outfit blends comfort for your morning yoga session with a polished yet relaxed vibe for catching coffee with a friend later. The warm orange top creates an energetic base that harmonizes beautifully with the grounding moss green of the trousers, establishing a balanced and stylish aesthetic. Wide legs provide ease of movement while maintaining a chic silhouette that transitions seamlessly from exercise to casual socializing. The natural textures of modal and hemp ensure you feel at ease throughout the day, perfectly aligning with your wish for an everyday look that feels authentic."}
+
+── ВІДПОВІДЬ (784 симв., 197.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "flared crop top",
+      "details": "relaxed fit ending at the hip bone, breathable modal knit",
+      "slot": "top",
+      "color_hex": "#FFA54F",
+      "worn": true
+    },
+    {
+      "name": "wide-leg trousers",
+      "details": "high-waisted, tapered ankle cut reaching just above the shoe line, sustainable hemp-blend twill",
+      "slot": "bottom",
+      "color_hex": "#5D766C",
+      "worn": true
+    },
+    {
+      "name": "slide sandals",
+      "details": "flat heel, smooth leather",
+      "slot": "shoes",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "pendant necklace",
+      "details": "geometric pendant in brushed silver",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
