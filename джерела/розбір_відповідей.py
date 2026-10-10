@@ -54,9 +54,10 @@ import дріт_моделі as _Д
                            "never a source you cite to her",
                  треба=True),
         _ЗП.Поле("outfit.items[].photos",
-                 "the numbers of this item's photos: every photo stands under its own label «Photo N:» "
-                 "among the blocks placed before this object; under a label with «not delivered» or "
-                 "«not available» there is no image",
+                 "the numbers of this item's photos: every photo stands under its own label «Photo N — …:» "
+                 "among the blocks placed before this object, and the label names the item by its «n»; it is "
+                 "the shop's photo of that one item, often worn by a model or a mannequin with clothes that "
+                 "are not hers; under a label with «not delivered» or «not available» there is no image",
                  як="describe what you see on the photos, not the name; from each photo take only the item of "
                     "its «kind» — a belt, a bag or jewelry is often shown worn with a blouse or a dress: describe "
                     "the belt, not the blouse; the other clothes in the frame are not part of the outfit and are "
@@ -66,8 +67,10 @@ import дріт_моделі as _Д
                  без="There are no item photos: describe the items by their names; leave «wrong_photos» empty."),
         # рядок 3457 (ЖИВІ-13 №8 рука 2): «Пасок Базовий блакитний» описано блузою з фото пояса — опис
         # ішов за кадром, а не за річчю; рід речі кодом каже, ЩО на кадрі описувати
+        # рядок 4580: цілий комплект — родом «set» (доти «top, blazer», і опис звав його «не включеним»)
         _ЗП.Поле("outfit.items[].kind", "what the item is, as a code (belt, top, dress, shoes, bag…); «type» — "
-                                        "its narrower type when the code knows it",
+                                        "its narrower type when the code knows it; «set» — a set sold as one "
+                                        "item, its top and its bottom both in the outfit",
                  як="«about_items» describes the item of this «kind» and nothing else from its photo"),
         # рядок 3656 (ЖИВІ-14 №11 рука 1): кадр «кемел» пальта — сірий (галерея іншого кольору моделі); код це знав
         # (R-FEED-01 за кнопкою картки), модель — ні, і правило «опиши, як на фото» тягнуло її проти речі.
@@ -193,7 +196,8 @@ import дріт_моделі as _Д
         # у «named» усі номери, а текст пропускав пальто чи піджак і описував штани, яких нема
         "про_речі[].н": "«n» of the item of «outfit»: one entry for every item of «outfit», in its order",
         "про_речі[].текст": "prose for her about this one item of its «kind»: what it is, cut, length, color in words, "
-                            "fabric, in one or two sentences, as its photo and data show",
+                            "fabric, in one or two sentences, as its photo and data show; it is in her outfit — "
+                            "never say it is not included",
         "текст": "prose for her after the items: (1) optional, only when it adds something — how the "
                  "shoes, the outer layer and the accessories go with the rest, in one or two sentences; "
                  "(2) why it works — 3–4 sentences, taking from «day», «palette», «makeup» and «missing» "
@@ -382,6 +386,38 @@ def промпт_опису(об):
     """`ОПИС_V1` обʼєктом коду → повідомлення моделі: збирач (`ОПИС`, англійською) над тими
     самими фактами кодами (`дріт_моделі.опис`); мова вільного тексту — `завдання.мова`."""
     return _ЗП.зібрати(ОПИС, _Д.опис(об), мова_тексту=((об or {}).get("завдання") or {}).get("мова"))
+
+
+# ── ПІДПИС КАДРУ: ЧИЯ ЦЕ РІЧ І ЩО ЦЕ КАДР КРАМНИЦІ (рядок 4580) ─────────────────────
+# ЖИВІ-22 №7 рука 1: «a grey wool blazer over a white top, paired with black pants» — білий топ і чорні
+# штани стоять на манекені кадру піджака; пальто «worn over a black turtleneck, paired with sheer black
+# tights» — з кадру пальта на моделі. №8 рука 2: «cream sweater tied at the waist … beige trousers» — з
+# кадру пояса, вдягненого на светр; після коментаря «silk scarf at your neck» — хустка моделі з кадру
+# блузи. Доти кадр стояв під голим «Photo N:», а чий він — лише в «photos» обʼєкта ПІСЛЯ всіх кадрів.
+# Код не знає, котрий кадр на моделі (клас кадру виміряно в 1 086 речей із 12 426), тож підпис однаковий
+# для кожного кадру: номер і рід речі кодами й що решта одягу в кадрі — не її образ. Двокрапку чи «not
+# available» дописує показ (`підписатиКадри`): лише він знає, чи кадр дійшов
+ПІДПИС_КАДРУ_EN = "Photo {N} — the shop's photo of {n} ({kind}); the other clothes in it are not in her outfit"
+ПІДПИС_СВОГО_КАДРУ_EN = "Photo {N} — her own photo of {n} ({kind}); the other clothes in it are not in her outfit"
+
+
+def підписи_кадрів(об, усього):
+    """Підписи кадрів опису для `ОПИС_V1` обʼєктом коду: `усього` рядків, і-й — перед кадром і+1.
+
+    Річ кадру — за «photos» дроту (`дріт_моделі.опис`), рід — її «kind» і «type»; запасна (ФОТО-1)
+    має рід речі, яку вона заміняє. Кадр без речі лишається «Photo N»."""
+    д = _Д.опис(об)
+    рід = lambda x: ", ".join(str(x[к]) for к in ("kind", "type") if x.get(к)) or "item"
+    чий = {}
+    for x in д["outfit"]["items"]:
+        for N in x.get("photos") or ():
+            чий[N] = (ПІДПИС_СВОГО_КАДРУ_EN if x.get("hers") else ПІДПИС_КАДРУ_EN).format(N=N, n=x["n"], kind=рід(x))
+    зап = д.get("swap_spares") or {}
+    рід_зап = рід(next((x for x in д["outfit"]["items"] if x["n"] == зап.get("item")), {}))
+    for x in зап.get("spares") or ():
+        for N in x.get("photos") or ():
+            чий[N] = ПІДПИС_КАДРУ_EN.format(N=N, n=x.get("n"), kind=рід_зап)
+    return [чий.get(N, "Photo %d" % N) for N in range(1, int(усього) + 1)]
 
 
 def опис_v1(речі, образ=None, задум=None, випадок=None, свідомі=None, фото_є=True,
