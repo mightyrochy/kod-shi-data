@@ -1,0 +1,24 @@
+# -*- coding: utf-8 -*-
+"""ФІГУРА-4, рядки 2320/2321/2322: слово крою й слот у каталозі руки 1. Друкує (ДО/ПІСЛЯ — той самий запуск на
+двох комітах): 2320 — сукні `fitted`/`relaxed`: що кладе на дріт, що читає геометрія (слово чи один крій);
+2321 — речі зі словом поза кроями слота без перекладу: скільки з них несе дріт сирим словом; 2322 — комбінезони
+слота «сукня»: яким кроєм їх читає геометрія (слово речі чи переклад сукні). Запуск з теки `джерела`:
+python3 проби/фіг4_слоти_каталогу.py"""
+import sys, os, json, collections
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
+import bridge as B, feed as Ф, outfit as O, пакет_моделі as П
+вх = json.load(open("стенд_вх.json", encoding="utf-8")); вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml"); вх["гілка"] = 0
+json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
+кат = B.каталог_останнього_пакета()
+дріт = lambda c: П._річ_пулу(c, {}).get("крій")
+for сл in ("fitted", "relaxed"):
+    Z = collections.Counter((дріт(c), O.крій_речі(c)) for c in кат if c.get("слот") == "сукня"
+                            and c.get("тип") != "комбінезон" and O._крій_слово(c) == сл)
+    for (д, г), n in sorted(Z.items()): print("2320 сукня %-8s дріт %-18s геометрія %-8s %d" % (сл, д, г, n))
+поза = [c for c in кат if O.крої_слота(c)[1] == "cut_word_outside_slot"]
+for (сл, к), n in sorted(collections.Counter((c["слот"], O._крій_слово(c)) for c in поза).items()):
+    print("2321 поза слотом %-12s %-9s %2d, із них сире слово на дроті %d" % (сл, к, n, sum(
+        дріт(c) is not None for c in поза if c["слот"] == сл and O._крій_слово(c) == к)))
+комб = [c for c in кат if c.get("слот") == "сукня" and c.get("тип") == "комбінезон"]
+Z = collections.Counter((O._крій_слово(c), O.крій_речі(c)) for c in комб)
+print("2322 комбінезонів у слоті «сукня» %d; (слово речі → крій у геометрії): %s" % (len(комб), dict(sorted(Z.items(), key=str))))
