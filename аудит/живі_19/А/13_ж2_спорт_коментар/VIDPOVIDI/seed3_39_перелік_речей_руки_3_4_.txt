@@ -1,0 +1,43 @@
+── ПРОМПТ (2128 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Oversized cotton tee with a relaxed box cut and dropped shoulders, soft oatmeal color (#e6dfce), 100% organic jersey knit. High-waisted linen-blend wide-leg trousers with a fluid pleat at the front, sandy beige tone (#c9bfa8), lightweight breathable fabric. Minimalist leather slide sandals with an open toe and thin sole, warm tan shade (#d4c5b5), smooth supple calf skin. Delicate gold-fill hoop earrings in medium gauge and a single pearl pendant necklace, offering subtle shine against the matte natural fibers. This outfit works because the loose silhouettes of the tee and trousers allow for maximum comfort and range of motion during morning yoga while maintaining an effortless chic aesthetic. The warm earth tones harmonize beautifully with her skin undertones without feeling too heavy for a casual coffee date later. Removing any outer layers keeps the look breathable and adaptable to shifting temperatures between the studio and the café."}
+
+── ВІДПОВІДЬ (981 симв., 194.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Oversized cotton tee",
+      "details": "relaxed box cut with dropped shoulders, soft texture",
+      "slot": "top",
+      "color_hex": "#e6dfce",
+      "worn": true
+    },
+    {
+      "name": "high-waisted linen-blend wide-leg trousers",
+      "details": "fluid pleat at the front, lightweight breathable fabric",
+      "slot": "bottom",
+      "color_hex": "#c9bfa8",
+      "worn": true
+    },
+    {
+      "name": "leather slide sandals",
+      "details": "open toe with thin sole, smooth supple calf skin",
+      "slot": "shoes",
+      "color_hex": "#d4c5b5",
+      "worn": true
+    },
+    {
+      "name": "gold-fill hoop earrings",
+      "details": "delicate medium gauge design",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "pearl pendant necklace",
+      "details": "single pendant offering subtle shine",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

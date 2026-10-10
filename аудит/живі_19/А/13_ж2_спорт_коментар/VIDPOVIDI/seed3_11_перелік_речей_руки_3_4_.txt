@@ -1,0 +1,29 @@
+── ПРОМПТ (2105 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Soft ribbed long-sleeve top in heather taupe (#d3c4af), relaxed fit, knee-length, stretch cotton blend.\nHigh-waisted wide-leg trousers in stone beige (#e6e2db), straight cut, ankle length, organic cotton twill.\nMinimalist leather sneakers in oat cream (#f5f0e8), low-profile sole, smooth calfskin.\n\nThis ensemble transitions seamlessly from her morning yoga practice to a relaxed coffee chat with a friend, honoring the need for movement-friendly fabric that feels supportive yet breathable during warm outdoor activity. The neutral tonal palette of earthy beiges and soft greys complements her skin tones while maintaining an effortless, everyday aesthetic suitable for both active recovery and social connection. By pairing stretch materials with structured cuts, the outfit ensures comfort without sacrificing a polished look that respects her preference for understated elegance over loud patterns or heavy outer layers."}
+
+── ВІДПОВІДЬ (598 симв., 169.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "ribbed long-sleeve top",
+      "details": "relaxed fit, knee-length, stretch cotton blend",
+      "slot": "top",
+      "color_hex": "#d3c4af",
+      "worn": true
+    },
+    {
+      "name": "wide-leg trousers",
+      "details": "high-waisted, straight cut, ankle length, organic cotton twill",
+      "slot": "bottom",
+      "color_hex": "#e6e2db",
+      "worn": true
+    },
+    {
+      "name": "leather sneakers",
+      "details": "minimalist, low-profile sole, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#f5f0e8",
+      "worn": true
+    }
+  ]
+}

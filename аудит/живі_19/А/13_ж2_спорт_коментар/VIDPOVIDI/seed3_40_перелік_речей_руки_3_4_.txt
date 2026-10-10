@@ -1,0 +1,52 @@
+── ПРОМПТ (2474 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Soft white high-neck tank top with a relaxed, draped silhouette, knee-length hem, creamy ivory color (#FFFFF0), lightweight organic cotton jersey.\nOversized drape-front tunic top with an asymmetrical side slit, mid-thigh length, muted sage green shade (#8FA99A), breathable modal blend fabric.\nWide-leg flowy trousers with a pleated waist and elastic back, ankle-length cut, earthy taupe tone (#C1B3A2), soft recycled polyester crepe material.\n\nMinimalist low-profile yoga sneakers with a flexible sole and padded collar, charcoal gray color (#36454F), sustainable rubber and mesh construction.\nDelicate gold-filled thin hoop earrings and a simple layered chain necklace in warm rose gold tones (#B76E79), lightweight hollow metal design.\n\nThis outfit seamlessly transitions from morning movement to casual socializing, honoring her specific wish for shoes while maintaining comfort throughout the day. The breathable natural fabrics and relaxed silhouettes allow for ease of motion during yoga and effortless style with a coffee companion. Neutral earth tones harmonize with any skin tone and create a grounded, peaceful aesthetic suitable for an early start. Each piece respects her refusal of restrictive clothing by prioritizing flow and adaptability between active and social contexts."}
+
+── ВІДПОВІДЬ (1484 симв., 202.8 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "high-neck tank top",
+        "details": "relaxed, draped silhouette with knee-length hem; lightweight organic cotton jersey",
+        "slot": "top",
+        "color_hex": "#FFFFF0",
+        "worn": true
+      },
+      {
+        "name": "tunic top",
+        "details": "oversized drape-front with asymmetrical side slit and mid-thigh length; breathable modal blend fabric",
+        "slot": "top",
+        "color_hex": "#8FA99A",
+        "worn": true
+      },
+      {
+        "name": "trousers",
+        "details": "wide-leg flowy with pleated waist and elastic back; ankle-length cut; soft recycled polyester crepe material",
+        "slot": "bottom",
+        "color_hex": "#C1B3A2",
+        "worn": true
+      },
+      {
+        "name": "yoga sneakers",
+        "details": "minimalist low-profile with flexible sole and padded collar; sustainable rubber and mesh construction",
+        "slot": "shoes",
+        "color_hex": "#36454F",
+        "worn": true
+      },
+      {
+        "name": "hoop earrings",
+        "details": "delicate gold-filled thin hoops; lightweight hollow metal design",
+        "slot": "earrings",
+        "color_hex": null,
+        "worn": true
+      },
+      {
+        "name": "layered chain necklace",
+        "details": "simple layered chains in warm rose gold tones; lightweight hollow metal design",
+        "slot": "necklace",
+        "color_hex": "#B76E79",
+        "worn": true
+      }
+    ]
+  }
+}
