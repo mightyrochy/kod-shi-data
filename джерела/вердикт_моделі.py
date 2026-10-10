@@ -197,13 +197,19 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         "Choose the outfits you keep by what she wants in «case» — her occasion, «intent», «goal» and her own "
         "words — and so that their ideas («pole») differ; then improve them. Do not choose by how many remarks "
         "an outfit has or how mild they are: an outfit that answers her better stays with its remarks.",
-        "A remark (a finding without «register» «gate») does not by itself drop an outfit or undo a move you "
-        "declared: fix it, or keep the item and say why in «done». A finding without «fix» is information about "
-        "the outfit and asks for no change.",
+        # СТЕЛЯ-РЕМОНТУ (рядок 3640; аудит/ПРОДУКТ.md п.17): «fix it, or keep the item and say why in «done»»
+        # модель читала як «запис на кожне зауваження»: у 47 записаних відповідях ремонту — 942 записи
+        # «done», 56 % символів, і 8 із 8 обривів об стелю 4000 т. — такі; «fixed» стояв і над речами,
+        # яких ремонт не міняв. Зауваження — інформація: міняти річ — лише з вагомою причиною її випадку.
+        "A remark (a finding without «register» «gate») is information about the outfit: it does not by itself "
+        "drop an outfit or undo a move you declared. Change an item for a remark only when that makes the "
+        "outfit answer her case better; a remark you leave as it is needs no entry in «done». A finding "
+        "without «fix» asks for no change.",
         "When «case» has «palette_scheme», she chose that scheme herself: keep its families on the large items "
         "of the outfits that carry them, and do not repair her scheme away into neutrals; give a missing family "
         "a large item from «showcase» where one fits her occasion.",
-        "For every finding with «register» «gate» — an entry in «done» of its outfit: «finding» is its «id».",
+        "«done» of an outfit: an entry for every finding with «register» «gate», and for a remark only when "
+        "you changed an item for it; «finding» is the finding's «id».",
         # ОПИС-1 (рядок 1416, аудит/ПРОДУКТ.md п.4): «fixed» без визначення модель ставила й тоді, коли
         # знахідка лишалась (1 501 «fixed» на 02.10, 112 непідтверджених); міра — суд коду.
         # ПРАВИЛОМ, НЕ ПІДПИСОМ ЛИСТКА (рядок 3240): підпис стояв за переліком («fixed|declined|partly
@@ -211,7 +217,8 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         # останні ремонти рук 1–2: 27 із 64 дій), тож «declined» з ід знахідки губився в тексті.
         "«action» in «done» is one word: fixed — the finding is gone from the outfit by the code's check "
         "(you replaced or removed what raised it); partly — it stays but weaker; declined — you keep it on "
-        "purpose, with «why». When you are not sure it is gone, say partly.",
+        "purpose, with «why». When you are not sure it is gone, say partly. «why» goes with declined only: "
+        "fixed and partly the code checks by fact.",
         "One item of each kind: an item of a kind the outfit already has replaces it; a missing kind is added "
         "without removing other items. An outfit has a dress, a set, or a top and a bottom.",
         _РЯДОК_РІЧ_ДВІЧІ,
@@ -227,7 +234,9 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
     вихід="ОБРАЗИ_V1",
     поля_виходу=dict(_ПОЛЯ_ОБРАЗІВ, **{
         "образи[].ід": "«id» of the «your_outfit» you improved",
-        "образи[].виконано[].знахідка": "«id» of a finding or a blocker of this outfit",
+        "образи[].виконано[].знахідка": "«id» of a «gate» finding of this outfit, or of a remark you changed "
+                                        "an item for",
+        "образи[].виконано[].чому": "only with declined: why you keep it, one sentence",
         # рядок 3160: хід адресує знахідку кодом — речі мало, на ній стоять і чужі знахідки
         "образи[].свідомо[].знахідка": "«id» of the finding of this outfit that this move answers",
     }),
