@@ -1,0 +1,36 @@
+── ПРОМПТ (2223 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "OUTFIT_TEXT:\nSilk slip dress\nflowing drape, midi length, champagne with a subtle pearlescent undertone (#F7E7CE), lightweight duchess satin.\nOvercoat tailored blazer\nstructured shoulders, knee length, midnight blue (#0B1226), wool gabardine blend.\nStrappy heels\npointed toe, ankle height, polished black (#000000), high-quality leather.\nClutch bag\nsmooth finish, rectangular silhouette, gold-tone hardware, soft structured calfskin.\n\nThis ensemble balances the up-scale restaurant setting with a festive, celebration-ready vibe while respecting the warm weather by keeping the outer layer optional and elegant. The champagne silk dress offers a soft, luminous quality that feels appropriate for a holiday event without being overly heavy or restrictive. Adding the midnight blue blazer provides a touch of sophisticated structure should the temperature drop slightly or if a more formal touch is desired, while the black heels ground the look with timeless polish. The gold hardware on the accessories ties the metallic undertones in the fabric together, creating a cohesive and celebratory appearance that fits the occasion perfectly."}
+
+── ВІДПОВІДЬ (816 симв., 208.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk slip dress",
+      "details": "flowing drape, midi length, lightweight duchess satin",
+      "slot": "dress",
+      "color_hex": "#F7E7CE",
+      "worn": true
+    },
+    {
+      "name": "Overcoat tailored blazer",
+      "details": "structured shoulders, knee length, wool gabardine blend",
+      "slot": "outerwear",
+      "color_hex": "#0B1226",
+      "worn": true
+    },
+    {
+      "name": "Strappy heels",
+      "details": "pointed toe, ankle height, high-quality leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Clutch bag",
+      "details": "smooth finish, rectangular silhouette, soft structured calfskin with gold-tone hardware",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

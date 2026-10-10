@@ -1,0 +1,43 @@
+── ПРОМПТ (2062 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald silk slip midi dress with a bias cut for fluid movement, length hitting mid-calf, color #059669, fabric: lustrous silk.\nTan structured blazer with a tailored fit, length ending at the hip bone, color #C19A6B, fabric: linen-blend wool.\nGold strappy stiletto sandals, open-toe with ankle support, color #D4AF37, material: polished metal-finish leather.\nDelicate pearl drop earrings and a matching gold clutch to complete the elegant look.\n\nThis ensemble balances the upscale restaurant setting with a touch of festive warmth suitable for a svyat celebration. The emerald dress offers an elongating silhouette that flatters her proportions without relying on numerical descriptions, while the tan blazer provides necessary coverage if the evening air cools slightly after 20°C but remains ready to be removed if it stays warm. The gold accessories tie together her warm undertones seen in her skin and hair, creating a cohesive and sophisticated appearance for the occasion."}
+
+── ВІДПОВІДЬ (942 симв., 207.5 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Emerald silk slip midi dress",
+      "details": "bias cut for fluid movement, length hitting mid-calf, lustrous silk",
+      "slot": "dress",
+      "color_hex": "#059669",
+      "worn": true
+    },
+    {
+      "name": "Tan structured blazer",
+      "details": "tailored fit, length ending at the hip bone, linen-blend wool",
+      "slot": "outerwear",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "Gold strappy stiletto sandals",
+      "details": "open-toe with ankle support, polished metal-finish leather",
+      "slot": "shoes",
+      "color_hex": "#D4AF37",
+      "worn": true
+    },
+    {
+      "name": "Delicate pearl drop earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Gold clutch",
+      "details": "",
+      "slot": "bag",
+      "color_hex": "#D4AF37",
+      "worn": true
+    }
+  ]
+}
