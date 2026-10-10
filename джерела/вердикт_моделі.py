@@ -13,8 +13,8 @@ import протокол as _ПР
 import ід_правил as _ід_правил
 from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей
 from розбір_відповідей import _словник_речей, _за_номером, СВІДОМИЙ_МНОЖНИК, _свідомі_з_json
-from суд_від_моделі import _сім_я_слота, _множина
-from повнота_образу import _вітрина_ремонту, _код_блокера, ВИБІР as _ВИБІР
+from суд_від_моделі import _сім_я_слота, _множина, розібрати_рядок_блокера as _розібрати_блокер
+from повнота_образу import _вітрина_ремонту, ВИБІР as _ВИБІР
 
 
 # ── `_формат_відповіді` ЗНЕСЕНО (Т-02, 12.09.2026) ───────────────────────────
@@ -194,22 +194,34 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         _ЗП.Поле("outfits_wanted", "how many outfits to return", треба=True),
     ),
     правила=(
-        "Choose the outfits you keep by what she wants in «case» — her occasion, «intent», «goal» and her own "
-        "words — and so that their ideas («pole») differ; then improve them. Do not choose by how many remarks "
+        # РЕМОНТ-1 (рядок 4290; аудит/ПРОДУКТ.md п.17): вибір — окремим кроком відповіді, ДО образів. Доки
+        # він стояв лише цим реченням, qwen3.5-9b ішла вердиктом згори й вертала о1…о5 у 27/27 пар заміру
+        # ГГ-1: що стояло в о6–о10, до неї не доходило (25 з 54 опор загинули саме так). Код порядку
+        # не міняє і за зауваженнями не сортує — порядок вердикта лише названо таким, що нічого не каже.
+        "First choose: in «chosen» name the «outfits_wanted» outfits of «verdict» you keep, and in «why» of "
+        "each say what in «case» it answers — her occasion, «intent», «goal», her own words — so that their "
+        "ideas («pole») differ. Read every outfit of «verdict» before you choose: its place in «verdict» is "
+        "only the order they were put together and says nothing about her. Do not choose by how many remarks "
         "an outfit has or how mild they are: an outfit that answers her better stays with its remarks.",
+        "«outfits» of the answer are exactly the outfits named in «chosen», in that order, each improved.",
         # СТЕЛЯ-РЕМОНТУ (рядок 3640; аудит/ПРОДУКТ.md п.17): «fix it, or keep the item and say why in «done»»
         # модель читала як «запис на кожне зауваження»: у 47 записаних відповідях ремонту — 942 записи
         # «done», 56 % символів, і 8 із 8 обривів об стелю 4000 т. — такі; «fixed» стояв і над речами,
         # яких ремонт не міняв. Зауваження — інформація: міняти річ — лише з вагомою причиною її випадку.
         "A remark (a finding without «register» «gate») is information about the outfit: it does not by itself "
         "drop an outfit or undo a move you declared. Change an item for a remark only when that makes the "
-        "outfit answer her case better; a remark you leave as it is needs no entry in «done». A finding "
-        "without «fix» asks for no change.",
+        "outfit answer her case better; a remark needs no entry in «done». A finding without «fix» asks for "
+        "no change.",
         "When «case» has «palette_scheme», she chose that scheme herself: keep its families on the large items "
         "of the outfits that carry them, and do not repair her scheme away into neutrals; give a missing family "
         "a large item from «showcase» where one fits her occasion.",
-        "«done» of an outfit: an entry for every finding with «register» «gate», and for a remark only when "
-        "you changed an item for it; «finding» is the finding's «id».",
+        # РЕМОНТ-1 (рядок 4291): «and for a remark only when you changed an item for it» qwen3.5-9b читала як
+        # запис на кожне зауваження — у 65 відповідях заміру ГГ-1 3 627 записів «done» над зауваженнями
+        # проти 70 над гейтами, 54 % символів виводу, 36 обривів об стелю 4000 т. Що річ замінено, код
+        # бачить і так (новий суд), а зауваження — інформація, не пункт звіту.
+        "«done» of an outfit: one entry for each finding of this outfit with «register» «gate», and nothing "
+        "else — a remark gets no entry, whether you changed an item for it or not; «finding» is the "
+        "finding's «id». An outfit without «gate» findings has an empty «done».",
         # ОПИС-1 (рядок 1416, аудит/ПРОДУКТ.md п.4): «fixed» без визначення модель ставила й тоді, коли
         # знахідка лишалась (1 501 «fixed» на 02.10, 112 непідтверджених); міра — суд коду.
         # ПРАВИЛОМ, НЕ ПІДПИСОМ ЛИСТКА (рядок 3240): підпис стояв за переліком («fixed|declined|partly
@@ -230,12 +242,17 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
         "«needed» — only for an item that is neither in the outfits nor in «showcase».",
         "An outfit of the answer is «your_outfit» after your work, with the same «id» and with «done»; "
         "«structure», «findings», «keep», «checklist» and «knot» stay out of the answer.",
+        # РЕМОНТ-1 (рядок 4291): правило кінця відповіді складання й опису (рядок 4025) — і тут. Ремонт писав
+        # {"answer": {…}} у 56/65 відповідей і далі переписував дані промпту: «fixes», «set», «showcase»
+        # (16/65 — вітрину з «price», «hex», «L») до стелі виводу.
+        _ЗП.КІНЕЦЬ_ВІДПОВІДІ_EN,
     ),
     вихід="ОБРАЗИ_V1",
     поля_виходу=dict(_ПОЛЯ_ОБРАЗІВ, **{
+        "обрано[].ід": "«id» of an outfit of «verdict» you keep",
+        "обрано[].чому": "what in «case» this outfit answers, a few words",
         "образи[].ід": "«id» of the «your_outfit» you improved",
-        "образи[].виконано[].знахідка": "«id» of a «gate» finding of this outfit, or of a remark you changed "
-                                        "an item for",
+        "образи[].виконано[].знахідка": "«id» of a «gate» finding of this outfit",
         "образи[].виконано[].чому": "only with declined: why you keep it, one sentence",
         # рядок 3160: хід адресує знахідку кодом — речі мало, на ній стоять і чужі знахідки
         "образи[].свідомо[].знахідка": "«id» of the finding of this outfit that this move answers",
@@ -243,18 +260,6 @@ from пакет_моделі import ПОЛЯ_ОБРАЗІВ_EN as _ПОЛЯ_ОБ
     межі=("лише_вхід",),
     мова_промпту="en",
 )
-
-
-def _у_лапках(т):
-    """Усі «…» з рядка по порядку — слоти, які `структура_образу` називає в лапках."""
-    out, i = [], 0
-    while True:
-        a = т.find("«", i)
-        b = т.find("»", a + 1) if a >= 0 else -1
-        if b < 0:
-            return out
-        out.append(т[a + 1:b])
-        i = b + 1
 
 
 # ── СИРИЙ ID КРАМНИЦІ В ТЕКСТІ ЗНАХІДКИ (розбір 3/8, вада 1) ────────────────
@@ -287,7 +292,7 @@ def блокери_структури(рядки, речі=None, ном=None, з
     """Структурні рядки `блокує` → `[{код, речі, суть}]` за `ВЕРДИКТ_V1.структура.блокери`.
 
     `речі` — речі образу з `перевірити_від_моделі` ({id, слот, назва}); для
-    «слот_двічі» адресою стають речі названого слота, для решти адреси нема — образ
+    «слот_двічі» адресою стають речі слотів, названих у рядку-коді, для решти адреси нема — образ
     цілий. Вето людини (K-PC-08) сюди кладе `знахідки_вердикту`, бо його речі лежать
     у знахідці, не в рядку.
 
@@ -300,15 +305,15 @@ def блокери_структури(рядки, речі=None, ном=None, з
     вих = []
     for р in (рядки or []):
         т = str(р or "")
-        код = _код_блокера(т)
+        код, _адреса = _розібрати_блокер(т)
         if not код:
             continue
         адреси = []
         if код == "слот_двічі":
-            слоти = set(_у_лапках(т))
-            # ІМЕНА В ЛАПКАХ — ТЕПЕР МОЖУТЬ БУТИ СІМ'ЄЮ (рядок 47): дві пари
+            слоти = set(_адреса)
+            # СЛОТИ РЯДКА — ТЕПЕР МОЖУТЬ БУТИ СІМ'ЄЮ (рядок 47): дві пари
             # сережок у різних буквальних слотах адресуються обидві, не лише та,
-            # чий літеральний слот збігся з іменем у рядку.
+            # чий літеральний слот збігся зі слотом у рядку.
             адреси = [номер_речі(r.get("id"), ном, r.get("частина_комплекту"))
                       for r in (речі or [])
                       if r.get("слот") in слоти
