@@ -650,6 +650,7 @@ import внутрішня_мова as _ВМ_П
         "of the outfit: the item and why.",
         "When an outfit needs an item «pool» does not have, say so in «needed».",
         РЯДОК_ЛИШЕ_НОМЕР,
+        _ЗП.КІНЕЦЬ_ВІДПОВІДІ_EN,
     ),
     вихід="ОБРАЗИ_V1",
     поля_виходу=dict(ПОЛЯ_ОБРАЗІВ_EN, **{
