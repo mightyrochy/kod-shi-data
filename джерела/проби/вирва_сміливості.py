@@ -14,6 +14,8 @@ import gzip, json, glob, re, math, sys, collections as K
 def дж(с):  # не-JSON (наприклад, виклик language_rewrite з «Text:» після схеми) — не вирва, пропускаємо
     try: return json.loads(с) if с and с.lstrip()[:1] in ("{", "[") else None
     except ValueError: return None
+def розгорт(в):  # нові відповіді — в обгортці `answer` (поруч `needed`/`checklist`): розбираємо внутрішню відповідь
+    return в["answer"] if isinstance(в, dict) and isinstance(в.get("answer"), dict) else в
 def лчх(h):
     c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]; c = [((x + .055) / 1.055) ** 2.4 if x > .04045 else x / 12.92 for x in c]; f = lambda u: u ** (1 / 3) if u > .008856 else 7.787 * u + 16 / 116
     X, Y, Z = f((.4124 * c[0] + .3576 * c[1] + .1805 * c[2]) / .95047), f(.2126 * c[0] + .7152 * c[1] + .0722 * c[2]), f((.0193 * c[0] + .1192 * c[1] + .9505 * c[2]) / 1.08883)
@@ -41,7 +43,7 @@ def зібрати(сп):  # потік викликів → вирви: асе�
 ВИР, ВИГ, СЛ, НЕВ, ЦН = [], [], re.compile(r"satin|lace|velvet|sequin|metallic|glossy|shine|patent|print|floral|embroider|silk|sheen"), [], {}  # вирви; вигадані образи рук 3–4; невідомі номери; цілі слотів схеми по нагодах
 for f in sorted(x for x in glob.glob((ДАНІ or Р + "per_492") + "/*/вердикти.txt.gz") if ФІЛЬТР.search(x.split("/")[-2])):
     for в in json.load(gzip.open(f, "rt"))["прогони"][0]["вердикти"]:
-        н = f.split("/")[-2][:None if ДАНІ else -2]; кл = [(c["крок"], дж(c["запит"]["текст"]), дж(c["відповідь_сира"])) for c in в["етапи"]["виклики"]]
+        н = f.split("/")[-2][:None if ДАНІ else -2]; кл = [(c["крок"], дж(c["запит"]["текст"]), розгорт(дж(c["відповідь_сира"]))) for c in в["етапи"]["виклики"]]
         if str(в["рука"]) in "12": ВИР.append(("Ш" if ДАНІ else "В", н, int(в["рука"]), (зібрати(кл) or [dict(a=None, r=None, c=None)])[0])); НЕВ += [(н, в["рука"], x["підпис"]) for c in в["етапи"]["виклики"] for x in (c.get("розбір_блоків") or {}).get("невідомі_в_образах", [])]
         else: ВИГ.append((н, int(в["рука"]), [(None if i["slot"] in ("earrings", "bracelet", "necklace", "ring", "brooch", "jewelry") else i.get("color_hex"), i["slot"] in ("top", "bottom", "dress", "set", "outerwear"), bool(СЛ.search((i["name"] + i["details"]).lower()))) for i in кл[1][2]["items"]]))
 for т in ([] if ДАНІ else sorted(glob.glob(Р + "zhp_a/*"))):

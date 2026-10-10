@@ -1228,6 +1228,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "outfit",
     "cannot_tell_two_accent_surfaces_match": "so the code cannot tell whether two accent items match exactly "
                                              "in colour",
+    # КОЛІР-ВІКНО-СУД (рядки 3080, 3081): вікно слова по обидва боки межі прийому палітри чи інтересу
+    "cannot_tell_item_off_palette": "so the code cannot tell whether the item's colour lies outside her palette",
+    "cannot_tell_colour_from_eyes": "so the code cannot tell whether the colour comes from the family of her eyes",
+    "cannot_tell_colour_block": "so the code cannot tell how many colour families the big items carry",
+    "cannot_tell_item_carries_interest": "so the code cannot tell whether the item's colour is strong enough "
+                                         "to carry interest",
     # ОПИС-1 (рядок 1254, K-COL-06): одиниці «dE00», «hex», «L*» у визначеннях шар повторював у реченні
     # для неї («розкид близько 11,5 dE00 … за двома виміряними hex»), сторож латиниці (П-3) знімав
     # речення, і питання «код не знає» лишалось без тексту — 9 питань у 8 прогонах 02.10. Зміст той
@@ -2120,6 +2126,16 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "the colour stayed under the coat (values: temperature_c — the "
                                         "temperature)",
     "move_colour_to_hat_scarf_gloves": "move the colour into the hat, scarf or gloves",
+    # рядок 3161а: K-WEA-01 — нижче −8 °C у образі нема ні шапки, ні шарфа
+    "frost_head_neck_uncovered": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay "
+                                 "open, and no outer layer covers them (values: temperature_c — the "
+                                 "temperature)",
+    "add_warm_hat_and_scarf": "add a warm hat and a scarf (wool, cashmere, knit); they also carry the colour",
+    # рядок 3161а: опора стилістці в мороз — шари на торсі й тепло голови та шиї
+    "frost_layers_and_cold_accessories": "hard frost: the layer map asks for this many layers on the torso — "
+                                         "a warm layer under the coat counts — and a warm hat and scarf are "
+                                         "part of the warmth and the main carriers of colour (values: "
+                                         "temperature_c — the temperature, layers — layers the map asks for)",
     # ДОЩ-1 (рядок 1470): K-WEA-01 — дощовий день, а верхнього шару від дощу в образі нема
     "no_rain_layer_on_rainy_day": "the day is rainy, and no outer layer of the look keeps the rain off — a "
                                   "trench, a raincoat, a parka, a puffer or a coat; an umbrella is not "
