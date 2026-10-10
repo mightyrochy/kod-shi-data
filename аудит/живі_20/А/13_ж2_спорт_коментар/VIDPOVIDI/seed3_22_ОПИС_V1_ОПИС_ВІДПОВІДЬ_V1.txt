@@ -1,0 +1,435 @@
+── ПРОМПТ (17174 симв.) ──
+
+
+
+
+
+
+
+
+
+{"version": "1", "task": {"role": "You are the stylist. You describe to her the outfit you chose for her.", "rules": ["Describe only the items of «outfit»: no suggestions to buy or add more, no items it does not contain — no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or she may own it.", "Do not change the outfit yourself. Describe each item as its photo shows it; never compare the photo with the name, the shop's data or «color» in «about_items», «text» or «how_to_wear» (no «the name says …, but the photo …», no «the code»): a clearly different item or colour goes only into «wrong_photos» or «swap».", "Say each thing about an item once, and do not state a quality and then doubt it.", "Talk to her about the items, never about what you were given: no word about photos, frames, what else a frame shows, a photo you could not see, or the name and shop data you went by — the card already shows her the photos and says under an item when it has none.", "Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).", "Every item of «outfit» is your choice: stand behind it. Do not end a doubt with «the choice is yours», «it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a decision to her only about what she asked for herself: her words in «case», an item marked «hers».", "Only when a photo shows that an item is not what this outfit needs — a clearly different colour, another kind of item, or unfit for her occasion — and that matters for this outfit, name that one item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in doubt, leave «swap» out.", "Write the answer object itself: it begins with {\"version\" and ends with the brace that closes it. Do not put it under «answer» or «answer_schema», and write nothing after it — no «answer_schema», «input», «statement_codes» or any other part of «task» or of the data."], "limits": ["Rely only on the input: do not invent what it does not contain.", "Text for her: address her informally, with the familiar singular \"you\", never the polite plural; in plain human words, without item numbers, ids, hex codes or markdown.", "Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.", "Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \"on the scale\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "DESCRIPTION_V1", "answer_schema": {"version": "1", "text": "<prose for her after the items: (1) optional, only when it adds something — how the shoes, the outer layer and the accessories go with the rest, in one or two sentences; (2) why it works — 3–4 sentences, taking from «day», «palette», «makeup» and «missing» only what matters most for this outfit and her occasion>", "how_to_wear": ["<one piece of advice per line, at most three, each changing how the outfit looks or lives through her day>"], "wrong_photos": ["<«n» of an item whose photo shows another item, a clearly different color, a placeholder or a logo; the same item on a person, from another angle, close up or with other clothes in the frame is no reason; when in doubt, leave it out>"], "swap": {"item": "<«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty reason — the usual case>", "why": "colour|kind|occasion — colour — the photo shows a clearly different colour than the code knows; kind — the photo shows another kind of item; occasion — the item on the photo does not suit her occasion", "to": "<only with «swap_spares» in the input: «n» of the spare you choose; leave it out to keep the item>"}, "named": [{"n": "<«n» of the item of «outfit» that «text» or «how_to_wear» names; a thing that is not an item of «outfit» has no «n» — and should not be named at all>", "what": "<every garment, shoe, bag, jewelry or accessory that «text» or «how_to_wear» names — each once, in a few words>"}], "about_items": [{"n": "<«n» of the item of «outfit»: one entry for every item of «outfit», in its order>", "text": "<prose for her about this one item of its «kind»: what it is, cut, length, color in words, fabric, in one or two sentences, as its photo and data show>"}]}, "input": ["\"outfit\" — the chosen outfit: its items with number «n», name and shop, and the shop's data on their color («color» as a code, «shop_color» — the shop's own word when it says more, «hex») — a hint for reading the photo and the colour of an item that has no photo; never a source you cite to her", "\"photos\" — the numbers of this item's photos: every photo stands under its own label «Photo N:» among the blocks placed before this object; under a label with «not delivered» or «not available» there is no image; describe what you see on the photos, not the name; from each photo take only the item of its «kind» — a belt, a bag or jewelry is often shown worn with a blouse or a dress: describe the belt, not the blouse; the other clothes in the frame are not part of the outfit and are not mentioned; never take for an item a photo under another number, and when all of its photos are not delivered, describe it by its name and «color»", "\"kind\" — what the item is, as a code (belt, top, dress, shoes, bag…); «type» — its narrower type when the code knows it; «about_items» describes the item of this «kind» and nothing else from its photo", "\"photo_colour\" — the colour the code sees on this item's photo when it is not the item's «color»: the shop showed another colour of it on the photo; the item is «color»: give it that colour, not the photo's; this is no reason for «wrong_photos» or «swap» — the card already tells her about the photo", "\"idea\" — your caption of this outfit", "\"case\" — her occasion: its fields as codes, her own words as quotes; «formality» is an internal 1–10 band, for you only", "\"day\" — her day as facts; «formality» is the same internal band; in the last part of «text» say how this outfit lives through her day; when something you chose argues with the day (weather, hours on her feet, the place), say in one plain sentence why you still chose it, or what she does about it in the day itself (take the layer off, swap the pair); never hand that decision back to her", "\"your_day_sentence\" — your sentence about her day in this outfit, from the choice; a hint, not ready text", "\"palette\" — her palette; in the third part, in your own words and only where it concerns the items of this outfit: the metal, when the outfit has jewelry or metal details; a colour «farthest» from her only when an item of this outfit carries it (call no other colour farthest from her); a combination she can put together — optional, and only from the items of this outfit, never by adding an item; not as a list", "\"body\" — her figure as the code measured it: height, shape code, zones, and statements — the cuts that sit best on her, where a voluminous outfit takes its anchor, where most conditions meet on her body; in the last part of «text» say in one or two sentences what this outfit does for her figure — which line it draws, where it sets the eye (shoulders, waist, hips, legs, height), with the items that do it; speak of what the outfit does, never of what her body lacks or what should be hidden; when an item of the outfit works against these statements, say so gently and say why you chose it anyway or what to do with it; never name the shape code, a body type or a number", "\"shape\" — a routing code of her figure, not a verdict: A — hips wider than shoulders; V — shoulders wider than hips; X — a marked waist; H — a straight contour without a marked waist; HX — a waist on the edge of being marked; O — the waist nearly as wide as the hips: lead the eye along a vertical, up to the face and down to the legs, the middle quiet", "\"ways_to_wear\" — ways the items can be worn: each statement is one way — its place, and its effect when the code knows one; in «how_to_wear» name a way only when it changes something for this outfit — its effect matters here (a line across the torso that already has many, a hem it lands on); a way that changes nothing is left out", "\"your_declared\" — numbers of the items you placed deliberately against a condition; in «how_to_wear» say what to do with them", "\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, or {code: values}; codes are defined in \"statement_codes\""], "statement_codes": {"pair_wider_zone": "one half of her body is wider than the other: volume or structure on the narrower half, a clean line on the wider one; clinging on the narrower half does not make up for the difference (values: wider — top or bottom; narrower; difference_pct — the difference of girths, %)", "volume_anchor": "a voluminous outfit keeps one anchor where the body shows: the waist (belt, wrap, tuck) or the ankle (a tapered or cropped bottom); volume without an anchor reads as \"the body shows nowhere\"", "cuts_best_on_her": "the cuts of this kind that score highest on her body, equal among themselves (values: kind; cuts; score — 0 to 1; weaker — how many other cuts score lower: weaker, not banned)", "body_knot": "most conditions meet at these zones of her body; conditions shared by both zones need ONE item for both, since a fix on one zone moves the other; the rest on the first zone is fixed separately (values: zones — per zone: conditions, tension 0 to 1; shared, own — condition codes, defined here too)", "pair_balance": "condition: the balance of her top and bottom halves — volume or structure on the narrower half, a clean line on the wider one", "one_line": "the contour leaves the body in ONE place below the shoulders: a voluminous top together with a voluminous bottom gives two lines, and neither reads", "top_cut": "condition: the cut of the top item — the cuts that score highest on her body", "place_near_face_field": "worn this way, the item sits in the field near her face and brings its colour there (values: place — where it is worn)", "place_above_face": "worn this way, the item sits above her face (values: place — where it is worn)", "place_top_layer_asymmetry": "worn this way, the item becomes a top layer and gives asymmetry (values: place — where it is worn)", "place_belt_preconditions": "worn this way, the item works as a belt, and the conditions of a belt apply (values: place — where it is worn)", "place_on_accessory_off_face": "worn this way, it is an accessory on an accessory and does not touch the field near her face (values: place — where it is worn)", "place_wrist_accent_budget": "worn this way, it takes the wrist's place in the accent budget: it competes with bracelets, a scarf on the wrist and rings of the same hand (values: place — where it is worn)", "place_becomes_garment": "worn this way, the item becomes a garment: its area and its kind change (values: place — where it is worn)", "scarf_size_unknown": "the card does not name the scarf's size, so the code does not know which knots and ways of wearing are possible (values: item — item name)"}}, "outfit": {"id": "o1", "items": [{"n": "#28·26", "name": "Подовжена сорочка на кнопках", "kind": "top", "type": "shirt", "shop": "ricamare.com.ua", "color": "emerald", "photo_colour": "blue", "photos": [1, 2]}, {"n": "#99·12", "name": "Лляні палаццо капучино", "kind": "bottom", "type": "trousers", "shop": "feelyou.com.ua", "shop_color": "капучіно", "hex": "#ae9589", "photos": [3, 4]}, {"n": "#356·03", "name": "Сумка жіноча, ATTICO, шкіра, колір пудра", "kind": "bag", "type": "bag_generic", "shop": "attico.ua", "color": "pink", "photos": [5, 6]}, {"n": "#72·33", "name": "Зелені лаковані балетки зі шкіри", "kind": "shoes", "type": "ballet_flats", "shop": "theoriginals.com.ua", "color": "green", "photos": [7]}, {"n": "#424·22", "name": "В’язаний шарф унісекс з кашеміром молочний", "kind": "scarf", "type": "scarf_generic", "shop": "morandi.ua", "color": "milky", "hex": "#eee4d3", "photos": [8, 9]}]}, "idea": "Yoga to Coffee: Earthy comfort with ballet flats and a scarf", "case": {"event": "йога зранку, потім кава з подругою", "intent": "conventional", "occasion": "everyday", "intent_source": "default"}, "day": {"place": "cafe", "part_of_day": "morning", "light": "daylight", "unknown": ["temperature_c"]}, "your_day_sentence": "Perfect for yoga's movement and the cafe's quiet light. The linen shirt balances the relaxed joggers, while the pink bag adds a pop of colour.", "palette": {"metal": "gold_and_silver", "combinations": [{"technique": "neutral_plus_accent", "colors": ["graphite #585346", "white #d1d1d1", "olive #6f753e"]}, {"technique": "neutral_plus_accent", "colors": ["graphite #585346", "white #d1d1d1", "green #a8b54e"]}, {"technique": "neutral_plus_accent", "colors": ["graphite #585346", "white #d1d1d1", "green #69780c"]}], "techniques": [{"technique": "echo_features", "gist": "repeat her eye colour as an accent, her hair as a neutral, her skin as her own white"}, {"technique": "tone_on_tone", "gist": "one colour family, 2–3 visible steps of lightness, different textures"}, {"technique": "analogous", "gist": "neighbouring families of the palette with a step of lightness between them"}, {"technique": "muted_complementary", "gist": "a family plus its complement; one of the two muted or small"}, {"technique": "neutral_plus_accent", "gist": "her neutrals plus one accent; the family of her eyes comes first"}, {"technique": "color_block", "gist": "2–3 families in equal areas"}, {"technique": "contrast_as_carrier", "gist": "a colour outside the palette can be worn when the outfit's contrast matches hers"}, {"technique": "placement", "gist": "palette colours near the face; colours outside it in kinds far from the face (bottom, shoes)"}, {"technique": "print", "gist": "a print fits when its dominant colour is in the palette and its inner contrast is close to hers"}, {"technique": "metal", "gist": "metal by colour temperature: warm — gold, cool — silver, neutral — both"}], "axes": {"sides": {"value": "mid_lightness", "chroma": "mid_chroma", "hue": "withheld"}, "positions": {"value": 0.12, "chroma": -0.08, "hue": 0.0}, "source_hue": "withheld"}, "window": {"lightness": [13, 83], "chroma": [9, 54]}, "accent_families": [{"family": "green", "colors": ["olive", "mint", "green", "pine_green", "turquoise"]}, {"family": "yellow", "colors": ["camel", "olive", "yellow", "golden", "green", "mustard"]}, {"family": "eyes", "colors": ["olive", "green", "pine_green"]}, {"family": "blue", "colors": ["light_blue", "petrol", "turquoise", "navy", "blue"]}, {"family": "orange", "colors": ["brown", "peach", "chocolate", "terracotta", "orange"]}, {"family": "violet", "colors": ["purple", "blue", "lilac", "plum"]}, {"family": "red", "colors": ["brick", "peach", "raspberry", "pink", "burgundy", "coral"]}, {"family": "pink", "colors": ["peach", "pink", "coral"]}], "neutral_axes": [{"name": "grey", "hex": "#838383", "temperature": "achromatic", "lightness": 55}, {"name": "graphite", "hex": "#645e52", "temperature": "warm", "lightness": 40}, {"name": "graphite", "hex": "#585346", "temperature": "warm", "lightness": 35}, {"name": "white", "hex": "#d1d1d1", "temperature": "achromatic", "lightness": 84}, {"name": "silvery", "hex": "#c1baac", "temperature": "warm", "lightness": 76}], "wardrobe_season": {"autumn_winter": ["graphite", "olive", "pine_green", "green", "mustard", "petrol"], "spring_summer": ["white", "silvery", "camel", "mint", "light_blue", "green"]}, "calibration": "t3_uncalibrated_filter_not_promise"}, "body": {"height_cm": 168, "shape": "X", "zones": {"top_vs_bottom": 0.01, "waist_defined": true}, "statements": [{"pair_wider_zone": {"wider": "bottom", "narrower": "top", "difference_pct": 1}}, "volume_anchor", {"cuts_best_on_her": {"kind": "top", "cuts": ["belted", "wrap", "peplum", "fitted"], "score": 1.0, "weaker": 3}}, {"cuts_best_on_her": {"kind": "bottom", "cuts": ["straight", "tapered", "wide", "culottes", "a-line", "full"], "score": 1.0, "weaker": 5}}, {"body_knot": {"zones": [{"zone": "shoulders", "conditions": 3, "tension": 0.52}, {"zone": "hips", "conditions": 3, "tension": 0.52}], "shared": ["pair_balance", "one_line"], "own": ["top_cut"]}}]}, "ways_to_wear": [{"item": "В’язаний шарф унісекс з кашеміром молочний", "statements": [{"place_near_face_field": {"place": "neck"}}, {"place_above_face": {"place": "hair"}}, {"place_top_layer_asymmetry": {"place": "shoulders"}}, {"place_belt_preconditions": {"place": "waist"}}, {"place_on_accessory_off_face": {"place": "bag_handle"}}, {"place_wrist_accent_budget": {"place": "wrist"}}, {"place_becomes_garment": {"place": "as_top"}}, {"scarf_size_unknown": {"item": {"free_text": "В’язаний шарф унісекс з кашеміром молочний", "lang": "uk"}}}]}], "your_declared": ["#28·26"]}
+
+── ВІДПОВІДЬ (10379 симв., 57.9 с, HTTP 200) ──
+{
+  "version": "1",
+  "text": "This look starts with an emerald green shirt, tied loosely at the waist to define your figure, paired with high-waisted capuchino-colored trousers that flow straight down. The outfit is anchored by a soft pink shoulder bag and finished with glossy green ballet flats. A milky white scarf adds a cozy layer that contrasts beautifully with the deeper tones of the top.",
+  "how_to_wear": [
+    "Tie the shirt in a knot at the hips to accentuate your waistline without adding bulk.",
+    "Wrap the knitted scarf around your neck or leave it draped over your shoulders for a relaxed, effortless feel."
+  ],
+  "wrong_photos": [],
+  "swap": {
+    "item": "",
+    "why": "",
+    "to": ""
+  },
+  "named": [
+    {
+      "n": "#28·26",
+      "what": "emerald green shirt, belted at the waist"
+    },
+    {
+      "n": "#99·12",
+      "what": "capuchino linen trousers, high-waisted and wide-legged"
+    },
+    {
+      "n": "#356·03",
+      "what": "pink leather shoulder bag with a long strap"
+    },
+    {
+      "n": "#72·33",
+      "what": "green patent leather ballet flats with a buckle detail"
+    },
+    {
+      "n": "#424·22",
+      "what": "milky white ribbed knit scarf"
+    }
+  ],
+  "about_items": [
+    {
+      "n": "#28·26",
+      "text": "A relaxed-fit button-down shirt in a rich emerald green hue, styled with the bottom hem tied into a knot to create a cinched waistline. The fabric appears soft and drapes fluidly, offering comfort while maintaining structure."
+    },
+    {
+      "n": "#99·12",
+      "text": "High-waisted trousers in a warm capuchino shade made from lightweight linen fabric. They feature a straight, wide-leg cut that flows comfortably from the high waist down to the ankle, creating a clean vertical line."
+    },
+    {
+      "n": "#356·03",
+      "text": "A sleek, minimalist shoulder bag in a delicate pastel pink tone. Crafted from smooth leather with a curved silhouette and a slender strap designed to rest easily on the shoulder or across the body."
+    },
+    {
+      "n": "#72·33",
+      "text": "Classic ballet flats made from glossy green patent leather. They feature a low, rounded toe box and are accented by a small metallic buckle detail at the front vamp, adding a touch of refinement to the silhouette."
+    },
+    {
+      "n": "#424·22",
+      "text": "A substantial, ribbed knit scarf in an off-white milky shade. The thick, textured fabric provides warmth and softness, with a classic rectangular shape that drapes elegantly around the neck or shoulders."
+    }
+  ],
+  "idea": "Yoga to Coffee: Earthy comfort with ballet flats and a scarf",
+  "case": {
+    "event": "йога зранку, потім кава з подругою",
+    "intent": "conventional",
+    "occasion": "everyday",
+    "intent_source": "default"
+  },
+  "day": {
+    "place": "cafe",
+    "part_of_day": "morning",
+    "light": "daylight",
+    "unknown": [
+      "temperature_c"
+    ]
+  },
+  "your_day_sentence": "Perfect for yoga's movement and the cafe's quiet light. The linen shirt balances the relaxed joggers, while the pink bag adds a pop of colour.",
+  "palette": {
+    "metal": "gold_and_silver",
+    "combinations": [
+      {
+        "technique": "neutral_plus_accent",
+        "colors": [
+          "graphite #585346",
+          "white #d1d1d1",
+          "olive #6f753e"
+        ]
+      },
+      {
+        "technique": "neutral_plus_accent",
+        "colors": [
+          "graphite #585346",
+          "white #d1d1d1",
+          "green #a8b54e"
+        ]
+      },
+      {
+        "technique": "neutral_plus_accent",
+        "colors": [
+          "graphite #585346",
+          "white #d1d1d1",
+          "green #69780c"
+        ]
+      }
+    ],
+    "techniques": [
+      {
+        "technique": "echo_features",
+        "gist": "repeat her eye colour as an accent, her hair as a neutral, her skin as her own white"
+      },
+      {
+        "technique": "tone_on_tone",
+        "gist": "one colour family, 2–3 visible steps of lightness, different textures"
+      },
+      {
+        "technique": "analogous",
+        "gist": "neighbouring families of the palette with a step of lightness between them"
+      },
+      {
+        "technique": "muted_complementary",
+        "gist": "a family plus its complement; one of the two muted or small"
+      },
+      {
+        "technique": "neutral_plus_accent",
+        "gist": "her neutrals plus one accent; the family of her eyes comes first"
+      },
+      {
+        "technique": "color_block",
+        "gist": "2–3 families in equal areas"
+      },
+      {
+        "technique": "contrast_as_carrier",
+        "gist": "a colour outside the palette can be worn when the outfit's contrast matches hers"
+      },
+      {
+        "technique": "placement",
+        "gist": "palette colours near the face; colours outside it in kinds far from the face (bottom, shoes)"
+      },
+      {
+        "technique": "print",
+        "gist": "a print fits when its dominant colour is in the palette and its inner contrast is close to hers"
+      },
+      {
+        "technique": "metal",
+        "gist": "metal by colour temperature: warm — gold, cool — silver, neutral — both"
+      }
+    ],
+    "axes": {
+      "sides": {
+        "value": "mid_lightness",
+        "chroma": "mid_chroma",
+        "hue": "withheld"
+      },
+      "positions": {
+        "value": 0.12,
+        "chroma": -0.08,
+        "hue": 0.0
+      },
+      "source_hue": "withheld"
+    },
+    "window": {
+      "lightness": [
+        13,
+        83
+      ],
+      "chroma": [
+        9,
+        54
+      ]
+    },
+    "accent_families": [
+      {
+        "family": "green",
+        "colors": [
+          "olive",
+          "mint",
+          "green",
+          "pine_green",
+          "turquoise"
+        ]
+      },
+      {
+        "family": "yellow",
+        "colors": [
+          "camel",
+          "olive",
+          "yellow",
+          "golden",
+          "green",
+          "mustard"
+        ]
+      },
+      {
+        "family": "eyes",
+        "colors": [
+          "olive",
+          "green",
+          "pine_green"
+        ]
+      },
+      {
+        "family": "blue",
+        "colors": [
+          "light_blue",
+          "petrol",
+          "turquoise",
+          "navy",
+          "blue"
+        ]
+      },
+      {
+        "family": "orange",
+        "colors": [
+          "brown",
+          "peach",
+          "chocolate",
+          "terracotta",
+          "orange"
+        ]
+      },
+      {
+        "family": "violet",
+        "colors": [
+          "purple",
+          "blue",
+          "lilac",
+          "plum"
+        ]
+      },
+      {
+        "family": "red",
+        "colors": [
+          "brick",
+          "peach",
+          "raspberry",
+          "pink",
+          "burgundy",
+          "coral"
+        ]
+      },
+      {
+        "family": "pink",
+        "colors": [
+          "peach",
+          "pink",
+          "coral"
+        ]
+      }
+    ],
+    "neutral_axes": [
+      {
+        "name": "grey",
+        "hex": "#838383",
+        "temperature": "achromatic",
+        "lightness": 55
+      },
+      {
+        "name": "graphite",
+        "hex": "#645e52",
+        "temperature": "warm",
+        "lightness": 40
+      },
+      {
+        "name": "graphite",
+        "hex": "#585346",
+        "temperature": "warm",
+        "lightness": 35
+      },
+      {
+        "name": "white",
+        "hex": "#d1d1d1",
+        "temperature": "achromatic",
+        "lightness": 84
+      },
+      {
+        "name": "silvery",
+        "hex": "#c1baac",
+        "temperature": "warm",
+        "lightness": 76
+      }
+    ],
+    "wardrobe_season": {
+      "autumn_winter": [
+        "graphite",
+        "olive",
+        "pine_green",
+        "green",
+        "mustard",
+        "petrol"
+      ],
+      "spring_summer": [
+        "white",
+        "silvery",
+        "camel",
+        "mint",
+        "light_blue",
+        "green"
+      ]
+    },
+    "calibration": "t3_uncalibrated_filter_not_promise"
+  },
+  "body": {
+    "height_cm": 168,
+    "shape": "X",
+    "zones": {
+      "top_vs_bottom": 0.01,
+      "waist_defined": true
+    },
+    "statements": [
+      {
+        "pair_wider_zone": {
+          "wider": "bottom",
+          "narrower": "top",
+          "difference_pct": 1
+        }
+      },
+      {
+        "volume_anchor": null
+      },
+      {
+        "cuts_best_on_her": {
+          "kind": "top",
+          "cuts": [
+            "belted",
+            "wrap",
+            "peplum",
+            "fitted"
+          ],
+          "score": 1.0,
+          "weaker": 3
+        }
+      },
+      {
+        "cuts_best_on_her": {
+          "kind": "bottom",
+          "cuts": [
+            "straight",
+            "tapered",
+            "wide",
+            "culottes",
+            "a-line",
+            "full"
+          ],
+          "score": 1.0,
+          "weaker": 5
+        }
+      },
+      {
+        "body_knot": {
+          "zones": [
+            {
+              "zone": "shoulders",
+              "conditions": 3,
+              "tension": 0.52
+            },
+            {
+              "zone": "hips",
+              "conditions": 3,
+              "tension": 0.52
+            }
+          ],
+          "shared": [
+            "pair_balance",
+            "one_line"
+          ],
+          "own": [
+            "top_cut"
+          ]
+        }
+      }
+    ]
+  },
+  "ways_to_wear": [
+    {
+      "item": "В’язаний шарф унісекс з кашеміром молочний",
+      "statements": [
+        {
+          "place_near_face_field": {
+            "place": "neck"
+          }
+        },
+        {
+          "place_above_face": {
+            "place": "hair"
+          }
+        },
+        {
+          "place_top_layer_asymmetry": {
+            "place": "shoulders"
+          }
+        },
+        {
+          "place_belt_preconditions": {
+            "place": "waist"
+          }
+        },
+        {
+          "place_on_accessory_off_face": {
+            "place": "bag_handle"
+          }
+        },
+        {
+          "place_wrist_accent_budget": {
+            "place": "wrist"
+          }
+        },
+        {
+          "place_becomes_garment": {
+            "place": "as_top"
+          }
+        },
+        {
+          "scarf_size_unknown": {
+            "item": {
+              "free_text": "В’язаний шарф унісекс з кашеміром молочний",
+              "lang": "uk"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "your_declared": [
+    "#28·26"
+  ]
+}

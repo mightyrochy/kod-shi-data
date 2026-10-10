@@ -1,0 +1,29 @@
+── ПРОМПТ (1837 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A lightweight ribbed tank dress in soft sage green, flowy silhouette at mid-thigh length, 100% breathable modal fabric.\nMinimalist woven leather sandals in warm tan, narrow strap across the toe, smooth finish.\nSmall structured crossbody bag in natural woven texture, adjustable shoulder strap.\nThis ensemble transitions seamlessly from her morning yoga session to an afternoon coffee meet-up with a friend. The flowy dress offers comfort and freedom of movement needed for exercise while maintaining a polished look for the cafe setting. The neutral earth tones of sage green and tan create a calming, cohesive palette that feels effortless yet intentional."}
+
+── ВІДПОВІДЬ (609 симв., 116.1 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "tank dress",
+      "details": "lightweight ribbed flowy silhouette at mid-thigh length",
+      "slot": "dress",
+      "color_hex": "#8eb091",
+      "worn": true
+    },
+    {
+      "name": "woven leather sandals",
+      "details": "minimalist narrow strap across the toe smooth finish",
+      "slot": "shoes",
+      "color_hex": "#d2b48c",
+      "worn": true
+    },
+    {
+      "name": "crossbody bag",
+      "details": "small structured natural woven texture with adjustable shoulder strap",
+      "slot": "bag",
+      "color_hex": "#eaddcf",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+── ПРОМПТ (2258 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Flowing linen tunic, relaxed fit reaching mid-thigh, soft oatmeal beige (#E0DCC3), breathable woven fabric.\nWide-leg tailored pants with side slits at the hem, ankle length, warm sand color (#C6B89A), lightweight cotton blend.\nMinimalist leather sandals, flat sole for stability during stretching and walking, muted olive green (#6B705C), supple nubuck material.\n\nThis ensemble prioritizes comfort and ease for a morning yoga session followed by coffee, ensuring movement is unrestricted while maintaining a polished look for the cafe setting. The linen tunic provides gentle coverage that warms up slightly with activity or breeze, while the wide-leg pants allow free flow without clinging to the body during poses. Flat sandals respect her specific refusal of heels and any shoe prints, offering a grounded foundation for both stretching on the mat and navigating uneven pavement. The natural earth tones in beige, sand, and olive create a harmonious, calming palette that aligns perfectly with the mindful nature of yoga and the relaxed atmosphere of a morning café meeting."}
+
+── ВІДПОВІДЬ (626 симв., 71.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Linen Tunic",
+      "details": "Relaxed fit flowing tunic reaching mid-thigh, breathable woven fabric",
+      "slot": "top",
+      "color_hex": "#E0DCC3",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg Pants",
+      "details": "Tailored pants with side slits at hem, ankle length, lightweight cotton blend",
+      "slot": "bottom",
+      "color_hex": "#C6B89A",
+      "worn": true
+    },
+    {
+      "name": "Leather Sandals",
+      "details": "Flat sole minimalist sandals made of supple nubuck",
+      "slot": "shoes",
+      "color_hex": "#6B705C",
+      "worn": true
+    }
+  ]
+}

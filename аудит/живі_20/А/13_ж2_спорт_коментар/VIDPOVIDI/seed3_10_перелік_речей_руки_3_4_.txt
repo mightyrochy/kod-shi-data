@@ -1,0 +1,43 @@
+── ПРОМПТ (2222 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Woven tunic top in soft heather grey (#808080) with a relaxed boxy cut and falling just above the hips. High-waisted wide-leg trousers in warm sand beige (#d2b48c) with a straight leg that hits mid-calf for ease of movement during yoga. White canvas slip-on sneakers with a minimal profile to transition seamlessly from floor to floor without breaking in. Layered gold vermeil hoop earrings sized at 15mm to add subtle shine to her hairline and eye color. A crossbody bag in taupe nubuck (#8a7f73) that holds her phone, keys, and coffee cup securely. This outfit works because the neutral tonal palette reflects her warm skin and hair tones while maintaining comfort for morning practice. The loose yet structured silhouettes allow full range of motion during yoga poses without riding up or restricting movement. Transitioning to a cafe meeting is effortless as the polished slip-ons and refined textures elevate the look beyond sportswear. The minimal jewelry honors her wish for understated elegance without overwhelming her natural features."}
+
+── ВІДПОВІДЬ (979 симв., 37.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Woven tunic top",
+      "details": "relaxed boxy cut falling just above the hips",
+      "slot": "top",
+      "color_hex": "#808080",
+      "worn": true
+    },
+    {
+      "name": "High-waisted wide-leg trousers",
+      "details": "straight leg hitting mid-calf for ease of movement",
+      "slot": "bottom",
+      "color_hex": "#d2b48c",
+      "worn": true
+    },
+    {
+      "name": "White canvas slip-on sneakers",
+      "details": "minimal profile designed to transition seamlessly without breaking in",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Layered gold vermeil hoop earrings",
+      "details": "sized at 15mm",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Crossbody bag",
+      "details": "taupe nubuck material holding phone and keys securely",
+      "slot": "bag",
+      "color_hex": "#8a7f73",
+      "worn": true
+    }
+  ]
+}
