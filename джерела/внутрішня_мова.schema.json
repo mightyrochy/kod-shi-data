@@ -50,6 +50,11 @@
       "bracelet",
       "ring",
       "glasses",
+      "gloves",
+      "watch",
+      "swimwear",
+      "underwear",
+      "accessory",
       "unknown"
      ]
     },
@@ -356,6 +361,11 @@
       "bracelet",
       "ring",
       "glasses",
+      "gloves",
+      "watch",
+      "swimwear",
+      "underwear",
+      "accessory",
       "unknown"
      ]
     },
@@ -1624,6 +1634,11 @@
        "bracelet",
        "ring",
        "glasses",
+       "gloves",
+       "watch",
+       "swimwear",
+       "underwear",
+       "accessory",
        "unknown"
       ]
      }
@@ -1672,6 +1687,125 @@
        "item": {
         "$ref": "#/$defs/free_text",
         "description": "назва її речі"
+       },
+       "slot": {
+        "description": "слот її речі з фото",
+        "enum": [
+         "top",
+         "bottom",
+         "dress",
+         "set",
+         "outerwear",
+         "shoes",
+         "bag",
+         "scarf",
+         "headwear",
+         "belt",
+         "tights",
+         "socks",
+         "jewelry",
+         "earrings",
+         "collar_necklace",
+         "necklace",
+         "brooch",
+         "bracelet",
+         "ring",
+         "glasses",
+         "gloves",
+         "watch",
+         "swimwear",
+         "underwear",
+         "accessory",
+         "unknown"
+        ]
+       },
+       "item_type": {
+        "description": "вид її речі з фото",
+        "enum": [
+         "evening_dress",
+         "cocktail_dress",
+         "suit",
+         "sheath_dress",
+         "sundress",
+         "blazer",
+         "over_knee_boots",
+         "chelsea_boots",
+         "ugg_boots",
+         "ballet_flats",
+         "mules",
+         "espadrilles",
+         "pumps",
+         "dress_shoes",
+         "moccasins",
+         "loafers",
+         "sneakers",
+         "plimsolls",
+         "ankle_boots",
+         "boots",
+         "heeled_sandals",
+         "sandals",
+         "clutch",
+         "backpack",
+         "tote",
+         "baguette_bag",
+         "hobo_bag",
+         "crossbody_bag",
+         "bucket_bag",
+         "belt_bag",
+         "briefcase",
+         "saddle_bag",
+         "hoodie",
+         "sportswear",
+         "loungewear",
+         "leggings",
+         "jeans",
+         "t_shirt",
+         "shirt",
+         "blouse",
+         "knitwear",
+         "cardigan",
+         "sweater",
+         "shorts",
+         "jumpsuit",
+         "skirt",
+         "trousers",
+         "coat",
+         "trench_coat",
+         "jacket",
+         "vest",
+         "top_garment",
+         "stole",
+         "kerchief",
+         "twilly",
+         "snood",
+         "shawl",
+         "bactus_scarf",
+         "ring",
+         "headband",
+         "bow",
+         "hair_clip",
+         "hair_tie",
+         "scarf_generic",
+         "jewelry_generic",
+         "bag_generic",
+         "dress_generic",
+         "two_piece_set",
+         "casual_suit",
+         "bodysuit",
+         "longsleeve",
+         "half_coat",
+         "down_jacket",
+         "fur_coat",
+         "sheepskin_coat",
+         "parka",
+         "raincoat",
+         "rain_cape",
+         "windbreaker",
+         "anorak",
+         "bomber",
+         "poncho",
+         "unknown"
+        ]
        },
        "verdict": {
         "$ref": "#/$defs/screen_message"
@@ -2090,7 +2224,7 @@
        "description": "рядок на картці образу про те, чого в ньому нема"
       },
       {
-       "const": "card_added_by_code",
+       "const": "card_added_by_selection",
        "description": "рядок на картці образу про те, що в ньому зробив ДОБІР, а не стилістка: речі, докладені в порожні місця, і речі, зняті або замінені, бо з ними образ не проходив перевірку (ярус 4)"
       },
       {
@@ -2098,7 +2232,7 @@
        "description": "рядок на картці образу: стилістка, побачивши фото речей, замінила одну річ іншою того самого роду з її добору — що замінила і чому"
       },
       {
-       "const": "card_code_unknown",
+       "const": "card_unchecked",
        "description": "рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю»"
       },
       {
@@ -2297,7 +2431,7 @@
           "description": "how many colour families the scheme holds at once (values: families — a number)"
          },
          {
-          "const": "code_does_not_advise_here",
+          "const": "stylist_does_not_advise_here",
           "description": "for this outing the stylist does not advise it by itself"
          },
          {
@@ -2313,11 +2447,11 @@
           "description": "the stylist chose this outfit's palette scheme for her (values: scheme — the scheme's name)"
          },
          {
-          "const": "scheme_taken_by_code",
+          "const": "scheme_taken_by_default",
           "description": "this outfit's palette scheme was taken by default; she did not choose it (values: scheme — the scheme's name)"
          },
          {
-          "const": "scheme_not_in_code_substituted",
+          "const": "scheme_not_in_set_substituted",
           "description": "the named scheme is not in today's set, so the outfit was built by another one (values: asked — the one she asked for, given — the one it was built by)"
          },
          {
@@ -2693,15 +2827,15 @@
           "description": "the catalogue has no needed item for this case, so the outfit stays incomplete; a gap in the catalogue, not in the display (values: missing — code of what is missing)"
          },
          {
-          "const": "code_added_to_empty_slots",
-          "description": "the stylist left these places of the outfit empty and the code filled them; the outfit is not ready without them (values: slots — slot codes)"
+          "const": "selection_filled_empty_slots",
+          "description": "the stylist left these places of the outfit empty and the selection filled them with items from the catalogue; the outfit is not ready without them (values: slots — slot codes)"
          },
          {
           "const": "weather_needs_outerwear",
           "description": "this weather cannot be met without a coat or a warm jacket (values: temperature_c — the degrees she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; precipitation — the code of wet precipitation when there is any)"
          },
          {
-          "const": "item_added_by_code",
+          "const": "item_added_by_selection",
           "description": "this item was picked by the selection, not by the stylist"
          },
          {
@@ -2753,11 +2887,11 @@
           "description": "on her skin this is already a statement, not a nude: too much white pigment"
          },
          {
-          "const": "code_removed_item_from_stylist_look",
+          "const": "selection_removed_item_from_stylist_look",
           "description": "the named item was removed from the stylist's outfit (values: item — the item's name)"
          },
          {
-          "const": "code_swapped_item_from_stylist_look",
+          "const": "selection_swapped_item_from_stylist_look",
           "description": "the named item was replaced with another one from the same selection (values: was — what it was, now — what it is now)"
          },
          {
@@ -2765,7 +2899,7 @@
           "description": "after seeing the item photos the stylist replaced one item with another of the same kind from her selection; the code checked the outfit again (values: was — the item she took out, now — the item in its place, both as the shop names them: name each in a few words of your own — its kind and its colour — never quote the shop's name; reason — what the photo of «was» showed: colour — its colour there is clearly not the one the shop named (say that it is the colour that differs), kind — it is another kind of item, occasion — it does not suit her occasion)"
          },
          {
-          "const": "code_removed_this_layer",
+          "const": "selection_removed_this_layer",
           "description": "the layer named above is exactly the one removed from the stylist's outfit"
          },
          {
@@ -3614,7 +3748,7 @@
          },
          {
           "const": "set_composition_unknown",
-          "description": "a set together with a separate top: the code does not know whether the set's upper half is a layer (jacket, blazer, vest) worn over a top or a top itself, so it does not call this a doubling (values: field — the catalogue-parse field that would tell)"
+          "description": "a set together with a separate top: the code does not know whether the set's upper half is a layer (jacket, blazer, vest) worn over a top or a top itself, so it does not call this a doubling"
          },
          {
           "const": "no_shoes",
@@ -3679,6 +3813,18 @@
          {
           "const": "colour_step_below_min",
           "description": "the lightness step between the outfit's colours is below the threshold (values: step_min — the step threshold in L*; on_windows — true when the judgement rests on the windows of colour words, not on a measurement)"
+         },
+         {
+          "const": "one_lightness_level_reads_flat",
+          "description": "all the outfit's items sit on one level of lightness, so the outfit reads flat (values: spread — the L* range inside that level; step_min — the step threshold in L*)"
+         },
+         {
+          "const": "add_second_lightness_step",
+          "description": "add a second step of lightness: shoes, bag or a layer at least this far from the outfit's mass (values: step — ΔL* from the mass)"
+         },
+         {
+          "const": "or_lean_on_texture_contrast",
+          "description": "or lean on texture contrast: the items carry different texture labels, and whether the difference is visible the code does not measure (values: textures — how many different labels)"
          },
          {
           "const": "more_than_one_loud_colour",
@@ -3755,6 +3901,10 @@
          {
           "const": "accent_orphan",
           "description": "the accent colour stands in one slot only and nowhere else: the eye finds no intention (values: colour — the code of the colour or family, hue — the hue in degrees, slot — slot code; on_windows — true when the judgement rests on the windows of colour words, not on a measurement)"
+         },
+         {
+          "const": "accent_echoed",
+          "description": "the accent colour is repeated in separated zones within the ceiling: the outfit holds the colour as an intention, not as noise (values: colour — the code of the colour or family, hue — the hue in degrees, zones — in how many zones; on_windows — true when a carrier's colour is the window of a colour word, wholly within the echo arc)"
          },
          {
           "const": "echo_accent_or_declare_focus",
@@ -3926,7 +4076,7 @@
          },
          {
           "const": "smooth_sole_on_ice",
-          "description": "a fully smooth sole at black-ice temperatures is a plain no for winter (values: temperature_c — the day's temperature)"
+          "description": "a fully smooth sole at black-ice temperatures is a plain no for winter (values: temperature_c — the day's temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "deep_multidirectional_tread",
@@ -3934,7 +4084,7 @@
          },
          {
           "const": "summer_accessory_no_warmth",
-          "description": "the accessory's summer material gives no warmth in the cold: it can be worn, it just does not warm (values: material — material code, temperature_c — the day's temperature)"
+          "description": "the accessory's summer material gives no warmth in the cold: it can be worn, it just does not warm (values: material — material code, temperature_c — the day's temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "winter_form_of_slot",
@@ -3942,7 +4092,7 @@
          },
          {
           "const": "winter_accessory_too_hot",
-          "description": "the accessory's winter material is not worn in the heat (values: material — material code, temperature_c — the day's temperature)"
+          "description": "the accessory's winter material is not worn in the heat (values: material — material code, temperature_c — the day's temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "summer_form_of_slot",
@@ -4286,7 +4436,7 @@
          },
          {
           "const": "layers_off_temperature_map",
-          "description": "there are too few or too many layers on the torso for the day's temperature by the layer map (values: direction — too_few or too_many, temperature_c — the temperature, layers — how much warmth the layers give, needed — how much the map asks for; partial_warmth_items — how many layers warm only partly, like a trench)"
+          "description": "there are too few or too many layers on the torso for the day's temperature by the layer map (values: direction — too_few or too_many, temperature_c — the temperature, layers — how much warmth the layers give, needed — how much the map asks for; partial_warmth_items — how many layers warm only partly, like a trench; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "layers_to_temperature_map",
@@ -4294,7 +4444,7 @@
          },
          {
           "const": "outer_layer_only_partly_warm_for_frost",
-          "description": "in this band the warmth is carried by the coat itself, and this outer layer is only partly warm by its type — a jacket, a bomber, a vest, a cardigan or a poncho (values: temperature_c — the temperature, outer_type — its type code, warmth_share — how much of a layer it counts as)"
+          "description": "in this band the warmth is carried by the coat itself, and this outer layer is only partly warm by its type — a jacket, a bomber, a vest, a cardigan or a poncho (values: temperature_c — the temperature, outer_type — its type code, warmth_share — how much of a layer it counts as; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "warmer_coat_not_a_fourth_item",
@@ -4302,7 +4452,7 @@
          },
          {
           "const": "cold_accessories_carry_no_colour",
-          "description": "in hard frost mostly the outer layer and the accessories are visible, and the hat, the scarf and the mittens are quiet here: all the colour stayed under the coat (values: temperature_c — the temperature)"
+          "description": "in hard frost mostly the outer layer and the accessories are visible, and the hat, the scarf and the mittens are quiet here: all the colour stayed under the coat (values: temperature_c — the temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "move_colour_to_hat_scarf_gloves",
@@ -4310,7 +4460,7 @@
          },
          {
           "const": "frost_head_neck_uncovered",
-          "description": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay open, and no outer layer covers them (values: temperature_c — the temperature)"
+          "description": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay open, and no outer layer covers them (values: temperature_c — the temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "add_warm_hat_and_scarf",
@@ -4318,7 +4468,7 @@
          },
          {
           "const": "frost_layers_and_cold_accessories",
-          "description": "hard frost: the layer map asks for this many layers on the torso — a warm layer under the coat counts — and a warm hat and scarf are part of the warmth and the main carriers of colour (values: temperature_c — the temperature, layers — layers the map asks for)"
+          "description": "hard frost: the layer map asks for this many layers on the torso — a warm layer under the coat counts — and a warm hat and scarf are part of the warmth and the main carriers of colour (values: temperature_c — the temperature, layers — layers the map asks for; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "no_rain_layer_on_rainy_day",
@@ -4858,7 +5008,7 @@
          },
          {
           "const": "fabric_out_of_season",
-          "description": "the item's fabric reads out of season: the day is warmer or colder than its band, which is semantics rather than a thermometer (values: temperature_c — the day's temperature, band — the fabric's band from and to, direction — warmer or colder, fabrics — fabric codes)"
+          "description": "the item's fabric reads out of season: the day is warmer or colder than its band, which is semantics rather than a thermometer (values: temperature_c — the day's temperature, band — the fabric's band from and to, direction — warmer or colder, fabrics — fabric codes; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "same_item_in_day_band_fabric",
@@ -4950,7 +5100,7 @@
          },
          {
           "const": "shoe_type_outside_temp_band",
-          "description": "shoe type outside the day's temperature band (temp_c)"
+          "description": "shoe type outside the day's temperature band (temp_c; weather_feel — instead of temp_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "take_from_day_band",
@@ -5246,11 +5396,11 @@
          },
          {
           "const": "outer_layer_kept_despite_warmth",
-          "description": "the outer layer stays although the temperature band alone would not ask for it (values: temperature_c — °C of the scene; held_by — dress_code when the dressiness band or the dress code holds it, weather_or_outdoors when rain, wind or the street below +22 °C does)"
+          "description": "the outer layer stays although the temperature band alone would not ask for it (values: temperature_c — °C she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; held_by — dress_code when the dressiness band or the dress code holds it, weather_or_outdoors when rain, wind or the street below +22 °C does)"
          },
          {
           "const": "outer_layer_removed_by_temperature",
-          "description": "the outer layer was removed by the temperature band: it asks for one layer on the torso, so the empty kind is not a gap in the catalogue (values: temperature_c — °C of the scene)"
+          "description": "the outer layer was removed by the temperature band: it asks for one layer on the torso, so the empty kind is not a gap in the catalogue (values: temperature_c — °C she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "jewellery_kind_dropped_by_her_word",
@@ -5498,7 +5648,7 @@
          },
          {
           "const": "cold_outer_layer_counts",
-          "description": "in this cold the outer layer is part of the outfit, not an addition: its colour and formality are judged with the rest; open shoes, thin tights and bare ankles are a mistake here, not a style (values: temperature_c)"
+          "description": "in this cold the outer layer is part of the outfit, not an addition: its colour and formality are judged with the rest; open shoes, thin tights and bare ankles are a mistake here, not a style (values: temperature_c; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
          },
          {
           "const": "precipitation_shoes_materials",
@@ -5542,7 +5692,7 @@
          },
          {
           "const": "weather_layers",
-          "description": "the weather outside and the layers it asks for (values: temperature_c; layers — how many layers on the torso, a half is one more light removable layer; fabrics — fabric codes for this temperature; outer_at_formality — true when the outer layer is held to the outfit's formality too)"
+          "description": "the weather outside and the layers it asks for (values: temperature_c; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; layers — how many layers on the torso, a half is one more light removable layer; fabrics — fabric codes for this temperature; outer_at_formality — true when the outer layer is held to the outfit's formality too)"
          },
          {
           "const": "scheme_colours_by_kind",
@@ -5774,75 +5924,75 @@
          },
          {
           "const": "russian_in_text",
-          "description": "Russian in the text for her: a Russian word, ending or letter. Instead: the same meaning in Ukrainian, without a single Russian word or ending (R-LNG-UA)"
+          "description": "Russian in the text for her: a Russian word, ending or letter. Instead: the same meaning in Ukrainian, without a single Russian word or ending"
          },
          {
           "const": "status_signal",
-          "description": "explaining a choice by how the item presents her to others (\"reads expensive\", \"looks cheap\", \"signals status\"). Instead: deliberateness as a condition, not status as a goal — an element may read as CHOSEN rather than accidental (K-SIG-01)"
+          "description": "explaining a choice by how the item presents her to others (\"reads expensive\", \"looks cheap\", \"signals status\"). Instead: deliberateness as a condition, not status as a goal — an element may read as CHOSEN rather than accidental"
          },
          {
           "const": "refuting_her_belief",
-          "description": "refuting her belief about stripes or prints (\"actually it does not widen\"). Instead: take the belief as a limit — do not offer such items and do not raise the topic (K-LNG-04)"
+          "description": "refuting her belief about stripes or prints (\"actually it does not widen\"). Instead: take the belief as a limit — do not offer such items and do not raise the topic"
          },
          {
           "const": "stripes_body_volume",
-          "description": "stripes as a claim about body volume in either direction. Instead: a stripe as a composition element — where it draws a line and what it rhymes with, with no claim about body volume (R-HELM-03)"
+          "description": "stripes as a claim about body volume in either direction. Instead: a stripe as a composition element — where it draws a line and what it rhymes with, with no claim about body volume"
          },
          {
           "const": "age_as_filter",
-          "description": "age as a filter of items (\"after N years one does not wear X\"). Instead: a life transition as context (a new job, a return, a change of role) (K-PC-06)"
+          "description": "age as a filter of items (\"after N years one does not wear X\"). Instead: a life transition as context (a new job, a return, a change of role)"
          },
          {
           "const": "hide_flaw_fix_body",
-          "description": "\"hide a flaw / correct the body\", softened forms included, when she did not set such a goal. Instead: composition, colour, occasion, comfort; play with texture, not with the body (R-ONB-06)"
+          "description": "\"hide a flaw / correct the body\", softened forms included, when she did not set such a goal. Instead: composition, colour, occasion, comfort; play with texture, not with the body"
          },
          {
           "const": "type_verdict",
-          "description": "a confident typology verdict (\"your season is Winter\", \"you are Soft Natural\"). Instead: a vocabulary bridge — \"if you are used to colour types, this is roughly…\" translated into axes: value contrast, depth, temperature (R-TYP-04)"
+          "description": "a confident typology verdict (\"your season is Winter\", \"you are Soft Natural\"). Instead: a vocabulary bridge — \"if you are used to colour types, this is roughly…\" translated into axes: value contrast, depth, temperature"
          },
          {
           "const": "style_score",
-          "description": "a universal numeric style score. Instead: the strength of a single finding with its measure and threshold (R-ABC-08)"
+          "description": "a universal numeric style score. Instead: the strength of a single finding with its measure and threshold"
          },
          {
           "const": "colour_emotion",
-          "description": "a universal colour → emotion or trait meaning (\"blue = trust\"). Instead: colour as a measure and its relation to her colouring and to the other items, with no claim about the viewer's emotion (R-PSY-02)"
+          "description": "a universal colour → emotion or trait meaning (\"blue = trust\"). Instead: colour as a measure and its relation to her colouring and to the other items, with no claim about the viewer's emotion"
          },
          {
           "const": "clothes_psychology_promise",
-          "description": "a causal psychological promise of clothes (\"will give you confidence\", \"93% is non-verbal\"). Instead: \"reads as a put-together outfit for [the occasion]\"; comfort and freedom of movement in neutral words (R-PSY-01)"
+          "description": "a causal psychological promise of clothes (\"will give you confidence\", \"93% is non-verbal\"). Instead: \"reads as a put-together outfit for [the occasion]\"; comfort and freedom of movement in neutral words"
          },
          {
           "const": "body_by_size",
-          "description": "a comment on her body through size (\"L suits you better\"). Instead: the brand's size chart with the garment's own centimetres, not her body (R-BPC-02)"
+          "description": "a comment on her body through size (\"L suits you better\"). Instead: the brand's size chart with the garment's own centimetres, not her body"
          },
          {
           "const": "gender_theory_prescriptive",
-          "description": "Simmel's or Veblen's gender theses as prescriptions. Instead: as a description of a mechanism, marked as a theory of 1899/1904 (R-SIM-12, R-VEB-10)"
+          "description": "Simmel's or Veblen's gender theses as prescriptions. Instead: as a description of a mechanism, marked as a theory of 1899/1904"
          },
          {
           "const": "trickle_down_law",
-          "description": "trickle-down as a one-way waterfall. Instead: movement both ways; trickle-down as ONE of the mechanisms, not a law (R-SIM-03)"
+          "description": "trickle-down as a one-way waterfall. Instead: movement both ways; trickle-down as ONE of the mechanisms, not a law"
          },
          {
           "const": "outshine_host",
-          "description": "white at someone else's wedding framed as outshining the host. Instead: speak about the item, not about rivalry with the host (K-KOH-08)"
+          "description": "white at someone else's wedding framed as outshining the host. Instead: speak about the item, not about rivalry with the host"
          },
          {
           "const": "western_cue_transfer",
-          "description": "western cue → meaning carried over without a local measure; Ukrainian vernacular mixed with a Russian-coded \"post-Soviet\" aesthetic. Instead: Ukrainian markers named and locally measured; without a measure — silence (R-PP-09, R-LOC-06)"
+          "description": "western cue → meaning carried over without a local measure; Ukrainian vernacular mixed with a Russian-coded \"post-Soviet\" aesthetic. Instead: Ukrainian markers named and locally measured; without a measure — silence"
          },
          {
           "const": "body_zone_advice",
-          "description": "a body zone as the OBJECT of advice when she did not set it as a goal. Instead: composition, colour, occasion, comfort; a measure without a claimed effect (\"the hem ends at the widest point of the calf\") is always allowed (R-LNG-01)"
+          "description": "a body zone as the OBJECT of advice when she did not set it as a goal. Instead: composition, colour, occasion, comfort; a measure without a claimed effect (\"the hem ends at the widest point of the calf\") is always allowed"
          },
          {
           "const": "comfort_causal_promise",
-          "description": "a causal promise around comfort and freedom of movement. Instead: comfort as a MEASURE — range of motion, ease in centimetres, fabric weight, stretch — without a causal wrapper (R-NVB-02)"
+          "description": "a causal promise around comfort and freedom of movement. Instead: comfort as a MEASURE — range of motion, ease in centimetres, fabric weight, stretch — without a causal wrapper"
          },
          {
           "const": "type_label_mechanism",
-          "description": "a typology label used as a MECHANISM rather than a vocabulary bridge. Instead: the bridge translated into axes — the label outside, the axes inside (R-TYP-05)"
+          "description": "a typology label used as a MECHANISM rather than a vocabulary bridge. Instead: the bridge translated into axes — the label outside, the axes inside"
          },
          {
           "const": "chroma_budget",
@@ -6277,13 +6427,13 @@
    "tension_node": "вузол"
   },
   "part_of_day": {
-   "morning": 9,
-   "day": 13,
-   "evening": 20,
-   "night": 23
+   "morning": "ранок",
+   "day": "день",
+   "evening": "вечір",
+   "night": "ніч"
   },
   "weather_feel": {
-   "frost": -8.0,
+   "frost": -10.0,
    "cold": 2.0,
    "cool": 10.0,
    "warm": 20.0,
@@ -6370,7 +6520,12 @@
    "brooch": "брошка",
    "bracelet": "браслет",
    "ring": "каблучка",
-   "glasses": "окуляри"
+   "glasses": "окуляри",
+   "gloves": "рукавички",
+   "watch": "годинник",
+   "swimwear": "купальник",
+   "underwear": "білизна",
+   "accessory": "аксесуар"
   },
   "item_type": {
    "evening_dress": "вечірня_сукня",
