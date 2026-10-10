@@ -110,6 +110,8 @@ import дріт_моделі as _Д
                     "this outfit, never by adding an item; not as a list"),
         # РЯДОК 1422 (K-BOD-02, K-SIL-03; аудит/ПРОДУКТ.md п.4): її фігура кодами — ті самі, що в брифі складання.
         # П.17 (рядок 1427, #599): річ образу — вибір стилістки; річ проти фігури — пояснити, рішення не віддавати
+        # рядок 4282 (ЖИВІ-4281 №13 рука 1, `seed3_48`): «cuts_best_on_her: belted» при вільному светрі без
+        # пояса — «tuck in just the front hem slightly over your belt»; «що з цим робити» — лише речами образу
         _ЗП.Поле("body", "her figure as the code measured it: height, shape code, zones, and statements — the cuts "
                          "that sit best on her, where a voluminous outfit takes its anchor, where most conditions "
                          "meet on her body",
@@ -117,8 +119,10 @@ import дріт_моделі as _Д
                     "figure — which line it draws, where it sets the eye (shoulders, waist, hips, legs, "
                     "height), with the items that do it; speak of what the outfit does, never of what her "
                     "body lacks or what should be hidden; when an item of the outfit works against these "
-                    "statements, say so gently and say why you chose it anyway or what to do with it; never "
-                    "name the shape code, a body type or a number"),
+                    "statements, say so gently and say why you chose it anyway or what to do with it — only "
+                    "with the items of «outfit»; «cuts» are cuts of an item, not items to add («belted» — a top "
+                    "with its own belt, never a belt she puts on); never name the shape code, a body type or a "
+                    "number"),
         _ЗП.Поле("body.shape", _Д.ФІГУРА_КОДИ_EN),
         # ОПИС-1 (рядок 1428, K-ACC-12, K-EDG-01): у кожної сумки є три способи (рука, плече, навскоси),
         # і «Як це носити» доти щоразу казало про сумку — 69 рядків із 337, «діагональ» — 39 карток
