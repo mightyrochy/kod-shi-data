@@ -45,6 +45,6 @@ const [КОРІНЬ, PYODIDE, ЗНІМОК] = process.argv.slice(2), БАЗА = 
   });
   console.log('РЕЧІ ' + JSON.stringify(речі, null, 1));
   console.log('ОПИС ' + JSON.stringify(await стор.evaluate(() => безЗайвоїЛатинкиП('Перлова підвіска з ланцюжком із золота 18k, ніжний мінімалістичний дизайн.', new Set()))));
-  if (ЗНІМОК) { await стор.evaluate(() => document.querySelector('#картки .список').scrollIntoView()); await стор.waitForTimeout(1500); await стор.screenshot({ path: ЗНІМОК }); }
+  if (ЗНІМОК) { await стор.evaluate(() => { режим('образи'); document.querySelector('#картки .список').scrollIntoView(); }); await стор.waitForTimeout(500); await стор.screenshot({ path: ЗНІМОК }); }
   await браузер.close();
 })();
