@@ -666,6 +666,15 @@ def _норм(с, v, шлях, незнайомі):
         # частини образу»: річ без слота й так стоїть на всьому образі, тож він знімається, решта ознак лишається.
         if _ref(с) == "thing" and isinstance(v, dict) and _код(v.get("slot")) == СЛОТ_БУДЬ_ЯКИЙ:
             v = {к: x for к, x in v.items() if к != "slot"}
+        # ЦИТАТА В ОЗНАЦІ ПАРОЮ (рядок 3932, живі 15 №6): «одягну своє взуття з фото» модель записала як
+        # `{"name": {"quote": "своє взуття з фото", "value": "мої туфлі"}, …}` — уривок стояв у назви, не в речі.
+        # Пара на глибині дає своє значення, і цитата губилась: `_тримається` шукав «мої туфлі» в її словах і
+        # знімав річ як вигадку. Без власного уривку річ бере уривок своєї ознаки-пари (назва — першою).
+        if isinstance(v, dict) and (not isinstance(v.get("quote"), str) or _порожнє(v["quote"])):
+            ц = next((x["quote"] for к, x in sorted(v.items(), key=lambda кх: кх[0] != "name")
+                      if isinstance(x, dict) and isinstance(x.get("quote"), str) and not _порожнє(x["quote"])
+                      and any(п in x for п in _ЗНАЧЕННЯ_ПАРИ)), None)
+            v = dict(v, quote=ц) if ц else v
         н = _норм({"type": "object", "properties": _ОБʼЄКТИ[_ref(с)][1]}, v, шлях, незнайомі)
         if списки and isinstance(н, dict):
             н = dict(н, **списки)
