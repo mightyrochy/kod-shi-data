@@ -302,8 +302,10 @@ def осі(зона, рч=None):
     if с and с.get("смуга"):
         lo, hi = с["смуга"][0], с["смуга"][1]
         вих["fabric_c"] = [_число(lo), (_число(hi) if hi is not None and hi < 900 else None)]
-    if р.get("слот") == "взуття" or р.get("каблук_є") is not None or р.get("каблук_словами"):
-        є = р.get("каблук_є")
+    if р.get("слот") == "взуття" or р.get("каблук_є") is not None or р.get("каблук") is not None or р.get("каблук_словами"):
+        # Як у відсіві пакета: доведене True старше за False, бо другий свідок міг не побачити каблук.
+        свідки = (р.get("каблук_є"), р.get("каблук"))
+        є = True if True in свідки else (False if False in свідки else None)
         вих["heel"] = "none" if є is False else (U if є is None else "yes")
         if р.get("каблук_форма"):
             вих["heel_shape"] = _з(_КАБЛУК_ФОРМА, р["каблук_форма"])
