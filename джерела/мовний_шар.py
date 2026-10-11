@@ -2663,15 +2663,9 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # ШКАЛА-2 (рядок 1132): «працюю з дому» — то home, то work; «на кожен день в університет» — то everyday, то
     # school; «театр на прем'єру» — то theatre, то opera_premiere (смуга 4–6 проти 6–8). Нагода — рід заняття
     # (робота вдома — робота, навчання — школа), «щодня» — частота, а не рід; місце — те, що названо її словами.
-    # Рядок 4622 (ЖИВІ-22 №8, seed3_01): «йога зранку, потім кава з подругою» — «перша названа частина» — йога, тож
-    # `occasion: sport`, `event` з уривком «йога зранку», `movement` нема, а кава й кафе — лише в `place_words`
-    # (код його не читає, п.12): рука 2 збирала на йогу. ДО правки рядка 4362 (ЖИВІ-20, ЖИВІ-21) ця сама модель
-    # давала `everyday`, кафе й повну подію. Спорт частини дня — рух (рядок 4362), а нагода й місце — про решту дня.
     "\"occasion\" is what she will be doing and \"place\" is where she will be; both describe the same "
     "part of her day, never the occasion of one part and the place of another. When her day has several "
-    "parts, both describe the first part she names that is not a sport: a sport part (yoga, a run, a workout) is "
-    "movement sport, and occasion is sport only when sport is all her day; \"event\" keeps all the parts, "
-    "its quote too. \"occasion\" is the "
+    "parts, both describe the part she names first, and \"event\" keeps all of them. \"occasion\" is the "
     "kind of what she does, not how often or where: working is work even at home (place home); studying at "
     "a school, a university or courses is school, also every day. \"place\" is the place her words name: "
     "a premiere or a show at a theatre is theatre; opera_premiere only when her words name an opera.",
