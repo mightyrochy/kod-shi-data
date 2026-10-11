@@ -1,0 +1,50 @@
+── ПРОМПТ (2261 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "High-top athletic sneaker with a dynamic geometric print in deep charcoal and slate grey hex #36454f, knit upper for breathability, mid-calf length, engineered mesh.\nLoose cropped sweatpants in solid soft oatmeal beige hex #e8e1d6, wide-leg taper at ankle, straight cut, cotton jersey.\nRelaxed fit long-sleeve thermal top in cream white hex #fdfcf5, dropped shoulder seam, boxy silhouette, modal blend.\nSimple gold-plated hoop earrings hex #d4af37, minimal stainless steel ring, small canvas tote bag in muted sage green hex #8fa696.\n\nThis outfit honors your wish for heels by selecting elevated high-top sneakers that offer a structured, stylish edge rather than traditional stilettos, ensuring you stay comfortable and grounded during morning yoga while still looking polished. The neutral oatmeal, cream, and charcoal palette complements your skin tones like #d9b48f and hair color #745a3b without clashing in the warm cafe lighting. Soft cotton jersey and modal fabrics provide the necessary stretch and ease for movement before you switch into coffee mode with your friends."}
+
+── ВІДПОВІДЬ (1108 симв., 183.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "high-top athletic sneaker",
+      "details": "mid-calf length, knit upper, engineered mesh, dynamic geometric print",
+      "slot": "shoes",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "loose cropped sweatpants",
+      "details": "wide-leg taper at ankle, straight cut, cotton jersey",
+      "slot": "bottom",
+      "color_hex": "#e8e1d6",
+      "worn": true
+    },
+    {
+      "name": "relaxed fit long-sleeve thermal top",
+      "details": "dropped shoulder seam, boxy silhouette, modal blend",
+      "slot": "top",
+      "color_hex": "#fdfcf5",
+      "worn": true
+    },
+    {
+      "name": "gold-plated hoop earrings",
+      "details": "minimal",
+      "slot": "earrings",
+      "color_hex": "#d4af37",
+      "worn": true
+    },
+    {
+      "name": "stainless steel ring",
+      "details": "simple",
+      "slot": "ring",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "small canvas tote bag",
+      "details": "muted sage green",
+      "slot": "bag",
+      "color_hex": "#8fa696",
+      "worn": true
+    }
+  ]
+}

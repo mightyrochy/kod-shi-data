@@ -1,0 +1,51 @@
+── ПРОМПТ (6973 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Вовняний піджак коричневого кольору · colour code: chocolate · about it: text н=1
+2 — Спідниця шовкова в леопардовому принті · colour code: camel · about it: text н=2
+3 — Сумка жіноча, ATTICO, екошкіра, колір рудий · colour code: chocolate · about it: text н=3
+4 — Пасок Базовий червоний · about it: text н=4
+5 — Сріблястий браслет з бежевим декором · colour code: silvery · about it: text н=5
+6 — Черевики жіночі, RIEKER, екошкіра/текстиль, колір чорний · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; camel — кемел; chocolate — шоколадний; silvery — срібний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This brown blazer features a classic checkered weave with a sharp peplum waist that gently flares over the hips. The fabric is structured to provide crisp lines, and the brown leather collar adds a touch of warmth."},
+{"н": 2, "текст": "A flowing skirt made from silk in a striking leopard print, featuring an asymmetrical hem that adds dynamic movement as you walk. The beige tones in the pattern blend seamlessly with neutral shoes."},
+{"н": 3, "текст": "This sturdy tote is crafted from smooth ginger-toned leather with a silver lock clasp at the front, making it functional yet sophisticated enough for a morning outing."},
+{"н": 4, "текст": "A vibrant red belt with a sleek metal buckle that cinches the waist to highlight your natural shape. It provides a bold splash of color against the browns and neutrals."},
+{"н": 5, "текст": "A simple silver bangle bracelet with a brushed finish and a small round disc detail, catching the light subtly without overwhelming the rest of your look."},
+{"н": 6, "текст": "These black slip-on ankle boots offer an espadrille-style sole for comfort during yoga and walking. The leather upper is sleek, while the soft lining ensures ease of wear."},
+{"н": 7, "текст": "You are ready for your morning yoga session and the coffee afterwards, dressed in a structured brown blazer that defines your waist, paired with a leopard-print silk skirt. Your look is grounded by comfortable black slip-on ankle boots and finished with a warm ginger bag to carry your essentials. A silver bracelet adds a cool, polished touch, while a bright red belt cinches the waist, ensuring your silhouette stays elongated and balanced."},
+{"н": 8, "текст": "Keep the blazer untucked over the skirt for a layered look that defines your waist without feeling heavy in the morning light."},
+{"н": 9, "текст": "Вовняний піджак коричневого кольору, Спідниця шовкова в леопардовому принті, Черевики жіночі, RIEKER, екошкіра/текстиль, колір чорний — This outfit balances the sport occasion with smart formality using a neat blazer and skirt that transition well from yoga to cafe without being too formal."}
+]
+
+── ВІДПОВІДЬ (2028 симв., 78.9 с, HTTP 200) ──
+```json
+{
+  "1": "Цей коричневий піджак має класичний картатий візерунок з гострим пеплумом на талії, який ніжно розширюється над стегнами. Тканина структурована для створення чітких ліній, а коричневий шкіряний комір додає тепла.",
+  "2": "Поділ спідниці виготовлений з шовку в яскравому леопардовому принті, має несиметричний поділ, який динамічно рухається під час ходьби. Бежеві тони у візерунку бездоганно поєднуються з нейтральним взуттям.",
+  "3": "Ця міцна сумка виготовлена з гладкої рудувато-коричневої шкіри зі срібним замком на передній частині, що робить її функціональною та водночас достатньо елегантною для ранкового заходу.",
+  "4": "Яскравий червоний пасок з витонченою металевою пряжкою підкреслює твою природну форму. Він додає сміливого кольорового акценту до коричневих і нейтральних відтінків.",
+  "5": "Простий срібний браслет з матовим покриттям та маленьким круглим диском, який ледь помітно ловить світло без перевантаження твого образу.",
+  "6": "Ці чорні ботильйони на еспадрильній підошві забезпечують комфорт під час йоги та прогулянок. Шкіряний верх елегантний, а м'яка внутрішня частина гарантує зручність у носінні.",
+  "7": "Ти готова до ранкової сесії йоги та кави після неї, одягнена в структурований коричневий піджак, який підкреслює твою талію, поєднаний з шовковою спідницею в леопардовому принті. Твій образ доповнюють зручні чорні ботильйони на еспадрильній підошві, а руда сумка дозволяє носити необхідні речі. Срібний браслет додає прохолодного та вишуканого акценту, тоді як яскравий червоний пасок підкреслює твою талію, забезпечуючи видовжену та збалансовану фігуру.",
+  "8": "Залиш піджак не заправленим у спідницю для багатошарового образу, який підкреслить твою талію без зайвої тяжкості в ранковому світлі.",
+  "9": "Коричневий вовняний піджак, шовкова леопардова спідниця, чорні ботильйони Rieker — Цей образ поєднує спортивну подію з розумною офіційністю за допомогою охайного піджака та спідниці, які добре переходять від йоги до кав’ярні без надмірної формальності."
+}
+```

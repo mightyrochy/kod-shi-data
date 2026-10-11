@@ -1,0 +1,62 @@
+── ПРОМПТ (6891 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Оливковий спортивний топ на бретелях MustHave x Smartass · about it: text н=1
+2 — Штани з костюмної тканини · colour code: brown · about it: text н=2
+3 — Челсі осінні бежеві з натурального спилку-замші · colour code: sand · about it: text н=3
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; sand — пісочний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This olive sports top features a sleek cut with adjustable straps and a subtle criss-cross back detail, offering both support and freedom of movement. Its fitted silhouette hugs the upper body comfortably while allowing flexibility for yoga poses."},
+{"н": 2, "текст": "The brown wide-leg trousers are crafted from structured suiting fabric with deep front pleats that flow elegantly from hip to hem. Their relaxed fit through the leg provides comfort without sacrificing shape, while their length accentuates your height and posture."},
+{"н": 3, "текст": "These beige Chelsea boots are made of soft suede with a chunky tread sole for stability during movement. Their slip-on design ensures easy wearability while their neutral tone complements the entire outfit seamlessly."},
+{"н": 4, "текст": "Your morning looks effortless and intentional. The olive sports top hugs your upper body comfortably while allowing freedom of movement, its simple lines setting a calm tone. The wide-leg trousers in a warm brown tone bring softness and balance to your figure, drawing attention to the length of your legs without adding bulk. Finished with understated beige Chelsea boots in natural suede, the whole ensemble feels grounded yet polished for your yoga class and the café that follows."},
+{"н": 5, "текст": "Leave the olive top on for the practice, but if you feel warm or want to layer after class, slide it off before heading to the coffee shop."},
+{"н": 6, "текст": "Оливковий спортивний топ на бретелях MustHave x Smartass, Штани з костюмної тканини, Челсі осінні бежеві з натурального спилку-замші — While three registers compete, the soft jersey top leads with 'sport_chic', supported by classic trousers, creating a layered harmony where no single genre dominates but none is ignored."},
+{"н": 7, "текст": "Оливковий спортивний топ на бретелях MustHave x Smartass — The olive sportswear top answers her wish for heels and print_generic by offering a structured, athletic silhouette that can be dressed up for coffee, acting as the 'heels' substitute she asked for while remaining practical for yoga."},
+{"н": 8, "текст": "Оливковий спортивний топ на бретелях MustHave x Smartass — The olive sportswear top acts as the 'heels' substitute she asked for by offering a structured, athletic silhouette that can be dressed up."}
+]
+
+── ВІДПОВІДЬ (2493 симв., 113.5 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "текст": "Цей оливковий спортивний топ має елегантний крій з регульованими бретелями та ледь помітною перехресною деталлю на спині, що забезпечує підтримку та свободу рухів. Його приталений силует зручно облягає верхню частину тіла, водночас дозволяючи гнучкість для виконання асан йоги."
+  },
+  "2": {
+    "текст": "Штани вільного крою з коричневої костюмної тканини мають глибокі складки спереду, які елегантно спадають від стегон до низу. Їхній вільний крій у ногах забезпечує комфорт без шкоди для форми, а їхня довжина підкреслює твій зріст і поставу."
+  },
+  "3": {
+    "текст": "Ці бежеві челсі виготовлені з м’якої замші та мають масивну підошву з протектором для стійкості під час руху. Їхній дизайн без застібок забезпечує легке взування, а нейтральний колір гармонійно доповнює весь образ."
+  },
+  "4": {
+    "текст": "Твій ранковий вигляд — це поєднання легкості та продуманості. Оливковий спортивний топ зручно облягає верхню частину тіла, водночас дозволяючи свободу рухів, а його лаконічні лінії створюють спокійний настрій. Штани вільного крою в теплому коричневому відтінку додають м’якості та балансу твоїй фігурі, підкреслюючи довжину ніг без зайвого об’єму. Завершений стриманими бежевими челсі з натуральної замші, весь ансамбль виглядає елегантно й водночас практично для заняття йогою та кав’ярні після."
+  },
+  "5": {
+    "текст": "Залишай оливковий топ на занятті, але якщо тобі стане жарко або ти захочеш одягнутися тепліше після тренування, зніми його перед тим, як підеш до кав’ярні."
+  },
+  "6": {
+    "текст": "Оливковий спортивний топ на бретелях MustHave x Smartass, Штани з костюмної тканини, Челсі осінні бежеві з натурального спилку-замші — Хоча три стилі конкурують між собою, м’який джерсі топ задає тон у стилі 'спортивно-шик', підтримуваний класичними брюками, створюючи гармонійний образ, де жоден стиль не домінує, але й ніхто з них не залишається поза увагою."
+  },
+  "7": {
+    "текст": "Оливковий спортивний топ на бретелях MustHave x Smartass — Оливковий спортивний топ відповідає твоєму бажанню носити підбори та принт_generic, пропонуючи структурований атлетичний силует, який можна одягнути для кави, замінивши собою 'підбори', які ти попросила, залишаючись практичним для йоги."
+  },
+  "8": {
+    "текст": "Оливковий спортивний топ на бретелях MustHave x Smartass — Оливковий спортивний топ виконує роль 'замінника підборів', який ти попросила, пропонуючи структурований атлетичний силует, який можна одягнути."
+  }
+}
+```

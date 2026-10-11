@@ -1,0 +1,72 @@
+── ПРОМПТ (6912 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Светр-павутинка капучино кемел · colour code: chocolate · about it: text н=1
+2 — Штани прямого крою · colour code: grey · about it: text н=2
+3 — Пасок з пірʼям персик · colour code: peach · about it: text н=3
+4 — Базовий обруч жовтий · colour code: yellow · about it: text н=4
+5 — Шльопанці замшеві з липучками та анатомічною устілкою (Other Brand) · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: chocolate — шоколадний; grey — сірий; peach — персиковий; yellow — жовтий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This camel-colored knit sweater features a relaxed, slightly oversized fit with long sleeves that drape gently. Its soft mesh-like texture allows for freedom of movement while providing comfortable warmth."},
+{"н": 2, "текст": "These grey trousers have a straight cut that flows smoothly from waist to ankle, offering both comfort and structure suitable for active mornings. The fabric holds its shape well without clinging or bunching."},
+{"н": 3, "текст": "The peach-colored belt has delicate white feathers attached along the bottom edge of the band, adding a touch of whimsy while cinching your waist gently without restricting movement."},
+{"н": 4, "текст": "This wide yellow headband sits comfortably around your head with a smooth inner lining. Its bold color brings an energetic accent to your morning look."},
+{"н": 5, "текст": "These olive suede sandals feature adjustable velcro straps for secure footing and anatomically shaped insoles that support your feet during standing or walking portions of your day."},
+{"н": 6, "текст": "Your morning starts with a soft camel knit sweater, the kind that wraps comfortably around your shoulders for gentle movement. The straight-leg grey trousers balance the volume at the top while keeping a clean vertical line down to your ankles, perfect for stretching and holding an easy pose. A delicate peach belt with white feathers cinches your waist just enough to highlight your defined shape without restricting freedom. The bright yellow headband acts as a cheerful accent against the calm neutrals, catching light when you turn it slightly after a bend."},
+{"н": 7, "текст": "Let the sweater fall loosely over your hips for unrestricted breathing and stretching"},
+{"н": 8, "текст": "Tuck the feathered belt to one side if you need to shift your center of balance during pose changes"},
+{"н": 9, "текст": "Keep the headband snug at the crown so it stays in place while you move"},
+{"н": 10, "текст": "Базовий обруч жовтий — The bright yellow headband is a deliberate personal choice that aligns with your mood and words, serving as the intentional anchor near your face despite being outside the strict eye-color palette window."}
+]
+
+── ВІДПОВІДЬ (2192 симв., 151.2 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "текст": "Цей кемеловий в’язаний светр має розслаблений, злегка оверсайз крій із довгими рукавами, які м’яко спадають. Його ніжна сітчаста текстура дає свободу рухів і водночас забезпечує комфортне тепло."
+  },
+  "2": {
+    "текст": "Ці штани прямого крою мають рівний силует від талії до щиколотки, що пропонує як зручність, так і структуру для активних ранків. Тканина добре тримає форму без облягання чи збирання."
+  },
+  "3": {
+    "текст": "Персиковий пасок має ніжні білі пір’ячка, прикріплені до нижнього краю стрічки, що додають нотку грайливості та м’яко підкреслюють твою талію без обмеження рухів."
+  },
+  "4": {
+    "текст": "Цей широкий жовтий обруч зручно сидить на голові з гладкою внутрішньою підкладкою. Його яскравий колір додає енергійний акцент до твого ранкового образу."
+  },
+  "5": {
+    "текст": "Ці оливкові замшеві сандалі мають регульовані липучки для надійної фіксації та анатомічно сформовані устілки, які підтримують ноги під час стояння чи ходьби протягом дня."
+  },
+  "6": {
+    "текст": "Твій ранок починається з м’якого кемелового в’язаного светра, який зручно огортає твої плечі для легких рухів. Штани прямого крою сірого кольору балансують об’єм зверху та зберігають чисту вертикальну лінію до щиколоток — ідеально підходять для розтяжки та виконання простих поз. Ніжний персиковий пасок з білими пір’їнками ледь підкреслює твою фігуру, не обмежуючи свободу рухів. Яскравий жовтий обруч служить веселим акцентом на фоні спокійних нейтральних кольорів і ловить світло при легкому повороті голови після згинання."
+  },
+  "7": {
+    "текст": "Дай светру вільно спадати до стегон, щоб ти могла безперешкодно дихати та розтягуватися."
+  },
+  "8": {
+    "текст": "Відсунь пасок з пір’ям набік, якщо тобі потрібно змістити центр ваги під час зміни поз."
+  },
+  "9": {
+    "текст": "Тримай обруч щільно біля тімені, щоб він залишався на місці під час руху."
+  },
+  "10": {
+    "текст": "Базовий жовтий обруч — Яскравий жовтий обруч є свідомим особистим вибором, який відповідає твоєму настрою та словам і слугує навмисною фіксацією біля твого обличчя попри те, що він знаходиться поза межами суворого вікна колірної палітри очей."
+  }
+}
+```

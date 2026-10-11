@@ -1,0 +1,36 @@
+── ПРОМПТ (2165 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Rib-knit sports top, relaxed fit, hip-length, soft charcoal gray (#3F4250), lightweight stretch cotton with subtle compression zones.  \nWide-leg yoga pants, drawstring waist, ankle-length just below the heel, deep navy blue (#0A1929), breathable moisture-wicking synthetic blend.  \nMinimalist leather-look slide sandal, flat sole, neutral cream (#E8E6E3), smooth vegan synthetic leather with a flexible rubber tread.  \nDelicate gold-plated stud earrings, hoop design, polished brass finish, lightweight metal for secure wear during movement.  \nThis outfit works because the stretchy knit and drawwaist pants allow full range of motion for morning yoga while keeping you dry and comfortable. The neutral color palette transitions seamlessly from workout to your café meetup with friends without feeling mismatched. Adding a sleek sandal and subtle jewelry honors her desire to look put-together yet effortless after exercise, respecting her wish to avoid heavy or restrictive clothing."}
+
+── ВІДПОВІДЬ (897 симв., 174.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Rib-knit sports top",
+      "details": "relaxed fit, hip-length, lightweight stretch cotton with subtle compression zones",
+      "slot": "top",
+      "color_hex": "#3F4250",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg yoga pants",
+      "details": "drawstring waist, ankle-length just below the heel, breathable moisture-wicking synthetic blend",
+      "slot": "bottom",
+      "color_hex": "#0A1929",
+      "worn": true
+    },
+    {
+      "name": "Leather-look slide sandal",
+      "details": "flat sole, smooth vegan synthetic leather with flexible rubber tread",
+      "slot": "shoes",
+      "color_hex": "#E8E6E3",
+      "worn": true
+    },
+    {
+      "name": "Gold-plated stud earrings",
+      "details": "hoop design, polished brass finish, lightweight metal",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
