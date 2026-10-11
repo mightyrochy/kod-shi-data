@@ -4,7 +4,10 @@ import sys; sys.path.insert(0, '.'); from оцінка_образу import пр�
 from розбір_відповідей import _свідомі_з_json
 
 суд = dict(образ=["c1"], запасні=[], зміни=[], рівень="clean", суд=dict(findings=[]),
-           без_входу=[dict(input="occasion"), dict(input="temperature")])
+           без_входу=[dict(input="occasion"), dict(input="temperature"),
+                       dict(input="color_measure"),
+                       dict(check="face", missing={"free_text": "контраст обличчя"},
+                            what={"free_text": "перевірка контрасту"})])
 для_оцінки = {
     "seed4_12": '{"answer":"Verdict: wear_with_change (item c1)","verdict":"unknown"}',
     "seed4_13": '{"answer":"answer: item c1","verdict":"unknown"}',
@@ -14,8 +17,11 @@ for імʼя, сире in для_оцінки.items():
     після = прийняти_оцінку(сире, суд)["картка"]
     print(імʼя, "ДО", сире)
     print(імʼя, "ПІСЛЯ", після)
-    assert len(після["не_знаю"]) == 2
+    assert [х["текст"] for х in після["не_знаю"]] == ["Немає даних: нагода.", "Немає даних: температура.",
+        "Немає даних: вимір кольору.", "контраст обличчя"]
     assert "c1" not in після["відповідь"]
+
+assert not прийняти_оцінку('{"answer":"Так, товар p1 пасує","verdict":"unknown"}', суд)["картка"]["відповідь"]
 
 словник = {"c1": {"id": "c1", "назва": "Сукня"}}
 for текст in ("Wait, #464 is already in the list…", "Зачекай, #464 вже є у списку…"):
