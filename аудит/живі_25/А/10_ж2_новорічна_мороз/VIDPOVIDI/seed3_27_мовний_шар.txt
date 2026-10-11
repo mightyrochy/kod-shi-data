@@ -1,0 +1,97 @@
+── ПРОМПТ (8065 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Вишукана довга сукня · about it: text н=1
+2 — Пряме пальто чорна ялинка з блиском · colour code: navy · about it: text н=2
+3 — Чоботи шкіряні коричневі · colour code: chocolate · about it: text н=3
+4 — Жіноча сумка Welfare бежева · colour code: peach · about it: text н=4
+5 — Срібне намисто з акцентною застібкою · colour code: silvery · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: chocolate — шоколадний; navy — темно-синій; peach — персиковий; silvery — срібний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A floor-length blue satin dress with a deep V cowl neckline and a delicate floral embroidered belt at the waist. The smooth, lustrous fabric flows gracefully, creating an elegant silhouette perfect for formal evening events. Its rich color stands out beautifully against winter backdrops while maintaining a soft, luxurious feel."},
+{"н": 2, "текст": "A knee-to-mid-calf graphite wool-blend coat featuring a classic herringbone weave pattern and wide lapels. It includes a matching fabric belt that cinches at the waist to highlight your figure when worn closed, while the open style creates effortless sophistication for layering over evening wear."},
+{"н": 3, "текст": "Polished brown leather knee-high boots with a subtle ankle strap adorned by a gold-toned buckle detail and a sturdy low heel. The smooth finish and refined shape offer both comfort and timeless elegance, making them ideal for outdoor winter events and indoor celebrations alike."},
+{"н": 4, "текст": "A structured beige pebbled leather handbag shaped like a dome with dual top handles and an optional shoulder strap. Its front flap closure secured by two vertical metal tabs adds architectural charm, while the subtle texture provides understated luxury that pairs perfectly with evening ensembles."},
+{"н": 5, "текст": "A sleek silver chain-link necklace finished with a minimalist toggle clasp and circular accent piece. The cool metallic tone complements both warm and neutral tones in your outfit, adding just enough sparkle to elevate formal wear without overpowering it."},
+{"н": 6, "текст": "You are radiant in a deep blue satin dress with an elegant cowl neckline, accented by a delicate floral belt at the waist. Layered over it is a sophisticated graphite herringbone coat that adds warmth and texture for chilly evenings. Grounding the ensemble are rich brown leather boots with a polished strap detail, while a soft beige pebbled leather bag offers timeless elegance to complement your look. A silver chain necklace finishes the outfit with understated shine, perfect for both festive dinners and winter celebrations."},
+{"н": 7, "текст": "Let the long coat wrap loosely when you feel chilly, or cinch it at the waist with its belt to define your silhouette for dance floors and photo moments."},
+{"н": 8, "текст": "Take the coat off at dinner tables to reveal the vibrant blue dress beneath, letting the satin catch candlelight and keeping the focus on your presence."},
+{"н": 9, "текст": "Keep the boots clean and dry before stepping out—they anchor your look even in frosty weather and carry you through every moment of celebration with quiet confidence."},
+{"н": 10, "текст": "Жіноча сумка Welfare бежева — Added to satisfy 'no_bag'."},
+{"н": 11, "текст": "Пряме пальто чорна ялинка з блиском — Wait, #464 is already in the list. The input had two necklaces (#243, #258). I need to remove one necklace and add an outer layer if missing? No, 'no_bag' is a blocker. Also 'kind_twice' on necklaces."},
+{"н": 12, "текст": "Жіноча сумка Welfare бежева — Added to satisfy 'kind_twice' regarding bags. The original had two bags (#185, #273). This new beige bag replaces the black one and the brown tote to leave only one bag slot filled."},
+{"н": 13, "текст": "Жіноча сумка Welfare бежева — Replaced conflicting bags to satisfy 'several_items_in_one_slot'."}
+]
+
+── ВІДПОВІДЬ (3579 симв., 106.6 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "н": 1,
+    "текст": "Ти виглядаєш чудово в довгій синій атласовій сукні з глибоким V-подібним вирізом і ніжним квітковим поясом на талії. Гладка блискуча тканина елегантно струмує, створюючи чудовий силует для урочистих вечірніх заходів. Її насичений колір чудово виглядає на зимовому фоні, зберігаючи при цьому м’який розкішний ефект."
+  },
+  "2": {
+    "н": 2,
+    "текст": "Вовняне пальто-трапеція темно-синього кольору з класичним візерунком «гусяча лапка» та широкими лацканами. Воно має ремінь у тон тканини, який підкреслює твою фігуру, коли ти його застібаєш, а в розстебнутому вигляді створює безтурботну вишуканість для багатошаровості з вечірнім одягом."
+  },
+  "3": {
+    "н": 3,
+    "текст": "Поліровані коричневі шкіряні чоботи до колін із тонким ремінцем на щиколотці та золотистим пряжкою. Гладка поверхня і витончена форма поєднують у собі комфорт і позачасову елегантність, що робить їх ідеальними для зимових заходів просто неба та святкових вечірок."
+  },
+  "4": {
+    "н": 4,
+    "текст": "Структурована бежева сумка з тисненої шкіри у формі купола з двома ручками зверху і додатковим плечовим ремінцем. Фронтальна застібка на двох вертикальних металевих планках додає архітектурного шарму, а ледь помітна текстура надає вишуканості, яка чудово доповнює вечірні образи."
+  },
+  "5": {
+    "н": 5,
+    "текст": "Срібний ланцюжок з мінімалістичною застібкою-карабіном і круглим акцентним елементом. Прохолодний металевий відтінок доповнює як теплі, так і нейтральні тони в твоєму образі, додаючи достатньо блиску, щоб підкреслити вечірній одяг без надмірності."
+  },
+  "6": {
+    "н": 6,
+    "текст": "Ти випромінюєш сяйво у глибокій синій атласовій сукні з елегантним V-подібним вирізом, підкресленій ніжним квітковим поясом на талії. Зверху одягнене солідне темно-синє пальто в «гусячу лапку», яке додає тепла і текстури для прохолодних вечорів. Образ завершують насичені коричневі шкіряні чоботи з полірованим ремінцем, а м’яка бежева сумка з тисненої шкіри доповнює твій вигляд елегантністю на всі часи. Срібний ланцюжок додає образу стриманого блиску, ідеального для святкових вечерь та зимових урочистостей."
+  },
+  "7": {
+    "н": 7,
+    "текст": "Коли стане прохолодно, просто накинь пальто. А щоб підкреслити фігуру на танцполі чи для фотографій, затягни його ремінцем."
+  },
+  "8": {
+    "н": 8,
+    "текст": "Зніми пальто біля столу, і насичений синій колір сукні з атласу буде сяяти у світлі свічок. Це приверне увагу до твоєї присутності."
+  },
+  "9": {
+    "н": 9,
+    "текст": "Тримай чоботи чистими та сухими перед виходом — вони підкреслюють твій образ навіть у морозну погоду і проведуть тебе крізь кожну мить святкування з тихою впевненістю."
+  },
+  "10": {
+    "н": 10,
+    "текст": "Жіноча сумка Welfare бежева — Додана для задоволення вимоги 'no_bag'."
+  },
+  "11": {
+    "н": 11,
+    "текст": "Пряме пальто чорна ялинка з блиском — Зачекай, #464 вже є у списку. У вхідних даних було два намиста (#243, #258). Мені потрібно прибрати одне намисто і додати верхній шар, якщо його немає? Ні, 'no_bag' є блокуючим фактором. Також 'kind_twice' щодо намист."
+  },
+  "12": {
+    "н": 12,
+    "текст": "Жіноча сумка Welfare бежева — Замінено конфліктуючі сумки для задоволення вимоги 'several_items_in_one_slot'. Оригінал містив дві сумки (#185, #273). Ця нова бежева сумка замінює чорну і коричневу тоут-сумку, щоб залишити лише одне вільне місце для сумки."
+  },
+  "13": {
+    "н": 13,
+    "текст": "Жіноча сумка Welfare бежева — Замінено конфліктуючі сумки для задоволення вимоги 'several_items_in_one_slot'."
+  }
+}
+```

@@ -1,0 +1,53 @@
+── ПРОМПТ (5688 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_unchecked — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- crossbody — кросбоді.
+- hand — рука.
+- outerwear — верхній шар.
+- shoulder — плече.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+
+ЗАЯВИ:
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- sole_grip_unknown_ice — the card does not say whether the sole grips on ice, and today there is black ice (values: item — item name).
+- outer_ease_not_in_feed — the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — item names).
+- front_v_depth_no_body_input — the code computed the depth of the outer layer's neckline, but has nothing to apply it to: it does not know her under-bust girth or neck length (values: item — item name).
+- outer_shoulder_not_measured — the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "outer_shoulder_not_measured", "values": {"item": {"free_text": "Довге пальто", "lang": "uk"}}}]},
+{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Other Brand", "lang": "uk"}}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "outerwear", "range": "S–XXXL"}]}}]},
+{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "outer_ease_not_in_feed", "values": {"items": [{"free_text": "Довге пальто", "lang": "uk"}]}}]},
+{"н": 5, "вид": "card_unchecked", "заяви": [{"code": "front_v_depth_no_body_input", "values": {"item": {"free_text": "Довге пальто", "lang": "uk"}}}]},
+{"н": 6, "вид": "card_unchecked", "заяви": [{"code": "sole_grip_unknown_ice", "values": {"item": {"free_text": "Other Brand", "lang": "uk"}}}]},
+{"н": 7, "вид": "card_unchecked", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Сумка жіноча, ATTICO, шкіра, колір…", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]}
+]
+
+── ВІДПОВІДЬ (706 симв., 103.5 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю ширину плечей твого довгого пальто.",
+  "2": "Не перевірила, чи підходять тобі туфлі Other Brand за розміром. Я ще не знаю довжини твоєї стопи й внутрішню устілку цих черевиків.",
+  "3": "Розмір S–XXXL на верхньому одязі — це лише позначка, я не можу сказати, чи він тобі підійде без вимірів.",
+  "4": "Я не знаю, як вільно довге пальто лежатиме поверх інших речей.",
+  "5": "Не можу оцінити глибину вирізу на твоєму довгому пальті: я ще не знаю обхват під грудьми й довжину шиї.",
+  "6": "Я не знаю, чи черевики Other Brand мають підошву з хорошим зчепленням на льоду.",
+  "7": "Ти ще не обрала спосіб носити сумку жіночу ATTICO зі шкіри: в руці, на плечі чи через тіло."
+}
+```

@@ -1,0 +1,51 @@
+── ПРОМПТ (6973 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Топ сатиновий з сіткою смарагд · about it: text н=1
+2 — Спідниця аріель міді а-силуету шоколад · about it: text н=2
+3 — Жіночий зимовий стьобаний пуховик біопух casual з капюшоном Snow Owl (сірий, 2XL) · colour code: graphite · about it: text н=3
+4 — Сережки золотистого кольору Придане · about it: text н=4
+5 — Короткі черевики з текстилю та шкіри · about it: text н=5
+6 — Сумка жіноча, ATTICO, шкіра, колір пудра · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: graphite — графіт.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "The emerald top features a delicate V-neckline with sheer mesh details at the shoulders, adding an elegant touch. It has a sleek, satin-like fabric that drapes beautifully over your form."},
+{"н": 2, "текст": "This chocolate-colored midi skirt follows an A-line silhouette, offering a graceful and feminine shape that complements your waistline perfectly. Its smooth texture pairs wonderfully with the top for a cohesive look."},
+{"н": 3, "текст": "The grey winter puffer jacket boasts a casual yet chic design with a hood and functional pockets. Its length extends to your mid-calf, providing ample warmth and protection from the cold."},
+{"н": 4, "текст": "These golden earrings have an organic, abstract shape that adds a modern and sophisticated flair to your ensemble. Their subtle shine complements the rich colors of your outfit without overpowering them."},
+{"н": 5, "текст": "The green ankle boots combine textured fabric with sleek leather accents, creating an interesting visual contrast. They provide a comfortable yet stylish finish to your look."},
+{"н": 6, "текст": "This soft pink bag has a minimalist design with a simple shoulder strap. Its pastel hue offers a gentle contrast to the darker tones of your outfit, adding a touch of femininity and charm."},
+{"н": 7, "текст": "This ensemble transforms your festive dinner into a moment of striking elegance. The deep emerald top paired with the rich chocolate skirt establishes a sophisticated, earthy foundation that is both warm and luxurious. You add the grey down jacket for protection against the frost, creating a cozy outer layer. The gold earrings provide a perfect touch of sparkle against the darker tones, while the green ankle boots tie the lower half together seamlessly. Finally, the soft pink bag offers a delightful pop of color to brighten your look, ensuring you feel festive and confident throughout the evening."},
+{"н": 8, "текст": "Start with the emerald top and chocolate skirt for the main course; slip on the grey jacket when the temperature drops or when you move to the patio for fresh air."},
+{"н": 9, "текст": "Tuck a warm scarf into the collar of your down jacket if you need extra warmth without sacrificing style during your dinner."}
+]
+
+── ВІДПОВІДЬ (2193 симв., 94.9 с, HTTP 200) ──
+```json
+{
+  "1": "Смарагдовий топ має ніжний V-подібний виріз із прозорими сітчастими деталями на плечах, що додає елегантного штриха. Він виготовлений з гладкої атласної тканини, яка красиво драпірується по твоїй фігурі.",
+  "2": "Ця шоколадна міді-спідниця має А-силуетний крій, що пропонує граціозну та жіночну форму, ідеально підкреслюючи твою лінію талії. Її гладка текстура чудово поєднується з топом для гармонійного образу.",
+  "3": "Сірий зимовий пуховик має невимушений, але елегантний дизайн із капюшоном і функціональними кишенями. Його довжина сягає середини литки, забезпечуючи достатньо тепла та захисту від холоду.",
+  "4": "Ці золотисті сережки мають органічну, абстрактну форму, яка додає сучасної та вишуканої родзинки до твого вбрання. Їхній ледь помітний блиск гармонійно підкреслює насичені кольори твого образу без надмірності.",
+  "5": "Зелені черевики поєднують текстуровану тканину з елегантними шкіряними акцентами, створюючи цікавий візуальний контраст. Вони забезпечують комфортний і стильний фінал твоєму образу.",
+  "6": "Ця ніжно-рожева сумка має мінімалістичний дизайн із простим плечовим ремінцем. Її пастельний відтінок пропонує ніжний контраст до темніших тонів твого вбрання, додаючи нотку жіночності та шарму.",
+  "7": "Цей ансамбль перетворює твою святкову вечерю на момент приголомшливої елегантності. Глибокий смарагдовий топ у поєднанні з насиченою шоколадною спідницею створюють вишуканий, землистий фундамент, який є водночас теплим і розкішним. Ти одягаєш сірий пуховик для захисту від морозу, створюючи затишний верхній шар. Золоті сережки додають досконалий штрих блиску на тлі темніших тонів, а зелені черевики бездоганно поєднують нижню частину образу. Насамкінець, ніжно-рожева сумка пропонує чудовий колірний акцент, щоб освіжити твій вигляд і забезпечити тобі відчуття святковості та впевненості протягом усього вечора.",
+  "8": "Почни зі смарагдового топу та шоколадної спідниці для основної частини; одягни сірий пуховик, коли температура знизиться або ти перейдеш на терасу насолоджуватися свіжим повітрям.",
+  "9": "Загорни теплий шарф у комір твого пуховика, якщо тобі потрібне додаткове тепло без шкоди для стилю під час вечері."
+}
+```

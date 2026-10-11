@@ -1,0 +1,31 @@
+── ПРОМПТ (2273 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green silk satin evening gown, empire waist cut above the hip, midi length ending at mid-calf, deep forest color with hex code #046307, flowing fabric with a subtle liquid sheen.\nHeeled mule sandals in black velvet, low block heel, ankle strap detail, matte finish, rich deep black color with hex code #000000.\nGold vermeil drop earrings, classic teardrop shape, polished metal, warm antique gold color with hex code #FFD700.\n\nThis outfit works by blending the festive celebration theme with a sophisticated frost-proof elegance suitable for an upscale restaurant setting. The emerald green hue reflects her warm skin tones while offering a rich contrast to the cool winter weather, creating a look that feels both cozy and luxurious indoors. The midi length provides modesty appropriate for New Year's parties without restricting movement, while the velvet shoes add texture balance to the sleek satin dress. Every piece aligns with the requirement for an outer layer only when necessary, leaving her free to enjoy the warmth of the venue without feeling overdressed or cold outside."}
+
+── ВІДПОВІДЬ (744 симв., 199.6 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "emerald green silk satin evening gown",
+        "details": "empire waist cut above the hip, midi length ending at mid-calf, flowing fabric with a subtle liquid sheen",
+        "slot": "dress",
+        "color_hex": "#046307",
+        "worn": true
+      },
+      {
+        "name": "black velvet heeled mule sandals",
+        "details": "low block heel, ankle strap detail, matte finish",
+        "slot": "shoes",
+        "color_hex": "#000000",
+        "worn": true
+      },
+      {
+        "name": "gold vermeil drop earrings",
+        "details": "classic teardrop shape, polished metal",
+        "slot": "earrings",
+        "color_hex": "#FFD700",
+        "worn": true
+      }
+    ]
+  }
+}

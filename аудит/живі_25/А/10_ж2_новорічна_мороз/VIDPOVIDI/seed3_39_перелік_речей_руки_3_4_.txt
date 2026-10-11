@@ -1,0 +1,36 @@
+── ПРОМПТ (2246 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green sheath dress with a subtle velvet texture and long sleeves, midi length, deep forest green (#055F3C), silk blend; charcoal grey tailored trousers, wide leg cut, full length, classic black (charcoal) (#2E3638), fine worsted wool; Cream white fur-boa collar scarf, oversized shape, knee-length drape, soft ivory cream (#FFFEF2), faux mink synthetic; Nude leather pumps with a moderate stiletto heel, pointed toe, ankle height, sheer nude (flesh tone) (#E0C5B4), smooth calfskin.\n\nThis outfit perfectly balances your wish for an outer layer against the frosty weather while adhering to the requested formal and neat dress codes for the New Year's celebration. The velvet texture of the sheath dress adds a luxurious festive touch appropriate for a restaurant dinner, while the tailored wool trousers provide necessary warmth without compromising elegance. Completing the look with a statement fur scarf and sophisticated nude pumps ensures you remain stylishly covered in the cold while maintaining a refined silhouette suitable for a celebratory occasion."}
+
+── ВІДПОВІДЬ (867 симв., 220.0 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "Emerald green with a subtle velvet texture, long sleeves, midi length",
+      "slot": "dress",
+      "color_hex": "#055F3C",
+      "worn": true
+    },
+    {
+      "name": "tailored trousers",
+      "details": "Charcoal grey with wide leg cut and full length, fine worsted wool",
+      "slot": "bottom",
+      "color_hex": "#2E3638",
+      "worn": true
+    },
+    {
+      "name": "fur-boa collar scarf",
+      "details": "Cream white with oversized shape and knee-length drape, faux mink synthetic",
+      "slot": "scarf",
+      "color_hex": "#FFFEF2",
+      "worn": true
+    },
+    {
+      "name": "leather pumps",
+      "details": "Nude with moderate stiletto heel and pointed toe, ankle height, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#E0C5B4",
+      "worn": true
+    }
+  ]
+}

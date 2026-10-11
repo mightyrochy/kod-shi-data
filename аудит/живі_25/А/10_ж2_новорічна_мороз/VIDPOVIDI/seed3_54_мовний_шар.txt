@@ -1,0 +1,107 @@
+── ПРОМПТ (8084 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Піджак класичний прямий графіт · colour code: graphite · about it: text н=1
+2 — Джинси жіночі блакитні · colour code: graphite · about it: text н=2
+3 — Шкіряна сумка Trinity · colour code: burgundy · about it: text н=3
+4 — Чоботи із замші червоного кольору · colour code: burgundy · about it: text н=4
+5 — Пальто-піджак вовна в кольорі графіт · colour code: grey · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: burgundy — бордовий; graphite — графіт; grey — сірий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This is a classic straight-cut blazer in graphite that fits clean through the shoulders and hips. Its structured lapels and sharp silhouette bring a formal polish, while the lightweight fabric keeps it comfortable for moving around."},
+{"н": 2, "текст": "These light blue jeans have a straight-leg cut that flows cleanly from hip to hem, balancing volume around the hips with a clean line down the leg. The lighter wash adds softness against the graphite layers."},
+{"н": 3, "текст": "This is a burgundy leather handbag with a sleek rectangular shape and a thin metallic handle that arches gracefully above the bag. Its rich color echoes your boots and adds depth to the monochrome outfit."},
+{"н": 4, "текст": "These are knee-high suede boots in deep burgundy with a block heel that offers both stability and elegance. Their tall shaft lengthens your legs and grounds the outfit with texture and color."},
+{"н": 5, "текст": "This is a graphite wool coat with wide lapels, double-breasted buttons, and matching patch pockets. It has a strong structure that can be belted at the waist to emphasize your shape or left open for effortless ease."},
+{"н": 6, "текст": "You are wearing a classic graphite blazer paired with straight-leg light blue jeans. Your burgundy leather handbag and knee-high suede boots add rich, festive depth to the look. The outer layer is a structured double-breasted coat in matching graphite wool that can be belted to define your waist. This outfit moves you seamlessly from an elegant evening dinner through a frosty night without losing its polished edge."},
+{"н": 7, "текст": "Tuck the hem of your jeans slightly or leave them natural depending on how much leg you want to show before the boots, balancing volume at the hips with your clean-line coat."},
+{"н": 8, "текст": "Keep your jewelry subtle in gold and silver tones—let the rich burgundy and graphite colors speak for themselves."},
+{"н": 9, "текст": "If the weather gets too cold, wear the outer coat over the blazer; when indoors, you can remove it to reveal a sleek, professional silhouette."},
+{"н": 10, "текст": "Чоботи із замші червоного кольору — Added to satisfy the 'no_shoes' blocker: boots are essential for evening wear in frost and formal settings."},
+{"н": 11, "текст": "Пальто-піджак вовна в кольорі графіт — Added to satisfy the 'weather_needs_outerwear' and 'needs_third_piece' blockers: a coat provides necessary warmth for frost and completes the third piece count required for formal events."},
+{"н": 12, "текст": "Шкіряна сумка Trinity — The burgundy bag serves as the necessary anchor first element for warmth near the face, and its cool hue balances the outfit's overall tone."},
+{"н": 13, "текст": "Піджак класичний прямий графіт — The lack of an outer layer is addressed by the heavy weight and texture of the tweed jacket, which acts as a substantial"},
+{"н": 14, "текст": "Пальто-піджак вовна в кольорі графіт, Піджак класичний прямий графіт — The long wool coat is accepted to solve the frost exposure: it acts as the critical thermal layer needed for the evening dinner in freezing weather, overriding minor register mismatches."},
+{"н": 15, "текст": "Джинси жіночі блакитні — The light blue jeans are kept to establish a preppy base; their formality is accepted as a stylistic choice that softens the rigid lines of the blazer, offering ease."}
+]
+
+── ВІДПОВІДЬ (3677 симв., 122.8 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "н": 1,
+    "текст": "Це класичний прямий піджак графітового кольору, який добре сидить на плечах і стегнах. Його структуровані лацкани та чіткий силует додають формальної елегантності, а легка тканина робить його зручним для пересування."
+  },
+  "2": {
+    "н": 2,
+    "текст": "Ці блакитні джинси мають прямий крій від стегна до краю штанини, збалансовуючи об’єм у стегнах із чистою лінією по нозі. Світліший колір додає м’якості на тлі шарів графітового кольору."
+  },
+  "3": {
+    "н": 3,
+    "текст": "Це бордова шкіряна сумка з елегантною прямокутною формою та тонкою металевою ручкою, яка витончено піднімається над сумкою. Її насичений колір перегукується з твоїми чобітьми й додає глибини монохромному образу."
+  },
+  "4": {
+    "н": 4,
+    "текст": "Це ботильйони до колін із замші червоного кольору на стійкому каблуці, який забезпечує як стабільність, так і елегантність. Високе халявне відділення видовжує твої ноги та завершує образ текстурою й кольором."
+  },
+  "5": {
+    "н": 5,
+    "текст": "Це вовняне пальто-піджак графітового кольору з широкими лацканами, подвійною лінією гудзиків і відповідними накладними кишенями. Воно має чітку структуру, яку можна підперезати в талії для акцентування твоєї фігури або носити розстебнутим для невимушеної легкості."
+  },
+  "6": {
+    "н": 6,
+    "текст": "Ти одягла класичний графітовий піджак у парі з прямими блакитними джинсами. Твоя бордова шкіряна сумка та ботильйони до колін із замші додають насиченої святкової глибини образу. Верхній шар — це структуроване пальто-піджак подвійною лінією гудзиків у відповідному вовняному графіті, яке можна підперезати для визначення талії."
+  },
+  "7": {
+    "н": 7,
+    "текст": "Злегка загорни низ джинсів або носи їх природно залежно від того, скільки ноги ти хочеш показати перед чобітьми, збалансовуючи об’єм у стегнах із твоїм пальтом-піджаком."
+  },
+  "8": {
+    "н": 8,
+    "текст": "Зберігай ювелірні вироби стриманими в золотих і срібних тонах — нехай насичені бордовий і графітовий кольори говорять самі за себе."
+  },
+  "9": {
+    "н": 9,
+    "текст": "Якщо стане надто холодно, одягни верхнє пальто поверх піджака; коли ти в приміщенні, можеш зняти його, щоб відкрити елегантний і професійний силует."
+  },
+  "10": {
+    "н": 10,
+    "текст": "Чоботи із замші червоного кольору — Додано для задоволення блокувальника 'no_shoes': ботильйони необхідні для вечірнього одягу в мороз і на формальних заходах."
+  },
+  "11": {
+    "н": 11,
+    "текст": "Пальто-піджак вовна в кольорі графіт — Додано для задоволення блокувальників 'weather_needs_outerwear' і 'needs_third_piece': пальто забезпечує необхідне тепло на мороз і завершує третій елемент, потрібний для формальних заходів."
+  },
+  "12": {
+    "н": 12,
+    "текст": "Шкіряна сумка Trinity — Бордова сумка слугує необхідним першим елементом для тепла біля обличчя, а її прохолодний колір збалансовує загальний тон образу."
+  },
+  "13": {
+    "н": 13,
+    "текст": "Піджак класичний прямий графіт — Відсутність верхнього шару компенсується важкою вагою та текстурою твідового піджака, який діє як суттєвий..."
+  },
+  "14": {
+    "н": 14,
+    "текст": "Пальто-піджак вовна в кольорі графіт, Піджак класичний прямий графіт — Довге вовняне пальто прийняте для вирішення проблеми впливу морозу: воно діє як критичний тепловий шар, необхідний на вечірньому обіді під час сильних морозів, перекриваючи незначні невідповідності в стилі."
+  },
+  "15": {
+    "н": 15,
+    "текст": "Джинси жіночі блакитні — Блакитні джинси збережені для створення базового образу в стилі preppy; їхня формальність прийнята як стильовий вибір, який пом’якшує жорсткі лінії піджака, пропонуючи легкість."
+  }
+}
+```
