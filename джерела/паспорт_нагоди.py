@@ -1543,6 +1543,7 @@ def вікно_розмови(історія, остання_ціла=True):
     "\"вето\" under its section; nothing she denied goes into \"бажання\".",
 )
 import збирач_промптів as _ЗП_
+import річ_з_фото as _РФ_   # рамка «на око» поля «фото_речей» — одним текстом із промптами речей (рядок 4760)
 
 ПАСПОРТ = _ЗП_.Оголошення(
     задача="паспорт",
@@ -1584,7 +1585,8 @@ import збирач_промптів as _ЗП_
         _ЗП_.Поле("фото_речей", "photos of her items, in the order of the images in this message",
                   як="add one object per item to \"речі_з_фото\"; \"рамка\" — bounds of the item itself "
                      "in thousandths of the photo width and height (0 left or top edge, 1000 right or "
-                     "bottom), tight around the item, without background or other items; \"чия\" — "
+                     "bottom), tight around the item, without background or other items; " + _РФ_.РАМКА_НА_ОКО + "; "
+                     "\"чия\" — "
                      "\"моя\" when she says she has the item, \"хочу купити\" when she is choosing it in "
                      "a shop, otherwise \"невідомо\"; do not say whether the item suits her — the code "
                      "says that; if she did not say where she is going, do not ask about the occasion; "
