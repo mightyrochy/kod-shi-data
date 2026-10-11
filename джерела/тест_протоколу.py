@@ -576,6 +576,15 @@ _оe = json.loads(P.помилка_формату(пом, відповідь="В
        _оe.get("error") == "format" and len(_оe.get("errors") or []) == 2 and _оe.get("answer") == "CHOICE_V1"
        and {п["where"] for п in _оe["errors"]} == {"chosen", "version"}
        and not any(re.search(r"[а-яіїєґ]", п["what"], re.I) for п in _оe["errors"]), str(_оe))
+_ехо_коди = (
+    "input_verdict_copied(fields=task,iteration)",
+    "carries_check_fields(fields=checklist,knot)",
+    "cut_on_check_field(field=findings)",
+)
+звірка("ехо вердикту — три структуровані коди, англійський повтор пояснює кожен",
+       all(re.match(r"^[a-z_]+\((?:fields|field)=[^)]+\)$", к) and P._що_en(к) != к
+           and not re.search(r"[а-яіїєґ]", P._що_en(к), re.I) for к in _ехо_коди),
+       str([P._що_en(к) for к in _ехо_коди]))
 _о2 = json.loads(P.помилка_формату(P.розбір("{не json}")[1]))
 звірка("причина розбору їде тим самим каналом",
        len(_о2.get("помилки") or []) == 1 and _о2["помилки"][0]["що"].startswith("invalid_json("), str(_о2))

@@ -2099,8 +2099,7 @@ def _без_ехо(об, нотатки, текст):
     if not isinstance(об.get("образи"), list):
         вх = поля_входу(об)
         if вх:
-            ехо.append(_пом("корінь", "відповідь переписала вхідний вердикт (%s) — це вхід, а "
-                                      "не образи відповіді" % ", ".join("«%s»" % к for к in вх)))
+            ехо.append(_пом("корінь", "input_verdict_copied(fields=%s)" % ",".join(вх)))
             об = dict(об, образи=[])
     else:
         лишити, знято_суду = [], 0
@@ -2121,9 +2120,7 @@ def _без_ехо(об, нотатки, текст):
                 лишити.append({к: v for к, v in о.items() if к not in суд})
                 знято_суду += 1
                 continue
-            ехо.append(_пом("образи[%d]" % і, "несе поля суду коду (%s) — це вердикт, переписаний "
-                                              "назад, а не образ відповіді"
-                                              % ", ".join("«%s»" % к for к in суд)))
+            ехо.append(_пом("образи[%d]" % і, "carries_check_fields(fields=%s)" % ",".join(суд)))
         if знято_суду:
             нотатки["нормалізовано"].append("%s: %d" % (ПОЛЯ_СУДУ_ЗНЯТО, знято_суду))
         if ехо or знято_суду:
@@ -2131,12 +2128,8 @@ def _без_ехо(об, нотатки, текст):
         elif not лишити and нотатки.get("обрізано"):
             м = _ПОЛЕ_СУДУ_У_ТЕКСТІ.search(str(текст or ""))
             if м:
-                ехо.append(_пом("образи", "відповідь обірвалась на образі з полем суду коду «%s» — "
-                                          "це вердикт, переписаний назад, а не образ відповіді"
-                                          % м.group(1)))
+                ехо.append(_пом("образи", "cut_on_check_field(field=%s)" % м.group(1)))
     if ехо:
-        ехо[0]["що"] += (". Образ відповіді — «ід», «речі», «виконано» (скелет — у "
-                          "«завдання.схема_відповіді»); «%s» лишаються у вердикті" % "», «".join(ПОЛЯ_СУДУ))
         нотатки["ехо"] = нотатки.get("ехо", []) + ехо
         нотатки["нормалізовано"].extend("%s: %s" % (е["де"], е["що"]) for е in ехо)
     return об
@@ -2295,8 +2288,8 @@ def скелет_en(с, ключ=None):
 
 # ── ПОВТОР ФОРМАТУ АНГЛІЙСЬКОЮ ───────────────────────────────────────────────
 # Рядки помилок пише валідатор (`перевірити`) і розбір (`розбір`) — кодами з числами (рядок 3442),
-# ехо (`_без_ехо`) — ще українською. Звіт власника читає їх як є; у повтор англійського промпта
-# йде той самий перелік, перекладений шаблонами; рядок поза шаблонами лишається як є.
+# ехо (`_без_ехо`) — теж кодами. Звіт власника читає їх як є; у повтор англійського промпта
+# йде той самий перелік, пояснений шаблонами; рядок поза шаблонами лишається як є.
 _ТИПИ_EN = {"рядок": "string", "число": "number", "ціле": "integer", "логічне": "boolean",
             "список": "list", "обʼєкт": "object", "карта": "object", "будь_що": "any"}
 _ПОМИЛКИ_EN = (
@@ -2317,28 +2310,26 @@ _ПОМИЛКИ_EN = (
     (r"^items_not_in_pool\((.*)\)$",
      lambda м: "no item is an «n» of «pool» written exactly as given, the «·» included"
                + (" (written: %s)" % м.group(1) if м.group(1) else "")),
-    (r"^відповідь переписала вхідний вердикт.*$",
-     lambda м: "the answer copies the input verdict: that is the input, not the outfits of the answer"),
-    (r"^несе поля суду коду.*$",
-     lambda м: "carries the code's check fields: that is the verdict copied back, not an outfit of the answer"),
-    (r"^відповідь обірвалась на образі з полем суду коду.*$",
-     lambda м: "the answer broke off on an outfit with the code's check fields: the verdict copied back"),
+    (r"^input_verdict_copied\(fields=(.*)\)$",
+     lambda м: "the answer copies the input verdict (fields: %s): that is the input, not the outfits of the answer"
+               % м.group(1)),
+    (r"^carries_check_fields\(fields=(.*)\)$",
+     lambda м: "carries the code's check fields (%s): that is the verdict copied back, not an outfit of the answer"
+               % м.group(1)),
+    (r"^cut_on_check_field\(field=(.*)\)$",
+     lambda м: "the answer broke off on an outfit with the code's check field %s: the verdict copied back"
+               % м.group(1)),
 )
 
 
 def _що_en(що):
     """Рядок помилки → англійською за шаблоном; поза шаблонами — як є."""
     т = str(що or "")
-    хвіст = ""
-    if ". Образ відповіді — " in т:      # хвіст ехо (`_без_ехо`): що таке образ відповіді
-        т = т.split(". Образ відповіді — ")[0]
-        хвіст = (". An outfit of the answer has «id», «items», «done» (see answer_schema); «%s» "
-                 "stay in the verdict" % "», «".join(ПОЛЯ_СУДУ_EN))
     for шаблон, як in _ПОМИЛКИ_EN:
         м = _re.match(шаблон, т)
         if м:
-            return як(м) + хвіст
-    return т + хвіст
+            return як(м)
+    return т
 
 
 def помилка_en(о):
