@@ -1206,8 +1206,8 @@ def _названі(v):
 
 
 _СЛУЖБОВИЙ_ТЕКСТ = _re.compile(
-    r"(?:\b(?:wear_as_is|wear_with_change|do_not_wear)\b|\b(?:answer|verdict|works|change|unknown|items?)[\"']?\s*[:=]|"
-    r"\b(?:p\d+(?:-\d+)?|c\d+|[fb]-(?:o\d+|set)-\d+)\b|#\d+)", _re.I)
+    r"(?:\b(?:wear_as_is|wear_with_change|do_not_wear)\b|[\"'](?:answer|verdict|works|change|unknown|items?)[\"']\s*:|^\s*(?:answer|verdict|works|change|unknown|items?)\s*[:=]|"
+    r"\b(?:p\d+(?:-\d+)?|c\d+|[fb]-(?:o\d+|set)-\d+)\b|#(?![0-9a-f]{6}\b)\d+)", _re.I | _re.M)
 
 
 def _текст_картки(v):
