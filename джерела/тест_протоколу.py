@@ -576,14 +576,20 @@ _оe = json.loads(P.помилка_формату(пом, відповідь="В
        _оe.get("error") == "format" and len(_оe.get("errors") or []) == 2 and _оe.get("answer") == "CHOICE_V1"
        and {п["where"] for п in _оe["errors"]} == {"chosen", "version"}
        and not any(re.search(r"[а-яіїєґ]", п["what"], re.I) for п in _оe["errors"]), str(_оe))
-_ехо_коди = (
-    "input_verdict_copied(fields=task,iteration)",
-    "carries_check_fields(fields=checklist,knot)",
-    "cut_on_check_field(field=findings)",
-)
-звірка("ехо вердикту — три структуровані коди, англійський повтор пояснює кожен",
-       all(re.match(r"^[a-z_]+\((?:fields|field)=[^)]+\)$", к) and P._що_en(к) != к
-           and not re.search(r"[а-яіїєґ]", P._що_en(к), re.I) for к in _ехо_коди),
+_ехо_коди = []
+for _об, _нот, _текст in (
+        ({"ітерація": 2, "випадок": "x", "вердикт": []}, dict(нормалізовано=[], ехо=[]), ""),
+        ({"образи": [{"чекліст": {"x": 1}, "вузол": {"x": 1}}]},
+         dict(нормалізовано=[], ехо=[]), ""),
+        ({"образи": []}, dict(нормалізовано=[], ехо=[], обрізано=True), '{"знахідки":')):
+    P._без_ехо(_об, _нот, _текст)
+    _ехо_коди.append(_нот["ехо"][0]["що"])
+звірка("ехо з українськими ключами — код незмінний, англійський повтор без кирилиці",
+       _ехо_коди == ["input_verdict_copied(fields=ітерація,випадок,вердикт)",
+                       "carries_check_fields(fields=чекліст,вузол)",
+                       "cut_on_check_field(field=знахідки)"]
+       and all(not re.search(r"[а-яіїєґ]", P._що_en(к), re.I) for к in _ехо_коди)
+       and "foreign" in P._що_en("cut_on_check_field(field=foreign)"),
        str([P._що_en(к) for к in _ехо_коди]))
 _о2 = json.loads(P.помилка_формату(P.розбір("{не json}")[1]))
 звірка("причина розбору їде тим самим каналом",

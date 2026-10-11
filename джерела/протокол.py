@@ -2061,6 +2061,13 @@ _ЛИШЕ_ВЕРДИКТ = frozenset(set(ВЕРДИКТ_V1["поля"]) - set(О
 _ЛИШЕ_ВЕРДИКТ_EN = frozenset(("iteration", "case", "set", "showcase", "language", "register",
                               "still_missing", "task"))
 ВЕРДИКТ_ОБРАЗІВ_EN = "verdict"
+# Ключі ехо лишаються в `нотатки` тими, що написала модель; ця мапа лише
+# перекладає їх для англійського повтору. Корені дзеркалять `дріт_моделі.вердикт`.
+_ПОЛЯ_ЕХО_EN = dict(zip(ПОЛЯ_СУДУ, ПОЛЯ_СУДУ_EN))
+_ПОЛЯ_ЕХО_EN.update({
+    "ітерація": "iteration", "випадок": "case", "набір": "set", "вітрина": "showcase",
+    "мова": "language", "реєстр": "register", "завдання": "task", ВЕРДИКТ_ОБРАЗІВ: ВЕРДИКТ_ОБРАЗІВ_EN,
+})
 # Поля образу відповіді, яких вердикт на дроті не несе (`ПОЛЯ_ТВОГО_ОБРАЗУ`): непорожні — образ складено, а не
 # переписано (`_без_ехо`, рядок 4024).
 _РОБОТА_НАД_ЗНАХІДКАМИ = ("виконано", "свідомо")
@@ -2312,14 +2319,19 @@ _ПОМИЛКИ_EN = (
                + (" (written: %s)" % м.group(1) if м.group(1) else "")),
     (r"^input_verdict_copied\(fields=(.*)\)$",
      lambda м: "the answer copies the input verdict (fields: %s): that is the input, not the outfits of the answer"
-               % м.group(1)),
+               % _поля_ехо_en(м.group(1))),
     (r"^carries_check_fields\(fields=(.*)\)$",
      lambda м: "carries the code's check fields (%s): that is the verdict copied back, not an outfit of the answer"
-               % м.group(1)),
+               % _поля_ехо_en(м.group(1))),
     (r"^cut_on_check_field\(field=(.*)\)$",
      lambda м: "the answer broke off on an outfit with the code's check field %s: the verdict copied back"
-               % м.group(1)),
+               % _поля_ехо_en(м.group(1))),
 )
+
+
+def _поля_ехо_en(поля):
+    """Назви полів із коду ехо → англійський дріт; невідомий ключ не вигадуємо."""
+    return ",".join(_ПОЛЯ_ЕХО_EN.get(к, к) for к in поля.split(","))
 
 
 def _що_en(що):
