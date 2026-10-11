@@ -23,6 +23,7 @@ for імʼя, сире in для_оцінки.items():
 
 assert прийняти_оцінку('{"answer":"This outfit works well; change nothing.","verdict":"unknown"}', суд)["картка"]["відповідь"]
 assert not прийняти_оцінку('{"answer":"{\\"unknown\\": []}","verdict":"unknown"}', суд)["картка"]["відповідь"]
+assert прийняти_оцінку('{"answer":"This works for the O2 Arena.","verdict":"unknown"}', суд)["картка"]["відповідь"]
 assert not прийняти_оцінку('{"answer":"Так, товар p1 пасує","verdict":"unknown"}', суд)["картка"]["відповідь"]
 
 словник = {"c1": {"id": "c1", "назва": "Сукня"}}
