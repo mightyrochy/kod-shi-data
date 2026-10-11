@@ -236,15 +236,19 @@ def кольори_кодом(текст):
     return re.sub(r"[ \t]{2,}", " ", _HEX_У_ТЕКСТІ.sub(код, str(текст or ""))).replace(" ,", ",")
 
 
-def _абзац_кольорів(розмітка):
-    """Абзац промпту про коди кольорів у текстах — лише вжиті коди з внутрішнім словом ядра; без них — ""."""
-    коди = sorted({к for р in розмітка for к in _КОД_КОЛЬОРУ.findall(р["текст"])})
+def _абзац_кольорів(розмітка, коди_речей=()):
+    """Абзац промпту про коди кольорів — лише вжиті коди (у текстах і біля речей переліку, `коди_речей`) з внутрішнім
+    словом ядра; без них — ""."""
+    у_текстах = {к for р in розмітка for к in _КОД_КОЛЬОРУ.findall(р["текст"])}
+    коди = sorted(у_текстах | set(коди_речей))
     if not коди:
         return ""
+    слова = "; ".join("%s — %s" % (к, _ВМ.ключ("color_name", к)) for к in коди) + ".\n\n"
+    if not у_текстах:
+        return "Colour codes: " + слова
     return ("[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, "
             "узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а "
-            "другої назви кольору не додавай. Коди: "
-            + "; ".join("%s — %s" % (к, _ВМ.ключ("color_name", к)) for к in коди) + ".\n\n")
+            "другої назви кольору не додавай. Коди: " + слова)
 
 
 def розмітити(тексти, виправ=None):
@@ -277,38 +281,77 @@ def розмітити(тексти, виправ=None):
 # перекладається в цьому ж виклику (`мовоюКарткуП`). Промпт називає кожну річ номером із назвою (назва вигаданої —
 # «текст н=K») і просить вид — іменником назви, узгодження — з ним, а речей, яких англійський текст не називає, не
 # додавати (рядок 4450). Назв код не читає: передає як є, слова пише мовна модель (п.12).
-ПРАВИЛО_РЕЧЕЙ = ("Коли текст каже про річ образу, назви її видом із її назви в переліку — тим самим іменником у "
-                 "потрібному відмінку (у переліку «Тренч бежевий подовжений» — у тексті «тренч», «Светр в'язаний "
-                 "оверсайз» — «светр»), а не іншим видом чи синонімом з англійського слова. Кожне означення, "
-                 "займенник і дієслово при цій речі узгодь із цим іменником у роді й числі («Тренч бежевий» — «бежевий "
-                 "тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). Назву, яку ти перекладаєш у цьому "
-                 "ж виклику (текст н=K), дай одним іменником і в усіх текстах називай цю річ ним же, узгоджено. "
-                 "Перелік — лише для назв: річ, якої англійський текст не називає, у переклад не додавай — ні в "
-                 "опис, ні в поради; колір, тканину й деталі перекладай з тексту.")
+# ОПИС РЕЧІ — СВОЇМ ТЕКСТОМ, КОЛІР РЕЧІ — СЛОВОМ КРАМНИЦІ ЧИ КОДОМ (ПЕРЕКЛАД-36, рядки 4683, 4687, 4689; п.18, п.12).
+# ЩО БУЛО ВИДНО. Опис руки 1–2 модель пише річ за річчю (`about_items` з номером речі), а показ віддавав шару одну
+# прозу — абзаци без номера. Перекладачка мала перелік назв, але не знала, який абзац про яку річ, і вид та колір
+# брала з англійських слів моделі про фото, бо правило так і казало («колір… перекладай з тексту»): «dark
+# heather-grey knit» → «темно-фіолетовий светр» (у переліку «Джемпер … темно-сірий-молочний», ЖИВІ-24 07),
+# «graphite headband» → «Поясна стрічка» (у переліку «Обруч Келлі…» і «Поясна сумка…», ЖИВІ-23 №13), «lime-green
+# bag» → «лимонна» («Шкіряна сумка яскраво-зеленого кольору»), «pearl necklace» → «перлова намистина» («Намисто з
+# 5 рядів перлин айворі»). ЩО ТЕПЕР. Абзац про річ іде своїм текстом, і перелік каже біля речі, який текст про
+# неї («text н=M»); біля речі крамниці — код її кольору (`колір` картки — код каталогу, у вікні слова крамниці; без
+# нього — hex тим самим вікном, що підписує палітру, `_код_кольору`). Колір речі — слово її назви (річ зберігає
+# слово крамниці, п.18), а без нього — назва коду; кольорові слова англійського тексту про цю річ — враження моделі
+# від фото, не її колір. Назв і слів код не читає: передає назву, номер тексту й код (п.12).
+ПРАВИЛО_РЕЧЕЙ = ("When a text speaks of an item of the list, call it by the kind in its name — the same noun in the "
+                 "right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), "
+                 "not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with "
+                 "the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; "
+                 "«Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): "
+                 "give it one noun and call the item by it, in agreement, in every text. A text the list gives as "
+                 "about an item (about it: text н=M) speaks of that one item, and so does every other text where the "
+                 "English names it. The colour of an item of the list is the colour of its name: keep the shop's "
+                 "colour word from its name; when its name has no colour word, write the Ukrainian name of its colour "
+                 "code. The English colour words for that item are the stylist's impression of a photo: do not turn "
+                 "them into a colour of their own — the item's colour stands in their place. Colours of its details "
+                 "(trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for "
+                 "names only: an item the English text does not name is not added to the translation — neither to "
+                 "the description nor to the advice.")
+
+
+def _код_кольору_речі(р):
+    """Код кольору речі крамниці з переліку картки: `колір` (код каталогу), коли він код `color_name`, інакше hex тим
+    самим вікном, що підписує палітру (`_код_кольору`), або None. Вигадана й її річ коду тут не мають: їхній колір —
+    у тексті, який перекладає цей самий виклик."""
+    if р.get("ключ"):
+        return None
+    к = str(р.get("колір") or "").strip()
+    if к in _ВМ.ТАБЛИЦЯ.get("color_name", {}) and not _ВМ.невідомо(к):
+        return к
+    hx = re.fullmatch(r"#?([0-9a-fA-F]{6})", str(р.get("hex") or "").strip())
+    return _код_кольору(hx.group(1)) if hx else None
 
 
 def _абзац_речей(розмітка, речі):
-    """Абзац промпту з речами картки (`речі` — [{н, назва, ключ?}] з показу): номер і назва біля речі; назва, яку
-    перекладає цей самий виклик (`ключ` є в `розмітка`), — посиланням «текст н=K». Без речей — ""."""
+    """(абзац промпту з речами картки, коди кольорів речей). `речі` — [{н, назва, ключ?, опис?, колір?, hex?}] з показу:
+    номер і назва біля речі; назва, яку перекладає цей самий виклик (`ключ` є в `розмітка`), — посиланням «текст н=K»;
+    текст про цю річ (`опис` — ключ тексту в `розмітка`) — «about it: text н=M»; код кольору речі крамниці
+    (`_код_кольору_речі`). Без речей — ("", [])."""
     н_ключа = {р["ключ"]: р["н"] for р in розмітка}
-    рядки = []
+    рядки, коди = [], []
     for р in речі if isinstance(речі, list) else []:
         if not isinstance(р, dict):
             continue
         н, назва = н_ключа.get(str(р.get("ключ") or "")), " ".join(str(р.get("назва") or "").split())
-        if н or назва:
-            рядки.append("%s — %s" % (р.get("н") or len(рядки) + 1, "назва в тексті н=%d" % н if н else назва))
+        if not (н or назва):
+            continue
+        к, про = _код_кольору_речі(р), н_ключа.get(str(р.get("опис") or ""))
+        if к:
+            коди.append(к)
+        рядки.append("%s — %s" % (р.get("н") or len(рядки) + 1, "назва в тексті н=%d" % н if н else назва)
+                     + (" · colour code: %s" % к if к else "") + (" · about it: text н=%d" % про if про else ""))
     if not рядки:
-        return ""
+        return "", []
     return ("Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):\n"
-            + "\n".join(рядки) + "\n" + ПРАВИЛО_РЕЧЕЙ + "\n\n")
+            + "\n".join(рядки) + "\n" + ПРАВИЛО_РЕЧЕЙ + "\n\n"), коди
 
 
 def промпт(розмітка, речі=None):
     """Промпт моделі шару: роль і форма (з речами картки й кодами кольорів, коли вони є) + JSON текстів, по одному
     на рядок."""
     основа, _, хвіст = ПРОМПТ_ВИХОДУ.rpartition("ТЕКСТИ:\n")
-    return основа + _абзац_речей(розмітка, речі) + _абзац_кольорів(розмітка) + "ТЕКСТИ:\n" + хвіст + "[\n" + ",\n".join(
+    абзац, коди = _абзац_речей(розмітка, речі)
+    return основа + абзац + _абзац_кольорів(розмітка, коди) + "ТЕКСТИ:\n" + хвіст + "[\n" + ",\n".join(
         _json_.dumps(dict(н=р["н"], текст=р["текст"], **({"виправ": р["виправ"]} if р.get("виправ") else {})),
                      ensure_ascii=False) for р in розмітка) + "\n]"
 
@@ -1254,6 +1297,30 @@ def _бажання_на_її_словах(внутрішня, слова):
     return (dict(вих, wants=лишити) if лишити else вих), зняті
 
 
+# «НЕ ПОДОБАЄТЬСЯ» БЕЗ ЖОДНОЇ ПРИЧИНИ — НЕ ЗАПИСУЄТЬСЯ (рядок 4680, ЖИВІ-24 07). «Колір мій, а жакет я б носила й
+# окремо, з джинсами» перекладач коментаря записав `about_items: [{id: м-002, opinion: dislike, reasons: []}]` —
+# сандалі, про які вона не сказала нічого, — і річ пішла в «не ця» сценарію. Уривка в речі коментаря нема (сторож
+# `_тримається` рядка 3164 її не тримає), тож опора — лише форма: `dislike` стоїть на коді причини (`reasons`) чи
+# ознаки під власним ключем речі (`feature`, `pattern`, `fabric`); без жодного — не береться, рядок у `незнайомі`
+# (`about_items[N].dislike_without_reasons`). Звірка — до `_ознака_причини_в_межі`: той забирає коди ознак із
+# `reasons` у межі, і «взуття не моє, без каблука» лишилось би з порожніми причинами. Виміряно на записах живих
+# 12–24: «Колір мій, а жакет…» — `dislike` у 10 записах, 8 без причини; «взуття не моє…» — 14, усі з причиною.
+def _незгода_з_опорою(об):
+    """(відповідь без речей `dislike`, де нема ні коду причини, ні коду ознаки, рядки `незнайомі` про зняті)."""
+    речі = об.get("about_items")
+    if not isinstance(речі, list):
+        return об, []
+    def опора(р):
+        return any(isinstance(x, str) and x.strip() and not _ВМ.невідомо(_код(x)) for x in
+                   (р.get("reasons") if isinstance(р.get("reasons"), list) else [р.get("reasons")])) \
+            or any(_коди(р.get(п)) for п in _ПОЛЯ_ОЗНАК_ПРИЧИНИ)
+    зняті = [і for і, р in enumerate(речі) if isinstance(р, dict) and _код(р.get("opinion")) == "dislike" and not опора(р)]
+    if not зняті:
+        return об, []
+    return (dict(об, about_items=[р for і, р in enumerate(речі) if і not in зняті]),
+            ["about_items[%d].dislike_without_reasons" % і for і in зняті])
+
+
 def прийняти_вхід(вид, відповідь, ід_речей=None, слоти_речей=None, слова=None):
     """Відповідь вхідного перекладача → dict(внутрішня, незнайомі, невідомо, заглушки, причина).
 
@@ -1274,10 +1341,11 @@ def прийняти_вхід(вид, відповідь, ід_речей=None, 
     об, однина = _ознаки_одниною(об) if {"about_items", "vetoes"} <= set(ВИДИ_ВХОДУ[вид]["поля"]) else (об, [])
     об, заперечене = _заперечене_в_межі(об) if "vetoes" in ВИДИ_ВХОДУ[вид]["поля"] else (об, [])
     об, її_річ = _бажання_її_річ(об) if {"wants", "own_items"} <= set(ВИДИ_ВХОДУ[вид]["поля"]) else (об, [])
+    об, без_опори = _незгода_з_опорою(об) if "about_items" in ВИДИ_ВХОДУ[вид]["поля"] else (об, [])
     об, причина = _ознака_причини_в_межі(об, слоти_речей) if {"about_items", "vetoes"} <= set(ВИДИ_ВХОДУ[вид]["поля"]) else (об, [])
     об, слот_лише = _слот_без_ознаки(об, слоти_речей) if {"about_items", "wants"} <= set(ВИДИ_ВХОДУ[вид]["поля"]) else (об, [])
     на_своє = на_своє + однина + заперечене + її_річ + причина + слот_лише
-    поля, незнайомі, невідомо = в["поля"], [], []
+    поля, незнайомі, невідомо = в["поля"], list(без_опори), []
     внутрішня, цитати = {}, {}
     for к, v in об.items():
         if к not in поля:
@@ -2562,6 +2630,12 @@ def _коди_розмови():
             р.append("  · travel — she is away on a trip or a holiday, and every outing of it, by day or in the "
                      "evening, is travel; celebration — a festive event itself: a birthday, a party, an "
                      "anniversary, a New Year. A trip or a holiday without such an event is never celebration")
+            # Рядок 4622 (ЖИВІ-22 №8, ЖИВІ-23 №13, ЖИВІ-24 №8): «йога зранку, потім кава з подругою» — 3 з 3
+            # `occasion: sport` з уривком усього листа, `movement` 0 з 3. Правило частин дня самé (#911) нагоди не
+            # зрушило: модель обирає код тут, з переліку, тож межа коду `sport` стоїть при ньому
+            р.append("  · sport — only when sport is all her day; a sport that is one part of her day (a run "
+                     "before work, a workout and then a dinner) is movement sport, and occasion and place are "
+                     "her other part")
     р.append("Items — lists of objects; every item she names goes into one of them, none is left out; each "
              "object has \"quote\" — the fragment of her words about this item, copied letter for letter — and "
              "only the attributes she named:")
@@ -2655,13 +2729,16 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # `movement` каже «also when sport is only one part of her day». Перелік частин нижче називав рух лише дорогою
     # («how she gets there»), а подію — `occasion` (кава, `everyday`): спорт частини дня не лягав ніде. Код рух з
     # `event` не виводить (п.12), тож перелік частин називає спорт дня прямо.
+    # Рядок 4622: ця фраза («also when another part of her day is the occasion») прийшла між ЖИВІ-21 і ЖИВІ-23 — і
+    # нагода того самого листа з `everyday` (Ж20, Ж21) стала `sport` (Ж22–24, 3 з 3): спорт першою частиною
+    # ставав нагодою. Тепер вона каже прямо, що нагода й місце — інша частина дня.
     "\"update\" holds every field her new message fills or changes, and only those. Go through her "
     "message part by part: one phrase often fills several fields, and the same fragment of her words may be "
     "the quote of each of them — the outing itself (work, a party, a trip) is occasion, also when the same "
     "phrase says how she gets there: such a phrase gives both occasion and movement, never movement alone; "
     "degrees and snow or rain said together are temperature_c and precipitation; how she gets there (on foot, "
-    "a long way) is movement; a sport she names for that day (yoga, a run, a workout) is movement sport, also "
-    "when another part of her day is the occasion; the place where the event is (a restaurant, an office, "
+    "a long way) is movement; a sport she names for that day (yoga, a run, a workout) is movement sport, and "
+    "when her day has another part, occasion and place are that part; the place where the event is (a restaurant, an office, "
     "a café) is place, also "
     "inside the phrase that names the event; her way to the outing and the street in her words about the "
     "weather are never place; an item she names for this outing goes into wants or own_items; her "
@@ -2701,11 +2778,19 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # ШКАЛА-2 (рядок 1132): «працюю з дому» — то home, то work; «на кожен день в університет» — то everyday, то
     # school; «театр на прем'єру» — то theatre, то opera_premiere (смуга 4–6 проти 6–8). Нагода — рід заняття
     # (робота вдома — робота, навчання — школа), «щодня» — частота, а не рід; місце — те, що названо її словами.
+    # Рядок 4622: спорт першою частиною дня — не нагода (див. примітку коду `sport`), тож частина дня — перша не
+    # спортивна. Місце «кави з подругою» модель 5 з 5 (Ж20–24) клала лише в `place_words` — кодом `cafe` (шов
+    # `_СУСІДИ_КОДІВ` переносить його в `place`) чи підписом «Кафе» (код слів не читає, п.12 → `not_taken`): «place
+    # is the place her words name» вона читала як «місце названо прямо». Місце того, що вона назвала, — теж місце.
+    # Правка #911 (довге речення про спорт тут) вийнята: у ЖИВІ-24 №7 (без спорту) місце випало — тут лише коротка
+    # вставка, решта правила — текст `main`.
     "\"occasion\" is what she will be doing and \"place\" is where she will be; both describe the same "
     "part of her day, never the occasion of one part and the place of another. When her day has several "
-    "parts, both describe the part she names first, and \"event\" keeps all of them. \"occasion\" is the "
+    "parts, both describe the first part she names that is not a sport, and \"event\" keeps all of them. "
+    "\"occasion\" is the "
     "kind of what she does, not how often or where: working is work even at home (place home); studying at "
-    "a school, a university or courses is school, also every day. \"place\" is the place her words name: "
+    "a school, a university or courses is school, also every day. \"place\" is the place her words name, "
+    "also the place of what she names (a coffee with someone — cafe): "
     "a premiere or a show at a theatre is theatre; opera_premiere only when her words name an opera.",
     # НП-в крок 2: ошатність — число мовної моделі ЗАВЖДИ, без цитати (її слова, подія, плитки);
     # з нього код рахує смугу й відсів пулу, інших джерел смуги нема.
