@@ -1,0 +1,50 @@
+── ПРОМПТ (7280 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Піджак з V-образним вирізом сірий · colour code: grey · about it: text н=1
+2 — Спідниця жіноча зелена · colour code: green · about it: text н=2
+3 — Пасок з пір’ям 2 смарагд · colour code: emerald · about it: text н=3
+4 — Черевики бежеві NITY на хутрі · colour code: beige · about it: text н=4
+5 — Сумка жіноча, ATTICO, шкіра, колір бежевий · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; emerald — смарагд; green — зелений; grey — сірий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This is a tailored grey blazer with a flattering V-neckline that opens at the front, revealing your yellow top underneath. The fabric has a subtle texture and falls straight from the shoulders to the hips, creating a clean, professional line."},
+{"н": 2, "текст": "A playful yet polished mini skirt in vertical stripes of teal and white, with an elasticated waistband that sits comfortably at the natural waist. It features a small front pocket detail and a subtle embroidered logo on the lower right side."},
+{"н": 3, "текст": "A luxurious emerald green satin belt, finished with a cascade of fine green feathers that add movement and elegance. The smooth fabric hugs your waist, defining your silhouette without being too tight."},
+{"н": 4, "текст": "Cozy tan suede ankle boots with distinctive white crochet trim around the top edge and a plush shearling lining for comfort. They sit just above the ankle on a thick, cushioned sole that provides stability throughout your day."},
+{"н": 5, "текст": "A soft pale beige leather wallet-style bag with a sleek rectangular shape and a protective flap secured by a magnetic closure. The fine-grain texture and silver zipper pull make it both understated and refined."},
+{"н": 6, "текст": "Your ensemble is built for a structured office day, balancing the sharp lines of your new grey blazer with the playful energy of a bright green striped skirt. The emerald belt cinches the waist to highlight your natural X shape, defining the hourglass figure while keeping the silhouette professional and polished. Your beige ankle boots bring comfort without sacrificing elegance, and the soft beige bag offers practical storage for essentials like your phone or keys."},
+{"н": 7, "текст": "Start by wearing the grey blazer to work as your outer layer; if you need a change of rhythm at lunch or during evening hours, take it off to let the striped skirt breathe and add color to your look."},
+{"н": 8, "текст": "Tuck the hem of your yellow top into the skirt so that the emerald belt sits perfectly against your waist, ensuring you always feel centered and put-together as you move through meetings."},
+{"н": 9, "текст": "Піджак з V-образним вирізом сірий, Спідниця жіноча зелена, Пасок з пір’ям 2 смарагд, Черевики бежеві NITY на хутрі, Сумка жіноча, ATTICO, шкіра, колір бежевий — While coordination can be tighter, this outfit serves her intent to lead with one focal point by using the emerald belt and green skirt together to create a harmonious analogous look that fits the office occasion perfectly."}
+]
+
+── ВІДПОВІДЬ (2406 симв., 45.1 с, HTTP 200) ──
+```json
+{
+  "1": "Це приталений сірий піджак з V-подібним вирізом, який розкривається спереду та демонструє твій жовтий топ. Тканина має ледь помітну текстуру і вільно спадає від плечей до стегон, створюючи чисту професійну лінію.",
+  "2": "Весела й водночас елегантна міні-спідниця у вертикальні смужки бірюзового та білого кольорів з еластичним поясом на лінії талії. Вона має невелику кишеню спереду і ледь помітний вишитий логотип праворуч внизу.",
+  "3": "Розкішний смарагдово-зелений атласний пасок, прикрашений каскадом тонких зелених пір’їн, які додають руху та елегантності. Гладка тканина облягає твою талію, підкреслюючи силует без зайвого тиску.",
+  "4": "Затишні бежеві замшеві черевики з виразною білою в’язаною обробкою по верхньому краю і м’яким хутряним утепленням для комфорту. Вони сидять трохи вище щиколотки на товстій, амортизованій підошві, яка забезпечує стійкість протягом дня.",
+  "5": "М’яка світло-бежева шкіряна сумка у вигляді гаманця з елегантним прямокутним силуетом і захисною клапаном на магнітній застібці. Тонка текстура та срібна фурнітура роблять її водночас стриманою й вишуканою.",
+  "6": "Твій образ створений для структурованого робочого дня, поєднуючи чіткі лінії твого нового сірого піджака з грайливою енергією яскравої зелено-смугастої спідниці. Смарагдовий пасок підкреслює талію, виділяючи природну X-подібну фігуру, створюючи силует професійний і елегантний. Бежеві черевики дарують комфорт без втрати вишуканості, а м’яка бежева сумка пропонує практичне місце для зберігання необхідних речей, таких як телефон або ключі.",
+  "7": "Почни з того, щоб одягнути сірий піджак на роботу в якості верхнього шару; якщо тобі потрібна зміна ритму за обіднім столом чи у вечірні години, зніми його, щоб спідниця-смужка могла дихати та додавати кольору твоєму образу.",
+  "8": "Заправ край жовтого топу в спідницю так, щоб смарагдовий пасок ідеально сидів на твоїй талії, забезпечуючи відчуття збалансованості протягом усіх зустрічей.",
+  "9": "Піджак з V-образним вирізом сірий, Спідниця жіноча зелена, Пасок з пір’ям 2 смарагд, Черевики бежеві NITY на хутрі, Сумка жіноча, ATTICO, шкіра, колір бежевий — Хоч координація може бути більш тісною, цей образ служить її задуму виділити один акцентний елемент за допомогою смарагдового паска та зелено-смугастої спідниці разом, створюючи гармонійний аналоговий образ, який ідеально підходить для офіційного випадку."
+}
+```

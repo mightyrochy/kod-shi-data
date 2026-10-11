@@ -1,0 +1,52 @@
+── ПРОМПТ (2171 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer tailored with a relaxed fit, knee-length, slate grey (#607D8B), lightweight wool blend.\nPencil skirt mid-thigh length, forest green (#2E4E3F), crepe de Chine.\nSilk blouse tucked in, v-neck, ivory white (#FFFFF0), chiffon with a subtle drape.\n loafers with a low block heel, oxblood red (#961E1C), leather calf skin.\n Minimalist gold stud earrings and a thin chain necklace, polished brass and 14k gold.\nThis ensemble strikes the perfect balance between professional polish and personal comfort for a busy office day. The relaxed blazer adds a modern touch without sacrificing authority, while the contrasting deep green skirt grounds the look with sophistication. Natural light fabrics like silk and crepe ensure she remains cool and comfortable throughout her workday, adhering strictly to her preference against heavy outer layers on warm days. The pop of oxblood on the shoes introduces an element of individual style that makes the classic silhouette feel fresh and intentional."}
+
+── ВІДПОВІДЬ (1188 симв., 111.0 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Blazer",
+        "details": "tailored with a relaxed fit, knee-length, lightweight wool blend",
+        "slot": "outerwear",
+        "color_hex": "#607D8B",
+        "worn": true
+      },
+      {
+        "name": "Pencil skirt",
+        "details": "mid-thigh length, crepe de Chine",
+        "slot": "bottom",
+        "color_hex": "#2E4E3F",
+        "worn": true
+      },
+      {
+        "name": "Silk blouse",
+        "details": "tucked in, v-neck, chiffon with a subtle drape",
+        "slot": "top",
+        "color_hex": "#FFFFF0",
+        "worn": true
+      },
+      {
+        "name": "Loafers",
+        "details": "with a low block heel, leather calf skin",
+        "slot": "shoes",
+        "color_hex": "#961E1C",
+        "worn": true
+      },
+      {
+        "name": "Minimalist gold stud earrings",
+        "details": "polished brass and 14k gold",
+        "slot": "earrings",
+        "color_hex": null,
+        "worn": true
+      },
+      {
+        "name": "Thin chain necklace",
+        "details": "polished brass and 14k gold",
+        "slot": "necklace",
+        "color_hex": null,
+        "worn": true
+      }
+    ]
+  }
+}
