@@ -136,7 +136,11 @@ def _ключ(поле, код, незнайомі, де):
 #   · «kind» — вид речі кодом `item_type` (рядок 4602), і СЛОТ БЕРЕТЬСЯ З НЬОГО (`внутрішня_мова.СЛОТ_ТИПУ`), а не
 #     зі «slot» моделі: ЖИВІ-22 №6 (`OTSINKA_F2=L`) — дві пари ботильйонів ф2 названо «Trousers (light/dark)» зі
 #     слотом bottom, і обидві стали «низом»; Ж18 №10 — куртку ф1 картка звала «сарафан». Вид — одне слово з
-#     переліку на ту саму форму, що й правило слота; модель оцінки бачить його в «items» (`kind`);
+#     переліку на ту саму форму, що й правило слота; модель оцінки бачить його в «items» (`kind`). Слот — ПЕРШИМ, вид —
+#     після нього й у його межах (рядок 4684): з «kind» перед «slot» (ЖИВІ-24 №06, qwen3.5-9b, `seed3_02`, `seed3_09`)
+#     ті самі ботильйони ф2 стали «Top variant (beige/black)» — slot top, kind null чи top_garment — в обох викликах, а
+#     без «kind» (ЖИВІ-22 №05, та сама модель і фігура) — взуттям у трьох із трьох; промпт речей розмови
+#     (`річ_з_фото.промпт_фото`: slot, тоді kind) білі сандалі ЖИВІ-24 №04 назвав `shoes`/`sandals`;
 #   · рамка «на око» і «відповідь — одразу обʼєкт» (рядок 4286): Ж19 №15, `OTSINKA_F2=L` — 13 265 симв.
 #     роздумів «Left: ~200 (if 600px wide)…» про пікселі рамок без JSON, у стелю 4000 т. за 110,8 с; другий
 #     виклик тієї ж сцени — 3 328 симв. опису перед JSON. Рамку код і так міряє в тисячних (`_рамка`).
@@ -154,13 +158,12 @@ def _ключ(поле, код, незнайомі, де):
         "\"in_outfit\" is true for items worn together in the outfit; false for an item shown as an "
         "alternative to one of them; \"unknown\" when the photo does not show which of them she wears "
         "(two pairs side by side, nothing on her).",
-        "\"kind\" is the item's exact kind from \"codes.item_type\", read from its own shape like \"slot\".",
         "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a "
         "toe, boots also a shaft rising from them; a top or outerwear has a neckline, shoulders and sleeves "
         "or straps; trousers have two legs; a skirt hangs from the waist in one piece.",
+        "\"kind\" is the item's exact kind from \"codes.item_type\" within its \"slot\", read from the same shape.",
         "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
-        "around the item itself, without background or skin; estimate it by eye as shares of the photo — "
-        "no pixel calculations.",
+        "around the item itself, without background or skin; " + _РФ.РАМКА_НА_ОКО + ".",
         "Field values are only codes from \"codes\"; what the photo does not show is null.",
         "Start the answer with the JSON object itself: no description or reasoning before it.",
     ),
@@ -168,8 +171,8 @@ def _ключ(поле, код, незнайомі, де):
     скелет={"items": [{
         "photo": "<photo id>",
         "name": "<short English name, as a shop would call the item>",
-        "kind": "<code from codes.item_type: the exact kind of the item, or null>",
         "slot": "<code from codes.slot>",
+        "kind": "<code from codes.item_type: the exact kind of the item within its slot, or null>",
         "color": "<code from codes.color: the main color of the item itself>",
         "fabric": "<code from codes.fabric when the texture is visible, else null>",
         "cut": "<code from codes.cut or null>",
@@ -191,11 +194,14 @@ def промпт_речей(фото):
     return _json.dumps(_ЗП.зібрати(РЕЧІ, {"photos": ф, "codes": коди_речей()}), ensure_ascii=False)
 
 
+def _рамка_списком(v):
+    """Рамка моделі {left, top, right, bottom} → [ліво, верх, право, низ]; інше — як є."""
+    return [v.get(к) for к in ("left", "top", "right", "bottom")] if isinstance(v, dict) else v
+
+
 def _рамка(v):
     """Рамка моделі {left, top, right, bottom} (або список) → рамка `річ_з_фото` чи None."""
-    if isinstance(v, dict):
-        v = [v.get(к) for к in ("left", "top", "right", "bottom")]
-    return _РФ._рамка(v)
+    return _РФ._рамка(_рамка_списком(v))
 
 
 def _в_образі(о):
@@ -256,6 +262,9 @@ def речі_з_відповіді(відповідь, фото):
                  чия="невідомо",
                  в_образі=_в_образі(о),
                  рамка=_рамка(о.get("frame")))
+        вироджена = _РФ.рамка_виродилась(_рамка_списком(о.get("frame")), де)
+        if вироджена:
+            вих["нотатки"].append(вироджена)        # річ без рамки, як не названо (рядок 4682)
         # слот — з виду, коли вид у таблиці (рядок 4602): розбіжність зі «slot» моделі — кодом у `нотатки`
         слот_виду = _ВМ.ключ("slot", _ВМ.СЛОТ_ТИПУ.get(вид)) if вид else None
         if слот_виду and слот_виду != р["слот"]:
