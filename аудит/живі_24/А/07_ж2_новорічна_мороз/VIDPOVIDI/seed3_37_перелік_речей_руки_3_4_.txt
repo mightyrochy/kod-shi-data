@@ -1,0 +1,36 @@
+── ПРОМПТ (2195 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green velvet wrap coat, relaxed fit with a wide lapel, knee length, #046307, heavy woven wool blend.\nCremesilk satin slip dress, bias cut straight silhouette, midi length hitting mid-calf, #d9b48f, pure silk charmeuse.\nPointed-toe stiletto pump, sleek narrow silhouette, ankle height, #5c4033, patent calfskin leather.\nDiamond stud earrings, medium carat, round cut, white metal setting, #f0f0f0, rhinestone in clear cubic zirconia.\n\nThis ensemble captures the festive New Year's spirit with a luxurious velvet coat that provides necessary warmth against the frost while draping elegantly over the satin slip dress underneath. The rich emerald green of the outer layer contrasts beautifully with her skin tone, creating a jewel-toned focal point suitable for a dinner celebration, while the bias cut accentuates natural curves without feeling restrictive. Metallic patent heels add a modern edge to the classic velvet and silk combination, ensuring she feels poised and comfortable throughout the evening."}
+
+── ВІДПОВІДЬ (915 симв., 375.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Emerald green velvet wrap coat",
+      "details": "Relaxed fit with a wide lapel, knee length, heavy woven wool blend",
+      "slot": "outerwear",
+      "color_hex": "#046307",
+      "worn": true
+    },
+    {
+      "name": "Cremesilk satin slip dress",
+      "details": "Bias cut straight silhouette, midi length hitting mid-calf, pure silk charmeuse",
+      "slot": "dress",
+      "color_hex": "#d9b48f",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe stiletto pump",
+      "details": "Sleek narrow silhouette, ankle height, patent calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#5c4033",
+      "worn": true
+    },
+    {
+      "name": "Diamond stud earrings",
+      "details": "Medium carat, round cut, white metal setting with rhinestone in clear cubic zirconia",
+      "slot": "earrings",
+      "color_hex": "#f0f0f0",
+      "worn": true
+    }
+  ]
+}
