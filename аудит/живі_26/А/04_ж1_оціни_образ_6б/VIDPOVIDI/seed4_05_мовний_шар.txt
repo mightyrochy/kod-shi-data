@@ -1,0 +1,262 @@
+── ПРОМПТ (6120 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Кольори пиджака та штанів поєднуються між собою і підійдуть тобі: бежевий у верхньому колірі гарно освітлює обличчя, а бордовий низ додає яскравості без надмірної насиченості."},
+{"н": 2, "текст": "Бежевий пиджак (p1-2) у верхній частині тіла створює гарний контраст з твоїм обличчям і підкреслює його кольори, що є важливим для будь-якого образу."},
+{"н": 3, "текст": "Вертикальна лінія від верхньої частини до низу (p1-2 і p1-3) підкреслює затишність образу, а закруглена форма штанин (p1-3) додає м'якості."},
+{"н": 4, "текст": "Заміни бордові штани на бежеву спідницю forte_forte (cultboutique.com.ua), щоб створити гармонійний монохромний образ, який виглядає дуже елегантно і стильно."},
+{"н": 5, "текст": "unknown: occasion"},
+{"н": 6, "текст": "unknown: temperature"},
+{"н": 7, "текст": "unknown: calf girth not measured"},
+{"н": 8, "текст": "unknown: items register unknown (2)"},
+{"н": 9, "текст": "unknown: dividing line item length unknown"},
+{"н": 10, "текст": "unknown: not run:one silhouette letter"},
+{"н": 11, "текст": "unknown: not run:formality spread"},
+{"н": 12, "текст": "unknown: not run:shine budget"},
+{"н": 13, "текст": "unknown: not run:print budget"},
+{"н": 14, "текст": "unknown: not run:one sprezzatura"},
+{"н": 15, "текст": "unknown: not run:hem off widest point"},
+{"н": 16, "текст": "unknown: not run:one metal"},
+{"н": 17, "текст": "unknown: not run:genre dominant"},
+{"н": 18, "текст": "unknown: not run:one trend item"},
+{"н": 19, "текст": "unknown: not run:fabric cut formality"},
+{"н": 20, "текст": "unknown: not run:scale to person"},
+{"н": 21, "текст": "unknown: not run:layer hems apart"},
+{"н": 22, "текст": "unknown: not run:repairs not opposed"},
+{"н": 23, "текст": "unknown: not run:near face weight"},
+{"н": 24, "текст": "unknown: not run:neutrals tone or step"},
+{"н": 25, "текст": "unknown: not run:not median choice"},
+{"н": 26, "текст": "unknown: not run:texture adds"},
+{"н": 27, "текст": "unknown: not run:silhouette decided"},
+{"н": 28, "текст": "unknown: not run:not same for anyone"},
+{"н": 29, "текст": "unknown: not run:passport from talk"},
+{"н": 30, "текст": "unknown: not run:print dominant hers"},
+{"н": 31, "текст": "unknown: not run:grey hair eyes lead"},
+{"н": 32, "текст": "unknown: not run:context keeps edge colour"},
+{"н": 33, "текст": "unknown: not run:face colour eye side"},
+{"н": 34, "текст": "unknown: not run:scheme chosen"},
+{"н": 35, "текст": "unknown: not run:soft palette drama by lightness"},
+{"н": 36, "текст": "unknown: not run:glove sleeve length"},
+{"н": 37, "текст": "unknown: not run:tights density"},
+{"н": 38, "текст": "unknown: not run:tights link"},
+{"н": 39, "текст": "unknown: not run:jewelry scale"},
+{"н": 40, "текст": "unknown: not run:necklace off neckline"},
+{"н": 41, "текст": "unknown: not run:accessory edge placement"},
+{"н": 42, "текст": "unknown: not run:price per combinations"},
+{"н": 43, "текст": "unknown: not run:repairable shoes"},
+{"н": 44, "текст": "unknown: not run:refusal reason physical"},
+{"н": 45, "текст": "unknown: not run:glasses in chroma"},
+{"н": 46, "текст": "unknown: not run:jewelry kind asked"},
+{"н": 47, "текст": "unknown: not run:weather withstood"},
+{"н": 48, "текст": "unknown: not run:metal is surface"}
+]
+
+── ВІДПОВІДЬ (3940 симв., 89.0 с, HTTP 200) ──
+```json
+[
+  {
+    "н": 1,
+    "текст": "Кольори пиджака та штанів поєднуються між собою і підійдуть тобі: бежевий у верхній частині гарно освітлює обличчя, а бордовий низ додає яскравості без надмірної насиченості."
+  },
+  {
+    "н": 2,
+    "текст": "Бежевий пиджак (p1-2) у верхній частині тіла створює гарний контраст з твоїм обличчям і підкреслює його кольори, що є важливим для будь-якого образу."
+  },
+  {
+    "н": 3,
+    "текст": "Вертикальна лінія від верхньої частини до низу (p1-2 і p1-3) підкреслює затишність образу, а закруглена форма штанин (p1-3) додає м'якості."
+  },
+  {
+    "н": 4,
+    "текст": "Заміни бордові штани на бежеву спідницю forte_forte (cultboutique.com.ua), щоб створити гармонійний монохромний образ, який виглядає дуже елегантно і стильно."
+  },
+  {
+    "н": 5,
+    "текст": "unknown: occasion"
+  },
+  {
+    "н": 6,
+    "текст": "unknown: temperature"
+  },
+  {
+    "н": 7,
+    "текст": "unknown: calf girth not measured"
+  },
+  {
+    "н": 8,
+    "текст": "unknown: items register unknown (2)"
+  },
+  {
+    "н": 9,
+    "текст": "unknown: dividing line item length unknown"
+  },
+  {
+    "н": 10,
+    "текст": "unknown: not run:one silhouette letter"
+  },
+  {
+    "н": 11,
+    "текст": "unknown: not run:formality spread"
+  },
+  {
+    "н": 12,
+    "текст": "unknown: not run:shine budget"
+  },
+  {
+    "н": 13,
+    "текст": "unknown: not run:print budget"
+  },
+  {
+    "н": 14,
+    "текст": "unknown: not run:one sprezzatura"
+  },
+  {
+    "н": 15,
+    "текст": "unknown: not run:hem off widest point"
+  },
+  {
+    "н": 16,
+    "текст": "unknown: not run:one metal"
+  },
+  {
+    "н": 17,
+    "текст": "unknown: not run:genre dominant"
+  },
+  {
+    "н": 18,
+    "текст": "unknown: not run:one trend item"
+  },
+  {
+    "н": 19,
+    "текст": "unknown: not run:fabric cut formality"
+  },
+  {
+    "н": 20,
+    "текст": "unknown: not run:scale to person"
+  },
+  {
+    "н": 21,
+    "текст": "unknown: not run:layer hems apart"
+  },
+  {
+    "н": 22,
+    "текст": "unknown: not run:repairs not opposed"
+  },
+  {
+    "н": 23,
+    "текст": "unknown: not run:near face weight"
+  },
+  {
+    "н": 24,
+    "текст": "unknown: not run:neutrals tone or step"
+  },
+  {
+    "н": 25,
+    "текст": "unknown: not run:not median choice"
+  },
+  {
+    "н": 26,
+    "текст": "unknown: not run:texture adds"
+  },
+  {
+    "н": 27,
+    "текст": "unknown: not run:silhouette decided"
+  },
+  {
+    "н": 28,
+    "текст": "unknown: not run:not same for anyone"
+  },
+  {
+    "н": 29,
+    "текст": "unknown: not run:passport from talk"
+  },
+  {
+    "н": 30,
+    "текст": "unknown: not run:print dominant hers"
+  },
+  {
+    "н": 31,
+    "текст": "unknown: not run:grey hair eyes lead"
+  },
+  {
+    "н": 32,
+    "текст": "unknown: not run:context keeps edge colour"
+  },
+  {
+    "н": 33,
+    "текст": "unknown: not run:face colour eye side"
+  },
+  {
+    "н": 34,
+    "текст": "unknown: not run:scheme chosen"
+  },
+  {
+    "н": 35,
+    "текст": "unknown: not run:soft palette drama by lightness"
+  },
+  {
+    "н": 36,
+    "текст": "unknown: not run:glove sleeve length"
+  },
+  {
+    "н": 37,
+    "текст": "unknown: not run:tights density"
+  },
+  {
+    "н": 38,
+    "текст": "unknown: not run:tights link"
+  },
+  {
+    "н": 39,
+    "текст": "unknown: not run:jewelry scale"
+  },
+  {
+    "н": 40,
+    "текст": "unknown: not run:necklace off neckline"
+  },
+  {
+    "н": 41,
+    "текст": "unknown: not run:accessory edge placement"
+  },
+  {
+    "н": 42,
+    "текст": "unknown: not run:price per combinations"
+  },
+  {
+    "н": 43,
+    "текст": "unknown: not run:repairable shoes"
+  },
+  {
+    "н": 44,
+    "текст": "unknown: not run:refusal reason physical"
+  },
+  {
+    "н": 45,
+    "текст": "unknown: not run:glasses in chroma"
+  },
+  {
+    "н": 46,
+    "текст": "unknown: not run:jewelry kind asked"
+  },
+  {
+    "н": 47,
+    "текст": "unknown: not run:weather withstood"
+  },
+  {
+    "н": 48,
+    "текст": "unknown: not run:metal is surface"
+  }
+]
+```
