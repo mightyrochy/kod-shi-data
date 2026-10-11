@@ -1206,7 +1206,7 @@ def _названі(v):
 
 
 _СЛУЖБОВИЙ_ТЕКСТ = _re.compile(
-    r"(?:\b(?:wear_as_is|wear_with_change|do_not_wear)\b|\b(?:answer|verdict|works|change|unknown|items?)\s*[:=]|"
+    r"(?:\b(?:wear_as_is|wear_with_change|do_not_wear)\b|\b(?:answer|verdict|works|change|unknown|items?)[\"']?\s*[:=]|"
     r"\b(?:p\d+(?:-\d+)?|c\d+|[fb]-(?:o\d+|set)-\d+|o\d+)\b|#\d+)", _re.I)
 
 
