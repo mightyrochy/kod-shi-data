@@ -495,8 +495,8 @@ _НЕМАЄ = {"metal": "none", "metal_where": "none", "decor[]": "none", "set_k
 # Коди-синоніми: значення моделі → код переліку. Лише те, що читається однозначно; сумнівне
 # («mid» — mid_thigh чи midi? «asymmetric», «hood», «bomber» — коду нема) лишається "unknown".
 _КОЛІР = {"milk": "milky", "pearl": "pearly", "ivory": "cream", "vanilla": "cream",
-          "ecru": "cream", "off_white": "cream", "capuccino": "latte", "cappuccino": "latte",
-          "capuchino": "latte", "kapuchino": "latte", "mokko": "mocha", "mocca": "mocha",
+          "ecru": "cream", "off_white": "cream", "capuccino": "cappuccino",
+          "capuchino": "cappuccino", "kapuchino": "cappuccino", "mokko": "mocha", "mocca": "mocha",
           "caramel": "camel", "cinnamon": "brown", "tobacco": "brown", "dark_blue": "navy",
           "indigo": "navy", "denim": "denim_blue", "cobalt": "blue", "bluish": "blue",
           "cornflower": "light_blue", "sky": "light_blue", "electric": "electric_blue",
