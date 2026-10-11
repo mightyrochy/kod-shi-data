@@ -163,8 +163,7 @@ def _ключ(поле, код, незнайомі, де):
         "or straps; trousers have two legs; a skirt hangs from the waist in one piece.",
         "\"kind\" is the item's exact kind from \"codes.item_type\" within its \"slot\", read from the same shape.",
         "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
-        "around the item itself, without background or skin; estimate it by eye as shares of the photo — "
-        "no pixel calculations.",
+        "around the item itself, without background or skin; " + _РФ.РАМКА_НА_ОКО + ".",
         "Field values are only codes from \"codes\"; what the photo does not show is null.",
         "Start the answer with the JSON object itself: no description or reasoning before it.",
     ),
@@ -1206,6 +1205,30 @@ def _названі(v):
     return [ід_з_дроту(str(і)) for і in v] if isinstance(v, list) else []
 
 
+_СЛУЖБОВИЙ_ТЕКСТ = _re.compile(
+    r"(?:\b(?:wear_as_is|wear_with_change|do_not_wear)\b|[\"'](?:answer|verdict|works|change|unknown|items?)[\"']\s*:|^\s*(?:answer|verdict|works|change|unknown|items?)\s*[:=]|"
+    r"\b(?:p\d+(?:-\d+)?|c\d+|[fb]-(?:o\d+|set)-\d+)\b|#(?![0-9a-f]{6}\b)\d+)", _re.I | _re.M)
+
+
+def _текст_картки(v):
+    """Вільний текст лише коли в ньому нема ключів протоколу чи внутрішніх ід."""
+    текст = _текст(v)
+    return "" if _СЛУЖБОВИЙ_ТЕКСТ.search(текст) else текст
+
+
+def _назва_без_входу(запис):
+    """Запис `без_входу` → чесний рядок картки; вільний текст беремо лише з позначеного поля."""
+    вхід = запис.get("input")
+    назви = dict(_ВМ.ТАБЛИЦЯ["advice_topic"], color_measure="вимір кольору")
+    if вхід in назви:
+        return "Немає даних: %s." % назви[вхід]
+    for поле in ("missing", "what"):
+        текст = _текст((запис.get(поле) or {}).get("free_text")) if isinstance(запис.get(поле), dict) else ""
+        if текст:
+            return текст
+    return "Немає даних про один із входів."
+
+
 def _суперечить(про, речі, суд_):
     """Чому твердження «вдало» (`про`, речі) суперечить суду коду, або None."""
     нема = {б.get("input") for б in суд_.get("без_входу") or []}
@@ -1359,15 +1382,25 @@ def прийняти_оцінку(відповідь, суд_):
     if вердикт == "wear_with_change" and not змінити:
         сторож.append(dict(де="verdict", чому="change_missing", що=вердикт))
         вердикт = None
-    не_знаю = [dict(текст=_текст(у.get("text") if isinstance(у, dict) else у))
-               for у in (об.get("unknown") if isinstance(об.get("unknown"), list) else [])]
-    не_знаю = [у for у in не_знаю if у["текст"]]
-    картка = dict(відповідь=_текст(об.get("answer")), вердикт=вердикт, вдало=вдало,
+    # блок «Чого я не знаю» — від коду: назва входу українською з таблиці мови (не код і не слово моделі)
+    не_знаю, бачено = [], set()
+    for б in невідоме_для_моделі(суд_):   # лише те, що стосується цього образу, не повний звіт власника
+        if not б.get("input"):
+            continue
+        текст = _назва_без_входу(б)
+        if текст not in бачено:
+            не_знаю.append(dict(текст=текст))
+            бачено.add(текст)
+    відповідь = _текст_картки(об.get("answer"))
+    if not відповідь:
+        відповідь = next((п["текст"] for п in вдало + змінити if _текст_картки(п["текст"])), "")
+    картка = dict(відповідь=відповідь, вердикт=вердикт, вдало=вдало,
                   змінити=змінити, не_знаю=не_знаю)
     return dict(картка=картка, сторож=сторож,
                 причина=(None if картка["відповідь"] else "empty_answer_field"), нотатки=нотатки,
                 # межа сторожа — кодами полів, не фразою (рядок 3430, аудит/ПРОДУКТ.md п.12)
-                сторож_межа=dict(звіряє=["about", "items", "change_id", "verdict"], не_читає=["answer", "text"]))
+                сторож_межа=dict(звіряє=["about", "items", "change_id", "verdict", "answer"],
+                                 не_читає=["text"]))
 
 
 def повтор_вердикту(суд_, сторож):
