@@ -139,8 +139,8 @@ def гучність(lab):
 
 def _темне_буре(L, Cc, h):
     """Чи точка виміру входить у вузьке вікно темного червоно-бурого K-COL-06."""
-    Lmax, Cmax, hmax, зсув = C["темне_буре"]
-    return L < Lmax and Cc <= Cmax and L + зсув <= h < hmax
+    Lmax, Cmax, hmin, hmax, _ = C["темне_буре"]
+    return L < Lmax and Cc <= Cmax and hmin <= h < hmax
 
 
 def нейтраль(lab):
