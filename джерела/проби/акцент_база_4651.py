@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """КОЛІР-АКЦЕНТ (рядки 4651, 4652). (1) Суд N образів стенда (сід 7, як `відношення_одне_4650.py -о`): «правило:сила» K-COL-02,
-K-ACC-01, K-COL-05, K-PAL-04/05/15, K-COMP-05, K-CRA-02 і речі кожної сироти K-COL-05 default (колір виміру). (2) Пул того самого стенда, виміряні кольорові речі (не K-COL-06) з L* < 26: чи вони акцент K-COL-05 (`колір_річ.акцент_меж`, ISCC-NBS). (3) Пари пулу руки 1, обидва
+K-ACC-01, K-COL-05, K-PAL-04/05/15, K-COMP-05, K-CRA-02 і речі кожної сироти K-COL-05 default (колір виміру). (2) Пул того самого стенда, виміряні кольорові речі (не K-COL-06) з L* < 40: чи вони акцент K-COL-05 (`колір_річ.акцент_меж`, ISCC-NBS). (3) Пари пулу руки 1, обидва
 виміри, C* 4–8 × C* ≥ 20, де сектор кола (без певності) не дає «той самий тон»: частка same_hue «так» (лише через ΔH*). Код без `акцент_меж` (ДО) —
 (2) пропускається. Запуск із джерела/: python3 проби/акцент_база_4651.py [-о 600]"""
 import json, random, sys, warnings, collections as K; warnings.filterwarnings("ignore"); sys.path.insert(0, "."); sys.path.insert(0, "проби")
@@ -17,7 +17,7 @@ for n in range(N):
 N and print("(1) суд %d образів: %s" % (N, " · ".join("%s %d" % кв for кв in sorted(С.items()))))
 N and print("    речі сиріт K-COL-05 default (колір: разів):", ", ".join("%s: %d" % кв for кв in Сир.most_common(14)))
 Т = {cs.hex_з_lab(x["lab"]): (с, КР.акцент_меж(x), x.get("назва", "")[:34]) for с, xs in к.items() for x in map(зі0.get, (y["id"] for y in xs))
-     if hasattr(КР, "акцент_меж") and x and x.get("lab") and КР.не_вимір(x) is None and cs.lch(x["lab"])[0] < 26 and not КО.нейтраль(tuple(x["lab"]))}
+     if hasattr(КР, "акцент_меж") and x and x.get("lab") and КР.не_вимір(x) is None and cs.lch(x["lab"])[0] < 40 and not КО.нейтраль(tuple(x["lab"]))}
 вх0, бачені, П = json.load(open("стенд_вх.json", encoding="utf-8")), set(), K.Counter()
 for назва in ("офіс·18°C", "дощ·ресторан·вечір", "весілля·гість", "спека·парк"):
     кк = json.loads(B.виклик("запити", json.dumps(dict(вх0, сценарій=dict(СЗ.СЦЕНАРІЇ[назва]), випадок=назва), ensure_ascii=False)))["кандидати"]
