@@ -1206,7 +1206,7 @@ def _названі(v):
 
 
 _СЛУЖБОВИЙ_ТЕКСТ = _re.compile(
-    r"(?:\b(?:answer|verdict|works|change|unknown|items?|wear_as_is|wear_with_change|do_not_wear)\b|"
+    r"(?:\b(?:wear_as_is|wear_with_change|do_not_wear)\b|\b(?:answer|verdict|works|change|unknown|items?)\s*[:=]|"
     r"\b(?:p\d+(?:-\d+)?|c\d+|[fb]-(?:o\d+|set)-\d+|o\d+)\b|#\d+)", _re.I)
 
 
@@ -1384,7 +1384,9 @@ def прийняти_оцінку(відповідь, суд_):
         вердикт = None
     # блок «Чого я не знаю» — від коду: назва входу українською з таблиці мови (не код і не слово моделі)
     не_знаю, бачено = [], set()
-    for б in суд_.get("без_входу") or []:
+    for б in невідоме_для_моделі(суд_):   # лише те, що стосується цього образу, не повний звіт власника
+        if not б.get("input"):
+            continue
         текст = _назва_без_входу(б)
         if текст not in бачено:
             не_знаю.append(dict(текст=текст))
