@@ -1,0 +1,124 @@
+── ПРОМПТ (6055 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Олівий топ і червоні сукня гарно поєднуються за кольором, але туфлі переривають лінію ноги. Краще підбереш сумочку або ж верхній одяг, щоб завершити образ."},
+{"н": 2, "текст": "Форма топу та форма сукні утворюють гарний баланс силуету."},
+{"н": 3, "текст": "Ці туфлі мають темний колір, що відрізняється від шкіри. Це розриває лінію ноги, тому краще обрати світліші варіанти."},
+{"н": 4, "текст": "unknown: occasion"},
+{"н": 5, "текст": "unknown: temperature"},
+{"н": 6, "текст": "unknown: shoe size not checked (Cream Chelsea Boots)"},
+{"н": 7, "текст": "unknown: her foot length unknown"},
+{"н": 8, "текст": "unknown: item insole length unknown"},
+{"н": 9, "текст": "unknown: calf girth not measured"},
+{"н": 10, "текст": "unknown: leg proportion template crotch"},
+{"н": 11, "текст": "unknown: wear cost no duration surface"},
+{"н": 12, "текст": "unknown: items register unknown (3)"},
+{"н": 13, "текст": "unknown: not run:one silhouette letter"},
+{"н": 14, "текст": "unknown: not run:formality spread"},
+{"н": 15, "текст": "unknown: not run:shine budget"},
+{"н": 16, "текст": "unknown: not run:print budget"},
+{"н": 17, "текст": "unknown: not run:one sprezzatura"},
+{"н": 18, "текст": "unknown: not run:hem off widest point"},
+{"н": 19, "текст": "unknown: not run:one metal"},
+{"н": 20, "текст": "unknown: not run:genre dominant"},
+{"н": 21, "текст": "unknown: not run:one trend item"},
+{"н": 22, "текст": "unknown: not run:fabric cut formality"},
+{"н": 23, "текст": "unknown: not run:scale to person"},
+{"н": 24, "текст": "unknown: not run:layer hems apart"},
+{"н": 25, "текст": "unknown: not run:repairs not opposed"},
+{"н": 26, "текст": "unknown: not run:near face weight"},
+{"н": 27, "текст": "unknown: not run:neutrals tone or step"},
+{"н": 28, "текст": "unknown: not run:not median choice"},
+{"н": 29, "текст": "unknown: not run:texture adds"},
+{"н": 30, "текст": "unknown: not run:silhouette decided"},
+{"н": 31, "текст": "unknown: not run:not same for anyone"},
+{"н": 32, "текст": "unknown: not run:passport from talk"},
+{"н": 33, "текст": "unknown: not run:print dominant hers"},
+{"н": 34, "текст": "unknown: not run:grey hair eyes lead"},
+{"н": 35, "текст": "unknown: not run:context keeps edge colour"},
+{"н": 36, "текст": "unknown: not run:face colour eye side"},
+{"н": 37, "текст": "unknown: not run:scheme chosen"},
+{"н": 38, "текст": "unknown: not run:soft palette drama by lightness"},
+{"н": 39, "текст": "unknown: not run:glove sleeve length"},
+{"н": 40, "текст": "unknown: not run:tights density"},
+{"н": 41, "текст": "unknown: not run:tights link"},
+{"н": 42, "текст": "unknown: not run:jewelry scale"},
+{"н": 43, "текст": "unknown: not run:necklace off neckline"},
+{"н": 44, "текст": "unknown: not run:accessory edge placement"},
+{"н": 45, "текст": "unknown: not run:price per combinations"},
+{"н": 46, "текст": "unknown: not run:repairable shoes"},
+{"н": 47, "текст": "unknown: not run:refusal reason physical"},
+{"н": 48, "текст": "unknown: not run:glasses in chroma"},
+{"н": 49, "текст": "unknown: not run:jewelry kind asked"},
+{"н": 50, "текст": "unknown: not run:weather withstood"},
+{"н": 51, "текст": "unknown: not run:metal is surface"}
+]
+
+── ВІДПОВІДЬ (2595 симв., 51.4 с, HTTP 200) ──
+```json
+{
+  "1": "Оливковий топ і червона сукня гарно поєднуються за кольором, але туфлі переривають лінію ноги. Краще підбереш сумочку або ж верхній одяг, щоб завершити образ.",
+  "2": "Форма топу та форма сукні утворюють гарний баланс силуету.",
+  "3": "Ці туфлі мають темний колір, що відрізняється від шкіри. Це розриває лінію ноги, тому краще обрати світліші варіанти.",
+  "4": "unknown: occasion",
+  "5": "unknown: temperature",
+  "6": "unknown: shoe size not checked (Cream Chelsea Boots)",
+  "7": "unknown: her foot length unknown",
+  "8": "unknown: item insole length unknown",
+  "9": "unknown: calf girth not measured",
+  "10": "unknown: leg proportion template crotch",
+  "11": "unknown: wear cost no duration surface",
+  "12": "unknown: items register unknown (3)",
+  "13": "unknown: not run:one silhouette letter",
+  "14": "unknown: not run:formality spread",
+  "15": "unknown: not run:shine budget",
+  "16": "unknown: not run:print budget",
+  "17": "unknown: not run:one sprezzatura",
+  "18": "unknown: not run:hem off widest point",
+  "19": "unknown: not run:one metal",
+  "20": "unknown: not run:genre dominant",
+  "21": "unknown: not run:one trend item",
+  "22": "unknown: not run:fabric cut formality",
+  "23": "unknown: not run:scale to person",
+  "24": "unknown: not run:layer hems apart",
+  "25": "unknown: not run:repairs not opposed",
+  "26": "unknown: not run:near face weight",
+  "27": "unknown: not run:neutrals tone or step",
+  "28": "unknown: not run:not median choice",
+  "29": "unknown: not run:texture adds",
+  "30": "unknown: not run:silhouette decided",
+  "31": "unknown: not run:not same for anyone",
+  "32": "unknown: not run:passport from talk",
+  "33": "unknown: not run:print dominant hers",
+  "34": "unknown: not run:grey hair eyes lead",
+  "35": "unknown: not run:context keeps edge colour",
+  "36": "unknown: not run:face colour eye side",
+  "37": "unknown: not run:scheme chosen",
+  "38": "unknown: not run:soft palette drama by lightness",
+  "39": "unknown: not run:glove sleeve length",
+  "40": "unknown: not run:tights density",
+  "41": "unknown: not run:tights link",
+  "42": "unknown: not run:jewelry scale",
+  "43": "unknown: not run:necklace off neckline",
+  "44": "unknown: not run:accessory edge placement",
+  "45": "unknown: not run:price per combinations",
+  "46": "unknown: not run:repairable shoes",
+  "47": "unknown: not run:refusal reason physical",
+  "48": "unknown: not run:glasses in chroma",
+  "49": "unknown: not run:jewelry kind asked",
+  "50": "unknown: not run:weather withstood",
+  "51": "unknown: not run:metal is surface"
+}
+```
