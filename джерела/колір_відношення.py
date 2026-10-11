@@ -263,8 +263,12 @@ def _ворота(р, хрома):
     if р is None:
         return None
     в = lambda v, ц: 0.5 + 0.5 * math.tanh(КРУТІСТЬ_ТОНУ * (v - ц))
-    return (в(р["C"][0], хрома) * в(р["L"][0], СВІТЛОТА_ТОНУ),
-            в(р["C"][1], хрома) * в(р["L"][1], СВІТЛОТА_ТОНУ))
+    Lmax, Cmax, hmax, зсув = C["темне_буре"]
+    темне_буре = lambda L, Cc, h: h is not None and L < Lmax and Cc <= Cmax and L + зсув <= h < hmax
+    світлота = lambda L, Cc, h: 1.0 if темне_буре(L, Cc, h) else в(L, СВІТЛОТА_ТОНУ)
+    h0, h1 = р["дуга"] if р["дуга"] is not None else (None, None)
+    return (в(р["C"][0], хрома) * світлота(р["L"][0], р["C"][0], h0),
+            в(р["C"][1], хрома) * світлота(р["L"][1], р["C"][1], h1))
 
 
 def _буре(р):
