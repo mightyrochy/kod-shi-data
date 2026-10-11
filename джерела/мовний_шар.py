@@ -2562,6 +2562,12 @@ def _коди_розмови():
             р.append("  · travel — she is away on a trip or a holiday, and every outing of it, by day or in the "
                      "evening, is travel; celebration — a festive event itself: a birthday, a party, an "
                      "anniversary, a New Year. A trip or a holiday without such an event is never celebration")
+            # Рядок 4622 (ЖИВІ-22 №8, ЖИВІ-23 №13, ЖИВІ-24 №8): «йога зранку, потім кава з подругою» — 3 з 3
+            # `occasion: sport` з уривком усього листа, `movement` 0 з 3. Правило частин дня самé (#911) нагоди не
+            # зрушило: модель обирає код тут, з переліку, тож межа коду `sport` стоїть при ньому
+            р.append("  · sport — only when sport is all her day; a sport that is one part of her day (a run "
+                     "before work, a workout and then a dinner) is movement sport, and occasion and place are "
+                     "her other part")
     р.append("Items — lists of objects; every item she names goes into one of them, none is left out; each "
              "object has \"quote\" — the fragment of her words about this item, copied letter for letter — and "
              "only the attributes she named:")
@@ -2655,13 +2661,16 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # `movement` каже «also when sport is only one part of her day». Перелік частин нижче називав рух лише дорогою
     # («how she gets there»), а подію — `occasion` (кава, `everyday`): спорт частини дня не лягав ніде. Код рух з
     # `event` не виводить (п.12), тож перелік частин називає спорт дня прямо.
+    # Рядок 4622: ця фраза («also when another part of her day is the occasion») прийшла між ЖИВІ-21 і ЖИВІ-23 — і
+    # нагода того самого листа з `everyday` (Ж20, Ж21) стала `sport` (Ж22–24, 3 з 3): спорт першою частиною
+    # ставав нагодою. Тепер вона каже прямо, що нагода й місце — інша частина дня.
     "\"update\" holds every field her new message fills or changes, and only those. Go through her "
     "message part by part: one phrase often fills several fields, and the same fragment of her words may be "
     "the quote of each of them — the outing itself (work, a party, a trip) is occasion, also when the same "
     "phrase says how she gets there: such a phrase gives both occasion and movement, never movement alone; "
     "degrees and snow or rain said together are temperature_c and precipitation; how she gets there (on foot, "
-    "a long way) is movement; a sport she names for that day (yoga, a run, a workout) is movement sport, also "
-    "when another part of her day is the occasion; the place where the event is (a restaurant, an office, "
+    "a long way) is movement; a sport she names for that day (yoga, a run, a workout) is movement sport, and "
+    "when her day has another part, occasion and place are that part; the place where the event is (a restaurant, an office, "
     "a café) is place, also "
     "inside the phrase that names the event; her way to the outing and the street in her words about the "
     "weather are never place; an item she names for this outing goes into wants or own_items; her "
@@ -2701,11 +2710,19 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # ШКАЛА-2 (рядок 1132): «працюю з дому» — то home, то work; «на кожен день в університет» — то everyday, то
     # school; «театр на прем'єру» — то theatre, то opera_premiere (смуга 4–6 проти 6–8). Нагода — рід заняття
     # (робота вдома — робота, навчання — школа), «щодня» — частота, а не рід; місце — те, що названо її словами.
+    # Рядок 4622: спорт першою частиною дня — не нагода (див. примітку коду `sport`), тож частина дня — перша не
+    # спортивна. Місце «кави з подругою» модель 5 з 5 (Ж20–24) клала лише в `place_words` — кодом `cafe` (шов
+    # `_СУСІДИ_КОДІВ` переносить його в `place`) чи підписом «Кафе» (код слів не читає, п.12 → `not_taken`): «place
+    # is the place her words name» вона читала як «місце названо прямо». Місце того, що вона назвала, — теж місце.
+    # Правка #911 (довге речення про спорт тут) вийнята: у ЖИВІ-24 №7 (без спорту) місце випало — тут лише коротка
+    # вставка, решта правила — текст `main`.
     "\"occasion\" is what she will be doing and \"place\" is where she will be; both describe the same "
     "part of her day, never the occasion of one part and the place of another. When her day has several "
-    "parts, both describe the part she names first, and \"event\" keeps all of them. \"occasion\" is the "
+    "parts, both describe the first part she names that is not a sport, and \"event\" keeps all of them. "
+    "\"occasion\" is the "
     "kind of what she does, not how often or where: working is work even at home (place home); studying at "
-    "a school, a university or courses is school, also every day. \"place\" is the place her words name: "
+    "a school, a university or courses is school, also every day. \"place\" is the place her words name, "
+    "also the place of what she names (a coffee with someone — cafe): "
     "a premiere or a show at a theatre is theatre; opera_premiere only when her words name an opera.",
     # НП-в крок 2: ошатність — число мовної моделі ЗАВЖДИ, без цитати (її слова, подія, плитки);
     # з нього код рахує смугу й відсів пулу, інших джерел смуги нема.
