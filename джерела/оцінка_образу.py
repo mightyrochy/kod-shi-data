@@ -163,8 +163,7 @@ def _ключ(поле, код, незнайомі, де):
         "or straps; trousers have two legs; a skirt hangs from the waist in one piece.",
         "\"kind\" is the item's exact kind from \"codes.item_type\" within its \"slot\", read from the same shape.",
         "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
-        "around the item itself, without background or skin; estimate it by eye as shares of the photo — "
-        "no pixel calculations.",
+        "around the item itself, without background or skin; " + _РФ.РАМКА_НА_ОКО,
         "Field values are only codes from \"codes\"; what the photo does not show is null.",
         "Start the answer with the JSON object itself: no description or reasoning before it.",
     ),
