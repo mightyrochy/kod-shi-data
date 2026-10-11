@@ -1228,6 +1228,28 @@ def _коди_без_входу(запис):
     return коди
 
 
+def _дані_заяви(запис, код):
+    """Значення заяви `statement:<код>` (назви речей з `free_text`, числа) — шару, щоб рядок був про конкретне."""
+    для = []
+    for з in запис.get("statements") or []:
+        if isinstance(з, dict) and "statement:%s" % next(iter(з)) == код:
+            для.append(з[next(iter(з))])
+    вих = []
+
+    def йти(в):
+        if isinstance(в, dict):
+            if в.get("free_text"):
+                вих.append(_текст(в["free_text"]))
+            else:
+                [йти(х) for х in в.values()]
+        elif isinstance(в, (list, tuple)):
+            [йти(х) for х in в]
+        elif isinstance(в, (int, float)) and not isinstance(в, bool):
+            вих.append(str(в))
+    йти(для)
+    return вих
+
+
 def _вільний_текст_без_входу(запис):
     """Вільний текст з позначеного поля `missing`/`what` (слова вже чиї-небудь, не коду)."""
     for поле in ("missing", "what"):
@@ -1395,7 +1417,7 @@ def прийняти_оцінку(відповідь, суд_):
     for б in невідоме_для_моделі(суд_):   # лише те, що стосується цього образу, не повний звіт власника
         for код in _коди_без_входу(б):
             if код not in бачено:
-                не_знаю.append(dict(код=код, речі=list(б.get("items") or [])))
+                не_знаю.append(dict(код=код, речі=list(б.get("items") or []), дані=_дані_заяви(б, код)))
                 бачено.add(код)
         текст = _вільний_текст_без_входу(б) if not _коди_без_входу(б) else ""
         if текст and текст not in бачено:
