@@ -2,7 +2,8 @@
 """Рядок 4710: рамка «на око» — одним текстом (`річ_з_фото.РАМКА_НА_ОКО`) в обох промптах речей.
 ДО — записи ЖИВІ-24 (`origin/claude/zhyvi-24`, VIDPOVIDI `*речі_з_фото*` сцен «ж3_свято_др_взуття_фото»):
 скільки рамок мають сторону, що дорівнює ширині чи висоті фото (пікселі, а не тисячні).
-`python3 проби/рамка_на_око_4710.py` (з теки `джерела`)."""
+ПІСЛЯ — ті самі записи нового прогону: `python3 проби/рамка_на_око_4710.py [гілка] [тека]` (з теки `джерела`;
+типово `origin/claude/zhyvi-24` і `аудит/живі_24/`)."""
 import json, re, subprocess, sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import річ_з_фото as РФ, оцінка_образу as О
@@ -13,12 +14,13 @@ for назва, промпт in (("розмова (річ_з_фото.промп
     правило = next(п for п in json.loads(промпт)["task"]["rules"] if п.startswith('"frame"'))
     print("%s: інструкція %s\n  %s" % (назва, "є" if РФ.РАМКА_НА_ОКО in правило else "НЕМА", правило))
 
-ГІЛКА, СЦЕНА = "origin/claude/zhyvi-24", "ж3_свято_др_взуття_фото/VIDPOVIDI/"
+ГІЛКА, ТЕКА = (sys.argv[1:] + ["origin/claude/zhyvi-24", "аудит/живі_24/"][len(sys.argv) - 1:])[:2]
+СЦЕНА = "ж3_свято_др_взуття_фото/VIDPOVIDI/"
 git = lambda *а: subprocess.run(["git", "-c", "core.quotepath=off", *а], capture_output=True, text=True, encoding="utf-8")
 файли = [ф for ф in git("ls-tree", "-r", "--full-tree", "--name-only", ГІЛКА).stdout.split()
-         if ф.startswith("аудит/живі_24/") and СЦЕНА in ф and "речі_з_фото" in ф]
+         if ф.startswith(ТЕКА) and СЦЕНА in ф and "речі_з_фото" in ф]
 if not файли:
-    sys.exit("ДО: БЕЗ ВХОДУ — нема %s (git fetch origin claude/zhyvi-24)" % ГІЛКА)
+    sys.exit("БЕЗ ВХОДУ — нема записів %s у %s (git fetch?)" % (ТЕКА, ГІЛКА))
 усього = пікс = 0
 for ф in файли:
     текст = git("show", "%s:%s" % (ГІЛКА, ф)).stdout
@@ -30,6 +32,6 @@ for ф in файли:
         рамка = р.get("frame") or {}
         у_пікселях = any(рамка.get(к) in сторони for к in ("left", "top", "right", "bottom"))
         усього += 1; пікс += у_пікселях
-        print("%s  сторони фото %s  frame %s%s" % (ф.split("/")[3][:2] + "/" + ф.split("/")[-1], sorted(сторони),
+        print("%s  сторони фото %s  frame %s%s" % (re.search(r"/(\d+)_[^/]*/VIDPOVIDI/", ф).group(1) + "/" + ф.split("/")[-1], sorted(сторони),
               [рамка.get(к) for к in ("left", "top", "right", "bottom")], "  ← у пікселях" if у_пікселях else ""))
-print("ДО (ЖИВІ-24): рамок зі стороною = ширині чи висоті фото — %d з %d" % (пікс, усього))
+print("%s %s: рамок зі стороною = ширині чи висоті фото — %d з %d" % (ГІЛКА, ТЕКА, пікс, усього))
