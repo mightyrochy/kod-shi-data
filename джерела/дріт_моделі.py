@@ -309,9 +309,7 @@ def осі(зона, рч=None):
         вих["heel"] = "none" if є is False else (U if є is None else "yes")
         if р.get("каблук_форма"):
             вих["heel_shape"] = _з(_КАБЛУК_ФОРМА, р["каблук_форма"])
-        if р.get("каблук_см") is not None:
-            вих["heel_height"] = _число(р["каблук_см"])
-        elif р.get("каблук_висота"):
+        if р.get("каблук_висота"):
             вих["heel_height"] = _з(_КАБЛУК_ВИСОТА, р["каблук_висота"])
     return вих
 
