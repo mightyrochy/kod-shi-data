@@ -21,17 +21,29 @@
   },
   "allowed_file": "аудит/тест_codex_push.txt",
   "expected_blob_sha": "d869ed27183a419645e079b90580b8917caafbaa",
-  "phase": "BLOCKED_AUTOMATION_BINDING",
+  "phase": "BLOCKED_CAS_TEST_INCONCLUSIVE",
   "input": "621734940654bda06711df67856db4bf1c1a0952 тест\n",
   "requests": {},
   "backlog_row": null,
-  "preparation_sha": "9ee57b70098b972d655e278a0a6321c17f095e70",
-  "test_pr": 953,
-  "automation": {
-    "id": "6acbf46b03b081919f68f2acfb3bd792",
-    "is_enabled": false,
+  "binding_evidence": {
+    "type": "owner_reported_actual_UI",
+    "url": "https://chatgpt.com/c/6acbf336-4550-83eb-b268-ba4ef9f23862?automationId=6acbf46b03b081919f68f2acfb3bd792&messageId=finalAgentTurnStart",
     "conversation_id": "6acbf336-4550-83eb-b268-ba4ef9f23862",
-    "last_run_time": null
+    "thread_id": "01a12cae-190e-752d-969f-2b2e4d6b9072",
+    "chat_title": "Перевірка хмарних можливостей",
+    "ordinary_work_chat": true,
+    "dot": false,
+    "description": "Owner opened Scheduled UI; exact initial prompt and first response with matching CODEX_THREAD_ID and pwd observed. UI confirms paused."
   },
-  "blocker": "Returned create/peek/update metadata do not expose codex_thread_id/session_id or no-dot evidence; cannot establish binding to authorized session. Automation disabled without test run; delivery not performed."
+  "cas_negative_test": {
+    "candidate_sha": "9622592e62d59a140a4b4e8ea02c1bbbb591e9c6",
+    "current_sha": "8489f60278998ae98fa6dd8841965525fe3011b5",
+    "stale_expected_sha": "9ee57b70098b972d655e278a0a6321c17f095e70",
+    "force": false,
+    "error_code": "UNKNOWN",
+    "error": "GithubGraphQLAPIError; request 83F6:1F5EBA:E79BB0:15BA171:6ACBF4FA at 2026-10-11T20:43:39Z",
+    "ref_after": "8489f60278998ae98fa6dd8841965525fe3011b5",
+    "conclusion": "Ref unchanged, but no explicit stale-SHA rejection reason; inconclusive, no retry or race test."
+  },
+  "blocker": "UI binding established by owner evidence; expected_sha negative test returned UNKNOWN GraphQL failure, so stale-SHA enforcement remains unproven. Automation remains paused; delivery not run."
 }
