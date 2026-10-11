@@ -4,12 +4,11 @@
 """
 import collections as K, gzip, json, os, sys
 
-sys.path.insert(0, os.path.dirname(__file__))
-os.environ["ЗАМІНА_ПУЛУ"] = "0"
-import гг1_повтор_ремонту as Г
-
 
 def main():
+    sys.path.insert(0, "."); sys.path.insert(0, os.path.dirname(__file__))
+    os.environ["ЗАМІНА_ПУЛУ"] = "0"
+    import гг1_повтор_ремонту as Г
     Л = K.Counter()
     for рядок in gzip.open(Г.ВХОДИ, "rt", encoding="utf-8"):
         з = json.loads(рядок)
