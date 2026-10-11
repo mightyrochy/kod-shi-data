@@ -1,0 +1,36 @@
+── ПРОМПТ (2408 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Sun-bleached linen tunic with an open back for breathability, a flowing A-line cut that ends just below the knee, in a warm sand hue (#d1ab86), crafted from lightweight woven fabric.\nSoft-soled minimalist canvas sneakers with a rounded toe, offering flexible traction, in an off-white tone (#f5f5dc) with thin straps, made of breathable knit upper and gum rubber sole.\nMinimalist gold-plated hoop earrings featuring a brushed finish to complement the earthy palette, paired with a single delicate geode-crystal bracelet in rose quartz tones to honor her natural coloring.\n\nThis outfit works by merging the functional freedom required for morning yoga practice with the relaxed elegance needed for an afternoon coffee catch-up, ensuring you stay comfortable through movement without looking out of place when transitioning from the mat to the café. The earthy sand and off-white color palette harmonizes beautifully with your skin tones (#d9b48f, #d1ab86) and warm hair shades (#745a3b), creating a cohesive look that feels effortless rather than forced. By choosing natural fibers like linen and knit, the ensemble breathes freely in the morning air while honoring your wish for a seamless transition from sport to social time."}
+
+── ВІДПОВІДЬ (886 симв., 124.5 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Linen tunic",
+      "details": "Open back breathable A-line cut ending below knee, lightweight woven fabric with thin straps",
+      "slot": "top",
+      "color_hex": "#d1ab86",
+      "worn": true
+    },
+    {
+      "name": "Canvas sneakers",
+      "details": "Minimalist rounded toe flexible traction breathable knit upper with gum rubber sole and thin straps",
+      "slot": "shoes",
+      "color_hex": "#f5f5dc",
+      "worn": true
+    },
+    {
+      "name": "Gold-plated hoop earrings",
+      "details": "Minimalist brushed finish complementing earthy palette",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Geode-crystal bracelet",
+      "details": "Single delicate rose quartz tones honoring natural coloring",
+      "slot": "bracelet",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

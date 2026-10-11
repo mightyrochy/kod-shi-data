@@ -1,0 +1,38 @@
+── ПРОМПТ (2203 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Flattering high-neck racerback yoga top, relaxed boxy cut, mid-thigh length, charcoal heather gray, soft cotton jersey blend.\nWide-leg linen trousers, straight leg opening, ankle length, forest green, breathable lightweight woven linen.\nStructured blazer jacket, tailored fit with cropped length at the waist, deep navy blue, smooth double-faced wool crepe.\nPointed-toe stiletto heels, sleek elongated silhouette, mid-calf height, metallic silver, glossy patent leather.\n\nThis ensemble masterfully balances your active morning yoga session with a chic coffee date, adhering strictly to your wish for heels and your refusal of printed shoes by keeping the footwear solid silver. The layered approach ensures you stay comfortable during movement while maintaining a sophisticated outer layer before transitioning indoors. By pairing sporty basics like the racerback top with tailored elements such as the blazer and pointed heels, this look honors your specific fashion preferences without compromising on comfort or style."}
+
+── ВІДПОВІДЬ (952 симв., 181.7 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "yoga top",
+        "details": "high-neck racerback relaxed boxy cut mid-thigh length soft cotton jersey blend",
+        "slot": "top",
+        "color_hex": "#36454F",
+        "worn": true
+      },
+      {
+        "name": "trousers",
+        "details": "wide-leg straight leg opening ankle length breathable lightweight woven linen",
+        "slot": "bottom",
+        "color_hex": "#228B22",
+        "worn": true
+      },
+      {
+        "name": "blazer jacket",
+        "details": "structured tailored fit cropped length at waist deep navy blue smooth double-faced wool crepe",
+        "slot": "outerwear",
+        "color_hex": "#000080",
+        "worn": true
+      },
+      {
+        "name": "heels",
+        "details": "pointed-toe stiletto mid-calf height metallic silver glossy patent leather",
+        "slot": "shoes",
+        "color_hex": "#C0C0C0",
+        "worn": true
+      }
+    ]
+  }
+}
