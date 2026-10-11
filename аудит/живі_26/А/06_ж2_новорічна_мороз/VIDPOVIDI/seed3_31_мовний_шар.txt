@@ -1,0 +1,81 @@
+── ПРОМПТ (8171 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_unchecked — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- bag — сумка.
+- black — чорний.
+- chocolate — шоколадний.
+- dress — сукня.
+- golden — золотий.
+- jewelry — прикраси.
+- necklace — намисто.
+- outerwear — верхній шар.
+- sand — пісочний.
+- shoes — взуття.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+
+ЗАЯВИ:
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_accent_echoed — so the code cannot tell whether the accent colour repeats elsewhere in the outfit.
+- cannot_tell_colour_from_eyes — so the code cannot tell whether the colour comes from the family of her eyes.
+- cannot_tell_item_carries_interest — so the code cannot tell whether the item's colour is strong enough to carry interest.
+- cannot_tell_two_neutrals_distinct — so the code cannot tell whether two neutrals of one lightness differ visibly.
+- cannot_tell_accent_role_chroma — so the code cannot tell whether the item is colourful enough for the accent role the palette scheme gave its slot.
+- cannot_tell_items_intensity_match — so the code cannot tell whether the outfit's items match in colour saturation.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- outer_shoulder_not_measured — the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- cut_from_photo_shop_differs — the cut was read from the photo, and the shop names another one (values: items — the items: slot — slot code, shop — the cut by the shop, photo — the cut from the photo; the cut names are in English, retell them in her language).
+- photo_shows_other_colour — in the card's photo the code sees a different colour than the one the item is described and judged by: the shop may have shown another colour of the model or named it differently (values: items — items: slot — slot code, colour — the item's colour, photo — the colour in the photo).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "outer_shoulder_not_measured", "values": {"item": {"free_text": "Жіноче вовняне пальто з англійським коміром…", "lang": "uk"}}}]},
+{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Шкіряні черевики зі шкіри із золотистим…", "lang": "uk"}}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "necklace", "colour": "золотий"}, {"slot": "jewelry", "colour": "золотий"}, {"slot": "shoes", "colour": "золотий"}]}}, {"code": "cannot_tell_accent_echoed"}]},
+{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "shoes", "colour": "золотий"}, {"slot": "bag", "colour": "пісочний"}]}}, {"code": "cannot_tell_two_neutrals_distinct"}]},
+{"н": 5, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "dress", "range": "32–44 і S"}]}}]},
+{"н": 6, "вид": "card_unchecked", "заяви": [{"code": "photo_shows_other_colour", "values": {"items": [{"slot": "shoes", "colour": "golden", "photo": "black"}, {"slot": "bag", "colour": "sand", "photo": "chocolate"}]}}]},
+{"н": 7, "вид": "card_unchecked", "заяви": [{"code": "cut_from_photo_shop_differs", "values": {"items": [{"slot": "dress", "shop": "fitted", "photo": "bodycon"}]}}]},
+{"н": 8, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "outerwear", "range": "36–54"}]}}]},
+{"н": 9, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "shoes", "colour": "золотий"}]}}, {"code": "cannot_tell_item_carries_interest"}]},
+{"н": 10, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "shoes", "colour": "золотий"}, {"slot": "bag", "colour": "пісочний"}]}}, {"code": "cannot_tell_items_intensity_match"}]},
+{"н": 11, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "shoes", "colour": "золотий"}]}}, {"code": "cannot_tell_accent_role_chroma"}]},
+{"н": 12, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "jewelry", "colour": "золотий"}]}}, {"code": "cannot_tell_accent_role_chroma"}]},
+{"н": 13, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "jewelry", "colour": "золотий"}]}}, {"code": "cannot_tell_item_holds_scheme_hue"}]},
+{"н": 14, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "shoes", "colour": "золотий"}]}}, {"code": "cannot_tell_item_holds_scheme_hue"}]},
+{"н": 15, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "shoes", "colour": "золотий"}]}}, {"code": "cannot_tell_colour_from_eyes"}]}
+]
+
+── ВІДПОВІДЬ (1785 симв., 80.6 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю, чи підійде тобі це вовняне пальто з англійським коміром по ширині плечей.",
+  "2": "Не можу сказати, чи пасуватимуть ці шкіряні черевики із золотистими вставками твоїй нозі. Я не знаю довжину твоєї стопи і внутрішню устілку черевиків.",
+  "3": "Я обрала золоті прикраси та туфлі, але не можу сказати, чи повторюється цей колір деінде в образі.",
+  "4": "Я обрала золоті туфлі й пісочну сумку, але я не знаю, чи достатньо відрізняються ці два нейтральні кольори за світлотою.",
+  "5": "Не можу сказати, як сидітиме на тобі ця сукня розміру 32–44 і S. Розмір — це лише цифра, а щоб визначити посадку, потрібні виміри одягу.",
+  "6": "На картці туфлі й сумка мають інший колір: золотий та шоколадний замість пісочного відповідно. Можливо, на фотографії було показано іншу модель або назву кольору.",
+  "7": "Я прочитала крій сукні з фотографії як bodycon, а в магазині він називається fitted. Не знаю, чи це одна й та сама річ.",
+  "8": "Не можу сказати, чи підійде тобі ця верхня одежа розміру 36–54. Розмір — лише цифра, потрібні виміри одягу.",
+  "9": "Я обрала золоті туфлі, але не знаю, чи достатньо насичений їхній колір для образу.",
+  "10": "Я обрала золоті туфлі й пісочну сумку, але я не знаю, чи збігаються ці речі за інтенсивністю кольору.",
+  "11": "Я обрала золоті туфлі, але не можу сказати, чи достатньо вони насичені для акцентної ролі в образі.",
+  "12": "Я обрала золоті прикраси, але я не знаю, чи достатньо вони насичені для акцентної ролі в образі.",
+  "13": "Я обрала золоті прикраси, але не можу сказати, чи пасує цей колір до кольору твоїх очей.",
+  "14": "Я обрала золоті туфлі, але я не знаю, чи пасує цей колір до кольору твоїх очей.",
+  "15": "Я обрала золоті туфлі, але я не знаю, чи пасує цей колір до кольору твоїх очей."
+}
+```

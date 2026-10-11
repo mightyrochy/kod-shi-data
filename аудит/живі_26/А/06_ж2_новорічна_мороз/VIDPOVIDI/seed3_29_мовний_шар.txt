@@ -1,0 +1,53 @@
+── ПРОМПТ (6704 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Кардиган мохеровий на ґудзиках смарагд · colour code: emerald · about it: text н=1
+2 — Штани жіночі прямого фасону в класичному стилі демісезонні · colour code: beige · about it: text н=2
+3 — Пряме пальто чорна ялинка з блиском · colour code: graphite · about it: text н=3
+4 — Чоботи шкіряні бежеві · colour code: beige · about it: text н=4
+5 — Золота підвіска з танцюючим кристалом · colour code: golden · about it: text н=5
+6 — Шкіряна сумка яскраво-зеленого кольору · colour code: green · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; emerald — смарагд; golden — золотий; graphite — графіт; green — зелений.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A sheer emerald cardigan with delicate buttons that you wear open to show off a camisole underneath, perfect for layering warmth without bulk."},
+{"н": 2, "текст": "High-waisted beige trousers in a soft suede-look fabric that drape elegantly from the waist down, creating a smooth silhouette along your legs."},
+{"н": 3, "текст": "A structured graphite coat with a subtle herringbone pattern and wide lapels that fall to mid-calf, offering coverage and style for cool winter nights."},
+{"н": 4, "текст": "Beige platform boots with a chunky tread and a polished metal buckle that add height and a modern edge while keeping you comfortable on hard floors."},
+{"н": 5, "текст": "A fine gold chain necklace featuring a small, elegant pendant that catches the light without overwhelming your neckline."},
+{"н": 6, "текст": "A vibrant lime-green leather tote with clean lines and long handles that bring an unexpected pop of color against your neutral base tones."},
+{"н": 7, "текст": "Your look is anchored by a deep emerald cardigan worn open over matching satin trousers that skim your hips and legs with fluid grace. A charcoal herringbone coat wraps you warmly, while beige platform loafers give you the height and stability needed for an evening of dancing. A delicate gold pendant rests lightly on your chest, complemented by a bright lime-green bag that adds a playful spark to your sophisticated silhouette."},
+{"н": 8, "текст": "Layer the emerald cardigan first for a soft touch, then slip the coat over it when you need warmth at the restaurant."},
+{"н": 9, "текст": "Keep the trousers untucked and let them flow freely from your waist to maintain a clean vertical line."},
+{"н": 10, "текст": "Tuck the gold necklace slightly higher on your collarbone so the pendant doesn't get lost beneath the open cardigan."}
+]
+
+── ВІДПОВІДЬ (1781 симв., 87.6 с, HTTP 200) ──
+```json
+{
+  "1": "Прозора смарагдова кардиганка з ніжними ґудзиками, яку ти носиш відкритою, щоб показати комбінацію під нею. Ідеально для того, щоб додати тепла без об’єму.",
+  "2": "Високопоясні бежеві штани з м'якої замшевої тканини, які елегантно спадають від талії вниз, створюючи гладку лінію по ногах.",
+  "3": "Структуроване графітове пальто з ледь помітним візерунком «ялинка» і широкими лацканами, що опускаються до середини литки. Забезпечує покриття та стиль у прохолодні зимові ночі.",
+  "4": "Бежеві ботильйони на платформі з масивною підошвою та відполірованою металевою пряжкою, які додають висоту і сучасний акцент, залишаючись комфортними на твердих підлогах.",
+  "5": "Тонкий золотий ланцюжок із маленьким елегантним кулоном, який ловить світло без перевантаження твоєї лінії шиї.",
+  "6": "Яскрава сумка-тоут лимонно-зеленого кольору зі шкіри з чистими лініями та довгими ручками, яка додає несподіваний колірний акцент до твого нейтрального образу.",
+  "7": "Твій образ підкреслений глибокою смарагдовою кардиганкою, одягненою відкрито поверх відповідних атласних штанів, які плавно облягають стегна та ноги. Графітове пальто в «ялинку» зігріває тебе, а бежеві ботильйони на платформі дарують необхідну висоту і стійкість для вечора танців. Ніжний золотий кулон ледь помітно розташований на грудях, доповнений яскравою лимонно-зеленою сумкою, яка додає грайливий акцент твоєму вишуканому силуету.",
+  "8": "Спочатку одягни смарагдову кардиганку для м'якого ефекту, а потім накинь пальто зверху, коли тобі знадобиться тепло в ресторані." ,
+  "9": "Залиш штани не заправленими і дай їм вільно спадати від талії, щоб зберегти чисту вертикальну лінію.",
+  "10": "Злегка підтягни золотий кулон вище на ключиці, щоб він не загубився під відкритою кардиганкою."
+}
+```
