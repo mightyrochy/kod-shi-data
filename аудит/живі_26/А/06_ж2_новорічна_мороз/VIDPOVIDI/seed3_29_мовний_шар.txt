@@ -1,4 +1,4 @@
-── ПРОМПТ (6704 симв.) ──
+── ПРОМПТ (6831 симв.) ──
 Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
 
 Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
@@ -12,42 +12,36 @@
 Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
 
 Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
-1 — Кардиган мохеровий на ґудзиках смарагд · colour code: emerald · about it: text н=1
-2 — Штани жіночі прямого фасону в класичному стилі демісезонні · colour code: beige · about it: text н=2
-3 — Пряме пальто чорна ялинка з блиском · colour code: graphite · about it: text н=3
-4 — Чоботи шкіряні бежеві · colour code: beige · about it: text н=4
-5 — Золота підвіска з танцюючим кристалом · colour code: golden · about it: text н=5
-6 — Шкіряна сумка яскраво-зеленого кольору · colour code: green · about it: text н=6
+1 — Довга фіолетова сукня з відкритою спиною · colour code: purple · about it: text н=1
+2 — Жіноча сумка Welfare коричнева · colour code: brown · about it: text н=2
+3 — Жіноче вовняне класичне пальто з ґудзиками та кишенями Stella Polare (сірий, 42) · colour code: grey · about it: text н=3
+4 — LeBERDES Чоботи осінні коричневі · colour code: brown · about it: text н=4
 When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
 
-Colour codes: beige — бежевий; emerald — смарагд; golden — золотий; graphite — графіт; green — зелений.
+Colour codes: brown — коричневий; grey — сірий; purple — фіолетовий.
 
 ТЕКСТИ:
 [
-{"н": 1, "текст": "A sheer emerald cardigan with delicate buttons that you wear open to show off a camisole underneath, perfect for layering warmth without bulk."},
-{"н": 2, "текст": "High-waisted beige trousers in a soft suede-look fabric that drape elegantly from the waist down, creating a smooth silhouette along your legs."},
-{"н": 3, "текст": "A structured graphite coat with a subtle herringbone pattern and wide lapels that fall to mid-calf, offering coverage and style for cool winter nights."},
-{"н": 4, "текст": "Beige platform boots with a chunky tread and a polished metal buckle that add height and a modern edge while keeping you comfortable on hard floors."},
-{"н": 5, "текст": "A fine gold chain necklace featuring a small, elegant pendant that catches the light without overwhelming your neckline."},
-{"н": 6, "текст": "A vibrant lime-green leather tote with clean lines and long handles that bring an unexpected pop of color against your neutral base tones."},
-{"н": 7, "текст": "Your look is anchored by a deep emerald cardigan worn open over matching satin trousers that skim your hips and legs with fluid grace. A charcoal herringbone coat wraps you warmly, while beige platform loafers give you the height and stability needed for an evening of dancing. A delicate gold pendant rests lightly on your chest, complemented by a bright lime-green bag that adds a playful spark to your sophisticated silhouette."},
-{"н": 8, "текст": "Layer the emerald cardigan first for a soft touch, then slip the coat over it when you need warmth at the restaurant."},
-{"н": 9, "текст": "Keep the trousers untucked and let them flow freely from your waist to maintain a clean vertical line."},
-{"н": 10, "текст": "Tuck the gold necklace slightly higher on your collarbone so the pendant doesn't get lost beneath the open cardigan."}
+{"н": 1, "текст": "This is a long-sleeved, floor-length dress in a rich purple hue that exudes sophistication, featuring a flattering boat neckline and a dramatically open back that reveals your upper spine. The fabric drapes softly over the hips while maintaining a clean silhouette from waist to hem."},
+{"н": 2, "текст": "A structured handbag in warm brown leather with a pebbled finish, designed for both elegance and practicality. It features dual top handles, an adjustable shoulder strap, and a zippered front pocket secured with a decorative pull tab for easy access."},
+{"н": 3, "текст": "A tailored wool coat in charcoal grey with classic wide lapels, double-breasted buttons, and spacious pockets. The interior lining bears the repeated logo 'Stella Polare,' adding a subtle brand touch inside, while the exterior offers timeless warmth and style."},
+{"н": 4, "текст": "These are knee-high boots in smooth brown leather with a low black block heel and a distinctive gold-toned rectangular buckle that wraps around the ankle. The rounded toe design ensures comfort for dancing through the night while maintaining a polished, luxurious edge."},
+{"н": 5, "текст": "Your purple dress with its open back is the jewel of your outfit, catching the eye in that festive dinner setting. The grey coat brings a frost-worthy warmth and classic elegance, perfect for New Year's celebrations without losing its modern touch. Finally, the brown boots ground your look in rich earth tones while their buckle detail adds a hint of luxury to stride across the restaurant floor."},
+{"н": 6, "текст": "Try wearing the coat open at the dinner table to show off your purple back, then snap the buttons when stepping into the cold air outside."},
+{"н": 7, "текст": "The dress fits like a glove on your waist thanks to its structured silhouette, accentuating your figure perfectly for the evening."},
+{"н": 8, "текст": "Довга фіолетова сукня з відкритою спиною, Жіноче вовняне класичне пальто з ґудзиками та кишенями Stella Polare (сірий, 42) — The single layer of a warm grey wool coat adequately addresses the need for outerwear to withstand the frost."}
 ]
 
-── ВІДПОВІДЬ (1781 симв., 87.6 с, HTTP 200) ──
+── ВІДПОВІДЬ (1980 симв., 188.2 с, HTTP 200) ──
 ```json
 {
-  "1": "Прозора смарагдова кардиганка з ніжними ґудзиками, яку ти носиш відкритою, щоб показати комбінацію під нею. Ідеально для того, щоб додати тепла без об’єму.",
-  "2": "Високопоясні бежеві штани з м'якої замшевої тканини, які елегантно спадають від талії вниз, створюючи гладку лінію по ногах.",
-  "3": "Структуроване графітове пальто з ледь помітним візерунком «ялинка» і широкими лацканами, що опускаються до середини литки. Забезпечує покриття та стиль у прохолодні зимові ночі.",
-  "4": "Бежеві ботильйони на платформі з масивною підошвою та відполірованою металевою пряжкою, які додають висоту і сучасний акцент, залишаючись комфортними на твердих підлогах.",
-  "5": "Тонкий золотий ланцюжок із маленьким елегантним кулоном, який ловить світло без перевантаження твоєї лінії шиї.",
-  "6": "Яскрава сумка-тоут лимонно-зеленого кольору зі шкіри з чистими лініями та довгими ручками, яка додає несподіваний колірний акцент до твого нейтрального образу.",
-  "7": "Твій образ підкреслений глибокою смарагдовою кардиганкою, одягненою відкрито поверх відповідних атласних штанів, які плавно облягають стегна та ноги. Графітове пальто в «ялинку» зігріває тебе, а бежеві ботильйони на платформі дарують необхідну висоту і стійкість для вечора танців. Ніжний золотий кулон ледь помітно розташований на грудях, доповнений яскравою лимонно-зеленою сумкою, яка додає грайливий акцент твоєму вишуканому силуету.",
-  "8": "Спочатку одягни смарагдову кардиганку для м'якого ефекту, а потім накинь пальто зверху, коли тобі знадобиться тепло в ресторані." ,
-  "9": "Залиш штани не заправленими і дай їм вільно спадати від талії, щоб зберегти чисту вертикальну лінію.",
-  "10": "Злегка підтягни золотий кулон вище на ключиці, щоб він не загубився під відкритою кардиганкою."
+  "1": "Це сукня з довгими рукавами і до підлоги насиченого фіолетового кольору, що випромінює елегантність. Вона має привабливий виріз «човник» і драматично відкриту спину, яка оголює верх хребта. Тканина м’яко драпірується на стегнах, зберігаючи чистий силует від талії до подолу.",
+  "2": "Структурована сумка з теплої коричневої шкіри з рельєфною обробкою, розроблена для елегантності та практичності. Вона має дві ручки зверху, регульований плечовий ремінь і закритий на блискавку передній кишеню із декоративним язичком для зручного доступу.",
+  "3": "Класичне вовняне пальто з широкими лацканами, двобортними ґудзиками та просторими кишенями. Внутрішня підкладка має повторюваний логотип 'Stella Polare', що додає брендовий акцент всередині, а зовнішній вигляд пропонує позачасову теплоту і стиль.",
+  "4": "Це чоботи до коліна з гладкої коричневої шкіри на низькому чорному блочному підборі та характерною золотою прямокутною пряжкою, що обертається навколо щиколотки. Заокруглений носок забезпечує комфорт для танців всю ніч, зберігаючи при цьому вишуканий і розкішний вигляд.",
+  "5": "Твоя фіолетова сукня з відкритою спиною — це коштовність твого образу, що привертає увагу на святковій вечері. Сіре пальто дарує зимову теплоту та класичну елегантність, ідеально підходить для новорічних святкувань без втрати сучасності. Насамкінець, коричневі чоботи заземлюють твій образ у насичених земляних тонах, а деталь з пряжкою додає нотку розкоші на кожному кроці по ресторану.",
+  "6": "Спробуй носити пальто відкритим за столом вечері, щоб показати свою фіолетову спину, потім закрий ґудзики, коли виходиш у холодний повітря надвір.",
+  "7": "Сукня ідеально сидить на твоїй талії завдяки структурованому силуету, чудово підкреслюючи твою фігуру ввечері.",
+  "8": "Довга фіолетова сукня з відкритою спиною, Жіноче вовняне класичне пальто з ґудзиками та кишенями Stella Polare (сірий, 42) — Одношарове тепле сіре вовняне пальто достатньо захищає від морозу."
 }
 ```

@@ -1,0 +1,46 @@
+── ПРОМПТ (5732 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: cream — вершковий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Emerald velvet midi slip dress, bias-cut bodice with a subtle ruched waist that falls to mid-calf,, heavy-weight woven velvet that offers warmth against the frost.\nSilver patent leather knee-high booties, pointed toe with a moderate block heel for stability on cold floors,, smooth synthetic leather designed to resist snow slush.\nChampagne faux-fur cropped stole, wide-shoulder wrap style draped loosely around the shoulders, [colour: cream], plush synthetic fur that adds insulation without restricting movement.\n\nThis ensemble works because the emerald velvet provides a luxurious festive glow suitable for a New Year's dinner while its substantial weight keeps her cozy in the frost. The silver booties strike the perfect balance between elegant elongation and practical warmth, ensuring comfort during long periods of standing or dancing on cool restaurant tiles. Finally, the champagne stole acts as an essential outer layer to trap body heat without adding bulk, honoring her need for festive attire that respects the chilly weather conditions."},
+{"н": 2, "текст": "Slip Dress"},
+{"н": 3, "текст": "Booties"},
+{"н": 4, "текст": "Stole"}
+]
+
+── ВІДПОВІДЬ (1225 симв., 143.3 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "текст": "Оксамитова сукня-комбінація смарагдового кольору міді довжини, крій по косій з ледь помітною зібраною талією, що спадає до середини литки. Тепла тканина щільного оксамиту захищає від холоду.\nЧоботи на підборах вище колін із сріблястої лакованої шкіри, загострений носок і помірний стійкий каблук для впевненості на холодній підлозі. Гладка синтетична шкіра захищає від мокрого снігу.\nКоротка шаль з еко-хутра кольору шампань, широкий обгортковий стиль вільно драпірується навколо плечей, вершкового кольору, пухнастий штучний хутро додає тепла без обмеження рухів.\n\nЦей образ вдалий тому, що смарагдовий оксамит дарує розкішне святкове сяйво для новорічної вечері, а його щільна тканина зігріває в мороз. Сріблясті чобітки ідеально поєднують елегантне видовження та практичне тепло, забезпечуючи комфорт під час тривалого перебування на ногах або танців на холодних ресторанних плитках. Насамкінець, шаль кольору шампань слугує важливим верхнім шаром для утримання тепла без зайвого об’єму, поважаючи потребу в святковому одязі, який враховує прохолодну погоду."
+  },
+  "2": {
+    "текст": "Сукня-комбінація"
+  },
+  "3": {
+    "текст": "Чоботи"
+  },
+  "4": {
+    "текст": "Шаль"
+  }
+}
+```

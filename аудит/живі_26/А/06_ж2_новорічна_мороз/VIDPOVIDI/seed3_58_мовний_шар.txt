@@ -1,0 +1,51 @@
+── ПРОМПТ (6485 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Світшот з українськими орнаментами · colour code: purple · about it: text н=1
+2 — Штани з контрастними лампасами з вовни ягнят сірі · colour code: grey · about it: text н=2
+3 — Жакет двобортний в кольорі кемел · colour code: camel
+4 — Черевики жіночі, REMONTE, шкіра, колір коричневий · colour code: brown · about it: text н=3
+5 — Сумка жіноча Le Bambino Chaîne · colour code: pink · about it: text н=4
+6 — Жіноче вовняне пальто без утеплювача з англійським коміром Stella Polare (сірий, 50) · colour code: grey · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; camel — кемел; grey — сірий; pink — рожевий; purple — фіолетовий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A comfortable purple hoodie features subtle embroidered details in a lighter tone across the chest and sleeves."},
+{"н": 2, "текст": "Grey wool trousers have a relaxed, straight fit with thin green stripes running down the sides for quiet motion."},
+{"н": 3, "текст": "Rustic brown leather ankle boots offer a sturdy block heel with a side buckle that blends casual ease with polished style."},
+{"н": 4, "текст": "A bright pink woven bag carries silver chain details and soft edges, turning it into the joyful center of your outfit."},
+{"н": 5, "текст": "An oversized grey wool coat drapes loosely from the shoulders with a long double-breasted front to shield you from the cold."},
+{"н": 6, "текст": "This look weaves a cozy warmth into your festive evening at the restaurant. You wear a soft purple hoodie and matching grey wool trousers that hug your figure nicely, topped with a sophisticated camel blazer to add structure and elegance. Brown ankle boots ground your feet comfortably while you enjoy dinner, and a vibrant pink bag adds a joyful pop of color for the celebration. A long grey coat draped over your shoulders keeps you protected against the frosty air without weighing you down."},
+{"н": 7, "текст": "Wear the purple hoodie under the camel blazer to balance cozy comfort with evening polish."},
+{"н": 8, "текст": "Pair the brown ankle boots with the wide grey trousers to keep the line from ankle to floor clean and elongated."},
+{"н": 9, "текст": "Keep the pink bag close for essentials, its bright hue drawing attention to your hands when you laugh or dance."}
+]
+
+── ВІДПОВІДЬ (1524 симв., 34.0 с, HTTP 200) ──
+```json
+{
+  "1": "Зручний фіолетовий світшот має ледь помітні вишиті деталі у світлому відтінку на грудях та рукавах.",
+  "2": "Сірі вовняні штани мають вільний, прямий крій з тонкими зеленими смужками, що проходять по боках для тихого руху.",
+  "3": "Рустикальні коричневі шкіряні черевики на стійкому блочному підборі мають бічну застібку-пряжку, яка поєднує невимушену легкість з вишуканим стилем.",
+  "4": "Яскрава рожева сумка має срібні ланцюжки та м’які краї, перетворюючи її на радісний центр твого образу.",
+  "5": "Об’ємне сіре вовняне пальто вільно спадає з плечей з довгою двобортною передньою частиною, щоб захистити тебе від холоду.",
+  "6": "Цей образ вплітає затишне тепло у твій святковий вечір у ресторані. Ти одягнула м’який фіолетовий світшот і відповідні сірі вовняні штани, які гарно облягають твою фігуру, доповнені вишуканим кемеловим жакетом для додавання структури та елегантності. Коричневі черевики надійно тримають твої ноги під час вечері, а яскрава рожева сумка додає радісний колірний акцент для святкування. Довге сіре пальто, накинуте тобі на плечі, захищає тебе від морозного повітря без зайвого обтяження.",
+  "7": "Одягни фіолетовий світшот під кемеловий жакет, щоб збалансувати затишний комфорт і вечірній блиск.",
+  "8": "Поєднай коричневі черевики зі широкими сірими штанами, щоб зберегти лінію від щиколотки до підлоги чистою та видовженою.",
+  "9": "Тримай рожеву сумку близько для необхідних речей, її яскравий колір привертає увагу до твоїх рук, коли ти смієшся чи танцюєш."
+}
+```

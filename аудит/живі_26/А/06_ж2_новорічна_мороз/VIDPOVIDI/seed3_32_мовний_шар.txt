@@ -1,48 +1,49 @@
-── ПРОМПТ (5198 симв.) ──
-Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+── ПРОМПТ (6955 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
 
-Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
-На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
 
-ВИДИ РЯДКІВ:
-- card_unchecked — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
 
-КОДИ У ЗНАЧЕННЯХ:
-- crossbody — кросбоді.
-- hand — рука.
-- jewelry — прикраси.
-- necklace — намисто.
-- shoes — взуття.
-- shoulder — плече.
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
 
-Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
 
-ЗАЯВИ:
-- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
-- cannot_tell_two_accent_surfaces_match — so the code cannot tell whether two accent items match exactly in colour.
-- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
-- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
-- outer_ease_not_in_feed — the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — item names).
-- front_v_depth_no_body_input — the code computed the depth of the outer layer's neckline, but has nothing to apply it to: it does not know her under-bust girth or neck length (values: item — item name).
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
 
-Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Костюм з паском: туніка приталеного крою, асиметрична, без застібки; штани завужені, посадка висока (AniNadin) · colour code: chocolate · about it: text н=1
+2 — Напівчеревики бордові · colour code: burgundy · about it: text н=2
+3 — Сумка жіноча Aries · colour code: burgundy · about it: text н=3
+4 — Напівпальто жіноч на запах з поясом напіввовняне демісезонну · colour code: chocolate · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
 
-ПОВІДОМЛЕННЯ:
+Colour codes: burgundy — бордовий; chocolate — шоколадний.
+
+ТЕКСТИ:
 [
-{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "outer_ease_not_in_feed", "values": {"items": [{"free_text": "Сіра вовняна сукня приталеного крою", "lang": "uk"}, {"free_text": "Жіноче вовняне пальто з англійським коміром…", "lang": "uk"}]}}]},
-{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "front_v_depth_no_body_input", "values": {"item": {"free_text": "Жіноче вовняне пальто з англійським коміром…", "lang": "uk"}}}]},
-{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "сумка Пісочна", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
-{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "necklace", "colour": "золотий"}, {"slot": "jewelry", "colour": "золотий"}, {"slot": "shoes", "colour": "золотий"}]}}, {"code": "cannot_tell_two_accent_surfaces_match"}]},
-{"н": 5, "вид": "card_unchecked", "заяви": [{"code": "items_register_unknown", "values": {"count": 3}}]}
+{"н": 1, "текст": "This set combines a chocolate brown fitted top with exaggerated bubble sleeves and high-waisted, slim-fit trousers. It includes a matching belt to define the waistline."},
+{"н": 2, "текст": "These are burgundy ankle boots crafted from suede, featuring a ribbed sock-like collar for comfort and a solid heel perfect for dancing or standing throughout an evening event."},
+{"н": 3, "текст": "A structured burgundy leather handbag with two top handles secured by buckle straps, offering a classic and polished look that pairs well with the deep tones of your outfit."},
+{"н": 4, "текст": "This is a chocolate brown knit wrap coat with lapels and a long tie belt. The fabric has a fine textured weave, adding warmth while maintaining a sleek profile for a formal yet cozy occasion."},
+{"н": 5, "текст": "You are wearing a sophisticated chocolate brown two-piece set featuring a fitted top with voluminous bubble sleeves and high-waisted straight trousers, tied at the waist with a matching belt. To complete the ensemble on your feet, you have burgundy ankle boots made of soft suede, chosen for their comfort over long hours and festive dining. Carried by your side is a rich burgundy leather handbag that echoes the hue of your shoes to create a seamless base for the look."},
+{"н": 6, "текст": "Layer the chocolate knitted coat over the two-piece set; its wrap style and belt cinch to accentuate your natural waist and balance the bubble sleeves with a streamlined silhouette."},
+{"н": 7, "текст": "The ankle boots offer a relaxed yet structured feel that suits an evening gathering where you can move freely among the guests without sacrificing elegance."},
+{"н": 8, "текст": "Костюм з паском: туніка приталеного крою, асиметрична, без застібки; штани завужені, посадка висока (AniNadin), Напівпальто жіноч на запах з поясом напіввовняне демісезонну — The price ranking is a dataset artifact, not a quality flaw; the fit and fabric of these items suit her occasion better"},
+{"н": 9, "текст": "Напівпальто жіноч на запах з поясом напіввовняне демісезонну — I substituted the thin graphite trench with this structured wool cape to provide genuine warmth against the -10°C frost while maintaining a formal silhouette."}
 ]
 
-── ВІДПОВІДЬ (537 симв., 80.4 с, HTTP 200) ──
+── ВІДПОВІДЬ (2135 симв., 86.6 с, HTTP 200) ──
 ```json
 {
-  "1": "Я не знаю, чи вільно сідає вовняна сукня приталеного крою під жіноче вовняне пальто з англійським коміром.",
-  "2": "Не можу перевірити глибину вирізу на пальта без інформації про твій обхват під грудьми та довжину шиї.",
-  "3": "Ти ще не обрала, як носити сумку Пісочну: в руці, на плечі чи через тіло.",
-  "4": "Я знаю лише колір золотий для намиста, прикрас і туфель згідно зі словами крамниці. Не можу сказати точно, чи вони гармоніюють між собою за кольором.",
-  "5": "У трьох речей немає визначеного стилю."
+  "1": "Цей комплект поєднує шоколадно-коричневий приталений топ з об’ємними рукавами та високі, вузькі штани. Він включає ремінь у тон для підкреслення лінії талії.",
+  "2": "Це бордові черевики на щиколотці зі шкіри замші, мають ребристий комір-шкарпетку для комфорту і стійкий каблук, який чудово підходить для танців або стояння протягом вечірнього заходу.",
+  "3": "Структурована бордова сумка з двома ручками зверху, зафіксованими ремінцями з пряжками, пропонує класичний і вишуканий вигляд, який добре поєднується з глибокими тонами твого вбрання.",
+  "4": "Це шоколадно-коричневе трикотажне пальто на запах з лацканами та довгим ремінцем. Тканина має дрібну текстуровану фактуру, що додає тепла, зберігаючи при цьому елегантний силует для формального, але затишного заходу.",
+  "5": "Ти одягнена у вишуканий шоколадно-коричневий комплект з двох частин: приталений топ з об’ємними рукавами та високі прямі штани, підперезані ремінцем у тон. На ногах ти маєш бордові черевики на щиколотці зі шкіри замші, обрані за їхній комфорт протягом довгих годин і святкової вечері. Поруч з тобою — багата бордова сумка зі шкіри, що перегукується відтінком із твоїми туфлями, створюючи бездоганну основу для образу.",
+  "6": "Одягни шоколадне в’язане пальто поверх комплекту; його модель на запах і ремінець підкреслюють природну лінію талії та збалансовують об’ємні рукави струнким силуетом.",
+  "7": "Черевики на щиколотці пропонують розслаблений, але структурований вигляд, який підходить для вечірнього зібрання, де ти можеш вільно пересуватися серед гостей без шкоди елегантності.",
+  "8": "Костюм з паском: туніка приталеного крою, асиметрична, без застібки; штани завужені, посадка висока (AniNadin), Напівпальто жіноч на запах з поясом напіввовняне демісезонну — Ранжування цін є артефактом набору даних, не недоліком якості; крій і тканина цих речей краще підходять для її випадку",
+  "9": "Напівпальто жіноч на запах з поясом напіввовняне демісезонну — Я замінила тонку графітову тренчку цим структурованим вовняним плащем, щоб забезпечити справжнє тепло проти -10°C морозу, зберігаючи при цьому формальний силует."
 }
 ```

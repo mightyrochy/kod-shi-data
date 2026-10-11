@@ -1,0 +1,36 @@
+── ПРОМПТ (1936 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald Green velvet midi dress with a flattering A-line silhouette and a deep V-neckline in #046306, featuring long sleeves that provide warmth against the frost, cut from rich heavy velvet to catch the festive lights. Black leather ankle boots with a moderate stiletto heel for stability on restaurant floors, finished in #000000. Gold hoop earrings in #FFD700 and a matching velvet clutch to add subtle sparkle without overwhelming the emerald tone. This outfit works because the rich emerald hue complements her warm skin tones and dark hair while creating a striking contrast in the dim restaurant lighting, providing both the necessary warmth for the cold weather and an elegant structure that flatters her figure perfectly for the New Year celebration."}
+
+── ВІДПОВІДЬ (795 симв., 203.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Velvet midi dress",
+      "details": "A-line silhouette with a deep V-neckline and long sleeves, cut from rich heavy velvet",
+      "slot": "dress",
+      "color_hex": "#046306",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "Moderate stiletto heel with black leather finish",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Hoop earrings",
+      "details": "Gold finish, featuring subtle sparkle",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "Velvet clutch",
+      "details": "Gold tone with velvet fabric to match the dress",
+      "slot": "bag",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}

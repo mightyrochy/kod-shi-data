@@ -1,4 +1,4 @@
-── ПРОМПТ (5058 симв.) ──
+── ПРОМПТ (7565 симв.) ──
 Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
 
 Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
@@ -10,38 +10,64 @@
 
 КОДИ У ЗНАЧЕННЯХ:
 - crossbody — кросбоді.
+- dress — сукня.
 - hand — рука.
-- necklace — намисто.
+- outerwear — верхній шар.
+- shoes — взуття.
 - shoulder — плече.
 
 Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
 
 ЗАЯВИ:
 - unchecked_in_this_look — behind this button is the list of what stays unchecked in this outfit: what could not be verified for lack of data about the items, about her or about her day.
-- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
-- cannot_tell_two_accent_surfaces_match — so the code cannot tell whether two accent items match exactly in colour.
+- cannot_tell_lightness_structure — so the code cannot tell which structure of light and dark the outfit carries.
+- cannot_tell_two_neutrals_distinct — so the code cannot tell whether two neutrals of one lightness differ visibly.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
 - wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- item_length_unknown_edge_default — the cards do not carry the length of the named items: the usual edge for such an item was taken, so the code does not know where exactly it lands on the body (values: slots — slot codes).
 - items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
 - sole_grip_unknown_ice — the card does not say whether the sole grips on ice, and today there is black ice (values: item — item name).
+- outer_ease_not_in_feed — the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — item names).
+- front_v_depth_no_body_input — the code computed the depth of the outer layer's neckline, but has nothing to apply it to: it does not know her under-bust girth or neck length (values: item — item name).
+- outer_shoulder_not_measured — the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
 
 Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
 
 ПОВІДОМЛЕННЯ:
 [
-{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "sole_grip_unknown_ice", "values": {"item": {"free_text": "Чоботи шкіряні бежеві", "lang": "uk"}}}]},
-{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Шкіряна сумка яскраво-зеленого кольору", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
-{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "necklace", "colour": "золотий"}]}}, {"code": "cannot_tell_two_accent_surfaces_match"}]},
-{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "items_register_unknown", "values": {"count": 4}}]},
-{"н": 5, "вид": "card_unknowns_toggle", "заяви": [{"code": "unchecked_in_this_look"}]}
+{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "item_length_unknown_edge_default", "values": {"slots": ["shoes"]}}]},
+{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "outer_shoulder_not_measured", "values": {"item": {"free_text": "Жіноче вовняне класичне пальто з ґудзиками…", "lang": "uk"}}}]},
+{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "LeBERDES Чоботи осінні", "lang": "uk"}}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "cannot_tell_lightness_structure"}]},
+{"н": 5, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "dress", "range": "36–40"}]}}]},
+{"н": 6, "вид": "card_unchecked", "заяви": [{"code": "cannot_tell_two_neutrals_distinct"}]},
+{"н": 7, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "outerwear", "range": "40–56"}]}}]},
+{"н": 8, "вид": "card_unchecked", "заяви": [{"code": "outer_ease_not_in_feed", "values": {"items": [{"free_text": "Довга фіолетова сукня з відкритою спиною", "lang": "uk"}, {"free_text": "Жіноче вовняне класичне пальто з ґудзиками…", "lang": "uk"}]}}]},
+{"н": 9, "вид": "card_unchecked", "заяви": [{"code": "front_v_depth_no_body_input", "values": {"item": {"free_text": "Жіноче вовняне класичне пальто з ґудзиками…", "lang": "uk"}}}]},
+{"н": 10, "вид": "card_unchecked", "заяви": [{"code": "sole_grip_unknown_ice", "values": {"item": {"free_text": "LeBERDES Чоботи осінні", "lang": "uk"}}}]},
+{"н": 11, "вид": "card_unchecked", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Жіноча сумка Welfare 8853 GREY", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
+{"н": 12, "вид": "card_unchecked", "заяви": [{"code": "items_register_unknown", "values": {"count": 3}}]},
+{"н": 13, "вид": "card_unknowns_toggle", "заяви": [{"code": "unchecked_in_this_look"}]}
 ]
 
-── ВІДПОВІДЬ (525 симв., 78.0 с, HTTP 200) ──
+── ВІДПОВІДЬ (1197 симв., 155.3 с, HTTP 200) ──
 ```json
 {
-  "1": "Я не знаю, чи добре підошва твоїх бежевих шкіряних чобіт триматиметься на льоду сьогодні.",
-  "2": "Ти ще не обрала, як носити свою яскраво-зелену шкіряну сумку: в руці, на плечі чи через тіло.",
-  "3": "Я знаю колір твого золотого намиста лише з назви магазину. Не можу сказати точно, чи воно поєднується за кольором з іншими акцентними речами у твоєму образі.",
-  "4": "У чотирьох предметів одягу я не визначила стиль.",
-  "5": "За цим рядком — список того, що в цьому образі ще потребує перевірки."
+  "1": "Я не знаю, де саме взуття закінчується на твоїй нозі.",
+  "2": "Не можу сказати, чи добре підходить тобі ширина плечей у цього пальта.",
+  "3": "Я ще не перевірила розмір чобітків LeBERDES Чоботи осінні для твоєї ноги. Я також не знаю довжину твоєї стопи та внутрішню довжину взуття.",
+  "4": "Не можу визначити, чи гармонійне поєднання світла й тіні у цьому образі.",
+  "5": "Розмір 36–40 на сукні — це лише позначка. Я не знаю, як вона сидить на тобі.",
+  "6": "Я ще не можу сказати, чи відрізняються два нейтральні кольори за світлотою.",
+  "7": "Розміри 40–56 для верхнього одягу — це лише позначки. Я не знаю, як він на тобі сидить.",
+  "8": "Не можу перевірити, чи зручно довга фіолетова сукня з відкритою спиною та вовняне пальто поєднуються між собою.",
+  "9": "Я не знаю глибину вирізу пальта, бо мені бракує інформації про твій обхват під грудьми й довжину шиї.",
+  "10": "Не можу сказати, чи ковзають чобітки LeBERDES Чоботи осінні по льоду сьогодні.",
+  "11": "Ти ще не обрала спосіб носити сумку Welfare 8853 GREY: у руці, на плечі чи через тіло.",
+  "12": "Я не знаю стиль трьох речей в образі.",
+  "13": "За цим рядком — список того, що ще треба перевірити."
 }
 ```
