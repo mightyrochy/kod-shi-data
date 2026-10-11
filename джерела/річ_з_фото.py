@@ -433,9 +433,10 @@ def речі_з_json(сирі, фото=None, досі=None, словами=None
 #   · «kind» — вид речі кодом `item_type` (рядок 4283): назву жінці пише мовна модель, а вид у вердикт
 #     репліки (`міст_річ` → `item_type`) — лише з цього коду. Без нього шар ЖИВІ-19 №6–8 назвав
 #     «white leather sandals» тричі, а репліка казала «туфлі-човники», «туфлі», «взуття».
-# Рамка «на око» (рядки 4286, 4710) — одним текстом для обох промптів речей: оцінки (`оцінка_образу.РЕЧІ`)
-# і розмови (`ФОТО_РЕЧЕЙ`). Без нього ЖИВІ-24 №04 дала рамку фото 500×700 у пікселях — {0, 700, 500, 700}.
-РАМКА_НА_ОКО = "estimate it by eye as shares of the photo — no pixel calculations."
+# Рамка «на око» (рядки 4286, 4710, 4760) — одним текстом для всіх промптів рамки речі: оцінки
+# (`оцінка_образу.РЕЧІ`), розмови (`ФОТО_РЕЧЕЙ`) і виклику 0 (`паспорт_нагоди.ПАСПОРТ`, поле «фото_речей»).
+# Без нього ЖИВІ-24 №04 дала рамку фото 500×700 у пікселях — {0, 700, 500, 700}. Без крапки: її ставить речення.
+РАМКА_НА_ОКО = "estimate it by eye as shares of the photo — no pixel calculations"
 ФОТО_РЕЧЕЙ = None      # оголошення будується ліниво (`_фото_речей`): збирач імпортує протокол
 
 
@@ -460,7 +461,7 @@ def _фото_речей():
                 "One object per item on the photos — garment, shoes, bag, accessory, jewelry; an item seen "
                 "on several photos is listed once, with the photo where it is seen best.",
                 "\"frame\" is the item's box on its photo in thousandths of the width and height (0–1000), "
-                "tight around the item itself, without background, skin or other items; " + РАМКА_НА_ОКО,
+                "tight around the item itself, without background, skin or other items; " + РАМКА_НА_ОКО + ".",
                 "Field values are codes from \"codes\"; what the photo does not show is null.",
                 # Р-1 (27.09.2026): на фото її речі стоять і чужі — знімок крамниці на моделі,
                 # вбрання, у якому сфотографовано її спідницю. Свідком «річ її» для коду є
