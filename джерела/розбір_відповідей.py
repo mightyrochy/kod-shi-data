@@ -54,9 +54,10 @@ import дріт_моделі as _Д
                            "never a source you cite to her",
                  треба=True),
         _ЗП.Поле("outfit.items[].photos",
-                 "the numbers of this item's photos: every photo stands under its own label «Photo N:» "
-                 "among the blocks placed before this object; under a label with «not delivered» or "
-                 "«not available» there is no image",
+                 "the numbers of this item's photos: every photo stands under its own label «Photo N — …:» "
+                 "among the blocks placed before this object, and the label names the item by its «n»; it is "
+                 "the shop's photo of that one item, often worn by a model or a mannequin with clothes that "
+                 "are not hers; under a label with «not delivered» or «not available» there is no image",
                  як="describe what you see on the photos, not the name; from each photo take only the item of "
                     "its «kind» — a belt, a bag or jewelry is often shown worn with a blouse or a dress: describe "
                     "the belt, not the blouse; the other clothes in the frame are not part of the outfit and are "
@@ -66,8 +67,10 @@ import дріт_моделі as _Д
                  без="There are no item photos: describe the items by their names; leave «wrong_photos» empty."),
         # рядок 3457 (ЖИВІ-13 №8 рука 2): «Пасок Базовий блакитний» описано блузою з фото пояса — опис
         # ішов за кадром, а не за річчю; рід речі кодом каже, ЩО на кадрі описувати
+        # рядок 4580: цілий комплект — родом «set» (доти «top, blazer», і опис звав його «не включеним»)
         _ЗП.Поле("outfit.items[].kind", "what the item is, as a code (belt, top, dress, shoes, bag…); «type» — "
-                                        "its narrower type when the code knows it",
+                                        "its narrower type when the code knows it; «set» — a set sold as one "
+                                        "item, its top and its bottom both in the outfit",
                  як="«about_items» describes the item of this «kind» and nothing else from its photo"),
         # рядок 3656 (ЖИВІ-14 №11 рука 1): кадр «кемел» пальта — сірий (галерея іншого кольору моделі); код це знав
         # (R-FEED-01 за кнопкою картки), модель — ні, і правило «опиши, як на фото» тягнуло її проти речі.
@@ -193,7 +196,8 @@ import дріт_моделі as _Д
         # у «named» усі номери, а текст пропускав пальто чи піджак і описував штани, яких нема
         "про_речі[].н": "«n» of the item of «outfit»: one entry for every item of «outfit», in its order",
         "про_речі[].текст": "prose for her about this one item of its «kind»: what it is, cut, length, color in words, "
-                            "fabric, in one or two sentences, as its photo and data show",
+                            "fabric, in one or two sentences, as its photo and data show; it is in her outfit — "
+                            "never say it is not included",
         "текст": "prose for her after the items: (1) optional, only when it adds something — how the "
                  "shoes, the outer layer and the accessories go with the rest, in one or two sentences; "
                  "(2) why it works — 3–4 sentences, taking from «day», «palette», «makeup» and «missing» "
@@ -382,6 +386,38 @@ def промпт_опису(об):
     """`ОПИС_V1` обʼєктом коду → повідомлення моделі: збирач (`ОПИС`, англійською) над тими
     самими фактами кодами (`дріт_моделі.опис`); мова вільного тексту — `завдання.мова`."""
     return _ЗП.зібрати(ОПИС, _Д.опис(об), мова_тексту=((об or {}).get("завдання") or {}).get("мова"))
+
+
+# ── ПІДПИС КАДРУ: ЧИЯ ЦЕ РІЧ І ЩО ЦЕ КАДР КРАМНИЦІ (рядок 4580) ─────────────────────
+# ЖИВІ-22 №7 рука 1: «a grey wool blazer over a white top, paired with black pants» — білий топ і чорні
+# штани стоять на манекені кадру піджака; пальто «worn over a black turtleneck, paired with sheer black
+# tights» — з кадру пальта на моделі. №8 рука 2: «cream sweater tied at the waist … beige trousers» — з
+# кадру пояса, вдягненого на светр; після коментаря «silk scarf at your neck» — хустка моделі з кадру
+# блузи. Доти кадр стояв під голим «Photo N:», а чий він — лише в «photos» обʼєкта ПІСЛЯ всіх кадрів.
+# Код не знає, котрий кадр на моделі (клас кадру виміряно в 1 086 речей із 12 426), тож підпис однаковий
+# для кожного кадру: номер і рід речі кодами й що решта одягу в кадрі — не її образ. Двокрапку чи «not
+# available» дописує показ (`підписатиКадри`): лише він знає, чи кадр дійшов
+ПІДПИС_КАДРУ_EN = "Photo {N} — the shop's photo of {n} ({kind}); the other clothes in it are not in her outfit"
+ПІДПИС_СВОГО_КАДРУ_EN = "Photo {N} — her own photo of {n} ({kind}); the other clothes in it are not in her outfit"
+
+
+def підписи_кадрів(об, усього):
+    """Підписи кадрів опису для `ОПИС_V1` обʼєктом коду: `усього` рядків, і-й — перед кадром і+1.
+
+    Річ кадру — за «photos» дроту (`дріт_моделі.опис`), рід — її «kind» і «type»; запасна (ФОТО-1)
+    має рід речі, яку вона заміняє. Кадр без речі лишається «Photo N»."""
+    д = _Д.опис(об)
+    рід = lambda x: ", ".join(str(x[к]) for к in ("kind", "type") if x.get(к)) or "item"
+    чий = {}
+    for x in д["outfit"]["items"]:
+        for N in x.get("photos") or ():
+            чий[N] = (ПІДПИС_СВОГО_КАДРУ_EN if x.get("hers") else ПІДПИС_КАДРУ_EN).format(N=N, n=x["n"], kind=рід(x))
+    зап = д.get("swap_spares") or {}
+    рід_зап = рід(next((x for x in д["outfit"]["items"] if x["n"] == зап.get("item")), {}))
+    for x in зап.get("spares") or ():
+        for N in x.get("photos") or ():
+            чий[N] = ПІДПИС_КАДРУ_EN.format(N=N, n=x.get("n"), kind=рід_зап)
+    return [чий.get(N, "Photo %d" % N) for N in range(1, int(усього) + 1)]
 
 
 def опис_v1(речі, образ=None, задум=None, випадок=None, свідомі=None, фото_є=True,
@@ -605,6 +641,15 @@ _ПАРА_РЕГ = _re_ід.compile(r"#\s*(\d+)\s*[·.\-•∙⋅‧・]\s*(\d{2
 # означенням поля, тож «237·12» без «#» там однозначний; у прозі — ні (там «#» лишається
 # обовʼязковим, бо саме він відрізняє номер від числа в реченні).
 _ПАРА_ПОЛЯ_РЕГ = _re_ід.compile(r"^\s*(?:№\s*)?(\d+)\s*[·.\-•∙⋅‧・]\s*(\d{2})(?:\s*/\s*(верх|низ|top|bottom))?(?![0-9A-Fa-f])")
+# НОМЕР БЕЗ «·» У ПОЛІ (рядок 4590). ЖИВІ-22 №8 рука 1 (qwen3.5-9b): усі 25 номерів складання — без
+# крапки: «#41812» замість «#418·12» (графітовий піджак, його й називає речення образу), «#45010» —
+# «#450·10» (леопардові кеди), одне «#79» замість «#79·33». Доти такий елемент не впізнавався ніяк і
+# зникав навіть з `невідомі`: 0 образів, `no_outfit_in_answer`. Цілим елементом поля він — номер
+# речі; прочитань два: «N·MM» без крапки (останні дві цифри — код магазину, бо код завжди з двох
+# цифр) і голий «N»; «#» чи «№» обовʼязкові — без них число в полі лишається числом. Річ
+# зараховується, лише коли рівно одне прочитання — річ нумерації пулу (номер і, для першого, код
+# магазину збіглись); обидва чи жодне — номер іде в `невідомі` під своїм написанням.
+_НОМЕР_БЕЗ_КРАПКИ_РЕГ = _re_ід.compile(r"^\s*(?:#|№)\s*(\d+)\s*(?:/\s*(верх|низ|top|bottom)\s*)?$")
 # ПОЛОВИНА КОМПЛЕКТУ АНГЛІЙСЬКИМ ДРОТОМ (П-2): промпт складання англійський і просить «/top» чи
 # «/bottom»; у складі образу половина лишається словом ядра («верх»/«низ»), як доти.
 _ПОЛОВИНА = {"top": "верх", "bottom": "низ"}
@@ -642,12 +687,31 @@ def _за_номером(кандидати=None):
     return {n: (і, к) for і, (n, к) in _ном.items()}
 
 
-def _розпізнати_речі(де, словник, за_ном=None, поле=False, двічі=None):
+def _номер_без_крапки(де, за_ном):
+    """Елемент поля номерів без «·» («#41812», «#79») → (id, номер «#N·MM», половина, написання) або None,
+    коли це не такий елемент. id None — номер неоднозначний чи поза нумерацією пулу
+    (`_НОМЕР_БЕЗ_КРАПКИ_РЕГ`)."""
+    м = _НОМЕР_БЕЗ_КРАПКИ_РЕГ.match(де)
+    if not м:
+        return None
+    ц = м.group(1)
+    голий = за_ном.get(int(ц))
+    злитий = за_ном.get(int(ц[:-2])) if len(ц) >= 3 else None
+    прочитання = ([(голий[0], "#%s·%s" % (ц, голий[1]))] if голий else []) + (
+        [(злитий[0], "#%s·%s" % (ц[:-2], ц[-2:]))] if злитий and злитий[1] == ц[-2:] else [])
+    і, номер = прочитання[0] if len(прочитання) == 1 else (None, None)
+    return і, номер, _ПОЛОВИНА.get(м.group(2), м.group(2)), де.strip()
+
+
+def _розпізнати_речі(де, словник, за_ном=None, поле=False, двічі=None, без_крапки=None):
     """Один рядок (проза або елемент поля `речі`) → (id, невірні пари, половини комплекту).
 
     `двічі` — необовʼязковий список викликача: сюди падає id, який рядок назвав ДВІЧІ
     (той самий id або той самий номер «#N·MM» удруге; рядок 208, доповнення). id і
     номер ТІЄЇ САМОЇ речі поруч — одна згадка, не дві, і сюди не йдуть.
+
+    `без_крапки` — так само список викликача: номер без «·», зарахований цілим елементом поля
+    (`_номер_без_крапки`, рядок 4590), — `{написано, номер}`.
 
     `поле=True` — рядок є ЕЛЕМЕНТОМ поля, яке схема оголошує номерами речей
     (`речі`, `фото_не_те`, `прибрати`, `свідомо.річ`): там номер без «#» («237·12»)
@@ -691,6 +755,17 @@ def _розпізнати_речі(де, словник, за_ном=None, по�
                     частини[пара[0]] = _ПОЛОВИНА.get(м.group(3), м.group(3))   # половина комплекту названа явно
             else:
                 невірні.append(м.group(0).strip())
+        # номер без «·» (рядок 4590): лише цілим елементом поля; неоднозначний — у невірні, як пара,
+        # що не зійшлась, і зараховане теж називається (`без_крапки`) — склад не міняється мовчки
+        бк = _номер_без_крапки(де, за_ном) if (поле and not пари and not знайдені) else None
+        if бк and бк[0]:
+            знайдені.append(бк[0])
+            if бк[2]:
+                частини[бк[0]] = бк[2]
+            if без_крапки is not None:
+                без_крапки.append(dict(написано=бк[3], номер=бк[1]))
+        elif бк:
+            невірні.append(бк[3])
     return знайдені, невірні, частини
 
 
@@ -814,9 +889,9 @@ def образи_з_json(об, кандидати=None, каталог=None):
         речі = о.get("речі") or о.get("образ") or []
         if isinstance(речі, str):
             речі = [речі]
-        знайдені, невірні, частини, двічі, половини = [], [], {}, [], {}
+        знайдені, невірні, частини, двічі, половини, без_крапки = [], [], {}, [], {}, []
         for x in речі:
-            з, н, ч = _розпізнати_речі(str(x), словник, за_ном, поле=True, двічі=двічі)
+            з, н, ч = _розпізнати_речі(str(x), словник, за_ном, поле=True, двічі=двічі, без_крапки=без_крапки)
             двічі += [і for і in з if і in знайдені and і not in двічі]
             for і in з:
                 половини.setdefault(і, set()).add(ч.get(і) or "")
@@ -832,6 +907,8 @@ def образи_з_json(об, кандидати=None, каталог=None):
         запис = _запис_образу(знайдені, невірні, словник, "поле «речі»", частини,
                               чому="items_field_no_id",
                               двічі=двічі)
+        if без_крапки:
+            запис["без_крапки"] = без_крапки
         # ПІДПИС — 3–5 слів задуму, не пояснення. Друга ітерація відрізняє за ним
         # свідомий експеримент від огріху; без нього вона бачить лише номери.
         if о.get("підпис"):
