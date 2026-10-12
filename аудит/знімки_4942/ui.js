@@ -1,0 +1,83 @@
+const {chromium}=require('playwright');
+const fs=require('fs'), path=require('path');
+(async()=>{
+ const root=process.argv[2], out=process.argv[3], cache=process.argv[4];
+ const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
+ const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
+ const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
+ page.on('console',m=>console.log('console',m.type(),m.text().slice(0,200)));
+ page.on('requestfailed',r=>{const u=new URL(r.url());console.log('requestfailed',u.hostname,u.pathname);});
+ await page.route('**/*',async r=>{
+  const u=new URL(r.request().url());
+  if(u.hostname==='palette.local'){
+   const name=decodeURIComponent(u.pathname).replace(/^\//,'')||'index.html';
+   const local=path.join(root,name), fallback=path.join(process.cwd(),name);
+   return fs.existsSync(local)?r.fulfill({path:local}):fs.existsSync(fallback)?r.fulfill({path:fallback}):r.fulfill({status:404,body:''});
+  }
+  if(cache&&u.href.includes('/pyodide/')) return r.fulfill({path:path.join(cache,path.basename(u.pathname))});
+  if(u.href.includes('/Fixel@main/fonts/webfonts/')) return r.fulfill({path:path.join(process.cwd(),'.qa4942/fonts',path.basename(u.pathname))});
+  return r.abort();
+ });
+ await page.goto('http://palette.local/');
+ await page.waitForFunction(()=>typeof document.getElementById('пал-назад').onclick==='function');
+ await page.evaluate(()=>{window.pendingPalette=0;const original=оновитиПалітруП;оновитиПалітруП=async function(){window.pendingPalette++;try{return await original();}finally{window.pendingPalette--;}};});
+ await page.evaluate(()=>{КОЛІР={шкіра:null,волосся:null,очі:null,кільце:null,точки:null};ПРОФІЛЬ_СТВОРЕНО=true;режим('палітра');});
+ await page.screenshot({path:path.join(out,'empty.png'),animations:'disabled'});
+ console.log(JSON.stringify(await page.locator('#е-палітра').evaluate(e=>({text:e.innerText,sections:[...e.querySelectorAll('.розділ')].filter(x=>x.getBoundingClientRect().height>0).map(x=>x.innerText),buttons:[...e.querySelectorAll('button')].filter(x=>x.getBoundingClientRect().height>0).map(x=>x.textContent)})),null,2));
+ if(await page.locator('#пал-кольори').count()){
+  await page.locator('#пал-кольори').tap();
+  await page.screenshot({path:path.join(out,'tap.png'),animations:'disabled'});
+  console.log('tap',await page.locator('#аркуш-назва').innerText());
+ }else await page.evaluate(()=>відкритиПрофіль('кол-блок'));
+ await page.locator('#кол-блок summary').tap();
+ await page.locator('#кол-відповідь').fill(JSON.stringify({photo:'usable',skin:['#edc4ad'],hair:['#66412f'],eyes:'#6f7858'}));
+ await page.locator('#кол-читати').tap();
+ console.log('applied',await page.locator('#кол-стан').innerText());
+ await page.waitForFunction(()=>!!КОЛІР.шкіра&&!!КОЛІР.волосся&&!!КОЛІР.очі);
+ await page.locator('#аркуш-готово').tap();
+ await page.locator('#вк-сценарій').tap();
+ await page.evaluate(()=>{ПАСПОРТ_П={джерело:'модель',нагода:'робота',місце:'офіс',джерело_полів:{}};застосуватиПаспортДоЕкрана(ПАСПОРТ_П);малюватиКарткуСценарію();});
+ await page.locator('#пал-кнопка').tap();
+ await page.waitForFunction(()=>document.getElementById('пал-стан').textContent.startsWith('Палітра не порахувалась:'),null,{timeout:300000});
+ const heightError=await page.evaluate(async()=>{try{await містП('палітри',вхідПалітри());return 'no error';}catch(e){return String(e);}});
+ fs.writeFileSync(path.join(out,'colors-only-error.txt'),heightError);
+ await page.screenshot({path:path.join(out,'colors-only.png'),animations:'disabled'});
+ await page.locator('#пф-кнопка').tap();
+ await page.locator('button[data-аркуш="мір-блок"]').tap();
+ for(const [id,value] of [['мр-зріст',168],['мр-плечі',98],['мр-груди',92],['мр-талія',74],['мр-стегна',99]]) await page.locator('#'+id).fill(String(value));
+ await page.locator('#аркуш-готово').tap();
+ await page.locator('#вк-сценарій').tap();
+ await page.evaluate(()=>{ПАСПОРТ_П={джерело:'модель',нагода:'робота',місце:'офіс',джерело_полів:{}};застосуватиПаспортДоЕкрана(ПАСПОРТ_П);малюватиКарткуСценарію();});
+ await page.locator('#пал-кнопка').tap();
+ console.log('palette tapped');
+ await page.waitForTimeout(5000);
+ console.log('bridge state',await page.evaluate(()=>({state:document.getElementById('пал-стан').textContent,palette:!!ПАЛІТРА,errors:typeof loadPyodide})),errors);
+ await page.screenshot({path:path.join(out,'debug.png'),animations:'disabled'});
+ await page.waitForFunction(()=>!!ПАЛІТРА||document.getElementById('пал-стан').textContent.startsWith('Палітра не порахувалась:'),null,{timeout:300000});
+ if(!await page.evaluate(()=>!!ПАЛІТРА)){
+  const error=await page.evaluate(async()=>{try{await містП('палітри',вхідПалітри());return 'no error';}catch(e){return String(e);}});
+  fs.writeFileSync(path.join(out,'bridge-error.txt'),error);
+  await page.screenshot({path:path.join(out,'return-error.png'),animations:'disabled'});
+  await browser.close();console.log(error);process.exitCode=1;return;
+ }
+ await page.waitForFunction(()=>window.pendingPalette===0);
+ await page.screenshot({path:path.join(out,'return.png'),animations:'disabled'});
+ const data=await page.evaluate(()=>({palette:ПАЛІТРА,colors:КОЛІР,choices:ВИБІР,schemes:[...document.querySelectorAll('#пал-схема .чип')].map(x=>({text:x.textContent,disabled:x.getAttribute('aria-disabled')})),bases:[...document.querySelectorAll('#пал-основа .чип')].map(x=>x.textContent),gamut:[...document.querySelectorAll('#пал-гама .чип')].map(x=>x.textContent)}));
+ fs.writeFileSync(path.join(out,'full.json'),JSON.stringify(data,null,2));
+ await page.locator('#пал-схема').scrollIntoViewIfNeeded();
+ await page.screenshot({path:path.join(out,'schemes.png'),animations:'disabled'});
+ console.log('full',{schemes:data.schemes.length,bases:data.bases.length,gamut:data.gamut.length});
+ await page.locator('#пал-основа details>summary').tap();
+ await page.locator('#пал-основа details .чип').first().tap();
+ await page.waitForFunction(()=>!!(ВИБІР.вибір_кольору||{}).база);
+ await page.locator('#пал-схема .чип').last().tap();
+ await page.waitForFunction(()=>ВИБІР.гілка!=null);
+ await page.waitForFunction(()=>window.pendingPalette===0);
+ fs.writeFileSync(path.join(out,'selected.json'),JSON.stringify(await page.evaluate(()=>ВИБІР),null,2));
+ await page.evaluate(async()=>{КОЛІР={шкіра:'#edc4ad',волосся:null,очі:null};ПАЛІТРА=null;await оновитиПалітруП();});
+ await page.evaluate(()=>window.scrollTo(0,0));
+ await page.screenshot({path:path.join(out,'partial.png'),animations:'disabled'});
+ fs.writeFileSync(path.join(out,'partial.txt'),await page.locator('#е-палітра').innerText());
+ fs.writeFileSync(path.join(out,'errors.json'),JSON.stringify(errors));
+ await browser.close();
+})().catch(e=>{console.error(e);process.exitCode=1});
