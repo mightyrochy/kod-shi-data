@@ -5835,7 +5835,7 @@ function закритиАркуш(){
   document.documentElement.classList.remove('аркуш-відкрито');
   document.querySelectorAll('.ряд-паспорта.відкрито').forEach(р=>р.classList.remove('відкрито'));
   if (після){ try{ після(); }catch(e){} }
-  const ф = [відкривач, повернення].find(в=>в && в.isConnected && в.tabIndex >= 0
+  const ф = [відкривач, повернення && повернення()].find(в=>в && в.isConnected && в.tabIndex >= 0
     && !в.matches(':disabled') && !в.closest('[inert]') && в.getClientRects().length
     && getComputedStyle(в).visibility === 'visible');
   if (ф) ф.focus({preventScroll:true});
@@ -5846,8 +5846,8 @@ const НАЗВИ_АРКУШІВ_ПРОФІЛЮ = {'ф-блок':'Фото', 'к�
 function відкритиАркушПрофілю(ід){
   const б = $(ід); if (!б) return;
   /* Кнопка переходу до профілю може сховатися зі зміною режиму.
-     Тоді повертаємо на відповідний рядок огляду, а не на схований відкривач. */
-  const повернення = document.querySelector('#е-огляд [data-аркуш="' + ід + '"]');
+     Тоді повертаємо на поточний рядок після оновлення огляду. */
+  const повернення = ()=>document.querySelector('#е-огляд [data-аркуш="' + ід + '"]');
   відкритиАркуш(НАЗВИ_АРКУШІВ_ПРОФІЛЮ[ід] || '', б, {повернення, після: ()=>{ малюватиОгляд(); }});
   if (ід === 'мір-блок') малюватиВирізку();
   if (ід === 'др-блок') малюватиДрап();
