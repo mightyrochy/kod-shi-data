@@ -5817,7 +5817,7 @@ function відкритиАркуш(назва, вузол, о){
      Збережений inert повертається дослівно: аркуш не вмикає чужий схований фон. */
   for (const в of document.body.children){
     if (в === а || в.id === 'заслона' || /^(SCRIPT|STYLE)$/.test(в.tagName)) continue;
-    АРКУШ.фон.push([в, в.hasAttribute('inert')]); в.setAttribute('inert', '');
+    АРКУШ.фон.push([в, в.getAttribute('inert')]); в.setAttribute('inert', '');
   }
   const фокуси = фокусиАркуша(), заданий = о.фокус && $(о.фокус);
   (фокуси.includes(заданий) ? заданий : фокуси[0] || а).focus();
@@ -5829,7 +5829,9 @@ function закритиАркуш(){
   вузол.hidden = було_hidden; if (було_open != null && вузол.tagName === 'DETAILS') вузол.open = було_open;
   const а = $('аркуш'); if (а){ а.hidden = true; $('аркуш-тіло').innerHTML = ''; }
   const з = $('заслона'); if (з) з.hidden = true;
-  for (const [в, було] of фон) в.toggleAttribute('inert', було);
+  for (const [в, було] of фон){
+    if (було === null) в.removeAttribute('inert'); else в.setAttribute('inert', було);
+  }
   document.documentElement.classList.remove('аркуш-відкрито');
   document.querySelectorAll('.ряд-паспорта.відкрито').forEach(р=>р.classList.remove('відкрито'));
   if (після){ try{ після(); }catch(e){} }
