@@ -1,0 +1,51 @@
+{
+  "n": 972,
+  "info": {
+    "url": "https://github.com/mightyrochy/kod-shi-data/pull/972",
+    "number": 972,
+    "state": "open",
+    "merged": false,
+    "mergeable": false,
+    "draft": false,
+    "body": "## Що змінено\n\n- `CLAUDE.md`, «Для всіх сесій»: новий п.23 — відповіді власникові й усе, що пише сесія (листи, PR, коміти, коментарі), завжди тільки українською; мова в коді — як і раніше, п.12.\n- `CLAUDE.md` п.22: кожен звіт ChatGPT перевіряє сторож звітів (дешева сесія: голова, CI, конфлікт, знімок), а менеджер сам не перевіряє й зливає з SHA сторожа.\n- `аудит/МЕНЕДЖЕР.md`: те саме в «ChatGPT (Codex)» (лист сторожа «ДО ЗЛИТТЯ #PR <SHA>: …») і в «Перевірка й злиття» — знімок перед злиттям дивиться дешева сесія, не менеджер.\n- `аудит/РІШЕННЯ_ВЛАСНИКА.md`: обидві цитати з датою — 12.10.2026 ~19:55 UTC «Українською. Завжди тільки українською» і ~21:00 UTC «Ти перевіряєш все сам? Це має робити окрема дешевша сесія.»\n\n## Перевірено\n\n- Лише документи: 3 файли, коду не зачеплено.\n- `git merge-tree` з `main` 286b3103 конфліктів не показує.\n- Злити з найближчою пачкою ChatGPT (так само, як #967).\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_01RcLyfytgk1Avh2z7ZmoDoj",
+    "title": "Слова власника 12.10: тільки українською (п.23); звіт перевіряє дешева сесія (п.22)",
+    "base": "main",
+    "base_sha": "97b31460a3215c13f54c992cc221beb43eeb449f",
+    "head": "claude/slovo-1210-mova",
+    "head_sha": "eccb23bb3ad235189b3311a7aea7a1ae6b478b92",
+    "head_repo_id": 1350115747,
+    "head_repo_full_name": "mightyrochy/kod-shi-data",
+    "merge_commit_sha": "20518d5c88292972b70145a5b9e3c35283b4da34",
+    "user": {
+      "login": "mightyrochy",
+      "name": "mightyrochy",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/289388706?v=4",
+      "id": 289388706
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-10-12T19:57:50Z",
+    "updated_at": "2026-10-12T21:14:04Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 2,
+    "changed_files": 3,
+    "additions": 14,
+    "deletions": 5,
+    "display_url": "https://github.com/mightyrochy/kod-shi-data/pull/972",
+    "display_title": "Слова власника 12.10: тільки українською (п.23); звіт перевіряє дешева сесія (п.22)"
+  },
+  "comments": [
+    {
+      "url": "https://github.com/mightyrochy/kod-shi-data/pull/972#issuecomment-6131613511",
+      "body": "<!-- codex-pull-request-review-summary -->\n\n## Codex Review Summary\n\nThis comment shows the latest Codex review activity on this pull request.\n\n| Review | Status | Commit | Review trigger |\n| --- | --- | --- | --- |\n| 📝 **Code Review** | ✅ **Completed** <relative-time datetime=\"2026-10-12T19:58:48.220810Z\">2026-10-12T19:58:48.220810Z</relative-time> | `a673e39` | PR opened |\n\n\n\n<details> <summary>ℹ️ About Codex in GitHub</summary>\n<br/>\n\n[Your team has set up Codex to review pull requests in this repo](https://chatgpt.com/codex/cloud/settings/general). Reviews are triggered when you\n- Open a pull request for review\n- Mark a draft as ready\n- Comment \"@codex review\" or \"@codex security review\".\n\nCodex reacts with 👀 while any review is running, comments if it has suggestions, and reacts with 👍 once all reviews finish with no findings.\n\n</details>"
+    },
+    {
+      "url": "https://github.com/mightyrochy/kod-shi-data/pull/972#issuecomment-6132715993",
+      "body": "Незалежна перевірка поточної голови `eccb23bb3ad235189b3311a7aea7a1ae6b478b92` проти чинного `main` `286b310328eb3f981e403ae9b4ddcabd667b2f97`.\n\n**Рекомендую включити саме цю голову до найближчої пачки**, як вказано в #960, коментар 6132531563. Зміни відповідають двом рішенням власника: завжди українською (п.23) та окрема дешева сесія перевіряє звіт, менеджер зливає з її SHA (п.22).\n\nВласний diff від спільного предка: рівно 3 документи, 14 доданих / 5 прибраних рядків — `CLAUDE.md`, `аудит/МЕНЕДЖЕР.md`, `аудит/РІШЕННЯ_ВЛАСНИКА.md`. Є правило мови, межа з мовою в коді п.12, обов’язки сторожа щодо голови/CI/конфлікту/знімка та датовані цитати власника. Продуктових змін, нового рядка дошки чи медіа немає. `diff --check` чистий.\n\n`git merge-tree --write-tree` з чинним main завершився без конфліктів; дерево результату `ef545e8b81bd764a89e58141ab493b63b373ea61`. Незалежно звірено: різниця майбутнього злиття з main — лише ці 3 документи, кожен побайтово дорівнює версії PR; увесь код і решта дерева main збережені. Гілка PR відстає від main, тому прямий diff двох дерев показує старі продуктові відмінності; власний diff і обчислене злиття їх не містять.\n\nCI саме `eccb23bb3ad235189b3311a7aea7a1ae6b478b92`: [38307886196](https://github.com/mightyrochy/kod-shi-data/actions/runs/38307886196) — ще виконується. Останній попередній автоматичний коментар стосується старої голови `a673e39`; він не є перевіркою поточної голови. Рекомендація включення не означає дозволу на злиття до зеленого CI голови пачки й окремої перевірки звіту.\n\nКаталог, знімок продукту й повна локальна батарея для цих процесних документів не застосовні. Продуктових файлів не змінювали, живі моделі не запускали, main не пушили й не зливали.\n"
+    }
+  ]
+}
