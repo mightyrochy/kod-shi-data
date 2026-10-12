@@ -1,11 +1,11 @@
-"""4920: слово переліку проти виміру фото; ДО — після злиття main, до виправлення зауважень, ПІСЛЯ — робочий код."""
+"""4920: слово переліку проти виміру фото; ДО — main 286b310, ПІСЛЯ — робочий код; контроль не є вибором."""
 import gzip, json, os, subprocess, sys, tempfile, types
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import фід_варіант as ФВ, фід_збагачення as ФЗ, verify as V
 from фід_розбір import читати_yml, _СЕП_КОЛЬОРУ
 from фід_фото import _спільні_фото, чужий_кадр
-ДО = types.ModuleType("варіант_до"); exec(subprocess.run(["git", "show", "e61f2202a286f250f14d6a726f84328830263ad2:джерела/фід_варіант.py"],
+ДО = types.ModuleType("варіант_до"); exec(subprocess.run(["git", "show", "286b310328eb3f981e403ae9b4ddcabd667b2f97:джерела/фід_варіант.py"],
                     capture_output=True, text=True, check=True).stdout, ДО.__dict__)
 with gzip.open("../каталог_повний.xml.gz", "rb") as ф, tempfile.NamedTemporaryFile() as т:
     т.write(ф.read()); т.flush(); речі, _ = читати_yml(т.name)
