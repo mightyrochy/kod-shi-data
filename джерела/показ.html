@@ -501,6 +501,9 @@ button.назад{padding:14px 0 0;font-size:14px}
 #аркуш-тіло .розділ::before{display:none}
 #аркуш-тіло .розділ>h2{display:none}
 #аркуш-тіло .сцена{margin-top:4px}
+/* Поля аркуша не гублять клавіатурний фокус під загальним outline:none. */
+#аркуш :focus-visible{outline:2px solid var(--золото);outline-offset:2px}
+#аркуш button:focus-visible{outline-offset:-3px}
 html.аркуш-відкрито{overflow:hidden}
 
 /* ── ПРОФІЛЬ РЯДКАМИ: список із прев'ю, кожен рядок — свій аркуш ──────────── */
@@ -1955,7 +1958,7 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
      збереження, блоки профілю. Вузол переїжджає в `#аркуш-тіло` і повертається
      додому при закритті (`відкритиАркуш` / `закритиАркуш`). ────────────────── -->
 <div class="заслона" id="заслона" hidden></div>
-<div class="аркуш" id="аркуш" hidden role="dialog" aria-modal="true" aria-labelledby="аркуш-назва">
+<div class="аркуш" id="аркуш" hidden role="dialog" aria-modal="true" aria-labelledby="аркуш-назва" tabindex="-1">
   <div class="ручка" aria-hidden="true"></div>
   <div class="аркуш-шапка"><h2 id="аркуш-назва"></h2><button type="button" class="текст" id="аркуш-скасувати">скасувати</button></div>
   <div id="аркуш-тіло"></div>
@@ -5788,13 +5791,21 @@ async function малюватиБічніСценарії(){
    Вузол-редактор переїжджає в `#аркуш-тіло` і ПОВЕРТАЄТЬСЯ ДОДОМУ при закритті:
    поля лишаються тими самими вузлами, тож усі обробники й значення живуть далі.
    Рівно один аркуш за раз; зміна режиму закриває його. */
-let АРКУШ = null;   // {вузол, дім, наступний, після, було_hidden, було_open}
+let АРКУШ = null;   // редактор, його дім, відкривач і попередній стан фону
+function фокусиАркуша(){
+  return [...$('аркуш').querySelectorAll('button, input, select, textarea, a[href], summary, [tabindex]')]
+    .filter(в=>в.tabIndex >= 0 && !в.matches(':disabled') && !в.closest('[inert]')
+      && в.getClientRects().length && getComputedStyle(в).visibility !== 'hidden');
+}
 function відкритиАркуш(назва, вузол, о){
   о = о || {};
+  const відкривач = АРКУШ && $('аркуш').contains(document.activeElement)
+    ? АРКУШ.відкривач : о.відкривач || document.activeElement;
   закритиАркуш();
   const а = $('аркуш'), т = $('аркуш-тіло'); if (!а || !т || !вузол) return;
   АРКУШ = {вузол, дім: вузол.parentNode, наступний: вузол.nextSibling, після: о.після || null,
-           було_hidden: вузол.hidden, було_open: ('open' in вузол) ? вузол.open : null};
+           було_hidden: вузол.hidden, було_open: ('open' in вузол) ? вузол.open : null,
+           відкривач, фон: []};
   т.innerHTML = ''; т.appendChild(вузол);
   вузол.hidden = false; if ('open' in вузол && вузол.tagName === 'DETAILS') вузол.open = true;
   $('аркуш-назва').textContent = назва || '';
@@ -5802,18 +5813,29 @@ function відкритиАркуш(назва, вузол, о){
   const гт = $('аркуш-готово'); if (гт) гт.hidden = о.готово === false;
   а.hidden = false; $('заслона').hidden = false;
   document.documentElement.classList.add('аркуш-відкрито');
-  if (о.фокус){ try{ const ф = $(о.фокус); if (ф) ф.focus(); }catch(e){} }
+  /* Фон не бере клавіатуру й не читається як частина модального вікна.
+     Збережений inert повертається дослівно: аркуш не вмикає чужий схований фон. */
+  for (const в of document.body.children){
+    if (в === а || в.id === 'заслона' || /^(SCRIPT|STYLE)$/.test(в.tagName)) continue;
+    АРКУШ.фон.push([в, в.getAttribute('inert')]); в.setAttribute('inert', '');
+  }
+  const фокуси = фокусиАркуша(), заданий = о.фокус && $(о.фокус);
+  (фокуси.includes(заданий) ? заданий : фокуси[0] || а).focus();
 }
 function закритиАркуш(){
   if (!АРКУШ) return;
-  const {вузол, дім, наступний, після, було_hidden, було_open} = АРКУШ; АРКУШ = null;
+  const {вузол, дім, наступний, після, було_hidden, було_open, відкривач, фон} = АРКУШ; АРКУШ = null;
   if (дім){ if (наступний && наступний.parentNode === дім) дім.insertBefore(вузол, наступний); else дім.appendChild(вузол); }
   вузол.hidden = було_hidden; if (було_open != null && вузол.tagName === 'DETAILS') вузол.open = було_open;
   const а = $('аркуш'); if (а){ а.hidden = true; $('аркуш-тіло').innerHTML = ''; }
   const з = $('заслона'); if (з) з.hidden = true;
+  for (const [в, було] of фон){
+    if (було === null) в.removeAttribute('inert'); else в.setAttribute('inert', було);
+  }
   document.documentElement.classList.remove('аркуш-відкрито');
   document.querySelectorAll('.ряд-паспорта.відкрито').forEach(р=>р.classList.remove('відкрито'));
   if (після){ try{ після(); }catch(e){} }
+  if (відкривач && відкривач.isConnected && !відкривач.closest('[inert]')) відкривач.focus({preventScroll:true});
 }
 /* Блоки профілю — ті самі, що на кроках знайомства; назви беруться з рядка огляду. */
 const НАЗВИ_АРКУШІВ_ПРОФІЛЮ = {'ф-блок':'Фото', 'кол-блок':'Твої кольори', 'проф-блок':'Як тебе звати',
@@ -6842,7 +6864,11 @@ function перемкнутиРедактор(ід){
   const е = $(ід); if (!е) return;
   const ряд = document.querySelector('.ряд-паспорта[data-редактор="' + ід + '"]');
   if (АРКУШ && АРКУШ.вузол === е){ закритиАркуш(); return; }
-  відкритиАркуш((ряд && ряд.dataset.назва) || '', е, {після: ()=>{ малюватиКарткуСценарію(); }});
+  /* Перший ручний вхід замінює приклади карткою ще до відкриття аркуша:
+     його кнопки вже нема. Тоді місце повернення — відповідний рядок картки. */
+  const активний = document.activeElement;
+  const відкривач = активний !== document.body && активний.getClientRects().length ? активний : ряд;
+  відкритиАркуш((ряд && ряд.dataset.назва) || '', е, {відкривач, після: ()=>{ малюватиКарткуСценарію(); }});
   if (ряд) ряд.classList.add('відкрито');
   /* Сходинку помад рахує код, і рахує її Pyodide — тож відкриття редактора саме
      й є моментом, коли її треба просити. Доти тут не було чого просити: кольори
@@ -8701,7 +8727,16 @@ async function старт(){
     $('аркуш-готово').onclick = закритиАркуш;
     $('аркуш-скасувати').onclick = закритиАркуш;
     $('заслона').onclick = закритиАркуш;
-    document.addEventListener('keydown', е=>{ if (е.key === 'Escape' && АРКУШ) закритиАркуш(); });
+    document.addEventListener('keydown', е=>{
+      if (!АРКУШ) return;
+      if (е.key === 'Escape'){ е.preventDefault(); закритиАркуш(); return; }
+      if (е.key !== 'Tab') return;
+      const ф = фокусиАркуша(), перший = ф[0], останній = ф[ф.length - 1];
+      if (!ф.length){ е.preventDefault(); $('аркуш').focus(); }
+      else if (!ф.includes(document.activeElement) || (е.shiftKey ? document.activeElement === перший : document.activeElement === останній)){
+        е.preventDefault(); (е.shiftKey ? останній : перший).focus();
+      }
+    });
     document.querySelectorAll('#е-огляд .рядок[data-аркуш]').forEach(р=>{ р.onclick = ()=>відкритиАркушПрофілю(р.dataset.аркуш); });
     $('сц-рукою-показати').onclick = ()=>{ КАРТКА_РУКОЮ = true; малюватиЧатП(); перемкнутиРедактор('ред-нагода'); };
     $('кол-запит').value = ПРОМПТ_КОЛІР;
