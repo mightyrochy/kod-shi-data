@@ -30,7 +30,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
    facts.keyboard=[];
    for(let i=0;i<120;i++){await page.keyboard.press('Tab');const id=await page.evaluate(()=>document.activeElement.id);facts.keyboard.push(id);if(id==='вк-оцінка')break;}
    assert.equal(facts.keyboard.at(-1),'вк-оцінка');await page.keyboard.press('Enter');facts.enter=await page.evaluate(()=>({mode:РЕЖИМ,events:trusted5090.slice()}));assert.equal(facts.enter.mode,'оцінка');assert(facts.enter.events.at(-1).trusted);
-   await page.locator('#вк-сценарій').tap();await page.locator('#вк-оцінка').tap();facts.touch=await page.evaluate(()=>({mode:РЕЖИМ,events:trusted5090.slice()}));assert.equal(facts.touch.mode,'оцінка');assert(facts.touch.events.at(-1).trusted);
+   await page.evaluate(scene=>режим(scene==='порожня-палітра'?'палітра':scene==='архівна-картка'?'образи':'сценарій'),scene);facts.preTouchMode=await page.evaluate(()=>РЕЖИМ);await page.locator('#вк-оцінка').tap();facts.touch=await page.evaluate(()=>({mode:РЕЖИМ,events:trusted5090.slice()}));assert.equal(facts.touch.mode,'оцінка');assert(facts.touch.events.at(-1).trusted);
    if(scene==='сценарій'){
     await page.locator('#вк-сценарій').tap();await page.locator('#сц-рукою-показати').tap();await page.keyboard.press('Escape');
     const opener=page.locator('.ряд-паспорта[data-редактор="ред-нагода"]');await opener.tap();
