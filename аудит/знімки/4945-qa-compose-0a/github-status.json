@@ -1,0 +1,543 @@
+{
+  "capturedAt": "2026-10-13T22:51:22.743Z",
+  "pr": {
+    "url": "https://github.com/mightyrochy/kod-shi-data/pull/1004",
+    "number": 1004,
+    "state": "open",
+    "merged": false,
+    "mergeable": true,
+    "draft": true,
+    "body": "## Що змінено\n\n«Замінити» біля речі одразу добирає іншу річ у той самий слот цього образу. Інші образи зберігаються побайтно. Добір рук 1–2 використовує спільний пул і чинні режими список/оцінка/турнір, звужені до одного слота; руки 3–4 — модельний вибір із цілим незмінним образом у контексті. Повне «Зібрати ще раз» без поля заміни незмінне.\n\n**Зафіксована голова: 0a664f440b208a4023cbeb9a01bc4461ae37ab84**, дерево 365275d2ddeac6d43bd1e56f1fcf8a987dadcbed. Звичайний merge з main16a13b727f35aec508bf01d7fc6070049481a785: parents b722c8867f671c612e71c5f5828f8befbf642111 +16a13b727f35aec508bf01d7fc6070049481a785. Наряд [6151806775](https://github.com/mightyrochy/kod-shi-data/issues/960#issuecomment-6151806775), рядок 4945, ПРОДУКТ п.7/12/14. Дослівне слово власника «1а», дата й питання записані в журналі; ПРОДУКТ п.7 містить лише точний погоджений рядок.\n\n[Менеджер підтвердив А, 6154651750](https://github.com/mightyrochy/kod-shi-data/issues/960#issuecomment-6154651750): кожен дотик міняє річ, навіть коли X вже позначено; X лишається в не_ця для наступного повного збору, знімається чинною «Повернути всі». Шапка показує цю кнопку без перемальовування інших карток. Рішення більше не очікується.\n\nОцінка й турнір отримують replacement/fixed_outfit та відповідну інструкцію лише на локальному шляху; повна оцінка лишилася дослівною. Повні фінальні етапи заміни записуються до реального save в IndexedDB. Повтор SKU, невідоме джерело/слот, відмова й помилка зберігають стару річ; повторні дотики об’єднані, застарілі відповіді після навігації відкидаються. Коментарі й вибори жінки збережені, автоматичного надсилання вердикту немає. Семантичних читачів слів або нових фраз жінці не додано; старий опис після зміни речі збережений у звіті й прибраний із поточного показу.\n\n## Перевірено\n\n**Поточна композиція 0a664f44…:** звичайно включено main16a13 з його ARIA, фокусом, статусами, даними й іншими рядками дошки. Власна зміна CSS/ARIA від 4945 відсутня; успадковані зміни main збережено. Повний build цього HEAD rc0: 156 модулів, 11993 речей, 731 звірка / 64 розділи; artifact SHA256 **e3622fdfdddcbbe2d9b9f5921ce9c4d72cd64ca2604ed5713dcaadd2334d7864**.\n\n[Поточний архів композиції: exact artifact, raw, PNG, body snapshot](https://github.com/mightyrochy/kod-shi-data/tree/da92e44ff879f70ef1c4b41d40da03c3a538921c/аудит/знімки/4945-compose-0a).\n\nВласний справжній Chromium 390×844 / Pyodide / міст / IndexedDB: чотири вузькі сцени композиції rapid, error, успішні руки 1 та 3 — rc0. На початку, під час очікування, після помилки й успіху старих вузлів/обіцянок 0; шапка і «Повернути всі» видимі. Стан chip aria-pressed і status/live/atomic узгоджений. Інші DOM/cardJSON/записи IndexedDB побайтно однакові, завершений етап збережено; автоматичних вердиктів і modelPOST 0, власних процесів 0. SYNTHETIC лише відповіді моделі, це не оцінка якості моделі або фото.\n\nІнша незалежна composition QA зараз перевіряє саме 0a664f44…, включно з фактичним Tab/outline. Потрібні її висновок та обидві зелені jobs **нового CI [run38476054451](https://github.com/mightyrochy/kod-shi-data/actions/runs/38476054451)**; джерела115566892867 in_progress. Старі QA та CI не є прийманням цієї голови.\n\n**Окремо збережені докази b722 до включення main:** виправлено контекст у оцінці/турнірі, фінальний save етапу і вилучено застарілі per-item відповідь та початкове пояснення майбутнього збору. Під час цього виправлення CSS/ARIA не змінювали. Старий висновок QA736 був COMMENT із «не прийнято» через видиму підказку; його знімки й raw збережено.\n\nНа b722 стандартна батарея CLAUDE із шести етапів, синтаксис, 14 AST, підготовка, міст та власна проба rc0. Додаткова досяжність після інфраструктурного переривання досягла ліміту300с/rc124 без NIKHTO-результату; це не приховано й не позначено PASS. [Архів виконавця b722](https://github.com/mightyrochy/kod-shi-data/tree/92f3acc68077d2ad049b6235f56e311c1892076c/аудит/знімки/4945-b722).\n\nОкрема свіжа readonly Astra max дала **CONTENT PASS / PENDING CI лише b722**: 21 різна native-сцена, header/reset capture, 12 PNG очима, 156/156 модулів і HTML exact, ownjobs0. Список — 1, оцінка — 1, турнір — 2; руки 3–4 — 1; невідоме/відсутнє — 0 фактичних викликів. [Незалежний звіт, raw і PNG](https://github.com/mightyrochy/kod-shi-data/tree/92f3acc68077d2ad049b6235f56e311c1892076c/аудит/знімки/4945-qa3-b722). Артефакт b722 має SHA2561c376f922b1a2c10492d710b6b1e98200dcab9a0aeab99ec7b9fbf2536f821df; його старі CI/jobs не переносимо на поточний HEAD.\n\nДО записано на main7c90: два дотики по X в різних образах лише ставили/знімали глобальну позначку без негайної заміни й модельних викликів. [Незмінний архів ДО/WIP](https://github.com/mightyrochy/kod-shi-data/tree/e811eded2c592fe2ade20c2a5955316d6410eaab/аудит/знімки/4945-wip) збережено окремо. Відповіді фікстур не дають нового мірила моделі чи фото.\n\n## Живий ПІСЛЯ\n\nРуки 3–4: після незалежно готового коду й фактичного злиття — той самий записаний ж7_мороз_без_відкритого з архіву 3469039c20d5b844b2fa04e54369ed821dff39cb, source/build 7c90a0093b5d7dc8587a90c541eaf11e23b9a3be. Повторно не запускати старий код живцем; відтворити той самий вхід і незмінні початкові образи, виконати лише нові заміни взуття рук 3 і 4 локальними qwen/qwen3.5-9b + mamaylm-gemma-3-12b-it-v2.0. Потрібні нові raw-відповіді, source/full код.txt, кількість і час викликів, 390×844 до/після, побайтна тотожність інших образів і незалежний огляд. Черга — #996; нове продуктове мірило до цього не прийнято, 4945 ВІДКРИТО.\n\nНових медіа у main 0; докази — лише архівна гілка без PR у main. Платні API, нові секрети, cloud-live, main push/merge, force, auto-merge, dispatch і згадки бота не застосовано.\n",
+    "title": "4945: заміна однієї речі лише в цьому образі",
+    "base": "main",
+    "base_sha": "16a13b727f35aec508bf01d7fc6070049481a785",
+    "head": "codex/4945-zamina-odnoho-obrazu",
+    "head_sha": "0a664f440b208a4023cbeb9a01bc4461ae37ab84",
+    "head_repo_id": 1350115747,
+    "head_repo_full_name": "mightyrochy/kod-shi-data",
+    "merge_commit_sha": "dd835f1cdcedc4aa9135857f65a47b3ce9240de6",
+    "user": {
+      "login": "mightyrochy",
+      "name": "mightyrochy",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/289388706?v=4",
+      "id": 289388706
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-10-13T20:26:43Z",
+    "updated_at": "2026-10-13T22:24:14Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 4,
+    "changed_files": 13,
+    "additions": 333,
+    "deletions": 73,
+    "display_url": "https://github.com/mightyrochy/kod-shi-data/pull/1004",
+    "display_title": "4945: заміна однієї речі лише в цьому образі"
+  },
+  "runs": {
+    "workflow_runs": [
+      {
+        "id": 38476054451,
+        "name": "збірка показу",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 2549,
+        "jobs_url": "https://api.github.com/repos/mightyrochy/kod-shi-data/actions/runs/38476054451/jobs",
+        "logs_url": "https://api.github.com/repos/mightyrochy/kod-shi-data/actions/runs/38476054451/logs",
+        "workflow_id": 355260477
+      }
+    ]
+  },
+  "jobs": {
+    "jobs": [
+      {
+        "id": 115566892867,
+        "name": "перевірка джерел",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 38476054451,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "залежності батареї показу",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "node --check на кожен .js у джерела/",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "py_compile на кожен .py у джерела/",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "проби поділу (ВПАЛО має лишатись 0)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "розпакувати каталоги й почистити фід",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          },
+          {
+            "name": "дим на живому шляху",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "живий шлях (4 руки × 2 каталоги, brief)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          },
+          {
+            "name": "протокол",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "розділи гейтів (ВПАЛО має лишатись 0)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13
+          },
+          {
+            "name": "контракти (мають лишатись цілі)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 14
+          },
+          {
+            "name": "батарея показу (jsdom)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          },
+          {
+            "name": "міст (50 звірок)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16
+          },
+          {
+            "name": "досяжність («НІХТО» мусить лишатись 0)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17
+          },
+          {
+            "name": "звіт досяжності → job'у збірки",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 18
+          },
+          {
+            "name": "стенд у браузері (Chromium + Pyodide, 20 звірок)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 19
+          },
+          {
+            "name": "числа приладів у підсумок",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 20
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 38
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 39
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 40
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 41
+          }
+        ]
+      },
+      {
+        "id": 115575195251,
+        "name": "зібрати показ-повний",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 38476054451,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "залежності батареї показу",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "зібрати показ-повний",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "звірка вантажу з джерелами",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "свіжий звіт досяжності з перевірки",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "закомітити артефакт",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 9
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 18
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 19
+          }
+        ]
+      }
+    ]
+  },
+  "sourceSteps": {
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Run actions/setup-python@v5",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Run actions/setup-node@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "залежності батареї показу",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "node --check на кожен .js у джерела/",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "py_compile на кожен .py у джерела/",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7
+      },
+      {
+        "name": "проби поділу (ВПАЛО має лишатись 0)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8
+      },
+      {
+        "name": "розпакувати каталоги й почистити фід",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9
+      },
+      {
+        "name": "дим на живому шляху",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10
+      },
+      {
+        "name": "живий шлях (4 руки × 2 каталоги, brief)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11
+      },
+      {
+        "name": "протокол",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12
+      },
+      {
+        "name": "розділи гейтів (ВПАЛО має лишатись 0)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13
+      },
+      {
+        "name": "контракти (мають лишатись цілі)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 14
+      },
+      {
+        "name": "батарея показу (jsdom)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 15
+      },
+      {
+        "name": "міст (50 звірок)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 16
+      },
+      {
+        "name": "досяжність («НІХТО» мусить лишатись 0)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 17
+      },
+      {
+        "name": "звіт досяжності → job'у збірки",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18
+      },
+      {
+        "name": "стенд у браузері (Chromium + Pyodide, 20 звірок)",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19
+      },
+      {
+        "name": "числа приладів у підсумок",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 20
+      },
+      {
+        "name": "Post Run actions/setup-node@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 38
+      },
+      {
+        "name": "Post Run actions/setup-python@v5",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 39
+      },
+      {
+        "name": "Post Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 40
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 41
+      }
+    ]
+  },
+  "buildSteps": {
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Run actions/setup-python@v5",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Run actions/setup-node@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "залежності батареї показу",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "зібрати показ-повний",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "звірка вантажу з джерелами",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7
+      },
+      {
+        "name": "свіжий звіт досяжності з перевірки",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8
+      },
+      {
+        "name": "закомітити артефакт",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 9
+      },
+      {
+        "name": "Post Run actions/setup-node@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 16
+      },
+      {
+        "name": "Post Run actions/setup-python@v5",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 17
+      },
+      {
+        "name": "Post Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19
+      }
+    ]
+  },
+  "ownerDecisions": [
+    {
+      "id": 6151806775,
+      "url": "https://github.com/mightyrochy/kod-shi-data/issues/960#issuecomment-6151806775",
+      "body": "Черга від менеджера Claude (13.10 ~18:10 UTC) — **рішення власника для 4945 і наряд за ним**.\n\nПитання власнику: «„Замінити“ біля речі зараз знімає річ із пулу лише на наступному повному „Зібрати ще раз“. А — заміна лише в цьому образі, решту образів не чіпати; Б — як є». Відповідь власника, 13.10 ~18:05 UTC: «1а».\n\n**Наряд 4945** (паралельно з хвилею 6151544586):\n- **Що зробити.** Дотик «Замінити» біля речі одразу ставить у той самий слот цього образу іншу річ. Добір — тим самим шляхом, що й повне збирання, звужений до одного слота одного образу. Решта образів не змінюється.\n- **Що лишається як є.** Поведінку повного «Зібрати ще раз» і позначку `не_ця` цей крок не міняє. Якщо після локальної заміни вона стає суперечливою — `ДЛЯ CLAUDE: РІШЕННЯ` з варіантами.\n- **Де:** `показ.html` (`НЕ_ЦЯ_П`), міст (`не_ця`), добір рук 1–2; руки 3–4 — модельним шляхом.\n- **Мірило ДО → ПІСЛЯ.** Справжній Chromium 390×844 на зібраній сторінці з фікстурою відповіді моделі. Після «Замінити» на речі X в образі k:\n  - в образі k у тому самому слоті інша річ;\n  - решта образів побайтно та сама (ДО: не так);\n  - число викликів моделі — по найменшому шляху.\n  \n  Живий ПІСЛЯ для рук 3–4 — сцена в чергу ноутбука.\n- **Слово власника** — у тому самому PR: `аудит/ПРОДУКТ.md`, розділ «Інтерфейс v5» (п.7), — рядок «„Замінити“ біля речі міняє її лише в цьому образі; інші образи не змінюються»; у `аудит/РІШЕННЯ_ВЛАСНИКА.md` — дата й цитата.\n\nМодель — Sol 6.1 high.\n\n---\n_Generated by [Claude Code](https://claude.ai/code)_"
+    },
+    {
+      "id": 6154651750,
+      "url": "https://github.com/mightyrochy/kod-shi-data/issues/960#issuecomment-6154651750",
+      "body": "Черга від менеджера Claude (13.10 ~20:40 UTC) — **4945: відповідь на РІШЕННЯ 6154622106 (#1004)**.\n\nОбираю варіант **А**. Кожен дотик «Замінити» одразу міняє річ у цьому образі, навіть коли X уже позначено. X лишається в `не_ця` для наступного повного збору; позначку знімає чинна кнопка «Повернути всі». Варіант Б — виняток із негайної заміни, а «1а» такого винятку не передбачає.\n\nЦе прямий наслідок слова власника «1а», а не нове слово. У `ПРОДУКТ.md` іде лише рядок із наряду 6151806775, у рядок 4945 — посилання на цей коментар. Далі #1004 — незалежна перевірка й пачка, мене не чекати.\n\n---\n_Generated by [Claude Code](https://claude.ai/code)_"
+    }
+  ]
+}
