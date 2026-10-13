@@ -1,0 +1,44 @@
+── ПРОМПТ (6860 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Атласна сукня ніжно-рожева · colour code: soft_pink
+2 — Шарф вовняний з бахромою, чорний · colour code: black · about it: text н=1
+3 — Ilvi Чоботи зимові · colour code: beige · about it: text н=2
+4 — Сумка жіноча, ATTICO, екошкіра, колір білий · colour code: white · about it: text н=3
+5 — Пальто подовжене класичне на запах з поясом · colour code: beige · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; soft_pink — ніжно-рожевий; white — білий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A thick black wool scarf with long tassels at the ends, ideal for adding warmth during winter walks."},
+{"н": 2, "текст": "Tall beige boots with a wide chunky sole and a soft leather finish that reach just below the knee for full leg coverage in snow."},
+{"н": 3, "текст": "A structured handbag in white and graphite crocodile print, featuring gold hardware and two top handles."},
+{"н": 4, "текст": "An oatmeal-colored wool cape coat with wide sleeves and a belted waist that falls to the mid-calf, designed to be worn over your dress."},
+{"н": 5, "текст": "Your look for the snowy commute combines a soft pink satin slip dress, an oatmeal wool cape coat, and a thick black wool scarf with tassels. On your feet are tall beige chunky-sole boots that offer warmth on the salted roads, while a structured white-and-graphite crocodile-print handbag handles your daily essentials. This ensemble works because the deep charcoal of the scarf and the neutral tones of the coat anchor your soft pink dress, keeping it professional for work yet cozy against the cold. The silhouette is tall and vertical: the floor-length coat and wide-legged pants elongate your figure, while the boat-neck dress balances your shoulders so you appear sleek without needing a belt."},
+{"н": 6, "текст": "Keep the black wool scarf close to your neck or loosely wrapped as a collar to add warmth and visual weight that frames your face."},
+{"н": 7, "текст": "Сумка жіноча, ATTICO, екошкіра, колір білий — Fills 'bag' blocker (structure: no_bag)"},
+{"н": 8, "текст": "Пальто подовжене класичне на запах з поясом — Fills 'outer_layer' blocker (structure: weather_needs_outerwear)"},
+{"н": 9, "текст": "Атласна сукня ніжно-рожева, Пальто подовжене класичне на запах з поясом — Accepting the 'tonal' scheme gate: the large neutral items (kimono, coat) harmonize beautifully to create a cohesive, sophisticated winter silhouette suited for her office day."},
+{"н": 10, "текст": "Атласна сукня ніжно-рожева — Using a sleeveless kimono top under an outer layer is unconventional but fits the relaxed register requested; it adds texture over the knit body."}
+]
+
+── ВІДПОВІДЬ (155 симв., 28.9 с, HTTP 200) ──
+```json
+{
+  "н": 1,
+  "текст": "Теплий чорний вовняний шарф з довгими китицями на кінцях — ідеальний для додавання тепла під час зимових прогулянок."
+}
+```

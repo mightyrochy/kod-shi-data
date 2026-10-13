@@ -1,0 +1,67 @@
+── ПРОМПТ (6784 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Майка з трикотажу білого кольору · colour code: white · about it: text н=1
+2 — Штани жіночі укорочені завужені до низу демісезонні · colour code: grey · about it: text н=2
+3 — Жіночий зимовий пуховик з гусячим пухом і капюшоном Basic (оливковий, 42) · colour code: olive · about it: text н=3
+4 — Ковбойки бежеві з натурального нубука · colour code: beige · about it: text н=4
+5 — Жіноча сумка Welfare синя · colour code: blue · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; blue — синій; grey — сірий; olive — оливковий; white — білий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This is a white ribbed camisole with a clean square neckline and simple thin straps, worn tucked into your trousers for a crisp finish."},
+{"н": 2, "текст": "You have light grey tapered trousers that fall just above the ankle; their relaxed fit and soft drape provide comfort while keeping a smart silhouette for the office."},
+{"н": 3, "текст": "This is an olive-green quilted puffer coat with a large hood lined in white, offering long insulation against the cold and snowy weather you face today."},
+{"н": 4, "текст": "These are beige cowboy boots made of nappa nubuck leather, featuring a decorative stitched yoke on the shaft, a sturdy block heel, and a pointed toe for an elegant yet grounded look."},
+{"н": 5, "текст": "This is a structured navy blue tote bag crafted from pebbled leather with top handles and a secure zippered opening on the side, perfect for carrying your essentials to work."},
+{"н": 6, "текст": "You have put together an exceptionally composed look that bridges office decorum with winter resilience. The crisp white camisole and light grey trousers create a clean, neutral foundation that feels professional without being rigid, while the olive-green puffer coat adds a sophisticated layer of warmth perfectly suited for -15 degrees and snowy conditions. The beige boots introduce a touch of western heritage that elevates the silhouette above standard work footwear, preventing your outfit from feeling too monotonous during long days on the move. This combination respects the formality required at work while acknowledging the harsh weather outside, ensuring you stay stylishly protected. The deep navy tote brings a grounded contrast to the lighter upper half and anchors the entire ensemble with its substantial presence."},
+{"н": 7, "текст": "With the coat open, the white camisole and grey trousers show off your clean lines while you move between tasks, and when temperatures drop, zip it up to layer everything together comfortably."}
+]
+
+── ВІДПОВІДЬ (2139 симв., 29.5 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "н": 1,
+    "текст": "Це біла трикотажна майка з чистим квадратним вирізом і простими тонкими бретелями, одягнена заправленою у твої штани для лаконічного завершення."
+  },
+  "2": {
+    "н": 2,
+    "текст": "У тебе світло-сірі звужені до низу брюки, які закінчуються трохи вище щиколотки; їхній вільний крій і м’який спад забезпечують комфорт, зберігаючи при цьому елегантний силует для офісу."
+  },
+  "3": {
+    "н": 3,
+    "текст": "Це оливково-зелений стьобаний пуховик з великим капюшоном, підбитим білим кольором, який забезпечує тривале утеплення в холодну та сніжну погоду, яку ти сьогодні переживаєш."
+  },
+  "4": {
+    "н": 4,
+    "текст": "Це бежеві ковбойські чоботи з натуральної нубукової шкіри наппа, що мають декоративний прошитий кант на халяві, міцний стійкий каблук і загострений носок для елегантного та водночас практичного вигляду."
+  },
+  "5": {
+    "н": 5,
+    "текст": "Це структурована темно-синя сумка-тоут з тисненої шкіри зі зручними ручками зверху і надійною застібкою-блискавкою збоку — ідеальна для перенесення твоїх необхідних речей на роботу."
+  },
+  "6": {
+    "н": 6,
+    "текст": "Ти створила надзвичайно витриманий образ, який поєднує офіційний стиль із зимовою стійкістю. Свіжа біла майка і світло-сірі брюки формують чисту нейтральну основу, яка відчувається професійною без зайвої жорсткості, а оливково-зелений пуховик додає вишуканий шар тепла, який чудово підходить для -15 градусів і сніжних умов. Бежеві чоботи вносять нотку західного стилю, яка робить силует більш цікавим за звичайне робоче взуття та запобігає монотонності твого образу протягом довгого дня на ходу. Ця комбінація поважає офіційну вимогу до одягу, водночас враховуючи сувору погоду зовні, гарантуючи тобі стильний захист. Глибока темно-синя сумка створює стриманий контраст з верхньою світлою частиною і завершує весь ансамбль своєю значною присутністю."
+  },
+  "7": {
+    "н": 7,
+    "текст": "Коли ти розстібнеш пальто, біла майка та сірі брюки продемонструють твої чіткі лінії під час переходу між завданнями, а коли температура впаде, застебни його на блискавку, щоб комфортно зігрітися."
+  }
+}
+```
