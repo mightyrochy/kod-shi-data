@@ -1,0 +1,29 @@
+START list hand1
+PASS list hand1 changed true calls 1 DOM/JSON/storage true true true
+START list hand2
+PASS list hand2 changed true calls 1 DOM/JSON/storage true true true
+START list hand3
+PASS list hand3 changed true calls 1 DOM/JSON/storage true true true
+START list hand4
+PASS list hand4 changed true calls 1 DOM/JSON/storage true true true
+START list sameSKU
+PASS list sameSKU changed false calls 1 DOM/JSON/storage true true true
+START list refusal
+PASS list refusal changed false calls 1 DOM/JSON/storage true true true
+START list error
+PASS list error changed false calls 1 DOM/JSON/storage true true true
+START list rapid
+PASS list rapid changed true calls 1 DOM/JSON/storage true true true
+START list late-outfit
+AssertionError [ERR_ASSERTION]: late-outfit: інші речі/картки/DOM/сховище
+    at measure (/workspace/scratch/qa4945-r3-b722/final-v2-native.cjs:127:3)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:502:9)
+    at async /workspace/scratch/qa4945-r3-b722/final-v2-native.cjs:193:78 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
