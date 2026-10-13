@@ -1,6 +1,6 @@
 import json, pathlib, importlib.util, copy
 from jsonschema import Draft202012Validator
-root=pathlib.Path(__file__).resolve().parents[1]
+root=pathlib.Path(__file__).resolve().parents[2]
 spec=importlib.util.spec_from_file_location('pilot991',root/'джерела/прилади/рядки_кольору_5190.py')
 pilot=importlib.util.module_from_spec(spec); spec.loader.exec_module(pilot)
 schema,_,_,codes=pilot.контракт()
