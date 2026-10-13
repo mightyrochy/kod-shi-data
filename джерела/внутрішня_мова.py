@@ -846,6 +846,28 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
 # `on_face`…), тож визначення називає лише, що це місце; перелік у кожному визначенні роздув би промпт.
 _МІСЦЯ_ОПЦІЙ = "where it is worn"
 ЗАЯВИ = {
+    # Причини мети (3841): означення тільки на межі моделі, факти лишаються кодами.
+    "goal_default_no_weights": "no goal weights were supplied: flatter is the system default, not her choice. "
+                               "It assumes she wants to please; this is not neutral or universal (theme-6 1.6)",
+    "goal_default_no_known_weights": "no known goal occurs in the supplied weights: the goal remains the "
+                                     "system default flatter, not her choice",
+    "goal_default_no_dominant_weight": "the leading weight is less than threshold ahead of the runner-up: "
+                                       "no priority was established, so flatter remains the system default "
+                                       "(values: leading, weight, runner_up, runner_up_weight, gap, threshold)",
+    "goal_from_weights": "the leading weight gives the goal through the system's soft mapping, not a mapping "
+                         "from the source. The attention axis changes the direction of advice, not its strength "
+                         "(theme-6 1.6; values: goal, leading, weight, runner_up, runner_up_weight, gap, threshold)",
+    "goal_comfort_not_represented": "comfort is not represented in the single attention-goal scalar: it maps "
+                                   "to flatter to retain colour behaviour; the comfort preference has no effect",
+    "goal_ease_not_represented": "ease of composing is not represented in the attention-goal scalar: it maps "
+                                "to flatter; the ease preference has no effect",
+    "goal_appropriateness_in_occasion": "appropriateness is handled by the occasion layer (K-KOH-09), not by "
+                                       "the attention goal",
+    "goal_from_her_words": "the occasion passport supplied her goal from her words (K-IO-02): goal overrides "
+                           "weights_goal. Her exact words are separate in goal_quote; goal weights are not her "
+                           "choice for this occasion",
+    "goal_zone_only": "conceal concerns the named zones, not the entire outfit: the outfit-wide goal comes "
+                      "from the weights or the system default (values: zones, goal)",
     # ── портрет, з якого кольори не читаються (П-4, `міст_вхід.ПРИЧИНИ_ПОРТРЕТА`) ─────
     "portrait_black_white": "the photo is black-and-white or under a heavy filter: it carries no true colours",
     "portrait_face_small": "the face takes less than a quarter of the frame",

@@ -744,6 +744,12 @@ def людина(л):
     if not isinstance(л, dict):
         return л
     вих = {}
+    if "мета" in л:
+        вих["goal"] = _ВМ.код_або_невідомо("goal", л["мета"])
+    if isinstance(л.get("чому_мети"), dict):
+        вих["goal_reason"] = {"statements": заяви(л["чому_мети"].get("statements"))}
+    if "цитата_мети" in л:
+        вих["goal_quote"] = л["цитата_мети"]
     if л.get("контраст"):
         вих["contrast"] = _з(_КОНТРАСТ, л["контраст"])
     if isinstance(л.get("світлота"), dict):
