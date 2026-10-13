@@ -82,7 +82,7 @@ def контракт():
     схема_байти = (ДАНІ / 'відповідь.schema.json').read_bytes()
     промпт_байти = (ДАНІ / 'промпт.txt').read_bytes()
     схема = читати_json(схема_байти)
-    коди = схема['properties']['rows']['items']['properties']['variants']['items']['properties']['colors']['items']['properties']['code']['enum']
+    коди = схема['properties']['rows']['items']['oneOf'][0]['properties']['variants']['items']['properties']['colors']['items']['properties']['code']['enum']
     чинна = читати_json((КОРІНЬ / 'джерела/внутрішня_мова.schema.json').read_bytes())
     if коди != [к for к in чинна['$defs']['thing']['properties']['color_name']['enum'] if к != 'unknown']:
         raise ValueError('Перелік кодів змінився; потрібна явна ревізія схеми пілота')
