@@ -1,0 +1,86 @@
+{
+  "review_kind": "independent_manual_word_code_photo_qa",
+  "completed_utc": "2026-10-13",
+  "pilot_artifact_sha": "b31ff9f056665fa75b260c36cb7746b9762a11c8",
+  "actual_source_sha": "4c400859e5f9f0fee5b49c555805eae107c7449f",
+  "pr991_head_at_freeze": "37bd6834ee2f3f96308dfbef453b21c4251e5151",
+  "photo_artifact_sha": "3a6b9a43023a63d9b837473b2f235b09c3ee5717",
+  "formal": {
+    "requests": 97,
+    "responses": 97,
+    "caches": 97,
+    "offline_verified": 97,
+    "known": 75,
+    "unknown": 22,
+    "schema_and_quote_success_is_colour_acceptance": false
+  },
+  "frozen40": {
+    "viewed": 40,
+    "correct": 1,
+    "incorrect": 12,
+    "unresolved": 27,
+    "threshold": 38,
+    "passed": false,
+    "fully_confirmed_case_numbers": [
+      9
+    ],
+    "partial_visual_matches_preserved": [
+      26,
+      36,
+      37
+    ],
+    "word_to_model_code_false_cases": [
+      1,
+      4,
+      7,
+      11,
+      12,
+      16,
+      26,
+      35
+    ],
+    "missed_plain_colour_cases": [
+      6
+    ],
+    "proven_variant_grouping_error_cases": [
+      15,
+      16,
+      18,
+      35,
+      39
+    ],
+    "photo_other_colour_or_variant_unresolved_cases": [
+      1,
+      2,
+      8,
+      17,
+      27,
+      31,
+      33,
+      34,
+      39
+    ],
+    "categories_overlap": true,
+    "warning": "12 incorrect — кількість товарів, не кількість унікальних рядків. 27 unresolved не оголошені помилками кольорових слів. Це не семантичний відсоток усіх 97 рядків."
+  },
+  "unknown22": {
+    "ambiguous_context_needed": 17,
+    "justified_no_colour": 2,
+    "missed_plain_colour": 2,
+    "wrong_no_colour_reason": 1
+  },
+  "source119": {
+    "admitted_occurrences": 0,
+    "unknown_provenance": 119,
+    "runtime_applied": false,
+    "catalogue_connection_allowed": false,
+    "limit": "Паралельний структурний аудит; unknown не означає доведено чужий рядок. Належність URL тому самому offer доведена для фото, але точний variant witness не випливає з цього."
+  },
+  "limits": [
+    "Не робили нових викликів моделі/API, живого збирання фото чи запуску 2401.",
+    "Не використовували старі коди/оцінки архіву як відповідь нової моделі.",
+    "40 фото — архівні конкретні кадри; це не доказ поточного стану живих сторінок магазинів.",
+    "Огляд кожного з усіх 75 known поза frozen40 не виконано; загальний семантичний відсоток 97 не обчислювався."
+  ],
+  "next_action": "Виправити промпт/загальні приклади у тому самому PR991; не додавати SKU/hex/alias-винятків, читача слів чи семантичних фільтрів кодом, не послаблювати валідатор. Спершу виправлений Mamay та повторний незалежний frozen40. Lapa лише після невдачі виправленого Mamay. 2401 не запускати за цим результатом."
+}
