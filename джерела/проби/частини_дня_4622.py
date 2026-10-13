@@ -24,7 +24,6 @@ for ж in ("20", "21", "22", "23", "24"):
                        for к in ("occasion", "place", "place_words", "movement") if к in у),
               " ".join("%s=%s" % (к, п.get(к)) for к in ("нагода", "місце", "рух", "подія")),
               [н[:60] for н in п.get("не_взято_кодом") or [] if "place" in н] or "—"))
-п = json.dumps(json.loads(М.промпт_розмови({"розмова": {"нове": "йога зранку, потім кава з подругою", "історія": []}})),
-               ensure_ascii=False)
-print("промпт: спорт частини дня — рух, нагода й місце — решта дня:", "так" if "sport — only when sport is all her day" in п and
-      "first part she names that is not a sport" in п and "a coffee with someone — cafe" in п else "ні")
+п = json.loads(М.промпт_розмови({"розмова": {"нове": "йога зранку, потім кава з подругою", "історія": []}}))
+print("промпт: намір обраної частини дня, незалежно від руху:",
+      next(р for р in п["task"]["codes"] if р.startswith("- occasion_part")))
