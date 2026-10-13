@@ -1,0 +1,697 @@
+{
+  "profile": [
+    [
+      null,
+      [
+        "лестити",
+        {
+          "statements": [
+            {
+              "code": "goal_default_no_weights",
+              "values": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        }
+      ]
+    ],
+    [
+      {},
+      [
+        "лестити",
+        {
+          "statements": [
+            {
+              "code": "goal_default_no_weights",
+              "values": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        }
+      ]
+    ],
+    [
+      {
+        "unknown": 1
+      },
+      [
+        "лестити",
+        {
+          "statements": [
+            {
+              "code": "goal_default_no_known_weights",
+              "values": {
+                "goal": "flatter"
+              }
+            }
+          ]
+        }
+      ]
+    ],
+    [
+      {
+        "помітність": 0.5,
+        "непомітність": 0.5
+      },
+      [
+        "лестити",
+        {
+          "statements": [
+            {
+              "code": "goal_default_no_dominant_weight",
+              "values": {
+                "goal": "flatter",
+                "leading": "помітність",
+                "weight": 0.5,
+                "runner_up": "непомітність",
+                "runner_up_weight": 0.5,
+                "gap": 0.0,
+                "threshold": 0.15
+              }
+            }
+          ]
+        }
+      ]
+    ],
+    [
+      {
+        "помітність": 0.6,
+        "непомітність": 0.45
+      },
+      [
+        "лестити",
+        {
+          "statements": [
+            {
+              "code": "goal_default_no_dominant_weight",
+              "values": {
+                "goal": "flatter",
+                "leading": "помітність",
+                "weight": 0.6,
+                "runner_up": "непомітність",
+                "runner_up_weight": 0.45,
+                "gap": 0.14999999999999997,
+                "threshold": 0.15
+              }
+            }
+          ]
+        }
+      ]
+    ],
+    [
+      {
+        "помітність": 1
+      },
+      [
+        "експресія",
+        {
+          "statements": [
+            {
+              "code": "goal_from_weights",
+              "values": {
+                "goal": "express",
+                "source": "theme-6:1.6",
+                "mapping_source": "system",
+                "strength": "soft",
+                "leading": "помітність",
+                "weight": 1.0,
+                "runner_up": null,
+                "runner_up_weight": 0.0,
+                "gap": 1.0,
+                "threshold": 0.15
+              }
+            }
+          ]
+        }
+      ]
+    ],
+    [
+      {
+        "непомітність": 1
+      },
+      [
+        "приховати",
+        {
+          "statements": [
+            {
+              "code": "goal_from_weights",
+              "values": {
+                "goal": "conceal",
+                "source": "theme-6:1.6",
+                "mapping_source": "system",
+                "strength": "soft",
+                "leading": "непомітність",
+                "weight": 1.0,
+                "runner_up": null,
+                "runner_up_weight": 0.0,
+                "gap": 1.0,
+                "threshold": 0.15
+              }
+            }
+          ]
+        }
+      ]
+    ],
+    [
+      {
+        "комфорт": 1
+      },
+      [
+        "лестити",
+        {
+          "statements": [
+            {
+              "code": "goal_from_weights",
+              "values": {
+                "goal": "flatter",
+                "source": "theme-6:1.6",
+                "mapping_source": "system",
+                "strength": "soft",
+                "leading": "комфорт",
+                "weight": 1.0,
+                "runner_up": null,
+                "runner_up_weight": 0.0,
+                "gap": 1.0,
+                "threshold": 0.15
+              }
+            },
+            {
+              "code": "goal_comfort_not_represented"
+            }
+          ]
+        }
+      ]
+    ],
+    [
+      {
+        "легкість_збирання": 1
+      },
+      [
+        "лестити",
+        {
+          "statements": [
+            {
+              "code": "goal_from_weights",
+              "values": {
+                "goal": "flatter",
+                "source": "theme-6:1.6",
+                "mapping_source": "system",
+                "strength": "soft",
+                "leading": "легкість_збирання",
+                "weight": 1.0,
+                "runner_up": null,
+                "runner_up_weight": 0.0,
+                "gap": 1.0,
+                "threshold": 0.15
+              }
+            },
+            {
+              "code": "goal_ease_not_represented"
+            }
+          ]
+        }
+      ]
+    ],
+    [
+      {
+        "доречність": 1
+      },
+      [
+        "лестити",
+        {
+          "statements": [
+            {
+              "code": "goal_from_weights",
+              "values": {
+                "goal": "flatter",
+                "source": "theme-6:1.6",
+                "mapping_source": "system",
+                "strength": "soft",
+                "leading": "доречність",
+                "weight": 1.0,
+                "runner_up": null,
+                "runner_up_weight": 0.0,
+                "gap": 1.0,
+                "threshold": 0.15
+              }
+            },
+            {
+              "code": "goal_appropriateness_in_occasion"
+            }
+          ]
+        }
+      ]
+    ]
+  ],
+  "cases": [
+    {
+      "input": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "person": {
+        "жорстке_ні_правило": "K-PER-05",
+        "жорстке_ні": [],
+        "відкинуто_за_жорстким_ні": 0,
+        "приклади_відкинутих": [],
+        "ваги_цілей": null,
+        "життєвий_перехід": null,
+        "мета": "лестити",
+        "чому_мети": {
+          "statements": [
+            {
+              "code": "goal_default_no_weights",
+              "values": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        },
+        "цитата_мети": null,
+        "прикраси": null,
+        "нема_входів": [
+          "жорстке_ні",
+          "ваги_цілей",
+          "прикраси"
+        ],
+        "чому_важить": "тема-6 PART 12: без цих полів шар елісітації не має де жити. `жорстке_ні` — абсолютний фільтр (річ не показується взагалі), `ваги_цілей` — ваги. Порожні поля означають, що правила теми-6 мовчать, а не що обмежень нема"
+      },
+      "wire": {
+        "goal": "flatter",
+        "goal_reason": {
+          "statements": [
+            {
+              "goal_default_no_weights": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        },
+        "goal_quote": null
+      },
+      "unaffected": "9d12458fc87fbc3c3bd7603a582bf15b485b93b161899e37976e375dfef46888"
+    },
+    {
+      "input": [
+        "невідомо",
+        null,
+        null,
+        null
+      ],
+      "person": {
+        "жорстке_ні_правило": "K-PER-05",
+        "жорстке_ні": [],
+        "відкинуто_за_жорстким_ні": 0,
+        "приклади_відкинутих": [],
+        "ваги_цілей": null,
+        "життєвий_перехід": null,
+        "мета": "лестити",
+        "чому_мети": {
+          "statements": [
+            {
+              "code": "goal_default_no_weights",
+              "values": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        },
+        "цитата_мети": null,
+        "прикраси": null,
+        "нема_входів": [
+          "жорстке_ні",
+          "ваги_цілей",
+          "прикраси"
+        ],
+        "чому_важить": "тема-6 PART 12: без цих полів шар елісітації не має де жити. `жорстке_ні` — абсолютний фільтр (річ не показується взагалі), `ваги_цілей` — ваги. Порожні поля означають, що правила теми-6 мовчать, а не що обмежень нема"
+      },
+      "wire": {
+        "goal": "flatter",
+        "goal_reason": {
+          "statements": [
+            {
+              "goal_default_no_weights": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        },
+        "goal_quote": null
+      },
+      "unaffected": "4152f7309a6a8c438fd4f5ae504d99631c9dbe57012bb4e84edb6f76670255f9"
+    },
+    {
+      "input": [
+        "експресія",
+        null,
+        "  Жінка: “хочу уваги.”\nточна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата ",
+        null
+      ],
+      "person": {
+        "жорстке_ні_правило": "K-PER-05",
+        "жорстке_ні": [],
+        "відкинуто_за_жорстким_ні": 0,
+        "приклади_відкинутих": [],
+        "ваги_цілей": null,
+        "життєвий_перехід": null,
+        "мета": "експресія",
+        "чому_мети": {
+          "statements": [
+            {
+              "code": "goal_from_her_words",
+              "values": {
+                "goal": "express",
+                "weights_goal": "flatter",
+                "source": "K-IO-02"
+              }
+            },
+            {
+              "code": "goal_default_no_weights",
+              "values": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        },
+        "цитата_мети": "  Жінка: “хочу уваги.”\nточна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата ",
+        "прикраси": null,
+        "нема_входів": [
+          "жорстке_ні",
+          "ваги_цілей",
+          "прикраси"
+        ],
+        "чому_важить": "тема-6 PART 12: без цих полів шар елісітації не має де жити. `жорстке_ні` — абсолютний фільтр (річ не показується взагалі), `ваги_цілей` — ваги. Порожні поля означають, що правила теми-6 мовчать, а не що обмежень нема"
+      },
+      "wire": {
+        "goal": "express",
+        "goal_reason": {
+          "statements": [
+            {
+              "goal_from_her_words": {
+                "goal": "express",
+                "weights_goal": "flatter",
+                "source": "K-IO-02"
+              }
+            },
+            {
+              "goal_default_no_weights": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        },
+        "goal_quote": "  Жінка: “хочу уваги.”\nточна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата точна цитата "
+      },
+      "unaffected": "cb94bddd9dbc098b07c36f316d3d832387bfa6392092136a1ea54ca9157648f6"
+    },
+    {
+      "input": [
+        "приховати",
+        [
+          "живіт"
+        ],
+        "сховати живіт",
+        {
+          "помітність": 1
+        }
+      ],
+      "person": {
+        "жорстке_ні_правило": "K-PER-05",
+        "жорстке_ні": [],
+        "відкинуто_за_жорстким_ні": 0,
+        "приклади_відкинутих": [],
+        "ваги_цілей": {
+          "помітність": 1
+        },
+        "життєвий_перехід": null,
+        "мета": "експресія",
+        "чому_мети": {
+          "statements": [
+            {
+              "code": "goal_zone_only",
+              "values": {
+                "zones": [
+                  "живіт"
+                ],
+                "goal": "conceal",
+                "source": "K-IO-02"
+              }
+            },
+            {
+              "code": "goal_from_weights",
+              "values": {
+                "goal": "express",
+                "source": "theme-6:1.6",
+                "mapping_source": "system",
+                "strength": "soft",
+                "leading": "помітність",
+                "weight": 1.0,
+                "runner_up": null,
+                "runner_up_weight": 0.0,
+                "gap": 1.0,
+                "threshold": 0.15
+              }
+            }
+          ]
+        },
+        "цитата_мети": "сховати живіт",
+        "прикраси": null,
+        "нема_входів": [
+          "жорстке_ні",
+          "прикраси"
+        ],
+        "чому_важить": "тема-6 PART 12: без цих полів шар елісітації не має де жити. `жорстке_ні` — абсолютний фільтр (річ не показується взагалі), `ваги_цілей` — ваги. Порожні поля означають, що правила теми-6 мовчать, а не що обмежень нема"
+      },
+      "wire": {
+        "goal": "express",
+        "goal_reason": {
+          "statements": [
+            {
+              "goal_zone_only": {
+                "zones": [
+                  "живіт"
+                ],
+                "goal": "conceal",
+                "source": "K-IO-02"
+              }
+            },
+            {
+              "goal_from_weights": {
+                "goal": "express",
+                "source": "theme-6:1.6",
+                "mapping_source": "system",
+                "strength": "soft",
+                "leading": "помітність",
+                "weight": 1.0,
+                "runner_up": null,
+                "runner_up_weight": 0.0,
+                "gap": 1.0,
+                "threshold": 0.15
+              }
+            }
+          ]
+        },
+        "goal_quote": "сховати живіт"
+      },
+      "unaffected": "9be7f5ef228000b692f166f1d9abfacfbba7fc862285a514458d27dcda3a0be3"
+    },
+    {
+      "input": [
+        "приховати",
+        null,
+        "не привертати уваги",
+        null
+      ],
+      "person": {
+        "жорстке_ні_правило": "K-PER-05",
+        "жорстке_ні": [],
+        "відкинуто_за_жорстким_ні": 0,
+        "приклади_відкинутих": [],
+        "ваги_цілей": null,
+        "життєвий_перехід": null,
+        "мета": "приховати",
+        "чому_мети": {
+          "statements": [
+            {
+              "code": "goal_from_her_words",
+              "values": {
+                "goal": "conceal",
+                "weights_goal": "flatter",
+                "source": "K-IO-02"
+              }
+            },
+            {
+              "code": "goal_default_no_weights",
+              "values": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        },
+        "цитата_мети": "не привертати уваги",
+        "прикраси": null,
+        "нема_входів": [
+          "жорстке_ні",
+          "ваги_цілей",
+          "прикраси"
+        ],
+        "чому_важить": "тема-6 PART 12: без цих полів шар елісітації не має де жити. `жорстке_ні` — абсолютний фільтр (річ не показується взагалі), `ваги_цілей` — ваги. Порожні поля означають, що правила теми-6 мовчать, а не що обмежень нема"
+      },
+      "wire": {
+        "goal": "conceal",
+        "goal_reason": {
+          "statements": [
+            {
+              "goal_from_her_words": {
+                "goal": "conceal",
+                "weights_goal": "flatter",
+                "source": "K-IO-02"
+              }
+            },
+            {
+              "goal_default_no_weights": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        },
+        "goal_quote": "не привертати уваги"
+      },
+      "unaffected": "22b9292029612239937f9b20921e74216b1e173e425029c6d58a416b7df7483e"
+    },
+    {
+      "input": [
+        "вище",
+        null,
+        "вище",
+        null
+      ],
+      "person": {
+        "жорстке_ні_правило": "K-PER-05",
+        "жорстке_ні": [],
+        "відкинуто_за_жорстким_ні": 0,
+        "приклади_відкинутих": [],
+        "ваги_цілей": null,
+        "життєвий_перехід": null,
+        "мета": "вище",
+        "чому_мети": {
+          "statements": [
+            {
+              "code": "goal_from_her_words",
+              "values": {
+                "goal": "taller",
+                "weights_goal": "flatter",
+                "source": "K-IO-02"
+              }
+            },
+            {
+              "code": "goal_default_no_weights",
+              "values": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        },
+        "цитата_мети": "вище",
+        "прикраси": null,
+        "нема_входів": [
+          "жорстке_ні",
+          "ваги_цілей",
+          "прикраси"
+        ],
+        "чому_важить": "тема-6 PART 12: без цих полів шар елісітації не має де жити. `жорстке_ні` — абсолютний фільтр (річ не показується взагалі), `ваги_цілей` — ваги. Порожні поля означають, що правила теми-6 мовчать, а не що обмежень нема"
+      },
+      "wire": {
+        "goal": "taller",
+        "goal_reason": {
+          "statements": [
+            {
+              "goal_from_her_words": {
+                "goal": "taller",
+                "weights_goal": "flatter",
+                "source": "K-IO-02"
+              }
+            },
+            {
+              "goal_default_no_weights": {
+                "goal": "flatter",
+                "source": "theme-6:1.6"
+              }
+            }
+          ]
+        },
+        "goal_quote": "вище"
+      },
+      "unaffected": "2901dfc26b5983a8c583094a6bb3814f8c7a3150e905b06522dccdcccd793f19"
+    }
+  ],
+  "items": [
+    {
+      "перевірено": false,
+      "розбір": {
+        "речі": [],
+        "без_кольору": [],
+        "без_слота": [],
+        "надлишок": [],
+        "чому": "no_hex_line"
+      },
+      "знахідки": [],
+      "граф": null,
+      "вузол": null,
+      "блокує": [],
+      "рядок_вузла": null,
+      "мова": null,
+      "чому": "замало_речей"
+    },
+    {
+      "перевірено": false,
+      "розбір": {
+        "речі": [
+          {
+            "id": "м-001",
+            "слот": "верх",
+            "назва": "Модельна річ",
+            "ціна": 0,
+            "group_id": null,
+            "набір": false,
+            "hex": "#000000",
+            "джерело": "модель"
+          }
+        ],
+        "без_кольору": [],
+        "без_слота": [],
+        "надлишок": [],
+        "не_потрібні": [],
+        "перелік_моделі": {
+          "названо": 1,
+          "не_потрібних": 0,
+          "без_слота": [],
+          "джерело": "окремий виклик ITEM_LIST, слот кодом"
+        },
+        "чому": null
+      },
+      "знахідки": [],
+      "граф": null,
+      "вузол": null,
+      "блокує": [],
+      "рядок_вузла": null,
+      "мова": null,
+      "чому": "замало_речей"
+    }
+  ]
+}
