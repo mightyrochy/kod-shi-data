@@ -1136,6 +1136,13 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none !important;transition:none !important}
 }
+/* Фокус поля й прихованого файлового входу видно на самій дії (4944). */
+input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--золото);outline-offset:2px}
+label:has(input:focus-visible),.слот:has(input:focus-visible){
+  outline:2px solid var(--золото);outline-offset:-3px}
+.лише-читач{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 </style>
 </head>
 <body>
@@ -1383,7 +1390,7 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
       <!-- «Оціни мій образ» стояла тут кнопкою (наряд Л-6) і губилась унизу екрана під
            прикладами: слово власника 28.09 — вхід переїхав на панель швидкого доступу
            четвертою вкладкою «Оцінити» (`#вк-оцінка`), тут його більше нема. -->
-      <div id="зб-картка"><div class="статус" id="зб-статус"></div></div>
+      <div id="зб-картка"><div class="статус" id="зб-статус" role="status" aria-live="polite" aria-atomic="true"></div></div>
       <div class="пс-дрібні"><button class="текст" id="сц-зберегти" type="button">Зберегти сценарій</button></div>
     </div>
 
@@ -1693,6 +1700,7 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
 
 
 
+<div id="зб-оголошення" class="лише-читач" role="status" aria-live="polite" aria-atomic="true"></div>
 <details id="службове">
   <summary>Службове</summary>
   <div id="ш-рядок"></div>
@@ -1991,7 +1999,7 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
                кнопка — поруч із «надіслати», тож вона їде разом із полем і в
                аркуш листа, і в панель (`розмістити_поле` переносить увесь вузол). -->
           <div class="чат-вкладення" id="чат-вкладення"></div>
-          <textarea id="чат-поле" rows="1" placeholder="Куди ти збираєшся?"></textarea>
+          <textarea aria-label="Куди ти збираєшся?" id="чат-поле" rows="1" placeholder="Куди ти збираєшся?"></textarea>
           <!-- ГОЛОС (слово власника 24.09): мікрофон стоїть ПОРУЧ із фото й «Надіслати»,
                а не замість них. Продиктоване лягає в поле для правки й НІКОЛИ не йде
                саме — надсилає вона дотиком, як і написане рукою. -->
@@ -2423,7 +2431,7 @@ function оновитиПолеВердиктуП(поз, корінь){
      під «що заважає» — протилежні твердження; перевернути їх мовчки означало б записати те, чого
      вона не казала. Тому вибір знімається, і це видно: чипи гаснуть під новою міткою. */
   if (в.аспекти_знак && в.аспекти_знак !== знак && (в.аспекти || []).length){
-    б.querySelectorAll('.чип.вибр').forEach(ч => ч.classList.remove('вибр'));
+    б.querySelectorAll('.чип.вибр').forEach(ч => { ч.classList.remove('вибр'); станВиборуП(ч); });
     в.аспекти = [];
   }
   в.аспекти_знак = знак;
@@ -2570,6 +2578,7 @@ function відновитиСтанКарткиП(поз, з, ключ){
     ряд.querySelectorAll('.чип').forEach(ч => {
       ч.classList.toggle('вибр', поле === 'аспекти' ? в.аспекти.includes(ч.dataset.код)
                                                     : (поле === 'верд' || поле === 'для_мене' || поле === 'річ') && в[поле] === ч.dataset.з);
+      станВиборуП(ч);
     });
   });
   /* Позначка з запису — та сама, що після тапу: річ у наборі сценарію, рядок і фото з `.замінити`; інакше напис «на заміну»
@@ -2963,6 +2972,10 @@ function відповідь(поз){
                          верд_код:null, для_мене_код:null, аспекти:[], аспекти_знак:''};
   return В[поз];
 }
+/* Узгоджує доступний стан з наявною позначкою вибору чипа чи плитки. */
+function станВиборуП(вузол){
+  вузол.setAttribute('aria-pressed', вузол.classList.contains('вибр') ? 'true' : 'false');
+}
 function чипРяд(конт, поле, поз, варіанти, класи, класРяду){
   const ряд = ел('div', 'ряд' + (класРяду ? ' ' + класРяду : ''));
   /* РЯД ПІДПИСАНИЙ ПОЛЕМ І ПОЗИЦІЄЮ (КВ-2): так шукач ІНШОГО чипа (прилад,
@@ -2985,6 +2998,7 @@ function чипРяд(конт, поле, поз, варіанти, класи, 
     if (вс && (поле === 'аспекти' ? (вс.аспекти || []).includes(с.dataset.код)
                                    : (поле !== 'ок' && поле !== 'ні' && вс[поле] === с.dataset.з)))
       с.classList.add('вибр');
+    станВиборуП(с);
     с.onclick = ()=>{
       const в = відповідь(поз);
       if (поле==='ок' || поле==='ні'){
@@ -3007,6 +3021,7 @@ function чипРяд(конт, поле, поз, варіанти, класи, 
         /* ОЦІН-1: дотик по чипу картки образу — це вже запис (див. `позначитиЗмінуП`) */
         позначитиЗмінуП(поз, поле);
       }
+      ряд.querySelectorAll('.чип').forEach(станВиборуП);
     };
     с.onkeydown = е=>{ if (е.key === 'Enter' || е.key === ' '){ е.preventDefault(); с.click(); } };
     ряд.appendChild(с);
@@ -6155,7 +6170,7 @@ function обратиВідчуттяП(ключ){
 }
 function позначитиВідчуттяП(){
   const к = ключВідчуттяП();
-  document.querySelectorAll('#сц-відчуття-плитки .плитка').forEach(п => п.classList.toggle('вибр', п.dataset.ключ === к));
+  document.querySelectorAll('#сц-відчуття-плитки .плитка').forEach(п => { п.classList.toggle('вибр', п.dataset.ключ === к); станВиборуП(п); });
 }
 /* «ХАЙ ОБЕРЕ СТИЛІСТКА» — СВІДОМИЙ ВИБІР, А НЕ ПОРОЖНЕЧА (21.09.2026, рядок 120).
    Слова — ті самі, що на екрані палітри (аудит/ПРОДУКТ.md п.7: слова «ші» в текстах для
@@ -7756,6 +7771,7 @@ function привʼязатиГолос(о){
 }
 function плитка(текст, нота, ікона, вибр, дія){
   const п = ел('button', 'плитка' + (вибр ? ' вибр' : '')); п.type = 'button';
+  станВиборуП(п);
   if (ікона) п.appendChild(іконка(ікона));
   п.appendChild(ел('span', 'н', текст));
   if (нота) п.appendChild(ел('small', null, нота));
@@ -8532,7 +8548,8 @@ async function малюватиДрап(){
         const ч = ел('span', 'чип' + (ДРАП[поле] === в.ключ ? ' вибр' : ''));
         if (в.hex){ const з = ел('span', 'зразки'); const i_ = ел('i'); i_.style.background = в.hex; з.appendChild(i_); ч.appendChild(з); }
         ч.appendChild(document.createTextNode(в.підпис));
-        ч.setAttribute('role','button'); ч.tabIndex = 0;
+        ч.setAttribute('role','button'); ч.tabIndex = 0; станВиборуП(ч);
+        ч.onkeydown = e=>{ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); ч.click(); } };
         ч.onclick = async ()=>{ ДРАП[поле] = в.ключ; await писатиДрап(); малюватиДрап(); };
         р.appendChild(ч);
       });
@@ -8553,6 +8570,7 @@ async function малюватиДрап(){
       тіло.appendChild(д);
       if (нуль){
         const т = ел('button', 'текст однаково', (ДРАП[поле] === нуль.ключ ? '✓ ' : '') + нуль.підпис); т.type = 'button';
+        т.setAttribute('aria-pressed', ДРАП[поле] === нуль.ключ ? 'true' : 'false');
         т.onclick = async ()=>{ ДРАП[поле] = нуль.ключ; await писатиДрап(); малюватиДрап(); };
         тіло.appendChild(т);
       }
@@ -8561,7 +8579,8 @@ async function малюватиДрап(){
       const р = ел('div', 'ряд');
       оп.в.forEach(в=>{
         const ч = ел('span', 'чип' + (ДРАП[поле] === в.ключ ? ' вибр' : ''), в.підпис);
-        ч.setAttribute('role','button'); ч.tabIndex = 0;
+        ч.setAttribute('role','button'); ч.tabIndex = 0; станВиборуП(ч);
+        ч.onkeydown = e=>{ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); ч.click(); } };
         ч.onclick = async ()=>{ ДРАП[поле] = в.ключ; await писатиДрап(); малюватиДрап(); };
         р.appendChild(ч);
       });
@@ -11372,10 +11391,14 @@ function малюватиПоступП(){
     const тк = $('ткання'); if (тк){ тк.classList.toggle('тихо', !!ЗБ.готово); тк.dataset.щабель = щабель; }
   }
   const e = $('зб-поступ');
-  if (e) e.textContent = ЗБ.стадії.map((с,i)=>{
+  const поступ = ЗБ.стадії.map((с,i)=>{
     const к = ЗБ.картки[i];
     return 'варіант ' + (i+1) + ': ' + (к ? '✓ готово' : (написСтадіїП(с) || 'чекає…'));
   }).join('\n');
+  if (e) e.textContent = поступ;
+  const ог = $('зб-оголошення');
+  const напис = ЗБ.готово ? $('стани').querySelector('span:last-child').textContent : поступ;
+  if (ог && ог.textContent !== напис) ог.textContent = напис;
 }
 /* Конус крапок: від туману можливостей до одного чіткого — образ бренду,
    намальований кодом. Ліворуч широко й густо, праворуч — одна крапка. */
@@ -11709,7 +11732,7 @@ function малюватиОцінкуП(){
     оп.innerHTML = '';
     ОПАДИ.forEach(([к, підпис])=>{
       const ч = ел('span', 'чип' + (ОЦ.опади === к ? ' вибр' : ''), підпис);
-      ч.setAttribute('role', 'button'); ч.tabIndex = 0;
+      ч.setAttribute('role', 'button'); ч.tabIndex = 0; станВиборуП(ч);
       /* другий дотик знімає вибір: «не знаю» — законна відповідь, і її не підставляє ніхто */
       ч.onclick = ()=>{ ОЦ.опади = (ОЦ.опади === к ? '' : к); малюватиОцінкуП(); };
       ч.onkeydown = e=>{ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); ч.click(); } };
@@ -14224,7 +14247,7 @@ function чипП(текст, обрано, дія, зразки, додКлас
   /* `додКлас` іде ПЕРЕД `вибр`: обрана рідша схема має виглядати як будь-яка
      інша обрана, тож правило вибраності перекриває стриманість (рядок 117). */
   ч.className = 'чип' + (додКлас ? ' ' + додКлас : '') + (обрано ? ' вибр' : '');
-  ч.setAttribute('role', 'button'); ч.tabIndex = 0;
+  ч.setAttribute('role', 'button'); ч.tabIndex = 0; станВиборуП(ч);
   const сп = (Array.isArray(зразки) ? зразки : (зразки ? [зразки] : [])).filter(Boolean);
   if (сп.length){
     const з = document.createElement('span'); з.className = 'зразки';
