@@ -16,13 +16,15 @@ import tempfile
 import time
 import urllib.request
 import xml.etree.ElementTree as XML
+import журнал_рядків_5190 as Ж
 
 
 КОРІНЬ = Path(__file__).resolve().parents[2]
 ДАНІ = Path(__file__).with_name('рядки_5190')
 МОДЕЛЬ = 'mamaylm-gemma-3-12b-it-v2.0'
 ПРОКСІ = 'http://127.0.0.1:1235/v1/chat/completions'
-ПРОТОКОЛ = '5190-rows-v1'
+ПРОТОКОЛ = '5190-rows-v2'
+ПРОТОКОЛ_ПРОКСІ = '5190-once-v1'
 ПАРАМЕТРИ = {'temperature': 0, 'max_tokens': 4096, 'stream': False}
 ПОЛЯ = ('Колір', '~Колір')  # Імена полів транспорту, не словник їхніх значень.
 
@@ -82,13 +84,38 @@ def контракт():
     схема_байти = (ДАНІ / 'відповідь.schema.json').read_bytes()
     промпт_байти = (ДАНІ / 'промпт.txt').read_bytes()
     схема = читати_json(схема_байти)
-    коди = схема['properties']['rows']['items']['oneOf'][0]['properties']['variants']['items']['properties']['colors']['items']['properties']['code']['enum']
+    форми = схема['properties']['rows']['items']['oneOf']
+    переліки = [ф['properties']['variants']['items']['properties']['colors']['items']['properties']['code']['enum']
+                for ф in форми if ф['properties']['status']['const'] == 'known']
+    коди = переліки[0]
+    if any(п != коди for п in переліки):
+        raise ValueError('Кодові переліки форм схеми розійшлися')
     чинна = читати_json((КОРІНЬ / 'джерела/внутрішня_мова.schema.json').read_bytes())
     if коди != [к for к in чинна['$defs']['thing']['properties']['color_name']['enum'] if к != 'unknown']:
         raise ValueError('Перелік кодів змінився; потрібна явна ревізія схеми пілота')
     версія = {'protocol': ПРОТОКОЛ, 'model': МОДЕЛЬ, 'schema_sha256': відбиток(схема_байти),
               'prompt_sha256': відбиток(промпт_байти), 'generation': ПАРАМЕТРИ}
     return схема, промпт_байти.decode('utf-8'), версія, set(коди)
+
+
+def попередні_спроби():
+    """Відновлює відомі фактичні спроби з незмінних шести артефактів ноутбука."""
+    індекс = читати_json((ДАНІ / 'попередні_спроби.json').read_bytes())
+    рядки = {}
+    for доказ in індекс['records']:
+        байти = (ДАНІ / доказ['file']).read_bytes()
+        if відбиток(байти) != доказ['sha256']:
+            raise ValueError('Змінено артефакт попереднього фактичного виклику')
+        запис = читати_json(байти)
+        if відбиток(байти_json(запис['request'])) != доказ['request_sha256']:
+            raise ValueError('Хибний відбиток запиту історичної спроби')
+        for рядок in читати_json(запис['request']['messages'][1]['content'])['rows']:
+            if рядок['row_id'] != відбиток(рядок['raw'].encode('utf-8')):
+                raise ValueError('Хибний row_id історичної спроби')
+            дані = рядки.setdefault(рядок['row_id'], dict(рядок, attempts=[]))
+            дані['attempts'].append({'request_sha256': доказ['request_sha256'], 'identity': запис['identity'],
+                'artifact_sha256': доказ['sha256'], 'source_ref': індекс['source_commit'] + ':' + доказ['source_path']})
+    return list(рядки.values())
 
 
 def підготувати(корінь=КОРІНЬ):
@@ -285,26 +312,54 @@ def запит(рядки, схема, промпт):
 
 def надіслати(тіло):
     """Викликає послідовний місцевий проксі тільки з явного живого шляху."""
-    звернення = urllib.request.Request(ПРОКСІ, data=байти_json(тіло), headers={'Content-Type': 'application/json'})
     # Не використовуємо HTTP_PROXY середовища для місцевого стенда.
     клієнт = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    адреса = ПРОКСІ.removesuffix('/v1/chat/completions') + '/.well-known/lyusterko-5190'
+    with клієнт.open(urllib.request.Request(адреса), timeout=10) as відповідь:
+        можливість = читати_json(відповідь.read())
+    if можливість != {'protocol': ПРОТОКОЛ_ПРОКСІ, 'post_retries': 0}:
+        raise ValueError('Проксі не підтвердив заборону повторів; POST не надіслано')
+    звернення = urllib.request.Request(ПРОКСІ, data=байти_json(тіло),
+                 headers={'Content-Type': 'application/json', 'X-Lyusterko-Once': ПРОТОКОЛ_ПРОКСІ})
     with клієнт.open(звернення, timeout=900) as відповідь:
         return читати_json(відповідь.read())
 
 
 def відповідь_пакета(відповідь, рядки, коди):
-    """Перевіряє модель, кінець генерації й увесь повернутий пакет."""
+    """Перевіряє конверт, потім кожний рядок незалежно, без ремонту змісту."""
     if not isinstance(відповідь, dict) or відповідь.get('model') != МОДЕЛЬ or len(відповідь.get('choices', [])) != 1 or відповідь['choices'][0].get('finish_reason') != 'stop':
         raise ValueError('Чужа модель, неповна або обірвана відповідь')
-    return перевірити_відповідь(читати_json(відповідь['choices'][0]['message']['content']), рядки, коди)
+    дані = читати_json(відповідь['choices'][0]['message']['content'])
+    _поля(дані, ('rows',))
+    if not isinstance(дані['rows'], list):
+        raise ValueError('Пакет rows не є масивом')
+    очікувані = {р['row_id']: р for р in рядки}
+    згруповані, чужі = {}, []
+    for запис in дані['rows']:
+        ід = запис.get('row_id') if isinstance(запис, dict) else None
+        if not isinstance(ід, str) or ід not in очікувані:
+            чужі.append(запис)
+        else:
+            згруповані.setdefault(ід, []).append(запис)
+    валідні, відхилені = {}, {}
+    for ід, вхід in очікувані.items():
+        записи = згруповані.get(ід, [])
+        try:
+            if len(записи) != 1:
+                raise ValueError('Очікується рівно один рядок цього row_id, отримано ' + str(len(записи)))
+            валідні.update(перевірити_відповідь({'rows': записи}, [вхід], коди))
+        except (ValueError, TypeError, KeyError) as помилка:
+            відхилені[ід] = {'row_id': ід, 'error': str(помилка), 'actual': записи,
+                'expected': 'unknown:0 variants; single:1 variant/1 color; combination:1 variant/2+ colors; alternatives:2+ variants'}
+    return {'valid': валідні, 'rejected': відхилені, 'unexpected_rows': чужі}
 
 
 def перевірити_кеш(кеш, рядок, версія, тека, коди, схема, промпт):
     """Звіряє кеш із точними байтами збереженого запиту й відповіді."""
     if кеш['identity'] != версія or кеш['raw'] != рядок['raw'] or кеш['row_id'] != рядок['row_id']:
         raise ValueError('Застарілий або чужий кеш')
-    запис = читати_json((Path(тека) / 'requests' / (кеш['request_sha256'] + '.json')).read_bytes())
-    if запис['identity'] != версія or запис['state'] != 'validated' or відбиток(байти_json(запис['request'])) != кеш['request_sha256']:
+    запис = читати_json((Path(тека) / 'requests' / кеш['request_file']).read_bytes())
+    if запис['identity'] != версія or запис['state'] not in ('validated', 'partial') or відбиток(байти_json(запис['request'])) != кеш['request_sha256']:
         raise ValueError('Немає точного походження кешу')
     запитані = читати_json(запис['request']['messages'][1]['content'])['rows']
     if рядок not in запитані or запис['request'] != запит(запитані, схема, промпт):
@@ -313,7 +368,7 @@ def перевірити_кеш(кеш, рядок, версія, тека, ко
         _поля(запитаний, ('row_id', 'raw'))
         if запитаний['row_id'] != відбиток(запитаний['raw'].encode('utf-8')):
             raise ValueError('Пошкоджений відбиток рядка запиту')
-    перевірене = відповідь_пакета(запис['response'], запитані, коди)[рядок['row_id']]
+    перевірене = відповідь_пакета(запис['response'], запитані, коди)['valid'][рядок['row_id']]
     if кеш['answer'] != перевірене['answer'] or кеш['quote_utf8_spans'] != перевірене['quote_utf8_spans'] or кеш['variant_utf8_spans'] != перевірене['variant_utf8_spans']:
         raise ValueError('Кеш не тотожний перевіреній відповіді')
     if type(кеш['batch_rows']) is not int or кеш['batch_rows'] != len(запитані) or not math.isfinite(кеш['batch_elapsed_s']) or кеш['batch_elapsed_s'] < 0 or кеш['batch_elapsed_s'] != запис['batch_elapsed_s'] or кеш['amortized_s'] != кеш['batch_elapsed_s'] / кеш['batch_rows'] or кеш['timing_kind'] != 'batch_wall_equal_share':
@@ -336,92 +391,120 @@ def приєднати(маніфест, переклади):
     return результат
 
 
-def виконати(маніфест, тека, пакет=4, транспорт=надіслати, лише_переклад=False):
-    """Послідовно перекладає нові рядки; збій зупиняє прогін без повтору.
+def виконати(маніфест, тека, пакет=2, транспорт=надіслати, лише_переклад=False, дозвіл=None):
+    """Перекладає тільки нові рядки; журнал спроб спільний для всіх тек.
 
-    Час рядка — явно позначена рівна частка wall-time пакета, не окрема
-    затримка моделі. Кеш зберігає сирий запит/відповідь, версії та джерело.
+    Повтор потребує окремого наряду з точною історією та новою identity.
+    Помилка одного рядка не губить валідних сусідів і не ремонтується кодом.
     """
-    if type(пакет) is not int or not 1 <= пакет <= 8:
-        raise ValueError('Пакет має містити від 1 до 8 рядків')
+    if type(пакет) is not int or not 1 <= пакет <= 2:
+        raise ValueError('Пакет має містити один або два рядки')
     if not лише_переклад and any(в['admission'] != 'admitted' for в in маніфест['occurrences']):
         raise ValueError('Походження не доведене: дозволений лише явний --лише-переклад')
+    if дозвіл and not лише_переклад:
+        raise ValueError('Поточний наряд повтору стосується лише мовного виміру')
+    if дозвіл and дозвіл.get('requires_all_provenance') and any(в['admission'] != 'admitted' for в in маніфест['occurrences']):
+        raise ValueError('Наряд повтору вимагає спершу підтвердити походження всіх входжень')
     схема, промпт, версія, коди = контракт()
     тека = Path(тека)
     тека.mkdir(parents=True, exist_ok=True)
-    замок = тека / '.5190.lock'
-    # Власник знімає залишений після аварії замок лише після перевірки процесу.
-    with замок.open('x', encoding='utf-8') as файл:
-        файл.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
-    результати, нові, виклики, час_пакетів = {}, [], 0, 0.0
-    try:
-        зберегти(тека / 'звіт.json', {'state': 'started', 'identity': версія, 'runtime_applied': False})
-        for рядок in маніфест['rows']:
-            шлях = тека / 'cache' / (ключ_кешу(рядок, версія) + '.json')
-            if not шлях.exists():
-                нові.append(рядок)
-                continue
-            кеш = читати_json(шлях.read_bytes())
-            результати[рядок['row_id']] = перевірити_кеш(кеш, рядок, версія, тека, коди, схема, промпт)
-        нові_ід = {р['row_id'] for р in нові}
-        for шлях in (тека / 'requests').glob('*.json'):
-            спроба = читати_json(шлях.read_bytes())
-            if спроба['identity'] == версія:
-                попередні = читати_json(спроба['request']['messages'][1]['content'])['rows']
-                if any(р['row_id'] in нові_ід for р in попередні):
-                    raise ValueError('Рядок уже мав спробу без повного кешу; потрібен розбір збою, не автоматичний повтор')
-        зберегти(тека / 'маніфест.json', маніфест)
-        for початок in range(0, len(нові), пакет):
-            рядки = нові[початок:початок + пакет]
-            тіло = запит(рядки, схема, промпт)
-            ід_запиту = відбиток(байти_json(тіло))
-            слід = тека / 'requests' / (ід_запиту + '.json')
-            if слід.exists():
-                raise ValueError('Пакет уже мав спробу без повного кешу; потрібен розбір збереженого збою')
-            запис = {'identity': версія, 'request': тіло, 'input_source': маніфест['source'],
-                     'started_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'state': 'started'}
-            зберегти(слід, запис)
-            старт = time.monotonic()
-            try:
-                виклики += 1
-                відповідь = транспорт(тіло)
-                час = time.monotonic() - старт
-                запис.update(response=відповідь, batch_elapsed_s=час)
-                перевірені = відповідь_пакета(відповідь, рядки, коди)
-                час_пакетів += час
-                запис['state'] = 'validated'
+    with Ж.відкрити(попередні_спроби()) as журнал:
+        результати, відхилені, нові = {}, {}, []
+        виклики, час_пакетів, чужі = 0, 0.0, []
+        try:
+            зберегти(тека / 'звіт.json', {'state': 'started', 'identity': версія, 'once_ledger': str(журнал.шлях), 'runtime_applied': False})
+            # Старі локальні requests також не можна обійти новою версією.
+            for шлях in (тека / 'requests').glob('*.json'):
+                запис = читати_json(шлях.read_bytes())
+                ід_запиту = відбиток(байти_json(запис['request']))
+                for рядок in читати_json(запис['request']['messages'][1]['content'])['rows']:
+                    попередні = журнал.попередні(рядок)
+                    if not any(с['request_sha256'] == ід_запиту for с in попередні):
+                        дані = журнал.дані['rows'].setdefault(рядок['row_id'], {'raw': рядок['raw'], 'attempts': []})
+                        дані['attempts'].append({'request_sha256': ід_запиту, 'identity': запис['identity'], 'state': 'legacy_needs_review', 'source_ref': str(шлях.resolve())})
+            журнал.зберегти()
+            for рядок in маніфест['rows']:
+                попередні = журнал.попередні(рядок)
+                остання = попередні[-1] if попередні else None
+                if остання and остання['identity'] == версія and остання['state'] == 'validated':
+                    джерело = Path(остання['output_dir'])
+                    кеш = читати_json((джерело / 'cache' / (ключ_кешу(рядок, версія) + '.json')).read_bytes())
+                    if кеш['request_file'] != остання['request_file'] or кеш['request_sha256'] != остання['request_sha256']:
+                        raise ValueError('Кеш не належить останній зафіксованій спробі')
+                    результати[рядок['row_id']] = dict(перевірити_кеш(кеш, рядок, версія, джерело, коди, схема, промпт), cache_origin=str(джерело))
+                elif остання and остання['identity'] == версія and остання['state'] == 'rejected' and дозвіл is None:
+                    запис = читати_json((Path(остання['output_dir']) / 'requests' / остання['request_file']).read_bytes())
+                    вхід = читати_json(запис['request']['messages'][1]['content'])['rows']
+                    if запис['identity'] != версія or відбиток(байти_json(запис['request'])) != остання['request_sha256'] or запис['request'] != запит(вхід, схема, промпт) or рядок not in вхід:
+                        raise ValueError('Втрачено точне походження відхиленого рядка')
+                    відхилені[рядок['row_id']] = відповідь_пакета(запис['response'], вхід, коди)['rejected'][рядок['row_id']]
+                else:
+                    журнал.перевірити_повтор(рядок, версія, дозвіл)
+                    нові.append(рядок)
+            зберегти(тека / 'маніфест.json', маніфест)
+            for початок in range(0, len(нові), пакет):
+                рядки = нові[початок:початок + пакет]
+                тіло = запит(рядки, схема, промпт)
+                ід_запиту = відбиток(байти_json(тіло))
+                файл_запиту = ід_запиту + '-' + str(time.time_ns()) + '.json'
+                слід = тека / 'requests' / файл_запиту
+                запис = {'identity': версія, 'request': тіло, 'input_source': маніфест['source'],
+                         'started_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'state': 'started',
+                         'once_ledger': str(журнал.шлях), 'authorization': дозвіл}
+                журнал.почати(рядки, версія, ід_запиту, файл_запиту, тека, дозвіл)
                 зберегти(слід, запис)
-            except Exception as помилка:
-                запис.update(state='failed', error=str(помилка), batch_elapsed_s=time.monotonic() - старт)
-                зберегти(слід, запис)
-                raise
-            for рядок in рядки:
-                кеш = {**перевірені[рядок['row_id']], 'row_id': рядок['row_id'], 'raw': рядок['raw'],
-                       'identity': версія, 'request_sha256': ід_запиту, 'input_source': маніфест['source'],
-                       'batch_elapsed_s': час, 'batch_rows': len(рядки), 'amortized_s': час / len(рядки),
-                       'timing_kind': 'batch_wall_equal_share', 'created_utc': запис['started_utc']}
-                зберегти(тека / 'cache' / (ключ_кешу(рядок, версія) + '.json'), кеш)
-                результати[рядок['row_id']] = dict(кеш, cache_hit=False)
+                старт = time.monotonic()
+                try:
+                    виклики += 1
+                    відповідь = транспорт(тіло)
+                    час = time.monotonic() - старт
+                    запис.update(response=відповідь, batch_elapsed_s=час)
+                    перевірені = відповідь_пакета(відповідь, рядки, коди)
+                    час_пакетів += час
+                    запис.update(state='partial' if перевірені['rejected'] or перевірені['unexpected_rows'] else 'validated', validation=перевірені)
+                    зберегти(слід, запис)
+                except Exception as помилка:
+                    запис.update(state='failed', error=str(помилка), batch_elapsed_s=time.monotonic() - старт)
+                    зберегти(слід, запис)
+                    журнал.завершити(рядки, {р['row_id']: 'ambiguous' for р in рядки})
+                    raise
+                for рядок in рядки:
+                    ід = рядок['row_id']
+                    if ід not in перевірені['valid']:
+                        відхилені[ід] = перевірені['rejected'][ід]
+                        continue
+                    кеш = {**перевірені['valid'][ід], 'row_id': ід, 'raw': рядок['raw'],
+                           'identity': версія, 'request_sha256': ід_запиту, 'request_file': файл_запиту,
+                           'input_source': маніфест['source'], 'batch_elapsed_s': час, 'batch_rows': len(рядки),
+                           'amortized_s': час / len(рядки), 'timing_kind': 'batch_wall_equal_share', 'created_utc': запис['started_utc']}
+                    зберегти(тека / 'cache' / (ключ_кешу(рядок, версія) + '.json'), кеш)
+                    результати[ід] = dict(кеш, cache_hit=False, cache_origin=str(тека.resolve()))
+                журнал.завершити(рядки, {р['row_id']: 'validated' if р['row_id'] in перевірені['valid'] else 'rejected' for р in рядки})
+                чужі.extend(перевірені['unexpected_rows'])
+                зберегти(тека / 'переклади.json', list(результати.values()))
+                зберегти(тека / 'відхилені.json', відхилені)
+            звіт = {'state': 'partial' if відхилені or чужі else 'completed',
+                    'mode': 'translation_only' if лише_переклад else 'provenance_checked_translation',
+                    'identity': версія, 'once_ledger': str(журнал.шлях), 'raw_rows': len(маніфест['rows']),
+                    'raw_occurrences': len(маніфест['occurrences']), 'validated_rows': len(результати),
+                    'rejected_rows': len(відхилені), 'unexpected_rows': len(чужі),
+                    'admitted_occurrences': sum(в['admission'] == 'admitted' for в in маніфест['occurrences']),
+                    'unknown_provenance': sum(в['admission'] != 'admitted' for в in маніфест['occurrences']),
+                    'requests_this_run': виклики, 'batch_wall_s_this_run': час_пакетів,
+                    'cache_hits': sum(р['cache_hit'] for р in результати.values()),
+                    'known_rows': sum(р['answer']['status'] == 'known' for р in результати.values()),
+                    'model_unknown_rows': sum(р['answer']['status'] == 'unknown' for р in результати.values()),
+                    'semantic_review': 'pending', 'photo_review': 'not_performed', 'runtime_applied': False}
             зберегти(тека / 'переклади.json', list(результати.values()))
-        звіт = {'state': 'completed', 'mode': 'translation_only' if лише_переклад else 'provenance_checked_translation',
-                'identity': версія, 'raw_rows': len(маніфест['rows']), 'raw_occurrences': len(маніфест['occurrences']),
-                'admitted_occurrences': sum(в['admission'] == 'admitted' for в in маніфест['occurrences']),
-                'unknown_provenance': sum(в['admission'] != 'admitted' for в in маніфест['occurrences']),
-                'requests_this_run': виклики, 'batch_wall_s_this_run': час_пакетів,
-                'cache_hits': sum(р['cache_hit'] for р in результати.values()),
-                'known_rows': sum(р['answer']['status'] == 'known' for р in результати.values()),
-                'unknown_rows': sum(р['answer']['status'] == 'unknown' for р in результати.values()),
-                'semantic_review': 'pending', 'photo_review': 'not_performed', 'runtime_applied': False}
-        зберегти(тека / 'переклади.json', list(результати.values()))
-        зберегти(тека / 'входження.json', приєднати(маніфест, результати))
-        зберегти(тека / 'звіт.json', звіт)
-        return звіт
-    except Exception as помилка:
-        зберегти(тека / 'звіт.json', {'state': 'failed', 'error': str(помилка), 'identity': версія,
-                 'requests_this_run': виклики, 'validated_rows': len(результати), 'runtime_applied': False})
-        raise
-    finally:
-        замок.unlink()
+            зберегти(тека / 'відхилені.json', відхилені)
+            зберегти(тека / 'входження.json', приєднати(маніфест, результати))
+            зберегти(тека / 'звіт.json', звіт)
+            return звіт
+        except Exception as помилка:
+            зберегти(тека / 'звіт.json', {'state': 'failed', 'error': str(помилка), 'identity': версія,
+                     'requests_this_run': виклики, 'validated_rows': len(результати), 'rejected_rows': len(відхилені),
+                     'once_ledger': str(журнал.шлях), 'runtime_applied': False})
+            raise
 
 
 def головна():
@@ -429,7 +512,8 @@ def головна():
     парсер = argparse.ArgumentParser(description=__doc__)
     парсер.add_argument('--вихід', type=Path, required=True)
     парсер.add_argument('--походження', type=Path)
-    парсер.add_argument('--пакет', type=int, default=4)
+    парсер.add_argument('--пакет', type=int, default=2)
+    парсер.add_argument('--повтор-за', type=Path)
     парсер.add_argument('--виконати', action='store_true')
     парсер.add_argument('--лише-переклад', action='store_true')
     арг = парсер.parse_args()
@@ -443,14 +527,15 @@ def головна():
                 'unknown_provenance': sum(в['admission'] != 'admitted' for в in маніфест['occurrences']),
                 'requests_this_run': 0, 'runtime_applied': False}
         if арг.виконати:
-            звіт = виконати(маніфест, арг.вихід, арг.пакет, лише_переклад=арг.лише_переклад)
+            дозвіл = читати_json(арг.повтор_за.read_bytes()) if арг.повтор_за else None
+            звіт = виконати(маніфест, арг.вихід, арг.пакет, лише_переклад=арг.лише_переклад, дозвіл=дозвіл)
         else:
-            if (арг.вихід / '.5190.lock').exists():
+            if (Ж.тека_журналу() / '.lock').exists():
                 raise ValueError('У цій теці вже працює пілот')
             зберегти(арг.вихід / 'маніфест.json', маніфест)
             зберегти(арг.вихід / 'звіт_підготовки.json', звіт)
         print(json.dumps(звіт, ensure_ascii=False, indent=2))
-        return 0
+        return 1 if звіт.get('state') == 'partial' else 0
     except (ValueError, OSError, KeyError, TypeError) as помилка:
         print('ЗБІЙ ПІЛОТА 5190: ' + str(помилка))
         return 1

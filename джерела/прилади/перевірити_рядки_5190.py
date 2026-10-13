@@ -4,12 +4,17 @@
 Не є перевіркою якості MamayLM, кольорових кодів, вікон або фото.
 """
 import gzip
+import io
 import json
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
 import xml.etree.ElementTree as XML
+from urllib.parse import urlsplit
+
+from jsonschema import Draft202012Validator
 
 import рядки_кольору_5190 as П
 
@@ -46,6 +51,12 @@ class Протокол(unittest.TestCase):
         self.тимчасова = tempfile.TemporaryDirectory()
         self.addCleanup(self.тимчасова.cleanup)
         self.тека = Path(self.тимчасова.name)
+        self.журнал = self.тека / 'once'
+        self.реальна_історія = П.попередні_спроби
+        для_журналу = patch.object(П.Ж, 'тека_журналу', return_value=self.журнал)
+        для_історії = patch.object(П, 'попередні_спроби', return_value=[])
+        для_журналу.start(); для_історії.start()
+        self.addCleanup(для_журналу.stop); self.addCleanup(для_історії.stop)
         self.вхід = рядок('«Синій»')
         self.коди = П.контракт()[3]
 
@@ -176,7 +187,7 @@ class Протокол(unittest.TestCase):
             П.виконати(маніфест, self.тека, транспорт=заглушка)
         self.assertEqual(бачені, [])
         звіт = П.виконати(маніфест, self.тека, транспорт=заглушка, лише_переклад=True)
-        self.assertEqual((len(бачені), len(set(бачені)), звіт['requests_this_run']), (97, 97, 25))
+        self.assertEqual((len(бачені), len(set(бачені)), звіт['requests_this_run']), (97, 97, 49))
         self.assertEqual((звіт['admitted_occurrences'], звіт['unknown_provenance']), (0, 119))
         повтор = П.виконати(маніфест, self.тека, транспорт=заглушка, лише_переклад=True)
         self.assertEqual((повтор['cache_hits'], повтор['requests_this_run'], len(бачені)), (97, 0, 97))
@@ -205,16 +216,144 @@ class Протокол(unittest.TestCase):
         for поле in ('model', 'schema_sha256', 'prompt_sha256', 'protocol'):
             self.assertNotEqual(П.ключ_кешу(вхід, версія), П.ключ_кешу(вхід, dict(версія, **{поле: 'stale'})))
         збійна = self.тека / 'збій'
+        невипробувані = dict(маніфест, rows=[рядок('Окремий вхід 1'), рядок('Окремий вхід 2')])
         def обірвана(тіло):
             """Імітує обрізання відповіді за лімітом виходу."""
             дані = заглушка(тіло)
             дані['choices'][0]['finish_reason'] = 'length'
             return дані
-        for транспорт, пакет in ((обірвана, 4), (заглушка, 1)):
+        for транспорт, пакет in ((обірвана, 2), (заглушка, 1)):
             with self.assertRaises(ValueError):
-                П.виконати(маніфест, збійна, пакет=пакет, транспорт=транспорт)
+                П.виконати(невипробувані, збійна, пакет=пакет, транспорт=транспорт)
         self.assertFalse((збійна / 'cache').exists())
         self.assertFalse((збійна / '.5190.lock').exists())
+
+    def test_справжній_транспорт_і_проксі_без_повтору(self):
+        """Передає фактичний Request runner до справжнього proxy у VM без сокетів."""
+        тіло = П.запит([self.вхід], *П.контракт()[:2])
+        бачені = []
+        class Клієнт:
+            """Заміщує лише HTTP I/O, зберігає фактичні метод, URL, headers і body."""
+            def open(цей, запит, timeout):
+                бачені.append(запит)
+                дані = {'protocol': П.ПРОТОКОЛ_ПРОКСІ, 'post_retries': 0} if запит.get_method() == 'GET' else відповідь([невідоме(self.вхід)])
+                return io.BytesIO(П.байти_json(дані))
+        with patch.object(П.urllib.request, 'build_opener', return_value=Клієнт()):
+            П.надіслати(тіло)
+        self.assertEqual([р.get_method() for р in бачені], ['GET', 'POST'])
+        self.assertEqual(бачені[0].full_url, 'http://127.0.0.1:1235/.well-known/lyusterko-5190')
+        р = бачені[1]
+        П.зберегти(self.тека / 'caller.json', {'method': р.get_method(), 'path': urlsplit(р.full_url).path,
+            'headers': {к.lower(): з for к, з in р.header_items()}, 'body': р.data.decode('utf-8')})
+        вихід = subprocess.check_output(['node', str(П.КОРІНЬ / 'аудит/ноутбук_стенд_2/тест_проксі_5190.js'),
+                                        str(self.тека / 'caller.json')], text=True)
+        self.assertEqual(json.loads(вихід), {'capability_posts': 0, 'once_posts': 1, 'ordinary_posts': 3})
+        with patch.object(П.urllib.request, 'build_opener') as збудувати:
+            збудувати.return_value.open.return_value = io.BytesIO(b'{"post_retries":2}')
+            with self.assertRaises(ValueError):
+                П.надіслати(тіло)
+            self.assertEqual(збудувати.return_value.open.call_count, 1)  # До POST старого proxy не дійшло.
+
+    def test_один_raw_між_теками_версіями_та_після_збою(self):
+        """Новий output і prompt/model/schema не дають повтору вже посланого raw."""
+        маніфест = {'source': {}, 'rows': [self.вхід], 'occurrences': []}
+        def заглушка(тіло):
+            """Імітує один успішний результат."""
+            return відповідь([невідоме(self.вхід)])
+        with patch.object(П, 'контракт', wraps=П.контракт) as контракт:
+            первісний = П.контракт()
+            self.assertEqual(П.виконати(маніфест, self.тека / 'а', транспорт=заглушка)['requests_this_run'], 1)
+            with patch('builtins.print'):
+                повтор = П.виконати(маніфест, self.тека / 'б', транспорт=lambda _: self.fail('Повтор POST'))
+            self.assertEqual((повтор['cache_hits'], повтор['requests_this_run']), (1, 0))
+            for поле in ('prompt_sha256', 'schema_sha256', 'model', 'protocol'):
+                нова = dict(первісний[2], **{поле: 'changed'})
+                контракт.return_value = (первісний[0], первісний[1] + '\n', нова, первісний[3])
+                for вихід in ('а', 'новий-' + поле):
+                    with self.subTest(поле=поле, вихід=вихід), self.assertRaises(ValueError):
+                        П.виконати(маніфест, self.тека / вихід, транспорт=lambda _: self.fail('Неявний повтор'))
+        інший = {'source': {}, 'rows': [рядок('Невизначена спроба')], 'occurrences': []}
+        with self.assertRaises(OSError):
+            П.виконати(інший, self.тека / 'обрив', транспорт=lambda _: (_ for _ in ()).throw(OSError('after accepted')))
+        with self.assertRaises(ValueError):
+            П.виконати(інший, self.тека / 'інша', транспорт=lambda _: self.fail('Повтор після обриву'))
+        with П.Ж.відкрити([]):
+            with self.assertRaises(FileExistsError):
+                П.виконати(маніфест, self.тека / 'паралельний', транспорт=lambda _: self.fail('Конкурентний POST'))
+
+    def test_явний_дозвіл_точній_історії_лише_раз(self):
+        """Дозвіл із decision/reason/identity/prior attempts діє рівно один раз."""
+        маніфест = {'source': {}, 'rows': [self.вхід], 'occurrences': []}
+        попередня = {'row_id': self.вхід['row_id'], 'raw': self.вхід['raw'], 'attempts': [
+            {'request_sha256': 'old-request', 'identity': {'protocol': 'old'}}]}
+        with П.Ж.відкрити([попередня]):
+            pass
+        дозвіл = {'version': '5190-repeat-v1', 'authorization_id': 'fixture-decision',
+            'decision_ref': 'fixture:explicit-decision', 'reason': 'Синтетичне рішення після збою',
+            'target_identity_sha256': П.Ж.відбиток(П.контракт()[2]), 'rows': {self.вхід['row_id']: ['old-request']}}
+        for хибний in (None, dict(дозвіл, rows={}), dict(дозвіл, target_identity_sha256='stale')):
+            with self.assertRaises(ValueError):
+                П.виконати(маніфест, self.тека / 'а', лише_переклад=True, дозвіл=хибний,
+                           транспорт=lambda _: self.fail('Неповний дозвіл'))
+        зіпсоване = dict(відоме(self.вхід), variants=[])
+        звіт = П.виконати(маніфест, self.тека / 'а', лише_переклад=True, дозвіл=дозвіл,
+                         транспорт=lambda _: відповідь([зіпсоване]))
+        self.assertEqual((звіт['state'], звіт['rejected_rows'], звіт['requests_this_run']), ('partial', 1, 1))
+        with self.assertRaises(ValueError):
+            П.виконати(маніфест, self.тека / 'інша', лише_переклад=True, дозвіл=дозвіл,
+                       транспорт=lambda _: self.fail('Повтор використаного дозволу'))
+
+    def test_часткова_відповідь_кешує_сусіда_без_ремонту(self):
+        """Некоректний рядок не втрачає валідний сусід і не стає unknown-відповіддю."""
+        інший = рядок('Рядок із хибною формою')
+        маніфест = {'source': {}, 'rows': [self.вхід, інший], 'occurrences': []}
+        хибний = dict(відоме(інший), relation='alternatives')
+        звіт = П.виконати(маніфест, self.тека / 'а', транспорт=lambda _: відповідь([відоме(self.вхід), хибний]))
+        self.assertEqual((звіт['validated_rows'], звіт['rejected_rows'], звіт['model_unknown_rows']), (1, 1, 0))
+        повтор = П.виконати(маніфест, self.тека / 'б', транспорт=lambda _: self.fail('Повтор часткового пакета'))
+        self.assertEqual((повтор['cache_hits'], повтор['rejected_rows'], повтор['requests_this_run']), (1, 1, 0))
+        for записи in ([відоме(self.вхід), хибний, хибний], [відоме(self.вхід), dict(хибний, row_id='чужий')]):
+            результат = П.відповідь_пакета(відповідь(записи), маніфест['rows'], self.коди)
+            self.assertEqual(set(результат['valid']), {self.вхід['row_id']})
+            self.assertEqual(set(результат['rejected']), {інший['row_id']})
+
+    def test_шість_фактичних_відповідей_і_схема(self):
+        """Offline replay frozen93: 19 структурно придатних, п'ять відхилених; не якість кольору."""
+        індекс = П.читати_json((П.ДАНІ / 'попередні_спроби.json').read_bytes())
+        форма = Draft202012Validator(П.контракт()[0]['properties']['rows']['items'])
+        валідні = відхилені = 0
+        for доказ in індекс['records']:
+            байти = (П.ДАНІ / доказ['file']).read_bytes()
+            self.assertEqual(П.відбиток(байти), доказ['sha256'])
+            запис = П.читати_json(байти)
+            рядки = П.читати_json(запис['request']['messages'][1]['content'])['rows']
+            with patch.object(П, 'МОДЕЛЬ', запис['identity']['model']):
+                результат = П.відповідь_пакета(запис['response'], рядки, self.коди)
+            валідні += len(результат['valid']); відхилені += len(результат['rejected'])
+            for ряд in П.читати_json(запис['response']['choices'][0]['message']['content'])['rows']:
+                self.assertEqual(форма.is_valid(ряд), ряд['row_id'] in результат['valid'])
+        self.assertEqual((валідні, відхилені), (19, 5))
+        тіло = П.запит([self.вхід, рядок('Другий')], *П.контракт()[:2])
+        схема = тіло['response_format']['json_schema']['schema']
+        self.assertEqual((схема['properties']['rows']['minItems'], схема['properties']['rows']['maxItems']), (2, 2))
+        перевірка = Draft202012Validator(схема)
+        self.assertFalse(перевірка.is_valid({'rows': [невідоме(self.вхід)]}))
+        self.assertFalse(перевірка.is_valid({'rows': [невідоме(self.вхід), невідоме(рядок('Чужий'))]}))
+
+    def test_історичний_дозвіл_і_джерельна_умова(self):
+        """Звіряє всі відомі prior attempts; чинний повтор чекає джерельних доказів."""
+        історія = self.реальна_історія()
+        дозвіл = П.читати_json((П.ДАНІ / 'повтор_6152300721.json').read_bytes())
+        self.assertEqual((len(історія), sum(len(р['attempts']) for р in історія)), (16, 24))
+        with П.Ж.відкрити(історія) as журнал:
+            for р in історія:
+                журнал.перевірити_повтор(р, П.контракт()[2], дозвіл)
+                with self.assertRaises(ValueError):
+                    журнал.перевірити_повтор(р, П.контракт()[2], None)
+        маніфест = {'source': {}, 'rows': [self.вхід], 'occurrences': [{'admission': 'unknown'}]}
+        with self.assertRaisesRegex(ValueError, 'спершу підтвердити'):
+            П.виконати(маніфест, self.тека / 'а', лише_переклад=True, дозвіл=дозвіл,
+                       транспорт=lambda _: self.fail('До перевірки джерела'))
 
 
 if __name__ == '__main__':
