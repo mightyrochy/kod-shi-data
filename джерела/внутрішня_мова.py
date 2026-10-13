@@ -1383,7 +1383,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_lug_width_unknown": "the card does not carry the watch's lug width",
     "item_glove_size_unknown": "the card does not carry the gloves' size mark",
     "item_frame_size_unreadable": "the code could not read the frame size from the card (values: "
-                                 "frame_size — literal card field, her_pupillary_distance_mm — measured number, item — item "
+                                 "frame_size — literal card field, her_pupillary_distance_mm — measured number, "
+                                 "item_id — exact item reference, never write it in the woman's text, item — item "
                                   "name)",
     # ── спосіб носіння (`аксесуари_структура`, `аксесуари_суд`) ────────────────
     "wear_way_not_chosen": "how she wears this item is not chosen yet, and which rules apply to it depends on "
@@ -3293,8 +3294,8 @@ def заява(код, **значення):
 def суть_кодом(заяви, речі=()):
     """`суть` знахідки внутрішньою мовою (п.12, рядок 4250): коди її заяв через « + » (як їх друкує
     звіт, `показ.html: питанняКодомП`) і id речей у дужках, без слів. Це діагноз у звіті власника,
-    ярлик сліду правил і ключ дедуплікації (правило, суть): дві знахідки одного правила над різними
-    речами чи з різних причин не зливаються. Речення пише мовна модель із самих `заяви`. Річ-словник передає лише свій `id`."""
+    ярлик сліду правил. Ідентичність питання — повні заяви, значення й id учасників
+    (`знахідка.ключ_питання`): дві зони або речі з однаковою назвою не зливаються. Речення пише мовна модель із самих `заяви`. Річ-словник передає лише свій `id`."""
     коди = [з.get("code") if isinstance(з, dict) else з for з in заяви or ()]
     for к in коди:
         if к not in ЗАЯВИ:
