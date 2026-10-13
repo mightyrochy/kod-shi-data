@@ -1,0 +1,64 @@
+── ПРОМПТ (8006 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Довга сукня з принтом · colour code: brown · about it: text н=1
+2 — Вузький ремінь зі шкіри з фірмовою пряжкою · colour code: black · about it: text н=2
+3 — Золота підвіска Paloma Picasso · colour code: golden · about it: text н=3
+4 — Жіноче зимове вовняне пальто капучино з Comfortemp® утеплювачем Stella Polare (капучино, 42) · colour code: cappuccino · about it: text н=4
+5 — Шкіряний зелений клатч Rockstud · colour code: green · about it: text н=5
+6 — Хустка з м'якої вовни ягнят темно-сіра · colour code: grey · about it: text н=6
+7 — Чоботи осінні зелені з натурального спилку-замші · colour code: green · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; cappuccino — капучино; golden — золотий; green — зелений; grey — сірий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A flowing brown dress in a warm chocolate hue that drapes softly from the shoulders, creating an elegant silhouette perfect for festive occasions."},
+{"н": 2, "текст": "A sleek black leather belt with a distinctive branded buckle that defines your waist and adds a touch of modern edge to the dress."},
+{"н": 3, "текст": "A luminous gold Paloma Picasso necklace featuring sparkling stones that catch the candlelight beautifully as a focal point for your neckline."},
+{"н": 4, "текст": "A cozy cappuccino-colored wool coat with built-in insulation that wraps around you warmly without adding bulk, ideal for crisp winter evenings."},
+{"н": 5, "текст": "A striking green leather clutch adorned with bold studs that add a playful pop of color to your ensemble while keeping your hands free."},
+{"н": 6, "текст": "A soft dark grey wool scarf that adds texture and warmth, tying together the earthy tones of your outfit effortlessly."},
+{"н": 7, "текст": "Sturdy autumn green suede boots in a rich natural tone that ground the look with both comfort and style for any uneven winter terrain."},
+{"н": 8, "текст": "This outfit brings your festive dinner look to life with a sophisticated warmth that fits the frosted air and the celebratory mood. The deep brown dress sets a rich, elegant base, while the gold necklace catches the light beautifully without overpowering the moment. You can easily balance the warm tones of the coat and bag with your dark grey scarf and green boots, letting the neutral backdrop highlight your features. Through the evening, you'll feel wrapped in comfort yet always polished, perfect for dining and dancing."},
+{"н": 9, "текст": "Wear the gold necklace close to your neck to let its warmth echo your skin and draw attention to your face as you toast with friends."},
+{"н": 10, "текст": "Tuck the waist-belted dress into itself or leave it open at the top depending on how much warmth you need, then pull the coat collar up against the frost when stepping outside."},
+{"н": 11, "текст": "Wrap the scarf loosely around your neck for easy removal if you get warm inside, or twist it once for a sharper line that complements the defined waist of your figure."},
+{"н": 12, "текст": "Золота підвіска Paloma Picasso — Swapped for the gold pendant to ensure one metal (gold) dominates, matching the dress's warmth and avoiding mixed metals near the face."},
+{"н": 13, "текст": "Вузький ремінь зі шкіри з фірмовою пряжкою — Retained as a structural anchor to define the waist of the midi silhouette, preventing it from looking shapeless under layers."},
+{"н": 14, "текст": "Хустка з м'якої вовни ягнят темно-сіра — A grey scarf adds a necessary layer for the frosty weather while maintaining a cool-neutral tone near the face that harmonizes with the hoodie's cool undertones."},
+{"н": 15, "текст": "Хустка з м'якої вовни ягнят темно-сіра — To resolve 'kind_twice' in outerwear by removing one coat and adding a scarf to complete the look without extra layers."}
+]
+
+── ВІДПОВІДЬ (2820 симв., 41.8 с, HTTP 200) ──
+```json
+{
+  "1": "Довга коричнева сукня в теплому шоколадному відтінку, яка м’яко спадає з плечей, створюючи елегантний силует ідеальний для святкових подій.",
+  "2": "Стильний чорний шкіряний ремінь із фірмовою пряжкою, який підкреслює талію й додає образу сучасного шарму.",
+  "3": "Яскравий золотий кулон Paloma Picasso з блискучими камінцями, які чудово переливаються у світлі свічок і стають акцентною точкою на шиї.",
+  "4": "Затишне вовняне пальто капучино з вбудованим утеплювачем Comfortemp®, яке зігріває без зайвого об’єму, чудово підходить для прохолодних зимових вечорів.",
+  "5": "Яскравий зелений шкіряний клатч із великими заклепками, який додає образу грайливого кольорового акценту й залишає руки вільними.",
+  "6": "М’яка темно-сіра вовняна хустка, яка додає текстури та тепла, гармонійно поєднуючи землянисті тони твого образу.",
+  "7": "Міцні зелені осінні чоботи з натуральної спілку-замші в насиченому природному відтінку, які завершують образ комфортом і стилем для будь-якої зимової місцевості.",
+  "8": "Цей образ оживляє твій святковий вечірній вигляд із витонченим теплом, що відповідає морозному повітрю та святковому настрою. Глибока коричнева сукня створює насичений елегантний фон, а золотий кулон красиво переливається у світлі без надмірності. Ти легко можеш збалансувати теплі тони пальто й клатча за допомогою темно-сірої хустки та зелених чобіт, дозволяючи нейтральному фону підкреслити твої риси. Протягом вечора ти почуватимешся захищеною комфортом і завжди вишукано одягненою — ідеально для вечері й танців.",
+  "9": "Одягни золотий кулон близько до шиї, щоб його тепло перегукувалося з кольором твоєї шкіри та привертало увагу до обличчя під час тостування з друзями.",
+  "10": "Заправ сукню в ремінь або залиш її відкритою зверху залежно від того, скільки тепла тобі потрібно, а потім підніми комір пальто проти морозу, коли виходиш на вулицю.",
+  "11": "Недбало обмотай хустку навколо шиї для легкого зняття, якщо стане жарко в приміщенні, або скрути її один раз для чіткішої лінії, яка доповнює виражену талію твоєї фігури.",
+  "12": "Золотий кулон Paloma Picasso — Замінено на золотий підвіс, щоб забезпечити панування одного металу (золота), який відповідає теплоті сукні й уникає змішування металів біля обличчя.",
+  "13": "Вузький ремінь зі шкіри з фірмовою пряжкою — Збережено як структурний елемент, щоб підкреслити талію міді-силуету й запобігти його вигляду безформним під шарами.",
+  "14": "Хустка з м'якої вовни ягнят темно-сіра — Сіра хустка додає необхідний шар для морозної погоди, зберігаючи при цьому прохолодний нейтральний тон біля обличчя, який гармонізує з холодним підтоном худі.",
+  "15": "Хустка з м’якої вовни ягнят темно-сіра — Щоб усунути 'вид_двічі' в верхньому одязі, прибрати один пальта й додати шарф для завершення образу без зайвих шарів."
+}
+```
