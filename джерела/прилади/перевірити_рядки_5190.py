@@ -323,6 +323,8 @@ class Протокол(unittest.TestCase):
         форма = Draft202012Validator(П.контракт()[0]['properties']['rows']['items'])
         валідні = відхилені = 0
         for доказ in індекс['records']:
+            if доказ.get('stage') != 'initial93':
+                continue
             байти = (П.ДАНІ / доказ['file']).read_bytes()
             self.assertEqual(П.відбиток(байти), доказ['sha256'])
             запис = П.читати_json(байти)
@@ -341,18 +343,22 @@ class Протокол(unittest.TestCase):
         self.assertFalse(перевірка.is_valid({'rows': [невідоме(self.вхід), невідоме(рядок('Чужий'))]}))
 
     def test_історичний_дозвіл_і_джерельна_умова(self):
-        """Звіряє всі відомі prior attempts; чинний повтор чекає джерельних доказів."""
+        """Звіряє всю історію нового перекладу; товарний допуск лишається окремим."""
         історія = self.реальна_історія()
-        дозвіл = П.читати_json((П.ДАНІ / 'повтор_6152300721.json').read_bytes())
-        self.assertEqual((len(історія), sum(len(р['attempts']) for р in історія)), (16, 24))
+        дозвіл = П.читати_json((П.ДАНІ / 'повтор_6153799914.json').read_bytes())
+        self.assertEqual((len(історія), sum(len(р['attempts']) for р in історія)), (97, 177))
         with П.Ж.відкрити(історія) as журнал:
             for р in історія:
                 журнал.перевірити_повтор(р, П.контракт()[2], дозвіл)
                 with self.assertRaises(ValueError):
                     журнал.перевірити_повтор(р, П.контракт()[2], None)
         маніфест = {'source': {}, 'rows': [self.вхід], 'occurrences': [{'admission': 'unknown'}]}
+        with self.assertRaisesRegex(ValueError, 'Походження не доведене'):
+            П.виконати(маніфест, self.тека / 'товар', дозвіл=дозвіл,
+                       транспорт=lambda _: self.fail('До перевірки джерела'))
+        джерельний_дозвіл = П.читати_json((П.ДАНІ / 'повтор_6152300721.json').read_bytes())
         with self.assertRaisesRegex(ValueError, 'спершу підтвердити'):
-            П.виконати(маніфест, self.тека / 'а', лише_переклад=True, дозвіл=дозвіл,
+            П.виконати(маніфест, self.тека / 'а', лише_переклад=True, дозвіл=джерельний_дозвіл,
                        транспорт=lambda _: self.fail('До перевірки джерела'))
 
 
