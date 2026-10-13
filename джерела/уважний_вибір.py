@@ -38,6 +38,7 @@ import copy as _copy
 import json as _json
 import random as _random
 import re as _re
+import dataclasses as _dc
 
 import протокол as _ПР
 import пакет_моделі as _ПМ
@@ -177,6 +178,9 @@ def _контекст(пакет, межі=None):
     к = {п.шлях: д.get(п.шлях) for п in _КОНТЕКСТ if д.get(п.шлях)}
     if межі:
         к["she_refuses"] = list(межі)
+    if пакет.get("заміна"):
+        import заміна_речі as _ЗР
+        к["replacement"] = _ЗР.контекст(пакет["заміна"])
     return к
 
 
@@ -228,6 +232,14 @@ def групи_турніру(пул, сід):
 # ── ЗАПИТИ ───────────────────────────────────────────────────────────────────
 def _запит(оголошення, дані, сід, крок, чого, ключ, слоти=None, групи=None):
     """Один запит: текст збирачем + запис порядку для етапу руки."""
+    if дані.get("replacement"):
+        import заміна_речі as _ЗР
+        правило = "Judge every candidate for replacing only replacement.slot in the unchanged fixed_outfit. " \
+                  "An item fits only if it suits her, the occasion and all the fixed items together."
+        правила = ((оголошення.правила[0], правило, *оголошення.правила[2:])
+                   if оголошення is ОЦІНКА else (правило, *оголошення.правила))
+        оголошення = _dc.replace(оголошення, вхід=оголошення.вхід + (_ЗР._ПОЛЕ,), правила=правила,
+            роль="You are the stylist choosing a replacement for one item of her current outfit.")
     текст = _json.dumps(_ЗП.зібрати(оголошення, дані), ensure_ascii=False, separators=(",", ":"))
     зап = _ПЗ.запис(сід, крок, слоти=слоти)
     if групи is not None:
