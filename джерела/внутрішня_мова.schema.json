@@ -3327,7 +3327,7 @@
          },
          {
           "const": "item_frame_size_unreadable",
-          "description": "the code could not read the frame size from the card (values: item — item name)"
+          "description": "the code could not read the frame size from the card (values: frame_size — literal card field, her_pupillary_distance_mm — measured number, item — item name)"
          },
          {
           "const": "wear_way_not_chosen",
@@ -3447,7 +3447,7 @@
          },
          {
           "const": "cut_unknown_form_default",
-          "description": "the cards do not name the cut of some items, so the code counts the outfit's shape on the usual cut (values: slots — slot codes)"
+          "description": "some cards have no known cut; unknown_cuts preserve literal card witnesses by item_id. The code counts the outfit's shape on the usual cut (values: slots — slot codes)"
          },
          {
           "const": "cut_not_declared_assumed_regular",
@@ -3516,6 +3516,10 @@
          {
           "const": "claim_look_shape_vs_body_shape",
           "description": "the outfit's shape is not the one worth leading to for her figure (values: body — the figure's shape, look — the outfit's shape, target — the shapes to lead to; shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the edge of being marked; never write the letters themselves, only the description)"
+         },
+         {
+          "const": "contour_direction_not_set_by_goal",
+          "description": "the goal for this outing is not to flatter, so the measured contour has no prescribed direction (values: goal — goal code); do not prescribe adding or removing volume to flatter"
          },
          {
           "const": "look_shape_is",

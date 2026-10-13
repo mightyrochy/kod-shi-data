@@ -1382,7 +1382,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_frame_size_unknown": "the card does not carry the frame size",
     "item_lug_width_unknown": "the card does not carry the watch's lug width",
     "item_glove_size_unknown": "the card does not carry the gloves' size mark",
-    "item_frame_size_unreadable": "the code could not read the frame size from the card (values: item — item "
+    "item_frame_size_unreadable": "the code could not read the frame size from the card (values: "
+                                 "frame_size — literal card field, her_pupillary_distance_mm — measured number, item — item "
                                   "name)",
     # ── спосіб носіння (`аксесуари_структура`, `аксесуари_суд`) ────────────────
     "wear_way_not_chosen": "how she wears this item is not chosen yet, and which rules apply to it depends on "
@@ -1475,7 +1476,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "dividing_line_item_length_unknown": "the outfit's dividing line is the hem of its top item, and the cards do "
                                          "not carry the length of the named top items, so the line was not "
                                          "judged (values: slots — slot codes)",
-    "cut_unknown_form_default": "the cards do not name the cut of some items, so the code counts the outfit's "
+    "cut_unknown_form_default": "some cards have no known cut; unknown_cuts preserve literal card witnesses by item_id. "
+                                "The code counts the outfit's "
                                 "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
                                         "ordinary straight cut; what follows holds only if the cut really is "
@@ -1536,6 +1538,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # Ф-2: було «does not aim to flatter the figure». Сенс той самий — мети `flatter`
     # на цей вихід не поставлено, — але фраза дослівно та, яку R-LNG-01 забороняє
     # (дієслово ефекту + зона). Мету називаємо ЇЇ КОДОМ, а не описом дії над тілом.
+    "contour_direction_not_set_by_goal": "the goal for this outing is not to flatter, so the measured "
+                                        "contour has no prescribed direction (values: goal — goal code); "
+                                        "do not prescribe adding or removing volume to flatter",
     "look_shape_is": "the shape the outfit gives, with no judgement, because the goal for this outing is "
                      "not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — "
                      "shoulders wider than hips, X — a marked waist, H — a straight contour without a marked "

@@ -9,6 +9,7 @@
 """
 import json as _json
 import trace as СЛ
+import знахідка as ЗН
 import внутрішня_мова as _ВМ_в
 import сценарій as СЦ
 import протокол as _ПР
@@ -1226,7 +1227,7 @@ def від_моделі(вхід):
     _бач_пит = set()
     межа_площ = False
     for z in [z for z in (в.get("знахідки") or []) if _PL._питання_або_нуль(z)] + list(_черга):
-        _к = (z.get("правило"), str(z.get("суть"))[:120])
+        _к = ЗН.ключ_питання(z) if z.get("заяви") else (z.get("правило"), str(z.get("суть"))[:120])
         if _к in _бач_пит:
             continue
         _бач_пит.add(_к)
