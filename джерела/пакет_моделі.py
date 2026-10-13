@@ -817,14 +817,22 @@ def _сім_я_кута(h):
 
 
 def _сім_я_тону(hex_):
-    """Назва сім'ї тону за `palettes.СІМ_Ї` для hex речі; None — нейтраль або не виміряно."""
+    """Сім'я нейтралі за судом, кольору — за `palettes.СІМ_Ї`; None — тон не визначено.
+
+    Нейтраль визначає чинний числовий суд, без окремого порога хроми пакета.
+    Кольорові дуги палітри лишаються своїми: це інша таксономія.
+    """
     if not hex_:
         return None
     try:
         import colorspace as _КС
-        L, C, h = _КС.lch(_КС.hx(hex_))
+        lab = _КС.hx(hex_)
+        L, C, h = _КС.lch(lab)
     except (TypeError, ValueError, AttributeError):
         return None
+    import колір_образу as _КО
+    if _КО.нейтраль(lab) is not None:
+        return _КО.сім_я(lab)
     if C is None or C < 10:
         return None
     return _сім_я_кута(h)
