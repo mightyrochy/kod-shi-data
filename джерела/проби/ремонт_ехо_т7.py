@@ -14,13 +14,13 @@ import bridge as B, протокол as P
           for і in range(10)]
 від = lambda т, **д: json.loads(B.виклик("від_моделі", json.dumps(dict(вх, текст_моделі=т, **д), ensure_ascii=False)))
 в1 = від(json.dumps(dict(версія="1", образи=образи), ensure_ascii=False))
-т = в1["промпт_ремонту"]; пр = json.loads(т); ск = пр["task"]["answer_schema"]   # П-2: англійський дріт
+т = в1["промпт_ремонту"]; пр = json.loads(т); ск = пр["answer_schema"]   # П-2: англійський дріт
 д = lambda о: json.dumps(о, ensure_ascii=False, separators=(",", ":"))
 def шляхи(x, п=""):
     if isinstance(x, dict):
         return set().union(*[{п + к} | шляхи(v, п + к) for к, v in x.items()]) if x else set()
     return set().union(*[шляхи(v, п + "[].") for v in x]) if isinstance(x, list) and x else set()
-спільні = sorted(шляхи(ск) & шляхи({к: v for к, v in пр.items() if к != "task"}))
+спільні = sorted(шляхи(ск) & шляхи({к: v for к, v in пр.items() if к not in ("task", "answer_schema")}))
 суд = пр["verdict"]
 твій = lambda с: {к: v for к, v in (с.get("your_outfit") or с).items() if к in ("id", "caption", "items", "day")}
 print("промпт ремонту %d симв. · шляхи відповіді, які повторює вхід: %s" % (len(т), ", ".join(спільні) or "—"))
