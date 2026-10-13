@@ -1,0 +1,66 @@
+{
+  "scope": "Exact actual function completion/catch seam in native Chromium with four synthetic failed hands; journal/message dependencies local fake, not full model run",
+  "functionTail": "ЗБ.готово = true; малюватиПоступП(); малюватиДіагнозП();\n    ЗБ.картки.filter(к => к && !к.збій && (к.рука === '1' || к.рука === '2'))\n.forEach(к => (к.речі || []).forEach(р => { if (р && р.id && !р.вигадана) ВЖЕ_БУЛИ_П.add(р.id); }));\n    const зп = $('зб-поступ'); if (зп) зп.textContent = 'готово за ' + секунд + ' с · діагнозів: ' + ЗБ.діагноз.length;\nawait записатиЗбоїРукП();\nconst усіЗбій = ЗБ.картки.every(к=>к && к.збій);\n    if (усіЗбій) throw new Error('build_no_hand_finished: ' + (ЗБ.діагноз[ЗБ.діагноз.length-1] || 'no_reason'));\nрендер();\n}catch(e){\nconsole.error(e);\n    режим('сценарій');\nif (ЗБ){\n      ЗБ.діагноз.push('build · failed: ' + String((e && e.stack) || e).slice(0, 1200));\nЗБ.готово = true; малюватиДіагнозП();\n}\n    ст.textContent = '';\n    const м = await повідомленнямП({відмова: повідомленняЗбоюЗбиранняП(e)}, 'build');\nif (ЗБ){ ЗБ.діагноз.push(...рядкиШаруП(м.записи)); малюватиДіагнозП(); }\n    ст.textContent = м.тексти.відмова || '';\n}finally{ кн.disabled = false; далі.disabled = false; }\n",
+  "allFailed": true,
+  "mode": "сценарій",
+  "liveStatus": "Готово",
+  "mutations": [
+    "Готово"
+  ],
+  "ready": true,
+  "axStatuses": [
+    {
+      "name": {
+        "type": "computedString",
+        "value": "",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          },
+          {
+            "type": "attribute",
+            "attribute": "title"
+          }
+        ]
+      },
+      "role": {
+        "type": "role",
+        "value": "status"
+      },
+      "properties": [
+        {
+          "name": "live",
+          "value": {
+            "type": "token",
+            "value": "polite"
+          }
+        },
+        {
+          "name": "atomic",
+          "value": {
+            "type": "boolean",
+            "value": true
+          }
+        },
+        {
+          "name": "relevant",
+          "value": {
+            "type": "tokenList",
+            "value": "additions text"
+          }
+        }
+      ]
+    }
+  ],
+  "head": "cfbe2671b868cdcf124d25bd3d1c895fc14055fe",
+  "chromium": "151.0.7922.173",
+  "modelAPI": 0,
+  "statusFieldText": "Не вдалося зібрати образи.",
+  "limits": "Completion/catch seam reproducer with synthetic four failed hand containers and local journal/message fakes; no actual model run or screen-reader audio. The failure status DOM text is inspected, not claimed visible in this screenshot.",
+  "eyeReviewedPNG": true
+}
