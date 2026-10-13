@@ -1,0 +1,45 @@
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\321\200\320\2626_\321\201\321\202\320\265\320\275\320\264.js" "b/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\321\200\320\2626_960_\320\262\320\270\320\274\321\226\321\200.js"
+index 57112bda..275c0c95 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\321\200\320\2626_\321\201\321\202\320\265\320\275\320\264.js"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\321\200\320\2626_960_\320\262\320\270\320\274\321\226\321\200.js"
+@@ -5319,6 +5319,17 @@ function підсумокМоделі(){
+      нагода й погода не підставляються, сторож знімає суперечне твердження, вердикт — у
+      журнал з етапами, допит під карткою — з тими самими фото. OTSINKA=0 — сцену пропустити. */
+   async function сцена6(){
++    await стор.evaluate(()=>{
++      window.__960={scene_started:performance.now()};
++      new MutationObserver(()=>{
++        const e=document.querySelector('#оц-картка .оц-відповідь');
++        if(e && e.innerText.trim() && !window.__960.card_ms){
++          window.__960.card_ms=performance.now()-window.__960.scene_started;
++          window.__960.first_text=e.innerText;
++        }
++      }).observe(document.body,{subtree:true,childList:true,characterData:true});
++    });
++
+     console.log('\n6. «Оціни мій образ» (Л-6): два фото її речей → оцінка → картка');
+     await стор.evaluate(() => режим('сценарій')); await с(300);
+     /* Вхід — четверта вкладка панелі швидкого доступу (слово власника 28.09), не кнопка
+@@ -5472,6 +5483,22 @@ function підсумокМоделі(){
+     await с(200);
+     await знімок('otsinka_kartka_vikno', null, true);
+     await зібратиТекст('картка «Оціни мій образ»', '#оц-картка');
++    const вимір960=await стор.evaluate(async()=>{
++      const д=document.querySelector('#оц-картка details.оц-не-знаю');
++      const result={...window.__960,collapsed_before:д ? !д.open : null};
++      if(!д) return {...result,unknowns_missing:true};
++      const t=performance.now(); д.open=true;
++      await невідомеОцінкиСловамиП(ОЦ.результат.картка,ОЦ.етапи);
++      await new Promise(r=>setTimeout(r,150));
++      return {...result,expand_ms:performance.now()-t,
++        expected_unknowns:ОЦ.результат.картка.не_знаю.length,
++        unknown_texts:[...document.querySelectorAll('#оц-картка .оц-не-знаю .задум > div')].map(e=>e.textContent)};
++    });
++    fs.writeFileSync(path.join(ЗНІМКИ,'timing960.json'),JSON.stringify(вимір960,null,2));
++    await знімок('otsinka_unknowns_expanded','#оц-картка');
++    await знімок('otsinka_unknowns_expanded_vikno',null,true);
++    await зібратиТекст('картка оцінки після розгортання', '#оц-картка');
++
+     /* вердикт тими самими чипами, що й на картках образів → журнал з етапами */
+     const дв6 = await стор.evaluate(() => дотикВердиктуП('оц', {верд: 'one_change'}));
+     console.log('   дотик по чипах «Оціни мій образ»:', JSON.stringify(дв6));
