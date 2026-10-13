@@ -271,11 +271,16 @@ def ключ_кешу(рядок, версія):
 
 def запит(рядки, схема, промпт):
     """Будує пакет точних рядків без читання вільних слів кодом."""
+    схема_пакета = читати_json(байти_json(схема))
+    перелік = схема_пакета['properties']['rows']
+    перелік.update(minItems=len(рядки), maxItems=len(рядки))
+    for форма in перелік['items']['oneOf']:
+        форма['properties']['row_id'] = {'type': 'string', 'enum': [р['row_id'] for р in рядки]}
     return {'model': МОДЕЛЬ, **ПАРАМЕТРИ,
             'messages': [{'role': 'system', 'content': промпт},
                          {'role': 'user', 'content': json.dumps({'rows': рядки}, ensure_ascii=False)}],
             'response_format': {'type': 'json_schema', 'json_schema':
-                               {'name': 'colour_rows_5190', 'strict': True, 'schema': схема}}}
+                               {'name': 'colour_rows_5190', 'strict': True, 'schema': схема_пакета}}}
 
 
 def надіслати(тіло):
