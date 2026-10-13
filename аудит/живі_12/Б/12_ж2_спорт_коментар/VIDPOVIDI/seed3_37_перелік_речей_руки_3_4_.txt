@@ -1,0 +1,29 @@
+── ПРОМПТ (1775 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cotton jersey yoga pants, wide relaxed fit, mid-calf length, sage green #8FBC8F, soft stretch fabric. Leather sneakers, low-profile sole, rounded toe, cream white #FFFDD0, supple smooth leather. Minimalist gold-plated hoops, small diameter, polished finish, mixed metal alloy. A crisp explanation: This ensemble balances comfort with the relaxed elegance of an everyday coffee outing in a park or casual café setting. The soft jersey fabric allows for movement if you decide to stretch your legs while chatting, maintaining the active lifestyle vibe she desires. Neutral tones in sage green and cream create a harmonious look that feels effortless yet put-together without needing any outer layer."}
+
+── ВІДПОВІДЬ (614 симв., 80.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Cotton jersey yoga pants",
+      "details": "wide relaxed fit, mid-calf length, soft stretch fabric",
+      "slot": "bottom",
+      "color_hex": "#8FBC8F",
+      "worn": true
+    },
+    {
+      "name": "Leather sneakers",
+      "details": "low-profile sole, rounded toe, supple smooth leather",
+      "slot": "shoes",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "Minimalist gold-plated hoops",
+      "details": "small diameter, polished finish, mixed metal alloy",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

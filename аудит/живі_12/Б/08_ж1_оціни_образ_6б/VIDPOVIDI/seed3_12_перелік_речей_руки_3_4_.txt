@@ -1,0 +1,44 @@
+── ПРОМПТ (2248 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured blazer, tailored fit, knee-length hem, charcoal grey (hex #36454F), wool blend\nSilk button-up shirt, relaxed collar, hip-length cut, off-white (hex #FAF9F6), smooth satin weave\nHigh-rise straight-leg trousers, ankle-length slit, deep navy (hex #000080), creased worsted wool\nPointed-toe pump shoe, medium heel, matte black (hex #1C1C1C), soft leather\nMinimalist gold stud earrings, polished metal finish, 14k yellow gold\nLeather card holder, slim profile, tan brown (hex #D2B48C), full-grain leather\n\nThis ensemble balances professional polish with subtle warmth, ensuring you feel confident in the office environment. The charcoal blazer provides a classic silhouette that adapts to indoor heating without overheating, while the off-white silk underneath adds a touch of effortless elegance against your skin. Deep navy trousers ground the look with authority, and the tan leather accents introduce understated sophistication that complements rather than competes with your workspace attire. By sticking to neutral tones and high-quality natural fibers, this outfit allows you to focus entirely on your work while maintaining a refined personal style."}
+
+── ВІДПОВІДЬ (998 симв., 232.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Structured blazer",
+      "details": "tailored fit with knee-length hem",
+      "slot": "outerwear",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "Silk button-up shirt",
+      "details": "relaxed collar with hip-length cut",
+      "slot": "top",
+      "color_hex": "#FAF9F6"
+    },
+    {
+      "name": "High-rise straight-leg trousers",
+      "details": "ankle-length slit in creased worsted wool",
+      "slot": "bottom",
+      "color_hex": "#000080"
+    },
+    {
+      "name": "Pointed-toe pump shoe",
+      "details": "medium heel made of soft leather",
+      "slot": "shoes",
+      "color_hex": "#1C1C1C"
+    },
+    {
+      "name": "Minimalist gold stud earrings",
+      "details": "polished metal finish in 14k yellow gold",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "Leather card holder",
+      "details": "slim profile made of full-grain leather",
+      "slot": "bag",
+      "color_hex": "#D2B48C"
+    }
+  ]
+}

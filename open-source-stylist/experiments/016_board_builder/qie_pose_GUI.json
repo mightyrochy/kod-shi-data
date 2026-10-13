@@ -1,0 +1,231 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "qwen_image_edit_2511_fp8mixed.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "type": "qwen_image"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "e016_person.png"
+    }
+  },
+  "5": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "e016_board.png"
+    }
+  },
+  "12": {
+    "class_type": "FluxKontextImageScale",
+    "inputs": {
+      "image": [
+        "4",
+        0
+      ]
+    }
+  },
+  "13": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": [
+        "12",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "prompt": "Keep this exact person (image 1): face, hair, skin tone, body proportions, pose unchanged. Using only the reference board (image 2), dress them in exactly these items: blouse front, skirt front, shoes. Render only the items listed above. Take all colour and texture from the board.\nHow these items are worn:\nhow the outfit is worn \u2014 stated literally as what is seen, front view, layer by layer:\n- the blouse covers the upper body and both arms; long sleeves down to the wrists.\n- the blouse lower hem must be fully seen.\n- the skirt goes down to the mid calfs.\n- the wedge sandals are on the feet, fully visible below the skirt hem.",
+      "image1": [
+        "12",
+        0
+      ],
+      "image2": [
+        "5",
+        0
+      ],
+      "image3": [
+        "20",
+        0
+      ]
+    }
+  },
+  "7": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "prompt": "",
+      "image1": [
+        "12",
+        0
+      ],
+      "image2": [
+        "5",
+        0
+      ]
+    }
+  },
+  "14": {
+    "class_type": "ModelSamplingAuraFlow",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "shift": 3.1
+    }
+  },
+  "15": {
+    "class_type": "CFGNorm",
+    "inputs": {
+      "model": [
+        "14",
+        0
+      ],
+      "strength": 1.0
+    }
+  },
+  "16": {
+    "class_type": "FluxKontextMultiReferenceLatentMethod",
+    "inputs": {
+      "conditioning": [
+        "6",
+        0
+      ],
+      "reference_latents_method": "index_timestep_zero"
+    }
+  },
+  "17": {
+    "class_type": "FluxKontextMultiReferenceLatentMethod",
+    "inputs": {
+      "conditioning": [
+        "7",
+        0
+      ],
+      "reference_latents_method": "index_timestep_zero"
+    }
+  },
+  "9": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "21",
+        0
+      ],
+      "seed": 42,
+      "steps": 20,
+      "cfg": 4.0,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "positive": [
+        "16",
+        0
+      ],
+      "negative": [
+        "17",
+        0
+      ],
+      "latent_image": [
+        "13",
+        0
+      ],
+      "denoise": 1.0
+    }
+  },
+  "10": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "9",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "10",
+        0
+      ],
+      "filename_prefix": "gui_pose"
+    }
+  },
+  "20": {
+    "class_type": "DWPreprocessor",
+    "inputs": {
+      "image": [
+        "12",
+        0
+      ],
+      "detect_hand": "enable",
+      "detect_body": "enable",
+      "detect_face": "enable",
+      "resolution": 1024,
+      "bbox_detector": "yolox_l.onnx",
+      "pose_estimator": "dw-ll_ucoco_384_bs5.torchscript.pt",
+      "scale_stick_for_xinsr_cn": "disable"
+    }
+  },
+  "21": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "model": [
+        "15",
+        0
+      ],
+      "lora_name": "qwen_image_union_diffsynth_lora.safetensors",
+      "strength_model": 1.0
+    }
+  },
+  "22": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "20",
+        0
+      ],
+      "filename_prefix": "e016poseskel"
+    }
+  }
+}

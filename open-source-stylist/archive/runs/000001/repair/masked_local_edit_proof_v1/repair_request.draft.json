@@ -1,0 +1,163 @@
+{
+  "schema_version": "1.0",
+  "request_id": "000001_masked_local_edit_proof_v1",
+  "run_id": "000001",
+  "mode": "research",
+  "status": "draft_requires_assets",
+  "source": {
+    "person_image": {
+      "path": "runs/000001/input/person_two_view.png",
+      "status": "exists"
+    },
+    "outfit_package": {
+      "path": "runs/000001/outfit/outfit_package.json",
+      "status": "exists"
+    },
+    "reference_board": {
+      "path": "runs/000001/qwen/reference_board_neutral_labels.png",
+      "status": "exists"
+    }
+  },
+  "base_generation": {
+    "image": {
+      "path": "runs/000001/experiments/two_view_prompt_v4/output/candidate_01.png",
+      "status": "exists"
+    },
+    "prompt": {
+      "path": "runs/000001/experiments/two_view_prompt_v4/input/prompt.txt",
+      "status": "exists"
+    },
+    "settings": {
+      "path": "runs/000001/qwen/settings.json",
+      "status": "exists"
+    }
+  },
+  "evaluation": {
+    "input": {
+      "path": "runs/000001/experiments/two_view_prompt_v4/evaluation/manual_evaluation.json",
+      "status": "exists"
+    },
+    "base_verdict": "usable_for_local_repair",
+    "selected_failure_class": "wrong_layer_boundary"
+  },
+  "repair_target": {
+    "target_id": "local_layer_boundary_001",
+    "failure_class": "wrong_layer_boundary",
+    "region_label": "waist_top_hem_layer_boundary",
+    "priority": 1,
+    "why_repairable": "The base image preserves identity, body, and global outfit structure. The selected issue is local and can be tested without editing face or body anatomy."
+  },
+  "mask": {
+    "edit_mask": {
+      "path": "runs/000001/repair/masked_local_edit_proof_v1/edit_mask.png",
+      "status": "planned"
+    },
+    "mask_method": "manual",
+    "confidence": "unknown",
+    "notes": "Mask is not prepared yet. It should cover only the local clothing boundary plus enough context for local inpaint."
+  },
+  "protected_regions": [
+    {
+      "label": "face_hair_glasses",
+      "mask": {
+        "path": "runs/000001/repair/masked_local_edit_proof_v1/protected_masks/face_hair_glasses.png",
+        "status": "planned"
+      },
+      "rule": "must remain unchanged"
+    },
+    {
+      "label": "background",
+      "mask": {
+        "path": "runs/000001/repair/masked_local_edit_proof_v1/protected_masks/background.png",
+        "status": "planned"
+      },
+      "rule": "must remain unchanged"
+    }
+  ],
+  "reference_evidence": [
+    {
+      "label": "outfit_reference_board",
+      "file": {
+        "path": "runs/000001/qwen/reference_board_neutral_labels.png",
+        "status": "exists"
+      },
+      "purpose": "Provides garment layer and detail evidence from the manual outfit package."
+    },
+    {
+      "label": "top_front_details",
+      "file": {
+        "path": "runs/000001/references/blouse_ivory_front.webp",
+        "status": "exists"
+      },
+      "purpose": "Shows top hem, waist shaping, and front construction."
+    },
+    {
+      "label": "skirt_front_details",
+      "file": {
+        "path": "runs/000001/references/skirt_brown_front.webp",
+        "status": "exists"
+      },
+      "purpose": "Shows high waist, straight silhouette, and front seam/slit logic."
+    }
+  ],
+  "executor": {
+    "class": "masked_local_generative_edit",
+    "tool": "comfyui_qwen_image_edit",
+    "workflow": {
+      "path": "runs/000001/repair/masked_local_edit_proof_v1/comfyui_workflow.json",
+      "status": "planned"
+    },
+    "settings": {
+      "path": "runs/000001/repair/masked_local_edit_proof_v1/settings.json",
+      "status": "planned"
+    }
+  },
+  "instruction": {
+    "file": {
+      "path": "runs/000001/repair/masked_local_edit_proof_v1/repair_instruction.txt",
+      "status": "planned"
+    },
+    "summary": "Repair only the masked local clothing boundary according to the outfit package and references. Preserve identity, body, background, and global outfit structure.",
+    "negative_constraints": [
+      "do not change face, hair, glasses, skin tone, body shape, or pose",
+      "do not change background or camera framing",
+      "do not redesign the outfit",
+      "do not edit outside the mask except for natural edge blending",
+      "do not alter the skirt length, footwear, earrings, or visible hands"
+    ]
+  },
+  "verification": {
+    "method": [
+      "manual visual review during R&D",
+      "before_after comparison",
+      "mask leakage check",
+      "protected-region visual check"
+    ],
+    "criteria": [
+      "selected local layer boundary is improved",
+      "edit stays local",
+      "identity and body are preserved",
+      "background is preserved",
+      "global outfit structure is not worsened",
+      "no new artifacts are introduced"
+    ]
+  },
+  "outputs": {
+    "image": {
+      "path": "runs/000001/repair/masked_local_edit_proof_v1/output.png",
+      "status": "planned"
+    },
+    "before_after": {
+      "path": "runs/000001/repair/masked_local_edit_proof_v1/before_after.png",
+      "status": "planned"
+    },
+    "verifier_result": {
+      "path": "runs/000001/repair/masked_local_edit_proof_v1/verifier_result.json",
+      "status": "planned"
+    },
+    "verdict": {
+      "path": "runs/000001/repair/masked_local_edit_proof_v1/verdict.md",
+      "status": "planned"
+    }
+  }
+}

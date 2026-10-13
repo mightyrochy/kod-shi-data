@@ -1,0 +1,26 @@
+── ПРОМПТ (3186 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This chocolate lace slip dress flows elegantly over your frame, featuring a soft satin sheen that catches the light. Its V-neckline and delicate spaghetti straps add a touch of romance, while the high slit offers a modern edge suitable for your celebration. The deep brown hue grounds the look with sophistication. Topping it with the structured black double-breasted blazer adds instant formality and sharpness, creating a powerful balance between the dress's softness and your goal to stand out; the fitted cut of the jacket highlights your waist and shoulders perfectly. To inject that vibrant pop of color you want, place the red leather belt bag low on your hips near the slit—this draws attention to your legs and breaks up the dark tones with a bold statement. Finally, finish the ensemble with the light blue suede pumps; their pointed toe elongates your silhouette while the soft fabric introduces a cool contrast against the warm chocolate tone. This outfit lives through your day by starting powerful in the structured jacket for arrival, then effortlessly shifting as you remove the blazer to reveal the elegant dress under the restaurant lights."},
+{"н": 2, "текст": "Start with the black blazer on during arrival and drinks, taking it off once dancing or dining begins to let the dress shine."},
+{"н": 3, "текст": "Туфлі-човники замшеві блакитні TAIKAN — Added cherry suede pumps to resolve 'no_shoes' blocker, ensuring the outfit is ready for the cocktail dress code."}
+]
+
+── ВІДПОВІДЬ (1462 симв., 162.5 с, HTTP 200) ──
+```json
+{
+  "1": "Ця шоколадна мереживна сукня-сліп елегантно струмує по твоїй фігурі, має м’який атласний блиск, який ловить світло. Її V-подібний виріз і ніжні бретельки спагеті додають романтичності, а високий розріз пропонує сучасну родзинку, яка підходить для твого святкування. Глибокий коричневий колір заземлює образ з вишуканістю. Поєднуючи її зі структурованим чорним двобортним блейзером, ти додаєш миттєвої офіційності та гостроти, створюючи потужний баланс між м’якістю сукні та твоїм бажанням вирізнятися; приталений крій жакета ідеально підкреслює твою талію та плечі. Щоб додати той яскравий колір, який ти хочеш, поклади шкіряну червону сумку-банан низько на стегнах біля розрізу — це привертає увагу до ніг і розбиває темні тони сміливим акцентом. Насамкінець заверши образ світло-блакитними замшевими туфлями; їхній загострений носок видовжує силует, а м’яка тканина створює прохолодний контраст з теплим шоколадним тоном. Цей образ проживе твій день, починаючи потужно у структурованому жакеті під час прибуття, потім легко змінюючись, коли ти знімеш блейзер і розкриєш елегантну сукню під світлом ресторану.",
+  "2": "Почни зі чорного блейзера на собі під час прибуття та коктейлів, а потім зніми його, коли почнеш танцювати або вечеряти, щоб дати сукні засяяти.",
+  "3": "Туфлі-човники замшеві блакитні TAIKAN — Додала вишневі замшеві туфлі, щоб вирішити проблему 'no_shoes', забезпечивши готовність образу до коктейльного дрес-коду."
+}
+```

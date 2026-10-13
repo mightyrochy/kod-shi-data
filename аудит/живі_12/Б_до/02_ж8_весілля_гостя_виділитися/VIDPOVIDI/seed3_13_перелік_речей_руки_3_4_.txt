@@ -1,0 +1,43 @@
+── ПРОМПТ (2443 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet structured blazer with exaggerated wide lapels, double-breasted cut, floor-length sleeve extension, midnight blue (#0a0f2e), heavy woven fabric.\nTailored high-waisted trousers with a dramatic balloon silhouette below the knee and tapered ankles, A-line hip flare, charcoal gray (#36454f), thick wool blend.\nStatement silk slip dress peeking through the blazer opening at the bust, bias cut, thigh-length hem, oxidized copper (#b87333), liquid satin texture.\nChunky platform stiletto pumps with an exaggerated geometric heel, ankle strap with crystal detailing, burnt orange (#cc5500), molded leather.\nWide gold-tone metallic cuff bracelet set on the left wrist, articulated joints, brushed brass finish (#d4af37), rigid metal alloy.\n\nThis outfit commands attention immediately through its rich textures and deep, sophisticated color palette that contrasts sharply with her warm skin tone. The juxtaposition of the structured velvet blazer against the fluid silk slip creates a dynamic silhouette that feels both powerful and artistic, perfectly embodying her desire to stand out at the ceremony. By incorporating bold architectural elements like the balloon trousers and massive platform heels, the ensemble ensures she becomes an unforgettable focal point while maintaining a cohesive, high-fashion aesthetic suitable for the wedding's formal setting."}
+
+── ВІДПОВІДЬ (1241 симв., 255.1 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Velvet structured blazer",
+      "details": "exaggerated wide lapels, double-breasted cut, floor-length sleeve extension, heavy woven fabric",
+      "slot": "outerwear",
+      "color_hex": "#0a0f2e",
+      "worn": true
+    },
+    {
+      "name": "Tailored high-waisted trousers",
+      "details": "dramatic balloon silhouette below the knee and tapered ankles, A-line hip flare, thick wool blend",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Statement silk slip dress",
+      "details": "peeking through the blazer opening at the bust, bias cut, thigh-length hem, liquid satin texture",
+      "slot": "dress",
+      "color_hex": "#b87333",
+      "worn": true
+    },
+    {
+      "name": "Chunky platform stiletto pumps",
+      "details": "exaggerated geometric heel, ankle strap with crystal detailing, molded leather",
+      "slot": "shoes",
+      "color_hex": "#cc5500",
+      "worn": true
+    },
+    {
+      "name": "Wide gold-tone metallic cuff bracelet",
+      "details": "set on the left wrist, articulated joints, brushed brass finish, rigid metal alloy",
+      "slot": "bracelet",
+      "color_hex": "#d4af37",
+      "worn": true
+    }
+  ]
+}

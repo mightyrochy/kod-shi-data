@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "person_profile",
+  "title": "PersonProfile",
+  "description": "Structured description of the person in the input photo — what must be preserved.",
+  "type": "object",
+  "required": ["schema_version", "person_id", "photo_path", "photo_format"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "person_id": { "type": "string" },
+    "photo_path": { "type": "string" },
+    "photo_format": {
+      "type": "string",
+      "enum": ["front", "side", "dual", "full_partial"]
+    },
+    "skin_tone": {
+      "type": "object",
+      "required": ["description"],
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": "string" },
+        "lab_reference": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "hair": {
+      "type": "object",
+      "required": ["color", "style"],
+      "additionalProperties": false,
+      "properties": {
+        "color": { "type": "string" },
+        "style": { "type": "string" },
+        "length": { "type": "string" }
+      }
+    },
+    "body_proportions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "shoulder_width_norm": { "type": "number", "minimum": 0 },
+        "waist_width_norm": { "type": "number", "minimum": 0 },
+        "hip_width_norm": { "type": "number", "minimum": 0 },
+        "height_px": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "current_outfit_description": { "type": "string" },
+    "accessories": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes": { "type": "string" }
+  }
+}

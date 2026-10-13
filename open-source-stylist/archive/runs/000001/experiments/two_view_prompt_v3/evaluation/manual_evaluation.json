@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1",
+  "run_id": "000001",
+  "experiment_id": "two_view_prompt_v3",
+  "evaluation_type": "manual_visual_review",
+  "overall_verdict": "very_consistent_but_inaccurate",
+  "summary": {
+    "what_worked": [
+      "Outputs are highly consistent across five runs.",
+      "Two-view layout is preserved.",
+      "Woman identity is more stable than v2; no obvious hair-color collapse like v2 candidate 03.",
+      "Skirt and sandals are stable.",
+      "Old sweater, jeans, and socks are removed."
+    ],
+    "main_failures": [
+      "The outfit is less accurate to the reference board.",
+      "The top becomes a generic tucked blouse/shirt instead of the shaped peplum blouse with visible hem.",
+      "The blouse hem often does not remain visibly over the upper skirt.",
+      "The belt becomes a normal visible waist belt or waistband, not a barely visible glimpse.",
+      "Reference-specific details are simplified.",
+      "The result is consistent, but it converges toward a generic polished outfit."
+    ],
+    "prompt_observation": [
+      "Adding explicit simple color words and many preservation constraints appears to improve consistency but reduce reference fidelity.",
+      "Simple color words may encourage the model to use its internal generic color/outfit prior instead of copying the exact visual tone from image 2.",
+      "The next prompt should preserve identity strongly while avoiding simple item color words."
+    ]
+  },
+  "recommended_next_action": {
+    "experiment": "two_view_prompt_v4",
+    "goal": "keep v3 identity consistency while improving visual reference fidelity",
+    "changes": [
+      "Remove simple item color words from the prompt.",
+      "Use a neutral-label reference board.",
+      "Keep identity preservation explicit.",
+      "Use phrases like 'match the visual appearance from image 2' instead of naming colors.",
+      "Describe structure and layering, not generic colors."
+    ]
+  }
+}

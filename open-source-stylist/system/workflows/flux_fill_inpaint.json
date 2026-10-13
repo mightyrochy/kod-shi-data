@@ -1,0 +1,128 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "flux1-fill-dev.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "DualCLIPLoader",
+    "inputs": {
+      "clip_name1": "clip_l.safetensors",
+      "clip_name2": "t5xxl_fp16.safetensors",
+      "type": "flux"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "__PERSON_IMAGE__"
+    }
+  },
+  "5": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": ["4", 0],
+      "upscale_method": "lanczos",
+      "width": "__WIDTH__",
+      "height": "__HEIGHT__",
+      "crop": "disabled"
+    }
+  },
+  "6": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "__MASK_IMAGE__"
+    }
+  },
+  "7": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": ["6", 0],
+      "upscale_method": "nearest-exact",
+      "width": "__WIDTH__",
+      "height": "__HEIGHT__",
+      "crop": "disabled"
+    }
+  },
+  "8": {
+    "class_type": "ImageToMask",
+    "inputs": {
+      "image": ["7", 0],
+      "channel": "red"
+    }
+  },
+  "9": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": ["2", 0],
+      "text": "__POSITIVE_PROMPT__"
+    }
+  },
+  "10": {
+    "class_type": "FluxGuidance",
+    "inputs": {
+      "conditioning": ["9", 0],
+      "guidance": 30.0
+    }
+  },
+  "11": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": ["9", 0]
+    }
+  },
+  "12": {
+    "class_type": "InpaintModelConditioning",
+    "inputs": {
+      "positive": ["10", 0],
+      "negative": ["11", 0],
+      "vae": ["3", 0],
+      "pixels": ["5", 0],
+      "mask": ["8", 0],
+      "noise_mask": true
+    }
+  },
+  "13": {
+    "class_type": "DifferentialDiffusion",
+    "inputs": {
+      "model": ["1", 0]
+    }
+  },
+  "14": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["13", 0],
+      "seed": "__SEED__",
+      "steps": "__STEPS__",
+      "cfg": 1.0,
+      "sampler_name": "__SAMPLER__",
+      "scheduler": "__SCHEDULER__",
+      "positive": ["12", 0],
+      "negative": ["12", 1],
+      "latent_image": ["12", 2],
+      "denoise": "__DENOISE__"
+    }
+  },
+  "15": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["14", 0],
+      "vae": ["3", 0]
+    }
+  },
+  "16": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["15", 0],
+      "filename_prefix": "__OUTPUT_PREFIX__"
+    }
+  }
+}

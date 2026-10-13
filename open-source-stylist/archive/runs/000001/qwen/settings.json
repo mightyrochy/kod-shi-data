@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1",
+  "engine": "ComfyUI",
+  "comfyui_url": "http://127.0.0.1:8000",
+  "primary_model": "qwen_image_edit_2511_fp8mixed.safetensors",
+  "fallback_model": "qwen_image_edit_2511_bf16.safetensors",
+  "text_encoder": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+  "vae": "qwen_image_vae.safetensors",
+  "lora": "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors",
+  "status": "prompt_package_prepared",
+  "qwen_inputs": {
+    "image_1": "../input/person_front.png",
+    "image_2": "reference_board_clean.png",
+    "debug_board": "reference_board.png"
+  },
+  "notes": [
+    "First run should prioritize repeatability over perfect fashion output.",
+    "If VRAM is low, unload LM Studio models before generation.",
+    "This run uses person_front.png as image 1 and qwen/reference_board_clean.png as image 2.",
+    "qwen/reference_board.png is kept only as a fuller debug board."
+  ]
+}

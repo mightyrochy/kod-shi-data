@@ -1,0 +1,48 @@
+── ПРОМПТ (4685 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "· The black sleeveless dress with a V-neckline is cut from fluid fabric and falls to mid-calf length, featuring an asymmetrical slit along the front that adds movement to your step.\n · These burgundy pointed-toe pumps bring a rich contrast to the dark monochrome base of the look, grounding the ensemble with their sleek, glossy finish.\n · The pair of gold hoop-style earrings offers delicate warmth that catches the light near your face, softening the edge of the deep black velvet gown.\n · The knitted brooch in milky ivory tone acts as a gentle focal point on the sleeve, introducing a playful texture and a whisper of color that breaks up the serious lines of the silhouette.\n · The red leather fanny pack adds a modern, structured pop of color to your waist, balancing the fluidity of the dress with sporty sophistication for the evening ahead."},
+{"н": 2, "текст": "Wear the dress over your shoulders or let it hang loose to emphasize its drape."},
+{"н": 3, "текст": "Поясна сумка з червоної шкіри з лого — Added a belt bag to resolve the 'no_bag' blocker, providing essential structure and carrying capacity for an evening event."},
+{"н": 4, "текст": "Чорна лляна сукня з V-вирізом та розрізом, LeBERDES Туфлі бордові, Поясна сумка з червоної шкіри з лого — Although there is a 'colours_in_her_pairings' gate regarding the specific color logic of the accessories, the outfit's boldness serves her explicit goal to be memorable and stand out better than any quieter alternative."},
+{"н": 5, "текст": "Чорна лляна сукня з V-вирізом та розрізом — The natural fabric breathes in 28°C weather despite the formal 'ceremonial' label, and the cut scores highest on her body."},
+{"н": 6, "текст": "LeBERDES Туфлі бордові — Burgundy is her primary accent and carries the scheme; leather works with linen."},
+{"н": 7, "текст": "Вигнуті сережки з жовтого золота — Gold contrasts with black, creating a sharp focal point on her high-contrast palette."},
+{"н": 8, "текст": "В’язана троянда-брошка айворі — A soft organic element near the face to soften the structure of the dress and shoes."},
+{"н": 9, "текст": "Вигнуті сережки з жовтого золота — Curved gold shapes soften the sharp lines of the black base, drawing attention to the face."},
+{"н": 10, "текст": "Вигнуті сережки з жовтого золота — Gold earrings add sparkle to the neutral face area, enhancing her high contrast features."},
+{"н": 11, "текст": "LeBERDES Туфлі бордові — Burgundy shoes ground the outfit in her accent color, creating a sophisticated look for a wedding guest."},
+{"н": 12, "текст": "В’язана троянда-брошка айворі — Ivory brooch adds an organic element near the face to soften the structured feel of the belt and backpack."},
+{"н": 13, "текст": "Вигнуті сережки з жовтого золота — Gold earrings add warmth to the cool blue dress and draw attention to the face."},
+{"н": 14, "текст": "В’язана троянда-брошка айворі — Ivory brooch adds a delicate touch near the face, balancing the boldness of the jewelry."}
+]
+
+── ВІДПОВІДЬ (2843 симв., 90.8 с, HTTP 200) ──
+```json
+{
+  "1": "· Чорну безрукавну сукню з V-подібним вирізом пошито з м’якої тканини та вона доходить до середини литки. Сукня має асиметричний розріз спереду, який додає руху кожному твоєму кроку.\n · Бордові туфлі-човники на шпильці створюють насичений контраст з темним монохромним фоном образу та завершують ансамбль своїм елегантним глянцевим блиском.\n · Пара золотих сережок у вигляді кілець додає делікатного тепла, яке привертає увагу поблизу твого обличчя, пом’якшуючи строгі лінії оксамитової чорної сукні.\n · В’язана брошка кольору слонової кістки слугує ніжним акцентом на рукаві, вносячи грайливу текстуру та ледь помітний колір, який розбиває чіткі лінії силуету.\n · Червона шкіряна сумка через плече додає сучасного структурованого кольорового акценту до твоєї талії, збалансовуючи плавність сукні зі спортивною вишуканістю для вечора.",
+  "2": "Одягни сукню на плечі або залиш її вільно спадати, щоб підкреслити її драпірування.",
+  "3": "Сумка через плече з червоної шкіри з лого — Додала поясну сумку для вирішення блокування 'no_bag', забезпечивши необхідну структуру та місткість для вечірнього заходу.",
+  "4": "Чорна лляна сукня з V-подібним вирізом і розрізом, LeBERDES Туфлі бордові, Сумка через плече з червоної шкіри з лого — Хоча є обмеження 'colours_in_her_pairings' щодо конкретної колірної логіки аксесуарів, сміливість образу слугує її чіткій меті бути незабутньою та виділятися краще за будь-яку тихішу альтернативу.",
+  "5": "Чорна лляна сукня з V-подібним вирізом і розрізом — Натуральна тканина дихає в 28°C, незважаючи на формальний «церемоніальний» статус, а крій найкраще підкреслює її фігуру.",
+  "6": "LeBERDES Туфлі бордові — Бордовий колір є її основним акцентом і формує схему; шкіра добре поєднується з льоном.",
+  "7": "Вигнуті сережки з жовтого золота — Золото контрастує з чорним, створюючи чіткий фокус на висококонтрастній палітрі.",
+  "8": "В’язана троянда-брошка айворі — М’який органічний елемент поблизу обличчя для пом’якшення структури сукні та взуття.",
+  "9": "Вигнуті сережки з жовтого золота — Вигнуті золоті форми пом’якшують різкі лінії чорної основи, привертаючи увагу до обличчя.",
+  "10": "Вигнуті сережки з жовтого золота — Золоті сережки додають блиску нейтральній зоні обличчя, підкреслюючи її висококонтрастні риси.",
+  "11": "LeBERDES Туфлі бордові — Бордові туфлі завершують образ у її акцентному кольорі, створюючи витончений вигляд для гості на весіллі.",
+  "12": "В’язана троянда-брошка айворі — Слонова брошка додає делікатний штрих поблизу обличчя, збалансовуючи сміливість прикрас.",
+  "13": "Вигнуті сережки з жовтого золота — Золоті сережки додають тепла до синьої сукні та привертають увагу до обличчя.",
+  "14": "В’язана троянда-брошка айворі — Слонова брошка додає ніжний штрих поблизу обличчя, збалансовуючи структуроване відчуття поясу та рюкзака."
+}
+```

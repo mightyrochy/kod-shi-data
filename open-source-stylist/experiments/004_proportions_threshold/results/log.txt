@@ -1,0 +1,31 @@
+=== E-004: Proportions gate threshold calibration ===
+
+--- Step 1: segment person_two_view front crop ---
+  Saved two-view front crop: C:\Users\Admin\Open Source Stylist\experiments\004_proportions_threshold\results\person_twoview_front_crop.png (756x688)
+  Segmentation done -> C:\Users\Admin\Open Source Stylist\experiments\004_proportions_threshold\results\person.png
+
+--- Step 2: masks ---
+  mask_front   : C:\Users\Admin\Open Source Stylist\experiments\001_segmentation_masks\results\person_front\person.png
+  mask_twoview : C:\Users\Admin\Open Source Stylist\experiments\004_proportions_threshold\results\person.png
+  Synthetic masks (fx=1.10 / 1.20 / 1.30) created in memory.
+
+--- Step 3: profiles ---
+  mask_front      shoulder=0.2968  waist=0.2273  hip=0.3102  height=1267px
+  mask_twoview    shoulder=0.2965  waist=0.2271  hip=0.3091  height=634px
+
+--- Step 4: pair scores ---
+  SAN-00    type=sanity            shoulder=0.0%  waist=0.0%  hip=0.0%  max_abs=0.00%
+  NAT-01    type=natural           shoulder=-0.1%  waist=-0.09%  hip=-0.35%  max_abs=0.35%
+  SYN-10    type=synthetic+10%     shoulder=10.11%  waist=10.07%  hip=10.19%  max_abs=10.19%
+  SYN-20    type=synthetic+20%     shoulder=20.18%  waist=20.15%  hip=20.08%  max_abs=20.18%
+  SYN-30    type=synthetic+30%     shoulder=29.78%  waist=30.22%  hip=30.01%  max_abs=30.22%
+
+--- Step 5: threshold analysis ---
+  SAN-00 (sanity)      : 0.0%  (expected <1)
+  NAT-01 (natural var) : 0.35%
+  SYN-10 (+10% synth)  : 10.19%
+  gap = 9.84%
+  proposed threshold = 5.3%
+  VERDICT: PASS — clear separation (gap=9.84% >= 5%)
+
+Results written: C:\Users\Admin\Open Source Stylist\experiments\004_proportions_threshold\results\scores.csv

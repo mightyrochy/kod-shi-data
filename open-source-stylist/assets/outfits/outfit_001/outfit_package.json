@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "outfit_id": "outfit_001",
+  "items": [
+    {
+      "item_id": "blouse",
+      "type": "top",
+      "description": "voluminous-sleeve blouse with V neckline, front buttons, shaped waist, and peplum hem",
+      "reference_image_paths": [
+        "assets/outfits/outfit_001/blouse_front.webp",
+        "assets/outfits/outfit_001/blouse_back.webp"
+      ],
+      "visibility_priority": 1
+    },
+    {
+      "item_id": "skirt",
+      "type": "bottom",
+      "description": "long straight high-waisted skirt with front slit",
+      "reference_image_paths": [
+        "assets/outfits/outfit_001/skirt_front.webp",
+        "assets/outfits/outfit_001/skirt_back.webp"
+      ],
+      "visibility_priority": 2
+    },
+    {
+      "item_id": "belt",
+      "type": "accessory",
+      "description": "wide leather belt with decorative panels and buckle",
+      "reference_image_paths": [
+        "assets/outfits/outfit_001/belt.jpg"
+      ],
+      "visibility_priority": 3
+    },
+    {
+      "item_id": "shoes",
+      "type": "shoes",
+      "description": "wedge sandals with ankle strap, open toe, and textured surface",
+      "reference_image_paths": [
+        "assets/outfits/outfit_001/shoes_wedge.webp"
+      ],
+      "visibility_priority": 4
+    },
+    {
+      "item_id": "earrings",
+      "type": "accessory",
+      "description": "large disc earrings with ridged spiral texture",
+      "reference_image_paths": [
+        "assets/outfits/outfit_001/earrings_disc.webp"
+      ],
+      "visibility_priority": 5
+    }
+  ],
+  "layout_path": "assets/outfits/outfit_001/outfit layout.txt",
+  "reference_board": {
+    "labels": [
+      "blouse front",
+      "blouse back",
+      "skirt front",
+      "skirt back",
+      "belt",
+      "shoes",
+      "earrings"
+    ],
+    "variants": {
+      "masked_crops": {
+        "path": "assets/outfits/outfit_001/reference_boards/masked_crops.png",
+        "sha256": "1b5229c6f2c5f5d7ca00488228a69d0a358c67829934432285a2ee091aaed832"
+      },
+      "rectangular_crops": {
+        "path": "assets/outfits/outfit_001/reference_boards/rectangular_crops.png",
+        "sha256": "41d510468934664afc763bd235c076cc194c50d00dee7c3764ced77b0c7b510d"
+      },
+      "hybrid_mask_crop": {
+        "path": "assets/outfits/outfit_001/reference_boards/hybrid_mask_crop.png",
+        "sha256": "542051b334f0b02114093c574ea2e4ae31e137afb368a786ab434e16109aba83",
+        "labels": [
+          "blouse front mask",
+          "blouse front crop",
+          "skirt front mask",
+          "skirt front crop",
+          "belt mask",
+          "earrings mask",
+          "earrings crop",
+          "shoes mask",
+          "shoes crop"
+        ]
+      }
+    }
+  },
+  "negative_constraints": [
+    "do not show any of the person's original clothing",
+    "do not copy the body or face of any model in the reference product photos",
+    "do not change the person's identity, face, hair, or body proportions",
+    "do not change the background"
+  ]
+}

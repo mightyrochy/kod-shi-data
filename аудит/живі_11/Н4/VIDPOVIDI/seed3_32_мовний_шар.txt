@@ -1,0 +1,81 @@
+── ПРОМПТ (6665 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти»; стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа, hex і слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_code_unknown — рядок у згорнутому блоці «код не знає» на картці образу: чого код не знає — про речі, про неї чи про її день — і що через це лишилось не перевіреним. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- as_top — верх.
+- bag — сумка.
+- bag_handle — сумка.
+- hair — волосся.
+- neck — шия.
+- shoulders — плечі.
+- top — верх.
+- waist — до талії / талія.
+- wrist — зап'ясток.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами.
+
+ЗАЯВИ:
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word).
+- cannot_tell_two_accent_surfaces_match — so the code cannot tell whether two accent items match exactly in colour.
+- no_input_outer_warmth — nobody publishes the warmth of an outer layer as a number, so the code judges whether it is enough for this weather only by the item's type.
+- no_input_down_fill_power — the cards do not carry down quality together with filling weight, so the code does not read the warmth of a down jacket as a number.
+- no_input_filling_loft — the cards do not carry the filling's thickness, so the code does not know how much room it takes under an outer layer.
+- no_input_down_category_meaning — nobody has checked yet whether a shop's "down jacket" is real down and not synthetic, so the code does not count warmth by the category name.
+- no_input_belt_height_petite — sources advise different heights for the belt of an outer layer on a petite figure, so the code does not advise this.
+- no_input_pocket_type_on_hip — the cards do not say whether an outer layer's hip pockets are patch or slit, so the code does not judge how they lie on the hips.
+- no_input_ease_look_vs_move — the difference between ease "for the look" and ease "for movement" in a woman's coat is not researched yet, so the code does not judge it.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- vertical_balance_not_judged — the code does not judge the ratio of the outfit's top and bottom to her proportions: the sources have too little evidence for it.
+- leg_proportion_template_crotch — the code does not count torso-to-leg proportions: the crotch height comes from a template, not from her; one measurement fixes this.
+- calf_girth_not_measured — her calf girth is unknown, so how the edges of shoes and of a hem land on the calf is not measured; there is a field for it in "Extended measurements".
+- areas_not_measured — the code did not measure how much room each item takes in the outfit, so rules that depend on area give no conclusion.
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- wear_cost_no_duration_surface — the code does not count the wearing cost for the feet: it is unknown how many hours and on what she will walk.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_code_unknown", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Хустка з м'якої вовни ягнят світло-сіра", "lang": "uk"}, "ways": ["neck", "hair", "shoulders", "waist", "bag_handle", "wrist", "as_top"]}}]},
+{"н": 2, "вид": "card_code_unknown", "заяви": [{"code": "calf_girth_not_measured"}]},
+{"н": 3, "вид": "card_code_unknown", "заяви": [{"code": "leg_proportion_template_crotch"}]},
+{"н": 4, "вид": "card_code_unknown", "заяви": [{"code": "wear_cost_no_duration_surface"}]},
+{"н": 5, "вид": "card_code_unknown", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"slot": "top", "colour": "бузковий"}, {"slot": "bag", "colour": "бузковий"}]}}, {"code": "cannot_tell_two_accent_surfaces_match"}]},
+{"н": 6, "вид": "card_code_unknown", "заяви": [{"code": "items_register_unknown", "values": {"count": 3}}]},
+{"н": 7, "вид": "card_code_unknown", "заяви": [{"code": "areas_not_measured"}]},
+{"н": 8, "вид": "card_code_unknown", "заяви": [{"code": "vertical_balance_not_judged"}]},
+{"н": 9, "вид": "card_code_unknown", "заяви": [{"code": "no_input_outer_warmth"}]},
+{"н": 10, "вид": "card_code_unknown", "заяви": [{"code": "no_input_down_fill_power"}]},
+{"н": 11, "вид": "card_code_unknown", "заяви": [{"code": "no_input_filling_loft"}]},
+{"н": 12, "вид": "card_code_unknown", "заяви": [{"code": "no_input_down_category_meaning"}]},
+{"н": 13, "вид": "card_code_unknown", "заяви": [{"code": "no_input_belt_height_petite"}]},
+{"н": 14, "вид": "card_code_unknown", "заяви": [{"code": "no_input_pocket_type_on_hip"}]},
+{"н": 15, "вид": "card_code_unknown", "заяви": [{"code": "no_input_ease_look_vs_move"}]}
+]
+
+── ВІДПОВІДЬ (1997 симв., 108.7 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю, як ти носитимеш цю світло-сіру хустку з м'якої вовни ягнят: на шиї, у волоссі, на плечах, в талії, на ручці сумки чи на зап’ясті — або навіть замість верху. Ти сама вирішуєш.",
+  "2": "Я не знаю обхвату твоїх литок, тому не можу сказати, як край штанів і подолу сукні ляжуть по них.",
+  "3": "Я не враховую пропорції тулуба та ніг: висота паху взята з шаблону, а не виміряна у тебе. Щоб це зробити точніше, потрібне одне твоє вимірювання.",
+  "4": "Не можу порахувати вартість носіння взуття — я не знаю, скільки годин ти проведеш на ногах і по якій поверхні ходитимеш.",
+  "5": "Я бачу, що у тебе бузковий верх і бузкова сумка. Але я можу лише здогадуватися, чи вони точно одного кольору — адже знаю їхній колір тільки зі слів магазину, а не з вимірювання фотографії.",
+  "6": "Я не визначила стиль трьох речей у твоєму образі.",
+  "7": "Не можу сказати, скільки місця займають окремі предмети в образі — я просто не знаю площу кожного з них.",
+  "8": "Я не оцінюю пропорції верху та низу твого образу до твоїх фігури: у джерелах замало інформації для цього.",
+  "9": "Не можу сказати, чи достатньо тепло твоєї верхньої речі на цю погоду — я знаю тільки її тип, а не товщину утеплювача.",
+  "10": "Я не знаю якість пуху в твоїй куртці: карти не містять інформації про його показник сили. Тому й не можу оцінити тепло цієї речі як число.",
+  "11": "Не знаю, наскільки товстим є утеплювач у твоєму одязі — я просто не маю даних про його об’єм під верхнім шаром.",
+  "12": "Я не можу сказати точно, чи куртка з написом «пухова» дійсно зроблена з пуху або ж це синтетика. Тому й не враховую назву категорії для оцінки тепла.",
+  "13": "Не знаю, якої висоти має бути пояс на твоїй верхній речі — джерела дають різні поради щодо фігури «міні».",
+  "14": "Я не можу сказати, чи кишені на стегнах твоєї верхньої речі пришиті поверх або прорізані в тканину.",
+  "15": "Не знаю, як має сидіти одяг: вільно «для вигляду» чи вільно «для руху». Це питання ще не досліджено."
+}
+```

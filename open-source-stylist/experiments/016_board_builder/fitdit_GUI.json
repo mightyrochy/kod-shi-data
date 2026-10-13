@@ -1,0 +1,101 @@
+{
+  "1": {
+    "class_type": "FitDiTLoader",
+    "inputs": {
+      "device": "cuda",
+      "with_fp16": false,
+      "with_offload": true,
+      "with_aggressive_offload": false
+    }
+  },
+  "2": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "e016_person.png"
+    }
+  },
+  "3": {
+    "class_type": "FitDiTMaskGenerator",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "vton_image": [
+        "2",
+        0
+      ],
+      "category": "Lower-body",
+      "offset_top": 0,
+      "offset_bottom": 0,
+      "offset_left": 0,
+      "offset_right": 0
+    }
+  },
+  "4": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "e016_skirt.png"
+    }
+  },
+  "5": {
+    "class_type": "FitDiTTryOn",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "vton_image": [
+        "2",
+        0
+      ],
+      "garm_image": [
+        "4",
+        0
+      ],
+      "mask": [
+        "3",
+        1
+      ],
+      "pose_image": [
+        "3",
+        2
+      ],
+      "n_steps": 20,
+      "image_scale": 2.0,
+      "seed": 42,
+      "num_images": 1,
+      "resolution": "1152x1536"
+    }
+  },
+  "6": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "5",
+        0
+      ],
+      "filename_prefix": "gui_fitdit"
+    }
+  },
+  "7": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "3",
+        1
+      ],
+      "filename_prefix": "gui_fitdit_mask"
+    }
+  },
+  "8": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "3",
+        2
+      ],
+      "filename_prefix": "gui_fitdit_pose"
+    }
+  }
+}

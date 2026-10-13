@@ -1,0 +1,50 @@
+── ПРОМПТ (2134 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Loose organic cotton yoga top in earthy sage green (#8a9a8f), rectangular cut with dropped shoulders, knee-length hem, breathable jersey knit. Relaxed-fit mid-rise linen-blend trousers in warm sand (#d6c4a5), tapered leg ending just above the ankle, soft drape for movement. Minimalist leather slide sandals in cream beige (#f5f0e6), open toe and thong strap with a low block heel for stability on grass or pavement. Delicate thin gold chain necklace in brushed finish, small hoop earrings in matching gold tone, and a lightweight woven tote in natural straw to hold water bottle and notebook.\n\nThis outfit works because it honors your wish for an everyday park yoga session followed by coffee while prioritizing comfort and ease of movement. The breathable fabrics like organic cotton and linen keep you cool at 9 AM with temperatures around +20 °C, so no outer layer is needed. The neutral earthy tones flatter your complexion and hair colors, creating a harmonious look that transitions seamlessly from stretching on the grass to chatting in the cafe."}
+
+── ВІДПОВІДЬ (1226 симв., 79.6 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Loose organic cotton yoga top",
+      "details": "Rectangular cut with dropped shoulders, knee-length hem, breathable jersey knit",
+      "slot": "top",
+      "color_hex": "#8a9a8f",
+      "worn": true
+    },
+    {
+      "name": "Relaxed-fit mid-rise linen-blend trousers",
+      "details": "Tapered leg ending just above the ankle, soft drape for movement",
+      "slot": "bottom",
+      "color_hex": "#d6c4a5",
+      "worn": true
+    },
+    {
+      "name": "Minimalist leather slide sandals",
+      "details": "Open toe and thong strap with a low block heel",
+      "slot": "shoes",
+      "color_hex": "#f5f0e6",
+      "worn": true
+    },
+    {
+      "name": "Delicate thin gold chain necklace",
+      "details": "Brushed finish",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Small hoop earrings",
+      "details": "Gold tone matching the necklace",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Lightweight woven tote",
+      "details": "Natural straw material designed to hold water bottle and notebook",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

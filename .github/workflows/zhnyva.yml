@@ -1,0 +1,100 @@
+# Жнива за рецептами (виконавець.py) з серверів GitHub — запуск із телефона: Actions → «жнива» → Run workflow.
+# Журнал (сирі/*.jsonl) переноситься між запусками через гілку zhnyva-data: перед жнивами гілка стягується,
+# після — перезаписується (один коміт, без історії; jsonl у gzip). Легке (зведення_жнив.tsv) комітиться в main.
+# Контактні аркуші огляд/<домен>.jpg — у тій самій гілці: дивитись очима перед активацією рецепта.
+# Магазини з транспортом «дім» тут не беруться: python3 виконавець.py --транспорт дім на ноутбуці.
+name: жнива
+
+on:
+  workflow_dispatch:
+    inputs:
+      shops:
+        description: "усі — або домени через кому"
+        type: string
+        default: усі
+      transport:
+        description: "http,браузер (з дата-центру) — не змінювати без потреби"
+        type: string
+        default: "http,браузер"
+      ceiling:
+        description: "карток на магазин за запуск"
+        type: string
+        default: "300"
+      seconds:
+        description: "бюджет секунд на магазин"
+        type: string
+        default: "900"
+      parallel:
+        description: "магазинів одночасно (1–4)"
+        type: string
+        default: "3"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: zhnyva
+  cancel-in-progress: false
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet playwright pillow
+      - run: python3 -m playwright install --with-deps chromium
+      - name: журнал із гілки zhnyva-data (якщо є)
+        working-directory: zhnyvarka
+        run: |
+          set -e
+          mkdir -p сирі огляд
+          if git ls-remote --exit-code --heads origin zhnyva-data >/dev/null 2>&1; then
+            tmp=$(mktemp -d)
+            git clone -q --depth 1 --branch zhnyva-data "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "$tmp"
+            [ -d "$tmp/сирі" ] && cp -r "$tmp/сирі/." сирі/ || true
+            find сирі -name "*.jsonl.gz" -exec gunzip -f {} +
+            echo "журналів перенесено: $(ls сирі | grep -c jsonl || true)"
+          else
+            echo "гілки zhnyva-data ще нема — перший запуск"
+          fi
+      - name: жнива
+        working-directory: zhnyvarka
+        run: |
+          python3 виконавець.py --рецепти рецепти.tsv --магазини "${{ inputs.shops }}" --транспорт "${{ inputs.transport }}" \
+            --стеля "${{ inputs.ceiling }}" --секунд-на-магазин "${{ inputs.seconds }}" --паралельно "${{ inputs.parallel }}" \
+            2>&1 | tee жнива_лог.txt
+          echo "=== зведення_жнив.tsv ==="; cat зведення_жнив.tsv
+      - name: журнал і огляд → гілка zhnyva-data
+        if: always()
+        working-directory: zhnyvarka
+        run: |
+          set -e
+          tmp=$(mktemp -d)
+          mkdir -p "$tmp/сирі" "$tmp/огляд"
+          cp -r сирі/. "$tmp/сирі/" 2>/dev/null || true
+          cp -r огляд/. "$tmp/огляд/" 2>/dev/null || true
+          cp зведення_жнив.tsv жнива_лог.txt "$tmp/" 2>/dev/null || true
+          find "$tmp/сирі" -name "*.jsonl" -exec gzip -9f {} +
+          cd "$tmp"
+          git init -q -b zhnyva-data
+          git config user.name "zhnyva-bot"
+          git config user.email "zhnyva-bot@users.noreply.github.com"
+          git add -A
+          git commit -qm "жнива: ${{ inputs.shops }} · $(date -u +%Y-%m-%d\ %H:%M) UTC"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" HEAD:zhnyva-data
+          du -sh "$tmp"
+      - name: зведення → main
+        if: always()
+        run: |
+          set -e
+          git config user.name "zhnyva-bot"
+          git config user.email "zhnyva-bot@users.noreply.github.com"
+          git add -f zhnyvarka/зведення_жнив.tsv zhnyvarka/жнива_лог.txt 2>/dev/null || true
+          git diff --cached --quiet && { echo "нема що комітити"; exit 0; }
+          git commit -m "жнива: зведення · $(date -u +%Y-%m-%d\ %H:%M) UTC"
+          git pull --rebase origin main || true
+          git push

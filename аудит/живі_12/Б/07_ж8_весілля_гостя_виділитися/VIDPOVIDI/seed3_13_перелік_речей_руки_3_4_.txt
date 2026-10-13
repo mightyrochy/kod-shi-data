@@ -1,0 +1,36 @@
+── ПРОМПТ (2427 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk slip dress, bias cut to skim the silhouette from collarbone to mid-thigh, color #c7a07a (soft amber), fluid crepe material for effortless movement.\nStrappy stiletto sandals, open toe and ankle cage design in metallic gold, length extending to floor contact point, polished leather finish to reflect light during walking.\nDiamond-stud choker necklace, tight chain width with scattered stones, color #ffffff (pure white) for high contrast against skin tone, delicate metal construction to draw immediate attention.\nEmeral-cut sapphire drop earrings, elongated shape framing the face, color #0f52ba (deep blue) to create a bold focal point, faceted glass surface that catches every glance as she moves.\n\nThis ensemble works because it transforms a simple walk into a memorable moment through strategic contrast and texture. The amber slip dress provides a warm, organic base that feels intimate yet sophisticated, while the metallic gold shoes elongate the legs for movement. However, the true \"statement\" lies in the jewelry: the stark white necklace demands to be seen against her skin, and the deep blue earrings create an impossible-to-ignore pop of color that ensures she stands out exactly as she wishes. Every element is chosen to maximize visibility without sacrificing the comfort needed for a long evening of mingling and walking."}
+
+── ВІДПОВІДЬ (954 симв., 213.6 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk slip dress",
+      "details": "bias cut to skim the silhouette from collarbone to mid-thigh, fluid crepe material for effortless movement",
+      "slot": "dress",
+      "color_hex": "#c7a07a",
+      "worn": true
+    },
+    {
+      "name": "Strappy stiletto sandals",
+      "details": "open toe and ankle cage design, length extending to floor contact point, polished leather finish",
+      "slot": "shoes",
+      "color_hex": "#d4af37",
+      "worn": true
+    },
+    {
+      "name": "Diamond-stud choker necklace",
+      "details": "tight chain width with scattered stones, delicate metal construction",
+      "slot": "collar_necklace",
+      "color_hex": "#ffffff",
+      "worn": true
+    },
+    {
+      "name": "Emerald-cut sapphire drop earrings",
+      "details": "elongated shape framing the face, faceted glass surface",
+      "slot": "earrings",
+      "color_hex": "#0f52ba",
+      "worn": true
+    }
+  ]
+}

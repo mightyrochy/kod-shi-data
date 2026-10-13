@@ -1,0 +1,85 @@
+{
+  "schema_version": "0.1",
+  "run_id": "000001",
+  "experiment_id": "two_view_prompt_v4",
+  "evaluation_type": "manual_visual_review",
+  "overall_verdict": "strong_base_for_postproduction",
+  "evaluation_priority": [
+    "person identity",
+    "body shape and proportions",
+    "body anatomy and physically plausible garment fit",
+    "outfit structure and layering logic",
+    "garment shapes and silhouettes",
+    "footwear/accessory placement",
+    "pose preservation when required by the input",
+    "colors and fine detail"
+  ],
+  "summary": {
+    "what_worked": [
+      "Very consistent across five runs.",
+      "Identity is stable enough for a base generation.",
+      "Hair color, glasses, and general face are preserved.",
+      "Front and side views remain aligned for this diagnostic input.",
+      "Body shape, anatomy, and side silhouette are more useful than front-only output.",
+      "Top-over-skirt structure is stable.",
+      "Top hem/peplum-like shape is present and more accurate than v3.",
+      "Skirt silhouette and front slit are stable.",
+      "Wedge sandals on bare feet are stable and readable.",
+      "Earrings are stable on both views."
+    ],
+    "main_failures": [
+      "Belt is too visible and becomes a dominant waist belt instead of a barely visible glimpse.",
+      "Some fine blouse construction details are simplified.",
+      "Sandal material texture and buckle detail are simplified.",
+      "Earring surface detail is simplified.",
+      "Exact color tones are not perfect, but this is lower priority because color is more repairable than pose/body/logic."
+    ],
+    "important_conclusion": [
+      "This is a better base-generation direction than a less consistent but more color-faithful result.",
+      "The remaining failures are more suitable for postproduction than identity/body/pose failures.",
+      "Exact pose matching is less important than preserving believable anatomy, body shape, and garment fit.",
+      "The next layer should focus on local belt correction and detail/color repair, not another broad prompt rewrite."
+    ]
+  },
+  "best_candidates": [
+    {
+      "candidate": "candidate_01.png",
+      "reason": "Strong balance of identity, structure, two-view consistency, and outfit completeness."
+    },
+    {
+      "candidate": "candidate_04.png",
+      "reason": "Strong outfit shape and consistency, but belt is dominant."
+    },
+    {
+      "candidate": "candidate_05.png",
+      "reason": "Stable identity and structure; useful as another repair base."
+    }
+  ],
+  "postproduction_targets": [
+    {
+      "target": "belt visibility",
+      "repairability": "medium",
+      "notes": "Local torso/waist repair. Either hide most of belt under top hem or accept visible belt as revised outfit logic."
+    },
+    {
+      "target": "sandal material and buckle detail",
+      "repairability": "medium",
+      "notes": "Local foot/shoe region repair with reference crop."
+    },
+    {
+      "target": "earring surface detail",
+      "repairability": "medium",
+      "notes": "Local earring repair is possible but small region may be fragile."
+    },
+    {
+      "target": "color matching",
+      "repairability": "high",
+      "notes": "Mask-based color correction or low-denoise local edit should be feasible later."
+    }
+  ],
+  "recommended_next_action": {
+    "decision": "promote_v4_as_current_best_base_generation_direction",
+    "next_test": "Start postproduction planning from v4 candidate_01 or candidate_04.",
+    "first_repair_choice": "belt visibility, because it tests whether local structure/layering can be adjusted without damaging identity or body shape."
+  }
+}

@@ -1,0 +1,24 @@
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1781713138.989608   27552 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1781713139.002779   12604 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1781713139.027458   16028 landmark_projection_calculator.cc:81] Using NORM_RECT without IMAGE_DIMENSIONS is only supported for the square ROI. Provide IMAGE_DIMENSIONS or use PROJECTION_MATRIX.
+W0000 00:00:1781713139.483150    7400 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1781713139.495478    3940 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+skirt length_fraction=0.917 (on-model, hip->ankle)
+
+--- pass: skirt (Lower-body) ---
+  auto mask + pose downloaded
+  skirt hem y=1181 (measured frac 0.92; ankle=1225)
+  try-on skirt: 7.1s -> experiments\010_protect_by_construction\results\proto_chain\skirt_result.png
+
+--- pass: blouse (Upper-body) ---
+  auto mask + pose downloaded
+  try-on blouse: 7.1s -> experiments\010_protect_by_construction\results\proto_chain\blouse_result.png
+
+FINAL: experiments\010_protect_by_construction\results\proto_chain\blouse_result.png
+Intermediates in experiments\010_protect_by_construction\results\proto_chain/ (automask, ourmask, result per pass)
+
+OWNER CHECKPOINT:
+  skirt_result.png  — does the row-filled mask render a SKIRT (not pants)?
+  blouse_result.png — does the blouse layer OVER the skirt (pass order + mask overlap)?
+  + identity preserved (run identity gate via system Python on the final image).

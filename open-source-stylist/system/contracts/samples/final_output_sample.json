@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "output_id": "out_001",
+  "request_id": "req_001",
+  "final_image_path": "experiments/001_baseline/results/final_001.png",
+  "retry_count": 0,
+  "per_criterion_report": {
+    "identity": {
+      "arcface_cosine": 0.94,
+      "verdict": "pass"
+    },
+    "outfit_completeness": {
+      "verdict": "pass",
+      "missing_items": []
+    },
+    "outfit_logic": {
+      "verdict": "pass",
+      "notes": "sweater tucked in as specified"
+    },
+    "color_texture": {
+      "verdict": "pass",
+      "per_region": {
+        "top_001": { "delta_e_mean": 3.8, "verdict": "pass" },
+        "bottom_001": { "delta_e_mean": 3.1, "verdict": "pass" },
+        "shoes_001": { "delta_e_mean": 4.2, "verdict": "pass" }
+      }
+    }
+  },
+  "shell_steps_applied": ["face_restore", "background_restore", "color_match"],
+  "repairs_applied": [],
+  "owner_verdict": null
+}

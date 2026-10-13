@@ -1,0 +1,29 @@
+── ПРОМПТ (1984 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "OUTFIT_TEXT\nSilk slip dress, bias-cut, floor-length with a subtle train, electric violet (#8A2BE2), satin finish.\nStrappy open-back sandals, sculpted heel, metallic silver (#C0C0C0), polished leather.\nCrystal choker necklace and drop earrings, geometric shards, clear quartz with gold plating, glass and metal.\nWhy this outfit works: The electric violet slip dress acts as a bold canvas that immediately commands attention at an afternoon wedding ceremony. Striking the balance between fluid silk movement for your stroll and sharp metallic heels ensures you feel grounded yet otherworldly throughout the event. This monochromatic base with high-gloss textures creates a cohesive silhouette that naturally highlights your form without needing to announce it. The sparkling jewelry adds layers of light, reinforcing your goal to be unforgettable through sheer visual impact rather than complex layering."}
+
+── ВІДПОВІДЬ (581 симв., 256.0 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk slip dress",
+      "details": "bias-cut, floor-length with a subtle train",
+      "slot": "dress",
+      "color_hex": "#8A2BE2",
+      "worn": true
+    },
+    {
+      "name": "Strappy open-back sandals",
+      "details": "sculpted heel, polished leather",
+      "slot": "shoes",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "Crystal choker necklace and drop earrings",
+      "details": "geometric shards with glass and metal",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": false
+    }
+  ]
+}

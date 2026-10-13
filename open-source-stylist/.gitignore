@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Models (large binary files)
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.gguf
+*.ggml
+*.fp8
+*.q4_0
+*.q4_1
+*.q8_0
+
+# Images: never tracked here. 2026-09-18 this project moved into the PUBLIC
+# repository kod-shi-data (GitHub Pages). assets/person/ holds photos of a real
+# person and experiments/, runs/ hold hundreds of generated images of her, so
+# the old negations that tracked assets/** and experiments/** images were
+# removed and every image file was dropped from history on import
+# (git filter-repo). The full record with images stays in the original
+# repository C:\Users\Admin\Open Source Stylist (its .git, ~405 MB, commit
+# 3d51e6d) and, as ignored files, on disk in this folder. Publishing them is
+# the owner's decision; then `git add -f` the chosen paths.
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.mp4
+*.gif
+
+# ComfyUI temp
+ComfyUI/temp/
+ComfyUI/output/
+ComfyUI/input/
+*.comfy_temp
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets / local config
+.env
+*.local
+system/gates/models/
