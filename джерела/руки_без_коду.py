@@ -136,6 +136,8 @@ def її_речі(речі_паспорта):
                  як="do not take an item that goes against her refusals or her words"),
         _ЗП.Поле("case.her_words", "what she asked for in her own words", як="meet every point"),
         _ЗП.Поле("case.formality", "the level of dress she named: " + _БР.ЩАБЛІ_EN),
+        _ЗП.Поле("case.goal_zones", "the body zones she wants to draw the eye away from, with any goal",
+                 як="keep these zones quiet; the rest of the look follows goal"),
         *_ПОЛЯ_МЕЖІ_НА_СЛОТ,
         _ЗП.Поле("photo_of_her", "a photo of her is attached", як="fit the outfit to her"),
         _ЗП.Поле("person", "facts about her from her photo and measurements, without conclusions: colors "
@@ -187,8 +189,8 @@ def проза_руки(текст):
 
 
 # Поля випадку пакета, яких рядок рук 3–4 не ніс (`паспорт_нагоди.паспорт_рядком`): нота мовної моделі,
-# чужий колір події, зони мети, «невідомо»; губи — лише «колір губ названо», без hex
-_НЕ_В_РЯДКУ = ("language_model_note", "reserved_colour", "goal_zones", "unknown", "intent", "intent_source")
+# чужий колір події, «невідомо»; губи — лише «колір губ названо», без hex
+_НЕ_В_РЯДКУ = ("language_model_note", "reserved_colour", "unknown", "intent", "intent_source")
 
 # Погода й пора року її дня в `день_кодами` (протокол.ДЕНЬ): рукам 1–2 вони їдуть у `day`, рукам 3–4 — у `case`
 _ПОГОДА_ДНЯ = ("season", "temperature_c", "weather_feel", "precipitation", "wind_ms", "wind", "direct_sun", "road_salt")
@@ -215,6 +217,9 @@ def випадок_кодами(паспорт, рядок, сценарій=Non
     злитий із паспортом) — як `day` рук 1–2 (`міст_пакет`). Доти тут стояв сирий сценарій показу, і вшиті +18 °C
     форми, яких вона не казала, їхали в `case` погодою (тест власника 14.10, файл 1551: `temperature_c: 18`
     на жовтневий вечір із дощем); тепер їх нема, а `season` — пора року з дати — є.
+    ЗОНИ МЕТИ (рядок 5316). `goal_zones` — вхідний факт усіх рук, як пора року: рукам 1–2 він ішов у `case`
+    пакета, а тут його вирізав `_НЕ_В_РЯДКУ`, тож «сховати живіт» руки 3–4 не бачили (пояс і шпильки на Г4,
+    тоді як `goal_extra` і `movement` бачили). Тепер зона стоїть у `case` і в переліку входів промпта; логіка рук та сама.
     Паспорта нема (стенд, CLI) — None: тоді `case` лишається рядком входу, як доти."""
     if not isinstance(паспорт, dict) or not паспорт:
         return None
