@@ -1,0 +1,72 @@
+{
+  "sha": "e20db6ad71069116b3a9e189c85c394efbccaa67",
+  "stages": {
+    "01-каталоги": {
+      "rc": 0,
+      "seconds": 13.27,
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-c",
+        "import чистка_каталогу as ч,feed as Ф;print('фід:',ч.забезпечити_чистим('каталог_повний.xml'));print('фікстура:',Ф.каталог_на_диску('каталог_brief.xml'))"
+      ],
+      "log": "01-каталоги.log"
+    },
+    "02-дим": {
+      "rc": 0,
+      "seconds": 2.72,
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "стенд_знімок.py",
+        "--дим"
+      ],
+      "log": "02-дим.log"
+    },
+    "03-живий-шлях": {
+      "rc": 0,
+      "seconds": 83.51,
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "тест_живого_шляху.py"
+      ],
+      "log": "03-живий-шлях.log"
+    },
+    "04-протокол": {
+      "rc": 0,
+      "seconds": 4.32,
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "тест_протоколу.py"
+      ],
+      "log": "04-протокол.log"
+    },
+    "05-гейти": {
+      "rc": 0,
+      "seconds": 408.96,
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "прилади/розділи_гейтів.py"
+      ],
+      "log": "05-гейти.log"
+    },
+    "06-контракти": {
+      "rc": 0,
+      "seconds": 14.29,
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "audit_contracts.py"
+      ],
+      "log": "06-контракти.log"
+    },
+    "07-показ": {
+      "rc": 0,
+      "seconds": 59.79,
+      "command": [
+        "node",
+        "тест_показу.js"
+      ],
+      "log": "07-показ.log"
+    }
+  },
+  "started": "2026-10-15T15:54:04.213656+00:00",
+  "finished": "2026-10-15T16:03:51.071939+00:00"
+}
