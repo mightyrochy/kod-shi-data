@@ -577,7 +577,9 @@ def _чому_без_входу(вхід, Р, бракує, вікна=False):
     if вікна and вхід in _ПОЛЕ_РЕЧІ_ПРИ_ВІКНАХ:
         рід, поле = "річ", _ПОЛЕ_РЕЧІ_ПРИ_ВІКНАХ[вхід]
     if рід == "річ":
-        з_фото = any(str(e.get("річ") or e.get("id") or "").startswith(_ПРЕФІКС_РІЧ_З_ФОТО) for e in Р)
+        # джерело — за речами, у яких поля бракує (змішаний образ: площа є у фото-речі, нема в каталожній)
+        без = [e for e in Р if not (колір_виміряний(e) if поле == "lab" else e.get(поле) not in (None, ""))] or list(Р)
+        з_фото = any(str(e.get("річ") or e.get("id") or "").startswith(_ПРЕФІКС_РІЧ_З_ФОТО) for e in без)
         return ("photo_field_missing:" if з_фото else "catalogue_field_missing:") + поле
     return ("not_given:" if рід == "дала" else "system:") + поле
 
