@@ -1881,11 +1881,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "accessory_spends_chroma_budget": "a loud accessory is not a trimming: its chroma spends from the accent "
                                       "budget even though there is no area behind it (values: slot — slot "
                                       "code, chroma — the accessory's chroma, loud_from — the chroma from "
-                                      "which a colour counts as loud)",
+                                      "which a colour counts as loud, echo_strength — min/max strength of the same-hue window)",
     # ГГ-1 (рядки 1121, 1290): опора, не зауваження — відлуння акценту гучним аксесуаром (K-COMP-05)
     "accessory_echoes_accent": "a loud accessory in the tone of a loud item of the outfit is the second point of "
                                "the same accent, not a second accent (values: slot — the accessory's slot code, "
-                               "accent_slot — slot code of the item it echoes)",
+                               "accent_slot — slot code of the item it echoes, echo_strength — min/max strength of "
+                               "the same-hue window; support has no penalty weight)",
     "bag_format_at_scale_edge": "the bag's format is at the edge of the scale, not its middle: both an "
                                 "oversized and a demonstratively small one upset the proportion alike "
                                 "(values: format — large or small)",
