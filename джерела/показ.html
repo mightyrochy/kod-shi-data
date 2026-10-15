@@ -8784,9 +8784,9 @@ async function малюватиДрап(){
   if (портрет){
     const пк = ел('div');
     пк.innerHTML = '<div class="фото-назва" style="margin-top:14px">Підведи обличчя в кружок</div>'
-      + '<div class="кадр"><span>Масштаб</span><input type="range" id="кд-м" min="100" max="320" value="' + КАДР.масштаб + '"></div>'
-      + '<div class="кадр"><span>Ліво-право</span><input type="range" id="кд-x" min="0" max="100" value="' + КАДР.x + '"></div>'
-      + '<div class="кадр"><span>Вгору-вниз</span><input type="range" id="кд-y" min="0" max="100" value="' + КАДР.y + '"></div>';
+      + '<div class="кадр"><span id="кд-м-підпис">Масштаб</span><input type="range" id="кд-м" aria-labelledby="кд-м-підпис" min="100" max="320" value="' + КАДР.масштаб + '"></div>'
+      + '<div class="кадр"><span id="кд-x-підпис">Ліво-право</span><input type="range" id="кд-x" aria-labelledby="кд-x-підпис" min="0" max="100" value="' + КАДР.x + '"></div>'
+      + '<div class="кадр"><span id="кд-y-підпис">Вгору-вниз</span><input type="range" id="кд-y" aria-labelledby="кд-y-підпис" min="0" max="100" value="' + КАДР.y + '"></div>';
     тіло.appendChild(пк);
   }
 
