@@ -308,6 +308,42 @@ const пнг = байтів => {
   тест("x-images-dropped=1 і заголовок відкритий сторінці", в.headers.get("x-images-dropped") === "1"
        && /x-images-dropped/.test(в.headers.get("Access-Control-Expose-Headers")), в.headers.get("x-images-dropped"));
 
+  /* Рядок 5634: справжній декодований WebP 24×24 без MIME-заголовка.
+     Anthropic завантажує URL сам: тут перевіряємо передачу URL і відмови,
+     не приписуємо локальній заглушці перевірку байтів самим провайдером. */
+  {
+    const вебп = Buffer.from("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", "base64");
+    const адреса = "https://img.example/no-content-type.webp";
+    const старий = globalThis.fetch;
+    let байти = вебп;
+    globalThis.fetch = async (url, opts) => String(url) === адреса
+      ? (фотоЗапити.push(адреса), new Response(байти, {status:200})) : старий(url, opts);
+    for (const картинка of [true, false]) {
+      байти = картинка ? вебп : new TextEncoder().encode("<html>не фото</html>".repeat(100));
+      вихідні.length = 0; фотоЗапити.length = 0;
+      відповідач = () => new Response(JSON.stringify({candidates:[{content:{parts:[{text:"є"}]}, finishReason:"STOP"}]}), {status:200});
+      в = await зап({model:"gemini-flash-latest", messages:[{role:"user", content:[
+        {type:"image", source:{type:"url", url:адреса}}]}]});
+      const кадр = вихідні[0].body.contents[0].parts[0];
+      тест("Gemini: 200 без content-type — " + (картинка ? "WebP доходить без втрат" : "не-картинка випадає"),
+        в.status === 200 && фотоЗапити.length === 1 && в.headers.get("x-images-dropped") === (картинка ? "0" : "1")
+        && (картинка ? кадр.inline_data?.mime_type === "image/webp" && кадр.inline_data.data === вебп.toString("base64")
+                     : !кадр.inline_data && /not delivered/.test(кадр.text)), кадр);
+      вихідні.length = 0; фотоЗапити.length = 0;
+      відповідач = () => картинка
+        ? new Response(JSON.stringify({content:[{type:"text",text:"є"}], usage:{}}), {status:200})
+        : new Response(JSON.stringify({error:{type:"invalid_request_error",message:"непідтримуване фото"}}), {status:400});
+      в = await зап({model:"claude-sonnet-5", messages:[{role:"user", content:[
+        {type:"image", source:{type:"url", url:адреса}}]}]});
+      const джерело = вихідні[0].body.messages[0].content[0].source;
+      тест("Anthropic: URL без локального MIME-фільтра — " + (картинка ? "успіх провайдера" : "відмова провайдера видима"),
+        фотоЗапити.length === 0 && джерело.type === "url" && джерело.url === адреса
+        && в.headers.get("x-images-dropped") === "0" && в.status === (картинка ? 200 : 400)
+        && (картинка || /непідтримуване фото/.test(await в.text())), [джерело, в.status]);
+    }
+    globalThis.fetch = старий;
+  }
+
   console.log("4б-2. ФОТО ТЯГНУТЬСЯ ПАРАЛЕЛЬНО Й ІЗ СПІЛЬНОЮ СТЕЛЕЮ ВАГИ");
   {
     вихідні.length = 0; фотоЗапити.length = 0;
