@@ -12,8 +12,8 @@ const srv = http.createServer((q, r) => { const u = new URL(q.url, 'http://x').p
   const html = fs.readFileSync(path.join(dir, page), 'utf8');
   const own = (html.match(/const ЗБІРКА_ПОКАЗУ = "([^"]*)"/) || [])[1];
   const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium'}); const out = {}; const w = f => fs.writeFileSync(path.join(dir, 'build.txt'), f);
-  async function відкрити(){
-    const p = await b.newPage({viewport:{width:390,height:844}}); p.errs = [];
+  async function відкрити(ш = 390, в = 844){
+    const p = await b.newPage({viewport:{width:ш,height:в}}); p.errs = [];
     p.on('pageerror', e => p.errs.push(String(e)));
     await p.route(/^https?:\/\/(?!127\.)/, r => r.abort());
     await p.goto(base + page + '#пакет123'); await p.waitForTimeout(2500); return p;
@@ -35,6 +35,10 @@ const srv = http.createServer((q, r) => { const u = new URL(q.url, 'http://x').p
   await p.close();
   fs.unlinkSync(path.join(dir, 'build.txt'));
   p = await відкрити(); await візит(p); out.в_смужка = await видно(p); out.в_помилок = p.errs.length;
+  w(нова); p = await відкрити(1280, 800); await візит(p);
+  out.г_широко = await p.evaluate(() => { const r = id => document.getElementById(id).getBoundingClientRect();
+    const к = document.querySelector('body>.колонка').getBoundingClientRect(); const з = r('нова-версія');
+    return {верх: Math.round(з.top), над_колонкою: з.width >= к.width + 232 && з.bottom <= к.top + 1}; });
   console.log(JSON.stringify(out)); await b.close(); srv.close();
 })();
 """
