@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Приклад фіда крамниці-партнера Люстерка (специфікація — каталог_партнерів_2026-10-15.md).
-     Сумісний з YML Prom.ua / Rozetka: offer = один розмір одного кольору; group_id — модель;
-     колір усередині моделі — окремий варіант зі своїми фото. Крамниця й речі вигадані. -->
+<!-- Р2 — Р1 плюс розширені поля (каталог_партнерів_2026-10-15.md §3, Р2): ролі фото, візерунок, форма (силует, довжина,
+     довжина виробу в см, рукав, виріз; для взуття — каблук), сезон, опис без службового тексту, бренд, дата зміни; на
+     фото «на моделі» — зріст моделі й розмір на ній. Ціна, розмір і обміри — є, Люстерко поки не використовує (⏸, рядки
+     45 і 84). Крамниця й речі вигадані. -->
 <yml_catalog date="2026-10-15 06:00">
   <shop>
     <name>Приклад</name>
@@ -33,13 +34,14 @@
         <param name="Колір hex">#D9B8AA</param>
         <param name="Склад">55% льон; 45% віскоза</param>
         <param name="Візерунок">однотонний</param>
+        <param name="Тип">сукня-сорочка</param>
         <param name="Силует">прямий</param>
         <param name="Довжина">міді</param>
         <param name="Довжина виробу" unit="см">112</param>
         <param name="Рукав">довгий</param>
         <param name="Виріз">комір-стійка</param>
         <param name="Застібка">ґудзики</param>
-        <param name="Підкладка">ні</param>
+        <param name="Деталі">пояс у тон; перламутрові ґудзики</param>
         <param name="Сезон">весна-літо</param>
         <param name="Догляд">ручне прання 30°; не відбілювати; прасувати з вологою</param>
         <param name="Зріст моделі" unit="см">172</param>
@@ -61,13 +63,20 @@
         <picture>https://pryklad.example.ua/img/5001-pud-back.jpg</picture>
         <picture>https://pryklad.example.ua/img/5001-pud-detail.jpg</picture>
         <picture>https://pryklad.example.ua/img/5001-pud-model.jpg</picture>
+        <description>Сукня-сорочка прямого крою з поясом, ґудзики по всій довжині.</description>
         <param name="Ролі фото">спереду; ззаду; деталь; на моделі</param>
         <param name="Колір">пудровий</param>
         <param name="Склад">55% льон; 45% віскоза</param>
+        <param name="Візерунок">однотонний</param>
+        <param name="Силует">прямий</param>
+        <param name="Довжина">міді</param>
+        <param name="Сезон">весна-літо</param>
+        <param name="Зріст моделі" unit="см">172</param>
+        <param name="Розмір на моделі">S</param>
         <param name="Розмір">M</param>
         <param name="Оновлено">2026-10-14</param>
       </offer>
-      <!-- Та сама модель 5001 в іншому кольорі — окремий варіант зі своїми фото -->
+      <!-- Та сама модель 5001 в іншому кольорі — окремий варіант зі своїми фото; фото «викладка» — без моделі -->
       <offer id="5001-oliv-M" group_id="5001" available="true">
         <url>https://pryklad.example.ua/p/5001?color=oliv</url>
         <price>2400</price>
@@ -79,22 +88,41 @@
         <picture>https://pryklad.example.ua/img/5001-oliv-front.jpg</picture>
         <picture>https://pryklad.example.ua/img/5001-oliv-back.jpg</picture>
         <picture>https://pryklad.example.ua/img/5001-oliv-flat.jpg</picture>
+        <description>Сукня-сорочка прямого крою з поясом, ґудзики по всій довжині.</description>
         <param name="Ролі фото">спереду; ззаду; викладка</param>
         <param name="Колір">оливковий</param>
         <param name="Склад">55% льон; 45% віскоза</param>
         <param name="Візерунок">однотонний</param>
+        <param name="Силует">прямий</param>
+        <param name="Довжина">міді</param>
+        <param name="Сезон">весна-літо</param>
         <param name="Розмір">M</param>
         <param name="Оновлено">2026-10-14</param>
       </offer>
-      <!-- Жакет без моделі й без складу: валідатор має назвати, чого бракує -->
+      <!-- Жакет у ялинку: принт — Візерунок і Колір додатковий -->
       <offer id="7310-M" group_id="7310" available="true">
         <url>https://pryklad.example.ua/p/7310</url>
         <price>3900</price>
         <currencyId>UAH</currencyId>
         <categoryId>20</categoryId>
-        <name>Жакет в ялинку</name>
+        <name>Жакет у ялинку</name>
+        <vendor>Приклад</vendor>
         <picture>https://pryklad.example.ua/img/7310-front.jpg</picture>
+        <picture>https://pryklad.example.ua/img/7310-detail.jpg</picture>
+        <description>Жакет прямого крою з вовняної суміші, на підкладці, дві кишені з клапанами.</description>
+        <param name="Ролі фото">спереду; деталь</param>
+        <param name="Колір">сірий</param>
+        <param name="Колір додатковий">молочний</param>
+        <param name="Склад">60% вовна; 40% поліестер</param>
+        <param name="Склад підкладки">100% віскоза</param>
+        <param name="Візерунок">ялинка</param>
+        <param name="Силует">прямий</param>
+        <param name="Довжина">до стегна</param>
+        <param name="Довжина виробу" unit="см">68</param>
+        <param name="Бортність">однобортний</param>
+        <param name="Сезон">демісезон</param>
         <param name="Розмір">M</param>
+        <param name="Оновлено">2026-10-12</param>
       </offer>
     </offers>
   </shop>

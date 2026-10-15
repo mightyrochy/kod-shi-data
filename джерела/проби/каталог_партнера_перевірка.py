@@ -1,39 +1,46 @@
 # -*- coding: utf-8 -*-
-"""Читає фід крамниці-партнера (YML, можна .gz) і друкує, яких обов'язкових полів бракує.
-
-Чому так: поля — ключі специфікації `аудит/дослідження_research/каталог_партнерів_2026-10-15.md`, не слова речі;
-значень проба не читає, лише є поле чи нема (п.12). Запуск: `python3 проби/каталог_партнера_перевірка.py [фід]`."""
-import sys, gzip, pathlib, collections
+"""Читає фід крамниці-партнера (YML Prom/Rozetka чи Google Merchant, можна .gz) і друкує рівень Р0–Р3 й чого бракує.
+Чому так: ключі рівнів — `аудит/дослідження_research/каталог_партнерів_рівні.json`, спільні зі специфікацією; проба
+бачить лише, чи поле є (п.12), а зі значень — код договору «на моделі» й роздільники кольору. Без аргументу — приклади."""
+import sys, gzip, json, pathlib, collections
 from xml.etree import ElementTree as ET
-
-_ПРИКЛАД = pathlib.Path(__file__).resolve().parents[2] / "аудит/дослідження_research/каталог_партнерів_приклад.xml"
-_АТРИБУТИ = ("id", "available", "group_id")
-_ТЕГИ = (("url",), ("name", "name_ua"), ("categoryId",), ("picture",), ("price",))   # кортеж — рівноцінні імена
-_ПАРАМИ = (("Колір",), ("Склад", "Матеріал"))
-_БАЖАНІ = ("Ролі фото", "Візерунок", "Силует", "Довжина", "Зріст моделі", "Розмір на моделі", "Сезон", "Догляд")
-
-def параметри(офер):
-    """Повертає {name: текст} непорожніх `param`; текст і з вкладених `<value lang>` Rozetka, і після `<br/>`."""
-    return {п.get("name"): т for п in офер.findall("param") if (т := "".join(п.itertext()).strip())}
-
-def бракує(офер, розмірна):
-    """Повертає (обов'язкові, бажані) назви полів, яких нема; `Розмір` — лише коли колір моделі має кілька оферів."""
-    п = параметри(офер)
-    нема = [а for а in _АТРИБУТИ if not офер.get(а)]
-    нема += ["/".join(т) for т in _ТЕГИ if not any((офер.findtext(і) or "").strip() for і in т)]
-    нема += ["/".join(і) for і in _ПАРАМИ + ((("Розмір",),) if розмірна else ()) if not п.keys() & set(і)]
-    return нема, [б for б in _БАЖАНІ if б not in п]
-
+_ТЕКА = pathlib.Path(__file__).resolve().parents[2] / "аудит/дослідження_research"
+_К = json.loads((_ТЕКА / "каталог_партнерів_рівні.json").read_text(encoding="utf-8"))
+_G, _Т, _Р = "{http://base.google.com/ns/1.0}", lambda е: "".join(е.itertext()).strip(), lambda р: "Р%d" % р if р >= 0 else "нижче Р0"
+_ВАР = lambda п: (п.get("модель"), п.get("Колір"))                     # варіант: модель + колір
+def поля(о):
+    """Офер YML чи item Google → ({ключ специфікації: текст, фото: кількість}, [адреси фото])."""
+    д, г = _К["google" if о.tag == "item" else "yml"], о.tag == "item"
+    п = {д.get(к.replace(_G, ""), к.replace(_G, "") if г else None): в for к, в in [*о.attrib.items(), *((е.tag, _Т(е)) for е in о)]
+         if в}
+    п |= {е.get("name"): _Т(е) for е in о.findall("param")} | {
+        е.findtext(_G + "attribute_name"): е.findtext(_G + "attribute_value") for е in о.iter(_G + "product_detail")}
+    фото = [_Т(е) for е in о if е.tag in ("picture", _G + "image_link", _G + "additional_image_link")]
+    return dict(п, фото=len(фото)), фото
+def рівень(п, фото, кратний, спільні):
+    """Повертає (досягнутий рівень 0–3, -1 — нижче Р0; чого бракує до наступного). Р1 має ще три правила формату."""
+    for н, р in enumerate(_К["рівні"]):
+        нема = [" | ".join(г) for г in р["поля"] if not any(п.get(к) for к in г)]
+        нема += [к for к, роль in р.get("коли", {}).items() if роль in п.get("Ролі фото", "") and not п.get(к)]
+        нема += [] if н != 1 else ["Розмір"] * bool(кратний and not п.get("Розмір")) + ["один колір на офер"] * any(
+            з in п.get("Колір", "") for з in ",;|/") + ["свої фото варіанта"] * any(спільні[ф] > 1 for ф in фото)
+        if нема:
+            return н - 1, нема
+    return 3, []
+def звіт(шлях):
+    """Друкує рівень фіда (найвищий, якого досягли ≥ «поріг» оферів), розподіл оферів і чого бракує до наступного."""
+    к = ET.parse(gzip.open(шлях) if шлях.suffix == ".gz" else шлях).getroot()
+    оф = [(о.get("id") or о.findtext(_G + "id"), *поля(о)) for о in [*к.iter("offer"), *к.iter("item")]]
+    групи, посил = collections.Counter(_ВАР(п) for _, п, _ in оф), {_Т(е) for е in к.iter("offerRef")}   # offerRef — образ Р3
+    спільні = collections.Counter(ф for ф, _ in {(ф, _ВАР(п)) for _, п, фф in оф for ф in фф})       # варіантів на фото
+    образи = {_ВАР(п) for і, п, _ in оф if і in посил}
+    підс = [(і, *рівень(dict(п, образ=_ВАР(п) in образи), фф, п.get("модель") and групи[_ВАР(п)] > 1, спільні)) for і, п, фф in оф]
+    ч = collections.Counter(р for _, р, _ in підс)
+    фід = max(р for р in range(-1, 4) if sum(ч[x] for x in range(р, 4)) >= _К["поріг"] * len(підс))
+    print("%s: рівень фіда %s · оферів %d (%s)" % (шлях.name, _Р(фід), len(підс), " · ".join("%s %d" % (_Р(р), ч[р]) for р in range(3, -2, -1))))
+    [print("  offer %s: %s%s" % (ід, _Р(р), ", до %s бракує: %s" % (_Р(р + 1), ", ".join(нема)) if нема else ""))
+     for ід, р, нема in (підс if len(підс) <= 50 else [])]
+    бракує = collections.Counter(х for _, р, н in підс if р == фід for х in н).most_common(12)
+    print("  до %s бракує (оферів): %s" % (_Р(фід + 1), dict(бракує)) if фід < 3 else "  вищий рівень")
 if __name__ == "__main__":
-    шлях = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else _ПРИКЛАД
-    офери = list(ET.parse(gzip.open(шлях) if шлях.suffix == ".gz" else шлях).getroot().iter("offer"))
-    варіант = lambda о: (о.get("group_id"), параметри(о).get("Колір"))
-    групи = collections.Counter(map(варіант, офери))
-    підсумки = [(о.get("id"), *бракує(о, bool(о.get("group_id")) and групи[варіант(о)] > 1)) for о in офери]
-    for ід, н, _ in підсумки:
-        if н and len(підсумки) <= 50:
-            print("offer %s: бракує %s" % (ід, ", ".join(н)))
-    обов = collections.Counter(х for _, н, _ in підсумки for х in н)
-    print("оферів %d · без обов'язкових полів %d" % (len(підсумки), sum(bool(н) for _, н, _ in підсумки)))
-    print("обов'язкові (бракує): %s" % (dict(обов.most_common()) or "усі є"))
-    print("бажані (бракує): %s" % dict(collections.Counter(х for *_, б in підсумки for х in б).most_common()))
+    [звіт(ш) for ш in [*map(pathlib.Path, sys.argv[1:])] or sorted(_ТЕКА.glob("каталог_партнерів_р*.xml"))]
