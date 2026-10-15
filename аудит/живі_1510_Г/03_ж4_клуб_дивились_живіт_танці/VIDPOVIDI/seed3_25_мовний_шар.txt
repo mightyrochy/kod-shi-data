@@ -1,0 +1,59 @@
+── ПРОМПТ (6662 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Чорне ворсове пальто на запах вільного крою · colour code: black · about it: text н=1
+2 — Чорно-біла сукня приталеного крою · colour code: black · about it: text н=2
+3 — Сумка жіноча, ATTICO, шкіра, колір темно-коричневий · colour code: brown · about it: text н=3
+4 — Черевики жіночі, ATTICO, замша, колір чорний · colour code: black · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "The outer layer is a belted coat in black, crafted from soft brushed fabric that drapes elegantly. It features an oversized shawl collar and deep pockets, with the belt tied to define the silhouette while maintaining a relaxed feel."},
+{"н": 2, "текст": "This structured dress is entirely black and cut for a tailored fit. Its clean lines and classic shape offer a sophisticated base that works well under the coat, keeping you sleek through the evening."},
+{"н": 3, "текст": "The bag is a dark brown leather piece with a flap front, secured by a distinctive silver clasp and featuring adjustable straps for versatile wear."},
+{"н": 4, "текст": "These ankle boots are made of black suede with lace-up detailing and a low block heel. They offer sturdy support and a subtle 'W' logo detail on the toe cap, blending comfort with a touch of design."},
+{"н": 5, "текст": "You’re wearing a belted coat in black over a tailored dress that’s also black—both pieces are dark but textured differently, so they read as layered rather than flat. The coat’s soft brushed finish feels welcoming for autumn air, and its loose shape gives room to dance without feeling heavy. A brown leather bag with silver hardware brings warmth and a bit of contrast at the hip, while black suede boots ground the look with quiet polish. This outfit draws attention upward by leaving the middle relaxed and lets your eyes move up from your shoes all the way to your face. It works as an evening wear choice that balances ease with confidence for a club or celebratory dinner."},
+{"н": 6, "текст": "Tie the coat’s belt at the natural waist to define the torso without clinging, and let the dress fall freely underneath—this keeps the midsection airy while keeping your hips and shoulders aligned vertically."},
+{"н": 7, "текст": "Carry the dark brown bag on the shoulder with one strap lengthened so it rests lightly across the hip; that position anchors the outfit and gives you hands free for a dance or a toast."}
+]
+
+── ВІДПОВІДЬ (2109 симв., 33.9 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "текст": "Зовнішній шар — це чорне пальто на запах, пошите з м’якої ворсової тканини, яка елегантно драпірується. Воно має великий шалевий комір і глибокі кишені, а пояс зав’язаний так, щоб підкреслити силует, зберігаючи при цьому розслаблений вигляд."
+  },
+  "2": {
+    "текст": "Ця сукня чорного кольору має чіткий крій. Її чисті лінії та класична форма створюють елегантну основу, яка добре поєднується з пальтом і дозволяє тобі залишатися вишуканою протягом вечора."
+  },
+  "3": {
+    "текст": "Сумка — це темно-коричнева шкіряна модель із клапаном спереду та характерним срібним застібанням. Вона має регульовані ремені для універсального носіння."
+  },
+  "4": {
+    "текст": "Ці ботильйони чорного кольору виготовлені з замші, мають шнурівку та невисокий стійкий каблук. Вони забезпечують надійну підтримку і непомітний логотип «W» у вигляді деталі на миску, поєднуючи комфорт із ноткою дизайну."
+  },
+  "5": {
+    "текст": "Ти одягла чорне пальто з поясом поверх приталеної сукні такого ж кольору — обидва вироби темного відтінку, але мають різну текстуру, тому вони сприймаються як багатошарові, а не плоскі. М’який ворс на пальта створює відчуття затишку для осіннього повітря, а його вільний крій дає змогу танцювати без відчуття тяжкості. Коричнева шкіряна сумка зі срібним обладнанням додає тепла та трохи контрасту біля стегна, тоді як чорні замшеві ботильйони завершують образ стриманою елегантністю. Цей наряд привертає увагу вгору, залишаючи середину розслабленою і дозволяючи очам рухатися від черевиків до обличчя. Це чудовий вибір для вечірнього заходу, який поєднує легкість із упевненістю — наприклад, клуб чи святкова вечеря."
+  },
+  "6": {
+    "текст": "Зав’яжи пояс пальта на талії, щоб підкреслити торс без облягання, і дозволь сукні вільно спадати знизу. Це залишає середню частину тіла повітряною, водночас зберігаючи вертикальне вирівнювання стегон і плечей."
+  },
+  "7": {
+    "текст": "Носи коричневу сумку на одному ремені через плече так, щоб вона злегка лежала біля стегна. Така позиція фіксує образ і залишає вільні руки для танців чи тосту."
+  }
+}
+```

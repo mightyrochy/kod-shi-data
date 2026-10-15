@@ -1,0 +1,29 @@
+── ПРОМПТ (1974 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk satin slip dress, bias cut, midi length, deep emerald green (#043927), lustrous woven fabric.\nStiletto sandals, almond pointed toe, ankle height, metallic gold (#D4AF37), polished leather.\nStatement choker necklace, rigid structure, collarbone length, antique bronze (#8C7658), oxidized metal with chain link detail.\n\nThis electric emerald gown catches the club lights as you move, ensuring every glance lands on your silhouette while the sleek satin provides effortless comfort for hours of dancing. The metallic gold heels elevate your posture and complement the warm autumnal tones without feeling heavy under a crowded dance floor. Bold jewelry acts as a final spotlight to draw immediate attention, perfectly balancing the desire to be seen with the need to stay agile on the rhythm."}
+
+── ВІДПОВІДЬ (630 симв., 68.1 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk satin slip dress",
+      "details": "Bias cut, midi length, lustrous woven fabric",
+      "slot": "dress",
+      "color_hex": "#043927",
+      "worn": true
+    },
+    {
+      "name": "Stiletto sandals",
+      "details": "Almond pointed toe, ankle height, polished leather",
+      "slot": "shoes",
+      "color_hex": "#D4AF37",
+      "worn": true
+    },
+    {
+      "name": "Statement choker necklace",
+      "details": "Rigid structure, collarbone length, oxidized metal with chain link detail",
+      "slot": "collar_necklace",
+      "color_hex": "#8C7658",
+      "worn": true
+    }
+  ]
+}

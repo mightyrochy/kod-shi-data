@@ -1,0 +1,43 @@
+── ПРОМПТ (2062 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black silk slip dress, bias cut, knee length, #000000 for the fabric\nSilver sequin wrap coat, tailored drape cut, hip length, metallic silver gradient, velvet blend\nNude satin point-toe heels, sleek silhouette, ankle length, #F5D0B0, smooth satin\nChunky silver chain belt, rigid structure, waist length, oxidized silver metal\nPearl drop earrings, teardrop cut, earlobe length, #FFFFFF with iridescent nacre, glass and freshwater pearl\n\nThis outfit works because the deep black slip dress acts as a neutral canvas that lets the shimmering silver coat command immediate attention in a club setting. The tailored velvet wrap adds structure and luxury while the nude heels elongate the silhouette without restricting movement during dancing. Ultimately, the bold combination of reflective metallics against matte skin tones ensures she becomes the undeniable focal point of the room."}
+
+── ВІДПОВІДЬ (949 симв., 78.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "black silk slip dress",
+      "details": "bias cut, knee length",
+      "slot": "dress",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "silver sequin wrap coat",
+      "details": "tailored drape cut, hip length, metallic silver gradient",
+      "slot": "outerwear",
+      "color_hex": "",
+      "worn": true
+    },
+    {
+      "name": "nude satin point-toe heels",
+      "details": "sleek silhouette, ankle length",
+      "slot": "shoes",
+      "color_hex": "#F5D0B0",
+      "worn": true
+    },
+    {
+      "name": "chunky silver chain belt",
+      "details": "rigid structure, waist length, oxidized silver metal",
+      "slot": "belt",
+      "color_hex": "",
+      "worn": true
+    },
+    {
+      "name": "pearl drop earrings",
+      "details": "teardrop cut, earlobe length, iridescent nacre",
+      "slot": "earrings",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    }
+  ]
+}
