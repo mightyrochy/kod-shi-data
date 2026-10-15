@@ -32,8 +32,8 @@ with КФ.ThreadPoolExecutor(len(вибірка)) as пул: мапи = {м: (ш
 нема = {о['id']: шлях(о['url']) not in мапи[м][0] for м, л in вибірка.items() if мапи[м][0] for о in л}
 print('крамниць %d · з мапою %d (з <lastmod> %d) · файлів мап %d · речей вибірки в крамницях з мапою %d, нема в мапі %d' % (len(мапи), sum(bool(ш) for ш, _, _ in мапи.values()), sum(bool(ш) and л for ш, л, _ in мапи.values()), sum(ф for _, _, ф in мапи.values()), len(нема), sum(нема.values())) + ' · без мапи: %s' % [м for м, (ш, _, _) in мапи.items() if not ш])
 if os.path.exists('/tmp/жниварка_зникли.json'):
-    прич = json.load(open('/tmp/жниварка_зникли.json', encoding='utf-8')); ЗНИКЛА = {'HTTP 404', 'HTTP 410', 'порожня сторінка', 'переадресація без товару', 'сторінка без товару'}
-    кл = lambda п: 'зникла' if п in ЗНИКЛА else 'розпродана' if п == 'OutOfStock' else 'невідомо' if п.startswith(('HTTP', 'JS')) else 'жива'  # noqa: E731
+    прич = C.defaultdict(lambda: 'невідомо', json.load(open('/tmp/жниварка_зникли.json', encoding='utf-8'))); ЗНИКЛА = {'HTTP 404', 'HTTP 410', 'порожня сторінка', 'переадресація без товару', 'сторінка без товару'}
+    кл = lambda п: 'зникла' if п in ЗНИКЛА else 'розпродана' if п == 'OutOfStock' else 'невідомо' if п.startswith(('HTTP', 'JS', 'невідомо')) else 'жива'  # noqa: E731
     таб = C.Counter((кл(прич[і]), н) for і, н in нема.items() if і in прич)
     print('сторінка → нема в мапі: ' + ' · '.join('%s %d/%d' % (с, таб[(с, True)], таб[(с, True)] + таб[(с, False)]) for с in ('зникла', 'розпродана', 'жива', 'невідомо')))
     print('JS-перевірка — нема в мапі: %s' % {м.split('.')[0]: '%d/%d' % (sum(нема[о['id']] for о in л), len(л)) for м, л in вибірка.items() if any(прич.get(о['id']) == 'JS-перевірка' for о in л) and мапи[м][0]})

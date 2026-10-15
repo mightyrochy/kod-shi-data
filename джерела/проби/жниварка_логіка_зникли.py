@@ -21,9 +21,9 @@ def крамниця(м):
     сирі = [(о,) + взяти(о['url']) for о in вибірка[м]]; розмічує = sum(код == 200 and bool(ТОВАР.search(т)) for _, код, _, т in сирі) >= 3
     def причина(о, код, кін, т):
         if код != 200 or len(т) < 3000: return 'HTTP %s' % код if код != 200 else 'JS-перевірка' if '<script' in т else 'порожня сторінка'
-        переадр, д = шлях(кін) != шлях(о['url']), {x.lower().replace(' ', '') for x in ДОСТ.findall(т)}
+        переадр, д = шлях(кін) != шлях(о['url']), {x.lower().replace(' ', '') for x in ДОСТ.findall(т)}; наяв = 'InStock' if д & {'instock', 'limitedavailability', 'preorder', 'presale', 'backorder'} else 'OutOfStock' if д & {'outofstock', 'soldout', 'discontinued', 'oos'} else 'товар без наявності'
         if not ТОВАР.search(т): return 'переадресація без товару' if переадр else 'сторінка без товару' if розмічує else 'без розмітки'
-        return 'переадресація на товар' if переадр else 'InStock' if д & {'instock', 'limitedavailability', 'preorder', 'presale', 'backorder'} else 'OutOfStock' if д & {'outofstock', 'soldout', 'discontinued', 'oos'} else 'товар без наявності'
+        return 'переадресація на товар' if переадр and наяв != 'OutOfStock' else наяв  # розпродане після переадресації — розпродане
     return м, [(р[0], причина(*р)) for р in сирі]
 with КФ.ThreadPoolExecutor(len(вибірка)) as пул: рез = dict(пул.map(крамниця, вибірка))
 ЗНИКЛА, РОЗПР, ЖИВА = {'HTTP 404', 'HTTP 410', 'порожня сторінка', 'переадресація без товару', 'сторінка без товару'}, {'OutOfStock'}, {'InStock', 'товар без наявності', 'без розмітки', 'переадресація на товар'}
@@ -32,7 +32,7 @@ def частка(клас, умова=lambda о: True):
     """Зважена речами крамниці частка класу серед визначених, 95 % Вілсона з ефективним n (Korn–Graubard), покриття каталогу."""
     стр = {м: в for м, в in ((м, [п in клас for о, п in р if п in ВИЗН and умова(о)]) for м, р in рез.items()) if в}; Ч = sum(len(за[м]) for м in стр); n = sum(map(len, стр.values()))
     p = sum(len(за[м]) / Ч * sum(в) / len(в) for м, в in стр.items()); v = sum((len(за[м]) / Ч) ** 2 * sum(в) / len(в) * (1 - sum(в) / len(в)) / len(в) * (1 - len(в) / len(за[м])) for м, в in стр.items())
-    н = min(n, p * (1 - p) / v) if v else n; ц, r = (p + 1.92 / н) / (1 + 3.84 / н), 1.96 * math.sqrt(p * (1 - p) / н + 0.96 / н ** 2) / (1 + 3.84 / н)
+    н = (min(n, p * (1 - p) / v) if v else n) or 1; ц, r = (p + 1.92 / н) / (1 + 3.84 / н), 1.96 * math.sqrt(p * (1 - p) / н + 0.96 / н ** 2) / (1 + 3.84 / н)
     return '%.1f %% [%.1f–%.1f] ≈ %d речей; визначено %d у %d крамницях = %.0f %% каталогу' % (100 * p, 100 * max(0, ц - r), 100 * (ц + r), p * Ч, n, len(стр), 100 * Ч / ВСЬОГО)
 лік = lambda клас, умова: '%d/%d' % (sum(п in клас for о, п in все if умова(о) and п in ВИЗН), sum(п in ВИЗН for о, п in все if умова(о)))  # noqa: E731
 print('каталог %d речей, %d крамниць · вибірка %d (по %d) · причини %s\nЗНИКЛИ з сайту: %s\nНЕ КУПИТИ (зникли + розпродані): %s' % (ВСЬОГО, len(за), len(все), к, dict(C.Counter(п for _, п in все).most_common()), частка(ЗНИКЛА), частка(ЗНИКЛА | РОЗПР)))
