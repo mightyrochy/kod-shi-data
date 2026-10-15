@@ -1,0 +1,53 @@
+── ПРОМПТ (7697 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня приталеного крою на блискавці (Gucci) · colour code: graphite · about it: text н=1
+2 — Ремінь жіночий Welfare зелений · colour code: green · about it: text н=2
+3 — Черевики шоколадний флотар ROUX на натуральному хутрі · colour code: chocolate · about it: text н=3
+4 — Жакардовий двосторонній шарф з графічним мотивом молочний · colour code: white · about it: text н=4
+5 — Сумка жіноча, ATTICO, замша, колір бежевий · colour code: beige · about it: text н=5
+6 — Жіноче зимове вовняне пальто капучино з Comfortemp® утеплювачем Stella Polare (капучино, 42) · colour code: cappuccino · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; cappuccino — капучино; chocolate — шоколадний; graphite — графіт; green — зелений; white — білий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This is a fitted long-sleeve dress in a rich graphite tone with a central black zipper closure and contrasting dark buttons. The fabric has a soft texture, perfect for evening occasions, and the cut hugs your waist to highlight your shape while keeping you comfortable throughout the night."},
+{"н": 2, "текст": "A slim green leather belt with a polished silver-toned rectangular buckle. It features a pebbled texture on the outside and smooth brown leather on the inside, adding a modern metallic accent to your waistline when worn."},
+{"н": 3, "текст": "Sturdy chocolate-brown ankle boots made from natural-looking faux fur lining and genuine leather upper. They feature lace-up front detailing and a thick platform sole with visible stitching, offering both style and warmth for the winter weather."},
+{"н": 4, "текст": "A reversible jacquard scarf in white with intricate black graphic embroidery on one side. The fringed edges add movement, and the large-scale design brings an artistic flair to your outfit without overwhelming the grey tones."},
+{"н": 5, "текст": "A structured suede handbag in a soft beige tone with gold hardware accents. It includes a detachable circular pouch and features dual top handles, offering elegant functionality to carry your essentials effortlessly during the celebration."},
+{"н": 6, "текст": "A luxurious cappuccino-toned wool coat with a plush fur collar and a classic double-breasted silhouette. The long length and heavy fabric make it ideal for layering over your dress, providing warmth without compromising on elegance."},
+{"н": 7, "текст": "For your New Year's celebration at the restaurant, we have selected a striking grey dress with a zipper and button details, paired with chunky chocolate-colored lace-up boots to keep you warm against the frost. You can easily dress it down for an office day by adding the long cappuccino wool coat with its fur collar, or switch up your footwear if you prefer ankle boots in the same chocolate tone for a more classic look. The outfit is anchored by a white jacquard scarf featuring bold black graphic motifs, which adds a sophisticated touch to your ensemble."},
+{"н": 8, "текст": "Drape the scarf around your neck or shoulders as an accessory, letting its patterns peek out over the grey dress for a festive yet understated look."},
+{"н": 9, "текст": "Ремінь жіночий Welfare зелений — The emerald belt acts as a deliberate accent to break the mono-object silhouette of the dress."},
+{"н": 10, "текст": "Жакардовий двосторонній шарф з графічним мотивом молочний — A white jacquard scarf adds a third texture source to avoid pure texture rendering in the photo and answers the need for neck warmth."}
+]
+
+── ВІДПОВІДЬ (2522 симв., 44.1 с, HTTP 200) ──
+```json
+{
+  "1": "Це приталена сукня з довгими рукавами в насиченому графітовому кольорі, із центральною чорною блискавкою та контрастними темними ґудзиками. Тканина має м’яку текстуру, ідеально підходить для вечірніх заходів, а крій облягає твою талію, щоб підкреслити фігуру, водночас залишаючи тебе комфортною протягом усієї ночі.",
+  "2": "Стрункий зелений шкіряний ремінь із полірованою сріблясто-коричневою прямокутною пряжкою. Він має тиснену текстуру зовні та гладку коричневу шкіру всередині, додаючи сучасний металевий акцент до твоєї лінії талії.",
+  "3": "Міцні шоколадно-коричневі черевики на підборах з натуральним хутряним оздобленням і верхом зі штучної шкіри. Вони мають шнурівку спереду, товсту платформу з видитими швами та пропонують стиль і тепло для зимової погоди.",
+  "4": "Двосторонній жакардовий шарф у білому кольорі з вишуканою чорною графічною вишивкою на одній стороні. Бахрома додає руху, а великий дизайн привносить художню нотку в твій образ без перевантаження сірих тонів.",
+  "5": "Структурована замшева сумка бежевого кольору з золотистими металевими акцентами. Вона включає круглий відстібний гаманець і має дві ручки зверху, пропонуючи елегантну функціональність для зручного перенесення твоїх речей.",
+  "6": "Розкішне вовняне пальто кольору капучіно з пухнастим хутряним коміром і класичним двобортним силуетом. Довжина та щільна тканина роблять його ідеальним для носіння поверх сукні, забезпечуючи тепло без шкоди для елегантності.",
+  "7": "На твою новорічну вечірку в ресторані ми підібрали вражаючий сіру сукню з блискавкою та ґудзиками, поєднану з масивними шоколадно-коричневими черевиками на шнурівці, щоб ти була в теплі проти морозу. Ти можеш легко одягнути її для офісного дня, додавши довге пальто кольору капучіно з хутряним коміром або замінивши своє взуття, якщо віддаєш перевагу черевикам того ж шоколадного тону для більш класичного вигляду. Образ доповнює білий жакардовий шарф із сміливими чорними графічними мотивами, який додає вишуканий штрих твоєму ансамблю.",
+  "8": "Оберни шарф навколо шиї або плечей як аксесуар, дозволяючи його візерункам виглядати з-під сірої сукні для святкового та стриманого образу.",
+  "9": "Ремінь жіночий Welfare зелений — Смарагдовий ремінь слугує навмисним акцентом, щоб розбити монолітний силует сукні.",
+  "10": "Жакардовий двосторонній шарф з графічним мотивом молочний — Білий жакардовий шарф додає третє джерело текстури, щоб уникнути чистої рендерингу текстури на фотографії та задовольнити потребу в теплі для шиї."
+}
+```

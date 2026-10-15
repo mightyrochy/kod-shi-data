@@ -1,0 +1,50 @@
+── ПРОМПТ (2499 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet-blazer, tailored fit, knee-length hem, deep midnight blue (#0F1830), heavy-weight wool blend with subtle sheen.\nSatin-cummerbund, relaxed wrap, hip-length cut, electric teal (#00E5FF), smooth silk-chiffon mix.\nSilk-shell-dress, bias-cut silhouette, midi length ending mid-calf, rich burgundy (#800020), liquid satin with a faint woven damask pattern.\nLeather-pumps, classic stiletto heel, ankle-high shaft, charcoal grey (#36454F), polished nappa leather.\nGold-tone-chains, delicate links, short pendant resting at collarbone, 18k gold-plated brass, lightweight metal mesh.\nCashmere-capelet, loose drape, elbow-length sleeves, silver-grey (#C0C0C0), soft brushed cashmere for warmth against the frost.\n\nThis ensemble balances festive vibrancy with the sophisticated atmosphere of a New Year's restaurant celebration, using rich jewel tones and metallic accents to stand out during winter festivities. The velvet blazer and capelet provide essential warmth against the frosty weather without appearing bulky or restrictive. A relaxed silk cummerbund adds movement and visual interest at the waist, softening the structured tailoring of the outer layers. Overall, the outfit honors your wish for glamour while respecting the cold conditions, ensuring you feel both stylish and comfortable throughout the night."}
+
+── ВІДПОВІДЬ (1277 симв., 186.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Velvet-blazer",
+      "details": "tailored fit, knee-length hem, heavy-weight wool blend with subtle sheen",
+      "slot": "outerwear",
+      "color_hex": "#0F1830",
+      "worn": true
+    },
+    {
+      "name": "Satin-cummerbund",
+      "details": "relaxed wrap, hip-length cut, smooth silk-chiffon mix",
+      "slot": "accessory",
+      "color_hex": "#00E5FF",
+      "worn": true
+    },
+    {
+      "name": "Silk-shell-dress",
+      "details": "bias-cut silhouette, midi length ending mid-calf, liquid satin with a faint woven damask pattern",
+      "slot": "dress",
+      "color_hex": "#800020",
+      "worn": true
+    },
+    {
+      "name": "Leather-pumps",
+      "details": "classic stiletto heel, ankle-high shaft, polished nappa leather",
+      "slot": "shoes",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Gold-tone-chains",
+      "details": "delicate links, short pendant resting at collarbone, lightweight metal mesh",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Cashmere-capelet",
+      "details": "loose drape, elbow-length sleeves, soft brushed cashmere",
+      "slot": "outerwear",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}

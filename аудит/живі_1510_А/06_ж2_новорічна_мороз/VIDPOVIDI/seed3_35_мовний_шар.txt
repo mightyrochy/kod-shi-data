@@ -1,0 +1,61 @@
+── ПРОМПТ (7903 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня Максі сатин шоколад · colour code: chocolate · about it: text н=1
+2 — Твідовий асиметричний піджак ялинка на одне плече · colour code: grey · about it: text н=2
+3 — Сумка Пісочна · colour code: sand · about it: text н=3
+4 — Шовкова хустка в синій принт · colour code: blue · about it: text н=4
+5 — Сережки "Malachite" · colour code: green · about it: text н=5
+6 — Рожева заколка з лого · colour code: pink · about it: text н=6
+7 — Чоботи KELLY замшеві на низьких підборах · colour code: beige · about it: text н=7
+8 — Жіноче вовняне пальто без утеплювача з англійським коміром Stella Polare (сірий, 50) · colour code: grey · about it: text н=8
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; blue — синій; chocolate — шоколадний; green — зелений; grey — сірий; pink — рожевий; sand — пісочний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A chocolate satin maxi dress in a relaxed, draped silhouette that flows from the bust to just above the ankles, with delicate thin straps and a soft sheen."},
+{"н": 2, "текст": "A grey tweed blazer designed with an asymmetrical one-shoulder neckline, long sleeves, a double-breasted front, and a peplum hem that sits at the waist."},
+{"н": 3, "текст": "A structured crossbody bag featuring a colorful geometric tapestry panel atop a solid sand-colored base, with an adjustable strap for easy wear."},
+{"н": 4, "текст": "A silk scarf printed with an intricate blue and white floral and bird motif on a crisp background."},
+{"н": 5, "текст": "Stud earrings set with polished square-cut green malachite stones, each encased in a smooth gold-tone metal frame."},
+{"н": 6, "текст": "A glossy pink rectangular hair clip or accessory featuring the word 'CELINE' in white letters, designed to add a pop of color and brand identity."},
+{"н": 7, "текст": "Tall beige suede boots with a sleek straight shaft and a low kitten heel, finished with a pointed toe for a modern touch."},
+{"н": 8, "текст": "A long grey wool coat with a double-breasted front, wide lapels, four-button closure, and an English-style collar for structured elegance."},
+{"н": 9, "текст": "For your New Year celebration at the restaurant, I have chosen a rich chocolate satin maxi dress as your base. Its fluid fabric and relaxed cut will keep you comfortable throughout an evening of dining and dancing, while its deep tone feels elegant against the winter light. Topped with a tailored grey blazer that adds structure and polish, and paired with tall beige suede boots to ground the look, this ensemble balances ease with sophistication. To complete the festive feel, I added a patterned crossbody bag, a green malachite stud earring pair for subtle sparkle, and a pink logo clip to catch your eye."},
+{"н": 10, "текст": "Leave the blazer open to let the satin dress shine at dinner, then slip it on when the restaurant gets cold or if you move outdoors."},
+{"н": 11, "текст": "Твідовий асиметричний піджак ялинка на одне плече — I included this asymmetrical velvet blazer (chocolate/brown base but worn over green top) to add texture contrast for the formal occasion. The asymmetry balances her X shape while adding visual interest that fits the celebration mood."},
+{"н": 12, "текст": "Твідовий асиметричний піджак ялинка на одне плече — Chose this asymmetrical velvet blazer to add texture and structure over the simple dress, easing the 'body_knot' tension between her shoulders (volume) and hips (fitted)."},
+{"н": 13, "текст": "Жіноче вовняне пальто без утеплювача з англійським коміром Stella Polare (сірий, 50) — Chose this grey wool-blend midi skirt as a classic choice for festive occasions, balancing her X shape with a fitted silhouette that draws attention to her waist."}
+]
+
+── ВІДПОВІДЬ (2842 симв., 94.9 с, HTTP 200) ──
+```json
+{
+  "1": "Шовкова максісукня з сатину шоколадного кольору в розслабленому драпірованому силуеті, що спадає від грудей до трохи вище щиколоток, з ніжними тонкими бретелями та м’яким блиском.",
+  "2": "Сірий твідовий піджак із асиметричним вирізом на одне плече, довгими рукавами, подвійним рядом ґудзиків спереду та плісерованою облямівкою по лінії талії.",
+  "3": "Структурована сумка-кросбоді з кольоровою геометричною вишивкою на основі пісочного кольору, регульованим ремінцем для зручності носіння.",
+  "4": "Шовкова хустка в синій принт із складним квітковим і пташиним мотивом на білому тлі.",
+  "5": "Сережки-гвоздики з відполірованими квадратними зеленими малахітовими каменями, кожен у гладкій золотій оправі.",
+  "6": "Блискучий рожевий прямокутний затискач для волосся або аксесуар зі словом 'CELINE' білим шрифтом, розроблений, щоб додати яскравого кольору та брендової ідентичності.",
+  "7": "Високі бежеві замшеві чоботи з гладкою прямою халявою та низьким підбором kitten heel, із загостреним носком для сучасного вигляду.",
+  "8": "Довге сіре вовняне пальто без утеплювача з подвійним рядом ґудзиків спереду, широкими лацканами, чотирма гудзиками та англійським коміром для структурованої елегантності.",
+  "9": "Для твого святкування Нового року в ресторані я обрала багату шовкову максісукню з сатину як основу. Її текуча тканина та розслаблений крій забезпечать тобі комфорт протягом вечора, проведеного за вечерею та танцями, а глибокий відтінок виглядає елегантно в зимовому світлі. Доповнила її приталеним сірим піджаком, який додає структури та полірованості, і високими бежевими замшевими чоботами, щоб завершити образ. Щоб додати святкового настрою, я також обрала сумку-кросбоді з принтом, пару сережок із зеленого малахіту для ледь помітного блиску та рожевий затискач із логотипом, який приверне увагу.",
+  "10": "Залиш піджак розстебнутим, щоб максісукня сяяла під час вечері, а потім одягни його, коли в ресторані стане прохолодно або якщо ти підеш на вулицю.",
+  "11": "Твідовий асиметричний піджак ялинка на одне плече — Я включила цей оксамитовий піджак (шоколадний/коричневий основний колір, але носиться поверх зеленої блузи), щоб додати текстурного контрасту для формального випадку. Асиметрія збалансовує її X-подібну фігуру та додає візуального інтересу, який відповідає святковому настрою.",
+  "12": "Твідовий асиметричний піджак ялинка на одне плече — Обрала цей оксамитовий піджак з асиметрією, щоб додати текстури та структури поверх простої сукні, полегшивши «вузол тіла» між її плечима (об’єм) і стегнами (приталений силует).",
+  "13": "Жіноче вовняне пальто без утеплювача з англійським коміром Stella Polare (сірий, 50) — Обрала цю сіру вовняну спідницю-міді як класичний вибір для святкових випадків, який збалансовує її X-подібну фігуру та приталений силует, що підкреслює талію."
+}
+```
