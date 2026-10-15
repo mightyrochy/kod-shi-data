@@ -1,0 +1,29 @@
+── ПРОМПТ (2011 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "High-waisted yoga pants in a deep charcoal gray (#3e3e3e) with an allover textured marl knit finish, cut from a blend of recycled polyamide and elastane for maximum stretch and moisture-wicking properties. A matching cropped tank top in heathered black (#2b2b2b) featuring a relaxed boxy silhouette and wide racerback straps to keep the neck cool during morning stretches. Barefoot is preferred for direct sensory connection with the floor, but if needed, minimalist split-toe grips in matte obsidian finish. This monochromatic athletic set works perfectly for a 168 cm frame as it creates an elongated vertical line while allowing complete freedom of movement; the dark tones keep you feeling grounded and focused at 7 AM before the sun fully rises; without any outer layer since early morning warmth suffices even with slight chill."}
+
+── ВІДПОВІДЬ (583 симв., 266.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "high-waisted yoga pants",
+      "details": "textured marl knit, blend of recycled polyamide and elastane",
+      "slot": "bottom",
+      "color_hex": "#3e3e3e",
+      "worn": true
+    },
+    {
+      "name": "cropped tank top",
+      "details": "relaxed boxy silhouette, wide racerback straps",
+      "slot": "top",
+      "color_hex": "#2b2b2b",
+      "worn": true
+    },
+    {
+      "name": "minimalist split-toe grips",
+      "details": "matte obsidian finish",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": false
+    }
+  ]
+}

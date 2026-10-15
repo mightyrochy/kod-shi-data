@@ -1,0 +1,36 @@
+── ПРОМПТ (2313 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Soft, stretchy leggings in a deep forest green, cut with a high waist for comfort and coverage, falling to mid-calf length, made from a breathable moisture-wicking microfiber fabric. A matching lightweight tank top in heather grey, featuring a racerback cut for unrestricted arm movement, sitting short at the hem, crafted from quick-dry synthetic blend material. Minimalist white canvas sneaker trainers with a flexible sole and flat profile, designed specifically for grip and stability on a yoga mat. A thin cotton headband in solid black to absorb sweat without slipping during dynamic poses. This outfit works because the high-waisted bottoms provide necessary support and coverage for morning coolness, while the technical fabrics ensure you stay dry and move freely throughout your practice. The neutral grey top pairs easily with the green base to create a calming aesthetic, keeping the focus entirely on your flow rather than fashion details. Finally, the flat trainer is essential for stability during standing poses and transitions, fulfilling the practical needs of a dedicated yoga session without any bulk or restriction."}
+
+── ВІДПОВІДЬ (764 симв., 267.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "leggings",
+      "details": "high waist cut, mid-calf length, breathable moisture-wicking microfiber fabric",
+      "slot": "bottom",
+      "color_hex": "#1b4d3e",
+      "worn": true
+    },
+    {
+      "name": "tank top",
+      "details": "racerback cut, short hem length, quick-dry synthetic blend fabric",
+      "slot": "top",
+      "color_hex": "#b0b0b0",
+      "worn": true
+    },
+    {
+      "name": "sneaker trainers",
+      "details": "flexible sole with flat profile",
+      "slot": "shoes",
+      "color_hex": "#ffffff",
+      "worn": true
+    },
+    {
+      "name": "headband",
+      "details": "thin cotton material, solid color",
+      "slot": "headwear",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+── ПРОМПТ (7621 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лофери шкіряні жовті · colour code: yellow · about it: text н=1
+2 — Сріблястого кольору сережки у формі логотипу · colour code: silvery · about it: text н=2
+3 — Жіноче вовняне пальто в клітинку з поясом та накладними кишенями Stella Polare (чорний/білий, 52) · colour code: black · about it: text н=3
+4 — Джинси з манжетами із середньою посадкою · colour code: light_blue · about it: text н=4
+5 — Футболка вільна з куліру · colour code: graphite · about it: text н=5
+6 — Жіноча сумка солом'яна зелена · colour code: green · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; graphite — графіт; green — зелений; light_blue — блакитний; silvery — срібний; yellow — жовтий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "These yellow loafers feature a sleek, low-cut leather upper with a classic strap across the instep for easy wear. The smooth finish contrasts gently against your black coat while the compact heel ensures stability during yoga poses."},
+{"н": 2, "текст": "These small silvery earrings carry a modern knot motif that adds delicate shine without distracting from the natural textures of your wool and denim. The cool metallic tone harmonizes beautifully with both your graphite top and the earthy tones in the room."},
+{"н": 3, "текст": "This oversized plaid coat offers generous warmth for a brisk morning, its black-and-white check pattern creating visual rhythm that plays well against your light blue jeans. The included belt defines your waistline precisely, giving structure to the voluminous shape."},
+{"н": 4, "текст": "These light blue jeans are tailored with a straight leg and finished cuffs rolled up at the bottom to highlight your ankles—a small detail that keeps movement fluid during stretching. The medium wash adds depth without overpowering your soft t-shirt."},
+{"н": 5, "текст": "This graphite t-shirt drapes softly around your frame with a slightly dropped shoulder line, letting you move freely without restriction. Its neutral tone serves as the perfect foundation for layered styling and allows your coat to stand out when worn together."},
+{"н": 6, "текст": "This mint-green woven bag brings an organic texture and a fresh color note that complements your yellow loafers. Its slouchy shape fits naturally beside you during practice, carrying essentials without bulk or fuss."},
+{"н": 7, "текст": "You are dressed for a relaxed morning yoga session in a comfortable graphite t-shirt that gives your shoulders and arms total freedom of movement. Over this, you wear a stylish black-and-white checked wool coat with a belt to cinch the waist, creating a defined silhouette that complements your figure perfectly. Your legs are covered by light blue jeans finished with rolled cuffs at the hem, adding a casual yet deliberate touch to your look. To complete the ensemble, you have chosen bright yellow loafers, which inject a cheerful pop of color against the neutral base. As an accessory, a silvery-colored earring set adds a subtle metallic gleam without overwhelming the natural simplicity of the scene."},
+{"н": 8, "текст": "Start with the grey t-shirt tucked loosely into the jeans for comfort during your practice; later in the day you can unbutton it or wear it open over the coat if temperatures drop."},
+{"н": 9, "текст": "Лофери шкіряні жовті — The yellow loafers provide a deliberate pop of colour near the face and match the scheme's accent role."}
+]
+
+── ВІДПОВІДЬ (2572 симв., 74.8 с, HTTP 200) ──
+```json
+{
+  "1": "Ці жовті лофери мають елегантний верх із м’якої шкіри з низьким вирізом і класичним ремінцем на підйомі для зручного носіння. Гладка поверхня ніжно контрастує з твоїм чорним пальтам, а компактний каблук забезпечує стійкість під час виконання вправ йоги.",
+  "2": "Ці маленькі сріблясті сережки мають сучасний мотив вузла, який додає делікатне сяйво без відвернення уваги від природних текстур твого вовняного пальта та джинсів. Прохолодний металевий тон гармонійно поєднується як з твоїм графітовим топом, так і з земляними тонами в кімнаті.",
+  "3": "Це велике картате пальто пропонує достатньо тепла для ранкового похолодання, а його чорно-білий візерунок створює зоровий ритм, який добре поєднується з твоїми блакитними джинсами. Включений пояс точно окреслює талію, надаючи форму об’ємній формі.",
+  "4": "Ці світло-блакитні джинси мають прямий крій і закінчуються манжетами, підвернутими на низ для виділення щиколоток — невеликий нюанс, який зберігає рухливість під час розтяжки. Середній відтінок додає глибини без перевантаження твого м’якого топа.",
+  "5": "Цей графітовий топ вільно драпірується по фігурі з трохи опущеною лінією плеча, дозволяючи тобі рухатися вільно без обмежень. Його нейтральний тон служить ідеальною основою для багатошарового стилю та дає змогу твоєму пальту виділитися під час носіння разом.",
+  "6": "Ця м’ятно-зелена плетінка приносить органічну текстуру та свіжу кольорову нотку, яка доповнює твої жовті лофери. Її недбала форма природно лежить поруч із тобою під час практики, вміщуючи необхідні речі без об’ємності чи метушні.",
+  "7": "Ти одягнена для розслабленого ранкового заняття йогою в зручному графітовому топі, який дає твоїм плечам і рукам повну свободу руху. Зверху ти носиш стильне картате вовняне пальто чорно-білого кольору з поясом, щоб підкреслити талію, створюючи визначений силует, який чудово доповнює твою фігуру. Твої ноги закриті світло-блакитними джинсами із манжетами на подолі, що додають невимушений і водночас продуманий штрих твоєму образу. Щоб завершити ансамбль, ти обрала яскраві жовті лофери, які вносять веселий колірний акцент на нейтральній основі. Як аксесуар, сріблястий комплект сережок додає ледь помітне металеве сяйво без перевантаження природної простоти сцени.",
+  "8": "Почни з того, щоб вільно заправити сірий топ у джинси для комфорту під час практики; пізніше вдень ти можеш розстебнути його або носити відкритим поверх пальта, якщо температура знизиться.",
+  "9": "Жовті лофери надають навмисний колірний акцент біля обличчя та відповідають ролі акценту схеми."
+}
+```
