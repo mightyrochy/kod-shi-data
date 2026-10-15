@@ -1,0 +1,45 @@
+── ПРОМПТ (2317 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "Ukrainian", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Тренч з довгим рукавом та прямим кроєм, відкритий вперед до лінії талії, кольору #9E8A7D (пісочно-коричневий), тканина габардин. Вільний топ із круглим вирізом та м'яким падінням, середньої довжини по груди, кольору #C5B6A0 (полірована бежевий), бавовна з додаванням еластану. Прямі штани з високою талію, що сидять уздовж ніг, до щиколотки, кольору #4B3F3F (глибокий графіт), оксфорд. Ботинки на невисокому п'ятці зі шнурівкою, округлим носком, середньої товщини підошви, кольору #5C534A (темний кахет), шкіра натурального хромованого типу. Металеві сережки-гільзи з гострим кінцем та тонкою ніжкою, кольору #A69D8D (староантовий срібло), білий метал. Цей виступ працює для вас, оскільки він поєднує елементи «повсякденного» стилю зі штанами та топом, а «шляхетний» стиль реалізований через структурований тренч і строгий крой аксесуарів. Колірне рішення з теплого бежевого верху на темному дні створює візуально витончений силует, який виглядає ввічливо та сучасно для офіційного середовища восени. Легкість тканин забезпечує комфорт при температурі понад 20 °C, залишаючи відкритим верхній шар без потреби в товстому піджаку чи пальто."}
+
+── ВІДПОВІДЬ (1031 симв., 182.7 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Тренч",
+        "details": "прямий крій, відкритий вперед до лінії талії, довгий рукав",
+        "slot": "outerwear",
+        "color_hex": "#9E8A7D",
+        "worn": true
+      },
+      {
+        "name": "Топ",
+        "details": "круглий виріз, м'яке падіння, вільний силует",
+        "slot": "top",
+        "color_hex": "#C5B6A0",
+        "worn": true
+      },
+      {
+        "name": "Штани",
+        "details": "прямі, висока талія, що сидять уздовж ніг, до щиколотки",
+        "slot": "bottom",
+        "color_hex": "#4B3F3F",
+        "worn": true
+      },
+      {
+        "name": "Ботинки",
+        "details": "на невисокому п'ятці зі шнурівкою, округлий носок, середньої товщини підошва",
+        "slot": "shoes",
+        "color_hex": "#5C534A",
+        "worn": true
+      },
+      {
+        "name": "Сережки-гільзи",
+        "details": "гострий кінець, тонка ніжка",
+        "slot": "earrings",
+        "color_hex": "#A69D8D",
+        "worn": true
+      }
+    ]
+  }
+}

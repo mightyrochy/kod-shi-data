@@ -1,0 +1,29 @@
+── ПРОМПТ (2126 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "Ukrainian", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Шовковий блейзер прямого крою з тонким текстурним візерунком у кольорі мідь (hex #B87333) з легкими металевими ґудзиками, підкладаний оксамитовою обробкою на манжетах і воротнику.\nСукня з глибокого V-подібного вирізу мінімальної довжини, що закінчується рівно по лінії колін, у насиченому кольорі темно-вишні (hex #4A0E15) з фактурною тканиною, що імітує шкіру.\nКласичні оксамитові туфлі на низькому підборі в одній з тих же глибоких відтінків фіолетового (hex #3E1F48), з м'якою підошвою для зручності протягом робочого дня.\nЦей образ ідеально балансує між професійною стриманістю та індивідуальним стилем, відповідаючи вимогам як доповняльного, так і елегантного дресс-коду. Обрані відтінки міді та насиченого темно-вишні створюють теплу та гармонійну палітру для осінніх днів, додаючи вишуканості до офісного одягу. Легка структура блейзера та оксамитова текстуру взуття забезпечують необхідний комфорт без порушення естетики робочого місця."}
+
+── ВІДПОВІДЬ (730 симв., 181.3 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Блейзер",
+      "details": "прямий крій з тонким текстурним візерунком, підкладаний оксамитовою обробкою на манжетах і воротнику, з легкими металевими ґудзиками",
+      "slot": "top",
+      "color_hex": "#B87333",
+      "worn": true
+    },
+    {
+      "name": "Сукня",
+      "details": "глибокий V-подібний виріз, мінімальна довжина закінчується рівно по лінії колін, фактурна тканина що імітує шкіру",
+      "slot": "dress",
+      "color_hex": "#4A0E15",
+      "worn": true
+    },
+    {
+      "name": "Туфлі",
+      "details": "класичні на низькому підборі, м'яка підошва для зручності протягом робочого дня",
+      "slot": "shoes",
+      "color_hex": "#3E1F48",
+      "worn": true
+    }
+  ]
+}
