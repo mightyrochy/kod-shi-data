@@ -1,0 +1,58 @@
+── ПРОМПТ (7392 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лляний блейзер з декоративним стібком ручної роботи пісок-меланж · colour code: beige · about it: text н=1
+2 — Комбінезон лляний Монца · colour code: beige · about it: text н=2
+3 — Мокасіни жіночі бежеві · colour code: beige · about it: text н=3
+4 — Сумка Пісочна · colour code: sand · about it: text н=4
+5 — Ремінь жіночий Welfare хакі · colour code: khaki · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; khaki — хакі; sand — пісочний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This lightweight beige linen blazer features a relaxed, unlined cut with notched lapels and two front flap pockets. The hand-sewn decorative buttons add an artisanal touch while maintaining effortless drape against your body."},
+{"н": 2, "текст": "The beige linen jumpsuit has a classic collar shirt top with short sleeves and a front button placket that ties at the waist. Its wide-leg silhouette flows down to cropped hems with rolled cuffs, balancing comfort and structure for all-day wear."},
+{"н": 3, "текст": "These beige suede ballet flats feature a soft slip-on design with a rounded toe and a cushioned rubber sole. Their lightweight build ensures they feel as natural to your feet as any sock."},
+{"н": 4, "текст": "This vibrant crossbody bag showcases a colorful geometric pattern in red, blue, green, and gold tones across its upper woven panel. The lower half and strap are crafted from durable tan canvas, making it both eye-catching and practical for carrying essentials during your evening."},
+{"н": 5, "текст": "This khaki leather belt features a polished metallic rose buckle that adds an elegant focal point. Its smooth texture complements the matte finish of the linen pieces without overwhelming them."},
+{"н": 6, "текст": "You look wonderfully composed in this soft, sand-colored linen ensemble. The tailored blazer gives your silhouette a clean line that draws attention to the waist, while the wide-leg jumpsuit flows comfortably for all the movement of your evening at the office. The ballet flats offer the effortless ease you asked for, keeping you grounded and ready to focus on your vocal lesson without distraction."},
+{"н": 7, "текст": "Keep the blazer open to let the jumpsuit’s neckline breathe and draw eyes toward your collarbone."},
+{"н": 8, "текст": "Wear the leather belt loosely around the waist of the jumpsuit to softly define your shape."},
+{"н": 9, "текст": "Комбінезон лляний Монца — Cream wide-leg trousers replace the shorts to match the formal level of the blazer and create a long vertical line."},
+{"н": 10, "текст": "Мокасіни жіночі бежеві — Beige ballet flats replace the original shoes to match the cream trousers' tone, ensuring comfort and visual continuity."},
+{"н": 11, "текст": "Сумка Пісочна — A sand faux-leather clutch adds a textural third piece and balances the heavy blazer."},
+{"н": 12, "текст": "Ремінь жіночий Welfare хакі — A khaki belt adds a subtle earth tone accent that anchors the outfit and defines the waist."},
+{"н": 13, "текст": "Лляний блейзер з декоративним стібком ручної роботи пісок-меланж — Linen blazer adds texture to the tonal beige scheme despite the 'sand' name indicating a different shade"}
+]
+
+── ВІДПОВІДЬ (2575 симв., 46.6 с, HTTP 200) ──
+```json
+{
+  "1": "Цей легкий бежевий лляний блейзер має вільний, непідшитий крій з лацканами та двома передніми накладними кишенями. Ручна декоративна строчка додає вишуканого акценту, зберігаючи при цьому природну драпіровку по фігурі.",
+  "2": "Бежевий лляний комбінезон має класичну сорочкову верхню частину з короткими рукавами та застібкою на ґудзики спереду, яка зав'язується в талії. Його силует із широкими штанинами вільно спадає до підвернутих кроїв, поєднуючи комфорт і структуру для цілоденного носіння.",
+  "3": "Ці бежеві замшеві балетки мають м’який дизайн на шнурках з округлим миском та амортизованою гумовою підошвою. Їхня легка конструкція робить їх такими ж природними для ваших ніг, як і будь-які шкарпетки.",
+  "4": "Ця яскрава сумка через плече демонструє барвистий геометричний візерунок у червоних, синіх, зелених та золотих тонах на верхній вишитій панелі. Нижня частина та ремінець виконані з міцного бежевого полотна, що робить її одночасно помітною і практичною для носіння необхідних дрібниць під час вашого вечора.",
+  "5": "Цей хакі шкіряний пояс має відполіровану металеву золотисту пряжку, яка додає елегантного акценту. Його гладка текстура доповнює матове покриття лляних речей без перевантаження образу.",
+  "6": "Ти виглядаєш чудово зібраною в цьому м’якому пісочному лляному ансамблі. Приталений блейзер надає твоїй фігурі чіткої лінії, яка привертає увагу до талії, а комбінезон із широкими штанинами вільно спадає для всіх рухів під час вечора в офісі. Балетки пропонують легкість, яку ти попросила, зберігаючи тебе на землі і готовою зосередитися на уроці вокалу без відволікань.",
+  "7": "Залиш блейзер розстебнутим, щоб верх комбінезона дихав та привернути увагу до ключиць.",
+  "8": "Одягни шкіряний пояс вільно навколо талії комбінезона, щоб м’яко окреслити твою фігуру.",
+  "9": "Комбінезон лляний Монца — Кремові широкі штани замінюють шорти, щоб відповідати формальному рівню блейзера і створити довгу вертикальну лінію.",
+  "10": "Мокасіни жіночі бежеві — Бежеві балетки замінюють оригінальне взуття, щоб поєднуватися з тоном кремових штанів, забезпечуючи комфорт та візуальну цілісність.",
+  "11": "Сумка Пісочна — Піщаний клатч зі штучної шкіри додає текстурний третій елемент і врівноважує важкий блейзер.",
+  "12": "Ремінь жіночий Welfare хакі — Хакі пояс додає тонкий акцент кольору землі, який закріплює образ та окреслює талію.",
+  "13": "Лляний блейзер з декоративним стібком ручної роботи пісок-меланж — Лляний блейзер додає текстуру тональній бежевій схемі попри те, що назва 'sand' вказує на інший відтінок."
+}
+```

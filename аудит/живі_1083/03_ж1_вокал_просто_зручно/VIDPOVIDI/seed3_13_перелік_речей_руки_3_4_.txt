@@ -1,0 +1,50 @@
+── ПРОМПТ (2272 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Navy blue structured blazer with a relaxed shoulder cut and mid-length hem in 20°C warm wool-blend fabric, #1B283F\nCream viscose-blend midi blouse with an empire waist and elbow-length sleeves, #FFFDD0\nCharcoal grey tailored trousers with a straight leg and full length crafted from soft stretch-worsted wool, #36454F\nBlack leather ankle booties with a low block heel and a rounded toe, #000000\nMinimalist gold hoop earrings in 18k vermeil and a thin silver chain necklace, #FFD700 / #C0C0C0\n\nThis outfit works for a vocal lesson because the relaxed blazer and empire waist blouse allow your arms to move freely while you sing, ensuring comfort during the performance. The soft stretch wool trousers support easy movement as you walk between rooms or adjust your microphone stand without restriction. At 18°C, the layers provide just enough warmth without overheating, keeping you focused on your practice rather than feeling chilly. Finally, the low-heel ankle booties honor your wish for simple and comfortable footwear, giving you a confident yet effortless stance throughout the class."}
+
+── ВІДПОВІДЬ (1132 симв., 77.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "structured blazer",
+      "details": "relaxed shoulder cut with mid-length hem in warm wool-blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#1B283F",
+      "worn": true
+    },
+    {
+      "name": "viscose-blend midi blouse",
+      "details": "empire waist with elbow-length sleeves",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "tailored trousers",
+      "details": "straight leg with full length crafted from soft stretch-worsted wool",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "ankle booties",
+      "details": "low block heel with rounded toe in leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "hoop earrings",
+      "details": "minimalist gold in 18k vermeil",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "chain necklace",
+      "details": "thin silver chain",
+      "slot": "necklace",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}

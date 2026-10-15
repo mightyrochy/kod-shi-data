@@ -1,0 +1,31 @@
+── ПРОМПТ (2121 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured blouse in soft peach with hex #deb295, loose cut at the hem falling mid-thigh for ease of breathing while singing, woven cotton-linen blend for breathability.  \nTailored trousers in charcoal grey with hex #36454F, relaxed fit through the leg to allow unrestricted movement during vocal exercises, stretch-woven wool fabric.  \nFlat leather loafers in warm taupe with hex #d2b48c, rounded toe design ensuring comfort for walking between lessons or standing long periods, smooth calfskin leather.  \n\nThis outfit works because it prioritizes your wish for simple and comfortable footwear while maintaining a polished yet relaxed silhouette perfect for a vocal lesson. The loose blouse and relaxed trousers ensure complete freedom of movement needed for breathing and singing, avoiding any restrictive clothing. The neutral earthy tones complement your natural skin and hair tones without overwhelming the professional autumn setting."}
+
+── ВІДПОВІДЬ (669 симв., 87.1 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Structured blouse",
+        "details": "loose cut at the hem falling mid-thigh, woven cotton-linen blend",
+        "slot": "top",
+        "color_hex": "#deb295",
+        "worn": true
+      },
+      {
+        "name": "Tailored trousers",
+        "details": "relaxed fit through the leg, stretch-woven wool fabric",
+        "slot": "bottom",
+        "color_hex": "#36454F",
+        "worn": true
+      },
+      {
+        "name": "Flat leather loafers",
+        "details": "rounded toe design, smooth calfskin leather",
+        "slot": "shoes",
+        "color_hex": "#d2b48c",
+        "worn": true
+      }
+    ]
+  }
+}
