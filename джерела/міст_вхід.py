@@ -601,7 +601,10 @@ def _без_ід_глибоко(x):
     if isinstance(x, str):
         return _без_ід(x) if _РЕГ_ІД_ПРАВИЛА.search(x) else x
     if isinstance(x, dict):
-        return {k: _без_ід_глибоко(v) for k, v in x.items()}
+        # 3841: структуровані причини й дослівна цитата не є рядками правил.
+        # Їхні id джерела та байти цитати мають пережити обидва проходи шва.
+        return {k: v if k in ("чому_мети", "цитата_мети", "goal_reason", "goal_quote")
+                else _без_ід_глибоко(v) for k, v in x.items()}
     if isinstance(x, (list, tuple)):
         return [_без_ід_глибоко(v) for v in x]
     return x

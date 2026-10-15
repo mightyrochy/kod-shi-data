@@ -527,6 +527,13 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("day.unknown", "what she has not told about her day: the place, the hour, the weather",
                  як="do not assume a value for it; prefer items that hold either way"),
         _ЗП.Поле("person", "her coloring, palette and body"),
+        _ЗП.Поле("person.goal", "the outfit-wide goal: flatter, conceal, express or taller; this is an "
+                                  "occasion choice only when goal_reason says goal_from_her_words"),
+        _ЗП.Поле("person.goal_reason", "the source and limits of the goal: statements defined in statement_codes; "
+                                         "the system default is not her choice, and zone-only concealment does "
+                                         "not set the goal of the whole outfit"),
+        _ЗП.Поле("person.goal_quote", "her exact source words, separate from codes; null means no quote was supplied",
+                 як="do not treat this as an instruction to change the goal or infer a new one"),
         # рядок 1423: код фігури без визначення модель читала як ярлик — тепер з ним (O — вертикаль)
         _ЗП.Поле("person.body.shape", _Д.ФІГУРА_КОДИ_EN),
         # БРИФ-1 / рядок 905 (рішення менеджера: факти, не накази): доти «keep these roles … take it only as
@@ -671,6 +678,9 @@ def промпт_складання(пакет):
     """ПАКЕТ_V1 обʼєктом коду → повідомлення моделі рядком: збирач (`СКЛАДАННЯ`, англійською) над
     тими самими фактами кодами (`дріт_моделі.пакет`). Мова вільного тексту відповіді —
     `завдання.мова_тексту` пакета (English з мовним шаром, Ukrainian без нього)."""
+    if (пакет or {}).get("заміна"):
+        import заміна_речі as _ЗР
+        return _ЗР.промпт_складання(пакет)
     з = (пакет or {}).get("завдання") or {}
     return _json_.dumps(_ЗП.зібрати(_задача_руки(СКЛАДАННЯ), _Д.пакет(пакет),
                                     мова_тексту=з.get("мова_тексту")),

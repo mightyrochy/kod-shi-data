@@ -848,6 +848,28 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
 # `on_face`…), тож визначення називає лише, що це місце; перелік у кожному визначенні роздув би промпт.
 _МІСЦЯ_ОПЦІЙ = "where it is worn"
 ЗАЯВИ = {
+    # Причини мети (3841): означення тільки на межі моделі, факти лишаються кодами.
+    "goal_default_no_weights": "no goal weights were supplied: flatter is the system default, not her choice. "
+                               "It assumes she wants to please; this is not neutral or universal (theme-6 1.6)",
+    "goal_default_no_known_weights": "no known goal occurs in the supplied weights: the goal remains the "
+                                     "system default flatter, not her choice",
+    "goal_default_no_dominant_weight": "the leading weight is less than threshold ahead of the runner-up: "
+                                       "no priority was established, so flatter remains the system default "
+                                       "(values: leading, weight, runner_up, runner_up_weight, gap, threshold)",
+    "goal_from_weights": "the leading weight gives the goal through the system's soft mapping, not a mapping "
+                         "from the source. The attention axis changes the direction of advice, not its strength "
+                         "(theme-6 1.6; values: goal, leading, weight, runner_up, runner_up_weight, gap, threshold)",
+    "goal_comfort_not_represented": "comfort is not represented in the single attention-goal scalar: it maps "
+                                   "to flatter to retain colour behaviour; the comfort preference has no effect",
+    "goal_ease_not_represented": "ease of composing is not represented in the attention-goal scalar: it maps "
+                                "to flatter; the ease preference has no effect",
+    "goal_appropriateness_in_occasion": "appropriateness is handled by the occasion layer (K-KOH-09), not by "
+                                       "the attention goal",
+    "goal_from_her_words": "the occasion passport supplied her goal from her words (K-IO-02): goal overrides "
+                           "weights_goal. Her exact words are separate in goal_quote; goal weights are not her "
+                           "choice for this occasion",
+    "goal_zone_only": "conceal concerns the named zones, not the entire outfit: the outfit-wide goal comes "
+                      "from the weights or the system default (values: zones, goal)",
     # ── портрет, з якого кольори не читаються (П-4, `міст_вхід.ПРИЧИНИ_ПОРТРЕТА`) ─────
     "portrait_black_white": "the photo is black-and-white or under a heavy filter: it carries no true colours",
     "portrait_face_small": "the face takes less than a quarter of the frame",
@@ -1384,7 +1406,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_frame_size_unknown": "the card does not carry the frame size",
     "item_lug_width_unknown": "the card does not carry the watch's lug width",
     "item_glove_size_unknown": "the card does not carry the gloves' size mark",
-    "item_frame_size_unreadable": "the code could not read the frame size from the card (values: item — item "
+    "item_frame_size_unreadable": "the code could not read the frame size from the card (values: "
+                                 "frame_size — literal card field, her_pupillary_distance_mm — measured number, "
+                                 "item_id — exact item reference, never write it in the woman's text, item — item "
                                   "name)",
     # ── спосіб носіння (`аксесуари_структура`, `аксесуари_суд`) ────────────────
     "wear_way_not_chosen": "how she wears this item is not chosen yet, and which rules apply to it depends on "
@@ -1477,7 +1501,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "dividing_line_item_length_unknown": "the outfit's dividing line is the hem of its top item, and the cards do "
                                          "not carry the length of the named top items, so the line was not "
                                          "judged (values: slots — slot codes)",
-    "cut_unknown_form_default": "the cards do not name the cut of some items, so the code counts the outfit's "
+    "cut_unknown_form_default": "some cards have no known cut; unknown_cuts preserve literal card witnesses by item_id. "
+                                "The code counts the outfit's "
                                 "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
                                         "ordinary straight cut; what follows holds only if the cut really is "
@@ -1538,6 +1563,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # Ф-2: було «does not aim to flatter the figure». Сенс той самий — мети `flatter`
     # на цей вихід не поставлено, — але фраза дослівно та, яку R-LNG-01 забороняє
     # (дієслово ефекту + зона). Мету називаємо ЇЇ КОДОМ, а не описом дії над тілом.
+    "contour_direction_not_set_by_goal": "the goal for this outing is not to flatter, so the measured "
+                                        "contour has no prescribed direction (values: goal — goal code); "
+                                        "do not prescribe adding or removing volume to flatter",
     "look_shape_is": "the shape the outfit gives, with no judgement, because the goal for this outing is "
                      "not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — "
                      "shoulders wider than hips, X — a marked waist, H — a straight contour without a marked "
@@ -3320,13 +3348,14 @@ def заява(код, **значення):
 def суть_кодом(заяви, речі=()):
     """`суть` знахідки внутрішньою мовою (п.12, рядок 4250): коди її заяв через « + » (як їх друкує
     звіт, `показ.html: питанняКодомП`) і id речей у дужках, без слів. Це діагноз у звіті власника,
-    ярлик сліду правил і ключ дедуплікації (правило, суть): дві знахідки одного правила над різними
-    речами чи з різних причин не зливаються. Речення пише мовна модель із самих `заяви`."""
+    ярлик сліду правил. Ідентичність питання — повні заяви, значення й id учасників
+    (`знахідка.ключ_питання`): дві зони або речі з однаковою назвою не зливаються. Речення пише мовна модель із самих `заяви`. Річ-словник передає лише свій `id`."""
     коди = [з.get("code") if isinstance(з, dict) else з for з in заяви or ()]
     for к in коди:
         if к not in ЗАЯВИ:
             raise KeyError("заява поза словником ЗАЯВИ: %r" % (к,))
-    ід = [str(x) for x in dict.fromkeys(речі or ()) if x is not None and str(x).strip()]
+    речі = [x.get("id") if isinstance(x, dict) else x for x in речі or ()]
+    ід = [str(x) for x in dict.fromkeys(речі) if x is not None and str(x).strip()]
     return " + ".join(коди) + (" [%s]" % ", ".join(ід) if ід else "")
 
 
