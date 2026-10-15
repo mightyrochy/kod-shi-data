@@ -1,0 +1,1231 @@
+{
+  "перевірка": "Незалежна FINAL-звірка лише метаданих PR #1094",
+  "час_UTC": "2026-10-15 18:55:00 UTC",
+  "репозиторій": "mightyrochy/kod-shi-data",
+  "правила_свіжо_прочитані": {
+    "AGENTS": "6f256fd128c70fa34b9ab0a794fe74d5982f6dc0",
+    "CLAUDE": "83a4caa6a452ab24644476ac6bb7e8e46773b6d8"
+  },
+  "PR": {
+    "number": 1094,
+    "head": "0ffb624821c5972d7361c60f73dabcd52e61d9ee",
+    "base": "7f9e9f8d51c7ea135b68eb3c12aa94c456de324f",
+    "state": "open",
+    "draft": false,
+    "mergeable": true,
+    "mergeable_state": "clean",
+    "updated_at": "2026-10-15T18:54:02Z",
+    "body": "## Фінальна звірка CI цієї голови\n\nПоточна голова `0ffb624821c5972d7361c60f73dabcd52e61d9ee`: run `38776154272`, обидві jobs `116568603547` (перевірка джерел) і `116584285538` (зібрати показ-повний) — completed/SUCCESS. Три фактичні джерела #1070 `1ee1f74b7fb7151e4ccc8c408a01e152c4591474`, #1071 `5a68ba97c03776f293b8494d85fbce8a7fee7255`, #1082 `3f1cb373d5aeab2635c4a22e9798854f49b23db8` також мають обидві jobs completed/SUCCESS. Незалежний FINAL BODY/ARCHIVE — 6198637117; межі native й датоване походження перевірок нижче збережені. Нових прогонів чи зміни голови ця звірка не робить. Сумісність із поточним main звіряється окремо перед передачею до злиття; зелений CI сам собою не є злиттям.\n\n## Що змінено\n\n**Заморожена голова `0ffb624821c5972d7361c60f73dabcd52e61d9ee`**, дерево `047c546edda2151d082f82891737f9e0fee12921`, база main `7f9e9f8d51c7ea135b68eb3c12aa94c456de324f`. Пачка #1094, та сама гілка `codex/pachka-1510-5`; звичайні злиття з CAS/force=false зберегли попередню голову 9961 та всі три актуальні джерела.\n\n| PR / рядок | Актуальна голова | Зміна |\n| --- | --- | --- |\n| #1070 / 5641 | `1ee1f74b7fb7151e4ccc8c408a01e152c4591474` | Структурний `available` доходить до запису та чинного фільтра пулу; п.12. |\n| #1071 / 5580 | `5a68ba97c03776f293b8494d85fbce8a7fee7255` | Увесь діагноз `hand_N`, зокрема промпти, приховано до четвертого вердикта; помилки видимі, файл власника повний; п.1. |\n| #1082 / 5685 | `3f1cb373d5aeab2635c4a22e9798854f49b23db8` | SHA action, npm/pip locks, права job, Pyodide SRI, незмінні Fixel; п.7/9/12/21. |\n\nНові worker/UI та жнива 3350/3710 main поєднано з трьома виправленнями. Усі 1502 ID main, повні чужі байти, порядок і історія збережені; додано лише 5685, разом 1503 ID, дублів 0. Власний історичний LF збережено. Незалежна композиція пачки та [CONTENT/FINAL актуальних джерел](https://github.com/mightyrochy/kod-shi-data/tree/1cb1369ce2b6af7b123c83bf18f79f0e694a64eb/перевірка/оновлення1078-1079/FINAL) прийняті.\n\n## Перевірено\n\nЗавершено **10/10 команд продовження** на точному поточному SHA: уражений синтаксис (6 Python + 3 JS), одна AST-проба жнив, гейти **577/0/0**, контракти цілі, показ **741 звірка / 65 розділів**, міст, досяжність **«НІХТО» = 0**, наявність, захист і повна збірка. Перша спроба збірки завершилася rc1 через мою відсутню вихідну теку `assembled-current/`; після mkdir повторено лише незавершену збірку. Сирий невдалий журнал і checkpoint збережені, дев’ять завершених команд не повторювалися.\n\nШість завершених команд старої 9961 і перервані гейти збережені датованою історією. Для підготовки, диму, живого шляху й протоколу підтверджено незмінність 145/159/159/159 локальних Python-залежностей, 263 файлів даних, gzip/6 фікстур і 3289 байтів HTML-фрагмента протоколу; невизначених динамічних імпортів 0. Старі завершені перевірки мають власний SHA й походження. Повного нового прогону 14 команд не заявлено.\n\nПоточна проба 5641: **11887 записів / 11887 ключів available / 1308 недоступних / 0 недоступних у пулі**; справжні true/false/unknown проходять producer → record → composer, у пулі True/None. Початкове незалежне приймання джерела #1070 дало пул 11887 → 10579 і решту JSON всіх записів без змін; ці старі виміри збережені як джерельна історія. RAW: 50813000 байтів; CLEAN: 49504146 байтів, SHA256 `374492934617994073a0780b17c06c08d1ef05c8a7cd02b4352693d77de49226`; стадії розділені.\n\nПоточна проба 5685: 19 action мають SHA40, 41/41 npm пакет має integrity; незакріплених action/npm/pip, глобального write, CDN без SRI та Fixel@main — 0; типові права read у 4 workflow.\n\nПоточна збірка: 8320244 байтів, SHA256 `e1aaa1e62e4494ebedaaccf1746ae30f85f25542a47e4daf422580edb454e777`; код `8545f62e98b6`, вантаж `17c47ab983c8` збігаються з незалежною збіркою. Повний HTML має власний часовий штамп. Збірка пропустила свій повтор jsdom через відсутню локальну node_modules; окремий тест показу 741/65 пройдений через спільний NODE_PATH. 1564 входи, з них 1546 джерельних файлів, звірені з Git blobs до й після завершення.\n\nПоточний незалежний Chromium має **обмежений висновок**: blind1/«Службове» + діалог та огляд двох актуальних PNG пройдені; фактичні Pyodide 14761 байт/SRI/WASM200, три використані Fixel HTTP200, pageerrors0. Runner rc1: timeout шляху fixture/profiletap у режимі пакета з правильно прихованим профілем; продуктову ваду не доведено. **Crop UNMEASURED**. Blind0/3/4, raw download і четвертий Fixel у native належать лише датованій 9961. Незалежно звірені crop model9224B/render281524B точні main. [Незалежний огляд поточних двох знімків і точні межі](https://github.com/mightyrochy/kod-shi-data/pull/1094#issuecomment-6198187742); [незмінні центральні native-докази](https://github.com/mightyrochy/kod-shi-data/tree/1d9a24b460eb993c72d88d1d424079dec48355ad/перевірка/оновлення1078-1079). Широкий поточний native PASS не заявлено.\n\n[Авторський архів і SHA256-маніфест](https://github.com/mightyrochy/kod-shi-data/tree/codex/perevirka-pachka-1510-5/знімки) — лише поза main, включно з повним поточним тілом PR, датованою історією та сирими невдалими спробами. [Поточне «Службове»](https://github.com/mightyrochy/kod-shi-data/blob/codex/perevirka-pachka-1510-5/знімки/current-service-blind-390.png), [поточний діалог](https://github.com/mightyrochy/kod-shi-data/blob/codex/perevirka-pachka-1510-5/знімки/current-modal-390.png).\n\nВласних browser/server/heavy/background jobs **0**, ресурс передано наступному виконавцю. Модельних/платних викликів і нових секретів 0; ноутбук на паузі #960/6195175238. CI точної нової голови перевіряє координатор окремо; попередні зелені CI не перенесені. Злиття чи готовність за CI цим звітом не заявляються.\n\n---\n\n## Датована історія початкового опису 0ffb та попередньої 9961\n\n## Поточна заморожена пачка після злиття #1078 і #1079\n\n**Голова `0ffb624821c5972d7361c60f73dabcd52e61d9ee`**, дерево `047c546edda2151d082f82891737f9e0fee12921`, свіжий main `7f9e9f8d51c7ea135b68eb3c12aa94c456de324f`. Та сама гілка `codex/pachka-1510-5`, normal merge трьох актуальних джерел, CAS expected9961, force=false. Незалежний SOURCE3 CONTENT COMPOSITION PASS отриманий прямо до оновлення пачки.\n\n- #1070 `1ee1f74b7fb7151e4ccc8c408a01e152c4591474`: структурна наявність, рядок5641.\n- #1071 `5a68ba97c03776f293b8494d85fbce8a7fee7255`: сліпий службовий діагноз до четвертого вердикта, рядок5580.\n- #1082 `3f1cb373d5aeab2635c4a22e9798854f49b23db8`: SHA/locks/права/SRI/fonts, рядок5685.\n\nОбидві логіки й історії збережені: нові worker/UI та жнива3350/3710 main разом із трьома виправленнями пачки. Усі 1502 ID/повні чужі байти/порядок main точні; додано лише5685, разом1503, дублів0. Власний історичний LF збережено. Гілка містить стару9961, свіжийmain та всі три актуальні sourceheads.\n\nСтарий прогін9961 зупинений за вказівкою координатора: 6 завершених етапів і частковий сьомий збережені окремою датованою історією. Для підготовки/диму/живого шляху/протоколу незалежно від виконання звірено Git blobs 145/159/159/159 локальних import-залежностей, невизначених dynamic imports0; усі вони та каталожні входи незмінні. Це походження історичних завершених перевірок, не нові прогони. Перевірки синтаксису будуть лише для змінених/нових файлів; повториться лише уражена AST-проба жнив, потім незавершені гейти/контракти/показ/міст/досяжність/власні сімейні проби/збірка.\n\nНезалежний один поточний Chromium на цій голові (blind+SRI+нові modal/crop) виконує центральна QA перед продовженням авторської батареї. Рецензент пачки перевіряє композицію й сам оглядає актуальні PNG; старі 8 сцен9961 не повторюються. Поточні native/продовження батареї ще не завершені. CI цієї нової голови окремо веде координатор; старі source/9961 greens не перенесені.\n\nДокази лише поза main: `codex/perevirka-pachka-1510-5`, тека `знімки/`. Ноутбук на паузі #960/6195175238; моделей/платних API/нових секретів0. У main не пушили, PR не зливали, dispatch/auto-merge не запускали.\n\n---\n\n## Датована історія попередньої голови9961\n\n## Поточний стан: батарею перервано через новий продуктовий main\n\nГолова пачки ще `9961b3b5ed806aaba9db7dcec5aa1f8dc691f308`; код і гілка під час прогону не змінювалися. Після фактичного злиття #1078 і #1079 main перейшов на `7f9e9f8d51c7ea135b68eb3c12aa94c456de324f` із продуктовими змінами UI та worker/harvest. За прямою вказівкою координатора зупинено лише перевірені власні runner/child. Власних активних фонових завдань 0.\n\nІсторична батарея `9961…`: синтаксис, проби поділу, підготовка каталогу, дим, живий шлях і протокол завершені з rc0; сьомий етап гейтів перерваний, решта не запускалась. Точні SHA/стани/журнали збережені, повною завершеною батареєю це не названо. [Незалежний CONTENT і 8 знімків очима](https://github.com/mightyrochy/kod-shi-data/pull/1094#issuecomment-6197803377) — PASS саме для історичної голови `9961…`.\n\nЗАБЛОКОВАНО: очікується центральне звичайне оновлення трьох джерельних PR від нового main. Далі збирач оновить цю саму гілку normal merge/CAS без force, зафіксує нові входи та виконає лише уражені або незавершені перевірки зі збереженням походження завершених. Старі battery/native/CI не переносяться на новий SHA. CI окремо веде координатор.\n\n---\n\n## Історичний початковий опис голови 9961\n\n## Що змінено\n\nПачка рівно трьох незалежно перевірених PR, від свіжого main `0750a9494e0057995d5f0b4151a71a09b6ddae14`. Заморожена голова **`9961b3b5ed806aaba9db7dcec5aa1f8dc691f308`**, дерево `3d54b30e81cacef7d1b982778971604fd0dbb214`. Звичайні merge-коміти зберігають фактичні джерельні голови й історію main.\n\n- #1070 `202898c4e3e0f08d88c619c7b63dec0ac95702d6`, рядок 5641, п.12: структурний `available` доходить до запису й чинного фільтра; вихідне приймання 11 887 → 10 579 речей, недоступних у пулі 1 308 → 0, решта JSON незмінна.\n- #1071 `9b9d4314e1b984ce02081f71da1c12ea894abf2c`, рядок 5580, п.1: «Службове» приховує весь суфікс `hand_N` до четвертого вердикта, зокрема промпти; HTTP-помилки та брак входу видимі, файл власника повний.\n- #1082 `a8bed1b02dcce3eb1b5315b0ceb2976ed0669927`, рядок 5685, п.7/9/12/21: 19 action закріплено SHA40, 3 npm та 4 pip встановлення мають lock/хеші, глобальні права лише read й потрібний write на job; Pyodide SRI/crossorigin, шрифти на незмінному коміті.\n\nУсі 1 500 ID та порядок main, чужі повні байти дошки й історія збережені; додано лише 5685, разом 1 501 ID, дублів 0. Власний історичний порожній рядок #1082 збережено. HTML поєднано звичайним three-way зі збереженням української назви main, його змін однієї речі та обох виправлень джерел. Нові документи main успадковано. Поза трьома рядками дошки продуктових дописів від збирача немає.\n\n## Перевірено\n\nДо збирання повторно прочитано actual head/body/comments трьох PR; незалежні CONTENT і FINAL хвилі 2 підтверджені: [CONTENT](https://github.com/mightyrochy/kod-shi-data/tree/9b23f0671ace6144a755065e7a559110e2fa81a5/перевірка/оновлення1077), [FINAL](https://github.com/mightyrochy/kod-shi-data/tree/31b8ce5264e17c2fed808ced1db344e8643ac293/перевірка/оновлення1077/final). Повторний actual CI readback джерел: #1070 run38761797468 jobs116517078525+116533433084; #1071 run38761855019 jobs116520346081+116533049537; #1082 run38761946590 jobs116521013010+116531141794 — усі success, run head_sha точні.\n\nКомпозиція: ancestry чотирьох входів, Git tree/blob/mode, чужі байти дошки та diff-check перевірені. Незалежна перевірка цієї пачки отримує заморожений SHA одразу. Одна повна батарея саме цієї голови та сімейні проби — ще не завершені; незалежний вузький Chromium 390×844 для спільних змін — ще не завершений. Старі source-батареї не видаються за нову батарею пачки. CI цієї голови окремо веде координатор; pending/unknown не є green.\n\nДокази будуть лише поза main у `codex/perevirka-pachka-1510-5/знімки`. Ноутбук на паузі за #960/6195175238. Моделей, платних API й нових секретів 0; workflow_dispatch, auto-merge, merge PR та push main не виконувалися. ЖИВИЙ ПІСЛЯ: не потрібен для структурного переносу наявності, приховування службового діагнозу й закріплення залежностей; ноутбук не запускався.\n",
+    "body_utf8_bytes": 17922
+  },
+  "точність_оновлення_опису": {
+    "previous_body_utf8_bytes": 16927,
+    "previous_body_sha256": "b04df5c20415e872baf1140fb296d6f432cb2c6fc0ff60d5254fe8a742790b82",
+    "entire_previous_body_is_exact_suffix": true,
+    "prefix_utf8_bytes": 995
+  },
+  "CI_пачки": {
+    "run": {
+      "id": 38776154272,
+      "head_sha": "0ffb624821c5972d7361c60f73dabcd52e61d9ee",
+      "status": "completed",
+      "conclusion": "success",
+      "run_attempt": 1,
+      "event": "pull_request",
+      "html_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/38776154272",
+      "updated_at": "2026-10-15T18:03:42Z"
+    },
+    "jobs": [
+      {
+        "id": 116568603547,
+        "name": "перевірка джерел",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 38776154272,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "залежності батареї показу",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "node --check на кожен .js у джерела/",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "py_compile на кожен .py у джерела/",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "проби поділу (ВПАЛО має лишатись 0)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "розпакувати каталоги й почистити фід",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          },
+          {
+            "name": "дим на живому шляху",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "живий шлях (4 руки × 2 каталоги, brief)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          },
+          {
+            "name": "протокол",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "розділи гейтів (ВПАЛО має лишатись 0)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13
+          },
+          {
+            "name": "контракти (мають лишатись цілі)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 14
+          },
+          {
+            "name": "батарея показу (jsdom)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          },
+          {
+            "name": "міст (50 звірок)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16
+          },
+          {
+            "name": "досяжність («НІХТО» мусить лишатись 0)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17
+          },
+          {
+            "name": "звіт досяжності → job'у збірки",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 18
+          },
+          {
+            "name": "стенд у браузері (Chromium + Pyodide, 20 звірок)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 19
+          },
+          {
+            "name": "числа приладів у підсумок",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 20
+          },
+          {
+            "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 38
+          },
+          {
+            "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 39
+          },
+          {
+            "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 40
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 41
+          }
+        ]
+      },
+      {
+        "id": 116584285538,
+        "name": "зібрати показ-повний",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 38776154272,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "залежності батареї показу",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "зібрати показ-повний",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "звірка вантажу з джерелами",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "свіжий звіт досяжності з перевірки",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "закомітити артефакт",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 9
+          },
+          {
+            "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16
+          },
+          {
+            "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17
+          },
+          {
+            "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 18
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 19
+          }
+        ]
+      }
+    ]
+  },
+  "CI_джерел": [
+    {
+      "PR": 1070,
+      "head": "1ee1f74b7fb7151e4ccc8c408a01e152c4591474",
+      "run": {
+        "id": 38775584437,
+        "head_sha": "1ee1f74b7fb7151e4ccc8c408a01e152c4591474",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "event": "pull_request",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/38775584437",
+        "updated_at": "2026-10-15T17:48:47Z"
+      },
+      "jobs": [
+        {
+          "id": 116562241119,
+          "name": "перевірка джерел",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38775584437,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "залежності батареї показу",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "node --check на кожен .js у джерела/",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "py_compile на кожен .py у джерела/",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "проби поділу (ВПАЛО має лишатись 0)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "розпакувати каталоги й почистити фід",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "дим на живому шляху",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "живий шлях (4 руки × 2 каталоги, brief)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            },
+            {
+              "name": "протокол",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "розділи гейтів (ВПАЛО має лишатись 0)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            },
+            {
+              "name": "контракти (мають лишатись цілі)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14
+            },
+            {
+              "name": "батарея показу (jsdom)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15
+            },
+            {
+              "name": "міст (50 звірок)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16
+            },
+            {
+              "name": "досяжність («НІХТО» мусить лишатись 0)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            },
+            {
+              "name": "звіт досяжності → job'у збірки",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "стенд у браузері (Chromium + Pyodide, 20 звірок)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            },
+            {
+              "name": "числа приладів у підсумок",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 20
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 38
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 39
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 40
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 41
+            }
+          ]
+        },
+        {
+          "id": 116577226822,
+          "name": "зібрати показ-повний",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38775584437,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "залежності батареї показу",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "зібрати показ-повний",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "звірка вантажу з джерелами",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "свіжий звіт досяжності з перевірки",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "закомітити артефакт",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "PR": 1071,
+      "head": "5a68ba97c03776f293b8494d85fbce8a7fee7255",
+      "run": {
+        "id": 38775634820,
+        "head_sha": "5a68ba97c03776f293b8494d85fbce8a7fee7255",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "event": "pull_request",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/38775634820",
+        "updated_at": "2026-10-15T17:49:27Z"
+      },
+      "jobs": [
+        {
+          "id": 116562415741,
+          "name": "перевірка джерел",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38775634820,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "залежності батареї показу",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "node --check на кожен .js у джерела/",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "py_compile на кожен .py у джерела/",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "проби поділу (ВПАЛО має лишатись 0)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "розпакувати каталоги й почистити фід",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "дим на живому шляху",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "живий шлях (4 руки × 2 каталоги, brief)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            },
+            {
+              "name": "протокол",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "розділи гейтів (ВПАЛО має лишатись 0)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            },
+            {
+              "name": "контракти (мають лишатись цілі)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14
+            },
+            {
+              "name": "батарея показу (jsdom)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15
+            },
+            {
+              "name": "міст (50 звірок)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16
+            },
+            {
+              "name": "досяжність («НІХТО» мусить лишатись 0)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            },
+            {
+              "name": "звіт досяжності → job'у збірки",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "стенд у браузері (Chromium + Pyodide, 20 звірок)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            },
+            {
+              "name": "числа приладів у підсумок",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 20
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 38
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 39
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 40
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 41
+            }
+          ]
+        },
+        {
+          "id": 116578061150,
+          "name": "зібрати показ-повний",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38775634820,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "залежності батареї показу",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "зібрати показ-повний",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "звірка вантажу з джерелами",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "свіжий звіт досяжності з перевірки",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "закомітити артефакт",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "PR": 1082,
+      "head": "3f1cb373d5aeab2635c4a22e9798854f49b23db8",
+      "run": {
+        "id": 38775684863,
+        "head_sha": "3f1cb373d5aeab2635c4a22e9798854f49b23db8",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "event": "pull_request",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/38775684863",
+        "updated_at": "2026-10-15T17:48:49Z"
+      },
+      "jobs": [
+        {
+          "id": 116562589762,
+          "name": "перевірка джерел",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38775684863,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "залежності батареї показу",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "node --check на кожен .js у джерела/",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "py_compile на кожен .py у джерела/",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "проби поділу (ВПАЛО має лишатись 0)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "розпакувати каталоги й почистити фід",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "дим на живому шляху",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "живий шлях (4 руки × 2 каталоги, brief)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            },
+            {
+              "name": "протокол",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "розділи гейтів (ВПАЛО має лишатись 0)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            },
+            {
+              "name": "контракти (мають лишатись цілі)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14
+            },
+            {
+              "name": "батарея показу (jsdom)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15
+            },
+            {
+              "name": "міст (50 звірок)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16
+            },
+            {
+              "name": "досяжність («НІХТО» мусить лишатись 0)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            },
+            {
+              "name": "звіт досяжності → job'у збірки",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "стенд у браузері (Chromium + Pyodide, 20 звірок)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            },
+            {
+              "name": "числа приладів у підсумок",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 20
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 38
+            },
+            {
+              "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 39
+            },
+            {
+              "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 40
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 41
+            }
+          ]
+        },
+        {
+          "id": 116577402101,
+          "name": "зібрати показ-повний",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38775684863,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "залежності батареї показу",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "зібрати показ-повний",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "звірка вантажу з джерелами",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "свіжий звіт досяжності з перевірки",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "закомітити артефакт",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16
+            },
+            {
+              "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            },
+            {
+              "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "свіжий_main": {
+    "sha": "a89c513ba89e5b651953d218ae4763508c3a3ea1",
+    "compare": {
+      "repository_full_name": "mightyrochy/kod-shi-data",
+      "base": "7f9e9f8d51c7ea135b68eb3c12aa94c456de324f",
+      "head": "a89c513ba89e5b651953d218ae4763508c3a3ea1",
+      "status": "ahead",
+      "ahead_by": 4,
+      "behind_by": 0,
+      "total_commits": 4,
+      "too_large": null,
+      "base_commit": {
+        "sha": "7f9e9f8d51c7ea135b68eb3c12aa94c456de324f",
+        "url": "https://api.github.com/repos/mightyrochy/kod-shi-data/commits/7f9e9f8d51c7ea135b68eb3c12aa94c456de324f",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/commit/7f9e9f8d51c7ea135b68eb3c12aa94c456de324f"
+      },
+      "merge_base_commit": {
+        "sha": "7f9e9f8d51c7ea135b68eb3c12aa94c456de324f",
+        "url": "https://api.github.com/repos/mightyrochy/kod-shi-data/commits/7f9e9f8d51c7ea135b68eb3c12aa94c456de324f",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/commit/7f9e9f8d51c7ea135b68eb3c12aa94c456de324f"
+      },
+      "files": [
+        {
+          "filename": "build.txt",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1,
+          "changes": 2,
+          "previous_filename": null
+        },
+        {
+          "filename": "index.html",
+          "status": "modified",
+          "additions": 37,
+          "deletions": 10,
+          "changes": 47,
+          "previous_filename": null
+        },
+        {
+          "filename": "аудит/передачі/2026-10-15_1800.md",
+          "status": "added",
+          "additions": 102,
+          "deletions": 0,
+          "changes": 102,
+          "previous_filename": null
+        },
+        {
+          "filename": "джерела/аудит/ДОСЯЖНІСТЬ.md",
+          "status": "modified",
+          "additions": 19,
+          "deletions": 18,
+          "changes": 37,
+          "previous_filename": null
+        }
+      ]
+    },
+    "продуктових_змін": 0
+  },
+  "походження_FINAL": {
+    "comment_id": 6198637117,
+    "archive_commit": "e8eaeb195aa5efee11a286e66836d8f606b14a1e",
+    "archive_parent": "0ffb624821c5972d7361c60f73dabcd52e61d9ee",
+    "archive_compare": {
+      "repository_full_name": "mightyrochy/kod-shi-data",
+      "base": "0ffb624821c5972d7361c60f73dabcd52e61d9ee",
+      "head": "e8eaeb195aa5efee11a286e66836d8f606b14a1e",
+      "status": "ahead",
+      "ahead_by": 1,
+      "behind_by": 0,
+      "total_commits": 1,
+      "too_large": null,
+      "base_commit": {
+        "sha": "0ffb624821c5972d7361c60f73dabcd52e61d9ee",
+        "url": "https://api.github.com/repos/mightyrochy/kod-shi-data/commits/0ffb624821c5972d7361c60f73dabcd52e61d9ee",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/commit/0ffb624821c5972d7361c60f73dabcd52e61d9ee"
+      },
+      "merge_base_commit": {
+        "sha": "0ffb624821c5972d7361c60f73dabcd52e61d9ee",
+        "url": "https://api.github.com/repos/mightyrochy/kod-shi-data/commits/0ffb624821c5972d7361c60f73dabcd52e61d9ee",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/commit/0ffb624821c5972d7361c60f73dabcd52e61d9ee"
+      },
+      "files": [
+        {
+          "filename": "знімки/current-modal-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0,
+          "changes": 0,
+          "previous_filename": null
+        },
+        {
+          "filename": "знімки/current-service-blind-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0,
+          "changes": 0,
+          "previous_filename": null
+        },
+        {
+          "filename": "знімки/докази-поточні.tar.gz",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0,
+          "changes": 0,
+          "previous_filename": null
+        },
+        {
+          "filename": "знімки/маніфест.json",
+          "status": "added",
+          "additions": 416,
+          "deletions": 0,
+          "changes": 416,
+          "previous_filename": null
+        }
+      ]
+    },
+    "manifest_blob": "6e1a71775345e4364c4f394ea3fd1f6807bcb057",
+    "archive_bytes": 1297082,
+    "archive_sha256": "e7649b87c321907b3eae9a1a3790794088b1e3733c5251f33a0099869ad23327",
+    "межа": "Свіжо звірено metadata/comment/parent/чотири шляхи/manifest. Tar, журнали, native та CONTENT повторно не виконувалися й не приймалися."
+  },
+  "Claude_лише_сумісність_шляхів": [
+    {
+      "PR": 1096,
+      "head": "1e180a38657612bbf221be7f1bbbf4ba0b71ab07",
+      "changed_files": [
+        "аудит/БЕКЛОГ.md",
+        "джерела/outfit.py",
+        "джерела/pipeline.py",
+        "джерела/аксесуари_суд.py",
+        "джерела/вердикт_моделі.py",
+        "джерела/оцінка_образу.py",
+        "джерела/проби/acc_без_входу.py",
+        "джерела/проби/поділ_очікувані.d/рядок-5281.txt",
+        "джерела/проби/фото_поля_суду_5297.py",
+        "джерела/проби/чекліст_стосується_5281.py",
+        "джерела/протокол.py",
+        "джерела/річ_з_фото.py",
+        "джерела/суд_чеклісти.py"
+      ],
+      "shared_paths_with_1094": [
+        "аудит/БЕКЛОГ.md"
+      ]
+    },
+    {
+      "PR": 1099,
+      "head": "c6eaddf6ddb5277dcca0a127f7db4c5a5f3706e3",
+      "changed_files": [
+        "аудит/БЕКЛОГ.md",
+        "джерела/outfit.py",
+        "джерела/pipeline.py",
+        "джерела/аксесуари_суд.py",
+        "джерела/вердикт_моделі.py",
+        "джерела/оцінка_образу.py",
+        "джерела/проби/acc_без_входу.py",
+        "джерела/проби/колір_весь_кадр_5286.py",
+        "джерела/проби/поділ_очікувані.d/рядок-5281.txt",
+        "джерела/проби/поділ_очікувані.d/рядок-5282.txt",
+        "джерела/проби/поділ_очікувані.d/рядок-5286.txt",
+        "джерела/проби/фото_поля_суду_5297.py",
+        "джерела/проби/чекліст_стосується_5281.py",
+        "джерела/проби/чекліст_фаза_5282.py",
+        "джерела/протокол.py",
+        "джерела/річ_з_фото.py",
+        "джерела/суд_образу.py",
+        "джерела/суд_чеклісти.py"
+      ],
+      "shared_paths_with_1094": [
+        "аудит/БЕКЛОГ.md"
+      ]
+    }
+  ],
+  "межі": [
+    "10 команд продовження, не нова повна батарея 14 команд; старі 6 та перервана 07 мають окреме походження.",
+    "Поточний native має кваліфікований обсяг: blind1/AX/помилки/modal/два PNG/SRI/три використані шрифти. Runner rc1 збережений; crop UNMEASURED.",
+    "Blind0/3/4/raw/fourth font — лише датовані докази 9961. Ні загального поточного native PASS, ні H1/LIVE, ні якості фото/кольору.",
+    "Сумісність Claude встановлено тільки за переліками змінених файлів; спільна дошка вимагає збереження обох логік/рядків під час майбутнього злиття. Merge-tree і продуктове приймання Claude тут не виконувалися.",
+    "Нових тестів, build, native, моделей, ноутбука, продуктового коду, main push та merge у цій FINAL 0."
+  ],
+  "висновок": "FINAL МЕТАДАНІ ТА CI PASS для точної голови 0ffb624821c5972d7361c60f73dabcd52e61d9ee з наведеними межами."
+}
