@@ -14,7 +14,7 @@ sys.path.insert(0, (_К := os.path.dirname(os.path.dirname(os.path.abspath(__fil
           сід=3, варіантів=3, випадок="прогулятись із собаками по парку")
 відп = мст("запити", вх)
 пак = відп["B"]
-рядки = (json.loads(пак) if isinstance(пак, str) else пак)["pool"]
+import збирач_промптів as ЗП; рядки = ЗП.рядки_таблиці((json.loads(пак) if isinstance(пак, str) else пак)["pool"])
 за_н = {р_["n"]: р_ for р_ in рядки}
 пул = {сл: [за_н[ном] for ном in ід if ном in за_н]
        for сл, ід in відп["порядок_рук"]["1"]["слоти"].items()}
