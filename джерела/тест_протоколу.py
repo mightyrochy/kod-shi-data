@@ -884,6 +884,7 @@ _до7 = _ДМ6.опис(_оп7)
        and not _КИР.search(json.dumps({к: v for к, v in _до7["case"].items() if к != "event"}, ensure_ascii=False))
        and _ЗП6.коди_заяв(_до7)[:1] == ["place_near_face_field"], json.dumps(_до7, ensure_ascii=False)[:400])
 import оцінка_образу as _ОЦ7
+import суд_чеклісти as _СЧ7
 _ід7 = ("ф1", "ф1·2", "з3", "з-о1-1")
 звірка("ВМ-3б: ід оцінки на дроті латинкою («ф1·2» → «p1-2», «з3» → «c3»), назад — ті самі",
        [_ОЦ7.ід_на_дріт(x) for x in _ід7] == ["p1", "p1-2", "c3", "f-o1-1"]
@@ -895,16 +896,22 @@ _суд7 = {"суд": {"findings": [dict(ід="з-о1-1", правило="K-COL-
          "пункти": [dict(бік="надлишок", пункт=2, правила=["K-CRA-02"], стан="провал", що="рівно один фокус"),
                     dict(бік="обличчя", пункт="K-CLR-02", правила=["K-CLR-02"], стан="пройдено", що="в межах")],
          "без_входу": [dict(input="color_measure", items=["ф1"], why=[{"free_text": "пікселів не було", "lang": "uk"}]),
+                       dict(input="temperature"),
+                       dict(rule=["K-CRA-01"], check="надлишок", point="formality_spread", why="photo_field_missing:тип",
+                            what={"free_text": "розкид ошатності", "lang": "uk"}),
                        dict(rule=["K-SIL-01"], check="надлишок", point="one_silhouette_letter",
-                            what={"free_text": "одна читана літера силуету", "lang": "uk"})]}
+                            why="system:довжина_виробу_см", constant="system:довжина_виробу_см"),
+                       dict(rule=["K-WEA-01"], check="аксесуари", point="weather_withstood", why="not_given:темп_c")]}
 _пк7 = _ОЦ7.перевірка_для_моделі(_суд7)
 _нв7 = _ОЦ7._ід_усюди(_ОЦ7.невідоме_для_моделі(_суд7))
 звірка("ВМ-3б: суд оцінки на дроті — знахідки заявами, блокер кодом, пункти кодами, вузол кодом слота, «без "
-       "входу» — `not_run` кодами; кирилиці нема",
+       "входу» — позначки «немає входу» без норми (5285): сталий брак і похідне від погоди не йдуть; кирилиці нема",
        _пк7["findings"][0]["statements"] == ["two_different_whites"] and _пк7["findings"][0]["fix"] == ["one_white"]
        and _пк7["blockers"] == [{"code": "no_bag"}] and _пк7["node"] == "outerwear"
        and _пк7["points"] == {"failed": ["single_focus"], "passed": ["face_contrast"]}
-       and {"not_run": ["one_silhouette_letter"]} in _нв7 and {"input": "color_measure", "items": ["p1"]} in _нв7
+       and _нв7 == [{"no_input": ["color_measure"], "items": ["p1"]}, {"no_input": ["temperature"]},
+                    {"no_input": ["item_kind"], "why": "photo_field_missing"}]
+       and set(_ОЦ7._ВХІД_КОД) >= {п for р, п in _СЧ7._ЧОМУ_БЕЗ_ВХОДУ.values() if р != "система"}
        and not _КИР.search(json.dumps(_ОЦ7._ід_усюди(_пк7), ensure_ascii=False) + json.dumps(_нв7, ensure_ascii=False))
        and _ЗП6.коди_заяв({"check": _пк7})[-1] == "face_contrast", json.dumps(_пк7, ensure_ascii=False)[:300])
 

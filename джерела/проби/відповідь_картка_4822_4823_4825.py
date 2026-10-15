@@ -17,7 +17,7 @@ for імʼя, сире in для_оцінки.items():
     після = прийняти_оцінку(сире, суд)["картка"]
     print(імʼя, "ДО", сире)
     print(імʼя, "ПІСЛЯ", після)
-    assert [х.get("код") for х in після["не_знаю"]][:3] == ["input:occasion", "input:temperature", "input:color_measure"]
+    assert [х.get("входи") for х in після["не_знаю"]][:3] == [["occasion"], ["temperature"], ["color_measure"]]   # 5285
     assert not any("Немає даних" in str(х) for х in після["не_знаю"])   # слова — не від коду (п.12)
     assert "c1" not in після["відповідь"]
 
