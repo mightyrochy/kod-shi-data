@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Приклад фіда крамниці-партнера Люстерка (специфікація — каталог_партнерів_2026-10-15.md).
+     Сумісний з YML Prom.ua / Rozetka: offer = один розмір одного кольору; group_id — модель;
+     колір усередині моделі — окремий варіант зі своїми фото. Крамниця й речі вигадані. -->
+<yml_catalog date="2026-10-15 06:00">
+  <shop>
+    <name>Приклад</name>
+    <company>ФОП Приклад</company>
+    <url>https://pryklad.example.ua</url>
+    <currencies><currency id="UAH" rate="1"/></currencies>
+    <categories>
+      <category id="10">Сукні</category>
+      <category id="11" parentId="10">Сукні міді</category>
+      <category id="20">Жакети</category>
+    </categories>
+    <offers>
+      <!-- Модель 5001 «сукня-сорочка», колір «пудровий», розміри S і M -->
+      <offer id="5001-pud-S" group_id="5001" available="true">
+        <url>https://pryklad.example.ua/p/5001?color=pud</url>
+        <price>2400</price>
+        <currencyId>UAH</currencyId>
+        <categoryId>11</categoryId>
+        <name>Сукня-сорочка міді з льону, пудрова</name>
+        <vendor>Приклад</vendor>
+        <vendorCode>5001-PUD</vendorCode>
+        <picture>https://pryklad.example.ua/img/5001-pud-front.jpg</picture>
+        <picture>https://pryklad.example.ua/img/5001-pud-back.jpg</picture>
+        <picture>https://pryklad.example.ua/img/5001-pud-detail.jpg</picture>
+        <picture>https://pryklad.example.ua/img/5001-pud-model.jpg</picture>
+        <description>Сукня-сорочка прямого крою з поясом, ґудзики по всій довжині.</description>
+        <param name="Ролі фото">спереду; ззаду; деталь; на моделі</param>
+        <param name="Колір">пудровий</param>
+        <param name="Колір hex">#D9B8AA</param>
+        <param name="Склад">55% льон; 45% віскоза</param>
+        <param name="Візерунок">однотонний</param>
+        <param name="Силует">прямий</param>
+        <param name="Довжина">міді</param>
+        <param name="Довжина виробу" unit="см">112</param>
+        <param name="Рукав">довгий</param>
+        <param name="Виріз">комір-стійка</param>
+        <param name="Застібка">ґудзики</param>
+        <param name="Підкладка">ні</param>
+        <param name="Сезон">весна-літо</param>
+        <param name="Догляд">ручне прання 30°; не відбілювати; прасувати з вологою</param>
+        <param name="Зріст моделі" unit="см">172</param>
+        <param name="Розмір на моделі">S</param>
+        <param name="Розмір">S</param>
+        <param name="Розмірна сітка">INT</param>
+        <param name="Таблиця обмірів">https://pryklad.example.ua/sizes/5001</param>
+        <param name="Оновлено">2026-10-14</param>
+      </offer>
+      <offer id="5001-pud-M" group_id="5001" available="false">
+        <url>https://pryklad.example.ua/p/5001?color=pud</url>
+        <price>2400</price>
+        <currencyId>UAH</currencyId>
+        <categoryId>11</categoryId>
+        <name>Сукня-сорочка міді з льону, пудрова</name>
+        <vendor>Приклад</vendor>
+        <vendorCode>5001-PUD</vendorCode>
+        <picture>https://pryklad.example.ua/img/5001-pud-front.jpg</picture>
+        <picture>https://pryklad.example.ua/img/5001-pud-back.jpg</picture>
+        <picture>https://pryklad.example.ua/img/5001-pud-detail.jpg</picture>
+        <picture>https://pryklad.example.ua/img/5001-pud-model.jpg</picture>
+        <param name="Ролі фото">спереду; ззаду; деталь; на моделі</param>
+        <param name="Колір">пудровий</param>
+        <param name="Склад">55% льон; 45% віскоза</param>
+        <param name="Розмір">M</param>
+        <param name="Оновлено">2026-10-14</param>
+      </offer>
+      <!-- Та сама модель 5001 в іншому кольорі — окремий варіант зі своїми фото -->
+      <offer id="5001-oliv-M" group_id="5001" available="true">
+        <url>https://pryklad.example.ua/p/5001?color=oliv</url>
+        <price>2400</price>
+        <currencyId>UAH</currencyId>
+        <categoryId>11</categoryId>
+        <name>Сукня-сорочка міді з льону, оливкова</name>
+        <vendor>Приклад</vendor>
+        <vendorCode>5001-OLV</vendorCode>
+        <picture>https://pryklad.example.ua/img/5001-oliv-front.jpg</picture>
+        <picture>https://pryklad.example.ua/img/5001-oliv-back.jpg</picture>
+        <picture>https://pryklad.example.ua/img/5001-oliv-flat.jpg</picture>
+        <param name="Ролі фото">спереду; ззаду; викладка</param>
+        <param name="Колір">оливковий</param>
+        <param name="Склад">55% льон; 45% віскоза</param>
+        <param name="Візерунок">однотонний</param>
+        <param name="Розмір">M</param>
+        <param name="Оновлено">2026-10-14</param>
+      </offer>
+      <!-- Жакет без моделі й без складу: валідатор має назвати, чого бракує -->
+      <offer id="7310-M" group_id="7310" available="true">
+        <url>https://pryklad.example.ua/p/7310</url>
+        <price>3900</price>
+        <currencyId>UAH</currencyId>
+        <categoryId>20</categoryId>
+        <name>Жакет в ялинку</name>
+        <picture>https://pryklad.example.ua/img/7310-front.jpg</picture>
+        <param name="Розмір">M</param>
+      </offer>
+    </offers>
+  </shop>
+</yml_catalog>
