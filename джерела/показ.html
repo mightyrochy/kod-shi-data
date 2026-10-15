@@ -1038,6 +1038,9 @@ img.образ{max-width:100%;border:1px solid var(--межа);display:block}
 .заява p{color:var(--олівець);font-size:14px;line-height:1.5}
 pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
   font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto}
+#нова-версія{position:sticky;top:0;z-index:50;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;padding:8px 16px;background:var(--папір);border-bottom:1px solid var(--межа);color:var(--чорнило);font-size:14px}
+#нова-версія[hidden]{display:none}
+#нова-версія button{padding:6px 14px;font-size:14px}
 #службове{display:none;border-top:1px solid var(--межа);margin-top:20px;padding-top:12px;font-size:13px;color:var(--олівець)}
 #службове.видно{display:block}
 #службове summary{cursor:pointer}
@@ -1092,6 +1095,7 @@ pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
   body>.колонка{grid-column:2;max-width:none;width:100%;padding:26px 0 0;display:flex;flex-direction:column;min-height:100vh;box-sizing:border-box}
   body>.колонка>*{flex:0 0 auto}
   header.шапка{display:none}
+  #нова-версія{grid-column:1/-1;grid-row:1}
   .бік{display:flex;flex-direction:column;grid-column:1;position:sticky;top:0;height:100vh;box-sizing:border-box;padding:26px 0 22px}
   .бік-знак{font:500 28px/1 var(--дисплей);font-variation-settings:"CONT" 600;letter-spacing:.01em;color:var(--чорнило);background:none;border:0;
     padding:0 12px 9px;text-align:left;position:relative;clip-path:none;align-self:flex-start;cursor:pointer}
@@ -1154,6 +1158,7 @@ label:has(input:focus-visible),.слот:has(input:focus-visible){
 </style>
 </head>
 <body>
+<div id="нова-версія" role="status" hidden><span>Є новіша версія Люстерка.</span> <button type="button" id="нова-версія-кн">Оновити</button></div>
 
 <svg style="display:none" aria-hidden="true">
   <symbol id="і-день" viewBox="0 0 24 24"><path d="M5 8h11v6a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5V8z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2M4 22h14"/></symbol>
@@ -11503,6 +11508,33 @@ async function приміряти(поз){
 const МОДУЛІ_ПОКАЗУ = "__МОДУЛІ_ПОКАЗУ__";
 const ЗБІРКА_ПОКАЗУ = "__ЗБІРКА_ПОКАЗУ__";
 const ВІДБИТОК_ПОКАЗУ = "__ВІДБИТОК__";
+
+/* ── ЧИ Є НОВІША ЗБІРКА ──────────────────────────────────────────────────
+   GitHub Pages віддає index.html з max-age=600, а відновлена вкладка й вбудовані
+   браузери месенджерів тримають копію ще довше. CI кладе поруч `build.txt` зі
+   штампом збірки; при відкритті й коли вкладка знову видима читаємо його повз кеш.
+   Лише смужка з кнопкою: сторінку сама не перезавантажуємо, щоб не обірвати розмову. */
+const ФАЙЛ_ЗБІРКИ = 'build.txt';
+function шляхОновлення(нова, адреса){
+  const у = new URL(адреса);
+  у.searchParams.set('v', нова);
+  return у.pathname + у.search + у.hash;
+}
+async function перевіритиНовішуЗбірку(){
+  if (!/^https?:$/.test(location.protocol) || ЗБІРКА_ПОКАЗУ.indexOf('показ') < 0) return;
+  try{
+    const відп = await fetch(new URL(ФАЙЛ_ЗБІРКИ, location.href).pathname + '?t=' + Date.now(), {cache:'no-store'});
+    if (!відп.ok){ console.warn('штамп збірки: ' + ФАЙЛ_ЗБІРКИ + ' → ' + відп.status); return; }
+    const нова = (await відп.text()).trim();
+    if (!нова || нова === ЗБІРКА_ПОКАЗУ) return;
+    $('нова-версія').hidden = false;
+    $('нова-версія-кн').onclick = () => location.replace(шляхОновлення(нова, location.href));
+  }catch(e){ console.warn('штамп збірки не прочитано:', e); }
+}
+перевіритиНовішуЗбірку();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') перевіритиНовішуЗбірку();
+});
 const ГАМИ = ['приглушені', 'середні', 'насичені'];
 const ДЗЕРКАЛА_П = [['jsdelivr', 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/']];
 const СТОРОЖ_П = 150000;
