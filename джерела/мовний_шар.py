@@ -1701,14 +1701,9 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
             об[ім] = list(dict.fromkeys(коди))[:3] or (досі.get(ім) if є(досі.get(ім)) else None)
         else:
             об[ім] = _ВМ.ключ(перелік, в.get(поле)) or (досі.get(ім) if є(досі.get(ім)) else None)
-    # ЗОНИ МЕТИ ЖИВУТЬ ЛИШЕ З МЕТОЮ, ЯКУ ВОНИ УТОЧНЮЮТЬ (ФОКУС-3, огляд #616): мета, названа ЦИМ
-    # ходом, без зон цього ходу скидає зони попередніх — «хочу, щоб дивились» (express) чи «просто
-    # не хочу привертати уваги» (conceal без зони) означають увесь образ, а не давній живіт.
-    # Хід, що мети не назвав, зони лишає; зони, названі знову, стоять.
-    # Скидання — порожнім списком: ключі з None шов нижче відкидає, а `[]` `паспорт_з_json` читає
-    # як «поля нема» і давнього не переносить.
-    if _ВМ.ключ("goal", в.get("goal")) and not в.get("goal_zones"):
-        об["мета_зони"] = []
+    # ЗОНИ МЕТИ — ОКРЕМА ПЛИТКА (рядок 5211, рішення власника 15.10 «3б»): доти мета, названа ходом без
+    # зон, скидала давні зони (ФОКУС-3, огляд #616) — бо «приховати» з зоною означало лише зону. Тепер зона
+    # «відвести погляд від…» стоїть поруч із будь-якою увагою, тож нова увага давньої зони не знімає.
     # ГОДИНА — ЛИШЕ НАЗВАНА, ПОРА — ПОРОЮ (рядок 4020). Доти пора без годинника ставала годиною
     # (`evening` → 20), і картка «Коли й погода» показувала 20:00, яких вона не казала. Пору несе
     # `пора` (цикл вимірів розмови вище); година цього ходу знімає давню пору — вона точніша.
@@ -2473,17 +2468,18 @@ _ПОЛЯ_EN = {
               "approve); statement — she wants to impress, stand out or be noticed, however she words it (all "
               "eyes on her, a star, bold, bright, not like everyone else, tired of grey and safe); conventional "
               "— none of these, also when she wants to be unnoticed",
-    # Рядок 1437: «conceal — no attention or hiding something» — два наміри одним кодом; розводить їх
-    # goal_zones, і код читає це так само (`регістр_уваги.мета_образу`)
-    "goal": "how she wants to be seen in this look — only its own codes, never an intent code: flatter — to suit "
-            "her; conceal — either no attention to her whole look, or drawing the eye away from a body zone (then "
-            "also goal_zones); express — to be looked at, set together with intent statement when she wants to "
-            "stand out. Passing someone's judgement (no remarks, no criticism, no questions to her) is not conceal: "
+    # Рядок 5211 (рішення власника 15.10 «3б»): мета — дві осі. `goal` — лише скільки уваги; зони й «що ще
+    # важливо» — свої поля, з будь-якою увагою (код читає їх окремо: `регістр_уваги`, `реєстр_намір._намір`)
+    "goal": "how much attention she wants for this look — only its own codes, never an intent code: conceal — "
+            "quiet, no attention to her look; flatter — usual, to suit her; express — to be looked at, set together "
+            "with intent statement when she wants to stand out. A body zone she wants to hide is goal_zones, not "
+            "conceal. Passing someone's judgement (no remarks, no criticism, no questions to her) is not conceal: "
             "it is intent context_optimal",
-    "goal_zones": "only with goal conceal, when she wants to draw the eye away from a body zone («сховати "
-                  "живіт» — belly): the goal then concerns only these zones, and the rest of the look is free; "
-                  "when she also wants no attention to herself at all — no field, the whole look is quiet. Never for "
-                  "how much skin she shows: that is open_zones",
+    "goal_extra": "what else matters to her in this look, several together: taller — a longer line, to look "
+                  "taller; comfort — moving comfortably all day; strict — strictly by the occasion",
+    "goal_zones": "body zones she wants to draw the eye away from («сховати живіт» — belly), with any goal: these "
+                  "zones stay quiet, the rest of the look follows goal. Never for how much skin she shows: that is "
+                  "open_zones",
     "makeup": "make-up for this outing; lips_hex only when she named a lip colour",
     "jewelry": "jewellery she wants with this look; ethnic — wood, bone, beads; other — without metal",
     "registers": "style registers she described herself with",
@@ -2575,7 +2571,9 @@ def _умови_тем():
         "occasion": ("where she is going in this item: work, a date, a celebration or every day",
                      "she sent a photo of her item and no occasion, place or event is known"),
         # Рядок 1441: «today» модель переносила дослівно — «сьогодні» для події в серпні чи суботу
-        "goal": ("whether at this outing she wants to draw attention or stay unnoticed", вечір),
+        # Рядок 5211: тема мети — обидві осі (увага й «що ще важливо»), одним м'яким реченням
+        "goal": ("whether at this outing she wants to draw attention or stay unnoticed, and whether a longer line, "
+                 "comfort all day or strictness for the occasion matter to her", вечір),
         # МАК-2 (рядок 258): та сама умова, що `face_contrast.порада_з_випадку` у судді тем
         "makeup": ("what make-up she plans and the lip colour",
                    "%s; or profile colouring.contrast is low and the occasion is dressy: occasion %s, place %s, "
