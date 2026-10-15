@@ -2278,6 +2278,42 @@
        "code": {
         "oneOf": [
          {
+          "const": "goal_default_no_weights",
+          "description": "no goal weights were supplied: flatter is the system default, not her choice. It assumes she wants to please; this is not neutral or universal (theme-6 1.6)"
+         },
+         {
+          "const": "goal_default_no_known_weights",
+          "description": "no known goal occurs in the supplied weights: the goal remains the system default flatter, not her choice"
+         },
+         {
+          "const": "goal_default_no_dominant_weight",
+          "description": "the leading weight is less than threshold ahead of the runner-up: no priority was established, so flatter remains the system default (values: leading, weight, runner_up, runner_up_weight, gap, threshold)"
+         },
+         {
+          "const": "goal_from_weights",
+          "description": "the leading weight gives the goal through the system's soft mapping, not a mapping from the source. The attention axis changes the direction of advice, not its strength (theme-6 1.6; values: goal, leading, weight, runner_up, runner_up_weight, gap, threshold)"
+         },
+         {
+          "const": "goal_comfort_not_represented",
+          "description": "comfort is not represented in the single attention-goal scalar: it maps to flatter to retain colour behaviour; the comfort preference has no effect"
+         },
+         {
+          "const": "goal_ease_not_represented",
+          "description": "ease of composing is not represented in the attention-goal scalar: it maps to flatter; the ease preference has no effect"
+         },
+         {
+          "const": "goal_appropriateness_in_occasion",
+          "description": "appropriateness is handled by the occasion layer (K-KOH-09), not by the attention goal"
+         },
+         {
+          "const": "goal_from_her_words",
+          "description": "the occasion passport supplied her goal from her words (K-IO-02): goal overrides weights_goal. Her exact words are separate in goal_quote; goal weights are not her choice for this occasion"
+         },
+         {
+          "const": "goal_zone_only",
+          "description": "conceal concerns the named zones, not the entire outfit: the outfit-wide goal comes from the weights or the system default (values: zones, goal)"
+         },
+         {
           "const": "portrait_black_white",
           "description": "the photo is black-and-white or under a heavy filter: it carries no true colours"
          },
