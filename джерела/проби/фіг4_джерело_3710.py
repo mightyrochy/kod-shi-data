@@ -23,6 +23,7 @@ def головна():
                          фото_опису_до=р.get('фото_опису'), джерело_до=р.get('крій_джерело')))
     print('RAW XML', len(сирий_xml), 'SHA256', hashlib.sha256(сирий_xml).hexdigest(), 'offers', len(офери))
     print('RUNTIME каталог', len(кат), 'сукні', len(сукні), 'крої', dict(collections.Counter(р.get('крій') for р in сукні)))
+    print('RUNTIME SHA256', hashlib.sha256(json.dumps(кат, ensure_ascii=False, sort_keys=True).encode()).hexdigest(), 'raw_ids_поза_runtime', sorted(set(сирі) - {р['id'] for р in кат}))
     print('пілот', len(вхід), 'типи producer', dict(collections.Counter(р['тип'] for р in вхід)))
     print('контракт сукні', sum(р['контракт_сукні'] for р in вхід), 'без одного крою ДО', sum(len(р['крої_до']) != 1 for р in вхід))
     комб = [р for р in офери if Ф.тип_речі(р, Ф.слоти(р)['слот']) == 'комбінезон']
