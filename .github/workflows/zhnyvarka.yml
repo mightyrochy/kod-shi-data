@@ -25,7 +25,7 @@ on:
         default: "6"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: zhnyvarka
@@ -52,11 +52,11 @@ jobs:
       matrix:
         group: ${{ fromJSON(needs.plan.outputs.groups) }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
-      - run: pip install --quiet requests beautifulsoup4 lxml curl_cffi brotli
+      - run: 'python3 -m pip install --quiet --only-binary=:all: --require-hashes -r .github/requirements/жниварка.txt'
       - name: жнива
         working-directory: zhnyvarka
         run: |
@@ -76,7 +76,7 @@ jobs:
           cp -f zhnyvarka/жнива_сирі_проба/*.json.gz артефакт/сирі/ 2>/dev/null || true
           cp -f zhnyvarka/лог_жнив.txt "артефакт/лог_${{ strategy.job-index }}.txt" 2>/dev/null || true
           ls -la артефакт артефакт/сирі
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: zhnyva-${{ strategy.job-index }}
           path: артефакт/
@@ -85,16 +85,18 @@ jobs:
           compression-level: 9
 
   assemble:
+    permissions:
+      contents: write
     needs: harvest
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
-      - run: pip install --quiet requests beautifulsoup4 lxml curl_cffi brotli
-      - uses: actions/download-artifact@v4
+      - run: 'python3 -m pip install --quiet --only-binary=:all: --require-hashes -r .github/requirements/жниварка.txt'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           pattern: zhnyva-*
           path: зібране
