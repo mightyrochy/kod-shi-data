@@ -1,0 +1,123 @@
+{
+  "head": "f2e099e85f8b2238e9898ec3833d6c80f6f5ba20",
+  "status": "finished",
+  "started": 1792054633.7847776,
+  "steps": [
+    {
+      "name": "підготовка",
+      "command": [
+        "python3",
+        "-c",
+        "import чистка_каталогу as ч, feed as Ф; print('фід:', ч.забезпечити_чистим('каталог_повний.xml')); print('фікстура:', Ф.каталог_на_диску('каталог_brief.xml'))"
+      ],
+      "rc": 0,
+      "seconds": 13.59,
+      "finished": true
+    },
+    {
+      "name": "синтаксис",
+      "command": [
+        "python3",
+        "-c",
+        "import pathlib,ast,subprocess; files=[p for p in pathlib.Path('.').rglob('*.py') if 'node_modules' not in p.parts]; [ast.parse(p.read_text(encoding='utf-8'),filename=str(p)) for p in files]; js=[p for p in pathlib.Path('.').rglob('*.js') if 'node_modules' not in p.parts]; [subprocess.run(['node','--check',str(p)],check=True) for p in js]; print('Python',len(files),'JS',len(js))"
+      ],
+      "rc": 0,
+      "seconds": 3.43,
+      "finished": true
+    },
+    {
+      "name": "поділ",
+      "command": [
+        "python3",
+        "-c",
+        "import glob,subprocess; rc=[subprocess.run(['python3',p]).returncode for p in sorted(glob.glob('проби/поділ_*_ast.py'))]; print('ВПАЛО',sum(x!=0 for x in rc)); raise SystemExit(any(rc))"
+      ],
+      "rc": 0,
+      "seconds": 5.78,
+      "finished": true
+    },
+    {
+      "name": "дим",
+      "command": [
+        "python3",
+        "стенд_знімок.py",
+        "--дим"
+      ],
+      "rc": 0,
+      "seconds": 2.86,
+      "finished": true
+    },
+    {
+      "name": "живий_шлях",
+      "command": [
+        "python3",
+        "тест_живого_шляху.py"
+      ],
+      "rc": 0,
+      "seconds": 87.36,
+      "finished": true
+    },
+    {
+      "name": "протокол",
+      "command": [
+        "python3",
+        "тест_протоколу.py"
+      ],
+      "rc": 0,
+      "seconds": 4.38,
+      "finished": true
+    },
+    {
+      "name": "розділи_гейтів",
+      "command": [
+        "python3",
+        "прилади/розділи_гейтів.py"
+      ],
+      "rc": 0,
+      "seconds": 395.58,
+      "finished": true
+    },
+    {
+      "name": "контракти",
+      "command": [
+        "python3",
+        "audit_contracts.py"
+      ],
+      "rc": 0,
+      "seconds": 14.61,
+      "finished": true
+    },
+    {
+      "name": "показ",
+      "command": [
+        "node",
+        "тест_показу.js"
+      ],
+      "rc": 0,
+      "seconds": 58.26,
+      "finished": true
+    },
+    {
+      "name": "міст",
+      "command": [
+        "node",
+        "тест_мосту.js"
+      ],
+      "rc": 0,
+      "seconds": 20.63,
+      "finished": true
+    },
+    {
+      "name": "досяжність",
+      "command": [
+        "python3",
+        "досяжність.py"
+      ],
+      "rc": 0,
+      "seconds": 297.04,
+      "finished": true
+    }
+  ],
+  "current": null,
+  "finished": 1792055537.3167326
+}
