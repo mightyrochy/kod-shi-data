@@ -100,20 +100,22 @@ def _слоти_повноти(образи, кандидати):
     слоти, чому = {}, {}
     for і, о in enumerate(образи or [], 1):
         ід = str(о.get("номер") or о.get("ід") or ("о%d" % і))
-        коди = []
+        коди = {}
         # ЗАПИС `bridge._запис` тримає блокери полем, вердикт (`ВЕРДИКТ_V1`) — у
         # «структура»: одна функція читає обидві форми, бо кличуть її з обох боків.
         for b in (о.get("блокери") or (о.get("структура") or {}).get("блокери") or []):
             к = str((b or {}).get("код") or "")
-            if к in СЛОТИ_БЛОКЕРА and к not in коди:
-                коди.append(к)
-        for к in коди:
+            if к in СЛОТИ_БЛОКЕРА:
+                коди[к] = list(dict.fromkeys(коди.get(к, []) + list(_слоти_блокера(b))))
+        for к, сім in коди.items():
             чому.setdefault(ід, []).append(_ЧОМУ_БЛОКЕРА[к])
-            _сім = [с for с in СЛОТИ_БЛОКЕРА[к] if (кандидати or {}).get(с)]
+            _сім = [с for с in сім if (кандидати or {}).get(с)]
             # СІМʼЯ «ТРЕТЬОЇ РЕЧІ» ЗРІЗАЄТЬСЯ ДО НАЙБАГАТШИХ СЛОТІВ: потрібна ОДНА
             # річ, а слотів у сімʼї одинадцять — платити за всі означало б платити
-            # за вибір, якого не просили.
-            if len(_сім) > 1:
+            # за вибір, якого не просили. Лише вона (рядок 5825): «нема верху й низу»
+            # зрізом губив низ, коли низів у пулі менше, ніж суконь, комплектів і верхів, —
+            # її слоти вже звужені до тих, яких бракує (`_слоти_блокера`).
+            if к == "неповний" and len(_сім) > 1:
                 _сім = sorted(_сім, key=lambda с: -len(кандидати[с]))[:_РЕЄСТР.C["слотів_третьої"]]
             for с in _сім:
                 if ід not in слоти.setdefault(с, []):
@@ -1477,11 +1479,14 @@ def повнота_набору(вердикт, кандидати=None, кат�
 # П-2 (26.09.2026): шаблон і дані — англійським дротом (`мова_промпту="en"`, `дріт_моделі.вердикт`):
 # доти англійський текст стояв в українському шаблоні над українськими ключами («структура.блокери»,
 # «вітрина», «бракує»). «Порожній слот» — «missing kind of item»: місце речі модель знає сама.
-# СТЕЛЯ-ПОВНОТИ (рядок 3640): у ремонті повноти знахідок нема, лише блокери, які код перевіряє структурою, —
-# а «done» прозою («Fixed kind_twice (bottom): removed jeans, kept trousers.», ід — 2 із 331 записів) брав 28 %
-# символів 51 записаної відповіді. Як у складанні (`пакет_моделі.СКЛАДАННЯ`): порожній список.
-_БЕЗ_ВИКОНАНО = "here «done» is an empty list: the code checks the blockers itself"
-
+# СТЕЛЯ-ПОВНОТИ (рядок 3640): «done» прозою брав 28 % символів 51 записаної відповіді — відповідь
+# ходами (нижче) поля «done» не має зовсім.
+# ХІД НА БЛОКЕР І ПІСЛЯ ВИБОРУ (рядок 5826): доти тут була ОБРАЗИ_V1 — модель переписувала обраний образ
+# цілим, і ті самі вади, що Н2 зняв до вибору (`ПОВНОТА_ВСІ` нижче), лишались тут: 4 записи живих 1510 А
+# з цією роллю — додана річ лише в тексті «done» («added a missing bag from showcase»), склад, про який не
+# просили, зник (09: о1 5 → 2), одна річ на кілька блокерів. Тепер та сама форма: хід «add» з «options»
+# блокера чи «keep» одної речі групи (`ДОПОВНЕННЯ_V1`), склад, підпис, «день» і ходи — з вердикта
+# (`доповнити_обраний`). Модель обирає образ тим, на чиї блокери відповідає; «один образ» лишається.
 ПОВНОТА = _ЗП.Оголошення(
     задача="повнота",
     роль=("You are the stylist. The code checked the outfits you put together for her, and none of them "
@@ -1491,8 +1496,9 @@ _БЕЗ_ВИКОНАНО = "here «done» is an empty list: the code checks the 
         _ЗП.Поле("day", "her day as facts"),
         _ЗП.Поле("verdict", "your outfits and the code's check: «your_outfit» — items with their full "
                             "descriptions and your caption; «structure.blockers» — what keeps the outfit from "
-                            "being shown: a missing kind of item, or several items of one kind («items» lists "
-                            "them)", треба=True),
+                            "being shown, each under its «id»: a missing kind of item, with «options» — the "
+                            "«n» of the «showcase» items that fill it; or several items of one kind, with "
+                            "«items»", треба=True),
         _ЗП.Поле("showcase", "items that can fill what is missing"),
         _ЗП.Поле("still_missing", "your previous answer to this request and the blockers it still has: "
                                   "«empty_kinds» — missing kinds with the showcase items that fill them, "
@@ -1501,24 +1507,22 @@ _БЕЗ_ВИКОНАНО = "here «done» is an empty list: the code checks the 
         _ЗП.Поле("she_refuses", "what she refused", як="do not add an item that breaks it"),
     ),
     правила=(
-        "Choose ONE outfit — the one you would stand behind for her — and clear all of its blockers.",
-        "A missing kind of item: add one item for it from «showcase».",
-        "Several items of one kind: keep the one that suits the outfit best and remove the others.",
-        "Change nothing else: the remaining items, the caption and the day stay as they are.",
-        # рядок 3240: тут лише блокери, знахідки назвати нема чого — «deliberate» несло пояснення
-        # доданої речі («Added shoes to complete the outfit») і йшло в суд ходом без коду
-        "Leave «deliberate» empty: an item you add for a blocker is not a deliberate move, and the moves "
-        "you declared before stay as they were.",
-        "Take every item from «verdict» or «showcase».",
+        "Choose ONE outfit — the one you would stand behind for her — and answer EVERY blocker of it with "
+        "«options» or «items»: one entry in «fixes» under the blocker's «id».",
+        "A blocker with «options»: put in «add» the item of its «options» that suits this outfit best — one "
+        "item; for a missing top and bottom, a dress, or a top and a bottom.",
+        "A blocker with «items»: put in «keep» the one item that suits the outfit best; the code removes "
+        "the others.",
+        "You only add and keep: the other items, the caption and the day of the outfit stay as they are, "
+        "and the code keeps them.",
+        "Answer the blockers of that one outfit only.",
         РЯДОК_ЛИШЕ_НОМЕР,
-        "Return exactly ONE outfit.",
     ),
-    вихід="ОБРАЗИ_V1",
+    вихід="ДОПОВНЕННЯ_V1",
     поля_виходу={
-        "образи[].ід": "«id» of the outfit you finished",
-        "образи[].речі": "«n» of each item of the finished outfit, alone",
-        "образи[].день": "«day» of «your_outfit», unchanged",
-        "образи[].виконано[].знахідка": _БЕЗ_ВИКОНАНО,
+        "fixes[].blocker": "«id» of the blocker, as in «structure.blockers»",
+        "fixes[].add": "«n» of the item you add, alone",
+        "fixes[].keep": "«n» of the item you keep, alone",
     },
     межі=("лише_вхід",),
     мова_промпту="en",
@@ -1599,7 +1603,8 @@ def _з_ходами_кодом(свідомо, х):
 
 
 def донести_ходи_кодом(відповідь, попередній):
-    """Ремонт повноти ПІСЛЯ вибору (`ПОВНОТА`) — ті самі ходи кодом, що `злити_з_неторканими`
+    """Ремонт повноти ПІСЛЯ вибору (`ПОВНОТА`), відповідь старою формою ОБРАЗИ_V1 (ходами її читає
+    `доповнити_обраний`) — ті самі ходи кодом, що `злити_з_неторканими`
     дає ремонту до вибору: образ відповіді, що має пару у вердикті за «ід» (або єдиний з
     єдиним), несе й ходи пари з `правило`. None — коли донести нічого (відповідь тоді
     лишається тим самим текстом)."""
@@ -1720,6 +1725,22 @@ def доповнити(відповідь, попередній):
     return dict(версія="1", образи=[dict(ід=ід, речі=склад[ід]) for ід in склад if ід in торкнуто]), лічба
 
 
+def доповнити_обраний(відповідь, попередній):
+    """ДОПОВНЕННЯ_V1 ремонту ПІСЛЯ вибору (`ПОВНОТА`) + вердикт, з яким рука пішла в ремонт → ОБРАЗИ_V1
+    лише образів, яких торкнувся хід: склад — вердикта з ходами (`доповнити`), підпис, «день» і
+    оголошені ходи (з кодом знахідки) — того самого образу вердикта (`злити_з_неторканими`).
+
+    `(обʼєкт, лічба)` — як `доповнити`; ходи нічого не змінили — образів нема, і спроба витрачена,
+    як на будь-якій відповіді без образу. None — ходів на блокер нема (стара форма ОБРАЗИ_V1 чи
+    сміття): тоді міст читає її як доти (`донести_ходи_кодом`)."""
+    дп = доповнити(відповідь, попередній)
+    if not дп:
+        return None
+    торкнуто = {о["ід"] for о in дп[0]["образи"]}
+    зл = злити_з_неторканими(дп[0], попередній) if торкнуто else None
+    return dict(версія="1", образи=[о for о in (зл[0]["образи"] if зл else []) if о.get("ід") in торкнуто]), дп[1]
+
+
 # Блокери, які лікує ремонт повноти: порожній слот (`СЛОТИ_БЛОКЕРА`) і слот із кількома
 # речами. Вето, одна річ і гейти — не його задача.
 _БЛОКЕРИ_ПОВНОТИ = frozenset(СЛОТИ_БЛОКЕРА) | {"слот_двічі"}
@@ -1798,31 +1819,37 @@ def вердикт_повноти(вердикт, спроба=1, всі=False):
     в["вітрина"] = {с: р for с, р in вітрина.items() if с in потрібні}
     if int(спроба or 1) >= 2:
         в["бракує"] = _бракує_адресно(в["образи"], потрібні, в["вітрина"])
-    if всі:
-        # Н2: діра несе свої варіанти — модель обирає з них річ на ЦЕЙ блокер (`ПОВНОТА_ВСІ`);
-        # блокери копіюються: вердикт, з яким рука пішла в ремонт, лишається як був
-        for о in в["образи"]:
-            if isinstance(о.get("структура"), dict):
-                блокери = []
-                for б in (о["структура"].get("блокери") or []):
-                    вар = _варіанти_блокера(б, в["вітрина"]) if isinstance(б, dict) else []
-                    блокери.append(dict(б, варіанти=вар) if вар else б)
-                о["структура"] = dict(о["структура"], блокери=блокери)
+    # Н2: діра несе свої варіанти — модель обирає з них річ на ЦЕЙ блокер (`ПОВНОТА_ВСІ`, а з рядка
+    # 5826 і `ПОВНОТА`); блокери копіюються: вердикт, з яким рука пішла в ремонт, лишається як був
+    for о in в["образи"]:
+        if isinstance(о.get("структура"), dict):
+            блокери = []
+            for б in (о["структура"].get("блокери") or []):
+                вар = _варіанти_блокера(б, в["вітрина"]) if isinstance(б, dict) else []
+                блокери.append(dict(б, варіанти=вар) if вар else б)
+            о["структура"] = dict(о["структура"], блокери=блокери)
     return в
 
 
-def _варіанти_блокера(б, вітрина):
-    """Номери речей вітрини, що закривають порожній слот блокера `б`; [] — блокер не про порожній слот.
+def _слоти_блокера(б):
+    """Слоти, що закривають порожнє місце блокера `б`; () — блокер не про порожнє місце.
 
     «Нема верху й низу» з одним названим слотом (`missing` заяви) — лише цей слот: сукня до
     наявного низу дала б два низи (`суд_від_моделі`, «сукня + низ»)."""
-    слоти = СЛОТИ_БЛОКЕРА.get(str((б or {}).get("код") or ""), ())
+    б = б if isinstance(б, dict) else {}
+    слоти = СЛОТИ_БЛОКЕРА.get(str(б.get("код") or ""), ())
     if б.get("код") == "нема_верху_низу":
         бракує = [_ВМ.ключ("slot", x) for з in (б.get("заяви") or []) if isinstance(з, dict)
                   for x in ((з.get("values") or {}).get("missing") or [])]
         if len(бракує) == 1 and бракує[0]:
             слоти = tuple(бракує)
-    return list(dict.fromkeys(r.get("н") for с in слоти for r in (вітрина.get(с) or [])
+    return слоти
+
+
+def _варіанти_блокера(б, вітрина):
+    """Номери речей вітрини, що закривають порожній слот блокера `б` (`_слоти_блокера`); [] — блокер
+    не про порожній слот."""
+    return list(dict.fromkeys(r.get("н") for с in _слоти_блокера(б) for r in (вітрина.get(с) or [])
                               if isinstance(r, dict) and r.get("н")))
 
 
