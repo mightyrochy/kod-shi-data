@@ -2460,6 +2460,12 @@ _ПОЛЯ_EN = {
                    "in \"chosen\" names it or usually takes it (an evening reception, a theatre, a concert, an "
                    "opera or a New Year party — evening; a place the code reads as evening by itself, %s — "
                    "evening); an event that happens at any time of day — absent",
+    # Рядок 5260: пора року рукам — з дати показу, бо місяця події паспорт не ніс: новорічний корпоратив, про
+    # який вона пише 10.10, руки бачили осінню подією. Місяць — розуміння її слів моделлю (п.14), код слів не читає
+    "month": "the month of the event, only when her words name it: a date or a month («27 грудня», «у березні»), "
+             "or a holiday that falls in one month (a New Year party, a New Year corporate party — december; "
+             "Valentine's day — february; the first of September — september), with that word as quote; "
+             "«today», «tomorrow», «on Saturday» or an event of any month — absent",
     # ДОЩ-1 (рядок 1471): градуси — лише названі; сезон свята без числа — `weather_feel` (код → число бере
     # `внутрішня_мова.ТАБЛИЦЯ`, не модель), і його опора — слово свята в її репліці (сторож `_тримається`).
     # ГРАДУСИ-1 (рядок 2381, живий пачки 3+4 К7): «на вулиці мінус п'ятнадцять і сніг» MamayLM записала
