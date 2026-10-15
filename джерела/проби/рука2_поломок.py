@@ -29,7 +29,7 @@ for ім, сц in СЦ.items():
         if сід > 1: continue
         дост = set(поле(р, "with_input").split(",")); діє = {а.split(":")[0]: а.split(":")[1].split("+") for а in поле(р, "acts").split(",") if ":" in а}
         стар = ПР2.вхід; ПР2.вхід = lambda зп, d, п=None: (зп["ід"] in дост, None if зп["ід"] in дост else "x")
-        канд = sorted(і for і in дост if діє.get(і) or ПР2._лише_суд(і)) or sorted(дост)
+        дост -= getattr(ПР2, "ПОЗА_ЖЕРЕБОМ", set()); канд = sorted(і for і in дост if діє.get(і) or ПР2._лише_суд(і)) or sorted(дост)
         межі[getattr(ПР2, "межа_поломок", lambda і: 1)(канд)] += 1; print("   з входом %d · кандидатів %d · межа поломок %d" % (len(дост), len(канд), getattr(ПР2, "межа_поломок", lambda і: 1)(канд)))
         for с in range(50):
             зп = ПР2.жереб(dict(сід=с), None, діє=діє)[0]; k[зп.get("поломок", 1)] += 1; пр.update(зп.get("правила", (зп["ід"],)))
