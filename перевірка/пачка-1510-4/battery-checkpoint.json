@@ -1,0 +1,356 @@
+{
+  "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+  "tree": "52b3fc857ac0568cc5afa7b3bb595272150e9869",
+  "status": "COMPLETED",
+  "stages": {
+    "01-синтаксис": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-c",
+        "import pathlib,py_compile,subprocess,sys; fs=[p for p in pathlib.Path('.').rglob('*') if p.is_file() and 'node_modules' not in p.parts]; py=[p for p in fs if p.suffix=='.py']; js=[p for p in fs if p.suffix=='.js']; [py_compile.compile(str(p),doraise=True) for p in py]; rs=[subprocess.run(['node','--check',str(p)]).returncode for p in js]; print('Синтаксис Python',len(py),'JS',len(js),'збоїв',sum(x!=0 for x in rs)); sys.exit(any(rs))"
+      ],
+      "started_at": "2026-10-15T15:37:16.933472+00:00",
+      "log": "01-синтаксис.log",
+      "resources_before": {
+        "memory.current": "16024125440",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 349062\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 2.31,
+      "finished_at": "2026-10-15T15:37:19.247232+00:00",
+      "log_sha256": "20e4d4bf59d7e75aec7a3f122d54e176ab1a05fbd7662a16712168e626ed339d",
+      "resources_after": {
+        "memory.current": "16047415296",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 349062\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "02-поділ": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-c",
+        "import pathlib,subprocess,sys; fs=sorted(pathlib.Path('проби').glob('поділ_*_ast.py')); rs=[subprocess.run([sys.executable,str(f)]).returncode for f in fs]; print('Проби поділу',len(fs),'ВПАЛО',sum(x!=0 for x in rs)); sys.exit(any(rs))"
+      ],
+      "started_at": "2026-10-15T15:37:19.249751+00:00",
+      "log": "02-поділ.log",
+      "resources_before": {
+        "memory.current": "16047337472",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 349062\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 5.72,
+      "finished_at": "2026-10-15T15:37:24.970535+00:00",
+      "log_sha256": "11421357ba0e5406b865e450854890daecbcaf37bcdb2be8cce90e424e57f91d",
+      "resources_after": {
+        "memory.current": "16105070592",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 349062\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "03-каталоги": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-c",
+        "import чистка_каталогу as ч,feed as Ф; print('фід:',ч.забезпечити_чистим('каталог_повний.xml')); print('фікстура:',Ф.каталог_на_диску('каталог_brief.xml'))"
+      ],
+      "started_at": "2026-10-15T15:37:24.974266+00:00",
+      "log": "03-каталоги.log",
+      "resources_before": {
+        "memory.current": "16105291776",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 349062\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 13.33,
+      "finished_at": "2026-10-15T15:37:38.300900+00:00",
+      "log_sha256": "b050175694485e781174684cee04e7189af2ae01648e141f1de715cb99aadc61",
+      "resources_after": {
+        "memory.current": "15893053440",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 350358\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "04-дим": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "стенд_знімок.py",
+        "--дим"
+      ],
+      "started_at": "2026-10-15T15:37:38.303837+00:00",
+      "log": "04-дим.log",
+      "resources_before": {
+        "memory.current": "15893041152",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 350358\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 2.99,
+      "finished_at": "2026-10-15T15:37:41.299324+00:00",
+      "log_sha256": "c4a8704b6b085f4760827c5ae4347a51ff61ada1d9806098d5f833ee32e2c9f2",
+      "resources_after": {
+        "memory.current": "15890190336",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 350358\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "05-живий-шлях": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "тест_живого_шляху.py"
+      ],
+      "started_at": "2026-10-15T15:37:41.302340+00:00",
+      "log": "05-живий-шлях.log",
+      "resources_before": {
+        "memory.current": "15890395136",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 350358\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 90.74,
+      "finished_at": "2026-10-15T15:39:12.039842+00:00",
+      "log_sha256": "f8e79b5993b2e2a29fbed20c680cbb8542eb526bb34d86779c43981fce87cdca",
+      "resources_after": {
+        "memory.current": "15894839296",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 350358\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "06-протокол": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "тест_протоколу.py"
+      ],
+      "started_at": "2026-10-15T15:39:12.043379+00:00",
+      "log": "06-протокол.log",
+      "resources_before": {
+        "memory.current": "15894761472",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 350358\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 4.12,
+      "finished_at": "2026-10-15T15:39:16.166380+00:00",
+      "log_sha256": "a40bebdaf22e3566098bb56e36d62d1e35643c28ae67628b1c9650514ea97636",
+      "resources_after": {
+        "memory.current": "15894298624",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 350358\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "07-гейти": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "прилади/розділи_гейтів.py"
+      ],
+      "started_at": "2026-10-15T15:39:16.169093+00:00",
+      "log": "07-гейти.log",
+      "resources_before": {
+        "memory.current": "15894290432",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 350358\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 413.73,
+      "finished_at": "2026-10-15T15:46:09.900182+00:00",
+      "log_sha256": "421f63e4f38b7471a77bca462edf51277f5f922144ec2b408c0036c82d8aa882",
+      "resources_after": {
+        "memory.current": "16341975040",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 352709\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "08-контракти": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "audit_contracts.py"
+      ],
+      "started_at": "2026-10-15T15:46:09.903472+00:00",
+      "log": "08-контракти.log",
+      "resources_before": {
+        "memory.current": "16342163456",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 352709\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 14.57,
+      "finished_at": "2026-10-15T15:46:24.473329+00:00",
+      "log_sha256": "bcd01565e35473916c9772f2118063049a7f1d715f81763b15fb461cefd0e2e6",
+      "resources_after": {
+        "memory.current": "16341311488",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 352709\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "09-показ": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "node",
+        "тест_показу.js"
+      ],
+      "started_at": "2026-10-15T15:46:24.476370+00:00",
+      "log": "09-показ.log",
+      "resources_before": {
+        "memory.current": "16341225472",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 352709\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 60.2,
+      "finished_at": "2026-10-15T15:47:24.679166+00:00",
+      "log_sha256": "8974d77abcb64dd40c1aa8acfaee47ee1380ba2025768030746f742bd6b82076",
+      "resources_after": {
+        "memory.current": "15646539776",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 355760\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "10-міст": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "node",
+        "тест_мосту.js"
+      ],
+      "started_at": "2026-10-15T15:47:24.689520+00:00",
+      "log": "10-міст.log",
+      "resources_before": {
+        "memory.current": "15612669952",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 355760\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 20.69,
+      "finished_at": "2026-10-15T15:47:45.380736+00:00",
+      "log_sha256": "356c04fa4d0533ed5247e95dd2df38a5ab82730967fd9ccc7e12f800d8d4e5a1",
+      "resources_after": {
+        "memory.current": "15609815040",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 355760\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "11-досяжність": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "досяжність.py"
+      ],
+      "started_at": "2026-10-15T15:47:45.385693+00:00",
+      "log": "11-досяжність.log",
+      "resources_before": {
+        "memory.current": "15609778176",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 355760\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 286.16,
+      "finished_at": "2026-10-15T15:52:31.545196+00:00",
+      "log_sha256": "5c61cda4ac71915323fdde2d1544248e578dfc760b598b2714bc5e6b4ec3c659",
+      "resources_after": {
+        "memory.current": "15622586368",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 355760\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "12-сімя-3350": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "проби/сімї_нетранзитивність_3350.py"
+      ],
+      "started_at": "2026-10-15T15:52:31.547692+00:00",
+      "log": "12-сімя-3350.log",
+      "resources_before": {
+        "memory.current": "15622578176",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 355760\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 15.09,
+      "finished_at": "2026-10-15T15:52:46.637140+00:00",
+      "log_sha256": "a2271f6fad65adfa5dd261c8724bc0f8296000ec1b0bf27ddd91005501c320df",
+      "resources_after": {
+        "memory.current": "15628574720",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 355760\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    },
+    "13-сімя-3710": {
+      "status": "completed",
+      "sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "проби/фіг4_джерело_3710.py",
+        "/dev/shm/pachka-1510-4/work/каталог_повний.xml.gz"
+      ],
+      "started_at": "2026-10-15T15:52:46.639718+00:00",
+      "log": "13-сімя-3710.log",
+      "resources_before": {
+        "memory.current": "15628546048",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 355760\noom 4\noom_kill 4\noom_group_kill 0"
+      },
+      "rc": 0,
+      "after_sha": "751458dc348f9299405008e9e827ce92943f75f4",
+      "seconds": 19.52,
+      "finished_at": "2026-10-15T15:53:06.164769+00:00",
+      "log_sha256": "253b41337726b0df66ee91023223cb490a925cc9ee3b3ad2e953a92cc9d063e9",
+      "resources_after": {
+        "memory.current": "15628599296",
+        "memory.max": "17179869184",
+        "memory.events": "low 0\nhigh 0\nmax 355760\noom 4\noom_kill 4\noom_group_kill 0"
+      }
+    }
+  },
+  "battery_started": true,
+  "own_background_jobs": 0,
+  "prepared_at": "2026-10-15T15:37:10.659971+00:00",
+  "verified_input_sha256": "0d1b0d756cc6de94b72fa1af7cc4a7e2ec5307a81e51044650e1b2058b9ef39a",
+  "current": null,
+  "finished_at": "2026-10-15T15:53:06.165812+00:00"
+}
