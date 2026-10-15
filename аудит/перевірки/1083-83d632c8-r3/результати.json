@@ -1,0 +1,3149 @@
+{
+  "head": "83d632c8a756cad5e882bf5a97829b35c08e42c7",
+  "actor": "/root/review_live_a_h1_5238_r3",
+  "producers": [
+    "формальність.вимоги_коду",
+    "формальність.формальність_образу",
+    "вердикт_моделі.знахідки_вердикту",
+    "повнота_образу.донести_прийняття_вибору",
+    "повнота_образу._суд_складу"
+  ],
+  "source": {
+    "ід": "о3",
+    "речі": [
+      "cardigan",
+      "pumps"
+    ],
+    "знахідки": [
+      {
+        "ід": "з-о3-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.8,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 1.2,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    ],
+    "структура": {
+      "ок": false,
+      "блокери": [
+        {
+          "код": "no_top_and_bottom"
+        }
+      ]
+    }
+  },
+  "rows": [
+    {
+      "case": "null",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": null}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "bool-false",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": false}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "bool-true",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": true}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "zero",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": 0}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "positive-integer",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": 37}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "negative-integer",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": -2}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "float",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": 1.25}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "empty-array",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": []}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "string-array",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [\"why\"]}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "valid-string-array",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [\"Свідомо обираю ансамбль без коктейльної сукні.\"]}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "number-array",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [37]}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "bool-array",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [true]}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "null-array",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [null]}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "nested-array",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [[\"Свідомо обираю ансамбль без коктейльної сукні.\"]]}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "deep-array",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [[[\"Свідомо обираю ансамбль без коктейльної сукні.\"]]]}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "mixed-array",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [\"Свідомо обираю ансамбль без коктейльної сукні.\", {\"x\": 1}]}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "object",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": {\"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "empty-object",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": {}}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "object-array",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [{\"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "nested-object",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": {\"why\": [\"Свідомо обираю ансамбль без коктейльної сукні.\"]}}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "empty-string",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"\"}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "whitespace",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \" \\n\\t\"}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "valid-string",
+      "passed": true,
+      "expected": true,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": true,
+      "why": "Свідомо обираю ансамбль без коктейльної сукні.",
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": true,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2,
+        "прийнято_чому": "Свідомо обираю ансамбль без коктейльної сукні."
+      }
+    },
+    {
+      "case": "valid-trimmed",
+      "passed": true,
+      "expected": true,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"  Свідомо обираю ансамбль без коктейльної сукні. \\n\"}]}",
+      "conscious": true,
+      "why": "Свідомо обираю ансамбль без коктейльної сукні.",
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": true,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2,
+        "прийнято_чому": "Свідомо обираю ансамбль без коктейльної сукні."
+      }
+    },
+    {
+      "case": "valid-unrelated-field-error",
+      "passed": true,
+      "expected": true,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}], \"title\": 37, \"day\": false}",
+      "conscious": true,
+      "why": "Свідомо обираю ансамбль без коктейльної сукні.",
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": true,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2,
+        "прийнято_чому": "Свідомо обираю ансамбль без коктейльної сукні."
+      }
+    },
+    {
+      "case": "foreign-finding",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о99-99\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "foreign-existing-finding",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о4-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "unknown-chosen",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o99\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "empty-chosen",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "same-source-items",
+      "passed": true,
+      "expected": true,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": true,
+      "why": "Свідомо обираю ансамбль без коктейльної сукні.",
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps"
+        ],
+        "гейт_речі": [],
+        "свідомий": true,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.8,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 1.2,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2,
+        "прийнято_чому": "Свідомо обираю ансамбль без коктейльної сукні."
+      }
+    },
+    {
+      "case": "repaired-superset",
+      "passed": true,
+      "expected": true,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": true,
+      "why": "Свідомо обираю ансамбль без коктейльної сукні.",
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": true,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2,
+        "прийнято_чому": "Свідомо обираю ансамбль без коктейльної сукні."
+      }
+    },
+    {
+      "case": "source-subset",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 4.8,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.2,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "source-shoe-replaced",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pants",
+          "replacement"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "new-forbidden-item",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "hard",
+        "сила_нп": 0.95,
+        "регістр": "гейт",
+        "суть": "тип «кеди» не належить до коду «cocktail» (+2 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "замінити річ типом, який код називає; або зняти заявлений код, якщо запрошення його не вимагає",
+        "речі": [
+          "foreign",
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [
+          "foreign"
+        ],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "item_type_not_in_dress_code",
+            "values": {
+              "item_type": "plimsolls",
+              "dress_code": "cocktail"
+            }
+          },
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 4.8,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "type_named_by_code_or_drop_code"
+          },
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.2,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 3
+      }
+    },
+    {
+      "case": "single-object-salvage",
+      "passed": true,
+      "expected": true,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": {\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}}",
+      "conscious": true,
+      "why": "Свідомо обираю ансамбль без коктейльної сукні.",
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": true,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2,
+        "прийнято_чому": "Свідомо обираю ансамбль без коктейльної сукні."
+      }
+    },
+    {
+      "case": "accept-string",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "accept-number",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": 37}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "accept-bool",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": true}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "accept-null",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": null}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    },
+    {
+      "case": "invalid-then-valid-salvage",
+      "passed": true,
+      "expected": true,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [\"Свідомо обираю ансамбль без коктейльної сукні.\"]}, {\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": true,
+      "why": "Свідомо обираю ансамбль без коктейльної сукні.",
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": true,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2,
+        "прийнято_чому": "Свідомо обираю ансамбль без коктейльної сукні."
+      }
+    },
+    {
+      "case": "valid-then-invalid-salvage",
+      "passed": true,
+      "expected": true,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}, {\"finding\": \"з-о3-1\", \"why\": true}]}",
+      "conscious": true,
+      "why": "Свідомо обираю ансамбль без коктейльної сукні.",
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": true,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2,
+        "прийнято_чому": "Свідомо обираю ансамбль без коктейльної сукні."
+      }
+    },
+    {
+      "case": "foreign-then-valid-salvage",
+      "passed": true,
+      "expected": true,
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о9-9\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}, {\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}",
+      "conscious": true,
+      "why": "Свідомо обираю ансамбль без коктейльної сукні.",
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": true,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2,
+        "прийнято_чому": "Свідомо обираю ансамбль без коктейльної сукні."
+      }
+    },
+    {
+      "case": "answer-envelope-valid",
+      "passed": true,
+      "expected": true,
+      "raw": "{\"answer\": {\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо обираю ансамбль без коктейльної сукні.\"}]}}",
+      "conscious": true,
+      "why": "Свідомо обираю ансамбль без коктейльної сукні.",
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": true,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2,
+        "прийнято_чому": "Свідомо обираю ансамбль без коктейльної сукні."
+      }
+    },
+    {
+      "case": "answer-envelope-invalid-array",
+      "passed": true,
+      "expected": false,
+      "raw": "{\"answer\": {\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [\"Свідомо обираю ансамбль без коктейльної сукні.\"]}]}}",
+      "conscious": false,
+      "why": null,
+      "result": {
+        "ід": "з-о1-1",
+        "правило": "K-KOH-05",
+        "сила": "strong",
+        "сила_нп": 0.75,
+        "регістр": "гейт",
+        "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+        "ремонт": "додати: knee_to_midi_dress",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "гейт_речі": [],
+        "свідомий": false,
+        "заяви": [
+          {
+            "code": "dress_code_requires_type",
+            "values": {
+              "dress_code": "cocktail",
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "outfit_level_off_occasion",
+            "values": {
+              "direction": "below",
+              "level": 5.0,
+              "target": [
+                7,
+                8
+              ],
+              "risk_posture": "neutral"
+            }
+          }
+        ],
+        "ремонт_заяви": [
+          {
+            "code": "add_required_type",
+            "values": {
+              "types": [
+                "cocktail_dress",
+                "dress_generic",
+                "sheath_dress"
+              ]
+            }
+          },
+          {
+            "code": "shift_outfit_level",
+            "values": {
+              "steps": 2.0,
+              "direction": "up"
+            }
+          }
+        ],
+        "злито": 2
+      }
+    }
+  ],
+  "total": 44,
+  "failures": 0
+}
