@@ -11623,6 +11623,7 @@ window.ЗАВАНТАЖЕНО_П = {файлів: 0, байтів: 0};
    мережі) приходить раніше за нього. Чекаємо його, а не падаємо з кодом жінці. */
 async function дочекатисьЗавантажувачаПП(мс){
   const до = Date.now() + (мс || 60000);
+  if (!document.querySelector('script[src*="pyodide.js"]')) return;   // скрипта нема — чекати нічого
   while (typeof loadPyodide !== 'function' && Date.now() < до) await new Promise(р => setTimeout(р, 100));
 }
 async function підняти_pyodide_показу(){
