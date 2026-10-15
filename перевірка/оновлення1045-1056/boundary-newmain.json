@@ -1,0 +1,442 @@
+{
+  "models": 0,
+  "paid": 0,
+  "live_acceptance": false,
+  "ast": [
+    {
+      "pr": 1074,
+      "file": "міст_відповіді",
+      "functions": 16,
+      "all_existing_function_ast_unchanged": true,
+      "sha256": "e6af9e20fd8155c4b88c30d5894d0c883d54a84ef1dd04e5423bfe65793e0dab"
+    },
+    {
+      "pr": 1074,
+      "file": "повнота_образу",
+      "functions": 43,
+      "all_existing_function_ast_unchanged": true,
+      "sha256": "138222c64faeaf30c4639614d4608b3d723b4c6e3493c111b83f3adba0dd8337"
+    },
+    {
+      "pr": 1074,
+      "file": "протокол",
+      "functions": 66,
+      "all_existing_function_ast_unchanged": true,
+      "sha256": "ba3288deb3cd0e7c7af63b5bcd1488002c4e524605efeddd1f5f08422b0843b2"
+    },
+    {
+      "pr": 1083,
+      "file": "міст_відповіді",
+      "functions": 16,
+      "all_existing_function_ast_unchanged": true,
+      "sha256": "9972202ba52476cfce053a314e17bba21feb723e063d8a839ac8333bddb29c4b"
+    },
+    {
+      "pr": 1083,
+      "file": "повнота_образу",
+      "functions": 44,
+      "all_existing_function_ast_unchanged": true,
+      "sha256": "f3772c4925cdfa6ff1f93b4c7274e07d243a48523928b36de705ee029ca6e66f"
+    },
+    {
+      "pr": 1083,
+      "file": "протокол",
+      "functions": 66,
+      "all_existing_function_ast_unchanged": true,
+      "sha256": "ba3288deb3cd0e7c7af63b5bcd1488002c4e524605efeddd1f5f08422b0843b2"
+    }
+  ],
+  "1074_shadow_boundary": "Повний producer від_моделі/суд/повнота/cache AST тотожний old37-parent6f; усі ownshadow модулі exactoldblobs. Main3541 змінив лише declared serializer; повтор samecard fresh/cached producer не потрібен за незмінного шляху ідентичності.",
+  "1083_raw_guard_cases": [
+    {
+      "case": "raw-array",
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": [\"Свідомо лишаю цей хід заради задуму.\"]}]}",
+      "expected_conscious": false,
+      "conscious": false,
+      "current": {
+        "ід": "о1",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "знахідки": [
+          {
+            "ід": "з-о1-1",
+            "правило": "K-KOH-05",
+            "сила": "strong",
+            "сила_нп": 0.75,
+            "регістр": "гейт",
+            "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+            "ремонт": "додати: knee_to_midi_dress",
+            "речі": [
+              "cardigan",
+              "pumps",
+              "pants"
+            ],
+            "гейт_речі": [],
+            "свідомий": false,
+            "заяви": [
+              {
+                "code": "dress_code_requires_type",
+                "values": {
+                  "dress_code": "cocktail",
+                  "types": [
+                    "cocktail_dress",
+                    "dress_generic",
+                    "sheath_dress"
+                  ]
+                }
+              },
+              {
+                "code": "outfit_level_off_occasion",
+                "values": {
+                  "direction": "below",
+                  "level": 5.0,
+                  "target": [
+                    7,
+                    8
+                  ],
+                  "risk_posture": "neutral"
+                }
+              }
+            ],
+            "ремонт_заяви": [
+              {
+                "code": "add_required_type",
+                "values": {
+                  "types": [
+                    "cocktail_dress",
+                    "dress_generic",
+                    "sheath_dress"
+                  ]
+                }
+              },
+              {
+                "code": "shift_outfit_level",
+                "values": {
+                  "steps": 2.0,
+                  "direction": "up"
+                }
+              }
+            ],
+            "злито": 2
+          }
+        ],
+        "структура": {
+          "ок": false,
+          "блокери": [
+            {
+              "код": "no_top_and_bottom"
+            }
+          ]
+        }
+      },
+      "wire": {
+        "verdict": [
+          {
+            "your_outfit": {
+              "id": "o1",
+              "items": [
+                "cardigan",
+                "pumps",
+                "pants"
+              ]
+            },
+            "structure": {
+              "ok": false,
+              "blockers": [
+                {
+                  "code": "no_top_and_bottom"
+                }
+              ]
+            }
+          }
+        ],
+        "remarks_by_code": {
+          "dress_code_requires_type": [
+            {
+              "outfit": "o1",
+              "id": "f-o1-1",
+              "register": "gate",
+              "fix": [
+                {
+                  "add_required_type": {
+                    "types": [
+                      "cocktail_dress",
+                      "dress_generic",
+                      "sheath_dress"
+                    ]
+                  }
+                },
+                {
+                  "shift_outfit_level": {
+                    "direction": "up"
+                  }
+                }
+              ],
+              "merged": 2,
+              "items": [
+                "cardigan",
+                "pumps",
+                "pants"
+              ],
+              "values": {
+                "dress_code": "cocktail",
+                "types": [
+                  "cocktail_dress",
+                  "dress_generic",
+                  "sheath_dress"
+                ]
+              }
+            }
+          ],
+          "outfit_level_off_occasion": [
+            {
+              "outfit": "o1",
+              "id": "f-o1-1",
+              "register": "gate",
+              "fix": [
+                {
+                  "add_required_type": {
+                    "types": [
+                      "cocktail_dress",
+                      "dress_generic",
+                      "sheath_dress"
+                    ]
+                  }
+                },
+                {
+                  "shift_outfit_level": {
+                    "direction": "up"
+                  }
+                }
+              ],
+              "merged": 2,
+              "items": [
+                "cardigan",
+                "pumps",
+                "pants"
+              ],
+              "values": {
+                "direction": "below",
+                "level": "neat",
+                "target": [
+                  "smart",
+                  "formal"
+                ],
+                "risk_posture": "neutral"
+              }
+            }
+          ]
+        }
+      },
+      "passed": true
+    },
+    {
+      "case": "valid-quoted-string",
+      "raw": "{\"version\": \"1\", \"chosen\": \"o3\", \"accept\": [{\"finding\": \"з-о3-1\", \"why\": \"Свідомо лишаю цей хід заради задуму.\"}]}",
+      "expected_conscious": true,
+      "conscious": true,
+      "current": {
+        "ід": "о1",
+        "речі": [
+          "cardigan",
+          "pumps",
+          "pants"
+        ],
+        "знахідки": [
+          {
+            "ід": "з-о1-1",
+            "правило": "K-KOH-05",
+            "сила": "strong",
+            "сила_нп": 0.75,
+            "регістр": "гейт",
+            "суть": "код «cocktail» просить knee_to_midi_dress — в образі такої речі нема (+1 за цим самим правилом; речі обʼєднано)",
+            "ремонт": "додати: knee_to_midi_dress",
+            "речі": [
+              "cardigan",
+              "pumps",
+              "pants"
+            ],
+            "гейт_речі": [],
+            "свідомий": true,
+            "заяви": [
+              {
+                "code": "dress_code_requires_type",
+                "values": {
+                  "dress_code": "cocktail",
+                  "types": [
+                    "cocktail_dress",
+                    "dress_generic",
+                    "sheath_dress"
+                  ]
+                }
+              },
+              {
+                "code": "outfit_level_off_occasion",
+                "values": {
+                  "direction": "below",
+                  "level": 5.0,
+                  "target": [
+                    7,
+                    8
+                  ],
+                  "risk_posture": "neutral"
+                }
+              }
+            ],
+            "ремонт_заяви": [
+              {
+                "code": "add_required_type",
+                "values": {
+                  "types": [
+                    "cocktail_dress",
+                    "dress_generic",
+                    "sheath_dress"
+                  ]
+                }
+              },
+              {
+                "code": "shift_outfit_level",
+                "values": {
+                  "steps": 2.0,
+                  "direction": "up"
+                }
+              }
+            ],
+            "злито": 2,
+            "прийнято_чому": "Свідомо лишаю цей хід заради задуму."
+          }
+        ],
+        "структура": {
+          "ок": false,
+          "блокери": [
+            {
+              "код": "no_top_and_bottom"
+            }
+          ]
+        },
+        "свідомі": [
+          {
+            "річ": "cardigan, pumps",
+            "чому": "Свідомо лишаю цей хід заради задуму.",
+            "правило": "K-KOH-05",
+            "текст": "Свідомо лишаю цей хід заради задуму."
+          }
+        ]
+      },
+      "wire": {
+        "verdict": [
+          {
+            "your_outfit": {
+              "id": "o1",
+              "items": [
+                "cardigan",
+                "pumps",
+                "pants"
+              ]
+            },
+            "structure": {
+              "ok": false,
+              "blockers": [
+                {
+                  "code": "no_top_and_bottom"
+                }
+              ]
+            },
+            "your_declared": [
+              {
+                "item": "cardigan, pumps",
+                "why": "Свідомо лишаю цей хід заради задуму.",
+                "finding": "f-o1-1"
+              }
+            ]
+          }
+        ],
+        "remarks_by_code": {
+          "dress_code_requires_type": [
+            {
+              "outfit": "o1",
+              "id": "f-o1-1",
+              "register": "gate",
+              "fix": [
+                {
+                  "add_required_type": {
+                    "types": [
+                      "cocktail_dress",
+                      "dress_generic",
+                      "sheath_dress"
+                    ]
+                  }
+                },
+                {
+                  "shift_outfit_level": {
+                    "direction": "up"
+                  }
+                }
+              ],
+              "merged": 2,
+              "items": [
+                "cardigan",
+                "pumps",
+                "pants"
+              ],
+              "declared": true,
+              "values": {
+                "dress_code": "cocktail",
+                "types": [
+                  "cocktail_dress",
+                  "dress_generic",
+                  "sheath_dress"
+                ]
+              }
+            }
+          ],
+          "outfit_level_off_occasion": [
+            {
+              "outfit": "o1",
+              "id": "f-o1-1",
+              "register": "gate",
+              "fix": [
+                {
+                  "add_required_type": {
+                    "types": [
+                      "cocktail_dress",
+                      "dress_generic",
+                      "sheath_dress"
+                    ]
+                  }
+                },
+                {
+                  "shift_outfit_level": {
+                    "direction": "up"
+                  }
+                }
+              ],
+              "merged": 2,
+              "items": [
+                "cardigan",
+                "pumps",
+                "pants"
+              ],
+              "declared": true,
+              "values": {
+                "direction": "below",
+                "level": "neat",
+                "target": [
+                  "smart",
+                  "formal"
+                ],
+                "risk_posture": "neutral"
+              }
+            }
+          ]
+        }
+      },
+      "passed": true
+    }
+  ],
+  "1083_head": "51dcefe81cf7efd0d9726ce8cb19ddc6c20caedb",
+  "1074_head": "37e4c876b57aee8e566e1f691af064acf6061f4f"
+}
