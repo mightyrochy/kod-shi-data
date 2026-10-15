@@ -1,0 +1,24 @@
+{
+  "head": "c80bea14f73505903d1b99c77b746c45acb34c45",
+  "reason": "У першому проході sparse checkout не містив .github/workflows; додано точні HEAD-файли. Виконані лише два пропущені перевіряння.",
+  "workflows": [
+    "rozvidka.yml",
+    "zbirka.yml",
+    "zhnyva.yml",
+    "zhnyvarka.yml"
+  ],
+  "steps": [
+    {
+      "name": "ключ кожного job'а у .github/workflows — ASCII-ідентифікатор, як вимагає GitHub: інакше прогін умирає до першого кроку, на всіх гілках і без жодного job'а",
+      "rc": 0,
+      "finished": true
+    },
+    {
+      "name": "жоден крок `run:` не присвоює кириличному імені змінної: bash читає це не як присвоєння, а як команду (код 127), і під `set -e` крок падає",
+      "rc": 0,
+      "finished": true
+    }
+  ],
+  "status": "finished",
+  "rc": 0
+}
