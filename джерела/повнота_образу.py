@@ -957,7 +957,7 @@ def _речі_гейтів(гейти, ід, словник, за_ном):
     """id образу, які назвали знахідки-гейти: номер «#N·MM», id або назва речі."""
     цілі = []
     for z in гейти:
-        for x in (z.get("речі") or []):
+        for x in (z.get("гейт_речі", z.get("речі")) or []):
             з, _н, _ч = _розпізнати_речі(str(x), словник, за_ном)
             з += [і for і in ід if str(x) in (str((словник.get(і) or {}).get("назва") or "\0"), і)]
             цілі += [і for і in з if і in ід and і not in цілі]
@@ -977,8 +977,9 @@ def _її_речі(ід, словник):
 
 
 def _свідомі_ключі(к, ід, словник, за_ном):
-    """Гейти, які модель оголосила навмисними в образі: `[(правило, {id речей})]` над складом `ід`."""
-    return [(str(z.get("правило")), set(_речі_гейтів([z], ід, словник, за_ном)))
+    """Гейти, які модель оголосила навмисними: правило, адреси речей і її пояснення."""
+    return [(str(z.get("правило")), set(_речі_гейтів([z], ід, словник, за_ном)),
+             z.get("прийнято_чому") or z["свідомий"])
             for z in ((к or {}).get("знахідки") or []) if isinstance(z, dict) and z.get("свідомий")]
 
 
@@ -993,8 +994,10 @@ def _суд_складу(о, ід, ключі, свої, словник, за_н
     for z in ((о or {}).get("знахідки") or []):
         if isinstance(z, dict) and z.get("регістр") == "гейт" and not z.get("свідомий"):
             рр = set(_речі_гейтів([z], ід, словник, за_ном))
-            if any(п == str(z.get("правило")) and (рр <= р if р else not рр) for п, р in ключі):
-                z = dict(z, свідомий=True)
+            чому = next((ч for п, р, ч in ключі
+                         if п == str(z.get("правило")) and (рр <= р if р else not рр)), None)
+            if чому:
+                z = dict(z, свідомий=True, **({"прийнято_чому": чому} if isinstance(чому, str) else {}))
             elif рр and рр <= set(свої):
                 z = dict(z, регістр="репліка", блокує=False, без_замків=True)
         вих.append(z)
@@ -1529,31 +1532,48 @@ _БЕЗ_ВИКОНАНО = "here «done» is an empty list: the code checks the 
 # слота) іде моделі одним викликом, і вона доповнює ВСІ; образи без дір лишаються як були
 # (`злити_з_неторканими`). Вибір дістає п'ять дверей. Ця спроба — перша з `спроб_повноти`:
 # ремонт після вибору починає з наступної, а добір кодом лишається останнім ярусом.
+# ── ХІД НА БЛОКЕР, А НЕ СКЛАД ОБРАЗУ (Н2, рядки 5238, 5246) ──────────────────────────────
+# Доти відповідь була ОБРАЗИ_V1: модель переписувала кожен образ цілим (підпис, полюс, «день»,
+# «deliberate», «done») і мала тримати в «items» решту складу. 13 записаних відповідей qwen3.5-9b
+# (живі 1510 А і 1083, 53 образи): у 12 додана річ стоїть лише в тексті «done» («Added #19·45»),
+# якого код не читає (п.12); у 19 зник склад, про який не просили (07: о1 4→2, о4 4→1; 09: «items» —
+# hex замість номерів); при 3–6 блокерах образ діставав одну річ (10: п'ять образів з однієї речі,
+# +1 кожному). Після ремонту образів без блокера — 0 у трьох руках з десяти. Тепер відповідь —
+# по ходу на блокер (`ДОПОВНЕННЯ_V1`): «add» з його «options» (речі вітрини, що закривають саме
+# цю діру) чи «keep» одної речі групи. Решту складу, підпис, «день» і ходи тримає код
+# (`доповнити`, `злити_з_неторканими`): неінвазивність — кодом, не побажанням моделі (рядок 150).
 ПОВНОТА_ВСІ = _ЗП.Оголошення(
     задача="повнота",
     роль=("You are the stylist. The code checked the outfits you put together for her, and some of them "
           "cannot be shown yet: each such outfit has a blocker in «structure». You finish every one of them "
           "before she chooses."),
-    вхід=ПОВНОТА.вхід,
-    правила=(
-        "Finish EVERY outfit in «verdict»: clear all of its blockers.",
-        "A missing kind of item: add one item for it from «showcase».",
-        "Several items of one kind: keep the one that suits the outfit best and remove the others.",
-        "Change nothing else: the remaining items, the caption and the day stay as they are.",
-        # рядок 3240: тут лише блокери, знахідки назвати нема чого — «deliberate» несло пояснення
-        # доданої речі («Added shoes to complete the outfit») і йшло в суд ходом без коду
-        "Leave «deliberate» empty: an item you add for a blocker is not a deliberate move, and the moves "
-        "you declared before stay as they were.",
-        "Take every item from «verdict» or «showcase».",
-        РЯДОК_ЛИШЕ_НОМЕР,
-        "Return every outfit of «verdict», each under its own «id».",
+    вхід=(
+        _ЗП.Поле("case", "her occasion in her and the code's words"),
+        _ЗП.Поле("day", "her day as facts"),
+        _ЗП.Поле("verdict", "your outfits and the code's check: «your_outfit» — items with their full "
+                            "descriptions and your caption; «structure.blockers» — what keeps the outfit from "
+                            "being shown, each under its «id»: a missing kind of item, with «options» — the "
+                            "«n» of the «showcase» items that fill it; or several items of one kind, with "
+                            "«items»", треба=True),
+        _ЗП.Поле("showcase", "items that can fill what is missing"),
+        _ЗП.Поле("she_refuses", "what she refused", як="do not add an item that breaks it"),
     ),
-    вихід="ОБРАЗИ_V1",
+    правила=(
+        "Answer EVERY blocker with «options» or «items», in every outfit of «verdict»: one entry in «fixes» "
+        "under the blocker's «id».",
+        "A blocker with «options»: put in «add» the item of its «options» that suits this outfit best — one "
+        "item; for a missing top and bottom, a dress, or a top and a bottom.",
+        "A blocker with «items»: put in «keep» the one item that suits the outfit best; the code removes "
+        "the others.",
+        "You only add and keep: the other items, the caption and the day of the outfit stay as they are, "
+        "and the code keeps them.",
+        РЯДОК_ЛИШЕ_НОМЕР,
+    ),
+    вихід="ДОПОВНЕННЯ_V1",
     поля_виходу={
-        "образи[].ід": "«id» of the outfit, as in «verdict»",
-        "образи[].речі": "«n» of each item of the finished outfit, alone",
-        "образи[].день": "«day» of «your_outfit», unchanged",
-        "образи[].виконано[].знахідка": _БЕЗ_ВИКОНАНО,
+        "fixes[].blocker": "«id» of the blocker, as in «structure.blockers»",
+        "fixes[].add": "«n» of the item you add, alone",
+        "fixes[].keep": "«n» of the item you keep, alone",
     },
     межі=("лише_вхід",),
     мова_промпту="en",
@@ -1649,6 +1669,57 @@ def злити_з_неторканими(відповідь, попередні�
     return dict(версія=str((відповідь or {}).get("версія") or "1"), образи=вих), len(поп) - len(пари)
 
 
+def _номер_ходу(x):
+    """Річ ходу моделі → номер «#N·MM» (половина комплекту — з «/top», «/bottom»); не номер — None."""
+    м = _re.fullmatch(r"#?\s*(\d+)\s*[·.]\s*(\d{2})\s*(/\s*(?:top|bottom))?", str(x or "").strip())
+    return ("#%s·%s" % м.group(1, 2) + (м.group(3) or "").replace(" ", "")) if м else None
+
+
+def доповнити(відповідь, попередній):
+    """ДОПОВНЕННЯ_V1 ремонту до вибору + вердикт, з яким рука пішла в ремонт → ОБРАЗИ_V1 образів,
+    яких торкнувся хоч один хід: їхній склад з вердикта, до якого додано «add» блокера, а в групі
+    «keep» лишено одну річ. Ходи адресують блокер за його «id»; річ «add» — лише з вітрини цього ж
+    ремонту (`вердикт_повноти(…, всі=True)`), «keep» — лише з речей групи блокера.
+
+    `(обʼєкт, лічба)`; лічба — `ходів`, `прийнято` (ходів, що змінили склад), `не_з_вітрини` (номери
+    поза вітриною й не номери). None — у відповіді нема жодного ходу на блокер вердикта (стара
+    форма ОБРАЗИ_V1 чи сміття): тоді міст читає її як доти."""
+    ходи = [х for х in ((відповідь or {}).get("fixes") or []) if isinstance(х, dict)]
+    дані = вердикт_повноти(попередній, спроба=1, всі=True) if ходи else None
+    if not дані:
+        return None
+    вітрина = {r.get("н") for рр in (дані.get("вітрина") or {}).values() for r in (рр or []) if isinstance(r, dict)}
+    блокери = {str(б.get("ід")): (str(о.get("ід") or ""), б) for о in дані["образи"]
+               for б in ((о.get("структура") or {}).get("блокери") or []) if isinstance(б, dict) and б.get("ід")}
+    склад = {str(о.get("ід") or ""): list(о.get("речі") or []) for о in дані["образи"]}
+    лічба = dict(ходів=0, прийнято=0, не_з_вітрини=[])
+    торкнуто = []
+    for х in ходи:
+        ід, б = блокери.get(_ПР.ід_з_дроту(str(х.get("blocker") or "").strip()), (None, None))
+        if б is None:
+            continue
+        лічба["ходів"] += 1
+        до = list(склад[ід])
+        лишити = х.get("keep")
+        лишити = _номер_ходу(лишити[0] if isinstance(лишити, list) and len(лишити) == 1 else лишити) \
+            if б.get("код") == "слот_двічі" else None
+        if лишити and лишити in (б.get("речі") or []):
+            склад[ід] = [r for r in склад[ід] if r == лишити or r not in б["речі"]]
+        for r in (х.get("add") if isinstance(х.get("add"), list) else [х.get("add")]):
+            н = _номер_ходу(r)
+            if н is None or н.split("/")[0] not in вітрина:
+                if r not in (None, ""):
+                    лічба["не_з_вітрини"].append(str(r))
+            elif н not in склад[ід]:
+                склад[ід].append(н)
+        if склад[ід] != до:
+            лічба["прийнято"] += 1
+            торкнуто += [ід] if ід not in торкнуто else []
+    if not лічба["ходів"]:
+        return None
+    return dict(версія="1", образи=[dict(ід=ід, речі=склад[ід]) for ід in склад if ід in торкнуто]), лічба
+
+
 # Блокери, які лікує ремонт повноти: порожній слот (`СЛОТИ_БЛОКЕРА`) і слот із кількома
 # речами. Вето, одна річ і гейти — не його задача.
 _БЛОКЕРИ_ПОВНОТИ = frozenset(СЛОТИ_БЛОКЕРА) | {"слот_двічі"}
@@ -1727,7 +1798,32 @@ def вердикт_повноти(вердикт, спроба=1, всі=False):
     в["вітрина"] = {с: р for с, р in вітрина.items() if с in потрібні}
     if int(спроба or 1) >= 2:
         в["бракує"] = _бракує_адресно(в["образи"], потрібні, в["вітрина"])
+    if всі:
+        # Н2: діра несе свої варіанти — модель обирає з них річ на ЦЕЙ блокер (`ПОВНОТА_ВСІ`);
+        # блокери копіюються: вердикт, з яким рука пішла в ремонт, лишається як був
+        for о in в["образи"]:
+            if isinstance(о.get("структура"), dict):
+                блокери = []
+                for б in (о["структура"].get("блокери") or []):
+                    вар = _варіанти_блокера(б, в["вітрина"]) if isinstance(б, dict) else []
+                    блокери.append(dict(б, варіанти=вар) if вар else б)
+                о["структура"] = dict(о["структура"], блокери=блокери)
     return в
+
+
+def _варіанти_блокера(б, вітрина):
+    """Номери речей вітрини, що закривають порожній слот блокера `б`; [] — блокер не про порожній слот.
+
+    «Нема верху й низу» з одним названим слотом (`missing` заяви) — лише цей слот: сукня до
+    наявного низу дала б два низи (`суд_від_моделі`, «сукня + низ»)."""
+    слоти = СЛОТИ_БЛОКЕРА.get(str((б or {}).get("код") or ""), ())
+    if б.get("код") == "нема_верху_низу":
+        бракує = [_ВМ.ключ("slot", x) for з in (б.get("заяви") or []) if isinstance(з, dict)
+                  for x in ((з.get("values") or {}).get("missing") or [])]
+        if len(бракує) == 1 and бракує[0]:
+            слоти = tuple(бракує)
+    return list(dict.fromkeys(r.get("н") for с in слоти for r in (вітрина.get(с) or [])
+                              if isinstance(r, dict) and r.get("н")))
 
 
 # ── РЕМОНТ ПОВНОТИ НЕ МАЄ ПРАВА ГУБИТИ РЕЧІ, ПРО ЯКІ ЙОГО НЕ ПРОСИЛИ (рядок 150) ──
@@ -1993,6 +2089,56 @@ def прийняти_гейти(вердикт, прийнято):
              if (isinstance(z, dict) and z.get("регістр") == "гейт" and not z.get("свідомий")
                  and str(z.get("правило") or "") in правила) else z)
             for z in (о.get("знахідки") or [])]
+    return вердикт
+
+
+def донести_прийняття_вибору(вердикт, вибір, кандидати=None, каталог=None):
+    """Перевірене прийняття вибору → той самий гейт у ремонті того самого образу.
+
+    Сирий вибір розбирається своєю схемою над початковим вердиктом: чужа знахідка,
+    порожнє why і підставлений запасний образ права не дають. Нумерація образу може
+    змінитись; його початкові речі мусять лишитись, адреси гейту звіряє CQ06.
+    """
+    if not isinstance(вибір, dict):
+        return вердикт
+    над = вибір.get("вердикт") or {}
+    if not isinstance(над, dict):
+        return вердикт
+    # Читаємо JSON без нормалізації типів: вона, зокрема, зливає ["why"] у "why".
+    об, _, _ = _ПР.розбір_останній(вибір.get("текст"), ("chosen",))
+    if isinstance(об, dict) and "chosen" not in об:
+        об, _, _ = _ПР.розбір_останній(вибір.get("текст"), ("обрано",))
+    if not isinstance(об, dict):
+        return вердикт
+    об = _ПР.з_дроту_en(об, _ПР.СХЕМИ["ВИБІР_V1"])
+    # 5238: старий розбір коерсує why через str(); це не згода стилістки.
+    прийнято = _список(об.get("прийнято"))
+    об = dict(об, прийнято=[п for п in прийнято if isinstance(п, dict)
+                           and isinstance(п.get("чому"), str) and п["чому"].strip()])
+    р = вибір_з_json(_json.dumps(об, ensure_ascii=False), над, кандидати=кандидати, каталог=каталог)
+    о = _образ_вердикту(над, р.get("названо"))
+    if not о or р.get("замінено") or not р.get("прийнято"):
+        return вердикт
+    словник, за_ном = _словник_речей(кандидати, каталог), _за_номером(кандидати)
+    склад = _склад_вибору(о, словник, за_ном)["ід"]
+    if not склад:
+        return вердикт
+    чому_за = {п["знахідка"]: п["чому"] for п in р["прийнято"]}
+    позначений = dict(о, знахідки=[dict(z, свідомий=чому_за[z["ід"]])
+                       if z.get("ід") in чому_за else z for z in о.get("знахідки") or []])
+    ключі = _свідомі_ключі(позначений, склад, словник, за_ном)
+    for к in (вердикт or {}).get("образи") or []:
+        ід = _склад_вибору(к, словник, за_ном)["ід"]
+        if not set(склад) <= set(ід):
+            continue
+        суд = _суд_складу(к, ід, ключі, [], словник, за_ном)
+        к["знахідки"] = суд["знахідки"]
+        правила = {(z.get("правило"), z.get("прийнято_чому")) for z in суд["знахідки"] if z.get("свідомий")}
+        for п in р["прийнято"]:
+            if (п["правило"], п["чому"]) in правила:
+                к.setdefault("свідомі", []).append(dict(
+                    річ=", ".join(о.get("речі") or []), чому=п["чому"],
+                    правило=п["правило"], текст=п["чому"]))
     return вердикт
 
 
