@@ -298,7 +298,9 @@ const ПРОВАЙДЕРИ = [
         try {
           const в = await fetch(б.source.url, {headers: {"accept": "image/*"}, signal: ctrl.signal});
           const тип = (в.headers.get("content-type") || "").split(";")[0].trim();
-          if (!в.ok || !тип_картинки(тип)) return null;
+          /* Крамниця може не віддати MIME-тип: тоді вирішує сигнатура нижче.
+             Явно непідтримуваний тип, помилки й межі ваги відсіюємо як раніше. */
+          if (!в.ok || (тип && !тип_картинки(тип))) return null;
           const довжина = Number(в.headers.get("content-length"));
           if (Number.isFinite(довжина) && довжина > СТЕЛЯ_ФОТО) {
             await в.body?.cancel();
