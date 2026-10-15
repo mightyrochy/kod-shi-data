@@ -2788,6 +2788,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                            "conceal (values: loudness — the colour's loudness, ceiling — the "
                                            "ceiling, area_pct — its area in the outfit as a percentage, when "
                                            "known)",
+    "colour_holds_attention_in_goal_zone": "the item's colour holds attention in a body zone she wants to draw "
+                                           "the eye away from (values: loudness — the colour's loudness, "
+                                           "ceiling — the ceiling, zones — those zones, area_pct — its area in "
+                                           "the outfit as a percentage, when known)",
+    "item_draws_eye_by_itself_in_goal_zone": "the item draws the eye not by its colour but by itself, in a body "
+                                             "zone she wants to draw the eye away from (values: witnesses — what "
+                                             "draws the eye: open_zone, festive_trim, shine; zones — the zones it "
+                                             "opens; shine_class — the class of its shine)",
     "item_draws_eye_by_itself_goal_conceal": "the item draws the eye not by its colour but by itself, and her "
                                              "goal for this outing is conceal (values: witnesses — what draws "
                                              "the eye: open_zone, festive_trim, shine; zones — the zones it "
