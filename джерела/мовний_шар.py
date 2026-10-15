@@ -2633,7 +2633,10 @@ def _коди_розмови():
          "her letters, with no quotation marks or backslashes of its own around them:"]
     for ім, с in поля.items():
         if _група(ім, с) == "пари":
-            р.append("- %s — %s; %s" % (ім, _ПОЛЯ_EN[ім], _довідник_en(ім) if ім in _ГРУПИ_ДОВІДНИКА else _тип_en(с)))
+            тип = _довідник_en(ім) if ім in _ГРУПИ_ДОВІДНИКА else _тип_en(с)
+            if с.get("type") == "array" and "enum" in (с.get("items") or {}):
+                тип += '; {"quote": the fragment of her words, "value": [codes]}'
+            р.append("- %s — %s; %s" % (ім, _ПОЛЯ_EN[ім], тип))
             # Рядки 238 і 474: підвид офісу — лише за її словами; не названо — загальний `office` (ОФІС-1)
             if ім == "place":
                 р += ["  · %s — kinds of one place, %s: one of them only when her words say which kind; "
