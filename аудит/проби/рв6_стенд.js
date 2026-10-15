@@ -5353,7 +5353,14 @@ function підсумокМоделі(){
     const т0 = Date.now();
     await стор.click('#оц-оцінити');
     /* рядок 5740: перелік «Що я бачу на фото» — картка чекає дотику; стенд тисне «Так, оцінюй», щойно кнопка з'явилась */
-    стор.click('#оц-так', {timeout: 600000}).catch(() => null);
+    await стор.waitForFunction(() => document.getElementById('оц-так') || (!ОЦ.іде && (ОЦ.результат || (ОЦ.етапи || {}).помилка)), null, {timeout: 600000});
+    if (await стор.$('#оц-так')){
+      await знімок('otsinka_perelik', '#оц-речі');
+      console.log('   перелік до «Так»: ' + JSON.stringify(await стор.evaluate(() => [...document.querySelectorAll('#оц-речі .оц-річ')].map(р => [...р.children].map(
+        х => ({т: х.tagName + '.' + х.className, текст: х.textContent, ш: Math.round(х.getBoundingClientRect().width), ф: getComputedStyle(х).background.slice(0, 40)})))))
+        .slice(0, 1800));
+      await стор.click('#оц-так');
+    }
     await стор.waitForFunction(() => !ОЦ.іде && (ОЦ.результат || (ОЦ.етапи || {}).помилка), null, {timeout: 600000});
     const о6 = await стор.evaluate(() => {
       const е = ОЦ.етапи || {}, с_ = е.суд || {}, к = document.getElementById('оц-картка');
