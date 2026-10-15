@@ -5735,6 +5735,13 @@ function мостПриміркиЗаглушка(w){
     тест("дотик «зручність» → у файлі `about_items: [{id, opinion: dislike, reasons: [comfort]}]`, джерело — tap",
          JSON.stringify(з1.зведено.about_items) === JSON.stringify([{id: "ж-1@g.com", opinion: "dislike", reasons: ["comfort"]}])
          && з1.зведено.джерело.about_items === "tap" && JSON.stringify(з1.замінити_чому) === '{"ж-1@g.com":["comfort"]}', зап.slice(0, 300));
+    Array.from(d.querySelectorAll("button.текст")).find(к => к.textContent === "Повернути всі").click();
+    w.eval("позначитиЗмінуП(0); записатиВердиктП(0)");
+    await чекатиНа(() => w.eval("!!(В[0].записано && В[0].записана_зміна === В[0].зміна)"), "вердикт після «Повернути всі» не дописався");
+    const з2 = JSON.parse(await w.eval("усіВердикти().then(в => JSON.stringify(в.find(з => з.позиція === 1)))"));
+    тест("«Повернути всі» чистить ряд «чому» і запис: ряду нема, ні `замінити_чому`, ні `about_items` про повернуту річ",
+         d.querySelectorAll("#к-0 .чому-не-ця .ряд").length === 0 && !з2.замінити_чому && !(з2.зведено || {}).about_items,
+         [з2.замінити_чому, (з2.зведено || {}).about_items]);
     w.eval("відновитиСтанКарткиП(0, " + JSON.stringify({вердикт_людини: "ні", замінити: "ж-1@g.com", замінити_чому: {"ж-1@g.com": ["comfort"]}}) + ", 1)");
     тест("відкриття з бібліотеки відновлює ряд «чому» зі збереженим дотиком",
          чипиЧому().filter(ч => ч.classList.contains("вибр")).map(ч => ч.dataset.код).join() === "comfort");
