@@ -289,7 +289,10 @@ def осі(зона, рч=None):
     к = з.get("колір")
     if к and к.get("L"):
         вих["L"] = [int(round(к["L"][0])), int(round(к["L"][1]))]
-        вих["L_from"] = ("word" if р.get("джерело_кольору") == "назва_вікно" or str(к.get("джерело") or "").startswith("слово")
+        # кадр картки іншого кольору (рядок 5220): світлота — межі слова крамниці й кадру разом
+        # (`фід_кадр_колір.вікно_з_кадром`), а не лише слова
+        вих["L_from"] = ("word_or_photo" if (р.get("кадр_кольору") or {}).get("стан") == "інший_колір"
+                         else "word" if р.get("джерело_кольору") == "назва_вікно" or str(к.get("джерело") or "").startswith("слово")
                          else ("photo" if к.get("розкид") is not None else "photo_point"))
     кр = з.get("край")
     if кр and кр.get("см"):
@@ -436,7 +439,10 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
     "si": "shine", "nk": "neckline", "vm": "vamp", "mt": "metal", "mw": "metal is the body "
     "of the item or only its hardware", "dc": "decoration", "sk": "kind of set it is sold as",
     "sp": "the parts of the set", "co": "color", "cx": "other colors the shop names",
-    "cw": "why there are several colors", "hx": "measured hex of the color",
+    "cw": "why there are several colors",
+    "cq": "another witness of the color disagrees with `co`: the item's photo or the catalogue text shows "
+          "this color, and which of the two she gets is not known",
+    "hx": "hex of the color: measured on the photo, or the middle of the shop word's range when `Lf` is word",
     "fm": "color family", "ia": "the color lies inside her palette's scheme arc",
     "vt": "what the item carries that she may refuse, listed only when it does: stripes, "
           "big_print, print, shine, oversize, tight", "rg": "style register", "br": "core, edge or break of her palette",
@@ -539,6 +545,8 @@ def річ(r, короткий=False, пул=False, слот=None):
             ("shine", True if r.get("блиск") else None), ("details", _деталі(r.get("деталі"))),
             ("color", колір_код(r.get("колір"))[0]), ("shop_color", колір_код(r.get("колір"))[1]),
             ("hex", r.get("hex")),
+            # другий свідок кольору (рядок 5220): кадр картки показує інший колір, ніж слово крамниці
+            ("color_disputed", код("color_name", r["колір_кадру"]) if r.get("колір_кадру") else None),
             ("family", _сім_я_речі(r)),
             ("in_arc", r.get("у_дузі") if r.get("у_дузі") is not None else None)):
         if v not in (None, "", [], ()):
