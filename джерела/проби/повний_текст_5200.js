@@ -16,7 +16,7 @@ try{const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:t
   return f&&fs.existsSync(f)?r.fulfill({path:f}):r.abort();});
  await page.goto('https://probe.invalid/#model_mova=none');
  await page.waitForFunction(()=>typeof document.getElementById('оц-оцінити').onclick==='function');
- await page.evaluate(raw=>{ОЦ.результат={картка:raw.картка,суд:raw.суд,сценарій:raw.сценарій_екрана};
+ await page.evaluate(raw=>{ОЦ.перелік={так:true}; ОЦ.результат={картка:raw.картка,суд:raw.суд,сценарій:raw.сценарій_екрана};
   ОЦ.фото=[];ОЦ.етапи=raw;режим('оцінка');малюватиКарткуОцінкиП();},raw);
  await page.evaluate(()=>document.fonts.ready);
  const changes=page.locator('.оц-зміни .оц-чому');
