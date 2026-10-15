@@ -90,6 +90,8 @@ def коди_речей():
 ЗАПАСНА_БЕЗ_ОПОРИ = "alternative_without_worn_item"
 # Код у `нотатки` речей: слот моделі розійшовся з видом (`kind`), і слот узято з виду (`речі_з_відповіді`).
 СЛОТ_З_ВИДУ = "slot_from_kind"
+# Код у `нотатки` речей: точний дубль (те саме фото, ті самі коди й рамка) злито з першою (`речі_з_відповіді`, рядок 5740).
+ДУБЛЬ_РЕЧІ = "duplicate_item"
 
 
 def _ключ(поле, код, незнайомі, де):
@@ -143,7 +145,12 @@ def _ключ(поле, код, незнайомі, де):
 #     (`річ_з_фото.промпт_фото`: slot, тоді kind) білі сандалі ЖИВІ-24 №04 назвав `shoes`/`sandals`;
 #   · рамка «на око» і «відповідь — одразу обʼєкт» (рядок 4286): Ж19 №15, `OTSINKA_F2=L` — 13 265 симв.
 #     роздумів «Left: ~200 (if 600px wide)…» про пікселі рамок без JSON, у стелю 4000 т. за 110,8 с; другий
-#     виклик тієї ж сцени — 3 328 симв. опису перед JSON. Рамку код і так міряє в тисячних (`_рамка`).
+#     виклик тієї ж сцени — 3 328 симв. опису перед JSON. Рамку код і так міряє в тисячних (`_рамка`);
+#   · рядок 5294 (замір 5287: qwen3.5-9b, 19 викликів, обидві фігури ф2): усі 5 речей — 0 з 19, бо сорочку під
+#     жакетом зливали з ним — звідси «a garment under an open jacket is its own item»; жакет `outerwear` — 5 з 18
+#     (решта `top`: старе правило ставило верх і верхній шар однією формою) — звідси «worn open over another
+#     garment»; на ф2 поряд із ботильйонами — 9 вигаданих `bottom` («trousers», «beige bottom») і взуття на L
+#     2 з 9 — звідси «a photo of shoes alone has no top or bottom».
 РЕЧІ = _ЗП.Оголошення(
     задача="оцінка_речі",
     роль="You are a stylist. You see photos of an outfit a woman has put together herself, and you "
@@ -153,14 +160,17 @@ def _ключ(поле, код, незнайомі, де):
         _ЗП.Поле("codes", "allowed codes for item fields"),
     ),
     правила=(
-        "List every garment, pair of shoes, bag and accessory visible on her photos: one object per item.",
+        "List every garment, pair of shoes, bag and accessory visible on her photos: one object per item. "
+        "A garment under an open jacket is its own item, and so is each pair of shoes.",
         "An item seen on several photos is listed once, with the photo where it is seen best.",
         "\"in_outfit\" is true for items worn together in the outfit; false for an item shown as an "
         "alternative to one of them; \"unknown\" when the photo does not show which of them she wears "
         "(two pairs side by side, nothing on her).",
         "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a "
-        "toe, boots also a shaft rising from them; a top or outerwear has a neckline, shoulders and sleeves "
-        "or straps; trousers have two legs; a skirt hangs from the waist in one piece.",
+        "toe, boots also a shaft rising from them; a top has a neckline, shoulders and sleeves or straps; "
+        "a jacket, blazer or coat worn open over another garment is \"outerwear\", the garment under it "
+        "\"top\"; trousers have two legs; a skirt hangs from the waist in one piece.",
+        "A photo of shoes alone has no top or bottom: boot shafts are not trouser legs.",
         "\"kind\" is the item's exact kind from \"codes.item_type\" within its \"slot\", read from the same shape.",
         "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
         "around the item itself, without background or skin; " + _РФ.РАМКА_НА_ОКО + ".",
@@ -230,7 +240,7 @@ def речі_з_відповіді(відповідь, фото):
         вих["причина"] = причина or "відповідь без списку «items»"
         вих["без_речей"] = фото_ід
         return вих
-    лічба = {}
+    лічба, побачені = {}, {}
     без_фото = 0
     for н, о in enumerate(об["items"]):
         if not isinstance(о, dict):
@@ -270,8 +280,16 @@ def речі_з_відповіді(відповідь, фото):
         if слот_виду and слот_виду != р["слот"]:
             вих["нотатки"].append("%s: %s.slot=%s kind=%s" % (СЛОТ_З_ВИДУ, де, о.get("slot"), вид))
             р["слот"] = слот_виду
+        # ТОЧНИЙ ДУБЛЬ (рядок 5740): 6б `seed3_11` назвала ті самі 4 речі двічі (фото, коди, рамка) — 8 рядків, і `скласти`
+        # давало 5 «запасних». Збігається все, крім назви (слів код не судить, п.12): друга лишається в `нотатки`.
+        відбиток = tuple(р[к] for к in ("фото", "вид", "слот", "колір", "матеріал", "крій", "довжина", "принт",
+                                         "ошатність", "в_образі")) + (_json.dumps(р["рамка"], sort_keys=True, default=str),)
+        if відбиток in побачені:
+            вих["нотатки"].append("%s: %s=%s" % (ДУБЛЬ_РЕЧІ, де, побачені[відбиток]))
+            continue
         лічба[ф] = лічба.get(ф, 0) + 1
         р["ід"] = ф if лічба[ф] == 1 else "%s·%d" % (ф, лічба[ф])
+        побачені[відбиток] = р["ід"]
         вих["речі"].append(р)
     вих["без_речей"] = [ф for ф in фото_ід if not лічба.get(ф)]
     # ЗАПАСНА БЕЗ РЕЧІ, ЯКІЙ ВОНА ЗАПАСНА (рядок 4600): «false — річ, показана НАТОМІСТЬ іншої», а на її місці
@@ -779,6 +797,22 @@ def _без_кадру(речі):
                               чому=вим.get("чому"), причина=ПРИЧИНА_БЕЗ_КАДРУ, гілка=вим["гілка"],
                               ненадійний={к: вим.get(к) for к in ("hex", "слово", "частка", "кластери")})
     return речі
+
+
+def перелік(речі):
+    """Речі з фото → {ід: hex кружечка в переліку «Що я бачу на фото»} — центр вікна її слова (`річ_з_фото`:
+    слово → вікно ядра). Вимір кадру дає `суд` (далі, поверх); тут лише число з таблиці, без пікселів: перелік
+    стоїть до суду й не стоїть у ланцюгу (рядок 5740). Слова без вікна — None (кружечок порожній)."""
+    import colorspace as _cs
+    import verify as _V
+    import palettes as _ПЛ
+    вих = {}
+    for р in речі or []:
+        if not isinstance(р, dict) or not р.get("ід"):
+            continue
+        вікно = _V.ЛЕКСИКОН.get(р.get("колір"))
+        вих[р["ід"]] = _cs.hex_з_lab(tuple(_ПЛ._центр(вікно))) if вікно else None
+    return вих
 
 
 def суд(d):
