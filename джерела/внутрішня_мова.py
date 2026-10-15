@@ -2682,6 +2682,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "accent_colour_or_print_near_face": "an accent colour or print in the slot nearest the face",
     "item_removable_no_metric_drops": "the item can go: without it no metric of the look drops",
     "remove_this_item": "remove this item",
+    "use_target_formality_band": "choose items for the target formality band (values: band — from and to)",
     # ── оцінка її власного образу з фото: чого на кадрі не знайшлось (Ч-8, рядок 197) ──
     "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one; "
                                 "`items_without_photo`: items were named but not on which of her photos, so none could be "
