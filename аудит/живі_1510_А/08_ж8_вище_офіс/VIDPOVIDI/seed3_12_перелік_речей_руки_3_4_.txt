@@ -1,0 +1,43 @@
+── ПРОМПТ (2259 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wide-leg trousers, cropped just above the ankle bone, #2d241f charcoal brown, heavy wool gabardine.\nTailored blazer, single-breasted with a slightly dropped waistline to elongate the silhouette, #1a1613 deep espresso black, smooth matte crepe.\nCotton-poplin button-up shirt peeking from under the blazer, crisp white with a subtle micro-check pattern, sharp collar.\nLeather loafers, pointed toe with a 7cm hidden stiletto heel, #9f8b80 taupe brown, calfskin leather.\nMinimalist gold-toned pendant necklace on an 80cm chain, brushed gold vermeil.\n\nThis outfit leverages dark monochromatic tones in the bottom half and sharp tailoring to visually stretch the leg line, addressing her specific wish to appear taller. The cropped trouser length combined with the elongated heel creates an uninterrupted vertical flow from hip to toe, maximizing perceived height without altering actual proportions. A structured blazer defines the waist while adding architectural volume that commands authority for the office setting, ensuring she feels both elevated and professional."}
+
+── ВІДПОВІДЬ (1029 симв., 160.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "wide-leg trousers",
+      "details": "cropped just above the ankle bone, heavy wool gabardine",
+      "slot": "bottom",
+      "color_hex": "#2d241f",
+      "worn": true
+    },
+    {
+      "name": "tailored blazer",
+      "details": "single-breasted with a slightly dropped waistline, smooth matte crepe",
+      "slot": "outerwear",
+      "color_hex": "#1a1613",
+      "worn": true
+    },
+    {
+      "name": "button-up shirt",
+      "details": "crisp white with a subtle micro-check pattern, sharp collar",
+      "slot": "top",
+      "color_hex": "#ffffff",
+      "worn": true
+    },
+    {
+      "name": "leather loafers",
+      "details": "pointed toe with a 7cm hidden stiletto heel, calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#9f8b80",
+      "worn": true
+    },
+    {
+      "name": "pendant necklace",
+      "details": "minimalist gold-toned pendant on an 80cm chain, brushed gold vermeil",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

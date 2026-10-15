@@ -1,0 +1,75 @@
+── ПРОМПТ (7312 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня чорна · colour code: black · about it: text н=1
+2 — Туфлі Sergio Rossi помаранчеві · colour code: orange · about it: text н=2
+3 — Сумка жіноча, ATTICO, шкіра, колір темно-коричневий · colour code: brown · about it: text н=3
+4 — Пасок шкіряний (Hermes) · colour code: orange · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; orange — помаранчевий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A timeless black dress in a sleek fabric, cut with a flattering V-neck and defined waistline that elongates your figure. The voluminous long sleeves add a touch of drama while maintaining professional elegance."},
+{"н": 2, "текст": "Striking orange patent leather pumps with a pointed toe and a sturdy block heel, finished with an ankle strap for secure wear. The glossy finish adds a luxurious contrast to the matte dress."},
+{"н": 3, "текст": "A versatile dark brown leather bag crafted from pebbled leather for depth of texture. It features a classic envelope flap closure secured by a polished metal clasp and includes an adjustable strap for versatile carrying."},
+{"н": 4, "текст": "A vibrant orange leather belt distinguished by its signature gold 'H' buckle, offering a statement of bold style that perfectly matches the shoes to unify your ensemble."},
+{"н": 5, "текст": "This ensemble brings a commanding presence to your office meetings. The structured black dress establishes a clean, professional silhouette that is both authoritative and sleek. To add an unexpected element of warmth and energy, the bright orange heels serve as a bold statement, while the matching orange belt introduces a deliberate pop of color to draw attention to your waist. A sophisticated dark brown bag grounds the look in rich textures, completing the palette without cluttering it."},
+{"н": 6, "текст": "The orange shoes and belt create a perfect echo that draws the eye vertically, making you appear taller and elongating your entire figure."},
+{"н": 7, "текст": "Пасок шкіряний (Hermes) — To fulfill the needs_third_piece blocker: an outer layer or accessory was missing; a belt acts as the essential third piece to define the waist and add structure."},
+{"н": 8, "текст": "Туфлі Sergio Rossi помаранчеві — Shoe lightness is matched to skin tone (nude/orange) rather than the black dress. This prevents the shoes from cutting the leg line, ensuring the 'taller' illusion works."},
+{"н": 9, "текст": "Сумка жіноча, ATTICO, шкіра, колір темно-коричневий — Leather bag in a neutral brown tones down the bright orange shoes, preventing them from becoming a distracting focal point that shortens the look. It grounds the outfit."},
+{"н": 10, "текст": "Сукня чорна, Туфлі Sergio Rossi помаранчеві — The bold contrast between the black dress and orange shoes is a deliberate stylistic choice that serves her goal of appearing taller by extending the leg line toward skin tone, overriding the code's concerns about color gaps."},
+{"н": 11, "текст": "Сукня чорна — Sheath silhouette is the most effective shape for elongating the figure; fitted cut eliminates width distractions."}
+]
+
+── ВІДПОВІДЬ (2770 симв., 86.4 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "текст": "Чорна сукня з гладкої тканини, пошита з V-подібним вирізом і підкресленою талією, що видовжує твою фігуру. Об'ємні довгі рукави додають драматизму, зберігаючи професійну елегантність."
+  },
+  "2": {
+    "текст": "Яскраві помаранчеві лаковані туфлі з загостреним носком і стійким широким підбором, доповнені ремінцем на щиколотці для зручної посадки. Блискуча обробка додає розкішного контрасту матовій сукні."
+  },
+  "3": {
+    "текст": "Універсальна темно-коричнева шкіряна сумка, виготовлена з тисненої шкіри для глибини текстури. Вона має класичну застібку на клапані та поліровану металеву пряжку і регульований ремінь для різноманітних способів носіння."
+  },
+  "4": {
+    "текст": "Яскравий помаранчевий шкіряний пасок, що вирізняється фірмовою золотою застібкою 'H', пропонує сміливий стиль, який ідеально підходить до взуття та гармонійно завершує твій образ."
+  },
+  "5": {
+    "текст": "Цей ансамбль створює вражаючу присутність на офіційних зустрічах. Чорна сукня з чітким силуетом встановлює чистий, професійний вигляд, який водночас є авторитетним і елегантним. Щоб додати несподіваний відтінок тепла та енергії, яскраві помаранчеві підбори слугують сміливою заявою, а відповідний помаранчевий пасок додає навмисний акцент кольору, щоб привернути увагу до твоєї талії. Вишукана темно-коричнева сумка завершує образ у багатих текстурах."
+  },
+  "6": {
+    "текст": "Помаранчеві туфлі та пасок створюють ідеальний відгук, який привертає погляд вертикально, роблячи тебе вищою та видовжуючи твою фігуру загалом."
+  },
+  "7": {
+    "текст": "Пасок шкіряний (Hermes) — Щоб задовольнити вимоги блокувальника третього елемента: не вистачало верхнього шару або аксесуару; пасок є необхідним третім елементом, щоб підкреслити талію і додати структури."
+  },
+  "8": {
+    "текст": "Туфлі Sergio Rossi помаранчеві — Легкість взуття відповідає тону шкіри (нюд/помаранчевий) замість чорної сукні. Це запобігає тому, щоб туфлі розрізали лінію ноги, забезпечуючи роботу ілюзії «вищої». "
+  },
+  "9": {
+    "текст": "Сумка жіноча, ATTICO, шкіра, колір темно-коричневий — Шкіряна сумка в нейтральних коричневих тонах приглушує яскраві помаранчеві туфлі, запобігаючи тому, щоб вони стали відволікаючим центром уваги, який скорочує образ. Вона заземлює ансамбль."
+  },
+  "10": {
+    "текст": "Сукня чорна, Туфлі Sergio Rossi помаранчеві — Сміливий контраст між чорною сукнею та помаранчевими туфлями є навмисним стильовим вибором, який слугує її меті здаватися вищою, продовжуючи лінію ноги до тону шкіри, незважаючи на застереження коду щодо розбіжностей у кольорах."
+  },
+  "11": {
+    "текст": "Сукня чорна — Силует-футляр є найбільш ефективною формою для видовження фігури; приталений крій виключає відволікаючі елементи ширини."
+  }
+}
+```

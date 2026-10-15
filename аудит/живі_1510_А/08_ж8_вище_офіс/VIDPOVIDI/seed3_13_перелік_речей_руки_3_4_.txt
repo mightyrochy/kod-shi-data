@@ -1,0 +1,36 @@
+── ПРОМПТ (2054 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured blazer, sharp lapel cut, knee-length, charcoal gray with hex code #36454F, virgin wool blend.\nTailored trousers, wide-leg silhouette, ankle length, matching charcoal gray with hex code #36454F, high-twist wool.\nClassic pumps, almond toe, 9 cm heel, neutral beige with hex code #D3C6B2, leather.\nMinimalist gold hoop earrings, thin band, shiny brass, polished sterling silver.\n\nThis outfit creates an immediate sense of vertical elongation through the matching monochromatic tones that seamlessly extend the line from waist to ankle. The wide-leg trousers and sharp blazer lapel draw the eye upward while maintaining a commanding, professional silhouette suitable for the office environment. Even though the weather is mild enough to forgo an outer layer, the structured cuts ensure she appears taller and more poised without adding bulk or restricting movement."}
+
+── ВІДПОВІДЬ (769 симв., 156.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "structured blazer",
+      "details": "sharp lapel cut, knee-length, virgin wool blend",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "tailored trousers",
+      "details": "wide-leg silhouette, ankle length, high-twist wool",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "classic pumps",
+      "details": "almond toe, 9 cm heel, leather",
+      "slot": "shoes",
+      "color_hex": "#D3C6B2",
+      "worn": true
+    },
+    {
+      "name": "minimalist gold hoop earrings",
+      "details": "thin band, shiny brass, polished sterling silver",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

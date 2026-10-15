@@ -1,0 +1,44 @@
+── ПРОМПТ (5635 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Structured wide-leg trousers, cropped just above the ankle bone, charcoal brown, heavy wool gabardine.\nTailored blazer, single-breasted with a slightly dropped waistline to elongate the silhouette, deep espresso black, smooth matte crepe.\nCotton-poplin button-up shirt peeking from under the blazer, crisp white with a subtle micro-check pattern, sharp collar.\nLeather loafers, pointed toe with a 7cm hidden stiletto heel, taupe brown, calfskin leather.\nMinimalist gold-toned pendant necklace on an 80cm chain, brushed gold vermeil.\n\nThis outfit leverages dark monochromatic tones in the bottom half and sharp tailoring to visually stretch the leg line, addressing her specific wish to appear taller. The cropped trouser length combined with the elongated heel creates an uninterrupted vertical flow from hip to toe, maximizing perceived height without altering actual proportions. A structured blazer defines the waist while adding architectural volume that commands authority for the office setting, ensuring she feels both elevated and professional."},
+{"н": 2, "текст": "wide-leg trousers"},
+{"н": 3, "текст": "tailored blazer"},
+{"н": 4, "текст": "button-up shirt"},
+{"н": 5, "текст": "leather loafers"},
+{"н": 6, "текст": "pendant necklace"}
+]
+
+── ВІДПОВІДЬ (1306 симв., 141.5 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "2": "штани широкі",
+    "3": "піджак приталений",
+    "4": "сорочка з ґудзиками",
+    "5": "лофери зі шкіри",
+    "6": "кулон мінімалістичний",
+    "текст": "Широкі штани вільного крою, укорочені трохи вище кісточки, темно-сірі, з щільної вовняної габардину.\nПриталений піджак із запахом і невеликим спуском талії для подовження силуету, глибокого чорного кольору, гладкої матової крепдешини.\nБавовняна сорочка-поло з ґудзиками виглядає з-під піджака, білосніжна зі стриманим мікро-клітинчастим візерунком, гострим коміром.\nШкіряні лофери на загостреному носку з прихованим шпильковим каблуком 7 см, сіро-бежеві, з телячої шкіри.\nМінімалістичний золотистий кулон на ланцюжку завдовжки 80 см, позолочений вермейль.\n\nЦей образ використовує темні монохромні тони в нижній частині та чіткий крій для візуального видовження лінії ніг, що відповідає її конкретному бажанню здаватися вищою. Укорочена довжина штанів у поєднанні з видовженим каблуком створюють безперервний вертикальний силует від стегна до носка, максимально збільшуючи сприйняту висоту без зміни фактичних пропорцій. Структурований піджак окреслює талію, додаючи архітектурного об’єму, який випромінює впевненість для офісного середовища, гарантуючи, що вона почувається одночасно елегантно і професійно."
+  }
+}
+```
