@@ -1,0 +1,163 @@
+{
+  "recorded_at": 1792059690.5027094,
+  "source_head": "824243ed89fd75b04a9c96552784a51ab6a39888",
+  "incoming_main": "2fb809276e2683f1f579249662aec7b4ce2740f7",
+  "state": {
+    "head": "824243ed89fd75b04a9c96552784a51ab6a39888",
+    "started": 1792058769.6129854,
+    "steps": [
+      {
+        "name": "prepare",
+        "command": [
+          "python3",
+          "-c",
+          "import чистка_каталогу as ч, feed as Ф; print('фід:', ч.забезпечити_чистим('каталог_повний.xml')); print('фікстура:', Ф.каталог_на_диску('каталог_brief.xml'))"
+        ],
+        "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+        "started": 1792058769.613008,
+        "status": "finished",
+        "returncode": 0,
+        "finished": 1792058772.0840018
+      },
+      {
+        "name": "syntax",
+        "command": [
+          "python3",
+          "-c",
+          "import pathlib,subprocess,sys,ast; paths=list(pathlib.Path('.').rglob('*')); py=[p for p in paths if p.suffix=='.py' and 'node_modules' not in p.parts]; js=[p for p in paths if p.suffix=='.js' and 'node_modules' not in p.parts]; [ast.parse(p.read_text(),filename=str(p)) for p in py]; checks=[subprocess.run(['node','--check',str(p)]).returncode for p in js]; print('Python',len(py),'JavaScript',len(js),'fails',sum(checks)); sys.exit(bool(sum(checks)))"
+        ],
+        "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+        "started": 1792058772.084258,
+        "status": "finished",
+        "returncode": 0,
+        "finished": 1792058776.3907099
+      },
+      {
+        "name": "split",
+        "command": [
+          "bash",
+          "-c",
+          "failed=0; for f in проби/поділ_*_ast.py; do python3 \"$f\" || failed=$((failed+1)); done; echo \"ВПАЛО $failed\"; test \"$failed\" -eq 0"
+        ],
+        "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+        "started": 1792058776.3909872,
+        "status": "finished",
+        "returncode": 0,
+        "finished": 1792058780.5310674
+      },
+      {
+        "name": "smoke",
+        "command": [
+          "python3",
+          "стенд_знімок.py",
+          "--дим"
+        ],
+        "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+        "started": 1792058780.5313435,
+        "status": "finished",
+        "returncode": 0,
+        "finished": 1792058782.6931622
+      },
+      {
+        "name": "path",
+        "command": [
+          "python3",
+          "тест_живого_шляху.py"
+        ],
+        "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+        "started": 1792058782.693531,
+        "status": "finished",
+        "returncode": 0,
+        "finished": 1792058866.2046993
+      },
+      {
+        "name": "protocol",
+        "command": [
+          "python3",
+          "тест_протоколу.py"
+        ],
+        "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+        "started": 1792058866.2049758,
+        "status": "finished",
+        "returncode": 0,
+        "finished": 1792058870.248863
+      },
+      {
+        "name": "gates",
+        "command": [
+          "python3",
+          "прилади/розділи_гейтів.py"
+        ],
+        "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+        "started": 1792058870.2491562,
+        "status": "finished",
+        "returncode": 1,
+        "finished": 1792059282.3440602
+      },
+      {
+        "name": "contracts",
+        "command": [
+          "python3",
+          "audit_contracts.py"
+        ],
+        "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+        "started": 1792059282.3443742,
+        "status": "finished",
+        "returncode": 0,
+        "finished": 1792059296.2958233
+      },
+      {
+        "name": "display",
+        "command": [
+          "node",
+          "тест_показу.js"
+        ],
+        "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+        "started": 1792059296.2961779,
+        "status": "finished",
+        "returncode": 0,
+        "finished": 1792059362.316501
+      },
+      {
+        "name": "bridge",
+        "command": [
+          "node",
+          "тест_мосту.js"
+        ],
+        "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+        "started": 1792059362.3170943,
+        "status": "finished",
+        "returncode": 0,
+        "finished": 1792059383.0027723
+      },
+      {
+        "name": "reach",
+        "command": [
+          "python3",
+          "досяжність.py"
+        ],
+        "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+        "started": 1792059383.0031424,
+        "status": "finished",
+        "returncode": 0,
+        "finished": 1792059678.2017705
+      }
+    ],
+    "finished": 1792059678.202248,
+    "success": false
+  },
+  "finished_log_sha256": {
+    "prepare": "23d9aa25b3e05fcd4f2b416a755c0f69204c123c896a74af305bc5abf0abbe6f",
+    "syntax": "4253da39114be721835d41e44a2d02a7eb025eec491ece153cfc4081094e5a2a",
+    "split": "14dbba77e44522a811d9167e157275b7120ecf513f9f08c97a55bb77ceed5757",
+    "smoke": "c4a8704b6b085f4760827c5ae4347a51ff61ada1d9806098d5f833ee32e2c9f2",
+    "path": "f8e79b5993b2e2a29fbed20c680cbb8542eb526bb34d86779c43981fce87cdca",
+    "protocol": "a40bebdaf22e3566098bb56e36d62d1e35643c28ae67628b1c9650514ea97636",
+    "gates": "5023d1c7f374d9772b4ad168c1ececba82ffaa67dd45e46e7180c3f6efa9f940",
+    "contracts": "b3225b5f6e4bf2dcd4a7016e9bd8ef0c3e1e8d48dc991ad3a6c480359f733a32",
+    "display": "2c6f7defb48ab3b65c731d4d6a0ce45a05e0e50002edb109b0de7acff8f4c659",
+    "bridge": "356c04fa4d0533ed5247e95dd2df38a5ab82730967fd9ccc7e12f800d8d4e5a1",
+    "reach": "12947b46dc0ff399cec54ad2b93f641acf727f5f8e249326285e647f2ebbb747"
+  },
+  "note": "Джерела протягом єдиної батареї не змінено; усі 11 етапів завершено. Gates rc1: лише відсутній root .gz sparse checkout; 574/575 пройдено, точну умову проваленого гейту окремо перевірено після відновлення наявного readonly hardlink."
+}

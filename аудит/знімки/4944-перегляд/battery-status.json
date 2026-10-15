@@ -1,0 +1,144 @@
+{
+  "head": "824243ed89fd75b04a9c96552784a51ab6a39888",
+  "started": 1792058769.6129854,
+  "steps": [
+    {
+      "name": "prepare",
+      "command": [
+        "python3",
+        "-c",
+        "import чистка_каталогу as ч, feed as Ф; print('фід:', ч.забезпечити_чистим('каталог_повний.xml')); print('фікстура:', Ф.каталог_на_диску('каталог_brief.xml'))"
+      ],
+      "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+      "started": 1792058769.613008,
+      "status": "finished",
+      "returncode": 0,
+      "finished": 1792058772.0840018
+    },
+    {
+      "name": "syntax",
+      "command": [
+        "python3",
+        "-c",
+        "import pathlib,subprocess,sys,ast; paths=list(pathlib.Path('.').rglob('*')); py=[p for p in paths if p.suffix=='.py' and 'node_modules' not in p.parts]; js=[p for p in paths if p.suffix=='.js' and 'node_modules' not in p.parts]; [ast.parse(p.read_text(),filename=str(p)) for p in py]; checks=[subprocess.run(['node','--check',str(p)]).returncode for p in js]; print('Python',len(py),'JavaScript',len(js),'fails',sum(checks)); sys.exit(bool(sum(checks)))"
+      ],
+      "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+      "started": 1792058772.084258,
+      "status": "finished",
+      "returncode": 0,
+      "finished": 1792058776.3907099
+    },
+    {
+      "name": "split",
+      "command": [
+        "bash",
+        "-c",
+        "failed=0; for f in проби/поділ_*_ast.py; do python3 \"$f\" || failed=$((failed+1)); done; echo \"ВПАЛО $failed\"; test \"$failed\" -eq 0"
+      ],
+      "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+      "started": 1792058776.3909872,
+      "status": "finished",
+      "returncode": 0,
+      "finished": 1792058780.5310674
+    },
+    {
+      "name": "smoke",
+      "command": [
+        "python3",
+        "стенд_знімок.py",
+        "--дим"
+      ],
+      "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+      "started": 1792058780.5313435,
+      "status": "finished",
+      "returncode": 0,
+      "finished": 1792058782.6931622
+    },
+    {
+      "name": "path",
+      "command": [
+        "python3",
+        "тест_живого_шляху.py"
+      ],
+      "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+      "started": 1792058782.693531,
+      "status": "finished",
+      "returncode": 0,
+      "finished": 1792058866.2046993
+    },
+    {
+      "name": "protocol",
+      "command": [
+        "python3",
+        "тест_протоколу.py"
+      ],
+      "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+      "started": 1792058866.2049758,
+      "status": "finished",
+      "returncode": 0,
+      "finished": 1792058870.248863
+    },
+    {
+      "name": "gates",
+      "command": [
+        "python3",
+        "прилади/розділи_гейтів.py"
+      ],
+      "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+      "started": 1792058870.2491562,
+      "status": "finished",
+      "returncode": 1,
+      "finished": 1792059282.3440602
+    },
+    {
+      "name": "contracts",
+      "command": [
+        "python3",
+        "audit_contracts.py"
+      ],
+      "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+      "started": 1792059282.3443742,
+      "status": "finished",
+      "returncode": 0,
+      "finished": 1792059296.2958233
+    },
+    {
+      "name": "display",
+      "command": [
+        "node",
+        "тест_показу.js"
+      ],
+      "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+      "started": 1792059296.2961779,
+      "status": "finished",
+      "returncode": 0,
+      "finished": 1792059362.316501
+    },
+    {
+      "name": "bridge",
+      "command": [
+        "node",
+        "тест_мосту.js"
+      ],
+      "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+      "started": 1792059362.3170943,
+      "status": "finished",
+      "returncode": 0,
+      "finished": 1792059383.0027723
+    },
+    {
+      "name": "reach",
+      "command": [
+        "python3",
+        "досяжність.py"
+      ],
+      "cwd": "/workspace/scratch/4944-aa-next/repo/джерела",
+      "started": 1792059383.0031424,
+      "status": "finished",
+      "returncode": 0,
+      "finished": 1792059678.2017705
+    }
+  ],
+  "finished": 1792059678.202248,
+  "success": false
+}
