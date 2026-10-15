@@ -1271,7 +1271,8 @@ def порада_коду(сценарій, паспорт_досі=None, сло
          "already say it, skip this topic"),
         ("мета", вечір and not ст["мета"],
          "whether at this outing she wants to draw attention or stay unnoticed (it changes the colours "
-         "near the face and the fit)"),
+         "near the face and the fit), and whether a longer line, comfort all day or strictness for the "
+         "occasion matter to her (each changes the choice of items)"),
         ("макіяж", (вечір or _мк_контраст) and not ст["макіяж"],
          "what make-up she plans and the lip colour: a noticeable lipstick adds a step of "
          "contrast near the face, so items near the face are chosen more precisely"),

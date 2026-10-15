@@ -1491,7 +1491,7 @@ label:has(input:focus-visible),.слот:has(input:focus-visible){
       <div class="плитки" id="сц-мета-плитки"></div>
       <p class="підказка"><b>Що ще важливо</b> — можна кілька або жодного</p>
       <div class="плитки" id="сц-мета-важливо-плитки"></div>
-      <div class="плитки" id="сц-мета-зони-плитки" hidden></div>
+      <div class="ряд" id="сц-мета-зони-плитки" hidden></div>
       <p class="підказка" id="сц-мета-нота"></p>
     </div>
 
@@ -8171,9 +8171,12 @@ function малюватиМетуОбразу(){
     if (зониВкл){ вз.value = ''; МЕТА_ЗОНИ_ВІДКРИТО_П = false; } else МЕТА_ЗОНИ_ВІДКРИТО_П = true;
     дія(); }));
   кз.hidden = !зониВкл; кз.innerHTML = '';
-  Object.keys(МЕТА_ЗОНИ_ЧИП_П).forEach(з=>{
-    кз.appendChild(плитка(МЕТА_ЗОНИ_ЧИП_П[з], null, null, зони.includes(з), ()=>{
-      вз.value = (зони.includes(з) ? зони.filter(к=>к !== з) : зони.concat([з]).slice(-3)).join(','); дія(); }));
+  Object.keys(МЕТА_ЗОНИ_ЧИП_П).forEach(з=>{     /* зони — чипами, як барви драпіровки; до трьох (`goal_zones`) */
+    const ч = ел('span', 'чип' + (зони.includes(з) ? ' вибр' : ''), МЕТА_ЗОНИ_ЧИП_П[з]);
+    ч.setAttribute('role', 'button'); ч.tabIndex = 0; станВиборуП(ч);
+    ч.onkeydown = e=>{ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); ч.click(); } };
+    ч.onclick = ()=>{ вз.value = (зони.includes(з) ? зони.filter(к=>к !== з) : зони.concat([з]).slice(-3)).join(','); дія(); };
+    кз.appendChild(ч);
   });
   const нота = $('сц-мета-нота'); if (!нота) return;
   нота.textContent = (вм.value || важл.length || зони.length)

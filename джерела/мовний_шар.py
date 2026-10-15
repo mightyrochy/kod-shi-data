@@ -2571,7 +2571,9 @@ def _умови_тем():
         "occasion": ("where she is going in this item: work, a date, a celebration or every day",
                      "she sent a photo of her item and no occasion, place or event is known"),
         # Рядок 1441: «today» модель переносила дослівно — «сьогодні» для події в серпні чи суботу
-        "goal": ("whether at this outing she wants to draw attention or stay unnoticed", вечір),
+        # Рядок 5211: тема мети — обидві осі (увага й «що ще важливо»), одним м'яким реченням
+        "goal": ("whether at this outing she wants to draw attention or stay unnoticed, and whether a longer line, "
+                 "comfort all day or strictness for the occasion matter to her", вечір),
         # МАК-2 (рядок 258): та сама умова, що `face_contrast.порада_з_випадку` у судді тем
         "makeup": ("what make-up she plans and the lip colour",
                    "%s; or profile colouring.contrast is low and the occasion is dressy: occasion %s, place %s, "
