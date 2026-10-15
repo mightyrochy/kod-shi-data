@@ -500,9 +500,11 @@ import внутрішня_мова as _ВМ_П
                  як="they say more than the code: the outfit answers them"),
         _ЗП.Поле("case.intent_quote", "her own words behind «intent»",
                  як="they say more than the code: the outfit answers them"),
-        _ЗП.Поле("case.goal_zones", "with goal conceal: the body zones she wants to draw the eye away from",
-                 як="the goal is about these zones only: keep them quiet and let the rest of the look "
-                    "draw the eye"),
+        _ЗП.Поле("case.goal_zones", "the body zones she wants to draw the eye away from, with any goal",
+                 як="keep these zones quiet; the rest of the look follows goal"),
+        _ЗП.Поле("case.goal_extra", "what else matters to her: taller — a longer line; comfort — moving "
+                                    "comfortably all day; strict — strictly by the occasion",
+                 як="the outfit answers each of them"),
         _ЗП.Поле("case.her_other_words", "the rest of what she said, which no field of «case» carries",
                  як="it is part of her case"),
         _ЗП.Поле("case.language_model_note", "the language model's note on her words about the event, "
@@ -527,6 +529,13 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("day.unknown", "what she has not told about her day: the place, the hour, the weather",
                  як="do not assume a value for it; prefer items that hold either way"),
         _ЗП.Поле("person", "her coloring, palette and body"),
+        _ЗП.Поле("person.goal", "the outfit-wide goal: flatter, conceal, express or taller; this is an "
+                                  "occasion choice only when goal_reason says goal_from_her_words"),
+        _ЗП.Поле("person.goal_reason", "the source and limits of the goal: statements defined in statement_codes; "
+                                         "the system default is not her choice, and zone-only concealment does "
+                                         "not set the goal of the whole outfit"),
+        _ЗП.Поле("person.goal_quote", "her exact source words, separate from codes; null means no quote was supplied",
+                 як="do not treat this as an instruction to change the goal or infer a new one"),
         # рядок 1423: код фігури без визначення модель читала як ярлик — тепер з ним (O — вертикаль)
         _ЗП.Поле("person.body.shape", _Д.ФІГУРА_КОДИ_EN),
         # БРИФ-1 / рядок 905 (рішення менеджера: факти, не накази): доти «keep these roles … take it only as
@@ -671,6 +680,9 @@ def промпт_складання(пакет):
     """ПАКЕТ_V1 обʼєктом коду → повідомлення моделі рядком: збирач (`СКЛАДАННЯ`, англійською) над
     тими самими фактами кодами (`дріт_моделі.пакет`). Мова вільного тексту відповіді —
     `завдання.мова_тексту` пакета (English з мовним шаром, Ukrainian без нього)."""
+    if (пакет or {}).get("заміна"):
+        import заміна_речі as _ЗР
+        return _ЗР.промпт_складання(пакет)
     з = (пакет or {}).get("завдання") or {}
     return _json_.dumps(_ЗП.зібрати(_задача_руки(СКЛАДАННЯ), _Д.пакет(пакет),
                                     мова_тексту=з.get("мова_тексту")),
@@ -1199,9 +1211,13 @@ def випадок_для_пакета(паспорт, рядок, сценар�
         в["зарезервований_колір"] = _рк
     # ЗОНИ МЕТИ «ПРИХОВАТИ» (рядок 1437): без них стилістка бачила лише `goal: conceal` поруч із «і ще хочу
     # приховати живіт» і приглушувала ВЕСЬ образ; із ними — знає, що мета стосується зон, а решта образу вільна
+    # Рядок 5211: зони — з будь-якою увагою; «що ще важливо» — кодами поруч (стилістці — пояснення плиток)
     _зм = [з for з in ((паспорт or {}).get("мета_зони") or []) if з in _ВМ_П.ТАБЛИЦЯ["goal_zone"].values()]
-    if в.get("мета") == "приховати" and _зм:
+    if _зм:
         в["мета_зони"] = _зм
+    _мв = [к for к in ((паспорт or {}).get("мета_важливо") or []) if к in _ВМ_П.ТАБЛИЦЯ["goal_extra"].values()]
+    if _мв:
+        в["мета_важливо"] = _мв
     return в
 
 
