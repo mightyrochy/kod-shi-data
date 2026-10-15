@@ -5704,7 +5704,7 @@ function мостПриміркиЗаглушка(w){
       'control · trace · breakage=hour · packet_fields=x', 'control · no_input=a=b']}; малюватиДіагнозП();`);
     const діаг = () => d.getElementById("зб-діагноз").textContent;
     тест("до жодного вердикту: ні поломки, ні номера руки; статус і брак входу на місці",
-         !/breakage=|hand_[0-9]+/.test(діаг()) && /образ · blocks=1/.test(діаг()) && /no_input=a=b/.test(діаг()), діаг());
+         !/breakage=|hand_[0-9]+|without_format/.test(діаг()) && /образ · blocks=1/.test(діаг()) && /no_input=a=b/.test(діаг()), діаг());
     const чип = (поз, код) => d.querySelector(`#к-${поз} .ряд[data-поле="верд"] .чип[data-код="${код}"]`);
     чип(0, "as_is").click();
     await чекатиНа(() => w.eval("!!(В[0] && В[0].записано)"), "перший вердикт не записався");
