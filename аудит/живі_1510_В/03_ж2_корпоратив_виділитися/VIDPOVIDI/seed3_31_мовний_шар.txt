@@ -1,0 +1,53 @@
+── ПРОМПТ (7491 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Приталений однобортний піджак з акцентними плечима коричневий · colour code: brown · about it: text н=1
+2 — Кемел сатинові штани · colour code: camel · about it: text н=2
+3 — Сумка жіноча Bambino Chaîne · colour code: red · about it: text н=3
+4 — Золота підвіска з танцюючим кристалом · colour code: golden · about it: text н=4
+5 — Лофери марсалові OSTIN на шкірі · colour code: burgundy · about it: text н=5
+6 — Сережки Vintage Alhambra з жовтого золота · colour code: yellow · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; burgundy — бордовий; camel — кемел; golden — золотий; red — червоний; yellow — жовтий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This tailored brown blazer features subtle shoulder accents that give a modern edge while maintaining a smooth, elegant line. The rich brown tone adds warmth to your look without overpowering it."},
+{"н": 2, "текст": "The camel satin trousers offer a soft, fluid drape that skims the body gracefully. Their gentle sheen catches the light beautifully, adding a touch of luxury to your outfit."},
+{"н": 3, "текст": "This red handbag features a sleek structure with a chain strap and clean lines. Its bold color creates a striking contrast against neutral tones."},
+{"н": 4, "текст": "The delicate gold necklace is suspended from a fine chain with a small circular pendant, adding just the right amount of sparkle without overwhelming your look."},
+{"н": 5, "текст": "These burgundy suede loafers feature a polished buckle detail and a low heel. Their soft texture adds comfort while their rich color grounds your outfit in sophistication."},
+{"н": 6, "текст": "The gold earrings feature a classic clover design with white stone centers, offering timeless elegance that complements any neckline."},
+{"н": 7, "текст": "Your look for the holiday party starts with a rich brown blazer that adds structure to your figure, paired with soft camel satin trousers that let your legs move freely under the restaurant lights. The burgundy suede loafers ground the outfit in a deep, festive tone, while the bold red bag and gold earrings bring just the right amount of sparkle to make you stand out without overpowering the ensemble."},
+{"н": 8, "текст": "Wear the blazer open to keep the silhouette relaxed yet polished, letting the camel trousers shine as your foundation."},
+{"н": 9, "текст": "Приталений однобортний піджак з акцентними плечима коричневий, Кемел сатинові штани, Сумка жіноча Bambino Chaîne, Золота підвіска з танцюючим кристалом, Лофери марсалові OSTIN на шкірі, Сережки Vintage Alhambra з жовтого золота — The code flags this outfit for lacking a cocktail dress, but as a preppy-style jacket and trouser combination, it functions perfectly as 'smart' attire that meets the 'cocktail' dress code's intent of formality without requiring a specific silhouette, especially given the occasion is a restaurant celebration where versatility is key."},
+{"н": 10, "текст": "Сережки Vintage Alhambra з жовтого золота — The yellow earrings serve as a deliberate focal point near the face to satisfy her goal of standing out, rather than acting as an isolated orphan; their metallic finish ties them to the gold necklace and brooch, creating a cohesive 'express' element that balances the warm neutrals."}
+]
+
+── ВІДПОВІДЬ (2572 симв., 144.8 с, HTTP 200) ──
+```json
+{
+  "1": "Цей приталений коричневий піджак з акцентними плечима має ледь помітні деталі на плечах, які надають сучасного шарму, зберігаючи гладку та елегантну лінію. Багатий коричневий відтінок додає тепла твоєму образу без надмірності.",
+  "2": "Кемел сатинові штани пропонують м’який і плавний спад, який витончено облягає тіло. Їхній ніжний блиск красиво відбиває світло, додаючи нотку розкоші твоєму вбранню.",
+  "3": "Ця червона сумка має елегантну структуру з ланцюжковим ремінцем і чіткими лініями. Її сміливий колір створює вражаючий контраст із нейтральними тонами.",
+  "4": "Делікатний золотий кулон підвішений на тонкому ланцюжку з маленьким круглим медальйоном, додаючи саме ту кількість блиску, яка потрібна без перевантаження твого образу.",
+  "5": "Ці марсалові замшеві лофери мають поліровану деталь пряжки та невисокий каблук. Їхня м’яка текстура забезпечує комфорт, а насичений колір робить твоє вбрання вишуканим.",
+  "6": "Золоті сережки мають класичний дизайн у формі конюшини з білими камінчиками посередині, пропонуючи позачасову елегантність, яка доповнює будь-який виріз.",
+  "7": "Твій образ для святкової вечірки починається з насиченого коричневого піджака, який додає структури твоїй фігурі, у поєднанні з м’якими кемел сатиновими штанами, які дозволяють твоїм ногам вільно рухатися під світлом ресторану. Марсалові замшеві лофери роблять вбрання глибоким і святковим відтінком, а смілива червона сумка та золоті сережки додають саме ту кількість блиску, щоб ти виділялася без надмірності.",
+  "8": "Носи піджак розстебнутим, щоб зберегти силует невимушеним і водночас елегантним, дозволяючи кемел штанам стати основою твого образу.",
+  "9": "Приталений однобортний піджак з акцентними плечима коричневий, Кемел сатинові штани, Сумка жіноча Bambino Chaîne, Золота підвіска з танцюючим кристалом, Лофери марсалові OSTIN на шкірі, Сережки Vintage Alhambra з жовтого золота — Код сигналізує про відсутність коктейльної сукні в цьому образі, але як поєднання жакета та штанів у стилі преппі, він ідеально підходить для «розумного» одягу, який відповідає наміру дрес-коду «коктейль», що вимагає формальності без конкретного силуету, особливо враховуючи, що це святкування в ресторані, де універсальність є ключем.",
+  "10": "Сережки Vintage Alhambra з жовтого золота слугують навмисною акцентною точкою біля обличчя для досягнення твоєї мети виділитися, а не просто окремою прикрасою; їхній металевий блиск пов’язує їх із золотим кулоном і брошкою, створюючи гармонійний «виразний» елемент, який збалансовує теплі нейтральні кольори."
+}
+```

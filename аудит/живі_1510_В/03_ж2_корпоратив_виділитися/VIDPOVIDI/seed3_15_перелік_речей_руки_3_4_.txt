@@ -1,0 +1,29 @@
+── ПРОМПТ (2161 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green midi dress with a draped cowl neckline and asymmetrical hemline that sweeps longer in the back, emerald (#50C878), liquid silk charmeuse.\nSilver heeled mule sandals with a slim stiletto and glittering chain detail across the vamp, silver (#E8EDF3), glossy patent leather with embedded micro-crystals.\nGold drop earrings featuring dangling textured discs that catch light from every angle, gold (#FFD700), polished 14k vermeil brass with diamond-cut glass centers.\n\nThis outfit works because the emerald green is bold enough to command attention in a restaurant setting while remaining elegant for a cocktail dress code. The asymmetrical hemline and flowing silk create dynamic movement that ensures you stand out as you walk or dance, fulfilling your wish to be memorable. The silver shoes add a modern, festive contrast to the rich green, while the sparkling gold earrings provide the perfect finishing touch to ensure you catch every eye without being overdressed."}
+
+── ВІДПОВІДЬ (757 симв., 163.1 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Emerald green midi dress",
+      "details": "Draped cowl neckline, asymmetrical hemline sweeping longer in the back, cut from liquid silk charmeuse",
+      "slot": "dress",
+      "color_hex": "#50C878",
+      "worn": true
+    },
+    {
+      "name": "Silver heeled mule sandals",
+      "details": "Slim stiletto heel, glittering chain detail across the vamp, glossy patent leather with embedded micro-crystals",
+      "slot": "shoes",
+      "color_hex": "#E8EDF3",
+      "worn": true
+    },
+    {
+      "name": "Gold drop earrings",
+      "details": "Dangling textured discs, polished 14k vermeil brass with diamond-cut glass centers",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}
