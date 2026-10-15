@@ -50,8 +50,8 @@ const лог = (...а) => { const р = а.join(' '); вивід.push(р); consol
       };
       режим('оцінка');
     }, [fs.readFileSync(б4Файл, 'utf8'), fs.readFileSync(б6бФайл, 'utf8')]);
-    const стан = () => page.evaluate(() => ({ рядки: [...document.querySelectorAll('#оц-речі .оц-річ')].map(x => x.dataset.ід + ':' + x.querySelector('.слот').textContent
-                                                       + ':' + (x.querySelector('.кр').style.background || '-') + (x.querySelector('.замість') ? ':замість' : '')),
+    const стан = () => page.evaluate(() => ({ рядки: [...document.querySelectorAll('#оц-речі .оц-річ')].map(x => x.dataset.ід + ':' + x.querySelector('.оц-місце').textContent
+                                                       + ':' + (x.querySelector('.оц-кр').style.background || '-') + (x.querySelector('.оц-замість') ? ':замість' : '')),
       дотиків: ОЦ.перелік && ОЦ.перелік.звіт.дотиків, перезапущено: ОЦ.перелік && ОЦ.перелік.звіт.суд_перезапущено,
       обірвано: __виклики.обірвано, результат: !!ОЦ.результат, суд: ОЦ.етапи && ОЦ.етапи.суд ? ОЦ.етапи.суд.речі.map(р => р.ід) : null }));
     /* знімок блоку «Що я бачу на фото» (він під фото й питанням, у вікно 390×844 не влазить), картки — усієї сторінки */
