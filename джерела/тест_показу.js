@@ -5699,7 +5699,8 @@ function мостПриміркиЗаглушка(w){
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64, idb: new IDBFactory()});
     await чекатиНа(() => d.querySelectorAll("#картки .картка").length === 2, "дві картки не намалювались");
     w.eval(`ЗБ = {картки: П.картки, стадії: [], етап: [], ключ: [2, 1], готово: true, успіх: true, діагноз: [
-      'hand_1 · blocks=1', 'control · hand_2_broken=temperature', 'control · blind · breakage=temperature · brief_rows=3',
+      'hand_1 · blocks=1', 'prompt · hand_1_without_format · format=OBRAZ · variants=1',
+      'control · hand_2_broken=temperature', 'control · blind · breakage=temperature · brief_rows=3',
       'control · trace · breakage=hour · packet_fields=x', 'control · no_input=a=b']}; малюватиДіагнозП();`);
     const діаг = () => d.getElementById("зб-діагноз").textContent;
     тест("до жодного вердикту: ні поломки, ні номера руки; статус і брак входу на місці",
