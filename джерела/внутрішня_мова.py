@@ -1276,6 +1276,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ── колір лише словом, а не вимір (`колір_річ.без_входу_кольору`) ──────────
     "colour_word_shop": "the code knows the colour of the named items only from the shop's word, not from "
                         "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
+    "colour_word_shop_photo_other": "the shop names one colour of the named items and their card photo shows "
+                                    "another, so the code knows neither for sure (values: items — items: slot — "
+                                    "slot code, colour — the shop's colour word, photo — the colour on the photo)",
     "colour_word_model": "the code knows the colour of the named items only from the model's word, not from "
                          "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
     "colour_word_not_photo": "the colour of the named items comes from a word, not from measuring the photo "
