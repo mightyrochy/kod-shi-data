@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Р1 — той самий YML Prom/Rozetka плюс 11 обов'язкових полів і три правила формату (каталог_партнерів_2026-10-15.md §3):
+     offer = один розмір одного кольору; group_id = модель; колір — окремий варіант зі своїми фото; Колір — один на офер;
+     Склад (одяг) чи Матеріал (взуття, сумки, прикраси). Крамниця й речі вигадані. -->
+<yml_catalog date="2026-10-15 06:00">
+  <shop>
+    <name>Приклад-1</name>
+    <company>ФОП Приклад</company>
+    <url>https://pryklad1.example.ua</url>
+    <currencies><currency id="UAH" rate="1"/></currencies>
+    <categories>
+      <category id="1">Жіночий одяг</category>
+      <category id="11" parentId="1">Сукні</category>
+      <category id="30">Взуття</category>
+      <category id="31" parentId="30">Лофери</category>
+    </categories>
+    <offers>
+      <!-- Модель 10451, колір «чорний», розміри S і M: ті самі фото -->
+      <offer id="10451-chorn-S" group_id="10451" available="true">
+        <url>https://pryklad1.example.ua/p/10451?color=chorn</url>
+        <price>1890</price>
+        <currencyId>UAH</currencyId>
+        <categoryId>11</categoryId>
+        <name_ua>Сукня трикотажна міді, чорна</name_ua>
+        <vendor>Приклад-1</vendor>
+        <picture>https://pryklad1.example.ua/img/10451-chorn-1.jpg</picture>
+        <picture>https://pryklad1.example.ua/img/10451-chorn-2.jpg</picture>
+        <param name="Колір">чорний</param>
+        <param name="Склад">95% віскоза; 5% еластан</param>
+        <param name="Розмір">S</param>
+      </offer>
+      <offer id="10451-chorn-M" group_id="10451" available="true">
+        <url>https://pryklad1.example.ua/p/10451?color=chorn</url>
+        <price>1890</price>
+        <currencyId>UAH</currencyId>
+        <categoryId>11</categoryId>
+        <name_ua>Сукня трикотажна міді, чорна</name_ua>
+        <vendor>Приклад-1</vendor>
+        <picture>https://pryklad1.example.ua/img/10451-chorn-1.jpg</picture>
+        <picture>https://pryklad1.example.ua/img/10451-chorn-2.jpg</picture>
+        <param name="Колір">чорний</param>
+        <param name="Склад">95% віскоза; 5% еластан</param>
+        <param name="Розмір">M</param>
+      </offer>
+      <!-- Та сама модель у кольорі «бежевий» — свої фото, не фото чорної -->
+      <offer id="10451-bezh-S" group_id="10451" available="false">
+        <url>https://pryklad1.example.ua/p/10451?color=bezh</url>
+        <price>1890</price>
+        <currencyId>UAH</currencyId>
+        <categoryId>11</categoryId>
+        <name_ua>Сукня трикотажна міді, бежева</name_ua>
+        <vendor>Приклад-1</vendor>
+        <picture>https://pryklad1.example.ua/img/10451-bezh-1.jpg</picture>
+        <param name="Колір">бежевий</param>
+        <param name="Склад">95% віскоза; 5% еластан</param>
+        <param name="Розмір">S</param>
+      </offer>
+      <!-- Взуття: Матеріал замість Складу; один розмір у наявності — Розмір усе одно пишемо -->
+      <offer id="20310-37" group_id="20310" available="true">
+        <url>https://pryklad1.example.ua/p/20310</url>
+        <price>2950</price>
+        <currencyId>UAH</currencyId>
+        <categoryId>31</categoryId>
+        <name_ua>Лофери шкіряні</name_ua>
+        <vendor>Приклад-1</vendor>
+        <picture>https://pryklad1.example.ua/img/20310-1.jpg</picture>
+        <picture>https://pryklad1.example.ua/img/20310-2.jpg</picture>
+        <param name="Колір">коньячний</param>
+        <param name="Матеріал">натуральна шкіра</param>
+        <param name="Розмір">37</param>
+      </offer>
+    </offers>
+  </shop>
+</yml_catalog>
