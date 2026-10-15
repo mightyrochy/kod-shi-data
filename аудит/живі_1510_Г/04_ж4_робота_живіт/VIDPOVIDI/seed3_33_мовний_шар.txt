@@ -1,0 +1,50 @@
+── ПРОМПТ (6949 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Гольф в рубчик, Green Moss · colour code: green · about it: text н=1
+2 — Штани з кишенями та регульованою гумовою стрічкою по низу штанин, пасок-гумова стрічка, посадка висока (Max Mara) · colour code: graphite · about it: text н=2
+3 — Сабо чорні URBAN · colour code: black · about it: text н=3
+4 — Жіноча сумка Welfare коричнева · colour code: brown · about it: text н=4
+5 — Пасок з пірʼям червоний · colour code: red · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; graphite — графіт; green — зелений; red — червоний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A fitted black ribbed turtleneck sweater with long sleeves and a high collar that offers a sleek, elongated line from neck to waist."},
+{"н": 2, "текст": "High-rise wide-leg trousers in graphite grey with hidden pockets and an elasticized hem that falls smoothly over the ankle for a relaxed drape."},
+{"н": 3, "текст": "Minimalist black leather mules with a rounded toe and low stacked heel designed for all-day comfort without sacrificing polish."},
+{"н": 4, "текст": "A structured brown pebbled-leather tote bag with top handles, a zip closure on the side, and a casual slouch that balances the refined lines of your outfit."},
+{"н": 5, "текст": "A slim red belt trimmed with soft feathers that sits at the natural waist to add texture and color contrast while defining your figure gently."},
+{"н": 6, "текст": "You’re wearing a sleek black ribbed turtleneck sweater tucked into high-waisted graphite trousers with an elasticized hem, cinched at the waist with a red feathered belt that adds soft drama to your silhouette. You carry a slouchy brown pebbled leather tote bag and step out in minimalist black leather mules for effortless movement through your office day. The outfit leans into your shape by keeping the top streamlined and letting the wide-leg trousers create a clean vertical line, while the warm brown of the bag grounds your monochrome base with an earthy note."},
+{"н": 7, "текст": "Let the sweater stay untucked to soften the high waistline and keep the upper body looking easy but polished."},
+{"н": 8, "текст": "Slide the feathered belt just enough to highlight the narrowest part of your torso without cutting the silhouette too sharply."},
+{"н": 9, "текст": "Гольф в рубчик, Green Moss, Штани з кишенями та регульованою гумовою стрічкою по низу штанин, пасок-гумова стрічка, посадка висока (Max Mara), Сабо чорні URBAN, Жіноча сумка Welfare коричнева, Пасок з пірʼям червоний — Despite having multiple registers present including boho and classic, the core elements of the ribbed knit and clean trousers successfully lead with a quiet luxury and workwear vibe that perfectly serves her professional intent."}
+]
+
+── ВІДПОВІДЬ (2123 симв., 31.2 с, HTTP 200) ──
+```json
+{
+  "1": "Облягаючий чорний гольф в рубчик з довгими рукавами та високим коміром, який пропонує елегантну видовжену лінію від шиї до талії.",
+  "2": "Штани з високою посадкою вільного крою графітового кольору зі схованими кишенями та еластичним краєм по низу штанин, що плавно спадають на щиколотку для розслабленого драпірування.",
+  "3": "Мінімалістичні чорні шкіряні мюлі з округлим носком і невисоким стійким каблуком, створені для комфорту протягом усього дня без втрати елегантності.",
+  "4": "Структурована коричнева сумка-тоут зі штучної шкіри з верхніми ручками, бічною блискавкою та недбалим силуетом, що врівноважує витончені лінії твого образу.",
+  "5": "Тонкий червоний пасок, оброблений м’яким пір’ям, який сидить на природній талії, щоб додати текстуру та колірний контраст, ніжно підкреслюючи фігуру.",
+  "6": "Ти одягла елегантний чорний гольф в рубчик, заправлений у штани з високою посадкою графітового кольору з еластичним краєм по низу штанин, і підперезана червоним паском з пір’ям, який додає м’якої драматичності твоєму силуету. Ти несеш коричневу сумку-тоут зі штучної шкіри та йдеш у мінімалістичних чорних шкіряних мюлях для безпроблемного пересування протягом робочого дня. Образ підкреслює твою фігуру, зберігаючи верхню частину тіла стрункою і дозволяючи штанам вільного крою створити чисту вертикальну лінію, а теплий коричневий колір сумки збалансовує монохромний образ земним відтінком.",
+  "7": "Залиш гольф не заправленим, щоб пом’якшити високу талію і зберегти верхню частину тіла легкою, але охайною.",
+  "8": "Зсунь пасок з пір’ям так, щоб він підкреслював найвужчу частину тулуба без надмірного розрізання силуету.",
+  "9": "Гольф в рубчик, Green Moss, Штани з кишенями та регульованою гумовою стрічкою по низу штанин, пасок-гумова стрічка, посадка висока (Max Mara), Сабо чорні URBAN, Жіноча сумка Welfare коричнева, Пасок з пірʼям червоний — Незважаючи на присутність різних стилів, включаючи бохо та класичний, основні елементи гольфу в рубчик і чистих штанів успішно створюють атмосферу тихої розкоші та робочого одягу, що чудово відповідає її професійним потребам."
+}
+```

@@ -1,0 +1,54 @@
+── ПРОМПТ (7503 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лляна чорна сорочка з довгим рукавом Мілда · colour code: black · about it: text н=1
+2 — Жилетка вкорочена молочний шоколад · colour code: chocolate · about it: text н=2
+3 — Спідниця міді шкіряна бургунді · colour code: black · about it: text н=3
+4 — Сабо чорні URBAN · colour code: black · about it: text н=4
+5 — Бежевий тоут у фірмову монограму · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; chocolate — шоколадний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This black linen shirt has a relaxed, oversized fit with long sleeves and a button-front closure. It’s lightweight and breathable, perfect for layering or wearing alone in mild weather."},
+{"н": 2, "текст": "The puffer vest is made from soft matte fabric and sits at hip length with a front zipper and quilted panels. Its muted chocolate tone complements your skin and adds warmth without bulk."},
+{"н": 3, "текст": "This midi skirt is crafted from structured leather in a deep burgundy hue, falling straight from the waist with clean seams that elongate your silhouette."},
+{"н": 4, "текст": "These black mules are made of smooth leather with a slightly curved sole and open back for easy slip-on wear. They’re designed for all-day comfort without sacrificing style."},
+{"н": 5, "текст": "This tote bag features a bold monogram print in beige tones with black straps and hardware. It’s spacious enough to carry your essentials and adds a playful touch to your neutral palette."},
+{"н": 6, "текст": "Your outfit is built for a relaxed start to your autumn office day, balancing comfort with a polished silhouette. The black linen shirt provides a soft, easy drape that you can take off if the office gets warm or slip into a jacket when it cools down. Over it, the chocolate-toned puffer vest adds just enough structure to define your shape without feeling stiff. Below, the burgundy leather midi skirt introduces a rich texture and color contrast to keep things interesting. The black mules offer a comfortable, open-toe feel perfect for walking between floors, while the beige tote keeps your hands free and grounded in neutral tones."},
+{"н": 7, "текст": "You can layer the puffer vest over or under the linen shirt depending on how you want to feel; it acts as a soft outer shell without bulk. The black mules are slip-on shoes that go well with skirts and pants alike, giving you an effortless yet put-together look."},
+{"н": 8, "текст": "The leather skirt is structured enough to keep your lines clean even when you're moving all day. If the office gets cold, the vest becomes your main layer; if it's mild, wear it lightly over the shirt."},
+{"н": 9, "текст": "Жилетка вкорочена молочний шоколад — The chocolate vest anchors the waist and draws the eye away from the belly zone, softening the rigid lines of the leather skirt."},
+{"н": 10, "текст": "Сабо чорні URBAN — The leather skirt is fitted and hits mid-thigh, defining the hips without adding volume that could widen the belly zone further."},
+{"н": 11, "текст": "Спідниця міді шкіряна бургунді, Жилетка вкорочена молочний шоколад — I accept the waistline being hidden by the long vest because it functionally creates a smooth column that conceals the belly zone, which is the primary goal of this outfit."}
+]
+
+── ВІДПОВІДЬ (2738 симв., 35.3 с, HTTP 200) ──
+```json
+{
+  "1": "Ця чорна лляна сорочка має вільний, оверсайз крій з довгими рукавами та застібкою на ґудзики спереду. Вона легка й дихаюча, ідеальна для багатошаровості або носіння окремо у м’яку погоду.",
+  "2": "Ця жилетка виготовлена з м’якої матової тканини та сягає довжини до стегон із передньою блискавкою й стьобаними панелями. Її приглушений шоколадний відтінок підкреслює колір твоєї шкіри та додає тепла без об’ємності.",
+  "3": "Ця міді-спідниця виготовлена з фактурної шкіри глибокого бордового кольору, що спадає прямо від талії з чистими швами, які видовжують силует.",
+  "4": "Ці чорні сабо виготовлені зі гладкої шкіри з трохи закругленою підошвою й відкритим задником для зручного взування. Вони розроблені для комфорту протягом усього дня без шкоди для стилю.",
+  "5": "Ця сумка-тоут має сміливий принт із монограмою в бежевих тонах з чорними ремінцями й фурнітурою. Вона досить містка, щоб носити всі необхідні речі, і додає грайливості до твоєї нейтральної палітри.",
+  "6": "Твій образ створений для розслабленого початку осіннього робочого дня, поєднуючи комфорт з вишуканим силуетом. Чорна лляна сорочка дарує м’який і легкий драпірування, яку ти можеш зняти, якщо в офісі стане жарко, або накинути піджак, коли похолодає. Зверху шоколадна жилетка додає достатньо структури, щоб окреслити твою фігуру без відчуття скутості. Нижче бордова шкіряна міді-спідниця вносить багату текстуру та колірний контраст, щоб усе було цікавіше. Чорні сабо пропонують комфортне відкрите відчуття для ніг ідеальне для ходьби між поверхами, а бежева сумка-тоут залишає твої руки вільними й підтримує нейтральні тони.",
+  "7": "Ти можеш одягати шоколадну жилетку поверх або під лляну сорочку залежно від того, як ти хочеш почуватися; вона слугує м’якою зовнішньою оболонкою без об’ємності. Чорні сабо — це зручне взуття на низькому ходу, яке добре виглядає зі спідницями та штанами, даруючи тобі невимушений і водночас охайний образ.",
+  "8": "Шкіряна міді-спідниця досить структурована, щоб зберігати твої лінії чистими навіть під час руху протягом усього дня. Якщо в офісі стане холодно, жилетка стане твоєю основною річчю; якщо буде тепло, одягни її легко поверх сорочки.",
+  "9": "Жилетка вкорочена молочний шоколад — Шоколадна жилетка акцентує талію й відволікає увагу від зони живота, пом’якшуючи жорсткі лінії шкіряної спідниці.",
+  "10": "Сабо чорні URBAN — Шкіряна міді-спідниця облягає фігуру та сягає середини стегна, підкреслюючи стегна без додавання зайвого об’єму в зоні живота." ,
+  "11": "Спідниця міді шкіряна бургунді, Жилетка вкорочена молочний шоколад — Я приймаю те, що талію приховує довга жилетка, адже вона функціонально створює гладку колону, яка маскує зону живота, що є головною метою цього образу."
+}
+```

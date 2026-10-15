@@ -1,0 +1,43 @@
+── ПРОМПТ (2317 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Overcoat in a structured wool blend, mid-length knee coverage, charcoal grey with hex code #36454F, heavy woven fabric.\nTailored blazer in a fine merino knit, single-breasted cut with notched lapels, deep forest green with hex code #1A2E26, soft textured material.\nHigh-waisted wide-leg trousers in dark denim, ankle length just above the heel, indigo navy with hex code #0F172A, sturdy cotton twill.\nLeather loafers, rounded toe silhouette, polished brown with hex code #8B5A2B, smooth calf leather.\nThin gold chain necklace, delicate link design, antique brass finish with hex code #B5944E, lightweight metal.\nThis outfit works because it balances professional polish with autumnal warmth while adhering to her request for everyday and neat styles. The dark denim trousers ground the look in casual comfort, whereas the refined merino blazer elevates it to an office-appropriate level. The structured overcoat provides necessary protection against fall weather without appearing overly formal. Every piece coordinates harmoniously to create a sophisticated silhouette that feels both intentional and effortless for her specific case."}
+
+── ВІДПОВІДЬ (1028 симв., 69.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Overcoat",
+      "details": "structured wool blend, mid-length knee coverage, heavy woven fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Blazer",
+      "details": "fine merino knit, single-breasted cut with notched lapels, soft textured material",
+      "slot": "top",
+      "color_hex": "#1A2E26",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "high-waisted wide-leg, ankle length just above the heel, sturdy cotton twill",
+      "slot": "bottom",
+      "color_hex": "#0F172A",
+      "worn": true
+    },
+    {
+      "name": "Loafers",
+      "details": "rounded toe silhouette, polished brown, smooth calf leather",
+      "slot": "shoes",
+      "color_hex": "#8B5A2B",
+      "worn": true
+    },
+    {
+      "name": "Necklace",
+      "details": "thin gold chain, delicate link design, lightweight metal",
+      "slot": "collar_necklace",
+      "color_hex": "#B5944E",
+      "worn": true
+    }
+  ]
+}
