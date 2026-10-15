@@ -1,0 +1,48 @@
+Незалежна перевірка #1060: ВАДА походження frozen ДО
+Голова: e0adf7dc52dd6acb265708aeaeae0fca2a3888f7
+База: 0ccb8dbfa1b97ab3ac2ed189139a7bcfbe9ba3bc
+CONTENT: не прийнято через інший вхід фактичного пілоту. Рядок 3710 відкритий.
+Авторська зміна b2a→e0ad сталася до будь-якого мого grade; прямим diff і blob ID звірено незмінність чотирьох producer-модулів. Ця оцінка стосується саме e0ad.
+
+Перевірка коду:
+Перелік із8 кодів відповідає silhouette.КРІЙ_СЛОТ; вузька нормалізація пропускає їх, відхиляє14 інших/None/unknown. Неширокий перелік застосовується тільки за guard сукні.
+Усі5 готових широких промптів побайтно рівні базі. Широка нормалізація22кроїв+None+unknown рівна базі. Комбінезон/None/светр/чужийслот guard=False.
+Промпт і нормалізатор отримують той самий guard; нових regex/словників сирих назв у дифі немає. Використано наявний feed.тип_речі, який сам є старим канонізатором слів; читання тексту в цьому старому helper не можна оголошувати усунутим.
+
+Вада джерела:
+Compressed catalog blob base=head=working:04d84f5556cf4654f10a594128c3531530773649.
+Його gunzip:50813000байтів,12426rawoffers,SHA25675d5362253e1ebdd47bfc91e8bdbee08cc81d98a43ff6be4d8d74bc9c946150e.
+Readonly /dev/shm/liusterko-3710-1510/каталог_повний.xml:49504146байтів,11993rawoffers,SHA256374492934617994073a0780b17c06c08d1ef05c8a7cd02b4352693d77de49226.
+Відсутні433id; рівність compressed blob не доводить походження фактично прочитаного XML.
+Автор підтвердив, що штатний standcleaner перетворив sharedXML. Заявлені11887/677/676/45 відтворюються лише на цьому іншому вході.
+Готовий пілот має canonical JSON hash1b69b9ea8cebfaa0e48a2ed4b52189ab0d6373ea69913b8ad7a4d074db43efdd; файл із indent2 має byteSHA256ac23c70277b9e715f4eba9741716c721f46abb915065fbf7daa69ecb8ac3965b. Це різні способи серіалізації; в оновленому evidence варто явно назвати спосіб hash.
+
+Власне точне відтворення на gitblob через memfd, без дискової копії XML:
+cd /workspace/dress3710-next/джерела
+env PYTHONDONTWRITEBYTECODE=1 TMPDIR=/dev/shm python3 -
+import gzip,os,runpy,subprocess,sys
+head='e0adf7dc52dd6acb265708aeaeae0fca2a3888f7'
+assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()==head
+raw=subprocess.check_output(['git','show',head+':каталог_повний.xml.gz'])
+fd=os.memfd_create('qa1060-exact-catalog');os.write(fd,gzip.decompress(raw))
+sys.argv=['проби/фіг4_джерело_3710.py',f'/proc/self/fd/{fd}']
+runpy.run_path(sys.argv[0],run_name='__main__')
+os.close(fd)
+
+Вихід rc=0:
+/workspace/dress3710-next/джерела/palettes.py:344: SyntaxWarning: invalid escape sequence '\A'
+  Sci\ART/Kalisz, Lamport, JPCA). Самі межі — T3, не калібровані (масштаби осей —
+/workspace/dress3710-next/джерела/palettes.py:805: SyntaxWarning: invalid escape sequence '\A'
+  практики дають протилежний тон (Sci\ART) і «washed out» (Lamport). Це
+каталог 12280 сукні 1763 крої {'a-line': 99, 'straight': 281, 'fitted': 543, 'bodycon': 536, None: 63, 'relaxed': 173, 'sheath': 56, 'wrap': 11, 'shift': 1}
+пілот 716 типи producer {'сукня_без_уточнення': 664, 'сарафан': 38, 'спідниця': 1, 'футляр': 2, 'коктейльна_сукня': 4, 'вечірня_сукня': 1, 'штани': 3, 'блейзер': 1, 'светр': 1, 'куртка': 1}
+контракт сукні 709 без одного крою ДО 716
+комбінезонів 36 dressenum 0 None False
+перелік ДО ['skinny', 'straight', 'tapered', 'wide', 'flared', 'culottes', 'pencil', 'a-line', 'full', 'pleated', 'bias-slip', 'bodycon', 'fitted', 'relaxed', 'oversized', 'belted', 'wrap', 'peplum', 'shift', 'sheath', 'empire', 'double-breasted'] ПІСЛЯ ['a-line', 'bias-slip', 'bodycon', 'belted', 'wrap', 'shift', 'sheath', 'empire'] невідоме None
+пілот sha256 069eccd8f7cc932394bed292809983062f77d29415e84c92165631703fb8cdf0
+
+
+Потрібне виправлення тим самим автором у тій самій гілці: зафіксувати exact source input, оновити frozen пілот/ДО/manifest/PR/власний3710; не підмінювати правильний вхід transformedXML.
+Після виправлення нову голову перевіряє інший незалежний reviewer, якого призначає координатор.
+Жодного нового модельного прогону; жодної оцінки фото. Фото/семантичне приймання UNGRADABLE; ≥38/40 не підтверджено.
+Батарею повторно не запускав. CI і main merge веде координатор.
