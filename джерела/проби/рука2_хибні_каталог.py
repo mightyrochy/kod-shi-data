@@ -16,12 +16,14 @@ for код in ('K-CRA-01', 'K-KOH-02', 'K-OUT-33'):
     п1, п2 = з['пакети']['1'], з['пакети']['2']; кат = Б.каталог_останнього_пакета(); каталожні_ід = {str(r['id']) for r in кат}
     осн = [next(r for r in кат if r.get('слот') == с) for с in ('верх', 'низ', 'взуття', 'сумка')]
     тр = next(r for r in кат if r.get('слот') == 'верхній_шар' and r.get('id'))
-    if код == 'K-KOH-02': тр = next(r for r in кат if (с:=Ф.інтервал_формальності(r))[0] is not None and 4 < с[0] <= 5)
+    if код == 'K-KOH-02': осн[0] = next(r for r in кат if r.get('слот') == 'верх' and (с:=Ф.інтервал_формальності(r))[0] is not None and 4 < с[0] <= 5)
     ід = [r['id'] for r in осн + [тр]]
     в = json.loads(Б.виклик('від_моделі', json.dumps(dict(вх, донор=True, ід=ід), ensure_ascii=False)))
     assert not в.get('помилка'), в
+    if нове: assert set(map(str, в['повнота']['ід'])) == set(map(str, ід)) and len(ід) == 5
     активні = {(х['правило'], tuple(sorted(str(і) for і in х.get('речі') or [] if str(і) in каталожні_ід)), json.dumps(х['ремонт_заяви'], sort_keys=True)): х for х in знайти(в) if х.get('правило') in запис['коди']}
     тінь = (в.get('палітра') or {}).get('тінь_знахідки') or []; дії = [т for т in тінь if т.get('дія')]
+    if нове: assert json.loads(Б.виклик('від_моделі', json.dumps(dict(вх, донор=True, ід=ід), ensure_ascii=False)))['палітра']['тінь_знахідки'] == тінь
     рек = п2.get('обмеження') or {}
     if нове:
         assert активні and дії and all('правильна' in т and 'хибна' in т for т in дії)
