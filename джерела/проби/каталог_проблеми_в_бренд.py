@@ -22,10 +22,13 @@ print("оферів %d · <vendor> %d · лише ~бренд %d · без бр�
 print("різних брендів %d · бренд = ім'я крамниці %d · найчастіші %s" % (len(бр), свій, бр.most_common(5)))
 print("«Other Brand»: у <vendor> %d · у назві %d" % (sum(1 for x in в if "other brand" in x[0].lower()),
                                                    sum(1 for x in в if "other brand" in x[3].lower())))
-без = C.Counter(re.search(r"<url>https?://(?:www\.)?([^/<]+)", o).group(1) for o, x in zip(офери, в)
-                if not x[0] and not x[1] and "<url>" in o)
-print("крамниць без бренду в жодному офері: %d · найбільші: %s"
-      % (len(без), без.most_common(5)))
+кр = C.defaultdict(lambda: [0, 0])                 # крамниця → [оферів, з брендом]
+for o, x in zip(офери, в):
+    к = кр[(re.search(r"<url>https?://(?:www\.)?([^/<]+)", o) or [None, "?"])[1]]
+    к[0] += 1; к[1] += bool(x[0] or x[1])
+без = sorted(((k, v[0]) for k, v in кр.items() if not v[1]), key=lambda x: -x[1])
+print("крамниць %d · без бренду в жодному офері %d · змішаних %d · найбільші безбрендові: %s"
+      % (len(кр), len(без), sum(1 for v in кр.values() if 0 < v[1] < v[0]), без[:5]))
 оф = feed.читати_yml(feed.каталог_на_диску())[0]
 ключі = {k for o in оф for k in o} | {k for o in оф for k in (o.get("параметри") or {})}
 print("ключ бренду в розібраному офері фіду: %s" % (sorted(k for k in ключі if re.search("vendor|бренд", k)) or "нема"))
