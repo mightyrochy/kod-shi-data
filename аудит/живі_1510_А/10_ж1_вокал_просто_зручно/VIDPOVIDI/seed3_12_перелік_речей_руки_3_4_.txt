@@ -1,0 +1,29 @@
+── ПРОМПТ (2048 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Relaxed blouse in cream silk chiffon with a flowing drape cut and soft elbow length sleeves in #f5f0e6.\nTailored wide-leg trousers in stone wool blend with a high waist and straight leg length hitting just above the ankle in #aeb7b4.\nRound-toe ballet flats in pale beige suede with a low block heel for effortless walking in #dcd4c2.\nThis ensemble prioritizes maximum comfort and freedom of movement, which is essential for your vocal lessons, while the fluid fabric of the blouse allows your voice to resonate without restriction. The neutral color palette and relaxed silhouettes perfectly match the professional yet creative atmosphere of a vocal studio, creating an optimal context for focus and expression. Finally, the soft, simple design honors your specific wish for understated and easy-to-wear footwear, ensuring you feel at ease throughout the entire class."}
+
+── ВІДПОВІДЬ (639 симв., 169.1 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Relaxed blouse",
+      "details": "flowing drape cut with soft elbow length sleeves in cream silk chiffon",
+      "slot": "top",
+      "color_hex": "#f5f0e6",
+      "worn": true
+    },
+    {
+      "name": "Tailored wide-leg trousers",
+      "details": "high waist and straight leg length hitting just above the ankle in stone wool blend",
+      "slot": "bottom",
+      "color_hex": "#aeb7b4",
+      "worn": true
+    },
+    {
+      "name": "Round-toe ballet flats",
+      "details": "low block heel in pale beige suede",
+      "slot": "shoes",
+      "color_hex": "#dcd4c2",
+      "worn": true
+    }
+  ]
+}

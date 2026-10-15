@@ -1,0 +1,36 @@
+── ПРОМПТ (2301 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored blazer in a breathable mid-weight wool blend with a relaxed fit cut to allow for movement, color #2F4F4F (dark slate gray).\nUnderneath, a soft jersey knit blouse with a slightly loose silhouette and elbow-length sleeves, color #F5F5DC (beige).\nWide-leg trousers crafted from stretch twill that fall to the ankle, offering ease during walking or sitting, color #C0C0C0 (silver).\nA pair of minimalist leather loafers featuring an elastic side panel for slip-on comfort and a low stack heel, color #8B4513 (saddle brown), which aligns with her desire for simple and comfortable footwear.\nThis outfit works because the relaxed cuts and stretch fabrics ensure physical comfort during a vocal lesson where breathing freely is essential, while the layered textures add sophistication to a professional setting. The mid-weight wool blazer provides just enough structure without overheating at 18°C, and the slip-on shoes eliminate any hassle of laces while remaining practical for walking. Finally, the neutral color palette creates a calm visual focus that supports a serene atmosphere conducive to singing practice."}
+
+── ВІДПОВІДЬ (800 симв., 163.5 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "tailored blazer",
+      "details": "relaxed fit cut from breathable mid-weight wool blend",
+      "slot": "outerwear",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "jersey knit blouse",
+      "details": "slightly loose silhouette with elbow-length sleeves",
+      "slot": "top",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "wide-leg trousers",
+      "details": "stretch twill falling to the ankle offering ease of movement",
+      "slot": "bottom",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "leather loafers",
+      "details": "minimalist with elastic side panel and low stack heel",
+      "slot": "shoes",
+      "color_hex": "#8B4513",
+      "worn": true
+    }
+  ]
+}
