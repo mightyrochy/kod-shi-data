@@ -309,7 +309,7 @@ def review(F, речі, source="uncontrolled", фокус=None, intent="conventi
         зн = [z for z in обмежити_вагу(зн) if not z.pop("під_підлогою", False)]
         # Р2-2а: знахідки вимкненого правила руки 2 — у тінь, не в стан (поза рукою 2 — без змін)
         import правило_руки2 as _ПР2
-        зн = _ПР2.відсіяти(зн)
+        зн = _ПР2.відсіяти(зн, [r.get("id") for r in речі])
         джерела = {e.get("джерело_площі") for e in E if e["площа"] is not None}
         не_виміряний_near = sorted({e["річ"] for e in E if not e.get("near_виміряний")})
         рез["стани"][st] = dict(
