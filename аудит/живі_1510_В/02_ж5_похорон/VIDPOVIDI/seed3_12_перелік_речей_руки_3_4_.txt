@@ -1,0 +1,45 @@
+── ПРОМПТ (2184 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Deep charcoal wool blazer, relaxed cut, knee-length, slate gray (#4B4F56), heavy wool\nOatmeal cashmere turtleneck sweater, slim fit, hip-length, soft beige (#E8E4DC), fine-gauge knit\nMid-thigh dark navy straight-leg trousers, wide leg, charcoal black (#1C1D20), structured cotton twill\nClassic low-oxford two-tone shoes in black and dark brown, round toe, #302D2B, polished leather\nMatte black ceramic signet ring, simple band, jet black (#000000), sterling silver with onyx stone\n\nThis outfit honors the solemnity of your grandfather's funeral while adhering strictly to your request for a deep, dark autumn palette that avoids anything light or casual. The heavy wool and cotton fabrics provide necessary warmth for the cooler weather without appearing stiff, allowing you to move comfortably through the service. By choosing a relaxed blazer cut and soft cashmere, the ensemble balances respect with personal comfort, reflecting your desire to feel dignified yet at ease during this difficult time."}
+
+── ВІДПОВІДЬ (1146 симв., 192.2 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Wool blazer",
+        "details": "Deep charcoal wool relaxed cut knee-length heavy wool",
+        "slot": "outerwear",
+        "color_hex": "#4B4F56",
+        "worn": true
+      },
+      {
+        "name": "Cashmere turtleneck sweater",
+        "details": "Oatmeal cashmere slim fit hip-length soft beige fine-gauge knit",
+        "slot": "top",
+        "color_hex": "#E8E4DC",
+        "worn": true
+      },
+      {
+        "name": "Straight-leg trousers",
+        "details": "Mid-thigh dark navy wide leg charcoal black structured cotton twill",
+        "slot": "bottom",
+        "color_hex": "#1C1D20",
+        "worn": true
+      },
+      {
+        "name": "Oxford shoes",
+        "details": "Classic low-oxford round toe polished leather black and dark brown two-tone",
+        "slot": "shoes",
+        "color_hex": "#302D2B",
+        "worn": true
+      },
+      {
+        "name": "Signet ring",
+        "details": "Matte black ceramic simple band jet black sterling silver with onyx stone",
+        "slot": "ring",
+        "color_hex": "#000000",
+        "worn": true
+      }
+    ]
+  }
+}

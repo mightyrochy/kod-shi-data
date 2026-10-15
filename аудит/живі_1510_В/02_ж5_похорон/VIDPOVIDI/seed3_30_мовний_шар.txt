@@ -1,0 +1,53 @@
+── ПРОМПТ (7264 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лонгслів базовий жіночий з віскози демісезонний · colour code: black · about it: text н=1
+2 — Сукня трикотажна чорна · colour code: black · about it: text н=2
+3 — Чорний в'язаний шарф з вовни · colour code: black · about it: text н=3
+4 — Комплект сережок та намиста чорного кольору · colour code: black · about it: text н=4
+5 — Шкіряні чорні туфлі на середньому підборі · colour code: black · about it: text н=5
+6 — Чорний шкіряний тоут з текстовим принтом · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This is a classic long-sleeve top made from soft viscose, cut with a simple crew neck and smooth, elongating lines that drape neatly over the dress underneath."},
+{"н": 2, "текст": "The midi dress is crafted from comfortable knit fabric with a flattering V-neckline and a cinched waist that defines your figure before flowing into an A-line skirt ending just below the knee."},
+{"н": 3, "текст": "This thick, ribbed wool scarf adds warmth and a touch of cozy texture in solid black; its weight keeps it from slipping while providing a sophisticated layer against the cool autumn air."},
+{"н": 4, "текст": "The jewelry set features intricate, dark beads clustered into a choker-style necklace and matching stud earrings, offering understated elegance with just enough visual interest to stand out against the monochrome outfit."},
+{"н": 5, "текст": "These shoes are made from polished black leather with a sleek pointed toe and a sturdy block heel that provides security and height, perfect for standing for long periods during the service."},
+{"н": 6, "текст": "A structured tote in smooth black leather features subtle white text detailing its heritage on the front panel; it offers ample space for your essentials while maintaining a clean, formal profile."},
+{"н": 7, "текст": "This all-black ensemble is a respectful and dignified choice for your grandfather's funeral. The simple black viscose long-sleeve top layers elegantly over the knee-length knit dress, creating a streamlined silhouette that honors the solemnity of the occasion while maintaining a timeless look. Your chosen accessories—the chunky beaded earrings with matching necklace, the wide wool scarf, and the block-heel Mary Janes—bring just enough texture and weight to ground the outfit without appearing flashy. The structured tote completes the practical yet polished look you need for the day."},
+{"н": 8, "текст": "Wear the scarf loosely draped around your neck or tied slightly larger if it feels chilly in the morning air, ensuring it sits comfortably over the V-neck of the dress."},
+{"н": 9, "текст": "The shoes offer a stable and comfortable heel for walking during services, balancing the formal feel with everyday wearability."},
+{"н": 10, "текст": "Чорний шкіряний тоут з текстовим принтом, Чорний в'язаний шарф з вовни — The tote's text print shares a monochrome thread with the knitted scarf rather than clashing, maintaining a unified visual language suitable for mourning."}
+]
+
+── ВІДПОВІДЬ (2434 симв., 99.3 с, HTTP 200) ──
+```json
+{
+  "1": "Це класична футболка з довгими рукавами, виготовлена з м’якої віскози. Вона має простий круглий виріз і гладкі лінії, які елегантно драпіруються поверх сукні.",
+  "2": "Ця міді-сукня пошита з комфортної трикотажної тканини та має лестощі V-подібний виріз і завужену талію, яка підкреслює твою фігуру перед тим, як плавно переходить у спідницю А-силуету, що закінчується трохи нижче колін.",
+  "3": "Цей теплий в’язаний вовняний шарф додає тепло та затишну текстуру чорного кольору. Його вага не дає йому сповзати, забезпечуючи вишуканий захист від прохолодного осіннього повітря.",
+  "4": "Ювелірний набір складається з складних темних намистин, зібраних у намисто-чокер і відповідні сережки-гвоздики. Він пропонує стриману елегантність із достатньою візуальною цікавістю, щоб виділитися на тлі монохромного вбрання.",
+  "5": "Ці туфлі зроблені зі шліфованої чорної шкіри та мають стильний загострений носок і міцний стійкий каблук, який забезпечує безпеку та висоту. Вони чудово підходять для тривалого стояння на службі.",
+  "6": "Структурована сумка-тоут з гладкої чорної шкіри має приглушений білий текстовий друк на передній панелі, який розповідає про її походження. Вона забезпечує достатньо місця для твоїх речей і зберігає чистий, формальний вигляд.",
+  "7": "Цей повністю чорний ансамбль — шанобливий і гідний вибір на похорон дідуся. Проста футболка з довгими рукавами з віскози елегантно одягнена поверх трикотажної сукні міді, створюючи стрункий силует, який вшановує урочистість події та зберігає позачасовий вигляд. Твої обрані аксесуари — об’ємні намистини з сережками-гвоздиками та відповідним намистом, широкий вовняний шарф і туфлі на блочному підборі Mary Jane — додають достатньо текстури та ваги, щоб заземлити вбрання без вигляду помітності. Структурована сумка-тоут завершує практичний, але витончений образ, який тобі потрібен протягом дня.",
+  "8": "Носи шарф вільно накинутим навколо шиї або зав’яжи його трохи більшим, якщо вранці прохолодно. Переконайся, що він зручно лежить поверх V-подібного вирізу сукні.",
+  "9": "Туфлі забезпечують стійкий і комфортний каблук для ходьби під час служіння, поєднуючи формальний вигляд із повсякденною практичністю.",
+  "10": "Чорна шкіряна сумка-тоут з текстовим принтом та чорний в’язаний вовняний шарф — друк на сумці має монохромну тему, схожу на в’язаний шарф, а не конфліктує. Це підтримує єдину візуальну мову, яка підходить для жалоби."
+}
+```

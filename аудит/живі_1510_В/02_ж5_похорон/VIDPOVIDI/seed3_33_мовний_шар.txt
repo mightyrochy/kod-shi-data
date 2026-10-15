@@ -1,0 +1,60 @@
+── ПРОМПТ (7068 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Кардиган жіночий вовняний на запах із поясом демісезонний · colour code: black · about it: text н=1
+2 — Штани класичні прямі графіт · colour code: graphite · about it: text н=2
+3 — Клатч-орігамі GIA з фактурної шкіри · colour code: black · about it: text н=3
+4 — Балетки жіночі коричневі · colour code: brown · about it: text н=4
+5 — Тренч вкорочений класичний мокко · colour code: mocha · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; graphite — графіт; mocha — мокко.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A woolen cardigan with a lapel collar and a matching belt, presented in black. The fabric is woven in a subtle herringbone pattern, while the inner lining of the lapel and the sleeve cuffs are solid beige, creating a soft contrast against the dark outer shell."},
+{"н": 2, "текст": "Classic straight trousers in graphite, cut with a tailored fit that flows cleanly from the hip to the ankle. The fabric has a matte finish and holds its structure well, offering a polished line that sits comfortably on your figure."},
+{"н": 3, "текст": "An origami clutch made from textured leather, finished in black. It features a smooth front panel contrasted by a back panel with an embossed crocodile pattern, fastened with a simple magnetic closure and carrying a subtle debossed logo."},
+{"н": 4, "текст": "Ballet flats in brown, adorned with all-over sparkling sequins that catch the light. The shoe features a classic slip-on silhouette with a single strap across the instep secured by a small silver buckle and a flexible sole for quiet steps."},
+{"н": 5, "текст": "A cropped classic trench coat in mocha, designed with wide lapels, large buttons, and epaulets on the shoulders. It includes a self-fabric belt with a metal buckle to define the waist and offers a structured yet comfortable silhouette."},
+{"н": 6, "текст": "This ensemble is crafted for a moment of deep respect and solemnity. The herringbone cardigan in black with its beige lining brings a soft, textured warmth to your frame, while the graphite trousers provide a clean, structured silhouette that balances the volume of the top perfectly on your shape A. The mocha trench coat wraps around you with a classic authority, its high collar adding a sense of protection and dignity suitable for the occasion, and the black clutch rests at your side, understated and refined. Your footwear, the brown ballet flats, bridges the gap between comfort and elegance, allowing you to stand or move gently through this significant day. Every piece is chosen to honor the gravity of the gathering while ensuring you feel supported and present."},
+{"н": 7, "текст": "Wear the trench coat open over the cardigan to let its structured shoulders frame your face, then fasten the belt at the natural waist to anchor the look before taking it off once inside."}
+]
+
+── ВІДПОВІДЬ (2319 симв., 114.3 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "текст": "Вовняний кардиган із лацканами та поясом у тон, представлений у чорному кольорі. Тканина має ледь помітний візерунок «ялинкою», а внутрішня підкладка на лацканах і манжетах рукавів — однотонна бежева, створюючи м’який контраст із темним зовнішнім шаром."
+  },
+  "2": {
+    "текст": "Класичні прямі штани графітового кольору з кроєм, що елегантно звужується від стегна до щиколотки. Тканина має матове покриття та добре тримає форму, пропонуючи вишукану лінію, яка зручно сидить на твоїй фігурі."
+  },
+  "3": {
+    "текст": "Клатч-орігамі з фактурної шкіри чорного кольору. Він має гладку передню панель у контрасті зі спинкою з тисненим крокодиловим візерунком, закривається простим магнітним замком і прикрашений ледь помітною сліпотисненою емблемою."
+  },
+  "4": {
+    "текст": "Балетки коричневого кольору з блискучими паєтками по всій поверхні, які ловлять світло. Взуття має класичний силует без застібок із тонкою смужкою на підйомі та маленькою срібною пряжкою і гнучкою підошвою для тихих кроків."
+  },
+  "5": {
+    "текст": "Вкорочений класичний тренч мокко, розроблений із широкими лацканами, великими ґудзиками та погонами на плечах. Він включає пояс з основної тканини з металевою пряжкою для підкреслення лінії талії і пропонує структурований, але комфортний силует."
+  },
+  "6": {
+    "текст": "Цей ансамбль створено для моменту глибокої поваги й урочистості. Кардиган у чорному кольорі з бежевою підкладкою приносить м’яке, текстуроване тепло твоїй фігурі, а штани графітового кольору забезпечують чистий і структурований силует, який чудово врівноважує об’єм верху на твоїй формі А. Тренч мокко огортає тебе класичною владою, його високий комір додає відчуття захищеності та гідності, що підходить для цієї події, а чорний клатч лежить біля боку, стриманий і вишуканий. Твоє взуття — коричневі балетки — поєднує комфорт з елегантністю, дозволяючи тобі стояти або рухатися легко протягом цього важливого дня. Кожен предмет підібрано так, щоб віддати шану серйозності зібрання, водночас забезпечуючи відчуття підтримки та присутності."
+  },
+  "7": {
+    "текст": "Одягни тренч розстебнутим поверх кардигану, щоб його структуровані плечі обрамили твоє обличчя, потім підпережи на лінії талії, щоб зафіксувати образ перед тим як зняти його, коли зайдеш всередину."
+  }
+}
+```

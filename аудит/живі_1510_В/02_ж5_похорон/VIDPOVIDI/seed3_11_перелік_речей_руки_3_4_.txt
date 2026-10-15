@@ -1,0 +1,57 @@
+── ПРОМПТ (2239 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black wool coat, tailored fit, knee-length, #0f0f0f, heavy woven fabric. Black silk camisole, straight cut, hip-length, #0a0a0a, smooth fluid fabric. Black crepe wide-leg trousers, high-rise and wide leg opening, ankle-length, #121212, structured matte fabric. Black leather pumps, classic pointed toe, 8 cm heel, #050505, supaint grain leather. Matte black pearl stud earrings, round shape, small diameter, #000000, polished metal with cultured freshwater pearls. Simple black silk headband, smooth elasticated band, narrow width, #000000, lustrous fabric. Black satin clutch bag, structured rectangular shape, top handle, #080808, stiffened fabric. This outfit honors the solemnity of your grandfather's funeral while strictly adhering to traditional mourning dress codes for an autumn day. The all-black palette reflects deep respect and grief, creating a unified and dignified silhouette appropriate for the occasion. Each piece is crafted from respectful, high-quality fabrics that honor the gravity of the event without compromising on elegance or comfort."}
+
+── ВІДПОВІДЬ (1447 симв., 188.2 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Black wool coat",
+      "details": "tailored fit, knee-length, heavy woven fabric",
+      "slot": "outerwear",
+      "color_hex": "#0f0f0f",
+      "worn": true
+    },
+    {
+      "name": "Black silk camisole",
+      "details": "straight cut, hip-length, smooth fluid fabric",
+      "slot": "top",
+      "color_hex": "#0a0a0a",
+      "worn": true
+    },
+    {
+      "name": "Black crepe wide-leg trousers",
+      "details": "high-rise and wide leg opening, ankle-length, structured matte fabric",
+      "slot": "bottom",
+      "color_hex": "#121212",
+      "worn": true
+    },
+    {
+      "name": "Black leather pumps",
+      "details": "classic pointed toe, 8 cm heel, supaint grain leather",
+      "slot": "shoes",
+      "color_hex": "#050505",
+      "worn": true
+    },
+    {
+      "name": "Matte black pearl stud earrings",
+      "details": "round shape, small diameter, polished metal with cultured freshwater pearls",
+      "slot": "earrings",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Black silk headband",
+      "details": "smooth elasticated band, narrow width, lustrous fabric",
+      "slot": "headwear",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Black satin clutch bag",
+      "details": "structured rectangular shape, top handle, stiffened fabric",
+      "slot": "bag",
+      "color_hex": "#080808",
+      "worn": true
+    }
+  ]
+}
