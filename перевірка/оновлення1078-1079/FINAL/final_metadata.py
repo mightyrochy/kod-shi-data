@@ -1,0 +1,11 @@
+from pathlib import Path
+import json,hashlib,sys
+R=Path('/dev/shm/qa-updates-1078-1079');A=Path('/dev/shm/update-after-1078-1079/archive');sys.path.insert(0,str(R));from composition import tree
+r=json.load(open(R/'final-author-tree.json'));assert not r['truncated'];prefix='перевірка/оновлення-1510-1078-1079/';remote={x['path'][len(prefix):]:x for x in r['tree'] if x['type']=='blob' and x['path'].startswith(prefix)};local={p.name:p for p in A.iterdir() if p.is_file()};assert len(remote)==38 and set(remote)==set(local),(len(remote),len(local));m=json.load(open(A/'SHA256.json'));assert len(m)==37 and set(m)==set(local)-{'SHA256.json'}
+for n,p in local.items():
+ b=p.read_bytes();assert remote[n]['sha']==hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest() and remote[n]['mode']=='100644' and remote[n]['size']==len(b),(n,'remote bytes')
+ if n in m:assert m[n]==dict(sha256=hashlib.sha256(b).hexdigest(),bytes=len(b)),(n,'manifest')
+main=tree('7f9e9f8d51c7ea135b68eb3c12aa94c456de324f');foreign={x['path']:(x['mode'],x['type'],x['sha']) for x in r['tree'] if x['type']=='blob' and not x['path'].startswith(prefix)};assert main==foreign,(len(main),len(foreign),'product changed')
+ind=json.load(open(A/'independent-current.json'));assert ind['commit']=='1d9a24b460eb993c72d88d1d424079dec48355ad';assert ind['native_overall'].startswith('PARTIAL');assert ind['crop']['status']=='UNMEASURED' and ind['crop']['raw_failure_rc']==1 and not ind['crop']['product_defect_claim'];assert ind['second_browser_or_build']==0
+proof={'archive_commit':sys.argv[1],'archive_tree':r['sha'],'files':38,'sha256_entries':37,'all_remote_blobs_bytes_modes_exact':True,'nonproof_product_files_main_exact':len(main),'body_rows':json.load(open(R/'final-body-proof.json')),'heads_unchanged':True,'old_history10_exact':True,'ci':'not assessed; separate exact-head root gate, pending/unknown not green','native':'qualified PARTIAL; current blind1/modal/SRI pass; crop UNMEASURED/static main exact, setup rc1 retained','new_tests_build_native_in_final':0}
+(R/'final-metadata.json').write_text(json.dumps(proof,ensure_ascii=False,indent=2)+'\n');print(json.dumps({'PASS':True,'archive':38,'SHA256':37,'actualbody':10,'oldhistory':10,'nonproofmain':len(main)}))
