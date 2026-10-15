@@ -1,0 +1,20 @@
+const {chromium}=require('playwright'),fs=require('fs'),path=require('path');
+const stage=process.argv[2],root='/workspace/scratch/4944-next-evidence',out=path.join(root,stage);
+const fixture=JSON.parse(fs.readFileSync('/workspace/scratch/liusterko-4943/.qa4943/fixture.json'));
+(async()=>{const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});try{
+const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+page.setDefaultTimeout(45000);const errors=[],blocked=[];page.on('pageerror',e=>errors.push(String(e)));
+await page.route('**/*',r=>{const u=new URL(r.request().url());const f=u.hostname==='a11y.local'?(decodeURIComponent(u.pathname).startsWith('/шрифти/')?path.join('/workspace/scratch/4944-next-current',decodeURIComponent(u.pathname)):path.join(out,decodeURIComponent(u.pathname)==='/'?'index.html':decodeURIComponent(u.pathname))):u.href.includes('/pyodide/')?path.join('/workspace/scratch/liusterko-4944/.qa4944/pyodide',path.basename(u.pathname)):u.href.includes('/Fixel@main/fonts/webfonts/')?path.join('/workspace/scratch/liusterko-4942/.qa4942/fonts',path.basename(u.pathname)):null;if(f&&fs.existsSync(f))return r.fulfill({path:f});blocked.push(u.hostname);return r.abort();});
+await page.goto('http://a11y.local');await page.waitForFunction(()=>typeof document.getElementById('сц-рукою-показати').onclick==='function');
+await page.addScriptTag({path:'/workspace/scratch/liusterko-4944/.qa4944/node_modules/axe-core/axe.min.js'});
+await page.evaluate(async fixture=>{ПРОФІЛЬ_СТВОРЕНО=true;const d=await дб();await tx(d,'образи','readwrite',s=>s.put(fixture.record,fixture.record.ключ));режим('бібліотека');await оновитиБібліотеку();},fixture);
+await page.locator('.біб-образ').first().tap();await page.waitForFunction(()=>РЕЖИМ==='образи'&&!!П?.картки?.length);
+const summary=page.locator('#к-0 details').filter({has:page.locator('summary',{hasText:'Або додати картинку вручну'})}).locator('summary');
+await summary.scrollIntoViewIfNeeded();await summary.tap();await page.waitForTimeout(600);await page.evaluate(()=>document.fonts.ready);
+await page.locator('#кф-0').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'file-expanded.png')});
+await summary.focus();await page.keyboard.press('Tab');await page.screenshot({path:path.join(out,'file-keyboard-focus.png')});
+const metrics=await page.evaluate(async()=>{const e=document.getElementById('кф-0'),r=e.getBoundingClientRect(),cs=getComputedStyle(e);const axeResult=await axe.run(e,{runOnly:{type:'rule',values:['label']}});return {active:document.activeElement.id,focusVisible:e.matches(':focus-visible'),outline:cs.outline,box:{x:r.x,y:r.y,width:r.width,height:r.height},ariaLabel:e.getAttribute('aria-label'),labels:[...e.labels].map(l=>l.textContent.trim()),html:e.outerHTML,violations:axeResult.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth};});
+const session=await page.context().newCDPSession(page);await session.send('Accessibility.enable');const doc=await session.send('DOM.getDocument');const target=await session.send('DOM.querySelector',{nodeId:doc.root.nodeId,selector:'#кф-0'});const ax=await session.send('Accessibility.getPartialAXTree',{nodeId:target.nodeId,fetchRelatives:false});metrics.ax=ax.nodes.map(n=>({role:n.role?.value,name:n.name?.value,ignored:n.ignored}));
+const chooser=page.waitForEvent('filechooser');await page.keyboard.press('Enter');const opened=await chooser;metrics.filechooser=opened.isMultiple()?'multiple':'single';await opened.setFiles([]);
+fs.writeFileSync(path.join(out,'metrics.json'),JSON.stringify({stage,head:process.env.SOURCE_HEAD,chromium:browser.version(),axe:'4.14.0',fixture:{kind:fixture.kind,source:fixture.source,source_sha256:fixture.source_sha256},metrics,errors,blocked,modelApiCalls:0},null,2));console.log(JSON.stringify(metrics));
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
