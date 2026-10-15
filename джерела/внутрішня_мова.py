@@ -1517,7 +1517,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
                                         "ordinary straight cut; what follows holds only if the cut really is "
-                                        "such",
+                                        "such (values: slots — slot codes of the only items without a declared "
+                                        "cut; the other items keep their declared cut)",
     # МОВА ПРО РІЧ І ЛІНІЮ (28.09.2026, Ф-2): текст заяви їде мовній моделі, тож
     # заборона корпусу на «ховає» (R-ONB-06, R-LNG-01) діє тут так само, як у `суть`.
     # Було: "a straight boxy cut hides her defined waist" — річ діє на тіло. Стало:
