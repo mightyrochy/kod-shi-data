@@ -1,0 +1,50 @@
+── ПРОМПТ (6673 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Подовжений кардиган на ґудзиках PORTO сіра олива · colour code: grey · about it: text н=1
+2 — Довга сукня з рюшами · colour code: grey · about it: text н=2
+3 — Берет зі стразовим хвостиком м'ятний · colour code: mint · about it: text н=3
+4 — Лофери замшеві руді · colour code: ginger · about it: text н=4
+5 — Сумка Зелена смугаста із широким ременем · colour code: green · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: ginger — рудий; green — зелений; grey — сірий; mint — м'ятний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A soft grey ribbed cardigan with a deep V-neck and front buttons, worn open to reveal the knit set underneath for a relaxed yet polished evening look."},
+{"н": 2, "текст": "A flowing grey dress with ruffled neckline details, a tie waist for definition, and a tiered hem that adds gentle movement as you walk through the restaurant."},
+{"н": 3, "текст": "A mint-colored beret adorned with a sparkling crystal brooch on top—a playful yet elegant headwear piece perfect for evening outings."},
+{"н": 4, "текст": "Suede loafers in a warm ginger tone, featuring a chunky heel and gold-tone hardware—comfortable enough to dance in but stylish enough for a date night."},
+{"н": 5, "текст": "A vibrant crossbody bag with a colorful striped pattern and chevron strap, offering both style and practicality without overpowering your ensemble."},
+{"н": 6, "текст": "You're wearing a soft grey ribbed cardigan layered over a matching two-piece knit set—a cropped top and a flowing skirt—that sets a neat, evening tone. The grey ruffled dress from Maxa adds movement with its tiered hem and tie waist, while the mint beret brings a playful pop to your face. Your ginger loafers ground the look in comfort, and the colorful striped bag from Yakfaino adds a touch of fun without overwhelming the palette."},
+{"н": 7, "текст": "Keep the cardigan slightly open at dinner to show off the knit set beneath it for a relaxed yet polished look."},
+{"н": 8, "текст": "Tuck your hair behind your ears or let it fall loosely over the beret depending on how you want to feel tonight."},
+{"н": 9, "текст": "Подовжений кардиган на ґудзиках PORTO сіра олива, Довга сукня з рюшами, Лофери замшеві руді — Although the outfit levels off at 'neat', the sheer intentionality of the romantic details and the choice of soft textures over rigid formalwear makes it the stronger choice for a date where feeling special matters more than adhering to a strict dress code."}
+]
+
+── ВІДПОВІДЬ (1906 симв., 79.5 с, HTTP 200) ──
+```json
+{
+  "1": "М’який сірий ребристий кардиган з глибоким V-подібним вирізом і передніми ґудзиками, одягнений розстібнутим, щоб показати в’язаний комплект знизу для невимушеного та вишуканого вечірнього образу.",
+  "2": "Подовжена сіра сукня з рюшами на вирізі, зав’язкою на талії для підкреслення фігури та ярусною спідницею, яка додає ніжного руху, коли ти йдеш рестораном.",
+  "3": "Берет м’ятного кольору, прикрашений блискучим кристалом зверху — грайливий і водночас елегантний головний убір, який чудово підходить для вечірніх прогулянок.",
+  "4": "Замшеві лофери теплого рудого відтінку з масивним каблуком і золотистою фурнітурою — зручні для танців, але стильні для побачення.",
+  "5": "Яскрава сумка-кросбоді з кольоровим смугастим візерунком і ременем у вигляді літери «V», яка поєднує стиль і практичність без перевантаження твого образу.",
+  "6": "Ти одягла м’який сірий ребристий кардиган, накинутий поверх відповідного в’язаного комплекту — короткого топу та довгої спідниці, що створює охайний вечірній тон. Сіра сукня з рюшами від Maxa додає руху завдяки своїй ярусній спідниці та зав’язці на талії, а м’ятний берет привносить грайливий акцент до твого обличчя. Руді лофери підкреслюють образ комфортом, а кольорова смугаста сумка від Yakfaino додає нотку веселощів без перевантаження палітри.",
+  "7": "Під час вечері трохи розстібни кардиган, щоб показати в’язаний комплект знизу для невимушеного та вишуканого образу.",
+  "8": "Зачеши волосся за вуха або дай йому вільно спадати на берет залежно від того, як ти хочеш почуватися сьогодні ввечері.",
+  "9": "Подовжений кардиган на ґудзиках PORTO сіра олива, Довга сукня з рюшами, Лофери замшеві руді — Хоча образ виглядає охайно, щирість романтичних деталей і вибір м’яких фактур замість жорсткого формального одягу робить його кращим варіантом для побачення, де відчуття особливості важливіше за дотримання суворого дрес-коду."
+}
+```

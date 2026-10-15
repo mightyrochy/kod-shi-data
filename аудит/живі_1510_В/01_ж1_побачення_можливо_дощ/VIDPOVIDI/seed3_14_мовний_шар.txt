@@ -1,0 +1,48 @@
+── ПРОМПТ (5864 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "Washed navy wool-blend blazer, relaxed structured cut, elbow length, fabric with a subtle herringbone texture.\nCream merino wool turtleneck sweater, fitted silhouette, long length extending to the waist, soft hand-knit fabric.\nTailored charcoal linen-blend trousers, straight leg cut, ankle length, lightweight fabric with a slight drape.\nBlack leather ankle boots, pointed toe with a 6cm block heel, full shaft height, smooth calfskin leather.\nSilver geometric pendant necklace and matching thin hoop earrings in polished sterling silver, metallic finish.\nCompact transparent umbrella and a structured taupe clutch bag for potential rain.\n\nThis outfit balances the \"neat\" and \"formal\" requests with a tailored blazer and refined trousers that elevate casual evening wear without feeling stiff like a full suit. The neutral palette of navy, cream, charcoal, and silver harmonizes with her skin tone while the wool and linen fabrics offer warmth for autumn temperatures. Practical accessories like the umbrella and block-heel boots ensure comfort and mobility if light rain occurs during the date night at the restaurant."},
+{"н": 2, "текст": "Washed navy wool-blend blazer"},
+{"н": 3, "текст": "Cream merino wool turtleneck sweater"},
+{"н": 4, "текст": "Tailored charcoal linen-blend trousers"},
+{"н": 5, "текст": "Black leather ankle boots"},
+{"н": 6, "текст": "Silver geometric pendant necklace"},
+{"н": 7, "текст": "Matching thin hoop earrings"}
+]
+
+── ВІДПОВІДЬ (1565 симв., 159.8 с, HTTP 200) ──
+```json
+{
+  "1": {
+    "опис": "Вовняний блейзер кольору індиго з ефектом випраності, вільний силует, довжина до ліктя, тканина з ледь помітним візерунком «гусяча лапка».\nТрикотажний светр кремового кольору з тонким горлом, приталений крій, подовжена модель до талії, м'яка в'язана фактура.\nШтани сірого кольору зі змішаної тканини льону, прямий силует, довжина до щиколотки, легка тканина з невеликим драпіруванням.\nЧорні шкіряні черевики на підборах, загострений носок і стійкий каблук 6 см, високе халява, гладка теляча шкіра.\nСрібний геометричний кулон та відповідні тонкі сережки-конго в полірованому сріблі, металевий блиск.\nКомпактна прозора парасолька і клатч бежевого кольору з чіткими лініями для можливого дощу.",
+    "порада": "Цей образ поєднує «охайний» та «формальний» запити за допомогою блейзера, що підкреслює фігуру, та вишуканих штанів, які роблять вечірній одяг більш елегантним без відчуття офіційності. Нейтральна палітра кольорів індиго, кремового, сірого і срібла гармоніює з її тоном шкіри, а вовна та льон забезпечують тепло в осінню погоду. Практичні аксесуари, такі як парасолька і черевики на стійкому каблуці, гарантують комфорт і мобільність у разі легкої дощової погоди під час побачення в ресторані."
+  },
+  "2": "Вовняний блейзер кольору індиго з ефектом випраності",
+  "3": "Трикотажний светр кремового кольору з тонким горлом",
+  "4": "Штани сірого кольору зі змішаної тканини льону",
+  "5": "Чорні шкіряні черевики на підборах",
+  "6": "Срібний геометричний кулон",
+  "7": "Тонкі сережки-конго в полірованому сріблі"
+}
+```
