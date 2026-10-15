@@ -7,7 +7,7 @@ push(){ ( cd $R && git add аудит/повтор_4811 && git commit -qm "$1
 
 Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" ); for i in 1 2 3 4; do ( cd $R && git push --no-thin -q -u origin claude/povtor-4811 ) && break; sleep $((2<<i)); done; }
 cd $R/джерела
-for N in 7 14 21 28; do
+for N in 21 28; do
   LYSHE=$N VYVID=$A/гг1_пари BOKY=з_гг1,без_гг1 MODEL_URL=http://127.0.0.1:1234/v1 MODEL=qwen/qwen3.5-9b python3 -c "import os,runpy;os.environ['ЗАМІНА_ПУЛУ']='0';runpy.run_path('$G',run_name='__main__')" >> $A/хід.txt 2>&1
   echo "ч$N rc=$? $(date +%T)" >> $A/хід.txt
   push "повтор-4811: $N з 28"
