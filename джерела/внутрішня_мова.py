@@ -1681,8 +1681,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ── відмова збирати: сценарію нема (K-IO-01, `міст_запити`; Ч-4 — доти готове речення
     #    коду `сценарій.БРАК_СЦЕНАРІЮ_ЖІНЦІ`) ─────────────────────────────────────────
     "no_scenario_fields": "the outfits were not built because the code does not know where she is going: the "
-                          "scenario names none of the fields that set dressiness (values: fields — the keys "
-                          "of these fields)",
+                          "scenario names none of the fields that set dressiness (values: fields — which "
+                          "fields these are, as codes: occasion, place, dress_code, formality; the codes are "
+                          "for you — say each in her own everyday words, never write a code itself)",
     "retry_gives_same": "a retry without changes gives the same",
     # ── збирання спіткнулось не на сценарії (Ч-9, рядок 206; доти абзац коду
     #    `показ.рядокЗбоюЗбирання`) ────────────────────────────────────────────────
