@@ -113,7 +113,7 @@ _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "
 _ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
                  "тривалість_год": "duration_h", "рух": "movement", "дрес_код": "dress_code",
                  "ошатність": "formality", "година": "start_hour", "темп_c": "temperature_c",
-                 "опади": "precipitation", "намір": "intent", "мета": "goal", "мета_зони": "goal_zones", "макіяж": "makeup",
+                 "опади": "precipitation", "намір": "intent", "мета": "goal", "мета_зони": "goal_zones", "мета_важливо": "goal_extra", "макіяж": "makeup",
                  "прикраси": "jewelry", "реєстр_людини": "her_registers", "бажання": "wishes",
                  "вето": "refusals", "ноги_вище_см": "legs_shown_above_cm", "настрій": "mood",
                  "невідомо": "unknown", "вимоги_людини": "her_words",
@@ -695,6 +695,8 @@ def випадок(в, день=None):
             v = код("goal", v)
         elif к == "мета_зони":
             v = [код("goal_zone", x) for x in v]
+        elif к == "мета_важливо":
+            v = [код("goal_extra", x) for x in v]
         elif к == "прикраси":
             v = код("jewelry", v)
         elif к == "намір":
@@ -744,6 +746,12 @@ def людина(л):
     if not isinstance(л, dict):
         return л
     вих = {}
+    if "мета" in л:
+        вих["goal"] = _ВМ.код_або_невідомо("goal", л["мета"])
+    if isinstance(л.get("чому_мети"), dict):
+        вих["goal_reason"] = {"statements": заяви(л["чому_мети"].get("statements"))}
+    if "цитата_мети" in л:
+        вих["goal_quote"] = л["цитата_мети"]
     if л.get("контраст"):
         вих["contrast"] = _з(_КОНТРАСТ, л["контраст"])
     if isinstance(л.get("світлота"), dict):
@@ -1131,6 +1139,9 @@ def _чекліст(ч, скрізь, лише_провал=False):
         понад = [x for x in (п.get("вимкнено") or []) if x not in скрізь.get(б, ())]
         if понад:
             о["not_run"] = понад
+        if п.get("input_gaps"):
+            # 4381: причини невідомого — лише дані цього образу, збережені навіть за спільних not_run.
+            о["input_gaps"] = list(п["input_gaps"])
         вих[б] = о
     return вих
 

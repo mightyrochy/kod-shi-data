@@ -158,6 +158,8 @@ def невідомо(v, коди=()):
     # показувала як «20:00», хоч години вона не називала. Тепер пора лишається порою (`паспорт.пора`), а
     # година для правил — окремим кроком на шві нагоди (`сценарій.година_для_правил`, мітка `година_з_пори`).
     "part_of_day": {"morning": "ранок", "day": "день", "evening": "вечір", "night": "ніч"},
+    # Пора року з дати (рядок 3950, рішення власника 14.10): вхідний факт її дня для всіх рук — `сценарій.пора_року`
+    "season": {"winter": "зима", "spring": "весна", "summer": "літо", "autumn": "осінь"},
     # Погода без числа → число, яке бере код (температура — вхід теплової функції й воріт
     # тканини, і доти це число вгадувала модель виклику 0).
     # МОРОЗ — ВСЕРЕДИНІ СМУГИ «НИЖЧЕ −8 °C», НЕ НА ЇЇ КРАЮ (рядок 3451). Тут стояло −8,0 — нижня
@@ -168,13 +170,15 @@ def невідомо(v, коди=()):
     # репліками. −10 — середина звичного «морозу» (−5…−15); градусів вона й далі не читає.
     "weather_feel": {"frost": -10.0, "cold": 2.0, "cool": 10.0, "warm": 20.0, "hot": 28.0},
     "intent": {к: к for к in ("conventional", "statement", "comfort_first", "context_optimal")},
-    # ── ЧЕТВЕРТА МЕТА: «ВИЩЕ» (28.09.2026, рішення власника «10 а», звіт Research П8) ──
-    # Вертикаль — ОКРЕМА вісь від уваги: «щоб личило» / «не привертати» / «щоб дивились»
-    # нічого не кажуть про подовження лінії, а звіт ставить її окремим правилом-кандидатом
-    # («лінія талії за метою», П8) і окремим рядком мови («„витягує силует“ — лише коли
-    # людина сама обрала таку мету»). Ставиться ЛИШЕ зі слів жінки, як і решта трьох.
-    "goal": {"flatter": "лестити", "conceal": "приховати", "express": "експресія",
-             "taller": "вище"},
+    # ── МЕТА — ДВІ ОСІ (рядок 5211, рішення власника 15.10 «3б») ─────────────────────
+    # `goal` — лише вісь УВАГИ: тихо (conceal) / звично (flatter) / помітно (express), один вибір.
+    # `goal_extra` — «що ще важливо», кілька разом: довша лінія (taller; до 15.10 — четверта мета
+    # «вище» в `goal`, рішення 28.09 «10 а»), зручно рухатись (comfort), строго за нагодою (strict).
+    # Зони, від яких відвести погляд, — `goal_zone` нижче, з будь-якою увагою. Кожен код має правило
+    # з входом: вище — K-COL-01 і K-FIT-04 (`колір_світлота`, `fit`), комфорт — стеля каблука
+    # K-PER-00/K-SHO-16 (`реєстр_намір._намір`), строго — допуск смуги й K-KOH-05 hard (там само).
+    "goal": {"flatter": "лестити", "conceal": "приховати", "express": "експресія"},
+    "goal_extra": {"taller": "вище", "comfort": "комфорт", "strict": "строго"},
     "makeup_level": {"nude": "нюд", "noticeable": "помітний", "bold": "яскравий"},
     "makeup_zone": {"lips": "губи"},     # рядок 1978: зона обраного кольору макіяжу (K-MUA-01)
     "jewelry": {"gold": "золото", "silver": "срібло", "pearls": "перли", "ethnic": "етно",
@@ -505,6 +509,8 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
 
 СЦЕНАРІЙ = {
     "occasion": _перелік("occasion", "нагода — що це за подія"),
+    "occasion_part": {"enum": ["sport", "other", UNKNOWN],
+                      "description": "намір мовної моделі цього ходу: образ для спортивної чи іншої частини дня"},
     "place": _перелік("place", "місце — де вона буде"),
     "dress_code": _перелік("dress_code", "дрес-код, коли його названо"),
     "event": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="подія коротко, її мовою"),
@@ -541,16 +547,16 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
                                  "context_optimal — доречність і рівень події понад усе; "
                                  "statement — хоче вразити, заявити про себе; conventional — "
                                  "нічого з цього"),
-    # Рядок 1437: conceal — два наміри, і різнить їх лише goal_zones: без зон — увесь образ не привертає
-    # уваги; із зонами — погляд іде від зон, а решта образу вільна (`регістр_уваги.мета_образу`)
-    "goal": _перелік("goal", "мета на цей вихід: flatter — щоб личило; conceal — не привертати "
-                             "уваги до всього образу, або відвести погляд від зони тіла (тоді й "
-                             "goal_zones); express — щоб на неї дивились; taller — "
-                             "вона хоче довшу лінію, здаватись вищою"),
+    # Рядок 5211: мета — дві осі. `goal` — лише увага всього образу; зони й «що ще важливо» — окремі поля
+    "goal": _перелік("goal", "скільки уваги на цьому виході: conceal — тихо, не привертати уваги до образу; "
+                             "flatter — звично, щоб личило; express — помітно, щоб на неї дивились"),
+    "goal_extra": _список(_перелік("goal_extra", "що ще важливо"),
+                          "що ще їй важливо в цьому образі, кілька разом: taller — довша лінія, здаватись "
+                          "вищою; comfort — зручно рухатись цілий день; strict — строго за нагодою",
+                          maxItems=3),
     "goal_zones": _список(_перелік("goal_zone", "зона тіла"),
-                          "лише з метою conceal, коли вона хоче відвести погляд від зони тіла («сховати "
-                          "живіт» → belly): мета тоді стосується лише цих зон, а решта образу вільна; "
-                          "коли вона ще й не хоче уваги до себе взагалі — поля нема, увесь образ тихий",
+                          "зони тіла, від яких вона хоче відвести погляд («сховати живіт» → belly), з будь-якою "
+                          "увагою (goal): ці зони тихі, решта образу — за goal",
                           maxItems=3),
     "makeup": {"description": "макіяж на цей вихід", "type": "object", "additionalProperties": False,
                "properties": {
@@ -846,6 +852,28 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
 # `on_face`…), тож визначення називає лише, що це місце; перелік у кожному визначенні роздув би промпт.
 _МІСЦЯ_ОПЦІЙ = "where it is worn"
 ЗАЯВИ = {
+    # Причини мети (3841): означення тільки на межі моделі, факти лишаються кодами.
+    "goal_default_no_weights": "no goal weights were supplied: flatter is the system default, not her choice. "
+                               "It assumes she wants to please; this is not neutral or universal (theme-6 1.6)",
+    "goal_default_no_known_weights": "no known goal occurs in the supplied weights: the goal remains the "
+                                     "system default flatter, not her choice",
+    "goal_default_no_dominant_weight": "the leading weight is less than threshold ahead of the runner-up: "
+                                       "no priority was established, so flatter remains the system default "
+                                       "(values: leading, weight, runner_up, runner_up_weight, gap, threshold)",
+    "goal_from_weights": "the leading weight gives the goal through the system's soft mapping, not a mapping "
+                         "from the source. The attention axis changes the direction of advice, not its strength "
+                         "(theme-6 1.6; values: goal, leading, weight, runner_up, runner_up_weight, gap, threshold)",
+    "goal_comfort_not_represented": "comfort is not represented in the single attention-goal scalar: it maps "
+                                   "to flatter to retain colour behaviour; the comfort preference has no effect",
+    "goal_ease_not_represented": "ease of composing is not represented in the attention-goal scalar: it maps "
+                                "to flatter; the ease preference has no effect",
+    "goal_appropriateness_in_occasion": "appropriateness is handled by the occasion layer (K-KOH-09), not by "
+                                       "the attention goal",
+    "goal_from_her_words": "the occasion passport supplied her goal from her words (K-IO-02): goal overrides "
+                           "weights_goal. Her exact words are separate in goal_quote; goal weights are not her "
+                           "choice for this occasion",
+    "goal_zone_only": "conceal concerns the named zones, not the entire outfit: the outfit-wide goal comes "
+                      "from the weights or the system default (values: zones, goal)",
     # ── портрет, з якого кольори не читаються (П-4, `міст_вхід.ПРИЧИНИ_ПОРТРЕТА`) ─────
     "portrait_black_white": "the photo is black-and-white or under a heavy filter: it carries no true colours",
     "portrait_face_small": "the face takes less than a quarter of the frame",
@@ -1382,7 +1410,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_frame_size_unknown": "the card does not carry the frame size",
     "item_lug_width_unknown": "the card does not carry the watch's lug width",
     "item_glove_size_unknown": "the card does not carry the gloves' size mark",
-    "item_frame_size_unreadable": "the code could not read the frame size from the card (values: item — item "
+    "item_frame_size_unreadable": "the code could not read the frame size from the card (values: "
+                                 "frame_size — literal card field, her_pupillary_distance_mm — measured number, "
+                                 "item_id — exact item reference, never write it in the woman's text, item — item "
                                   "name)",
     # ── спосіб носіння (`аксесуари_структура`, `аксесуари_суд`) ────────────────
     "wear_way_not_chosen": "how she wears this item is not chosen yet, and which rules apply to it depends on "
@@ -1475,7 +1505,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "dividing_line_item_length_unknown": "the outfit's dividing line is the hem of its top item, and the cards do "
                                          "not carry the length of the named top items, so the line was not "
                                          "judged (values: slots — slot codes)",
-    "cut_unknown_form_default": "the cards do not name the cut of some items, so the code counts the outfit's "
+    "cut_unknown_form_default": "some cards have no known cut; unknown_cuts preserve literal card witnesses by item_id. "
+                                "The code counts the outfit's "
                                 "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
                                         "ordinary straight cut; what follows holds only if the cut really is "
@@ -1536,6 +1567,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # Ф-2: було «does not aim to flatter the figure». Сенс той самий — мети `flatter`
     # на цей вихід не поставлено, — але фраза дослівно та, яку R-LNG-01 забороняє
     # (дієслово ефекту + зона). Мету називаємо ЇЇ КОДОМ, а не описом дії над тілом.
+    "contour_direction_not_set_by_goal": "the goal for this outing is not to flatter, so the measured "
+                                        "contour has no prescribed direction (values: goal — goal code); "
+                                        "do not prescribe adding or removing volume to flatter",
     "look_shape_is": "the shape the outfit gives, with no judgement, because the goal for this outing is "
                      "not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — "
                      "shoulders wider than hips, X — a marked waist, H — a straight contour without a marked "
@@ -1649,8 +1683,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ── відмова збирати: сценарію нема (K-IO-01, `міст_запити`; Ч-4 — доти готове речення
     #    коду `сценарій.БРАК_СЦЕНАРІЮ_ЖІНЦІ`) ─────────────────────────────────────────
     "no_scenario_fields": "the outfits were not built because the code does not know where she is going: the "
-                          "scenario names none of the fields that set dressiness (values: fields — the keys "
-                          "of these fields)",
+                          "scenario names none of the fields that set dressiness (values: fields — which "
+                          "fields these are, as codes: occasion, place, dress_code, formality; the codes are "
+                          "for you — say each in her own everyday words, never write a code itself)",
     "retry_gives_same": "a retry without changes gives the same",
     # ── збирання спіткнулось не на сценарії (Ч-9, рядок 206; доти абзац коду
     #    `показ.рядокЗбоюЗбирання`) ────────────────────────────────────────────────
@@ -3248,6 +3283,36 @@ if _спільні:
     raise KeyError("код пункту чекліста збігся з кодом заяви: %s" % sorted(_спільні))
 ЗАЯВИ.update(ПУНКТИ_ЧЕКЛІСТА)
 
+# 4381: визначення браку для моделі, без словника фраз показу.
+ЗАЯВИ.update({
+    'gloves_slot': 'The glove slot needed for the check has no item in this outfit.',
+    'tights_den': 'The check needs tights with a DEN measurement.',
+    'tights_lightness': 'The check needs tights with measured lightness.',
+    'face_scale': 'The check needs measured facial feature scale; facial contrast does not supply it (K-SCL-01).',
+    'necklace_neckline': 'The check needs necklace length in centimetres and the neckline type of the top or dress.',
+    'bag_strap': 'The check needs bag strap length in centimetres; drop is half the handle length.',
+    'partner_pool': 'The check needs top and bottom candidates from this run to count combinations.',
+    'shoe_repairability': 'The check needs a repairability measurement for the shoe sole construction.',
+    'occasion_duration': 'The check needs occasion duration in hours from the scenario.',
+    'glasses_profile': 'The check needs glasses frame colour and pixel area from the profile.',
+    'jewelry_kind': 'The check needs jewelry kind, distinct from its metal; a named metal does not establish pearls, wood, bone or beads.',
+    'accent_pair': 'The check needs at least two non-neutral accent surfaces in different slots.',
+    'day_weather': 'The check needs scenario temperature or precipitation.',
+    'metal_surface_share': 'The check needs measured metal surface share from enrichment v2; named metal is not coverage.',
+    'shared_photo': 'The named item fields are unknown because the shop photo is shared with other products (R-FEED-06).',
+    'item_surface': 'Texture and fibre are unknown for the listed items; known counts cannot establish equal surfaces.',
+    'scheme_choice': 'The stylist or woman choice of the palette scheme was not supplied to the judge.',
+    'passport_author': 'The language model conversation author of the passport was not supplied to the judge.',
+    'point_input_unknown': 'The referenced checklist point lacks its required input. Do not treat this as a pass.',
+    'rule_input_unknown': 'The referenced producer rule lacks input; input and detail identify its missing coded facts and statements carry its context. Source fields name producer references, not conclusions.',
+})
+ЗАЯВИ.update({
+    "passport_tiles_only": "There is no passport from conversation; the scenario only came from tiles.",
+    "passport_call_zero": "Call zero filled the passport without a language-model conversation turn; the model was absent or its turn fell back to main.",
+    "passport_without_talk": "The seam filled the passport without a language-model conversation turn: tiles or translation without a talk.",
+})
+
+
 
 def код_пункту(ід):
     """Ід пункту чекліста → код внутрішньої мови; пункт без коду — None (сторож — `тест_протоколу`)."""
@@ -3265,7 +3330,9 @@ def код_пункту(ід):
 # із іншого боку: які з його значень ПРОСЯТЬ напрям, а які лише міняють вісь уваги.
 # «приховати» й «експресія» тут нема навмисно — вони не про гармонізацію, і їхню
 # власну знахідку дає `регістр_уваги` (R-CHEV-08).
-МЕТИ_З_НАПРЯМОМ = ("лестити", "вище")
+# Рядок 5211: «вище» вийшла з осі уваги в `goal_extra` — тепер вона не мета з напрямом, а вхід K-COL-01
+# і K-FIT-04 поруч із будь-якою увагою; гармонізацію при «вище» дає її вісь уваги («звично» — лестити).
+МЕТИ_З_НАПРЯМОМ = ("лестити",)
 
 
 def визначення_заяв(коди):
@@ -3288,13 +3355,14 @@ def заява(код, **значення):
 def суть_кодом(заяви, речі=()):
     """`суть` знахідки внутрішньою мовою (п.12, рядок 4250): коди її заяв через « + » (як їх друкує
     звіт, `показ.html: питанняКодомП`) і id речей у дужках, без слів. Це діагноз у звіті власника,
-    ярлик сліду правил і ключ дедуплікації (правило, суть): дві знахідки одного правила над різними
-    речами чи з різних причин не зливаються. Речення пише мовна модель із самих `заяви`."""
+    ярлик сліду правил. Ідентичність питання — повні заяви, значення й id учасників
+    (`знахідка.ключ_питання`): дві зони або речі з однаковою назвою не зливаються. Речення пише мовна модель із самих `заяви`. Річ-словник передає лише свій `id`."""
     коди = [з.get("code") if isinstance(з, dict) else з for з in заяви or ()]
     for к in коди:
         if к not in ЗАЯВИ:
             raise KeyError("заява поза словником ЗАЯВИ: %r" % (к,))
-    ід = [str(x) for x in dict.fromkeys(речі or ()) if x is not None and str(x).strip()]
+    речі = [x.get("id") if isinstance(x, dict) else x for x in речі or ()]
+    ід = [str(x) for x in dict.fromkeys(речі) if x is not None and str(x).strip()]
     return " + ".join(коди) + (" [%s]" % ", ".join(ід) if ід else "")
 
 

@@ -271,6 +271,12 @@ def коди_заяв(дані):
     def _обхід(в):
         if isinstance(в, dict):
             for к, v in в.items():
+                if к == "missing" and isinstance(v, list):
+                    # 4381: словник причин лише для цього виклику; вкладені заяви теж мають визначення.
+                    for x in v:
+                        вих.extend(_код(x))
+                        _обхід(x)
+                    continue
                 if к in КЛЮЧІ_ЗАЯВ and isinstance(v, list):
                     for x in v:
                         вих.extend(_код(x))

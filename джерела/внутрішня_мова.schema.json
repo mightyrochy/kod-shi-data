@@ -646,6 +646,14 @@
       "unknown"
      ]
     },
+    "occasion_part": {
+     "enum": [
+      "sport",
+      "other",
+      "unknown"
+     ],
+     "description": "намір мовної моделі цього ходу: образ для спортивної чи іншої частини дня"
+    },
     "place": {
      "description": "місце — де вона буде",
      "enum": [
@@ -905,17 +913,30 @@
      ]
     },
     "goal": {
-     "description": "мета на цей вихід: flatter — щоб личило; conceal — не привертати уваги до всього образу, або відвести погляд від зони тіла (тоді й goal_zones); express — щоб на неї дивились; taller — вона хоче довшу лінію, здаватись вищою",
+     "description": "скільки уваги на цьому виході: conceal — тихо, не привертати уваги до образу; flatter — звично, щоб личило; express — помітно, щоб на неї дивились",
      "enum": [
       "flatter",
       "conceal",
       "express",
-      "taller",
       "unknown"
      ]
     },
+    "goal_extra": {
+     "description": "що ще їй важливо в цьому образі, кілька разом: taller — довша лінія, здаватись вищою; comfort — зручно рухатись цілий день; strict — строго за нагодою",
+     "type": "array",
+     "items": {
+      "description": "що ще важливо",
+      "enum": [
+       "taller",
+       "comfort",
+       "strict",
+       "unknown"
+      ]
+     },
+     "maxItems": 3
+    },
     "goal_zones": {
-     "description": "лише з метою conceal, коли вона хоче відвести погляд від зони тіла («сховати живіт» → belly): мета тоді стосується лише цих зон, а решта образу вільна; коли вона ще й не хоче уваги до себе взагалі — поля нема, увесь образ тихий",
+     "description": "зони тіла, від яких вона хоче відвести погляд («сховати живіт» → belly), з будь-якою увагою (goal): ці зони тихі, решта образу — за goal",
      "type": "array",
      "items": {
       "description": "зона тіла",
@@ -1910,6 +1931,10 @@
         "description": "нагода — що це за подія"
        },
        {
+        "const": "occasion_part",
+        "description": "намір мовної моделі цього ходу: образ для спортивної чи іншої частини дня"
+       },
+       {
         "const": "place",
         "description": "місце — де вона буде"
        },
@@ -1987,11 +2012,15 @@
        },
        {
         "const": "goal",
-        "description": "мета на цей вихід: flatter — щоб личило; conceal — не привертати уваги до всього образу, або відвести погляд від зони тіла (тоді й goal_zones); express — щоб на неї дивились; taller — вона хоче довшу лінію, здаватись вищою"
+        "description": "скільки уваги на цьому виході: conceal — тихо, не привертати уваги до образу; flatter — звично, щоб личило; express — помітно, щоб на неї дивились"
+       },
+       {
+        "const": "goal_extra",
+        "description": "що ще їй важливо в цьому образі, кілька разом: taller — довша лінія, здаватись вищою; comfort — зручно рухатись цілий день; strict — строго за нагодою"
        },
        {
         "const": "goal_zones",
-        "description": "лише з метою conceal, коли вона хоче відвести погляд від зони тіла («сховати живіт» → belly): мета тоді стосується лише цих зон, а решта образу вільна; коли вона ще й не хоче уваги до себе взагалі — поля нема, увесь образ тихий"
+        "description": "зони тіла, від яких вона хоче відвести погляд («сховати живіт» → belly), з будь-якою увагою (goal): ці зони тихі, решта образу — за goal"
        },
        {
         "const": "makeup",
@@ -2265,6 +2294,42 @@
       "properties": {
        "code": {
         "oneOf": [
+         {
+          "const": "goal_default_no_weights",
+          "description": "no goal weights were supplied: flatter is the system default, not her choice. It assumes she wants to please; this is not neutral or universal (theme-6 1.6)"
+         },
+         {
+          "const": "goal_default_no_known_weights",
+          "description": "no known goal occurs in the supplied weights: the goal remains the system default flatter, not her choice"
+         },
+         {
+          "const": "goal_default_no_dominant_weight",
+          "description": "the leading weight is less than threshold ahead of the runner-up: no priority was established, so flatter remains the system default (values: leading, weight, runner_up, runner_up_weight, gap, threshold)"
+         },
+         {
+          "const": "goal_from_weights",
+          "description": "the leading weight gives the goal through the system's soft mapping, not a mapping from the source. The attention axis changes the direction of advice, not its strength (theme-6 1.6; values: goal, leading, weight, runner_up, runner_up_weight, gap, threshold)"
+         },
+         {
+          "const": "goal_comfort_not_represented",
+          "description": "comfort is not represented in the single attention-goal scalar: it maps to flatter to retain colour behaviour; the comfort preference has no effect"
+         },
+         {
+          "const": "goal_ease_not_represented",
+          "description": "ease of composing is not represented in the attention-goal scalar: it maps to flatter; the ease preference has no effect"
+         },
+         {
+          "const": "goal_appropriateness_in_occasion",
+          "description": "appropriateness is handled by the occasion layer (K-KOH-09), not by the attention goal"
+         },
+         {
+          "const": "goal_from_her_words",
+          "description": "the occasion passport supplied her goal from her words (K-IO-02): goal overrides weights_goal. Her exact words are separate in goal_quote; goal weights are not her choice for this occasion"
+         },
+         {
+          "const": "goal_zone_only",
+          "description": "conceal concerns the named zones, not the entire outfit: the outfit-wide goal comes from the weights or the system default (values: zones, goal)"
+         },
          {
           "const": "portrait_black_white",
           "description": "the photo is black-and-white or under a heavy filter: it carries no true colours"
@@ -3327,7 +3392,7 @@
          },
          {
           "const": "item_frame_size_unreadable",
-          "description": "the code could not read the frame size from the card (values: item — item name)"
+          "description": "the code could not read the frame size from the card (values: frame_size — literal card field, her_pupillary_distance_mm — measured number, item_id — exact item reference, never write it in the woman's text, item — item name)"
          },
          {
           "const": "wear_way_not_chosen",
@@ -3447,7 +3512,7 @@
          },
          {
           "const": "cut_unknown_form_default",
-          "description": "the cards do not name the cut of some items, so the code counts the outfit's shape on the usual cut (values: slots — slot codes)"
+          "description": "some cards have no known cut; unknown_cuts preserve literal card witnesses by item_id. The code counts the outfit's shape on the usual cut (values: slots — slot codes)"
          },
          {
           "const": "cut_not_declared_assumed_regular",
@@ -3516,6 +3581,10 @@
          {
           "const": "claim_look_shape_vs_body_shape",
           "description": "the outfit's shape is not the one worth leading to for her figure (values: body — the figure's shape, look — the outfit's shape, target — the shapes to lead to; shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the edge of being marked; never write the letters themselves, only the description)"
+         },
+         {
+          "const": "contour_direction_not_set_by_goal",
+          "description": "the goal for this outing is not to flatter, so the measured contour has no prescribed direction (values: goal — goal code); do not prescribe adding or removing volume to flatter"
          },
          {
           "const": "look_shape_is",
@@ -3695,7 +3764,7 @@
          },
          {
           "const": "no_scenario_fields",
-          "description": "the outfits were not built because the code does not know where she is going: the scenario names none of the fields that set dressiness (values: fields — the keys of these fields)"
+          "description": "the outfits were not built because the code does not know where she is going: the scenario names none of the fields that set dressiness (values: fields — which fields these are, as codes: occasion, place, dress_code, formality; the codes are for you — say each in her own everyday words, never write a code itself)"
          },
          {
           "const": "retry_gives_same",
@@ -6212,6 +6281,98 @@
          {
           "const": "face_contrast",
           "description": "the lightness jump near her face matches her own contrast (K-CLR-02)"
+         },
+         {
+          "const": "gloves_slot",
+          "description": "The glove slot needed for the check has no item in this outfit."
+         },
+         {
+          "const": "tights_den",
+          "description": "The check needs tights with a DEN measurement."
+         },
+         {
+          "const": "tights_lightness",
+          "description": "The check needs tights with measured lightness."
+         },
+         {
+          "const": "face_scale",
+          "description": "The check needs measured facial feature scale; facial contrast does not supply it (K-SCL-01)."
+         },
+         {
+          "const": "necklace_neckline",
+          "description": "The check needs necklace length in centimetres and the neckline type of the top or dress."
+         },
+         {
+          "const": "bag_strap",
+          "description": "The check needs bag strap length in centimetres; drop is half the handle length."
+         },
+         {
+          "const": "partner_pool",
+          "description": "The check needs top and bottom candidates from this run to count combinations."
+         },
+         {
+          "const": "shoe_repairability",
+          "description": "The check needs a repairability measurement for the shoe sole construction."
+         },
+         {
+          "const": "occasion_duration",
+          "description": "The check needs occasion duration in hours from the scenario."
+         },
+         {
+          "const": "glasses_profile",
+          "description": "The check needs glasses frame colour and pixel area from the profile."
+         },
+         {
+          "const": "jewelry_kind",
+          "description": "The check needs jewelry kind, distinct from its metal; a named metal does not establish pearls, wood, bone or beads."
+         },
+         {
+          "const": "accent_pair",
+          "description": "The check needs at least two non-neutral accent surfaces in different slots."
+         },
+         {
+          "const": "day_weather",
+          "description": "The check needs scenario temperature or precipitation."
+         },
+         {
+          "const": "metal_surface_share",
+          "description": "The check needs measured metal surface share from enrichment v2; named metal is not coverage."
+         },
+         {
+          "const": "shared_photo",
+          "description": "The named item fields are unknown because the shop photo is shared with other products (R-FEED-06)."
+         },
+         {
+          "const": "item_surface",
+          "description": "Texture and fibre are unknown for the listed items; known counts cannot establish equal surfaces."
+         },
+         {
+          "const": "scheme_choice",
+          "description": "The stylist or woman choice of the palette scheme was not supplied to the judge."
+         },
+         {
+          "const": "passport_author",
+          "description": "The language model conversation author of the passport was not supplied to the judge."
+         },
+         {
+          "const": "point_input_unknown",
+          "description": "The referenced checklist point lacks its required input. Do not treat this as a pass."
+         },
+         {
+          "const": "rule_input_unknown",
+          "description": "The referenced producer rule lacks input; input and detail identify its missing coded facts and statements carry its context. Source fields name producer references, not conclusions."
+         },
+         {
+          "const": "passport_tiles_only",
+          "description": "There is no passport from conversation; the scenario only came from tiles."
+         },
+         {
+          "const": "passport_call_zero",
+          "description": "Call zero filled the passport without a language-model conversation turn; the model was absent or its turn fell back to main."
+         },
+         {
+          "const": "passport_without_talk",
+          "description": "The seam filled the passport without a language-model conversation turn: tiles or translation without a talk."
          }
         ]
        },
@@ -6447,6 +6608,12 @@
    "evening": "вечір",
    "night": "ніч"
   },
+  "season": {
+   "winter": "зима",
+   "spring": "весна",
+   "summer": "літо",
+   "autumn": "осінь"
+  },
   "weather_feel": {
    "frost": -10.0,
    "cold": 2.0,
@@ -6463,8 +6630,12 @@
   "goal": {
    "flatter": "лестити",
    "conceal": "приховати",
-   "express": "експресія",
-   "taller": "вище"
+   "express": "експресія"
+  },
+  "goal_extra": {
+   "taller": "вище",
+   "comfort": "комфорт",
+   "strict": "строго"
   },
   "makeup_level": {
    "nude": "нюд",
