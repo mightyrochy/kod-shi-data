@@ -771,7 +771,8 @@ def зміни(d, F, T, сцен, речі, образ, запасні, о0, п�
     def _спроба(ціль, нова_ід, нова_слот, запис, звідки):
         ід = _заміна(образ, за_ід, ціль, нова_ід, нова_слот)
         кат = [записи[і] for і in ід if і in записи] + ([запис] if нова_ід not in записи else [])
-        о1 = _СЧ.відсутнє_на_фото(_ваги_образу([з["id"] for з in кат], кат, F, T, сцен, драп), [])[0]
+        о1 = _СЧ.відсутнє_на_фото(_ваги_образу([з["id"] for з in кат], кат, F, T, сцен, драп), [],
+                                  {з.get("слот") for з in кат})[0]
         сума1 = float(о1.get("сума_сил") or 0.0)
         знято = sorted(правила0 - _правила(о1))
         додано = sorted(_правила(о1) - правила0)
@@ -1004,8 +1005,9 @@ def суд(d):
     знахідки, вето = _знахідки(о, за_ід)
     блокери = [б for б in (_PL.блокери_структури(о.get("блокує") or [], о.get("речі") or [], {},
                                                   заяви=о.get("заяви_блокерів")) + вето)]
-    # рядок 5284: «на фото нема» — не вада й не gate (блокери повноти, K-SHO-01); рівень — від справжніх гейтів
-    о, блокери, відсутнє = _СЧ.відсутнє_на_фото(о, блокери)
+    # рядки 5284, 5745–5746: «на фото нема» — не вада й не gate (блокери повноти, одна річ, K-SHO-01, пальто в
+    # холод); рівень — від справжніх гейтів
+    о, блокери, відсутнє = _СЧ.відсутнє_на_фото(о, блокери, {з.get("слот") for з in записи})
     знахідки, _ = _знахідки(о, за_ід)       # без знахідок «на фото нема»; вето вже в блокерах
     for б in блокери:
         б["речі"] = [_до_фото(х, за_ід) for х in (б.get("речі") or [])]
@@ -1111,10 +1113,19 @@ def _сцена_для_моделі(суд_):
 _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, not a score: never count findings or remarks, "
                    "never say a change lowers, removes or adds them, and never mention the check, the code or "
                    "a system; say what changes in the outfit itself, in plain words.")
+# НА ФОТО НЕМА (рядок 5747, ПРОДУКТ п.9, п.14). Код зняв із суду те, чого на фото нема (`суд_образу.відсутнє_на_фото`),
+# а модель про це не знала: бачила образ без взуття й писала «додай взуття… і, бажано, сумку» (Б4, виклик 12;
+# картка 6б `otsinka_z_chatu_seed3.png`). Тепер вона знає, чого нема на фото, і що її задача — її питання про те,
+# що є: про відсутнє не судить, крім питання про нього. Рядок «на фото нема …» на картці пише мовний прохід.
+_НА_ФОТО = ("Judge only the items on her photos, for her question. A thing in \"not_in_photo\" is not a flaw and "
+            "not missing from her outfit — she may simply not have photographed it: never ask her to add it, never "
+            "call the outfit incomplete for it, and leave it out of every text, unless her question asks about it; "
+            "then answer from the items on her photos.")
 ОЦІНКА = _ЗП.Оголошення(
     задача="оцінка",
     роль="You are a stylist. A woman has put an outfit together herself and asks for your view. "
-         "You see her photos and the code's check of the outfit as a whole.",
+         "You see her photos and the code's check of the outfit as a whole. Her photos show what she chose to "
+         "show, often not the whole outfit: you judge what is on them.",
     вхід=(
         _ЗП.Поле("question", "her question in her words, with its language",
                  без="She asked no question: give your view of the outfit as a whole."),
@@ -1132,6 +1143,8 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
                           "reading of the photos", треба=True),
         _ЗП.Поле("outfit", "ids of the items worn together: the outfit you judge", треба=True),
         _ЗП.Поле("alternatives", "ids of her items shown as alternatives, not worn in the outfit"),
+        _ЗП.Поле("not_in_photo", "kinds of things that are not on her photos (shoes, bag, outerwear, more pieces…): "
+                                 "the code did not judge them, and her card tells her so in one line"),
         _ЗП.Поле("check", "the code's check of the outfit as a whole: findings (rule, strength, sila_np — "
                           "weight 0–1, register — gate blocks, remark is said, items, statements — what the "
                           "code found, fix — how to repair it), structure blockers, and the codes of the "
@@ -1175,6 +1188,10 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
         "\"text\" says that fix. \"wear_with_change\" only with at least one \"change\".",
         "An item in \"worn_unknown\" is one of her options: speak of it as her choice between them, not "
         "as what she is wearing.",
+        _НА_ФОТО,
+        # рядок 5746: образ з однієї речі — не «неповний образ», а одна річ, яку вона показала
+        "When the outfit is one item, judge that item itself: its color with her palette and near her face, "
+        "its cut and fabric, and her occasion and weather when she named them.",
         _БЕЗ_ЛІЧИЛЬНИКА,
     ),
     вихід="OUTFIT_REVIEW_V1",
@@ -1320,6 +1337,7 @@ def перевірка_для_моделі(суд_):
         "Keep to what you already told her unless the check contradicts it.",
         "Claim only what the check does not contradict; suggest replacing an item only with ids from "
         "\"changes\" and name the item in words.",
+        _НА_ФОТО,
         _БЕЗ_ЛІЧИЛЬНИКА,
     ),
     вихід="OUTFIT_FOLLOWUP_V1",
@@ -1420,6 +1438,10 @@ def дані_оцінки(суд_, питання=None):
     опори = опори_вдалого(суд_)
     if опори:
         дані["supported"] = опори
+    import суд_образу as _СЧ
+    нема = _СЧ.коди_нема_на_фото(суд_.get("не_на_фото") or [])     # рядок 5747: модель знає, чого нема на фото
+    if нема:
+        дані["not_in_photo"] = нема
     не_видно = [р["ід"] for р in суд_.get("речі") or [] if р.get("в_образі", True) is None]
     if не_видно:
         дані["worn_unknown"] = не_видно
