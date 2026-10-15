@@ -1225,17 +1225,28 @@ def формальність_образу(E, сцен=None, вечір=False, т
                                                        _НЕОДН_НЕ_ДАНО))
     import правило_руки2 as _ПР2
     if _ПР2.зламане("K-KOH-02"):
-        смуга = смуга_ошатності(сцен)
+        смуга = (сцен or {}).get("діапазон") or смуга_ошатності(сцен)
         if смуга:
             смуга = смуга[:2]
             ціль = _ПР2.сусідня_смуга(смуга)
-            _ПР2.рекомендація("K-KOH-02", "judge", list(смуга), list(ціль), "target_band",
-                              образ=sorted(str(e.get("річ")) for e in E))
-            зн = [з for з in зн if з.get("правило") != "K-KOH-02" or з.get("без_входу")]
-            хибні = [e for e, lo, hi in _і if hi < ціль[0] or lo > ціль[1]]
-            if хибні:
-                зн.append(_ПР2.хибна_знахідка("K-KOH-02", хибні, list(смуга), list(ціль),
-                          "target_band", _ВМ.заява("use_target_formality_band", band=list(ціль))))
+            невідомі = [e for e in одна_на_річ(E) if інтервал_формальності(e)[0] is None]
+            if невідомі:
+                з = _зн("K-KOH-02", "питання", "item_formality_unknown",
+                         [e["річ"] for e in невідомі], "item_formality_unknown",
+                         заяви=[_ВМ.заява("item_formality_unknown")])
+                з.update(сила_нп=0.0, регістр="питання", без_входу="формальність_речі")
+                зн.append(з)
+            if ціль and _і:
+                зн = [з for з in зн if з.get("правило") != "K-KOH-02" or з.get("без_входу")]
+                хибні = [e for e, lo, hi in _і if not _ПР2.хибний_щабель((lo, hi), смуга, ціль)]
+                образ = sorted({str(e.get("річ")) for e in E})
+                if хибні:
+                    зн.append(_ПР2.хибна_знахідка("K-KOH-02", хибні, list(смуга), list(ціль),
+                              "target_band", _ВМ.заява("use_target_formality_band", band=list(ціль)), образ))
+                else:
+                    _ПР2.рекомендація("K-KOH-02", "judge", list(смуга), list(ціль),
+                                      "keep_neighbor_items", образ=образ, речі=sorted({str(e["річ"]) for e, lo, hi in _і}),
+                                      суть="keep_neighbor_items", сила_нп=0.0)
     return зн
 
 

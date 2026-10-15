@@ -1631,14 +1631,15 @@ def структура_образу_заяви(речі, слоти_пулу=Non
     _хибне_пальто = bool(_ПР2.зламане("K-OUT-33") and _свідок_пальта and not _спорт
                          and _ПОГ.пальтова_смуга(_сц.get("темп_c")))
     if _хибне_пальто:
-        _ПР2.рекомендація("K-OUT-33", "judge", "require_outerwear", "omit_outerwear",
-                          "remove_items" if "верхній_шар" in є else "keep_without_outerwear",
-                          образ=sorted(str(r.get("id")) for r in речі),
-                          речі=[str(r.get("id")) for r, с in zip(речі, призн) if с == "верхній_шар"])
         _зайві = [r for r, с in zip(речі, призн) if с == "верхній_шар"]
         if _зайві:
             мʼякі.append(_ПР2.хибна_знахідка("K-OUT-33", _зайві, "require_outerwear",
-                         "omit_outerwear", "remove_items", _ВМ.заява("remove_this_item")))
+                         "omit_outerwear", "remove_items", _ВМ.заява("remove_this_item"),
+                         [r.get("id") for r in речі]))
+        else:
+            _ПР2.рекомендація("K-OUT-33", "judge", "require_outerwear", "omit_outerwear",
+                              "keep_without_outerwear", образ=sorted(str(r.get("id")) for r in речі),
+                              речі=[], суть="keep_without_outerwear", сила_нп=0.0)
     if верхні and not _спорт and "верхній_шар" not in є and not _хибне_пальто:
         import суд_погода as _ПОГ
         _бп = _ПОГ.блокер_пальта(_сц.get("темп_c"), _сц.get("опади"))
@@ -1694,25 +1695,27 @@ def структура_образу_заяви(речі, слоти_пулу=Non
     _хибна_третя = _ПР2.зламане("K-CRA-01") and not _спорт
     if _хибна_третя:
         _зайві = [r for r, с in zip(речі, призн) if с in _ТРЕТЯ]
-        _ПР2.рекомендація("K-CRA-01", "judge", "require_third_piece", "omit_third_piece",
-                          "remove_items" if _зайві else "keep_without_third_piece",
-                          образ=sorted(str(r.get("id")) for r in речі),
-                          речі=[str(r.get("id")) for r in _зайві])
         if _зайві:
             мʼякі.append(_ПР2.хибна_знахідка("K-CRA-01", _зайві, "require_third_piece",
-                         "omit_third_piece", "remove_items", _ВМ.заява("remove_this_item")))
+                         "omit_third_piece", "remove_items", _ВМ.заява("remove_this_item"),
+                         [r.get("id") for r in речі]))
+        else:
+            _ПР2.рекомендація("K-CRA-01", "judge", "require_third_piece", "omit_third_piece",
+                              "keep_without_third_piece", образ=sorted(str(r.get("id")) for r in речі),
+                              речі=[], суть="keep_without_third_piece", сила_нп=0.0)
     if not _спорт and not (є & _ТРЕТЯ) and not _хибна_третя:
         _бл_або_мʼяко("K-CRA-01", рядок_блокера("неповний", "третя_річ"),
                  _ВМ.заява("needs_third_piece"), 0.75, "C")
     _мін = 4 if ({"сукня", "комплект"} & є) else 5
     if _хибна_третя:
-        _ПР2.рекомендація("K-CRA-01-N", "judge", dict(minimum=_мін), dict(maximum=_мін - 1),
-                          "base_only_count", образ=sorted(str(r.get("id")) for r in речі),
-                          скільки=len(речі))
         if len(речі) >= _мін and _зайві:
             мʼякі.append(_ПР2.хибна_знахідка("K-CRA-01-N", _зайві,
                          dict(minimum=_мін), dict(maximum=_мін - 1),
-                         "remove_items", _ВМ.заява("remove_this_item")))
+                         "remove_items", _ВМ.заява("remove_this_item"), [r.get("id") for r in речі]))
+        else:
+            _ПР2.рекомендація("K-CRA-01-N", "judge", dict(minimum=_мін), dict(maximum=_мін - 1),
+                              "keep_base_count", образ=sorted(str(r.get("id")) for r in речі),
+                              речі=[str(r.get("id")) for r in речі], суть="keep_base_count", сила_нп=0.0)
     if not _спорт and len(речі) < _мін and not _хибна_третя:
         _бл_або_мʼяко("K-CRA-01-N", рядок_блокера("неповний", "замало_речей"),
                  _ВМ.заява("too_few_items", count=len(речі), minimum=_мін), 0.6, "D")
@@ -2335,10 +2338,7 @@ def нижче_смуги_образу(ід, за_ід, сценарій=None, �
     if not _смуга:
         return []
     import правило_руки2 as _ПР2
-    _ціль = _ПР2.сусідня_смуга(_смуга)
-    if _ПР2.зламане("K-KOH-07"):
-        _ПР2.рекомендація("K-KOH-07", "judge", list(_смуга), list(_ціль), "target_band",
-                          образ=sorted(map(str, ід or [])))
+    _ціль = _ПР2.сусідня_смуга(_смуга) or _смуга
     lo, hi = float(_ціль[0]), float(_ціль[1])
     # хід над іншою знахідкою (рядок 3160: прийнятий регістровий гейт над усім образом) — не
     # пояснення речі нижче смуги; пояснює хід без коду чи хід над самою K-KOH-07
@@ -2382,6 +2382,9 @@ def нижче_смуги_образу(ід, за_ід, сценарій=None, �
                 ламається="мірило хибить, де тип має лише точку чи бала фото нема (рядки 150, 512); "
                           "тому репліка, не гейт; сила — категорією корпусу, бо шкала 1–10 порядкова")
         вих.append(з)
+    if _ПР2.зламане("K-KOH-07") and _ціль != _смуга and вих:
+        _ПР2.рекомендація("K-KOH-07", "judge", list(_смуга), list(_ціль), "judge_below_target",
+                          образ=sorted(map(str, ід or [])), речі=[str(і) for з in вих for і in з.get("речі") or []])
     return вих
 
 

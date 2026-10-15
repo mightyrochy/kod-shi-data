@@ -11,8 +11,8 @@ with П.зламано(коди + ('K-MAT-03',)):
     assert not П.торкнулось('K-CRA-01', 'judge')
     х = М._входи_пакета(dict(сценарій=сц), None, None, 0)
     assert х != зв and х['зламані_правила']
-    assert П.сусідня_смуга((4, 5)) == (3, 4) and П.сусідня_смуга((1, 2)) == (2, 3)
-    assert П.сусідня_смуга(None) is None
+    assert П.сусідня_смуга((4, 5)) == (3, 3) and П.сусідня_смуга((1, 2)) == (3, 3)
+    assert П.сусідня_смуга(None) is None and П.сусідня_смуга((1, 10)) is None
     assert contextvars.Context().run(П.зламані) == frozenset()
     тінь = П.тінь()
     try:
