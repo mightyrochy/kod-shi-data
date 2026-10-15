@@ -6,12 +6,13 @@
 Запуск: cd джерела && python3 проби/каталог_проблеми_а_походження.py"""
 import collections, os, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ)
-import feed as Ф
+import feed as Ф, фід_фото as ФФ
 зб = [з for з in Ф.читати_збагачення().values() if isinstance(з, dict)]
 поля = collections.Counter(к for з in зб for к in ("фото", "хеш", "розмір", "клас", "маска", "частка_маски", "байтів") if з.get(к))
 print("записів збагачення %d · з полем:" % len(зб), {к: поля[к] for к in ("фото", "хеш", "розмір", "клас", "маска", "частка_маски", "байтів")})
 р3 = [з for з in зб if з.get("колір_р3")]
-різні = sum(1 for з in р3 if (з.get("з_v1") or {}).get("фото") and з["з_v1"]["фото"] != з.get("фото"))
+# той самий знімок у різних розмірах (`-999x999` / `-120x137`) — один кадр: звірка за `_файл_фото`
+різні = sum(1 for з in р3 if (з.get("з_v1") or {}).get("фото") and ФФ._файл_фото(з["з_v1"]["фото"]) != ФФ._файл_фото(з.get("фото") or ""))
 print("КОЛІР-Р3: %d записів, колір і поля форми з різних кадрів: %d" % (len(р3), різні))
 print("знято:", sorted(collections.Counter(str(з.get("знято")) for з in зб).items()))
 фото = sum(1 for _, _, фф in os.walk(ТУТ) for ф in фф if ф.lower().endswith((".jpg", ".jpeg", ".webp", ".png")))
