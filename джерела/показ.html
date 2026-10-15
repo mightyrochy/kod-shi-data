@@ -957,6 +957,8 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
 .полотно{padding:0 18px}
 img.образ{max-width:100%;border:1px solid var(--межа);display:block}
 .полотно img.образ{cursor:zoom-in}
+.полотно .перегляд-відкрити{display:block;max-width:100%;padding:0;border:0;background:none;clip-path:none;cursor:zoom-in}
+.полотно .перегляд-відкрити::after{display:none}
 .не-вийшло{padding:6px 18px 0;color:var(--олівець);font-size:15px;line-height:1.5}
 /* змінна пара під ціною каблука (рядок 181): вигляд рядка речі, але окремим блоком —
    не в образі, не в «Разом», не в колажі, без «не ця» */
@@ -1938,19 +1940,42 @@ label:has(input:focus-visible),.слот:has(input:focus-visible){
 })();
 </script>
 
-<div class="перегляд" id="перегляд" hidden><img alt="приміряний образ на весь екран"><button class="тихо" type="button" aria-label="Закрити">×</button></div>
+<div class="перегляд" id="перегляд" role="dialog" aria-modal="true" aria-label="Образ на весь екран" hidden><img alt="приміряний образ на весь екран"><button class="тихо" type="button" aria-label="Закрити">×</button></div>
 <script>
-/* Тап по приміряній картинці — на весь екран; тап будь-де — назад. Окремо від
-   основного коду. */
+/* Перегляд тримає фокус на єдиній кнопці й повертає його на відкривач.
+   Як і аркуш, дослівно відновлює попередній inert фону, а не вмикає його весь. */
 (function(){
   const п = document.getElementById('перегляд'); if (!п) return; const і = п.querySelector('img');
+  const кнопка = п.querySelector('button'); let відкривач = null, фон = [], прокрутка = '';
+  const закрити = ()=>{
+    п.hidden = true; і.removeAttribute('src'); document.body.style.overflow = прокрутка;
+    for (const [в, було] of фон){
+      if (було === null) в.removeAttribute('inert'); else в.setAttribute('inert', було);
+    }
+    фон = [];
+    if (відкривач && відкривач.isConnected && !відкривач.closest('[inert]') && відкривач.getClientRects().length)
+      відкривач.focus({preventScroll:true});
+    відкривач = null;
+  };
   document.addEventListener('click', е=>{
-    const т = е.target.closest && е.target.closest('.полотно img.образ');
-    if (т){ і.src = т.src; п.hidden = false; document.body.style.overflow = 'hidden'; return; }
+    const т = е.target.closest && е.target.closest('.полотно .перегляд-відкрити');
+    if (т){
+      відкривач = т; і.src = т.querySelector('img').src; п.hidden = false;
+      прокрутка = document.body.style.overflow; document.body.style.overflow = 'hidden';
+      for (const в of document.body.children){
+        if (в === п || /^(SCRIPT|STYLE)$/.test(в.tagName)) continue;
+        фон.push([в, в.getAttribute('inert')]); в.setAttribute('inert', '');
+      }
+      кнопка.focus(); return;
+    }
     if (!п.hidden && (е.target === п || е.target === і || е.target.closest('#перегляд button'))){
-      п.hidden = true; і.src = ''; document.body.style.overflow = ''; }
+      закрити(); }
   });
-  document.addEventListener('keydown', е=>{ if (е.key === 'Escape' && !п.hidden){ п.hidden = true; document.body.style.overflow = ''; } });
+  document.addEventListener('keydown', е=>{
+    if (п.hidden) return;
+    if (е.key === 'Escape'){ е.preventDefault(); закрити(); }
+    else if (е.key === 'Tab'){ е.preventDefault(); кнопка.focus(); }
+  });
 })();
 </script>
 
@@ -3202,7 +3227,9 @@ function полотно(поз){
   const і = ел('img', 'образ'); і.src = к.картинка; і.alt = 'приміряний образ';
   і.onerror = ()=>{ к.картинка = null; полотно(поз);
     const с = $('кст-'+поз); if (с) с.textContent = 'Цю картинку показати не вдалось. Спробуй інший шлях.'; };
-  п.appendChild(і);
+  const відкрити = ел('button', 'перегляд-відкрити'); відкрити.type = 'button';
+  відкрити.setAttribute('aria-label', 'Відкрити образ на весь екран');
+  відкрити.appendChild(і); п.appendChild(відкрити);
 }
 function грн(x){ const n = Number(x); return isFinite(n) && n > 0 ? n.toLocaleString('uk-UA') + ' ₴' : ''; }
 function крамниця(id){ const м = String(id||'').match(/@([^.\s]+)/); return м ? м[1] : ''; }
