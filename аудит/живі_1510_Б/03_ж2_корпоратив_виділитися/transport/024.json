@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-15T12:40:55.165Z",
+  "seconds": 14.328,
+  "status": 200,
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "result": {
+    "id": "chatcmpl-u1if7xlnsa5mnfp8wqukb",
+    "object": "chat.completion",
+    "created": 1792068056,
+    "model": "qwen/qwen3.5-9b",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"answer\": {\n    \"version\": \"1\",\n    \"outfits\": [\n      {\n        \"id\": \"o1\",\n        \"caption\": \"Bold cocktail expression: chocolate sheath and green jersey with plum cardigan, burgundy bag, raspberry boots, lemon pumps (one shoe type chosen for formality balance)\",\n        \"pole\": \"filter_and_rank\",\n        \"items\": [\n          \"#285·09\",\n          \"#46·18\",\n          \"#91·33\",\n          \"#66·14\"\n        ],\n        \"day\": \"A chocolate velvet sheath and green jersey top express her wish to stand out with striking color blocks, anchored by ruby ankle boots for height.\",\n        \"deliberate\": [],\n        \"done\": [\n          {\n            \"finding\": \"Removed duplicate shoes (kept knee-high boots for cocktail formality, removed pumps; added missing third piece: belt)\",\n            \"action\": \"fixed\",\n            \"why\": \"Addressed 'kind_twice' by keeping the most formal shoe and 'incomplete' by adding a belt from showcase\"\n          }\n        ]\n      }\n    ],\n    \"needed\": [\n      {\n        \"kind\": \"belt\",\n        \"description\": \"Belt to define waist and complete the outfit structure\",\n        \"type\": \"accessory\",\n        \"color\": \"burgundy\",\n        \"fabric\": \"leather\"\n      }\n    ]\n  }\n}",
+          "reasoning_content": "",
+          "tool_calls": []
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3991,
+      "completion_tokens": 334,
+      "total_tokens": 4325,
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "stats": {},
+    "system_fingerprint": "qwen/qwen3.5-9b"
+  }
+}

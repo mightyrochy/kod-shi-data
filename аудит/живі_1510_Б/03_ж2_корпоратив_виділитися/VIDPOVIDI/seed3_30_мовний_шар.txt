@@ -1,0 +1,49 @@
+── ПРОМПТ (6496 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Коротка коктейльна сукня корсетного типу · colour code: coral · about it: text н=1
+2 — Золота підвіска Paloma Picasso · colour code: golden · about it: text н=2
+3 — Сумка жіноча Wave Large · colour code: brown · about it: text н=3
+4 — Жіночі туфлі бордові шкіряні · colour code: burgundy · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; burgundy — бордовий; coral — кораловий; golden — золотий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This vibrant coral cocktail dress features an elegant sweetheart neckline and a fitted bodice that transitions into a flared skirt with black floral prints for sophisticated contrast."},
+{"н": 2, "текст": "The delicate golden necklace showcases a minimalist heart-shaped pendant that sits perfectly at the collarbone to draw attention to your neckline."},
+{"н": 3, "текст": "This structured tan leather satchel bag features gold-tone hardware and a distinctive logo charm that adds character while maintaining professional polish."},
+{"н": 4, "текст": "These burgundy leather brogue shoes combine classic wingtip detailing with chunky soles for both style and comfort throughout your evening."},
+{"н": 5, "текст": "For your New Year corporate in the restaurant, you look striking in this coral cocktail dress that hugs your waist and flares just right to accentuate your defined figure. The delicate golden pendant necklace catches the festive lights without overpowering your vibrant look, while the sleek brown satchel adds a touch of understated elegance as it complements your rich burgundy dress shoes that give you height and confidence."},
+{"н": 6, "текст": "Pair this playful yet polished look with a little extra sparkle in your hair or makeup to stand out during the celebration"},
+{"н": 7, "текст": "If you need to dance, slip the dress into an underlayer if needed to keep comfort all night"},
+{"н": 8, "текст": "The bold red tones of the dress work beautifully with warm evening lighting and holiday decorations"},
+{"н": 9, "текст": "Жіночі туфлі бордові шкіряні — I accept the remark about the shoe leg line because the elegant 12cm heel adds necessary height and formality to the midi length, ensuring the silhouette remains grounded and poised for the cocktail event rather than appearing short or casual."}
+]
+
+── ВІДПОВІДЬ (1779 симв., 74.0 с, HTTP 200) ──
+```json
+{
+  "1": "Ця яскрава коралова коктейльна сукня має елегантний виріз «сердечко» та приталений ліф, який переходить у розширену спідницю з чорними квітковими принтами для вишуканого контрасту.",
+  "2": "Ніжна золота підвіска демонструє мінімалістичний кулон у формі серця, що ідеально розташований на ключиці, щоб привернути увагу до твоєї лінії шиї.",
+  "3": "Ця структурована коричнева шкіряна сумка-саквояж має золотистий фурнітурний декор та виразну логотипну підвіску, яка додає характеру, зберігаючи професійний блиск.",
+  "4": "Ці бордові шкіряні туфлі поєднують класичну перфорацію з масивними підошвами для стилю та комфорту протягом усього вечора.",
+  "5": "На твій новорічний корпоратив у ресторані ти виглядаєш приголомшливо в цій кораловій коктейльній сукні, яка облягає твою талію і розширюється саме так, щоб підкреслити твої чіткі форми. Ніжна золота підвіска привертає увагу святкових вогнів без перевантаження твоєї яскравого образу, а елегантна коричнева сумка додає нотку стриманої вишуканості, доповнюючи твої насичені бордові туфлі на підборах, які дарують тобі висоту та впевненість.",
+  "6": "Поєднай цей грайливий і водночас елегантний образ з трохи більшим блиском у волоссі або макіяжі, щоб виділятися під час святкування.",
+  "7": "Якщо тобі потрібно танцювати, одягни сукню на тонкий шар для комфорту протягом усієї ночі.",
+  "8": "Сміливі червоні тони сукні чудово гармонують з теплим вечірнім освітленням та святковими прикрасами.",
+  "9": "Бордові шкіряні туфлі — я приймаю зауваження щодо лінії ноги взуття, адже елегантний 12-сантиметровий каблук додає необхідної висоти та урочистості до довжини міді, забезпечуючи те, що силует залишається збалансованим і витриманим для коктейльної події, а не здається коротким або повсякденним."
+}
+```

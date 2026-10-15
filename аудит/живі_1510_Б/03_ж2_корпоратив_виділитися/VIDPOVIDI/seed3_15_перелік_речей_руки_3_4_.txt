@@ -1,0 +1,31 @@
+── ПРОМПТ (2340 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green wrap midi dress with a draped cowl neck and a slightly flared skirt that hits just below the knee, hex color #50C878, liquid georgette fabric that drapes softly over curves while maintaining an elegant silhouette.\nStrappy black velvet pumps with a three-inch stiletto heel and a pointed toe, hex color #1A1A1A, smooth suede material that adds texture contrast to the sheer dress.\nGold geometric statement earrings with dangling crystal accents, hex color #D4AF37, polished brass setting designed to catch the restaurant lights and draw attention to the neckline without needing an outer layer since the indoor climate is likely warm enough for just this striking ensemble.\nThis outfit works because the rich emerald hue instantly commands attention in a festive setting, while the wrap design offers effortless elegance that flatters any figure type without restriction. The contrasting black heels ground the look with sophistication, and the sparkling gold earrings serve as a focal point that ensures she is remembered long after the event ends. Every element combines to fulfill her desire to stand out boldly at the New Year corporate party."}
+
+── ВІДПОВІДЬ (750 симв., 201.9 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "Emerald green wrap midi dress",
+        "details": "Draped cowl neck, slightly flared skirt hitting just below the knee, liquid georgette fabric",
+        "slot": "dress",
+        "color_hex": "#50C878",
+        "worn": true
+      },
+      {
+        "name": "Strappy black velvet pumps",
+        "details": "Three-inch stiletto heel, pointed toe, smooth suede material",
+        "slot": "shoes",
+        "color_hex": "#1A1A1A",
+        "worn": true
+      },
+      {
+        "name": "Gold geometric statement earrings",
+        "details": "Dangling crystal accents with polished brass setting",
+        "slot": "earrings",
+        "color_hex": "#D4AF37",
+        "worn": true
+      }
+    ]
+  }
+}
