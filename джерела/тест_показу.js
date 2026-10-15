@@ -5699,11 +5699,12 @@ function мостПриміркиЗаглушка(w){
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64, idb: new IDBFactory()});
     await чекатиНа(() => d.querySelectorAll("#картки .картка").length === 2, "дві картки не намалювались");
     w.eval(`ЗБ = {картки: П.картки, стадії: [], етап: [], ключ: [2, 1], готово: true, успіх: true, діагноз: [
-      'hand_1 · blocks=1', 'control · hand_2_broken=temperature', 'control · blind · breakage=temperature · brief_rows=3',
+      'hand_1 · blocks=1', 'prompt · hand_1_without_format · format=OBRAZ · variants=1',
+      'control · hand_2_broken=temperature', 'control · blind · breakage=temperature · brief_rows=3',
       'control · trace · breakage=hour · packet_fields=x', 'control · no_input=a=b']}; малюватиДіагнозП();`);
     const діаг = () => d.getElementById("зб-діагноз").textContent;
-    тест("до жодного вердикту: рядків про поломку нема, решта діагнозу на місці",
-         !/breakage=|hand_2_broken/.test(діаг()) && /hand_1 · blocks=1/.test(діаг()) && /no_input=a=b/.test(діаг()), діаг());
+    тест("до жодного вердикту: ні поломки, ні номера руки; статус і брак входу на місці",
+         !/breakage=|hand_[0-9]+|without_format/.test(діаг()) && /образ · blocks=1/.test(діаг()) && /no_input=a=b/.test(діаг()), діаг());
     const чип = (поз, код) => d.querySelector(`#к-${поз} .ряд[data-поле="верд"] .чип[data-код="${код}"]`);
     чип(0, "as_is").click();
     await чекатиНа(() => w.eval("!!(В[0] && В[0].записано)"), "перший вердикт не записався");
