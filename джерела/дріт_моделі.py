@@ -1252,6 +1252,8 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
         вих["day"] = день_на_дріт(в["день"])
     вих["verdict"] = []
     ремарки = {}
+    _позиція = {r.get("н"): і for і, r in enumerate(r for рр in (в.get("вітрина") or {}).values()
+                                                   for r in (рр or []) if isinstance(r, dict))}
     for с in суд:
         т = с.get("твій_образ") or {}
         склад = [x.get("н") if isinstance(x, dict) else x for x in (т.get("речі") or [])]
@@ -1264,9 +1266,13 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
             о["structure"] = {"ok": ст.get("ок")}
             if ст.get("блокери"):
                 # П-6: блокер із заявами їде кодами (`statements`), без рядка коду `what`
+                # Н2: `options` — номери речей вітрини, що закривають діру (`повнота_образу.вердикт_повноти`),
+                # порядком перемішаної вітрини (`порядок_запиту`), а не порядком пулу
                 о["structure"]["blockers"] = [
                     {к2: v for к2, v in (("id", б.get("ід")), ("code", _з(_БЛОКЕР, б.get("код"))),
                                          ("items", [_номер(x) for x in (б.get("речі") or [])]),
+                                         ("options", sorted(б.get("варіанти") or [],
+                                                            key=lambda н: _позиція.get(н, len(_позиція)))),
                                          ("statements", заяви(б.get("заяви"))),
                                          ("what", None if б.get("заяви") else б.get("суть")))
                      if v not in (None, "", [])}
