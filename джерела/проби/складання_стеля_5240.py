@@ -6,6 +6,7 @@ import glob, json, os, re, sys
 ЗНАКІВ_НА_ТОКЕН = float(sys.argv[2]) if len(sys.argv) > 2 else 3.29
 _пк = open("показ.html", encoding="utf-8").read()   # стеля — з показу, не копією числа
 НА_ОБРАЗ = int(re.search(r"СТЕЛЯ_НА_ОБРАЗ_П = (\d+)", _пк)[1]); МІН = int(re.search(r"СТЕЛЯ_СКЛАДАННЯ_МІН_П = (\d+)", _пк)[1])
+ЗАПАС = int(re.search(r"СТЕЛЯ_ЗАПАС_МИСЛЕННЯ_П = (\d+)", _пк)[1])   # лише для Gemini; локальна модель — без нього
 def кінець_образу(в, n):
     """Позиція (у знаках) кінця n-го об'єкта масиву «outfits» верхнього рівня; None — не закрився."""
     і = в.find("\"outfits\""); і = в.find("[", і) if і >= 0 else -1
@@ -25,7 +26,7 @@ for ф in sorted(glob.glob(os.path.join(sys.argv[1], "*ПАКЕТ_V1_ОБРАЗ�
     т = open(ф, encoding="utf-8").read(); пр, _, в = т.partition("\n── ВІДПОВІДЬ")
     N = int((re.search(r'"outfits_wanted"\s*:\s*(\d+)', пр) or [0, 0])[1]); в = в.partition("\n")[2]
     п = кінець_образу(в, N); образів = len(re.findall(r'"caption"', в))
-    ст = min(4000, max(МІН, НА_ОБРАЗ * N)); ток = п / ЗНАКІВ_НА_ТОКЕН if п else None
-    print("%-30s N=%2d образів у записі %2d · кінець N-го: %s · стеля %d т. → %s" % (
-        os.path.basename(ф)[:30], N, образів, "%d зн. ≈ %d т." % (п, ток) if п else "не закрився", ст,
+    ст = min(4000, max(МІН, НА_ОБРАЗ * N)); ст_г = min(4000, ст + ЗАПАС); ток = п / ЗНАКІВ_НА_ТОКЕН if п else None
+    print("%-30s N=%2d образів у записі %2d · кінець N-го: %s · стеля %d т. (Gemini %d) → %s" % (
+        os.path.basename(ф)[:30], N, образів, "%d зн. ≈ %d т." % (п, ток) if п else "не закрився", ст, ст_г,
         "N-й цілий" if ток and ток < ст else "N-й ЗРІЗАНО" if ток else "—"))
