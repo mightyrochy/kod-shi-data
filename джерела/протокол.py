@@ -1421,6 +1421,7 @@ _КОДИ_ВМ = lambda поле: слово(*_ВМ.ТАБЛИЦЯ[поле])
                "place": _КОДИ_ВМ("place"), "setting": _КОДИ_ВМ("setting"),
                "surface": _КОДИ_ВМ("surface"), "dress_code": _КОДИ_ВМ("dress_code"),
                "duration_h": ЧИСЛО, "temperature_c": ЧИСЛО,
+               "season": _КОДИ_ВМ("season"),
                "weather_feel": _КОДИ_ВМ("weather_feel"), "precipitation": _КОДИ_ВМ("precipitation"),
                "wind_ms": ЧИСЛО, "wind": обʼєкт({"free_text": РЯДОК, "lang": РЯДОК}),
                "direct_sun": ЛОГІЧНЕ, "road_salt": ЛОГІЧНЕ, "start_hour": ЦІЛЕ,
