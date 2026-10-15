@@ -1517,7 +1517,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
                                         "ordinary straight cut; what follows holds only if the cut really is "
-                                        "such",
+                                        "such (values: slots — slot codes of the only items without a declared "
+                                        "cut; the other items keep their declared cut)",
     # МОВА ПРО РІЧ І ЛІНІЮ (28.09.2026, Ф-2): текст заяви їде мовній моделі, тож
     # заборона корпусу на «ховає» (R-ONB-06, R-LNG-01) діє тут так само, як у `суть`.
     # Було: "a straight boxy cut hides her defined waist" — річ діє на тіло. Стало:
@@ -2787,6 +2788,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                            "conceal (values: loudness — the colour's loudness, ceiling — the "
                                            "ceiling, area_pct — its area in the outfit as a percentage, when "
                                            "known)",
+    "colour_holds_attention_in_goal_zone": "the item's colour holds attention in a body zone she wants to draw "
+                                           "the eye away from (values: loudness — the colour's loudness, "
+                                           "ceiling — the ceiling, zones — those zones, area_pct — its area in "
+                                           "the outfit as a percentage, when known)",
+    "item_draws_eye_by_itself_in_goal_zone": "the item draws the eye not by its colour but by itself, in a body "
+                                             "zone she wants to draw the eye away from (values: witnesses — what "
+                                             "draws the eye: open_zone, festive_trim, shine; zones — the zones it "
+                                             "opens; shine_class — the class of its shine)",
     "item_draws_eye_by_itself_goal_conceal": "the item draws the eye not by its colour but by itself, and her "
                                              "goal for this outing is conceal (values: witnesses — what draws "
                                              "the eye: open_zone, festive_trim, shine; zones — the zones it "
