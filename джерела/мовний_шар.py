@@ -1642,6 +1642,17 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     import паспорт_нагоди as _ПН
     import сценарій as _СЦ
     в, вигадки = _тримається(внутрішня, слова_ходу)
+    # Рядок 4622: рід частини дня визначає модель, не місце й не слова в Python.
+    # Суперечливу нагоду не замінюємо здогадом: решта кодів лишається, репліка
+    # отримує occasion у not_recorded. Намір чинний лише для цього оновлення.
+    конфлікт_нагоди = в.get("occasion_part") == "other" and в.get("occasion") == "sport"
+    if конфлікт_нагоди:
+        в = {к: x for к, x in в.items() if к != "occasion"}
+        if (сценарій or {}).get("нагода") == "спорт":
+            сценарій = dict(сценарій, нагода=None)
+        не_взято = list(не_взято or []) + [
+            "occasion_part_conflict · step=layer · field=occasion · model_said=sport · "
+            "occasion_part=other · code=not_taken"]
     # ЇЇ РІЧ БЕЗ СТАНУ — НЕ ЗАПИСАНА (рядок 4102, живі 17 №4). «Взуття — замшеві чоботи» модель дала в `own_items` без
     # `status` (у схемі він обов'язковий): річ трималась цитатою, але не ставала ні закріпленою, ні знятою — звіт казав
     # «не закріплено: мовний шар: None», а репліка «Записала: …» про неї мовчала. Чи буде річ в образі, вирішує мовна
@@ -1850,6 +1861,9 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
             % _json_.dumps(_текст(в.get("event"))[:60], ensure_ascii=False)]
     # ВИМІРИ — НАОСТАННЄ (рядок 861): `паспорт_з_json` рахував їх до того, як шов поставив опади, активність і
     # поверхню, тож паспорт казав `опади: дощ`, а `виміри.precipitation` — unknown (журнал і звіт власника)
+    if конфлікт_нагоди and п.get("нагода") in (None, "спорт"):
+        п["нагода"] = None
+        п.setdefault("джерело_полів", {})["нагода"] = "occasion_part_conflict"
     п["виміри"], п["звідки"] = _ПН.виміри_нагоди(п, сценарій or {})
     # ТЕМИ ПОРАДИ — ЗІ СТАНУ ПІСЛЯ ЦЬОГО ХОДУ. Виклик 0 пропонував теми в промпті, тобто за
     # станом ДО її слів; тут стан уже відомий (театр о 18:00 — вечір), і вечірні теми йдуть
@@ -1888,7 +1902,8 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
             к not in в or (к in _РЕЧІ_З_ЦИТАТОЮ and len(в.get(к) or []) < len(внутрішня.get(к) or [])))]
         return dict(паспорт=п, теми_поради=теми, обовʼязкове=обовʼязкове, записано=в, вигадки=вигадки,
                     текст=текст, відкинуто=відкинуто, бракує_обовʼязкового=бракує, дозволені=дозволені,
-                    запрошення_питанням=питанням, не_записано=не_записано if вигадки or без_стану else [],
+                    запрошення_питанням=питанням,
+                    не_записано=не_записано if вигадки or без_стану or конфлікт_нагоди else [],
                     запрошення=str(частини.get("invite") or "") if показані else "",
                     **({"ремонт_поради": ремонт} if ремонт else {}))
     # ХТО ВІВ РОЗМОВУ (М-5, пункт B7 чекліста) не губиться, коли шов перезбирає паспорт без нових слів
@@ -2363,6 +2378,9 @@ def _місця_вечірні_en():
 
 _ПОЛЯ_EN = {
     "occasion": "what kind of event it is",
+    "occasion_part": "your intent for the part of her day THIS outfit is for: sport when it is for doing "
+                     "sport, other when it is for another activity; give it with occasion, with the quote "
+                     "of that selected part, not a quote of the whole day; unknown when you cannot tell",
     # Рядок 4206 (ЖИВІ-18 №5): «Новорічна вечірка в ресторані» — `occasion` з цим уривком, а `place` — ні (Ж17 — так):
     # правило ходу каже «place, also inside the phrase that names the event», а опис поля, на який модель дивиться,
     # заповнюючи, — ні; код місця з назви не читає (п.12), тож лише модель
@@ -2630,12 +2648,11 @@ def _коди_розмови():
             р.append("  · travel — she is away on a trip or a holiday, and every outing of it, by day or in the "
                      "evening, is travel; celebration — a festive event itself: a birthday, a party, an "
                      "anniversary, a New Year. A trip or a holiday without such an event is never celebration")
-            # Рядок 4622 (ЖИВІ-22 №8, ЖИВІ-23 №13, ЖИВІ-24 №8): «йога зранку, потім кава з подругою» — 3 з 3
-            # `occasion: sport` з уривком усього листа, `movement` 0 з 3. Правило частин дня самé (#911) нагоди не
-            # зрушило: модель обирає код тут, з переліку, тож межа коду `sport` стоїть при ньому
-            р.append("  · sport — only when sport is all her day; a sport that is one part of her day (a run "
-                     "before work, a workout and then a dinner) is movement sport, and occasion and place are "
-                     "her other part")
+            # Рядок 4622: спорт рухом і спорт нагодою — незалежні канали.
+            # Модель називає рід обраної частини через occasion_part; код судить цю пару.
+            р.append("  · sport — the selected outing is for doing sport (occasion_part sport). A sport "
+                     "elsewhere in her day is movement sport; when this outfit is for the other part "
+                     "(occasion_part other), occasion is the kind of that outing, never sport")
     р.append("Items — lists of objects; every item she names goes into one of them, none is left out; each "
              "object has \"quote\" — the fragment of her words about this item, copied letter for letter — and "
              "only the attributes she named:")
@@ -2738,7 +2755,7 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     "phrase says how she gets there: such a phrase gives both occasion and movement, never movement alone; "
     "degrees and snow or rain said together are temperature_c and precipitation; how she gets there (on foot, "
     "a long way) is movement; a sport she names for that day (yoga, a run, a workout) is movement sport, and "
-    "when her day has another part, occasion and place are that part; the place where the event is (a restaurant, an office, "
+    "when the outfit is for another part, occasion and place are that part; the place where the event is (a restaurant, an office, "
     "a café) is place, also "
     "inside the phrase that names the event; her way to the outing and the street in her words about the "
     "weather are never place; an item she names for this outing goes into wants or own_items; her "
@@ -2778,15 +2795,21 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # ШКАЛА-2 (рядок 1132): «працюю з дому» — то home, то work; «на кожен день в університет» — то everyday, то
     # school; «театр на прем'єру» — то theatre, то opera_premiere (смуга 4–6 проти 6–8). Нагода — рід заняття
     # (робота вдома — робота, навчання — школа), «щодня» — частота, а не рід; місце — те, що названо її словами.
-    # Рядок 4622: спорт першою частиною дня — не нагода (див. примітку коду `sport`), тож частина дня — перша не
-    # спортивна. Місце «кави з подругою» модель 5 з 5 (Ж20–24) клала лише в `place_words` — кодом `cafe` (шов
+    # Рядок 4622: частину обирає модель з її запиту; явно спортивний образ лишається спортивним.
+    # Місце «кави з подругою» модель 5 з 5 (Ж20–24) клала лише в `place_words` — кодом `cafe` (шов
     # `_СУСІДИ_КОДІВ` переносить його в `place`) чи підписом «Кафе» (код слів не читає, п.12 → `not_taken`): «place
     # is the place her words name» вона читала як «місце названо прямо». Місце того, що вона назвала, — теж місце.
     # Правка #911 (довге речення про спорт тут) вийнята: у ЖИВІ-24 №7 (без спорту) місце випало — тут лише коротка
     # вставка, решта правила — текст `main`.
     "\"occasion\" is what she will be doing and \"place\" is where she will be; both describe the same "
     "part of her day, never the occasion of one part and the place of another. When her day has several "
-    "parts, both describe the first part she names that is not a sport, and \"event\" keeps all of them. "
+    "parts, use the part she wants this outfit for; if she has not chosen one, use the first non-sport "
+    "part, or the sport part when there is no other part. Set occasion_part to sport or other for that "
+    "selected part, and event keeps all parts. Movement describes her physical activity independently, "
+    "also sport elsewhere in the day. Yoga followed by coffee with a friend, without a request for a "
+    "yoga outfit, gives occasion_part other, occasion everyday, place cafe and movement sport; a request "
+    "for the yoga outfit gives occasion_part sport and occasion sport. A place alone never decides "
+    "occasion_part; sport in a park can be occasion sport. Travel remains travel for outings on her trip. "
     "\"occasion\" is the "
     "kind of what she does, not how often or where: working is work even at home (place home); studying at "
     "a school, a university or courses is school, also every day. \"place\" is the place her words name, "

@@ -505,6 +505,8 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
 
 СЦЕНАРІЙ = {
     "occasion": _перелік("occasion", "нагода — що це за подія"),
+    "occasion_part": {"enum": ["sport", "other", UNKNOWN],
+                      "description": "намір мовної моделі цього ходу: образ для спортивної чи іншої частини дня"},
     "place": _перелік("place", "місце — де вона буде"),
     "dress_code": _перелік("dress_code", "дрес-код, коли його названо"),
     "event": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="подія коротко, її мовою"),
@@ -3247,6 +3249,36 @@ _спільні = set(ПУНКТИ_ЧЕКЛІСТА) & set(ЗАЯВИ)
 if _спільні:
     raise KeyError("код пункту чекліста збігся з кодом заяви: %s" % sorted(_спільні))
 ЗАЯВИ.update(ПУНКТИ_ЧЕКЛІСТА)
+
+# 4381: визначення браку для моделі, без словника фраз показу.
+ЗАЯВИ.update({
+    'gloves_slot': 'The glove slot needed for the check has no item in this outfit.',
+    'tights_den': 'The check needs tights with a DEN measurement.',
+    'tights_lightness': 'The check needs tights with measured lightness.',
+    'face_scale': 'The check needs measured facial feature scale; facial contrast does not supply it (K-SCL-01).',
+    'necklace_neckline': 'The check needs necklace length in centimetres and the neckline type of the top or dress.',
+    'bag_strap': 'The check needs bag strap length in centimetres; drop is half the handle length.',
+    'partner_pool': 'The check needs top and bottom candidates from this run to count combinations.',
+    'shoe_repairability': 'The check needs a repairability measurement for the shoe sole construction.',
+    'occasion_duration': 'The check needs occasion duration in hours from the scenario.',
+    'glasses_profile': 'The check needs glasses frame colour and pixel area from the profile.',
+    'jewelry_kind': 'The check needs jewelry kind, distinct from its metal; a named metal does not establish pearls, wood, bone or beads.',
+    'accent_pair': 'The check needs at least two non-neutral accent surfaces in different slots.',
+    'day_weather': 'The check needs scenario temperature or precipitation.',
+    'metal_surface_share': 'The check needs measured metal surface share from enrichment v2; named metal is not coverage.',
+    'shared_photo': 'The named item fields are unknown because the shop photo is shared with other products (R-FEED-06).',
+    'item_surface': 'Texture and fibre are unknown for the listed items; known counts cannot establish equal surfaces.',
+    'scheme_choice': 'The stylist or woman choice of the palette scheme was not supplied to the judge.',
+    'passport_author': 'The language model conversation author of the passport was not supplied to the judge.',
+    'point_input_unknown': 'The referenced checklist point lacks its required input. Do not treat this as a pass.',
+    'rule_input_unknown': 'The referenced producer rule lacks input; input and detail identify its missing coded facts and statements carry its context. Source fields name producer references, not conclusions.',
+})
+ЗАЯВИ.update({
+    "passport_tiles_only": "There is no passport from conversation; the scenario only came from tiles.",
+    "passport_call_zero": "Call zero filled the passport without a language-model conversation turn; the model was absent or its turn fell back to main.",
+    "passport_without_talk": "The seam filled the passport without a language-model conversation turn: tiles or translation without a talk.",
+})
+
 
 
 def код_пункту(ід):
