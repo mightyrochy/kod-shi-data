@@ -111,7 +111,8 @@ def невідомо(v, коди=()):
     "absent_object": {"bag": "сумка", "shoes": "взуття", "gloves": "рукавички", "tights": "колготи",
                       "jewelry": "прикраси", "necklace": "кольє", "metal": "метал", "print": "принт",
                       "accent": "акцент", "neutral": "нейтраль", "coloured_item": "кольорова_річ",
-                      "top_or_bottom": "верх_низ", "more_pieces": "додаткові_речі"},
+                      "top_or_bottom": "верх_низ", "more_pieces": "додаткові_речі",
+                      "outerwear": "верхній_шар", "headwear": "головний_убір", "scarf": "шарф"},
     "occasion": {
         "everyday": "щоденне", "work": "робота", "date": "побачення", "celebration": "свято",
         "wedding_guest": "весілля_гість", "wedding_day": "весілля_денне", "mourning": "траур",
