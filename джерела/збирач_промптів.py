@@ -366,16 +366,25 @@ def таблиця(перелік):
     return {"cols": кол, "rows": рядки}
 
 
+# Остання розгорнута таблиця: збирач питає ту саму таблицю пулу за кожним полем «pool[].…»
+# (~7 разів на промпт, промпт — на кожен крок пошуку бюджету), а дані виклику він не міняє.
+_ОСТАННЯ = (None, None)
+
+
 def рядки_таблиці(т):
     """Таблиця (`таблиця`) → перелік обʼєктів; що не таблиця — як є."""
+    global _ОСТАННЯ
     if not (isinstance(т, dict) and isinstance(т.get("cols"), list) and isinstance(т.get("rows"), list)):
         return т
+    if _ОСТАННЯ[0] is т:
+        return _ОСТАННЯ[1]
     вих = []
     for р in т["rows"]:
         о = {к: в for к, в in zip(т["cols"], р) if в is not None}
         if len(р) > len(т["cols"]) and isinstance(р[-1], dict):
             о.update(р[-1])
         вих.append(о)
+    _ОСТАННЯ = (т, вих)
     return вих
 
 
@@ -392,8 +401,10 @@ def _значення(дані, шлях):
                 х = в[ключ]
                 if not список:
                     далі.append(х)
-                elif isinstance(рядки_таблиці(х), (list, tuple)):
-                    далі.extend(рядки_таблиці(х))
+                else:
+                    х = рядки_таблиці(х)
+                    if isinstance(х, (list, tuple)):
+                        далі.extend(х)
         вузли = далі
     return вузли
 
