@@ -647,6 +647,7 @@ def _без_входу(о, сцен, речі):
                                 what=_ВМ.код_пункту(х.get("пункт")),
                                 missing=х.get("бракує") or [dict(code="point_input_unknown", point=_ВМ.код_пункту(х.get("пункт")))],
                                 **({"point": _ВМ.код_пункту(х.get("пункт"))} if _ВМ.код_пункту(х.get("пункт")) else {}),
+                                **({"why": str(х["чому"])} if х.get("чому") else {}),        # рядок 5281: причина кодом
                                 **({"constant": str(х["чому"])} if х.get("стале") else {})))     # рядок 5283: сталий брак
     за_ід = {р["ід"]: р for р in речі}
     for відро in ("черга_на_вхід", "утримано"):
@@ -679,7 +680,7 @@ def _контраст_обличчя(F, T, записи, source):
     особа = _O.контраст_особи(F, source)
     if not особа.get("доступно"):
         return dict(без_входу=dict(rule=["K-CLR-02"], check="обличчя", point=_ВМ.код_пункту("K-CLR-02"),
-                                   what={"free_text": "контраст біля обличчя", "lang": "uk"},
+                                   what={"free_text": "контраст біля обличчя", "lang": "uk"}, why="not_given:шкіра_волосся",
                                    missing={"free_text": str(особа.get("чому") or "нема шкіри чи волосся"), "lang": "uk"}))
     рг = [_КМ._у_річ(dict(з), з["слот"], T) for з in записи if з.get("lab") and з.get("слот")]
     зк = _КС.біля_обличчя(_O.елементи(рг), особа) if рг else []
@@ -1096,7 +1097,8 @@ def _сцена_для_моделі(суд_):
 #     речей: саме цього не робила розмова (В-4); `about` і `items` — коди, за якими сторож
 #     звіряє твердження з судом коду (В-7: «усі пасують» поруч із «не з палітри»);
 #   · «change» — лише з перевірених змін: код переважив образ із кожною, і вага знахідок впала;
-#   · «unknown» — чого не можна судити: без нагоди — ошатності, без погоди — тепла (В-5, В-6);
+#   · «unknown» лише на вході — позначки «немає входу» коду; у відповіді його нема (рядок 5285): блок
+#     будує код, а вибір стилістки (1 пункт у Б4) не читав ніхто;
 #   · рядка «не відсилай до інших екранів» тут нема навмисно: відсилання робила ДОВІДКА про
 #     застосунок, якої в цьому виклику нема (В-8, В-12), а заборона без причини — шум.
 # Рядок 1431 (п.17, п.21): «зменшить кількість зауважень», «зайвий акцент, який знайшла клітинка» — суд
@@ -1137,8 +1139,8 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
         _ЗП.Поле("changes", "changes the code has verified: each replaces one outfit item with her "
                             "alternative or a shop item; removes and adds — the findings it takes away and "
                             "brings"),
-        _ЗП.Поле("unknown", "what the code could not check: inputs she did not give, checklist points "
-                            "not run (codes), and rules about her items that lacked data"),
+        _ЗП.Поле("unknown", "inputs the code has no value for, so nothing that needs them was judged: "
+                            "no_input — the inputs, why — the reason code, items — her items concerned"),
     ),
     правила=(
         "\"answer\": answer her question first and directly, in one to three sentences.",
@@ -1168,7 +1170,6 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
         "\"text\" says that fix. \"wear_with_change\" only with at least one \"change\".",
         "An item in \"worn_unknown\" is one of her options: speak of it as her choice between them, not "
         "as what she is wearing.",
-        "\"unknown\": what you cannot judge, the most important for her question first.",
         _БЕЗ_ЛІЧИЛЬНИКА,
     ),
     вихід="OUTFIT_REVIEW_V1",
@@ -1180,7 +1181,6 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
         "change": [{"id": "<change id from changes, or finding id from check>",
                     "items": ["<id of her item the text speaks about>"],
                     "text": "<why this change helps her>"}],
-        "unknown": [{"text": "<what you cannot judge and what would let you>"}],
     },
     межі=("лише_вхід", "невідомо", "для_неї", "без_чисел_тіла", "без_шкал"),
     мова_промпту="en",
@@ -1350,36 +1350,55 @@ def прийняти_допит(відповідь):
     return dict(відповідь=т, проза=проза, причина=(None if т else (причина or "no_answer_field")), нотатки=нотатки)
 
 
-def невідоме_для_моделі(суд_):
-    """«Без входу» для моделі — те, що стосується ЦЬОГО образу: входи сцени й виміру, пункти
-    чеклістів без входу і питання суду про її речі. Питання про образ узагалі без речей (розмір
-    каблучки, оправа окулярів, криси капелюха — K-SIZ-01, K-EYE-01, K-HAT-02) у промпт не йдуть:
-    на стенді вони давали 55 % промпта при нулі стосунку до її фото. Звіт власника бере
-    `без_входу` повним переліком — там нічого не знято. 4381: структурований `missing`
-    пункту зберігається для моделі разом із кодом пункту, щоб вона знала причину невідомого.
+# Поле, якого бракує пункту чекліста (`суд_чеклісти._чому_без_входу`: «<рід>:<поле>»), → код входу на дроті.
+# Сталий брак і поля, яких не пише система (`system:`), сюди не потрапляють: вони — лише у звіті (П2(а)).
+_ВХІД_КОД = {"lab": "item_colour", "візерунок": "item_pattern", "площа": "item_area", "крій": "item_cut",
+             "тип": "item_kind", "блиск": "item_shine", "слот": "item_slot", "край_джерело": "item_hem_length",
+             "метал": "item_metal", "текстура": "item_fabric_texture", "near_дистанція": "viewing_distance",
+             "вікна": "her_palette", "волосся": "her_hair_colour", "бік_температури": "her_undertone_side",
+             "очі": "her_eye_colour", "шкіра_волосся": "her_skin_hair_colour", "den": "tights_den",
+             "ланцюг_см": "chain_length", "ремінь_см": "bag_strap_length", "ремонтопридатна": "shoe_sole_construction",
+             "темп_c": "temperature", "частка_металу": "item_metal_share"}
+# Похідне від входу сцени (клас E дослідження 5280): без нагоди нема й дистанції огляду, без погоди — погоди дня.
+_ПОХІДНЕ_ВІД = {"viewing_distance": "occasion", "temperature": "temperature"}
 
-    ВМ-3б (рядок 540): пункт без входу — КОДОМ у спільному списку `not_run` (правила пункту
-    названо в його визначенні, `task.statement_codes`), питання суду про її речі — заявами;
-    `why` входу «колір» (чому пікселів не було) лишається звітові, як `missing`."""
-    вих, не_перевірено = [], []
+
+def _позначка_пункту(б):
+    """Пункт «немає входу» → (код входу, причина кодом). Правило само сказало «без входу» (`rule_said`) —
+    вхід і причина з його заяв: остання каже, чого не знає, перші — чому."""
+    рід, _, поле = str(б.get("why") or "").partition(":")
+    if рід != "rule_said":
+        return _ВХІД_КОД.get(поле, поле), рід
+    заяви = [к for м in б.get("missing") or [] if isinstance(м, dict)
+             for к in _ЗП.коди_заяв({"statements": м.get("statements") or []})]
+    return (заяви[-1], "+".join(заяви[:-1]) or рід) if заяви else ("point_input", рід)
+
+
+def невідоме_для_моделі(суд_):
+    """«Немає входу» для моделі й картки — позначки, лише про ЦЕЙ образ: якого входу нема й чому, кодами.
+
+    Позначка — `no_input` (входи) і `why` (причина: `photo_field_missing`, `catalogue_field_missing`,
+    `not_given` чи заяви правила), без норми пункту: дослідження 5280 (К3) — коли модель мала визначення
+    пункту, вона заперечувала саму норму («бюджет блиску перевищено» на пункті, якого ніхто не перевіряв,
+    35 з 44 рядків Б4). Пункти з однією причиною — одна позначка. Не йдуть: сталий брак і поля, яких нема в
+    системі (`system:`, слово власника 15.10, П2(а) — лише у звіті власника), похідне від названого
+    входу сцени (`_ПОХІДНЕ_ВІД`) і питання черги без її речей (K-SIZ-01, K-EYE-01: 55 % промпта без
+    стосунку до фото). Звіт власника бере `без_входу` повним переліком — там нічого не знято."""
+    вих, групи = [], {}
+    входи = {б["input"] for б in суд_.get("без_входу") or [] if б.get("input")}
     for б in суд_.get("без_входу") or []:
         if б.get("input"):
-            вих.append({к: б[к] for к in ("input", "items") if б.get(к)})
+            вих.append(dict(no_input=[б["input"]], **({"items": б["items"]} if б.get("items") else {})))
         elif б.get("check"):
-            if б.get("point"):
-                не_перевірено.append(б["point"])
-                if isinstance(б.get("missing"), list):
-                    вих.append(dict(point=б["point"], missing=б["missing"]))
-            else:
-                вих.append({к: б[к] for к in ("rule", "check", "what") if б.get(к)})
+            if not б.get("why") or б.get("constant") or str(б["why"]).startswith("system:"):
+                continue        # без причини (запис до 5281) — лише у звіті власника, як і сталий брак
+            вхід, чому = _позначка_пункту(б)
+            if _ПОХІДНЕ_ВІД.get(вхід) not in входи:
+                групи.setdefault(чому, []).append(вхід)
         elif б.get("items"):
-            вих.append({к: v for к, v in (("rule", б.get("rule")), ("items", б.get("items")),
-                                          ("statements", _заяви(б, "statements")),
-                                          ("what", None if б.get("statements") else б.get("what")))
-                        if v})
-    if не_перевірено:
-        вих.append({"not_run": list(dict.fromkeys(не_перевірено))})
-    return вих
+            вих.append({к: v for к, v in (("items", б.get("items")), ("statements", _заяви(б, "statements")),
+                                          ("what", None if б.get("statements") else б.get("what"))) if v})
+    return вих + [dict(no_input=list(dict.fromkeys(в)), why=ч) for ч, в in групи.items()]
 
 
 def дані_оцінки(суд_, питання=None):
@@ -1441,24 +1460,16 @@ def _текст_картки(v):
 
 
 def _коди_без_входу(запис):
-    """Запис `невідоме_для_моделі` → коди картки «Чого я не знаю»: вхід (`input:occasion`), заява про речі
-    (`statement:calf_girth_not_measured`), пункт чекліста, який не пройшов (`not_run:shine_budget`).
-    Слова до них дає мовний прохід картки (`показ.html`, `мовоюКарткуОцінкиП`), не код (п.12)."""
-    коди = []
-    if запис.get("input"):
-        коди.append("input:%s" % запис["input"])
-    коди += ["not_run:%s" % к for к in запис.get("not_run") or []]
-    коди += ["statement:%s" % (next(iter(з)) if isinstance(з, dict) else з) for з in запис.get("statements") or []]
-    return коди
+    """Позначка `невідоме_для_моделі` → коди входів, яких нема, для рядка «Чого я не знаю»: `no_input`
+    (`occasion`, `item_shine`…) чи коди заяв правила про її речі (`calf_girth_not_measured`). Слова до них
+    дає мовний прохід картки (`показ.html`, `мовоюКарткуОцінкиП`), не код (п.12)."""
+    return list(запис.get("no_input") or []) + [(next(iter(з)) if isinstance(з, dict) else з)
+                                                 for з in запис.get("statements") or []]
 
 
-def _дані_заяви(запис, код):
-    """Значення заяви `statement:<код>` (назви речей з `free_text`, числа) — шару, щоб рядок був про конкретне."""
-    для = []
-    for з in запис.get("statements") or []:
-        if isinstance(з, dict) and "statement:%s" % next(iter(з)) == код:
-            для.append(з[next(iter(з))])
-    вих = []
+def _дані_заяви(запис, назви):
+    """Назви її речей позначки й значення заяв (назви з `free_text`, числа) — щоб рядок був про конкретне."""
+    вих = [назви[і] for і in запис.get("items") or [] if назви.get(і)]
 
     def йти(в):
         if isinstance(в, dict):
@@ -1470,17 +1481,13 @@ def _дані_заяви(запис, код):
             [йти(х) for х in в]
         elif isinstance(в, (int, float)) and not isinstance(в, bool):
             вих.append(str(в))
-    йти(для)
+    йти([з[next(iter(з))] for з in запис.get("statements") or [] if isinstance(з, dict)])
     return вих
 
 
 def _вільний_текст_без_входу(запис):
-    """Вільний текст з позначеного поля `missing`/`what` (слова вже чиї-небудь, не коду)."""
-    for поле in ("missing", "what"):
-        текст = _текст((запис.get(поле) or {}).get("free_text")) if isinstance(запис.get(поле), dict) else ""
-        if текст:
-            return текст
-    return ""
+    """Вільний текст з позначеного поля `what` (слова вже чиї-небудь, не коду)."""
+    return _текст(запис["what"].get("free_text")) if isinstance(запис.get("what"), dict) else ""
 
 
 def _суперечить(про, речі, суд_):
@@ -1636,18 +1643,17 @@ def прийняти_оцінку(відповідь, суд_):
     if вердикт == "wear_with_change" and not змінити:
         сторож.append(dict(де="verdict", чому="change_missing", що=вердикт))
         вердикт = None
-    # блок «Чого я не знаю» — від коду лише КОДИ (п.12): слова дає шар на розгортання,
-    # усі записи зберігаються тут, але не затримують основний текст картки (4948).
+    # блок «Чого я не знаю» — від коду лише позначки «немає входу» кодами (п.12, рядок 5285): слова дає
+    # мовний прохід картки; лише те, що стосується цього образу, не повний звіт власника
     не_знаю, бачено = [], set()
-    for б in невідоме_для_моделі(суд_):   # лише те, що стосується цього образу, не повний звіт власника
-        for код in _коди_без_входу(б):
-            if код not in бачено:
-                не_знаю.append(dict(код=код, речі=list(б.get("items") or []), дані=_дані_заяви(б, код)))
-                бачено.add(код)
-        текст = _вільний_текст_без_входу(б) if not _коди_без_входу(б) else ""
-        if текст and текст not in бачено:
-            не_знаю.append(dict(текст=текст))
-            бачено.add(текст)
+    назви = {р.get("ід"): _текст(р.get("назва")) for р in суд_.get("речі") or []}
+    for б in невідоме_для_моделі(суд_):
+        входи = _коди_без_входу(б)
+        ключ = tuple(входи) + (б.get("why"),) if входи else _вільний_текст_без_входу(б)
+        if ключ and ключ not in бачено:
+            бачено.add(ключ)
+            не_знаю.append(dict(входи=входи, чому=б.get("why"), речі=list(б.get("items") or []),
+                                дані=_дані_заяви(б, назви)) if входи else dict(текст=ключ))
     відповідь = _текст_картки(об.get("answer"))
     if not відповідь:
         відповідь = next((п["текст"] for п in вдало + змінити if _текст_картки(п["текст"])), "")
