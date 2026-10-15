@@ -579,7 +579,8 @@ def промпт_вибору(образи, випадок=None, без_фото
         _ЗП.Поле("verdict", "your outfits and what the code noticed in each: «your_outfit» — its items, caption "
                             "and «day» (your sentence about her day in it); «structure» — blockers; «checklist» — "
                             "by area, the points the code noticed as not met; each point is a code defined in "
-                            "\"statement_codes\"; «your_declared» — your declared deliberate moves",
+                            "\"statement_codes\"; «your_declared» — your declared deliberate moves; "
+                            "«finding», when present, is the «id» of the matching finding in this verdict",
                  треба=True),
         # ГГ-1 (рядки 1121, 1290; п.17): утрачена опора — інформація, не лічба
         _ЗП.Поле("verdict[].lost_supports", "what this outfit stood on before your repair and no longer does — "
@@ -614,6 +615,10 @@ def промпт_вибору(образи, випадок=None, без_фото
         "A finding with «register» «gate» stops the outfit unless you accept it: if the outfit you choose has "
         "gates, accept each of them in «accept» with why it serves her here. That is your weighed decision and "
         "not a reason to pass over the outfit.",
+        "You may also keep a remark on purpose: in «accept», name its existing «id» from «remarks_by_code» "
+        "or the outfit's «findings», with a non-empty «why». Accept only findings of the chosen outfit; "
+        "do not invent ids. Remarks need no acceptance unless you mean to declare that deliberate choice; "
+        "«your_declared» and the overall «why» do not accept findings by themselves.",
         "When «case» has «palette_scheme», she chose that scheme herself: an outfit whose large items carry its "
         "families answers her own choice. Pass over such an outfit only when her occasion or day clearly asks for "
         "it; accepting a gate about her scheme needs a reason stronger than her own choice.",
@@ -625,7 +630,7 @@ def промпт_вибору(образи, випадок=None, без_фото
         "обрано": "«id» of the chosen outfit, from «your_outfit»",
         "чому": "one or two sentences in the words of the outfit itself: its idea, the items and colours that "
                 "carry it, and how they answer her occasion, her day and her intent — not the code's remarks",
-        "прийнято[].знахідка": "«id» of a «gate» finding of the chosen outfit that you accept on purpose",
+        "прийнято[].знахідка": "«id» of a finding of the chosen outfit that you accept on purpose: a gate or a remark",
         "прийнято[].чому": "why this outfit is still the right one for her with it",
         "прибрати": "«n» of an item to remove: only when a blocker says two items are of one kind — the "
                     "weaker of the two",
@@ -1939,7 +1944,9 @@ def _прийняті_гейти(о, прийнято):
 
     `образ` — копія, у якій прийняті знахідки несуть `свідомий` (причиною моделі), тож
     `_чому_не_можна` їх не рахує; `прийняті` — `[{знахідка, правило, чому, речі}]`;
-    `знехтувано` — `[{знахідка, чому}]` кодами причини (п.12)."""
+    `знехтувано` — `[{знахідка, чому}]` кодами причини (п.12).
+    Історична назва: за ID й причиною вже приймаються й зауваження (рядок 3541);
+    їхній оголошений хід послаблює новий суд, як і хід ремонту, а не сам розбір."""
     за_ід = {str(z.get("ід") or ""): z for z in ((о or {}).get("знахідки") or []) if isinstance(z, dict)}
     прийняті, знехтувано, бачено = [], [], set()
     for п in _список(прийнято):
@@ -2047,8 +2054,8 @@ def вибір_з_json(текст, вердикт, кандидати=None, ка
 
     Повертає `{обрано, названо, ід, частини, номери, підпис, день, слова_знято, чому,
     прибрано, знехтувано, замінено, чому_відмова, помилки, розриви, нормалізовано,
-    обрізано, повторний_виклик, прийнято, прийнято_знехтувано}`. `прийнято` — гейти обраного
-    образу, які модель прийняла полем (ВИБІР-3, `_прийняті_гейти`); вибір, що впав лише на
+    обрізано, повторний_виклик, прийнято, прийнято_знехтувано}`. `прийнято` — знахідки обраного
+    образу, які модель прийняла полем (ВИБІР-3, 3541, `_прийняті_гейти`); вибір, що впав лише на
     неприйнятому гейті, несе `повторний_виклик` з адресою гейтів. `названо` — ід образу, який назвала модель; `обрано` —
     той самий ід, лише коли код його ПРИЙНЯВ (Л-4, 26.09.2026): доти `обрано` лишалось і
     на відхиленому виборі, і показ ставив у опис номер і «день» відхиленого образу над
@@ -2118,7 +2125,7 @@ def вибір_з_json(текст, вердикт, кандидати=None, ка
         р["названо"] = str(о.get("ід") or "")
         с = _склад_вибору(о, словник, за_ном, _список(об.get("прибрати")))
         р.update(прибрано=с["прибрано"], знехтувано=с["знехтувано"])
-        # ВИБІР-3: гейти, які стилістка прийняла полем, — оголошені ходи цього образу
+        # ВИБІР-3, 3541: знахідки, які стилістка прийняла полем, — оголошені ходи цього образу
         _о_пр, р["прийнято"], р["прийнято_знехтувано"] = _прийняті_гейти(о, об.get("прийнято"))
         _чн = с["чому_ні"] or _чому_не_можна(_о_пр, прибирали=bool(с["прибрано"]))
         if _чн:
@@ -2133,7 +2140,7 @@ def вибір_з_json(текст, вердикт, кандидати=None, ка
                                                 ", ".join(_ПР.ід_на_дріт(г) for г in _гейти))),
                     ensure_ascii=False)
         else:
-            # прийнятий гейт їде далі оголошенням над речами своєї знахідки — у суд нового
+            # прийнята знахідка їде далі оголошенням над своїми речами — у суд нового
             # складу (×0.6, `_застосувати_свідомі`), в опис і на картку, як хід ітерації 2
             # адреса — код прийнятої знахідки (рядок 3160): речі гейту над цілим образом
             # інакше послабили б у новому суді й чужі знахідки над ними (K-KOH-10, живий 12 А/08)
