@@ -1,0 +1,29 @@
+const fs=require('fs'),path=require('path'),http=require('http'),assert=require('assert');
+const {chromium}=require('/dev/shm/security5685/repo/джерела/node_modules/playwright');
+const root='/dev/shm/security5685', out=path.join(root,'evidence'), file=path.join(root,'assembled/index.html');
+(async()=>{let browser,server;const net=[],errors=[],consoleErrors=[],failed=[];try{
+ const html=fs.readFileSync(file,'utf8'),own=(html.match(/const ЗБІРКА_ПОКАЗУ = "([^"]*)"/)||[])[1];let stamp=own;
+ server=http.createServer((q,r)=>{const u=decodeURIComponent(new URL(q.url,'http://localhost').pathname);
+  if(u==='/build.txt'){r.writeHead(stamp===null?404:200,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});return r.end(stamp||'');}
+  const f=u.startsWith('/шрифти/')?path.join(root,'repo',decodeURIComponent(u)):u==='/'?file:path.join(root,'assembled',decodeURIComponent(u));
+  fs.readFile(f,(e,b)=>{r.writeHead(e?404:200,{'Content-Type':u.endsWith('.ttf')?'font/ttf':'text/html; charset=utf-8'});r.end(e?'':b);});});
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base='http://127.0.0.1:'+server.address().port;
+ browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox'],proxy:{server:process.env.HTTPS_PROXY,bypass:'127.0.0.1,localhost'}});
+ const p=await browser.newPage({viewport:{width:390,height:844}});
+ p.on('response',r=>{if(r.url().includes('cdn.jsdelivr.net'))net.push({url:r.url(),status:r.status(),type:r.request().resourceType()});});
+ p.on('pageerror',e=>errors.push(String(e)));p.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text());});p.on('requestfailed',q=>failed.push({url:q.url(),failure:q.failure()}));
+ await p.goto(base+'/#пакет5685',{waitUntil:'load',timeout:120000});await p.waitForFunction(()=>typeof loadPyodide==='function',null,{timeout:30000});
+ const fonts=await p.evaluate(async()=>{const specs=['400 16px "Fixel Text"','500 16px "Fixel Text"','600 16px "Fixel Text"','600 16px "Fixel Display"'];return Promise.all(specs.map(async s=>({font:s,count:(await document.fonts.load(s)).length,loaded:document.fonts.check(s)})));});
+ assert(fonts.every(f=>f.loaded&&f.count>0));const scriptDOM=await p.evaluate(()=>{const e=document.querySelector('script[src*="pyodide.js"]');return {src:e.src,integrity:e.integrity,crossOrigin:e.crossOrigin,defer:e.defer};});assert.equal(scriptDOM.integrity,'sha384-i3R37b3tF+HWudsUf1VSEOY2YxwSNMqY8DQa9Z0O3xh+NkJ9o+yjcGyIi5huj+nB');assert.equal(scriptDOM.crossOrigin,'anonymous');assert.equal(scriptDOM.src,'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js');const fontStates=await p.evaluate(()=>Array.from(document.fonts).map(f=>({family:f.family,weight:f.weight,status:f.status})));assert.equal(fontStates.filter(f=>f.family.includes('Fixel')).length,4);assert(fontStates.filter(f=>f.family.includes('Fixel')).every(f=>f.status==='loaded')); const hidden=await p.locator('#нова-версія').isHidden();assert(hidden);
+ await p.screenshot({path:path.join(out,'5685_телефон_початок.png'),fullPage:true});
+ const pyodide=await p.evaluate(async()=>{const p=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/'});return {version:p.version,python:p.runPython('1 + 1')};});assert.equal(pyodide.python,2);
+ stamp='2099-01-01 00:00 · модулів 1 · показ ПОВНИЙ';await p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));await p.locator('#нова-версія').waitFor({state:'visible'});
+ await p.screenshot({path:path.join(out,'5685_телефон_оновити.png'),fullPage:true});await p.evaluate(()=>window.__мітка5685=1);
+ await Promise.all([p.waitForURL(u=>u.searchParams.get('v')===stamp),p.locator('#нова-версія-кн').click()]);await p.waitForLoadState('load');
+ const reload=await p.evaluate(()=>window.__мітка5685===undefined);assert(reload);assert.equal(decodeURIComponent(new URL(p.url()).hash),'#пакет5685');
+ stamp=null;await p.reload({waitUntil:'load'});assert(await p.locator('#нова-версія').isHidden());
+ stamp='2099-02-01 00:00 · модулів 1 · показ ПОВНИЙ';await p.setViewportSize({width:1280,height:800});await p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));await p.locator('#нова-версія').waitFor({state:'visible'});
+ const desktop=await p.evaluate(()=>{const b=document.querySelector('#нова-версія').getBoundingClientRect(),c=document.querySelector('body>.колонка').getBoundingClientRect();return {top:b.top,above:b.bottom<=c.top+1,width:b.width};});assert(desktop.above);await p.screenshot({path:path.join(out,'5685_ноутбук_оновити.png'),fullPage:true});
+ assert.equal(errors.length,0);assert(net.some(r=>r.url().endsWith('/pyodide.js')&&r.status===200));const fixelRequests=net.filter(r=>r.type==='font'&&r.url().includes('Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/'));assert.equal(new Set(fixelRequests.filter(r=>r.status===200).map(r=>r.url())).size,4);assert(fixelRequests.every(r=>r.status===200));assert.equal(failed.filter(r=>r.url.includes('cdn.jsdelivr.net')).length,0);assert.equal(consoleErrors.filter(t=>/integrity|valid digest|CORS|crossorigin/i.test(t)).length,0);
+ fs.writeFileSync(path.join(out,'native.json'),JSON.stringify({SHA:'5a8124b792e109d1cb01f87b1a7860900a158a65',assembled_sha256:require('crypto').createHash('sha256').update(fs.readFileSync(file)).digest('hex'),viewport:{width:390,height:844},actual_network:true,stubs:0,TLS_verification:true,fonts,fontStates,scriptDOM,fixel_successful_urls:4,pyodide,banner:{same_hidden:hidden,changed_visible:true,reloaded:reload,hash_preserved:true,missing_hidden:true},desktop,net,errors,consoleErrors,failed},null,2));console.log('Нативний Chromium: OK, реальний CDN/SRI, Fixel, Pyodide, смужка5615');
+ }finally{if(browser)await browser.close();if(server)await new Promise(r=>server.close(r));}})().catch(e=>{fs.writeFileSync(path.join(out,'native-error.txt'),String(e.stack));console.error(e);process.exitCode=1;});
