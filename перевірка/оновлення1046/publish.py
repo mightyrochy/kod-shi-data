@@ -1,7 +1,7 @@
 from pathlib import Path
 import subprocess,json,os,hashlib
 root=Path('/workspace/scratch/qa-update1046-independent');repo=root/'proof';repo.mkdir(exist_ok=True)
-os.environ['GIT_NO_LAZY_FETCH']='1';os.environ['GIT_ALTERNATE_OBJECT_DIRECTORIES']=os.pathsep.join(['/workspace/scratch/update999/repo/.git/objects']+json.loads(Path('/workspace/scratch/update1046/alternates.json').read_text()))
+os.environ['GIT_NO_LAZY_FETCH']='1';os.environ['GIT_ALTERNATE_OBJECT_DIRECTORIES']=os.pathsep.join(['/workspace/scratch/update999/repo/objects']+json.loads(Path('/workspace/scratch/update1046/alternates.json').read_text()))
 def git(*a,input=None):return subprocess.check_output(['git','-C',str(repo),*a],input=input)
 first=not (repo/'.git').exists()
 if first:
