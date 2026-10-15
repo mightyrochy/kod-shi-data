@@ -18,12 +18,12 @@ def rows(data):
  return ids,d
 D=json.loads(Path('/dev/shm/liusterko-update1064/classification.json').read_text());results=[]
 for n in map(int,sys.argv[2:]):
- pushed=json.loads((source/f'pushed-{n}.json').read_text());old=D[str(n)]['old'];base=D[str(n)]['base'];head=pushed['sha'];tbase,told,tmain,tnew=[tree(r) for r in [base,old,main,head]]
+ pushed=json.loads((source/f'pushed-{n}.json').read_text());old=pushed['old'];base=git('merge-base',old,main).decode().strip();head=pushed['sha'];tbase,told,tmain,tnew=[tree(r) for r in [base,old,main,head]]
  for r in [old,main]+[x['sha'] for x in pushed.get('sources',pushed.get('source_heads',[]))]:subprocess.run(['git','-C',repo,'merge-base','--is-ancestor',r,head],check=True)
  own={p for p in set(tbase)|set(told) if tbase.get(p)!=told.get(p)};expected=dict(tmain);exact=[];combined=[];details={}
  for p in own:
   if p=='аудит/БЕКЛОГ.md':continue
-  if p=='аудит/РІШЕННЯ_ВЛАСНИКА.md' and n==991 and D[str(n)]['rc']!=0 and tmain.get(p)!=tbase.get(p):
+  if p=='аудит/РІШЕННЯ_ВЛАСНИКА.md' and n==991 and D.get(str(n),{}).get('rc',0)!=0 and tmain.get(p)!=tbase.get(p):
    b,o,m,f=[blob(r,p) for r in [base,old,main,head]];assert o.startswith(b);addition=o[len(b):];assert addition and f.count(addition)==1;assert f.replace(addition,b'',1)==m
    anchor=b.splitlines(keepends=True)[-1];assert f.count(anchor)==1;assert anchor+addition in f;expected[p]=(tnew[p][0],tnew[p][1],git('hash-object','--stdin',input=f).decode().strip());combined.append(p);details[p]={'source_append_bytes':len(addition),'all_main_bytes_preserved':True};continue
   a,b,c=told.get(p),tbase.get(p),tmain.get(p)
@@ -54,6 +54,6 @@ for n in map(int,sys.argv[2:]):
  newpaths=git('diff','--name-only',main,head).decode().splitlines();assert not any(p.lower().endswith(('.png','.jpg','.jpeg','.webp','.svg','.gif','.mp4')) for p in newpaths)
  input_exact=all(told.get(p)==tnew.get(p) for p in tnew if p.startswith('джерела/') or p.startswith('.github/workflows/'))
  parents=git('show','-s','--format=%P',head).decode().strip().split()
- result={'pr':n,'old':old,'base':base,'main':main,'head':head,'tree':git('rev-parse',head+'^{tree}').decode().strip(),'ancestry':True,'parents':parents,'whole_tree_composition_exact':True,'nonboard_own_files_exact':exact,'combined':combined,'combined_details':details,'board_ids':len(fi),'duplicate_ids':0,'own_rows':sorted(ownrows),'own_rows_exact':True,'foreign_board_bytes_exact':True,'main_order_preserved':True,'new_main_rules_exact':True,'no_new_media':True,'entire_product_inputs_equal_old':input_exact,'product_tests_repeated':False,'ci_acceptance':'окремий exact-head gate координатора; не переноситься'}
+ result={'pr':n,'old':old,'base':base,'main':main,'head':head,'tree':git('rev-parse',head+'^{tree}').decode().strip(),'ancestry':True,'parents':parents,'updated_source_heads':pushed.get('sources',pushed.get('source_heads',[])),'whole_tree_composition_exact':True,'nonboard_own_files_exact':exact,'combined':combined,'combined_details':details,'board_ids':len(fi),'duplicate_ids':0,'own_rows':sorted(ownrows),'own_rows_exact':True,'foreign_board_bytes_exact':True,'main_order_preserved':True,'new_main_rules_exact':True,'no_new_media':True,'entire_product_inputs_equal_old':input_exact,'product_tests_repeated':False,'ci_acceptance':'окремий exact-head gate координатора; не переноситься'}
  (out/f'{n}.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');results.append(result)
 print(json.dumps(results,ensure_ascii=False,indent=2))
