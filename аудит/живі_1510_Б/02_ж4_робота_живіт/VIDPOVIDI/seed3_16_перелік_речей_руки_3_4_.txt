@@ -1,0 +1,50 @@
+── ПРОМПТ (2265 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer tailored in a structured fit, sharp and professional, charcoal grey (#36454F), wool blend.\nSilk blouse with a relaxed collar, classic cut, soft ivory white (#FFFFF0), pure silk.\nHigh-waisted trousers with a straight leg, moderate length hitting just above the ankle, deep navy blue (#000080), heavy cotton twill.\nLeather loafers with a slight heel, rounded toe, polished black (#000000), smooth calfskin.\nGold stud earrings and a delicate gold chain necklace.\n\nThis outfit works because it strikes a perfect balance between professional authority and approachable comfort for a daily office setting. The neutral color palette of charcoal, ivory, and navy creates a timeless foundation that is easy to mix and match while maintaining a polished appearance. By choosing breathable natural fabrics like wool and silk, the ensemble ensures you feel confident and at ease throughout the workday without sacrificing style. Finally, the minimal gold accessories add just enough subtle sophistication to elevate the look without appearing overly formal or distracted from your tasks."}
+
+── ВІДПОВІДЬ (1035 симв., 183.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "structured fit with sharp and professional silhouette",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Silk blouse",
+      "details": "relaxed collar with classic cut",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "High-waisted trousers",
+      "details": "straight leg with moderate length hitting just above the ankle",
+      "slot": "bottom",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "Leather loafers",
+      "details": "slight heel with rounded toe",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Gold stud earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Delicate gold chain necklace",
+      "details": "",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+── ПРОМПТ (7014 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Джемпер-поло жіночий бавовняний з коротким рукавом демісезонний · colour code: chocolate · about it: text н=1
+2 — Жилетка вкорочена молочний шоколад · colour code: chocolate · about it: text н=2
+3 — Штани жіночі теплі напіввовняні прямого крою демісезонні · colour code: graphite · about it: text н=3
+4 — LeBERDES Лофери чорні · colour code: black · about it: text н=4
+5 — Жіноча сумка тоут замшева бежева · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; chocolate — шоколадний; graphite — графіт.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This is a blue-and-chocolate striped knit polo with three-quarter sleeves and an eyelet pattern across the body. The collar stands crisp while the fabric feels soft and breathable for layering or wearing alone."},
+{"н": 2, "текст": "A tall-necked puffer vest in a milk-chocolate brown, quilted in wide horizontal panels with a full-length zipper and stand collar. It adds warmth without adding volume to the shoulders or torso."},
+{"н": 3, "текст": "Straight-leg trousers in graphite grey woven from a wool blend for structure and drape. The cut flows cleanly from hip to ankle, offering a quiet anchor for the layered tops above."},
+{"н": 4, "текст": "Black leather loafers with a modest stacked heel and polished surface. A thin strap across the vamp holds a small metallic detail that catches light without overpowering the neutral palette."},
+{"н": 5, "текст": "A camel suede tote bag shaped in soft slouchy lines, equipped with long handles and a drawstring pouch attached to the front for small essentials. Its texture contrasts gently with the knits and leather in the outfit."},
+{"н": 6, "текст": "Your outfit combines a blue-and-chocolate striped knit polo with relaxed sleeves and fine eyelet holes, worn underneath a high-necked puffer vest in a muted milk-chocolate tone. The base is set by straight-cut trousers in a dark graphite shade, finished with classic black loafers that carry a polished finish and subtle hardware accents. A soft camel suede tote hangs at your side to balance the structured lines above while introducing warmth and fluidity."},
+{"н": 7, "текст": "Wear the polo underneath the vest to let its collar frame the neckline without adding bulk. Keep the trousers untucked and fully zipped for a clean silhouette from hip to hem. Wear the loafers with socks only in cooler days, letting them sit directly on your shoes otherwise. Carry the tote by its long strap so it rests at your hip while walking."},
+{"н": 8, "текст": "Штани жіночі теплі напіввовняні прямого крою демісезонні — I chose these straight trousers to create a clear vertical line from hips to hem, ensuring there is an even column without a step at the waist so the outfit reads sharp rather than boxy."}
+]
+
+── ВІДПОВІДЬ (2155 симв., 86.3 с, HTTP 200) ──
+```json
+{
+  "1": "Це смугастий блакитно-шоколадний трикотажний поло з рукавами три чверті та візерунком із дірочок по всьому тілу. Комір стоїть твердо, а тканина відчувається м’якою й дихаючою для носіння як поверх одягу, так і самостійно.",
+  "2": "Жилет-пуховик з високим коміром у кольорі молочного шоколаду, стьобаний широкими горизонтальними панелями із застібкою на всю довжину та стоячим коміром. Він додає тепла без збільшення об’єму в плечах чи торсі.",
+  "3": "Штани прямого крою з графітового сірого, виткані зі суміші вовни для структури й драпірування. Крій плавно спускається від стегна до щиколотки, пропонуючи тихий акцент для багатошарових топів зверху.",
+  "4": "Чорні шкіряні лофери з помірним стіблем і відполірованою поверхнею. Тонкий ремінець на підйомі тримає невелику металеву деталь, що відбиває світло без перевантаження нейтральної палітри.",
+  "5": "Сумка-тоут з бежевої замші м’якої форми, оснащена довгими ручками та вбудованим мішечком на шнурку спереду для дрібниць. Її текстура ніжно контрастує зі светрами й шкірою у образі.",
+  "6": "Твій образ поєднує блакитно-шоколадний трикотажний поло з вільними рукавами та тонкими дірочками, одягнений під високий жилет-пуховик приглушеного кольору молочного шоколаду. Основа створена прямими штанами темного графітового відтінку, доповненими класичними чорними лоферами з відполірованою обробкою та тонкими металевими акцентами. М’яка бежева замшева сумка висить на твоєму боці, щоб врівноважити структуровані лінії зверху й додати тепла та легкості.",
+  "7": "Одягни поло під жилет, щоб його комір обрамлював лінію шиї без зайвого об’єму. Залиш штани не заправленими всередину і повністю застебнутими для чистого силуету від стегна до подолу. Носи лофери з шкарпетками лише в холодні дні, а решту часу дозволь їм лежати безпосередньо на ногах. Тримай сумку за довгу ручку так, щоб вона висіла біля твого боку під час ходьби.",
+  "8": "Штани жіночі теплі напіввовняні прямого крою демісезонні — Я обрала ці прямі штани, щоб створити чітку вертикальну лінію від стегон до подолу, забезпечивши рівний стовп без переходу в талії, так образ виглядатиме гостро, а не громіздко."
+}
+```
