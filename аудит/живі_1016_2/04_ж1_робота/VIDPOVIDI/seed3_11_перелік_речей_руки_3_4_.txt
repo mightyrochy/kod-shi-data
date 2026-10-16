@@ -1,0 +1,51 @@
+── ПРОМПТ (2630 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Oversized structured wool blazer, wide lapel cut, knee-length hem, charcoal grey with hex code #36454F, heavy-weight woven fabric.\nHigh-waisted straight-leg dark denim trousers, relaxed fit through thigh, full ankle length, deep indigo with hex code #191A17, sturdy cotton twill fabric.\nChunky knitted crewneck sweater, ribbed trim, longline drape, oat cream with hex code #EFEBE5, soft cashmere blend fabric.\nLeather Chelsea boots, chunky heel, ankle cuff, blackened oak with hex code #2C241B, smooth calfskin leather fabric.\nMatte gold hoop earrings, medium gauge, circular shape, polished metal, brass alloy fabric.\nMinimalist slim watch, rectangular face, leather strap, silver casing with hex code #A9A9A9, stainless steel and genuine leather fabric.\n\nThis outfit balances professional polish with creative comfort, perfectly suiting an autumn office environment where warmth and texture are key. The dark denim trousers ground the look in everyday practicality while the oversized wool blazer adds the refined edge of neat dressing without feeling stifling. Neutral tones like charcoal, oat cream, and blackened oak create a cohesive palette that works well with changing fall light, while the metallic accessories provide just enough sparkle for a creative workspace."}
+
+── ВІДПОВІДЬ (1339 симв., 78.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Oversized structured wool blazer",
+      "details": "wide lapel cut, knee-length hem, heavy-weight woven fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "High-waisted straight-leg dark denim trousers",
+      "details": "relaxed fit through thigh, full ankle length, sturdy cotton twill fabric",
+      "slot": "bottom",
+      "color_hex": "#191A17",
+      "worn": true
+    },
+    {
+      "name": "Chunky knitted crewneck sweater",
+      "details": "ribbed trim, longline drape, soft cashmere blend fabric",
+      "slot": "top",
+      "color_hex": "#EFEBE5",
+      "worn": true
+    },
+    {
+      "name": "Leather Chelsea boots",
+      "details": "chunky heel, ankle cuff, smooth calfskin leather fabric",
+      "slot": "shoes",
+      "color_hex": "#2C241B",
+      "worn": true
+    },
+    {
+      "name": "Matte gold hoop earrings",
+      "details": "medium gauge, circular shape, polished metal, brass alloy fabric",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Minimalist slim watch",
+      "details": "rectangular face, leather strap, stainless steel and genuine leather fabric",
+      "slot": "watch",
+      "color_hex": "#A9A9A9",
+      "worn": true
+    }
+  ]
+}

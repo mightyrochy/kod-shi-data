@@ -1,0 +1,44 @@
+── ПРОМПТ (2346 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend blazer in structured navy blue (#1a253f), single-breasted cut with notch lapels and a cropped length ending at the hip, featuring a soft matte finish. Silk-blend midi skirt in slate grey (#6b7c8a), A-line cut falling to mid-calf for movement and elegance. Leather ankle boots in chocolate brown (#524031), low block heel with a rounded toe and a sleek slip-on design. Pearl drop earrings in white freshwater pearls and 14k gold setting, paired with a slim leather belt in cognac (#c78d6e) matching the boot tone. This outfit bridges the gap between creative fluidity and office readiness, offering structured silhouettes that define the waist without feeling restrictive. The neutral palette of navy, slate, and cognac complements warm skin tones while maintaining a professional yet artistic vibe suitable for an autumn day. Textured fabrics like the wool blazer add depth to the ensemble, ensuring she stands out in a creative office environment without breaking any dress code rules."}
+
+── ВІДПОВІДЬ (856 симв., 75.4 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "blazer",
+"details": "structured single-breasted cut with notch lapels and cropped length ending at the hip featuring a soft matte finish",
+"slot": "outerwear",
+"color_hex": "#1a253f",
+"worn": true
+},
+{
+"name": "midi skirt",
+"details": "A-line cut falling to mid-calf for movement and elegance made of silk-blend",
+"slot": "bottom",
+"color_hex": "#6b7c8a",
+"worn": true
+},
+{
+"name": "ankle boots",
+"details": "low block heel with rounded toe and sleek slip-on design",
+"slot": "shoes",
+"color_hex": "#524031",
+"worn": true
+},
+{
+"name": "earrings",
+"details": "drop style with white freshwater pearls and 14k gold setting",
+"slot": "earrings",
+"color_hex": "null",
+"worn": true
+},
+{
+"name": "belt",
+"details": "slim leather design matching the boot tone",
+"slot": "belt",
+"color_hex": "#c78d6e",
+"worn": true
+}
+]
+}
