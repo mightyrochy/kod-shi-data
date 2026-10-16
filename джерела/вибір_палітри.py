@@ -138,8 +138,8 @@ def _до_очей(о, F):
                           "how many clothes (tops, bottoms, dresses, sets, outer layers) of today's "
                           "catalogue that suit the occasion lie in this base's colour family and "
                           "lightness band, \"clothing_maybe\" — how many more only may (the shop's "
-                          "colour word); 0 — only accessories can carry this base; absent for a "
-                          "neutral base", треба=True),
+                          "colour word); 0 — only accessories can carry this base; absent — not "
+                          "counted (a neutral base)", треба=True),
         _ЗП.Поле("fixed", "what she chose herself", "keep it and build around it",
                  без="She chose none of it herself."),
         _ЗП.Поле("reason_codes", "the only codes you may give as reasons, with their meaning",
