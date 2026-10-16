@@ -1,0 +1,52 @@
+── ПРОМПТ (7112 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Коричнева блузка в дрібний білий горох · kind code: blouse · colour code: brown · about it: text н=1
+2 — Джинси WIDE LEG шоколадні · kind code: jeans · colour code: chocolate · about it: text н=2
+3 — Лофери жіночі Tamaris · kind code: loafers · colour code: beige · about it: text н=3
+4 — Жіноча сумка Welfare бежева · kind code: bag_generic · colour code: beige · about it: text н=4
+5 — Жилет на запах · kind code: vest · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; chocolate — шоколадний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "The blouse is in fine white polka dots on a muted background, with a classic collar and long sleeves. It’s cut relaxed enough to drape softly over your hips without adding bulk, and the fabric feels light for an autumn office day."},
+{"н": 2, "текст": "These jeans are in chocolate, with a wide leg that flows from hip to ankle. The high waist keeps the line vertical, drawing the eye upward to your shoulders and downward to your legs while letting the fabric drape without clinging."},
+{"н": 3, "текст": "The loafers are in dark beige suede with a low block heel. They’re understated and comfortable, perfect for walking through an office or stepping out after hours without fuss."},
+{"н": 4, "текст": "The shoulder bag is in smooth beige leather with a silver buckle. It’s structured but not stiff, and the long strap lets you carry it comfortably across your body or on your shoulder."},
+{"н": 5, "текст": "The vest is in beige with a wrap-style front and a tied belt that falls loosely. It adds warmth without bulk, and its V-neckline elongates your torso while keeping the look neat."},
+{"н": 6, "текст": "You wear the blouse in fine white polka dots with black tailored trousers, a beige vest for layering, and Tamaris loafers. The bag is carried on your shoulder, and no jewelry or hair styling is included."},
+{"н": 7, "текст": "Wear the blouse untucked to let the loose hem fall over the high-waisted trousers, softening the waistline without marking it."},
+{"н": 8, "текст": "Let the vest sit open as an airy layer that adds warmth without adding bulk, keeping your silhouette clean."},
+{"н": 9, "текст": "Коричнева блузка в дрібний білий горох — The blouse pattern and color serve as the primary accent and focal point; its 'boho' register is acceptable here because it acts as the loud witness needed for her goal of expressiveness within the neat occasion band."}
+]
+
+── ВІДПОВІДЬ (1636 симв., 85.0 с, HTTP 200) ──
+```json
+{
+  "1": "Ця блузка в дрібний білий горох на приглушеному тлі, з класичним коміром і довгими рукавами. Вона пошита вільно, щоб м’яко спадати до стегон, не додаючи зайвого об’єму, а тканина здається легкою для осіннього робочого дня.",
+  "2": "Ці джинси шоколадного кольору з широкими штанинами від стегна до щиколотки. Висока талія тримає лінію вертикально, притягуючи погляд вгору до твоїх плечей і вниз до ніг, дозволяючи тканині спадати без облягання.",
+  "3": "Ці лофери темно-бежевого кольору з низьким стійким каблуком. Вони стримані та зручні, чудові для ходьби по офісу або виходу після роботи без зайвих зусиль.",
+  "4": "Жіноча сумка на плече гладка бежева шкіра зі срібною пряжкою. Вона має структуру, але не жорстка, а довгий ремінь дозволяє зручно носити її через тіло або на плечі.",
+  "5": "Цей жилет у бежевому кольорі з запахом і вільним поясом. Він додає тепла без об’єму, а V-подібний виріз подовжує твій торс, зберігаючи образ охайним.",
+  "6": "Ти одягнула блузку в дрібний білий горох з чорними прямими брюками, бежевий жилет для багатошаровості та лофери Tamaris. Сумку носиш на плечі, а прикраси чи зачіска не потрібні.",
+  "7": "Одягни блузку без розправлення, щоб вільний низ м’яко падав до високої талії брюк, пом’якшуючи лінію стегон без окреслення їх.",
+  "8": "Залиш жилет відкритим як повітряний шар, що додає тепла без об’єму, зберігаючи твою фігуру чистою.",
+  "9": "Коричнева блузка в дрібний білий горох — візерунок і колір служать основним акцентом і фокусом; її «богемний» регістр прийнятний тут, тому що вона діє як голос, необхідний для твоєї мети виразності у стриманій обстановці."
+}
+```
