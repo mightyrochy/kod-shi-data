@@ -106,7 +106,8 @@ import протокол as _ПР
 # стояло в кожному промпті своєю редакцією: межа `для_неї` — без форм, англійська — «familiar singular "you"», хід
 # розмови — з формами, перекладачка картки — з іншими. Наказ без «you» (Wrap…, Let…, Keep…) ніде не був названий,
 # і MamayLM писала «оберніть», «Дозвольте», «тримайте» (ЖИВИЙ-15 №12–13). Тепер форми — одним текстом тут; його
-# беруть обидві межі `для_неї` і промпти мовного шару (`мовний_шар`: перекладачки, хід розмови, порада).
+# бере українська межа `для_неї` і промпти мовного шару (`мовний_шар`: перекладачки, хід розмови, порада).
+# Англійська межа — без кирилиці (п.12): «you» однини і наказ до неї однини.
 ЗВЕРТАННЯ = ("«ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), "
              "ніколи «ви» (ви, вас, вам, ваш, ваша; хочете, скинете; наказ множини: розкажіть, оберніть, "
              "тримайте, дозвольте)")
@@ -199,8 +200,8 @@ def вибірка(о):
     # «you» англійською не розрізняє «ти» і «ви»: живий стенд НГ-4 (sonnet, 01.10) дав репліку розмови
     # на «ви», хоча українська межа каже «на „ти“» — тож форму звертання названо прямо.
     "для_неї": ("Text for her: address her informally, with the familiar singular \"you\", never the "
-                "polite plural; in Ukrainian that is " + ЗВЕРТАННЯ + ", in a command too; in plain human "
-                "words, without item numbers, ids, hex codes or markdown."),
+                "polite plural, and a command to her in the singular too; in plain human words, without item "
+                "numbers, ids, hex codes or markdown."),
     "без_чисел_тіла": ("Do not name lightness numbers, body measurements or height in numbers, or body-type "
                       "labels, and do not say you had limits."),
     "без_шкал": ("Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for "
