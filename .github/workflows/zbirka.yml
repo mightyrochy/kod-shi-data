@@ -50,7 +50,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 # ОДНА ЗБІРКА ВОДНОЧАС. `cancel-in-progress: false` — перервана посеред коміту
 # збірка гірша за чергу.
@@ -83,21 +83,21 @@ jobs:
       # модуль із файлом ДО поділу, а беруть його `git show <БАЗА>:джерела/<файл>.py`.
       # Бази — коміти вересня (`ac8c2ca`, `e4b36ae`, `b993a38`…), а типовий checkout бере
       # глибину 1: `git show` віддав би 128 і крок падав би завжди, на будь-якому коді.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
 
       - name: залежності батареї показу
         working-directory: джерела
-        run: npm i jsdom fake-indexeddb
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       # Синтаксис — перший гейт і найдешевший. САМЕ ЦЬОГО БРАКУВАЛО 18.09:
       # `тест_показу.js` з незакритою дужкою заїхав у `main`, і ніщо в CI не
@@ -274,7 +274,7 @@ jobs:
       # не стартує і в `main` цей файл не потрапляє.
       - name: звіт досяжності → job'у збірки
         if: always() && steps.dosiazhnist.outcome != 'skipped'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: dosiazhnist-zvit
           path: джерела/аудит/ДОСЯЖНІСТЬ.md
@@ -306,7 +306,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          ( cd джерела && npm i playwright && npx playwright install --with-deps chromium )
+          ( cd джерела && ./node_modules/.bin/playwright install --with-deps chromium )
           sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
           mkdir -p "${RUNNER_TEMP}/стенд"
           # Стенд міряє ЗІБРАНИЙ показ, а не джерела: збираємо його тут же, зі
@@ -315,6 +315,20 @@ jobs:
           ( cd джерела && LYUSTERKO_CATALOG=повний python3 build_артефакт.py . "${RUNNER_TEMP}/стенд/index.html" показ-повний )
           NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js \
             http://127.0.0.1:8765 "${RUNNER_TEMP}/стенд" "${RUNNER_TEMP}/pyodide" 3 2>&1 | tee стенд.log
+
+      # Рядок 5651: каталог — функція записів схеми v1 (`каталог_записи_v1.jsonl.gz`). Крок складає XML із записів,
+      # звіряє байти з `каталог_повний.xml.gz`, читає складене фідом і друкує «записано → прочитано» по полях.
+      # ЗВІТ, НЕ ГЕЙТ (п.3): `continue-on-error`, у підсумок йдуть лише рядки про збіг, опис і розбіжності.
+      - name: складальник каталогу — звіт записано → прочитано (не гейт)
+        continue-on-error: true
+        run: |
+          python3 zhnyvarka/складальник.py --проміжний "${RUNNER_TEMP}/складальник.xml" 2>&1 | tee складальник.log
+          {
+            echo "### Складальник каталогу (рядок 5651)"
+            echo '```'
+            grep -E '^збірка із|^поле  |^поле:опис|^поле:артикул|^поле:виробник|РОЗБІЖНІСТЬ' складальник.log || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: числа приладів у підсумок
         if: always()
@@ -344,20 +358,22 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   zbirka:
+    permissions:
+      contents: write
     name: зібрати показ-повний
     # ЗБІРКА ЙДЕ ЛИШЕ ПІСЛЯ ЗЕЛЕНОЇ ПЕРЕВІРКИ. Раніше вона була першою й єдиною
     # — тому й комітила артефакт зі зламаних джерел.
     needs: perevirka
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
 
       # node потрібен збирачеві: `node --check` на JS сторінки — гейт 2 збірки.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
 
@@ -365,7 +381,7 @@ jobs:
       # падає, а друкує попередження; у CI ми хочемо саме перевірку.
       - name: залежності батареї показу
         working-directory: джерела
-        run: npm i jsdom fake-indexeddb
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       # КРОКУ «розпакувати каталоги й почистити фід» ТУТ БІЛЬШЕ НЕМА, І ЦЕ НЕ
       # ЗАБУТТЯ (19.09.2026, рядок 57 дошки). Він був відповіддю на дві речі:
@@ -412,7 +428,7 @@ jobs:
       # те саме ДО злиття. На PR крок коштує секунди, а файл, який він кладе,
       # нікуди звідси не їде — наступний крок пропущено.
       - name: свіжий звіт досяжності з перевірки
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: dosiazhnist-zvit
           path: джерела/аудит

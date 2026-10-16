@@ -840,6 +840,24 @@
       "unknown"
      ]
     },
+    "month": {
+     "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця",
+     "enum": [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+      "unknown"
+     ]
+    },
     "temperature_c": {
      "description": "температура повітря, °C",
      "oneOf": [
@@ -936,7 +954,7 @@
      "maxItems": 3
     },
     "goal_zones": {
-     "description": "зони тіла, від яких вона хоче відвести погляд («сховати живіт» → belly), з будь-якою увагою (goal): ці зони тихі, решта образу — за goal",
+     "description": "зони тіла, від яких вона хоче відвести погляд (сховати чи стрункішою зробити зону → її код), з будь-якою увагою (goal): ці зони тихі, решта образу — за goal",
      "type": "array",
      "items": {
       "description": "зона тіла",
@@ -1289,6 +1307,230 @@
       }
      ],
      "description": "решта сказаного, що не лягає в поля вище"
+    }
+   }
+  },
+  "review_items_fix": {
+   "type": "object",
+   "description": "її слова про те, що не так у переліку речей з фото",
+   "additionalProperties": false,
+   "properties": {
+    "actions": {
+     "description": "по одній дії на кожну річ, про яку вона сказала, що в переліку не так",
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "op"
+      ],
+      "properties": {
+       "op": {
+        "description": "remove — прибрати річ, якої на фото нема; set — виправити річ, що вже є в переліку (item — її id); add — дописати річ, якої в переліку нема (item не пишеться)",
+        "enum": [
+         "remove",
+         "set",
+         "add"
+        ]
+       },
+       "item": {
+        "type": "string",
+        "description": "id речі з КОНТЕКСТ.items; для add не пишеться"
+       },
+       "slot": {
+        "description": "місце речі в образі — лише якщо вона назвала місце, а не вид",
+        "enum": [
+         "top",
+         "bottom",
+         "dress",
+         "set",
+         "outerwear",
+         "shoes",
+         "bag",
+         "scarf",
+         "headwear",
+         "belt",
+         "tights",
+         "socks",
+         "jewelry",
+         "earrings",
+         "collar_necklace",
+         "necklace",
+         "brooch",
+         "bracelet",
+         "ring",
+         "glasses",
+         "gloves",
+         "watch",
+         "swimwear",
+         "underwear",
+         "accessory",
+         "unknown"
+        ]
+       },
+       "kind": {
+        "description": "вид речі, як вона його назвала",
+        "enum": [
+         "evening_dress",
+         "cocktail_dress",
+         "suit",
+         "sheath_dress",
+         "sundress",
+         "blazer",
+         "over_knee_boots",
+         "chelsea_boots",
+         "ugg_boots",
+         "ballet_flats",
+         "mules",
+         "espadrilles",
+         "pumps",
+         "dress_shoes",
+         "moccasins",
+         "loafers",
+         "sneakers",
+         "plimsolls",
+         "ankle_boots",
+         "boots",
+         "heeled_sandals",
+         "sandals",
+         "clutch",
+         "backpack",
+         "tote",
+         "baguette_bag",
+         "hobo_bag",
+         "crossbody_bag",
+         "bucket_bag",
+         "belt_bag",
+         "briefcase",
+         "saddle_bag",
+         "hoodie",
+         "sportswear",
+         "loungewear",
+         "leggings",
+         "jeans",
+         "t_shirt",
+         "shirt",
+         "blouse",
+         "knitwear",
+         "cardigan",
+         "sweater",
+         "shorts",
+         "jumpsuit",
+         "skirt",
+         "trousers",
+         "coat",
+         "trench_coat",
+         "jacket",
+         "vest",
+         "top_garment",
+         "stole",
+         "kerchief",
+         "twilly",
+         "snood",
+         "shawl",
+         "bactus_scarf",
+         "ring",
+         "headband",
+         "bow",
+         "hair_clip",
+         "hair_tie",
+         "scarf_generic",
+         "jewelry_generic",
+         "bag_generic",
+         "dress_generic",
+         "two_piece_set",
+         "casual_suit",
+         "bodysuit",
+         "longsleeve",
+         "half_coat",
+         "down_jacket",
+         "fur_coat",
+         "sheepskin_coat",
+         "parka",
+         "raincoat",
+         "rain_cape",
+         "windbreaker",
+         "anorak",
+         "bomber",
+         "poncho",
+         "unknown"
+        ]
+       },
+       "color": {
+        "description": "колір речі, як вона його назвала",
+        "enum": [
+         "black",
+         "white",
+         "grey",
+         "graphite",
+         "beige",
+         "cream",
+         "milky",
+         "sand",
+         "taupe",
+         "camel",
+         "latte",
+         "cocoa",
+         "brown",
+         "chocolate",
+         "red",
+         "burgundy",
+         "cherry",
+         "raspberry",
+         "brick",
+         "terracotta",
+         "ginger",
+         "coral",
+         "orange",
+         "peach",
+         "yellow",
+         "lemon",
+         "mustard",
+         "golden",
+         "khaki",
+         "olive",
+         "green",
+         "pine_green",
+         "mint",
+         "turquoise",
+         "petrol",
+         "light_blue",
+         "denim_blue",
+         "blue",
+         "navy",
+         "lilac",
+         "purple",
+         "plum",
+         "magenta",
+         "fuchsia",
+         "pink",
+         "rose",
+         "powder_pink",
+         "silvery",
+         "pearly",
+         "creamy",
+         "mocha",
+         "cappuccino",
+         "powder",
+         "soft_pink",
+         "emerald",
+         "electric_blue",
+         "unknown"
+        ]
+       },
+       "in_outfit": {
+        "oneOf": [
+         {
+          "type": "boolean"
+         },
+         {
+          "const": "unknown"
+         }
+        ],
+        "description": "true — річ у самому образі; false — запасна, замість іншої речі образу; не пишеться, коли вона про це не казала"
+       }
+      }
+     }
     }
    }
   },
@@ -1991,6 +2233,10 @@
         "description": "частина доби, коли години не названо"
        },
        {
+        "const": "month",
+        "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця"
+       },
+       {
         "const": "temperature_c",
         "description": "температура повітря, °C"
        },
@@ -2020,7 +2266,7 @@
        },
        {
         "const": "goal_zones",
-        "description": "зони тіла, від яких вона хоче відвести погляд («сховати живіт» → belly), з будь-якою увагою (goal): ці зони тихі, решта образу — за goal"
+        "description": "зони тіла, від яких вона хоче відвести погляд (сховати чи стрункішою зробити зону → її код), з будь-якою увагою (goal): ці зони тихі, решта образу — за goal"
        },
        {
         "const": "makeup",
@@ -2616,7 +2862,7 @@
          },
          {
           "const": "big_items_carry_only_some",
-          "description": "the large items of this outfit carry some of these colours and not the others (values: present, missing — colour words)"
+          "description": "the large items of this outfit carry some of these colours and not the others; only the large items were counted, so say a colour is missing on the large items, never that it is missing from the outfit (values: present, missing — colour words; counted — slot codes of the large items counted; on_accessories — missing colours that an accessory of this outfit does carry: say they are there only on the accessories)"
          },
          {
           "const": "big_items_all_neutral",
@@ -3116,15 +3362,19 @@
          },
          {
           "const": "colour_word_shop",
-          "description": "the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word)"
+          "description": "the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word)"
+         },
+         {
+          "const": "colour_word_shop_photo_other",
+          "description": "the shop names one colour of the named items and their card photo shows another, so the code knows neither for sure (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — the shop's colour word, photo — the colour on the photo)"
          },
          {
           "const": "colour_word_model",
-          "description": "the code knows the colour of the named items only from the model's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word)"
+          "description": "the code knows the colour of the named items only from the model's word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word)"
          },
          {
           "const": "colour_word_not_photo",
-          "description": "the colour of the named items comes from a word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word)"
+          "description": "the colour of the named items comes from a word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word)"
          },
          {
           "const": "cannot_tell_item_holds_scheme_hue",
@@ -3192,7 +3442,11 @@
          },
          {
           "const": "cannot_tell_two_neutrals_distinct",
-          "description": "so the code cannot tell whether two neutrals of one lightness differ visibly"
+          "description": "so the code cannot tell whether two neutrals of one lightness differ visibly (values, when given: items — the neutrals' items: item_id, name — the item's name on the card, slot — slot code)"
+         },
+         {
+          "const": "cannot_tell_item_is_neutral",
+          "description": "so the code cannot tell whether the named item is a neutral at all, and the rules about neutrals did not judge it"
          },
          {
           "const": "cannot_tell_neutral_near_face_temperature",
@@ -3200,7 +3454,7 @@
          },
          {
           "const": "cannot_tell_two_different_whites",
-          "description": "so the code cannot tell whether the outfit has two different whites, cream and optical"
+          "description": "so the code cannot tell whether the outfit has two different whites, cream and optical (values, when given: items — the whites' items: item_id, name — the item's name on the card, slot — slot code)"
          },
          {
           "const": "cannot_tell_accessory_spends_chroma",
@@ -3225,6 +3479,18 @@
          {
           "const": "cannot_tell_colour_families_over_limit",
           "description": "so the code cannot tell whether the outfit holds more than three colour families"
+         },
+         {
+          "const": "cannot_tell_prints_share_colour",
+          "description": "so the code cannot tell whether the prints of the mix share a colour"
+         },
+         {
+          "const": "cannot_tell_shoes_cut_leg_line",
+          "description": "so the code cannot tell whether the shoes match the leg or the bottom in lightness or cut the leg line"
+         },
+         {
+          "const": "cannot_tell_shoe_edge_contrast",
+          "description": "so the code cannot tell whether the high-cut shoe edge contrasts with the leg"
          },
          {
           "const": "cannot_tell_two_loud_colours_clash",
@@ -3516,7 +3782,7 @@
          },
          {
           "const": "cut_not_declared_assumed_regular",
-          "description": "the item cards here do not name the cut, so it was counted as an ordinary straight cut; what follows holds only if the cut really is such"
+          "description": "the item cards here do not name the cut, so it was counted as an ordinary straight cut; what follows holds only if the cut really is such (values: items — the only items without a declared cut: item_id, name — the item's name on the card; the other items keep their declared cut)"
          },
          {
           "const": "claim_boxy_cut_does_not_follow_waist",
@@ -3641,6 +3907,18 @@
          {
           "const": "coordination_rank_not_computed",
           "description": "the coordination of the outfit's colours is computed, but it gave no place among the other outfits"
+         },
+         {
+          "const": "colour_coordination_off_optimum",
+          "description": "the outfit's colours are off the moderate-coordination optimum among the candidates (values: side — matchy: more coordinated than most, or discord: more divergent; off — distance from the optimum, 0 is the optimum)"
+         },
+         {
+          "const": "more_colour_distance_between_slots",
+          "description": "take a candidate whose slots are further apart in colour: another family in one slot"
+         },
+         {
+          "const": "less_colour_distance_between_slots",
+          "description": "take a candidate whose slots are closer in colour: one slot in a neutral or in the family of another"
          },
          {
           "const": "coordination_rank_homogeneous",
@@ -5092,7 +5370,7 @@
          },
          {
           "const": "fabric_out_of_season",
-          "description": "the item's fabric reads out of season: the day is warmer or colder than its band, which is semantics rather than a thermometer (values: temperature_c — the day's temperature, band — the fabric's band from and to, direction — warmer or colder, fabrics — fabric codes; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "the item's fabric reads out of season: the day is warmer or colder than its band, which is semantics rather than a thermometer (values: temperature_c — the day's temperature, band — the fabric's band from and to, direction — warmer or colder, fabrics — fabric codes; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; season — instead of both when she named no weather: the season of her day, and band is then absent)"
          },
          {
           "const": "same_item_in_day_band_fabric",
@@ -5184,7 +5462,15 @@
          },
          {
           "const": "shoe_type_outside_temp_band",
-          "description": "shoe type outside the day's temperature band (temp_c; weather_feel — instead of temp_c when she named no degrees, the weather as she put it)"
+          "description": "shoe type outside the day's temperature band (temp_c; weather_feel — instead of temp_c when she named no degrees, the weather as she put it; season — instead of both when she named no weather: the season of her day)"
+         },
+         {
+          "const": "bare_arms_in_cold_season",
+          "description": "arms or shoulders stay bare and nothing of the look goes over them, while the season of her day is cold or changeable (values: season, zones — the bare zones)"
+         },
+         {
+          "const": "sleeved_layer_over_bare_arms",
+          "description": "a layer with sleeves over it — a jacket, a cardigan or an outer layer"
          },
          {
           "const": "take_from_day_band",
@@ -5567,6 +5853,14 @@
           "description": "the item's colour holds attention, and her goal for this outing is conceal (values: loudness — the colour's loudness, ceiling — the ceiling, area_pct — its area in the outfit as a percentage, when known)"
          },
          {
+          "const": "colour_holds_attention_in_goal_zone",
+          "description": "the item's colour holds attention in a body zone she wants to draw the eye away from (values: loudness — the colour's loudness, ceiling — the ceiling, zones — those zones, area_pct — its area in the outfit as a percentage, when known)"
+         },
+         {
+          "const": "item_draws_eye_by_itself_in_goal_zone",
+          "description": "the item draws the eye not by its colour but by itself, in a body zone she wants to draw the eye away from (values: witnesses — what draws the eye: open_zone, festive_trim, shine; zones — the zones it opens; shine_class — the class of its shine)"
+         },
+         {
           "const": "item_draws_eye_by_itself_goal_conceal",
           "description": "the item draws the eye not by its colour but by itself, and her goal for this outing is conceal (values: witnesses — what draws the eye: open_zone, festive_trim, shine; zones — the zones it opens; shine_class — the class of its shine)"
          },
@@ -5608,7 +5902,7 @@
          },
          {
           "const": "pool_cut_to_budget",
-          "description": "the full pool was over the character budget of the item list, so it was cut by the stratified sampler: a floor of items per kind, the rest in proportion to what each kind has (values: full_chars — characters of the full list; floor — items per kind)"
+          "description": "the full pool was over the token budget of the item list, so it was cut by the stratified sampler: a floor of items per kind, the rest in proportion to what each kind has (values: full_tokens — tokens of the full list; floor — items per kind)"
          },
          {
           "const": "pool_budget_not_met",
@@ -6355,6 +6649,10 @@
           "description": "Texture and fibre are unknown for the listed items; known counts cannot establish equal surfaces."
          },
          {
+          "const": "colour_measure",
+          "description": "The colour of the listed items is a word window, not a measurement; their chroma may lie on either side of the interest threshold."
+         },
+         {
           "const": "scheme_choice",
           "description": "The stylist or woman choice of the palette scheme was not supplied to the judge."
          },
@@ -6496,6 +6794,20 @@
    "no_outer_layer": "нема_верхнього_шару",
    "incomplete": "неповний"
   },
+  "absent_object": {
+   "bag": "сумка",
+   "shoes": "взуття",
+   "gloves": "рукавички",
+   "tights": "колготи",
+   "jewelry": "прикраси",
+   "necklace": "кольє",
+   "metal": "метал",
+   "top_or_bottom": "верх_низ",
+   "more_pieces": "додаткові_речі",
+   "outerwear": "верхній_шар",
+   "headwear": "головний_убір",
+   "scarf": "шарф"
+  },
   "occasion": {
    "everyday": "щоденне",
    "work": "робота",
@@ -6621,6 +6933,20 @@
    "spring": "весна",
    "summer": "літо",
    "autumn": "осінь"
+  },
+  "month": {
+   "january": "січень",
+   "february": "лютий",
+   "march": "березень",
+   "april": "квітень",
+   "may": "травень",
+   "june": "червень",
+   "july": "липень",
+   "august": "серпень",
+   "september": "вересень",
+   "october": "жовтень",
+   "november": "листопад",
+   "december": "грудень"
   },
   "weather_feel": {
    "frost": -10.0,

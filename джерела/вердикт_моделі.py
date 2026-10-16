@@ -173,6 +173,8 @@ _БЕЗ_ГЕЙТІВ = {
                  як="think each outfit through against her day item by item: replace an item that will not "
                     "stand the day, or say gently in the outfit's «day» why it stays; write «day» anew "
                     "together with the items"),
+        _ЗП.Поле("item_keys", "what the keys of the items in «verdict» and «showcase» mean, and defaults for omitted values",
+                 як="read every item by these keys; restore every absent key that has an `absent =` default"),
         _ЗП.Поле("verdict", "the code's check of each outfit you put together: «your_outfit» — its items with "
                             "full descriptions, caption and «day» (your sentence about her day in it); "
                             "«your_declared» — the moves you declared in «deliberate»; «structure»; "
@@ -210,9 +212,13 @@ _БЕЗ_ГЕЙТІВ = {
                              "shine, print or a rich fabric on a garment, three_hue_families — three or "
                              "more colour families; «not_measured» — outfits with an item whose colour the "
                              "code does not know, so it could not measure them",
-                 як="keep at least «keep_at_least» of them among the outfits you return, the ones that "
-                    "answer her occasion best, and do not repair their signs away; an outfit of "
-                    "«not_measured» you judge by its items yourself, and it counts when you find it bold"),
+                 # рядок 5239: «keep at least «keep_at_least» of them among the outfits you return» qwen3.5-9b
+                 # читала як «скільки повернути»: з «keep_at_least: 2» «chosen» із двох — у 8 з 11 пар живих
+                 # 1510 А (без «bold» — 4 з 16)
+                 як="of the «outfits_wanted» outfits you return, at least «keep_at_least» are from these — the "
+                    "ones that answer her occasion best — and do not repair their signs away; it does not "
+                    "change how many you return. An outfit of «not_measured» you judge by its items "
+                    "yourself, and it counts when you find it bold"),
         _ЗП.Поле("set.not_done", "gate findings that still stand in the new check and are not named in «done»",
                  як="give each an entry in «done» of its outfit, or drop the outfit"),
         _ЗП.Поле("showcase", "items you have not taken yet: for missing kinds of items, for kinds where the set "
@@ -223,6 +229,7 @@ _БЕЗ_ГЕЙТІВ = {
                                "far from the face that is the tightest spot in most outfits",
                  як="a break you already declared («your_declared») stays in its own kind; a new break — "
                     "only with an entry in «deliberate»"),
+        # рядок 6213 (б): поле їде лише з порушеннями (`дріт_моделі.вердикт`)
         _ЗП.Поле("language", "violations in your previous text", як="do not repeat them; «instead» — what to use"),
         _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
         _ЗП.Поле("outfits_wanted", "how many outfits to return", треба=True),
@@ -234,11 +241,15 @@ _БЕЗ_ГЕЙТІВ = {
         # не міняє і за зауваженнями не сортує — порядок вердикта лише названо таким, що нічого не каже.
         "First choose: in «chosen» name the «outfits_wanted» outfits of «verdict» you keep, and in «why» of "
         "each say what in «case» it answers — her occasion, «intent», «goal», her own words — so that their "
-        "ideas («pole») differ. Read every outfit of «verdict» before you choose: its place in «verdict» is "
-        "only the order they were put together and says nothing about her. Do not choose by how many remarks "
+        "ideas («pole») differ. Read every outfit of «verdict» before you choose: «verdict» comes in an order "
+        "drawn by lot, and an outfit's place in it says nothing about her. Do not choose by how many remarks "
         "an outfit has or how mild they are: an outfit that answers her better stays with its remarks.",
         "«outfits» of the answer are exactly the outfits named in «chosen», in that order, each improved; an "
         "outfit you did not choose is not written.",
+        # СКЛАДАННЯ-ЧИТАННЯ (рядок 4040): ремонт повертав образи по 1–2 речі (лише змінену сукню чи спідницю) —
+        # повнота такі відкидає; у 27 відповідях живих 1510 А 10 образів зі складу 4–6 речей стали трьома
+        "An improved outfit is whole: «items» lists all its items, the ones you kept and the ones you put in; an "
+        "item leaves it only when you replace it or remove it for a finding.",
         # СТЕЛЯ-РЕМОНТУ (рядок 3640; аудит/ПРОДУКТ.md п.17): «fix it, or keep the item and say why in «done»»
         # модель читала як «запис на кожне зауваження»: у 47 записаних відповідях ремонту — 942 записи
         # «done», 56 % символів, і 8 із 8 обривів об стелю 4000 т. — такі; «fixed» стояв і над речами,
@@ -280,8 +291,14 @@ _БЕЗ_ГЕЙТІВ = {
     ),
     вихід="ОБРАЗИ_V1",
     поля_виходу=dict(_ПОЛЯ_ОБРАЗІВ, **{
-        "обрано[].ід": "«id» of an outfit of «verdict» you keep",
-        "обрано[].чому": "what in «case» this outfit answers, a few words",
+        # рядок 5239: у скелеті «chosen» — один запис, і з «keep_at_least: 2» ремонт лишав два образи з п'яти
+        "обрано[].ід": "«id» of an outfit of «verdict» you keep: «chosen» has one entry for each of the "
+                        "«outfits_wanted» outfits",
+        # рядок 4040: «why» у 15 з 88 записів «chosen» живих 1510 А — понад 200 симв. (до 262), у ЖИВІ-16 — роздуми
+        # на 2 тис.
+        "обрано[].чому": "what in «case» this outfit answers: one short sentence, up to 20 words",
+        "образи[].речі": "«n» of each item of the improved outfit, alone: all its items, not only the ones you "
+                         "changed",
         "образи[].ід": "«id» of the «your_outfit» you improved",
         "образи[].виконано[].знахідка": "an «id» from «gates» of this outfit",
         "образи[].виконано[].чому": "only with declined: why you keep it, one sentence",
@@ -291,6 +308,9 @@ _БЕЗ_ГЕЙТІВ = {
     межі=("лише_вхід",),
     мова_промпту="en",
     скелет_наприкінці=True,  # рядок 4531: за схемою відповіді — лише кінець промпту
+    # рядок 5239: за схемою — лише цей рядок; він називає кінець місцем, а не переліком ключів (рядок 4291)
+    наприкінці="Now write your answer: one object of the form above, from {\"version\" to the brace that "
+               "closes it right after «needed». The answer is over at that brace.",
 )
 
 
@@ -434,6 +454,9 @@ def знахідки_вердикту(знахідки, образ, ном=None)
         # її регістр «репліка», і гейт сережок сховався б за її сукнею.
         п = str(z["правило"]) + ("·її річ" if z.get("без_замків") else "")
         речі = [str(r) for r in (z.get("речі") or []) if r not in (None, "")]
+        # 5238: учасники гейту окремі від речей інформаційної репліки того ж правила.
+        if _ПР.регістр_знахідки(z) == "гейт":
+            z = dict(z, гейт_речі=list(z.get("гейт_речі", речі)))
         if п not in злиті:
             злиті[п] = dict(z, речі=речі, злито=1)
             порядок.append(п)
@@ -446,6 +469,9 @@ def знахідки_вердикту(знахідки, образ, ном=None)
         # знахідки, і модель читала «+1 за цим самим правилом», не знаючи, про що те «+1» —
         # K-BOD-02 «деталь на талії» тіла O зникала під геометричним «ні колони» на тій самій речі.
         зв = dict(z if якщо_сильніша else м, речі=усі_речі, злито=м["злито"] + 1)
+        if "гейт_речі" in м or "гейт_речі" in z:
+            зв["гейт_речі"] = list(dict.fromkeys(list(м.get("гейт_речі") or [])
+                                               + list(z.get("гейт_речі") or [])))
         for _к in ("заяви", "ремонт_заяви"):
             _усі = list(зв.get(_к) or []) + [x for x in ((м if якщо_сильніша else z).get(_к) or [])
                                                if x not in (зв.get(_к) or [])]
@@ -471,6 +497,8 @@ def знахідки_вердикту(знахідки, образ, ном=None)
             сила=z.get("сила"), сила_нп=round(float(z.get("сила_нп") or 0), 2),
             регістр=рег, суть=суть, ремонт=_номери_в_тексті(_ремонт_рядком(z), ном),
             речі=[номер_речі(r, ном) for r in z["речі"]],
+            **({"гейт_речі": [номер_речі(r, ном) for r in z["гейт_речі"]]}
+               if "гейт_речі" in z else {}),
             свідомий=bool(z.get("свідомий")),
             # ДРУГИЙ КОД ДОЇЖДЖАЄ НА ДРІТ (17.09.2026). Правило, чий вимір
             # збігається з чужим, окремого рядка не дістає — але й зникати не
@@ -492,14 +520,14 @@ def знахідки_вердикту(знахідки, образ, ном=None)
 
 def чекліст_вердикту(чеклісти):
     """`суд_образу.чеклісти` (пункти зі станом) → `ВЕРДИКТ_V1.чекліст`: провалені пункти
-    словами, решта — лічбою. Тристановість зберігається: «без входу» ≠ «пройдено»."""
+    словами, решта — лічбою. Стани не зливаються: «без входу» («немає входу») ≠ «пройдено», і
+    «не стосується» (рядок 5281) — окрема лічба з переліком `не_стосується_чому` для звіту власника."""
     if not isinstance(чеклісти, dict):
         return None
     вих = {}
     # ТРЕТІЙ БІК — ПАЛІТРА (K-PAL, 17.09.2026). Додано сюди, а не окремим полем:
-    # форма пункта та сама (провал словами, решта лічбою), і тристановість тут
-    # важить найбільше — саме в цьому списку «без входу» є нормальним станом
-    # (сивини нема, бік температури утримано), а не дефектом.
+    # форма пункта та сама (провал словами, решта лічбою). Сивини нема — тепер
+    # «не стосується» (рядок 5281), бік температури утримано — «без входу».
     for бік in ("надлишок", "прісність", "палітра", "аксесуари"):
         пункти = [p for p in (чеклісти.get(бік) or []) if isinstance(p, dict)]
         if not пункти:
@@ -510,7 +538,16 @@ def чекліст_вердикту(чеклісти):
                         # (`протокол._чекліст_на_дріт`); імена вище — для звіту власника
                         провал_ід=[p.get("пункт") for p in пункти if p.get("стан") == "провал"],
                         пройдено=sum(1 for p in пункти if p.get("стан") == "пройдено"),
-                        без_входу=sum(1 for p in пункти if p.get("стан") == "без входу"))
+                        без_входу=sum(1 for p in пункти if p.get("стан") == "без входу"),
+                        не_стосується=sum(1 for p in пункти if p.get("стан") == "не стосується"))
+        _нс = [dict(що=str(p.get("що") or ""), пункт=p.get("пункт"), чому=p.get("чому"))
+               for p in пункти if p.get("стан") == "не стосується"]
+        if _нс:
+            вих[бік]["не_стосується_чому"] = _нс
+        _ст = [dict(що=str(p.get("що") or ""), пункт=p.get("пункт"), чому=p.get("чому"))
+               for p in пункти if p.get("стан") == "без входу" and p.get("стале")]
+        if _ст:
+            вих[бік]["стале_чому"] = _ст                  # рядок 5283: сталий брак входу — названа черга звіту
         # ── ПРОВАЛЕНИЙ ПУНКТ НАЗИВАЄ СВОЇ ПРАВИЛА (друге проходження гейта) ───
         # ЩО ЦЕ МІНЯЄ (правило 3, before/after). Пункт чекліста НЕСЕ
         # `правила=[...]` — це його половина змісту: «бюджет хроми» без K-COL-02
@@ -521,8 +558,9 @@ def чекліст_вердикту(чеклісти):
 
         # ── ЩО САМЕ ВИМКНЕНО, А НЕ ЛИШЕ СКІЛЬКИ (17.09.2026) ─────────────────
         # Лічба «без входу: 4» каже, що черга є, і не каже, з чого вона. Для
-        # трьох перших боків цього досі вистачало (там «без входу» нормальний
-        # стан — сивини нема, принту нема), для аксесуарного не вистачає: там
+        # трьох перших боків цього досі вистачало (там «без входу» був нормальний
+        # стан — сивини нема, принту нема; з рядка 5281 це «не стосується» з
+        # `чому`), для аксесуарного не вистачає: там
         # у черзі стоять ПРАВИЛА КОРПУСУ, і вимкнене правило без назви поля —
         # це та сама тиша, яку весь цей шар і ловить.
         # ── `вхід` — ТЕЖ НАЗВА ТОГО, ЧОГО БРАКУЄ (друге проходження гейта) ────
@@ -537,7 +575,7 @@ def чекліст_вердикту(чеклісти):
         # пункт більше не виходить безіменним.
         _бракує = [dict(що=str(p.get("що") or ""), пункт=p.get("пункт"),
                         бракує=p.get("бракує") or [dict(code="point_input_unknown", point=_ВМ.код_пункту(p.get("пункт")))],
-                        правила=list(p.get("правила") or ()))
+                        правила=list(p.get("правила") or ()), **({"чому": p["чому"]} if p.get("чому") else {}))
                    for p in пункти if p.get("стан") == "без входу"
                    and (p.get("бракує") or p.get("вхід"))]
         if _бракує:
@@ -1332,7 +1370,8 @@ def риси_образу(речі, тіло=None, ном=None):
     # П.14 (СТАНДАРТ §4): `схема = None` — це «сімей кольору не порахувати», і
     # так його читає журнал вердикту. Ковтати сюди поломку `кластери` означало б
     # звітувати ту саму порожнечу над образом, у якого схема Є.
-    вих["схема"] = sorted({к["сім_я"] for к in _КОЛІР.кластери(_O.елементи(речі))})
+    # сім'я кольору зі слова, чиє вікно лежить у кількох сім'ях, — None (рядок 2851): у схему не йде
+    вих["схема"] = sorted({к["сім_я"] for к in _КОЛІР.кластери(_O.елементи(речі))} - {None})
     вих["крої"] = sum(1 for r in речі if _O.крій_речі(r))
     if тіло and вих["крої"] >= _РЕЄСТР.C["крою_для_літери"]:
         # П.14: `silhouette.літера` САМ каже полем `доступно`, коли літери нема

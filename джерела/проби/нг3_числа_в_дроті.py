@@ -5,8 +5,8 @@
 зі шкалою («1 to 10», «5–7 office», «9 gala»). Друкує факт. Запуск із `джерела`: [PRYKLAD=1] python3 проби/нг3_числа_в_дроті.py"""
 import json, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
-import bridge as B, feed as F
-ПОЛЯ = {"formality", "fo", "up_to", "formality_from_photo", "event_level", "fabric_level", "cut_level", "target",
+import bridge as B, feed as F, збирач_промптів as ЗП
+ПОЛЯ = {"formality", "up_to", "formality_from_photo", "event_level", "fabric_level", "cut_level", "target",
         "register_band", "occasion_band", "spread", "steps", "steps_over"}
 ЗАЯВА_ОШ = re.compile(r"formality|occasion|dress_code_band|shoes_in_band|event_level|outfit_level")  # чий `band` — ошатність
 ТЕКСТ = re.compile(r"\b(?:1 to 10|1[–-]10)\b|\b\d+[–-]\d+ office\b|\b\d+ (?:home|caf[eé]|gala|ceremony|theatre|evening out)\b")
@@ -36,4 +36,4 @@ for ім, сц in СЦЕНИ.items():
     print("%-14s чисел шкали ошатності: %s · пул %s речей, %s симв."
           % (ім, " · ".join("%s %s" % кв for кв in н.items()), з.get("пул_речей"), len(пп["складання"])))
     if os.environ.get("PRYKLAD"):  # приклад рядка пакета: день і перша річ пулу
-        с = json.loads(пп["складання"]); print("   day:", json.dumps(с.get("day"), ensure_ascii=False), "\n   річ:", json.dumps(с["pool"][0], ensure_ascii=False)[:400])
+        с = json.loads(пп["складання"]); print("   day:", json.dumps(с.get("day"), ensure_ascii=False), "\n   річ:", json.dumps(ЗП.рядки_таблиці(с["pool"])[0], ensure_ascii=False)[:400])

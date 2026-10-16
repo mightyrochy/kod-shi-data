@@ -20,11 +20,12 @@ def проба():
             відповіді = []
             for зап in р['запити']:
                 д = json.loads(зап['текст']); викликів += 1
+                if 'pool' in д: print(спосіб, 'replace prompt', len(зап['текст']), 'chars', len(д['pool']['rows']), 'items')
                 assert len(д['replacement']['fixed_outfit']) == 3
                 assert 'not as part of an outfit' not in str(д['task'])
                 а = ({'version':'1', 'ratings':{x['n']:'fits' for xs in д['items'].values() for x in xs}} if 'items' in д else
                      {'version':'1', 'winners':{г:[x['n'] for x in xs[:2]] for г,xs in д['groups'].items()}} if 'groups' in д else
-                     {'version':'1', 'outfits':[{'id':'o1', 'items':[д['pool'][0]['n']]}]})
+                     {'version':'1', 'outfits':[{'id':'o1', 'items':[д['pool']['rows'][0][0]]}]})
                 відповіді.append(dict(ключ=зап['ключ'], текст=json.dumps(а)))
             стан = dict(з, текст=відповіді[0]['текст']) if any(п['ключ']=='replace' for п in р['запити']) else dict(з, стан=р['стан'], відповіді=відповіді)
         assert р['річ']['id'] != з['ід'] and р['річ']['слот'] == 'взуття' and з['речі'] == речі
