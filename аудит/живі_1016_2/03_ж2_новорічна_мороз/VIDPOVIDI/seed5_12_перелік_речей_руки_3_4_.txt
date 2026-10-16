@@ -1,0 +1,44 @@
+── ПРОМПТ (2419 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "The Velvet-Black Wrap Blazer, structured fit with wide lapels, knee-length, #0A0A0A velvet; the Midnight-Gold Pleated Trouser, tailored high-rise cut, full length, #1C1814 silk blend.\n\nThe Obsidian-Stiletto Pump, pointed toe, ankle-height, #0F0F0F patent leather.\n\nThe Champagne-Edelweiss Drop Earring, classic drop silhouette, small, #E8D6C5 sterling silver and cubic zirconia; the Frosted-Mist Cashmere Scarf, rectangular loose drape, collar-length, #D8D3CE cashmere.\n\nThis outfit works perfectly for an upscale New Year's party because the velvet blazer provides the necessary richness and warmth required by the frosty autumn weather while adhering to her refusal of outer layers only when needed. The deep black tones against the warm gold accents create a sophisticated contrast that fits both smart and formal dress codes without appearing too casual or overly severe. The luxurious fabrics like silk blend and cashmere ensure comfort during the evening celebration, allowing her to move gracefully through the restaurant while looking polished and festive."}
+
+── ВІДПОВІДЬ (975 симв., 91.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Velvet-Black Wrap Blazer",
+      "details": "structured fit with wide lapels, knee-length",
+      "slot": "outerwear",
+      "color_hex": "#0A0A0A",
+      "worn": true
+    },
+    {
+      "name": "Midnight-Gold Pleated Trouser",
+      "details": "tailored high-rise cut, full length",
+      "slot": "bottom",
+      "color_hex": "#1C1814",
+      "worn": true
+    },
+    {
+      "name": "Obsidian-Stiletto Pump",
+      "details": "pointed toe, ankle-height",
+      "slot": "shoes",
+      "color_hex": "#0F0F0F",
+      "worn": true
+    },
+    {
+      "name": "Champagne-Edelweiss Drop Earring",
+      "details": "classic drop silhouette, small",
+      "slot": "earrings",
+      "color_hex": "#E8D6C5",
+      "worn": true
+    },
+    {
+      "name": "Frosted-Mist Cashmere Scarf",
+      "details": "rectangular loose drape, collar-length",
+      "slot": "scarf",
+      "color_hex": "#D8D3CE",
+      "worn": true
+    }
+  ]
+}

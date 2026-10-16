@@ -1,0 +1,56 @@
+── ПРОМПТ (7697 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лілова сукня з паєтками · kind code: dress_generic · colour code: purple · about it: text н=1
+2 — Жіноче вовняне пальто casual з хлястиком і накладними кишенями Bella Bicchi (рожевий, 36) · kind code: coat · colour code: pink · about it: text н=2
+3 — Комплект з підвіски та сережок з малюнком · kind code: earrings · colour code: black · about it: text н=3
+4 — Жіноча сумка через плече коричнева замшева · kind code: crossbody_bag · colour code: brown · about it: text н=4
+5 — Ботильйони коричневі DOUBLE на шкірі · kind code: ankle_boots · colour code: brown · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; pink — рожевий; purple — фіолетовий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A floor-length dress covered in fine purple sequins, featuring a high mock neck and long sleeves. It flares gently at the hem to skim over your ankles while highlighting your waistline."},
+{"н": 2, "текст": "A tailored wool coat in dusty pink with a broad collar that can be worn open or closed. Its structured silhouette and side pockets offer both style and warmth without adding bulk."},
+{"н": 3, "текст": "An elegant gold-tone set including a delicate chain necklace with a colorful enamel pendant and matching stud earrings, adding subtle luxury to your ensemble."},
+{"н": 4, "текст": "A sophisticated brown suede crossbody bag with a minimalist flap design and polished metal hardware, offering quiet refinement as you move through the evening."},
+{"н": 5, "текст": "Brown leather wedge ankle boots with a pointed toe and textured crocodile finish provide height and comfort while maintaining a sleek silhouette under your dress."},
+{"н": 6, "текст": "You will shine in this look: the deep purple sequined dress sets a festive tone while the soft pink coat adds warmth for the frosty air. The brown suede bag grounds your silhouette, and the brown leather boots keep you comfortable on any dance floor. Together, they balance warmth and elegance, perfect for an upscale New Year’s gathering."},
+{"н": 7, "текст": "Wear the coat open over the dress to show off the shimmering fabric and elongate your figure"},
+{"н": 8, "текст": "Keep the bag in front of you so it feels like a natural extension of the outfit, not clutter"},
+{"н": 9, "текст": "Let the boots wrap snugly around your ankle to maintain a clean, vertical line that draws attention upward"},
+{"н": 10, "текст": "Лілова сукня з паєтками, Жіноча сумка через плече коричнева замшева, Ботильйони коричневі DOUBLE на шкірі — This outfit serves her intent as a celebration look where one bold focal point (the sequined dress) is allowed to break the default formula, making it suitable for an upscale festive occasion despite being visually loud."},
+{"н": 11, "текст": "Лілова сукня з паєтками — Chosen as the anchor piece despite being 'ceremonial' formality because the case requires an outfit for a 'celebration' in a 'restaurant_upscale'; its sequins provide the required festive expression, and the maxi length is appropriate for dancing or seated close-up views."}
+]
+
+── ВІДПОВІДЬ (2356 симв., 32.0 с, HTTP 200) ──
+```json
+{
+  "1": "Довга сукня з дрібними фіолетовими паєтками, що має високий стійка та довгі рукави. Вона м’яко розширюється донизу, щоб ледь торкатися твоїх щиколоток і підкреслювати лінію твоєї талії.",
+  "2": "Приталене вовняне пальто в пильно-рожевому кольорі з широким коміром, який можна носити розстебнутим або застебнутим. Його структурований силует і бічні кишені пропонують стиль та тепло без зайвого об’єму.",
+  "3": "Елегантний золотистий комплект, що включає ніжне намисто з кольоровим емалевим кулоном і відповідні сережки-гвоздики, які додають витончену розкіш твоєму образу.",
+  "4": "Вишукана коричнева замшева сумка через плече з мінімалістичним клапаном та полірованою металевою фурнітурою, що пропонує тиху елегантність під час твоїх вечірніх прогулянок.",
+  "5": "Коричневі шкіряні ботильйони на платформі з загостреним носком і текстурованою крокодиловою обробкою додають висоту та комфорт, зберігаючи при цьому витончений силует під твоєю сукнею.",
+  "6": "Ти сяятимеш у цьому образі: глибока фіолетова паєткова сукня створює святковий настрій, а м’яке рожеве пальто додає тепла в морозну погоду. Коричнева замшева сумка завершує твій силует, а коричневі шкіряні ботильйони забезпечують комфорт на будь-якій танцювальній площадці. Разом вони поєднують тепло та елегантність, ідеальні для вишуканого новорічного зібрання.",
+  "7": "Одягни пальто розстебнутим поверх сукні, щоб продемонструвати блискучу тканину та видовжити свою фігуру",
+  "8": "Тримай сумку спереду так, щоб вона відчувалася як природне продовження твого образу, а не захаращувала його",
+  "9": "Нехай ботильйони щільно облягають твою щиколотку, підтримуючи чисту вертикальну лінію, яка привертає увагу вгору",
+  "10": "Фіолетова сукня з паєтками, коричнева замшева сумка через плече та коричневі шкіряні ботильйони DOUBLE — Цей образ відповідає твоєму наміру як святковому, де один сміливий акцент (паєткова сукня) дозволений порушити стандартну формулу, що робить його придатним для вишуканої урочистої події, незважаючи на свою візуальну яскравість.",
+  "11": "Фіолетова паєткова сукня — Обрана як основний елемент, попри те, що вона має «церемоніальну» формальність, тому що випадок потребує образу для «святкування» в «ресторані_вишуканому»; її паєтки забезпечують необхідне святкове вираження, а максі-довжина підходить для танців або близького огляду."
+}
+```
