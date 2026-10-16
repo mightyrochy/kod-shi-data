@@ -1386,6 +1386,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "accent role the palette scheme gave its slot",
     "cannot_tell_colour_families_over_limit": "so the code cannot tell whether the outfit holds more than three "
                                               "colour families",
+    "cannot_tell_prints_share_colour": "so the code cannot tell whether the prints of the mix share a colour",
+    "cannot_tell_shoes_cut_leg_line": "so the code cannot tell whether the shoes match the leg or the bottom in "
+                                      "lightness or cut the leg line",
+    "cannot_tell_shoe_edge_contrast": "so the code cannot tell whether the high-cut shoe edge contrasts with the leg",
     "cannot_tell_two_loud_colours_clash": "so the code cannot tell whether two loud colours compete for "
                                           "attention",
     "cannot_tell_items_intensity_match": "so the code cannot tell whether the outfit's items match in colour "
@@ -3186,7 +3190,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
 # ~1 350 знаків кирилиці від коду на виклик. ЩО ТЕПЕР. На дроті — код порушення
 # (`language_gate.КОДИ_ПОРУШЕНЬ`: ід правила гейта → код) і збіги з її тексту; що не так і що
 # натомість, модель читає у визначенні коду. Українські `суть` і `дозволено` лишаються в гейті —
-# для звіту власника; ід правил на дріт не йдуть, як і доти (Р-1).
+# для звіту власника; ід правил у визначеннях кодів порушень мови на дріт не йдуть (Р-1, мова_046); ід у визначеннях
+# `ЗАЯВИ` лишаються — це код внутрішньої мови (п.12), обидві моделі читають їх у `statement_codes`.
 ПОРУШЕННЯ_МОВИ = {
     "russian_in_text": "Russian in the text for her: a Russian word, ending or letter. Instead: the same "
                        "meaning in Ukrainian, without a single Russian word or ending (R-LNG-UA)",
@@ -3370,6 +3375,7 @@ if _спільні:
     'metal_surface_share': 'The check needs measured metal surface share from enrichment v2; named metal is not coverage.',
     'shared_photo': 'The named item fields are unknown because the shop photo is shared with other products (R-FEED-06).',
     'item_surface': 'Texture and fibre are unknown for the listed items; known counts cannot establish equal surfaces.',
+    'colour_measure': 'The colour of the listed items is a word window, not a measurement; their chroma may lie on either side of the interest threshold.',
     'scheme_choice': 'The stylist or woman choice of the palette scheme was not supplied to the judge.',
     'passport_author': 'The language model conversation author of the passport was not supplied to the judge.',
     'point_input_unknown': 'The referenced checklist point lacks its required input. Do not treat this as a pass.',

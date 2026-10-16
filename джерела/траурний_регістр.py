@@ -307,12 +307,14 @@ def траурний_регістр_речі(r):
                 "здебільшого" if частка > ЧАСТКА_БІЛЬШОСТІ_ТРАУРУ else "ні")
         return dict(стан=стан, частка=частка, свідок="слово", слово=слово,
                     L=tuple(вікно[:2]), C=tuple(вікно[2:4]), грубість=найменша, чому=чому)
-    lab = r.get("lab")
+    # точка — лише вимір (КОЛІР-ТОЧКА-СУДУ, рядок 2851): колір зі слова без вікна — «кольору нема»,
+    # а не центр вікна як вимір
+    import colorspace as _КС, колір_річ as _КР
+    lab = _КР.точка_кольору(r)
     if not lab:
         return dict(стан=None, частка=None, свідок=None, слово=None, L=None, C=None,
                     грубість=None, чому="кольору нема — незнання не відсівається")
-    import colorspace as _КС
-    L, C, _h = _КС.lch(tuple(lab))
+    L, C, _h = _КС.lch(lab)
     г = _грубість_трауру(L, C)
     чому = "виміряно L*%.0f C*%.0f — %s" % (L, C, "темне й тихе" if г <= 0.0 else
                                             "світле або яскраве для трауру")
@@ -324,10 +326,11 @@ def траурний_регістр_речі(r):
     # серед речей регістру з темним іменем і світлою більшою площею однотонних і без
     # візерунка 27, і це чорні ж-11125@theoriginals «Чорна облягаюча спідниця» (світла
     # площа 94 %), ж-11044@skripka «Сумка DANDY чорна» (85 %) — тло, а не річ.
-    кк = [c for c in (r.get("colors") or []) if isinstance(c, dict) and c.get("lab")]
+    кк = [(c, _lab_кольору(c)) for c in (r.get("colors") or []) if isinstance(c, dict)]
+    кк = [(c, lab_) for c, lab_ in кк if lab_ is not None]
     if len(кк) >= 2 and г <= 0.0 and r.get("візерунок") not in (None, "", "solid"):
-        осн = max(кк, key=lambda c: float(c.get("coverage") or 0.0))
-        L2, C2, _h2 = _КС.lch(tuple(осн["lab"]))
+        осн, lab2 = max(кк, key=lambda к: float(к[0].get("coverage") or 0.0))
+        L2, C2, _h2 = _КС.lch(lab2)
         г2 = _грубість_трауру(L2, C2)
         if г2 > 0.0:
             L, C, г = L2, C2, г2
@@ -347,9 +350,20 @@ def основний_колір(r, e):
     if len(кк) < 2:
         return True
     import colorspace as _КС
-    осн = max(кк, key=lambda c: float(c.get("coverage") or 0.0))
-    lab = осн.get("lab") or (_КС.hx(осн["hex"]) if осн.get("hex") else None)
-    return bool(lab and e.get("lab")) and _КС.de00(tuple(lab), tuple(e["lab"])) < 1.0
+    # ТОТОЖНІСТЬ, НЕ ВИМІР: елемент — той самий запис `colors`, і порівнюються дані входу одним розбором
+    # (`lab_входу`), тож основний колір зі слова теж знаходить свій елемент (центр тут — не вимір)
+    lab, lab_е = _lab_кольору(max(кк, key=lambda c: float(c.get("coverage") or 0.0))), _lab_кольору(e)
+    return bool(lab and lab_е) and _КС.de00(lab, lab_е) < 1.0
+
+
+def _lab_кольору(к):
+    """Lab-трійка кольору запису (`colors[*]`) чи елемента через `колір_річ.lab_входу` — той самий
+    розбір, що дав lab елементам суду; None — кольору нема чи він хибний."""
+    import колір_річ as _КР
+    try:
+        return _КР.lab_входу(к)
+    except (ValueError, TypeError):
+        return None
 
 
 def _прикраса_не_з_металу(r):

@@ -740,7 +740,8 @@ def _без_входу(о, сцен, речі):
                 вих.append(dict(rule=[з.get("правило")], kind=відро,
                                 items=[_до_фото(х, за_ід) for х in (з.get("речі") or []) if х != "образ"],
                                 what={"free_text": str(з.get("суть") or ""), "lang": "uk"},
-                                **({"statements": list(з["заяви"])} if з.get("заяви") else {})))
+                                **({"statements": list(з["заяви"])} if з.get("заяви") else {}),
+                                **({"missing": [str(з["бракує"])]} if з.get("бракує") else {})))   # рядок 6095: поле
     return вих
 
 
@@ -1034,8 +1035,8 @@ def _слово_сильніше(речі):
         р["вимір"] = dict(lab=None, маска=вим.get("маска"), рамка_виміру=вим.get("рамка_виміру"),
                           чому=вим.get("чому"), причина=вим.get("причина") or ПРИЧИНА_ЇЇ_СЛОВО,
                           гілка=вим.get("гілка"),
-                          ненадійний={к: вим.get(к) for к in ("hex", "слово", "частка", "кластери")
-                                      if вим.get(к) is not None} or None)
+                          ненадійний=({к: вим.get(к) for к in ("hex", "слово", "частка", "кластери")
+                                       if вим.get(к) is not None} or вим.get("ненадійний") or None))
         р["колір_її_слово"] = True
     return речі
 
@@ -1540,14 +1541,16 @@ def прийняти_допит(відповідь):
 
 
 # Поле, якого бракує пункту чекліста (`суд_чеклісти._чому_без_входу`: «<рід>:<поле>»), → код входу на дроті.
-# Сталий брак і поля, яких не пише система (`system:`), сюди не потрапляють: вони — лише у звіті (П2(а)).
+# Сталий брак, поля, яких не пише система (`system:`), і не передані шляхом (`not_passed:`, рядок 5705) сюди
+# не потрапляють: вони — лише у звіті (П2(а)).
 _ВХІД_КОД = {"lab": "item_colour", "візерунок": "item_pattern", "площа": "item_area", "крій": "item_cut",
              "тип": "item_kind", "блиск": "item_shine", "слот": "item_slot", "край_джерело": "item_hem_length",
              "метал": "item_metal", "текстура": "item_fabric_texture", "near_дистанція": "viewing_distance",
              "вікна": "her_palette", "волосся": "her_hair_colour", "бік_температури": "her_undertone_side",
              "очі": "her_eye_colour", "шкіра_волосся": "her_skin_hair_colour", "den": "tights_den",
              "ланцюг_см": "chain_length", "ремінь_см": "bag_strap_length", "ремонтопридатна": "shoe_sole_construction",
-             "темп_c": "temperature", "частка_металу": "item_metal_share"}
+             "темп_c": "temperature", "частка_металу": "item_metal_share",
+             "довжина_виробу_см": "item_length_cm"}      # рядок 5710: річ каталогу без числа крамниці
 # Похідне від входу сцени (клас E дослідження 5280): без нагоди нема й дистанції огляду, без погоди — погоди дня.
 _ПОХІДНЕ_ВІД = {"viewing_distance": "occasion", "temperature": "temperature"}
 # Заяви правил про вхід, якого система не пише ні зі слів жінки, ні з фото, ні з фіду (рядок 5815; слово власника
@@ -1590,7 +1593,7 @@ def невідоме_для_моделі(суд_):
         if б.get("input"):
             вих.append(dict(no_input=[б["input"]], **({"items": б["items"]} if б.get("items") else {})))
         elif б.get("check"):
-            if not б.get("why") or б.get("constant") or str(б["why"]).startswith("system:"):
+            if not б.get("why") or б.get("constant") or str(б["why"]).startswith(("system:", "not_passed:")):
                 continue        # без причини (запис до 5281) — лише у звіті власника, як і сталий брак
             вхід, чому = _позначка_пункту(б)
             if _ПОХІДНЕ_ВІД.get(вхід) not in входи:
