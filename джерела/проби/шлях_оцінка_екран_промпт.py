@@ -14,7 +14,7 @@ exec(open('проби/шлях_оцінка_екран_образ.py', encoding=
 t = об["task"]
 print("промпт відповіді: %d симв.; ключі шаблону: %s" % (len(п), ", ".join(t)))
 print("  поле «question» у вході: %s; перше поле відповіді: %s; правило №1: %s"
-      % ("question" in об, list(t["answer_schema"])[0], t["rules"][0][:60]))
+      % ("question" in об, list(об["answer_schema"])[0], t["rules"][0][:60]))
 print("  що бачить модель: речей %d (колір виміряно в %d), образ %s, знахідок суду %d, пунктів чеклістів %d, "
       "«без входу» %d" % (len(об["items"]), sum(1 for р in об["items"] if р.get("color_measured")),
                           "+".join(об["outfit"]), len(об["check"].get("findings") or []),
