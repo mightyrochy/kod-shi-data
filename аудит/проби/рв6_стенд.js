@@ -3039,7 +3039,7 @@ function підсумокМоделі(){
 
   /* ── PAL_DOTYK (рядок 5911): ДОТИК ПІСЛЯ ЕКРАНА «ПАЛІТРА» — ТА САМА НАГОДА В ПАЛІТРІ Й У РУКАХ ──
      Стилістка вже обрала на екрані (вище). `PAL_DOTYK=так` — дотик до ошатності (`#сц-дрес`, її обробник `onchange`)
-     на код, якого там нема; `PAL_DOTYK=ні` — без дотику. Тоді «Зібрати образи» і, коли є картки рук 1–2: скільки
+     на код, якого там нема; `PAL_DOTYK=ні` — без дотику; `перед` — нижче. Тоді «Зібрати образи» і, коли є картки рук 1–2: скільки
      запитів `вибір_палітри` (перший крок, без відповіді моделі), паспорт і сценарій останнього з них проти входу
      `запити`, `occasion`/`day` промпта палітри проти `case`/`day` рук, рядки діагнозу палітри. Далі стенд не йде. */
   if (process.env.PAL_DOTYK){
@@ -3064,6 +3064,9 @@ function підсумокМоделі(){
       return {було: було || null, стало: д.value || null};
     }, process.env.PAL_DOTYK !== 'ні');
     console.log('PAL_DOTYK · ошатність рукою: ' + JSON.stringify(дотик));
+    /* `PAL_DOTYK=перед` — дотик ДО екрана «Палітра» (як на 1551): екран питає стилістку на вході з дотиком, але з
+       паспортом розмови; паспорт рук перезбирається вже при «Зібрати образи» */
+    if (process.env.PAL_DOTYK === 'перед') await стор.evaluate(() => стилісткаОбираєП());
     await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к && typeof к.onclick === 'function') к.onclick(); });
     await стор.waitForFunction("(typeof ЗБ !== 'undefined' && ЗБ && Array.isArray(ЗБ.картки) && ['1','2'].every(р => "
         + "ЗБ.картки.some(к => к && к.рука === р))) || " + ВИРАЗ_ЗБОЮ, null, { timeout: 900000 });
@@ -3079,7 +3082,8 @@ function підсумокМоделі(){
     console.log('PAL_DOTYK · промптів палітри ' + пал.length + ', рук ' + рук.length
       + ' · occasion палітри = case руки: ' + (JSON.stringify(оп.випадок) === JSON.stringify(р1.випадок))
       + ' · day палітри = day руки: ' + (JSON.stringify(оп.день) === JSON.stringify(р1.день)));
-    console.log('PAL_DOTYK · occasion палітри: ' + JSON.stringify(оп.випадок) + '\nPAL_DOTYK · case руки: ' + JSON.stringify(р1.випадок));
+    console.log('PAL_DOTYK · occasion палітри: ' + JSON.stringify(оп.випадок) + '\nPAL_DOTYK · case руки: ' + JSON.stringify(р1.випадок)
+      + '\nPAL_DOTYK · day палітри: ' + JSON.stringify(оп.день) + '\nPAL_DOTYK · day руки: ' + JSON.stringify(р1.день));
     м.діагноз.forEach(р => console.log('PAL_DOTYK · діагноз · ' + р));
     await браузер.close(); process.exit(0);
   }
