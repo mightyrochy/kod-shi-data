@@ -3900,17 +3900,17 @@ def _година_при_порі(оновлення):
 # `не_взято` (`list_rest`), а в `перенесено` — `<поле>.list_pick`.
 # НАГОДА СПИСКОМ — ЗА `occasion_part` ТІЄЇ САМОЇ ВІДПОВІДІ (рядок 6522, доповнення менеджера). Частину дня, для якої
 # образ, обирає модель кодом `occasion_part`; перше значення списку могло бути спортом всупереч їй («пробіжка зранку,
-# потім обід» → sport). Код звіряє коди, не слова (п.12): `other` — перше значення, що не `sport`; `sport` — `sport`;
-# `unknown` чи нема — перше значення.
+# потім обід» → sport). Правило — те саме, що в описі `occasion_part` («when she has not said, the first part that is
+# not sport, or the sport part when there is no other»); код звіряє коди, не слова (п.12): `occasion_part` sport —
+# `sport`; інакше (other, unknown чи поля нема) — перше значення, що не `sport`, а коли всі sport — `sport`.
 def _значення_зі_списку(к, з, оновлення):
     """Значення поля `к` зі списку `з`: для `occasion` — за `occasion_part` того самого `update`, інакше перше."""
-    if к == "occasion":
-        частина = _код(_пара("occasion_part", {}, оновлення.get("occasion_part"))[0])
-        if частина == "other":
-            return next((x for x in з if _код(x) != "sport"), з[0])
-        if частина == "sport" and any(_код(x) == "sport" for x in з):
-            return next(x for x in з if _код(x) == "sport")
-    return з[0]
+    if к != "occasion":
+        return з[0]
+    спорт = [x for x in з if _код(x) == "sport"]
+    if _код(_пара("occasion_part", {}, оновлення.get("occasion_part"))[0]) == "sport" and спорт:
+        return спорт[0]
+    return next((x for x in з if _код(x) != "sport"), з[0])
 
 
 def _перше_зі_списку(оновлення, поля):

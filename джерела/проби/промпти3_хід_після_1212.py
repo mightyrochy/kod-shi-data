@@ -22,11 +22,10 @@ for ф in ходи(Г, r"живі_1016_1/(1[6-9]|[2-4]\d|50)_[^/]*/VIDPOVIDI/see
             мовчки.append("%s %s" % (сцена, к))
     if сцена in ("Ж:34", "Ж:39"):
         місця[сцена] = (р["внутрішня"].get("place"), р["внутрішня"].get("occasion"))
-    if сцена == "Ж:36":     # рядок 6522: нагода списком — за occasion_part (у записі його нема; other — підставлено)
-        з_частиною = dict(об, update=dict(об["update"], occasion_part="other"))
-        місця[сцена] = (р["внутрішня"].get("occasion"), М.прийняти_розмову(М._json_.dumps(з_частиною))["внутрішня"].get("occasion"))
+    if сцена in ("Ж:36", "Ж:49"):     # рядок 6522: нагода списком — за occasion_part (у Ж:36 його нема)
+        місця[сцена] = р["внутрішня"].get("occasion")
 print("перших ходів Ж:16–50 — знято мовчки %d %s" % (len(мовчки), мовчки))
-print("Ж:34/39 (place, occasion); Ж:36 occasion (як записано, з occasion_part other):", місця)
+print("Ж:34/39 (place, occasion), Ж:36/49 occasion:", місця)
 пар = не_взято = 0
 for ф in ходи("origin/claude/zhyvi-pachka-15", r"0[1-9]_ж1_оціни_образ_6б/VIDPOVIDI/.*_хід_розмови"):
     об = М._обʼєкт(відповідь("origin/claude/zhyvi-pachka-15", ф))[0]
