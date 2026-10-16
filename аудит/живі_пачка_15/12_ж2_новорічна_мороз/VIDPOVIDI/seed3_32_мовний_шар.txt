@@ -1,0 +1,69 @@
+── ПРОМПТ (8116 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Джинси жіночі блакитні · colour code: light_blue · about it: text н=1
+2 — Чоботи шкіряні бежеві · colour code: beige · about it: text н=2
+3 — Підвіска тризуб золотистого кольору · colour code: golden · about it: text н=3
+4 — В’язаний шарф унісекс з кашеміром молочний · colour code: milky · about it: text н=4
+5 — Кардиган Повітря смарагд · colour code: emerald · about it: text н=5
+6 — Шкіряний зелений клатч Rockstud · colour code: green · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; emerald — смарагд; golden — золотий; green — зелений; light_blue — блакитний; milky — молочний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "high-waisted light blue jeans in a straight leg cut that follows your legs cleanly from hip to ankle"},
+{"н": 2, "текст": "beige chunky-soled boots with a soft sock-like upper and a gold buckle detail on the vamp"},
+{"н": 3, "текст": "a delicate golden pendant necklace shaped like a trident, sitting centered at your collarbone"},
+{"н": 4, "текст": "a ribbed milky white knit scarf with a soft drape that wraps loosely around your neck for warmth and texture"},
+{"н": 5, "текст": "an emerald green sheer cardigan with a relaxed fit, long sleeves, pearl buttons down the front, and an airy mesh pattern on the shoulders"},
+{"н": 6, "текст": "a dark green studded leather clutch with gold spikes along the edges and a wrist strap for easy carry"},
+{"н": 7, "текст": "You are wearing the Air Emerald cardigan, light blue jeans, and beige boots, paired with a golden pendant necklace, a milky scarf, and a Rockstud clutch. The outfit works as a balanced celebration look for your winter evening: the soft green of the top and bag echo your skin tone and eye color while the neutral blues, beiges, and milky white anchor you in the cool frosty air. It complements your X figure by drawing a vertical line from shoulder to ankle through the fitted top and straight jeans, letting your defined waist shine. The golden metal and green accents bring warmth to your look without competing with your hair or eyes."},
+{"н": 8, "текст": "wear the milky scarf loosely around your neck to let the cardigan’s neckline breathe while keeping a cozy layer for the frost"},
+{"н": 9, "текст": "keep the clutch at hand as a sleek evening detail that matches your green top for a seamless color block"},
+{"н": 10, "текст": "wear the pendant close to your collarbone to frame your face and tie the neutral tones of your outfit together"},
+{"н": 11, "текст": "Джинси жіночі блакитні — The light blue jeans are a deliberate break from the strict neutral palette, adding necessary visual interest and cool tones near the face for the festive dinner."},
+{"н": 12, "текст": "Чоботи шкіряні бежеві — Brown leather knee boots continue the leg line under the maxi hem and match the warm neutral tone of the denim."},
+{"н": 13, "текст": "Підвіска тризуб золотистого кольору — A gold pendant necklace lifts the face contrast against her cool skin tone and adds a festive touch near her eyes."},
+{"н": 14, "текст": "В’язаний шарф унісекс з кашеміром молочний — A beige polyamide scarf covers her neck against the frost, providing necessary warmth without adding bulk."},
+{"н": 15, "текст": "Кардиган Повітря смарагд — An emerald cardigan adds a third piece of interest and breaks the neutral monotony with a rich accent color."},
+{"н": 16, "текст": "Джинси жіночі блакитні — The light blue jeans are chosen as a deliberate break from the strict neutral palette, adding necessary visual interest and cool tones near the face for the festive dinner."},
+{"н": 17, "текст": "В’язаний шарф унісекс з кашеміром молочний — A milky cashmere scarf covers her neck against the frost, adding softness to the structured suit."},
+{"н": 18, "текст": "В’язаний шарф унісекс з кашеміром молочний — A milky cashmere scarf covers her head and neck against the frost, adding softness to the structured vest."}
+]
+
+── ВІДПОВІДЬ (3159 симв., 88.9 с, HTTP 200) ──
+```json
+{
+  "1": "високопотасні блакитні джинси прямого крою, що охайно повторюють лінію твоїх ніг від стегна до щиколотки",
+  "2": "бежеві черевики на масивній підошві з м’яким верхом у вигляді шкарпетки та золотою пряжкою на носку",
+  "3": "делікатний золотий кулон-підвіска у формі тризуба, що сидить посередині ключиці",
+  "4": "в’язаний молочно-білий шарф з м’яким драпіруванням, який вільно обмотується навколо твоєї шиї для тепла та текстури",
+  "5": "смарагдово-зелений прозорий кардиган із вільним кроєм, довгими рукавами, перламутровими ґудзиками спереду та повітряною сітчастою структурою на плечах",
+  "6": "темно-зелена клатч з шкіри зі шпильками Rockstud по краях і ремінцем для зручного носіння",
+  "7": "Ти одягла кардиган Air Emerald, блакитні джинси та бежеві чоботи, доповнивши образ золотим кулоном-підвіскою, молочним шарфом і клатчем Rockstud. Образ працює як збалансований святковий лук для твого зимового вечора: м’який зелений верх і сумка перегукуються з тоном твоєї шкіри та кольором очей, а нейтральні блакитні, бежеві та молочно-білі відтінки гармонійно поєднуються з прохолодним морозним повітрям. Він підкреслює твою фігуру X, створюючи вертикальну лінію від плеча до щиколотки завдяки приталеному верху та прямим джинсам, дозволяючи вигідно показати тонку талію. Золоті металеві елементи та зелені акценти додають образу тепла без конкуренції з кольором твого волосся чи очей.",
+  "8": "обмотай молочно-білий шарф вільно навколо шиї, щоб дати кардигану можливість дихати, зберігаючи при цьому затишний прохолодний шар",
+  "9": "тримайте клатч під рукою як елегантний вечірній аксесуар, що гармонійно поєднується з твоїм зеленим верхом для бездоганного колірного блоку",
+  "10": "одягни кулон-підвіску близько до ключиці, щоб обрамити обличчя та пов’язати нейтральні тони вбрання разом",
+  "11": "Блакитні джинси — блакитні джинси є свідомим відхиленням від суворого нейтрального палітри, додаючи необхідний візуальний інтерес і прохолодні тони біля обличчя для святкової вечері.",
+  "12": "Бежеві шкіряні чоботи — коричневі шкіряні ботфорти продовжують лінію ноги під максі-подолком і гармонують з теплим нейтральним тоном джинсів.",
+  "13": "Золотий кулон-підвіска у формі тризуба — золотий кулон на ланцюжку підкреслює контраст обличчя зі світлою шкірою та додає святковий акцент біля очей.",
+  "14": "Молочно-білий в’язаний шарф унісекс з кашеміру — бежевий поліамідний шарф закриває шию від морозу, забезпечуючи необхідне тепло без зайвого об’єму.",
+  "15": "Смарагдовий кардиган Air — смарагдовий кардиган додає третій елемент інтересу та розбиває нейтральну монотонність яскравим акцентним кольором.",
+  "16": "Блакитні джинси — блакитні джинси обрані як свідоме відхилення від суворого нейтрального палітри, додаючи необхідний візуальний інтерес і прохолодні тони біля обличчя для святкової вечері.",
+  "17": "Молочно-білий в’язаний шарф унісекс з кашеміру — молочний кашеміровий шарф закриває шию від морозу, додаючи м’якості структурованому костюму.",
+  "18": "Молочно-білий в’язаний шарф унісекс з кашеміру — молочний кашеміровий шарф закриває голову та шию від морозу, додаючи м’якості структурованому жилету."
+}
+```

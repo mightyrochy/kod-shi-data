@@ -1,0 +1,54 @@
+── ПРОМПТ (6957 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Шапка з вуаллю сіра · colour code: grey · about it: text н=1
+2 — Джинси жіночі блакитні · colour code: light_blue · about it: text н=2
+3 — Сережка Juste un Clou · colour code: black · about it: text н=3
+4 — Черевики замшеві (Other Brand) · colour code: ginger · about it: text н=4
+5 — Сумка Пісочна · colour code: sand · about it: text н=5
+6 — Пальто міді чорне · colour code: black · about it: text н=6
+7 — Блакитний джинсовий піджак з брошкою · colour code: light_blue · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; ginger — рудий; grey — сірий; light_blue — блакитний; sand — пісочний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This is a grey sequined hat shaped like a dome and edged with a fine net veil that catches the light softly."},
+{"н": 2, "текст": "These are light blue jeans cut straight through the leg, fading to a soft white at the hem for a relaxed finish."},
+{"н": 3, "текст": "These are black earrings featuring a classic spike stud in gold-tone metal that add subtle shine without overpowering your look."},
+{"н": 4, "текст": "These are ginger suede ankle boots with plush shearling lining and a sturdy sole, perfect for cold weather."},
+{"н": 5, "текст": "This is a crossbody bag made of sand-toned fabric, decorated with a colorful geometric pattern that brings warmth to your ensemble."},
+{"н": 6, "текст": "This is a black wool coat with wide lapels and double-breasted buttons, offering clean lines and serious sophistication."},
+{"н": 7, "текст": "This is a light blue denim blazer cut loose through the shoulders and sleeves, featuring two front pockets and a soft fabric flower pinned to one side."},
+{"н": 8, "текст": "You are wearing a grey sequined hat with a net veil, light-blue jeans that fade toward the hem, and black earrings in gold-tone metal. On your feet are ginger suede ankle boots with shearling lining, carrying you through the frosty autumn air. A structured black mid-length coat wraps around you for warmth, while a relaxed denim blazer adds a cool, casual layer beneath it all. This look balances your celebration vibe: the sparkle of the hat catches attention at the top, the jeans ground you in comfort, and the boots keep you ready to dance or walk through the city. The black coat provides serious elegance, while the denim jacket introduces an easygoing touch perfect for a festive dinner."},
+{"н": 9, "текст": "Tuck the blazer slightly under your arms when indoors to reveal the coat beneath, then let it drape open as you leave."},
+{"н": 10, "текст": "Блакитний джинсовий піджак з брошкою — The hem measurement discrepancy is a minor data inconsistency that does not affect the outfit's ability to serve as a flattering, warm ensemble for a New Year's celebration."}
+]
+
+── ВІДПОВІДЬ (1908 симв., 78.3 с, HTTP 200) ──
+```json
+{
+  "1": "Це сіра шапка, прикрашена паєтками та виконана у формі купола. Вона має тонку мереживну вуаль, яка м’яко відбиває світло.",
+  "2": "Ці блакитні джинси мають прямий крій по всій довжині ноги і злегка вибілені на подолі для невимушеного вигляду.",
+  "3": "Це чорні сережки, що складаються зі стриманої золотистої шпильки. Вони додають ледь помітного блиску без перевантаження образу.",
+  "4": "Ці руді замшеві черевики мають м’яку овечу підкладку та міцну підошву, ідеальні для холодної погоди.",
+  "5": "Це сумка через плече з тканини кольору піску. Вона прикрашена яскравим геометричним візерунком, який додає тепла твоєму вбранню.",
+  "6": "Це чорне вовняне пальто з широкими лацканами та подвійною лінією ґудзиків, що пропонує чіткі лінії та серйозну елегантність.",
+  "7": "Це блакитний джинсовий піджак вільного крою в плечах і рукавах. Він має дві нагрудні кишені та м’яку тканинну квітку, приколоту збоку.",
+  "8": "Ти одягла сіру шапку з паєтками та мереживною вуаллю, блакитні джинси, що вибілені на подолі, і чорні сережки в золотистому металі. На ногах у тебе руді замшеві черевички з овечою підкладкою, які допомагають тобі пройти крізь морозне осіннє повітря. Чорне пальто міді обгортає тебе для тепла, а блакитний джинсовий піджак додає невимушеного шарму до всього образу. Цей образ поєднує святковий настрій: блиск шапки привертає увагу зверху, джинси дарують комфорт, а черевички готові до танців чи прогулянок містом. Чорне пальто надає елегантності, а піджак — невимушеного шарму, ідеального для святкової вечері.",
+  "9": "Коли ти в приміщенні, трохи засунь піджак під руки, щоб показати пальто знизу. А коли виходиш на вулицю, дай йому вільно звисати.",
+  "10": "Блакитний джинсовий піджак з брошкою — незначна розбіжність у розмірах подолу є несуттєвою помилкою в даних і не впливає на те, що цей образ буде елегантним та зігріваючим для святкування Нового року."
+}
+```

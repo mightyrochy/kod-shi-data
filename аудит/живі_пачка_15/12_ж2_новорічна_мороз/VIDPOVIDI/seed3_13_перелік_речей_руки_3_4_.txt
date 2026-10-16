@@ -1,0 +1,45 @@
+── ПРОМПТ (2003 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A velvet wrap coat, tailored fit with wide lapels, deep emerald green (#043927), wool blend.  \nA structured midi dress, A-line silhouette with a high neckline, frosted silver (#C0C0C0), heavy crepe.  \nHeeled ankle boots, pointed toe with a 7cm heel, metallic bronze (#CD7F32), smooth leather.  \nGold drop earrings and a matching clutch bag in textured leather to complete the look.  \nThis outfit balances the frosty autumn weather with a luxurious outer layer that keeps her warm without feeling heavy. The deep emerald coat provides a rich contrast to the shimmering silver dress, ensuring she stands out elegantly against the holiday lights. Together, the textures of velvet and crepe add depth suitable for a sophisticated restaurant celebration, while the metallic accents tie the festive occasion together seamlessly."}
+
+── ВІДПОВІДЬ (1015 симв., 205.4 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "velvet wrap coat",
+        "details": "tailored fit with wide lapels, deep emerald green, wool blend",
+        "slot": "outerwear",
+        "color_hex": "#043927",
+        "worn": true
+      },
+      {
+        "name": "structured midi dress",
+        "details": "A-line silhouette with a high neckline, frosted silver, heavy crepe",
+        "slot": "dress",
+        "color_hex": "#C0C0C0",
+        "worn": true
+      },
+      {
+        "name": "heeled ankle boots",
+        "details": "pointed toe with a 7cm heel, metallic bronze, smooth leather",
+        "slot": "shoes",
+        "color_hex": "#CD7F32",
+        "worn": true
+      },
+      {
+        "name": "gold drop earrings",
+        "details": null,
+        "slot": "earrings",
+        "color_hex": null,
+        "worn": true
+      },
+      {
+        "name": "clutch bag",
+        "details": "textured leather",
+        "slot": "bag",
+        "color_hex": null,
+        "worn": true
+      }
+    ]
+  }
+}
