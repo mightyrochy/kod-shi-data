@@ -49,20 +49,16 @@ import дріт_моделі as _Д
         # принт»), хоч крамниця його знає, — колір речі без фото береться звідси, без посилання на джерело
         _ЗП.Поле("outfit", "the chosen outfit: its items with number «n», name and shop, and the shop's data on "
                            "their color («color» as a code, «shop_color» — the shop's own word when it says more, "
-                           "«hex») — a hint for reading the photo and the colour of an item that has no photo; "
-                           "never a source you cite to her",
+                           "«hex») — a hint for reading the photo and the colour of an item that has no photo",
                  треба=True),
         _ЗП.Поле("outfit.items[].photos",
                  "the numbers of this item's photos: every photo stands under its own label «Photo N — …:» "
-                 "among the blocks placed before this object, and the label names the item by its «n»; it is "
-                 "the shop's photo of that one item, often worn by a model or a mannequin with clothes that "
-                 "are not hers; under a label with «not delivered» or «not available» there is no image",
+                 "among the blocks placed before this object, and the label names the item by its «n»; under a "
+                 "label with «not delivered» or «not available» there is no image",
                  як="describe what you see on the photos, not the name; from each photo take only the item of "
                     "its «kind» — a belt, a bag or jewelry is often shown worn with a blouse or a dress: describe "
-                    "the belt, not the blouse; the other clothes in the frame are not part of the outfit and are "
-                    "not mentioned; "
-                    "never take for an item a photo under another number, and when all of its photos are "
-                    "not delivered, describe it by its name and «color»",
+                    "the belt, not the blouse; never take for an item a photo under another number, and when "
+                    "all of its photos are not delivered, describe it by its name and «color»",
                  без="There are no item photos: describe the items by their names; leave «wrong_photos» empty."),
         # рядок 3457 (ЖИВІ-13 №8 рука 2): «Пасок Базовий блакитний» описано блузою з фото пояса — опис
         # ішов за кадром, а не за річчю; рід речі кодом каже, ЩО на кадрі описувати
@@ -177,15 +173,18 @@ import дріт_моделі as _Д
         "Describe only the items of «outfit»: no suggestions to buy or add more, no items it does not contain — "
         "no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or "
         "she may own it.",
-        "Do not change the outfit yourself. Describe each item as its photo shows it; never compare the photo "
-        "with the name, the shop's data or «color» in «about_items», «text» or «how_to_wear» (no «the name says …, but the "
-        "photo …», no «the code»): a clearly different item or colour goes only into «wrong_photos» or «swap».",
+        "Do not change the outfit yourself. Describe each item as its photo shows it: a clearly different item or "
+        "colour goes only into «wrong_photos» or «swap».",
         "Say each thing about an item once, and do not state a quality and then doubt it.",
         # ПРОЗА-КАРТОК-2 (рядок 1123): «На фото є ще й підібрані сірі штани, але до цього образу належить
         # лише жакет», «Фото я не бачу, тому орієнтуюся на назву», «як сказано в назві» — службова мова
-        # про кадр у кожній картці ПЕР-536; чого бракує на фото, картка вже каже під річчю (п.9)
+        # про кадр у кожній картці ПЕР-536; чого бракує на фото, картка вже каже під річчю (п.9).
+        # Рядок 6220: «не кажи про джерела» стояло ще в полі «outfit», у дужці правила 2 і в «photos» (кадр
+        # з чужим одягом — і в підписі кожного кадру); вада трималась не повторами (1 опис з 30), тож усе
+        # це — одним правилом тут, звірка фото з назвою й даними крамниці — теж
         "Talk to her about the items, never about what you were given: no word about photos, frames, what "
-        "else a frame shows, a photo you could not see, or the name and shop data you went by — the card "
+        "else a frame shows, a photo you could not see, or the name and shop data you went by, and no comparison "
+        "of a photo with them — the card "
         "already shows her the photos and says under an item when it has none.",
         "Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).",
         # рядок 1427: відповідальність за вибір речі — на стилістці (аудит/ПРОДУКТ.md п.17: з поясненням — свідомий вибір)
