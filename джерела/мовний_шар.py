@@ -730,56 +730,109 @@ def прийняти(розмітка, відповідь):
              "що вона сказала і що не лягло в жодне поле, — у rest дослівно. Питання — у question, а "
              "про що воно — у question_about; річ, про яку вона питає («а якщо…», «чи піде…»), — не "
              "бажання і в wants не йде."),
+    # ПЕРЕКЛАДАЧКИ ПОЗА РОЗМОВОЮ — ОГОЛОШЕННЯМИ ЗБИРАЧА АНГЛІЙСЬКОЮ (рядок 6191). Коментар до образу, питання екрана
+    # оцінки й виправлення переліку йшли українським текстом поза збирачем — єдині в сім'ї, крім 6190; їхній опис речі
+    # (3 430 симв.) жив окремо від `_РЕЧІ_EN` ходу розмови. Тепер вид несе роль, вхід (`Поле`), правила й описи полів
+    # англійською, а промпт складає `збирач_промптів` тим самим шаблоном, що хід і порада (`_оголошення_входу`); речі
+    # й форма значення — тим самим словником, що в ході (`_РЕЧІ_EN`, `_тип_en`). Сценарій (`scenario`) — як був.
     "verdict_comment": dict(
-        роль="Ти — перекладачка в застосунку-стилістці. Ти перекладаєш коментар жінки до образу "
-             "у внутрішню мову застосунку — JSON із кодами. Рішень не приймаєш.",
-        вхід="її коментар до образу; КОНТЕКСТ.items — речі цього образу (id, slot, name); "
-             "КОНТЕКСТ.tapped — що вона натиснула на картці (wear, mine, aspects зі знаком sign: "
-             "plus — що вдалось, minus — що заважає) і на яке питання картки писала (question)",
-        поля=_ВМ.КОМЕНТАР_ВЕРДИКТУ,
+        роль="You are a translator in a styling app. You translate a woman's comment on a look into the app's "
+             "internal language — JSON with codes. You make no decisions.",
         # КВ-1: дотик пояснює слова («так, через колір»), але поля не заповнює — інакше
         # «слова дали те саме, що кнопки» вимірювало б переписаний дотик, а не її слова
+        вхід=(("items", "the items of this look: id, slot, name"),
+              ("tapped", "what she tapped on the card: wear, mine, aspects with a sign (plus — what worked, minus — "
+                         "what bothers her) and the card question she wrote to (question)",
+               "only to understand her words: a field her words say nothing about is not copied from it"),
+              ("her_comment", "her comment on the look")),
+        поля=_ВМ.КОМЕНТАР_ВЕРДИКТУ,
         # Рядок 3319 (живі 12, Б/12): «хочу без каблука і без принта» → `wants` з вигаданим `no_heels` і типом
         # речі з образу; `vetoes` порожні, і `паспорт_з_коментаря` (межі лише з `vetoes`) нічого не долив.
         # Рядок 3659 (живі 14, А/13): «без принта» — у `wants` кодом `solid`; приклад називає код самого принта
-        # Рядок 4023 (живі 16, А/13): «без каблука» — кодом ознаки `heels` у `about_items[].reasons` (там лише аспекти)
-        # Рядок 4101 (живі 17, А/13): «без принта» — голим `print` у `reasons`; голий рід бере шов (`_код_переліку`)
-        # Рядок 4281 (живі 19, А/13): коди в дужках речення про reasons («підбори — feature heels») модель переписала
-        # у саму річ — `about_items[]: {reasons: [feature], features: [heels]}`, а `vetoes` лишила порожні; дужки —
-        # знову словами, як у Ж18 (межі у `vetoes`), а коди з речі в межу бере шов (`_ознака_причини_в_межі`)
-        # Рядок 4360 (живі 20, А/13): `wants: [{slot: shoes, item_type: sandals, feature: no_heels}]` без `quote` —
-        # «сандалі», яких вона не казала; бажання без уривка її слів шов не бере (`_бажання_на_її_словах`)
-        межа="КОНТЕКСТ.tapped — лише щоб зрозуміти її слова: поле, про яке вона нічого не сказала, "
-             "з натиснутого не переписуй. Те, без чого вона хоче образ, — межа у vetoes, навіть коли вона "
-             "каже це як бажання: кодом самої цієї ознаки, візерунка («без принта» — pattern print_generic, "
-             "не solid), тканини, кольору чи речі, зі слотом, "
-             "коли вона його назвала, і без типу речі з образу; коду заперечення нема. У wants — лише те, що "
-             "вона хоче мати, і лише з quote — уривком її слів, де вона це назвала: без нього код бажання не "
-             "бере. У reasons — лише коди аспектів; ознака речі, що їй заважає (підбори, принт), — "
-             "межа у vetoes."),
+        # Рядки 4023, 4101, 4281, 4360 (живі 16, 17, 19, 20, А/13): ознака-причина в `reasons` чи ключем речі, голий
+        # `print`, бажання без уривка. Три речення межі, які доти казали це моделі, тепер тримає шов, і в промпті їх
+        # нема (рядок 6191): «коду заперечення нема» — `_заперечене_в_межі`, «без quote код бажання не бере» —
+        # `_бажання_на_її_словах`, «ознака, що заважає, — межа у vetoes» — `_ознака_причини_в_межі`.
+        правила=("What she wants the look without is a limit in \"vetoes\", even when she says it as a wish: the code "
+                 "of that feature itself, of the pattern (without a print — pattern print_generic, not solid), of the "
+                 "fabric, the colour or the item, with a slot when she named it, and without the item type of the "
+                 "look. \"wants\" holds only what she wants to have. \"reasons\" hold only aspect codes.",),
+        опис={
+            "wear": "whether she will wear this look, by her words",
+            "mine": "whether this look is hers, by her words",
+            "reasons": "what bothers her in the look",
+            "good": "what worked in the look or what she likes",
+            "about_items": "the items of this look she spoke about",
+            "about_items.id": "the id of an item from \"items\"",
+            "about_items.opinion": "what she thinks of this item",
+            "about_items.reasons": "why",
+            "shift": "where, by her words, to move the next look of this outing",
+            "shift.formality": "more — dressier, less — simpler",
+            "shift.warmth": "more — warmer, less — lighter",
+            "shift.attention": "more — more noticeable, brighter, less — calmer",
+            "wants": "what she would like instead",
+            "vetoes": "what she does not want",
+            "note": "the rest of what she said that fits no field above",
+        },
+        коди_en={
+            "verdict_wear": {"as_is": "as it is", "one_change": "if one item is changed", "no": "no"},
+            "verdict_mine": {"mine": "just hers", "pretty": "pretty, but not hers", "not_mine": "not hers"},
+            "verdict_aspect": {"colour": "colour", "cut": "the cut: fit, length, silhouette",
+                               "combination": "how the items go together", "style": "style, mood, «not me»",
+                               "occasion": "fit for the occasion or the place", "weather": "weather, season",
+                               "comfort": "comfort: shoes, movement, fabric", "price": "price",
+                               "photo": "the photo does not show or make clear what the item really is",
+                               "on_me": "not sure how it will look on her",
+                               "want_to_try": "she wants to try it despite a doubt"},
+            "opinion": {"like": "she likes it", "dislike": "she does not like it"},
+        },
+        скелет={"<field>": "every field her words give grounds for, in its form from \"codes\""},
+        наприкінці="Translate her comment: one JSON object following \"answer_schema\" in \"task\", only with the "
+                   "fields her words give grounds for."),
     # ВИПРАВЛЕННЯ ПЕРЕЛІКУ РЕЧЕЙ СЛОВАМИ (рядок 5742): «там не штани, а вершкові ботильйони, чорні — запасні». Вхід —
     # перелік, який вона бачить, кодами (`оцінка_образу.речі_для_слів`); вихід — ті самі дії, що дають дотики
     # (`виправити_речі`). Цитати поруч із полем нема: дія стоїть на речі з переліку, а не на її уривку.
     "review_items_fix": dict(
-        роль="Ти — перекладачка в застосунку-стилістці. Стилістка щойно показала жінці перелік речей, які вона побачила "
-             "на її фото; жінка словами каже, що в переліку не так. Ти перекладаєш її слова в дії над переліком — JSON "
-             "із кодами. Рішень про образ не приймаєш, на питання не відповідаєш.",
-        вхід="її слова про перелік; КОНТЕКСТ.items — речі переліку, які вона бачить (id, slot, item_type, color_name, "
-             "in_outfit, name)",
+        роль="You are a translator in a styling app. The stylist has just shown the woman the list of items she saw in "
+             "her photo; the woman says in words what is wrong in the list. You translate her words into actions on "
+             "the list — JSON with codes. You make no decisions about the look and do not answer questions.",
+        вхід=(("items", "the items of the list she sees: id, slot, item_type, color_name, in_outfit, name",
+               "a field her words say nothing about is not copied from it"),
+              ("her_words", "her words about the list")),
         поля=_ВМ.ВИПРАВЛЕННЯ_ПЕРЕЛІКУ,
-        межа="Одна дія — одна річ. Річ, яку вона назвала хибною («там не X, а Y»), виправляй дією set над її id: "
-             "новий вид і колір, що вона назвала, а slot не пиши — місце видно з виду. Річ, якої на фото нема, — "
-             "remove над її id. Річ, якої в переліку немає зовсім, — add без item, з видом і кольором, що вона "
-             "назвала. «Запасні», «замість» про річ — in_outfit: false; «в образі», «на мені» — true. Пиши лише те, що "
-             "вона назвала: поле, про яке вона не сказала, не пиши і з КОНТЕКСТ.items його не переписуй."),
+        правила=("One action — one item. An item she called wrong (not this, but that) is corrected with set over its "
+                 "id: the new kind and colour she named, without slot — the place follows from the kind. An item the "
+                 "list does not have at all — add with the kind and colour she named.",),
+        опис={
+            "actions": "one action per item she said is wrong in the list",
+            "actions.op": "remove — take away an item that is not in the photo; set — correct an item already in the list "
+                  "(item — its id); add — add an item the list does not have (no item)",
+            "actions.item": "the id of an item from \"items\"; not written for add",
+            "actions.slot": "the place of the item in the look — only when she named the place, not the kind",
+            "actions.kind": "the kind of the item as she named it",
+            "actions.color": "the colour of the item as she named it",
+            "actions.in_outfit": "true — the item is in the look itself; false — a spare one, instead of another item of the "
+                         "look; not written when she did not say",
+        },
+        скелет={"actions": [{"op": "remove | set | add", "<field>": "every other field of the action her words give, "
+                                                                    "in its form from \"codes\""}]},
+        наприкінці="Translate her words: one JSON object following \"answer_schema\" in \"task\", only with what she "
+                   "named."),
     # ДОПИТ ОЦІНКИ — ЛИШЕ ПИТАННЯ (рядок 1449): уточнення до оцінки («А якщо з чорними ботильйонами?»)
     # ішло повним промптом сценарію — ~11 тис. знаків на одне питання, — а показ бере з відповіді лише
     # `question`; решта полів давала шум (`wants: black ankle_boots` у 14 з 31).
     "question": dict(
-        роль="Ти — перекладачка в застосунку-стилістці. Жінка ставить стилістці питання про свій "
-             "образ. Ти переносиш його у внутрішню мову застосунку — JSON. На питання не відповідаєш.",
-        вхід="її питання",
-        поля={к: _ВМ.СЦЕНАРІЙ[к] for к in ("question", "question_about")}),
+        роль="You are a translator in a styling app. The woman asks the stylist a question about her look. You carry "
+             "it over into the app's internal language — JSON. You do not answer the question.",
+        вхід=(("her_question", "her question"),),
+        поля={к: _ВМ.СЦЕНАРІЙ[к] for к in ("question", "question_about")},
+        правила=(),
+        опис={"question": "her question, her words",
+              "question_about": "what her question is about"},
+        коди_en={"question_about": {"app": "about the app: screens, buttons, steps, what to do next",
+                                    "look": "about her look, items, photo, style or colours"}},
+        скелет={"<field>": "every field her words give grounds for, in its form from \"codes\""},
+        наприкінці="Carry her question over: one JSON object following \"answer_schema\" in \"task\"."),
 }
 _ОБʼЄКТИ = {"thing": ("«річ»", _ВМ.РІЧ_У_СЛОВАХ), "own_item": ("«її річ»", _ВМ.ЇЇ_РІЧ)}
 
@@ -874,14 +927,110 @@ def _група(ім, с):
     return "службові" if ім in _БЕЗ_ЦИТАТИ else "пари"
 
 
+# ── ПЕРЕКЛАДАЧКИ ВХОДУ ЗБИРАЧЕМ (рядок 6191) ──────────────────────────────────────────────────────────────────
+# Вид зі `скелет` (коментар, питання, виправлення переліку) складає `збирач_промптів` англійським шаблоном зі сталою
+# частиною спершу, як хід розмови й порада: роль, рядки входу, правила, коди — поля з формою значення (`опис` виду,
+# вкладена ознака — «поле.ознака»; значення кодів — `коди_en` за таблицею `внутрішня_мова.ТАБЛИЦЯ`) і ознаки речі тим
+# самим словником, що в ході (`_ознаки_речі_en`), — скелет; далі дані, останнім — `наприкінці`. Межу «лише вхід» несе
+# точніше перше правило (`_ОПОРА_EN`: пропущене поле — «unknown»), тож загальної межі `лише_вхід` тут нема.
+# МЕЖА ОПОРИ — ПЕРШИМ ПРАВИЛОМ І ЩЕ РАЗ НАПРИКІНЦІ (вимір MamayLM-4B 25.09: з межею лише вгорі й «unknown або не пиши»
+# мала модель заповнила всі 30 полів вигаданим): пропущене поле — це "unknown", і рядок `наприкінці` повторює «лише
+# поля з опорою» останнім перед відповіддю.
+_ОПОРА_EN = ("Write only the fields her words give grounds for: a field she said nothing about is not in the answer "
+             "at all — that is \"unknown\". Do not infer one field from another; values are only codes from \"codes\".")
+_МОВА_ЇЇ_EN = "the language of her words"
+_ОГОЛОШЕННЯ_ВХОДУ = {}
+
+
+def _значення_кодів_en(с, коди_en):
+    """«codes: <код> — <що>, …» поля-переліку зі значеннями `коди_en` виду ({таблиця: {код: що}}) або None. Значення,
+    що розійшлися з кодами своєї таблиці, — ValueError: новий код не лишиться без слова мовчки."""
+    коди = [к for к in с.get("enum") or () if к != U]
+    for таблиця, значення in коди_en.items():
+        if set(_ВМ.ТАБЛИЦЯ[таблиця]) - {U} != set(значення):
+            raise ValueError("коди_en «%s» розійшлися з таблицею: %s"
+                             % (таблиця, sorted((set(_ВМ.ТАБЛИЦЯ[таблиця]) - {U}) ^ set(значення))))
+        if коди and set(коди) == set(значення):
+            return "codes: " + ", ".join("%s — %s" % (к, значення[к]) for к in коди)
+    return None
+
+
+def _форма_en(с, шлях, в):
+    """Форма значення поля `шлях` виду `в` англійською або None, коли опис поля сам називає кожен код."""
+    if "enum" in с:
+        if set(с["enum"]) - {U} == set(_ВМ.ТАБЛИЦЯ["item_type"]) - {U}:
+            return "codes: " + _типи_речей()[len("коди: "):]
+        значення = _значення_кодів_en(с, в.get("коди_en") or {})
+        if значення:
+            return значення
+        return None if all("%s — " % к in в["опис"].get(шлях, "") for к in с["enum"] if к != U) else _тип_en(с)
+    if _ref(с) == "thing":
+        return "object «thing»"
+    if any(x.get("type") == "boolean" for x in [с] + list(с.get("oneOf") or ())):
+        return None if all(к in в["опис"].get(шлях, "") for к in ("true — ", "false — ")) else "true or false"
+    if с.get("type") == "array":
+        ел = с.get("items") or {}
+        скільки = " (up to %d)" % с["maxItems"] if с.get("maxItems") else ""
+        if ел.get("type") == "object" and ел.get("properties"):
+            return "list%s of objects:" % скільки
+        return "list%s of %s" % (скільки, _форма_en(ел, шлях, в))
+    if с.get("type") == "object" and с.get("properties"):
+        return "object:"
+    return _тип_en(с)
+
+
+def _рядки_полів_en(в):
+    """Рядки полів виду «- <поле> — <опис>; <форма>», ознаки вкладеного об'єкта — «  · …» під своїм полем. Ті самі
+    коди вдруге — «the same codes as <поле>»."""
+    рядки, було = [], {}
+    def обійти(поля, шлях, мітка):
+        for ім, с in поля.items():
+            п = "%s.%s" % (шлях, ім) if шлях else ім
+            форма = _форма_en(с, п, в)
+            коди = форма[форма.index("codes: "):] if форма and "codes: " in форма else None
+            if коди and коди in було:
+                форма = форма.replace(коди, "the same codes as %s" % було[коди])
+            elif коди:
+                було[коди] = п
+            рядки.append("%s %s — %s" % (мітка, ім, "; ".join(x for x in (в["опис"][п], форма) if x)))
+            вкл = (с.get("items") or {}) if с.get("type") == "array" else с
+            if вкл.get("type") == "object" and вкл.get("properties"):
+                обійти(вкл["properties"], п, "  ·")
+    обійти(в["поля"], "", "-")
+    return рядки
+
+
+def _оголошення_входу(вид):
+    """`збирач_промптів.Оголошення` виду зі `скелет` — складається раз на вид. Останнє поле входу — її слова, без
+    них виклику не буває."""
+    if вид not in _ОГОЛОШЕННЯ_ВХОДУ:
+        в = ВИДИ_ВХОДУ[вид]
+        коди = ["Fields:"] + _рядки_полів_en(в)
+        if any(_ref(с) == "thing" or _ref(с.get("items") or {}) == "thing" for с in в["поля"].values()):
+            коди += ["Object «thing» — a JSON object: first \"quote\" — the fragment of her words about this item, "
+                     "copied letter for letter; then only the attributes she named:"] + _ознаки_речі_en()
+        _ОГОЛОШЕННЯ_ВХОДУ[вид] = _ЗП_Р.Оголошення(
+            задача=вид, роль=в["роль"],
+            вхід=tuple(_ЗП_Р.Поле(*п, треба=п is в["вхід"][-1]) for п in в["вхід"]),
+            правила=(_ОПОРА_EN,) + в["правила"], вихід=вид, скелет=в["скелет"], коди=tuple(коди),
+            мова_промпту="en", сталий_спершу=True, наприкінці=в["наприкінці"])
+    return _ОГОЛОШЕННЯ_ВХОДУ[вид]
+
+
 def промпт_входу(вид, слова, контекст=None):
     """Промпт вхідного перекладача: роль, вхід, поля схеми з кодами, межа «unknown».
 
-    Вид із `пари` (сценарій) пише поле з кодом чи числом парою {quote, value}: уривок її слів
-    стоїть поруч із полем, а не окремим `quotes` наприкінці (його складає шов, `прийняти_вхід`).
+    Вид зі `скелет` (коментар, питання, виправлення переліку; рядок 6191) — JSON шаблону збирача англійською
+    (`_оголошення_входу`): дані — поля входу виду з `контекст`, останнім — її слова. Сценарій — текстом: вид із `пари`
+    пише поле з кодом чи числом парою {quote, value}: уривок її слів стоїть поруч із полем, а не окремим `quotes`
+    наприкінці (його складає шов, `прийняти_вхід`).
     У тексті промпта нема жодного прикладу-фрази й жодного рядка-заглушки — лише роль, вхід,
     поля з кодами й межа (рішення власника)."""
     в = ВИДИ_ВХОДУ[вид]
+    if "скелет" in в:
+        к = контекст if isinstance(контекст, dict) else {}
+        дані = dict({п[0]: к.get(п[0]) for п in в["вхід"][:-1]}, **{в["вхід"][-1][0]: str(слова or "").strip() or U})
+        return _json_.dumps(_ЗП_Р.зібрати(_оголошення_входу(вид), дані, мова_тексту=_МОВА_ЇЇ_EN), ensure_ascii=False)
     поля = {ім: с for ім, с in в["поля"].items() if not (в.get("пари") and ім == "quotes")}
     рядки = [в["роль"], "", "Вхід — %s." % в["вхід"]]
     групи = в.get("групи") or (("", "Поля внутрішньої мови:"),)
@@ -1080,7 +1229,11 @@ def _норм(с, v, шлях, незнайомі):
             н = _норм(с["properties"][к], x, "%s.%s" % (шлях, к), незнайомі)
             if н not in (None, []):
                 вих[к] = н
+        # ОБОВʼЯЗКОВЕ ПОЛЕ — У `незнайомі` (рядок 6111): дія переліку без `op` (`{"item": "p1", "color": "beige"}`)
+        # зникала мовчки, і звіт казав `невідомо: [actions]` — ніби перекладачка сама сказала «unknown»
         бракує = [к for к in (с.get("required") or []) if к not in вих]
+        if вих and бракує:
+            незнайомі += ["%s.%s" % (шлях, к) for к in бракує]
         return None if (not вих or бракує) else вих
     if с.get("type") == "boolean":
         т = str(v).strip().lower()
@@ -2760,6 +2913,14 @@ def _тип_en(с):
     return "value"
 
 
+def _ознаки_речі_en():
+    """Рядки ознак речі «  · <ознака> — <що>; <коди>» — один опис речі для ходу розмови й перекладачок входу
+    (`_РЕЧІ_EN`; вид речі — з підписами, `_типи_речей`)."""
+    return ["  · %s — %s; %s" % (к, _РЕЧІ_EN[к], ("codes: " + _типи_речей()[len("коди: "):])
+                                 if к == "item_type" else _тип_en(с))
+            for к, с in _ВМ.РІЧ_У_СЛОВАХ.items() if к != "quote"]
+
+
 def _довідник_en(поле):
     """«codes: <код> (<підпис плитки>[: <нота>]), …» — `_коди_довідника` англійською рамкою."""
     return "codes: " + _коди_довідника(поле)[len("коди: "):]
@@ -2887,10 +3048,7 @@ def _коди_розмови():
     for ім in _РЕЧІ_З_ЦИТАТОЮ:
         if ім != "own_items":
             р.append("- %s — %s" % (ім, _ПОЛЯ_EN[ім]))
-    for к, с in _ВМ.РІЧ_У_СЛОВАХ.items():
-        if к != "quote":
-            р.append("  · %s — %s; %s" % (к, _РЕЧІ_EN[к], ("codes: " + _типи_речей()[len("коди: "):])
-                                           if к == "item_type" else _тип_en(с)))
+    р += _ознаки_речі_en()
     # Рядок 3310 (живі 12, Б/01–03): «одягну своє взуття з фото» — 3 з 3 сідів поле `shoes{…}` поза переліком із
     # вигаданими `ankle_boots, black` (на фото — біла сандаля): поле її речей одне, ознаки речі з фото — лише її слова
     # МОВА-ХІД-ТОНШЕ (рядок 3491): «лише ознаки з її слів» стояло тричі — в описі поля, у формі й у реченні про

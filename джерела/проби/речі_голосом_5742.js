@@ -2,7 +2,8 @@
    (Pyodide з її кодом). Модель — заглушка: «речі» віддають записані речі, перекладач `review_items_fix` — готові дії (він читає
    КОНТЕКСТ.items з промпта, тож перевіряється й контекст), мережі нема. Мікрофон — підставний SpeechRecognition (у headless його нема).
    Міряє: (А) «там не штани, а вершкові ботильйони, чорні — запасні» → 3 дії на перелік; (Б) після «✕ н2 + нова» ід не повторюється;
-   (В) дотик під час перемальовування не губиться — `locator.tap` по фото в редакторі при штормі `малюватиПерелікП`, вузли живуть.
+   (В) дотик під час перемальовування не губиться — `locator.tap` по фото в редакторі при штормі `малюватиПерелікП`, вузли живуть;
+   рядок 6112 у (А): дописані словами ботильйони мають назву, яку мовна модель написала з коду виду.
    Запуск: NODE_PATH=<тека з playwright> CHROMIUM=/opt/pw-browsers/chromium [ДО=1] node проби/речі_голосом_5742.js <html> <тека pyodide> <тека знімків>
    ДО=1 — зібрана сторінка `main` (без «Що не так?»): пропускає (А) і ловить лише (В); без нього перевіряє все. */
 const fs = require('fs'), path = require('path'), assert = require('assert'), { chromium } = require('playwright');
@@ -53,11 +54,20 @@ const РЕЧІ = [
         ф2: jpeg(600, 800, (c, w, h) => { c.fillStyle = '#8c96a0'; c.fillRect(0, 0, w, h); c.fillStyle = '#e6dfd2'; c.fillRect(w * .12, h * .35, w * .3, h * .5); c.fillStyle = '#1d1c1c'; c.fillRect(w * .58, h * .35, w * .3, h * .5); })};
       window.__переклади = [];
       /* перекладач: читає КОНТЕКСТ.items із промпта й будує дії за видом, а не за id (id — її дріт p1-2, не вгадується) */
-      const оригінал = window.модельМовиП;
+      /* рядок 6191: промпт перекладачки — JSON шаблону збирача (`task.answer` — вид входу, `items`, `her_words`); рядок 6112:
+         перекладачка виходу дає назву речі переліку — і з коду виду для речі, дописаної словами (`add` з `kind`) */
+      window.__назви = [];
+      const НАЗВИ = { 'white blouse': 'Біла блуза', 'black trousers': 'Чорні штани', 'black ankle boots': 'Чорні черевики',
+                      ankle_boots: 'Ботильйони' };
       window.модельМовиП = async function (промпт, вибірка, запис) {
-        if (!/щойно показала жінці перелік речей/.test(промпт)) return '{}';
-        const кт = JSON.parse(промпт.split('КОНТЕКСТ:\n')[1]), штани = кт.items.find(х => х.item_type === 'trousers');
-        window.__переклади.push({ слова: промпт.split('СЛОВА:\n')[1].split('\n')[0], речі: кт.items.map(х => х.id + ':' + х.item_type + ':' + х.color_name), штани: штани && штани.id });
+        if (/\nТЕКСТИ:\n/.test(промпт)) {
+          const тексти = JSON.parse(промпт.split('\nТЕКСТИ:\n')[1]); window.__назви.push(тексти.map(т => т.текст));
+          return JSON.stringify(Object.fromEntries(тексти.map(т => [т.н, НАЗВИ[т.текст] || 'Річ'])));
+        }
+        let о = {}; try { о = JSON.parse(промпт); } catch (e) {}
+        if ((о.task || {}).answer !== 'review_items_fix') return '{}';
+        const кт = о, штани = кт.items.find(х => х.item_type === 'trousers');
+        window.__переклади.push({ слова: о.her_words, речі: кт.items.map(х => х.id + ':' + х.item_type + ':' + х.color_name), штани: штани && штани.id });
         return JSON.stringify({ actions: [{ op: 'remove', item: штани.id }, { op: 'add', kind: 'ankle_boots', color: 'cream' },
                                           { op: 'add', kind: 'ankle_boots', color: 'black', in_outfit: false }] });
       };
@@ -95,7 +105,8 @@ const РЕЧІ = [
       await page.locator('#оц-слова-мік').tap();                                    // дотик 2: стоп
       await знімок('а_2_надиктовано.png');
       await page.locator('#оц-слова-слати').tap();                                  // дотик 3: «Виправити»
-      await чекати(() => ОЦ.перелік.речі.some(р => р.ід === 'н2'));
+      /* рядок дописаної речі — у DOM, а не лише в стані: перелік перемальовується після виміру кружечків */
+      await чекати(() => [...document.querySelectorAll('#оц-речі .оц-річ')].some(х => х.dataset.ід === 'н2'));
       const р1 = await рядки(); лог('після слів:', JSON.stringify(р1));
       const пер = await page.evaluate(() => window.__переклади); лог('перекладач бачив:', JSON.stringify(пер));
       assert.strictEqual(пер.length, 1); assert.strictEqual(пер[0].слова, ФРАЗА); assert.strictEqual(пер[0].штани, 'p1-2');
@@ -105,6 +116,12 @@ const РЕЧІ = [
       assert.strictEqual(звіт.слова[0].від_перекладача, 3); assert.strictEqual(звіт.слова[0].спосіб, 'voice'); assert.strictEqual(звіт.дотиків, 3);
       assert.strictEqual(await page.locator('#оц-слова-поле').inputValue(), '', 'поле мусить очиститись після виправлення');
       await знімок('а_3_виправлено.png');
+      /* рядок 6112: дописані словами ботильйони (н1, н2) — з назвою, яку мовна модель написала з коду виду */
+      await чекати(() => ['н1', 'н2'].every(ід => (ОЦ.перелік.назви || {})[ід]));
+      const назви = await page.evaluate(() => [...document.querySelectorAll('#оц-речі .оц-річ')].map(x => x.dataset.ід + ':' + x.querySelector('.оц-назва').textContent));
+      лог('назви рядків:', JSON.stringify(назви), '| шар бачив:', JSON.stringify(await page.evaluate(() => window.__назви)));
+      assert.ok(назви.includes('н1:Ботильйони') && назви.includes('н2:Ботильйони'), 'дописана річ без назви з коду виду');
+      await знімок('а_4_назви_дописаних.png');
 
       /* ═══ Б. ід не повторюється (5811) ═══ */
       await page.locator('#оц-речі .оц-річ[data-ід="н2"] .оц-х').tap();
