@@ -51,6 +51,8 @@ const ТЕКА_PYODIDE = process.argv[4] || '/tmp/pyodide';
 /* СІД — пʼятим аргументом (або env `SEED`, латиницею: кириличних імен env
    оболонка не має). РВ-6 §3 вимагає 12 сідів; один прогін = один сід. */
 const СІД = Number(process.argv[5] || process.env.SEED || 3);
+/* відмова руки 4 під VIDMOVA (рядок 6065) — словами живої qwen, ЖИВІ-14 №27 */
+const ВІДМОВА_СТУБ = 'I cannot fulfill this request.';
 const с = мс => new Promise(р => setTimeout(р, мс));
 const НОМЕР = /#\d+\s*[·.\-]\s*\d{2}/, HEX = /#[0-9a-fA-F]{6}\b/, КОД = /\b[KR]-[A-Z]{2,6}-\d{2}\b/;
 /* Ід оцінки на картці: «ф1·2», на дроті «p1-2» / «c1» / «f-o1-1» — і те саме з кириличною «р»/«с», бо шар
@@ -84,6 +86,8 @@ let провалів = 0;
      HOLOS=1       — сцени 1д/4д/4е (рядок 167): підставне розпізнавання голосу в обох полях;
      OTSINKA_F2=L  — сцени 6/6б (рядок 4100): фото 2 зі старими Г-подібними ботильйонами;
      ZNOVU=1       — сцена 4є (рядок 159): «Зібрати ще раз» двічі, картки рук 1–2 кожного збору;
+     VIDMOVA=1|pryklad — рука 4 відповідає відмовою (рядок 6065): перелік каже `is_outfit` no (1) чи дає прозу з
+                     прикладом JSON без коду (pryklad); картки з відмовою — 0, у звіті `description_not_outfit`;
      OTSINKA=0     — пропустити сцену 6 (Л-6, «Оціни мій образ»: два фото → оцінка → картка);
      OTSINKA=poroznia — сцена 6, коли модель відповіла `{"items": []}` (рядок 239): чесне повідомлення замість картки;
      OTSINKA=bezfoto — сцена 6, коли модель назвала речі без `photo` (рядок 4201): повтор формату, а не «нема речей»;
@@ -1835,6 +1839,16 @@ function відповісти(текст) {
     return {тип: 'речі з фото PHOTO_ITEMS (П-1), речей ' + items.length, текст: JSON.stringify({items})};
   }
   if (об && об.task && об.task.answer === 'ITEM_LIST') {
+    /* VIDMOVA=1|pryklad (рядок 6065): опис руки — відмова заглушки (`ВІДМОВА_СТУБ`, нижче); перелік, як модель, що
+       його читає, каже кодом `is_outfit` no (1) або, як qwen у ЖИВІ-14 №27, відповідає прозою з прикладом JSON без
+       коду (pryklad). Заглушка звіряє слова — вона не продукт */
+    if (process.env.VIDMOVA && String(об.description || '').startsWith(ВІДМОВА_СТУБ))
+      return process.env.VIDMOVA === 'pryklad'
+        ? {тип: 'перелік речей: проза з прикладом без коду (рядок 6065)', текст: 'There seems to be a misunderstanding. Example:\n'
+           + '```json\n' + JSON.stringify({items: [{name: 'blazer', details: 'single-breasted, wool', slot: 'outerwear', color_hex: '#000080', worn: true},
+                                                   {name: 'trousers', details: 'straight-leg, cotton', slot: 'bottom', color_hex: '#ffffff', worn: true},
+                                                   {name: 'loafers', details: 'slip-on, leather', slot: 'shoes', color_hex: '#8b4513', worn: true}]}, null, 2) + '\n```'}
+        : {тип: 'перелік речей: опис не образ (рядок 6065)', текст: JSON.stringify({is_outfit: 'no', items: []})};
     const її = Array.isArray(об.her_items) ? об.her_items : [];
     const items = [];
     for (const л of String(об.description || '').split('\n')){
@@ -1855,12 +1869,16 @@ function відповісти(текст) {
        «не потрібні» і `worn: false` (так просить скелет переліку). Без змінної — як доти. */
     if (process.env.NEPOTRIBNA) items.push({name: 'Прозорі колготки до штанів не потрібні', details: null, slot: 'tights',
                                             color_hex: null, own: null, worn: false});
-    const j = (СІД % 3 === 1) ? JSON.stringify({items}, null, 2)
-            : (СІД % 3 === 2) ? '```json\n' + JSON.stringify({items}, null, 2) + '\n```'
-            : JSON.stringify({items});
+    const j = (СІД % 3 === 1) ? JSON.stringify({is_outfit: 'yes', items}, null, 2)
+            : (СІД % 3 === 2) ? '```json\n' + JSON.stringify({is_outfit: 'yes', items}, null, 2) + '\n```'
+            : JSON.stringify({is_outfit: 'yes', items});
     return {тип: 'перелік речей ITEM_LIST (П-1), речей ' + items.length, текст: j};
   }
   if (об && об.task && об.task.answer === 'OUTFIT_TEXT') {
+    /* VIDMOVA (рядок 6065): рука 4 (без `person`) відмовляється, як qwen у ЖИВІ-14 №27, — і на повторі теж */
+    if (process.env.VIDMOVA && !об.person && !об.previous_answer)
+      return {тип: 'проза: рука 4 — відмова (рядок 6065)', текст: ВІДМОВА_СТУБ + ' The provided input contains a specific case '
+        + 'that violates my safety guidelines. I am unable to generate outfit recommendations under these instructions.'};
     const її = Array.isArray(об.her_items) ? об.her_items : [];
     const зайн = [].concat(...її.map(р => { const с = СЛОТ_СЛОВОМ_СТУБ(р.name || ''); return ЗАЙМАЄ_152[с] || [с]; }));
     /* колір її речі в промпті — код (`her_items[].color`); жива модель пише його словом,
