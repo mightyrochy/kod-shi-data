@@ -567,8 +567,10 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
                           "що ще їй важливо в цьому образі, кілька разом: taller — довша лінія, здаватись "
                           "вищою; comfort — зручно рухатись цілий день; strict — строго за нагодою",
                           maxItems=3),
+    # Рядок 6262: приклад опису — родом, без слів живої сцени («сховати живіт» — ж4_клуб_*)
     "goal_zones": _список(_перелік("goal_zone", "зона тіла"),
-                          "зони тіла, від яких вона хоче відвести погляд («сховати живіт» → belly), з будь-якою "
+                          "зони тіла, від яких вона хоче відвести погляд (сховати чи стрункішою зробити зону → її "
+                          "код), з будь-якою "
                           "увагою (goal): ці зони тихі, решта образу — за goal",
                           maxItems=3),
     "makeup": {"description": "макіяж на цей вихід", "type": "object", "additionalProperties": False,
@@ -1660,6 +1662,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "coordination_not_computed": "the code did not compute how well the outfit's colours are coordinated",
     "coordination_rank_not_computed": "the coordination of the outfit's colours is computed, but it gave no "
                                       "place among the other outfits",
+    # K-COMP-01: розлад чи надкоординація образу проти набору кандидатів (рядок 6281)
+    "colour_coordination_off_optimum": "the outfit's colours are off the moderate-coordination optimum among the "
+                                       "candidates (values: side — matchy: more coordinated than most, or discord: "
+                                       "more divergent; off — distance from the optimum, 0 is the optimum)",
+    "more_colour_distance_between_slots": "take a candidate whose slots are further apart in colour: another family "
+                                          "in one slot",
+    "less_colour_distance_between_slots": "take a candidate whose slots are closer in colour: one slot in a neutral "
+                                          "or in the family of another",
     "coordination_rank_homogeneous": "the outfit has no place by colour coordination: all candidates are the "
                                      "same in colour",
     "feature_and_item_indistinguishable": "a feature of her face and the item near it are the same colour in "
