@@ -1386,6 +1386,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "accent role the palette scheme gave its slot",
     "cannot_tell_colour_families_over_limit": "so the code cannot tell whether the outfit holds more than three "
                                               "colour families",
+    "cannot_tell_prints_share_colour": "so the code cannot tell whether the prints of the mix share a colour",
+    "cannot_tell_shoes_cut_leg_line": "so the code cannot tell whether the shoes match the leg or the bottom in "
+                                      "lightness or cut the leg line",
+    "cannot_tell_shoe_edge_contrast": "so the code cannot tell whether the high-cut shoe edge contrasts with the leg",
     "cannot_tell_two_loud_colours_clash": "so the code cannot tell whether two loud colours compete for "
                                           "attention",
     "cannot_tell_items_intensity_match": "so the code cannot tell whether the outfit's items match in colour "
@@ -3371,6 +3375,7 @@ if _спільні:
     'metal_surface_share': 'The check needs measured metal surface share from enrichment v2; named metal is not coverage.',
     'shared_photo': 'The named item fields are unknown because the shop photo is shared with other products (R-FEED-06).',
     'item_surface': 'Texture and fibre are unknown for the listed items; known counts cannot establish equal surfaces.',
+    'colour_measure': 'The colour of the listed items is a word window, not a measurement; their chroma may lie on either side of the interest threshold.',
     'scheme_choice': 'The stylist or woman choice of the palette scheme was not supplied to the judge.',
     'passport_author': 'The language model conversation author of the passport was not supplied to the judge.',
     'point_input_unknown': 'The referenced checklist point lacks its required input. Do not treat this as a pass.',
