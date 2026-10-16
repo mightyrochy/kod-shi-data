@@ -22,6 +22,15 @@ _ПОЛЕ = _ЗП.Поле("replacement", "one rejected item and the unchanged i
 _ПРАВИЛА = ("Choose exactly one different item for replacement.slot, considering the entire fixed outfit. "
             "Return only that item, never a rebuilt outfit. If no eligible different item exists, "
             "return an empty item list. Do not invent a catalogue item or reuse an item already worn.",)
+# Роль заміни — одна на її складання й уважний вибір (`уважний_вибір._запит`).
+РОЛЬ = "You are the stylist choosing a replacement for one item of her current outfit."
+# ЗАМІНА — НЕ СКЛАДАННЯ ДЕСЯТИ ОБРАЗІВ (рядок 6209): доти промпт брав роль і весь вхід `СКЛАДАННЯ` — «You put
+# together outfits for her…», задуми набору («each outfit follows its own idea…»), недосяжні задуми, число
+# образів, ноти всіх видів і скелет `ОБРАЗИ_V1` з підписом, задумом, «day», «deliberate» і «needed» (2 тис.
+# переліків кодів), а правило — «Return only that item». Задуми й число — питання набору, а не однієї речі;
+# відповідь — лише номер речі слота.
+_НЕ_ДЛЯ_ЗАМІНИ = ("poles", "poles_unavailable", "outfits_wanted")
+_СКЕЛЕТ = {"outfits": [{"items": ["<n>"]}]}
 
 
 def контекст(з):
@@ -37,15 +46,20 @@ def контекст(з):
 
 
 def промпт_складання(пакет):
-    """Варіант спільного складання для одного слота; решта його входів ті самі."""
+    """Складання на один слот: роль заміни, вхід складання без полів набору, ноти лише виду слота, відповідь —
+    один номер речі (рядок 6209)."""
     з = пакет.get("заміна")
-    дані = _Д.пакет(пакет)
+    дані = {к: v for к, v in _Д.пакет(пакет).items() if к not in _НЕ_ДЛЯ_ЗАМІНИ}
     дані["replacement"] = контекст(з)
-    о = _dc.replace(_ПМ._задача_руки(_ПМ.СКЛАДАННЯ),
-        вхід=_ПМ.СКЛАДАННЯ.вхід + (_ПОЛЕ,), правила=_ПРАВИЛА,
-        поля_виходу=dict(_ПМ.ПОЛЯ_ОБРАЗІВ_EN, **{"образи[].речі": "exactly one eligible n, or []"}))
+    вид = дані["replacement"]["slot"]
+    if isinstance(дані.get("kind_notes"), dict):
+        дані["kind_notes"] = {к: v for к, v in дані["kind_notes"].items() if к == вид}
+    о = _dc.replace(_ПМ.СКЛАДАННЯ, роль=РОЛЬ,
+        вхід=tuple(п for п in _ПМ.СКЛАДАННЯ.вхід if п.шлях not in _НЕ_ДЛЯ_ЗАМІНИ) + (_ПОЛЕ,),
+        правила=_ПРАВИЛА + (_ПМ.РЯДОК_ЛИШЕ_НОМЕР,), скелет=_СКЕЛЕТ,
+        поля_виходу={"outfits[].items": "exactly one eligible «n» of «pool», or []"})
     return _json.dumps(_ЗП.зібрати(о, дані,
-        мова_тексту=(пакет.get("завдання") or {}).get("мова_тексту")), ensure_ascii=False)
+        мова_тексту=(пакет.get("завдання") or {}).get("мова_тексту")), ensure_ascii=False, separators=(",", ":"))
 
 
 def без_каталогу(d):

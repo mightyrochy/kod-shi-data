@@ -227,6 +227,7 @@ _БЕЗ_ГЕЙТІВ = {
                                "far from the face that is the tightest spot in most outfits",
                  як="a break you already declared («your_declared») stays in its own kind; a new break — "
                     "only with an entry in «deliberate»"),
+        # рядок 6213 (б): поле їде лише з порушеннями (`дріт_моделі.вердикт`)
         _ЗП.Поле("language", "violations in your previous text", як="do not repeat them; «instead» — what to use"),
         _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
         _ЗП.Поле("outfits_wanted", "how many outfits to return", треба=True),

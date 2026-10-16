@@ -80,11 +80,6 @@ _ПСЕВДОНІМИ = {"список": "list", "spysok": "list", "оцінка
 КОДИ_ОЦІНКИ = _ПР.КОДИ_ОЦІНКИ
 ПАСУЄ = КОДИ_ОЦІНКИ[0]
 
-# Англійський шаблон збирача (`мова_промпту`, П-1) — щойно він є в `збирач_промптів`;
-# доти тексти англійські, а ключі шаблону — ті, що має збирач (як `повнота_образу.ПОВНОТА`).
-_EN = ({"мова_промпту": "en"}
-       if "мова_промпту" in getattr(_ЗП.Оголошення, "__dataclass_fields__", {}) else {})
-
 # Контекст про неї — ТІ САМІ поля й ТИМ САМИМ дротом, що бачить складання (`дріт_моделі.пакет`).
 # ВМ-2 (01.10.2026, рядок 484): доти тут їхали поля пакета коду як є — українськими ключами
 # («випадок», «людина», «речі», «н») і українськими значеннями (зона речі реченням коду,
@@ -96,7 +91,10 @@ _КОНТЕКСТ = (
     _ЗП.Поле("day", "her day as facts: what she will do, where, how long, the weather, the hour "
                     "and light, the level of the occasion"),
     _ЗП.Поле("person", "her coloring, palette and body"),
-    _ЗП.Поле("style_rules", "rules of the style corpus for her and this case"),
+    # рядок 6213 (в): з БРИФ-1 це виміряні коди зі словника, а не «rules of the style corpus» — словами складання
+    # (`пакет_моделі.СКЛАДАННЯ`), без речення про «pool», якого тут нема
+    _ЗП.Поле("style_rules", "what the code measured about her and this case, her own answers and wishes: "
+                            "each entry is a code, or {code: values}; codes are defined in \"statement_codes\""),
     _ЗП.Поле("she_refuses", "what she refused in her words"),
 )
 
@@ -123,7 +121,7 @@ _КОНТЕКСТ = (
     вихід="ОЦІНКИ_V1",
     поля_виходу={"ratings.<ключ>": "the verdict for the item whose «n» is the key"},
     межі=("лише_вхід",),
-    **_EN,
+    мова_промпту="en",
 )
 
 # ТУРНІР (Б). ЧОМУ ЦІ РЯДКИ: «з цієї групи й лише з неї» — переможець чужої групи ламав
@@ -144,7 +142,7 @@ _КОНТЕКСТ = (
     вихід="ТУРНІР_V1",
     поля_виходу={"winners.<ключ>": "«n» of the winners of the group whose key this is"},
     межі=("лише_вхід",),
-    **_EN,
+    мова_промпту="en",
 )
 
 
@@ -238,8 +236,7 @@ def _запит(оголошення, дані, сід, крок, чого, кл
                   "An item fits only if it suits her, the occasion and all the fixed items together."
         правила = ((оголошення.правила[0], правило, *оголошення.правила[2:])
                    if оголошення is ОЦІНКА else (правило, *оголошення.правила))
-        оголошення = _dc.replace(оголошення, вхід=оголошення.вхід + (_ЗР._ПОЛЕ,), правила=правила,
-            роль="You are the stylist choosing a replacement for one item of her current outfit.")
+        оголошення = _dc.replace(оголошення, вхід=оголошення.вхід + (_ЗР._ПОЛЕ,), правила=правила, роль=_ЗР.РОЛЬ)
     текст = _json.dumps(_ЗП.зібрати(оголошення, дані), ensure_ascii=False, separators=(",", ":"))
     зап = _ПЗ.запис(сід, крок, слоти=слоти)
     if групи is not None:

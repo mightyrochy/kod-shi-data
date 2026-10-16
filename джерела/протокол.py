@@ -2337,6 +2337,8 @@ _ПОМИЛКИ_EN = (
     (r"^key_not_string\(«(.+)»\)$", lambda м: "key «%s» is not a string" % м.group(1)),
     (r"^required_missing$", lambda м: "a required key is missing"),
     (r"^empty_answer$", lambda м: "the answer is empty"),
+    # рядок 6207: JSON розібрано, а образів у ньому нема (`міст_відповіді`)
+    (r"^no_outfits$", lambda м: "the answer object has no «outfits» list"),
     (r"^no_json_object.*$", lambda м: "the answer has no JSON object"),
     (r"^invalid_json\(line=(\d+),col=(\d+)\)$", lambda м: "not JSON (line %s, column %s)" % м.groups()),
     (r"^invalid_json$", lambda м: "not JSON"),
