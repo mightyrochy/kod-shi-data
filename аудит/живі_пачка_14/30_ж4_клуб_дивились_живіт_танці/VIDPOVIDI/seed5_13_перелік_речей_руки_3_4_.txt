@@ -1,0 +1,38 @@
+── ПРОМПТ (2071 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet slip dress, bias cut, floor length, deep emerald (#0a3d2e), heavy crepe-back velvet.\nOversized structured blazer, boxy cut, hip length, obsidian black (#0d0d0d), wool-cashmer blend.\nChunky metallic heels, architectural shape, ankle height, burnished bronze (#cd7f32), metal and faux-leather composite.\nStatement choker necklace, wide link chain design, polished gold finish (#ffd700), lightweight hollow metal.\n\nThis ensemble works because the deep emerald velvet immediately draws attention as a bold, statement piece that satisfies the desire to be seen. The oversized black blazer adds an air of mystery and sophistication while keeping the silhouette clean around the bust and waist areas you wish to minimize. Chunky metallic heels and a striking gold choker further elevate the look, ensuring every glance focuses on your confident style rather than any specific body concern."}
+
+── ВІДПОВІДЬ (936 симв., 218.3 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "slip dress",
+        "details": "velvet slip with bias cut and floor length, heavy crepe-back construction",
+        "slot": "dress",
+        "color_hex": "#0a3d2e",
+        "worn": true
+      },
+      {
+        "name": "blazer",
+        "details": "oversized structured boxy cut with hip length, wool-cashmer blend",
+        "slot": "outerwear",
+        "color_hex": "#0d0d0d",
+        "worn": true
+      },
+      {
+        "name": "heels",
+        "details": "chunky architectural ankle height with metal and faux-leather composite",
+        "slot": "shoes",
+        "color_hex": "#cd7f32",
+        "worn": true
+      },
+      {
+        "name": "choker necklace",
+        "details": "statement wide link chain design, lightweight hollow metal with polished gold finish",
+        "slot": "collar_necklace",
+        "color_hex": "#ffd700",
+        "worn": true
+      }
+    ]
+  }
+}
