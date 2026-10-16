@@ -289,7 +289,10 @@ def осі(зона, рч=None):
     к = з.get("колір")
     if к and к.get("L"):
         вих["L"] = [int(round(к["L"][0])), int(round(к["L"][1]))]
-        вих["L_from"] = ("word" if р.get("джерело_кольору") == "назва_вікно" or str(к.get("джерело") or "").startswith("слово")
+        # кадр картки іншого кольору (рядок 5220): світлота — межі слова крамниці й кадру разом
+        # (`фід_кадр_колір.вікно_з_кадром`), а не лише слова
+        вих["L_from"] = ("word_or_photo" if (р.get("кадр_кольору") or {}).get("стан") == "інший_колір"
+                         else "word" if р.get("джерело_кольору") == "назва_вікно" or str(к.get("джерело") or "").startswith("слово")
                          else ("photo" if к.get("розкид") is not None else "photo_point"))
     кр = з.get("край")
     if кр and кр.get("см"):
@@ -436,7 +439,10 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
     "si": "shine", "nk": "neckline", "vm": "vamp", "mt": "metal", "mw": "metal is the body "
     "of the item or only its hardware", "dc": "decoration", "sk": "kind of set it is sold as",
     "sp": "the parts of the set", "co": "color", "cx": "other colors the shop names",
-    "cw": "why there are several colors", "hx": "measured hex of the color",
+    "cw": "why there are several colors",
+    "cq": "another witness of the color disagrees with `co`: the item's photo or the catalogue text shows "
+          "this color, and which of the two she gets is not known",
+    "hx": "hex of the color: measured on the photo, or the middle of the shop word's range when `Lf` is word",
     "fm": "color family", "ia": "the color lies inside her palette's scheme arc",
     "vt": "what the item carries that she may refuse, listed only when it does: stripes, "
           "big_print, print, shine, oversize, tight", "rg": "style register", "br": "core, edge or break of her palette",
@@ -539,6 +545,8 @@ def річ(r, короткий=False, пул=False, слот=None):
             ("shine", True if r.get("блиск") else None), ("details", _деталі(r.get("деталі"))),
             ("color", колір_код(r.get("колір"))[0]), ("shop_color", колір_код(r.get("колір"))[1]),
             ("hex", r.get("hex")),
+            # другий свідок кольору (рядок 5220): кадр картки показує інший колір, ніж слово крамниці
+            ("color_disputed", код("color_name", r["колір_кадру"]) if r.get("колір_кадру") else None),
             ("family", _сім_я_речі(r)),
             ("in_arc", r.get("у_дузі") if r.get("у_дузі") is not None else None)):
         if v not in (None, "", [], ()):
@@ -1438,15 +1446,19 @@ def опис(об):
         # «світло сірий» стояли в `color` поруч із `light_blue` сусідньої речі
         # рід і тип речі — лише кодом таблиці (рядок 3457); слово поза таблицею не їде (п.12)
         _рід = _ВМ.код("slot", x["слот"]) if x.get("слот") else None
-        # ОДИН КОЛІР НА РІЧ (рядок 4282): кадр іншого кольору (`кадр_колір`, R-FEED-01) доти їхав другим
-        # кольором (`photo_colour: green` біля `color: purple`), і опис переказував розлад жінці («здається
-        # зеленим, але ми обираємо його як фіолетовий»). Колір речі код уже вирішив (`фід_кадр_колір.рішення`),
-        # тож їде лише він і позначка про кадр; `hex` — вимір того самого чужого кадру — теж не їде
+        # ЖОДНОГО КОЛЬОРУ, КОЛИ КАДР ІНШИЙ (рядки 4282, 5220): другий колір поруч (`photo_colour: green` біля
+        # `color: purple`) опис переказував жінці («здається зеленим, але ми обираємо його як фіолетовий»), а
+        # один колір слова — «бежеві туфлі» під шоколадним кадром картки (файл 1551). Код не знає, котрий із
+        # двох вона отримає, тож їде лише позначка про кадр; `hex` чужого кадру — теж ні
         _інший_кадр = bool(x.get("кадр_колір"))
         for ключ, v in (("kind", _рід),
                         ("type", _тип_свого_роду(_ВМ.код("item_type", x["тип"]) if x.get("тип") else None, _рід)),
                         ("set_half", _з(_ЧАСТИНА, x.get("частина"))), ("shop", x.get("магазин")),
-                        ("color", колір_код(x.get("колір"))[0]), ("shop_color", колір_код(x.get("колір"))[1]),
+                        # кадр іншого кольору (рядок 5220): який колір вона отримає, код не знає (вікно
+                        # слова й кадру разом, `фід_кадр_колір.вікно_з_кадром`), тож колір не їде зовсім —
+                        # опис не назве річ кольором, який спростовує її ж кадр на картці
+                        ("color", None if _інший_кадр else колір_код(x.get("колір"))[0]),
+                        ("shop_color", None if _інший_кадр else колір_код(x.get("колір"))[1]),
                         ("hex", None if _інший_кадр else x.get("hex")),
                         ("photo_other_colour", True if _інший_кадр else None),
                         ("photos", x.get("фото_номери")), ("no_photo", True if x.get("без_кадру") else None),
