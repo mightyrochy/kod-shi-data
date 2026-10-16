@@ -305,6 +305,12 @@ def розмітити(тексти, виправ=None):
 # нього — hex тим самим вікном, що підписує палітру, `_код_кольору`). Колір речі — слово її назви (річ зберігає
 # слово крамниці, п.18), а без нього — назва коду; кольорові слова англійського тексту про цю річ — враження моделі
 # від фото, не її колір. Назв і слів код не читає: передає назву, номер тексту й код (п.12).
+# ВИД РЕЧІ — КОДОМ (рядки 5820, 3782; п.12). ЩО БУЛО ВИДНО. Перелік давав назву, колір і номер тексту, а вид речі
+# перекладачка брала з англійського слова моделі: «Suede pumps» → «Черевики з замші…» при «Туфлі човники» (живий
+# 07 ПІСЛЯ #1083, картка руки 1), «Emerald green snakeskin boots» → «ботильйони» при чоботях до коліна (ЖИВІ-14 №11).
+# ЩО ТЕПЕР. Біля речі крамниці стоїть код її виду (`item_type` укладки — той самий `type`, що бачила стилістка в
+# `дріт_моделі.опис`; без типу — код слота, як «kind» там же), а правило каже: іменник речі в кожному тексті — цього
+# виду. Слів код не читає: дає код.
 ПРАВИЛО_РЕЧЕЙ = ("When a text speaks of an item of the list, call it by the kind in its name — the same noun in the "
                  "right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), "
                  "not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with "
@@ -318,7 +324,12 @@ def розмітити(тексти, виправ=None):
                  "them into a colour of their own — the item's colour stands in their place. Colours of its details "
                  "(trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for "
                  "names only: an item the English text does not name is not added to the translation — neither to "
-                 "the description nor to the advice.")
+                 "the description nor to the advice. The kind code next to an item (kind code: …) is the code of "
+                 "its kind: every noun for that item, in every text, names this kind and no other, whatever word "
+                 "the English text uses — pumps are туфлі-човники or човники, never черевики; boots are чоботи, "
+                 "never ботильйони (those are ankle_boots); loafers are лофери, not туфлі; a code "
+                 "ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The "
+                 "kind noun of its name and this code are the same kind: write the name's noun.")
 
 
 def _код_кольору_речі(р):
@@ -335,7 +346,8 @@ def _код_кольору_речі(р):
 
 
 def _абзац_речей(розмітка, речі):
-    """(абзац промпту з речами картки, коди кольорів речей). `речі` — [{н, назва, ключ?, опис?, колір?, hex?}] з показу:
+    """(абзац промпту з речами картки, коди кольорів речей). `речі` — [{н, назва, ключ?, опис?, тип?, колір?, hex?}] з
+    показу (`тип` — ключ ядра `item_type` з укладки речі, без нього `слот`; у промпт — кодом виду):
     номер і назва біля речі; назва, яку перекладає цей самий виклик (`ключ` є в `розмітка`), — посиланням «текст н=K»;
     текст про цю річ (`опис` — ключ тексту в `розмітка`) — «about it: text н=M»; код кольору речі крамниці
     (`_код_кольору_речі`). Без речей — ("", [])."""
@@ -348,9 +360,12 @@ def _абзац_речей(розмітка, речі):
         if not (н or назва):
             continue
         к, про = _код_кольору_речі(р), н_ключа.get(str(р.get("опис") or ""))
+        вид = ((_ВМ.код("item_type", р.get("тип")) if р.get("тип") else None)
+               or (_ВМ.код("slot", р.get("слот")) if р.get("слот") else None))
         if к:
             коди.append(к)
         рядки.append("%s — %s" % (р.get("н") or len(рядки) + 1, "назва в тексті н=%d" % н if н else назва)
+                     + (" · kind code: %s" % вид if вид else "")
                      + (" · colour code: %s" % к if к else "") + (" · about it: text н=%d" % про if про else ""))
     if not рядки:
         return "", []
@@ -2438,7 +2453,10 @@ def _місця_вечірні_en():
 _ПОЛЯ_EN = {
     # Рядок 5318 (ЖИВІ-1510-Г, Г4): «Йду ввечері на вечірку в клуб» — `occasion` з цим уривком, `place` — ні (клас
     # 4206): правило ходу каже про місце в назві події, а опис поля, яке модель заповнює першим, — ні
-    "occasion": "what kind of event it is; the place named in the same phrase goes into place too",
+    # Рядок 5270 (ЖИВІ-1510-Б, Б1): «йду на роботу пішки» — `movement` з цим уривком, `occasion` — ні (ДО 960 — work):
+    # «such a phrase gives both occasion and movement» стояло лише в правилі `update`, не в описах полів
+    "occasion": "what kind of event it is, also when the same phrase says how she gets there (walking to work "
+                "is occasion work and movement walk); the place named in the same phrase goes into place too",
     # Рядок 5241 (ЖИВІ-1510-А, А2): «йога зранку, потім кава з подругою» → `occasion_part: sport` з уривком йоги:
     # правило «частина не названа — перша не спортивна» стояло лише в правилі ходу, не в описі поля
     "occasion_part": "which part of her day THIS outfit is for: sport when it is for doing "
@@ -2471,7 +2489,8 @@ _ПОЛЯ_EN = {
     # Рядок 4209: `activity` кодів спорту не має (діти, нерівний ґрунт, прогулянка, ходьба, фотосесія) — спорт її дня
     # несе `movement: sport`, і руки 3–4 бачать його в `case` (`руки_без_коду.випадок_кодами`, `рух`)
     "movement": "whether she will sit, stand, walk, walk a lot, dance, kneel or do sport — also when sport is only "
-                "one part of her day",
+                "one part of her day; when the phrase that says how she gets there names the outing (work, a party), "
+                "give occasion too, never movement alone",
     "activity": "what she will do there",
     "surface": "what is under her feet",
     # Рядок 3454 (живі 13, №6): «субота ввечері» → `hour: 19` з цитатою — «час словами — година» правила мови
