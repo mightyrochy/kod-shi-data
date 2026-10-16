@@ -1,0 +1,30 @@
+── ПРОМПТ (2534 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green sheath dress, fitted bodice with a slight A-line skirt that hits mid-calf, #056b3c color, velvet fabric with a subtle satin lining to contrast the warm skin tones of #d9b48f and #d1ab86.\nSilver stiletto pumps, pointed toe with a sleek silhouette, #c0c0c0 metallic finish, smooth patent leather that reflects the festive lights without being too glossy.\nA structured black blazer, single-breasted with notched lapels and sharp shoulders to elongate the frame, #000000 solid color, heavy wool blend that provides necessary warmth against the frosty autumn weather.\nThis outfit works because the emerald velvet captures the celebratory mood of the New Year's party while adhering strictly to her refusal of outer layers when not truly needed, though here a blazer is chosen for the specific frosty condition rather than just warmth alone; the fitted silhouette complements her measurements without relying on body-type labels or numerical limits, creating a refined yet comfortable look suitable for an upscale restaurant; the silver shoes add a touch of sparkle that bridges the gap between smart and formal dress codes without overshadowing the rich color of the dress."}
+
+── ВІДПОВІДЬ (678 симв., 85.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "fitted bodice with slight A-line skirt hitting mid-calf, velvet fabric with subtle satin lining",
+      "slot": "dress",
+      "color_hex": "#056b3c",
+      "worn": true
+    },
+    {
+      "name": "stiletto pumps",
+      "details": "pointed toe sleek silhouette smooth patent leather",
+      "slot": "shoes",
+      "color_hex": "#c0c0c0",
+      "worn": true
+    },
+    {
+      "name": "structured blazer",
+      "details": "single-breasted with notched lapels and sharp shoulders, heavy wool blend",
+      "slot": "outerwear",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

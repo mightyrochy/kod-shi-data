@@ -1,0 +1,51 @@
+── ПРОМПТ (2977 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer in a deep forest green with sharp shoulders and single-breasted closure, cut slim through the torso for a modern silhouette.\nTailored high-waisted trousers in matching dark emerald felt, featuring a straight leg with slight tapering at the ankle and no pleats.\nA fine-gauge cashmere turtleneck sweater in charcoal grey, ribbed at the neck and hem to provide subtle contrast while maintaining warmth against the frost.\nClassic pointed-toe leather pumps in black patent finish, heeled moderately at 8 cm for stability on indoor restaurant floors.\nDelicate gold-plated drop earrings with small geometric details to catch candlelight without overpowering the festive atmosphere.\nA structured clutch in matching forest green with a matte texture, complemented by sheer black tights and a sleek wrap coat in midnight blue wool if stepping outside into the cold air.\nThis outfit works perfectly for an upscale restaurant New Year's celebration because it balances the requested smart to formal dress code with the season's frosty weather through luxurious fabrics like cashmere and wool that provide essential warmth without bulk. The deep forest green color scheme feels rich and celebratory under dim restaurant lighting while remaining sophisticated enough for a winter event, avoiding overly flashy patterns in favor of textured elegance. Each piece is chosen to respect the need for an outer layer due to the freezing temperatures, ensuring comfort throughout the evening, while the monochromatic base allows the accessories to provide just enough festive sparkle appropriate for the occasion."}
+
+── ВІДПОВІДЬ (1255 симв., 88.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend blazer",
+      "details": "sharp shoulders, single-breasted closure, slim cut through torso, deep forest green color",
+      "slot": "outerwear",
+      "color_hex": "#2e4a3d",
+      "worn": true
+    },
+    {
+      "name": "high-waisted trousers",
+      "details": "straight leg with slight tapering at ankle, no pleats, dark emerald felt fabric",
+      "slot": "bottom",
+      "color_hex": "#2e4a3d",
+      "worn": true
+    },
+    {
+      "name": "cashmere turtleneck sweater",
+      "details": "ribbed neck and hem, fine gauge, charcoal grey color",
+      "slot": "top",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "pointed-toe leather pumps",
+      "details": "black patent finish, moderate heel height of 8 cm",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "gold-plated drop earrings",
+      "details": "small geometric details",
+      "slot": "earrings",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "structured clutch",
+      "details": "matte texture, matching forest green color",
+      "slot": "bag",
+      "color_hex": "#2e4a3d",
+      "worn": true
+    }
+  ]
+}

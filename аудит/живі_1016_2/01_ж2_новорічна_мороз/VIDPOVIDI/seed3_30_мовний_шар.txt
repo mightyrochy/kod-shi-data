@@ -1,0 +1,56 @@
+── ПРОМПТ (8061 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Піджак однобортний шоколад · kind code: blazer · colour code: chocolate · about it: text н=1
+2 — Штани з костюмної тканини · kind code: trousers · colour code: brown · about it: text н=2
+3 — Жорсткий браслет золотистого кольору з квіткою · kind code: jewelry_generic · colour code: golden · about it: text н=3
+4 — Чоботи замшеві смарагдові LEA на шкірі · kind code: boots · colour code: emerald · about it: text н=4
+5 — Сумка Бузкова геометрія · kind code: bag_generic · colour code: lilac · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; chocolate — шоколадний; emerald — смарагд; golden — золотий; lilac — бузковий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This chocolate-colored blazer is cut from a thick, matte fabric that feels structured and expensive. It has wide lapels that frame your face beautifully and long sleeves that drape loosely over your arms for a relaxed yet polished look."},
+{"н": 2, "текст": "These trousers in cappuccino brown sit comfortably on your waist with a high rise and a clean, straight silhouette that lengthens your legs. The fabric is smooth and holds its shape well without feeling stiff."},
+{"н": 3, "текст": "The bracelet is a rigid piece made of gold-toned metal featuring an intricate relief flower design that looks like a real bloom. Its sculptural shape adds texture to your wrist without any distracting movement."},
+{"н": 4, "текст": "These boots are crafted from soft emerald green suede and feature a comfortable wedge heel with a slight stretch at the ankle for easy slip-on wear."},
+{"н": 5, "текст": "This crossbody bag is made of sturdy lilac canvas and decorated with rows of colorful geometric triangles in pink, blue, yellow, and green. It has a practical zip closure and an adjustable strap that lets you carry it comfortably across your body."},
+{"н": 6, "текст": "You are ready for your New Year celebration at the upscale restaurant. This chocolate blazer and matching trousers set you apart with a sophisticated, monochromatic elegance that fits a formal evening perfectly. The emerald green boots add a deep, festive pop of color to your feet, while the gold flower bracelet catches the light without being too loud. You hold the lilac geometric bag in your hand, its bright pattern offering a perfect visual break against the dark brown tones of your suit."},
+{"н": 7, "текст": "Unbutton the top of the blazer when you settle onto your chair or make a toast to let your neckline breathe and relax your shoulders."},
+{"н": 8, "текст": "Take the green boots off if you want to feel warmer at the table, but keep them on if the restaurant floor is cold and you need that cozy protection."},
+{"н": 9, "текст": "Сумка Бузкова геометрія — The lilac bag serves as a deliberate complementary accent to the chocolate blazer, creating a sophisticated visual break that suits the upscale restaurant setting."},
+{"н": 10, "текст": "Піджак однобортний шоколад — The single-breasted chocolate blazer creates a strong vertical line that elongates the figure, addressing the goal to flatter her X shape by drawing the eye up and down; its smart formality fits the occasion perfectly."},
+{"н": 11, "текст": "Чоботи замшеві смарагдові LEA на шкірі — The ankle boots in green provide a pop of accent color that ties into the eyes family, adding interest without overwhelming the neutral base; their ankle height is practical for movement on any ground."}
+]
+
+── ВІДПОВІДЬ (2643 симв., 30.6 с, HTTP 200) ──
+```json
+{
+  "1": "Цей шоколадний піджак пошитий з щільної матової тканини, яка відчувається структурованою та дорогою. Він має широкі лацкани, які чудово обрамлюють твоє обличчя, і довгі рукави, що вільно спадають на твої руки для невимученого, але вишуканого образу.",
+  "2": "Ці штани кольору капучино коричневого зручно сидять на твоїй талії з високою посадкою та чітким прямим силуетом, який видовжує ноги. Тканина гладка і добре тримає форму без відчуття жорсткості.",
+  "3": "Браслет — це твердий виріб із золотистого металу з витонченим рельєфним квітковим дизайном, що нагадує справжній бутон. Його скульптурна форма додає текстури твоєму зап’ястю без будь-якого відволікаючого руху.",
+  "4": "Ці чоботи виготовлені з м'якої смарагдової замші та мають зручний конусоподібний каблук із невеликим розтягуванням на щиколотці для легкого взування.",
+  "5": "Ця сумка через плече зроблена з міцного бузкового полотна і прикрашена рядами різнокольорових геометричних трикутників у рожевому, блакитному, жовтому та зеленому кольорах. Вона має практичну застібку-блискавку та регульований ремінь, який дозволяє носити її зручно через тіло.",
+  "6": "Ти готова до свого новорічного святкування у вишуканому ресторані. Цей шоколадний піджак і відповідні штани вирізняють тебе з елегантною монохромною розкішністю, яка чудово пасує для формального вечора. Смарагдові чоботи додають глибокий святковий колір твоїм ногам, а золотий квітковий браслет ловить світло без зайвого блиску. Ти тримаєш бузкову геометричну сумку в руці, її яскравий візерунок пропонує ідеальний зоровий перепочинок на темних коричневих тонах твого костюму.",
+  "7": "Розстебни верхню частину піджака, коли ти сядеш за стіл або виголосиш тост, щоб дати твоєму вирізу дихати та розслабити плечі.",
+  "8": "Зніми зелені чоботи, якщо хочеш відчувати себе тепліше за столом, але носи їх, якщо підлога ресторану холодна і тобі потрібен цей затишок захисту.",
+  "9": "Сумка Бузкова геометрія — бузкова сумка слугує навмисним доповнюючим акцентом до шоколадного піджака, створюючи вишуканий візуальний перепочинок, який пасує для вишуканого ресторану.",
+  "10": "Піджак однобортний шоколад — однобортний шоколадний піджак створює сильну вертикальну лінію, яка видовжує фігуру, вирішуючи мету догодити твоїй X-подібній формі, привертаючи погляд вгору та вниз; його розумна формальність чудово пасує для цієї нагоди.",
+  "11": "Чоботи замшеві смарагдові LEA на шкірі — черевики кольору зелені надають акцентний колір, який пов’язується з сімейством очей, додаючи інтерес без перевантаження нейтральної основи; їхня висота до щиколотки практична для руху по будь-якій поверхні."
+}
+```
