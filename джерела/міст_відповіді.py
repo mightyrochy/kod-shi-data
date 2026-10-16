@@ -2039,7 +2039,7 @@ def від_моделі(вхід):
                                       items=[_вільний_в(н) for н in _назви]))
         # метал біля обличчя, якого вона не обирала (рядок 177): пул його зняв — заява каже це
         # й що її слово його повертає (замків нема, п.9)
-        if any("метал біля обличчя" in str(_п) for _п in (_тр_к.get("знято") or {})):
+        if any(str(_п).startswith("mourning_metal_near_face_not_chosen") for _п in (_тр_к.get("знято") or {})):
             _заяви.append(_ВМ_в.заява("mourning_no_metal_near_face"))
         if _тр_к.get("її_вибір"):
             _заяви.append(_ВМ_в.заява("her_own_choice_kept_as_is"))
