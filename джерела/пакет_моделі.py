@@ -638,9 +638,10 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("break", "where this pool offers a deliberate break of the palette: the kind, and "
                           "\"statements\" — codes defined in \"statement_codes\""),
         _ЗП.Поле("poles", "ideas of the outfits",
+                 # рядок 6213 (г): «give no explanations» стояло при скелеті з «day», «deliberate.why» і
+                 # «needed.description» — живий ж2: «day» 35–40 слів при межі 25
                  як="each outfit follows its own idea and puts its «id» in «pole»; outfits differ by "
-                    "idea, not by a detail; give no explanations — they are asked for once an outfit is "
-                    "chosen"),
+                    "idea, not by a detail; give no explanations beyond «day» and «deliberate»"),
         _ЗП.Поле("poles_unavailable", "«id» of the ideas this pool cannot give",
                  як="do not invent them and do not fill their place with a variation of an outfit you "
                     "already made"),

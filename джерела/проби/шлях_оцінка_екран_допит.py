@@ -16,7 +16,7 @@ print("теми поради в промпті оцінки: %d (поля advice
 д = json.loads(О.промпт_допиту(с, {"free_text": "а якщо з чорними ботильйонами?", "lang": "uk"},
                                  {"answer": "Mostly yes.", "works": ["Khaki suits you."]}))
 print("допит: поля відповіді %s; «previous» у вході: %s; суд і фото ті самі (check %d знахідок)" % (
-      list(д["task"]["answer_schema"]), "previous" in д, len(д["check"].get("findings") or [])))
+      list(д["task"]["answer_schema"]), "previous" in д.get("now", {}), len(д["check"].get("findings") or [])))
 н = п["unknown"]
 print("«без входу» у вході моделі: %d записів (%s…); у звіті повним переліком: %d" % (
       len(н), ", ".join(str(х.get("input") or "+".join(х.get("rule") or [])) for х in н[:4]), len(с["без_входу"])))

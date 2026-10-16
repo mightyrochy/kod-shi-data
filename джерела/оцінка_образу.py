@@ -77,24 +77,6 @@ def _довжини():
     return {к: рівень[сл] for к, сл in _ВМ.ТАБЛИЦЯ["length"].items() if сл in рівень}
 
 
-def коди_речей():
-    """Дозволені коди полів речі для промпта `РЕЧІ`: {поле: [коди]}."""
-    вих = {}
-    for поле, таблиця, словник in _ПОЛЯ_КОДІВ:
-        вих[поле] = [к for к, ключ in _ВМ.ТАБЛИЦЯ[таблиця].items() if ключ in словник]
-    вих["cut"] = list(_РФ.КРОЇ)
-    вих["length"] = list(_довжини())
-    # «solid» у таблиці візерунків має ключем сам себе, а `річ_з_фото` зве однотонне
-    # «однотонний» — той самий виняток, що в `мовний_шар._фраза`
-    вих["pattern"] = [к for к, ключ in _ВМ.ТАБЛИЦЯ["pattern"].items()
-                      if ключ in _РФ.ПРИНТИ or ключ == "solid"]
-    # ошатність — кодом щабля, як нагода; число шкали ставить код (`brief.число_щабля`, рядок 2100)
-    вих["formality"] = list(_БР.ЧИСЛО_ЩАБЛЯ)
-    # вид речі (рядок 4602) — той самий закритий перелік, що в задачі «речі з фото» (`річ_з_фото`)
-    вих["item_type"] = list(_ВМ.ТАБЛИЦЯ["item_type"])
-    return вих
-
-
 # Код `причина`, коли речі названо, а фото ні (два фото й жодна річ без `photo`): див. `речі_з_відповіді`.
 ФОТО_НЕ_НАЗВАНО = "items_without_photo"
 # Код у `нотатки` речей: «запасна» без речі образу на її місці читається «кадр не показує» (`речі_з_відповіді`).
@@ -140,6 +122,8 @@ def _ключ(поле, код, незнайомі, де):
 
 
 # ═══════════ 2. ЗАДАЧА «РЕЧІ»: ЩО НА ЇЇ ФОТО ════════════════════════════════════
+# Оголошення — спільне з розмовою (`річ_з_фото._фото_речей`, рядок 6221): оцінку відрізняє поле входу «outfit», і лише
+# з ним іде рядок про «in_outfit». Правила виміряно тут, на «Оціни мій образ», — звідси й причини нижче.
 # ЧОМУ ЦІ РЯДКИ (для людей; моделі це не потрібно):
 #   · «in_outfit» — вона може показати поруч річ, яку думає вдягти НАТОМІСТЬ (другі туфлі):
 #     такою річчю код не судить образ, а пробує її як зміну (крок 4 шапки); «unknown» — кадр цього
@@ -173,58 +157,15 @@ def _ключ(поле, код, незнайомі, де):
 #     2 з 9 — звідси «a photo of shoes alone has no top or bottom»;
 #   · «photo» — ід з підпису «Photo ф1:» перед кадром (рядок 5982, показ `викликОцінкиП`): живий 15 (qwen3.5-9b, L) —
 #     бордову спідницю ф1 записано на ф2 3 рази з 5 (картка: «штани»), бо кадри йшли поспіль без підпису.
-РЕЧІ = _ЗП.Оголошення(
-    задача="оцінка_речі",
-    роль="You are a stylist. You see photos of an outfit a woman has put together herself, and you "
-         "list the items that make it up.",
-    вхід=(
-        _ЗП.Поле("photos", "her photos: id, width, height; each image is attached after the label «Photo <id>:»", треба=True),
-        _ЗП.Поле("codes", "allowed codes for item fields"),
-    ),
-    правила=(
-        "List every garment, pair of shoes, bag and accessory visible on her photos: one object per item. "
-        "A garment under an open jacket is its own item, and so is each pair of shoes.",
-        "Each photo is a separate picture: \"photo\" is the id from the label right before the image where the "
-        "item itself is drawn. An item seen on several photos is listed once, with the photo where it is seen best.",
-        "\"in_outfit\" is true for items worn together in the outfit; false for an item shown as an "
-        "alternative to one of them; \"unknown\" when the photo does not show which of them she wears "
-        "(two pairs side by side, nothing on her).",
-        "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a "
-        "toe, boots also a shaft rising from them; a top has a neckline, shoulders and sleeves or straps; "
-        "a jacket, blazer or coat worn open over another garment is \"outerwear\", the garment under it "
-        "\"top\"; trousers have two legs; a skirt hangs from the waist in one piece.",
-        "A photo of shoes alone has no top or bottom: boot shafts are not trouser legs.",
-        "\"kind\" is the item's exact kind from \"codes.item_type\" within its \"slot\", read from the same shape.",
-        "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
-        "around the item itself, without background or skin; " + _РФ.РАМКА_НА_ОКО + ".",
-        "Field values are only codes from \"codes\"; what the photo does not show is null.",
-        "Start the answer with the JSON object itself: no description or reasoning before it.",
-    ),
-    вихід="OUTFIT_ITEMS_V1",
-    скелет={"items": [{
-        "photo": "<photo id>",
-        "name": "<short English name, as a shop would call the item>",
-        "slot": "<code from codes.slot>",
-        "kind": "<code from codes.item_type: the exact kind of the item within its slot, or null>",
-        "color": "<code from codes.color: the main color of the item itself>",
-        "fabric": "<code from codes.fabric when the texture is visible, else null>",
-        "cut": "<code from codes.cut or null>",
-        "length": "<code from codes.length or null>",
-        "pattern": "<code from codes.pattern>",
-        "formality": "<code from codes.formality: the occasion step the item suits — " + _БР.ЩАБЛІ_EN + ">",
-        "in_outfit": "<true | false | unknown>",
-        "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
-    }]},
-    межі=("лише_вхід", "невідомо"),
-    мова_промпту="en",
-)
 
 
 def промпт_речей(фото):
-    """Промпт задачі `РЕЧІ` рядком: фото — ід і розмір (самі зображення їдуть блоками)."""
+    """Промпт речей на фото оцінки рядком — спільна задача «речі з фото» (`річ_з_фото._фото_речей`, рядок 6221) з полем
+    «outfit»: фото — ід і розмір (самі зображення їдуть блоками, кожне під підписом `річ_з_фото.підписи_фото`)."""
     ф = [dict(id=str(х.get("ід")), width=х.get("ширина"), height=х.get("висота"))
          for х in (фото or []) if isinstance(х, dict) and х.get("ід")]
-    return _json.dumps(_ЗП.зібрати(РЕЧІ, {"photos": ф, "codes": коди_речей()}), ensure_ascii=False)
+    return _json.dumps(_ЗП.зібрати(_РФ._фото_речей(), {"photos": ф, "outfit": True, "codes": _РФ.коди_полів()}),
+                       ensure_ascii=False)
 
 
 def _рамка_списком(v):
@@ -1404,7 +1345,9 @@ def _заяви(обʼєкт, ключ_заяв):
 # Ід на дроті — латинкою: ід речі її фото «ф1»/«ф1·2» → «p1»/«p1-2», ід зміни «з1» → «c1»,
 # ід знахідки «з-о1-1» → «f-o1-1» (`протокол.ід_на_дріт`). Відповідь повертається тими самими
 # ідами, і `прийняти_оцінку` читає їх назад (`ід_з_дроту`).
-_ФОТО_ІД = _re.compile(r"ф(\d+)(?:·(\d+))?")
+# «її-ф2» (рядок 6216) — ід тієї самої речі її фото в паспорті розмови (`річ_з_фото`), яким заяви правил
+# називають річ (`item_id`): доти він їхав на дріт кирилицею (стенд, сід 3, `seed3_39`); на дроті — той самий «p2».
+_ФОТО_ІД = _re.compile(r"(?:її-)?ф(\d+)(?:·(\d+))?")
 _ФОТО_ДРІТ = _re.compile(r"p(\d+)(?:-(\d+))?")
 _ЗМІНА_ІД = _re.compile(r"з(\d+)")
 _ЗМІНА_ДРІТ = _re.compile(r"c(\d+)")
@@ -1488,41 +1431,39 @@ def перевірка_для_моделі(суд_):
                               "node": вузол}.items() if v not in (None, "", [], {})}
 
 
-# ДОПИТ ПІД КАРТКОЮ (власник 26.09: «Під карткою можна допитати»). Вхід — той самий, що в
-# `ОЦІНКА`, плюс її попередня відповідь і попередні питання; відповідь — одне поле «answer».
-# Сторожа тут нема не з лінощів: тверджень кодами допит не несе, а слів код не читає (п.12);
-# суд коду лежить у вході так само, як у першому виклику.
-ДОПИТ = _ЗП.Оголошення(
-    задача="оцінка_допит",
-    роль=ОЦІНКА.роль,
-    вхід=ОЦІНКА.вхід[:1] + (
-        _ЗП.Поле("previous", "what you already told her about this outfit, and her earlier questions "
-                             "with your answers", треба=True),) + ОЦІНКА.вхід[1:],
-    правила=(
-        "\"answer\": answer her new question (\"question\") directly, in one to four sentences.",
-        "Keep to what you already told her unless the check contradicts it.",
-        "Claim only what the check does not contradict; suggest replacing an item only with ids from "
-        "\"changes\" and name the item in words.",
-        _НА_ФОТО,
-        _БЕЗ_ЛІЧИЛЬНИКА,
-        _МОВА_ТЕКСТІВ,      # допит живого 15 (`02_…/seed2_09`) так само відповідав українською на «ви»
-    ),
-    вихід="OUTFIT_FOLLOWUP_V1",
-    скелет={"answer": "<the answer to her new question>"},
-    межі=ОЦІНКА.межі,
-    мова_промпту="en",
-)
+# ДОПИТ ПІД КАРТКОЮ (власник 26.09: «Під карткою можна допитати»): її нове питання про той самий образ;
+# відповідь — одне поле «answer». Сторожа тут нема не з лінощів: тверджень кодами допит не несе, а слів код не
+# читає (п.12); суд коду лежить у вході так само, як у першому виклику.
+# ПРОМПТ ОЦІНКИ + ХВІСТ «now» (рядок 6215, п.11, п.14). Доти допит був другим оголошенням того самого суду (`ДОПИТ`):
+# роль, 9 рядків входу й дані ОЦІНКИ ще раз, але правила свої — спільний початок двох промптів 209 симв. / 54 ток.
+# (ж15 01–10), і кеш початку різав на третьому правилі: ж15 ОЦІНКА 5,1–5,9 тис. ток. + ДОПИТ 4,8–5,7 тис. на сцену.
+# Тепер допит — байт у байт промпт ОЦІНКИ того самого суду, її першого питання й мови (ті самі кадри «Photo ф1:»),
+# і лише останнім ключем — нове питання, сказане досі й правило відповіді; кешований початок читається один раз.
+_ДОПИТ_ПРАВИЛО = ("Her new question about the same outfit: answer it alone, in one to four sentences, as "
+                  "{\"answer\": …}; keep to what you already told her unless the check contradicts it; suggest "
+                  "replacing an item only with ids from \"changes\".")
 
 
-def промпт_допиту(суд_, питання, попередня, мова_тексту=None):
-    """Промпт задачі `ДОПИТ` рядком: суд той самий, питання — нове, попередня відповідь — у вході."""
-    дані = _ід_усюди(дані_оцінки(суд_, питання))
-    дані["previous"] = _ід_усюди(попередня or {})
-    return _json.dumps(_ЗП.зібрати(ДОПИТ, дані, мова_тексту=мова_тексту), ensure_ascii=False, default=str)
+def _питання_дроту(питання):
+    """Її питання → «question» дроту: внутрішня мова перекладача як є, рядок — вільним текстом із мовою."""
+    return питання if isinstance(питання, dict) else {"free_text": str(питання), "lang": "uk"}
+
+
+def хвіст_допиту(питання, попередня):
+    """Хвіст «now» допиту: її нове питання, що модель уже сказала (і попередні питання), правило відповіді."""
+    return {"question": _питання_дроту(питання), "previous": _ід_усюди(попередня or {}), "rule": _ДОПИТ_ПРАВИЛО}
+
+
+def промпт_допиту(суд_, питання, попередня, мова_тексту=None, питання_оцінки=None):
+    """Промпт допиту рядком: промпт `ОЦІНКА` того самого суду (`питання_оцінки` — її перше питання, `мова_тексту` —
+    та сама мова) і хвіст «now» (`хвіст_допиту`) останнім ключем — початок той самий, що в оцінки, до її кінця."""
+    п = _ЗП.зібрати(ОЦІНКА, _ід_усюди(дані_оцінки(суд_, питання_оцінки)), мова_тексту=мова_тексту)
+    п[_ЗП.КЛЮЧІ_EN["наприкінці"]] = хвіст_допиту(питання, попередня)
+    return _json.dumps(п, ensure_ascii=False, default=str)
 
 
 def прийняти_допит(відповідь):
-    """Відповідь задачі `ДОПИТ` → {відповідь, причина, проза}: текст з поля «answer».
+    """Відповідь допиту → {відповідь, причина, проза}: текст з поля «answer» (і з повної відповіді схеми ОЦІНКИ).
 
     ОДНЕ ПОЛЕ, І ПРОЗА БЕЗ ДУЖОК — ЦЕ ТЕЖ ВІДПОВІДЬ (ОЦІНКА-1000, в). Схема задачі — `{"answer": "…"}`, і
     жива Sonnet відповідала прозою на ПЕРШУ спробу в 5 прогонах із 6 (02.10, сід 3): показ кликав другий
@@ -1577,8 +1518,8 @@ def _код_заяви(з):
     return next(iter(з)) if isinstance(з, dict) else з
 
 
-def невідоме_для_моделі(суд_):
-    """«Немає входу» для моделі й картки — позначки, лише про ЦЕЙ образ: якого входу нема й чому, кодами.
+def позначки_без_входу(суд_):
+    """«Немає входу» для картки й моделі — позначки, лише про ЦЕЙ образ: якого входу нема й чому, кодами.
 
     Позначка — `no_input` (входи) і `why` (причина: `photo_field_missing`, `catalogue_field_missing`,
     `not_given` чи заяви правила), без норми пункту: дослідження 5280 (К3) — коли модель мала визначення
@@ -1586,7 +1527,8 @@ def невідоме_для_моделі(суд_):
     35 з 44 рядків Б4). Пункти з однією причиною — одна позначка. Не йдуть: сталий брак і поля, яких нема в
     системі (`system:`, слово власника 15.10, П2(а) — лише у звіті власника), похідне від названого
     входу сцени (`_ПОХІДНЕ_ВІД`) і питання черги без її речей (K-SIZ-01, K-EYE-01: 55 % промпта без
-    стосунку до фото). Звіт власника бере `без_входу` повним переліком — там нічого не знято."""
+    стосунку до фото). Звіт власника бере `без_входу` повним переліком — там нічого не знято. Картка «Чого я не
+    знаю» (`прийняти_оцінку`) бере позначки як є, зі значеннями заяв (назви її речей); на дріт — `невідоме_для_моделі`."""
     вих, групи = [], {}
     входи = {б["input"] for б in суд_.get("без_входу") or [] if б.get("input")}
     for б in суд_.get("без_входу") or []:
@@ -1605,6 +1547,28 @@ def невідоме_для_моделі(суд_):
             вих.append({к: v for к, v in (("items", б.get("items")), ("statements", заяви),
                                           ("what", None if б.get("statements") else б.get("what"))) if v})
     return вих + [dict(no_input=list(dict.fromkeys(в)), why=ч) for ч, в in групи.items()]
+
+
+def невідоме_для_моделі(суд_):
+    """«unknown» задачі `ОЦІНКА` — позначки `позначки_без_входу` без того, що модель уже знає інакше (рядок 6216).
+
+    Стенд, сід 3 (`seed3_39`): `{"no_input": ["occasion"]}` і `{"no_input": ["temperature"]}` стояли поруч із рядками
+    «без» сцени («She did not name the occasion…»), заяви про її речі несли значення — назви речей
+    (`{"free_text": "Fitted blazer", "lang": "uk"}`: англійська назва з позначкою uk) і «item_id» паспорта, а однакові
+    записи йшли двічі. Тепер: входу, про який уже каже рядок «без», тут нема; заява — лише кодом (її речі — в «items»
+    позначки); однакова позначка — один раз. Словник кодів виклику (`task.statement_codes`) меншає сам."""
+    нагода, погода = _сцена_для_моделі(суд_)
+    рядком_без = {"occasion": not нагода, "temperature": not погода}
+    вих = []
+    for б in позначки_без_входу(суд_):
+        б = dict(б)
+        if б.get("no_input") and len(б["no_input"]) == 1 and рядком_без.get(б["no_input"][0]) and not б.get("items"):
+            continue
+        if б.get("statements"):
+            б["statements"] = list(dict.fromkeys(_код_заяви(з) for з in б["statements"]))
+        if б not in вих:
+            вих.append(б)
+    return вих
 
 
 def дані_оцінки(суд_, питання=None):
@@ -1629,7 +1593,7 @@ def дані_оцінки(суд_, питання=None):
     if не_видно:
         дані["worn_unknown"] = не_видно
     if питання and not _ВМ.невідомо((питання or {}).get("free_text") if isinstance(питання, dict) else питання):
-        дані["question"] = питання if isinstance(питання, dict) else {"free_text": str(питання), "lang": "uk"}
+        дані["question"] = _питання_дроту(питання)
     if нагода:
         дані["occasion"] = нагода
     if погода:
@@ -1670,7 +1634,7 @@ def _текст_картки(v):
 
 
 def _коди_без_входу(запис):
-    """Позначка `невідоме_для_моделі` → коди входів, яких нема, для рядка «Чого я не знаю»: `no_input`
+    """Позначка `позначки_без_входу` → коди входів, яких нема, для рядка «Чого я не знаю»: `no_input`
     (`occasion`, `item_shine`…) чи коди заяв правила про її речі (`calf_girth_not_measured`). Слова до них
     дає мовний прохід картки (`показ.html`, `мовоюКарткуОцінкиП`), не код (п.12)."""
     return list(запис.get("no_input") or []) + [(next(iter(з)) if isinstance(з, dict) else з)
@@ -1857,7 +1821,7 @@ def прийняти_оцінку(відповідь, суд_):
     # мовний прохід картки; лише те, що стосується цього образу, не повний звіт власника
     не_знаю, бачено = [], set()
     назви = {р.get("ід"): _текст(р.get("назва")) for р in суд_.get("речі") or []}
-    for б in невідоме_для_моделі(суд_):
+    for б in позначки_без_входу(суд_):
         входи = _коди_без_входу(б)
         ключ = tuple(входи) + (б.get("why"),) if входи else _вільний_текст_без_входу(б)
         if ключ and ключ not in бачено:
