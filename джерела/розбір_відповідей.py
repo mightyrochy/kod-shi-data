@@ -95,6 +95,15 @@ import дріт_моделі as _Д
         # складом не може, тож опис їх більше не дістає: склад — лише «outfit» кодами, день — «day» фактами.
         _ЗП.Поле("case", "her occasion: its fields as codes, her own words as quotes; «formality» is an "
                          "internal 1–10 band, for you only"),
+        # Рядки 5885, 5315 (ОЦІНКА-ЖИВІ-1510-Г, Г3, ж4_робота_живіт): `goal_zones` в описі був («case» кодами,
+        # `випадок_для_пакета`), а правила поля — ні; правило «body» («where it sets the eye … waist») і спосіб
+        # носіння вели модель далі: «підперезана червоним паском», «щоб пасок підкреслював найвужчу частину тулуба»
+        # при «приховати живіт». Названу зону ховає крій, сміливе лишається деінде (п.17).
+        _ЗП.Поле("case.goal_zones", "the body zones she wants to draw the eye away from, with any goal",
+                 як="this comes before «body» and «ways_to_wear»: set the eye on none of these zones — no "
+                    "sentence or way to wear that marks, frames or accentuates them (with belly or hips: no "
+                    "belt or tuck that marks the waist, never «the narrowest part of the torso»); do not name "
+                    "them to her as something to hide; say where the outfit leads the eye instead"),
         # рядок 1427 (СУКНЯ-СМУГА 03.10): «the choice is hers» тут стояло про БУДЬ-ЩО, що сперечається з
         # днем, і модель закінчувала ним 45 з 78 карток рук 1–2 — про речі, які обрала сама («сітка…
         # наскільки це важливо в церкві, вирішуєш ти»). Своє рішення стилістка не віддає жінці назад.
