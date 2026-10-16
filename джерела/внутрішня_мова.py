@@ -2836,12 +2836,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "this kind outside the palette)",
     "break_nothing_outside_palette": "no eligible kind holds an item outside the palette: there is nothing to "
                                      "break the palette with",
-    # ── стеля пулу під бюджет символів (`міст_пакет`, ВМ-3а, рядок 247) ─────────────
+    # ── стеля пулу під бюджет токенів (`міст_пакет`, ВМ-3а, рядок 247; токени — рядок 5541) ──
     # Числа зрізу — поля того самого запису (`K`, `K_запитано`, `K_віддано`, `унікальних`,
-    # `символів`, `пул_символів`, `бюджет`); заява каже лише те, чого в полях нема.
-    "pool_cut_to_budget": "the full pool was over the character budget of the item list, so it was cut by the "
+    # `символів`, `пул_токенів`, `бюджет`); заява каже лише те, чого в полях нема.
+    "pool_cut_to_budget": "the full pool was over the token budget of the item list, so it was cut by the "
                           "stratified sampler: a floor of items per kind, the rest in proportion to what each "
-                          "kind has (values: full_chars — characters of the full list; floor — items per kind)",
+                          "kind has (values: full_tokens — tokens of the full list; floor — items per kind)",
     "pool_budget_not_met": "the budget is not met: even the smallest possible sample is over it, and the "
                            "smallest possible pool was given",
     "pool_sampler_gave_other_than_asked": "the sampler gave a different number of items than was requested "

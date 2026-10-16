@@ -28,7 +28,7 @@ for сц in (sys.argv[1:] or list(СЦЕНИ)):
               % (сц, намір + ("/" + мета if мета else ""), n, вс["c"], вс["e"], вс["b"], 100.0 * (вс["e"] + вс["b"]) / max(1, n),
                  sum(1 for к in по.values() if к["e"]), len(по), розр or "—",
                  [с for с in розр if КО.SLOT_NEAR_FALLBACK.get(с, 1) >= КО.NEAR_МІН] or "ні", len(т),
-                 (р.get("стеля") or {}).get("пул_символів"),
+                 (р.get("стеля") or {}).get("пул_токенів"),
                  "недоступний" if "break" in (п.get("poles_unavailable") or []) else
                  ("є речі" if вс["b"] else "нема речей")))
         if вс["e"] + вс["b"]:

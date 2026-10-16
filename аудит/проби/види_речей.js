@@ -45,11 +45,24 @@ function видРечі(р){
   for (const [рег, вид] of ВИД_НАЗВИ) if (рег.test(р.name || р.features || р.fe || '')) return вид;
   return 'інше';
 }
+/* ПУЛ ТАБЛИЦЕЮ (рядок 5540): `pool` — {cols, rows}; рядок — значення в порядку колонок, null — ключа
+   нема, обʼєкт у кінці рядка — решта ключів (`збирач_промптів.таблиця`). Перелік обʼєктів (main до
+   5540) — як є; не пул — null. */
+function рядкиПулу(pool){
+  if (Array.isArray(pool)) return pool;
+  if (!pool || !Array.isArray(pool.cols) || !Array.isArray(pool.rows)) return null;
+  return pool.rows.map(р => {
+    const о = {};
+    pool.cols.forEach((к, i) => { if (р[i] !== null && р[i] !== undefined) о[к] = р[i]; });
+    const решта = р.length > pool.cols.length ? р[р.length - 1] : null;
+    return решта && typeof решта === 'object' ? Object.assign(о, решта) : о;
+  });
+}
 /* пул за видами: український пакет (main) — як є; англійський перелік — за `видРечі` */
 function пулЗаВидами(об){
   if (об.пул) return об.пул;
   const п = {};
-  for (const р of (об.pool || [])) { const в = р.two_piece ? 'комплект' : видРечі(р); (п[в] = п[в] || []).push({...р, н: р.n, назва: р.name || р.fe || р.features}); }
+  for (const р of (рядкиПулу(об.pool) || [])) { const в = р.two_piece ? 'комплект' : видРечі(р); (п[в] = п[в] || []).push({...р, н: р.n, назва: р.name || р.fe || р.features}); }
   return п;
 }
-module.exports = {відповідьЗадачі, видРечі, пулЗаВидами, ВИД_ТИПУ};
+module.exports = {відповідьЗадачі, видРечі, пулЗаВидами, рядкиПулу, ВИД_ТИПУ};
