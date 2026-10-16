@@ -1006,7 +1006,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                        "another very little: more equal areas hold the scheme better (values: "
                                        "most, least — the words of those colours)",
     "big_items_carry_only_some": "the large items of this outfit carry some of these colours and not the "
-                                 "others (values: present, missing — colour words)",
+                                 "others; only the large items were counted, so say a colour is missing on "
+                                 "the large items, never that it is missing from the outfit (values: present, "
+                                 "missing — colour words; counted — slot codes of the large items counted; "
+                                 "on_accessories — missing colours that an accessory of this outfit does "
+                                 "carry: say they are there only on the accessories)",
     "big_items_all_neutral": "the large items of this outfit are neutral",
     # СХЕМА-КАРТКА (02.10.2026, рядки 1294, 1404): велика річ іншого кольору — не нейтраль; свідомий
     # хід стилістки — її рішення; дія під чужою схемою — лише вибір для неї, не доручення
