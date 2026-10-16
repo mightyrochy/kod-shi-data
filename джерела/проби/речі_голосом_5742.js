@@ -58,7 +58,7 @@ const РЕЧІ = [
          перекладачка виходу дає назву речі переліку — і з коду виду для речі, дописаної словами (`add` з `kind`) */
       window.__назви = [];
       const НАЗВИ = { 'white blouse': 'Біла блуза', 'black trousers': 'Чорні штани', 'black ankle boots': 'Чорні черевики',
-                      ankle_boots: 'Ботильйони' };
+                      ankle_boots: 'Ботильйони', sneakers: 'Кеди' };
       window.модельМовиП = async function (промпт, вибірка, запис) {
         if (/\nТЕКСТИ:\n/.test(промпт)) {
           const тексти = JSON.parse(промпт.split('\nТЕКСТИ:\n')[1]); window.__назви.push(тексти.map(т => т.текст));
@@ -66,13 +66,17 @@ const РЕЧІ = [
         }
         let о = {}; try { о = JSON.parse(промпт); } catch (e) {}
         if ((о.task || {}).answer !== 'review_items_fix') return '{}';
+        /* рядки 6270, 6271: слова над річчю з назвою моделі фото — вид міняє її назву; нечитаний вид (`ботильйони` не код) дію не бере */
+        const чоботи = (о.items || []).find(х => х.id === 'p2');
+        if (о.her_words === 'там не ботильйони, а кеди') return JSON.stringify({ actions: [{ op: 'set', item: чоботи.id, kind: 'sneakers' }] });
+        if (о.her_words === 'там не кеди, а ботильйони, бежеві') return JSON.stringify({ actions: [{ op: 'set', item: чоботи.id, kind: 'ботильйони', color: 'beige' }] });
         const кт = о, штани = кт.items.find(х => х.item_type === 'trousers');
         window.__переклади.push({ слова: о.her_words, речі: кт.items.map(х => х.id + ':' + х.item_type + ':' + х.color_name), штани: штани && штани.id });
         return JSON.stringify({ actions: [{ op: 'remove', item: штани.id }, { op: 'add', kind: 'ankle_boots', color: 'cream' },
                                           { op: 'add', kind: 'ankle_boots', color: 'black', in_outfit: false }] });
       };
       _дзвінокП = async (повідомлення) => {
-        const т = JSON.stringify(повідомлення), речі = /you list the items that make it up/.test(т);
+        const т = JSON.stringify(повідомлення), речі = /you list the items/.test(т);
         const текст = речі ? JSON.stringify({ items: window.__РЕЧІ })
           : '{"answer":"Заглушка: образ оцінено.","verdict":"wear_as_is","works":[],"change":[],"unknown":[]}';
         return new Response(JSON.stringify({ content: [{ type: 'text', text: текст }], usage: { input_tokens: 1, output_tokens: 1 } }),
@@ -131,6 +135,22 @@ const РЕЧІ = [
       const ід = await page.evaluate(() => ({ речі: ОЦ.перелік.речі.map(р => р.ід), дії: ОЦ.перелік.звіт.дії.map(д => д.ід + ':' + д.op), лічильник: ОЦ.перелік.лічильник }));
       лог('після «✕ н2 + нова»:', JSON.stringify(ід));
       assert.deepStrictEqual(ід.речі, ['ф1', 'ф2', 'н1', 'н3']); assert.strictEqual(new Set(ід.речі).size, ід.речі.length); assert.strictEqual(ід.лічильник, 3);
+
+      /* ═══ Б2. рядок 6270: вид речі з назвою моделі фото змінено словами — стара назва знімається, нова з коду виду; рядок 6271: нечитаний вид — дію не взято ═══ */
+      const назваФ2 = () => page.evaluate(() => document.querySelector('#оц-речі .оц-річ[data-ід="ф2"] .оц-назва').textContent);
+      const казати = async слова => { await page.evaluate(() => { document.getElementById('оц-слова-стан').textContent = ''; }); await page.locator('#оц-слова-поле').fill(слова); await page.locator('#оц-слова-слати').tap();
+        await чекати(() => document.getElementById('оц-слова-слати').disabled === false && /Виправила|Не зрозуміла|Не вийшло/.test(document.getElementById('оц-слова-стан').textContent)); };
+      лог('назва ф2 до:', await назваФ2());
+      await казати('там не ботильйони, а кеди');
+      await чекати(() => (ОЦ.перелік.назви || {}).ф2 === 'Кеди');
+      лог('назва ф2 після зміни виду:', await назваФ2(), '| вид:', await page.evaluate(() => ОЦ.перелік.речі.find(р => р.ід === 'ф2').вид));
+      assert.strictEqual(await назваФ2(), 'Кеди', 'стара назва моделі фото лишилась');
+      await казати('там не кеди, а ботильйони, бежеві');
+      const стан = await page.evaluate(() => document.getElementById('оц-слова-стан').textContent);
+      const колір = await page.evaluate(() => ОЦ.перелік.речі.find(р => р.ід === 'ф2').колір);
+      лог('нечитаний вид: статус «' + стан + '», колір ф2:', колір);
+      assert.ok(/^Не зрозуміла/.test(стан), 'дію з нечитаним видом взято: ' + стан);
+      assert.ok(колір !== 'бежевий', 'колір ліг без виду');
     } else {
       await page.locator('#оц-плюс-річ').tap(); await page.locator('#оц-додати .чип', { hasText: /^Верх$/ }).tap();
       await чекати(() => ОЦ.перелік.речі.some(р => /^н/.test(р.ід)));
@@ -152,6 +172,17 @@ const РЕЧІ = [
       await чекати(() => { const р = ОЦ.перелік.речі.find(р => /^н/.test(р.ід) && р.дотик); return !!р; });
       лог('дотик по фото дописав рамку:', JSON.stringify(await page.evaluate(() => ОЦ.перелік.речі.filter(р => р.дотик).map(р => р.ід + ':' + р.фото))));
     }
+    /* ═══ Г. рядок 6275: набір, на який шар відповів чужою мовою, те саме малювання бере з пам'яті — шар питають раз (без моделі, заглушка віддає англійську) ═══ */
+    const ч = await page.evaluate(async () => {
+      let викликів = 0;
+      window.модельМовиП = async () => { викликів++; return JSON.stringify({ 1: 'Here is what stays unchecked in this outfit because the photo does not show it' }); };
+      const пов = { п1: { kind: 'card_unchecked', statements: [{ code: 'unchecked_in_this_look' }] } };
+      const перший = await повідомленнямП(пов, 'probe.code_unknowns'); const після1 = викликів;
+      await повідомленнямП(пов, 'probe.code_unknowns'); await повідомленнямП(пов, 'probe.code_unknowns');
+      return { після1, усього: викликів, чужою: перший.чужою || null };
+    });
+    лог('6275: викликів шару одним входом на три малювання:', JSON.stringify(ч));
+    assert.strictEqual(ч.усього, ч.після1, 'друге й третє малювання питали шар знову');
     fs.writeFileSync(path.join(тека, 'вивід.txt'), вивід.join('\n') + '\n');
     лог(ДО ? 'ДО (main): готово' : 'OK');
   } finally { await browser.close(); }
