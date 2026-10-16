@@ -716,6 +716,8 @@ function правилаРеченнями(текст){
 }
 /* Промпт оцінки з фото несе перед JSON підписи кадрів («Photo ф1:\n\nPhoto ф2:\n\n{…}», `викликОцінкиП`):
    `JSON.parse` на ньому падав, `об` лишався null, і заглушка не впізнавала «речі на фото» (сцена 6 — 0 речей). */
+/* Промпт речей на фото оцінки (рядок 6221) текстом — і тоді, коли за JSON іде повтор («ran out of room», формат) */
+const РЕЧІ_ОЦІНКИ = т => /"answer": "PHOTO_ITEMS"/.test(т || '') && /"outfit": true/.test(т || '');
 function розібратиПромпт(текст){
   try { return JSON.parse(текст); } catch (_) {}
   const м = /^(?:Photo [^\n:]+:\s*)+/.exec(текст || '');
@@ -741,9 +743,11 @@ function типПромпту(текст){
   if (відпЗб === 'ТУРНІР_V1') return 'ТУРНІР→ТУРНІР_V1';
   if (відповідьЗадачі(об) === 'ОПИС_ВІДПОВІДЬ_V1') return 'ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1';
   /* «Оціни мій образ» (Л-6): англійський шаблон збирача — `task.answer` замість `завдання.відповідь` */
-  if (об && об.task && об.task.answer === 'OUTFIT_ITEMS_V1') return 'ОЦІНКА: речі на фото';
+  /* речі на фото оцінки (рядок 6221) — спільна задача «речі з фото» з полем «outfit»; без нього — розмова (нижче) */
+  if (об && об.task && об.task.answer === 'PHOTO_ITEMS' && об.outfit === true) return 'ОЦІНКА: речі на фото';
+  /* допит (рядок 6215) — промпт оцінки того самого суду з хвостом «now»: упізнається за хвостом, не за ім'ям схеми */
+  if (об && об.task && об.task.answer === 'OUTFIT_REVIEW_V1' && об.now) return 'ОЦІНКА: допит';
   if (об && об.task && об.task.answer === 'OUTFIT_REVIEW_V1') return 'ОЦІНКА: відповідь';
-  if (об && об.task && об.task.answer === 'OUTFIT_FOLLOWUP_V1') return 'ОЦІНКА: допит';
   /* П-1: промпт приміряння — JSON збирача (`приміряння`, відповідь — картинка) */
   if (об && об.task && об.task.answer === 'TRY_ON_IMAGE') return 'ПРИМІРЯННЯ';
   /* П-4: стилістка й помічниця — англійський шаблон збирача (`task.answer`), кольори з портрета — теж */
@@ -1625,23 +1629,23 @@ function відповісти(текст) {
      намалювала; відповідь — із входу задачі (що код пропустив би), плюс ОДНЕ навмисно хибне
      твердження «палітра» про річ поза палітрою: сторож мусить його зняти (сцена 6 звіряє) */
   /* РЯДОК 4201: OTSINKA=bezfoto — перша відповідь про речі без `photo` (два фото: Ж18 seed3_02), повтор формату — з `photo` */
-  if (process.env.OTSINKA === 'bezfoto' && /OUTFIT_ITEMS_V1/.test(текст || '') && /Your previous answer was not one JSON object/.test(текст || ''))
+  if (process.env.OTSINKA === 'bezfoto' && РЕЧІ_ОЦІНКИ(текст) && /Your previous answer was not one JSON object/.test(текст || ''))
     return {тип: 'ОЦІНКА: речі на фото (повтор формату)', текст: JSON.stringify({items: ОЦІНКА_РЕЧІ})};
   /* РЯДОК 4286 (Ж19 №15): OTSINKA=stelia — кожен виклик «речі на фото» пише роздуми про пікселі рамок без JSON
      і впирається в стелю виводу; stelia1 — лише перший, повтор після обриву (промпт + «ran out of room», тож
      `JSON.parse` його не бере) відповідає речами, як звичайно */
-  if (/^stelia1?$/.test(process.env.OTSINKA || '') && /"answer": "OUTFIT_ITEMS_V1"/.test(текст || '')) {
+  if (/^stelia1?$/.test(process.env.OTSINKA || '') && РЕЧІ_ОЦІНКИ(текст)) {
     if (process.env.OTSINKA === 'stelia' || !/ran out of room/.test(текст))
       return {тип: 'ОЦІНКА: речі на фото (стеля)', стоп: 'max_tokens',
               текст: 'Based on the stylized images provided:\n' + '*   Left: ~200 (if 600px wide). No, wait. '.repeat(320)};
     return {тип: 'ОЦІНКА: речі на фото (повтор після обриву)', текст: JSON.stringify({items: ОЦІНКА_РЕЧІ})};
   }
-  if (об && об.task && об.task.answer === 'OUTFIT_ITEMS_V1')
+  if (об && об.task && об.task.answer === 'PHOTO_ITEMS' && об.outfit === true)
     return {тип: 'ОЦІНКА: речі на фото', текст: JSON.stringify({items: process.env.OTSINKA === 'poroznia' ? []
       : process.env.OTSINKA === 'bezfoto' ? ОЦІНКА_РЕЧІ.map(({photo, ...р}) => р) : ОЦІНКА_РЕЧІ})};
-  if (об && об.task && (об.task.answer === 'OUTFIT_REVIEW_V1' || об.task.answer === 'OUTFIT_FOLLOWUP_V1')) {
+  if (об && об.task && об.task.answer === 'OUTFIT_REVIEW_V1') {
     const en = об.task.language !== 'Ukrainian', т = к => en ? к : (ОЦІНКА_УК[к] || к);
-    if (об.task.answer === 'OUTFIT_FOLLOWUP_V1')
+    if (об.now)
       return {тип: 'ОЦІНКА: допит', текст: JSON.stringify({answer: т('Yes: with the darker pair the outfit is calmer, because the two different whites are gone.')})};
     const речі = об.items || [], образ = об.outfit || [];
     const у = речі.filter(р => образ.includes(р.id) && р.palette === 'in').map(р => р.id);
