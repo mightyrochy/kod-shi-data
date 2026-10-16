@@ -8,9 +8,10 @@
 читається ОПИС_ВІДПОВІДЬ_V1 (проза окремо, річ із чужим фото — id, без «текст» —
 повторний виклик). Рядка «як доти» тут нема: прозових промптів уже нема, і
 порівняння стоїть у тілі коміта.
-Запуск із теки `джерела`: PYTHONPATH=. python3 проби/вибір_опис_v1.py
+Запуск: python3 проби/вибір_опис_v1.py (теку й шлях модулів проба ставить сама)
 """
-import json, re
+import json, os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
 import bridge as B, протокол as P
 
 вх = json.load(open("стенд_вх.json"))
