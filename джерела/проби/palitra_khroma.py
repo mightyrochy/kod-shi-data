@@ -3,6 +3,7 @@
 «найдальші» й вікно L палітри та речення «найдальш/уникай» на картках.
 Запуск із джерела/: python3 проби/palitra_khroma.py <тека>"""
 import json, gzip, glob, os, re, sys, collections as K
+import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspath(__file__)))); from збирач_промптів import рядки_таблиці as РТ
 sys.path.insert(0, "."); import colorspace as cs, palettes as P
 МЕТ = ("golden", "silvery", "pearly"); Т = sys.argv[1]; Σ = K.Counter(); цілі, хроми = [], []
 for d in sorted(glob.glob(Т + "/ж*_*/")):
@@ -16,7 +17,7 @@ for d in sorted(glob.glob(Т + "/ж*_*/")):
         кл = {c["крок"]: c for c in в["етапи"]["виклики"]}
         if "assembly" not in кл: continue
         зп = json.loads(кл["assembly"]["запит"]["текст"]); pal = зп["person"].get("palette") or {}
-        пул = {i["n"]: i for i in зп["pool"]}
+        пул = {i["n"]: i for i in РТ(зп["pool"])}
         кц = [round(cs.lch(cs.hx(t["hex"]))[1]) for t in (pal.get("kind_colours") or {}).values() if t.get("hex")]
         цілі += кц
         if str(в["рука"]) == "1":

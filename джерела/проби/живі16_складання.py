@@ -6,6 +6,7 @@
 без `type`, а отже без жодного коду роду (`дріт_моделі.річ`), і пояси з кроєм сукні. Кращим: прочитано стільки, скільки
 написано; ехо 0; річ без `type` несе рід. Запуск: cd джерела && python3 проби/живі16_складання.py"""
 import json, re, subprocess, sys
+import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspath(__file__)))); from збирач_промптів import рядки_таблиці as РТ
 sys.path.insert(0, "."); import протокол as П
 git = lambda *а: subprocess.run(["git", "-c", "core.quotepath=false", *а], capture_output=True, text=True).stdout
 for ж in ("15", "16"):
@@ -25,7 +26,7 @@ for ж in ("15", "16"):
             print("Ж%s %s/%s: написано %d · прочитано %d%s" % (ж, ф.split("/")[-3][:2], ф.split("/")[-1][:8], написано,
                   прочитано, " · ЕХО промпту, %d симв." % len(відп) if є_ехо else ""))
         if "ПАКЕТ_V1" in ф and ж == "16":
-            пул = json.JSONDecoder().raw_decode(запит[запит.find("{"):])[0].get("pool") or []
+            пул = РТ(json.JSONDecoder().raw_decode(запит[запит.find("{"):])[0].get("pool")) or []
             без = [р for р in пул if "type" not in р]
             пояс = [р["name"][:24] + " cut=" + р["cut"] for р in пул if re.match(r"(Пасок|Ремінь|Пояс)", р.get("name", "")) and р.get("cut") not in (None, "belted")]
             print("   пул %s/%s: речей %d · без type (і без роду) %d, напр. %s · пояси з кроєм %d %s" % (ф.split("/")[-3][:2],
