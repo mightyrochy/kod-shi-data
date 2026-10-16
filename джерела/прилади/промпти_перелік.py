@@ -451,7 +451,9 @@ class Джерела:
         if ф not in self.blame:
             self.blame[ф] = {}
         if н not in self.blame[ф]:
-            сире = git("blame", "--line-porcelain", "-L", "%d,%d" % (н, н), ГОЛОВА, "--", ф).decode("utf-8", "replace")
+            # номер рядка — з файлу робочого дерева, тож і blame — по HEAD: на гілці файл довший за `origin/main`, і
+            # blame рядка `main` падав «file has only N lines» (наряд Е.3, рядок 6191); на `main` HEAD — той самий
+            сире = git("blame", "--line-porcelain", "-L", "%d,%d" % (н, н), "HEAD", "--", ф).decode("utf-8", "replace")
             sha = сире.split(" ", 1)[0]
             час = re.search(r"^author-time (\d+)", сире, re.M)
             self.blame[ф][н] = (sha, int(час.group(1)) if час else 0)
