@@ -1,0 +1,421 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lyusterko-colour-rows-5190-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rows"
+  ],
+  "properties": {
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "row_id",
+              "status",
+              "relation",
+              "variants",
+              "unknown_reason"
+            ],
+            "properties": {
+              "row_id": {
+                "type": "string"
+              },
+              "status": {
+                "const": "known"
+              },
+              "relation": {
+                "const": "single"
+              },
+              "variants": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "quote",
+                    "colors"
+                  ],
+                  "properties": {
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "colors": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "code",
+                          "quote"
+                        ],
+                        "properties": {
+                          "code": {
+                            "enum": [
+                              "black",
+                              "white",
+                              "grey",
+                              "graphite",
+                              "beige",
+                              "cream",
+                              "milky",
+                              "sand",
+                              "taupe",
+                              "camel",
+                              "latte",
+                              "cocoa",
+                              "brown",
+                              "chocolate",
+                              "red",
+                              "burgundy",
+                              "cherry",
+                              "raspberry",
+                              "brick",
+                              "terracotta",
+                              "ginger",
+                              "coral",
+                              "orange",
+                              "peach",
+                              "yellow",
+                              "lemon",
+                              "mustard",
+                              "golden",
+                              "khaki",
+                              "olive",
+                              "sage",
+                              "green",
+                              "pine_green",
+                              "mint",
+                              "turquoise",
+                              "petrol",
+                              "light_blue",
+                              "denim_blue",
+                              "blue",
+                              "navy",
+                              "lilac",
+                              "purple",
+                              "plum",
+                              "magenta",
+                              "fuchsia",
+                              "pink",
+                              "rose",
+                              "powder_pink",
+                              "silvery",
+                              "pearly",
+                              "creamy",
+                              "mocha",
+                              "cappuccino",
+                              "powder",
+                              "soft_pink",
+                              "emerald",
+                              "electric_blue"
+                            ]
+                          },
+                          "quote": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "maxItems": 1
+                    }
+                  }
+                },
+                "minItems": 1,
+                "maxItems": 1
+              },
+              "unknown_reason": {
+                "const": "none"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "row_id",
+              "status",
+              "relation",
+              "variants",
+              "unknown_reason"
+            ],
+            "properties": {
+              "row_id": {
+                "type": "string"
+              },
+              "status": {
+                "const": "known"
+              },
+              "relation": {
+                "const": "combination"
+              },
+              "variants": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "quote",
+                    "colors"
+                  ],
+                  "properties": {
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "colors": {
+                      "type": "array",
+                      "minItems": 2,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "code",
+                          "quote"
+                        ],
+                        "properties": {
+                          "code": {
+                            "enum": [
+                              "black",
+                              "white",
+                              "grey",
+                              "graphite",
+                              "beige",
+                              "cream",
+                              "milky",
+                              "sand",
+                              "taupe",
+                              "camel",
+                              "latte",
+                              "cocoa",
+                              "brown",
+                              "chocolate",
+                              "red",
+                              "burgundy",
+                              "cherry",
+                              "raspberry",
+                              "brick",
+                              "terracotta",
+                              "ginger",
+                              "coral",
+                              "orange",
+                              "peach",
+                              "yellow",
+                              "lemon",
+                              "mustard",
+                              "golden",
+                              "khaki",
+                              "olive",
+                              "sage",
+                              "green",
+                              "pine_green",
+                              "mint",
+                              "turquoise",
+                              "petrol",
+                              "light_blue",
+                              "denim_blue",
+                              "blue",
+                              "navy",
+                              "lilac",
+                              "purple",
+                              "plum",
+                              "magenta",
+                              "fuchsia",
+                              "pink",
+                              "rose",
+                              "powder_pink",
+                              "silvery",
+                              "pearly",
+                              "creamy",
+                              "mocha",
+                              "cappuccino",
+                              "powder",
+                              "soft_pink",
+                              "emerald",
+                              "electric_blue"
+                            ]
+                          },
+                          "quote": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "minItems": 1,
+                "maxItems": 1
+              },
+              "unknown_reason": {
+                "const": "none"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "row_id",
+              "status",
+              "relation",
+              "variants",
+              "unknown_reason"
+            ],
+            "properties": {
+              "row_id": {
+                "type": "string"
+              },
+              "status": {
+                "const": "known"
+              },
+              "relation": {
+                "const": "alternatives"
+              },
+              "variants": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "quote",
+                    "colors"
+                  ],
+                  "properties": {
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "colors": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "code",
+                          "quote"
+                        ],
+                        "properties": {
+                          "code": {
+                            "enum": [
+                              "black",
+                              "white",
+                              "grey",
+                              "graphite",
+                              "beige",
+                              "cream",
+                              "milky",
+                              "sand",
+                              "taupe",
+                              "camel",
+                              "latte",
+                              "cocoa",
+                              "brown",
+                              "chocolate",
+                              "red",
+                              "burgundy",
+                              "cherry",
+                              "raspberry",
+                              "brick",
+                              "terracotta",
+                              "ginger",
+                              "coral",
+                              "orange",
+                              "peach",
+                              "yellow",
+                              "lemon",
+                              "mustard",
+                              "golden",
+                              "khaki",
+                              "olive",
+                              "sage",
+                              "green",
+                              "pine_green",
+                              "mint",
+                              "turquoise",
+                              "petrol",
+                              "light_blue",
+                              "denim_blue",
+                              "blue",
+                              "navy",
+                              "lilac",
+                              "purple",
+                              "plum",
+                              "magenta",
+                              "fuchsia",
+                              "pink",
+                              "rose",
+                              "powder_pink",
+                              "silvery",
+                              "pearly",
+                              "creamy",
+                              "mocha",
+                              "cappuccino",
+                              "powder",
+                              "soft_pink",
+                              "emerald",
+                              "electric_blue"
+                            ]
+                          },
+                          "quote": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "minItems": 2
+              },
+              "unknown_reason": {
+                "const": "none"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "row_id",
+              "status",
+              "relation",
+              "variants",
+              "unknown_reason"
+            ],
+            "properties": {
+              "row_id": {
+                "type": "string"
+              },
+              "status": {
+                "const": "unknown"
+              },
+              "relation": {
+                "const": "unknown"
+              },
+              "variants": {
+                "type": "array",
+                "const": []
+              },
+              "unknown_reason": {
+                "enum": [
+                  "ambiguous",
+                  "no_colour",
+                  "insufficient_context"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
