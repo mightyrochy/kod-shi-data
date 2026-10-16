@@ -30,7 +30,7 @@
 <title>люстерко</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cpath%20d='M14%204h36l10%2010v46H4V14z'%20fill='%231B1A17'/%3E%3Cpath%20d='M14%2052h36'%20stroke='%23D6B45C'%20stroke-width='3'/%3E%3Ctext%20x='32'%20y='44'%20text-anchor='middle'%20font-family='Georgia,serif'%20font-size='32'%20fill='%23FBF9F4'%3E%D0%BB%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<script defer src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js" integrity="sha384-i3R37b3tF+HWudsUf1VSEOY2YxwSNMqY8DQa9Z0O3xh+NkJ9o+yjcGyIi5huj+nB" crossorigin="anonymous"></script>
 <style>
 /* ═══════════════════════════════════════════════════════════════════════════
    люстерко · інтерфейс v3 — «Полотно й нитка»; уночі — «Музейне золото».
@@ -54,16 +54,16 @@
 /* ── ШРИФТИ ─────────────────────────────────────────────────────────────── */
 @font-face{font-family:"Fixel Text";font-style:normal;font-weight:400;font-display:swap;
   src:local("Fixel Text"),local("FixelText-Regular"),
-  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@main/fonts/webfonts/FixelText-Regular.woff2") format("woff2")}
+  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelText-Regular.woff2") format("woff2")}
 @font-face{font-family:"Fixel Text";font-style:normal;font-weight:500;font-display:swap;
   src:local("Fixel Text Medium"),local("FixelText-Medium"),
-  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@main/fonts/webfonts/FixelText-Medium.woff2") format("woff2")}
+  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelText-Medium.woff2") format("woff2")}
 @font-face{font-family:"Fixel Text";font-style:normal;font-weight:600;font-display:swap;
   src:local("Fixel Text SemiBold"),local("FixelText-SemiBold"),
-  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@main/fonts/webfonts/FixelText-SemiBold.woff2") format("woff2")}
+  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelText-SemiBold.woff2") format("woff2")}
 @font-face{font-family:"Fixel Display";font-style:normal;font-weight:600;font-display:swap;
   src:local("Fixel Display SemiBold"),local("FixelDisplay-SemiBold"),
-  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@main/fonts/webfonts/FixelDisplay-SemiBold.woff2") format("woff2")}
+  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelDisplay-SemiBold.woff2") format("woff2")}
 /* Kyiv*Type — незмінені файли автора (NoDerivates), лежать у `шрифти/` поруч
    із index.html. Вісь ваги 0–1000: Regular = 350, Medium = 500, Bold = 700. */
 @font-face{font-family:"KyivType Titling";font-style:normal;font-weight:1 1000;font-display:swap;
@@ -12012,7 +12012,13 @@ function прогінОціненийП(){
 }
 function малюватиДіагнозП(){
   const д = $('зб-діагноз'); if (!д || !ЗБ) return;
-  const рядки = прогінОціненийП() ? ЗБ.діагноз : ЗБ.діагноз.filter(р => !РЯДОК_ПОЛОМКИ_П.test(р));
+  /* Рядок 5580: зберігаємо причину збою й статус кроку, але до кінця оцінювання
+     не називаємо руку — також у посиланні всередині рядка й у повному
+     службовому імені із суфіксом, який може називати поломку.
+     Початковий діагноз лишається незмінним для файлу власника. */
+  const рядки = прогінОціненийП() ? ЗБ.діагноз : ЗБ.діагноз
+    .filter(р => !РЯДОК_ПОЛОМКИ_П.test(р))
+    .map(р => р.replace(/hand_[0-9]+(?:_[A-Za-z0-9-]+)*/g, 'образ'));
   д.textContent = рядки.join('\n');
   д.style.display = рядки.length ? 'block' : 'none';
 }
