@@ -840,6 +840,24 @@
       "unknown"
      ]
     },
+    "month": {
+     "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця",
+     "enum": [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+      "unknown"
+     ]
+    },
     "temperature_c": {
      "description": "температура повітря, °C",
      "oneOf": [
@@ -1989,6 +2007,10 @@
        {
         "const": "part_of_day",
         "description": "частина доби, коли години не названо"
+       },
+       {
+        "const": "month",
+        "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця"
        },
        {
         "const": "temperature_c",
@@ -5100,7 +5122,7 @@
          },
          {
           "const": "fabric_out_of_season",
-          "description": "the item's fabric reads out of season: the day is warmer or colder than its band, which is semantics rather than a thermometer (values: temperature_c — the day's temperature, band — the fabric's band from and to, direction — warmer or colder, fabrics — fabric codes; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "the item's fabric reads out of season: the day is warmer or colder than its band, which is semantics rather than a thermometer (values: temperature_c — the day's temperature, band — the fabric's band from and to, direction — warmer or colder, fabrics — fabric codes; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; season — instead of both when she named no weather: the season of her day, and band is then absent)"
          },
          {
           "const": "same_item_in_day_band_fabric",
@@ -5192,7 +5214,15 @@
          },
          {
           "const": "shoe_type_outside_temp_band",
-          "description": "shoe type outside the day's temperature band (temp_c; weather_feel — instead of temp_c when she named no degrees, the weather as she put it)"
+          "description": "shoe type outside the day's temperature band (temp_c; weather_feel — instead of temp_c when she named no degrees, the weather as she put it; season — instead of both when she named no weather: the season of her day)"
+         },
+         {
+          "const": "bare_arms_in_cold_season",
+          "description": "arms or shoulders stay bare and nothing of the look goes over them, while the season of her day is cold or changeable (values: season, zones — the bare zones)"
+         },
+         {
+          "const": "sleeved_layer_over_bare_arms",
+          "description": "a layer with sleeves over it — a jacket, a cardigan or an outer layer"
          },
          {
           "const": "take_from_day_band",
@@ -5616,7 +5646,7 @@
          },
          {
           "const": "pool_cut_to_budget",
-          "description": "the full pool was over the character budget of the item list, so it was cut by the stratified sampler: a floor of items per kind, the rest in proportion to what each kind has (values: full_chars — characters of the full list; floor — items per kind)"
+          "description": "the full pool was over the token budget of the item list, so it was cut by the stratified sampler: a floor of items per kind, the rest in proportion to what each kind has (values: full_tokens — tokens of the full list; floor — items per kind)"
          },
          {
           "const": "pool_budget_not_met",
@@ -6643,6 +6673,20 @@
    "spring": "весна",
    "summer": "літо",
    "autumn": "осінь"
+  },
+  "month": {
+   "january": "січень",
+   "february": "лютий",
+   "march": "березень",
+   "april": "квітень",
+   "may": "травень",
+   "june": "червень",
+   "july": "липень",
+   "august": "серпень",
+   "september": "вересень",
+   "october": "жовтень",
+   "november": "листопад",
+   "december": "грудень"
   },
   "weather_feel": {
    "frost": -10.0,

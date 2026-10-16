@@ -167,6 +167,11 @@ def невідомо(v, коди=()):
     "part_of_day": {"morning": "ранок", "day": "день", "evening": "вечір", "night": "ніч"},
     # Пора року з дати (рядок 3950, рішення власника 14.10): вхідний факт її дня для всіх рук — `сценарій.пора_року`
     "season": {"winter": "зима", "spring": "весна", "summer": "літо", "autumn": "осінь"},
+    # Місяць події з її слів (рядок 5260): дата, місяць чи свято одного місяця («новорічний корпоратив» — грудень).
+    # Порядок — календарний: номер місяця — місце в таблиці (`сценарій.пора_року_події`)
+    "month": {"january": "січень", "february": "лютий", "march": "березень", "april": "квітень",
+              "may": "травень", "june": "червень", "july": "липень", "august": "серпень",
+              "september": "вересень", "october": "жовтень", "november": "листопад", "december": "грудень"},
     # Погода без числа → число, яке бере код (температура — вхід теплової функції й воріт
     # тканини, і доти це число вгадувала модель виклику 0).
     # МОРОЗ — ВСЕРЕДИНІ СМУГИ «НИЖЧЕ −8 °C», НЕ НА ЇЇ КРАЮ (рядок 3451). Тут стояло −8,0 — нижня
@@ -542,6 +547,7 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     "minute": _число("хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
                      тип="integer", minimum=0, maximum=59),
     "part_of_day": _перелік("part_of_day", "частина доби, коли години не названо"),
+    "month": _перелік("month", "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця"),
     "temperature_c": _число("температура повітря, °C"),
     "weather_feel": _перелік("weather_feel", "погода без числа градусів"),
     "precipitation": _перелік("precipitation", "опади"),
@@ -2560,7 +2566,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                             "band, which is semantics rather than a thermometer (values: temperature_c — the "
                             "day's temperature, band — the fabric's band from and to, direction — warmer or "
                             "colder, fabrics — fabric codes"
-                            "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                            "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it"
+                            "; season — instead of both when she named no weather: the season of her day, and band "
+                            "is then absent)",
     "same_item_in_day_band_fabric": "the same item in a fabric of the day's band, or the same colour and cut "
                                     "without the seasonal fabric",
     # ── П-6 хвиля 5: посадка, край, поділ, носіння, розмір аксесуарів, погода, інтерес — що і як полагодити ──
@@ -2605,7 +2613,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "long_day_items_unbearable": "over a long day (hours) items in these slots become unbearable in their own "
                                  "way: they demand attention while worn",
     "shoe_type_outside_temp_band": "shoe type outside the day's temperature band (temp_c"
-                                   "; weather_feel — instead of temp_c when she named no degrees, the weather as she put it)",
+                                   "; weather_feel — instead of temp_c when she named no degrees, the weather as she put it"
+                                   "; season — instead of both when she named no weather: the season of her day)",
+    # Рядок 5261: пора року без градусів — руки чи плечі голі, і над ними нічого
+    "bare_arms_in_cold_season": "arms or shoulders stay bare and nothing of the look goes over them, while the "
+                                "season of her day is cold or changeable (values: season, zones — the bare zones)",
+    "sleeved_layer_over_bare_arms": "a layer with sleeves over it — a jacket, a cardigan or an outer layer",
     "take_from_day_band": "take from the day's band: types, or density den (DEN)",
     "tights_den_off_day_band": "the tights' denier is outside the day's band (values: den — the denier, band "
                                "— the day's band; need — denser or thinner)",
@@ -2852,12 +2865,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "this kind outside the palette)",
     "break_nothing_outside_palette": "no eligible kind holds an item outside the palette: there is nothing to "
                                      "break the palette with",
-    # ── стеля пулу під бюджет символів (`міст_пакет`, ВМ-3а, рядок 247) ─────────────
+    # ── стеля пулу під бюджет токенів (`міст_пакет`, ВМ-3а, рядок 247; токени — рядок 5541) ──
     # Числа зрізу — поля того самого запису (`K`, `K_запитано`, `K_віддано`, `унікальних`,
-    # `символів`, `пул_символів`, `бюджет`); заява каже лише те, чого в полях нема.
-    "pool_cut_to_budget": "the full pool was over the character budget of the item list, so it was cut by the "
+    # `символів`, `пул_токенів`, `бюджет`); заява каже лише те, чого в полях нема.
+    "pool_cut_to_budget": "the full pool was over the token budget of the item list, so it was cut by the "
                           "stratified sampler: a floor of items per kind, the rest in proportion to what each "
-                          "kind has (values: full_chars — characters of the full list; floor — items per kind)",
+                          "kind has (values: full_tokens — tokens of the full list; floor — items per kind)",
     "pool_budget_not_met": "the budget is not met: even the smallest possible sample is over it, and the "
                            "smallest possible pool was given",
     "pool_sampler_gave_other_than_asked": "the sampler gave a different number of items than was requested "
