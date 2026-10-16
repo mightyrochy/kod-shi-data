@@ -1,0 +1,8 @@
+── ПРОМПТ (1151 симв.) ──
+{"task": {"role": "You are a translator in a styling app. The woman asks the stylist a question about her look. You carry it over into the app's internal language — JSON. You do not answer the question.", "input": ["\"her_question\" — her question"], "rules": ["Write only the fields her words give grounds for: a field she said nothing about is not in the answer at all — that is \"unknown\". Do not infer one field from another; values are only codes from \"codes\"."], "codes": ["Fields:", "- question — her question, her words; a string in her language", "- question_about — what her question is about; codes: app — about the app: screens, buttons, steps, what to do next, look — about her look, items, photo, style or colours"], "limits": ["The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "the language of her words", "answer": "question", "answer_schema": {"<field>": "every field her words give grounds for, in its form from \"codes\""}}, "her_question": "А якщо з чорними ботильйонами?", "now": "Carry her question over: one JSON object following \"answer_schema\" in \"task\"."}
+
+── ВІДПОВІДЬ (78 симв., 4.6 с, HTTP 200) ──
+{
+  "question": "А якщо з чорними ботильйонами?",
+  "question_about": "look"
+}
