@@ -1661,16 +1661,13 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "coordination_rank_not_computed": "the coordination of the outfit's colours is computed, but it gave no "
                                       "place among the other outfits",
     # K-COMP-01: розлад чи надкоординація образу проти набору кандидатів (рядок 6281)
-    "colour_coordination_off_optimum": "the outfit's colours are off the moderate-coordination optimum against "
-                                       "the other candidates (values: side — matchy: more coordinated than most "
-                                       "candidates, or discord: more divergent than most; off — distance from "
-                                       "the optimum on the coordination curve, 0 is the optimum; rank — the "
-                                       "outfit's place among the candidates by mean colour closeness, 0 to 1; "
-                                       "of — how many candidates)",
-    "more_colour_distance_between_slots": "take a candidate with a larger colour distance between slots: another "
-                                          "colour family in one of the slots",
-    "less_colour_distance_between_slots": "take a candidate with a smaller colour distance between slots: bring "
-                                          "one slot to a neutral or into the family of another",
+    "colour_coordination_off_optimum": "the outfit's colours are off the moderate-coordination optimum among the "
+                                       "candidates (values: side — matchy: more coordinated than most, or discord: "
+                                       "more divergent; off — distance from the optimum, 0 is the optimum)",
+    "more_colour_distance_between_slots": "take a candidate whose slots are further apart in colour: another family "
+                                          "in one slot",
+    "less_colour_distance_between_slots": "take a candidate whose slots are closer in colour: one slot in a neutral "
+                                          "or in the family of another",
     "coordination_rank_homogeneous": "the outfit has no place by colour coordination: all candidates are the "
                                      "same in colour",
     "feature_and_item_indistinguishable": "a feature of her face and the item near it are the same colour in "

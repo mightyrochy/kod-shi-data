@@ -629,7 +629,7 @@ def координація(E, набір_кандидатів=None, метрик
         # гілка без заяв) віз моделі `суть` — речення коду українською, 3 на ремонт стенда. Суть і ремонт
         # словами лишаються діагнозом звіту власника; бік кривої — значенням, не двома реченнями.
         заяви=[_ВМ.заява("colour_coordination_off_optimum", side="matchy" if ранг < 0.5 else "discord",
-                         off=round(1.0 - (оц or 0.0), 2), rank=round(ранг, 2), of=діагноз["n"])],
+                         off=round(1.0 - (оц or 0.0), 2))],
         ремонт_заяви=[_ВМ.заява("more_colour_distance_between_slots" if ранг < 0.5
                                 else "less_colour_distance_between_slots")],
         ламається="ΔE00 підставлений замість людських оцінок «coordinated/matching/"
