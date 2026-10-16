@@ -18,7 +18,7 @@ for r in К:
     кр = сім(r.get("колір_назва_крамниці")) if r.get("колір_hex_фото") else None
     if кр and кр not in АХРОМ and V.сім_я_слова(r.get("колір_назва_фото")) in АХРОМ:
         шари[(кр, CS.lch(CS.hx(r["колір_hex_фото"]))[0] < 25)].append(r)
-усього, Н = sum(map(len, шари.values())), 40
+усього = sum(map(len, шари.values())); Н = min(40, усього)          # після рядка 6430 клас менший за 40
 частки = {ш: Н * len(в) / усього for ш, в in шари.items()}
 квота = {ш: int(ч) for ш, ч in частки.items()}
 for ш in sorted(частки, key=lambda ш: (int(частки[ш]) - частки[ш], str(ш)))[:Н - sum(квота.values())]:
