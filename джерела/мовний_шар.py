@@ -521,8 +521,34 @@ def _з_форми(x):
 _КЛЮЧІ_НОМЕРА, _КЛЮЧІ_ТЕКСТУ = ("н", "n"), ("текст", "text", "переклад", "translation")
 
 
+# ПАРИ БЕЗ СВОЇХ «{» (рядок 6020; живий 15, qwen, `02_…/seed2_03`, `05_…/seed5_03`, `06_…/seed1_03`, `10_…/seed5_03`).
+# Перекладачка картки оцінки відповідала `{"н": 1, "текст": "…"},` і далі `"н": 2, "текст": "…"},` — одна «{» на
+# початку й зайва «}» після кожної пари. Об'єктом читалась лише перша пара, решта текстів (назви речей) лишались
+# англійськими: 8 текстів на чотирьох записах. Тепер пари читаються й підряд, з самої форми «номер, потім текст»:
+# ключ номера, за ним ключ тексту й JSON-рядок; береться прочитання, що дало більше пар. Слів код не читає.
+_ПАРА_ПІДРЯД = re.compile(r'"(?:%s)"\s*:\s*"?(\d+)"?\s*,\s*"(?:%s)"\s*:\s*(?=")'
+                          % ("|".join(_КЛЮЧІ_НОМЕРА), "|".join(_КЛЮЧІ_ТЕКСТУ)))
+
+
+def _пари_підряд(т):
+    """{н: текст} з пар «номер, текст», що стоять підряд у тексті відповіді, хоч би які дужки між ними; або {}."""
+    пари, п, декодер = {}, 0, _json_.JSONDecoder()
+    while True:
+        м = _ПАРА_ПІДРЯД.search(т, п)
+        if not м:
+            return пари
+        try:
+            текст, п = декодер.raw_decode(т, м.end())
+        except ValueError:
+            п = м.end()
+            continue
+        if isinstance(текст, str):
+            пари[м.group(1)] = текст
+
+
 def _пари_вхідної_форми(відповідь):
-    """{н: текст} з усіх пар «н»/«текст» відповіді — по порядку, у скількох завгодно об'єктах; або {}."""
+    """{н: текст} з усіх пар «н»/«текст» відповіді — по порядку, у скількох завгодно об'єктах або підряд без
+    своїх дужок (`_пари_підряд`); або {}."""
     сир = str(відповідь or "").replace(_ВСТАВКА, " ")
     декодер = _json_.JSONDecoder(object_pairs_hook=list)
     for т in dict.fromkeys((сир, _екрани(сир))):
@@ -540,6 +566,9 @@ def _пари_вхідної_форми(відповідь):
                 elif к in _КЛЮЧІ_ТЕКСТУ and isinstance(в, str) and н is not None:
                     пари[str(н)], н = в, None
             п = т.find("{", кінець)
+        підряд = _пари_підряд(т)
+        if len(підряд) > len(пари):
+            пари = підряд
         if пари:
             return пари
     return {}
@@ -589,6 +618,15 @@ def _урізано(вихід, джерело):
     return None
 
 
+ПОЛЯ_ЗЛИТО = "fields_joined"
+
+
+def _лише_рядки(x):
+    """Обʼєкт, усі значення якого — непорожні рядки, а ключі — не номери текстів (тоді це поля одного тексту)."""
+    return (isinstance(x, dict) and bool(x) and all(isinstance(в, str) and в.strip() for в in x.values())
+            and not any(str(к).isascii() and str(к).isdigit() for к in x))
+
+
 def прийняти(розмітка, відповідь):
     """Відповідь моделі шару → dict(тексти={ключ: текст}, без_відповіді=[ключі], причина,
     нотатки=[що прочитано з неідеальної форми], короткі={ключ: урізаний переклад}).
@@ -623,6 +661,13 @@ def прийняти(розмітка, відповідь):
             вих = _з_форми(вих)[1]
             if ФОРМА_ВХОДУ not in нотатки:
                 нотатки.append(ФОРМА_ВХОДУ)
+        elif _лише_рядки(вих):
+            # ТЕКСТ ПОЛЯМИ (рядок 6021; MamayLM, `13_ж2_йога_зранку/seed3_18`): {"1": {"<поле>": "…", "<поле>": "…"}} —
+            # переклад тексту, розкладений на поля з назвами, які придумала модель (опис і порада окремо). Назв полів
+            # код не читає: значення йдуть по порядку абзацами — так, як абзаци стояли в джерелі.
+            вих = "\n\n".join(в.strip() for в in вих.values())
+            if ПОЛЯ_ЗЛИТО not in нотатки:
+                нотатки.append(ПОЛЯ_ЗЛИТО)
         if isinstance(вих, (list, tuple)):
             вих = " ".join(str(x) for x in вих)
         if isinstance(вих, str) and not _ВМ.невідомо(вих):   # "null" / "None" — не текст для неї
@@ -2390,6 +2435,13 @@ def прийняти_повідомлення(розмітка, відповід
             вих = _з_форми(вих)[1]
             if ФОРМА_ВХОДУ not in нотатки:
                 нотатки.append(ФОРМА_ВХОДУ)
+        elif _лише_рядки(вих):
+            # ТЕКСТ ПОЛЯМИ (рядок 6021; MamayLM, `13_ж2_йога_зранку/seed3_18`): {"1": {"<поле>": "…", "<поле>": "…"}} —
+            # переклад тексту, розкладений на поля з назвами, які придумала модель (опис і порада окремо). Назв полів
+            # код не читає: значення йдуть по порядку абзацами — так, як абзаци стояли в джерелі.
+            вих = "\n\n".join(в.strip() for в in вих.values())
+            if ПОЛЯ_ЗЛИТО not in нотатки:
+                нотатки.append(ПОЛЯ_ЗЛИТО)
         if isinstance(вих, (list, tuple)):
             вих = " ".join(str(x) for x in вих)
         if isinstance(вих, str) and вих.strip() and not _ВМ.невідомо(вих):
@@ -2926,7 +2978,8 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # ставав нагодою. Тепер вона каже прямо, що нагода й місце — інша частина дня.
     # Рядки 5246, 5311, 5318 (ЖИВІ-1510-А А9, Г2, Г4): «надворі +18» → `place_words` «Надворі…» (заборона казала лише
     # place); «бездоганно за нагодою, без претензій» — уривком лише в `formality`, без `intent`; клуб — без `place`
-    "\"update\" holds every field her new message fills or changes, and only those. Go through her "
+    "\"update\" holds every field her new message fills or changes, and only those, and formality (its own "
+    "rule). Go through her "
     "message part by part: one phrase often fills several fields, and the same fragment of her words may be "
     "the quote of each of them — the outing itself (work, a party, a trip) is occasion, also when the same "
     "phrase says how she gets there: such a phrase gives both occasion and movement, never movement alone; "
@@ -2940,7 +2993,7 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     "goes into wants or own_items; her "
     "limit on how much of her body she shows is open_zones, never goal_zones. A "
     "new value replaces the old one; a wish or a limit from before that she takes back goes into "
-    "\"retract\". Do not repeat fields that do not change.",
+    "\"retract\". Do not repeat fields that do not change, except formality.",
     # НП-в5 (рядок 520): плитка без розмови — хід без її листа; паспорт тоді потребує числа моделі.
     "When her new message is unknown, she wrote nothing and only changed the tiles: \"update\" gives "
     "formality, part_of_day, reserved_colour and open_zones for what \"chosen\" and the passport say now; "
@@ -3019,7 +3072,12 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # свята, де б не було» — 2 і 5, і ДН у кафе ставав 5–7.
     # МОВА-ХІД-ТОНШЕ (рядок 3491): «приклади — лише для смуги, не place чи occasion» знято — те саме каже заголовок
     # якорів у «codes» («examples for the band only, not codes»).
-    "\"formality\" is always present, without quote: how dressy this outing is, taken by the anchors in "
+    # Рядок 6026: «always present» модель читала як «коли вона сказала про ошатність» (опис `update` — лише поля її
+    # листа). Тепер — на кожному ході, щойно відомо, що це за вихід, і також коли її лист інших полів не міняє. Без
+    # події число не ставиться: смуга сама робить сценарій (`сценарій.є_сценарій`), і обовʼязкове `occasion` зникло б.
+    "\"formality\" is in \"update\" on every turn once her words, the passport or \"chosen\" say what kind of "
+    "outing it is, also when it does not change; before that it is absent. It is without quote: how dressy this "
+    "outing is, taken by the anchors in "
     "\"codes\", not by eye. A named dress code — exactly its band from the dress-code bands. Otherwise start "
     "from the usual band of the example nearest to what kind of event it is — not to how important it is to "
     "her. Pick it by the place her words name, or, when she names none, by what she will be doing: a walk "
@@ -3133,9 +3191,15 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     "passport does not have.",
 )
 
+# РЯДОК 6026 (ЖИВИЙ-15, сцена 12 «Новорічна вечірка в ресторані, надворі мороз»): `update` описувався лише як «кожне
+# поле, яке заповнює чи міняє її лист», і правило «formality завжди» з ним сперечалось — модель дала occasion і
+# weather_feel без числа, смуги не було, рука 1 брала джинси з денім-піджаком. Ходів із нагодою чи місцем, що несли
+# formality: живий-14 — 4 з 40, живий-15 — 6 з 13. Тепер число — першим ключем самої форми `update`: модель бачить
+# його в скелеті, а не виводить з правила, що суперечить опису поля.
 СКЕЛЕТ_РОЗМОВИ = {
-    "update": "object — every field her new message fills or changes (one phrase may fill several), each in its "
-              "form from \"codes\"",
+    "update": {"formality": "{from, to} — on every turn once the kind of outing is known (the \"formality\" rule)",
+               "<field>": "every other field her new message fills or changes (one phrase may fill several), each "
+                          "in its form from \"codes\""},
     "need": " | ".join(_ВМ.ПОТРЕБИ),
     "text": [{"about": ["codes of the \"update\" fields this sentence tells about, or her_question"],
               "says": "one sentence of your reply to her, to her as «ти», never a lone word"}],
