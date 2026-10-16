@@ -2,7 +2,7 @@
 принта» (сцена №13 ЖИВІ-19/18/17/16/14) швом показу — `прийняти_вхід("verdict_comment", слоти речей образу)` →
 `паспорт_з_коментаря` → пул стенда (сід 4242): межі паспорта, бажання, `перенесено` і скільки у пулі взуття на каблуці
 та з візерунком. Ж19 (`seed3_33`): ознаки в `about_items[].features/patterns`, `wants[].features/patterns`, `vetoes: []`;
-Ж18 (`seed3_32`): межі у `vetoes` і `reasons: [heels, print]`. Ще — рядок промпту про «не моє» (той, що міняв #863).
+Ж18 (`seed3_32`): межі у `vetoes` і `reasons: [heels, print]`. Ще — правило промпту про «не моє» (з оголошення входу, рядок 6291).
 Код — з теки аргументу. Запуск: cd джерела && python3 проби/межі_не_моє.py [тека джерел іншої збірки]   (~1 хв)"""
 import json, os, re, subprocess, sys
 Д = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else "."); sys.path.insert(0, Д); os.chdir(Д)
@@ -15,7 +15,7 @@ def пул(п):
     вз = [p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")][0]["кандидати"].get("взуття") or []
     return "взуття %d: на каблуці %d, з візерунком %d" % (len(вз), sum(1 for r in вз if str(r.get("каблук")).startswith(
         "каблук: є")), sum(1 for r in вз if (r.get("візерунок") or "solid") != "solid"))
-print("промпт:", re.search(r"У reasons — .*", М.ВИДИ_ВХОДУ["verdict_comment"]["межа"]).group(0))
+print("промпт:", re.search(r"What she wants the look without.*", " ".join(М.ОГОЛОШЕННЯ_ВХОДУ["verdict_comment"].правила)).group(0))
 print("без меж:", пул({"перекладено_шаром": True, "вето": {}}))
 for назва, б, сід in (("Ж19", 19, 33), ("Ж18", 18, 32), ("Ж17", 17, 36), ("Ж16", 16, 36), ("Ж14", 14, 34)):
     git("fetch", "-q", "origin", "claude/zhyvi-%d" % б)
