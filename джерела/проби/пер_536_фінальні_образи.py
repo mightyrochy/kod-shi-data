@@ -2,6 +2,7 @@
 """ПЕР-536: «нижче смуги» у ФІНАЛЬНИХ образах рук 1–2 (на картках), а не в 10 ідеях раунду 1 — і знахідки K-KOH
 суду. Запуск: python3 джерела/проби/пер_536_фінальні_образи.py <тека per_536> робота співбесіда …"""
 import sys, json, re, os, gzip, collections
+import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspath(__file__)))); from збирач_промптів import рядки_таблиці as РТ
 Д = "/home/user/kod-shi-data/джерела"; sys.path.insert(0, Д); тека = os.path.abspath(sys.argv[1]); os.chdir(Д)
 import feed as F; F.каталог_на_диску("каталог_повний.xml")
 import фід_каталог as ФК, фід_слот as ФС, композитор_придатні as КП, формальність as ФО
@@ -14,7 +15,7 @@ for сц in sys.argv[2:]:
         р = int(re.sub(r"\D", "", str(в["рука"])) or 0)
         if р not in (1, 2): continue
         зб = в["етапи"]["виклики"][0]; пак = json.loads(зб["запит"]["текст"][зб["запит"]["текст"].index("{"):])
-        пул = {x["n"]: (за.get((x["name"], x.get("price"))) or [{}])[0] for x in пак["pool"]}; наз = {x["n"]: x["name"] for x in пак["pool"]}
+        пул = {x["n"]: (за.get((x["name"], x.get("price"))) or [{}])[0] for x in РТ(пак["pool"])}; наз = {x["n"]: x["name"] for x in РТ(пак["pool"])}
         с = в["етапи"]["суд"]; ідеї = json.loads(зб["відповідь_сира"][зб["відповідь_сира"].index("{"):])["outfits"]
         нев = lambda н: bool(пул.get(н)) and КП.нижче_смуги(пул[н], lo)
         фін = [(н, наз.get(н, "")[:50]) for о in с["образи"] for н in о["речі_н"] if нев(н)]
