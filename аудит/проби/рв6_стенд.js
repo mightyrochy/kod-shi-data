@@ -845,20 +845,9 @@ const ЧЕКАЄ_JSON = т => /ОБРАЗИ_V1|ВИБІР_V1|ОЦІНКИ_V1|Т�
    бачила HTTP 599 і чесно писала «рука 2: збій», тобто ПРИЛАД відрізав руку, а
    звіт списав би це на продукт. Тут таймаута нема взагалі: скільки модель
    рахує, стільки й чекаємо (сторінка сама має свої межі). */
-const http_ = require('http');
-function постЖСОН(адреса, тіло){
-  return new Promise(рез => {
-    const у = new URL(адреса), дані = Buffer.from(JSON.stringify(тіло), 'utf8');
-    const зап = http_.request({hostname: у.hostname, port: у.port, path: у.pathname + у.search,
-      method: 'POST', agent: false,   /* рядок 2246: нове з'єднання на виклик — повторно використане, але вже закрите сервером, давало `read ECONNRESET` */
-      headers: {'Content-Type': 'application/json', 'Content-Length': дані.length}},
-      від => { const шм = []; від.on('data', д => шм.push(д));
-               від.on('end', () => рез({статус: від.statusCode, сире: Buffer.concat(шм).toString('utf8')})); });
-    зап.setTimeout(0);
-    зап.on('error', е => рез({статус: 599, сире: JSON.stringify({error: {message: String(е)}})}));
-    зап.end(дані);
-  });
-}
+/* постЖСОН і передача обриву до моделі — `обрив_моста.js` (рядок 5813) */
+const {постЖСОН, стежитиЗаОбривом} = require(path.join(__dirname, 'обрив_моста.js'));
+const ЖИВІ_ЗАПИТИ = new Map(), ОБРИВИ = [];
 /* ФОТО РЕЧЕЙ ПРИХОДЯТЬ АДРЕСОЮ, А LM STUDIO БЕРЕ ЛИШЕ BASE64 (виміряно 24.09.2026).
    Показ шле в опис `{type:'image', source:{type:'url', url:'https://крамниця…'}}` —
    справжній воркер сам іде по фото й ставить заголовок `x-images-dropped` на ті,
@@ -919,7 +908,7 @@ async function кадрБазою(url, сире){
     return 'data:' + тип + ';base64,' + байти.toString('base64');
   } catch (е) { return втрата('мережа ' + String((е.cause && е.cause.code) || е.message).slice(0, 40)); }
 }
-async function живоюМоделлю(тіло, тип){
+async function живоюМоделлю(тіло, тип, держак){
   let фотоНеДійшло = 0; /* локально: виклики йдуть паралельно, глобальний лічильник їх мішав (КАДР-870) */
   if (ПРАВИЛА_РЕЧЕННЯМИ && тип === 'ПАКЕТ_V1→ОБРАЗИ_V1')
     тіло = Object.assign({}, тіло, {messages: (тіло.messages || []).map(м => Object.assign({}, м,
@@ -958,7 +947,7 @@ async function живоюМоделлю(тіло, тип){
   const почато = Date.now();
   let статус = 200, текст = '', думка = '', вхід = 0, вихід = 0, стоп = 'end_turn', помилка = null;
   try {
-    const відп = await постЖСОН(АДРЕСА_МОДЕЛІ + '/chat/completions', запит);
+    const відп = await постЖСОН(АДРЕСА_МОДЕЛІ + '/chat/completions', запит, держак);
     const сире = відп.сире;
     let дані = null; try { дані = JSON.parse(сире); } catch (_) {}
     if (відп.статус !== 200){ статус = відп.статус; помилка = сире.replace(/\s+/g, ' ').slice(0, 600); }
@@ -976,7 +965,8 @@ async function живоюМоделлю(тіло, тип){
   const с_ = (Date.now() - почато) / 1000;
   const видимихОцінка = Math.ceil(текст.length / 2);
   ЖУРНАЛ_МОДЕЛІ.push({тип, статус, с: +с_.toFixed(1), вхід, вихід, стоп,
-                      думка: думка.length, симв: текст.length, видимих_т_оцінка: видимихОцінка, фото_не_дійшло: фотоНеДійшло, помилка});
+                      думка: думка.length, симв: текст.length, видимих_т_оцінка: видимихОцінка, фото_не_дійшло: фотоНеДійшло, помилка,
+                      ...((держак || {}).обірвано_о ? {обрив: true} : {})});
   return {статус, текст, думка, вхід, вихід, стоп, помилка, с: с_, дропи: фотоНеДійшло};
 }
 /* ── ОДИН ВИКЛИК МОДЕЛІ ЧЕРЕЗ `claude -p` (наряд Ж-1) ────────────────────────
@@ -2144,11 +2134,31 @@ function підсумокМоделі(){
       /* схований елемент (картка оцінки, якої репліка не відкрила — живий ПІСЛЯ П4/П8, рядок 2246) чекав видимості 30 с і давав
          `Timeout 30000ms` без причини; тепер причина названа одразу, і прогін не гальмує */
       if (сел && !(await е.isVisible())) { console.log('   знімок ' + ім + ': елемент ' + сел + ' є, але не видно (схований) — не знімаю'); return null; }
-      await (е || стор).screenshot({path: ш, ...(сел ? {} : {fullPage: !вікно})});
-      console.log('   знімок:', ш, fs.statSync(ш).size, 'Б');
+      /* РЯДОК 5860: знімок елемента чи всієї сторінки (не вікна) на scroll 0 затуляє нижні ряди колажу фіксованою панеллю
+         (`.панель`: «Спитати стилістку» `#ші-пілюля` + вкладки) — вердикт «плитка без речі» виходив з методу, не з показу
+         (5822). На час знімка панель ховається; знімок вікна (`вікно`) лишає її — це справжній вигляд екрана. */
+      const сховано = !вікно && await стор.evaluate(() => { const с = document.createElement('style'); с.id = 'стенд-знімок';
+        с.textContent = '.панель, #ші-пілюля { visibility: hidden !important }'; document.head.appendChild(с); return true; }).catch(() => false);
+      try {
+        await (е || стор).screenshot({path: ш, ...(сел ? {} : {fullPage: !вікно})});
+        console.log('   знімок:', ш, fs.statSync(ш).size, 'Б');
+        /* мірило 5860: у центрі видимої частини кожної плитки колажу — саме її `img` (прокрутка до плитки, панель схована) */
+        if (сховано && /^#к-\d+$/.test(сел)){
+          const м = await стор.evaluate(кор => { const вс = [...document.querySelectorAll(кор + ' .колаж-вн .ф')]; let є = 0, без_приклад = null; const без = [];
+            const висота = innerHeight, ш_ = innerWidth;
+            вс.forEach((ф, і) => { ф.scrollIntoView({block: 'center'}); const і_ = ф.querySelector('img'); if (!і_) { без.push(і); return; }
+              const б = і_.getBoundingClientRect(), x1 = Math.max(0, б.left), x2 = Math.min(ш_, б.right), y1 = Math.max(0, б.top), y2 = Math.min(висота, б.bottom);
+              const т = x2 > x1 && y2 > y1 ? document.elementFromPoint((x1 + x2) / 2, (y1 + y2) / 2) : null;
+              if (т === і_) є++; else { без.push(і); if (без.length === 1) без_приклад = {у_центрі: т ? т.tagName + '.' + т.className : null, img: [Math.round(б.left), Math.round(б.top), Math.round(б.width), Math.round(б.height)], готово: і_.complete, природна: і_.naturalWidth}; } });
+            return {плиток: вс.length, img_у_центрі: є, без_img: без, ...(без_приклад ? {перший_без: без_приклад} : {})}; }, сел);
+          console.log('   плитки ' + ім + ': ' + JSON.stringify(м));
+          await стор.evaluate(() => window.scrollTo(0, 0));
+        }
+      } finally { if (сховано) await стор.evaluate(() => { const с = document.getElementById('стенд-знімок'); if (с) с.remove(); }).catch(() => {}); }
       return ш;
     } catch (e) { console.log('   знімок ' + ім + ' не вийшов:', String(e).slice(0, 120)); return null; }
   };
+  стежитиЗаОбривом(стор, ЖИВІ_ЗАПИТИ);
   await стор.route(u => цеМіст(u), async route => {
     const тіло = route.request().postDataJSON() || {};
     const ост = (тіло.messages || []).slice(-1)[0] || {};
@@ -2235,7 +2245,16 @@ function підсумокМоделі(){
         return route.fulfill({status: 501, contentType: 'application/json',
           body: JSON.stringify({error: {message: 'приміряння не перевіряється: локальна текстова модель картинок не малює'}})});
       }
-      const р = await живоюМоделлю(тіло, тип);
+      /* РЯДОК 5813: обрив сторінки (`AbortController`) рве й запит до LM Studio — `ЖИВІ_ЗАПИТИ` + `requestfailed` */
+      const держак = {}; ЖИВІ_ЗАПИТИ.set(route.request(), держак); держак.почато_о = Date.now();
+      const р = await живоюМоделлю(тіло, тип, держак);
+      ЖИВІ_ЗАПИТИ.delete(route.request());
+      if (держак.обірвано_о){
+        ОБРИВИ.push({тип, після_мс: держак.обірвано_о - держак.почато_о, закрито_мс: Date.now() - держак.обірвано_о});
+        console.log('   ✂ обрив: сторінка обірвала «' + тип + '» через ' + (держак.обірвано_о - держак.почато_о)
+          + ' мс; запит до моделі закрито, відповідь відкинуто');
+        return route.abort().catch(() => {});
+      }
       записатиВиклик(н, тип, промптФайлу, р);
       console.log('   ↔ модель #' + н + ' ' + тип + ' (' + текст.length + ' симв.'
         + ', разом ' + разом
@@ -5407,6 +5426,7 @@ function підсумокМоделі(){
     await стор.fill('#оц-питання', 'Чи поєднуються ці кольори між собою і чи підійдуть вони мені?');
     await знімок('otsinka_ekran', '#е-оцінка');
     const т0 = Date.now();
+    let ДОТИК_О = 0, ДОТИК_ОСТАННІЙ_О = 0, ТАК_О = 0;
     await стор.click('#оц-оцінити');
     /* рядок 5740: перелік «Що я бачу на фото» — картка чекає дотику; стенд тисне «Так, оцінюй», щойно кнопка з'явилась */
     await стор.waitForFunction(() => document.getElementById('оц-так') || (!ОЦ.іде && (ОЦ.результат || (ОЦ.етапи || {}).помилка)), null, {timeout: 600000});
@@ -5415,9 +5435,39 @@ function підсумокМоделі(){
       console.log('   перелік до «Так»: ' + JSON.stringify(await стор.evaluate(() => [...document.querySelectorAll('#оц-речі .оц-річ')].map(р => [...р.children].map(
         х => ({т: х.tagName + '.' + х.className, текст: х.textContent, ш: Math.round(х.getBoundingClientRect().width), ф: getComputedStyle(х).background.slice(0, 40)})))))
         .slice(0, 1800));
+      /* РЯДОК 5813: OTSINKA_DOTYK=<мс> — дотики до переліку (Б4): через <мс> після появи переліку ✕ на рядку слота «Низ»
+         (штани), потім «+ Річ» → «Взуття»; суд тим часом іде (обрив ланцюга) або вже готовий (перезапуск). Слоти —
+         OTSINKA_DOTYK_ПРИБРАТИ / OTSINKA_DOTYK_ДОДАТИ (підписи з показу). */
+      if (process.env.OTSINKA_DOTYK !== undefined){
+        await с(Number(process.env.OTSINKA_DOTYK) || 0);
+        const дій = () => стор.evaluate(() => (ОЦ.перелік && ОЦ.перелік.звіт.дії.length) || 0);
+        const чекатиДію = async до => { await стор.waitForFunction(н => (ОЦ.перелік.звіт.дії.length >= н), до, {timeout: 30000}).catch(() => {}); };
+        const слотПрибрати = process.env.OTSINKA_DOTYK_ПРИБРАТИ || 'Низ', слотДодати = process.env.OTSINKA_DOTYK_ДОДАТИ || 'Взуття';
+        ДОТИК_О = Date.now();
+        const хк = стор.locator('#оц-речі .оц-річ', {has: стор.locator('.оц-слот', {hasText: new RegExp('^' + слотПрибрати + '$')})}).locator('.оц-х').first();
+        if (await хк.count()){ const н0 = await дій(); await хк.click(); await чекатиДію(н0 + 1); }
+        else console.log('   дотики 5813: рядка слота «' + слотПрибрати + '» нема — ✕ пропущено');
+        await стор.click('#оц-плюс-річ');
+        const чип = стор.locator('#оц-додати .чип, #оц-додати button, #оц-додати *', {hasText: new RegExp('^' + слотДодати + '$')}).first();
+        if (await чип.count()){ const н1 = await дій(); await чип.click(); await чекатиДію(н1 + 1); }
+        else console.log('   дотики 5813: чипа «' + слотДодати + '» нема — «+ Річ» пропущено');
+        ДОТИК_ОСТАННІЙ_О = Date.now();
+      }
+      ТАК_О = Date.now();
       await стор.click('#оц-так');
     }
     await стор.waitForFunction(() => !ОЦ.іде && (ОЦ.результат || (ОЦ.етапи || {}).помилка), null, {timeout: 600000});
+    /* РЯДОК 5813: час до картки від «Так» і від останнього дотику; `втрачено_мс` — скільки роботи ланцюга пропало на обрив */
+    if (process.env.OTSINKA_DOTYK !== undefined){
+      await стор.waitForSelector('#оц-картка', {state: 'visible', timeout: 60000}).catch(() => {});
+      const тк = Date.now();
+      console.log('   дотики 5813: ' + JSON.stringify(await стор.evaluate(з => ({
+        суд_перезапущено: ОЦ.перелік.звіт.суд_перезапущено, втрачено_мс: ОЦ.перелік.звіт.втрачено_мс, дотиків: ОЦ.перелік.звіт.дотиків,
+        мс_до_так: ОЦ.перелік.звіт.мс_до_так, дії: ОЦ.перелік.звіт.дії.map(д => д.op + ':' + (д.ід || '') + ':' + д.спосіб),
+        картка_видна: !!document.getElementById('оц-картка'), ...з}),
+        {до_картки_від_Так_мс: тк - ТАК_О, до_картки_від_дотику_мс: тк - (ДОТИК_О || ТАК_О), від_останнього_дотику_мс: тк - (ДОТИК_ОСТАННІЙ_О || ТАК_О),
+         від_Оцінити_мс: тк - т0, обривів_до_моделі: ОБРИВИ})));
+    }
     const о6 = await стор.evaluate(() => {
       const е = ОЦ.етапи || {}, с_ = е.суд || {}, к = document.getElementById('оц-картка');
       return {помилка: е.помилка || null, мс: Date.now(),

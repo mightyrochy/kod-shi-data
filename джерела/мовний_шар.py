@@ -2409,7 +2409,10 @@ def _місця_вечірні_en():
 _ПОЛЯ_EN = {
     # Рядок 5318 (ЖИВІ-1510-Г, Г4): «Йду ввечері на вечірку в клуб» — `occasion` з цим уривком, `place` — ні (клас
     # 4206): правило ходу каже про місце в назві події, а опис поля, яке модель заповнює першим, — ні
-    "occasion": "what kind of event it is; the place named in the same phrase goes into place too",
+    # Рядок 5270 (ЖИВІ-1510-Б, Б1): «йду на роботу пішки» — `movement` з цим уривком, `occasion` — ні (ДО 960 — work):
+    # «such a phrase gives both occasion and movement» стояло лише в правилі `update`, не в описах полів
+    "occasion": "what kind of event it is, also when the same phrase says how she gets there (walking to work "
+                "is occasion work and movement walk); the place named in the same phrase goes into place too",
     # Рядок 5241 (ЖИВІ-1510-А, А2): «йога зранку, потім кава з подругою» → `occasion_part: sport` з уривком йоги:
     # правило «частина не названа — перша не спортивна» стояло лише в правилі ходу, не в описі поля
     "occasion_part": "which part of her day THIS outfit is for: sport when it is for doing "
@@ -2442,7 +2445,8 @@ _ПОЛЯ_EN = {
     # Рядок 4209: `activity` кодів спорту не має (діти, нерівний ґрунт, прогулянка, ходьба, фотосесія) — спорт її дня
     # несе `movement: sport`, і руки 3–4 бачать його в `case` (`руки_без_коду.випадок_кодами`, `рух`)
     "movement": "whether she will sit, stand, walk, walk a lot, dance, kneel or do sport — also when sport is only "
-                "one part of her day",
+                "one part of her day; when the phrase that says how she gets there names the outing (work, a party), "
+                "give occasion too, never movement alone",
     "activity": "what she will do there",
     "surface": "what is under her feet",
     # Рядок 3454 (живі 13, №6): «субота ввечері» → `hour: 19` з цитатою — «час словами — година» правила мови
