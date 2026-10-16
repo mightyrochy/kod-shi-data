@@ -578,6 +578,8 @@ def промпт_вибору(образи, випадок=None, без_фото
                                         "and «families» — its colour families, each meant for its own large item",
                  як="her explicit choice: the code's remarks about this scheme carry her wish, not the code's"),
         _ЗП.Поле("day", "her day as facts"),
+        _ЗП.Поле("item_keys", "what the keys of the items in «verdict» and «showcase» mean, and defaults for omitted values",
+                 як="read every item by these keys; restore every absent key that has an `absent =` default"),
         _ЗП.Поле("verdict", "your outfits and what the code noticed in each: «your_outfit» — its items, caption "
                             "and «day» (your sentence about her day in it); «structure» — blockers; «checklist» — "
                             "by area, the points the code noticed as not met; each point is a code defined in "
@@ -617,8 +619,10 @@ def промпт_вибору(образи, випадок=None, без_фото
         "A finding with «register» «gate» stops the outfit unless you accept it: if the outfit you choose has "
         "gates, accept each of them in «accept» with why it serves her here. That is your weighed decision and "
         "not a reason to pass over the outfit.",
-        "You may also keep a remark on purpose: in «accept», name its existing «id» from «remarks_by_code» "
-        "or the outfit's «findings», with a non-empty «why». Accept only findings of the chosen outfit; "
+        # рядок 6208: знахідки із заявами вибір несе лише в «remarks_by_code» (`дріт_моделі._ремарки_за_кодом`); «or the
+        # outfit's «findings»» посилав модель до поля, якого при образі нема, — поруч із «do not invent ids»
+        "You may also keep a remark on purpose: in «accept», name its existing «id» from «remarks_by_code», "
+        "with a non-empty «why». Accept only findings of the chosen outfit; "
         "do not invent ids. Remarks need no acceptance unless you mean to declare that deliberate choice; "
         "«your_declared» and the overall «why» do not accept findings by themselves.",
         "When «case» has «palette_scheme», she chose that scheme herself: an outfit whose large items carry its "
@@ -1477,6 +1481,16 @@ def повнота_набору(вердикт, кандидати=None, кат�
 #     і код вважав слот порожнім далі (19.09, друга спроба); прикладу-номера нема (Л-5);
 #   · «still_missing» — друга спроба каже, що саме лишилось після першої (рішення власника 19.09).
 # П-2 (26.09.2026): шаблон і дані — англійським дротом (`мова_промпту="en"`, `дріт_моделі.вердикт`):
+# ВИПАДОК ПОВНОТИ — КОДАМИ (рядок 6206, п.12): «case» повноти — той самий випадок кодами, що в ремонті й виборі
+# (`міст_відповіді._дріт_повноти`), тож і поля його ті самі, що в `ВИБІР` (як у `вердикт_моделі.РЕМОНТ`). Доти тут
+# стояло «her occasion in her and the code's words» над рядком паспорта, який код пише українською.
+ВИПАДОК_ПОВНОТИ = (
+    _ЗП.Поле("case", "her case in codes: the occasion and event, her «intent» and «goal», her words, wishes, mood "
+                     "and refusals"),
+    *[п for п in ВИБІР.вхід if п.шлях.startswith("case.")],
+)
+
+
 # доти англійський текст стояв в українському шаблоні над українськими ключами («структура.блокери»,
 # «вітрина», «бракує»). «Порожній слот» — «missing kind of item»: місце речі модель знає сама.
 # СТЕЛЯ-ПОВНОТИ (рядок 3640): «done» прозою брав 28 % символів 51 записаної відповіді — відповідь
@@ -1492,8 +1506,10 @@ def повнота_набору(вердикт, кандидати=None, кат�
     роль=("You are the stylist. The code checked the outfits you put together for her, and none of them "
           "can be shown yet: each has a blocker in «structure». You finish one of them."),
     вхід=(
-        _ЗП.Поле("case", "her occasion in her and the code's words"),
+        *ВИПАДОК_ПОВНОТИ,
         _ЗП.Поле("day", "her day as facts"),
+        _ЗП.Поле("item_keys", "what the keys of the items in «verdict» and «showcase» mean, and defaults for omitted values",
+                 як="read every item by these keys; restore every absent key that has an `absent =` default"),
         _ЗП.Поле("verdict", "your outfits and the code's check: «your_outfit» — items with their full "
                             "descriptions and your caption; «structure.blockers» — what keeps the outfit from "
                             "being shown, each under its «id»: a missing kind of item, with «options» — the "
@@ -1552,8 +1568,10 @@ def повнота_набору(вердикт, кандидати=None, кат�
           "cannot be shown yet: each such outfit has a blocker in «structure». You finish every one of them "
           "before she chooses."),
     вхід=(
-        _ЗП.Поле("case", "her occasion in her and the code's words"),
+        *ВИПАДОК_ПОВНОТИ,
         _ЗП.Поле("day", "her day as facts"),
+        _ЗП.Поле("item_keys", "what the keys of the items in «verdict» and «showcase» mean, and defaults for omitted values",
+                 як="read every item by these keys; restore every absent key that has an `absent =` default"),
         _ЗП.Поле("verdict", "your outfits and the code's check: «your_outfit» — items with their full "
                             "descriptions and your caption; «structure.blockers» — what keeps the outfit from "
                             "being shown, each under its «id»: a missing kind of item, with «options» — the "
