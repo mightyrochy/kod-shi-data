@@ -295,9 +295,15 @@ def промпт_руки(рука, випадок, вимоги="", вибір=
         "A slot the description says is not needed is not an item: give it worn false. One item "
         "carries one thing — of two alternatives list the first; a note in brackets is not an item.",
         "Slot \"accessory\" is for an item no other slot fits.",
+        # РЯДОК 6065: рука 4 (qwen, похорон) відповіла відмовою замість образу, перелік вигадав приклад
+        # (блейзер, штани, лофери) — і відмова стала карткою. Слів код не читає (п.12): чи опис — образ,
+        # каже кодом `is_outfit` модель, що його читає; картка руки — лише на «yes».
+        "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a "
+        "refusal, a question or a note; then items is empty.",
     ),
     вихід="ITEM_LIST",
-    скелет={"items": [{"name": "<what the item is>",
+    скелет={"is_outfit": "yes|no",
+            "items": [{"name": "<what the item is>",
                        "details": "<its cut, length and fabric>",
                        "slot": "|".join(_ВМ.ТАБЛИЦЯ["slot"]),
                        "color_hex": "<#rrggbb or null>",
@@ -316,8 +322,8 @@ def промпт_переліку(речі_паспорта=None, мова_те�
     if not її:
         # без її речей поля «own» у скелеті нема: відповідати нема чим, а зайвий рядок — токени
         import dataclasses as _dc
-        о = _dc.replace(ПЕРЕЛІК, скелет={"items": [{к: v for к, v in ПЕРЕЛІК.скелет["items"][0].items()
-                                                    if к != "own"}]})
+        о = _dc.replace(ПЕРЕЛІК, скелет=dict(ПЕРЕЛІК.скелет, items=[{к: v for к, v in ПЕРЕЛІК.скелет["items"][0].items()
+                                                                  if к != "own"}]))
     return _json.dumps(_ЗП.зібрати(о, dict(description=ЗАГЛУШКА_ОПИСУ, her_items=її), мова_тексту=мова_тексту),
                        ensure_ascii=False)
 
@@ -372,6 +378,27 @@ def речі_переліку(відповідь):
                         слот=_слот_за_назвою(код), код_слота=код,
                         hex=(hx.lower() if _HEX.match(hx) else None), own=own, носить=носить))
     return вих or None
+
+
+# Код `is_outfit` у записі моделі → код ядра: її запис коду (регістр, пробіл, булеве) приймається, як `worn`;
+# слів тут нема — лише два коди схеми
+_ОБРАЗ_КОДОМ = {"yes": True, "true": True, "no": False, "false": False}
+
+
+def опис_образ(відповідь):
+    """Чи опис руки — образ, кодом відповіді ПЕРЕЛІКУ (`is_outfit`): True, False або None — коду нема.
+
+    Слів опису код не читає (п.12): відмову моделі («I cannot fulfill…») називає кодом модель
+    переліку, яка опис читає (рядок 6065). None — перелік не прочитано або без `is_outfit` (ЖИВІ-14 №27:
+    перелік відповів прозою з прикладом JSON без цього поля): образом опис ніхто не назвав."""
+    об, _причина, _ = _ПР.розбір_останній(відповідь, ("is_outfit",))
+    if об is None:
+        try:
+            об = _json.loads(re_огорожа(str(відповідь or "")))
+        except ValueError:
+            return None
+    к = об.get("is_outfit") if isinstance(об, dict) else None
+    return _ОБРАЗ_КОДОМ.get(str(к).strip().lower()) if к is not None else None
 
 
 def re_огорожа(т):
