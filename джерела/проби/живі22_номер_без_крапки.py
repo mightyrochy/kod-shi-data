@@ -4,6 +4,7 @@
 Кращим: рука 1 (виклик 09) дає образи з речей пулу, а не 0. Запуск: cd джерела && python3 проби/живі22_номер_без_крапки.py
 [тека джерел іншої збірки]"""
 import json, re, subprocess, sys
+import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspath(__file__)))); from збирач_промптів import рядки_таблиці as РТ
 sys.path.insert(0, sys.argv[1] if len(sys.argv) > 1 else "."); import протокол as П, розбір_відповідей as Р
 git = lambda *а: subprocess.run(["git", "-c", "core.quotepath=false", *а], capture_output=True, text=True).stdout
 Г, Т = "origin/claude/zhyvi-22", "аудит/живі_22/А/08_ж2_спорт_коментар/VIDPOVIDI/"
@@ -13,7 +14,7 @@ for ф in ф_:
     т = git("show", "%s:%s" % (Г, ф)); запит, відп = т.split("── ВІДПОВІДЬ", 1)[0], т.split("── ВІДПОВІДЬ", 1)[1].split("\n", 1)[1]
     ім = ф.split("/")[-1][6:]
     if "ПАКЕТ_V1" in ім:
-        пул = json.JSONDecoder().raw_decode(запит[запит.find("{"):])[0].get("pool") or []
+        пул = РТ(json.JSONDecoder().raw_decode(запит[запит.find("{"):])[0].get("pool")) or []
         за_ном = {int(р["n"][1:].split("·")[0]): (р["n"], р["n"].split("·")[1]) for р in пул}
         словник = {р["n"]: dict(id=р["n"], слот="слот", назва=р.get("name")) for р in пул}
         Р._за_номером, Р._словник_речей = (lambda *а, **к: за_ном), (lambda *а, **к: словник)
