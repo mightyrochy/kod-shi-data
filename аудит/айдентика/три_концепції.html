@@ -19,8 +19,8 @@
 @font-face{font-family:"Fixel Text";font-weight:600;font-display:swap;
   src:url("шрифти/FixelText-SemiBold.woff2") format("woff2"),url("../тести/інструкція_тестувальниць/шрифти/FixelText-SemiBold.woff2") format("woff2")}
 
-/* Розкладка: три концепції — три вирівняні колонки; екрани одного типу стоять одним рядком, щоб порівнювати
-   поперек; нижче — спільні рядки характеристик, порівняння, порада й джерела. */
+/* Розкладка: концепції йдуть послідовно, кожна цілком — голова, екрани 390×844, опис; паралельно — лише
+   підсумкова таблиця порівняння; далі порада й джерела. */
 :root{
   --тло:#E4E5E3; --аркуш-ст:#F6F6F4; --текст-ст:#1E1F21; --сірий-ст:#595C61; --лінія-ст:#CDD0D2;
   --к1-колір:#B2321C; --к2-колір:#21505B; --к3-колір:#5A666C; --на-кольорі:#FFFFFF; --край-зразка:rgb(30 31 33 / .18);
@@ -40,7 +40,7 @@ body{margin:0;background:var(--тло);color:var(--текст-ст);font:15px/1.
 a{color:inherit;text-underline-offset:3px}
 a:focus-visible{outline:2px solid var(--к2-колір);outline-offset:2px}
 .сторінка{max-width:1258px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:44px}
-.сторінка > *,.ряди > *{min-width:0}
+.сторінка > *{min-width:0}
 .надпис{font-size:12.5px;color:var(--сірий-ст);letter-spacing:.02em}
 h1{font:500 clamp(34px,5vw,52px)/1.02 var(--заголовок-ст);font-variation-settings:"CONT" 640;margin:6px 0 14px;text-wrap:balance}
 h2{font:500 28px/1.1 var(--заголовок-ст);font-variation-settings:"CONT" 560;margin:0 0 10px;text-wrap:balance}
@@ -53,48 +53,38 @@ h2{font:500 28px/1.1 var(--заголовок-ст);font-variation-settings:"CON
 .порада p{margin:0;font-size:14px}
 @media (max-width:900px){.шапка-ст{grid-template-columns:minmax(0,1fr)}}
 
-/* колонки концепцій */
-.три{display:grid;grid-template-columns:repeat(3,390px);gap:44px}
-.прокрутка{overflow-x:auto;margin-inline:-4px;padding:4px}
-.голова{display:grid;gap:8px;align-content:start}
-.голова .рядок{display:flex;align-items:center;gap:10px}
+/* концепції — послідовно: голова, екрани, опис */
+.концепція{display:grid;gap:26px;padding-top:34px;border-top:1px solid var(--лінія-ст)}
+.голова{display:grid;gap:8px;max-width:76ch}
+.голова .рядок{display:flex;align-items:center;gap:12px}
 .мітка-к{display:inline-grid;place-items:center;min-width:34px;height:26px;padding:0 6px;font:600 12px/1 var(--текст-шр);letter-spacing:.06em;color:var(--на-кольорі)}
 .к1-мітка .мітка-к,.мітка-к.к1-тло{background:var(--к1-колір)}
 .к2-мітка .мітка-к,.мітка-к.к2-тло{background:var(--к2-колір)}
 .к3-мітка .мітка-к,.мітка-к.к3-тло{background:var(--к3-колір)}
-.голова b{font:500 25px/1.05 var(--заголовок-ст);font-variation-settings:"CONT" 600}
-.голова .корінь{font-size:12.5px;color:var(--сірий-ст)}
-.голова p{margin:0;font-size:14.5px}
-.назва-ряду{font:600 11.5px/1 var(--текст-шр);letter-spacing:.14em;text-transform:uppercase;color:var(--сірий-ст);margin:0 0 12px;
-  display:flex;align-items:center;gap:12px}
-.назва-ряду::after{content:"";flex:1;height:1px;background:var(--лінія-ст)}
-.ряди{display:grid;gap:36px}
-.телефон{margin:0;display:grid;gap:10px;align-content:start}
-.телефон .екран{border-radius:22px;box-shadow:0 1px 2px rgb(20 22 26 / .08),0 8px 24px rgb(20 22 26 / .10);outline:0}
+.голова b{font:500 34px/1.05 var(--заголовок-ст);font-variation-settings:"CONT" 600;text-wrap:balance}
+.голова .корінь{font-size:13px;color:var(--сірий-ст)}
+.голова p{margin:0;font-size:16px}
+.екрани{display:flex;flex-wrap:wrap;gap:34px 34px;min-width:0}
+.телефон{margin:0;display:grid;gap:10px;align-content:start;width:390px;flex:none}
+.телефон .екран{border-radius:22px;box-shadow:0 1px 2px rgb(20 22 26 / .08),0 8px 24px rgb(20 22 26 / .10)}
 .телефон figcaption{font-size:12.5px;color:var(--сірий-ст);line-height:1.45}
 .телефон figcaption b{color:var(--текст-ст);font-weight:600}
-.без-екрана{width:390px;min-height:200px;align-self:start;border:1px dashed var(--лінія-ст);display:grid;place-items:center;padding:24px;text-align:center;
-  font-size:13.5px;color:var(--сірий-ст)}
-.без-екрана p{margin:0;max-width:32ch}
-
-/* спільні рядки характеристик */
-.характеристики{display:grid;gap:0}
-.хар{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 44px;padding:22px 0;border-top:1px solid var(--лінія-ст)}
-.хар > h3{grid-column:1/-1;margin:0;font:600 13px/1.2 var(--текст-шр)}
-.хар > div{min-width:0;font-size:13.5px}
-.хар > div > .мітка-к{display:none;margin-bottom:6px}
-.хар ul,.хар ol{margin:0;padding-left:18px;display:grid;gap:4px}
-.хар dl{margin:0;display:grid;grid-template-columns:76px minmax(0,1fr);gap:5px 12px}
-.хар dt{color:var(--сірий-ст)}
-.хар dd{margin:0}
-.хар p{margin:0 0 6px}
+@media (max-width:460px){.екрани{flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px}}
+.опис{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 44px}
+.блок{min-width:0;font-size:13.5px;padding:14px 0 10px;border-top:1px solid var(--лінія-ст)}
+.блок h3{margin:0 0 8px;font:600 13px/1.2 var(--текст-шр)}
+.блок ul,.блок ol{margin:0;padding-left:18px;display:grid;gap:4px}
+.блок dl{margin:0;display:grid;grid-template-columns:76px minmax(0,1fr);gap:5px 12px}
+.блок dt{color:var(--сірий-ст)}
+.блок dd{margin:0}
+.блок p{margin:0 0 6px}
 .зразки{list-style:none;padding:0!important;gap:5px!important}
 .зразки li{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:8px;align-items:center}
 .зразки i{width:16px;height:16px;box-shadow:inset 0 0 0 1px var(--край-зразка)}
 .зразки code{font-size:12px;color:var(--сірий-ст);font-variant-numeric:tabular-nums}
-@media (max-width:1300px){.голови .три{grid-template-columns:minmax(0,1fr);gap:22px}}
-@media (max-width:900px){.хар{grid-template-columns:minmax(0,1fr)}.хар > div > .мітка-к{display:inline-grid}}
+@media (max-width:800px){.опис{grid-template-columns:minmax(0,1fr)}}
 
+.зміст-ст{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:14px}
 /* таблиці */
 .таблиця{overflow-x:auto;background:var(--аркуш-ст)}
 table{border-collapse:collapse;width:100%;min-width:760px;font-size:13.5px}
@@ -543,31 +533,16 @@ footer code,p code,li code{font-size:12px}
   </aside>
 </header>
 
-<section class="голови" aria-label="Концепції">
-  <div class="прокрутка"><div class="три">
-    <div class="голова к1-мітка">
+<nav class="зміст-ст" aria-label="Зміст"><a href="#к1">К1 «Кіновар»</a><a href="#к2">К2 «Вербівка»</a><a href="#к3">К3 «Люстерко в рушнику»</a><a href="#порівняння">Порівняння</a><a href="#дослідження">Дослідження</a></nav>
+
+<section class="концепція к1-мітка" id="к1" aria-label="К1">
+  <div class="голова">
       <div class="рядок"><span class="мітка-к">К1</span><b>Кіновар</b></div>
       <span class="корінь">Острозька Біблія у дві фарби · Нарбутова «Абетка» · Kyiv*Type</span>
       <p>Люстерко як рукописна книжка. Кожен екран — сторінка з полем і буквицею. Чорне — текст, кіновар — лише
       те, що веде: наступна дія, поточне місце, рубрика. Речі образу — «зміст» із відточієм до ціни.</p>
-    </div>
-    <div class="голова к2-мітка">
-      <div class="рядок"><span class="мітка-к">К2</span><b>Вербівка</b></div>
-      <span class="корінь">Вербівка й Скопці 1915–1917 · Екстер · Богомазов · ковдра Делоне</span>
-      <p>Київський авангард, вишитий руками. Площини, коло, смуга; межа — «стібок» (пунктир). Колір площин
-      береться з її палітри, хром лише чорно-білий, тож інтерфейс щоразу зібраний з її барв.</p>
-    </div>
-    <div class="голова к3-мітка">
-      <div class="рядок"><span class="мітка-к">К3</span><b>Люстерко в рушнику</b></div>
-      <span class="корінь">Кілковий рушник над дзеркалом · люстерко · Сковорода, «пізнай себе»</span>
-      <p>Замість екранів і вкладок — один предмет. У склі видно те, що стилістка зрозуміла; під склом — розмова.
-      Кінці рушника над люстерком вишиваються її кольорами; профіль — зворот люстерка.</p>
-    </div>
-  </div></div>
-</section>
-
-<div class="ряди">
-<section class="ряд-екранів" aria-label="Знайомство"><h3 class="назва-ряду">Знайомство</h3><div class="прокрутка"><div class="три"><figure class="телефон к1"><div class="екран" id="к1-е1">
+  </div>
+  <div class="екрани"><figure class="телефон к1"><div class="екран" id="к1-е1">
   <div class="фоліо">Крок <b>1</b> з 3</div>
   <div class="вміст">
     <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
@@ -595,50 +570,7 @@ footer code,p code,li code{font-size:12px}
     <div class="прапорець"><span></span><span>Дозволяю записати мої відтінки разом із вердиктами<br><span style="color:var(--олівець)">Без згоди вердикт запишеться без кольорів.</span></span></div>
     <div class="рядок-дій" style="margin-top:auto;margin-bottom:12px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#к1-і-стрілка"/></svg></span></div>
   </div>
-</div><figcaption><b>1 · Знайомство.</b> Буквиця відкриває кожен екран, як розділ у рукописі; поради — глосою на полі з ¶.</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е1">
-  <div class="вміст">
-    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
-    <div class="нитка"><b>Крок 2 з 3</b><i class="було"></i><i class="тут"></i><i></i><span>До лиця</span></div>
-    <h2 class="великий">Що тобі <em>до лиця.</em></h2>
-    <p class="підзаголовок">З яким полем обличчя живіше? Правильної відповіді нема — є твоя.</p>
-    <div class="диптих">
-      <svg viewBox="0 0 390 278" width="390" height="278" aria-label="Обличчя між золотом і сріблом">
-        <polygon points="0,18 214,0 196,278 0,278" fill="#C9A227"/>
-        <polygon points="214,0 390,30 390,278 196,278" fill="#B8BDC2"/>
-        <circle cx="200" cy="132" r="78" fill="#F1E3D8"/>
-        <circle cx="200" cy="132" r="78" fill="none" stroke="#141518" stroke-width="1.5" stroke-dasharray="6 5"/>
-        <ellipse cx="200" cy="120" rx="34" ry="42" fill="#E4CDBD"/>
-        <path d="M150 210c10-34 90-34 100 0" fill="#E4CDBD"/>
-        <rect x="24" y="226" width="60" height="6" fill="#141518"/>
-      </svg>
-      <span class="підпис" style="left:24px;color:#141518">Золото</span>
-      <span class="підпис" style="right:24px;color:#141518">Срібло</span>
-    </div>
-    <div class="мітка">Золото чи срібло біля обличчя</div>
-    <div class="варіанти"><span class="варіант обр">Золото</span><span class="варіант">Срібло</span><span class="варіант">Обидва однаково</span></div>
-    <ul class="ще-питання">
-      <li><span class="пара"><i style="background:#fff"></i><i style="background:#F4E9D2"></i></span>Білий чи молочний<span>далі</span></li>
-      <li><span class="пара"><i style="background:#C8B49D"></i><i style="background:#A9B0BA"></i></span>Теплі чи холодні нейтралі<span>далі</span></li>
-    </ul>
-    <div class="рядок-дій" style="margin-top:auto;margin-bottom:12px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#к2-і-стрілка"/></svg></span></div>
-  </div>
-</div><figcaption><b>1 · Знайомство.</b> Питання «золото чи срібло» стає композицією: дві площини й обличчя між ними; обране — чорним зі «стібком».</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е1">
-  <div class="шапка"><span></span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
-  <div class="люстро">
-    <div class="оправа-пів"><span style="left:-14px">Золото</span><span style="right:-14px">Срібло</span></div>
-    <div class="скло туман золото-срібло"><svg width="200" height="240" style="filter:blur(2.2px);opacity:.75;margin-top:60px"><use href="#к3-обличчя"/></svg></div>
-    <svg class="рушник"><use href="#к3-рушник"/></svg>
-  </div>
-  <div class="під-склом">
-    <div class="поступ"><span class="тут">Ще туманно</span><span>Проступають обриси</span><span>Вимальовується</span><span>Готово</span></div>
-    <div style="display:grid;gap:4px;justify-items:center"><span class="мітка">Крок 2 з 3 · До лиця</span>
-      <h2 class="заголовок">Що тобі до лиця.</h2></div>
-    <div style="display:grid;gap:7px"><span class="мітка" style="text-align:center">Золото чи срібло біля обличчя</span>
-      <div class="варіанти"><span class="варіант">Золото</span><span class="варіант">Срібло</span><span class="варіант">Обидва однаково</span></div></div>
-    <div class="рядок-дій" style="margin-top:auto;margin-bottom:10px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#к3-і-стрілка"/></svg></span></div>
-  </div>
-</div><figcaption><b>1 · Знайомство.</b> Оправа сама стає питанням: ліва половина золота, права срібна, обличчя між ними. Рушник ще полотняний — профілю нема.</figcaption></figure></div></div></section>
-<section class="ряд-екранів" aria-label="Аркуш листа"><h3 class="назва-ряду">Аркуш листа</h3><div class="прокрутка"><div class="три"><figure class="телефон к1"><div class="екран" id="к1-е2">
+</div><figcaption><b>1 · Знайомство.</b> Буквиця відкриває кожен екран, як розділ у рукописі; поради — глосою на полі з ¶.</figcaption></figure><figure class="телефон к1"><div class="екран" id="к1-е2">
   <div class="фоліо">Сценарій</div>
   <div class="вміст">
     <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
@@ -667,61 +599,7 @@ footer code,p code,li code{font-size:12px}
     </div>
   </div>
   <nav class="закладки"><span class="закладка поточна">Сценарій</span><span class="закладка">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
-</div><figcaption><b>2 · Аркуш листа.</b> Розлінований аркуш із полем кіноварю; 7 плиток + «Інше» — тихим змістом під листом, без іконок.</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е2">
-  <svg class="площини" viewBox="0 0 390 844" preserveAspectRatio="none" aria-hidden="true">
-    <rect x="262" y="150" width="170" height="170" fill="var(--п1)" transform="rotate(14 346 235)"/>
-    <circle cx="300" cy="372" r="56" fill="var(--п2)"/>
-  </svg>
-  <div class="вміст">
-    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
-    <h2 class="великий" style="font-size:54px;max-width:300px">Куди ти <em>збираєшся?</em></h2>
-    <div class="лист">
-      <p>Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.</p>
-      <div class="кнопки"><span class="кр" title="Додати фото речі"><svg><use href="#к2-і-камера"/></svg></span><span class="кр" title="Сказати голосом"><svg><use href="#к2-і-мікрофон"/></svg></span><span class="кр їде" title="Надіслати"><svg><use href="#к2-і-стрілка"/></svg></span></div>
-    </div>
-    <div class="приклади"><span>Іду на побачення в ресторан, увечері. Обіцяють дощ</span><span>Завтра презентація для клієнта в офісі</span><span>Прогулянка з дитиною в парку, +8 і вітер</span></div>
-    <div style="display:grid;gap:6px">
-      <span class="мітка">Або заповнити рукою</span>
-      <div class="плитки">
-        <div class="плитка"><svg style="fill:var(--п2)"><use href="#к2-ф-смуга"/></svg><b>Спорт, активність</b></div>
-        <div class="плитка"><svg style="fill:var(--п1)"><use href="#к2-ф-трикутник"/></svg><b>Подорож</b><small>у дорозі: переліт, поїзд</small></div>
-        <div class="плитка"><svg style="fill:var(--п4)"><use href="#к2-ф-квадрат"/></svg><b>Звичайний день</b><small>прогулянка, справи</small></div>
-        <div class="плитка"><svg style="fill:var(--п3)"><use href="#к2-ф-коло"/></svg><b>Побачення</b></div>
-        <div class="плитка"><svg style="fill:var(--п1)"><use href="#к2-ф-півколо"/></svg><b>Театр, концерт</b></div>
-        <div class="плитка"><svg style="fill:var(--чорне)"><use href="#к2-ф-ромб"/></svg><b>Робота</b><small>зустріч, презентація, співбесіда</small></div>
-        <div class="плитка"><svg style="fill:var(--п2)"><use href="#к2-ф-хрест"/></svg><b>Свято, вечірка</b><small>день народження, Новий рік</small></div>
-        <div class="плитка інше"><b>Інше</b><small>скажу словами</small></div>
-      </div>
-    </div>
-  </div>
-  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
-</div><figcaption><b>2 · Аркуш листа.</b> Аркуш — біла площина з вишитою межею поверх композиції з її кольорів; плитки — фігури замість піктограм.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е2">
-  <div class="шапка"><span>Збережені</span><span class="знак">люстерко</span><span class="праворуч"><span>Новий</span><span class="ніч">Ніч</span></span></div>
-  <div class="лист">
-    <p>Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.</p>
-    <div class="кнопки"><span class="кр" title="Додати фото речі"><svg><use href="#к3-і-камера"/></svg></span><span class="кр" title="Сказати голосом"><svg><use href="#к3-і-мікрофон"/></svg></span><span class="кр їде" title="Надіслати"><svg><use href="#к3-і-стрілка"/></svg></span></div>
-  </div>
-  <div class="люстро над">
-    <div class="скло туман"><span style="font:400 33px/1.15 var(--голос);font-variation-settings:'CONT' 200;color:#66727A;text-shadow:0 0 6px rgba(255,255,255,.9);filter:blur(.35px);max-width:190px">Куди ти збираєшся?</span></div>
-    <svg class="рушник" style="--кінці:url(#к3-в-її)"><use href="#к3-рушник"/></svg>
-  </div>
-  <div class="під-склом" style="top:566px;gap:8px">
-    <div class="приклади"><span>Іду на побачення в ресторан, увечері. Обіцяють дощ</span><span>Завтра презентація для клієнта в офісі</span></div>
-    <span class="мітка">Або заповнити рукою</span>
-    <div class="плитки">
-      <div class="плитка"><b>Спорт, активність</b></div>
-      <div class="плитка"><b>Подорож</b><small>у дорозі: переліт, поїзд</small></div>
-      <div class="плитка"><b>Звичайний день</b><small>прогулянка, справи</small></div>
-      <div class="плитка"><b>Побачення</b></div>
-      <div class="плитка"><b>Театр, концерт</b></div>
-      <div class="плитка"><b>Робота</b><small>зустріч, презентація…</small></div>
-      <div class="плитка"><b>Свято, вечірка</b><small>день народження…</small></div>
-      <div class="плитка" style="border-style:dashed"><b>Інше</b><small>скажу словами</small></div>
-    </div>
-  </div>
-  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
-</div><figcaption><b>2 · Аркуш листа.</b> На запітнілому склі — «Куди ти збираєшся?», ніби пальцем; лист засунуто за раму. Кінці рушника вже вишито її кольорами.</figcaption></figure></div></div></section>
-<section class="ряд-екранів" aria-label="Розмова"><h3 class="назва-ряду">Розмова</h3><div class="прокрутка"><div class="три"><figure class="телефон к1"><div class="екран" id="к1-е3">
+</div><figcaption><b>2 · Аркуш листа.</b> Розлінований аркуш із полем кіноварю; 7 плиток + «Інше» — тихим змістом під листом, без іконок.</figcaption></figure><figure class="телефон к1"><div class="екран" id="к1-е3">
   <div class="фоліо">Сценарій</div>
   <div class="вміст" style="gap:12px">
     <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
@@ -747,57 +625,7 @@ footer code,p code,li code{font-size:12px}
     <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#к1-і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#к1-і-стрілка"/></svg></span></div>
   </div>
   <nav class="закладки"><span class="закладка поточна">Сценарій</span><span class="закладка">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
-</div><figcaption><b>3 · Розмова.</b> Її слова — Fixel, голос стилістки — Kyiv*Type Serif; сценарій — «зміст» із відточієм, «типово» — сірим.</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е3">
-  <div class="вміст" style="gap:12px">
-    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
-    <div class="вона">Іду на побачення в ресторан, увечері. Обіцяють дощ</div>
-    <div class="стилістка">Зрозуміла: побачення в ресторані ввечері, під дощем. Наскільки ошатно там буде?
-      <small>Можна не відповідати — образи зберуться й так.</small></div>
-    <div class="паспорт">
-      <div class="паспорт-шапка"><b>Новий сценарій</b><small>не збережений</small></div>
-      <ul class="рядки">
-        <li><span class="під">Нагода</span><span>Побачення</span></li>
-        <li><span class="під">Де</span><span>Заклад <span class="типово">— типово для нагоди</span></span></li>
-        <li><span class="під">Ошатність</span><span class="типово">не обрано</span></li>
-        <li><span class="під">Коли й погода</span><span>ввечері, дощ</span></li>
-        <li><span class="під">Палітра</span><span class="типово">хай обере стилістка</span></li>
-        <li><span class="під">Додати</span><span class="типово">макіяж, прикраси, мета</span></li>
-      </ul>
-      <div class="так-ні"><span>Усе правильно?</span><span>так</span><span>поправити</span></div>
-      <span class="дія">Зібрати образи <svg><use href="#к2-і-стрілка"/></svg></span>
-    </div>
-  </div>
-  <div class="низ-розмови">
-    <div class="швидкі"><span>буденно</span><span>охайно буденно</span><span>ділово, м'яко</span><span>на твій розсуд</span></div>
-    <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#к2-і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#к2-і-стрілка"/></svg></span></div>
-  </div>
-  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
-</div><figcaption><b>3 · Розмова.</b> Її слова — на площині її пудрового; голос стилістки — Serif на білому зі смугою петролю; паспорт — «вишиті» рядки.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е3">
-  <div class="шапка"><span>Збережені</span><span class="знак">люстерко</span><span class="праворуч"><span>Новий</span><span class="ніч">Ніч</span></span></div>
-  <div class="люстро">
-    <div class="скло"><div class="дощ"></div>
-      <div class="відбиття" style="position:relative">
-        <span class="мітка">Новий сценарій</span>
-        <span class="гол">Побачення</span>
-        <span class="р"><small>Де</small>Заклад <span class="типово">— типово</span></span>
-        <span class="р"><small>Ошатність</small><span class="типово">не обрано</span></span>
-        <span class="р"><small>Коли й погода</small>ввечері, дощ</span>
-        <span class="р"><small>Палітра</small><span class="типово">хай обере стилістка</span></span>
-        <span class="р" style="font-size:11px"><span class="типово">+ макіяж, прикраси, мета</span></span>
-        <div class="так-ні"><span>Усе правильно?</span><span>так</span><span>поправити</span></div>
-      </div></div>
-    <svg class="рушник" style="--кінці:url(#к3-в-її)"><use href="#к3-рушник"/></svg>
-  </div>
-  <div class="під-склом" style="gap:9px">
-    <div class="вона">ти: <b>Іду на побачення в ресторан, увечері. Обіцяють дощ</b></div>
-    <p class="субтитр">Зрозуміла: побачення в ресторані ввечері, під дощем. Наскільки ошатно там буде?<small>Можна не відповідати — образи зберуться й так.</small></p>
-    <div class="швидкі"><span>буденно</span><span>охайно буденно</span><span>ділово, м'яко</span><span>на твій розсуд</span></div>
-    <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#к3-і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#к3-і-стрілка"/></svg></span></div>
-    <span class="дія">Зібрати образи <svg><use href="#к3-і-стрілка"/></svg></span>
-  </div>
-  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
-</div><figcaption><b>3 · Розмова.</b> Скло — паспорт: що стилістка зрозуміла (дощ — на склі). Її відповідь — субтитром під склом; рядок правиться дотиком по склу.</figcaption></figure></div></div></section>
-<section class="ряд-екранів" aria-label="Палітра"><h3 class="назва-ряду">Палітра</h3><div class="прокрутка"><div class="три"><figure class="телефон к1"><div class="екран" id="к1-е4">
+</div><figcaption><b>3 · Розмова.</b> Її слова — Fixel, голос стилістки — Kyiv*Type Serif; сценарій — «зміст» із відточієм, «типово» — сірим.</figcaption></figure><figure class="телефон к1"><div class="екран" id="к1-е4">
   <div class="фоліо">Палітра</div>
   <div class="вміст" style="gap:12px">
     <div class="шапка"><span style="font-size:13px">← До сценарію</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
@@ -827,62 +655,7 @@ footer code,p code,li code{font-size:12px}
       </ul></div>
   </div>
   <nav class="закладки"><span class="закладка поточна">Сценарій</span><span class="закладка">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
-</div><figcaption><b>4 · Палітра.</b> Основи — «таблиця фарб» друкаря з підписами Serif; вибір — рамка кіноварю; рідші схеми стоять поруч, клікабельні.</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е4">
-  <div class="вміст" style="gap:11px">
-    <div class="шапка"><span style="font-size:13px">← До сценарію</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
-    <h2 class="великий" style="font-size:44px">Палітра <em>образу.</em></h2>
-    <p class="підзаголовок">Основа — головний колір, на якому стоїть образ. Не знаєш — лиши «хай обере стилістка».</p>
-    <span class="мітка">Гама</span>
-    <div class="чипи"><span class="чип">хай обере стилістка</span><span class="чип">приглушені</span><span class="чип обр">середні</span><span class="чип">насичені</span></div>
-    <span class="мітка">Основа</span>
-    <div class="ковдра">
-      <div class="клапоть стил" style="grid-column:span 2">хай обере стилістка</div>
-      <div class="клапоть обр" style="grid-column:span 4;grid-row:span 2;background:var(--п1)">петроль · стилістка</div>
-      <div class="клапоть" style="grid-column:span 2;background:var(--п2)">цегляний</div>
-      <div class="клапоть" style="grid-column:span 3;background:var(--п4)">хвойний</div>
-      <div class="клапоть світлий" style="grid-column:span 3;background:var(--п3)">пудровий · м'яка</div>
-      <div class="клапоть" style="grid-column:span 2;background:#5B2E48">сливовий</div>
-      <div class="клапоть" style="grid-column:span 2;background:#3A3C40">графіт · нейтраль</div>
-      <div class="клапоть світлий" style="grid-column:span 2;background:#F6F3EC">білий · нейтраль</div>
-    </div>
-    <span class="підзаголовок" style="font-size:12.5px">ще 6 основ у цій гамі — не радимо, але можна</span>
-    <span class="мітка">Схема</span>
-    <div class="схеми">
-      <div class="схема обр"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:#F6F3EC"></i><i style="flex:1;background:var(--п2)"></i></span><span><b>нейтрали+акцент</b> · <small>найходовіша</small></span></div>
-      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:#B9A58A"></i><i style="flex:1;background:#A4583E"></i></span><span><b>приглушена комплементарна</b> · <small>звичайна</small></span></div>
-      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:var(--п4)"></i><i style="flex:1;background:#3E7A86"></i></span><span><b>аналогова</b> · <small>звичайна</small></span></div>
-      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:var(--п2)"></i><i style="flex:1;background:var(--п5)"></i></span><span><b>тріада</b> · <small>помітна</small></span></div>
-    </div>
-  </div>
-  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
-</div><figcaption><b>4 · Палітра.</b> Основи — ковдра з клаптів: обрана основа найбільша, сусіди видно поруч. Схема — пропорція 6 : 3 : 1, а не три однакові кружечки.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е4">
-  <div class="шапка"><span>← До сценарію</span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
-  <div class="люстро">
-    <div class="скло" style="background:radial-gradient(90% 80% at 40% 30%,#2E6672 0%,#21505B 55%,#173C45 100%)"><svg width="200" height="240" style="margin-top:96px"><use href="#к3-обличчя"/></svg></div>
-    <svg class="рушник" style="--кінці:url(#к3-в-нейтр)"><use href="#к3-рушник"/></svg>
-  </div>
-  <div class="під-склом" style="gap:9px">
-    <div style="display:grid;gap:2px;justify-items:center"><h2 class="заголовок" style="font-size:23px">Палітра образу.</h2>
-      <span style="font-size:12px;color:var(--олівець);text-align:center">Основа — головний колір, на якому стоїть образ. Не знаєш — лиши «хай обере стилістка».</span></div>
-    <div class="чипи"><span class="чип">хай обере стилістка</span><span class="чип">приглушені</span><span class="чип обр">середні</span><span class="чип">насичені</span></div>
-    <div class="намистини">
-      <span class="нам стил"><i></i>хай обере</span>
-      <span class="нам обр"><i style="background:#21505B"></i>петроль</span>
-      <span class="нам"><i style="background:#9E4730"></i>цегляний</span>
-      <span class="нам"><i style="background:#2E4B3D"></i>хвойний</span>
-      <span class="нам"><i style="background:#D8B0A6"></i>пудровий</span>
-      <span class="нам"><i style="background:#F6F3EC"></i>білий</span>
-    </div>
-    <ul class="схеми">
-      <li class="обр"><svg><rect width="76" height="16" fill="url(#к3-в-нейтр)"/></svg>нейтрали+акцент<span class="вага">найходовіша</span></li>
-      <li><svg><rect width="76" height="16" fill="url(#к3-в-компл)"/></svg>приглушена комплементарна<span class="вага">звичайна</span></li>
-      <li><svg><rect width="76" height="16" fill="url(#к3-в-аналог)"/></svg>аналогова<span class="вага">звичайна</span></li>
-      <li><svg><rect width="76" height="16" fill="url(#к3-в-тріада)"/></svg>тріада<span class="вага">помітна</span></li>
-    </ul>
-  </div>
-  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
-</div><figcaption><b>4 · Палітра.</b> У склі — її обличчя на тлі обраної основи (петроль). Кожна схема — смужка вишивки; обрана перевишиває кінці рушника.</figcaption></figure></div></div></section>
-<section class="ряд-екранів" aria-label="Образ"><h3 class="назва-ряду">Образ</h3><div class="прокрутка"><div class="три"><figure class="телефон к1"><div class="екран" id="к1-е5">
+</div><figcaption><b>4 · Палітра.</b> Основи — «таблиця фарб» друкаря з підписами Serif; вибір — рамка кіноварю; рідші схеми стоять поруч, клікабельні.</figcaption></figure><figure class="телефон к1"><div class="екран" id="к1-е5">
   <div class="фоліо">Образи · <b>1</b> / 4</div>
   <div class="вміст" style="gap:10px">
     <div class="пейджер"><span>‹</span><b>Перший образ</b><span>1 / 4 ›</span></div>
@@ -913,7 +686,145 @@ footer code,p code,li code{font-size:12px}
       <div class="чипи"><span class="чип">вдягну як є</span><span class="чип">змінила б одну річ</span><span class="чип">не вдягну</span></div></div>
   </div>
   <nav class="закладки"><span class="закладка">Сценарій</span><span class="закладка поточна">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
-</div><figcaption><b>5 · Картка образу.</b> Колаж — вклейка в подвійній рамці; речі — зміст із відточієм до ціни; «замінити» міняє річ лише в цьому образі.</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е5">
+</div><figcaption><b>5 · Картка образу.</b> Колаж — вклейка в подвійній рамці; речі — зміст із відточієм до ціни; «замінити» міняє річ лише в цьому образі.</figcaption></figure></div>
+  <div class="опис"><div class="блок"><h3>Шлях жінки</h3><dl>
+      <dt>Профіль</dt><dd>три кроки, як у показі; кожен відкривається буквицею, поради — глосою з ¶</dd>
+      <dt>Сценарій</dt><dd>розлінований аркуш листа з полем кіноварю; 7 плиток + «Інше» — тихим змістом під листом; паспорт — «зміст» з відточієм</dd>
+      <dt>Палітра</dt><dd>окремий екран; основи — таблиця фарб друкаря</dd>
+      <dt>Збирання</dt><dd>верстат лишається, статуси ті самі</dd>
+      <dt>Образи</dt><dd>по одному, «1 / 4»; речі — зміст до ціни, «замінити» кіновар'ю</dd></dl></div><div class="блок"><h3>Палітра й контраст (WCAG)</h3><ul class="зразки">
+      <li><i style="background:#FAF8F3"></i>аркуш, тло<code>#FAF8F3</code></li>
+      <li><i style="background:#F0EDE5"></i>поле сторінки<code>#F0EDE5</code></li>
+      <li><i style="background:#1E1C19"></i>чорнило: текст (16,0 : 1)<code>#1E1C19</code></li>
+      <li><i style="background:#6A655C"></i>олівець: другорядне (5,5 : 1)<code>#6A655C</code></li>
+      <li><i style="background:#B2321C"></i>кіновар: дія, рубрика (біле на ній 6,2 : 1)<code>#B2321C</code></li></ul>
+      <p class="дрібно" style="margin-top:8px">Один акцент — кіновар; золото йде. Ніч не намальована.</p></div><div class="блок"><h3>Шрифти</h3><ul>
+      <li>Kyiv*Type Titling, контраст CONT 900–1000 — знак, буквиці, заголовки</li>
+      <li>Kyiv*Type Serif — голос стилістки й підписи фарб</li>
+      <li>Fixel Text 400 / 500 / 600 — розмова й керування</li></ul></div><div class="блок"><h3>Один прийом — і що прибирається</h3><p><b>Рубрикація</b>: кіновар лише для того, що веде; буквиця; ¶ для порад; «зміст» з відточієм.</p>
+      <p class="дрібно">Прибирається: мережка, витинанка, намистини-чипи, «ї»-крапки, скоси Кричевського.</p></div><div class="блок"><h3>Рішення власника</h3><ol>
+      <li>Кіновар замість золота як єдиний акцент.</li>
+      <li>Буквиця на кожному екрані чи лише на першому екрані розділу.</li>
+      <li>Прибрати мережку, витинанку, намистини й «ї»-крапки.</li>
+      <li>Речі образу — «змістом» з відточієм до ціни.</li></ol></div><div class="блок"><h3>Ризики</h3><p>Найтихіша: може видатися «просто гарною редакційною версткою»; світле тло з засічками й червоним акцентом — поширений вигляд. Буквиці щодня можуть набриднути.</p></div><div class="блок"><h3>Упровадження (оцінка)</h3><p><b>6 нарядів</b>: токени й акцент; буквиця й рубрики; аркуш листа й плитки; паспорт-зміст; таблиця фарб; картка-зміст і прибирання мотивів. Нової логіки нема.</p></div><div class="блок"><h3>Перевірка на тестувальницях</h3><p>Екран без знака серед двох чужих — чи впізнають; чи знаходять «замінити» в змісті; чи читається ціна через відточіє.</p></div></div>
+</section>
+
+<section class="концепція к2-мітка" id="к2" aria-label="К2">
+  <div class="голова">
+      <div class="рядок"><span class="мітка-к">К2</span><b>Вербівка</b></div>
+      <span class="корінь">Вербівка й Скопці 1915–1917 · Екстер · Богомазов · ковдра Делоне</span>
+      <p>Київський авангард, вишитий руками. Площини, коло, смуга; межа — «стібок» (пунктир). Колір площин
+      береться з її палітри, хром лише чорно-білий, тож інтерфейс щоразу зібраний з її барв.</p>
+  </div>
+  <div class="екрани"><figure class="телефон к2"><div class="екран" id="к2-е1">
+  <div class="вміст">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
+    <div class="нитка"><b>Крок 2 з 3</b><i class="було"></i><i class="тут"></i><i></i><span>До лиця</span></div>
+    <h2 class="великий">Що тобі <em>до лиця.</em></h2>
+    <p class="підзаголовок">З яким полем обличчя живіше? Правильної відповіді нема — є твоя.</p>
+    <div class="диптих">
+      <svg viewBox="0 0 390 278" width="390" height="278" aria-label="Обличчя між золотом і сріблом">
+        <polygon points="0,18 214,0 196,278 0,278" fill="#C9A227"/>
+        <polygon points="214,0 390,30 390,278 196,278" fill="#B8BDC2"/>
+        <circle cx="200" cy="132" r="78" fill="#F1E3D8"/>
+        <circle cx="200" cy="132" r="78" fill="none" stroke="#141518" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <ellipse cx="200" cy="120" rx="34" ry="42" fill="#E4CDBD"/>
+        <path d="M150 210c10-34 90-34 100 0" fill="#E4CDBD"/>
+        <rect x="24" y="226" width="60" height="6" fill="#141518"/>
+      </svg>
+      <span class="підпис" style="left:24px;color:#141518">Золото</span>
+      <span class="підпис" style="right:24px;color:#141518">Срібло</span>
+    </div>
+    <div class="мітка">Золото чи срібло біля обличчя</div>
+    <div class="варіанти"><span class="варіант обр">Золото</span><span class="варіант">Срібло</span><span class="варіант">Обидва однаково</span></div>
+    <ul class="ще-питання">
+      <li><span class="пара"><i style="background:#fff"></i><i style="background:#F4E9D2"></i></span>Білий чи молочний<span>далі</span></li>
+      <li><span class="пара"><i style="background:#C8B49D"></i><i style="background:#A9B0BA"></i></span>Теплі чи холодні нейтралі<span>далі</span></li>
+    </ul>
+    <div class="рядок-дій" style="margin-top:auto;margin-bottom:12px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#к2-і-стрілка"/></svg></span></div>
+  </div>
+</div><figcaption><b>1 · Знайомство.</b> Питання «золото чи срібло» стає композицією: дві площини й обличчя між ними; обране — чорним зі «стібком».</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е2">
+  <svg class="площини" viewBox="0 0 390 844" preserveAspectRatio="none" aria-hidden="true">
+    <rect x="262" y="150" width="170" height="170" fill="var(--п1)" transform="rotate(14 346 235)"/>
+    <circle cx="300" cy="372" r="56" fill="var(--п2)"/>
+  </svg>
+  <div class="вміст">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
+    <h2 class="великий" style="font-size:54px;max-width:300px">Куди ти <em>збираєшся?</em></h2>
+    <div class="лист">
+      <p>Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.</p>
+      <div class="кнопки"><span class="кр" title="Додати фото речі"><svg><use href="#к2-і-камера"/></svg></span><span class="кр" title="Сказати голосом"><svg><use href="#к2-і-мікрофон"/></svg></span><span class="кр їде" title="Надіслати"><svg><use href="#к2-і-стрілка"/></svg></span></div>
+    </div>
+    <div class="приклади"><span>Іду на побачення в ресторан, увечері. Обіцяють дощ</span><span>Завтра презентація для клієнта в офісі</span><span>Прогулянка з дитиною в парку, +8 і вітер</span></div>
+    <div style="display:grid;gap:6px">
+      <span class="мітка">Або заповнити рукою</span>
+      <div class="плитки">
+        <div class="плитка"><svg style="fill:var(--п2)"><use href="#к2-ф-смуга"/></svg><b>Спорт, активність</b></div>
+        <div class="плитка"><svg style="fill:var(--п1)"><use href="#к2-ф-трикутник"/></svg><b>Подорож</b><small>у дорозі: переліт, поїзд</small></div>
+        <div class="плитка"><svg style="fill:var(--п4)"><use href="#к2-ф-квадрат"/></svg><b>Звичайний день</b><small>прогулянка, справи</small></div>
+        <div class="плитка"><svg style="fill:var(--п3)"><use href="#к2-ф-коло"/></svg><b>Побачення</b></div>
+        <div class="плитка"><svg style="fill:var(--п1)"><use href="#к2-ф-півколо"/></svg><b>Театр, концерт</b></div>
+        <div class="плитка"><svg style="fill:var(--чорне)"><use href="#к2-ф-ромб"/></svg><b>Робота</b><small>зустріч, презентація, співбесіда</small></div>
+        <div class="плитка"><svg style="fill:var(--п2)"><use href="#к2-ф-хрест"/></svg><b>Свято, вечірка</b><small>день народження, Новий рік</small></div>
+        <div class="плитка інше"><b>Інше</b><small>скажу словами</small></div>
+      </div>
+    </div>
+  </div>
+  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
+</div><figcaption><b>2 · Аркуш листа.</b> Аркуш — біла площина з вишитою межею поверх композиції з її кольорів; плитки — фігури замість піктограм.</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е3">
+  <div class="вміст" style="gap:12px">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
+    <div class="вона">Іду на побачення в ресторан, увечері. Обіцяють дощ</div>
+    <div class="стилістка">Зрозуміла: побачення в ресторані ввечері, під дощем. Наскільки ошатно там буде?
+      <small>Можна не відповідати — образи зберуться й так.</small></div>
+    <div class="паспорт">
+      <div class="паспорт-шапка"><b>Новий сценарій</b><small>не збережений</small></div>
+      <ul class="рядки">
+        <li><span class="під">Нагода</span><span>Побачення</span></li>
+        <li><span class="під">Де</span><span>Заклад <span class="типово">— типово для нагоди</span></span></li>
+        <li><span class="під">Ошатність</span><span class="типово">не обрано</span></li>
+        <li><span class="під">Коли й погода</span><span>ввечері, дощ</span></li>
+        <li><span class="під">Палітра</span><span class="типово">хай обере стилістка</span></li>
+        <li><span class="під">Додати</span><span class="типово">макіяж, прикраси, мета</span></li>
+      </ul>
+      <div class="так-ні"><span>Усе правильно?</span><span>так</span><span>поправити</span></div>
+      <span class="дія">Зібрати образи <svg><use href="#к2-і-стрілка"/></svg></span>
+    </div>
+  </div>
+  <div class="низ-розмови">
+    <div class="швидкі"><span>буденно</span><span>охайно буденно</span><span>ділово, м'яко</span><span>на твій розсуд</span></div>
+    <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#к2-і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#к2-і-стрілка"/></svg></span></div>
+  </div>
+  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
+</div><figcaption><b>3 · Розмова.</b> Її слова — на площині її пудрового; голос стилістки — Serif на білому зі смугою петролю; паспорт — «вишиті» рядки.</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е4">
+  <div class="вміст" style="gap:11px">
+    <div class="шапка"><span style="font-size:13px">← До сценарію</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
+    <h2 class="великий" style="font-size:44px">Палітра <em>образу.</em></h2>
+    <p class="підзаголовок">Основа — головний колір, на якому стоїть образ. Не знаєш — лиши «хай обере стилістка».</p>
+    <span class="мітка">Гама</span>
+    <div class="чипи"><span class="чип">хай обере стилістка</span><span class="чип">приглушені</span><span class="чип обр">середні</span><span class="чип">насичені</span></div>
+    <span class="мітка">Основа</span>
+    <div class="ковдра">
+      <div class="клапоть стил" style="grid-column:span 2">хай обере стилістка</div>
+      <div class="клапоть обр" style="grid-column:span 4;grid-row:span 2;background:var(--п1)">петроль · стилістка</div>
+      <div class="клапоть" style="grid-column:span 2;background:var(--п2)">цегляний</div>
+      <div class="клапоть" style="grid-column:span 3;background:var(--п4)">хвойний</div>
+      <div class="клапоть світлий" style="grid-column:span 3;background:var(--п3)">пудровий · м'яка</div>
+      <div class="клапоть" style="grid-column:span 2;background:#5B2E48">сливовий</div>
+      <div class="клапоть" style="grid-column:span 2;background:#3A3C40">графіт · нейтраль</div>
+      <div class="клапоть світлий" style="grid-column:span 2;background:#F6F3EC">білий · нейтраль</div>
+    </div>
+    <span class="підзаголовок" style="font-size:12.5px">ще 6 основ у цій гамі — не радимо, але можна</span>
+    <span class="мітка">Схема</span>
+    <div class="схеми">
+      <div class="схема обр"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:#F6F3EC"></i><i style="flex:1;background:var(--п2)"></i></span><span><b>нейтрали+акцент</b> · <small>найходовіша</small></span></div>
+      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:#B9A58A"></i><i style="flex:1;background:#A4583E"></i></span><span><b>приглушена комплементарна</b> · <small>звичайна</small></span></div>
+      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:var(--п4)"></i><i style="flex:1;background:#3E7A86"></i></span><span><b>аналогова</b> · <small>звичайна</small></span></div>
+      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:var(--п2)"></i><i style="flex:1;background:var(--п5)"></i></span><span><b>тріада</b> · <small>помітна</small></span></div>
+    </div>
+  </div>
+  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
+</div><figcaption><b>4 · Палітра.</b> Основи — ковдра з клаптів: обрана основа найбільша, сусіди видно поруч. Схема — пропорція 6 : 3 : 1, а не три однакові кружечки.</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е5">
   <div class="вміст" style="gap:10px">
     <div class="пейджер"><span>‹ попередній</span><b>Перший образ</b><span>1 / 4 ›</span></div>
     <div class="образ-верх">
@@ -943,7 +854,129 @@ footer code,p code,li code{font-size:12px}
     <div class="варіанти"><span class="варіант">вдягну як є</span><span class="варіант">змінила б одну річ</span><span class="варіант">не вдягну</span></div>
   </div>
   <nav class="вкладки"><span class="вкладка">Сценарій</span><span class="вкладка поточна">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
-</div><figcaption><b>5 · Образ.</b> Ліворуч — «формула»: колонка площин за часткою кожної речі в образі; той самий колір — мітка речі в списку.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е5">
+</div><figcaption><b>5 · Образ.</b> Ліворуч — «формула»: колонка площин за часткою кожної речі в образі; той самий колір — мітка речі в списку.</figcaption></figure></div>
+  <div class="опис"><div class="блок"><h3>Шлях жінки</h3><dl>
+      <dt>Профіль</dt><dd>питання стають композицією: золото й срібло — дві площини, обличчя між ними</dd>
+      <dt>Сценарій</dt><dd>аркуш листа — біла площина з межею-стібком поверх площин її кольорів; плитки — фігури</dd>
+      <dt>Палітра</dt><dd>основи — «ковдра» з клаптів; схема — пропорція 6 : 3 : 1</dd>
+      <dt>Збирання</dt><dd>верстат, нитки — її основа (у макеті не намальовано)</dd>
+      <dt>Образи</dt><dd>«формула» — колонка площин за часткою кожної речі; той самий колір мітить річ у списку</dd></dl></div><div class="блок"><h3>Палітра й контраст (WCAG)</h3><ul class="зразки">
+      <li><i style="background:#ECEBE6"></i>льон, тло<code>#ECEBE6</code></li>
+      <li><i style="background:#FFFFFF"></i>біле: площини керування<code>#FFFFFF</code></li>
+      <li><i style="background:#141518"></i>чорне: текст, кнопка (15,3 : 1)<code>#141518</code></li>
+      <li><i style="background:#5C5E63"></i>графіт: другорядне (5,4 : 1)<code>#5C5E63</code></li>
+      <li><i style="background:#21505B"></i>її петроль — приклад (біле 8,9 : 1)<code>#21505B</code></li>
+      <li><i style="background:#9E4730"></i>її цегляний (біле 6,2 : 1)<code>#9E4730</code></li>
+      <li><i style="background:#D8B0A6"></i>її пудровий (чорне 9,3 : 1)<code>#D8B0A6</code></li></ul>
+      <p class="дрібно" style="margin-top:8px">Площини беруться з профілю; без профілю — лише чорне й біле.</p></div><div class="блок"><h3>Шрифти</h3><ul>
+      <li>Kyiv*Type Titling, вага 850, CONT 0 — важкі заголовки без контрасту, знак</li>
+      <li>Kyiv*Type Serif — голос стилістки</li>
+      <li>Fixel Text 400 / 500 / 600 — решта</li></ul></div><div class="блок"><h3>Один прийом — і що прибирається</h3><p><b>Площина й стібок</b>: геометрія з її кольорів, межа — пунктир, як вишита.</p>
+      <p class="дрібно">Прибирається: «біле по білому», витинанка, рушникові смуги, золото.</p></div><div class="блок"><h3>Рішення власника</h3><ol>
+      <li>Хром бере кольори з палітри профілю; без профілю — чорне й біле.</li>
+      <li>Важкий Kyiv*Type без контрасту для заголовків.</li>
+      <li>«Формула» образу ліворуч від колажу.</li>
+      <li>Основи палітри — «ковдрою» замість сітки.</li></ol></div><div class="блок"><h3>Ризики</h3><p>Найгучніша: площини можуть сперечатися з фото речей. Без профілю кольорів нема — потрібен продуманий нейтральний стан. «Ковдра» менш звична за сітку.</p></div><div class="блок"><h3>Упровадження (оцінка)</h3><p><b>8 нарядів</b>: токени й хром; площини з палітри й стан без профілю; стібок; плитки-фігури; ковдра; формула образу; ніч; ноутбук. Нова логіка — колір хрому з профілю.</p></div><div class="блок"><h3>Перевірка на тестувальницях</h3><p>Чи не заважають площини фото речей; чи помічають, що кольори інтерфейсу — її; чи зрозуміла «формула» образу.</p></div></div>
+</section>
+
+<section class="концепція к3-мітка" id="к3" aria-label="К3">
+  <div class="голова">
+      <div class="рядок"><span class="мітка-к">К3</span><b>Люстерко в рушнику</b></div>
+      <span class="корінь">Кілковий рушник над дзеркалом · люстерко · Сковорода, «пізнай себе»</span>
+      <p>Замість екранів і вкладок — один предмет. У склі видно те, що стилістка зрозуміла; під склом — розмова.
+      Кінці рушника над люстерком вишиваються її кольорами; профіль — зворот люстерка.</p>
+  </div>
+  <div class="екрани"><figure class="телефон к3"><div class="екран" id="к3-е1">
+  <div class="шапка"><span></span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="оправа-пів"><span style="left:-14px">Золото</span><span style="right:-14px">Срібло</span></div>
+    <div class="скло туман золото-срібло"><svg width="200" height="240" style="filter:blur(2.2px);opacity:.75;margin-top:60px"><use href="#к3-обличчя"/></svg></div>
+    <svg class="рушник"><use href="#к3-рушник"/></svg>
+  </div>
+  <div class="під-склом">
+    <div class="поступ"><span class="тут">Ще туманно</span><span>Проступають обриси</span><span>Вимальовується</span><span>Готово</span></div>
+    <div style="display:grid;gap:4px;justify-items:center"><span class="мітка">Крок 2 з 3 · До лиця</span>
+      <h2 class="заголовок">Що тобі до лиця.</h2></div>
+    <div style="display:grid;gap:7px"><span class="мітка" style="text-align:center">Золото чи срібло біля обличчя</span>
+      <div class="варіанти"><span class="варіант">Золото</span><span class="варіант">Срібло</span><span class="варіант">Обидва однаково</span></div></div>
+    <div class="рядок-дій" style="margin-top:auto;margin-bottom:10px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#к3-і-стрілка"/></svg></span></div>
+  </div>
+</div><figcaption><b>1 · Знайомство.</b> Оправа сама стає питанням: ліва половина золота, права срібна, обличчя між ними. Рушник ще полотняний — профілю нема.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е2">
+  <div class="шапка"><span>Збережені</span><span class="знак">люстерко</span><span class="праворуч"><span>Новий</span><span class="ніч">Ніч</span></span></div>
+  <div class="лист">
+    <p>Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.</p>
+    <div class="кнопки"><span class="кр" title="Додати фото речі"><svg><use href="#к3-і-камера"/></svg></span><span class="кр" title="Сказати голосом"><svg><use href="#к3-і-мікрофон"/></svg></span><span class="кр їде" title="Надіслати"><svg><use href="#к3-і-стрілка"/></svg></span></div>
+  </div>
+  <div class="люстро над">
+    <div class="скло туман"><span style="font:400 33px/1.15 var(--голос);font-variation-settings:'CONT' 200;color:#66727A;text-shadow:0 0 6px rgba(255,255,255,.9);filter:blur(.35px);max-width:190px">Куди ти збираєшся?</span></div>
+    <svg class="рушник" style="--кінці:url(#к3-в-її)"><use href="#к3-рушник"/></svg>
+  </div>
+  <div class="під-склом" style="top:566px;gap:8px">
+    <div class="приклади"><span>Іду на побачення в ресторан, увечері. Обіцяють дощ</span><span>Завтра презентація для клієнта в офісі</span></div>
+    <span class="мітка">Або заповнити рукою</span>
+    <div class="плитки">
+      <div class="плитка"><b>Спорт, активність</b></div>
+      <div class="плитка"><b>Подорож</b><small>у дорозі: переліт, поїзд</small></div>
+      <div class="плитка"><b>Звичайний день</b><small>прогулянка, справи</small></div>
+      <div class="плитка"><b>Побачення</b></div>
+      <div class="плитка"><b>Театр, концерт</b></div>
+      <div class="плитка"><b>Робота</b><small>зустріч, презентація…</small></div>
+      <div class="плитка"><b>Свято, вечірка</b><small>день народження…</small></div>
+      <div class="плитка" style="border-style:dashed"><b>Інше</b><small>скажу словами</small></div>
+    </div>
+  </div>
+  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
+</div><figcaption><b>2 · Аркуш листа.</b> На запітнілому склі — «Куди ти збираєшся?», ніби пальцем; лист засунуто за раму. Кінці рушника вже вишито її кольорами.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е3">
+  <div class="шапка"><span>Збережені</span><span class="знак">люстерко</span><span class="праворуч"><span>Новий</span><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="скло"><div class="дощ"></div>
+      <div class="відбиття" style="position:relative">
+        <span class="мітка">Новий сценарій</span>
+        <span class="гол">Побачення</span>
+        <span class="р"><small>Де</small>Заклад <span class="типово">— типово</span></span>
+        <span class="р"><small>Ошатність</small><span class="типово">не обрано</span></span>
+        <span class="р"><small>Коли й погода</small>ввечері, дощ</span>
+        <span class="р"><small>Палітра</small><span class="типово">хай обере стилістка</span></span>
+        <span class="р" style="font-size:11px"><span class="типово">+ макіяж, прикраси, мета</span></span>
+        <div class="так-ні"><span>Усе правильно?</span><span>так</span><span>поправити</span></div>
+      </div></div>
+    <svg class="рушник" style="--кінці:url(#к3-в-її)"><use href="#к3-рушник"/></svg>
+  </div>
+  <div class="під-склом" style="gap:9px">
+    <div class="вона">ти: <b>Іду на побачення в ресторан, увечері. Обіцяють дощ</b></div>
+    <p class="субтитр">Зрозуміла: побачення в ресторані ввечері, під дощем. Наскільки ошатно там буде?<small>Можна не відповідати — образи зберуться й так.</small></p>
+    <div class="швидкі"><span>буденно</span><span>охайно буденно</span><span>ділово, м'яко</span><span>на твій розсуд</span></div>
+    <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#к3-і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#к3-і-стрілка"/></svg></span></div>
+    <span class="дія">Зібрати образи <svg><use href="#к3-і-стрілка"/></svg></span>
+  </div>
+  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
+</div><figcaption><b>3 · Розмова.</b> Скло — паспорт: що стилістка зрозуміла (дощ — на склі). Її відповідь — субтитром під склом; рядок правиться дотиком по склу.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е4">
+  <div class="шапка"><span>← До сценарію</span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="скло" style="background:radial-gradient(90% 80% at 40% 30%,#2E6672 0%,#21505B 55%,#173C45 100%)"><svg width="200" height="240" style="margin-top:96px"><use href="#к3-обличчя"/></svg></div>
+    <svg class="рушник" style="--кінці:url(#к3-в-нейтр)"><use href="#к3-рушник"/></svg>
+  </div>
+  <div class="під-склом" style="gap:9px">
+    <div style="display:grid;gap:2px;justify-items:center"><h2 class="заголовок" style="font-size:23px">Палітра образу.</h2>
+      <span style="font-size:12px;color:var(--олівець);text-align:center">Основа — головний колір, на якому стоїть образ. Не знаєш — лиши «хай обере стилістка».</span></div>
+    <div class="чипи"><span class="чип">хай обере стилістка</span><span class="чип">приглушені</span><span class="чип обр">середні</span><span class="чип">насичені</span></div>
+    <div class="намистини">
+      <span class="нам стил"><i></i>хай обере</span>
+      <span class="нам обр"><i style="background:#21505B"></i>петроль</span>
+      <span class="нам"><i style="background:#9E4730"></i>цегляний</span>
+      <span class="нам"><i style="background:#2E4B3D"></i>хвойний</span>
+      <span class="нам"><i style="background:#D8B0A6"></i>пудровий</span>
+      <span class="нам"><i style="background:#F6F3EC"></i>білий</span>
+    </div>
+    <ul class="схеми">
+      <li class="обр"><svg><rect width="76" height="16" fill="url(#к3-в-нейтр)"/></svg>нейтрали+акцент<span class="вага">найходовіша</span></li>
+      <li><svg><rect width="76" height="16" fill="url(#к3-в-компл)"/></svg>приглушена комплементарна<span class="вага">звичайна</span></li>
+      <li><svg><rect width="76" height="16" fill="url(#к3-в-аналог)"/></svg>аналогова<span class="вага">звичайна</span></li>
+      <li><svg><rect width="76" height="16" fill="url(#к3-в-тріада)"/></svg>тріада<span class="вага">помітна</span></li>
+    </ul>
+  </div>
+  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
+</div><figcaption><b>4 · Палітра.</b> У склі — її обличчя на тлі обраної основи (петроль). Кожна схема — смужка вишивки; обрана перевишиває кінці рушника.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е5">
   <div class="шапка"><span>‹ 1 / 4 ›</span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
   <div class="люстро">
     <div class="скло біле">
@@ -974,8 +1007,7 @@ footer code,p code,li code{font-size:12px}
     <div class="варіанти"><span class="варіант">вдягну як є</span><span class="варіант">змінила б одну річ</span><span class="варіант">не вдягну</span></div>
   </div>
   <nav class="сторони"><span class="сторона">Сценарій</span><span class="сторона тут">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
-</div><figcaption><b>5 · Образ.</b> Образ — у склі, на білому; речі пронумеровано точками. Дотик по речі — «замінити» лише її; інші образи й решта цього стоять.</figcaption></figure></div></div></section>
-<section class="ряд-екранів" aria-label="Профіль"><h3 class="назва-ряду">Профіль</h3><div class="прокрутка"><div class="три"><div class="без-екрана к1-мітка"><p>Профіль — як у показі: огляд рядками, кожен рядок відкриває свій аркуш; змінюються лише токени концепції.</p></div><div class="без-екрана к2-мітка"><p>Профіль — як у показі: огляд рядками, кожен рядок відкриває свій аркуш; змінюються лише токени концепції.</p></div><figure class="телефон к3"><div class="екран" id="к3-е6">
+</div><figcaption><b>5 · Образ.</b> Образ — у склі, на білому; речі пронумеровано точками. Дотик по речі — «замінити» лише її; інші образи й решта цього стоять.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е6">
   <div class="шапка"><span></span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
   <div class="люстро">
     <div class="скло зворот"><div class="гравюра"><small>Твій профіль</small><b>Оля К.</b>
@@ -995,118 +1027,28 @@ footer code,p code,li code{font-size:12px}
     </ul>
   </div>
   <nav class="сторони"><span class="сторона">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона тут">Профіль</span></nav>
-</div><figcaption><b>6 · Профіль.</b> Зворот люстерка: ім'я й емаль її кольорів; рядки огляду — ті самі, що в показі, кожен відкриває свій аркуш.</figcaption></figure></div></div></section>
-</div>
-
-<section class="характеристики" aria-label="Характеристики">
-  <div class="хар"><h3>Шлях жінки</h3>
-    <div><span class="мітка-к к1-тло">К1</span><dl>
-      <dt>Профіль</dt><dd>три кроки, як у показі; кожен відкривається буквицею, поради — глосою з ¶</dd>
-      <dt>Сценарій</dt><dd>розлінований аркуш листа з полем кіноварю; 7 плиток + «Інше» — тихим змістом під листом; паспорт — «зміст» з відточієм</dd>
-      <dt>Палітра</dt><dd>окремий екран; основи — таблиця фарб друкаря</dd>
-      <dt>Збирання</dt><dd>верстат лишається, статуси ті самі</dd>
-      <dt>Образи</dt><dd>по одному, «1 / 4»; речі — зміст до ціни, «замінити» кіновар'ю</dd></dl></div>
-    <div><span class="мітка-к к2-тло">К2</span><dl>
-      <dt>Профіль</dt><dd>питання стають композицією: золото й срібло — дві площини, обличчя між ними</dd>
-      <dt>Сценарій</dt><dd>аркуш листа — біла площина з межею-стібком поверх площин її кольорів; плитки — фігури</dd>
-      <dt>Палітра</dt><dd>основи — «ковдра» з клаптів; схема — пропорція 6 : 3 : 1</dd>
-      <dt>Збирання</dt><dd>верстат, нитки — її основа (у макеті не намальовано)</dd>
-      <dt>Образи</dt><dd>«формула» — колонка площин за часткою кожної речі; той самий колір мітить річ у списку</dd></dl></div>
-    <div><span class="мітка-к к3-тло">К3</span><dl>
+</div><figcaption><b>6 · Профіль.</b> Зворот люстерка: ім'я й емаль її кольорів; рядки огляду — ті самі, що в показі, кожен відкриває свій аркуш.</figcaption></figure></div>
+  <div class="опис"><div class="блок"><h3>Шлях жінки</h3><dl>
       <dt>Профіль</dt><dd>туман у склі розходиться з кожним кроком: «Ще туманно → … → Готово»; оправа сама питає «золото чи срібло»; далі профіль — зворот люстерка</dd>
       <dt>Сценарій</dt><dd>на запітнілому склі — «Куди ти збираєшся?», лист засунуто за раму; після відповіді в склі — паспорт, правка дотиком по склу; репліка стилістки — субтитром</dd>
       <dt>Палітра</dt><dd>у склі — обличчя на тлі основи; схеми — смужки вишивки; обрана перевишиває рушник</dd>
       <dt>Збирання</dt><dd>той самий туман у склі замість окремого екрана</dd>
-      <dt>Образи</dt><dd>образ у склі з точками речей; дотик по речі — «замінити» лише її</dd></dl></div>
-  </div>
-
-  <div class="хар"><h3>Палітра й контраст (WCAG)</h3>
-    <div><span class="мітка-к к1-тло">К1</span><ul class="зразки">
-      <li><i style="background:#FAF8F3"></i>аркуш, тло<code>#FAF8F3</code></li>
-      <li><i style="background:#F0EDE5"></i>поле сторінки<code>#F0EDE5</code></li>
-      <li><i style="background:#1E1C19"></i>чорнило: текст (16,0 : 1)<code>#1E1C19</code></li>
-      <li><i style="background:#6A655C"></i>олівець: другорядне (5,5 : 1)<code>#6A655C</code></li>
-      <li><i style="background:#B2321C"></i>кіновар: дія, рубрика (біле на ній 6,2 : 1)<code>#B2321C</code></li></ul>
-      <p class="дрібно" style="margin-top:8px">Один акцент — кіновар; золото йде. Ніч не намальована.</p></div>
-    <div><span class="мітка-к к2-тло">К2</span><ul class="зразки">
-      <li><i style="background:#ECEBE6"></i>льон, тло<code>#ECEBE6</code></li>
-      <li><i style="background:#FFFFFF"></i>біле: площини керування<code>#FFFFFF</code></li>
-      <li><i style="background:#141518"></i>чорне: текст, кнопка (15,3 : 1)<code>#141518</code></li>
-      <li><i style="background:#5C5E63"></i>графіт: другорядне (5,4 : 1)<code>#5C5E63</code></li>
-      <li><i style="background:#21505B"></i>її петроль — приклад (біле 8,9 : 1)<code>#21505B</code></li>
-      <li><i style="background:#9E4730"></i>її цегляний (біле 6,2 : 1)<code>#9E4730</code></li>
-      <li><i style="background:#D8B0A6"></i>її пудровий (чорне 9,3 : 1)<code>#D8B0A6</code></li></ul>
-      <p class="дрібно" style="margin-top:8px">Площини беруться з профілю; без профілю — лише чорне й біле.</p></div>
-    <div><span class="мітка-к к3-тло">К3</span><ul class="зразки">
+      <dt>Образи</dt><dd>образ у склі з точками речей; дотик по речі — «замінити» лише її</dd></dl></div><div class="блок"><h3>Палітра й контраст (WCAG)</h3><ul class="зразки">
       <li><i style="background:#EEF0EF"></i>стіна, тло<code>#EEF0EF</code></li>
       <li><i style="background:linear-gradient(158deg,#E8ECED,#C3CBCE)"></i>скло<code>#E8ECED → #C3CBCE</code></li>
       <li><i style="background:#1F2226"></i>чорне: текст, кнопка (14,0 : 1)<code>#1F2226</code></li>
       <li><i style="background:#5F656A"></i>олівець: другорядне (5,2 : 1)<code>#5F656A</code></li>
       <li><i style="background:#E9E2D3"></i>льон рушника<code>#E9E2D3</code></li>
       <li><i style="background:#66727A"></i>напис на запітнілому склі (≥ 3,5 : 1, кегль 33)<code>#66727A</code></li></ul>
-      <p class="дрібно" style="margin-top:8px">Вишивка рушника — її палітра; обрана схема перевишиває кінці.</p></div>
-  </div>
-
-  <div class="хар"><h3>Шрифти</h3>
-    <div><span class="мітка-к к1-тло">К1</span><ul>
-      <li>Kyiv*Type Titling, контраст CONT 900–1000 — знак, буквиці, заголовки</li>
-      <li>Kyiv*Type Serif — голос стилістки й підписи фарб</li>
-      <li>Fixel Text 400 / 500 / 600 — розмова й керування</li></ul></div>
-    <div><span class="мітка-к к2-тло">К2</span><ul>
-      <li>Kyiv*Type Titling, вага 850, CONT 0 — важкі заголовки без контрасту, знак</li>
-      <li>Kyiv*Type Serif — голос стилістки</li>
-      <li>Fixel Text 400 / 500 / 600 — решта</li></ul></div>
-    <div><span class="мітка-к к3-тло">К3</span><ul>
+      <p class="дрібно" style="margin-top:8px">Вишивка рушника — її палітра; обрана схема перевишиває кінці.</p></div><div class="блок"><h3>Шрифти</h3><ul>
       <li>Kyiv*Type Titling, CONT 600–760 — знак, заголовки, нагода в склі</li>
       <li>Kyiv*Type Serif — субтитр стилістки, напис на склі</li>
-      <li>Fixel Text 400 / 500 / 600 — керування</li></ul></div>
-    <p class="дрібно" style="grid-column:1/-1;margin:0">У всіх трьох — ті самі файли, що в показі: Titling 214,8 КБ і Serif 192,5 КБ (TTF, змінні осі <code>wght</code> і <code>CONT</code>, без перепакування за ліцензією), Fixel Text 46,0 / 55,6 / 56,0 КБ (woff2). Різниться лише роль і положення осі контрасту.</p>
-  </div>
-
-  <div class="хар"><h3>Один прийом — і що прибирається</h3>
-    <div><span class="мітка-к к1-тло">К1</span><p><b>Рубрикація</b>: кіновар лише для того, що веде; буквиця; ¶ для порад; «зміст» з відточієм.</p>
-      <p class="дрібно">Прибирається: мережка, витинанка, намистини-чипи, «ї»-крапки, скоси Кричевського.</p></div>
-    <div><span class="мітка-к к2-тло">К2</span><p><b>Площина й стібок</b>: геометрія з її кольорів, межа — пунктир, як вишита.</p>
-      <p class="дрібно">Прибирається: «біле по білому», витинанка, рушникові смуги, золото.</p></div>
-    <div><span class="мітка-к к3-тло">К3</span><p><b>Рушник над люстерком</b>: орнамент лише на кінцях і лише з її кольорів; скло — носій змісту.</p>
-      <p class="дрібно">Прибирається: усе інше ремісниче; чипи-намистини лишаються.</p></div>
-  </div>
-
-  <div class="хар"><h3>Рішення власника</h3>
-    <div><span class="мітка-к к1-тло">К1</span><ol>
-      <li>Кіновар замість золота як єдиний акцент.</li>
-      <li>Буквиця на кожному екрані чи лише на першому екрані розділу.</li>
-      <li>Прибрати мережку, витинанку, намистини й «ї»-крапки.</li>
-      <li>Речі образу — «змістом» з відточієм до ціни.</li></ol></div>
-    <div><span class="мітка-к к2-тло">К2</span><ol>
-      <li>Хром бере кольори з палітри профілю; без профілю — чорне й біле.</li>
-      <li>Важкий Kyiv*Type без контрасту для заголовків.</li>
-      <li>«Формула» образу ліворуч від колажу.</li>
-      <li>Основи палітри — «ковдрою» замість сітки.</li></ol></div>
-    <div><span class="мітка-к к3-тло">К3</span><ol>
+      <li>Fixel Text 400 / 500 / 600 — керування</li></ul></div><div class="блок"><h3>Один прийом — і що прибирається</h3><p><b>Рушник над люстерком</b>: орнамент лише на кінцях і лише з її кольорів; скло — носій змісту.</p>
+      <p class="дрібно">Прибирається: усе інше ремісниче; чипи-намистини лишаються.</p></div><div class="блок"><h3>Рішення власника</h3><ol>
       <li>Паспорт — у склі, розмова — субтитром з історією за дотиком. Це відступ від п.7 «розмова — чат з аркушем листа».</li>
       <li>Рушник над люстерком: так / лише на звороті / ні.</li>
       <li>Профіль — зворот люстерка замість вкладки-огляду.</li>
-      <li>Туман-статуси на все знайомство й збирання.</li></ol></div>
-  </div>
-
-  <div class="хар"><h3>Ризики</h3>
-    <div><span class="мітка-к к1-тло">К1</span><p>Найтихіша: може видатися «просто гарною редакційною версткою»; світле тло з засічками й червоним акцентом — поширений вигляд. Буквиці щодня можуть набриднути.</p></div>
-    <div><span class="мітка-к к2-тло">К2</span><p>Найгучніша: площини можуть сперечатися з фото речей. Без профілю кольорів нема — потрібен продуманий нейтральний стан. «Ковдра» менш звична за сітку.</p></div>
-    <div><span class="мітка-к к3-тло">К3</span><p>Найдорожча: інша розкладка (зачіпає <code>розмістити_розкладку</code> і ноутбук). Скло тісне: довгий паспорт і 5+ речей прокручуються в склі. Рушник межує з кітчем. Без перевірки з людьми не впроваджувати.</p></div>
-  </div>
-
-  <div class="хар"><h3>Упровадження (оцінка)</h3>
-    <div><span class="мітка-к к1-тло">К1</span><p><b>6 нарядів</b>: токени й акцент; буквиця й рубрики; аркуш листа й плитки; паспорт-зміст; таблиця фарб; картка-зміст і прибирання мотивів. Нової логіки нема.</p></div>
-    <div><span class="мітка-к к2-тло">К2</span><p><b>8 нарядів</b>: токени й хром; площини з палітри й стан без профілю; стібок; плитки-фігури; ковдра; формула образу; ніч; ноутбук. Нова логіка — колір хрому з профілю.</p></div>
-    <div><span class="мітка-к к3-тло">К3</span><p><b>12 нарядів</b>: розкладка-люстерко (і ≥ 900 px); паспорт у склі з правкою дотиком; субтитр та історія; туман-поступ; рушник з палітри; лист за рамою; палітра в склі; образ у склі з локальною заміною; зворот-профіль; ніч; доступність скла; прототип для тестувальниць.</p></div>
-  </div>
-
-  <div class="хар"><h3>Перевірка на тестувальницях</h3>
-    <div><span class="мітка-к к1-тло">К1</span><p>Екран без знака серед двох чужих — чи впізнають; чи знаходять «замінити» в змісті; чи читається ціна через відточіє.</p></div>
-    <div><span class="мітка-к к2-тло">К2</span><p>Чи не заважають площини фото речей; чи помічають, що кольори інтерфейсу — її; чи зрозуміла «формула» образу.</p></div>
-    <div><span class="мітка-к к3-тло">К3</span><p>Чи розуміють, що в склі — їхній сценарій і його можна правити дотиком; чи знаходять профіль на звороті; рушник — свій чи кітч; скільки секунд до «Зібрати образи».</p></div>
-  </div>
+      <li>Туман-статуси на все знайомство й збирання.</li></ol></div><div class="блок"><h3>Ризики</h3><p>Найдорожча: інша розкладка (зачіпає <code>розмістити_розкладку</code> і ноутбук). Скло тісне: довгий паспорт і 5+ речей прокручуються в склі. Рушник межує з кітчем. Без перевірки з людьми не впроваджувати.</p></div><div class="блок"><h3>Упровадження (оцінка)</h3><p><b>12 нарядів</b>: розкладка-люстерко (і ≥ 900 px); паспорт у склі з правкою дотиком; субтитр та історія; туман-поступ; рушник з палітри; лист за рамою; палітра в склі; образ у склі з локальною заміною; зворот-профіль; ніч; доступність скла; прототип для тестувальниць.</p></div><div class="блок"><h3>Перевірка на тестувальницях</h3><p>Чи розуміють, що в склі — їхній сценарій і його можна правити дотиком; чи знаходять профіль на звороті; рушник — свій чи кітч; скільки секунд до «Зібрати образи».</p></div></div>
 </section>
 
 <section aria-labelledby="порівняння">
@@ -1119,7 +1061,7 @@ footer code,p code,li code{font-size:12px}
       <tr><th>Українське джерело</th><td>Острозька Біблія (дві фарби, ініціали), Нарбутова «Абетка»</td><td>Вербівка й Скопці 1915–1917, Екстер, Богомазов, ковдра Делоне</td><td>кілковий рушник над дзеркалом, «люстерко», Сковорода</td></tr>
       <tr><th>Розкладка п.7</th><td>без змін</td><td>без змін</td><td>паспорт у склі й субтитр замість стрічки — рішення власника</td></tr>
       <tr><th>Новий спосіб роботи</th><td>нема</td><td>частково: колір з профілю</td><td>так</td></tr>
-      <tr><th>Шрифти</th><td colspan="3">ті самі файли, що в показі; різняться роль і вісь контрасту</td></tr>
+      <tr><th>Шрифти</th><td colspan="3">У всіх трьох — ті самі файли, що в показі: Titling 214,8 КБ і Serif 192,5 КБ (TTF, змінні осі <code>wght</code> і <code>CONT</code>, без перепакування за ліцензією), Fixel Text 46,0 / 55,6 / 56,0 КБ (woff2). Різниться лише роль і положення осі контрасту.</td></tr>
       <tr><th>Екранів у макеті</th><td class="число">5</td><td class="число">5</td><td class="число">6 (зі зворотом-профілем)</td></tr>
       <tr><th>Рішень власника</th><td class="число">4</td><td class="число">4</td><td class="число">4</td></tr>
       <tr><th>Нарядів (оцінка)</th><td class="число">6</td><td class="число">8</td><td class="число">12</td></tr>
