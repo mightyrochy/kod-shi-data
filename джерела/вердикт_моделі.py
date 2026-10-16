@@ -173,6 +173,8 @@ _БЕЗ_ГЕЙТІВ = {
                  як="think each outfit through against her day item by item: replace an item that will not "
                     "stand the day, or say gently in the outfit's «day» why it stays; write «day» anew "
                     "together with the items"),
+        _ЗП.Поле("item_keys", "what the keys of the items in «verdict» and «showcase» mean, and defaults for omitted values",
+                 як="read every item by these keys; restore every absent key that has an `absent =` default"),
         _ЗП.Поле("verdict", "the code's check of each outfit you put together: «your_outfit» — its items with "
                             "full descriptions, caption and «day» (your sentence about her day in it); "
                             "«your_declared» — the moves you declared in «deliberate»; «structure»; "
