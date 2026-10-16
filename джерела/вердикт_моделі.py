@@ -210,9 +210,13 @@ _БЕЗ_ГЕЙТІВ = {
                              "shine, print or a rich fabric on a garment, three_hue_families — three or "
                              "more colour families; «not_measured» — outfits with an item whose colour the "
                              "code does not know, so it could not measure them",
-                 як="keep at least «keep_at_least» of them among the outfits you return, the ones that "
-                    "answer her occasion best, and do not repair their signs away; an outfit of "
-                    "«not_measured» you judge by its items yourself, and it counts when you find it bold"),
+                 # рядок 5239: «keep at least «keep_at_least» of them among the outfits you return» qwen3.5-9b
+                 # читала як «скільки повернути»: з «keep_at_least: 2» «chosen» із двох — у 8 з 11 пар живих
+                 # 1510 А (без «bold» — 4 з 16)
+                 як="of the «outfits_wanted» outfits you return, at least «keep_at_least» are from these — the "
+                    "ones that answer her occasion best — and do not repair their signs away; it does not "
+                    "change how many you return. An outfit of «not_measured» you judge by its items "
+                    "yourself, and it counts when you find it bold"),
         _ЗП.Поле("set.not_done", "gate findings that still stand in the new check and are not named in «done»",
                  як="give each an entry in «done» of its outfit, or drop the outfit"),
         _ЗП.Поле("showcase", "items you have not taken yet: for missing kinds of items, for kinds where the set "
@@ -234,11 +238,15 @@ _БЕЗ_ГЕЙТІВ = {
         # не міняє і за зауваженнями не сортує — порядок вердикта лише названо таким, що нічого не каже.
         "First choose: in «chosen» name the «outfits_wanted» outfits of «verdict» you keep, and in «why» of "
         "each say what in «case» it answers — her occasion, «intent», «goal», her own words — so that their "
-        "ideas («pole») differ. Read every outfit of «verdict» before you choose: its place in «verdict» is "
-        "only the order they were put together and says nothing about her. Do not choose by how many remarks "
+        "ideas («pole») differ. Read every outfit of «verdict» before you choose: «verdict» comes in an order "
+        "drawn by lot, and an outfit's place in it says nothing about her. Do not choose by how many remarks "
         "an outfit has or how mild they are: an outfit that answers her better stays with its remarks.",
         "«outfits» of the answer are exactly the outfits named in «chosen», in that order, each improved; an "
         "outfit you did not choose is not written.",
+        # СКЛАДАННЯ-ЧИТАННЯ (рядок 4040): ремонт повертав образи по 1–2 речі (лише змінену сукню чи спідницю) —
+        # повнота такі відкидає; у 27 відповідях живих 1510 А 10 образів зі складу 4–6 речей стали трьома
+        "An improved outfit is whole: «items» lists all its items, the ones you kept and the ones you put in; an "
+        "item leaves it only when you replace it or remove it for a finding.",
         # СТЕЛЯ-РЕМОНТУ (рядок 3640; аудит/ПРОДУКТ.md п.17): «fix it, or keep the item and say why in «done»»
         # модель читала як «запис на кожне зауваження»: у 47 записаних відповідях ремонту — 942 записи
         # «done», 56 % символів, і 8 із 8 обривів об стелю 4000 т. — такі; «fixed» стояв і над речами,
@@ -280,8 +288,14 @@ _БЕЗ_ГЕЙТІВ = {
     ),
     вихід="ОБРАЗИ_V1",
     поля_виходу=dict(_ПОЛЯ_ОБРАЗІВ, **{
-        "обрано[].ід": "«id» of an outfit of «verdict» you keep",
-        "обрано[].чому": "what in «case» this outfit answers, a few words",
+        # рядок 5239: у скелеті «chosen» — один запис, і з «keep_at_least: 2» ремонт лишав два образи з п'яти
+        "обрано[].ід": "«id» of an outfit of «verdict» you keep: «chosen» has one entry for each of the "
+                        "«outfits_wanted» outfits",
+        # рядок 4040: «why» у 15 з 88 записів «chosen» живих 1510 А — понад 200 симв. (до 262), у ЖИВІ-16 — роздуми
+        # на 2 тис.
+        "обрано[].чому": "what in «case» this outfit answers: one short sentence, up to 20 words",
+        "образи[].речі": "«n» of each item of the improved outfit, alone: all its items, not only the ones you "
+                         "changed",
         "образи[].ід": "«id» of the «your_outfit» you improved",
         "образи[].виконано[].знахідка": "an «id» from «gates» of this outfit",
         "образи[].виконано[].чому": "only with declined: why you keep it, one sentence",
@@ -291,6 +305,9 @@ _БЕЗ_ГЕЙТІВ = {
     межі=("лише_вхід",),
     мова_промпту="en",
     скелет_наприкінці=True,  # рядок 4531: за схемою відповіді — лише кінець промпту
+    # рядок 5239: за схемою — лише цей рядок; він називає кінець місцем, а не переліком ключів (рядок 4291)
+    наприкінці="Now write your answer: one object of the form above, from {\"version\" to the brace that "
+               "closes it right after «needed». The answer is over at that brace.",
 )
 
 
