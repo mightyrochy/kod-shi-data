@@ -1,0 +1,57 @@
+── ПРОМПТ (7892 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти», ніколи «вона», «її», «їй», «неї» про неї. her skin tone — твій тон шкіри; complements her skin — доповнює колір твоєї шкіри; when she turns her head — коли ти повертаєш голову; makes her stand out — робить тебе помітною; so she can dance — щоб ти могла танцювати; she looks taller — ти виглядаєш вищою; her wish, as she asked — твоє бажання, як ти просила; the impression she wants to make — враження, яке ти хочеш справити. «Вона», «її» лишаються лише про річ (сукню, сумку, куртку).
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня з високою горловиною чорна · colour code: black · about it: text н=1
+2 — Ремінь жіночий Welfare чорний · colour code: black · about it: text н=2
+3 — Угги замшеві чорні KRUMP · colour code: black · about it: text н=3
+4 — Круглі сережки-цвяшки із золота · colour code: golden · about it: text н=4
+5 — Золота каблучка-трансформер з серцем на ланцюжку · colour code: golden · about it: text н=5
+6 — Помаранчевий шкіряний сетчел Sicily · colour code: orange · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; golden — золотий; orange — помаранчевий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This black knit dress features a high neckline, long sleeves, and a slim silhouette that falls to your mid-calf, offering a clean, modern line perfect for evening."},
+{"н": 2, "текст": "A smooth black leather belt with a simple rectangular buckle slides effortlessly around your waist, providing structure without adding bulk."},
+{"н": 3, "текст": "Soft black suede ankle boots sit on a thick platform sole, combining cozy warmth with an elevated, stylish edge for dancing through the night."},
+{"н": 4, "текст": "Classic gold ball studs offer subtle shine at your ears, complementing your warm skin tone and adding a touch of effortless elegance."},
+{"н": 5, "текст": "A silver ring shaped like a heart dangles from a delicate chain on your finger, bringing a playful yet chic detail to your hand."},
+{"н": 6, "текст": "This orange leather handbag has structured top handles and a slouchy shape that carries effortlessly across your day or night out."},
+{"н": 7, "текст": "You are wearing a sleek, form-fitting black knit dress with a high neckline and long sleeves that fall to your mid-calf. A smooth black belt cinches the waist gently without defining it sharply, allowing the outfit to flow down in one continuous line. Your feet are in soft, black suede platform boots that add height and comfort for dancing. To accessorize, you have delicate gold ball earrings catching the light at your ears, a silver chain ring with a heart charm resting on your finger, and a striking orange leather handbag adding a bold splash of color to your ensemble."},
+{"н": 8, "текст": "Wrap the black belt loosely around your waist or let it hang freely depending on how you feel in the moment."},
+{"н": 9, "текст": "Помаранчевий шкіряний сетчел Sicily — Added a large orange leather tote bag; solves the no_bag blocker and introduces a bold color accent that lifts the monochromatic look into celebration mode."},
+{"н": 10, "текст": "Сукня з високою горловиною чорна, Ремінь жіночий Welfare чорний, Угги замшеві чорні KRUMP, Помаранчевий шкіряний сетчел Sicily — The instruction to 'spread colors' resolves potential coordination issues by ensuring the orange bag stands out distinctly against the neutral black and grey base, creating a deliberate and balanced accent."},
+{"н": 11, "текст": "Помаранчевий шкіряний сетчел Sicily — Added an orange leather tote bag; introduces a bold accent color that stands out against the cool blues without overwhelming the look, fulfilling the need for a third piece and festive pop."}
+]
+
+── ВІДПОВІДЬ (2497 симв., 111.9 с, HTTP 200) ──
+```json
+{
+  "1": "Ця чорна в’язана сукня має високий виріз горловини, довгі рукави та приталений силует, який доходить до середини литки. Вона створює чисту й сучасну лінію, ідеально підходящу для вечора.",
+  "2": "Гладкий чорний шкіряний ремінь із простим прямокутним пряжкою легко обхоплює твою талію, надаючи форму без зайвого об’єму.",
+  "3": "М’які чорні замшеві черевики на товстій платформі поєднують затишне тепло зі стильним підняттям для танців цілу ніч.",
+  "4": "Класичні золоті кулькові сережки-цвяшки додають ледь помітний блиск до твоїх вушок, гармонійно доповнюючи колір твоєї шкіри та надаючи нотку бездоганної елегантності.",
+  "5": "Срібне кільце у формі серця звисає на тонкому ланцюжку на твоєму пальці, додаючи грайливу й водночас вишукану деталь до твоїх рук.",
+  "6": "Ця помаранчева шкіряна сумка має структуровані верхні ручки та недбалу форму, яку зручно носити протягом дня чи вечора.",
+  "7": "Ти одягнена в елегантну сукню-водолазку чорного кольору з високим вирізом горловини та довгими рукавами до середини литки. Гладкий чорний ремінь м’яко підкреслює твою талію, не роблячи її різкою, дозволяючи вбранню плавно спускатися вниз однією безперервною лінією. Твої ноги у зручних замшевих черевиках на платформі чорного кольору, які додають висоти й комфорту для танців. Як аксесуари ти маєш ніжні золоті сережки-цвяшки, що ловлять світло біля твоїх вушок, срібне кільце з підвіскою у формі серця на твоєму пальці та яскраву помаранчеву шкіряну сумку, яка додає сміливий колірний акцент до твого образу.",
+  "8": "Оберни чорний ремінь вільно навколо своєї талії або дай йому звисати в залежності від того, як ти почуваєшся у цей момент.",
+  "9": "Помаранчевий шкіряний сетчел Sicily — Додано велику помаранчеву шкіряну сумку-тоут; вирішує проблему відсутності сумки та вводить сміливий колірний акцент, який піднімає монохромний образ у святковий настрій.",
+  "10": "Сукня з високою горловиною чорна, Ремінь жіночий Welfare чорний, Угги замшеві чорні KRUMP, Помаранчевий шкіряний сетчел Sicily — Інструкція «розповсюдити кольори» вирішує потенційні проблеми координації, забезпечуючи, щоб помаранчева сумка виділялася на тлі нейтральних чорних і сірих тонів, створюючи навмисний і збалансований акцент.",
+  "11": "Помаранчевий шкіряний сетчел Sicily — Додано помаранчеву сумку-тоут; вводить сміливий колірний акцент, який виділяється на тлі холодних блакитних відтінків без перевантаження образу. Це задовольняє потребу у третьому елементі та святковому ефекті."
+}
+```
