@@ -408,72 +408,28 @@ def _спір_кольору(код, hex_):
 # опис і ремонт, а бюджет ріже лише пул.
 _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
 
-# ── КОРОТКІ КЛЮЧІ, ЯКІ РОЗШИФРОВУЄ ШАПКА ПРОМПТА (власник 27.09: «Короткі ключі дозволені,
-# якщо їх розшифровує шапка промпта») ───────────────────────────────────────────────────────
-# ЧОМУ ЦЕ НЕ КОСМЕТИКА. Ім'я ключа платиться на КОЖНІЙ речі пулу, а пояснення — раз на пакет.
-# На пулі 300+ речей «"formality":» коштує дорожче за саме число. Тому часті ключі короткі, а
-# `pool_keys` у шапці каже, що кожен із них означає (`пакет`, поле оголошення `СКЛАДАННЯ`).
-# ЩО НЕ СКОРОЧУЄТЬСЯ І ЧОМУ. Ключі, які мають ВЛАСНИЙ рядок пояснення в `СКЛАДАННЯ`
-# (`two_piece`, `for_her_wish`, `shown_before`, `softening`, поля її речі з фото), лишаються
-# довгими: збирач промпта ставить той рядок лише тоді, коли бачить поле ПІД ТИМ ІМЕНЕМ, і
-# коротший ключ мовчки зняв би пояснення. Вони й трапляються на одиницях речей, тож економії
-# з них нема. `n` уже короткий.
-# `type` і `item_type` — ОДИН ключ `ty`: вони не бувають разом (розбір заміняє поле коду) і
-# кажуть те саме, а два імені для одного факту модель читала б як два різні факти.
-КОРОТКІ_КЛЮЧІ = {
-    "price": "pr", "type": "ty", "item_type": "ty", "cut": "cu", "fabric": "fb",
-    "material": "ma", "length": "le", "sleeve": "sv", "shaft": "sf", "pattern": "pt",
-    "details": "dt", "shine": "si", "neckline": "nk", "vamp": "vm", "metal": "mt",
-    "metal_where": "mw", "decor": "dc", "set_kind": "sk", "set_parts": "sp",
-    "color": "co", "color_extra": "cx", "color_why": "cw", "color_disputed": "cq", "hex": "hx", "family": "fm",
-    "in_arc": "ia", "veto": "vt", "register": "rg", "branch": "br", "scheme": "sc",
-    "also_in": "ai", "features": "fe",
-    "L": "L", "L_from": "Lf", "hem_cm": "hm", "hem_from": "hf", "formality": "fo",
-    "fabric_c": "fc", "heel": "he", "heel_shape": "hs", "heel_height": "hh",
-}
-# Що кожен короткий ключ означає — рядок шапки. Де довге ім'я саме собою не все каже
-# (шкала формальності, світлота, смуга тканини), нота стоїть тут, а не в прозі поля `pool`:
-# так вона теж платиться раз на пакет і стоїть рівно там, де модель шукає ключ.
-ЗНАЧЕННЯ_КЛЮЧІВ = {
-    "pr": "price", "ty": "kind of item", "cu": "cut — in the cut words of the item's own kind, the same as `cuts_best_on_her`; several joined with | when the shop word fits several of them", "fb": "fabric", "ma": "material",
-    "le": "length", "sv": "sleeve", "sf": "shaft", "pt": "pattern", "dt": "details",
-    "si": "shine", "nk": "neckline", "vm": "vamp", "mt": "metal", "mw": "metal is the body "
-    "of the item or only its hardware", "dc": "decoration", "sk": "kind of set it is sold as",
-    "sp": "the parts of the set", "co": "color", "cx": "other colors the shop names",
-    "cw": "why there are several colors",
-    "cq": "another witness of the color disagrees with `co`: the item's photo or the catalogue text shows "
-          "this color, and which of the two she gets is not known",
-    "hx": "hex of the color: measured on the photo, or the middle of the shop word's range when `Lf` is word",
-    "fm": "color family", "ia": "the color lies inside her palette's scheme arc",
-    "vt": "what the item carries that she may refuse, listed only when it does: stripes, "
-          "big_print, print, shine, oversize, tight", "rg": "style register", "br": "core, edge or break of her palette",
-    "sc": "color scheme the item fits", "ai": "the same model also comes in these colors",
-    "fe": "what sets this item apart from other items with the same codes",
-    "L": "lightness from 0 to 100", "Lf": "where the lightness came from",
-    "hm": "hem in cm from the floor", "hf": "where the hem came from",
-    "fo": "formality: the step or steps from…to of the item, the same steps as the occasion: " + _БР.ЩАБЛІ_EN,
-    "fc": "temperature band of the fabric, °C", "he": "heel", "hs": "heel shape",
-    "hh": "heel height",
+# Що значать типові ключі пулу — рядок шапки `pool_keys`. Ім'я ключа платиться раз на пакет
+# (пул — таблиця, `збирач_промптів.таблиця`), тож ключі лишаються повними й легенди для решти
+# нема (рядок 5901: короткі ключі нічого не економили, а просили читати легенду).
+ОПИС_ТИПОВИХ = {
+    "in_arc": "the color lies inside her palette's scheme arc",
+    "branch": "core, edge or break of her palette",
+    "L_from": "where the lightness came from",
+    "hem_from": "where the hem came from",
 }
 
 # Типові значення на пулі стенда: факт платиться один раз у `pool_keys`, а на речі лишається
-# лише відхилення. Ключі тут повні: короткий запис перекладає їх через `КОРОТКІ_КЛЮЧІ`. Це
-# правило тільки для пулу; склад образу, вітрина ремонту й опис далі отримують повний факт.
+# лише відхилення. Правило тільки для пулу; склад образу, вітрина ремонту й опис далі отримують повний факт.
 ТИПОВІ_ПУЛУ = {"in_arc": True, "branch": "core", "L_from": "photo_point", "hem_from": "word"}
 
 
-def легенда_ключів(перелік, короткий=False):
-    """{ключ: що означає}; типові ключі є завжди, бо їхня відсутність несе факт.
-
-    Короткі ключі — лише ті, які в ЦЬОМУ пулі справді є (той самий закон, що в легенді
-    реєстрів `пакет_моделі`): ключ, якого в пулі нема, коштував би рядок і не назвав би нічого."""
-    є = {к for r in (перелік or []) if isinstance(r, dict) for к in r}
-    вих = {к: v for к, v in ЗНАЧЕННЯ_КЛЮЧІВ.items() if короткий and к in є}
-    for повний, типове in ТИПОВІ_ПУЛУ.items():
-        ключ = КОРОТКІ_КЛЮЧІ[повний] if короткий else повний
-        опис = ЗНАЧЕННЯ_КЛЮЧІВ[КОРОТКІ_КЛЮЧІ[повний]]
-        вих[ключ] = "%s; absent = %s" % (опис, str(типове).lower())
-        if повний == "in_arc":
+def легенда_ключів():
+    """{ключ: що означає} для типових значень пулу; їхня відсутність несе факт, тож шапка
+    називає їх завжди."""
+    вих = {}
+    for ключ, типове in ТИПОВІ_ПУЛУ.items():
+        вих[ключ] = "%s; absent = %s" % (ОПИС_ТИПОВИХ[ключ], str(типове).lower())
+        if ключ == "in_arc":
             вих[ключ] += "; `unknown` = not measured or no arc applies"
     return вих
 
@@ -494,7 +450,7 @@ def _стиснути(ключ, v):
 
 # Пара «від…до» з однаковими кінцями — одне число (рядок 5540): у 382 з 463 речей пулу руки 1
 # (офіс) `L` — [a, a], і друге число — ~4 токени Qwen ні про що. Ключі — повні й короткі.
-_ПАРИ_ВІД_ДО = ("L", "hem_cm", "hm")
+_ПАРИ_ВІД_ДО = ("L", "hem_cm")
 
 
 def _легше(о):
@@ -516,12 +472,12 @@ def _легше(о):
 
 
 def _скоротити(о):
-    """Ключі речі — короткими, значення — стиснутими; порядок той самий, невідоме ім'я як є."""
+    """Значення речі — стиснутими (`_стиснути`), порядок і ключі ті самі."""
     вих = {}
     for к, v in о.items():
         v = _стиснути(к, v)
         if v not in (None, "", [], {}):
-            вих[КОРОТКІ_КЛЮЧІ.get(к, к)] = v
+            вих[к] = v
     return вих
 
 
@@ -655,14 +611,11 @@ def річ(r, короткий=False, пул=False, слот=None):
     if "item_type" in о:                 # розбір назвав вид речі — рід уже випливає з нього
         о.pop("kind", None)
     вих = _скоротити(о) if розб else о
-    # У короткому режимі річ без розбору лишається повним записом; його довгі ключі не можна
-    # зняти за типовими короткими ключами шапки.
-    if пул and (not короткий or розб):
-        for повний, типове in ТИПОВІ_ПУЛУ.items():
-            ключ = КОРОТКІ_КЛЮЧІ[повний] if розб else повний
+    if пул:
+        for ключ, типове in ТИПОВІ_ПУЛУ.items():
             if вих.get(ключ) == типове:
                 вих.pop(ключ)
-            elif повний == "in_arc" and ключ not in вих:
+            elif ключ == "in_arc" and ключ not in вих:
                 # нема значення = невідомо (колір не виміряно чи слот без дуг); без позначки
                 # типове «true» шапки читалося б як позитивний висновок
                 вих[ключ] = "unknown"
@@ -1624,10 +1577,9 @@ def пакет(п):
     # а не на кожній із сотень речей; бюджет міряє токени (`пакет_моделі.вага_пулу`), тож
     # зекономлене на іменах стає речами в пулі за ту саму ціну виклику.
     вих["pool"] = _ЗП.таблиця(перелік)
-    # ШАПКА РОЗШИФРОВУЄ КОРОТКІ КЛЮЧІ — РАЗ НА ПАКЕТ, А НЕ НА КОЖНІЙ РЕЧІ (власник 27.09).
-    # Короткі ключі — лише ті, що в цьому пулі є (`легенда_ключів`); типові значення пулу
-    # (`ТИПОВІ_ПУЛУ`) шапка називає в обох режимах.
-    легенда = легенда_ключів(перелік, короткий=_короткий)
+    # ШАПКА НАЗИВАЄ ТИПОВІ ЗНАЧЕННЯ — РАЗ НА ПАКЕТ, А НЕ НА КОЖНІЙ РЕЧІ.
+    # Типові значення пулу (`ТИПОВІ_ПУЛУ`) шапка називає в обох режимах.
+    легенда = легенда_ключів()
     if легенда:
         вих["pool_keys"] = легенда
     о = п.get("обмеження") or {}

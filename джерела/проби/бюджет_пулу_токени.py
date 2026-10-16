@@ -3,7 +3,7 @@
 (символи, токени Qwen 3.5 і оцінка `пакет_моделі.токенів`, коли вона є), промпт руки 2, час збирання запитів.
 Та сама проба на `main` ДО і на гілці ПІСЛЯ: обидва дерева беруть свій типовий бюджет (аргумент — бюджет у
 токенах для дерева, що його розуміє). Токени — QWEN_TOKENIZER=<tokenizer.json Qwen3.5-9B> (`pip install tokenizers`).
-Запуск із `джерела`: QWEN_TOKENIZER=… python3 проби/бюджет_пулу_токени.py [бюджет_токенів]"""
+KOROTKYI=1 — пул із `короткий_запис=1` (К-3). Запуск із `джерела`: QWEN_TOKENIZER=… python3 проби/бюджет_пулу_токени.py [бюджет_токенів]"""
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
 import bridge as B, feed as Ф, міст_пакет as МП, пакет_моделі as ПМ
@@ -18,6 +18,7 @@ def запити(назва, сц, пасп):
     МП._КЕШ_ПАКЕТА.clear()
     вх = dict(База, каталог=КАТ, сценарій=сц, випадок=назва, паспорт=dict(пасп, **{к: сц[к] for к in ("темп_c", "місце", "година", "опади", "дрес_код") if к in сц}))
     if sys.argv[1:]: вх["бюджет_токенів"] = int(sys.argv[1])
+    if os.environ.get("KOROTKYI"): вх["короткий_запис"] = 1
     т0 = time.time(); r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False))); return r, time.time() - т0
 запити(*next((н, *в) for н, в in СЦЕНИ.items()))          # прогрів: імпорти й каталог, не міряється
 разом = {}

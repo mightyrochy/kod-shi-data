@@ -5,6 +5,7 @@
 лофери/мокасини на картках рук 1–2; «Де» з першої картки сценарію.
 Запуск: python3 проби/типове1_клітинки.py <тека> [<тека> …]"""
 import sys, os, re, json, tarfile, collections
+import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspath(__file__)))); from збирач_промптів import рядки_таблиці as РТ
 ВІДКРИТЕ, ШАР = ("sandals", "heeled_sandals", "espadrilles"), ("trench_coat", "coat")
 for т in sys.argv[1:]:
     with tarfile.open(os.path.join(т, "відповіді.tar.gz")) as tf:
@@ -16,7 +17,7 @@ for т in sys.argv[1:]:
             p = json.loads(мм.group(2)) if мм else None
             if p and "pool" in p:
                 break
-    пул = collections.Counter(і.get("type") for і in (p or {}).get("pool") or [])
+    пул = collections.Counter(і.get("type") for і in РТ((p or {}).get("pool")) or [])
     пр = json.dumps((p or {}).get("style_rules"), ensure_ascii=False)
     д = (p or {}).get("day") or {}
     карт = open(os.path.join(т, "картки.txt"), encoding="utf-8").read().split("═══ картка ")[1:]

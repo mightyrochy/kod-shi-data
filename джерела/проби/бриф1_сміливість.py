@@ -3,6 +3,7 @@
 з 4 ознак речей (гучний C*≥40, контраст L*≥50, фактура одягу, ≥3 кольорові сектори по 60° серед речей з C*≥15).
 Запуск: python3 проби/бриф1_сміливість.py <база> [<база> …], база — теки <нагода>_В з вердикти.txt(.gz). Друкує факт."""
 import gzip, json, glob, math, re, sys, os
+import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspath(__file__)))); from збирач_промптів import рядки_таблиці as РТ
 ТЕК = {"satin", "lace", "guipure", "velvet", "velour", "patent_leather", "atlas", "openwork", "tweed", "boucle"}
 АКС = ("bag", "jewel", "scarf", "belt", "headband", "shoes", "pumps", "loafers", "boots", "sandals", "sneakers", "mules", "flats", "plimsolls", "clutch", "tote", "ring", "kerchief", "hat", "glasses", "tights", "bracelet", "earring", "necklace", "brooch", "bow", "hair")
 дж = lambda с: json.JSONDecoder().raw_decode(с[с.index("{"):])[0] if isinstance(с, str) and "{" in с else None
@@ -23,7 +24,7 @@ for база in sys.argv[1:]:
         вв = json.load(gzip.open(f, "rt") if f.endswith(".gz") else open(f))["прогони"][0]["вердикти"]
         for в in (в for в in вв if str(в["рука"]) in "12"):
             кл = [(c["крок"], дж(c["запит"]["текст"]), дж(c.get("відповідь_сира"))) for c in в["етапи"]["виклики"]]
-            Д = {i["n"]: i for к, п, _ in кл if к == "assembly" and п for i in п.get("pool", [])}
+            Д = {i["n"]: i for к, п, _ in кл if к == "assembly" and п for i in РТ(п.get("pool", []))}
             рем = [(п, в_) for к, п, в_ in кл if к == "repair" and п and в_]; виб = [(п, в_) for к, п, в_ in кл if к == "choice" and п and в_]
             for п, _ in рем + виб: [Д.setdefault(i["n"], i) for o in п["verdict"] for i in o["your_outfit"]["items"]]
             б = lambda ns: бал([Д[n] for n in ns if n in Д])

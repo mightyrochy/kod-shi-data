@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """ПЕР-492: паспорт, пояснення_мови, хід мовної моделі і образи рук 1–2 нижче смуги з файлу вердиктів стенда. Запуск: python3 джерела/проби/пер_паспорт_і_смуга.py <тека запуску з вердикти.txt[.gz]>"""
 import sys, json, re, os, collections
+import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspath(__file__)))); from збирач_промптів import рядки_таблиці as РТ
 тека = os.path.abspath(sys.argv[1])
 Д = "/home/user/kod-shi-data/джерела"; sys.path.insert(0, Д); os.chdir(Д)
 import feed as F; F.каталог_на_диску("каталог_повний.xml")
@@ -28,13 +29,13 @@ for в in d["прогони"][0]["вердикти"]:
     в["рука"] = int(re.sub(r"\D", "", str(в["рука"])) or 0)
     if в["рука"] not in (1, 2): continue
     виклики = в["етапи"]["виклики"]; зб = виклики[0]; пакет = json.loads(зб["запит"]["текст"][зб["запит"]["текст"].index("{"):])
-    пул = {р["n"]: за.get((р["name"], р.get("price"))) or [] for р in пакет.get("pool", [])}
+    пул = {р["n"]: за.get((р["name"], р.get("price"))) or [] for р in РТ(пакет.get("pool", []))}
     вер = lambda н: (пул.get(н) or [{}])[0]
     відп = зб["відповідь_сира"]; обр = json.loads(відп[відп.index("{"):])["outfits"]
     рядки = []; всього = 0; нев = set()
     for о in обр:
         п_ = [н for н in о["items"] if lo is not None and вер(н) and КП.нижче_смуги(вер(н), lo)]
         рядки.append((о["id"], len(о["items"]), п_)); всього += len(п_); нев.update(п_)
-    наз = {р["n"]: р["name"] for р in пакет.get("pool", [])}
+    наз = {р["n"]: р["name"] for р in РТ(пакет.get("pool", []))}
     print("рука %d · пул %d · нижче смуги в пулі %d · образів %d · образів з недоречною %d · різних недоречних %d" % (в["рука"], len(пул), sum(1 for н in пул if lo is not None and вер(н) and КП.нижче_смуги(вер(н), lo)), len(обр), sum(1 for _, _, x in рядки if x), len(нев)))
     for н in sorted(нев): print("     ", н, наз.get(н, "")[:60], "|", КП.нижче_смуги(вер(н), lo), "| слот", вер(н).get("слот"))
