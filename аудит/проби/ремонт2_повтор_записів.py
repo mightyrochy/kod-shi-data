@@ -9,6 +9,7 @@ import gzip, json, glob, os, re, sys, collections as K
 
 ДАНІ = re.compile(r'"(fixes|not_run_everywhere|set|showcase|verdict|case|break_kind|language|register|outfits_wanted|'
                   r'input|statement_codes|answer_schema)"\s*:')     # дані промпту в тексті відповіді; «day» — поле образу
+ОБГОРТКА = re.compile(r'"answer"\s*:\s*\{')      # відповідь під «answer» — уся чи повтором за «needed» (рядок 5935)
 DONE = re.compile(r'\{\s*"finding"\s*:\s*"([^"]+)"\s*,\s*"action"\s*:\s*"[^"]*"(?:\s*,\s*"why"\s*:\s*"(?:[^"\\]|\\.)*")?\s*\}')
 лат = lambda і: str(і or "").replace("о", "o")
 
@@ -38,7 +39,7 @@ def повтор(тека, вихід):
         р = Г.бік(входи[к]["вх"], входи[к]["текст"], True, lambda п, о=None: next(т, (599, "", False, 0)))
         п = json.loads(р.pop("промпт", "") or "{}"); р2 = ост.get("р2") or {}; з = п.get("task") or {}
         вих[к] = dict(збій=р.get("збій"), ід_моделі=р.get("ід_моделі"), обрано=р.get("обрано"),
-                      промпт=dict(символів=len(json.dumps(п, ensure_ascii=False, separators=(",", ":"))), правил=len(з.get("rules") or []),
+                      промпт=dict(answer_у_task="answer" in з, символів=len(json.dumps(п, ensure_ascii=False, separators=(",", ":"))), правил=len(з.get("rules") or []),
                                   done_у_схемі='"done"' in json.dumps(з.get("answer_schema") or {}),
                                   gates=sum(len(о.get("gates") or []) for о in п.get("verdict") or []), bold=(п.get("set") or {}).get("bold")),
                       образи_р2=[dict(номер=о.get("номер"), ід_відповіді=о.get("ід_відповіді"), блокує=bool(о.get("блокує")))
@@ -59,6 +60,7 @@ def порівняти(тека_до, до, тека_після, після):
             for в in х["виклики"]:
                 т = в["текст"]; Л["викликів"] += 1; Л["обрізано"] += в["обрізано"]; Л["з даними промпту в тексті"] += bool(ДАНІ.search(т))
                 Л["символів відповідей"] += len(т)
+                Л["«\"answer\": {» у відповіді (рядок 5935)"] += bool(ОБГОРТКА.search(т))
                 for м in DONE.finditer(т):
                     Л["done над гейтом" if м.group(1) in гейти else "done над зауваженням"] += 1
         for к, р in json.load(open(ф, encoding="utf-8")).items():
