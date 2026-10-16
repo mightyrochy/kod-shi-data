@@ -1230,6 +1230,7 @@ def _норм(с, v, шлях, незнайомі):
         if not isinstance(v, dict):
             незнайомі.append("%s=%s" % (шлях, v))
             return None
+        було_об = len(незнайомі)
         вих = {}
         for к, x in v.items():
             if к not in с["properties"]:
@@ -1243,6 +1244,11 @@ def _норм(с, v, шлях, незнайомі):
         бракує = [к for к in (с.get("required") or []) if к not in вих]
         if вих and бракує:
             незнайомі += ["%s.%s" % (шлях, к) for к in бракує]
+        # ДІЯ З НЕЧИТАНОЮ ОЗНАКОЮ НЕ БЕРЕТЬСЯ ЦІЛОЮ (рядок 6271, як «річ» у рядку 156): `{"op": "set", "item": "p1",
+        # "kind": "ботильйони", "color": "beige"}` губила `kind` у `незнайомі`, а колір лягав — річ виправлено наполовину
+        if "op" in с["properties"] and len(незнайомі) > було_об:
+            незнайомі.append("%s — дію не взято: ознака не прочиталась" % шлях)
+            return None
         return None if (not вих or бракує) else вих
     if с.get("type") == "boolean":
         т = str(v).strip().lower()
