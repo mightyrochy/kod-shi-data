@@ -267,6 +267,7 @@ const ЖІНКА = process.env.ZHINKA ? JSON.parse(fs.readFileSync(process.env.Z
 /* П-7: VYBIR_PALITRY=proza — заглушка відповідає на вибір палітри прозою (не JSON), щоб пройти
    чесний шлях «стилістка не обрала» (ранг коду, P8 «без входу»); без змінної — вибір кодами */
 const ВИБІР_ПАЛІТРИ_ПРОЗОЮ = process.env.VYBIR_PALITRY === 'proza';
+const ПРОМПТИ_5911 = [];
 let портретВідмовлено = 0;
 const ДОВІДКА_ПИТАННЯ = process.env.DOVIDKA_PYTANNIA || null;
 const РІЧ_ТИПОВА = {фото: 'ф1', назва: 'сукня з фото', слот: 'сукня', колір: 'червоний', матеріал: null,
@@ -1601,6 +1602,10 @@ function відповісти(текст) {
     return {тип: 'мовний шар', текст: JSON.stringify(вих)};
   }
   let об = null; try { об = JSON.parse(текст); } catch (_) {}
+  /* PAL_DOTYK (рядок 5911): що бачила стилістка палітри (`occasion`, `day`) і що бачили руки (`case`, `day`) */
+  if (process.env.PAL_DOTYK && об && об.task && об.task.answer === 'PALETTE_CHOICE')
+    ПРОМПТИ_5911.push({хто: 'палітра', випадок: об.occasion, день: об.day});
+  else if (process.env.PAL_DOTYK && об && об.case) ПРОМПТИ_5911.push({хто: 'рука', випадок: об.case, день: об.day});
   /* ── «ОЦІНИ МІЙ ОБРАЗ» (Л-6): речі на двох фото сцени 6 — ті самі рамки, якими сцена їх
      намалювала; відповідь — із входу задачі (що код пропустив би), плюс ОДНЕ навмисно хибне
      твердження «палітра» про річ поза палітрою: сторож мусить його зняти (сцена 6 звіряє) */
@@ -3030,6 +3035,53 @@ function підсумокМоделі(){
     if (ШАР_ВИМКНЕНО) ф('рядок 402: без мовної моделі напис «без пояснення словами» на екрані «Палітра» один, не по рядку на схему',
       нап.написів <= 1, нап);
     if (process.env.DO === 'palitra'){ await браузер.close(); process.exit(провалів ? 1 : 0); }
+  }
+
+  /* ── PAL_DOTYK (рядок 5911): ДОТИК ПІСЛЯ ЕКРАНА «ПАЛІТРА» — ТА САМА НАГОДА В ПАЛІТРІ Й У РУКАХ ──
+     Стилістка вже обрала на екрані (вище). `PAL_DOTYK=так` — дотик до ошатності (`#сц-дрес`, її обробник `onchange`)
+     на код, якого там нема; `PAL_DOTYK=ні` — без дотику. Тоді «Зібрати образи» і, коли є картки рук 1–2: скільки
+     запитів `вибір_палітри` (перший крок, без відповіді моделі), паспорт і сценарій останнього з них проти входу
+     `запити`, `occasion`/`day` промпта палітри проти `case`/`day` рук, рядки діагнозу палітри. Далі стенд не йде. */
+  if (process.env.PAL_DOTYK){
+    await стор.evaluate(() => {
+      const зріз = в => JSON.stringify({паспорт: в.паспорт || null, сценарій: в.сценарій || null, випадок: в.випадок || null});
+      window.__вп = []; window.__запити = null;
+      const о = window.містП;
+      window.містП = function(е, вх){
+        if (е === 'вибір_палітри' && вх && вх.відповідь_моделі == null && вх.без_моделі == null)
+          window.__вп.push({зріз: зріз(вх), схема: вх.схема || null, дрес: (вх.сценарій || {}).дрес_код || null,
+                            ошатність: (вх.паспорт || {}).ошатність || null, мета: (вх.паспорт || {}).мета || null});
+        if (е === 'запити' && вх) window.__запити = {зріз: зріз(вх), схема: вх.схема || null};
+        return о.apply(this, arguments);
+      };
+    });
+    const дотик = await стор.evaluate(торкатись => {
+      const д = document.getElementById('сц-дрес'), було = д.value;
+      if (торкатись){
+        д.value = [...д.options].map(о => о.value).find(v => v && v !== було);
+        д.onchange();
+      }
+      return {було: було || null, стало: д.value || null};
+    }, process.env.PAL_DOTYK !== 'ні');
+    console.log('PAL_DOTYK · ошатність рукою: ' + JSON.stringify(дотик));
+    await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к && typeof к.onclick === 'function') к.onclick(); });
+    await стор.waitForFunction("(typeof ЗБ !== 'undefined' && ЗБ && Array.isArray(ЗБ.картки) && ['1','2'].every(р => "
+        + "ЗБ.картки.some(к => к && к.рука === р))) || " + ВИРАЗ_ЗБОЮ, null, { timeout: 900000 });
+    const м = await стор.evaluate(() => ({вп: window.__вп, запити: window.__запити,
+      діагноз: (ЗБ.діагноз || []).filter(р => /^palette · (choice · (same_as|rechosen)|stylist_not_asked)/.test(р))}));
+    const ост = м.вп[м.вп.length - 1] || {};
+    console.log('PAL_DOTYK · запитів вибір_палітри після екрана: ' + м.вп.length + ' · останній: ' + JSON.stringify(
+      {дрес: ост.дрес, ошатність: ост.ошатність, мета: ост.мета, схема: ост.схема}));
+    console.log('PAL_DOTYK · вхід останнього вибір_палітри = вхід запити (паспорт, сценарій, випадок): '
+      + (!!м.запити && ост.зріз === м.запити.зріз) + ' · схема рук: ' + JSON.stringify((м.запити || {}).схема));
+    const пал = ПРОМПТИ_5911.filter(п => п.хто === 'палітра'), рук = ПРОМПТИ_5911.filter(п => п.хто === 'рука');
+    const оп = пал[пал.length - 1] || {}, р1 = рук[0] || {};
+    console.log('PAL_DOTYK · промптів палітри ' + пал.length + ', рук ' + рук.length
+      + ' · occasion палітри = case руки: ' + (JSON.stringify(оп.випадок) === JSON.stringify(р1.випадок))
+      + ' · day палітри = day руки: ' + (JSON.stringify(оп.день) === JSON.stringify(р1.день)));
+    console.log('PAL_DOTYK · occasion палітри: ' + JSON.stringify(оп.випадок) + '\nPAL_DOTYK · case руки: ' + JSON.stringify(р1.випадок));
+    м.діагноз.forEach(р => console.log('PAL_DOTYK · діагноз · ' + р));
+    await браузер.close(); process.exit(0);
   }
 
   /* ── 1в. ТРИ ПИТАННЯ БЕЗ ПОРТРЕТА (PYTANNIA=1, рядок 151) ──────────────────
