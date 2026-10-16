@@ -19,7 +19,7 @@ d.pop("каталог", None); О._виміри_кроками = _вим(е["с�
 суд = О.суд(d)
 print("Б4 (5711 текстура/блиск з fabric=wool, 5710 довжина з фото):", пункти(лов["о"]["чеклісти"], (4, 5, 6, 15, 17, "B5")))
 print("  6095 K-SIL-02 у звіті:", [б.get("missing") for б in суд["без_входу"] if б.get("rule") == ["K-SIL-02"]],
-      "· на картці:", "dividing_line_item_length_unknown" in json.dumps(О.невідоме_для_моделі(суд)))
+      "· на картці:", "dividing_line_item_length_unknown" in json.dumps(О.позначки_без_входу(суд)))
 рв, вв = copy.deepcopy(d["речі"]), copy.deepcopy(е["суд"]["речі"])
 for р in (рв, вв):
     р[0].update(слот="верхній_шар", вид="jacket", в_образі=True); р[1].update(слот="низ", вид="skirt", в_образі=True)

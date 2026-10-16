@@ -453,51 +453,76 @@ def речі_з_json(сирі, фото=None, досі=None, словами=None
 
 
 def _фото_речей():
-    """Оголошення задачі «речі з фото» (ліниво — `збирач_промптів` тягне `протокол`)."""
+    """Оголошення задачі «речі з фото» — одне на розмову й «Оціни мій образ» (ліниво — `збирач_промптів` тягне
+    `протокол`).
+
+    ОДНЕ ОГОЛОШЕННЯ (рядок 6221, п.12, п.17). Доти задач було дві — ця й `оцінка_образу.РЕЧІ` (скелет 0,97, рамка 0,95),
+    і виправлення вад ішли лише в оцінку: підпис «Photo ф1:» перед кадром (5982), форма слота, «пара взуття — одна
+    річ», «фото самого взуття без верху й низу» (5294). У розмові ж15 ті самі вади відтворились: 11 викликів, 35 речей —
+    слот поза кодами 10 (`top_garment`), та сама пара взуття двома записами в 5 викликах, спідниця ф1 записана на ф2.
+    Тепер правила й скелет спільні, а що відрізняє виклики, стоїть полем входу: оцінка шле «outfit» (тоді «in_outfit»
+    має сенс), розмова — «her_items_in_words» (тоді «owner» — з її слів); рядок «як» поля йде лише з полем."""
     global ФОТО_РЕЧЕЙ
     if ФОТО_РЕЧЕЙ is None:
         import збирач_промптів as _ЗП
         ФОТО_РЕЧЕЙ = _ЗП.Оголошення(
             задача="речі_з_фото",
-            роль="You see photos of clothing items that a woman sent. Describe each item on them.",
+            роль="You are a stylist. You see photos a woman sent — of her clothing items, or of an outfit she has put "
+                 "together herself — and you list the items on them.",
             вхід=(
-                _ЗП.Поле("photos", "her photos in the order they are attached: id, width, height", треба=True),
+                _ЗП.Поле("photos", "her photos: id, width, height; each image is attached after the label "
+                                   "«" + _ЗП.ПІДПИС_КАДРУ_EN % "<id>" + ":»", треба=True),
+                # «Оціни мій образ»: вона може показати поруч річ, яку думає вдягти НАТОМІСТЬ (`оцінка_образу._в_образі`)
+                _ЗП.Поле("outfit", "true: the photos show one outfit she has put together herself",
+                         як="\"in_outfit\" is true for items worn together in the outfit; false for an item shown as "
+                            "an alternative to one of them; \"unknown\" when the photo does not show which of them she "
+                            "wears (two pairs side by side, nothing on her)"),
+                # Р-1 (27.09.2026): на фото її речі стоять і чужі — знімок крамниці на моделі, вбрання, у якому
+                # сфотографовано її спідницю. Свідком «річ її» для коду є саме `owner` (`чи_її`), тож модель має право
+                # сказати «не знаю, чия»; без її слів «mine» не читається зовсім (рядок 1882, `речі_з_відповіді_фото`).
                 _ЗП.Поле("her_items_in_words", "her own items as she described them in words",
-                         як="an item on a photo that is one of those with status \"has\" has owner \"mine\""),
-                _ЗП.Поле("codes", "allowed codes of the item fields", треба=True),
+                         як="an item on a photo that is one of those with status \"has\" has owner \"mine\"; any other "
+                            "item on her photos — a shop photo on a model, the outfit she wore for the shot — is not "
+                            "hers: its owner is \"unknown\""),
+                _ЗП.Поле("codes", "allowed codes for item fields", треба=True),
                 # повтор після нечитаної відповіді (як у виклику 0 — один): причину називає розбір
                 _ЗП.Поле("format_error", "why your previous answer could not be read",
                          як="answer again, following \"answer_schema\""),
             ),
+            # Причини рядків — у шапці `оцінка_образу` (розділ 2, «ЧОМУ ЦІ РЯДКИ»): там вони виміряні.
             правила=(
-                "One object per item on the photos — garment, shoes, bag, accessory, jewelry; an item seen "
-                "on several photos is listed once, with the photo where it is seen best.",
-                "\"frame\" is the item's box on its photo in thousandths of the width and height (0–1000), "
-                "tight around the item itself, without background, skin or other items; " + РАМКА_НА_ОКО + ".",
-                "Field values are codes from \"codes\"; what the photo does not show is null.",
-                # Р-1 (27.09.2026): на фото її речі стоять і чужі — знімок крамниці на моделі,
-                # вбрання, у якому сфотографовано її спідницю. Свідком «річ її» для коду є
-                # саме `owner` (`чи_її`), тож модель має право сказати «не знаю, чия».
-                "A photo of one of her items often shows other items too — a shop photo on a "
-                "model, the outfit she wore for the shot: those are not hers, their owner is "
-                "\"unknown\". Only an item her words name is \"mine\".",
+                "List every garment, pair of shoes, bag, accessory and piece of jewelry visible on her photos: one "
+                "object per item. A garment under an open jacket is its own item, and so is each pair of shoes.",
+                "Each photo is a separate picture: \"photo\" is the id from the label right before the image where the "
+                "item itself is drawn. An item seen on several photos is listed once, with the photo where it is seen best.",
+                "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a "
+                "toe, boots also a shaft rising from them; a top has a neckline, shoulders and sleeves or straps; "
+                "a jacket, blazer or coat worn open over another garment is \"outerwear\", the garment under it "
+                "\"top\"; trousers have two legs; a skirt hangs from the waist in one piece.",
+                "A photo of shoes alone has no top or bottom: boot shafts are not trouser legs.",
+                "\"kind\" is the item's exact kind from \"codes.item_type\" within its \"slot\", read from the same shape.",
+                "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
+                "around the item itself, without background, skin or other items; " + РАМКА_НА_ОКО + ".",
+                "Field values are only codes from \"codes\"; what the photo does not show is null.",
+                "Start the answer with the JSON object itself: no description or reasoning before it.",
             ),
             вихід="PHOTO_ITEMS",
             скелет={"items": [{
                 "photo": "<photo id>",
                 "name": "<short English name, as a shop would call the item>",
                 "slot": "<code from codes.slot>",
-                "kind": "<code from codes.item_type: the exact kind of the item, or null>",
+                "kind": "<code from codes.item_type: the exact kind of the item within its slot, or null>",
                 "color": "<code from codes.color: the main color of the item itself>",
                 "fabric": "<code from codes.fabric when the texture is visible, else null>",
                 "cut": "<code from codes.cut or null>",
                 "length": "<code from codes.length or null>",
                 "pattern": "<code from codes.pattern>",
                 "formality": "<code from codes.formality: the occasion step the item suits — " + _БР.ЩАБЛІ_EN + ">",
+                "in_outfit": "<true | false | unknown; null without \"outfit\">",
                 "owner": "<code from codes.owner>",
                 "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
             }]},
-            межі=("лише_вхід",),
+            межі=("лише_вхід", "невідомо"),
             мова_промпту="en",
         )
     return ФОТО_РЕЧЕЙ
@@ -514,6 +539,12 @@ def промпт_фото(фото, власні=None, помилка=None):
     дані = {"photos": ф, "her_items_in_words": [в for в in (власні or []) if isinstance(в, dict)],
             "codes": коди_полів(), "format_error": помилка}
     return _json.dumps(_ЗП.зібрати(_фото_речей(), дані), ensure_ascii=False)
+
+
+def підписи_фото(фото):
+    """{ід фото: підпис кадру} — текст перед кожним зображенням виклику (`збирач_промптів.ПІДПИС_КАДРУ_EN`)."""
+    import збирач_промптів as _ЗП
+    return {str(х["ід"]): _ЗП.ПІДПИС_КАДРУ_EN % х["ід"] for х in (фото or []) if isinstance(х, dict) and х.get("ід")}
 
 
 _ПОЛЯ_ФОТО = (("slot", "слот"), ("color", "колір"), ("fabric", "матеріал"), ("cut", "крій"),
