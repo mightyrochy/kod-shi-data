@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Люстерко · Люстерко в рушнику</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Статичний прототип, етап 2 рядка 5213 дошки. Шрифти — ті самі файли, що й у показі. */
+@font-face{font-family:"KyivType Titling";font-weight:1 1000;font-display:swap;
+  src:url("шрифти/KyivTypeTitling-VarGX.ttf") format("truetype"),url("../../шрифти/KyivTypeTitling-VarGX.ttf") format("truetype")}
+@font-face{font-family:"KyivType Serif";font-weight:1 1000;font-display:swap;
+  src:url("шрифти/KyivTypeSerif-VarGX.ttf") format("truetype"),url("../../шрифти/KyivTypeSerif-VarGX.ttf") format("truetype")}
+@font-face{font-family:"Fixel Text";font-weight:400;font-display:swap;
+  src:url("шрифти/FixelText-Regular.woff2") format("woff2"),url("../тести/інструкція_тестувальниць/шрифти/FixelText-Regular.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-weight:500;font-display:swap;
+  src:url("шрифти/FixelText-Medium.woff2") format("woff2"),url("../тести/інструкція_тестувальниць/шрифти/FixelText-Medium.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-weight:600;font-display:swap;
+  src:url("шрифти/FixelText-SemiBold.woff2") format("woff2"),url("../тести/інструкція_тестувальниць/шрифти/FixelText-SemiBold.woff2") format("woff2")}
+
+/* Розкладка: один предмет на кожному екрані — люстерко з кілковим рушником угорі; у склі — те, що
+   стилістка зрозуміла (сценарій, палітра, образ), під склом — розмова й дії; зворот люстерка — профіль. */
+:root{
+  --тло:#E3E5E4; --текст-оболонки:#202326; --сірий-оболонки:#5A5F63; --рамка-оболонки:#C3C7C7;
+  /* концепція: побілена стіна, срібне скло, лляний рушник; кольори вишивки — її палітра */
+  --стіна:#EEF0EF; --біле:#FFFFFF; --чорне:#1F2226; --олівець:#5F656A; --тонка:#D2D6D6;
+  --скло-1:#E8ECED; --скло-2:#C3CBCE; --оправа:#B7BEC1; --оправа-край:#848D91; --льон:#E9E2D3;
+  --п1:#21505B; --п2:#9E4730; --п3:#D8B0A6;
+  --титул:"KyivType Titling","Arsenal",Georgia,serif;
+  --голос:"KyivType Serif","Arsenal",Georgia,serif;
+  --текст:"Fixel Text",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --тло:#17191A; --текст-оболонки:#E7E9E8; --сірий-оболонки:#A0A6A9; --рамка-оболонки:#34383A; color-scheme:dark}}
+:root[data-theme="dark"]{--тло:#17191A; --текст-оболонки:#E7E9E8; --сірий-оболонки:#A0A6A9; --рамка-оболонки:#34383A; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--тло);color:var(--текст-оболонки);font:15px/1.5 var(--текст);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+.легенда{max-width:1180px;margin:0 auto 28px;display:grid;gap:10px}
+.легенда h1{font:500 30px/1.1 var(--титул);font-variation-settings:"CONT" 600;margin:0;text-wrap:balance}
+.легенда p{margin:0;max-width:74ch;color:var(--сірий-оболонки)}
+.легенда b{color:var(--текст-оболонки);font-weight:600}
+.стрічка{max-width:1660px;margin:0 auto;display:flex;flex-wrap:wrap;gap:36px 24px;justify-content:center}
+figure{margin:0;display:grid;gap:10px;justify-items:start}
+figcaption{font-size:13px;color:var(--сірий-оболонки);max-width:390px}
+figcaption b{color:var(--текст-оболонки)}
+@media (max-width:430px){.екран{zoom:.88}}
+
+.екран{width:390px;height:844px;position:relative;overflow:hidden;background:var(--стіна);color:var(--чорне);
+  font:15px/1.5 var(--текст);outline:1px solid var(--рамка-оболонки)}
+.екран *{box-sizing:border-box}
+.шапка{position:absolute;top:16px;left:20px;right:20px;height:34px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;font-size:13px;color:var(--олівець)}
+.шапка .знак{font:500 22px/1 var(--титул);font-variation-settings:"CONT" 700;color:var(--чорне)}
+.шапка .праворуч{justify-self:end;display:flex;gap:12px;align-items:center}
+.ніч{width:30px;height:30px;border-radius:50%;border:1px solid var(--тонка);display:grid;place-items:center;font-size:10.5px}
+/* люстерко: сталий предмет, сталe місце */
+.люстро{position:absolute;left:39px;top:62px;width:312px;height:352px}
+.скло{position:absolute;left:26px;top:14px;width:260px;height:330px;border-radius:50%;overflow:hidden;
+  background:linear-gradient(158deg,var(--скло-1) 0%,var(--скло-2) 42%,#EEF2F3 58%,#BAC3C6 100%);
+  box-shadow:0 0 0 1px var(--оправа-край),0 0 0 8px var(--оправа),0 0 0 9px var(--оправа-край),0 14px 28px rgba(31,34,38,.16);
+  display:grid;place-items:center;text-align:center}
+.скло.туман{background:radial-gradient(120% 90% at 40% 35%,#F7F8F8 0%,#E3E7E8 55%,#D3D9DB 100%)}
+.скло.біле{background:#fff}
+.скло.зворот{background:radial-gradient(90% 80% at 45% 35%,#5B4637 0%,#3E2F25 70%,#33271F 100%)}
+.скло.золото-срібло{box-shadow:0 14px 28px rgba(31,34,38,.16)}
+.оправа-пів{position:absolute;left:17px;top:5px;width:278px;height:348px;border-radius:50%;background:linear-gradient(90deg,#C9A227 50%,#B8BDC2 50%);box-shadow:0 0 0 1px var(--оправа-край)}
+.оправа-пів span{position:absolute;bottom:58px;font:600 10px/1 var(--текст);letter-spacing:.14em;text-transform:uppercase;color:var(--чорне);background:var(--стіна);padding:3px 6px}
+.рушник{position:absolute;left:0;top:0;width:312px;height:262px;pointer-events:none}
+.під-склом{position:absolute;left:20px;right:20px;top:422px;bottom:66px;display:flex;flex-direction:column;gap:12px}
+/* намистини туману — сталий поступ знайомства і збирання */
+.поступ{display:flex;justify-content:center;gap:6px;font-size:11.5px;color:var(--олівець);flex-wrap:wrap}
+.поступ span{display:flex;align-items:center;gap:5px}
+.поступ span::before{content:"";width:8px;height:8px;border-radius:50%;border:1px solid var(--олівець)}
+.поступ span.тут{color:var(--чорне);font-weight:600}
+.поступ span.тут::before{background:var(--п2);border-color:var(--п2)}
+.заголовок{font:500 26px/1.1 var(--титул);font-variation-settings:"CONT" 640;margin:0;text-align:center;text-wrap:balance}
+.мітка{font:600 11px/1.2 var(--текст);letter-spacing:.13em;text-transform:uppercase;color:var(--олівець)}
+.варіанти{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.варіант{min-height:44px;border-radius:999px;border:1px solid var(--тонка);background:var(--біле);display:grid;place-items:center;font-size:13.5px;text-align:center;padding:2px 8px;line-height:1.15}
+.варіант.обр{background:var(--чорне);border-color:var(--чорне);color:var(--біле)}
+.дія{display:flex;align-items:center;justify-content:center;gap:10px;height:50px;border-radius:999px;background:var(--чорне);color:var(--біле);font:600 15px/1 var(--текст)}
+.дія.тиха{background:transparent;color:var(--чорне);border:1px solid var(--чорне);padding:0 22px}
+.дія svg{width:18px;height:18px}
+.рядок-дій{display:flex;gap:10px}.рядок-дій .дія:last-child{flex:1}
+.сторони{position:absolute;left:0;right:0;bottom:0;height:62px;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--тонка);background:var(--стіна)}
+.сторона{display:grid;place-items:center;padding-top:10px;font-size:12px;color:var(--олівець);position:relative}
+.сторона.тут{color:var(--чорне);font-weight:600}
+.сторона.тут::before{content:"";position:absolute;top:9px;width:10px;height:13px;border-radius:50%;border:1.5px solid var(--чорне);background:linear-gradient(158deg,#fff,var(--скло-2))}
+/* лист за рамою */
+.лист{position:absolute;left:30px;right:26px;top:350px;height:198px;background:var(--біле);transform:rotate(1.8deg);
+  box-shadow:0 6px 16px rgba(31,34,38,.12);padding:62px 18px 0 18px;z-index:0}
+.лист p{margin:0;font:16px/1.45 var(--голос);color:var(--олівець)}
+.лист .кнопки{position:absolute;right:12px;bottom:12px;display:flex;gap:8px}
+.кр{width:40px;height:40px;border-radius:50%;border:1px solid var(--тонка);background:var(--біле);display:grid;place-items:center}
+.кр.їде{background:var(--чорне);border-color:var(--чорне);color:var(--біле)}
+.кр svg{width:18px;height:18px}
+.люстро.над{z-index:1}
+.плитки{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.плитка{border:1px solid var(--тонка);background:var(--біле);border-radius:12px;padding:7px 8px;display:grid;align-content:start;gap:1px;min-height:50px}
+.плитка b{font:500 12.5px/1.15 var(--текст)}
+.плитка small{font-size:10px;line-height:1.2;color:var(--олівець)}
+.приклади{display:flex;gap:6px;white-space:nowrap;overflow:hidden;font-size:12.5px}
+.приклади span{border-bottom:1px dashed var(--олівець);color:var(--олівець)}
+/* у склі: сценарій */
+.відбиття{width:220px;display:grid;gap:4px;color:#2B3135;justify-items:center}
+.відбиття .мітка{font-size:9.5px;color:#4F585D}
+.відбиття .гол{font:500 30px/1 var(--титул);font-variation-settings:"CONT" 760}
+.відбиття .р{display:block;font-size:12.5px;line-height:1.3}
+.відбиття .р small{font-size:9px;margin-right:5px;letter-spacing:.12em;text-transform:uppercase;color:#56606A}
+.відбиття .типово{color:#56606A}
+.дощ{position:absolute;inset:0;background:repeating-linear-gradient(102deg,transparent 0 18px,rgba(255,255,255,.45) 18px 19px,transparent 19px 41px);opacity:.8}
+.так-ні{display:flex;justify-content:center;gap:6px;font-size:12px;margin-top:4px}
+.так-ні span{padding:3px 10px;border-radius:999px;border:1px solid #6F7A80}
+.так-ні span:first-child{border:0;padding:3px 0}
+.вона{align-self:flex-end;font-size:13px;color:var(--олівець);max-width:90%;text-align:right}
+.вона b{color:var(--чорне);font-weight:500}
+.субтитр{font:17px/1.4 var(--голос);text-align:center;margin:0}
+.субтитр small{display:block;font:12.5px/1.4 var(--текст);color:var(--олівець);margin-top:4px}
+.швидкі{display:flex;gap:5px;white-space:nowrap;overflow:hidden}
+.швидкі span{border:1px solid var(--тонка);background:var(--біле);border-radius:999px;padding:6px 11px;font-size:12.5px}
+.ввід{display:flex;align-items:center;gap:6px;height:46px;border-radius:999px;border:1px solid var(--тонка);background:var(--біле);padding:0 4px 0 16px}
+.ввід > span:first-child{flex:1;color:var(--олівець);font-size:14.5px}
+.ввід .кр{width:38px;height:38px}
+/* палітра */
+.чипи{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.чип{border:1px solid var(--тонка);background:var(--біле);border-radius:999px;padding:5px 11px;font-size:12.5px}
+.чип.обр{background:var(--чорне);border-color:var(--чорне);color:var(--біле)}
+.намистини{display:flex;justify-content:space-between;align-items:flex-start}
+.нам{display:grid;justify-items:center;gap:3px;font-size:10.5px;color:var(--олівець);width:44px;text-align:center;line-height:1.1}
+.нам i{width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.нам.обр{color:var(--чорне);font-weight:600}
+.нам.обр i{box-shadow:0 0 0 2px var(--стіна),0 0 0 3.5px var(--чорне)}
+.нам.стил i{background:repeating-linear-gradient(135deg,#fff 0 4px,var(--тонка) 4px 5px)}
+.схеми{display:grid;margin:0;padding:0;list-style:none}
+.схеми li{display:grid;grid-template-columns:76px 1fr auto;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--тонка);font-size:13px}
+.схеми li.обр{font-weight:600}
+.схеми svg{width:76px;height:16px;display:block}
+.вага{font-size:11.5px;color:var(--олівець);font-weight:400}
+/* образ */
+.точка{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--біле);border:1.5px solid var(--чорне);display:grid;place-items:center;font-size:10px;font-weight:600}
+.точка.тут{background:var(--чорне);color:var(--біле)}
+.виноска{position:absolute;left:44px;top:246px;background:var(--чорне);color:var(--біле);border-radius:10px;padding:5px 10px;font-size:11.5px;line-height:1.25;text-align:left;white-space:nowrap}
+.виноска small{display:block;color:#C9CDD0;font-size:10px}
+.речі{display:grid;margin:0;padding:0;list-style:none}
+.речі li{display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--тонка);font-size:11.5px}
+.речі li .н{font-size:10px;font-weight:600;color:var(--олівець)}
+.речі li .назва{text-transform:uppercase;letter-spacing:.02em;line-height:1.25}
+.речі li .назва small{display:block;text-transform:none;letter-spacing:0;color:var(--олівець);font-size:10.5px}
+.речі li .ціна{font-weight:600;font-variant-numeric:tabular-nums}
+.речі li.тут{background:linear-gradient(90deg,transparent,rgba(158,71,48,.07))}
+.разом{display:flex;justify-content:space-between;font-weight:600;font-size:13.5px;font-variant-numeric:tabular-nums}
+.чому{font:14.5px/1.4 var(--голос);margin:0;text-align:center}
+.приклад-позначка{font-size:10px;color:var(--олівець);font-family:var(--текст)}
+/* зворот */
+.гравюра{display:grid;gap:10px;justify-items:center;color:#D9C38E}
+.гравюра b{font:500 34px/1 var(--титул);font-variation-settings:"CONT" 900}
+.гравюра small{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#BFA978}
+.емаль{display:flex;gap:10px}.емаль i{width:26px;height:26px;border-radius:50%;box-shadow:0 0 0 2px #B79A5C,inset 0 2px 3px rgba(0,0,0,.25)}
+.рядки{display:grid;margin:0;padding:0;list-style:none}
+.рядки li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:6px 0;border-bottom:1px solid var(--тонка);font-size:13.5px}
+.рядки li small{grid-column:1;font-size:11.5px;color:var(--олівець)}
+.рядки li .пр{grid-row:1/3;grid-column:2;align-self:center;font-size:12px;color:var(--олівець);text-align:right}
+.рядки .група{font:600 10.5px/1 var(--текст);letter-spacing:.13em;text-transform:uppercase;color:var(--олівець);padding:8px 0 2px;border:0;display:block}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="в-її" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#9E4730"/><rect x="14" y="10" width="4" height="4" fill="#9E4730"/><rect x="22" y="10" width="4" height="4" fill="#9E4730"/><rect x="10" y="14" width="4" height="4" fill="#9E4730"/><rect x="26" y="14" width="4" height="4" fill="#9E4730"/><rect x="6" y="18" width="4" height="4" fill="#9E4730"/><rect x="30" y="18" width="4" height="4" fill="#9E4730"/><rect x="10" y="22" width="4" height="4" fill="#9E4730"/><rect x="26" y="22" width="4" height="4" fill="#9E4730"/><rect x="14" y="26" width="4" height="4" fill="#9E4730"/><rect x="22" y="26" width="4" height="4" fill="#9E4730"/><rect x="18" y="30" width="4" height="4" fill="#9E4730"/><rect x="18" y="18" width="4" height="4" fill="#21505B"/><rect x="14" y="18" width="4" height="4" fill="#21505B"/><rect x="22" y="18" width="4" height="4" fill="#21505B"/><rect x="18" y="14" width="4" height="4" fill="#21505B"/><rect x="18" y="22" width="4" height="4" fill="#21505B"/><rect x="0" y="0" width="36" height="2" fill="#D8B0A6"/><rect x="0" y="36" width="36" height="2" fill="#D8B0A6"/></pattern>
+    <pattern id="в-нейтр" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#21505B"/><rect x="14" y="10" width="4" height="4" fill="#21505B"/><rect x="22" y="10" width="4" height="4" fill="#21505B"/><rect x="10" y="14" width="4" height="4" fill="#21505B"/><rect x="26" y="14" width="4" height="4" fill="#21505B"/><rect x="6" y="18" width="4" height="4" fill="#21505B"/><rect x="30" y="18" width="4" height="4" fill="#21505B"/><rect x="10" y="22" width="4" height="4" fill="#21505B"/><rect x="26" y="22" width="4" height="4" fill="#21505B"/><rect x="14" y="26" width="4" height="4" fill="#21505B"/><rect x="22" y="26" width="4" height="4" fill="#21505B"/><rect x="18" y="30" width="4" height="4" fill="#21505B"/><rect x="18" y="18" width="4" height="4" fill="#9E4730"/><rect x="14" y="18" width="4" height="4" fill="#9E4730"/><rect x="22" y="18" width="4" height="4" fill="#9E4730"/><rect x="18" y="14" width="4" height="4" fill="#9E4730"/><rect x="18" y="22" width="4" height="4" fill="#9E4730"/><rect x="0" y="0" width="36" height="2" fill="#F6F3EC"/><rect x="0" y="36" width="36" height="2" fill="#F6F3EC"/></pattern>
+    <pattern id="в-компл" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#21505B"/><rect x="14" y="10" width="4" height="4" fill="#21505B"/><rect x="22" y="10" width="4" height="4" fill="#21505B"/><rect x="10" y="14" width="4" height="4" fill="#21505B"/><rect x="26" y="14" width="4" height="4" fill="#21505B"/><rect x="6" y="18" width="4" height="4" fill="#21505B"/><rect x="30" y="18" width="4" height="4" fill="#21505B"/><rect x="10" y="22" width="4" height="4" fill="#21505B"/><rect x="26" y="22" width="4" height="4" fill="#21505B"/><rect x="14" y="26" width="4" height="4" fill="#21505B"/><rect x="22" y="26" width="4" height="4" fill="#21505B"/><rect x="18" y="30" width="4" height="4" fill="#21505B"/><rect x="18" y="18" width="4" height="4" fill="#A4583E"/><rect x="14" y="18" width="4" height="4" fill="#A4583E"/><rect x="22" y="18" width="4" height="4" fill="#A4583E"/><rect x="18" y="14" width="4" height="4" fill="#A4583E"/><rect x="18" y="22" width="4" height="4" fill="#A4583E"/><rect x="0" y="0" width="36" height="2" fill="#B9A58A"/><rect x="0" y="36" width="36" height="2" fill="#B9A58A"/></pattern>
+    <pattern id="в-аналог" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#21505B"/><rect x="14" y="10" width="4" height="4" fill="#21505B"/><rect x="22" y="10" width="4" height="4" fill="#21505B"/><rect x="10" y="14" width="4" height="4" fill="#21505B"/><rect x="26" y="14" width="4" height="4" fill="#21505B"/><rect x="6" y="18" width="4" height="4" fill="#21505B"/><rect x="30" y="18" width="4" height="4" fill="#21505B"/><rect x="10" y="22" width="4" height="4" fill="#21505B"/><rect x="26" y="22" width="4" height="4" fill="#21505B"/><rect x="14" y="26" width="4" height="4" fill="#21505B"/><rect x="22" y="26" width="4" height="4" fill="#21505B"/><rect x="18" y="30" width="4" height="4" fill="#21505B"/><rect x="18" y="18" width="4" height="4" fill="#3E7A86"/><rect x="14" y="18" width="4" height="4" fill="#3E7A86"/><rect x="22" y="18" width="4" height="4" fill="#3E7A86"/><rect x="18" y="14" width="4" height="4" fill="#3E7A86"/><rect x="18" y="22" width="4" height="4" fill="#3E7A86"/><rect x="0" y="0" width="36" height="2" fill="#2E4B3D"/><rect x="0" y="36" width="36" height="2" fill="#2E4B3D"/></pattern>
+    <pattern id="в-тон" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#21505B"/><rect x="14" y="10" width="4" height="4" fill="#21505B"/><rect x="22" y="10" width="4" height="4" fill="#21505B"/><rect x="10" y="14" width="4" height="4" fill="#21505B"/><rect x="26" y="14" width="4" height="4" fill="#21505B"/><rect x="6" y="18" width="4" height="4" fill="#21505B"/><rect x="30" y="18" width="4" height="4" fill="#21505B"/><rect x="10" y="22" width="4" height="4" fill="#21505B"/><rect x="26" y="22" width="4" height="4" fill="#21505B"/><rect x="14" y="26" width="4" height="4" fill="#21505B"/><rect x="22" y="26" width="4" height="4" fill="#21505B"/><rect x="18" y="30" width="4" height="4" fill="#21505B"/><rect x="18" y="18" width="4" height="4" fill="#4A7480"/><rect x="14" y="18" width="4" height="4" fill="#4A7480"/><rect x="22" y="18" width="4" height="4" fill="#4A7480"/><rect x="18" y="14" width="4" height="4" fill="#4A7480"/><rect x="18" y="22" width="4" height="4" fill="#4A7480"/><rect x="0" y="0" width="36" height="2" fill="#9DB6BC"/><rect x="0" y="36" width="36" height="2" fill="#9DB6BC"/></pattern>
+    <pattern id="в-тріада" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#21505B"/><rect x="14" y="10" width="4" height="4" fill="#21505B"/><rect x="22" y="10" width="4" height="4" fill="#21505B"/><rect x="10" y="14" width="4" height="4" fill="#21505B"/><rect x="26" y="14" width="4" height="4" fill="#21505B"/><rect x="6" y="18" width="4" height="4" fill="#21505B"/><rect x="30" y="18" width="4" height="4" fill="#21505B"/><rect x="10" y="22" width="4" height="4" fill="#21505B"/><rect x="26" y="22" width="4" height="4" fill="#21505B"/><rect x="14" y="26" width="4" height="4" fill="#21505B"/><rect x="22" y="26" width="4" height="4" fill="#21505B"/><rect x="18" y="30" width="4" height="4" fill="#21505B"/><rect x="18" y="18" width="4" height="4" fill="#C9A23A"/><rect x="14" y="18" width="4" height="4" fill="#C9A23A"/><rect x="22" y="18" width="4" height="4" fill="#C9A23A"/><rect x="18" y="14" width="4" height="4" fill="#C9A23A"/><rect x="18" y="22" width="4" height="4" fill="#C9A23A"/><rect x="0" y="0" width="36" height="2" fill="#9E4730"/><rect x="0" y="36" width="36" height="2" fill="#9E4730"/></pattern>
+    <symbol id="і-камера" viewBox="0 0 24 24"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="13.2" r="3.4" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="і-мікрофон" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="і-стрілка" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+    <!-- кілковий рушник над люстерком: орнамент лише на кінцях, як на справжньому рушнику -->
+    <symbol id="рушник" viewBox="0 0 312 262">
+      <path d="M8 2H304L298 30H14Z" fill="#E9E2D3"/>
+      <path d="M8 2H304" stroke="#D7CDB9" stroke-width="1"/>
+      <path d="M14 22H298" stroke="#BFB39B" stroke-width="1" stroke-dasharray="3 3"/>
+      <rect x="0" y="12" width="40" height="232" fill="#E9E2D3"/>
+      <rect x="272" y="12" width="40" height="232" fill="#E9E2D3"/>
+      <rect x="2" y="120" width="36" height="120" style="fill:var(--кінці,#E9E2D3)"/>
+      <rect x="274" y="120" width="36" height="120" style="fill:var(--кінці,#E9E2D3)"/>
+      <path d="M2 116H38M274 116H310" stroke="#BFB39B" stroke-dasharray="3 3"/>
+      <path d="M3 244v16M7 244v14M11 244v17M15 244v14M19 244v16M23 244v14M27 244v17M31 244v14M35 244v16M277 244v16M281 244v14M285 244v17M289 244v14M293 244v16M297 244v14M301 244v17M305 244v14M309 244v16" stroke="#D2C6AE" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="р-тренч" viewBox="0 0 100 130"><path d="M37 6 50 20 63 6 82 15 94 78 83 80 77 44 79 124H21L23 44 17 80 6 78 18 15Z"/><rect x="21" y="62" width="58" height="5" fill="rgba(255,255,255,.12)"/></symbol>
+    <symbol id="р-кардиган" viewBox="0 0 100 130"><path d="M36 8 50 40 64 8 82 16 92 96 82 98 76 50 76 120H54L50 40 46 120H24V50L18 98 8 96 18 16Z"/></symbol>
+    <symbol id="р-штани" viewBox="0 0 100 130"><path d="M28 6H72L80 124H58L50 44 42 124H20Z"/></symbol>
+    <symbol id="р-кросівки" viewBox="0 0 120 60"><path d="M8 38C9 24 24 18 34 18L52 16C60 28 76 30 92 31L108 34C115 37 115 44 112 48H10Z"/><rect x="8" y="46" width="106" height="7" fill="rgba(0,0,0,.14)"/></symbol>
+    <symbol id="р-клатч" viewBox="0 0 100 60"><rect x="6" y="10" width="88" height="44" rx="3"/><path d="M6 13 50 36 94 13" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.5"/></symbol>
+    <symbol id="обличчя" viewBox="0 0 200 240"><ellipse cx="100" cy="98" rx="46" ry="58" fill="#E7CDBB"/><path d="M54 92c0-52 92-52 92 0-6-26-26-36-46-36s-40 10-46 36Z" fill="#5A3B2A"/><path d="M26 240c6-58 42-78 74-78s68 20 74 78Z" fill="#E7CDBB"/></symbol>
+  </defs>
+</svg>
+
+<header class="легенда">
+  <h1>Концепція 3 · «Люстерко в рушнику» — новий підхід</h1>
+  <p><b>Суть.</b> Замість екранів і вкладок — один предмет: люстерко. У склі стилістка показує те, що зрозуміла: сценарій,
+  обличчя на тлі основи, образ. Під склом — розмова. Над люстерком висить кілковий рушник, як над дзеркалом у хаті; поки
+  профілю нема, він полотняний, а коли кольори зчитано — його кінці вишиваються її палітрою й щоразу показують обрану схему.
+  Профіль — зворот люстерка: там вигравіювано ім'я й емаль її кольорів.</p>
+  <p><b>Новий підхід у роботі.</b> (1) Те, що стилістка зрозуміла, завжди видно в склі й правиться дотиком по склу — паспорт
+  не загубиться в стрічці. (2) Туман: статуси верстата «Ще туманно → Проступають обриси → Вимальовується → Готово» ведуть усе
+  знайомство й збирання, а не лише очікування. (3) «Замінити» — дотик по речі в склі: міняється лише вона, решта образу стоїть.
+  (4) Тон — «пізнай себе» Сковороди: люстерко показує, а не судить.</p>
+  <p><b>Коріння.</b> Кілкові рушники «вішали розіп'ятими на кілки, забиті над дзеркалом» (ДніпроКультура); орнамент
+  рушника — на кінцях; люстерко — мале ручне дзеркальце (від «люстро»). Тексти — з показу; відповіді стилістки, яких у показі нема
+  дослівно, позначено «приклад»; палітра профілю — приклад.</p>
+</header>
+
+<main class="стрічка">
+
+<!-- 1 · Знайомство -->
+<figure>
+<div class="екран" id="е1">
+  <div class="шапка"><span></span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="оправа-пів"><span style="left:-14px">Золото</span><span style="right:-14px">Срібло</span></div>
+    <div class="скло туман золото-срібло"><svg width="200" height="240" style="filter:blur(2.2px);opacity:.75;margin-top:60px"><use href="#обличчя"/></svg></div>
+    <svg class="рушник"><use href="#рушник"/></svg>
+  </div>
+  <div class="під-склом">
+    <div class="поступ"><span class="тут">Ще туманно</span><span>Проступають обриси</span><span>Вимальовується</span><span>Готово</span></div>
+    <div style="display:grid;gap:4px;justify-items:center"><span class="мітка">Крок 2 з 3 · До лиця</span>
+      <h2 class="заголовок">Що тобі до лиця.</h2></div>
+    <div style="display:grid;gap:7px"><span class="мітка" style="text-align:center">Золото чи срібло біля обличчя</span>
+      <div class="варіанти"><span class="варіант">Золото</span><span class="варіант">Срібло</span><span class="варіант">Обидва однаково</span></div></div>
+    <div class="рядок-дій" style="margin-top:auto;margin-bottom:10px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#і-стрілка"/></svg></span></div>
+  </div>
+</div>
+<figcaption><b>1 · Знайомство.</b> Оправа сама стає питанням: ліва половина золота, права срібна, обличчя між ними. Рушник ще полотняний — профілю нема.</figcaption>
+</figure>
+
+<!-- 2 · Аркуш листа -->
+<figure>
+<div class="екран" id="е2">
+  <div class="шапка"><span>Збережені</span><span class="знак">люстерко</span><span class="праворуч"><span>Новий</span><span class="ніч">Ніч</span></span></div>
+  <div class="лист">
+    <p>Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.</p>
+    <div class="кнопки"><span class="кр" title="Додати фото речі"><svg><use href="#і-камера"/></svg></span><span class="кр" title="Сказати голосом"><svg><use href="#і-мікрофон"/></svg></span><span class="кр їде" title="Надіслати"><svg><use href="#і-стрілка"/></svg></span></div>
+  </div>
+  <div class="люстро над">
+    <div class="скло туман"><span style="font:400 33px/1.15 var(--голос);font-variation-settings:'CONT' 200;color:#7D898F;text-shadow:0 0 6px rgba(255,255,255,.9);filter:blur(.35px);max-width:190px">Куди ти збираєшся?</span></div>
+    <svg class="рушник" style="--кінці:url(#в-її)"><use href="#рушник"/></svg>
+  </div>
+  <div class="під-склом" style="top:566px;gap:8px">
+    <div class="приклади"><span>Іду на побачення в ресторан, увечері. Обіцяють дощ</span><span>Завтра презентація для клієнта в офісі</span></div>
+    <span class="мітка">Або заповнити рукою</span>
+    <div class="плитки">
+      <div class="плитка"><b>Спорт, активність</b></div>
+      <div class="плитка"><b>Подорож</b><small>у дорозі: переліт, поїзд</small></div>
+      <div class="плитка"><b>Звичайний день</b><small>прогулянка, справи</small></div>
+      <div class="плитка"><b>Побачення</b></div>
+      <div class="плитка"><b>Театр, концерт</b></div>
+      <div class="плитка"><b>Робота</b><small>зустріч, презентація…</small></div>
+      <div class="плитка"><b>Свято, вечірка</b><small>день народження…</small></div>
+      <div class="плитка" style="border-style:dashed"><b>Інше</b><small>скажу словами</small></div>
+    </div>
+  </div>
+  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
+</div>
+<figcaption><b>2 · Аркуш листа.</b> На запітнілому склі — «Куди ти збираєшся?», ніби пальцем; лист засунуто за раму. Кінці рушника вже вишито її кольорами.</figcaption>
+</figure>
+
+<!-- 3 · Розмова: паспорт у склі -->
+<figure>
+<div class="екран" id="е3">
+  <div class="шапка"><span>Збережені</span><span class="знак">люстерко</span><span class="праворуч"><span>Новий</span><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="скло"><div class="дощ"></div>
+      <div class="відбиття" style="position:relative">
+        <span class="мітка">Новий сценарій</span>
+        <span class="гол">Побачення</span>
+        <span class="р"><small>Де</small>Заклад <span class="типово">— типово</span></span>
+        <span class="р"><small>Ошатність</small><span class="типово">не обрано</span></span>
+        <span class="р"><small>Коли й погода</small>ввечері, дощ</span>
+        <span class="р"><small>Палітра</small><span class="типово">хай обере стилістка</span></span>
+        <span class="р" style="font-size:11px"><span class="типово">+ макіяж, прикраси, мета</span></span>
+        <div class="так-ні"><span>Усе правильно?</span><span>так</span><span>поправити</span></div>
+      </div></div>
+    <svg class="рушник" style="--кінці:url(#в-її)"><use href="#рушник"/></svg>
+  </div>
+  <div class="під-склом" style="gap:9px">
+    <div class="вона">ти: <b>Іду на побачення в ресторан, увечері. Обіцяють дощ</b></div>
+    <p class="субтитр">Зрозуміла: побачення в ресторані ввечері, під дощем. Наскільки ошатно там буде?<small>Можна не відповідати — образи зберуться й так.</small></p>
+    <div class="швидкі"><span>буденно</span><span>охайно буденно</span><span>ділово, м'яко</span><span>на твій розсуд</span></div>
+    <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#і-стрілка"/></svg></span></div>
+    <span class="дія">Зібрати образи <svg><use href="#і-стрілка"/></svg></span>
+  </div>
+  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
+</div>
+<figcaption><b>3 · Розмова.</b> Скло — паспорт: що стилістка зрозуміла (дощ — на склі). Її відповідь — субтитром під склом; рядок правиться дотиком по склу.</figcaption>
+</figure>
+
+<!-- 4 · Палітра -->
+<figure>
+<div class="екран" id="е4">
+  <div class="шапка"><span>← До сценарію</span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="скло" style="background:radial-gradient(90% 80% at 40% 30%,#2E6672 0%,#21505B 55%,#173C45 100%)"><svg width="200" height="240" style="margin-top:96px"><use href="#обличчя"/></svg></div>
+    <svg class="рушник" style="--кінці:url(#в-нейтр)"><use href="#рушник"/></svg>
+  </div>
+  <div class="під-склом" style="gap:9px">
+    <div style="display:grid;gap:2px;justify-items:center"><h2 class="заголовок" style="font-size:23px">Палітра образу.</h2>
+      <span style="font-size:12px;color:var(--олівець);text-align:center">Основа — головний колір, на якому стоїть образ. Не знаєш — лиши «хай обере стилістка».</span></div>
+    <div class="чипи"><span class="чип">хай обере стилістка</span><span class="чип">приглушені</span><span class="чип обр">середні</span><span class="чип">насичені</span></div>
+    <div class="намистини">
+      <span class="нам стил"><i></i>хай обере</span>
+      <span class="нам обр"><i style="background:#21505B"></i>петроль</span>
+      <span class="нам"><i style="background:#9E4730"></i>цегляний</span>
+      <span class="нам"><i style="background:#2E4B3D"></i>хвойний</span>
+      <span class="нам"><i style="background:#D8B0A6"></i>пудровий</span>
+      <span class="нам"><i style="background:#F6F3EC"></i>білий</span>
+    </div>
+    <ul class="схеми">
+      <li class="обр"><svg><rect width="76" height="16" fill="url(#в-нейтр)"/></svg>нейтрали+акцент<span class="вага">найходовіша</span></li>
+      <li><svg><rect width="76" height="16" fill="url(#в-компл)"/></svg>приглушена комплементарна<span class="вага">звичайна</span></li>
+      <li><svg><rect width="76" height="16" fill="url(#в-аналог)"/></svg>аналогова<span class="вага">звичайна</span></li>
+      <li><svg><rect width="76" height="16" fill="url(#в-тріада)"/></svg>тріада<span class="вага">помітна</span></li>
+    </ul>
+  </div>
+  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
+</div>
+<figcaption><b>4 · Палітра.</b> У склі — її обличчя на тлі обраної основи (петроль). Кожна схема — смужка вишивки; обрана перевишиває кінці рушника.</figcaption>
+</figure>
+
+<!-- 5 · Образ -->
+<figure>
+<div class="екран" id="е5">
+  <div class="шапка"><span>‹ 1 / 4 ›</span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="скло біле">
+      <svg viewBox="0 0 260 330" width="260" height="330" aria-label="Образ у склі">
+        <use href="#р-кардиган" x="92" y="58" width="92" height="120" fill="#EFE8DA" stroke="#D3CAB8"/>
+        <use href="#р-тренч" x="24" y="52" width="104" height="136" fill="#1F1D1B"/>
+        <use href="#р-штани" x="148" y="64" width="86" height="112" fill="#E6DECF" stroke="#D3CAB8"/>
+        <use href="#р-кросівки" x="58" y="200" width="104" height="50" fill="#D6C1A2"/>
+        <use href="#р-клатч" x="166" y="206" width="56" height="34" fill="#C7C8CA"/>
+      </svg>
+      <span class="точка" style="left:70px;top:70px">1</span><span class="точка" style="left:132px;top:84px">2</span><span class="точка" style="left:200px;top:96px">3</span>
+      <span class="точка тут" style="left:100px;top:208px">4</span><span class="точка" style="left:190px;top:200px">5</span>
+      <span class="виноска">↔ замінити<small>лише в цьому образі</small></span>
+    </div>
+    <svg class="рушник" style="--кінці:url(#в-нейтр)"><use href="#рушник"/></svg>
+  </div>
+  <div class="під-склом" style="gap:7px">
+    <h2 class="заголовок" style="font-size:23px">Перший образ</h2>
+    <p class="чому">Молочний верх і штани в один тон тягнуть лінію вгору, а чорний тренч тримає її під дощем. <span class="приклад-позначка">приклад</span></p>
+    <ul class="речі">
+      <li><span class="н">1</span><span class="назва">Тренч чорний лляний<small>alot.com.ua</small></span><span class="ціна">6 999 ₴</span></li>
+      <li><span class="н">2</span><span class="назва">Подовжений кардиган Porto молоко<small>25union.com.ua</small></span><span class="ціна">3 150 ₴</span></li>
+      <li><span class="н">3</span><span class="назва">Штани від двобортного костюму…<small>maryline.ua</small></span><span class="ціна">1 990 ₴</span></li>
+      <li class="тут"><span class="н">4</span><span class="назва">Анатомічні кросівки бежеві<small>kasandra.ua</small></span><span class="ціна">3 000 ₴</span></li>
+      <li><span class="н">5</span><span class="назва">Клатч ATTICO, світло-сірий<small>attico.ua</small></span><span class="ціна">2 399 ₴</span></li>
+    </ul>
+    <div class="разом"><span>Разом</span><span>17 538 ₴</span></div>
+    <div class="варіанти"><span class="варіант">вдягну як є</span><span class="варіант">змінила б одну річ</span><span class="варіант">не вдягну</span></div>
+  </div>
+  <nav class="сторони"><span class="сторона">Сценарій</span><span class="сторона тут">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
+</div>
+<figcaption><b>5 · Образ.</b> Образ — у склі, на білому; речі пронумеровано точками. Дотик по речі — «замінити» лише її; інші образи й решта цього стоять.</figcaption>
+</figure>
+
+<!-- 6 · Профіль — зворот люстерка -->
+<figure>
+<div class="екран" id="е6">
+  <div class="шапка"><span></span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="скло зворот"><div class="гравюра"><small>Твій профіль</small><b>Оля К.</b>
+      <div class="емаль"><i style="background:#E7CDBB"></i><i style="background:#5A3B2A"></i><i style="background:#6B7F5E"></i></div>
+      <small>шкіра · волосся · очі</small></div></div>
+    <svg class="рушник" style="--кінці:url(#в-її)"><use href="#рушник"/></svg>
+  </div>
+  <div class="під-склом" style="gap:0">
+    <ul class="рядки">
+      <li class="група">Про тебе</li>
+      <li>Фото<small>портрет і на повний зріст</small><span class="пр">2 фото</span></li>
+      <li>Твої кольори<small>зчитано з портрета</small><span class="пр">3 зразки</span></li>
+      <li>Що тобі до лиця<small>метали, білий, нейтралі</small><span class="пр">золото · чистий білий<br>теплі · яскраві, помітні</span></li>
+      <li class="група">Фігура</li>
+      <li>Обхвати<small>плечі · груди · талія · стегна · зріст</small><span class="пр">96 · 94 · 76 · 100</span></li>
+      <li>Розширені виміри<small>для взуття, капелюхів, посадки на нозі</small><span class="пр">2 з 6</span></li>
+    </ul>
+  </div>
+  <nav class="сторони"><span class="сторона">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона тут">Профіль</span></nav>
+</div>
+<figcaption><b>6 · Профіль.</b> Зворот люстерка: ім'я й емаль її кольорів; рядки огляду — ті самі, що в показі, кожен відкриває свій аркуш.</figcaption>
+</figure>
+
+</main>
+</body>
+</html>
