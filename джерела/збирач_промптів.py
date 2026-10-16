@@ -225,6 +225,10 @@ def вибірка(о):
 КІНЕЦЬ_ВІДПОВІДІ_EN = ("Write the answer object itself: it begins with {\"version\" and ends with the brace that "
                        "closes it. Do not put it under «answer» or «answer_schema», and write nothing after it — no "
                        "«answer_schema», «input», «statement_codes» or any other part of «task» or of the data.")
+# ПІДПИС КАДРУ (рядки 5982, 6221; аудит/ПРОДУКТ.md п.12 — промпти на збирачі): текст перед кожним зображенням виклику з
+# фото, той самий ід, що в «photos» промпту; двокрапку ставить показ разом із блоком кадру (`модельП`). Доти його
+# складав показ (`'Photo ' + ід`, `викликОцінкиП`), а розмова (`речіЗФотоШаромП`) слала кадри поспіль без підпису.
+ПІДПИС_КАДРУ_EN = "Photo %s"
 # Ключі шаблону: український → англійський (ті самі розділи, той самий порядок).
 КЛЮЧІ_EN = {"версія": "version", "завдання": "task", "роль": "role", "вхід": "input",
             "правила": "rules", "межі": "limits", "мова": "language", "відповідь": "answer",
