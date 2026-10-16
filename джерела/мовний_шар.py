@@ -2808,8 +2808,10 @@ def _умови_тем():
                      "she sent a photo of her item and no occasion, place or event is known"),
         # Рядок 1441: «today» модель переносила дослівно — «сьогодні» для події в серпні чи суботу
         # Рядок 5211: тема мети — обидві осі (увага й «що ще важливо»), одним м'яким реченням
-        "goal": ("whether at this outing she wants to draw attention or stay unnoticed, and whether a longer line, "
-                 "comfort all day or strictness for the occasion matter to her", вечір),
+        # Рядок 6193: «a longer line» MamayLM у ремонті «новорічна» читала як довжину сукні; довша лінія — щоб
+        # виглядати вищою (п.9, рядок 5211), як у `goal_extra`.
+        "goal": ("whether at this outing she wants to draw attention or stay unnoticed, and whether a longer line "
+                 "to look taller, comfort all day or strictness for the occasion matter to her", вечір),
         # МАК-2 (рядок 258): та сама умова, що `face_contrast.порада_з_випадку` у судді тем
         "makeup": ("what make-up she plans and the lip colour",
                    "%s; or profile colouring.contrast is low and the occasion is dressy: occasion %s, place %s, "
@@ -3187,7 +3189,7 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     "or the passport knows, never a code from \"required\". \"required\" is what was required before her new "
     "message: a code your \"update\" fills no longer remains. While one remains, \"ask\" is one short direct "
     "question about it, \"ask_code\" is that code, and \"invite\" is empty; otherwise, whenever such advice "
-    "codes are left, \"invite\" is one soft sentence to her as «ти» about up to three of them, saying she may "
+    "codes are left, \"invite\" is one soft sentence about up to three of them, saying she may "
     "skip it and the looks will be put together anyway; \"invite_topics\" are exactly its codes. Nothing else "
     "is required: never say that the looks cannot be put together.",
     # П.9 (Р-3, 20.09): драпіровка — лише профіль; про прикраси — лише «які з цим образом».
@@ -3201,7 +3203,7 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # ходом (без нового виклику, п.21): `header` — значення полів паспорта після `update` словами, кодами ключів.
     "\"header\" is the strip shown to her over her looks, beside the labels of the tiles: on every turn, for each "
     "of hour, temperature_c, precipitation, wants, vetoes and mood that the passport has after your \"update\", "
-    "its key and that value in a few plain Ukrainian words, to her as «ти», without codes; no key for a field the "
+    "its key and that value in a few plain Ukrainian words, without codes; no key for a field the "
     "passport does not have.",
 )
 
@@ -3210,15 +3212,17 @@ _ПРАВИЛО_ПРОФІЛЮ = (
 # weather_feel без числа, смуги не було, рука 1 брала джинси з денім-піджаком. Ходів із нагодою чи місцем, що несли
 # formality: живий-14 — 4 з 40, живий-15 — 6 з 13. Тепер число — першим ключем самої форми `update`: модель бачить
 # його в скелеті, а не виводить з правила, що суперечить опису поля.
+# Рядок 6192: «to her as «ти»» у `says`, `invite`, правилах `invite` і `header` знято — шість разів на промпт; форму
+# звертання кажуть `_ПРАВИЛО_ФОРМИ` і межа `для_неї`.
 СКЕЛЕТ_РОЗМОВИ = {
     "update": {"formality": "{from, to} — on every turn once the kind of outing is known (the \"formality\" rule)",
                "<field>": "every other field her new message fills or changes (one phrase may fill several), each "
                           "in its form from \"codes\""},
     "need": " | ".join(_ВМ.ПОТРЕБИ),
     "text": [{"about": ["codes of the \"update\" fields this sentence tells about, or her_question"],
-              "says": "one sentence of your reply to her, to her as «ти», never a lone word"}],
+              "says": "one sentence of your reply to her, never a lone word"}],
     "invite_topics": ["advice topic codes your invitation covers, up to three"],
-    "invite": "one soft invitation sentence to her as «ти», or empty",
+    "invite": "one soft invitation sentence, or empty",
     "ask_code": " | ".join(_ВМ.ОБОВʼЯЗКОВЕ) + ", or empty",
     "ask": "one short direct question, or empty",
     "header": {"hour | temperature_c | precipitation | wants | vetoes | mood": "that value in a few Ukrainian words"},
@@ -3982,6 +3986,10 @@ def _бульбашка(шматки):
 # лише мета; replay Ж20–22 — бульбашки ті самі (`проби/хід_форми_6067.py`).
 ПРО_ЇЇ_ПИТАННЯ = "her_question"
 _КОДИ_МЕТИ = ("goal", "goal_zones", "goal_extra")
+# РЕЧЕННЯ ПРО ОШАТНІСТЬ — НЕ ДЛЯ НЕЇ (рядок 6189, ж15): ошатність — внутрішня шкала (межа `без_шкал`), а речення з
+# formality в `about` правило R13 («restates it») пропускало — «з рівнем одяру 3–4», «середньої формальності», 5 з 28
+# бульбашок. Код слів не читає (п.12): речення, у `about` якого є formality, знімається цілим (`about_scale`).
+_КОДИ_ШКАЛИ = ("formality",)
 
 
 def _речення_тексту(text):
@@ -4001,8 +4009,8 @@ def _речення_тексту(text):
 
 def _текст_до_показу(частини, записано):
     """(текст без питань, зняті речення з «?», відкинуті речення не про записане) — речення `text`, які жінка
-    прочитає: про поля `записано` цього ходу чи про її питання (`ПРО_ЇЇ_ПИТАННЯ`). `записано` None — без
-    цього суду (лише «?»)."""
+    прочитає: про поля `записано` цього ходу чи про її питання (`ПРО_ЇЇ_ПИТАННЯ`), і ні про шкалу (`_КОДИ_ШКАЛИ`).
+    `записано` None — без цього суду (лише «?»)."""
     ч, відкинуто = частини or {}, []
     текст, речення = ч.get("text"), ч.get("text_parts")
     if isinstance(речення, list) and записано is not None:
@@ -4011,7 +4019,10 @@ def _текст_до_показу(частини, записано):
             коди = list((р or {}).get("about") or [])
             чуже = [к for к in коди if к != ПРО_ЇЇ_ПИТАННЯ and к not in записано
                     and к not in ((р or {}).get("not_taken") or ())]
-            if коди and not чуже:
+            шкала = [к for к in коди if к in _КОДИ_ШКАЛИ]
+            if шкала:
+                відкинуто.append(dict(частина="text", чому="about_scale", про=коди, зняте=р.get("says")))
+            elif коди and not чуже:
                 шматки = [x for x in _РЕЧЕННЯ.split(р.get("says") or "") if x.strip()] or [""]
                 довгі = [x for x in шматки if len(x.split()) > 1] or шматки[:1]
                 показ = довгі[:1 + len([к for к in коди if к in _КОДИ_МЕТИ and к in записано])]
@@ -4137,16 +4148,19 @@ def ремонт_поради(відкинуто, обовʼязкове, доз
     ),
     правила=(
         # П.9 (20.09, рядки 108 і 114): порада — до трьох тем одним м'яким реченням, без обовʼязкових.
-        "\"invite\" is advice, not your question: exactly one soft sentence to her as «ти» about up to three "
-        "codes from \"advice_topics\", saying she may skip it and the looks will be put together anyway; no "
-        "question marks. \"invite_topics\" are exactly the codes it covers.",
+        # Рядок 6192: «no question marks» тут суперечило ходу — суд приймає запрошення питанням (рядок 2814), а R15
+        # «?» не забороняє; «to her as «ти»» — у `_ПРАВИЛО_ФОРМИ` і межі `для_неї`, четвертий раз не треба.
+        "\"invite\" is advice, not your question: exactly one soft sentence about up to three codes from "
+        "\"advice_topics\", saying she may skip it and the looks will be put together anyway. \"invite_topics\" "
+        "are exactly the codes it covers.",
         _ПРАВИЛО_ФОРМИ,
         _ПРАВИЛО_ПРОФІЛЮ,
     ),
     вихід="ПОРАДА_ХОДУ",
     скелет={"invite_topics": ["advice topic codes your invitation covers, up to three"],
-            "invite": "one soft invitation sentence to her as «ти»"},
-    межі=("лише_вхід", "для_неї", "без_шкал"),
+            "invite": "one soft invitation sentence"},
+    # Рядок 6192: `без_шкал` знято — у вході ремонту шкал нема (теми, вада, запрошення, її лист).
+    межі=("лише_вхід", "для_неї"),
     мова_промпту="en",
     сталий_спершу=True,
     наприкінці="Answer: one JSON object following \"answer_schema\" in \"task\".",
