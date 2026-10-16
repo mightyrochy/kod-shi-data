@@ -5,13 +5,18 @@
 import copy, json, os, subprocess, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import оцінка_образу as О, суд_чеклісти as С, внутрішня_мова as ВМ
+def _вим(в):    # `суд` міряє через покроковик `_виміри_кроками` (рядок 5770): підміна — генератор, що одразу повертає в
+    def г(*а, **к):
+        return copy.deepcopy(в)
+        yield
+    return г
 КОМІТ, ТЕКА = "e6ce58e0", "аудит/живі_1510_Б/04_ж1_оціни_образ_6б/"
 D = ("shine_budget", "fabric_cut_formality", "formality_spread", "hem_off_widest_point")
 def git(ф): return subprocess.run(["git", "show", КОМІТ + ":" + ТЕКА + ф], capture_output=True, text=True, check=True).stdout
 def стани(речі, вим):
     d0 = json.loads(git("вердикти.txt")); е = d0["прогони"][0]["вердикти"][0]["етапи"]
     d = dict(d0["спільне"]["вхід_прогону"], речі=речі, пікселі={}, сценарій_оцінки=е.get("сценарій_екрана") or {}); d.pop("каталог", None)
-    О._виміри = lambda *а, **к: copy.deepcopy(вим)
+    О._виміри_кроками = _вим(вим)
     лов = {}; б = О._без_входу; О._без_входу = lambda о, с, р: (лов.setdefault("о", о), б(о, с, р))[1]
     О.суд(d)
     return {ВМ_к: х.get("стан") for п in лов["о"]["чеклісти"].values() if isinstance(п, list) for х in п
