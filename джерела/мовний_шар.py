@@ -45,7 +45,7 @@ import re
 import unicodedata
 
 import протокол as _ПР
-from збирач_промптів import ЗВЕРТАННЯ as _ЗВЕРТАННЯ, ЗВЕРТАННЯ_ТИ as _ЗВЕРТАННЯ_ТИ
+from збирач_промптів import ЗВЕРТАННЯ_ТИ as _ЗВЕРТАННЯ_ТИ
 import внутрішня_мова as _ВМ
 
 U = _ВМ.UNKNOWN
@@ -3246,11 +3246,15 @@ def _коди_розмови():
 
 
 # Два правила спільні з ремонтом поради (`ПОРАДА`, рядок 3930): та сама форма звертання й ті самі межі теми.
+# Рядок 6570 (ЖИВІ-1016-1 Ж:19, 20, 23): «йдете… не бажаєте показувати», «Ви йдете», «Ви… хочете» — «ви» в 3 з 35
+# бульбашок; правило стояло з повним `ЗВЕРТАННЯ`, де антиприклад «ніколи «ви» (…хочете…, розкажіть…)» — і «хочете»,
+# «розкажіть» MamayLM узяла саме звідти (у `invite` того ж ходу Ж:19 — «розкажіть»). Тепер форми лише «ти»
+# (`ЗВЕРТАННЯ_ТИ`), як у перекладачок виходу (рядок 6195); «never the polite plural» каже межа `для_неї`.
 _ПРАВИЛО_ФОРМИ = (
     "\"text\", \"invite\" and \"ask\" are natural literary Ukrainian: every Ukrainian word in Ukrainian "
     "Cyrillic letters only, each the letter itself (never a Unicode escape code), with no Latin letter inside "
     "it; brand and shop names as she wrote them. They "
-    "speak to her as " + _ЗВЕРТАННЯ + ".")
+    "speak to her as " + _ЗВЕРТАННЯ_ТИ + ".")
 _ПРАВИЛО_ПРОФІЛЮ = (
     "Never ask her what suits her face (metal, white, neutrals): that is her profile. About jewellery — "
     "only which jewellery she wants with this look. Never ask how she usually dresses, her habits, her "
@@ -3476,7 +3480,11 @@ _ПРАВИЛО_НОРМИ = (
     # Рядок 3560 (ЖИВІ-15 №12): «Це добре, бо коктейльний дрес-код дає простір для сміливих образів.» з
     # `about: [intent, goal]` — оцінка й прогноз про записане поле; суд речень бачить лише коди `about` і слів
     # не читає (п.12), тож межу речення про записане тримає правило.
-    "\"text\" does not mention the passport, codes or fields. It says only what she told and what you "
+    # Рядок 6570 (ЖИВІ-1016-1 Ж:41): «хочеш контекст оптимальний» при `intent: context_optimal` — код, перекладений
+    # слово в слово: «does not mention codes» модель читала як «не пиши код латиницею». Суд речень слів не читає (п.12),
+    # тож і переклад коду названо тут.
+    "\"text\" does not mention the passport or fields and never says a code, also not put into Ukrainian "
+    "words: what you recorded is told in plain words of what she meant. It says only what she told and what you "
     "understood — what already is, never what will be: nothing that is not in \"update\" or the passport, "
     "no promise or forecast about the looks, the items, "
     "their colours or how her words will be taken into account; the looks are put together later. "
@@ -4653,9 +4661,13 @@ def ремонт_поради(відкинуто, обовʼязкове, доз
         # П.9 (20.09, рядки 108 і 114): порада — до трьох тем одним м'яким реченням, без обовʼязкових.
         # Рядок 6192: «no question marks» тут суперечило ходу — суд приймає запрошення питанням (рядок 2814), а R15
         # «?» не забороняє; «to her as «ти»» — у `_ПРАВИЛО_ФОРМИ` і межі `для_неї`, четвертий раз не треба.
+        # Рядок 6615 (ЖИВІ-1016-2 №1–3, 10): «…? Можеш пропустити цей крок, якщо не хочеш.», «…? Хоча й без цього образ
+        # буде готовий!», «…? І, можливо, …?» — дослівно «saying she may skip it» другим реченням, і суд знімав пораду
+        # (`too_many_sentences`, порад 0; ремонтів із двома реченнями 4 з 8). «Можна не відповідати…» під
+        # запрошенням-питанням ставить показ сам (`ПОРАДА_НЕОБОВʼЯЗКОВА_П`); тут — лише одне речення.
         "\"invite\" is advice, not your question: exactly one soft sentence about up to three codes from "
-        "\"advice_topics\", saying she may skip it and the looks will be put together anyway. \"invite_topics\" "
-        "are exactly the codes it covers.",
+        "\"advice_topics\", and nothing after it — no second sentence and no second question; do not add that she "
+        "may skip it: the app tells her. \"invite_topics\" are exactly the codes it covers.",
         _ПРАВИЛО_ФОРМИ,
         _ПРАВИЛО_ПРОФІЛЮ,
     ),
