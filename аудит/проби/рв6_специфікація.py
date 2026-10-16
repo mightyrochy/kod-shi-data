@@ -60,7 +60,7 @@ r = міст("запити")
 в1 = json.loads(руки["1"])
 ф("завдання пакета: 10 образів, відповідь ОБРАЗИ_V1, схема відповіді й вимоги — у самому пакеті",
   пак["завдання"].get("образів") == 10 and пак["завдання"].get("відповідь") == "ОБРАЗИ_V1"
-  and в1.get("outfits_wanted") == 10 and в1["task"].get("answer") == "OUTFITS_V1" and bool(в1.get("answer_schema")) and list(в1)[-1] == "answer_schema" and bool(в1["task"].get("rules")),
+  and в1.get("outfits_wanted") == 10 and "answer" not in в1["task"] and "outfits" in (в1.get("answer_schema") or {}) and list(в1)[-1] == "answer_schema" and bool(в1["task"].get("rules")),
   "вимог %d" % len(в1["task"].get("rules") or []))
 ф("правила — список {код, рядок}, полюси — список", isinstance(пак.get("правила"), list) and isinstance(пак.get("полюси"), list),
   "правил %d" % len(пак["правила"]), "полюсів %d" % len(пак["полюси"]))
@@ -107,7 +107,7 @@ base = [с for с in ("верх", "низ", "взуття", _ТРЕТЯ) if с a
 рем = P.розібрати_json(в["промпт_ремонту"]) or {}
 ф("завдання вердикту: 5 образів, відповідь ОБРАЗИ_V1, вимоги списком",
   вд["завдання"].get("образів") == 5 and вд["завдання"].get("відповідь") == "ОБРАЗИ_V1"
-  and рем.get("outfits_wanted") == 5 and (рем.get("task") or {}).get("answer") == "OUTFITS_V1" and isinstance(рем["task"].get("rules"), list) and bool(рем["task"]["rules"]))
+  and рем.get("outfits_wanted") == 5 and "outfits" in (рем.get("answer_schema") or {}) and isinstance(рем["task"].get("rules"), list) and bool(рем["task"]["rules"]))
 зн = [z for о in вд["образи"] for z in о["знахідки"]]
 ф("знахідки мають стабільний ід «з-о1-n», регістр і ремонт; сила ≤ 1", all(re.match(r"з-о\d+-\d+", z["ід"]) and z.get("регістр") and "ремонт" in z for z in зн)
   and all(z["сила_нп"] <= 1 for z in зн), "знахідок %d" % len(зн), "регістри %s" % sorted({z["регістр"] for z in зн}))
