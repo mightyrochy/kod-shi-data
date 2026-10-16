@@ -1397,6 +1397,23 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "cannot_tell_items_intensity_match": "so the code cannot tell whether the outfit's items match in colour "
                                          "saturation",
     "cannot_tell_coordination_rank": "so the code cannot tell how well the outfit's colours are coordinated",
+    # Рядок 2851: правила світлоти й гучності кольору однієї речі, коли колір — вікно слова, а вікно лежить
+    # по обидва боки порога (`outfit.елементи`: L*/C* такого елемента нема, судять межі вікна)
+    "cannot_tell_face_contrast_matches_hers": "so the code cannot tell whether the jump of lightness near her "
+                                              "face matches her own contrast",
+    "cannot_tell_near_white_at_wedding": "so the code cannot tell whether the item reads as wedding white on "
+                                         "photos",
+    "cannot_tell_colour_too_loud_for_occasion": "so the code cannot tell whether the item's colour is louder "
+                                                "than the occasion allows",
+    "cannot_tell_lightness_fits_occasion": "so the code cannot tell whether the item's lightness fits the time "
+                                           "of the occasion",
+    "cannot_tell_chroma_too_high_for_photo": "so the code cannot tell whether the item's colour is too bright "
+                                             "for flash photos",
+    "cannot_tell_colour_holds_attention": "so the code cannot tell whether the item's colour draws the eye",
+    "cannot_tell_colour_left_under_coat": "so the code cannot tell whether the colour of the outfit stays "
+                                          "hidden under the coat",
+    "cannot_tell_dark_fitted_in_sun": "so the code cannot tell whether the fitted item is dark enough to "
+                                      "get hot in the sun",
     # ── правила, яким входу нема ніде (`верхнє_суд.БЕЗ_ВХОДУ`, `аксесуари_суд.БЕЗ_ВХОДУ`) ──
     "no_input_outer_warmth": "nobody publishes the warmth of an outer layer as a number, so the code judges "
                              "whether it is enough for this weather only by the item's type",
