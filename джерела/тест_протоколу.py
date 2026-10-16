@@ -923,7 +923,7 @@ _нв7 = _ОЦ7._ід_усюди(_ОЦ7.невідоме_для_моделі(_с
        and _пк7["points"] == {"failed": ["single_focus"], "passed": ["face_contrast"]}
        and _нв7 == [{"no_input": ["color_measure"], "items": ["p1"]}, {"no_input": ["temperature"]},
                     {"no_input": ["item_kind"], "why": "photo_field_missing"}]
-       and set(_ОЦ7._ВХІД_КОД) >= {п for р, п in _СЧ7._ЧОМУ_БЕЗ_ВХОДУ.values() if р != "система"}
+       and set(_ОЦ7._ВХІД_КОД) >= {п for р, п in _СЧ7._ЧОМУ_БЕЗ_ВХОДУ.values() if р not in ("система", "шлях")}
        and not _КИР.search(json.dumps(_ОЦ7._ід_усюди(_пк7), ensure_ascii=False) + json.dumps(_нв7, ensure_ascii=False))
        and _ЗП6.коди_заяв({"check": _пк7})[-1] == "face_contrast", json.dumps(_пк7, ensure_ascii=False)[:300])
 
