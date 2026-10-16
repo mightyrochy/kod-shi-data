@@ -1359,10 +1359,12 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
     if в.get("слот_розриву"):
         вих["break_kind"] = код("slot", в["слот_розриву"])
     м = в.get("мова")
-    if isinstance(м, dict):
-        вих["language"] = {"can_show": м.get("можна_видавати"),
-                           "violations": [{к2: v for к2, v in (("what", x.get("суть")), ("instead", x.get("натомість"))) if v}
-                                          for x in (м.get("порушення") or []) if isinstance(x, dict)]}
+    # ЛИШЕ З ПОРУШЕННЯМИ (рядок 6213 (б)): поле каже «violations in your previous text», і кожен ремонт ніс
+    # `{"can_show":true,"violations":[]}` разом із рядком входу про нього — без жодного порушення
+    _пор = [{к2: v for к2, v in (("what", x.get("суть")), ("instead", x.get("натомість"))) if v}
+            for x in ((м.get("порушення") or []) if isinstance(м, dict) else []) if isinstance(x, dict)]
+    if _пор:
+        вих["language"] = {"can_show": м.get("можна_видавати"), "violations": _пор}
     р = в.get("реєстр")
     if isinstance(р, dict):
         вих["register"] = {к2: v for к2, v in (("leading", реєстр(р.get("провідний"))),
