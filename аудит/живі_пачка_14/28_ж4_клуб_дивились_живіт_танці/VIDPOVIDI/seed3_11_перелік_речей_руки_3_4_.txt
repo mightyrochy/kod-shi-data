@@ -1,0 +1,43 @@
+── ПРОМПТ (2699 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Longline metallic silver sequin crop top, cropped high waist cut to sit at the narrowest point of the torso, iridescent silver color (#C0C0C0), stretchy synthetic blend fabric that reflects light with every movement.\n\nOversized sheer black mesh slip dress layered underneath for structural volume, bias-cut draping silhouette, jet black color (#000000), lightweight nylon and spandex knit fabric that flows freely.\n\nChunky silver platform ankle boots with a wide block heel, exaggerated square-toe cut, metallic silver finish matching the top (#C0C0C0), patent leather and rubber sole for stability during dancing.\n\nLarge geometric gold hoop earrings, medium-scale architectural shape, bright gold color (#FFD700), polished metal alloy.\n\nWide-leg high-waisted pleated vinyl pants with a sharp front slit, straight-leg cut from hip to floor, deep midnight blue color (#191970), glossy PVC faux leather fabric that adds edge.\n\nThis outfit works because the layered metallic crop top and sheer mesh create immediate visual impact, ensuring every glance is captured as she requested while celebrating her confidence. The bold silver-on-black palette paired with the shimmering sequins delivers a strong statement look perfect for standing out on the dance floor. While the silhouette emphasizes the shoulders and hips rather than the belly zone through strategic draping, the overall volume and reflective surfaces draw attention upward and outward in a way that aligns with her desire to be the center of attention."}
+
+── ВІДПОВІДЬ (1393 симв., 249.7 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Longline metallic silver sequin crop top",
+      "details": "Cropped high waist cut to sit at the narrowest point of the torso, stretchy synthetic blend fabric that reflects light with every movement",
+      "slot": "top",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "Oversized sheer black mesh slip dress",
+      "details": "Layered underneath for structural volume, bias-cut draping silhouette, lightweight nylon and spandex knit fabric that flows freely",
+      "slot": "dress",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Chunky silver platform ankle boots",
+      "details": "Wide block heel, exaggerated square-toe cut, metallic silver finish matching the top, patent leather and rubber sole for stability during dancing",
+      "slot": "shoes",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "Large geometric gold hoop earrings",
+      "details": "Medium-scale architectural shape, polished metal alloy",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg high-waisted pleated vinyl pants",
+      "details": "Sharp front slit, straight-leg cut from hip to floor, glossy PVC faux leather fabric that adds edge",
+      "slot": "bottom",
+      "color_hex": "#191970",
+      "worn": true
+    }
+  ]
+}

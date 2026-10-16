@@ -1,0 +1,49 @@
+── ПРОМПТ (7202 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти», ніколи «вона», «її», «їй», «неї» про неї. her skin tone — твій тон шкіри; complements her skin — доповнює колір твоєї шкіри; when she turns her head — коли ти повертаєш голову; makes her stand out — робить тебе помітною; so she can dance — щоб ти могла танцювати; she looks taller — ти виглядаєш вищою; her wish, as she asked — твоє бажання, як ти просила; the impression she wants to make — враження, яке ти хочеш справити. «Вона», «її» лишаються лише про річ (сукню, сумку, куртку).
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Кардиган жіночий напівприталеного силуету з вовною мериноса демісезонний · colour code: chocolate · about it: text н=1
+2 — Довга сукня з шовкового батиста з мереживом · colour code: black · about it: text н=2
+3 — Сабо рожеві YUMY · colour code: pink · about it: text н=3
+4 — Сумка жіноча, ATTICO, шкіра, колір помаранчевий · colour code: ginger · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; chocolate — шоколадний; ginger — рудий; pink — рожевий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A tailored chocolate merino wool cardigan that falls just below the hips, offering a relaxed yet structured silhouette. Its ribbed texture adds subtle depth and warmth, making it perfect for layering over your black silk dress."},
+{"н": 2, "текст": "An elegant black long dress made from sheer silk chiffon with a deep V-neckline and intricate lace detailing across the bodice. The flowing skirt adds movement and grace, ensuring you feel confident and captivating all night."},
+{"н": 3, "текст": "Playful pink YUMY mules with a wide strap design that sits comfortably on your feet. Their vibrant hue adds a fun, youthful contrast to your dark-toned outfit, drawing attention to your legs and adding an unexpected pop of color."},
+{"н": 4, "текст": "A bold orange leather crossbody bag with a textured finish that exudes confidence and style. Its vibrant hue serves as a striking accent, drawing attention to your midsection and ensuring you stand out in the crowd."},
+{"н": 5, "текст": "This outfit is a masterclass in texture and depth, perfect for your desire to be seen at the party. The black silk chiffon dress with its intricate lace bodice catches every glance as you move, while the chocolate merino wool cardigan adds a layer of sophisticated warmth that contrasts beautifully against the evening air. The pink YUMY mules introduce a playful, unexpected pop of color that draws attention to your legs, and the vibrant orange ATTICO bag acts as a striking focal point, ensuring you stand out from the crowd."},
+{"н": 6, "текст": "The lace bodice of your dress offers a touch of elegance, so keep your makeup classic and refined to complement the texture without overwhelming it."},
+{"н": 7, "текст": "Сумка жіноча, ATTICO, шкіра, колір помаранчевий — needed to fix blocker b-o4-1 (no_bag)"},
+{"н": 8, "текст": "Сумка жіноча, ATTICO, шкіра, колір помаранчевий — needed to fix blocker b-o5-1 (no_top_and_bottom)"}
+]
+
+── ВІДПОВІДЬ (1827 симв., 80.6 с, HTTP 200) ──
+```json
+{
+  "1": "Приталений шоколадний кардиган з мериносової вовни довжиною трохи нижче стегон, який дарує розслаблений і водночас структурований силует. Його ребриста текстура додає витончену глибину та тепло, роблячи його чудовим для носіння поверх твоєї чорної шовкової сукні.",
+  "2": "Елегантна довга чорна сукня з прозорого шовкового шифону з глибоким V-подібним вирізом і вишуканою мереживною обробкою на ліфі. Її струмлива спідниця додає руху та грації, гарантуючи, що ти почуватимешся впевнено й чарівно протягом усієї ночі.",
+  "3": "Веселі рожеві сабо YUMY з широким ремінцем, який зручно фіксується на твоїх ніжках. Їх яскравий колір додає грайливого та юного контрасту до твоєї темної сукні, привертаючи увагу до ніг і створюючи несподіваний акцент.",
+  "4": "Смілива помаранчева шкіряна сумка-кросбоді з текстурованою поверхнею, що випромінює впевненість та стиль. Її яскравий колір слугує вражаючим акцентом, привертаючи увагу до твоєї талії й гарантуючи, що ти будеш помітною серед натовпу.",
+  "5": "Цей образ — майстер-клас з текстури та глибини, ідеальний для твого бажання бути в центрі уваги на вечірці. Чорна шовкова шифонова сукня з мереживною обробкою ліфа привертає погляд кожним своїм рухом, а шоколадний кардиган з мериносової вовни додає вишуканого тепла, яке чудово контрастує з вечірнім повітрям. Рожеві сабо YUMY вносять грайливий і несподіваний акцент кольору, який привертає увагу до твоїх ніг, а яскрава помаранчева сумка ATTICO слугує вражаючим фокусом, гарантуючи, що ти будеш помітною серед натовпу.",
+  "6": "Мереживна обробка ліфа твоєї сукні додає нотку елегантності, тому збережи свій макіяж класичним і витонченим, щоб доповнити текстуру без перевантаження її.",
+  "7": "Сумка жіноча, ATTICO, шкіра, колір помаранчевий",
+  "8": "Сумка жіноча, ATTICO, шкіра, колір помаранчевий"
+}
+```
