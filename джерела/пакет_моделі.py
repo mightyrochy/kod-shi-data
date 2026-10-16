@@ -576,9 +576,7 @@ import внутрішня_мова as _ВМ_П
                          "the stated dress code, within her palette's lightness and her refusals; «formality» — "
                          "the item's step or steps from…to, the same steps as the occasion: " + _БР_Щ.ЩАБЛІ_EN + "; «L» — lightness 0 to "
                          "100; «hem_cm» — where the hem falls, cm above the floor; «fabric_c» — the °C the "
-                         "fabric suits; «L_from», «hem_from» — what the number was read from; «branch» — where "
-                         "the colour lies against her palette: core, edge or break; «register» — the item's "
-                         "style language",
+                         "fabric suits; «register» — the item's style language",
                  як="take items only from here and name each by its «n» alone; fitness for the "
                     "occasion, taste and the unity of the outfit are yours", треба=True),
         # Пул — таблицею (`збирач_промптів.таблиця`, рядок 5540): як її читати — рядок раз на
@@ -589,10 +587,8 @@ import внутрішня_мова as _ВМ_П
                               "object at the end of a row holds the item's other keys; «L» or «hem_cm» given as "
                               "one number is the same from and to",
                  як="read each row as one item with these keys"),
-        # К-3: короткий запис речі (перемикач `короткий_запис`) пише часті поля короткими
-        # ключами, а що кожен означає — цей рядок. Платиться раз на пакет замість того, щоб
-        # платитись іменем ключа на кожній із сотень речей пулу. Поля нема у звичайному
-        # записі, і рядок тоді в промпт не йде (`збирач_промптів.зібрати`).
+        # Що значать ключі пулу, яких назва не пояснює, і типові значення (`дріт_моделі.легенда_ключів`):
+        # раз на пакет, а не на кожній із сотень речей. `L_from`, `hem_from`, `branch` пояснює лише він (рядок 6211).
         _ЗП.Поле("pool_keys", "the keys the items of «pool» use, what each means, and defaults for omitted values",
                  як="read every item of «pool» by these keys; restore every absent key that has an `absent =` default"),
         _ЗП.Поле("pool[].kind", "the kind of an item the shop gives no type for: a belt, a hat, «Shoes»",
