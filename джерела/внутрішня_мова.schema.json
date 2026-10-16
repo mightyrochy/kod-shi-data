@@ -3138,19 +3138,19 @@
          },
          {
           "const": "colour_word_shop",
-          "description": "the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word)"
+          "description": "the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word)"
          },
          {
           "const": "colour_word_shop_photo_other",
-          "description": "the shop names one colour of the named items and their card photo shows another, so the code knows neither for sure (values: items — items: slot — slot code, colour — the shop's colour word, photo — the colour on the photo)"
+          "description": "the shop names one colour of the named items and their card photo shows another, so the code knows neither for sure (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — the shop's colour word, photo — the colour on the photo)"
          },
          {
           "const": "colour_word_model",
-          "description": "the code knows the colour of the named items only from the model's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word)"
+          "description": "the code knows the colour of the named items only from the model's word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word)"
          },
          {
           "const": "colour_word_not_photo",
-          "description": "the colour of the named items comes from a word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word)"
+          "description": "the colour of the named items comes from a word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word)"
          },
          {
           "const": "cannot_tell_item_holds_scheme_hue",
@@ -3218,7 +3218,11 @@
          },
          {
           "const": "cannot_tell_two_neutrals_distinct",
-          "description": "so the code cannot tell whether two neutrals of one lightness differ visibly"
+          "description": "so the code cannot tell whether two neutrals of one lightness differ visibly (values, when given: items — the neutrals' items: item_id, name — the item's name on the card, slot — slot code)"
+         },
+         {
+          "const": "cannot_tell_item_is_neutral",
+          "description": "so the code cannot tell whether the named item is a neutral at all, and the rules about neutrals did not judge it"
          },
          {
           "const": "cannot_tell_neutral_near_face_temperature",
@@ -3226,7 +3230,7 @@
          },
          {
           "const": "cannot_tell_two_different_whites",
-          "description": "so the code cannot tell whether the outfit has two different whites, cream and optical"
+          "description": "so the code cannot tell whether the outfit has two different whites, cream and optical (values, when given: items — the whites' items: item_id, name — the item's name on the card, slot — slot code)"
          },
          {
           "const": "cannot_tell_accessory_spends_chroma",
@@ -3542,7 +3546,7 @@
          },
          {
           "const": "cut_not_declared_assumed_regular",
-          "description": "the item cards here do not name the cut, so it was counted as an ordinary straight cut; what follows holds only if the cut really is such (values: slots — slot codes of the only items without a declared cut; the other items keep their declared cut)"
+          "description": "the item cards here do not name the cut, so it was counted as an ordinary straight cut; what follows holds only if the cut really is such (values: items — the only items without a declared cut: item_id, name — the item's name on the card; the other items keep their declared cut)"
          },
          {
           "const": "claim_boxy_cut_does_not_follow_waist",
