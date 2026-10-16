@@ -31,6 +31,6 @@ for назва, (сц, пасп) in СЦЕНИ.items():
     print("  каталог %d → абсолютні %d (%s)" % (кат, прид, ", ".join("%s %d" % кв for кв in відк.items()) or "—"))
     print("  %d слотів: %d місць у слотах (з альт) → після ошатності слота й вікон палітри %d речей" % (len(сл), sum(n for n, _, _ in сл.values()), len(у_вікнах)))
     print("  відсічення: %d → %d місць (%s)" % (до, після, ", ".join("%s %d" % кв for кв in sorted(лч.items(), key=lambda x: -x[1]))))
-    print("  бюджет: повний пул %s симв. → пул %s речей, %s симв. (бюджет %s)" % (next((ч["values"].get("full_chars") for ч in ст.get("чому") or [] if ч.get("code") == "pool_cut_to_budget"), "≤бюджету"), r["пул_речей"], ст.get("пул_символів"), ст.get("бюджет")))
+    print("  бюджет: повний пул %s ток. → пул %s речей, %s ток. (бюджет %s)" % (next((ч["values"].get("full_tokens") for ч in ст.get("чому") or [] if ч.get("code") == "pool_cut_to_budget"), "≤бюджету"), r["пул_речей"], ст.get("пул_токенів"), ст.get("бюджет")))
     сук = r["кандидати"].get("сукня") or []; нс, іс, лс = сл.get("сукня", (0, set(), None))
     print("  сукня: у слоті %d → після вікон %d (ошатність слота: %s) → у пулі %d; блиск ≥2: %d; сім'ї: %s; «нижче смуги» в пулі всього %d" % (нс, len(іс), лс, len(сук), sum(1 for x in сук if (x.get("блиск") or 0) >= 2), dict(collections.Counter(x.get("сім_я") for x in сук).most_common(4)), sum(1 for в in r["кандидати"].values() for x in в if x.get("_нижче_смуги"))))
