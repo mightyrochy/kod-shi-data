@@ -9,6 +9,9 @@ const НАЗВИ_EN = {OUTFITS_V1: 'ОБРАЗИ_V1', CHOICE_V1: 'ВИБІР_V1'
                   ITEM_RATINGS_V1: 'ОЦІНКИ_V1', TOURNAMENT_V1: 'ТУРНІР_V1'};
 const відповідьЗадачі = об => {
   const в = об && ((об.завдання || об.task || {}).відповідь || (об.завдання || об.task || {}).answer);
+  /* Рядок 5935: складання й ремонт (скелет наприкінці) імені схеми в «task» не мають — схема «answer_schema»
+     останнім ключем, і її «outfits» кажуть ОБРАЗИ_V1 */
+  if (!в && об && об.task && об.answer_schema && 'outfits' in об.answer_schema) return 'ОБРАЗИ_V1';
   return НАЗВИ_EN[в] || в;
 };
 const ВИД_ТИПУ = {сукня: ['evening_dress', 'cocktail_dress', 'sheath_dress', 'sundress', 'jumpsuit'],
