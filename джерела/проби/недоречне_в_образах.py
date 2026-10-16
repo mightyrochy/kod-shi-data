@@ -3,6 +3,7 @@
 `композитор_придатні.нижче_смуги`, що відсіває пул (#486), але тут ним міряють ВІДПОВІДЬ моделі, не пул.
 Запуск: python3 джерела/проби/недоречне_в_образах.py <тека VIDPOVIDI> (поруч — звіт.txt або сцена.txt зі сценою)."""
 import os, sys, re, json, glob, gzip, collections
+import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspath(__file__)))); from збирач_промптів import рядки_таблиці as РТ
 ТЕКА = os.path.abspath(sys.argv[1])
 Д = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."); sys.path.insert(0, Д); os.chdir(Д)
 import feed as F; F.каталог_на_диску("каталог_повний.xml")
@@ -18,7 +19,7 @@ def файли(мітка): return sorted(glob.glob(os.path.join(ТЕКА, "seed
 за = collections.defaultdict(list)
 for r in ФК._прочитати_каталог("каталог_повний.xml", 0)["каталог"]: за[(ФС.назва_для_людини(r), r.get("ціна"))].append(r)
 пакети = [читати(ш) for ш in файли("ПАКЕТ_V1")]; ру1 = max(пакети, key=lambda x: len(x[0]["style_rules"]))   # рука 2 = рука 1 без правил
-пул = {р["n"]: за.get((р["name"], р.get("price"))) or [] for р in ру1[0]["pool"]}
+пул = {р["n"]: за.get((р["name"], р.get("price"))) or [] for р in РТ(ру1[0]["pool"])}
 def вирок(н):   # (слот, код нижче_смуги | None); різні записи під однією назвою й ціною — береться перший
     рр = пул.get(н) or [{}]; return рр[0].get("слот"), КП.нижче_смуги(рр[0], lo) if рр[0] else None
 в_смузі = collections.Counter(вирок(н)[0] for н in пул if вирок(н)[1] is None and пул[н])
@@ -27,7 +28,7 @@ print("сцена %s · смуга нагоди %s–%s · пул %d речей,
 print("у 10 образах руки 1: різних речей %d, з них нижче смуги %d" % (len(вжито), sum(1 for н in вжито if вирок(н)[1])))
 def образ(мітка, id_, речі):
     нев = [(н, вирок(н)) for н in речі if вирок(н)[1]]
-    print("  %-10s %d/%d нижче смуги%s" % (мітка, len(нев), len(речі), "".join("\n      %s «%s» · слот %s · %s · доречних того слота в пулі: %d" % (н, next(p["name"] for p in ру1[0]["pool"] if p["n"] == н)[:45], с, к, в_смузі[с]) for н, (с, к) in нев)))
+    print("  %-10s %d/%d нижче смуги%s" % (мітка, len(нев), len(речі), "".join("\n      %s «%s» · слот %s · %s · доречних того слота в пулі: %d" % (н, next(p["name"] for p in РТ(ру1[0]["pool"]) if p["n"] == н)[:45], с, к, в_смузі[с]) for н, (с, к) in нев)))
 print("РУКА 1 · складання (10 образів):"); [образ(о["id"], о["id"], о["items"]) for о in json.loads(ру1[2])["outfits"]]
 ру2 = min(пакети, key=lambda x: len(x[0]["style_rules"])) if len(пакети) > 1 else ру1
 def схожість(в, ру):   # образи, яких склав вибір, — ремонт образів складання; рука 1 ↔ рука 2 розрізняються тим, чиї образи ближчі

@@ -3,6 +3,7 @@
 промпту; на пакет руки 1–2 Ж17 — речей пулу без `type` (без роду) і пояси з кроєм сукні. Кращим: прочитано стільки,
 скільки написано. Запуск: cd джерела && python3 проби/живі17_складання.py [тека джерел іншої збірки]"""
 import json, re, subprocess, sys
+import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspath(__file__)))); from збирач_промптів import рядки_таблиці as РТ
 sys.path.insert(0, sys.argv[1] if len(sys.argv) > 1 else "."); import протокол as П
 git = lambda *а: subprocess.run(["git", "-c", "core.quotepath=false", *а], capture_output=True, text=True).stdout
 for ж in ("16", "17"):
@@ -21,7 +22,7 @@ for ж in ("16", "17"):
             print("Ж%s %s/%s: написано %d · прочитано %d%s" % (ж, ф.split("/")[-3][:2], ф.split("/")[-1][:8], написано,
                   прочитано, " · ЕХО промпту, %d симв." % len(відп) if є_ехо else ""))
         if "ПАКЕТ_V1" in ф and ж == "17":
-            пул = json.JSONDecoder().raw_decode(запит[запит.find("{"):])[0].get("pool") or []
+            пул = РТ(json.JSONDecoder().raw_decode(запит[запит.find("{"):])[0].get("pool")) or []
             без = [р for р in пул if "type" not in р]
             пояс = [р["name"][:24] + " cut=" + р["cut"] for р in пул if re.match(r"(Пасок|Ремінь|Пояс)", р.get("name", "")) and р.get("cut") not in (None, "belted")]
             print("   пул %s/%s: речей %d · без type (і без роду) %d, напр. %s · пояси з кроєм %d %s" % (ф.split("/")[-3][:2],

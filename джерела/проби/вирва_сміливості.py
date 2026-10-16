@@ -7,6 +7,7 @@ loud_from із промпту вибору), контраст (max L*−min L*�
 Одяг — річ із типом, не з переліку АКС: без типу (пояс #269·19) код не дає слота, тож і мірило не рахує її одягом (рядок 2701).
 Вага знахідок: з промпту вибору, а коли її нема (після ВИБ-1) — з промпту ремонту за id знахідки; нема ніде → 0 і друкується «нема»."""
 import gzip, json, glob, re, math, sys, collections as K
+import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspath(__file__)))); from збирач_промптів import рядки_таблиці as РТ
 Р = "/home/user/kod-shi-data/аудит/перевірки/"
 ДАНІ, ФІЛЬТР = (sys.argv[1] if len(sys.argv) > 1 else None), re.compile(sys.argv[2] if len(sys.argv) > 2 else ".")  # ЗАМІР-Ш: тека з <прогін>/вердикти.txt.gz замість ПЕР-492 + ЖП-а; фільтр — за іменем теки
 ТЕК = {"satin", "lace", "guipure", "velvet", "velour", "patent_leather", "atlas", "openwork", "tweed", "boucle"}
@@ -56,7 +57,7 @@ for т in ([] if ДАНІ else sorted(glob.glob(Р + "zhp_a/*"))):
 ПРОП = []  # руки без ремонту чи вибору в потоці викликів (вибір на одному «образі» з 25 речей — ПІСЛЯ #539, ЗАМІР-Ш) — не рахуються, але названі
 for с, н, р, x in ВИР:
     if not (x["a"] and x["r"] and x["c"]): ПРОП.append((н, р)); continue
-    ап, ао = x["a"]; рп, ро = x["r"]; сп_, со = x["c"]; Д = {i["n"]: i for i in ап["pool"]}; Ц = ЦН[н] = цілі(ап)
+    ап, ао = x["a"]; рп, ро = x["r"]; сп_, со = x["c"]; Д = {i["n"]: i for i in РТ(ап["pool"])}; Ц = ЦН[н] = цілі(ап)
     for o in рп["verdict"] + сп_["verdict"]: [Д.setdefault(i["n"], i) for i in o["your_outfit"]["items"]]
     пол = {re.sub(r"\D", "", o["id"]): o["pole"] for o in ао["outfits"]}; ід5 = {o["id"] for o in ро["outfits"]}
     бал = lambda ns: ознаки([річ(Д[n]) for n in ns if n in Д])[1]; ВР = {(o["your_outfit"]["id"], f["id"]): f["weight"] for o in рп["verdict"] for f in o["findings"] if "weight" in f}  # після ВИБ-1 вибір ваг не несе → вага з ремонту за id знахідки
@@ -83,8 +84,8 @@ for с, н, р, x in ВИР:
     for o in ао["outfits"]:  # ВИРВА-968: оголошений хід складання → ремонт лишив у п'ятірці / змінив річ / відсіяв образ
         р_ = next((q for q in ро["outfits"] if re.sub(r"\D", "", q["id"]) == re.sub(r"\D", "", o["id"])), None)
         for дл in o.get("deliberate") or []: ЛІЧ["хід", o.get("pole"), "відсіяно" if not р_ else "лишено" if дл.get("item") in р_["items"] else "змінено"] += 1
-    ЛІЧ["пул: ядро/решта", all(i.get("branch") == "core" for i in ап["pool"])] += 1; ЛІЧ["полюс break недоступний"] += "break" in ап.get("poles_unavailable", [])
-    for гр, наб in (("пул", [[i["n"] for i in ап["pool"]]]), ("ідеї10", [[i["n"] for i in o["your_outfit"]["items"]] for o in рп["verdict"]]), ("фінал5", [Ф[5] for Ф in фін.values()]), ("обране", [ч[5]])):
+    ЛІЧ["пул: ядро/решта", all(i.get("branch") == "core" for i in РТ(ап["pool"]))] += 1; ЛІЧ["полюс break недоступний"] += "break" in ап.get("poles_unavailable", [])
+    for гр, наб in (("пул", [[i["n"] for i in РТ(ап["pool"])]]), ("ідеї10", [[i["n"] for i in o["your_outfit"]["items"]] for o in рп["verdict"]]), ("фінал5", [Ф[5] for Ф in фін.values()]), ("обране", [ч[5]])):
         пр = [Д[n] for ns in наб for n in ns if n in Д and Д[n].get("hex") and річ(Д[n])[1] and Д[n].get("color") not in ("golden", "silvery")]; сек = lambda h: "н" if math.hypot(*лчх(h)[1:]) < 15 else int(math.degrees(math.atan2(лчх(h)[2], лчх(h)[1])) % 360 // 60)
         КОЛ[гр]["речей"] += len(пр); КОЛ[гр]["у зоні"] += sum(зона(d["hex"]) for d in пр); КОЛ[гр]["ΔE≤20 до цілі"] += sum(min((math.dist(лчх(d["hex"]), лчх(t)) for t in Ц), default=99) <= 20 for d in пр)
         КОЛ[гр]["секторів"] += len({сек(d["hex"]) for d in пр}); КОЛ[гр]["слів"] += len({d.get("color") for d in пр})
