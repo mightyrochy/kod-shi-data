@@ -1,0 +1,50 @@
+── ПРОМПТ (2354 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black wool cape coat, classic straight cut, knee length, deep black (#000000), heavy woven wool.\nCrimson silk blouse, relaxed fit with a rounded neckline, hip length, muted red (#5d0218), smooth satin silk.\nCharcoal gray fine-gauge knit skirt, A-line silhouette, mid-calf length, dark charcoal (#36454f), merino wool.\nOxford black lace-up shoes, cap-toe design, ankle height, true black (#1a1a1a), full-grain leather.\nSimple matte black pearl stud earrings, round shape, 6mm diameter, #000000, cultured freshwater pearls set in sterling silver.\nA single white carnation pinned to the lapel.\n\nThis outfit honors the solemnity of a grandpa's funeral with appropriate darkness and texture while respecting the autumn season. The charcoal skirt provides a respectful step away from solid black to reflect personal warmth, balanced by the rich crimson blouse that adds life without being distracting. A practical wool cape offers necessary protection against cool fall weather while maintaining a dignified silhouette. The classic lace-up shoes ensure comfort for walking during the service, and the single white flower serves as a quiet, traditional tribute to the deceased."}
+
+── ВІДПОВІДЬ (1253 симв., 155.1 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Black wool cape coat",
+      "details": "classic straight cut, knee length, heavy woven wool",
+      "slot": "outerwear",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Crimson silk blouse",
+      "details": "relaxed fit with a rounded neckline, hip length, smooth satin silk",
+      "slot": "top",
+      "color_hex": "#5d0218",
+      "worn": true
+    },
+    {
+      "name": "Charcoal gray fine-gauge knit skirt",
+      "details": "A-line silhouette, mid-calf length, merino wool",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Oxford black lace-up shoes",
+      "details": "cap-toe design, ankle height, full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    },
+    {
+      "name": "Simple matte black pearl stud earrings",
+      "details": "round shape, 6mm diameter, cultured freshwater pearls set in sterling silver",
+      "slot": "earrings",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "White carnation",
+      "details": "single white flower pinned to the lapel",
+      "slot": "accessory",
+      "color_hex": "#ffffff",
+      "worn": true
+    }
+  ]
+}

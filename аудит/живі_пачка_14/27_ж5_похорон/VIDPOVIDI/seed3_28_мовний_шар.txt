@@ -1,0 +1,50 @@
+── ПРОМПТ (7619 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка: до неї — на «ти», і там, де текст каже про неї в третій особі (she, her). Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж: англійське you, your, а також she, her про неї — завжди «ти», «твій» (ти, тебе, тобі, твій, одягнула, почни, зніми), ніколи «ви», «ваш» (ви, вам, ваш, одягли, почніть, зніміть); стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи чи черевики, heeled — на підборах, а не туфлі; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти», ніколи «вона», «її», «їй», «неї» про неї. her skin tone — твій тон шкіри; complements her skin — доповнює колір твоєї шкіри; when she turns her head — коли ти повертаєш голову; makes her stand out — робить тебе помітною; so she can dance — щоб ти могла танцювати; she looks taller — ти виглядаєш вищою; her wish, as she asked — твоє бажання, як ти просила; the impression she wants to make — враження, яке ти хочеш справити. «Вона», «її» лишаються лише про річ (сукню, сумку, куртку).
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сірий однобортний жакет з поясом · colour code: grey · about it: text н=1
+2 — Спідниця максі зі шліцею ззаду · colour code: grey · about it: text н=2
+3 — Вузький ремінь зі шкіри коричневого кольору Kelly · colour code: brown · about it: text н=3
+4 — Лофери жіночі, ATTICO, замша, колір синій · colour code: blue · about it: text н=4
+5 — Сумка жіноча, ATTICO, шкіра, колір чорний · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; blue — синій; brown — коричневий; grey — сірий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A structured grey blazer with a single-button closure and wide lapels that offer a refined, timeless silhouette. It sits cleanly over the top half of your figure, adding polish while maintaining comfort for a formal occasion."},
+{"н": 2, "текст": "A flowing light grey midi skirt with a smooth drape and a small slit at the back for movement. Its relaxed cut contrasts gently with the fitted blazer, creating balance while allowing grace and ease through the day."},
+{"н": 3, "текст": "A narrow tan leather belt with a polished silver buckle that defines your waist without adding bulk. It brings warmth to the cool-toned palette and anchors the outfit at its most important line."},
+{"н": 4, "текст": "Classic blue suede loafers with a soft, textured finish and a subtle metallic charm detail on the strap. Their rounded toe and low profile make them ideal for long hours of standing or walking, while their muted tone blends effortlessly with the rest of your look."},
+{"н": 5, "текст": "A sleek black leather handbag with clean lines and a minimalist design. Its smooth texture and structured shape carry just enough presence to complete the outfit without drawing attention away from you."},
+{"н": 6, "текст": "You are wearing a tailored grey blazer with sharp lapels and clean lines, paired with a matching light grey midi skirt that has a subtle rear slit for ease of movement. A sleek tan leather belt cinches your waist to highlight your natural shape, while classic blue suede loafers add a touch of softness and quiet elegance. You carry a structured black handbag with a smooth finish that complements the entire ensemble without overpowering it."},
+{"н": 7, "текст": "Tuck the blazer in slightly at the front to emphasize your waist, especially when seated during the service or conversation."},
+{"н": 8, "текст": "Сірий однобортний жакет з поясом, Спідниця максі зі шліцею ззаду, Вузький ремінь зі шкіри коричневого кольору Kelly, Лофери жіночі, ATTICO, замша, колір синій, Сумка жіноча, ATTICO, шкіра, колір чорний — This register conflict is minor because the overwhelming majority of items (blazer, skirt, loafers, bag) are firmly 'classic', with only one 'quiet_luxury' piece; for a funeral, the strict classicism required by the occasion overrides this stylistic nuance."}
+]
+
+── ВІДПОВІДЬ (2271 симв., 70.7 с, HTTP 200) ──
+```json
+{
+  "1": "Структурований сірий жакет з однобортною застібкою та широкими лацканами, що пропонують вишуканий і позачасовий силует. Він елегантно сидить на верхній половині твоєї фігури, додаючи довершеності, зберігаючи при цьому комфорт для урочистої події.",
+  "2": "Подовжена світло-сіра спідниця з м’яким драпіруванням і невеликим розрізом на спинці для свободи рухів. Її вільний крій ніжно контрастує з приталеним жакетом, створюючи баланс, дозволяючи грацію та легкість протягом дня.",
+  "3": "Вузький коричневий шкіряний ремінь із полірованою срібною пряжкою, який підкреслює твою талію без зайвого об’єму. Він додає тепла до холодної колірної гами й фіксує образ на найважливішій лінії.",
+  "4": "Класичні сині замшеві лофери з м’якою, текстурованою поверхнею та ледь помітною металевою прикрасою на ремінці. Їхній закруглений носок і низький профіль роблять їх ідеальними для тривалого перебування на ногах або ходьби, а приглушений тон без зусиль поєднується з іншими елементами твого образу.",
+  "5": "Стильна чорна шкіряна сумка з чистими лініями та мінімалістським дизайном. Її гладка текстура й структурована форма мають достатньо виразності, щоб завершити образ без відволікання уваги від тебе.",
+  "6": "Ти одягнена в приталений сірий жакет з чіткими лацканами та чистими лініями, поєднаний зі світло-сірою максі спідницею, яка має ледь помітний розріз на спинці для свободи рухів. Вузький коричневий шкіряний ремінь підкреслює твою талію, виділяючи природні форми, а класичні сині замшеві лофери додають нотку м’якості й тихої елегантності. Ти тримаєш у руках структуровану чорну сумку з гладкою поверхнею, яка доповнює весь ансамбль без перевантаження.",
+  "7": "Злегка заправ жакет спереду, щоб підкреслити талію, особливо коли ти сидиш під час церемонії чи розмови.",
+  "8": "Сірий однобортний жакет з поясом, Спідниця максі зі шліцею ззаду, Вузький ремінь зі шкіри коричневого кольору Kelly, Лофери жіночі, ATTICO, замша, колір синій, Сумка жіноча, ATTICO, шкіра, колір чорний — Ця стильова розбіжність незначна, оскільки переважна більшість речей (жакет, спідниця, лофери, сумка) є «класичними», а лише одна річ належить до категорії «тихої розкоші»; для похорону суворе класицизм, необхідний за обставин, переважає цей стильовий нюанс."
+}
+```
