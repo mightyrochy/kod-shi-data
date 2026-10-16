@@ -1132,6 +1132,23 @@ def речі_для_моделі(суд_):
     return вих
 
 
+# РЕЧІ КАРТКИ ДЛЯ ПЕРЕКЛАДАЧКИ (рядок 4722, як ПЕРЕКЛАД-34 на картці образу). Перекладачка «Оціни образ» бачила лише
+# тексти: кольорове слово моделі («maroon») перекладала навмання («марунного» при коді `burgundy`), вид — з англійського
+# слова. Тепер з карткою їде перелік речей образу й запасних — номер, назва, ключ виду й код виміряного кольору (дані
+# суду, не слова), і шар дає колір і вид кожної речі з кодів (`мовний_шар._абзац_речей`).
+def речі_для_шару(суд_):
+    """Речі суду → [{н, назва, тип, код_кольору}] для `речі` мовного шару (`мовний_шар.промпт`)."""
+    вих = []
+    for р in суд_.get("речі") or []:
+        if not р.get("назва"):
+            continue
+        колір = _ВМ.код("color_name", (р.get("вимір") or {}).get("слово") or р.get("колір"))
+        тип = _ВМ.ключ("item_type", р.get("вид")) if р.get("вид") else None
+        вих.append({к: v for к, v in {"н": len(вих) + 1, "назва": р["назва"], "тип": тип,
+                                     "слот": р.get("слот"), "код_кольору": колір}.items() if v})
+    return вих
+
+
 # ЗАУВАЖЕННЯ — ІНФОРМАЦІЯ, НЕ ЛІЧИЛЬНИК (рядок 1431, аудит/ПРОДУКТ.md п.17). Доти зміна несла моделі
 # `weight_before`/`weight_after` — суму сил знахідок до й після, — а поле `changes` казало «lowers the total
 # weight of findings»; жінка читала «помітно зменшить кількість зауважень», «зате з'явиться невелике нове
@@ -1194,13 +1211,21 @@ _НА_ФОТО = ("Judge only the items on her photos, for her question. A thing
             "not missing from her outfit — she may simply not have photographed it: never ask her to add it, never "
             "call the outfit incomplete for it, and leave it out of every text, unless her question asks about it; "
             "then answer from the items on her photos.")
+# МОВА ТЕКСТІВ — МОВА «language», НЕ ЇЇ ПИТАННЯ (рядки 6022, 4722, 5983; ПРОДУКТ п.12). Поле «question» казало «with its
+# language», і qwen при `"language": "English"` писала жінці сама українською — 10 з 10 сцен живого 15 (`01…10_…/
+# seed*_04`): на «ви» («підкреслює вашу шкіру»), «я б додав», коди фото «(п1)», биті слова («біливі», «Замінка»),
+# «марунного» замість бордового (ЖИВІ-24 06). Мовний шар такий текст лише правив, а не перекладав: «природне» він
+# лишає, речей і кодів кольору не звіряє. Тепер модель пише мовою «language» (як помічниця, `міст_помічниця`), а
+# українською жінці пише перекладачка — на «ти», у жіночому роді, з речами картки й кодами їхнього кольору.
+_МОВА_ТЕКСТІВ = ("Write \"answer\" and every \"text\" in the language of \"language\", whatever language her "
+                "question is in.")
 ОЦІНКА = _ЗП.Оголошення(
     задача="оцінка",
     роль="You are a stylist. A woman has put an outfit together herself and asks for your view. "
          "You see her photos and the code's check of the outfit as a whole. Her photos show what she chose to "
          "show, often not the whole outfit: you judge what is on them.",
     вхід=(
-        _ЗП.Поле("question", "her question in her words, with its language",
+        _ЗП.Поле("question", "her question in her words, in her language (lang); you answer in \"language\"",
                  без="She asked no question: give your view of the outfit as a whole."),
         _ЗП.Поле("occasion", "where she is going, as she named it",
                  без="She did not name the occasion: do not judge formality or fitness for an event."),
@@ -1266,6 +1291,7 @@ _НА_ФОТО = ("Judge only the items on her photos, for her question. A thing
         "When the outfit is one item, judge that item itself: its color with her palette and near her face, "
         "its cut and fabric, and her occasion and weather when she named them.",
         _БЕЗ_ЛІЧИЛЬНИКА,
+        _МОВА_ТЕКСТІВ,
     ),
     вихід="OUTFIT_REVIEW_V1",
     скелет={
@@ -1412,6 +1438,7 @@ def перевірка_для_моделі(суд_):
         "\"changes\" and name the item in words.",
         _НА_ФОТО,
         _БЕЗ_ЛІЧИЛЬНИКА,
+        _МОВА_ТЕКСТІВ,      # допит живого 15 (`02_…/seed2_09`) так само відповідав українською на «ви»
     ),
     вихід="OUTFIT_FOLLOWUP_V1",
     скелет={"answer": "<the answer to her new question>"},
@@ -1457,6 +1484,13 @@ _ВХІД_КОД = {"lab": "item_colour", "візерунок": "item_pattern", 
              "темп_c": "temperature", "частка_металу": "item_metal_share"}
 # Похідне від входу сцени (клас E дослідження 5280): без нагоди нема й дистанції огляду, без погоди — погоди дня.
 _ПОХІДНЕ_ВІД = {"viewing_distance": "occasion", "temperature": "temperature"}
+# Заяви правил про вхід, якого система не пише ні зі слів жінки, ні з фото, ні з фіду (рядок 5815; слово власника
+# 15.10, П2(а): такі — лише у звіті власника): жінка не може його дати, тож на картці «Чого я не знаю» вони
+# нічого не питають. Ознака — реєстр кодів заяв, не слова; її входи (обхват литки, довжина стопи) тут не стоять.
+ВХОДИ_БЕЗ_ПИСАЧА = frozenset({
+    "outer_ease_not_in_feed", "outer_shoulder_not_measured", "item_insole_length_unknown", "shoe_size_not_checked",
+    "leg_proportion_template_crotch", "wear_cost_no_duration_surface", "items_register_unknown",
+    "dividing_line_item_length_unknown"})
 
 
 def _позначка_пункту(б):
@@ -1468,6 +1502,10 @@ def _позначка_пункту(б):
     заяви = [к for м in б.get("missing") or [] if isinstance(м, dict)
              for к in _ЗП.коди_заяв({"statements": м.get("statements") or []})]
     return (заяви[-1], "+".join(заяви[:-1]) or рід) if заяви else ("point_input", рід)
+
+
+def _код_заяви(з):
+    return next(iter(з)) if isinstance(з, dict) else з
 
 
 def невідоме_для_моделі(суд_):
@@ -1492,7 +1530,10 @@ def невідоме_для_моделі(суд_):
             if _ПОХІДНЕ_ВІД.get(вхід) not in входи:
                 групи.setdefault(чому, []).append(вхід)
         elif б.get("items"):
-            вих.append({к: v for к, v in (("items", б.get("items")), ("statements", _заяви(б, "statements")),
+            заяви = [з for з in _заяви(б, "statements") or [] if _код_заяви(з) not in ВХОДИ_БЕЗ_ПИСАЧА]
+            if б.get("statements") and not заяви:
+                continue        # усі заяви — про вхід без писача (5815): лише у звіті власника
+            вих.append({к: v for к, v in (("items", б.get("items")), ("statements", заяви),
                                           ("what", None if б.get("statements") else б.get("what"))) if v})
     return вих + [dict(no_input=list(dict.fromkeys(в)), why=ч) for ч, в in групи.items()]
 
@@ -1759,8 +1800,8 @@ def прийняти_оцінку(відповідь, суд_):
         відповідь = next((п["текст"] for п in вдало + змінити if _текст_картки(п["текст"])), "")
     import суд_образу as _СЧ
     картка = dict(відповідь=відповідь, вердикт=вердикт, вдало=вдало,
-                  змінити=змінити, не_знаю=не_знаю,
-                  нема_на_фото=dict(коди=_СЧ.коди_нема_на_фото(суд_.get("не_на_фото") or [])))   # рядок 5284
+                  змінити=змінити, не_знаю=не_знаю, речі_шару=речі_для_шару(суд_),
+                  нема_на_фото=dict(коди=_СЧ.коди_нема_на_фото(суд_.get("не_на_фото") or [], лише_речі=True)))   # рядок 5284
     return dict(картка=картка, сторож=сторож,
                 причина=(None if картка["відповідь"] else "empty_answer_field"), нотатки=нотатки,
                 # межа сторожа — кодами полів, не фразою (рядок 3430, аудит/ПРОДУКТ.md п.12)
