@@ -4661,9 +4661,13 @@ def ремонт_поради(відкинуто, обовʼязкове, доз
         # П.9 (20.09, рядки 108 і 114): порада — до трьох тем одним м'яким реченням, без обовʼязкових.
         # Рядок 6192: «no question marks» тут суперечило ходу — суд приймає запрошення питанням (рядок 2814), а R15
         # «?» не забороняє; «to her as «ти»» — у `_ПРАВИЛО_ФОРМИ` і межі `для_неї`, четвертий раз не треба.
+        # Рядок 6615 (ЖИВІ-1016-2 №1–3, 10): «…? Можеш пропустити цей крок, якщо не хочеш.», «…? Хоча й без цього образ
+        # буде готовий!», «…? І, можливо, …?» — дослівно «saying she may skip it» другим реченням, і суд знімав пораду
+        # (`too_many_sentences`, порад 0; ремонтів із двома реченнями 4 з 8). «Можна не відповідати…» під
+        # запрошенням-питанням ставить показ сам (`ПОРАДА_НЕОБОВʼЯЗКОВА_П`); тут — лише одне речення.
         "\"invite\" is advice, not your question: exactly one soft sentence about up to three codes from "
-        "\"advice_topics\", saying she may skip it and the looks will be put together anyway. \"invite_topics\" "
-        "are exactly the codes it covers.",
+        "\"advice_topics\", and nothing after it — no second sentence and no second question; do not add that she "
+        "may skip it: the app tells her. \"invite_topics\" are exactly the codes it covers.",
         _ПРАВИЛО_ФОРМИ,
         _ПРАВИЛО_ПРОФІЛЮ,
     ),
