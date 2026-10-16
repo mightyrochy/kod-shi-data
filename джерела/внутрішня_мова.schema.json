@@ -3119,6 +3119,10 @@
           "description": "the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word)"
          },
          {
+          "const": "colour_word_shop_photo_other",
+          "description": "the shop names one colour of the named items and their card photo shows another, so the code knows neither for sure (values: items — items: slot — slot code, colour — the shop's colour word, photo — the colour on the photo)"
+         },
+         {
           "const": "colour_word_model",
           "description": "the code knows the colour of the named items only from the model's word, not from measuring the photo (values: items — items: slot — slot code, colour — colour word)"
          },
@@ -3516,7 +3520,7 @@
          },
          {
           "const": "cut_not_declared_assumed_regular",
-          "description": "the item cards here do not name the cut, so it was counted as an ordinary straight cut; what follows holds only if the cut really is such"
+          "description": "the item cards here do not name the cut, so it was counted as an ordinary straight cut; what follows holds only if the cut really is such (values: slots — slot codes of the only items without a declared cut; the other items keep their declared cut)"
          },
          {
           "const": "claim_boxy_cut_does_not_follow_waist",
@@ -5557,6 +5561,14 @@
          {
           "const": "colour_holds_attention_goal_conceal",
           "description": "the item's colour holds attention, and her goal for this outing is conceal (values: loudness — the colour's loudness, ceiling — the ceiling, area_pct — its area in the outfit as a percentage, when known)"
+         },
+         {
+          "const": "colour_holds_attention_in_goal_zone",
+          "description": "the item's colour holds attention in a body zone she wants to draw the eye away from (values: loudness — the colour's loudness, ceiling — the ceiling, zones — those zones, area_pct — its area in the outfit as a percentage, when known)"
+         },
+         {
+          "const": "item_draws_eye_by_itself_in_goal_zone",
+          "description": "the item draws the eye not by its colour but by itself, in a body zone she wants to draw the eye away from (values: witnesses — what draws the eye: open_zone, festive_trim, shine; zones — the zones it opens; shine_class — the class of its shine)"
          },
          {
           "const": "item_draws_eye_by_itself_goal_conceal",

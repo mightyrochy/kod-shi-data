@@ -1276,6 +1276,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ── колір лише словом, а не вимір (`колір_річ.без_входу_кольору`) ──────────
     "colour_word_shop": "the code knows the colour of the named items only from the shop's word, not from "
                         "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
+    "colour_word_shop_photo_other": "the shop names one colour of the named items and their card photo shows "
+                                    "another, so the code knows neither for sure (values: items — items: slot — "
+                                    "slot code, colour — the shop's colour word, photo — the colour on the photo)",
     "colour_word_model": "the code knows the colour of the named items only from the model's word, not from "
                          "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
     "colour_word_not_photo": "the colour of the named items comes from a word, not from measuring the photo "
@@ -1517,7 +1520,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
                                         "ordinary straight cut; what follows holds only if the cut really is "
-                                        "such",
+                                        "such (values: slots — slot codes of the only items without a declared "
+                                        "cut; the other items keep their declared cut)",
     # МОВА ПРО РІЧ І ЛІНІЮ (28.09.2026, Ф-2): текст заяви їде мовній моделі, тож
     # заборона корпусу на «ховає» (R-ONB-06, R-LNG-01) діє тут так само, як у `суть`.
     # Було: "a straight boxy cut hides her defined waist" — річ діє на тіло. Стало:
@@ -2787,6 +2791,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                            "conceal (values: loudness — the colour's loudness, ceiling — the "
                                            "ceiling, area_pct — its area in the outfit as a percentage, when "
                                            "known)",
+    "colour_holds_attention_in_goal_zone": "the item's colour holds attention in a body zone she wants to draw "
+                                           "the eye away from (values: loudness — the colour's loudness, "
+                                           "ceiling — the ceiling, zones — those zones, area_pct — its area in "
+                                           "the outfit as a percentage, when known)",
+    "item_draws_eye_by_itself_in_goal_zone": "the item draws the eye not by its colour but by itself, in a body "
+                                             "zone she wants to draw the eye away from (values: witnesses — what "
+                                             "draws the eye: open_zone, festive_trim, shine; zones — the zones it "
+                                             "opens; shine_class — the class of its shine)",
     "item_draws_eye_by_itself_goal_conceal": "the item draws the eye not by its colour but by itself, and her "
                                              "goal for this outing is conceal (values: witnesses — what draws "
                                              "the eye: open_zone, festive_trim, shine; zones — the zones it "
