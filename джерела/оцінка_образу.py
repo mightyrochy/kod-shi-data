@@ -158,19 +158,22 @@ def _ключ(поле, код, незнайомі, де):
 #     жакетом зливали з ним — звідси «a garment under an open jacket is its own item»; жакет `outerwear` — 5 з 18
 #     (решта `top`: старе правило ставило верх і верхній шар однією формою) — звідси «worn open over another
 #     garment»; на ф2 поряд із ботильйонами — 9 вигаданих `bottom` («trousers», «beige bottom») і взуття на L
-#     2 з 9 — звідси «a photo of shoes alone has no top or bottom».
+#     2 з 9 — звідси «a photo of shoes alone has no top or bottom»;
+#   · «photo» — ід з підпису «Photo ф1:» перед кадром (рядок 5982, показ `викликОцінкиП`): живий 15 (qwen3.5-9b, L) —
+#     бордову спідницю ф1 записано на ф2 3 рази з 5 (картка: «штани»), бо кадри йшли поспіль без підпису.
 РЕЧІ = _ЗП.Оголошення(
     задача="оцінка_речі",
     роль="You are a stylist. You see photos of an outfit a woman has put together herself, and you "
          "list the items that make it up.",
     вхід=(
-        _ЗП.Поле("photos", "her photos in the order they are attached: id, width, height", треба=True),
+        _ЗП.Поле("photos", "her photos: id, width, height; each image is attached after the label «Photo <id>:»", треба=True),
         _ЗП.Поле("codes", "allowed codes for item fields"),
     ),
     правила=(
         "List every garment, pair of shoes, bag and accessory visible on her photos: one object per item. "
         "A garment under an open jacket is its own item, and so is each pair of shoes.",
-        "An item seen on several photos is listed once, with the photo where it is seen best.",
+        "Each photo is a separate picture: \"photo\" is the id from the label right before the image where the "
+        "item itself is drawn. An item seen on several photos is listed once, with the photo where it is seen best.",
         "\"in_outfit\" is true for items worn together in the outfit; false for an item shown as an "
         "alternative to one of them; \"unknown\" when the photo does not show which of them she wears "
         "(two pairs side by side, nothing on her).",
