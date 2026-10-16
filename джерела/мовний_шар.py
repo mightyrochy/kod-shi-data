@@ -2842,7 +2842,8 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # ставав нагодою. Тепер вона каже прямо, що нагода й місце — інша частина дня.
     # Рядки 5246, 5311, 5318 (ЖИВІ-1510-А А9, Г2, Г4): «надворі +18» → `place_words` «Надворі…» (заборона казала лише
     # place); «бездоганно за нагодою, без претензій» — уривком лише в `formality`, без `intent`; клуб — без `place`
-    "\"update\" holds every field her new message fills or changes, and only those. Go through her "
+    "\"update\" holds every field her new message fills or changes, and only those, and formality (its own "
+    "rule). Go through her "
     "message part by part: one phrase often fills several fields, and the same fragment of her words may be "
     "the quote of each of them — the outing itself (work, a party, a trip) is occasion, also when the same "
     "phrase says how she gets there: such a phrase gives both occasion and movement, never movement alone; "
@@ -2856,7 +2857,7 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     "goes into wants or own_items; her "
     "limit on how much of her body she shows is open_zones, never goal_zones. A "
     "new value replaces the old one; a wish or a limit from before that she takes back goes into "
-    "\"retract\". Do not repeat fields that do not change.",
+    "\"retract\". Do not repeat fields that do not change, except formality.",
     # НП-в5 (рядок 520): плитка без розмови — хід без її листа; паспорт тоді потребує числа моделі.
     "When her new message is unknown, she wrote nothing and only changed the tiles: \"update\" gives "
     "formality, part_of_day, reserved_colour and open_zones for what \"chosen\" and the passport say now; "
@@ -2935,7 +2936,12 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     # свята, де б не було» — 2 і 5, і ДН у кафе ставав 5–7.
     # МОВА-ХІД-ТОНШЕ (рядок 3491): «приклади — лише для смуги, не place чи occasion» знято — те саме каже заголовок
     # якорів у «codes» («examples for the band only, not codes»).
-    "\"formality\" is always present, without quote: how dressy this outing is, taken by the anchors in "
+    # Рядок 6026: «always present» модель читала як «коли вона сказала про ошатність» (опис `update` — лише поля її
+    # листа). Тепер — на кожному ході, щойно відомо, що це за вихід, і також коли її лист інших полів не міняє. Без
+    # події число не ставиться: смуга сама робить сценарій (`сценарій.є_сценарій`), і обовʼязкове `occasion` зникло б.
+    "\"formality\" is in \"update\" on every turn once her words, the passport or \"chosen\" say what kind of "
+    "outing it is, also when it does not change; before that it is absent. It is without quote: how dressy this "
+    "outing is, taken by the anchors in "
     "\"codes\", not by eye. A named dress code — exactly its band from the dress-code bands. Otherwise start "
     "from the usual band of the example nearest to what kind of event it is — not to how important it is to "
     "her. Pick it by the place her words name, or, when she names none, by what she will be doing: a walk "
@@ -3049,9 +3055,15 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     "passport does not have.",
 )
 
+# РЯДОК 6026 (ЖИВИЙ-15, сцена 12 «Новорічна вечірка в ресторані, надворі мороз»): `update` описувався лише як «кожне
+# поле, яке заповнює чи міняє її лист», і правило «formality завжди» з ним сперечалось — модель дала occasion і
+# weather_feel без числа, смуги не було, рука 1 брала джинси з денім-піджаком. Ходів із нагодою чи місцем, що несли
+# formality: живий-14 — 4 з 40, живий-15 — 6 з 13. Тепер число — першим ключем самої форми `update`: модель бачить
+# його в скелеті, а не виводить з правила, що суперечить опису поля.
 СКЕЛЕТ_РОЗМОВИ = {
-    "update": "object — every field her new message fills or changes (one phrase may fill several), each in its "
-              "form from \"codes\"",
+    "update": {"formality": "{from, to} — on every turn once the kind of outing is known (the \"formality\" rule)",
+               "<field>": "every other field her new message fills or changes (one phrase may fill several), each "
+                          "in its form from \"codes\""},
     "need": " | ".join(_ВМ.ПОТРЕБИ),
     "text": [{"about": ["codes of the \"update\" fields this sentence tells about, or her_question"],
               "says": "one sentence of your reply to her, to her as «ти», never a lone word"}],
