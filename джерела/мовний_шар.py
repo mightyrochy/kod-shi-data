@@ -1961,6 +1961,14 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         п["нагода"] = None
         п.setdefault("джерело_полів", {})["нагода"] = "occasion_part_conflict"
     п["виміри"], п["звідки"] = _ПН.виміри_нагоди(п, сценарій or {})
+    # ШАПКА НАД КАРТКАМИ (рядок 5422): слова моделі цього ходу — для значення поля після ходу; давні слова лишаються,
+    # поки значення те саме, для якого їх написано (`паспорт_нагоди.шапка_чинна`)
+    шапка = _ПН.шапка_чинна(dict(п, шапка=досі.get("шапка")), {
+        к: dict(текст=т, для=_ПН.значення_шапки(п, к)) for к, т in ((частини or {}).get("header") or {}).items()})
+    if шапка:
+        п["шапка"] = шапка
+    else:
+        п.pop("шапка", None)
     # ТЕМИ ПОРАДИ — ЗІ СТАНУ ПІСЛЯ ЦЬОГО ХОДУ. Виклик 0 пропонував теми в промпті, тобто за
     # станом ДО її слів; тут стан уже відомий (театр о 18:00 — вечір), і вечірні теми йдуть
     # на цьому ж ході. Без повторів (п.9): уже запропоновані лежать у `поради_дані`.
@@ -2477,18 +2485,30 @@ _ПОЛЯ_EN = {
     # 4206): правило ходу каже про місце в назві події, а опис поля, яке модель заповнює першим, — ні
     # Рядок 5270 (ЖИВІ-1510-Б, Б1): «йду на роботу пішки» — `movement` з цим уривком, `occasion` — ні (ДО 960 — work):
     # «such a phrase gives both occasion and movement» стояло лише в правилі `update`, не в описах полів
-    "occasion": "what kind of event it is, also when the same phrase says how she gets there (walking to work "
-                "is occasion work and movement walk); the place named in the same phrase goes into place too",
+    # Рядки 6090, 6092 (5313, 5318 живцем), 6069, 6070 (живий-14, 07–16 і 04–06): правила #1103 у підпунктах кодів і в правилі ходу модель
+    # не брала — весілля подруги лягало святом (4/5), «вечірка в клуб» давала саму нагоду без місця й пори (5/5),
+    # урок вокалу — роботою. Модель пише нагоду першою й бере з фрази одне поле — тож опис нагоди сам каже, що ще
+    # дає та сама фраза
+    "occasion": "what kind of event it is: someone else's wedding (a friend's, a relative's) is wedding_guest, "
+                "never celebration; a lesson she takes as a hobby (singing, dancing) is everyday — never work, and "
+                "never theatre: she takes part, she does not watch. Also when the same phrase says how she gets "
+                "there (walking to work is occasion work and movement walk). The same phrase gives its other fields "
+                "too: the place it names is place, with that quote (a party in a club — place club); the part of "
+                "the day it names is part_of_day («ввечері» — evening)",
     # Рядок 5241 (ЖИВІ-1510-А, А2): «йога зранку, потім кава з подругою» → `occasion_part: sport` з уривком йоги:
     # правило «частина не названа — перша не спортивна» стояло лише в правилі ходу, не в описі поля
-    "occasion_part": "which part of her day THIS outfit is for: sport when it is for doing "
-                     "sport, other when it is for another activity; she has not said which — the first part that "
-                     "is not sport, other; give it with occasion, with the quote "
-                     "of that selected part, not a quote of the whole day; unknown when you cannot tell",
+    # Рядок 6093 (5241 живцем, живий-14, 01–03): «йога зранку, потім кава» — `occasion_part: sport` 3/3: «sport when it is for doing
+    # sport» стояло першим, а типове other — у хвості. Тепер першим — other, і sport лише за її словами про вбрання
+    "occasion_part": "which part of her day THIS outfit is for: other — an activity that is not sport, also when "
+                     "she names a sport and another part but has not said the outfit is for the sport (then it is "
+                     "for the first part that is not sport); sport — only when she says the outfit is for doing "
+                     "the sport; give it with occasion, with the quote of that selected part, not a quote of the "
+                     "whole day; unknown when you cannot tell",
     # Рядок 4206 (ЖИВІ-18 №5): «Новорічна вечірка в ресторані» — `occasion` з цим уривком, а `place` — ні (Ж17 — так):
     # правило ходу каже «place, also inside the phrase that names the event», а опис поля, на який модель дивиться,
     # заповнюючи, — ні; код місця з назви не читає (п.12), тож лише модель
-    "place": "where she will be, also when only the phrase that names the event says it",
+    "place": "where she will be, also when only the phrase that names the event says it: occasion and place then "
+             "stand on the same quote",
     "dress_code": "the dress code, when it is named",
     # Рядок 3165 (живі 12, А/07): «"yoga and coffee with a friend"» — подія англійською й у власних лапках;
     # подія йде на картку випадку, тож — її слова з листа, її мовою, лише скорочені
@@ -2533,11 +2553,19 @@ _ПОЛЯ_EN = {
     # МОВА-ХІД-ТОНШЕ (рядок 3491): окреме правило ходу слово в слово повторювало цей опис; його місця вечора —
     # тепер тут (`_коди_розмови` доставляє перелік коду, `_місця_вечірні_en`)
     # Рядок 5241 (А2): «йога зранку, потім кава» — кава теж зранку, а `part_of_day` не дано (ДО того ж сіду — morning)
-    "part_of_day": "part of the day, only when no hour is known: from her words (said for one part of her day, it "
+    # Рядок 6070 (живий-14, 12–16): «Йду ввечері на вечірку…» — «ввечері» сиділо в цитаті нагоди, пори 0/5
+    "part_of_day": "part of the day, only when no hour is known: from her words («ввечері», «зранку»), also inside "
+                   "the phrase that names the event (said for one part of her day, it "
                    "holds for the parts after it until she names another), or when the event or a tile "
                    "in \"chosen\" names it or usually takes it (an evening reception, a theatre, a concert, an "
                    "opera or a New Year party — evening; a place the code reads as evening by itself, %s — "
                    "evening); an event that happens at any time of day — absent",
+    # Рядок 5260: пора року рукам — з дати показу, бо місяця події паспорт не ніс: новорічний корпоратив, про
+    # який вона пише 10.10, руки бачили осінню подією. Місяць — розуміння її слів моделлю (п.14), код слів не читає
+    "month": "the month of the event, only when her words name it: a date or a month («27 грудня», «у березні»), "
+             "or a holiday that falls in one month (a New Year party, a New Year corporate party — december; "
+             "Valentine's day — february; the first of September — september), with that word as quote; "
+             "«today», «tomorrow», «on Saturday» or an event of any month — absent",
     # ДОЩ-1 (рядок 1471): градуси — лише названі; сезон свята без числа — `weather_feel` (код → число бере
     # `внутрішня_мова.ТАБЛИЦЯ`, не модель), і його опора — слово свята в її репліці (сторож `_тримається`).
     # ГРАДУСИ-1 (рядок 2381, живий пачки 3+4 К7): «на вулиці мінус п'ятнадцять і сніг» MamayLM записала
@@ -2573,20 +2601,22 @@ _ПОЛЯ_EN = {
     # питань» — `goal: conceal`. Хвіст опису statement «a separate field from goal, both are set» читався як «став
     # обидва поля»; про те, що код наміру живе лише тут, опис мовчав. Рішення менеджера (рядок 2385): «без
     # претензій / без питань» — бездоганна доречність `context_optimal`, не «приховати» (воно — про тіло й увагу).
-    "intent": "what matters most to her — its codes go only here, never into goal: comfort_first — comfort and "
+    # Рядок 6091 (5317 живцем, живий-14, 12–16): `intent: statement` 5/5, `goal: express` 0/5 — «its codes go only here, never into
+    # goal» модель читала як «goal не пиши»; тепер опис statement сам велить писати й goal express
+    "intent": "what matters most to her (goal is a separate field with its own codes): comfort_first — comfort and "
               "freedom of movement; context_optimal — being appropriate to the event and its level, also "
               "flawless or strictly by the occasion (with strict in goal_extra), also when "
               "she says it only through someone's judgement she wants to pass (nobody should criticise her look "
               "or find fault with it, no remarks and no questions to her, the hosts or the elders should "
               "approve); statement — she wants to impress, stand out or be noticed, however she words it (all "
-              "eyes on her, a star, bold, bright, not like everyone else, tired of grey and safe), with goal "
-              "express; conventional "
+              "eyes on her, a star, bold, bright, not like everyone else, tired of grey and safe) — then goal "
+              "express is written too, on the same quote; conventional "
               "— none of these, also when she wants to be unnoticed",
     # Рядок 5211 (рішення власника 15.10 «3б»): мета — дві осі. `goal` — лише скільки уваги; зони й «що ще
     # важливо» — свої поля, з будь-якою увагою (код читає їх окремо: `регістр_уваги`, `реєстр_намір._намір`)
     "goal": "how much attention she wants for this look — only its own codes, never an intent code: conceal — "
-            "quiet, no attention to her look; flatter — usual, to suit her; express — to be looked at, set together "
-            "with intent statement when she wants to stand out. A body zone she wants to hide is goal_zones, not "
+            "quiet, no attention to her look; flatter — usual, to suit her; express — to be looked at or to stand "
+            "out: the words that give intent statement give goal express too. A body zone she wants to hide is goal_zones, not "
             "conceal. Passing someone's judgement (no remarks, no criticism, no questions to her) is not conceal: "
             "it is intent context_optimal",
     "goal_extra": "what else matters to her in this look, several together: taller — a longer line, to look "
@@ -2765,8 +2795,9 @@ def _коди_розмови():
                      "anniversary, a New Year. A trip or a holiday without such an event is never celebration")
             # Рядок 5313 (ЖИВІ-1510-Г, Г2): «Весілля подруги в суботу» → celebration, і правила гості весілля
             # (`case.reserved_colour`) не мали звідки взятись; рід «свято» про весілля мовчав
+            # Рядок 6090: «never celebration» — тепер в описі самої нагоди, куди модель дивиться
             р.append("  · wedding_guest — someone else's wedding, she is a guest (wedding_day when her words say it "
-                     "is by day); a wedding is never celebration")
+                     "is by day)")
             # Рядок 4622: спорт рухом і спорт нагодою — незалежні канали.
             # Модель називає рід обраної частини через occasion_part; код судить цю пару.
             р.append("  · sport — the selected outing is for doing sport (occasion_part sport). A sport "
@@ -3067,6 +3098,13 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     _ПРАВИЛО_ПРОФІЛЮ,
     # Проєкт нагоди §1.4.5: конфесію й траур проактивно не питати (`profile.ТРАУР_ПОЛІТИКА`).
     "Never ask about her faith, a religious service, mourning or her role at the event.",
+    # Рядок 5422 (п.12): шапку над картками доти складав код — «19:30», «-10 °C», «сніг», «хочеш: кеди, білий»,
+    # «без: підбори; чорний». Підписи плиток лишаються сталими написами показу, решту пише мовна модель тим самим
+    # ходом (без нового виклику, п.21): `header` — значення полів паспорта після `update` словами, кодами ключів.
+    "\"header\" is the strip shown to her over her looks, beside the labels of the tiles: on every turn, for each "
+    "of hour, temperature_c, precipitation, wants, vetoes and mood that the passport has after your \"update\", "
+    "its key and that value in a few plain Ukrainian words, to her as «ти», without codes; no key for a field the "
+    "passport does not have.",
 )
 
 СКЕЛЕТ_РОЗМОВИ = {
@@ -3079,6 +3117,7 @@ _ПРАВИЛО_ПРОФІЛЮ = (
     "invite": "one soft invitation sentence to her as «ти», or empty",
     "ask_code": " | ".join(_ВМ.ОБОВʼЯЗКОВЕ) + ", or empty",
     "ask": "one short direct question, or empty",
+    "header": {"hour | temperature_c | precipitation | wants | vetoes | mood": "that value in a few Ukrainian words"},
 }
 
 РОЗМОВА = _ЗП_Р.Оголошення(
@@ -3403,7 +3442,26 @@ def промпт_розмови(d):
 
 
 # ── ВІДПОВІДЬ ХОДУ: ОНОВЛЕННЯ — ТІЄЮ САМОЮ МОВОЮ СЦЕНАРІЮ, ЧАСТИНИ — ОКРЕМО ─────────────
-_ЧАСТИНИ = ("need", "text", "invite_topics", "invite", "ask_code", "ask")
+_ЧАСТИНИ = ("need", "text", "invite_topics", "invite", "ask_code", "ask", "header")
+ШАПКА_СИМВ = 60      # стеля символів на слова одного поля: шматок шапки — плашка в один рядок на 390 px
+_КОД_У_ТЕКСТІ = re.compile(r"\b[a-z]+_[a-z_]+\b|\bunknown\b")
+
+
+def _шапка(об, незнайомі):
+    """`header` відповіді ходу → {поле паспорта: слова}; ключ поза `паспорт_нагоди.ШАПКА_ПОЛЯ`, порожнє, задовге чи з кодом
+    (форма письма, слів код не читає) — у `незнайомі` рядком `header.<ключ>=<чому>`."""
+    import паспорт_нагоди as _ПН
+    вих = {}
+    for к, т in (об.items() if isinstance(об, dict) else ()):
+        поле = dict(_ПН.ШАПКА_ПОЛЯ).get(_код(к))
+        т = " ".join(т.split()) if isinstance(т, str) else ""
+        чому = ("unknown_key" if not поле else "empty" if _порожнє(т) or _ВМ.невідомо(т) else
+                "too_long" if len(т) > ШАПКА_СИМВ else "code_in_text" if _КОД_У_ТЕКСТІ.search(т) else None)
+        if чому:
+            незнайомі.append("header.%s=%s" % (к, чому))
+        else:
+            вих[поле] = т
+    return вих
 
 
 # ── КОД МЕТИ Й НАМІРУ — НА СВОЄМУ ПОЛІ (рядок 2380) ──────────────────────────────────────
@@ -3738,6 +3796,9 @@ def прийняти_розмову(відповідь):
     ask_code = _код(об.get("ask_code"))
     if ask_code and not _порожнє(ask_code):
         частини["ask_code"] = ask_code
+    шапка = _шапка(об.get("header"), незнайомі)
+    if шапка:
+        частини["header"] = шапка
     в = р["внутрішня"]
     if частини.get("need") in ("app", "look"):
         в["question_about"] = частини["need"]
