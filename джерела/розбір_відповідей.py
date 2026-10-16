@@ -76,10 +76,12 @@ import дріт_моделі as _Д
         # Рядок 4282 (ЖИВІ-19 №13 рука 2): другий колір поруч — `photo_colour: green` біля `color: purple` —
         # модель переказувала жінці («Колір тут здається зеленим, але ми обираємо його як фіолетовий»). Розлад
         # розвʼязує код (`фід_кадр_колір.рішення` → колір речі), тож річ несе ОДИН колір, а кадр — лише позначку
-        _ЗП.Поле("outfit.items[].photo_other_colour", "the shop's photos of this item show another colour of the "
-                                                      "same model; the item itself is «color»",
-                 як="give it «color» and say nothing about the colour on its photos — no «looks …, but …»; this "
-                    "is no reason for «wrong_photos» or «swap»: the card already tells her about the photo"),
+        # Рядок 5220 (файл 1551): «бежеві туфлі» в описі під шоколадним кадром картки — колір не їде зовсім
+        _ЗП.Поле("outfit.items[].photo_other_colour", "the shop names one colour of this item and its photos show "
+                                                      "another; which one she gets is not known",
+                 як="do not name the colour of this item and say nothing about the colour on its photos — no "
+                    "«looks …, but …»; this is no reason for «wrong_photos» or «swap»: the card already tells "
+                    "her about the photo"),
         _ЗП.Поле("outfit.items[].no_photo", "this item has no photo of its own among the others",
                  як="describe it by its name and «color»; do not take another item's photo for it"),
         _ЗП.Поле("outfit.items[].hers", "her own item from her photo, not a product",
