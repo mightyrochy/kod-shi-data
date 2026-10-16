@@ -1,0 +1,64 @@
+── ПРОМПТ (8622 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Джемпер жіночий щільний з рукавом типу реглан демісезонний · kind code: sweater · colour code: khaki · about it: text н=1
+2 — Жилет жіночий на гудзиках з вовни демісезонний · kind code: vest · colour code: black · about it: text н=2
+3 — Туфлі жіночі Tourni · kind code: dress_shoes · colour code: black · about it: text н=3
+4 — Жіноча сумка через плече шкіряна коричнева · kind code: crossbody_bag · colour code: brown · about it: text н=4
+5 — Брюки укорочені звужені до низу чорні · kind code: trousers · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; khaki — хакі.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "A relaxed-fit, chunky knitted sweater in deep olive khaki with a soft white ribbed collar that frames your neck gently and adds subtle contrast against darker tones."},
+{"н": 2, "текст": "A structured black sleeveless vest with wooden buttons running down the front — it sits lightly over the sweater without adding volume, offering clean vertical lines."},
+{"н": 3, "текст": "Glossy black dress shoes with a slim stiletto heel and elegant toe ties that add delicate femininity to your workday steps."},
+{"н": 4, "текст": "A rich brown leather crossbody bag with a sculptural rounded top handle — its smooth texture complements the matte knits while adding warmth to your palette."},
+{"н": 5, "текст": "Tailored black cropped trousers with a high waist and tapered legs that elongate your silhouette, ending just above the ankle for easy movement during daily routines."},
+{"н": 6, "текст": "Your outfit for the office day blends a relaxed yet polished look: the chunky knitted sweater in deep olive khaki gives you warmth and comfort, layered under the sleek black button vest that adds structure without adding bulk. The tailored black cropped trousers offer clean lines to balance the softer knitwear, while the glossy black pumps with delicate toe ties add an elegant touch suitable for your workplace environment. A rich brown leather crossbody bag grounds the look with its sophisticated silhouette, providing both style and practicality. This ensemble works beautifully as it combines comfort and sophistication — perfect for navigating long days in the office without compromising on style."},
+{"н": 7, "текст": "Layer the sweater under the vest to keep your arms free for note-taking while maintaining a polished appearance throughout meetings."},
+{"н": 8, "текст": "Tuck the vest slightly at the front if you wish to create subtle definition without marking your waist directly."},
+{"н": 9, "текст": "Carry the bag crossbody or in hand depending on how formal your meetings are that day."},
+{"н": 10, "текст": "Джемпер жіночий щільний з рукавом типу реглан демісезонний — A striped knit in warm khaki adds texture and a touch of color that breaks the monotony while staying within her muted complementary scheme."},
+{"н": 11, "текст": "Жилет жіночий на гудзиках з вовни демісезонний — I kept the relaxed vest over the fitted sweater to add layers without adding bulk around the waist, helping create a streamlined look that conceals the belly."},
+{"н": 12, "текст": "Туфлі жіночі Tourni — Black pumps with a heel lift the overall height and balance the proportions created by the wide-leg trousers, and they provide the necessary dark anchor for the outfit."},
+{"н": 13, "текст": "Джемпер жіночий щільний з рукавом типу реглан демісезонний, Жилет жіночий на гудзиках з вовни демісезонний — The layered hemlines create depth that breaks the visual weight at the hips, successfully addressing the code's concern about layers ending at the same level."},
+{"н": 14, "текст": "Жилет жіночий на гудзиках з вовни демісезонний — A relaxed vest worn over a slimming top adds layers without adding bulk around the waist, helping to create a streamlined look."},
+{"н": 15, "текст": "Туфлі жіночі Tourni — Black pumps with a heel lift the overall height and balance the proportions created by the wide-leg trousers."}
+]
+
+── ВІДПОВІДЬ (3144 симв., 100.7 с, HTTP 200) ──
+```json
+{
+  "1": "В’язаний щільний джемпер з рукавом реглан демісезонний темно оливкового хакі, який має м’який білий ребристий комірчик, що ніжно обрамлює шию та додає витончений контраст до темніших тонів.",
+  "2": "Структурований жилет без рукавів чорного кольору на дерев’яних ґудзиках по всій передній частині — він легко лягає поверх джемпера, не збільшуючи обсяг, і створює чисті вертикальні лінії.",
+  "3": "Глянцеві чорні туфлі-човники на тонкому підборі з витонченими зав’язками біля миска, які додають ніжної жіночності кожному твоєму робочому кроці.",
+  "4": "Стильна коричнева шкіряна сумка через плече зі скульптурною округлою верхньою ручкою — її гладка текстура доповнює матову в’язку, додаючи тепла твоїй палітрі.",
+  "5": "Пошиті чорні укорочені брюки з високою талією та завуженими штанинами від колін, які витягують силует і закінчуються трохи вище щиколотки для легкої мобільності в повсякденних справах.",
+  "6": "Твій образ на офісний день поєднує невимушений, але елегантний вигляд: щільний джемпер з рукавом реглан темно оливкового хакі дарує тобі тепло та комфорт і носиться під гладким чорним жилетом із ґудзиками, який додає структури без зайвого об’єму. Пошиті укорочені брюки створюють чисті лінії для збалансування м’якої в’язаної тканини, а глянцеві чорні туфлі-човники на підборі з витонченими зав’язками біля миска додають елегантного штриха, який ідеально пасуватиме твоїй робочій атмосфері. Коричнева шкіряна сумка через плече завершує цей образ своєю вишуканою формою та надає тобі як стиль, так і практичність.",
+  "7": "Одягни джемпер під жилет, щоб тримати руки вільними для записів на зустрічах, залишаючись при цьому охайною протягом усього дня.",
+  "8": "Злегка заправ жилет спереду, якщо ти хочеш створити ледь помітний акцент без прямого підкреслення талії.",
+  "9": "Носи сумку через плече або в руці залежно від того, наскільки офіційними будуть твої зустрічі сьогодні.",
+  "10": "Джемпер жіночий щільний з рукавом типу реглан демісезонний — Смугастий светр у теплому хакі додає текстури та легкого кольору, який розбавляє монотонність і при цьому залишається в твоїх приглушених гармонійних тонах.",
+  "11": "Жилет жіночий на гудзиках з вовни демісезонний — Я залишила зручний жилет поверх облягаючого джемпера, щоб додати шари без зайвого об’єму в області талії, допомагаючи створити стрункий силует.",
+  "12": "Туфлі жіночі Tourni — Чорні туфлі на підборі збільшують загальний зріст і балансують пропорції, створені широкими штанами, а також надають потрібний темний акцент для всього образу.",
+  "13": "Джемпер жіночий щільний з рукавом типу реглан демісезонний, Жилет жіночий на гудзиках з вовни демісезонний — Шаруваті краї створюють глибину, яка приглушує візуальну вагу в області стегон і успішно вирішує проблему шарів, що закінчуються на одному рівні.",
+  "14": "Жилет жіночий на гудзиках з вовни демісезонний — Зручний жилет, одягнений поверх облягаючого верху, додає шар без зайвого об’єму в області талії, допомагаючи створити стрункий силует.",
+  "15": "Туфлі жіночі Tourni — Чорні туфлі на підборі збільшують загальний зріст і балансують пропорції, створені широкими штанами."
+}
+```

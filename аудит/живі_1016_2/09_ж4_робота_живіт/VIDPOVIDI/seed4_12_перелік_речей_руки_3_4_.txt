@@ -1,0 +1,30 @@
+── ПРОМПТ (2639 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Midweight wool-blend blazer in charcoal gray (#3e4247), tailored with a slightly dropped shoulder and structured lapel for an authoritative yet comfortable silhouette.\n\nSlim-fit straight-leg trousers in stone-washed black denim (#0f0f10), featuring a subtle back pocket detail that elongates the leg line while providing comfort around the hips.\n\nRound-toe leather loafers in warm brown suede (#8c7356), chosen to draw attention toward the face and legs rather than the lower torso, grounding the outfit in autumnal warmth.\n\nThis look adheres strictly to her \"everyday\" and \"neat\" formality preferences while respecting her goal to keep the belly area quiet; the structured blazer provides a clean upper frame without clinging, and the dark, matte denim creates a vertical line that balances her proportions effortlessly. The warm brown suede shoes introduce a soft accent color that complements her skin tone (#5a3a2a) without competing for attention, ensuring the focus remains on her overall posture rather than specific body measurements. Since it is an autumn office day with daylight, the midweight wool and stone-wash fabrics offer both professional polish and seasonal comfort, meeting the dress code perfectly while honoring her wish to avoid highlighting her midsection."}
+
+── ВІДПОВІДЬ (630 симв., 201.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "midweight wool-blend, tailored with a slightly dropped shoulder and structured lapel",
+      "slot": "outerwear",
+      "color_hex": "#3e4247",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "slim-fit straight-leg, stone-washed denim with subtle back pocket detail",
+      "slot": "bottom",
+      "color_hex": "#0f0f10",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "round-toe leather, warm brown suede",
+      "slot": "shoes",
+      "color_hex": "#8c7356",
+      "worn": true
+    }
+  ]
+}

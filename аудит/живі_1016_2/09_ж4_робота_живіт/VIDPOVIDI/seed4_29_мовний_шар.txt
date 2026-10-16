@@ -1,0 +1,54 @@
+── ПРОМПТ (7411 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Джемпер гарно тягнеться · kind code: sweater · colour code: chocolate · about it: text н=1
+2 — Сірі штани з високою талією · kind code: trousers · colour code: grey · about it: text н=2
+3 — LeBERDES Лофери чорні · kind code: loafers · colour code: black · about it: text н=3
+4 — Сумка жіноча, ATTICO, шкіра, колір помаранчевий · kind code: bag_generic · colour code: terracotta · about it: text н=4
+5 — Чорний піджак прямого крою на гудзиках · kind code: blazer · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; chocolate — шоколадний; grey — сірий; terracotta — теракотовий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "The chocolate sweater is a soft knit with a neat half-turtleneck and short sleeves, cut to sit relaxed over your body without clinging. Its deep brown tone feels warm and inviting against the grey trousers."},
+{"н": 2, "текст": "The grey trousers have a high waist and a straight leg that falls gently to the ankle, offering a clean line that balances the softness of your sweater. They are tailored but not stiff, perfect for all-day comfort."},
+{"н": 3, "текст": "The black loafers are suede with plush shearling lining and a flat gum sole, giving you quiet warmth and ease as you walk through the office. The subtle gold detail on the vamp adds just enough polish."},
+{"н": 4, "текст": "The terracotta bag has a pebbled leather texture and a structured shape with a top handle and side straps that can be used in many ways. Its rich orange hue stands out beautifully against your neutral tones."},
+{"н": 5, "текст": "The black blazer is made of smooth fabric with two buttons, notched lapels, and functional pockets. It cuts straight down to the hip, offering a clean silhouette that works perfectly over your sweater or alone."},
+{"н": 6, "текст": "Your look is built around the rich chocolate sweater and grey trousers, with a sleek black blazer to wear over or take off at work. A pair of cozy black loafers ground your steps on the office floor, while a vibrant terracotta bag adds a warm pop that brightens even the most neutral days."},
+{"н": 7, "текст": "Wear the black blazer open when you move between rooms to keep things light and fluid throughout your day."},
+{"н": 8, "текст": "Leave the chocolate sweater untucked over the grey trousers to let it hang soft, drawing the eye up toward your face."},
+{"н": 9, "текст": "Hold the terracotta bag in hand or on a low shoulder for ease as you rush between meetings."},
+{"н": 10, "текст": "Джемпер гарно тягнеться, Сірі штани з високою талією, Чорний піджак прямого крою на гудзиках — The deliberate move to 'reduce' colours resolves the coordination imbalance, allowing the outfit's core intent—to quietly cover the belly zone for an office day—to shine."}
+]
+
+── ВІДПОВІДЬ (2124 симв., 115.8 с, HTTP 200) ──
+```json
+{
+  "1": "Шоколадний светр має м’який в’язаний трикотаж із акуратним напівворітом і короткими рукавами, пошитий так, щоб вільно лежав на твоєму тілі, не облягаючи. Його глибокий коричневий відтінок здається теплим та приємним у поєднанні з сірими штанами.",
+  "2": "Сірі штани мають високу талію і прямі брючини, що м’яко спадають до щиколотки, створюючи чистий силует, який гармонійно врівноважує ніжність твого светра. Вони пошиті так, щоб сиділи добре, але не були жорсткими — ідеально для цілоденного комфорту.",
+  "3": "Чорні лофери зроблені із замші з м’якою овечою підкладкою та плоскою гумовою підошвою. Вони дарують тобі тихий теплий затишок і легкість, коли йдеш по офісу. Легкий золотистий декор на носку додає лише достатньо вишуканості.",
+  "4": "Теракотова сумка має рельєфну шкіряну фактуру та чітку форму з верхньою ручкою і бічними пасками, які можна використовувати по-різному. Її насичений оранжево-червоний колір чудово виділяється на твоїх нейтральних тонах.",
+  "5": "Чорний піджак виконаний з гладкої тканини з двома гудзиками, вирізом у формі лацканів та функціональними кишенями. Він вільно спадає до стегон, створюючи чистий силует, який чудово поєднується зі светром або носиться окремо.",
+  "6": "Твій образ базується на насиченому шоколадному светрі і сірих штанах, з елегантним чорним піджаком для носіння поверх чи зняття його в офісі. Затишні чорні лофери м’яко стають твоїми кроками по підлозі офісу, а яскрава теракотова сумка додає теплий акцент, який освіжить навіть найнейтральніші дні.",
+  "7": "Носи чорний піджак розстебнутим, щоб залишатися легкою та вільною протягом дня.",
+  "8": "Залиш шоколадний светр не заправленим у штани, щоб він вільно звисав і привертав увагу до твого обличчя.",
+  "9": "Тримай теракотову сумку в руці або на низькому плечі для зручності під час переходу між зустрічами.",
+  "10": "Джемпер гарно тягнеться, Сірі штани з високою талією, Чорний піджак прямого крою на гудзиках — Цей продуманий хід до «зменшення» кольорів вирішує дисбаланс у координації, дозволяючи основному задуму образу—тихо прикривати зону живота для робочого дня—засяяти."
+}
+```
