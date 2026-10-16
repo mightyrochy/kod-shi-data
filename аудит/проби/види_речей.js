@@ -12,6 +12,10 @@ const відповідьЗадачі = об => {
   /* Рядок 5935: складання й ремонт (скелет наприкінці) імені схеми в «task» не мають — схема «answer_schema»
      останнім ключем, і її «outfits» кажуть ОБРАЗИ_V1 */
   if (!в && об && об.task && об.answer_schema && 'outfits' in об.answer_schema) return 'ОБРАЗИ_V1';
+  /* Рядок 6450: оцінка образу — теж скелет наприкінці; її схема має «verdict», а допит на її місці — лише «answer»
+     з хвостом «now» (ті самі дані: «outfit», «check») — обидва вертаються до OUTFIT_REVIEW_V1, як доти */
+  if (!в && об && об.task && об.answer_schema && об.outfit && об.check
+      && ('verdict' in об.answer_schema || об.now)) return 'OUTFIT_REVIEW_V1';
   return НАЗВИ_EN[в] || в;
 };
 const ВИД_ТИПУ = {сукня: ['evening_dress', 'cocktail_dress', 'sheath_dress', 'sundress', 'jumpsuit'],
