@@ -110,6 +110,32 @@ class Протокол(unittest.TestCase):
         with self.assertRaises(ValueError):
             П.перевірити_відповідь({'rows': [розбір]}, [вхід], self.коди)
 
+    def test_варіант_має_власний_фрагмент(self):
+        """Відкидає копію переліку у двох варіантах і два різні коди однієї цитати (рядок 6420)."""
+        вхід = рядок('Молочний, Бежевий')
+        група = {'quote': 'Молочний, Бежевий', 'colors': [{'code': 'milky', 'quote': 'Молочний'}, {'code': 'beige', 'quote': 'Бежевий'}]}
+        розбір = {'row_id': вхід['row_id'], 'status': 'known', 'relation': 'alternatives',
+                  'unknown_reason': 'none', 'variants': [група, група]}
+        with self.assertRaisesRegex(ValueError, 'зайнятий фрагмент'):
+            П.перевірити_відповідь({'rows': [розбір]}, [вхід], self.коди)
+        розбір['variants'] = [{'quote': 'Молочний', 'colors': [{'code': 'milky', 'quote': 'Молочний'}]},
+                              {'quote': 'Бежевий', 'colors': [{'code': 'beige', 'quote': 'Бежевий'}]}]
+        результат = П.перевірити_відповідь({'rows': [розбір]}, [вхід], self.коди)[вхід['row_id']]
+        self.assertEqual(результат['variant_utf8_spans'], [[0, 16], [18, 32]])
+        повтор = рядок('Сірий, Темно-сірий, сірий')
+        розбір = {'row_id': повтор['row_id'], 'status': 'known', 'relation': 'alternatives', 'unknown_reason': 'none',
+                  'variants': [{'quote': 'Темно-сірий', 'colors': [{'code': 'graphite', 'quote': 'Темно-сірий'}]},
+                               {'quote': 'сірий', 'colors': [{'code': 'grey', 'quote': 'сірий'}]}]}
+        self.assertEqual(П.перевірити_відповідь({'rows': [розбір]}, [повтор], self.коди)[повтор['row_id']]['variant_utf8_spans'][1][0], 35)
+        шавлія = рядок('Шавлія/білий, Шавлія')
+        розбір = {'row_id': шавлія['row_id'], 'status': 'known', 'relation': 'alternatives', 'unknown_reason': 'none',
+                  'variants': [{'quote': 'Шавлія/білий', 'colors': [{'code': 'sage', 'quote': 'Шавлія'}, {'code': 'white', 'quote': 'білий'}]},
+                               {'quote': 'Шавлія', 'colors': [{'code': 'sage', 'quote': 'Шавлія'}]}]}
+        П.перевірити_відповідь({'rows': [розбір]}, [шавлія], self.коди)
+        розбір['variants'][1]['colors'][0]['code'] = 'olive'
+        with self.assertRaisesRegex(ValueError, 'різні коди'):
+            П.перевірити_відповідь({'rows': [розбір]}, [шавлія], self.коди)
+
     def test_спільний_рядок_різні_джерела(self):
         """Один переклад не поширює довіру між двома входженнями."""
         вхід = self.вхід
@@ -345,8 +371,8 @@ class Протокол(unittest.TestCase):
     def test_історичний_дозвіл_і_джерельна_умова(self):
         """Звіряє всю історію нового перекладу; товарний допуск лишається окремим."""
         історія = self.реальна_історія()
-        дозвіл = П.читати_json((П.ДАНІ / 'повтор_6153799914.json').read_bytes())
-        self.assertEqual((len(історія), sum(len(р['attempts']) for р in історія)), (97, 177))
+        дозвіл = П.читати_json((П.ДАНІ / 'повтор_К4.json').read_bytes())
+        self.assertEqual((len(історія), sum(len(р['attempts']) for р in історія)), (97, 274))
         with П.Ж.відкрити(історія) as журнал:
             for р in історія:
                 журнал.перевірити_повтор(р, П.контракт()[2], дозвіл)
