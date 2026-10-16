@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""4531: схема остання у фактичному промпті `bridge.від_моделі`; без моделі.
+"""4531: схема остання у фактичному промпті `bridge.від_моделі` (за нею — лише рядок кінця, 5239); без моделі.
 Запуск: cd джерела && python3 проби/ремонт_схема_4531.py [тека сирих промптів]."""
 import json, os, sys
 from pathlib import Path
@@ -24,5 +24,6 @@ for ім, склад in (("повний", речі), ("без_взуття", р�
     print("%s: гейтів %d, схема %s, за схемою %r, input %s, statement_codes %s" %
           (ім, гейти, "корінь" if "answer_schema" in п else "task", хвіст[:40],
            "input" in п["task"], "statement_codes" in п["task"]))
-    assert list(п)[-1] == "answer_schema" and "answer_schema" not in п["task"]
-    assert хвіст == "}" and "input" in п["task"] and "statement_codes" in п["task"]
+    # рядок 5239: за схемою — лише рядок кінця відповіді («now»)
+    assert list(п)[-2:] == ["answer_schema", "now"] and "answer_schema" not in п["task"]
+    assert хвіст == ',"now":%s}' % json.dumps(п["now"], ensure_ascii=False) and "input" in п["task"] and "statement_codes" in п["task"]
