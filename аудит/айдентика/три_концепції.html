@@ -64,12 +64,12 @@ h2{font:500 28px/1.1 var(--заголовок-ст);font-variation-settings:"CON
 .голова b{font:500 34px/1.05 var(--заголовок-ст);font-variation-settings:"CONT" 600;text-wrap:balance}
 .голова .корінь{font-size:13px;color:var(--сірий-ст)}
 .голова p{margin:0;font-size:16px}
-.екрани{display:flex;flex-wrap:wrap;gap:34px 34px;min-width:0}
-.телефон{margin:0;display:grid;gap:10px;align-content:start;width:390px;flex:none}
+.екрани{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:34px;min-width:0}
+.телефон{margin:0;display:grid;gap:10px;align-content:start;min-width:0;max-width:390px;width:100%}
+.fit{width:100%;max-width:390px;overflow:hidden;border-radius:22px}
 .телефон .екран{border-radius:22px;box-shadow:0 1px 2px rgb(20 22 26 / .08),0 8px 24px rgb(20 22 26 / .10)}
 .телефон figcaption{font-size:12.5px;color:var(--сірий-ст);line-height:1.45}
 .телефон figcaption b{color:var(--текст-ст);font-weight:600}
-@media (max-width:460px){.екрани{flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px}}
 .опис{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 44px}
 .блок{min-width:0;font-size:13.5px;padding:14px 0 10px;border-top:1px solid var(--лінія-ст)}
 .блок h3{margin:0 0 8px;font:600 13px/1.2 var(--текст-шр)}
@@ -542,7 +542,7 @@ footer code,p code,li code{font-size:12px}
       <p>Люстерко як рукописна книжка. Кожен екран — сторінка з полем і буквицею. Чорне — текст, кіновар — лише
       те, що веде: наступна дія, поточне місце, рубрика. Речі образу — «зміст» із відточієм до ціни.</p>
   </div>
-  <div class="екрани"><figure class="телефон к1"><div class="екран" id="к1-е1">
+  <div class="екрани"><figure class="телефон к1"><div class="fit"><div class="екран" id="к1-е1">
   <div class="фоліо">Крок <b>1</b> з 3</div>
   <div class="вміст">
     <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
@@ -570,7 +570,7 @@ footer code,p code,li code{font-size:12px}
     <div class="прапорець"><span></span><span>Дозволяю записати мої відтінки разом із вердиктами<br><span style="color:var(--олівець)">Без згоди вердикт запишеться без кольорів.</span></span></div>
     <div class="рядок-дій" style="margin-top:auto;margin-bottom:12px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#к1-і-стрілка"/></svg></span></div>
   </div>
-</div><figcaption><b>1 · Знайомство.</b> Буквиця відкриває кожен екран, як розділ у рукописі; поради — глосою на полі з ¶.</figcaption></figure><figure class="телефон к1"><div class="екран" id="к1-е2">
+</div></div><figcaption><b>1 · Знайомство.</b> Буквиця відкриває кожен екран, як розділ у рукописі; поради — глосою на полі з ¶.</figcaption></figure><figure class="телефон к1"><div class="fit"><div class="екран" id="к1-е2">
   <div class="фоліо">Сценарій</div>
   <div class="вміст">
     <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
@@ -599,7 +599,7 @@ footer code,p code,li code{font-size:12px}
     </div>
   </div>
   <nav class="закладки"><span class="закладка поточна">Сценарій</span><span class="закладка">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
-</div><figcaption><b>2 · Аркуш листа.</b> Розлінований аркуш із полем кіноварю; 7 плиток + «Інше» — тихим змістом під листом, без іконок.</figcaption></figure><figure class="телефон к1"><div class="екран" id="к1-е3">
+</div></div><figcaption><b>2 · Аркуш листа.</b> Розлінований аркуш із полем кіноварю; 7 плиток + «Інше» — тихим змістом під листом, без іконок.</figcaption></figure><figure class="телефон к1"><div class="fit"><div class="екран" id="к1-е3">
   <div class="фоліо">Сценарій</div>
   <div class="вміст" style="gap:12px">
     <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
@@ -625,7 +625,7 @@ footer code,p code,li code{font-size:12px}
     <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#к1-і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#к1-і-стрілка"/></svg></span></div>
   </div>
   <nav class="закладки"><span class="закладка поточна">Сценарій</span><span class="закладка">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
-</div><figcaption><b>3 · Розмова.</b> Її слова — Fixel, голос стилістки — Kyiv*Type Serif; сценарій — «зміст» із відточієм, «типово» — сірим.</figcaption></figure><figure class="телефон к1"><div class="екран" id="к1-е4">
+</div></div><figcaption><b>3 · Розмова.</b> Її слова — Fixel, голос стилістки — Kyiv*Type Serif; сценарій — «зміст» із відточієм, «типово» — сірим.</figcaption></figure><figure class="телефон к1"><div class="fit"><div class="екран" id="к1-е4">
   <div class="фоліо">Палітра</div>
   <div class="вміст" style="gap:12px">
     <div class="шапка"><span style="font-size:13px">← До сценарію</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
@@ -655,7 +655,7 @@ footer code,p code,li code{font-size:12px}
       </ul></div>
   </div>
   <nav class="закладки"><span class="закладка поточна">Сценарій</span><span class="закладка">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
-</div><figcaption><b>4 · Палітра.</b> Основи — «таблиця фарб» друкаря з підписами Serif; вибір — рамка кіноварю; рідші схеми стоять поруч, клікабельні.</figcaption></figure><figure class="телефон к1"><div class="екран" id="к1-е5">
+</div></div><figcaption><b>4 · Палітра.</b> Основи — «таблиця фарб» друкаря з підписами Serif; вибір — рамка кіноварю; рідші схеми стоять поруч, клікабельні.</figcaption></figure><figure class="телефон к1"><div class="fit"><div class="екран" id="к1-е5">
   <div class="фоліо">Образи · <b>1</b> / 4</div>
   <div class="вміст" style="gap:10px">
     <div class="пейджер"><span>‹</span><b>Перший образ</b><span>1 / 4 ›</span></div>
@@ -686,7 +686,7 @@ footer code,p code,li code{font-size:12px}
       <div class="чипи"><span class="чип">вдягну як є</span><span class="чип">змінила б одну річ</span><span class="чип">не вдягну</span></div></div>
   </div>
   <nav class="закладки"><span class="закладка">Сценарій</span><span class="закладка поточна">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
-</div><figcaption><b>5 · Картка образу.</b> Колаж — вклейка в подвійній рамці; речі — зміст із відточієм до ціни; «замінити» міняє річ лише в цьому образі.</figcaption></figure></div>
+</div></div><figcaption><b>5 · Картка образу.</b> Колаж — вклейка в подвійній рамці; речі — зміст із відточієм до ціни; «замінити» міняє річ лише в цьому образі.</figcaption></figure></div>
   <div class="опис"><div class="блок"><h3>Шлях жінки</h3><dl>
       <dt>Профіль</dt><dd>три кроки, як у показі; кожен відкривається буквицею, поради — глосою з ¶</dd>
       <dt>Сценарій</dt><dd>розлінований аркуш листа з полем кіноварю; 7 плиток + «Інше» — тихим змістом під листом; паспорт — «зміст» з відточієм</dd>
@@ -716,7 +716,7 @@ footer code,p code,li code{font-size:12px}
       <p>Київський авангард, вишитий руками. Площини, коло, смуга; межа — «стібок» (пунктир). Колір площин
       береться з її палітри, хром лише чорно-білий, тож інтерфейс щоразу зібраний з її барв.</p>
   </div>
-  <div class="екрани"><figure class="телефон к2"><div class="екран" id="к2-е1">
+  <div class="екрани"><figure class="телефон к2"><div class="fit"><div class="екран" id="к2-е1">
   <div class="вміст">
     <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
     <div class="нитка"><b>Крок 2 з 3</b><i class="було"></i><i class="тут"></i><i></i><span>До лиця</span></div>
@@ -743,7 +743,7 @@ footer code,p code,li code{font-size:12px}
     </ul>
     <div class="рядок-дій" style="margin-top:auto;margin-bottom:12px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#к2-і-стрілка"/></svg></span></div>
   </div>
-</div><figcaption><b>1 · Знайомство.</b> Питання «золото чи срібло» стає композицією: дві площини й обличчя між ними; обране — чорним зі «стібком».</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е2">
+</div></div><figcaption><b>1 · Знайомство.</b> Питання «золото чи срібло» стає композицією: дві площини й обличчя між ними; обране — чорним зі «стібком».</figcaption></figure><figure class="телефон к2"><div class="fit"><div class="екран" id="к2-е2">
   <svg class="площини" viewBox="0 0 390 844" preserveAspectRatio="none" aria-hidden="true">
     <rect x="262" y="150" width="170" height="170" fill="var(--п1)" transform="rotate(14 346 235)"/>
     <circle cx="300" cy="372" r="56" fill="var(--п2)"/>
@@ -771,7 +771,7 @@ footer code,p code,li code{font-size:12px}
     </div>
   </div>
   <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
-</div><figcaption><b>2 · Аркуш листа.</b> Аркуш — біла площина з вишитою межею поверх композиції з її кольорів; плитки — фігури замість піктограм.</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е3">
+</div></div><figcaption><b>2 · Аркуш листа.</b> Аркуш — біла площина з вишитою межею поверх композиції з її кольорів; плитки — фігури замість піктограм.</figcaption></figure><figure class="телефон к2"><div class="fit"><div class="екран" id="к2-е3">
   <div class="вміст" style="gap:12px">
     <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
     <div class="вона">Іду на побачення в ресторан, увечері. Обіцяють дощ</div>
@@ -796,7 +796,7 @@ footer code,p code,li code{font-size:12px}
     <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#к2-і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#к2-і-стрілка"/></svg></span></div>
   </div>
   <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
-</div><figcaption><b>3 · Розмова.</b> Її слова — на площині її пудрового; голос стилістки — Serif на білому зі смугою петролю; паспорт — «вишиті» рядки.</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е4">
+</div></div><figcaption><b>3 · Розмова.</b> Її слова — на площині її пудрового; голос стилістки — Serif на білому зі смугою петролю; паспорт — «вишиті» рядки.</figcaption></figure><figure class="телефон к2"><div class="fit"><div class="екран" id="к2-е4">
   <div class="вміст" style="gap:11px">
     <div class="шапка"><span style="font-size:13px">← До сценарію</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
     <h2 class="великий" style="font-size:44px">Палітра <em>образу.</em></h2>
@@ -824,7 +824,7 @@ footer code,p code,li code{font-size:12px}
     </div>
   </div>
   <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
-</div><figcaption><b>4 · Палітра.</b> Основи — ковдра з клаптів: обрана основа найбільша, сусіди видно поруч. Схема — пропорція 6 : 3 : 1, а не три однакові кружечки.</figcaption></figure><figure class="телефон к2"><div class="екран" id="к2-е5">
+</div></div><figcaption><b>4 · Палітра.</b> Основи — ковдра з клаптів: обрана основа найбільша, сусіди видно поруч. Схема — пропорція 6 : 3 : 1, а не три однакові кружечки.</figcaption></figure><figure class="телефон к2"><div class="fit"><div class="екран" id="к2-е5">
   <div class="вміст" style="gap:10px">
     <div class="пейджер"><span>‹ попередній</span><b>Перший образ</b><span>1 / 4 ›</span></div>
     <div class="образ-верх">
@@ -854,7 +854,7 @@ footer code,p code,li code{font-size:12px}
     <div class="варіанти"><span class="варіант">вдягну як є</span><span class="варіант">змінила б одну річ</span><span class="варіант">не вдягну</span></div>
   </div>
   <nav class="вкладки"><span class="вкладка">Сценарій</span><span class="вкладка поточна">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
-</div><figcaption><b>5 · Образ.</b> Ліворуч — «формула»: колонка площин за часткою кожної речі в образі; той самий колір — мітка речі в списку.</figcaption></figure></div>
+</div></div><figcaption><b>5 · Образ.</b> Ліворуч — «формула»: колонка площин за часткою кожної речі в образі; той самий колір — мітка речі в списку.</figcaption></figure></div>
   <div class="опис"><div class="блок"><h3>Шлях жінки</h3><dl>
       <dt>Профіль</dt><dd>питання стають композицією: золото й срібло — дві площини, обличчя між ними</dd>
       <dt>Сценарій</dt><dd>аркуш листа — біла площина з межею-стібком поверх площин її кольорів; плитки — фігури</dd>
@@ -886,7 +886,7 @@ footer code,p code,li code{font-size:12px}
       <p>Замість екранів і вкладок — один предмет. У склі видно те, що стилістка зрозуміла; під склом — розмова.
       Кінці рушника над люстерком вишиваються її кольорами; профіль — зворот люстерка.</p>
   </div>
-  <div class="екрани"><figure class="телефон к3"><div class="екран" id="к3-е1">
+  <div class="екрани"><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е1">
   <div class="шапка"><span></span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
   <div class="люстро">
     <div class="оправа-пів"><span style="left:-14px">Золото</span><span style="right:-14px">Срібло</span></div>
@@ -901,7 +901,7 @@ footer code,p code,li code{font-size:12px}
       <div class="варіанти"><span class="варіант">Золото</span><span class="варіант">Срібло</span><span class="варіант">Обидва однаково</span></div></div>
     <div class="рядок-дій" style="margin-top:auto;margin-bottom:10px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#к3-і-стрілка"/></svg></span></div>
   </div>
-</div><figcaption><b>1 · Знайомство.</b> Оправа сама стає питанням: ліва половина золота, права срібна, обличчя між ними. Рушник ще полотняний — профілю нема.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е2">
+</div></div><figcaption><b>1 · Знайомство.</b> Оправа сама стає питанням: ліва половина золота, права срібна, обличчя між ними. Рушник ще полотняний — профілю нема.</figcaption></figure><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е2">
   <div class="шапка"><span>Збережені</span><span class="знак">люстерко</span><span class="праворуч"><span>Новий</span><span class="ніч">Ніч</span></span></div>
   <div class="лист">
     <p>Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.</p>
@@ -926,7 +926,7 @@ footer code,p code,li code{font-size:12px}
     </div>
   </div>
   <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
-</div><figcaption><b>2 · Аркуш листа.</b> На запітнілому склі — «Куди ти збираєшся?», ніби пальцем; лист засунуто за раму. Кінці рушника вже вишито її кольорами.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е3">
+</div></div><figcaption><b>2 · Аркуш листа.</b> На запітнілому склі — «Куди ти збираєшся?», ніби пальцем; лист засунуто за раму. Кінці рушника вже вишито її кольорами.</figcaption></figure><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е3">
   <div class="шапка"><span>Збережені</span><span class="знак">люстерко</span><span class="праворуч"><span>Новий</span><span class="ніч">Ніч</span></span></div>
   <div class="люстро">
     <div class="скло"><div class="дощ"></div>
@@ -950,7 +950,7 @@ footer code,p code,li code{font-size:12px}
     <span class="дія">Зібрати образи <svg><use href="#к3-і-стрілка"/></svg></span>
   </div>
   <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
-</div><figcaption><b>3 · Розмова.</b> Скло — паспорт: що стилістка зрозуміла (дощ — на склі). Її відповідь — субтитром під склом; рядок правиться дотиком по склу.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е4">
+</div></div><figcaption><b>3 · Розмова.</b> Скло — паспорт: що стилістка зрозуміла (дощ — на склі). Її відповідь — субтитром під склом; рядок правиться дотиком по склу.</figcaption></figure><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е4">
   <div class="шапка"><span>← До сценарію</span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
   <div class="люстро">
     <div class="скло" style="background:radial-gradient(90% 80% at 40% 30%,#2E6672 0%,#21505B 55%,#173C45 100%)"><svg width="200" height="240" style="margin-top:96px"><use href="#к3-обличчя"/></svg></div>
@@ -976,7 +976,7 @@ footer code,p code,li code{font-size:12px}
     </ul>
   </div>
   <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
-</div><figcaption><b>4 · Палітра.</b> У склі — її обличчя на тлі обраної основи (петроль). Кожна схема — смужка вишивки; обрана перевишиває кінці рушника.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е5">
+</div></div><figcaption><b>4 · Палітра.</b> У склі — її обличчя на тлі обраної основи (петроль). Кожна схема — смужка вишивки; обрана перевишиває кінці рушника.</figcaption></figure><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е5">
   <div class="шапка"><span>‹ 1 / 4 ›</span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
   <div class="люстро">
     <div class="скло біле">
@@ -1007,7 +1007,7 @@ footer code,p code,li code{font-size:12px}
     <div class="варіанти"><span class="варіант">вдягну як є</span><span class="варіант">змінила б одну річ</span><span class="варіант">не вдягну</span></div>
   </div>
   <nav class="сторони"><span class="сторона">Сценарій</span><span class="сторона тут">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
-</div><figcaption><b>5 · Образ.</b> Образ — у склі, на білому; речі пронумеровано точками. Дотик по речі — «замінити» лише її; інші образи й решта цього стоять.</figcaption></figure><figure class="телефон к3"><div class="екран" id="к3-е6">
+</div></div><figcaption><b>5 · Образ.</b> Образ — у склі, на білому; речі пронумеровано точками. Дотик по речі — «замінити» лише її; інші образи й решта цього стоять.</figcaption></figure><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е6">
   <div class="шапка"><span></span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
   <div class="люстро">
     <div class="скло зворот"><div class="гравюра"><small>Твій профіль</small><b>Оля К.</b>
@@ -1027,7 +1027,7 @@ footer code,p code,li code{font-size:12px}
     </ul>
   </div>
   <nav class="сторони"><span class="сторона">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона тут">Профіль</span></nav>
-</div><figcaption><b>6 · Профіль.</b> Зворот люстерка: ім'я й емаль її кольорів; рядки огляду — ті самі, що в показі, кожен відкриває свій аркуш.</figcaption></figure></div>
+</div></div><figcaption><b>6 · Профіль.</b> Зворот люстерка: ім'я й емаль її кольорів; рядки огляду — ті самі, що в показі, кожен відкриває свій аркуш.</figcaption></figure></div>
   <div class="опис"><div class="блок"><h3>Шлях жінки</h3><dl>
       <dt>Профіль</dt><dd>туман у склі розходиться з кожним кроком: «Ще туманно → … → Готово»; оправа сама питає «золото чи срібло»; далі профіль — зворот люстерка</dd>
       <dt>Сценарій</dt><dd>на запітнілому склі — «Куди ти збираєшся?», лист засунуто за раму; після відповіді в склі — паспорт, правка дотиком по склу; репліка стилістки — субтитром</dd>
@@ -1117,5 +1117,21 @@ footer code,p code,li code{font-size:12px}
 <footer>Окремі сторінки концепцій — <code>аудит/айдентика/концепція_1.html</code>, <code>концепція_2.html</code>, <code>концепція_3.html</code>; знімки Chromium 390×844 — гілка <code>claude/hvylia17-z1-znimky</code>; PR #1226.</footer>
 
 </div>
+<script>
+/* Телефон 390×844 масштабується до ширини колонки — екрани стоять один під одним, без прокрутки вбік. */
+(function(){
+  var Z = window.CSS && CSS.supports && CSS.supports('zoom','0.5');
+  function fit(){
+    document.querySelectorAll('.fit').forEach(function(box){
+      var f = box.firstElementChild, z = Math.min(1, box.clientWidth / 390);
+      if (Z) { f.style.zoom = z; }
+      else { f.style.transform = 'scale(' + z + ')'; f.style.transformOrigin = '0 0'; box.style.height = (844 * z) + 'px'; }
+    });
+  }
+  fit();
+  window.addEventListener('resize', fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
+</script>
 </body>
 </html>
