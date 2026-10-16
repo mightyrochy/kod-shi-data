@@ -1454,6 +1454,13 @@ _ВХІД_КОД = {"lab": "item_colour", "візерунок": "item_pattern", 
              "темп_c": "temperature", "частка_металу": "item_metal_share"}
 # Похідне від входу сцени (клас E дослідження 5280): без нагоди нема й дистанції огляду, без погоди — погоди дня.
 _ПОХІДНЕ_ВІД = {"viewing_distance": "occasion", "temperature": "temperature"}
+# Заяви правил про вхід, якого система не пише ні зі слів жінки, ні з фото, ні з фіду (рядок 5815; слово власника
+# 15.10, П2(а): такі — лише у звіті власника): жінка не може його дати, тож на картці «Чого я не знаю» вони
+# нічого не питають. Ознака — реєстр кодів заяв, не слова; її входи (обхват литки, довжина стопи) тут не стоять.
+ВХОДИ_БЕЗ_ПИСАЧА = frozenset({
+    "outer_ease_not_in_feed", "outer_shoulder_not_measured", "item_insole_length_unknown", "shoe_size_not_checked",
+    "leg_proportion_template_crotch", "wear_cost_no_duration_surface", "items_register_unknown",
+    "dividing_line_item_length_unknown"})
 
 
 def _позначка_пункту(б):
@@ -1465,6 +1472,10 @@ def _позначка_пункту(б):
     заяви = [к for м in б.get("missing") or [] if isinstance(м, dict)
              for к in _ЗП.коди_заяв({"statements": м.get("statements") or []})]
     return (заяви[-1], "+".join(заяви[:-1]) or рід) if заяви else ("point_input", рід)
+
+
+def _код_заяви(з):
+    return next(iter(з)) if isinstance(з, dict) else з
 
 
 def невідоме_для_моделі(суд_):
@@ -1489,7 +1500,10 @@ def невідоме_для_моделі(суд_):
             if _ПОХІДНЕ_ВІД.get(вхід) not in входи:
                 групи.setdefault(чому, []).append(вхід)
         elif б.get("items"):
-            вих.append({к: v for к, v in (("items", б.get("items")), ("statements", _заяви(б, "statements")),
+            заяви = [з for з in _заяви(б, "statements") or [] if _код_заяви(з) not in ВХОДИ_БЕЗ_ПИСАЧА]
+            if б.get("statements") and not заяви:
+                continue        # усі заяви — про вхід без писача (5815): лише у звіті власника
+            вих.append({к: v for к, v in (("items", б.get("items")), ("statements", заяви),
                                           ("what", None if б.get("statements") else б.get("what"))) if v})
     return вих + [dict(no_input=list(dict.fromkeys(в)), why=ч) for ч, в in групи.items()]
 
@@ -1757,7 +1771,7 @@ def прийняти_оцінку(відповідь, суд_):
     import суд_образу as _СЧ
     картка = dict(відповідь=відповідь, вердикт=вердикт, вдало=вдало,
                   змінити=змінити, не_знаю=не_знаю,
-                  нема_на_фото=dict(коди=_СЧ.коди_нема_на_фото(суд_.get("не_на_фото") or [])))   # рядок 5284
+                  нема_на_фото=dict(коди=_СЧ.коди_нема_на_фото(суд_.get("не_на_фото") or [], лише_речі=True)))   # рядок 5284
     return dict(картка=картка, сторож=сторож,
                 причина=(None if картка["відповідь"] else "empty_answer_field"), нотатки=нотатки,
                 # межа сторожа — кодами полів, не фразою (рядок 3430, аудит/ПРОДУКТ.md п.12)
