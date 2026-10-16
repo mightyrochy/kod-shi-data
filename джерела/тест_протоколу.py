@@ -1092,15 +1092,18 @@ _р51 = [P.розбір_останній(json.dumps(о), п) for о, п in (
     ({"answer": {"PHOTO_ITEMS": [_річ51]}}, ("items",)), ({"answer": {"PHOTO_ITEMS": {"items": [_річ51]}}}, ("items",)),
     ({"PHOTO_ITEMS": [_річ51]}, ("items",)), ({"answer": {"photo_items": [_річ51]}}, ("items",)),
     ({"answer": {"PHOTO_ITEMS": ["skirt"]}}, ("items",)), ({"answer": {"OUTFITS_V1": [_річ51]}}, ("answer",)),
-    ({"answer": {"PHOTO_ITEMS": [_річ51], "note": "x"}}, ("items",)))]
-звірка("6451: {answer: {PHOTO_ITEMS: [...]}} і {PHOTO_ITEMS: {items}} — речі з кодом зняття; мітка малими, список рядків, "
-       "поле «answer» (міст, допит), мітка поруч з іншим ключем — як доти",
+    ({"answer": {"PHOTO_ITEMS": [_річ51], "note": "x"}}, ("items",)), ({"answer": {"OUTFITS_V1": [_річ51]}}, ("items",)),
+    ({"answer": {"PALETTE_CHOICE": {"scheme": "tonal"}}}, ("scheme",)))]
+звірка("6451: {answer: {PHOTO_ITEMS: [...]}}, {PHOTO_ITEMS: {items}}, {PALETTE_CHOICE: {scheme}} — з кодом зняття; "
+       "мітка малими, список рядків, поле «answer», мітка поруч з іншим ключем, OUTFITS_V1 під «items» — як доти",
        [р[0].get("items") for р in _р51[:3]] == [[_річ51]] * 3
        and _р51[0][2] == ["answer_envelope_unwrapped", "task_label_unwrapped: PHOTO_ITEMS"]
        and _р51[2][2] == ["task_label_unwrapped: PHOTO_ITEMS"]
-       and [р[0] for р in _р51[3:]] == [{"photo_items": [_річ51]}, {"PHOTO_ITEMS": ["skirt"]},
-                                         {"answer": {"OUTFITS_V1": [_річ51]}}, {"PHOTO_ITEMS": [_річ51], "note": "x"}]
-       and not any("task_label" in "".join(р[2]) for р in _р51[3:]), json.dumps(_р51, ensure_ascii=False)[:600])
+       and [р[0] for р in _р51[3:8]] == [{"photo_items": [_річ51]}, {"PHOTO_ITEMS": ["skirt"]},
+                                          {"answer": {"OUTFITS_V1": [_річ51]}}, {"PHOTO_ITEMS": [_річ51], "note": "x"},
+                                          {"OUTFITS_V1": [_річ51]}]
+       and not any("task_label" in "".join(р[2]) for р in _р51[3:8])
+       and _р51[8][0] == {"scheme": "tonal"}, json.dumps(_р51, ensure_ascii=False)[:600])
 
 print()
 if провали:
