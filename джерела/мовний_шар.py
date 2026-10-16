@@ -77,9 +77,10 @@ U = _ВМ.UNKNOWN
               "який модель шару вже переклала (ПРОЗА-1)",
     "розмітка": "вхід із показу: розмітка першого кроку, віддана назад разом із відповіддю моделі",
     "відповідь_моделі": "вхід із показу: сира відповідь моделі шару на промпт першого кроку",
-    "вхід": "вхід із показу (`перекластиП`): вид вхідного перекладу — scenario | verdict_comment",
+    "вхід": "вхід із показу (`перекластиП`): вид вхідного перекладу — scenario | verdict_comment | review_items_fix",
     "слова": "вхід із показу: її слова цього ходу (репліка чи коментар до образу)",
-    "контекст": "вхід із показу: теми, які стилістка щойно пропонувала, або речі образу для коментаря",
+    "контекст": "вхід із показу: теми, які стилістка щойно пропонувала, речі образу для коментаря або перелік речей "
+                "з фото кодами (`оцінка_образу.речі_для_слів`) для виправлення переліку словами",
     "паспорт_з": "вхід із показу: внутрішня мова одного ходу, з якої шов збирає паспорт ядра",
     "коментар_з": "вхід із показу (`записати`): внутрішня мова коментаря до образу, з якої шов "
                   "бере межі, бажання й відкинуті речі (С-2)",
@@ -711,6 +712,21 @@ def прийняти(розмітка, відповідь):
              "вона хоче мати, і лише з quote — уривком її слів, де вона це назвала: без нього код бажання не "
              "бере. У reasons — лише коди аспектів; ознака речі, що їй заважає (підбори, принт), — "
              "межа у vetoes."),
+    # ВИПРАВЛЕННЯ ПЕРЕЛІКУ РЕЧЕЙ СЛОВАМИ (рядок 5742): «там не штани, а вершкові ботильйони, чорні — запасні». Вхід —
+    # перелік, який вона бачить, кодами (`оцінка_образу.речі_для_слів`); вихід — ті самі дії, що дають дотики
+    # (`виправити_речі`). Цитати поруч із полем нема: дія стоїть на речі з переліку, а не на її уривку.
+    "review_items_fix": dict(
+        роль="Ти — перекладачка в застосунку-стилістці. Стилістка щойно показала жінці перелік речей, які вона побачила "
+             "на її фото; жінка словами каже, що в переліку не так. Ти перекладаєш її слова в дії над переліком — JSON "
+             "із кодами. Рішень про образ не приймаєш, на питання не відповідаєш.",
+        вхід="її слова про перелік; КОНТЕКСТ.items — речі переліку, які вона бачить (id, slot, item_type, color_name, "
+             "in_outfit, name)",
+        поля=_ВМ.ВИПРАВЛЕННЯ_ПЕРЕЛІКУ,
+        межа="Одна дія — одна річ. Річ, яку вона назвала хибною («там не X, а Y»), виправляй дією set над її id: "
+             "новий вид і колір, що вона назвала, а slot не пиши — місце видно з виду. Річ, якої на фото нема, — "
+             "remove над її id. Річ, якої в переліку немає зовсім, — add без item, з видом і кольором, що вона "
+             "назвала. «Запасні», «замість» про річ — in_outfit: false; «в образі», «на мені» — true. Пиши лише те, що "
+             "вона назвала: поле, про яке вона не сказала, не пиши і з КОНТЕКСТ.items його не переписуй."),
     # ДОПИТ ОЦІНКИ — ЛИШЕ ПИТАННЯ (рядок 1449): уточнення до оцінки («А якщо з чорними ботильйонами?»)
     # ішло повним промптом сценарію — ~11 тис. знаків на одне питання, — а показ бере з відповіді лише
     # `question`; решта полів давала шум (`wants: black ankle_boots` у 14 з 31).
@@ -739,7 +755,11 @@ def _тип(с):
     лише словами, без жодного рядка-заглушки: вільний текст — рядок її мовою (обгортку
     `free_text`/`lang` ставить код), «unknown» — пропущене поле (межа промпта)."""
     if "enum" in с:
+        if set(с["enum"]) - {U} == set(_ВМ.ТАБЛИЦЯ["item_type"]) - {U}:     # вид речі — завжди з підписом (рядок 1449)
+            return _типи_речей()
         return "коди: " + ", ".join(к for к in с["enum"] if к != U)
+    if с.get("type") == "boolean":
+        return "true або false"
     if _ref(с) == "free_text":
         return "рядок її мовою"
     if _ref(с) in _ОБʼЄКТИ:
@@ -1017,6 +1037,12 @@ def _норм(с, v, шлях, незнайомі):
                 вих[к] = н
         бракує = [к for к in (с.get("required") or []) if к not in вих]
         return None if (not вих or бракує) else вих
+    if с.get("type") == "boolean":
+        т = str(v).strip().lower()
+        if т in ("true", "false"):
+            return т == "true"
+        незнайомі.append("%s=%s" % (шлях, v))
+        return None
     if с.get("type") in ("number", "integer"):
         т = str(v).replace(",", ".").replace("−", "-").strip().rstrip("CcСс").replace("°", "").strip()
         if с["type"] == "integer" and ":" in т:      # година «18:00» — та сама година 18
@@ -1123,7 +1149,29 @@ def _не_її_значення(значення, цитата):
 _ЧЕРГА_ЦИТАТИ = {"name": 0, "item_type": 1}
 
 
+# ЗНАЧЕННЯ ПАРИ СПИСКОМ — КОДИ ПОЛЯ, А НЕ ВКЛАДЕНИЙ СПИСОК (рядки 6067, 5273; ОЦІНКА-ЖИВИЙ-14). «І ще хочу приховати
+# живіт» модель записала `goal_zones: [{"quote": "приховати живіт", "value": ["belly"]}]` — список пар, значення кожної
+# списком. Шов брав значення пар як є, і поле ставало `[["belly"]]`: перевірка переліку відкидала його
+# (`goal_zones[0]=['belly']` у `незнайомі`), у `case` палітри `belly` не було в 4 ходах сцени 24, а бульбашка казала
+# «додала у список зон». Те саме з полем одного коду: `intent: {quote, value: ["context_optimal"]}` (сцена 11),
+# `goal: {quote, value: ["conceal"]}` (сцена 15) — код в одноелементному списку не брався. Код дивиться лише на ФОРМУ
+# (п.12): поле-список бере коди зі списків пар підряд; поле одного значення бере єдиний код зі списку з одного коду.
+# Список із кількох кодів для поля одного значення лишається як є — і йде в `незнайомі`, як доти.
+def _одне(з, с):
+    """Значення `з` для поля зі схемою `с`: поле одного значення бере єдиний код зі списку з одного коду."""
+    if с.get("type") != "array" and isinstance(з, list) and len(з) == 1 and isinstance(з[0], (str, int, float)) \
+            and not isinstance(з[0], bool):
+        return з[0]
+    return з
+
+
 def _пара(поле, с, v):
+    """(значення, цитата) поля `поле` зі схемою `с`; значення — за формою поля (`_одне`)."""
+    з, ц = _пара_сира(поле, с, v)
+    return _одне(з, с), ц
+
+
+def _пара_сира(поле, с, v):
     """(значення, цитата) поля `поле` зі схемою `с` з відповіді перекладача.
 
     Пара {quote, value} → значення й уривок (замість value модель може назвати ключ `code`
@@ -1149,7 +1197,7 @@ def _пара(поле, с, v):
         return v, None
     пари = [_пара(поле, (с.get("items") or {}) if с.get("type") == "array" else с, x) for x in v]
     цитати = list(dict.fromkeys(str(ц).strip() for _, ц in пари if isinstance(ц, str) and not _порожнє(ц)))
-    значення = [з for з, _ in пари]
+    значення = [y for з, _ in пари for y in (з if isinstance(з, list) and с.get("type") == "array" else [з])]
     return (значення[0] if len(значення) == 1 and с.get("type") != "array" else значення), (" ".join(цитати) or None)
 
 
@@ -2463,18 +2511,30 @@ _ПОЛЯ_EN = {
     # 4206): правило ходу каже про місце в назві події, а опис поля, яке модель заповнює першим, — ні
     # Рядок 5270 (ЖИВІ-1510-Б, Б1): «йду на роботу пішки» — `movement` з цим уривком, `occasion` — ні (ДО 960 — work):
     # «such a phrase gives both occasion and movement» стояло лише в правилі `update`, не в описах полів
-    "occasion": "what kind of event it is, also when the same phrase says how she gets there (walking to work "
-                "is occasion work and movement walk); the place named in the same phrase goes into place too",
+    # Рядки 6090, 6092 (5313, 5318 живцем), 6069, 6070 (живий-14, 07–16 і 04–06): правила #1103 у підпунктах кодів і в правилі ходу модель
+    # не брала — весілля подруги лягало святом (4/5), «вечірка в клуб» давала саму нагоду без місця й пори (5/5),
+    # урок вокалу — роботою. Модель пише нагоду першою й бере з фрази одне поле — тож опис нагоди сам каже, що ще
+    # дає та сама фраза
+    "occasion": "what kind of event it is: someone else's wedding (a friend's, a relative's) is wedding_guest, "
+                "never celebration; a lesson she takes as a hobby (singing, dancing) is everyday — never work, and "
+                "never theatre: she takes part, she does not watch. Also when the same phrase says how she gets "
+                "there (walking to work is occasion work and movement walk). The same phrase gives its other fields "
+                "too: the place it names is place, with that quote (a party in a club — place club); the part of "
+                "the day it names is part_of_day («ввечері» — evening)",
     # Рядок 5241 (ЖИВІ-1510-А, А2): «йога зранку, потім кава з подругою» → `occasion_part: sport` з уривком йоги:
     # правило «частина не названа — перша не спортивна» стояло лише в правилі ходу, не в описі поля
-    "occasion_part": "which part of her day THIS outfit is for: sport when it is for doing "
-                     "sport, other when it is for another activity; she has not said which — the first part that "
-                     "is not sport, other; give it with occasion, with the quote "
-                     "of that selected part, not a quote of the whole day; unknown when you cannot tell",
+    # Рядок 6093 (5241 живцем, живий-14, 01–03): «йога зранку, потім кава» — `occasion_part: sport` 3/3: «sport when it is for doing
+    # sport» стояло першим, а типове other — у хвості. Тепер першим — other, і sport лише за її словами про вбрання
+    "occasion_part": "which part of her day THIS outfit is for: other — an activity that is not sport, also when "
+                     "she names a sport and another part but has not said the outfit is for the sport (then it is "
+                     "for the first part that is not sport); sport — only when she says the outfit is for doing "
+                     "the sport; give it with occasion, with the quote of that selected part, not a quote of the "
+                     "whole day; unknown when you cannot tell",
     # Рядок 4206 (ЖИВІ-18 №5): «Новорічна вечірка в ресторані» — `occasion` з цим уривком, а `place` — ні (Ж17 — так):
     # правило ходу каже «place, also inside the phrase that names the event», а опис поля, на який модель дивиться,
     # заповнюючи, — ні; код місця з назви не читає (п.12), тож лише модель
-    "place": "where she will be, also when only the phrase that names the event says it",
+    "place": "where she will be, also when only the phrase that names the event says it: occasion and place then "
+             "stand on the same quote",
     "dress_code": "the dress code, when it is named",
     # Рядок 3165 (живі 12, А/07): «"yoga and coffee with a friend"» — подія англійською й у власних лапках;
     # подія йде на картку випадку, тож — її слова з листа, її мовою, лише скорочені
@@ -2519,7 +2579,9 @@ _ПОЛЯ_EN = {
     # МОВА-ХІД-ТОНШЕ (рядок 3491): окреме правило ходу слово в слово повторювало цей опис; його місця вечора —
     # тепер тут (`_коди_розмови` доставляє перелік коду, `_місця_вечірні_en`)
     # Рядок 5241 (А2): «йога зранку, потім кава» — кава теж зранку, а `part_of_day` не дано (ДО того ж сіду — morning)
-    "part_of_day": "part of the day, only when no hour is known: from her words (said for one part of her day, it "
+    # Рядок 6070 (живий-14, 12–16): «Йду ввечері на вечірку…» — «ввечері» сиділо в цитаті нагоди, пори 0/5
+    "part_of_day": "part of the day, only when no hour is known: from her words («ввечері», «зранку»), also inside "
+                   "the phrase that names the event (said for one part of her day, it "
                    "holds for the parts after it until she names another), or when the event or a tile "
                    "in \"chosen\" names it or usually takes it (an evening reception, a theatre, a concert, an "
                    "opera or a New Year party — evening; a place the code reads as evening by itself, %s — "
@@ -2565,20 +2627,22 @@ _ПОЛЯ_EN = {
     # питань» — `goal: conceal`. Хвіст опису statement «a separate field from goal, both are set» читався як «став
     # обидва поля»; про те, що код наміру живе лише тут, опис мовчав. Рішення менеджера (рядок 2385): «без
     # претензій / без питань» — бездоганна доречність `context_optimal`, не «приховати» (воно — про тіло й увагу).
-    "intent": "what matters most to her — its codes go only here, never into goal: comfort_first — comfort and "
+    # Рядок 6091 (5317 живцем, живий-14, 12–16): `intent: statement` 5/5, `goal: express` 0/5 — «its codes go only here, never into
+    # goal» модель читала як «goal не пиши»; тепер опис statement сам велить писати й goal express
+    "intent": "what matters most to her (goal is a separate field with its own codes): comfort_first — comfort and "
               "freedom of movement; context_optimal — being appropriate to the event and its level, also "
               "flawless or strictly by the occasion (with strict in goal_extra), also when "
               "she says it only through someone's judgement she wants to pass (nobody should criticise her look "
               "or find fault with it, no remarks and no questions to her, the hosts or the elders should "
               "approve); statement — she wants to impress, stand out or be noticed, however she words it (all "
-              "eyes on her, a star, bold, bright, not like everyone else, tired of grey and safe), with goal "
-              "express; conventional "
+              "eyes on her, a star, bold, bright, not like everyone else, tired of grey and safe) — then goal "
+              "express is written too, on the same quote; conventional "
               "— none of these, also when she wants to be unnoticed",
     # Рядок 5211 (рішення власника 15.10 «3б»): мета — дві осі. `goal` — лише скільки уваги; зони й «що ще
     # важливо» — свої поля, з будь-якою увагою (код читає їх окремо: `регістр_уваги`, `реєстр_намір._намір`)
     "goal": "how much attention she wants for this look — only its own codes, never an intent code: conceal — "
-            "quiet, no attention to her look; flatter — usual, to suit her; express — to be looked at, set together "
-            "with intent statement when she wants to stand out. A body zone she wants to hide is goal_zones, not "
+            "quiet, no attention to her look; flatter — usual, to suit her; express — to be looked at or to stand "
+            "out: the words that give intent statement give goal express too. A body zone she wants to hide is goal_zones, not "
             "conceal. Passing someone's judgement (no remarks, no criticism, no questions to her) is not conceal: "
             "it is intent context_optimal",
     "goal_extra": "what else matters to her in this look, several together: taller — a longer line, to look "
@@ -2757,8 +2821,9 @@ def _коди_розмови():
                      "anniversary, a New Year. A trip or a holiday without such an event is never celebration")
             # Рядок 5313 (ЖИВІ-1510-Г, Г2): «Весілля подруги в суботу» → celebration, і правила гості весілля
             # (`case.reserved_colour`) не мали звідки взятись; рід «свято» про весілля мовчав
+            # Рядок 6090: «never celebration» — тепер в описі самої нагоди, куди модель дивиться
             р.append("  · wedding_guest — someone else's wedding, she is a guest (wedding_day when her words say it "
-                     "is by day); a wedding is never celebration")
+                     "is by day)")
             # Рядок 4622: спорт рухом і спорт нагодою — незалежні канали.
             # Модель називає рід обраної частини через occasion_part; код судить цю пару.
             р.append("  · sport — the selected outing is for doing sport (occasion_part sport). A sport "
@@ -3607,6 +3672,51 @@ def _незакритий(відповідь):
     return None
 
 
+# ЛАПКИ З РИСКОЮ Й ПАРИ В КВАДРАТНИХ ДУЖКАХ (рядок 6068, ОЦІНКА-ЖИВИЙ-14). 4 ходи з 58 не розбирались: сцена 06 —
+# усі лапки `update` з рискою (`"hour": {\"quote\": \"увечері\", …}`), сцена 22 — пара в квадратних дужках
+# (`"goal_zones": [["quote": "приховати живіт", "value": ["belly"]]]`), обидві спроби. Хід ішов шляхом паспорта: 06 —
+# «Театр, концерт», 22 — живіт лише бажанням, репліка паспорта питала стиль. Код читає ФОРМУ (п.12): коли відповідь
+# не розбирається, «\"» поза рядком стає лапкою, а «[», за якою одразу йде ключ із двокрапкою, — «{» (і її «]» —
+# «}»). Прочитане так — у `перенесено`: `escaped_quotes_read`, `bracket_pairs_read`.
+ЛАПКИ_З_РИСКОЮ, ПАРИ_В_ДУЖКАХ = "escaped_quotes_read", "bracket_pairs_read"
+_КЛЮЧ_ПІСЛЯ_ДУЖКИ = re.compile(r'\s*"(?:[^"\\]|\\.)*"\s*:')
+
+
+def _пари_в_обʼєкти(т):
+    """Текст, де «[», за якою одразу йде ключ із двокрапкою, стала «{», а її пара «]» — «}» (поза рядками)."""
+    вих, стос, у_рядку, риска = list(т), [], False, False
+    for і, ч in enumerate(т):
+        if у_рядку:
+            у_рядку, риска = (ч != '"' or риска), (ч == "\\" and not риска)
+        elif ч == '"':
+            у_рядку = True
+        elif ч == "[":
+            обʼєкт = bool(_КЛЮЧ_ПІСЛЯ_ДУЖКИ.match(т, і + 1))
+            стос.append(обʼєкт)
+            if обʼєкт:
+                вих[і] = "{"
+        elif ч == "]" and стос and стос.pop():
+            вих[і] = "}"
+    return "".join(вих)
+
+
+def _лагоджена_форма(відповідь):
+    """(JSON-об'єкт відповіді, прочитаний після лагодження форми вище, коди лагодження) або (None, [])."""
+    т = re.sub(r"^```(?:json)?\s*|\s*```$", "", str(відповідь or "").replace(_ВСТАВКА, " ").strip())
+    без_риски = т.replace('\\"', '"')
+    for варіант, коди in ((без_риски, [ЛАПКИ_З_РИСКОЮ]), (_пари_в_обʼєкти(т), [ПАРИ_В_ДУЖКАХ]),
+                          (_пари_в_обʼєкти(без_риски), [ЛАПКИ_З_РИСКОЮ, ПАРИ_В_ДУЖКАХ])):
+        if варіант == т:
+            continue
+        try:
+            об = _json_.loads(варіант)
+        except ValueError:
+            continue
+        if isinstance(об, dict):
+            return об, коди
+    return None, []
+
+
 # «ОЦІНИ МІЙ ОБРАЗ» — НЕ БАЖАННЯ (рядок 5980, живий 15, qwen3.5-9b мовним шаром). На 6б «Оціни мій образ — як тобі?» з
 # двома фото модель дала `need: look` і `wants: [{quote: «мій образ» / уся репліка, item_type: dress_generic(, slot: set)}]`
 # у 10 з 10; поле в `update`, і показ (`лишеПитанняП`) вів хід у сценарій, а не в оцінку. Слів код не читає (п.12): при
@@ -3646,6 +3756,8 @@ def прийняти_розмову(відповідь):
     if not isinstance(об, dict):
         об, незакрито = _незакритий(відповідь), [НЕЗАКРИТИЙ_ОБʼЄКТ]
     if not isinstance(об, dict):
+        об, незакрито = _лагоджена_форма(відповідь)
+    if not isinstance(об, dict):
         return dict(внутрішня={}, частини={}, незнайомі=[], невідомо=[], заглушки=[],
                     причина="not_json_object: %s" % (чому_не or type(об).__name__))
     оновлення = об.get("update") if isinstance(об.get("update"), dict) else {}
@@ -3672,8 +3784,21 @@ def прийняти_розмову(відповідь):
         частини["need"] = need
     elif not _порожнє(need):
         незнайомі.append("need=%s" % need)
+    зайве_тексту = []
     for к in ("text", "invite", "ask"):
         т = об.get(к)
+        # `text` переліком рядків без `about` (рядок 6067: сцена 24 seed3_03, сцена 22 seed1_03 — «["У тебе робочий день
+        # в офісі, і ти хочеш приховати животик. Зрозуміла."]»): доти хід ішов як `no_text_field` шляхом паспорта, і
+        # записане `goal_zones` губилось. Про що речення, код не знає, тож показує лише перше з кількох слів, як
+        # `says` (рядки 4361, 4620); решта — у `відкинуто` (`extra_sentence`). При `need` app чи look бульбашку пише
+        # код (рядок 3742), і такий текст («Я подивлюся… і відповім») не показується
+        if к == "text" and isinstance(т, list) and т and all(isinstance(x, str) for x in т) \
+                and частини.get("need") not in ("app", "look"):
+            шматки = [x for x in _РЕЧЕННЯ.split(" ".join(т)) if x.strip()]
+            т = next((x for x in шматки if len(x.split()) > 1), шматки[0] if шматки else "")
+            if len(шматки) > 1:
+                зайве_тексту.append(dict(частина="text", чому="extra_sentence", про=[],
+                                         зняте=" ".join(x for x in шматки if x is not т)))
         if isinstance(т, str) and not _порожнє(т) and not _ВМ.невідомо(т):
             частини[к] = " ".join(т.split())
     речення = _речення_тексту(об.get("text"))
@@ -3716,7 +3841,7 @@ def прийняти_розмову(відповідь):
                 заглушки=_заглушки(об), причина=причина, текст=текст,
                 перенесено=["update.%s" % к for к in перенесено] + ["update.%s" % к for к in р.get("перенесено") or ()]
                 + незакрито + зняте_оцінки,
-                відкинуто=не_про_записане
+                відкинуто=зайве_тексту + не_про_записане
                 + ([dict(частина="text", чому="question_in_text", зняте=зняте)] if зняте else []))
 
 
@@ -3769,7 +3894,16 @@ def _бульбашка(шматки):
 # «Зрозуміла.», а переказ трьох записаних полів пішов у `відкинуто`. Шматок з одного слова (без пробілу всередині)
 # не може переказати жодного поля з `about` — форма, не слова (п.12): показується перший шматок із кількох слів, а
 # шматок з одного слова — лише коли інших нема (хід плиток: «text is one short word»); решта — `extra_sentence`.
+# РЕЧЕННЯ ПРО ЗАПИСАНУ МЕТУ — НЕ ЗАЙВЕ (рядок 6073, ОЦІНКА-ЖИВИЙ-14). Модель кладе мету другим реченням того самого
+# `says`: «Ти йдеш на вечірку в клуб, хочеш привернути до себе увагу та зручно танцювати. Пам'ятаймо про твій запит
+# сховати живіт.» (`about` — occasion, intent, goal_zones, movement). Правило одного речення знімало саме його: у
+# сценах 12–16 живіт у бульбашці 0 з 5, хоч `goal_zones` записано, — вона не бачить, що мету почули (п.9). Код
+# слів не читає (п.12): на кожен код мети (`goal`, `goal_zones`, `goal_extra`), записаний цим ходом і названий в
+# `about`, показується ще одне речення з кількох слів. Бюджет «по реченню на кожен код `about`» повертав питання-
+# накази рядка 4361 («Розкажи мені про місце проведення…» — Ж20 №6, №9, №13) і обіцянки («Обираємо лук…»), тож
+# лише мета; replay Ж20–22 — бульбашки ті самі (`проби/хід_форми_6067.py`).
 ПРО_ЇЇ_ПИТАННЯ = "her_question"
+_КОДИ_МЕТИ = ("goal", "goal_zones", "goal_extra")
 
 
 def _речення_тексту(text):
@@ -3801,9 +3935,10 @@ def _текст_до_показу(частини, записано):
                     and к not in ((р or {}).get("not_taken") or ())]
             if коди and not чуже:
                 шматки = [x for x in _РЕЧЕННЯ.split(р.get("says") or "") if x.strip()] or [""]
-                перше = next((x for x in шматки if len(x.split()) > 1), шматки[0])
-                далі = [x for x in шматки if x is not перше]
-                лишено.append(перше)
+                довгі = [x for x in шматки if len(x.split()) > 1] or шматки[:1]
+                показ = довгі[:1 + len([к for к in коди if к in _КОДИ_МЕТИ and к in записано])]
+                далі = [x for x in шматки if x not in показ]
+                лишено += показ
                 if далі:
                     відкинуто.append(dict(частина="text", чому="extra_sentence", про=коди, зняте=" ".join(далі)))
             else:
