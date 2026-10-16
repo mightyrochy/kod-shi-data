@@ -1278,15 +1278,21 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # (`заяви` знахідки), міст складає з них повідомлення виду `card_unchecked`, а речення
     # пише мовна модель. `суть` лишилась діагнозом суду для звіту власника (`етапи`).
     # ── колір лише словом, а не вимір (`колір_річ.без_входу_кольору`) ──────────
+    # Рядок 5227: кожна річ — з `item_id`, і міст дописує `name` — назву речі так, як її підписує картка
+    # (`назва_речі.на_картці`); доти речення звало річ слотом («колір речі верхній шар»)
     "colour_word_shop": "the code knows the colour of the named items only from the shop's word, not from "
-                        "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
+                        "measuring the photo (values: items — items: item_id, name — the item's name on the card, "
+                        "slot — slot code, colour — colour word)",
     "colour_word_shop_photo_other": "the shop names one colour of the named items and their card photo shows "
-                                    "another, so the code knows neither for sure (values: items — items: slot — "
-                                    "slot code, colour — the shop's colour word, photo — the colour on the photo)",
+                                    "another, so the code knows neither for sure (values: items — items: item_id, "
+                                    "name — the item's name on the card, slot — slot code, colour — the shop's "
+                                    "colour word, photo — the colour on the photo)",
     "colour_word_model": "the code knows the colour of the named items only from the model's word, not from "
-                         "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
+                         "measuring the photo (values: items — items: item_id, name — the item's name on the card, "
+                         "slot — slot code, colour — colour word)",
     "colour_word_not_photo": "the colour of the named items comes from a word, not from measuring the photo "
-                             "(values: items — items: slot — slot code, colour — colour word)",
+                             "(values: items — items: item_id, name — the item's name on the card, slot — slot "
+                             "code, colour — colour word)",
     "cannot_tell_item_holds_scheme_hue": "so the code cannot tell whether the item holds the hue of the "
                                          "chosen palette scheme",
     "cannot_tell_look_contrast_matches_hers": "so the code cannot tell whether the outfit's contrast matches "
@@ -1331,11 +1337,17 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "cannot_tell_lightness_structure": "so the code cannot tell which structure of light and dark the outfit "
                                        "carries",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
-                                         "differ visibly",
+                                         "differ visibly (values, when given: items — the neutrals' items: "
+                                         "item_id, name — the item's name on the card, slot — slot code)",
+    # Рядок 5226: річ, що за вікном слова лише «можливо» нейтраль (блакитний, зелений, оливковий), — не
+    # «дві нейтралі» й не «нейтраль біля обличчя»: код не знає, чи вона нейтраль узагалі
+    "cannot_tell_item_is_neutral": "so the code cannot tell whether the named item is a neutral at all, and the "
+                                   "rules about neutrals did not judge it",
     "cannot_tell_neutral_near_face_temperature": "so the code cannot tell whether a neutral near her face "
                                                  "matches her temperature",
     "cannot_tell_two_different_whites": "so the code cannot tell whether the outfit has two different whites, "
-                                        "cream and optical",
+                                        "cream and optical (values, when given: items — the whites' items: "
+                                        "item_id, name — the item's name on the card, slot — slot code)",
     "cannot_tell_accessory_spends_chroma": "so the code cannot tell whether a loud accessory spends the budget "
                                            "of loud colours next to another loud item",
     "cannot_tell_chroma_budget_exceeded": "so the code cannot tell whether the outfit has more loud colours "
@@ -1524,8 +1536,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
                                         "ordinary straight cut; what follows holds only if the cut really is "
-                                        "such (values: slots — slot codes of the only items without a declared "
-                                        "cut; the other items keep their declared cut)",
+                                        "such (values: items — the only items without a declared cut: item_id, "
+                                        "name — the item's name on the card; the other items keep their declared "
+                                        "cut)",
     # МОВА ПРО РІЧ І ЛІНІЮ (28.09.2026, Ф-2): текст заяви їде мовній моделі, тож
     # заборона корпусу на «ховає» (R-ONB-06, R-LNG-01) діє тут так само, як у `суть`.
     # Було: "a straight boxy cut hides her defined waist" — річ діє на тіло. Стало:
