@@ -750,8 +750,8 @@ function типПромпту(текст){
   /* речі на фото оцінки (рядок 6221) — спільна задача «речі з фото» з полем «outfit»; без нього — розмова (нижче) */
   if (об && об.task && об.task.answer === 'PHOTO_ITEMS' && об.outfit === true) return 'ОЦІНКА: речі на фото';
   /* допит (рядок 6215) — промпт оцінки того самого суду з хвостом «now»: упізнається за хвостом, не за ім'ям схеми */
-  if (об && об.task && об.task.answer === 'OUTFIT_REVIEW_V1' && об.now) return 'ОЦІНКА: допит';
-  if (об && об.task && об.task.answer === 'OUTFIT_REVIEW_V1') return 'ОЦІНКА: відповідь';
+  if (об && об.task && відповідьЗадачі(об) === 'OUTFIT_REVIEW_V1' && об.now) return 'ОЦІНКА: допит';
+  if (об && об.task && відповідьЗадачі(об) === 'OUTFIT_REVIEW_V1') return 'ОЦІНКА: відповідь';
   /* П-1: промпт приміряння — JSON збирача (`приміряння`, відповідь — картинка) */
   if (об && об.task && об.task.answer === 'TRY_ON_IMAGE') return 'ПРИМІРЯННЯ';
   /* П-4: стилістка й помічниця — англійський шаблон збирача (`task.answer`), кольори з портрета — теж */
@@ -1673,7 +1673,7 @@ function відповісти(текст) {
   if (об && об.task && об.task.answer === 'PHOTO_ITEMS' && об.outfit === true)
     return {тип: 'ОЦІНКА: речі на фото', текст: JSON.stringify({items: process.env.OTSINKA === 'poroznia' ? []
       : process.env.OTSINKA === 'bezfoto' ? ОЦІНКА_РЕЧІ.map(({photo, ...р}) => р) : ОЦІНКА_РЕЧІ})};
-  if (об && об.task && об.task.answer === 'OUTFIT_REVIEW_V1') {
+  if (об && об.task && відповідьЗадачі(об) === 'OUTFIT_REVIEW_V1') {
     const en = об.task.language !== 'Ukrainian', т = к => en ? к : (ОЦІНКА_УК[к] || к);
     if (об.now)
       return {тип: 'ОЦІНКА: допит', текст: JSON.stringify({answer: т('Yes: with the darker pair the outfit is calmer, because the two different whites are gone.')})};
