@@ -30,7 +30,8 @@ print("записів", len(ЗАПИСИ), "· у стелю", sorted(СТЕЛЯ
 
 
 def клас(т):
-    рядки = [р for р in т.split("\n") if р.strip() and not re.match(r"Photo \d+|\(image not delivered\)", р)]
+    # підписи фото — і номером («Photo 1»), і ідом її фото («Photo ф1:», ОЦІНКА): у записі стенда їх нема
+    рядки = [р for р in т.split("\n") if р.strip() and not re.match(r"Photo ф?\d+|\(image not delivered\)", р)]
     return re.sub(r"\d+", "#", (рядки or [""])[0][:140])
 
 

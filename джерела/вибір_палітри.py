@@ -437,6 +437,17 @@ def що_лишила(пер):
     return лишила
 
 
+def _назване(о):
+    """Нагода чи день на дріт → лише назване: без полів зі значенням `unknown` і без списку `unknown` дня.
+
+    Рядок 6223: опис полів «occasion» і «day» каже «a field she did not name is absent», а дріт ніс
+    `movement`, `precipitation`, `goal`, `jewelry`, `setting` зі значенням `unknown` і `day.unknown` —
+    114 симв. на виклик, які суперечили опису. Суддя нагоди не читає, тож вибір від цього не міняється."""
+    if not isinstance(о, dict):
+        return о
+    return {к: v for к, v in о.items() if к != _ВМ.UNKNOWN and v != _ВМ.UNKNOWN} or None
+
+
 def дані_промпта(пер):
     """Перелік → дані входу оголошення `ВИБІР` (коди й числа)."""
     її, fixed = пер["її"], {}
@@ -449,7 +460,8 @@ def дані_промпта(пер):
         fixed["base"] = _її_основа_дротом(її["база"])
     if її["гама"]:
         fixed["saturation"] = _ГАМА_КОД.get(її["гама"], її["гама"])
-    return dict(person=пер["особа"], occasion=пер["випадок"], **({"day": пер["день"]} if пер.get("день") else {}),
+    день = _назване(пер.get("день"))
+    return dict(person=пер["особа"], occasion=_назване(пер["випадок"]), **({"day": день} if день else {}),
                 schemes=[dict({"rank": с["ранг"], "scheme": с["код"], "weight": с["вага"],
                                "advised": с["радить"]},
                               **({"reliability": с["надійність"]} if с["надійність"] else {}),
