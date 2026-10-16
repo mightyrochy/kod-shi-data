@@ -10,9 +10,9 @@ import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
 import мовний_шар as МШ
 
-п = МШ.промпт_входу("scenario", "слова")
+п = МШ.промпт_розмови({"розмова": {"нове": "слова", "історія": []}, "сценарій": {}})   # рядок 6190: хід розмови
 print("промпт просить окреме поле quotes: %s · поле парою quote + value: %s"
-      % ("\n- quotes —" in п, "quote" in п and "value" in п))
+      % ('"- quotes —' in п, "quote" in п and "value" in п))
 річ = lambda ц, н, с: {"quote": ц, "name": н, "status": "has", "slot": с}
 ХОДИ = [("Збери образ під цю спідницю і чоботи для походу на концерт",
          {"place": {"quote": "для походу на концерт", "value": "theatre"}, "event": "похід на концерт",
