@@ -115,11 +115,20 @@ import протокол as _ПР
 ЗВЕРТАННЯ_ТИ = "«ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай)"
 ЗВЕРТАННЯ = (ЗВЕРТАННЯ_ТИ + ", ніколи «ви» (ви, вас, вам, ваш, ваша; хочете, скинете; наказ множини: розкажіть, "
              "оберніть, тримайте, дозвольте)")
+# РІД СТИЛІСТКИ — ТЕЖ МЕЖЕЮ (рядки 5302, 5983): «про себе — у жіночому роді» стояло лише в промптах мовного шару, і
+# без шару (`MODEL_MOVA=нема`) стилістка писала «я підготував», «я б додав». Межа `звертання` — «ти» і рід одним
+# текстом; `для_неї` починається з неї. Задачі, чий вільний текст іде їй поруч з id речей (складання: «day»,
+# «deliberate»; повнота, вибір, ремонт), беруть лише `звертання`: заборона id у `для_неї` — не для них.
+_ЗВЕРТАННЯ_РІД = "До неї — на " + ЗВЕРТАННЯ + "; стилістка про себе — у жіночому роді (я підібрала, я б додала)."
+_ЗВЕРТАННЯ_РІД_EN = ("Address her informally, with the familiar singular \"you\", never the polite plural, and a "
+                     "command to her in the singular too; you, the stylist, are a woman: speaking of yourself, use the "
+                     "feminine grammatical gender.")
 МЕЖІ = {
     "лише_вхід": "Спирайся лише на вхід: чого в ньому нема, не вигадуй.",
     "невідомо": "Чого не знаєш — «невідомо», null або порожній список, як дозволяє схема.",
-    "для_неї": ("Текст для неї — на " + ЗВЕРТАННЯ + ", і людськими словами: без номерів речей, id, "
-                "hex-кодів і markdown."),
+    "звертання": _ЗВЕРТАННЯ_РІД,
+    "для_неї": (_ЗВЕРТАННЯ_РІД + " Текст для неї — людськими словами: без номерів речей, id, hex-кодів і "
+                "markdown."),
     # рядок 1422 (живий прогін ж8_зима ПІСЛЯ): опис із полем `body` написав «твій зріст 154 см» — межа
     # тепер називає й мірки тіла, не лише світлоту й типи фігури
     "без_чисел_тіла": "Не називай чисел світлоти, мірок тіла чи зросту й типів фігури і не кажи, що мала обмеження.",
@@ -203,9 +212,9 @@ def вибірка(о):
     "невідомо": "What you do not know is \"unknown\", null or an empty list, as the schema allows.",
     # «you» англійською не розрізняє «ти» і «ви»: живий стенд НГ-4 (sonnet, 01.10) дав репліку розмови
     # на «ви», хоча українська межа каже «на „ти“» — тож форму звертання названо прямо.
-    "для_неї": ("Text for her: address her informally, with the familiar singular \"you\", never the "
-                "polite plural, and a command to her in the singular too; in plain human words, without item "
-                "numbers, ids, hex codes or markdown."),
+    "звертання": _ЗВЕРТАННЯ_РІД_EN,
+    "для_неї": ("Text for her. " + _ЗВЕРТАННЯ_РІД_EN + " Plain human words, without item numbers, ids, hex codes "
+                "or markdown."),
     "без_чисел_тіла": ("Do not name lightness numbers, body measurements or height in numbers, or body-type "
                       "labels, and do not say you had limits."),
     "без_шкал": ("Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for "

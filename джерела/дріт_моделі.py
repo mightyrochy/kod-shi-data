@@ -1016,7 +1016,8 @@ def _ошатність_заяви(код_заяви, в):
     "area_shares_unequal": ("K-COL-07", ("judge:суд_від_моделі.перевірити_від_моделі",)),
     "close_tones_need_texture": ("K-MAT-04", ("judge:суд_блиск.блиск_бюджет",)),
     "three_colour_families_max": ("K-COMP-03", ("judge:колір_хрома.сім_ї_образу",)),
-    "one_register_one_quote": ("K-REG-01", ("judge:реєстри.перевірити", "wire:pool.register")),
+    **{к: ("K-REG-01", ("judge:реєстри.перевірити", "wire:pool.register"))
+       for к in ("one_register_one_quote", "registers_at_equal_weight")},
     "one_focus_zone": ("K-CRA-02", ("judge:суд_ремесло.фокуси",)),
     "shoes_level_and_mass": ("K-SHO-01", ("judge:аксесуари_взуття.взуття_і_поділ",)),
     # її прохання про взуття — `case.shoe_request` і `case.refusals` (з правилом поля в `task.input`)
@@ -1024,12 +1025,13 @@ def _ошатність_заяви(код_заяви, в):
                                              "wire:case.refusals")),
     "fabric_level_form_drape": ("K-MAT-06", ("maxim",)),
     **{к: ("K-ACC-01", ("judge:аксесуари_структура.аксесуар_як_структура", "maxim"))
-       for к in ("bag_structured", "bag_may_be_soft", "jewellery_one_or_few_small")},
+       for к in ("bag_structured", "bag_may_be_soft", "jewellery_one_or_few_small", "loud_accessory_no_echo")},
     **{к: ("K-FIT-03", ("judge:fit.краї", "judge:fit.довжина_проти_зросту")) for к in ("no_hem_at", "top_hem_at", "hem_at")},
     **{к: ("K-BOD-02", ("judge:силует_суд.відповідність", "wire:person.body.zones"))
        for к in ("pair_wider_zone", "pair_even")},
     "volume_anchor": ("K-SIL-03", ("judge:силует_пропорції.об_єм",)),
     "volume_anchor_no_waist": ("K-SIL-03", ("judge:силует_пропорції.об_єм",)),
+    "volume_top_and_bottom_no_anchor": ("K-SIL-03", ("judge:силует_пропорції.об_єм",)),
     "one_line": ("K-SIL-01", ("judge:силует_пропорції.конкуренція",)),
 }
 
@@ -1545,6 +1547,10 @@ def опис(об):
                     ("межі", "she_refuses"), ("неповний", "missing"), ("макіяж", "makeup")):
         if об.get(к):
             вих[ключ] = день_на_дріт(об[к]) if к == "день" else об[к]
+    # оголошений хід — номер речі й заяви знахідки, проти якої він стоїть (рядок 3784)
+    if вих.get("your_declared"):
+        вих["your_declared"] = [{"item": х.get("н"), "statements": заяви(х.get("заяви"))}
+                                for х in вих["your_declared"] if isinstance(х, dict)]
     # ВИПАДОК КОДАМИ (ВМ-3б, рядок 541): є поля випадку — `case` їде ними (той самий `випадок`, що
     # в пакеті складання; поля, які несе `day`, — лише без нього), а рядок коду — ні: «офіс
     # корпоративний, приміщення, дрес-код «ділово, м'яко»» був фразою коду українською (п.12)
