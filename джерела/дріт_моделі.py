@@ -421,7 +421,8 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
 # нема (рядок 5901: короткі ключі нічого не економили, а просили читати легенду).
 ОПИС_ТИПОВИХ = {
     "in_arc": "the color lies inside her palette's scheme arc",
-    "branch": "core, edge or break of her palette",
+    "branch": "core or edge: both inside her palette; choose edge as freely as core. "
+              "break: outside her palette; declare it in deliberate, as with any condition you break",
     "L_from": "where the lightness came from",
     "hem_from": "where the hem came from",
 }
