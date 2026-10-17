@@ -2302,6 +2302,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "temperature"
                                         "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "move_colour_to_hat_scarf_gloves": "move the colour into the hat, scarf or gloves",
+    # рядок 3340: рукавиць у пулі нема — ті самі заяви без них
+    "cold_hat_scarf_carry_no_colour": "in hard frost mostly the outer layer and the accessories are "
+                                      "visible, and the hat and the scarf are quiet here: all the colour "
+                                      "stayed under the coat (values: temperature_c — the temperature"
+                                      "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+    "move_colour_to_hat_scarf": "move the colour into the hat or the scarf",
     # рядок 3161а: K-WEA-01 — нижче −8 °C у образі нема ні шапки, ні шарфа
     "frost_head_neck_uncovered": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay "
                                  "open, and no outer layer covers them (values: temperature_c — the "
