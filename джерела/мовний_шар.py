@@ -3032,11 +3032,15 @@ _ПОЛЯ_EN = {
     # Рядок 5211 (рішення власника 15.10 «3б»): мета — дві осі. `goal` — лише скільки уваги; зони й «що ще
     # важливо» — свої поля, з будь-якою увагою (код читає їх окремо: `регістр_уваги`, `реєстр_намір._намір`)
     # Рядок 6188: «щоб на мене дивились», «без питань до неї» (сцени клубу й корпоративу) — тепер рід: помітність, чужий суд
+    # Рядок 6753 (ЖИВІ-1016-3, Ж:02): «йога зранку, потім кава з подругою» — `goal: flatter` з уривком «потім кава з
+    # подругою». Уривок дослівно її, тож сторож (`_тримається`, підрядок) поле тримає: чи мовить уривок про увагу,
+    # код не судить (п.12). Мета — лише з її слів про увагу до образу; типове «звично» показ ставить сам
     "goal": "how much attention she wants for this look — only its own codes, never an intent code: conceal — "
             "quiet, no attention to her look; flatter — usual, to suit her; express — noticeable, attention to "
             "her look: the words that give intent statement give goal express too. A body zone she wants to hide "
             "is goal_zones, not conceal. Passing the judgement of others is not conceal: it is intent "
-            "context_optimal",
+            "context_optimal. Only on her words about attention to her look, never on her words about the "
+            "outing itself and never as a default",
     "goal_extra": "what else matters to her in this look, several together: taller — a longer line, to look "
                   "taller; comfort — moving comfortably all day; strict — strictly by the occasion",
     # Рядок 6188: «сховати живіт» — слова сцени ж4_клуб_приховати; тепер рід (сховати чи зменшити зону)
@@ -3591,6 +3595,11 @@ _ПРАВИЛО_НОРМИ = (
 # звертання кажуть `_ПРАВИЛО_ФОРМИ` і межа `для_неї`.
 СКЕЛЕТ_РОЗМОВИ = {
     "update": {"formality": "{from, to} — on every turn once the kind of outing is known (the \"formality\" rule)",
+               # Рядок 6753 (ЖИВІ-1016-3, Ж:02): «йога зранку, потім кава з подругою» — `occasion: sport` уривком усього
+               # дня, без `occasion_part`, `place` і `event`: кава зникла, плитка «Спорт, активність». Вибір частини
+               # (`occasion_part`) і суд пари `occasion_part other` + `occasion sport` (`паспорт_з_шару`) стоять, але
+               # поле, якого скелет не називає, модель не писала; тепер скелет називає його поруч із нагодою
+               "occasion_part": "with occasion: which part of her day this outfit is for (see \"codes\")",
                # Рядок 6186: `<field>` називає й другий виняток — норми події без її слів (R9); «одна фраза — кілька
                # полів» каже R2. Рядок 6457: після #1212 сім полів з парою в перших ходах ЖИВІ-1016-1 прийшли голими
                # (`temperature_c: -8`, `movement: "walk"` — Ж:38; Ж:22, 29, 48), і сторож знімав їх як вигадку без уривка:
