@@ -1,0 +1,30 @@
+── ПРОМПТ (2269 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Soft, drapey long-sleeve top in a relaxed silhouette, color #A8C3B1 (sage green), lightweight ponte knit with subtle stretch.\nHigh-waisted wide-leg trousers in fluid crepe, length reaching the ankle for a polished yet effortless line, color #6F5E45 (warm taupe).\nMinimalist leather flat sandals, pointed toe to elongate the leg without elevation, color #3A2D24 (dark espresso) with no heels as requested.\nThis outfit works because it balances comfort and refinement for your morning yoga session, allowing freedom of movement while looking put-together. The earthy, muted tones feel grounded and seasonally appropriate for autumn daylight, transitioning seamlessly into a relaxed coffee meet-up. By choosing wide-leg pants over tight leggings and flats over heels, the ensemble honors your refusal to wear restrictive prints or elevated footwear while still flattering your figure through fluid drape and clean lines."}
+
+── ВІДПОВІДЬ (612 симв., 209.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "top",
+      "details": "Soft, drapey long-sleeve top in a relaxed silhouette",
+      "slot": "top",
+      "color_hex": "#A8C3B1",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "High-waisted wide-leg trousers in fluid crepe, length reaching the ankle",
+      "slot": "bottom",
+      "color_hex": "#6F5E45",
+      "worn": true
+    },
+    {
+      "name": "sandals",
+      "details": "Minimalist leather flat sandals, pointed toe with no heels",
+      "slot": "shoes",
+      "color_hex": "#3A2D24",
+      "worn": true
+    }
+  ]
+}
