@@ -12,7 +12,9 @@ sys.path.insert(0, "."); import bridge as B
 for тека in sys.argv[1:]:
     Л = K.Counter()
     for f in sorted(glob.glob(тека + "/*/вердикти.txt*")):
-        д = json.load(gzip.open(f, "rt") if f.endswith(".gz") else open(f, encoding="utf-8")); вп = д["спільне"]["вхід_прогону"]; к = вп["колір"]
+        try: д = json.load(gzip.open(f, "rt") if f.endswith(".gz") else open(f, encoding="utf-8"))
+        except (ValueError, OSError, EOFError) as e: Л["файл не читається"] += 1; print("  НЕ ЧИТАЄТЬСЯ %s: %s: %s" % (f, type(e).__name__, e)); continue
+        вп = д["спільне"]["вхід_прогону"]; к = вп["колір"]
         вх = dict(ВХ0, зріст=вп["мірки"]["зріст"], обхвати=вп["мірки"]["обхвати"], шкіра=к["шкіра"][0], волосся=к["волосся"], очі=к["очі"],
                   сценарій=dict(вп["сценарій"], **{п: д["спільне"]["паспорт"][п] for п in ("мета", "намір") if д["спільне"].get("паспорт", {}).get(п) not in (None, "невідомо")}),
                   випадок=д["спільне"].get("паспорт", {}).get("подія") or ", ".join(str(x).replace("_", " ") for x in (
