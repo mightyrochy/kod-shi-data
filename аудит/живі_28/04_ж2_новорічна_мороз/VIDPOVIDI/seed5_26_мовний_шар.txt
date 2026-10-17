@@ -1,0 +1,63 @@
+── ПРОМПТ (8731 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Шапка з віскози · kind code: headwear · colour code: brown · about it: text н=1
+2 — Джемпер у смужку жіночий з віскози та бавовни демісезонний · kind code: sweater · colour code: chocolate · about it: text н=2
+3 — Ковбойки молочні з натуральної шкіри · kind code: boots · colour code: milky · about it: text н=3
+4 — Сукня міді вільна замшева з декоративними швами та довгим рукавом · kind code: dress_generic · colour code: chocolate · about it: text н=4
+5 — Фіолетова шкіряна сумка · kind code: bag_generic · colour code: purple · about it: text н=5
+6 — Довгий пухнастий чорний кардиган пальто · kind code: cardigan · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; chocolate — шоколадний; milky — молочний; purple — фіолетовий.
+
+ТЕКСТИ:
+{
+"1": "A soft ribbed beanie in warm chocolate brown sits snugly on your head, framing your face gently without hiding it. Its fine knit texture adds comfort for frosty nights while keeping the look relaxed yet polished.",
+"2": "A cozy striped sweater with horizontal bands of cream and deep brown offers a casual-but-chic layer that complements your skin tone. The slightly cropped fit keeps the silhouette balanced without overwhelming your frame.",
+"3": "Milky ivory ankle boots with a low block heel and side zippers offer sleek lines and quiet elegance—they glide over winter floors without compromising comfort or style.",
+"4": "A relaxed midi dress in rich chocolate suede features subtle decorative seams that add structure to the silhouette. Its flowing shape drapes softly around your waist and hips, creating a graceful vertical line.",
+"5": "A sleek violet shoulder bag with a slender strap and metallic logo brings a touch of playful contrast to the earthy tones. Its smooth leather finish catches the light subtly as you move through the restaurant.",
+"6": "An oversized black fuzzy cardigan draped open acts as your warm, understated outer layer. Its long silhouette extends past your hips, adding height and drama without hiding your figure or interrupting the outfit’s flow.",
+"7": "This outfit is crafted for your evening at the restaurant, where you want to feel elegant and festive. The rich brown tones of your sweater, dress, and beanie create a sophisticated, grounded palette perfect for winter gatherings, while the soft milky boots and luxurious purple bag introduce a gentle contrast that feels both special and wearable. Your long black cardigan adds warmth without hiding your silhouette, letting you carry the evening comfortably from arrival to dancing.",
+"8": "Start with the sweater tucked into your dress for a clean waistline, then layer the black cardigan loosely over when the room gets cool or as you move outside.",
+"9": "Keep your hair down in loose waves to let your face and eyes pop under the restaurant lights—this works especially well with the beanie’s soft ribbing.",
+"10": "Довгий пухнастий чорний кардиган пальто — The long black coat covers the head and neck as required by the hard frost, adding volume to the silhouette that frames you elegantly while keeping the face visible for photos.",
+"11": "Фіолетова шкіряна сумка — The violet bag is kept but treated as a single deliberate break of color; its dark saturation ensures it does not overpower the neutral base, serving only as a singular focal point on the evening setting.",
+"12": "Фіолетова шкіряна сумка — The violet hue is kept as it serves as the singular, deliberate break in color that prevents the neutral base from becoming too quiet for a festive occasion, rather than being an accidental clash.",
+"13": "Ковбойки молочні з натуральної шкіри — Milky boots are chosen here to soften the edge of the dark chocolate dress, preventing the outfit from feeling too heavy and adding a necessary step of lightness to the hem area.",
+"14": "Шапка з віскози — The viscose headwear in brown provides a neutral layer that bridges the gap between the cool graphite top and the warm brown coat, ensuring a smooth transition of tones."
+}
+
+── ВІДПОВІДЬ (3356 симв., 98.7 с, HTTP 200) ──
+```json
+{
+  "1": "М'яка ребриста шапка в теплому шоколадно-коричневому кольорі зручно сидить на твоїй голові, ніжно обрамлюючи обличчя без його приховування. Її тонка в'язана текстура додає комфорту для морозних ночей, зберігаючи образ розслабленим і водночас вишуканим.",
+  "2": "Затишний смугастий светр з горизонтальними смужками кремового та глибокого коричневого кольорів пропонує повсякденний, але елегантний шар, який доповнює твій тон шкіри. Трохи укорочений крій зберігає силует збалансованим без перевантаження твоєї фігури.",
+  "3": "Молочно-білі черевики на низькому блочному підборі та бічними блискавками пропонують елегантні лінії й тиху вишуканість — вони ковзають по зимовій підлозі, не жертвуючи комфортом чи стилем.",
+  "4": "Вільна міді-сукня з насиченої шоколадної замші має непомітні декоративні шви, які додають структури силуету. Її струмлива форма ніжно драпірується навколо твоєї талії й стегон, створюючи витончену вертикальну лінію.",
+  "5": "Стильна фіолетова шкіряна сумка з тонким ремінцем і металевим логотипом додає нотку грайливого контрасту до земляних тонів. Її гладка шкіряна обробка ледь помітно ловить світло, коли ти рухаєшся рестораном.",
+  "6": "Об'ємний чорний пухнастий кардиган, накинутий недбало, слугує твоїм теплим і стриманим верхнім шаром. Його довгий силует виходить за межі стегон, додаючи зросту й драматизму без приховування твоєї фігури чи порушення гармонії образу.",
+  "7": "Цей образ створений для твого вечора в ресторані, де ти хочеш почуватися елегантно та святково. Насичені коричневі тони светра, сукні й шапки створюють вишукану, стриману палітру, ідеальну для зимових зустрічей, а м'які молочні черевики й розкішна фіолетова сумка вводять ніжний контраст, який здається особливим і водночас практичним. Твій довгий чорний кардиган додає тепла без приховування силуету, дозволяючи тобі комфортно провести вечір від початку до танців.",
+  "8": "Почни з того, що заправ светр у сукню для чистої лінії талії, потім накинь зверху чорний кардиган вільно, коли в кімнаті стане прохолодно або ти вийдеш надвір.",
+  "9": "Залиш волосся розпущеним з легкими хвилями, щоб твоє обличчя й очі сяяли під світлом ресторану — це особливо добре поєднується з м'яким ребром шапки.",
+  "10": "Довгий пухнастий чорний кардиган пальто захищає голову та шию від сильного морозу, додаючи об’єм силуету, який елегантно обрамлює тебе, залишаючи при цьому обличчя видимим для фотографій.",
+  "11": "Фіолетова шкіряна сумка — Фіолетовий колір зберігається, оскільки він слугує єдиним навмисним контрастом у кольорі, який запобігає надмірній стриманості нейтральної основи та виступає лише як окремий акцент на вечірньому образі.",
+  "12": "Фіолетова шкіряна сумка — Фіолетовий відтінок зберігається, оскільки він слугує єдиним навмисним контрастом у кольорі, який запобігає тому, щоб нейтральна основа не стала надто тихою для святкового випадку, а не випадковим дисонансом.",
+  "13": "Ковбойки молочні з натуральної шкіри — Молочні черевики обрані тут, щоб пом’якшити гостроту темно-шоколадної сукні, запобігаючи тому, що образ здаватиметься надто важким і додаючи необхідний елемент легкості в області подолу.",
+  "14": "Шапка з віскози — Коричнева шапка з віскози забезпечує нейтральний шар, який заповнює прогалину між холодним графітним верхом і теплим коричневим пальтом, гарантуючи плавний перехід тонів."
+}
+```

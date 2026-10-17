@@ -1,0 +1,51 @@
+── ПРОМПТ (2533 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined wool-blend sheath dress in forest green with a subtle herringbone weave, knee-length cut with a modest V-neckline and long sleeves, hex code #2E4D33.\nSilk satin piping tracing the waist seam and hem to add a festive touch without overpowering the pattern.\nA tailored camel-colored wool capelet with a relaxed drape and no belt, falling to mid-thigh length.\nClassic black leather loafers with a low block heel, smooth finish and minimal branding, hex code #1A1A1A for the shoes.\nPearl drop earrings with 6mm spheres on silver settings, hex code #E0E0E0.\nA folded white silk pocket square in the jacket breast pocket, crisp texture and soft fold.\nThis outfit balances the autumn frost by providing a warm wool outer layer while maintaining an elegant silhouette suitable for an upscale restaurant celebration. The forest green hue feels rich and seasonal against the neutral capelet, creating a sophisticated palette that respects the formal dress code without being overly restrictive. Subtle metallic details like the satin piping and pearl jewelry elevate the look to fit the festive occasion, while the block heel ensures comfort on uneven surfaces inside the venue."}
+
+── ВІДПОВІДЬ (1256 симв., 176.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "refined wool-blend with subtle herringbone weave, modest V-neckline and long sleeves, knee-length cut",
+      "slot": "dress",
+      "color_hex": "#2E4D33",
+      "worn": true
+    },
+    {
+      "name": "piping",
+      "details": "silk satin tracing waist seam and hem",
+      "slot": "accessory",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "capelet",
+      "details": "tailored wool with relaxed drape, no belt, falling to mid-thigh length",
+      "slot": "outerwear",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "classic leather with low block heel, smooth finish and minimal branding",
+      "slot": "shoes",
+      "color_hex": "#1A1A1A",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "pearl drop with 6mm spheres on silver settings",
+      "slot": "earrings",
+      "color_hex": "#E0E0E0",
+      "worn": true
+    },
+    {
+      "name": "pocket square",
+      "details": "folded white silk with crisp texture and soft fold, placed in jacket breast pocket",
+      "slot": "accessory",
+      "color_hex": "#FFFFFF",
+      "worn": false
+    }
+  ]
+}
