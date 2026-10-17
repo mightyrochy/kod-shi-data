@@ -3317,7 +3317,7 @@ function мостПриміркиЗаглушка(w){
     тест("рука 1: хід ітерації 1 над річчю КАРТКИ доживає до журналу, хід над беретом, якого на картці нема, — ні",
          JSON.stringify(з1.свідомі) === '["Мюлі — так задумано"]', з1.свідомі);
     тест("рука 1: вхід опису — з рішення про картку: оголошення id-ами її речей, образ і «день» того самого образу",
-         !!вхідОпису && JSON.stringify(вхідОпису.свідомі) === '["b"]' && вхідОпису.образ === "о1"
+         !!вхідОпису && JSON.stringify(вхідОпису.свідомі) === '[{"ід":["b"]}]' && вхідОпису.образ === "о1"
          && вхідОпису.день === "день о1" && вхідОпису.підпис === "тон"
          && JSON.stringify(вхідОпису.номери) === '{"a":"#1·00","b":"#1·01"}',
          вхідОпису && {свідомі: вхідОпису.свідомі, образ: вхідОпису.образ, день: вхідОпису.день,
@@ -5981,6 +5981,43 @@ function мостПриміркиЗаглушка(w){
     w.eval("відновитиСтанКарткиП(0, " + JSON.stringify({вердикт_людини: "ні", замінити: "ж-1@g.com", замінити_чому: {"ж-1@g.com": ["comfort"]}}) + ", 1)");
     тест("відкриття з бібліотеки відновлює ряд «чому» зі збереженим дотиком",
          чипиЧому().filter(ч => ч.classList.contains("вибр")).map(ч => ч.dataset.код).join() === "comfort");
+    тест("без винятків", помилки.length === 0, помилки);
+  }
+
+  розділ("РЯДКИ 5470, 4944 (крок 2). [hidden] НЕ ПЕРЕБИВАЄТЬСЯ КЛАСОМ; СТАН ВИБОРУ Й ОГОЛОШЕННЯ СТАТУСІВ ЗБИРАННЯ");
+  {
+    /* Верстки в jsdom нема, але каскад `display` він рахує: клас `.поле{display:block}` без правила для [hidden]
+       дає тут `block` на схованому полі. Те саме у справжньому Chromium 390×844 міряє проба в PR. */
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html", idb: new IDBFactory()});
+    await чекатиСтарт(w);
+    const ява = [...d.querySelectorAll("[hidden]")].filter(е => !(е.tagName === "INPUT" && е.type === "hidden"));
+    const видимі = ява.filter(е => w.getComputedStyle(е).display !== "none").map(е => е.id || е.className);
+    тест("кожен елемент з `hidden` має `display:none` (один `[hidden]`, а не латка на поле)", ява.length > 0 && !видимі.length, видимі);
+    const правила = [...d.querySelectorAll("style")].map(е => е.textContent).join("\n");
+    тест("у стилях є одне загальне правило `[hidden]{display:none!important}`, а не латка на одне поле",
+         /(^|\n)\[hidden\]\{display:none!important\}/.test(правила));
+    тест("поле «Колір губ» до вибору «свій колір» не показується",
+         d.getElementById("сц-губи-поле").hidden && w.getComputedStyle(d.getElementById("сц-губи-поле")).display === "none");
+    const чат = d.getElementById("чат-поле");
+    тест("поле розмови має сталий підпис, що не зникає з плейсхолдером",
+         чат.getAttribute("aria-label") === "Куди ти збираєшся?", чат.getAttribute("aria-label"));
+    const жива = id => { const е = d.getElementById(id);
+      return !!е && е.getAttribute("role") === "status" && е.getAttribute("aria-live") === "polite" && е.getAttribute("aria-atomic") === "true"; };
+    тест("статуси збирання живуть у постійних областях aria-live (polite, atomic) — вони є в розмітці до першого збирання",
+         жива("зб-оголошення") && жива("зб-статус"), [жива("зб-оголошення"), жива("зб-статус")]);
+    w.eval("оголоситиЗбиранняП('варіант 1: чекає…')");
+    тест("напис збирання потрапляє в постійну область оголошень",
+         d.getElementById("зб-оголошення").textContent === "варіант 1: чекає…");
+    const вузол = d.createElement("button"); вузол.classList.add("вибр"); w.станВиборуП(вузол);
+    const без = d.createElement("button"); без.classList.add("вибр"); без.classList.remove("вибр"); w.станВиборуП(без);
+    тест("станВиборуП синхронізує aria-pressed з позначкою вибору в обидва боки",
+         вузол.getAttribute("aria-pressed") === "true" && без.getAttribute("aria-pressed") === "false",
+         [вузол.getAttribute("aria-pressed"), без.getAttribute("aria-pressed")]);
+    const кн = d.createElement("button"); w.eval("0");
+    w.виглядКнопкиЗаміниП(кн, true);
+    const стан1 = кн.getAttribute("aria-pressed"); w.виглядКнопкиЗаміниП(кн, false);
+    тест("кнопка «замінити» перемикає aria-pressed разом з класом і написом",
+         стан1 === "true" && кн.getAttribute("aria-pressed") === "false" && !кн.classList.contains("вибр"), [стан1, кн.className]);
     тест("без винятків", помилки.length === 0, помилки);
   }
 
