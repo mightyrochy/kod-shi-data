@@ -2786,6 +2786,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "same_item_in_opposite_season_fabric": "the same item in a fabric of the opposite season (values: band — "
                                            "from and to, °C)",
     "volume_top_and_bottom_no_anchor": "a loose cut both on top and at the bottom, with no fitted level",
+    "registers_at_equal_weight": "mix styles freely: several style languages sound at equal weight, none leads",
+    "loud_accessory_no_echo": "the bag or jewellery in a loud colour that nothing else in the outfit repeats; the "
+                              "accessory need not echo anything",
     "second_register_equal_weight": "bring a second style to the same weight as the leading one, so that "
                                     "neither leads (values: registers — the leading one and the second)",
     "loud_accessory_without_role": "replace the accessory with a loud one in a tone that nothing else in the "
