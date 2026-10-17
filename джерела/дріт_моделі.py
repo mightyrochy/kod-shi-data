@@ -984,8 +984,9 @@ def _ошатність_заяви(код_заяви, в):
     # (`сценарій.день_кодами`, рядок 167) фактом її дня не є, а ця заява їх доти везла
     "weather_layers": ("K-WEA-01", ("pool:пакет_моделі._жорстке_відсічення", "pool:composer.зібрати",
                                     "judge:суд_погода.погода", "wire:day.temperature_c")),
-    "cold_outer_layer_counts": ("K-OUT-33", ("pool:суд_погода.пальта_пулу", "judge:суд_погода.пальтова_смуга",
-                                             "wire:coat_required")),
+    # хибний рядок руки 2 (рядок 6635) іде туди ж, куди справний: у промпт складання — ні
+    **{к: ("K-OUT-33", ("pool:суд_погода.пальта_пулу", "judge:суд_погода.пальтова_смуга", "wire:coat_required"))
+       for к in ("cold_outer_layer_counts", "cold_outer_layer_optional")},
     "precipitation_shoes_materials": ("K-WEA-01", ("pool:пакет_моделі._жорстке_відсічення",
                                                    "judge:суд_погода.погода", "wire:day.precipitation")),
     "high_occasion_floor": ("K-KOH-08", ("pool:пакет_моделі._жорстке_відсічення",
@@ -1024,7 +1025,7 @@ def _ошатність_заяви(код_заяви, в):
     "fabric_level_form_drape": ("K-MAT-06", ("maxim",)),
     **{к: ("K-ACC-01", ("judge:аксесуари_структура.аксесуар_як_структура", "maxim"))
        for к in ("bag_structured", "bag_may_be_soft", "jewellery_one_or_few_small")},
-    **{к: ("K-FIT-03", ("judge:fit.краї", "judge:fit.довжина_проти_зросту")) for к in ("no_hem_at", "top_hem_at")},
+    **{к: ("K-FIT-03", ("judge:fit.краї", "judge:fit.довжина_проти_зросту")) for к in ("no_hem_at", "top_hem_at", "hem_at")},
     **{к: ("K-BOD-02", ("judge:силует_суд.відповідність", "wire:person.body.zones"))
        for к in ("pair_wider_zone", "pair_even")},
     "volume_anchor": ("K-SIL-03", ("judge:силует_пропорції.об_єм",)),

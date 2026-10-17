@@ -1818,6 +1818,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "no_bag": "no bag, and the occasion requires one",
     "needs_third_piece": "needs one more piece beyond top, bottom, shoes: outer layer, jewellery, belt, scarf "
                          "or hat",
+    # рядок 6635: хибні рядки брифа руки 2 (зламані K-CRA-01, K-OUT-33, K-FIT-03; перелік власника 15.10)
+    "no_third_piece": "top, bottom and shoes are already the whole outfit: no third piece, neither a layer nor "
+                      "a strong accessory",
     "too_few_items": "too few items in the outfit for this occasion (values: count — how many there are, "
                      "minimum — how many are needed at least)",
     "single_item_not_outfit": "one item is not an outfit yet: add at least shoes, or a top or a bottom to a "
@@ -3030,6 +3033,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                "and formality are judged with the rest; open shoes, thin tights and bare ankles "
                                "are a mistake here, not a style (values: temperature_c"
                                "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+    "cold_outer_layer_optional": "in this cold the outer layer is optional: the outfit stands without it; open "
+                                 "shoes and bare ankles are fine here (values: temperature_c; weather_feel — "
+                                 "instead of temperature_c when she named no degrees, the weather as she put it)",
     "precipitation_shoes_materials": "precipitation: closed shoes, no fabric soles, no suede or nubuck; "
                                      "materials afraid of water stay out of the outfit",
     "precipitation_water_shy_materials_with_condition": "precipitation: closed shoes, no fabric soles; suede, "
@@ -3115,6 +3121,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "no_hem_at": "no hem of any item ends at these points — they are the widest points of her body; other "
                  "lengths are free (values: at — body landmarks)",
     "top_hem_at": "the hem of the top item ends at one of these points (values: at — body landmarks)",
+    "hem_at": "the hems of the items end at these points — they are the widest points of her body, and the hem "
+              "stresses them (values: at — body landmarks)",
     "pair_wider_zone": "one half of her body is wider than the other: volume or structure on the narrower half, "
                        "a clean line on the wider one; clinging on the narrower half does not make up for the "
                        "difference (values: wider — top or bottom; narrower; difference_pct — the difference of "
