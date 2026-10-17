@@ -32,19 +32,25 @@ _ПРАВИЛА = ("Choose exactly one different item for replacement.slot, cons
 _НЕ_ДЛЯ_ЗАМІНИ = ("poles", "poles_unavailable", "outfits_wanted")
 _СКЕЛЕТ = {"outfits": [{"items": ["<n>"]}]}
 ПОВТОР = "повтор_форми"
+ВІДМОВА = "replacement_model_found_none"  # модель чесно відповіла «підходящої речі нема»: не помилка форми
 
 
-def _поле_помилки(як):
+def _поле_помилки(як, бачила=True):
     """Поле повтору: код, чому відповідь на це саме повідомлення не прочитано; є лише на повторі, тож сталий початок
-    промпта (кеш) той самий, що на першому виклику (як `format_error` ходу розмови)."""
-    return _ЗП.Поле("format_error", "the code of why your previous answer to this same message could not be used",
-                    як=як)
+    промпта (кеш) той самий, що на першому виклику (як `format_error` ходу розмови). `бачила` False — повтор іде
+    іншим промптом, ніж перша відповідь (оцінка/турнір): модель попередньої відповіді не бачила."""
+    опис = ("the code of why your previous answer to this same message could not be used" if бачила
+            else "the code of why this request is sent again")
+    return _ЗП.Поле("format_error", опис, як=як)
 
 
 _ПОМИЛКА_ПУЛУ = _поле_помилки("answer again: one JSON object following \"answer_schema\" with exactly one «n» of "
                              "«pool»")
 _ПОМИЛКА_ПЕРЕЛІКУ = _поле_помилки("answer again: one JSON object following \"answer_schema\" with exactly one "
                                   "item, its \"worn\" true")
+
+
+_ПОМИЛКА_ПУЛУ_ІНШИЙ = _поле_помилки(_ПОМИЛКА_ПУЛУ.як, бачила=False)
 
 
 def _відповідь(з):
@@ -71,12 +77,16 @@ def _номер_відповіді(текст, відомі):
     номер, не слова (п.12); рядок поза пулом форми не рятує."""
     об, причина, _ = _ПР.розбір_за_схемою(текст, "ОБРАЗИ_V1")
     образи = (об or {}).get("образи") or []
+    if not причина and (not образи or all(not (о.get("речі") or []) for о in образи)):
+        return None, ВІДМОВА
     if len(образи) == 1 and len(образи[0].get("речі") or []) == 1:
         return _УВ.ключ_н(образи[0]["речі"][0]), None
     try:
         список = _json.loads("\n".join(р for р in str(текст or "").splitlines() if not р.startswith("```")))
     except ValueError:
         список = None
+    if isinstance(список, list) and not список:
+        return None, ВІДМОВА
     if isinstance(список, list) and len(список) == 1 and _УВ.ключ_н(список[0]) in відомі:
         return _УВ.ключ_н(список[0]), None
     return None, причина or "replacement_not_one_item"
@@ -94,7 +104,7 @@ def контекст(з):
                 fixed_outfit=[_Д.річ(р) for р in речі if р is not старі[0]])
 
 
-def промпт_складання(пакет, помилка=None):
+def промпт_складання(пакет, помилка=None, бачила=True):
     """Складання на один слот: роль заміни, вхід складання без полів набору, ноти лише виду слота, відповідь —
     один номер речі (рядок 6209). `помилка` — код, чому попередню відповідь не прийнято (повтор, один)."""
     з = пакет.get("заміна")
@@ -105,7 +115,7 @@ def промпт_складання(пакет, помилка=None):
     if isinstance(дані.get("kind_notes"), dict):
         дані["kind_notes"] = {к: v for к, v in дані["kind_notes"].items() if к == вид}
     о = _dc.replace(_ПМ.СКЛАДАННЯ, роль=РОЛЬ,
-        вхід=tuple(п for п in _ПМ.СКЛАДАННЯ.вхід if п.шлях not in _НЕ_ДЛЯ_ЗАМІНИ) + (_ПОЛЕ, _ПОМИЛКА_ПУЛУ),
+        вхід=tuple(п for п in _ПМ.СКЛАДАННЯ.вхід if п.шлях not in _НЕ_ДЛЯ_ЗАМІНИ) + (_ПОЛЕ, _ПОМИЛКА_ПУЛУ if бачила else _ПОМИЛКА_ПУЛУ_ІНШИЙ),
         правила=_ПРАВИЛА + (_ПМ.РЯДОК_ЛИШЕ_НОМЕР,), скелет=_СКЕЛЕТ,
         поля_виходу={"outfits[].items": "exactly one eligible «n» of «pool», or []"})
     return _json.dumps(_ЗП.зібрати(о, дані,
@@ -134,6 +144,16 @@ def _промпт_без_каталогу(d, помилка=None):
     return _json.dumps(_ЗП.зібрати(о, базовий, мова_тексту=d.get("мова_тексту")), ensure_ascii=False)
 
 
+def _порожній_перелік(текст):
+    """Відповідь рук 3–4 — JSON з порожнім переліком речей (`items` — `[]`) або порожній список."""
+    try:
+        об = _json.loads("\n".join(р for р in str(текст or "").splitlines() if not р.startswith("```")))
+    except ValueError:
+        return False
+    items = об.get("items") if isinstance(об, dict) else об
+    return items == []
+
+
 def без_каталогу(d):
     """Руки 3–4 обирають одну вигадану річ тим самим модельним контекстом, без каталогу. Відповідь, що не одна річ
     (`worn` false, кілька, не обʼєкт), — один повтор із причиною кодом."""
@@ -142,6 +162,8 @@ def без_каталогу(d):
     текст, повтор = _відповідь(з)
     if текст is not None:
         речі = _РБ.речі_переліку(текст)
+        if речі == [] or _порожній_перелік(текст):
+            return dict(готово=True, чому=ВІДМОВА)
         if not речі or len(речі) != 1 or not речі[0].get("носить"):
             return _повтор_форми(повтор, "replacement_not_one_item", lambda код: _промпт_без_каталогу(d, код))
         р = речі[0]
@@ -190,10 +212,12 @@ def крок(d, пак, сцен, сід):
             return в
         return dict(готово=False, запити=[dict(ключ="replace", чого="replace_item", текст=промпт_складання(пакет))])
     н, причина = _номер_відповіді(текст, дозволені)
+    if причина == ВІДМОВА:
+        return dict(готово=True, чому=ВІДМОВА)
     if н is None:
         # Повтор іде промптом «списку» над пулом слота: стан «оцінки»/«турніру» до повтору не доходить — показ
         # повертає коду лише відповідь, а не промпт, на який вона була.
-        return _повтор_форми(повтор, причина, lambda код: промпт_складання(пакет, код))
+        return _повтор_форми(повтор, причина, lambda код: промпт_складання(пакет, код, бачила=_УВ.спосіб(з.get("спосіб")) == "list"))
     р = дозволені.get(н)
     if р is None:
         return dict(готово=True, чому="replacement_outside_pool_or_same_item")
