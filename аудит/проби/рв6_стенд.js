@@ -2726,6 +2726,7 @@ function підсумокМоделі(){
     console.log('KARTKA · число від ходу плиток (' + (прийшло ? (Date.now() - тЧ) + ' мс після 1.5 с' : 'НЕ ПРИЙШЛО за 20 с') + '):', JSON.stringify(await стор.evaluate(КАРТКА_РЯДКИ)));
     await знімок('plytka_stsenarii', null, true);
     await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к && typeof к.onclick === 'function') к.onclick(); });
+    await збиранняСтартувало(стор, браузер, 'PLYTKA');
     await стор.waitForFunction("(typeof ЗБ !== 'undefined' && ЗБ && ЗБ.готово) || " + ВИРАЗ_ЗБОЮ, null, { timeout: 900000 }).catch(() => null);
     const р = await стор.evaluate(() => ({ошатність: (ПАСПОРТ_П || {}).ошатність, година: (ПАСПОРТ_П || {}).година,
       джерело_полів: (ПАСПОРТ_П || {}).джерело_полів, плиток: (ЗБ.діагноз || []).filter(д => /^tiles · /.test(д)),
@@ -3239,6 +3240,7 @@ function підсумокМоделі(){
        паспортом розмови; паспорт рук перезбирається вже при «Зібрати образи» */
     if (process.env.PAL_DOTYK === 'перед') await стор.evaluate(() => стилісткаОбираєП());
     await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к && typeof к.onclick === 'function') к.onclick(); });
+    await збиранняСтартувало(стор, браузер, 'DO=palitra');
     await стор.waitForFunction("(typeof ЗБ !== 'undefined' && ЗБ && Array.isArray(ЗБ.картки) && ['1','2'].every(р => "
         + "ЗБ.картки.some(к => к && к.рука === р))) || " + ВИРАЗ_ЗБОЮ, null, { timeout: 900000 });
     const м = await стор.evaluate(() => ({вп: window.__вп, запити: window.__запити,
