@@ -1,0 +1,50 @@
+── ПРОМПТ (8916 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Коротке пальто кімоно темно-сіре · kind code: coat · colour code: grey
+2 — Футболка чорна · kind code: t_shirt · colour code: black · about it: text н=1
+3 — Штани з тенселу · kind code: trousers · colour code: khaki · about it: text н=2
+4 — Берет Bloom із золотими акцентами чорний · kind code: headwear · colour code: golden · about it: text н=3
+5 — Обруч Дейзі айворі · kind code: headband · colour code: milky · about it: text н=4
+6 — Черевики замшеві (Other Brand) · kind code: ankle_boots · colour code: ginger · about it: text н=5
+7 — Сумка жіноча, ATTICO, шкіра, колір чорний · kind code: bag_generic · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; ginger — рудий; golden — золотий; grey — сірий; khaki — хакі; milky — молочний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "The black off-shoulder top has a sleek ribbed texture and short sleeves that expose just enough shoulder for a feminine touch. Its simple silhouette complements the structured outer layer while keeping the outfit feeling effortless and modern."},
+{"н": 2, "текст": "These trousers are cut straight with a high waist that elongates your legs and balances your proportions. Their neutral tone blends seamlessly with both the coat and top, creating a cohesive foundation for the entire ensemble."},
+{"н": 3, "текст": "This black beret is adorned with delicate gold-toned embellishments that add an unexpected spark of elegance. Its slightly slouchy shape sits comfortably on your head, adding character without overwhelming your features or disrupting the outfit’s minimalist vibe."},
+{"н": 4, "текст": "The milky-colored headband features intricate floral motifs with crystal centers, offering a gentle contrast to the darker tones of your coat and top. Its lightweight design rests softly against your hairline, adding refinement without drawing too much attention away from your overall look."},
+{"н": 5, "текст": "These ginger suede ankle boots feature a low heel and plush lining for all-day comfort. Their warm tone contrasts subtly with the cool grays and blacks in your outfit while providing traction on snowy surfaces—perfect for navigating icy sidewalks during your morning walk to work."},
+{"н": 6, "текст": "This black leather tote bag has a pebbled texture that adds depth to your outfit without competing with its other elements. Its sturdy handles allow you to carry it comfortably whether slung over one shoulder or held by the side, making it practical yet polished for your daily commute."},
+{"н": 7, "текст": "The outfit is built around a dark, monochromatic base with subtle texture. You start with a charcoal kimono-style coat that drapes loosely over your frame, tied at the waist to define your shape without bulk. Beneath it, a sleek black off-shoulder top adds a soft contrast to the structured outer layer, while high-waisted trousers in a neutral tone elongate your legs and keep the silhouette balanced. A delicate milky headband with floral accents softens your face and introduces a touch of femininity that contrasts beautifully with the clean lines of the coat. The look is grounded by ginger suede ankle boots that bring warmth and movement, perfect for walking through snow-covered streets while maintaining comfort."},
+{"н": 8, "текст": "Wear the kimono-style coat loosely draped over your shoulders when indoors, letting it drape naturally as you move during your commute."},
+{"н": 9, "текст": "Keep the off-shoulder top tucked or slightly untucked depending on how much you want to show of your waistline—tucking emphasizes your defined shape while leaving it loose adds a relaxed vibe."},
+{"н": 10, "текст": "Tie the belt on the coat only if you’re feeling colder or want to accentuate your silhouette; otherwise, wear it open for effortless flow through the day."},
+{"н": 11, "текст": "Коротке пальто кімоно темно-сіре — The declaration that the wool coat provides necessary warmth for -10°C directly addresses the severe weather condition and salt slush on the road, overriding other minor concerns."},
+{"н": 12, "текст": "Коротке пальто кімоно темно-сіре — The occasion is work, but -10°C with snow demands a coat as the required outer layer; this grey wool coat provides the necessary warmth and meets the dress code."}
+]
+
+── ВІДПОВІДЬ (265 симв., 6.8 с, HTTP 200) ──
+```json
+{
+  "н": 1,
+  "текст": "Чорна футболка з відкритими плечима має гладку ребристу текстуру та короткі рукави, які оголюють достатньо плеча для жіночного акценту. Її простий силует доповнює структурований верхній шар, зберігаючи образ легким і сучасним."
+}
+```

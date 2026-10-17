@@ -1,0 +1,68 @@
+── ПРОМПТ (9020 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Штани з блискавками з трикотажу · kind code: trousers · colour code: camel · about it: text н=1
+2 — Укорочений фактурний кардиган COLETTE чорний · kind code: cardigan · colour code: black · about it: text н=2
+3 — Ремінь жіночий Welfare хакі · kind code: belt · colour code: khaki · about it: text н=3
+4 — Черевики замшеві (Other Brand) · kind code: ankle_boots · colour code: ginger · about it: text н=4
+5 — Сумка жіноча, ATTICO, екошкіра, колір бежевий · kind code: bag_generic · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; camel — кемел; ginger — рудий; khaki — хакі.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "These wide-leg trousers are made from a soft knit fabric in a warm camel tone, with an elastic waistband for comfort and subtle zippers running down the outer seam for a touch of edge."},
+{"н": 2, "текст": "This black textured cardigan features a ribbed crew neck, gold-toned buttons that catch the light, and a cropped hem that reveals your waist—perfect for layering or wearing alone on chilly mornings."},
+{"н": 3, "текст": "A slender leather belt in a soft camel shade, fastened with an ornate silver rose buckle that adds a delicate feminine accent without overpowering the rest of the outfit."},
+{"н": 4, "текст": "Ginger suede ankle boots lined with plush shearling for warmth on frosty days; their rounded toe and chunky sole give stability and style while you walk through snow-salted streets."},
+{"н": 5, "текст": "A structured pearlescent beige handbag crafted from pebbled leather, featuring a sleek flap closure with a gold-tone clasp and a long chain strap that can be worn across the body or on the shoulder."},
+{"н": 6, "текст": "This look is built for a crisp, frosty day when you walk from your home straight into the office. The cozy yet tailored wool-cardigan gives you that neat layer for work while the wide-leg trousers add volume without making you feel heavy at all. A slim leather belt in a soft camel hue cinches your waist, defining your X-shape and giving structure to the silhouette even with such relaxed pants. Ginger suede ankle boots bring warmth underfoot and just the right height for those twenty-minute steps on salted city streets."},
+{"н": 7, "текст": "Tuck the cardigan slightly into your trousers at the front to keep your waistline defined while leaving the back free, so you can slip a light jacket over it if the wind picks up."},
+{"н": 8, "текст": "Let the wide-leg trousers drape naturally without tucking them in, so the clean line from hip to ankle remains unbroken as you walk."},
+{"н": 9, "текст": "Укорочений фактурний кардиган COLETTE чорний — Added a warm black cardigan layer to reach the required 3 layers for the -10°C temperature map, replacing the lighter jersey fabric with a warmer knit texture."},
+{"н": 10, "текст": "Укорочений фактурний кардиган COLETTE чорний — Used as a fitted layer over a t-shirt instead of a vest to add structure and keep the look neat while walking outside."},
+{"н": 11, "текст": "Укорочений фактурний кардиган COLETTE чорний — A black cardigan anchors the colorful top and blue jeans, ensuring the X-shape waist is defined despite the casual nature of the walk."},
+{"н": 12, "текст": "Штани з блискавками з трикотажу — Leggings chosen over trousers to add necessary leg insulation against the extreme cold of the walk."},
+{"н": 13, "текст": "Укорочений фактурний кардиган COLETTE чорний — Used as an inner layer over a t-shirt to add necessary structure and warmth, ensuring the torso has enough layers without bulk."},
+{"н": 14, "текст": "Ремінь жіночий Welfare хакі — Retained the neutral beige belt as a visual break in the dark outfit and to cinch the waist, rather than removing it entirely."},
+{"н": 15, "текст": "Ремінь жіночий Welfare хакі — Used the neutral beige belt to define the waist on the X-shape figure while keeping the silhouette clean for walking."},
+{"н": 16, "текст": "Укорочений фактурний кардиган COLETTE чорний — Swapped the geometric print cardigan for the plain black wool cardigan to avoid clashing with the abstract bodysuit pattern, ensuring only one focus remains."},
+{"н": 17, "текст": "Укорочений фактурний кардиган COLETTE чорний — Changed from a geometric print black cardigan to a plain wool cardigan to prevent competing focal points and ensure only the plum color anchors the look."}
+]
+
+── ВІДПОВІДЬ (3746 симв., 114.2 с, HTTP 200) ──
+```json
+{
+  "1": "Ці широкі штани з високою талією виготовлені з м’якої трикотажної тканини в теплому кемеловому відтінку, мають еластичний пояс для комфорту і непомітні блискавки по зовнішньому шву — деталь, що додає трохи зухвалості.",
+  "2": "Цей чорний фактурний кардиган має ребристий виріз горловини, золотисті ґудзики, які ловлять світло, і укорочений низ, який відкриває твою талію — ідеальний варіант для багатошаровості або носіння окремо прохолодними ранками.",
+  "3": "Стрункий шкіряний ремінь м’якого кемелового відтінку з вишуканою срібною трояндовою пряжкою, яка додає ніжну жіночну деталь без перевантаження всього образу.",
+  "4": "Руді замшеві черевики на підборах із м’яким хутряним утеплювачем для тепла у морозні дні; їхній округлий носок і масивна підошва забезпечують стійкість та стиль, поки ти йдеш по засніжених вулицях.",
+  "5": "Структурована перламутрова бежева сумка з тисненої шкіри, що має елегантну клапанну застібку із золотистою пряжкою і довгий ланцюжок для носіння через плече або на плечі.",
+  "6": "Цей образ створений для прохолодного морозного дня, коли ти йдеш від дому прямо в офіс. Затишний, але елегантний вовняний кардиган дарує тобі необхідний шар для роботи, а широкі штани додають об’єм без відчуття тяжкості. Тонкий шкіряний ремінь м’якого кемелового відтінку підкреслює твою талію, визначаючи X-подібну фігуру і надаючи силуету структуру навіть з такими вільними штанами. Руді замшеві черевики на підборах зігрівають ноги і дають саме ту висоту для двадцятихвилинної прогулянки по вулицях, де дороги посипані сіллю.",
+  "7": "Злегка заправ кардиган у штани спереду, щоб твій силует залишався витонченим, а ззаду залишити його вільним — так ти зможеш накинути зверху легку куртку, якщо подує вітер.",
+  "8": "Дай широким штанам природно спадати без заправлення, щоб чиста лінія від стегна до щиколотки залишалася неперервною під час ходьби.",
+  "9": "Укорочений фактурний кардиган COLETTE чорного кольору — Додала теплий чорний кардиган як шар для досягнення необхідних трьох шарів при температурі -10°C, замінивши легку трикотажну тканину на теплішу в’язану текстуру.",
+  "10": "Укорочений фактурний кардиган COLETTE чорного кольору — Використала як облягаючий шар поверх футболки замість жилету, щоб додати структуру і зберегти образ охайним під час прогулянки на вулиці.",
+  "11": "Укорочений фактурний кардиган COLETTE чорного кольору — Чорний кардиган збалансував барвисту футболку та блакитні джинси, забезпечуючи визначення X-подібної лінії талії навіть у невимушеному образі для прогулянки.",
+  "12": "Штани з блискавками з трикотажу — Легінси замінили штани, щоб додати необхідну ізоляцію ніг від екстремального холоду під час ходьби.",
+  "13": "Укорочений фактурний кардиган COLETTE чорного кольору — Використала як внутрішній шар поверх футболки, щоб додати необхідну структуру і тепло, забезпечуючи достатню кількість шарів на тулубі без об’єму.",
+  "14": "Ремінь жіночий Welfare хакі — Зберегла нейтральний бежевий ремінь як візуальну перерву в темному образі та для підкреслення лінії талії, замість того щоб прибрати його зовсім.",
+  "15": "Ремінь жіночий Welfare хакі — Використала нейтральний бежевий ремінь, щоб визначити лінію талії на X-подібній фігурі, зберігаючи силует чистим під час ходьби.",
+  "16": "Укорочений фактурний кардиган COLETTE чорного кольору — Замінила геометричний принт кардигана на однотонний вовняний кардиган, щоб уникнути конфлікту з візерунком абстрактного боді, забезпечивши лише один акцент в образі.",
+  "17": "Укорочений фактурний кардиган COLETTE чорного кольору — Замінила геометричний принт чорного кардигана на однотонний вовняний кардиган, щоб запобігти конкуруючим фокусним точкам і забезпечити лише сливовий колір як акцент в образі."
+}
+```

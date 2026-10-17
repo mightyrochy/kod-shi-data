@@ -1,0 +1,51 @@
+── ПРОМПТ (3045 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Waterproof trench coat with a dropped hem, A-line silhouette, length reaching mid-thigh, color #2d3e50 (Deep Slate Blue), fabric composed of dense waxed cotton and nylon ripstop.\nMerino wool blend turtleneck sweater, fitted ribbed neck, cropped length hitting just above the waistline, color #f5f0e6 (Warm Beige), fabric featuring natural wool fibers for insulation against frost.\nDark wash straight-leg denim jeans, classic five-pocket construction, ankle-length cut to prevent bunching during walking, color #1c1a18 (Charcoal Black), fabric treated with water-resistant coating and reinforced stitching at stress points.\nChunky leather hiker-style boots, lace-up front, thick lug sole for traction on snow and salted roads, mid-height shaft protecting against slush, color #5c4d46 (Warm Taupe), fabric of full-grain vegetable-tanned leather.\nSilver-tone minimalist geometric pendant necklace in 925 sterling silver and brushed gold-tone oversized hoop earrings to add visual interest over the dark layers.\n\nThis ensemble works because it prioritizes essential warmth against the -10°C frost while maintaining a professional yet approachable look for work in an urban setting. The waterproof trench coat provides a necessary shield against snow and wind, ensuring comfort during the 20-minute walk without sacrificing style. The combination of textured wool and durable denim creates visual depth that elevates simple basics into a refined \"neat\" outfit suitable for office environments. Each piece is chosen specifically to handle wet, icy conditions while respecting the requirement for no outer layer when unnecessary, though here it is strictly needed for survival in winter weather."}
+
+── ВІДПОВІДЬ (1467 симв., 212.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "trench coat",
+      "details": "dropped hem, A-line silhouette, length reaching mid-thigh, dense waxed cotton and nylon ripstop fabric",
+      "slot": "outerwear",
+      "color_hex": "#2d3e50",
+      "worn": true
+    },
+    {
+      "name": "turtleneck sweater",
+      "details": "fitted ribbed neck, cropped length hitting just above the waistline, merino wool blend fabric for insulation",
+      "slot": "top",
+      "color_hex": "#f5f0e6",
+      "worn": true
+    },
+    {
+      "name": "straight-leg denim jeans",
+      "details": "classic five-pocket construction, ankle-length cut to prevent bunching, water-resistant coating and reinforced stitching",
+      "slot": "bottom",
+      "color_hex": "#1c1a18",
+      "worn": true
+    },
+    {
+      "name": "leather hiker-style boots",
+      "details": "lace-up front, thick lug sole for traction on snow and salted roads, mid-height shaft protecting against slush",
+      "slot": "shoes",
+      "color_hex": "#5c4d46",
+      "worn": true
+    },
+    {
+      "name": "pendant necklace",
+      "details": "silver-tone minimalist geometric pendant in 925 sterling silver",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "hoop earrings",
+      "details": "brushed gold-tone oversized hoops to add visual interest over dark layers",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

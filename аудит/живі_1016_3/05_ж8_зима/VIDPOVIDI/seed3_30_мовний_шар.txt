@@ -1,0 +1,73 @@
+── ПРОМПТ (8712 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа й слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_unchecked — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- black — чорний.
+- bottom — низ.
+- crossbody — кросбоді.
+- golden — золотий.
+- hand — рука.
+- headwear — головний убір.
+- outerwear — верхній шар.
+- shoulder — плече.
+- top — верх.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+
+ЗАЯВИ:
+- colour_word_shop_photo_other — the shop names one colour of the named items and their card photo shows another, so the code knows neither for sure (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — the shop's colour word, photo — the colour on the photo).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_item_off_palette — so the code cannot tell whether the item's colour lies outside her palette.
+- cannot_tell_colour_from_eyes — so the code cannot tell whether the colour comes from the family of her eyes.
+- cannot_tell_item_carries_interest — so the code cannot tell whether the item's colour is strong enough to carry interest.
+- cannot_tell_item_is_neutral — so the code cannot tell whether the named item is a neutral at all, and the rules about neutrals did not judge it.
+- cannot_tell_item_side_near_face — so the code cannot tell whether the item near the face lies on the yellow-blue side opposite to her eyes.
+- hat_size_not_checked — the code did not check the hat's size against her head (values: item — item name).
+- her_head_girth_unknown — the code does not know her head girth; it is one question of the questionnaire.
+- item_hat_girth_unknown — the hat's card does not carry its girth.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- outer_ease_not_in_feed — the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — item names).
+- front_v_depth_no_body_input — the code computed the depth of the outer layer's neckline, but has nothing to apply it to: it does not know her under-bust girth or neck length (values: item — item name).
+- outer_shoulder_not_measured — the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- cut_from_shop_photo_differs — the cut was taken from the shop's word, and the photo shows another one (values: items — the items: slot — slot code, shop — the cut by the shop, photo — the cut from the photo; the cut names are in English, retell them in her language).
+- photo_shows_other_colour — in the card's photo the code sees a different colour than the one the item is described and judged by: the shop may have shown another colour of the model or named it differently (values: items — items: slot — slot code, colour — the item's colour, photo — the colour in the photo).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "outer_shoulder_not_measured", "values": {"item": {"free_text": "Коротке пальто кімоно темно-сіре", "lang": "uk"}}}]},
+{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "hat_size_not_checked", "values": {"item": {"free_text": "Берет Bloom із золотими акцентами чорний", "lang": "uk"}, "item_id": "ж-07746@honchstudio.com"}}, {"code": "her_head_girth_unknown"}, {"code": "item_hat_girth_unknown"}]},
+{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop_photo_other", "values": {"items": [{"item_id": "ж-07746@honchstudio.com", "slot": "headwear", "colour": "золотий", "photo": "чорний", "name": {"free_text": "Берет Bloom із золотими акцентами чорний", "lang": "uk"}}]}}, {"code": "cannot_tell_item_is_neutral"}, {"code": "cannot_tell_item_side_near_face"}, {"code": "cannot_tell_item_carries_interest"}, {"code": "cannot_tell_item_holds_scheme_hue"}, {"code": "cannot_tell_item_off_palette"}, {"code": "cannot_tell_colour_from_eyes"}]},
+{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "top", "range": "40–54 і XS–XXL"}, {"slot": "bottom", "range": "32–48 і XS–XL"}]}}, {"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "outerwear", "range": "XS–XL"}, {"slot": "bottom", "range": "32–48 і XS–XL"}]}}]},
+{"н": 5, "вид": "card_unchecked", "заяви": [{"code": "photo_shows_other_colour", "values": {"items": [{"slot": "headwear", "colour": "golden", "photo": "black"}]}}]},
+{"н": 6, "вид": "card_unchecked", "заяви": [{"code": "cut_from_shop_photo_differs", "values": {"items": [{"slot": "outerwear", "shop": "relaxed", "photo": "fitted"}]}}]},
+{"н": 7, "вид": "card_unchecked", "заяви": [{"code": "outer_ease_not_in_feed", "values": {"items": [{"free_text": "Футболка чорна", "lang": "uk"}, {"free_text": "Коротке пальто кімоно темно-сіре", "lang": "uk"}]}}]},
+{"н": 8, "вид": "card_unchecked", "заяви": [{"code": "front_v_depth_no_body_input", "values": {"item": {"free_text": "Коротке пальто кімоно темно-сіре", "lang": "uk"}}}]},
+{"н": 9, "вид": "card_unchecked", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Сумка жіноча, ATTICO, шкіра, колір чорний", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]},
+{"н": 10, "вид": "card_unchecked", "заяви": [{"code": "items_register_unknown", "values": {"count": 6}}]}
+]
+
+── ВІДПОВІДЬ (1411 симв., 109.6 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю ширину плеча твого короткого пальто кімоно темно-сірого кольору.",
+  "2": "Не можу перевірити розмір твого берета Bloom із золотими акцентами чорного кольору, бо я не знаю обхват твоєї голови і на картці немає інформації про його розміри.",
+  "3": "Я не впевнена у нейтральності та розташуванні біля обличчя твого берета Bloom із золотими акцентами чорного кольору. Також я не знаю, чи він достатньо яскравий і чи відповідає обраній палітрі або кольору очей.",
+  "4": "Я не можу сказати, як ти носиш речі розмірів 40–54 та XS–XXL для верху й низу, а також 32–48 та XS–XL для верхнього одягу і низу. Розміри на картках – це лише позначення.",
+  "5": "На фото твій берет Bloom із золотими акцентами чорного кольору виглядає чорним, хоча в описі він зазначений як золотий."
+  "6": "Твоє коротке пальто кімоно темно-сірого кольору має інший крій на фото, ніж той, що заявлений у картці: замість вільного крою – приталений.",
+  "7": "Я не знаю, чи зручно ти носитимеш футболку чорного кольору та коротке пальто кімоно темно-сірого кольору разом."
+  "8": "Не можу визначити глибину вирізу твого короткого пальто кімоно темно-сірого кольору без інформації про обхват твоєї грудей під бюстом і довжину шиї.",
+  "9": "Ти ще не обрала, як носитимеш свою сумку жіночу ATTICO зі шкіри чорного кольору: в руці, на плечі чи через тіло."
+  "10": "Я не знаю стиль шести речей у твоєму образі."
+}
+```
