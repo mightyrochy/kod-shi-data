@@ -1836,8 +1836,9 @@ def _її_речі(речі):
     чоботи» одним записом зі `slot: ["bottom", "shoes"]` доти давало [] (`ключ` на списку —
     None); тепер — дві клаузи, низ і взуття, з тією самою назвою її словами.
     ТИП БЕЗ СЛОТА — ТАБЛИЦЕЮ КОДІВ (Ч-4): `внутрішня_мова.СЛОТ_ТИПУ`, а не словником крамниць
-    по слову ключа ядра."""
-    import річ_з_фото as _РФ
+    по слову ключа ядра.
+    СЛОТ — БУДЬ-ЯКИЙ СЛОТ ВНУТРІШНЬОЇ МОВИ (рядок 3911): доти слот поза `річ_з_фото.СЛОТИ_РЕЧІ` (17 слотів ваг
+    близькості) пропускався мовчки, і «мої рукавички» в паспорт не лягали; тепер `СЛОТИ_РЕЧІ` — та сама таблиця."""
     вих = []
     for р in речі or []:
         коди = lambda к: р.get(к) if isinstance(р.get(к), list) else [р.get(к)]
@@ -1849,7 +1850,7 @@ def _її_речі(речі):
         типи = [str(к) for к in коди("item_type") if к]
         матеріал = _ВМ.ключ("fabric", р.get("fabric")) if isinstance(р.get("fabric"), str) else None
         for слот in dict.fromkeys(слоти):
-            if слот not in _РФ.СЛОТИ_РЕЧІ or not назва:
+            if not слот or not назва:
                 continue
             # вид — код типу цього слота (тип списком дає клаузу на кожен), тканина — словом ядра, як у речі з фото
             вид = next((т for т in типи if _ВМ.ключ("slot", _ВМ.СЛОТ_ТИПУ.get(т)) == слот), None)
@@ -3292,10 +3293,15 @@ def _коди_розмови():
     # вигаданими `ankle_boots, black` (на фото — біла сандаля): поле її речей одне, ознаки речі з фото — лише її слова
     # МОВА-ХІД-ТОНШЕ (рядок 3491): «лише ознаки з її слів» стояло тричі — в описі поля, у формі й у реченні про
     # фото; тепер раз, з фото поруч.
-    р.append("- own_items — %s: objects with quote, name — the item in her words, status — %s, and only the "
-             "attributes her words name (not zone or feature), also for an item in her photo: the photo is looked "
-             "at by another model. It is the only field for her items: there is no field per part of the look"
-             % (_ПОЛЯ_EN["own_items"], _тип_en(_ВМ.ЇЇ_РІЧ["status"])[len("codes: "):].replace(", ", " | ")))
+    # ЇЇ-РІЧ-СЛОТ (рядки 4050, 4051): слот, тип і тканину її речі модель пише завжди — кодом з її слів або unknown
+    # (`внутрішня_мова.ЇЇ_РІЧ_КОДИ`); «своє взуття з фото» без `slot` у паспорт не лягало, «замшеві чоботи» без
+    # `fabric` не мали K-WEA-01. Решта ознак — як доти, лише названі нею.
+    р.append("- own_items — %s: objects with quote, name — the item in her words, status — %s, %s — always, each "
+             "a code her words give or unknown, and other attributes only when her words name them (not zone or "
+             "feature), also for an item in her photo: the photo is looked at by another model. It is the only "
+             "field for her items: there is no field per part of the look"
+             % (_ПОЛЯ_EN["own_items"], _тип_en(_ВМ.ЇЇ_РІЧ["status"])[len("codes: "):].replace(", ", " | "),
+                ", ".join(_ВМ.ЇЇ_РІЧ_КОДИ)))
     р.append("Fields in her words — a string in her language, without quote:")
     for ім, с in поля.items():
         if _група(ім, с) == "вільні":
