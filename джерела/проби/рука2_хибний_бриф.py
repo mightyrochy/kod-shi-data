@@ -9,7 +9,7 @@ import bridge as Б, правило_руки2 as П, fit as ПС, hypergraph as 
 відбиток = lambda п: hashlib.sha256(json.dumps(п, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 def заяви(промпт, код):   # значення заяв `код` у style_rules промпта складання
     return [json.JSONDecoder().raw_decode(промпт, m.end() - 1)[0] for m in re.finditer('"%s":{' % код, промпт)]
-for код in ('K-BOD-02', 'K-FIT-03', 'K-CRA-01', 'K-KOH-02', 'K-OUT-33', 'R-COL-16', 'K-COL-06-M', 'K-REG-01', 'K-SIL-03', 'K-ACC-01'):
+for код in ('K-BOD-02', 'K-FIT-03', 'K-CRA-01', 'K-KOH-02', 'R-COL-16', 'K-COL-06-M', 'K-REG-01', 'K-SIL-03', 'K-ACC-01'):   # K-OUT-33 (6760) — без рядка брифа
     вх, запис = dict(вх0, **ІНШЕ.get(код, {})), П.ЗА_ІД[код]
     П.жереб = lambda *а, **к: (П.злити([запис]), [код], {}, dict(дія='pool', чому=None))
     з = json.loads(Б.виклик('запити', json.dumps(вх, ensure_ascii=False))); assert not з.get('помилка'), з
