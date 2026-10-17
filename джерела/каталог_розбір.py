@@ -179,6 +179,9 @@ class Мірка(tuple):
 # словник тримає і скелет промпта, і обидві схеми, і перевірку відповіді: розійтись їм нема де.
 # Опис — англійською: його читає модель у скелеті промпта (РЗ-К).
 ПОЛЯ = (
+    ("listing_kind", _коди("listing_kind"), "kind of page or listing represented by this record"),
+    ("audience", _коди("catalog_audience"), "who the item is intended for, only when stated"),
+    ("name_language", _коди("name_language"), "language of the shop item name; quote the name"),
     ("slot", _коди("slot"), "place of the item in an outfit"),
     ("item_type", _коди("item_type", на=True), "item type"),
     ("set_kind", НАБІР, "whether the item is sold as a set, and which"),
