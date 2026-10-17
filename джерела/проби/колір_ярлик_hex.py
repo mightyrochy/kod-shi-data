@@ -28,6 +28,6 @@ for арг in sys.argv[1:]:
         опис = json.loads(subprocess.run(["node", "-e", JS, os.path.join(К, "показ.html"), т.name], capture_output=True,
                                          text=True, check=True).stdout); os.unlink(т.name)
         пр = json.loads(М.мова({"тексти": {"опис": опис}}))["промпт"]
-        текст = " ".join(р["текст"] for р in json.loads(пр[пр.index("ТЕКСТИ:") + 8:]))
+        текст = " ".join(json.loads(пр[пр.index("ТЕКСТИ:") + 8:]).values())
         з_hex += 1; зн = ЯРЛИК.findall(текст); ярлик += len(зн); голих += len(ГОЛИЙ.findall(текст)); приклади += зн
     print("%s: текстів із hex %d · «ярлик (назва)» %d · голих code/hex %d · %s" % (тека, з_hex, ярлик, голих, приклади[:6]))
