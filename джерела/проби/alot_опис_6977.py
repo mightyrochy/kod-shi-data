@@ -1,28 +1,35 @@
-"""Рахує поточні записи Alot і явний брак HTML для рядка 6977; мережі немає."""
-import csv
-import gzip
+"""Звіряє вузький рецепт Alot на двох справжніх HTML, без мережі."""
 import hashlib
 import json
+import sys
 from pathlib import Path
-from urllib.parse import urlparse
 
 КОРІНЬ = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(КОРІНЬ / "zhnyvarka"))
+import жниварка as ж
 
 
 def main():
-    """Друкує факти записів і рецепта без вигаданого покриття DOM."""
-    файл = КОРІНЬ / "каталог_записи_v1.jsonl.gz"
-    with gzip.open(файл, "rt", encoding="utf-8") as вхід:
-        записи = [з for рядок in вхід if (з := json.loads(рядок)).get("схема") == "v1"
-                  and urlparse(з.get("адреса", "")).hostname == "alot.com.ua"]
-    with (КОРІНЬ / "zhnyvarka/рецепти.tsv").open(encoding="utf-8") as вхід:
-        рецепт = next(р for р in csv.DictReader(вхід, delimiter="\t") if р["домен"] == "alot.com.ua")
-    print("записи SHA256:", hashlib.sha256(файл.read_bytes()).hexdigest())
-    print("Alot записів:", len(записи), "з описом:", sum(bool(з.get("опис")) for з in записи))
-    print("селектор_опису:", repr(рецепт["селектор_опису"]))
-    print("HTML у цій пробі: 0; DOM покриття: НЕ ВИМІРЯНО; історичні 341→278 не відтворено")
-    for з in записи[:2]:
-        print("потрібен HTML URL/date/SHA256:", з["ід"], з["адреса"])
+    """Порівнює старий резерв і рецепт із фактичним блоком та перевіряє SHA256."""
+    тека = Path(__file__).with_name("дані_6977")
+    мета = json.loads((тека / "мета.json").read_text(encoding="utf-8"))
+    сел = ж.рецепт_селекторів("alot.com.ua")
+    старі = {к: з for к, з in сел.items() if к != "опис"}
+    лічба = [0, 0]
+    for запис in мета["картки"]:
+        сире = (тека / (запис["ід"] + ".html")).read_bytes()
+        assert hashlib.sha256(сире).hexdigest() == запис["sha256"]
+        html = сире.decode("utf-8")
+        вузли = ж.BeautifulSoup(html, ж.ПАРСЕР_HTML).select('#tab-description > div[itemprop="description"]')
+        assert len(вузли) == 1
+        еталон = ж._текст(вузли[0], 8000)
+        до = ж.факти_з_картки(html, запис["url"], старі)
+        після = ж.факти_з_картки(html, запис["url"], сел)
+        assert після["є_товар"] and після["опис"] == еталон and еталон
+        лічба = [лічба[0] + bool(до["опис"]), лічба[1] + bool(після["опис"])]
+        print(запис["ід"], запис["utc"], "байт", len(сире), "ДО→ПІСЛЯ",
+              len(до["опис"] or ""), len(після["опис"]), "незмінний", до["опис"] == після["опис"])
+    print("Описів на тих самих actual HTML:", *лічба, "; історичні341→341 НЕ ВИМІРЯНО")
 
 
 if __name__ == "__main__":
