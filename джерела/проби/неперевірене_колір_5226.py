@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Рядки 5226, 5227, 5234, 5887: «неперевірене» картки над справжнім судом (`від_моделі`) образів рук 1–2 файла власника
+"""Рядки 5226, 5227, 5234, 5887, 5946: «неперевірене» картки над справжнім судом (`від_моделі`) образів рук 1–2 файла власника
 1551 (вхід — як `колір_кадр_слово_5223.py`). Пункти картки — `пункти` (ДО їх нема — `питання`), без `для_всіх`. Лічить:
 речі «можливо нейтраль» (вікно слова, `_нейтраль_межі` «невідомо») у пунктах «дві нейтралі»/«нейтраль біля обличчя»;
 найбільше пунктів на одну річ без виміру кольору; дублі правила (два пункти одного правила; правило·річ у двох пунктах);
-пункти із заявою про речі образу без жодного `item_id`; питань і правил у звіті власника (`питання`). Запуск із джерела/:
+пункти із заявою про речі образу без жодного `item_id` (5946: і R-FEED-01, K-COL-01 структура світлоти); питань і правил у звіті власника (`питання`). Запуск із джерела/:
 python3 -W ignore проби/неперевірене_колір_5226.py ../аудит/тести/власник_2026-10-14/verdykty-0phxvk-2026-10-14-1551.json"""
 import json, os, sys, collections
 sys.path.insert(0, os.getcwd()); import bridge as B, колір_нейтралі as КН
@@ -18,7 +18,8 @@ B.виклик("запити", json.dumps(вх, ensure_ascii=False)); за_ід 
           if c.get("крок") == "assembly" for о in (c.get("образи_кроку") or [])]
 НЕЙТР = {"cannot_tell_two_neutrals_distinct", "cannot_tell_neutral_near_face_temperature"}
 СЛОВО = {"colour_word_shop", "colour_word_shop_photo_other", "colour_word_model", "colour_word_not_photo"}
-ПРО_РЕЧІ = НЕЙТР | СЛОВО | {"cannot_tell_item_is_neutral", "cut_not_declared_assumed_regular", "cannot_tell_two_different_whites"}
+ПРО_РЕЧІ = НЕЙТР | СЛОВО | {"cannot_tell_item_is_neutral", "cut_not_declared_assumed_regular", "cannot_tell_two_different_whites",
+            "photo_shows_other_colour", "cannot_tell_lightness_structure"}
 Л, найб, правил = collections.Counter(), 0, 0
 for ід in образи:
     р = json.loads(B.виклик("від_моделі", json.dumps(dict(вх, ід=[і for і in ід if і in за_ід]), ensure_ascii=False)))
