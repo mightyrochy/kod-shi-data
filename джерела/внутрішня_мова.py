@@ -2781,6 +2781,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "use_target_formality_band": "choose items for the target formality band (values: band — from and to)",
     "choose_high_heel": "choose a pair with a high heel (values: heel_cm — from)",
     "cut_clings_at_level": "a cut that clings at this level",
+    "opposite_metal_near_face": "put the metal opposite to her warmth near the face (values: metal — the metal "
+                                "to put, lead — the leading one now)",
     # ── оцінка її власного образу з фото: чого на кадрі не знайшлось (Ч-8, рядок 197) ──
     "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one; "
                                 "`items_without_photo`: items were named but not on which of her photos, so none could be "
