@@ -53,6 +53,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 zhnyvarka/журнал_артефакт.py
       - name: жнива
+        id: harvest
         working-directory: zhnyvarka
         env:
           JOURNAL_ROOT: ${{ runner.temp }}/жнива-журнал
@@ -68,6 +69,23 @@ jobs:
             --стеля "$HARVEST_CEILING" --секунд-на-магазин "$HARVEST_SECONDS" --паралельно "$HARVEST_PARALLEL" \
             2>&1 | tee "$JOURNAL_ROOT/жнива_лог.txt"
           cat "$JOURNAL_ROOT/зведення_жнив.tsv"
+      - name: діагностика каталогу після жнив
+        if: always()
+        continue-on-error: true
+        run: |
+          # Цей виконавець не складає нового каталогу: вимір позначено як знімок checkout.
+          python3 джерела/прилади/звіт_після_жнив.py --вихід zhnyvarka \
+            --каталог каталог_повний.xml.gz --стан "${{ steps.harvest.outcome }}; каталог — знімок checkout"
+      - name: зберегти діагностику прогону
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: zhnyva-diagnostics
+          path: |
+            zhnyvarka/діагностика_каталогу.*
+            zhnyvarka/звіт_жнив.md
+          if-no-files-found: warn
+          retention-days: 30
       - name: зберегти журнал і частковий прогрес поза git
         if: always() && steps.restore.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

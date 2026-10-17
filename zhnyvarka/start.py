@@ -209,7 +209,7 @@ def викласти_у_github(дата, сесія=None):
         return 1 if p.status_code in (200, 201) else 0
     ок = зб = 0
     тека_repo = "%s/жнива_%s" % (ТЕКА_У_REPO, дата)
-    for ім in ("звіт_жнив.md", "journal_жнив.tsv"):
+    for ім in ("звіт_жнив.md", "journal_жнив.tsv", "стани_крамниць.json"):
         ф = os.path.join(ТУТ, "жнива", ім)
         if os.path.exists(ф):
             зб += 1; ок += покласти("%s/%s" % (тека_repo, ім), open(ф, "rb").read())
