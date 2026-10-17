@@ -64,12 +64,31 @@ jobs:
             echo "гілки zhnyva-data ще нема — перший запуск"
           fi
       - name: жнива
+        id: harvest
         working-directory: zhnyvarka
         run: |
+          set -o pipefail
           python3 виконавець.py --рецепти рецепти.tsv --магазини "${{ inputs.shops }}" --транспорт "${{ inputs.transport }}" \
             --стеля "${{ inputs.ceiling }}" --секунд-на-магазин "${{ inputs.seconds }}" --паралельно "${{ inputs.parallel }}" \
             2>&1 | tee жнива_лог.txt
           echo "=== зведення_жнив.tsv ==="; cat зведення_жнив.tsv
+      - name: діагностика каталогу після жнив
+        if: always()
+        continue-on-error: true
+        run: |
+          # Цей виконавець не складає нового каталогу: вимір позначено як знімок checkout.
+          python3 джерела/прилади/звіт_після_жнив.py --вихід zhnyvarka \
+            --каталог каталог_повний.xml.gz --стан "${{ steps.harvest.outcome }}; каталог — знімок checkout"
+      - name: зберегти діагностику прогону
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: zhnyva-diagnostics
+          path: |
+            zhnyvarka/діагностика_каталогу.*
+            zhnyvarka/звіт_жнив.md
+          if-no-files-found: warn
+          retention-days: 30
       - name: журнал і огляд → гілка zhnyva-data
         if: always()
         working-directory: zhnyvarka
@@ -80,6 +99,7 @@ jobs:
           cp -r сирі/. "$tmp/сирі/" 2>/dev/null || true
           cp -r огляд/. "$tmp/огляд/" 2>/dev/null || true
           cp зведення_жнив.tsv жнива_лог.txt "$tmp/" 2>/dev/null || true
+          cp діагностика_каталогу.* звіт_жнив.md "$tmp/" 2>/dev/null || true
           find "$tmp/сирі" -name "*.jsonl" -exec gzip -9f {} +
           cd "$tmp"
           git init -q -b zhnyva-data
