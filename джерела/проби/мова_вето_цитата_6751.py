@@ -20,10 +20,11 @@ for ф in sorted(glob.glob(os.path.join(sys.argv[1], "**", "*вхід_комен
     р = МШ.прийняти_вхід("verdict_comment", від, set(речі), речі, слова=п["her_comment"])
     взяті = р["внутрішня"].get("vetoes") or []
     д = МШ.паспорт_з_коментаря(р["внутрішня"], {})["додано"]["вето"]
-    без_цитати += б; взято_без += sum(1 for м in взяті if not м.get("quote")); долито += bool(д)
+    без_цитати += б; взято_без += sum(1 for м in взяті if not м.get("quote") and set(м) <= {"slot", "item_type"})
+    долито += bool(д)
     print("==", os.path.relpath(ф, sys.argv[1]))
     print("  її слова:", п["her_comment"])
     print("  межі відповіді: %d (без quote %d) · взято: %s" % (len(межі), б, json.dumps(взяті, ensure_ascii=False)))
     print("  зняті:", [x for x in р["незнайомі"] if x.startswith("vetoes")], "· долито в паспорт:", д)
-print("ПІДСУМОК: меж без quote у відповідях %d · взято меж без quote %d · записів, що долили межу %d"
+print("ПІДСУМОК: меж без quote у відповідях %d · взято меж на цілий вид без quote %d · записів, що долили межу %d"
       % (без_цитати, взято_без, долито))
