@@ -2786,6 +2786,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "same_item_in_opposite_season_fabric": "the same item in a fabric of the opposite season (values: band — "
                                            "from and to, °C)",
     "volume_top_and_bottom_no_anchor": "a loose cut both on top and at the bottom, with no fitted level",
+    "second_register_equal_weight": "bring a second style to the same weight as the leading one, so that "
+                                    "neither leads (values: registers — the leading one and the second)",
     # ── оцінка її власного образу з фото: чого на кадрі не знайшлось (Ч-8, рядок 197) ──
     "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one; "
                                 "`items_without_photo`: items were named but not on which of her photos, so none could be "
