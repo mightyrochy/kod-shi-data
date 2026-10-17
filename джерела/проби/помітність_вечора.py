@@ -4,6 +4,7 @@
 на руку 1–2: обраний образ — тип, каблук, тканина, назва; позначки: ВЕЧ (шпилька/човники/туфлі, атлас/шовк/оксамит/мереживо/метал),
 ДЕНЬ (лофери, балетки, вовна/овчина на взутті, солом'яна сумка, шопер)."""
 import gzip, json, glob, os, re, sys, collections as K
+import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspath(__file__)))); from збирач_промптів import рядки_таблиці as РТ
 ТЕКА, Ф = sys.argv[1], re.compile(sys.argv[2] if len(sys.argv) > 2 else ".")
 ВЕЧ_Т, ДЕНЬ_Т = {"pumps", "dress_shoes", "heeled_sandals", "clutch"}, {"loafers", "ballet_flats", "moccasins", "tote", "sneakers", "plimsolls"}
 ВЕЧ_Ф = {"satin", "silk", "velvet", "lace", "guipure", "atlas", "patent_leather", "chiffon"}
@@ -18,11 +19,11 @@ for ш in sorted({os.path.dirname(x): x for x in sorted(glob.glob(os.path.join(�
     for в in d["прогони"][0]["вердикти"]:
         if str(в["рука"]) not in "12": continue
         кр = {c["крок"]: c for c in в["етапи"]["виклики"]}
-        а = json.loads(кр["assembly"]["запит"]["текст"]); пул = {р.get("name"): р for р in а["pool"]}
+        а = json.loads(кр["assembly"]["запит"]["текст"]); пул = {р.get("name"): р for р in РТ(а["pool"])}
         сук = (а.get("kind_notes", {}).get("dress") or {}).get("statements") or [{}]
         фото = next((x["kind_cut_to_photo_formality"] for x in сук if isinstance(x, dict) and "kind_cut_to_photo_formality" in x), {})
         print("  рука", в["рука"], "| evening_outing" if "evening_outing" in а["style_rules"] else "| — вечора", "| day_outing" if "day_outing" in а["style_rules"] else "",
-              "| суконь у пулі", sum(1 for р in а["pool"] if "dress" in str(р.get("type")) and р.get("type") != "dress_shoes"),
+              "| суконь у пулі", sum(1 for р in РТ(а["pool"]) if "dress" in str(р.get("type")) and р.get("type") != "dress_shoes"),
               "| сукні фото: смуга", фото.get("band"), "знято", фото.get("removed"), "з них ошатних", фото.get("too_dressy"))
         for р in в.get("речі_образу") or []:
             x = пул.get(р.get("назва"), {}); тк = set(x.get("fabric") if isinstance(x.get("fabric"), list) else [x.get("fabric")])

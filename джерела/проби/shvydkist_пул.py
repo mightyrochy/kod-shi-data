@@ -33,7 +33,7 @@ try:
         t = time.perf_counter()
         вих = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
         дт = time.perf_counter() - t
-        рядки = json.loads(вих["руки"]["1"])["pool"]
+        рядки = __import__("збирач_промптів").рядки_таблиці(json.loads(вих["руки"]["1"])["pool"])
         за_н = {р_["n"]: р_ for р_ in рядки}
         пул = {сл: [за_н[ном] for ном in ід if ном in за_н]
                for сл, ід in вих["порядок_рук"]["1"]["слоти"].items()}

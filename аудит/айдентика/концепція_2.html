@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Люстерко · Вербівка</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Статичний прототип, етап 2 рядка 5213 дошки. Шрифти — ті самі файли, що й у показі. */
+@font-face{font-family:"KyivType Titling";font-weight:1 1000;font-display:swap;
+  src:url("шрифти/KyivTypeTitling-VarGX.ttf") format("truetype"),url("../../шрифти/KyivTypeTitling-VarGX.ttf") format("truetype")}
+@font-face{font-family:"KyivType Serif";font-weight:1 1000;font-display:swap;
+  src:url("шрифти/KyivTypeSerif-VarGX.ttf") format("truetype"),url("../../шрифти/KyivTypeSerif-VarGX.ttf") format("truetype")}
+@font-face{font-family:"Fixel Text";font-weight:400;font-display:swap;
+  src:url("шрифти/FixelText-Regular.woff2") format("woff2"),url("../тести/інструкція_тестувальниць/шрифти/FixelText-Regular.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-weight:500;font-display:swap;
+  src:url("шрифти/FixelText-Medium.woff2") format("woff2"),url("../тести/інструкція_тестувальниць/шрифти/FixelText-Medium.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-weight:600;font-display:swap;
+  src:url("шрифти/FixelText-SemiBold.woff2") format("woff2"),url("../тести/інструкція_тестувальниць/шрифти/FixelText-SemiBold.woff2") format("woff2")}
+
+/* Розкладка: супрематична композиція з площин її палітри за кожним заголовком; хром — лише чорне й біле,
+   межі — «стібок» (пунктир), бо ескізи авангардистів у Вербівці вишивали селянки. */
+:root{
+  --тло:#E4E3DF; --текст-оболонки:#1F2023; --сірий-оболонки:#5B5C60; --рамка-оболонки:#C6C5C0;
+  /* концепція: хром */
+  --льон:#ECEBE6; --біле:#FFFFFF; --чорне:#141518; --графіт:#5C5E63; --тонка:#D3D2CC;
+  /* її палітра (приклад профілю): площини беруться звідси, не з бренду */
+  --п1:#21505B; /* петроль */ --п2:#9E4730; /* цегляний */ --п3:#D8B0A6; /* пудровий */ --п4:#2E4B3D; /* хвойний */ --п5:#C9A23A; /* вохра */
+  --титул:"KyivType Titling","Arsenal",Georgia,serif;
+  --голос:"KyivType Serif","Arsenal",Georgia,serif;
+  --текст:"Fixel Text",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --тло:#18191B; --текст-оболонки:#E9E8E4; --сірий-оболонки:#A2A3A7; --рамка-оболонки:#36373A; color-scheme:dark}}
+:root[data-theme="dark"]{--тло:#18191B; --текст-оболонки:#E9E8E4; --сірий-оболонки:#A2A3A7; --рамка-оболонки:#36373A; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--тло);color:var(--текст-оболонки);font:15px/1.5 var(--текст);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+.легенда{max-width:1180px;margin:0 auto 28px;display:grid;gap:10px}
+.легенда h1{font:800 30px/1.1 var(--титул);font-variation-settings:"CONT" 0;margin:0;text-wrap:balance}
+.легенда p{margin:0;max-width:72ch;color:var(--сірий-оболонки)}
+.легенда b{color:var(--текст-оболонки);font-weight:600}
+.стрічка{max-width:1640px;margin:0 auto;display:flex;flex-wrap:wrap;gap:36px 28px;justify-content:center}
+figure{margin:0;display:grid;gap:10px;justify-items:start}
+figcaption{font-size:13px;color:var(--сірий-оболонки);max-width:390px}
+figcaption b{color:var(--текст-оболонки)}
+@media (max-width:430px){.екран{zoom:.88}}
+
+.екран{width:390px;height:844px;position:relative;overflow:hidden;background:var(--льон);color:var(--чорне);
+  font:15px/1.5 var(--текст);outline:1px solid var(--рамка-оболонки);isolation:isolate}
+.екран *{box-sizing:border-box}
+.площини{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.вміст{position:absolute;inset:0 0 66px 0;padding:18px 20px 0;display:flex;flex-direction:column;gap:14px}
+.шапка{display:flex;align-items:center;justify-content:space-between}
+.знак{font:850 25px/1 var(--титул);font-variation-settings:"CONT" 0;letter-spacing:-.01em}
+.шапка-дії{display:flex;gap:14px;align-items:center;font-size:13px;color:var(--графіт)}
+.ніч{width:32px;height:32px;display:grid;place-items:center;font-size:11px;background:var(--біле)}
+.великий{font:850 46px/1.08 var(--титул);font-variation-settings:"CONT" 0;margin:0;letter-spacing:-.02em;text-wrap:balance}
+.великий em{font-style:normal;color:var(--біле);background:var(--чорне);padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.підзаголовок{margin:0;color:var(--графіт);font-size:14.5px}
+/* стібок — пунктирна межа, «вишита» */
+.стібок{outline:1.5px dashed currentColor;outline-offset:-5px}
+.дія{display:flex;align-items:center;justify-content:center;gap:10px;height:50px;padding:0 20px;background:var(--чорне);color:var(--біле);
+  font:600 15px/1 var(--текст);outline:1.5px dashed rgba(255,255,255,.55);outline-offset:-6px}
+.дія.тиха{background:var(--біле);color:var(--чорне);outline-color:var(--тонка)}
+.дія svg{width:18px;height:18px}
+.рядок-дій{display:flex;gap:10px}.рядок-дій .дія:last-child{flex:1}
+.нитка{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--графіт)}
+.нитка i{width:28px;height:6px;background:var(--тонка)}
+.нитка i.було{background:var(--чорне)}
+.нитка i.тут{background:var(--п2)}
+.нитка b{color:var(--чорне);font-weight:600;margin-right:4px}
+/* вкладки */
+.вкладки{position:absolute;left:0;right:0;bottom:0;height:66px;background:var(--біле);display:grid;grid-template-columns:repeat(4,1fr);font-size:12.5px}
+.вкладка{display:grid;place-items:center;color:var(--графіт)}
+.вкладка.поточна{background:var(--чорне);color:var(--біле);font-weight:600}
+/* питання з диптихом */
+.диптих{position:relative;height:278px;margin:0 -20px}
+.диптих .підпис{position:absolute;bottom:14px;font:600 12px/1 var(--текст);letter-spacing:.12em;text-transform:uppercase}
+.варіанти{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.варіант{min-height:46px;display:grid;place-items:center;text-align:center;background:var(--біле);font-size:13.5px;padding:4px}
+.варіант.обр{background:var(--чорне);color:var(--біле);outline:1.5px dashed rgba(255,255,255,.6);outline-offset:-5px}
+.ще-питання{display:grid;gap:0;margin:0;padding:0;list-style:none}
+.ще-питання li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1.5px dashed var(--тонка);font-size:14px}
+.ще-питання li span:last-child{margin-left:auto;color:var(--графіт);font-size:12.5px}
+.пара{display:flex;width:30px;height:18px;flex:none}.пара i{flex:1}
+/* лист */
+.лист{position:relative;background:var(--біле);padding:16px 16px 62px;transform:rotate(-1.6deg);transform-origin:left top;margin-right:8px}
+.лист::after{content:"";position:absolute;inset:6px;border:1.5px dashed var(--тонка);pointer-events:none}
+.лист p{margin:0;font:16.5px/1.45 var(--текст);color:var(--графіт)}
+.лист .кнопки{position:absolute;right:14px;bottom:14px;display:flex;gap:8px;z-index:1}
+.кр{width:40px;height:40px;display:grid;place-items:center;background:var(--льон);color:var(--чорне)}
+.кр.їде{background:var(--чорне);color:var(--біле)}
+.кр svg{width:19px;height:19px}
+.приклади{display:flex;flex-wrap:wrap;gap:6px}
+.приклади span{background:var(--біле);padding:6px 10px;font-size:13px}
+.плитки{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.плитка{background:var(--біле);padding:8px 7px;min-height:66px;display:grid;align-content:start;gap:3px;position:relative}
+.плитка svg{width:16px;height:16px}
+.плитка b{font:500 12.5px/1.15 var(--текст)}
+.плитка small{font-size:10px;line-height:1.2;color:var(--графіт)}
+.плитка.інше{background:var(--чорне);color:var(--біле)}.плитка.інше small{color:#C9C9CC}
+.мітка{font:600 11px/1.2 var(--текст);letter-spacing:.14em;text-transform:uppercase;color:var(--графіт)}
+/* розмова */
+.вона{align-self:flex-end;max-width:82%;padding:11px 14px;background:var(--п3);font-size:15px}
+.стилістка{background:var(--біле);padding:12px 14px 12px 18px;position:relative;font:16.5px/1.42 var(--голос)}
+.стилістка::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--п1)}
+.стилістка small{display:block;font:13px/1.4 var(--текст);color:var(--графіт);margin-top:6px}
+.паспорт{background:var(--біле);padding:14px 14px 14px;display:grid;gap:9px;position:relative;overflow:hidden}
+.паспорт::before{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;background:var(--п2);border-radius:50%;opacity:.95}
+.паспорт::after{content:"";position:absolute;right:28px;top:-12px;width:46px;height:80px;background:var(--п1);transform:rotate(18deg)}
+.паспорт-шапка{position:relative;z-index:1;display:grid}
+.паспорт-шапка b{font:850 22px/1 var(--титул);font-variation-settings:"CONT" 0}
+.паспорт-шапка small{font-size:12px;color:var(--графіт)}
+.рядки{display:grid;margin:0;padding:0;list-style:none;position:relative;z-index:1}
+.рядки li{display:grid;grid-template-columns:104px 1fr;gap:8px;padding:6px 0;border-top:1.5px dashed var(--тонка);font-size:14px}
+.рядки .під{color:var(--графіт);font-size:12.5px;padding-top:1px}
+.рядки .типово{color:var(--графіт)}
+.так-ні{display:flex;gap:6px;align-items:center;font-size:14px}
+.так-ні span{background:var(--льон);padding:6px 12px}
+.так-ні span:first-child{background:none;padding-left:0}
+.низ-розмови{position:absolute;left:20px;right:20px;bottom:76px;display:grid;gap:8px}
+.швидкі{display:flex;gap:5px;white-space:nowrap;overflow:hidden}
+.швидкі span{background:var(--біле);padding:7px 11px;font-size:13px}
+.ввід{display:flex;align-items:center;gap:6px;height:48px;padding:0 5px 0 14px;background:var(--біле)}
+.ввід > span:first-child{flex:1;color:var(--графіт)}
+.ввід .кр{width:38px;height:38px}
+/* палітра — ковдра */
+.ковдра{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:44px;gap:3px}
+.клапоть{position:relative;display:flex;align-items:flex-end;padding:4px 6px;font:11px/1.1 var(--текст);color:var(--біле)}
+.клапоть.світлий{color:var(--чорне)}
+.клапоть.обр{outline:2px dashed currentColor;outline-offset:-6px;padding:10px 12px}
+.клапоть.стил{background:repeating-linear-gradient(135deg,var(--біле) 0 5px,var(--тонка) 5px 6px);color:var(--чорне)}
+.чипи{display:flex;flex-wrap:wrap;gap:5px}
+.чип{background:var(--біле);padding:7px 11px;font-size:13px}
+.чип.обр{background:var(--чорне);color:var(--біле)}
+.схеми{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.схема{background:var(--біле);padding:8px;display:grid;gap:6px;font-size:12.5px}
+.схема .компо{height:34px;display:flex}
+.схема b{font-weight:600}.схема small{color:var(--графіт)}
+.схема.обр{outline:2px dashed var(--чорне);outline-offset:-4px}
+/* образ */
+.пейджер{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--графіт)}
+.пейджер b{font:850 26px/1 var(--титул);font-variation-settings:"CONT" 0;color:var(--чорне)}
+.образ-верх{display:grid;grid-template-columns:44px 1fr;gap:8px;height:248px}
+.формула{display:flex;flex-direction:column;gap:2px}
+.формула i{display:block}
+.колаж{background:var(--біле);position:relative}
+.колаж svg{width:100%;height:100%;display:block}
+.речі{display:grid;margin:0;padding:0;list-style:none;background:var(--біле)}
+.речі li{display:grid;grid-template-columns:8px 1fr auto;column-gap:10px;padding:7px 12px 7px 0;border-bottom:1.5px dashed var(--тонка)}
+.речі li i{grid-row:1/3;align-self:stretch}
+.речі .назва{font:500 11.5px/1.3 var(--текст);text-transform:uppercase;letter-spacing:.02em}
+.речі .ціна{font:600 13px/1.3 var(--текст);font-variant-numeric:tabular-nums;text-align:right}
+.речі .де{font-size:11.5px;color:var(--графіт)}
+.речі .замінити{font-size:11.5px;text-align:right;text-decoration:underline;text-decoration-style:dashed;text-underline-offset:3px}
+.разом{display:flex;justify-content:space-between;font-weight:600;padding:2px 0;font-variant-numeric:tabular-nums}
+.чому{margin:0;font:15.5px/1.42 var(--голос)}
+.приклад-позначка{font-size:10.5px;color:var(--графіт);font-style:normal;letter-spacing:0;text-transform:none}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="і-камера" viewBox="0 0 24 24"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="13.2" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="і-мікрофон" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="і-стрілка" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <!-- знаки плиток: прості геометричні фігури, як у супрематичних ескізах -->
+    <symbol id="ф-коло" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/></symbol>
+    <symbol id="ф-квадрат" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12"/></symbol>
+    <symbol id="ф-трикутник" viewBox="0 0 16 16"><path d="M8 1.5 15 14.5H1Z"/></symbol>
+    <symbol id="ф-смуга" viewBox="0 0 16 16"><rect x="1" y="6" width="14" height="4" transform="rotate(-20 8 8)"/></symbol>
+    <symbol id="ф-хрест" viewBox="0 0 16 16"><path d="M6 1h4v5h5v4h-5v5H6v-5H1V6h5Z"/></symbol>
+    <symbol id="ф-півколо" viewBox="0 0 16 16"><path d="M1 12a7 7 0 0 1 14 0Z"/></symbol>
+    <symbol id="ф-ромб" viewBox="0 0 16 16"><path d="M8 1 15 8 8 15 1 8Z"/></symbol>
+    <symbol id="р-тренч" viewBox="0 0 100 130"><path d="M37 6 50 20 63 6 82 15 94 78 83 80 77 44 79 124H21L23 44 17 80 6 78 18 15Z"/><rect x="21" y="62" width="58" height="5" fill="rgba(255,255,255,.12)"/></symbol>
+    <symbol id="р-кардиган" viewBox="0 0 100 130"><path d="M36 8 50 40 64 8 82 16 92 96 82 98 76 50 76 120H54L50 40 46 120H24V50L18 98 8 96 18 16Z"/></symbol>
+    <symbol id="р-штани" viewBox="0 0 100 130"><path d="M28 6H72L80 124H58L50 44 42 124H20Z"/></symbol>
+    <symbol id="р-кросівки" viewBox="0 0 120 60"><path d="M8 38C9 24 24 18 34 18L52 16C60 28 76 30 92 31L108 34C115 37 115 44 112 48H10Z"/><rect x="8" y="46" width="106" height="7" fill="rgba(0,0,0,.14)"/></symbol>
+    <symbol id="р-клатч" viewBox="0 0 100 60"><rect x="6" y="10" width="88" height="44"/><path d="M6 13 50 36 94 13" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.5"/></symbol>
+  </defs>
+</svg>
+
+<header class="легенда">
+  <h1>Концепція 2 · «Вербівка»</h1>
+  <p><b>Суть.</b> Київський авангард, вишитий руками: у 1915–1917 рр. вишивальниці артілей Давидової (Вербівка) й Прибильської
+  вишивали ескізи Екстер, Малевича й інших. Звідси система: площини, коло, смуга, а межі — «стібок» (пунктир). Головне —
+  площини беруть кольори з <b>її</b> палітри: інтерфейс щоразу інакший, бо зібраний з її барв, а хром — лише чорне й біле.</p>
+  <p><b>Коріння.</b> Вербівка й Скопці; Екстер (майстерня в Києві 1918); Богомазов — ритм кольорових смуг; ковдра Соні
+  Делоне з клаптів «як у селянських хатах» — модель палітри, де сусідні кольори міняють одне одного. <b>Правило системи:</b>
+  колір у хромі — лише її; ніяких квітів, рушників і тризубів; заголовок — важкий Kyiv*Type Titling без контрасту.</p>
+  <p>Тексти — з показу; відповіді стилістки, яких у показі нема дослівно, позначено «приклад». Палітра профілю — приклад.</p>
+</header>
+
+<main class="стрічка">
+
+<!-- 1 · Знайомство: «Що тобі до лиця» -->
+<figure>
+<div class="екран" id="е1">
+  <div class="вміст">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
+    <div class="нитка"><b>Крок 2 з 3</b><i class="було"></i><i class="тут"></i><i></i><span>До лиця</span></div>
+    <h2 class="великий">Що тобі <em>до лиця.</em></h2>
+    <p class="підзаголовок">З яким полем обличчя живіше? Правильної відповіді нема — є твоя.</p>
+    <div class="диптих">
+      <svg viewBox="0 0 390 278" width="390" height="278" aria-label="Обличчя між золотом і сріблом">
+        <polygon points="0,18 214,0 196,278 0,278" fill="#C9A227"/>
+        <polygon points="214,0 390,30 390,278 196,278" fill="#B8BDC2"/>
+        <circle cx="200" cy="132" r="78" fill="#F1E3D8"/>
+        <circle cx="200" cy="132" r="78" fill="none" stroke="#141518" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <ellipse cx="200" cy="120" rx="34" ry="42" fill="#E4CDBD"/>
+        <path d="M150 210c10-34 90-34 100 0" fill="#E4CDBD"/>
+        <rect x="24" y="226" width="60" height="6" fill="#141518"/>
+      </svg>
+      <span class="підпис" style="left:24px;color:#141518">Золото</span>
+      <span class="підпис" style="right:24px;color:#141518">Срібло</span>
+    </div>
+    <div class="мітка">Золото чи срібло біля обличчя</div>
+    <div class="варіанти"><span class="варіант обр">Золото</span><span class="варіант">Срібло</span><span class="варіант">Обидва однаково</span></div>
+    <ul class="ще-питання">
+      <li><span class="пара"><i style="background:#fff"></i><i style="background:#F4E9D2"></i></span>Білий чи молочний<span>далі</span></li>
+      <li><span class="пара"><i style="background:#C8B49D"></i><i style="background:#A9B0BA"></i></span>Теплі чи холодні нейтралі<span>далі</span></li>
+    </ul>
+    <div class="рядок-дій" style="margin-top:auto;margin-bottom:12px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#і-стрілка"/></svg></span></div>
+  </div>
+</div>
+<figcaption><b>1 · Знайомство.</b> Питання «золото чи срібло» стає композицією: дві площини й обличчя між ними; обране — чорним зі «стібком».</figcaption>
+</figure>
+
+<!-- 2 · Аркуш листа -->
+<figure>
+<div class="екран" id="е2">
+  <svg class="площини" viewBox="0 0 390 844" preserveAspectRatio="none" aria-hidden="true">
+    <rect x="262" y="150" width="170" height="170" fill="var(--п1)" transform="rotate(14 346 235)"/>
+    <circle cx="300" cy="372" r="56" fill="var(--п2)"/>
+  </svg>
+  <div class="вміст">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
+    <h2 class="великий" style="font-size:54px;max-width:300px">Куди ти <em>збираєшся?</em></h2>
+    <div class="лист">
+      <p>Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.</p>
+      <div class="кнопки"><span class="кр" title="Додати фото речі"><svg><use href="#і-камера"/></svg></span><span class="кр" title="Сказати голосом"><svg><use href="#і-мікрофон"/></svg></span><span class="кр їде" title="Надіслати"><svg><use href="#і-стрілка"/></svg></span></div>
+    </div>
+    <div class="приклади"><span>Іду на побачення в ресторан, увечері. Обіцяють дощ</span><span>Завтра презентація для клієнта в офісі</span><span>Прогулянка з дитиною в парку, +8 і вітер</span></div>
+    <div style="display:grid;gap:6px">
+      <span class="мітка">Або заповнити рукою</span>
+      <div class="плитки">
+        <div class="плитка"><svg style="fill:var(--п2)"><use href="#ф-смуга"/></svg><b>Спорт, активність</b></div>
+        <div class="плитка"><svg style="fill:var(--п1)"><use href="#ф-трикутник"/></svg><b>Подорож</b><small>у дорозі: переліт, поїзд</small></div>
+        <div class="плитка"><svg style="fill:var(--п4)"><use href="#ф-квадрат"/></svg><b>Звичайний день</b><small>прогулянка, справи</small></div>
+        <div class="плитка"><svg style="fill:var(--п3)"><use href="#ф-коло"/></svg><b>Побачення</b></div>
+        <div class="плитка"><svg style="fill:var(--п1)"><use href="#ф-півколо"/></svg><b>Театр, концерт</b></div>
+        <div class="плитка"><svg style="fill:var(--чорне)"><use href="#ф-ромб"/></svg><b>Робота</b><small>зустріч, презентація, співбесіда</small></div>
+        <div class="плитка"><svg style="fill:var(--п2)"><use href="#ф-хрест"/></svg><b>Свято, вечірка</b><small>день народження, Новий рік</small></div>
+        <div class="плитка інше"><b>Інше</b><small>скажу словами</small></div>
+      </div>
+    </div>
+  </div>
+  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
+</div>
+<figcaption><b>2 · Аркуш листа.</b> Аркуш — біла площина з вишитою межею поверх композиції з її кольорів; плитки — фігури замість піктограм.</figcaption>
+</figure>
+
+<!-- 3 · Розмова -->
+<figure>
+<div class="екран" id="е3">
+  <div class="вміст" style="gap:12px">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
+    <div class="вона">Іду на побачення в ресторан, увечері. Обіцяють дощ</div>
+    <div class="стилістка">Зрозуміла: побачення в ресторані ввечері, під дощем. Наскільки ошатно там буде?
+      <small>Можна не відповідати — образи зберуться й так.</small></div>
+    <div class="паспорт">
+      <div class="паспорт-шапка"><b>Новий сценарій</b><small>не збережений</small></div>
+      <ul class="рядки">
+        <li><span class="під">Нагода</span><span>Побачення</span></li>
+        <li><span class="під">Де</span><span>Заклад <span class="типово">— типово для нагоди</span></span></li>
+        <li><span class="під">Ошатність</span><span class="типово">не обрано</span></li>
+        <li><span class="під">Коли й погода</span><span>ввечері, дощ</span></li>
+        <li><span class="під">Палітра</span><span class="типово">хай обере стилістка</span></li>
+        <li><span class="під">Додати</span><span class="типово">макіяж, прикраси, мета</span></li>
+      </ul>
+      <div class="так-ні"><span>Усе правильно?</span><span>так</span><span>поправити</span></div>
+      <span class="дія">Зібрати образи <svg><use href="#і-стрілка"/></svg></span>
+    </div>
+  </div>
+  <div class="низ-розмови">
+    <div class="швидкі"><span>буденно</span><span>охайно буденно</span><span>ділово, м'яко</span><span>на твій розсуд</span></div>
+    <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#і-стрілка"/></svg></span></div>
+  </div>
+  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
+</div>
+<figcaption><b>3 · Розмова.</b> Її слова — на площині її пудрового; голос стилістки — Serif на білому зі смугою петролю; паспорт — «вишиті» рядки.</figcaption>
+</figure>
+
+<!-- 4 · Палітра — ковдра -->
+<figure>
+<div class="екран" id="е4">
+  <div class="вміст" style="gap:11px">
+    <div class="шапка"><span style="font-size:13px">← До сценарію</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
+    <h2 class="великий" style="font-size:44px">Палітра <em>образу.</em></h2>
+    <p class="підзаголовок">Основа — головний колір, на якому стоїть образ. Не знаєш — лиши «хай обере стилістка».</p>
+    <span class="мітка">Гама</span>
+    <div class="чипи"><span class="чип">хай обере стилістка</span><span class="чип">приглушені</span><span class="чип обр">середні</span><span class="чип">насичені</span></div>
+    <span class="мітка">Основа</span>
+    <div class="ковдра">
+      <div class="клапоть стил" style="grid-column:span 2">хай обере стилістка</div>
+      <div class="клапоть обр" style="grid-column:span 4;grid-row:span 2;background:var(--п1)">петроль · стилістка</div>
+      <div class="клапоть" style="grid-column:span 2;background:var(--п2)">цегляний</div>
+      <div class="клапоть" style="grid-column:span 3;background:var(--п4)">хвойний</div>
+      <div class="клапоть світлий" style="grid-column:span 3;background:var(--п3)">пудровий · м'яка</div>
+      <div class="клапоть" style="grid-column:span 2;background:#5B2E48">сливовий</div>
+      <div class="клапоть" style="grid-column:span 2;background:#3A3C40">графіт · нейтраль</div>
+      <div class="клапоть світлий" style="grid-column:span 2;background:#F6F3EC">білий · нейтраль</div>
+    </div>
+    <span class="підзаголовок" style="font-size:12.5px">ще 6 основ у цій гамі — не радимо, але можна</span>
+    <span class="мітка">Схема</span>
+    <div class="схеми">
+      <div class="схема обр"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:#F6F3EC"></i><i style="flex:1;background:var(--п2)"></i></span><span><b>нейтрали+акцент</b> · <small>найходовіша</small></span></div>
+      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:#B9A58A"></i><i style="flex:1;background:#A4583E"></i></span><span><b>приглушена комплементарна</b> · <small>звичайна</small></span></div>
+      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:var(--п4)"></i><i style="flex:1;background:#3E7A86"></i></span><span><b>аналогова</b> · <small>звичайна</small></span></div>
+      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:var(--п2)"></i><i style="flex:1;background:var(--п5)"></i></span><span><b>тріада</b> · <small>помітна</small></span></div>
+    </div>
+  </div>
+  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
+</div>
+<figcaption><b>4 · Палітра.</b> Основи — ковдра з клаптів: обрана основа найбільша, сусіди видно поруч. Схема — пропорція 6 : 3 : 1, а не три однакові кружечки.</figcaption>
+</figure>
+
+<!-- 5 · Образ -->
+<figure>
+<div class="екран" id="е5">
+  <div class="вміст" style="gap:10px">
+    <div class="пейджер"><span>‹ попередній</span><b>Перший образ</b><span>1 / 4 ›</span></div>
+    <div class="образ-верх">
+      <div class="формула" aria-label="Кольори образу за площею">
+        <i style="flex:40;background:#1F1D1B"></i><i style="flex:24;background:#EFE8DA"></i><i style="flex:20;background:#E6DECF"></i><i style="flex:9;background:#D6C1A2"></i><i style="flex:7;background:#C7C8CA"></i>
+      </div>
+      <div class="колаж">
+        <svg viewBox="0 0 300 248" aria-label="Колаж речей образу">
+          <use href="#р-кардиган" x="100" y="16" width="100" height="130" fill="#EFE8DA" stroke="#D3CAB8"/>
+          <use href="#р-тренч" x="8" y="8" width="118" height="154" fill="#1F1D1B"/>
+          <use href="#р-штани" x="186" y="22" width="96" height="126" fill="#E6DECF" stroke="#D3CAB8"/>
+          <use href="#р-кросівки" x="110" y="170" width="118" height="56" fill="#D6C1A2"/>
+          <use href="#р-клатч" x="236" y="176" width="58" height="36" fill="#C7C8CA"/>
+        </svg>
+      </div>
+    </div>
+    <ul class="речі">
+      <li><i style="background:#1F1D1B"></i><span class="назва">Тренч чорний лляний</span><span class="ціна">6 999 ₴</span><span class="де">alot.com.ua</span><span class="замінити">замінити</span></li>
+      <li><i style="background:#EFE8DA"></i><span class="назва">Подовжений кардиган на ґудзиках Porto молоко</span><span class="ціна">3 150 ₴</span><span class="де">25union.com.ua</span><span class="замінити">замінити</span></li>
+      <li><i style="background:#E6DECF"></i><span class="назва">Штани від двобортного костюму…</span><span class="ціна">1 990 ₴</span><span class="де">maryline.ua</span><span class="замінити">замінити</span></li>
+      <li><i style="background:#D6C1A2"></i><span class="назва">Анатомічні кросівки бежеві</span><span class="ціна">3 000 ₴</span><span class="де">kasandra.ua</span><span class="замінити">замінити</span></li>
+      <li><i style="background:#C7C8CA"></i><span class="назва">Клатч жіночий, ATTICO, світло-сірий</span><span class="ціна">2 399 ₴</span><span class="де">attico.ua</span><span class="замінити">замінити</span></li>
+    </ul>
+    <div class="разом"><span>Разом</span><span>17 538 ₴</span></div>
+    <span class="мітка">Чому цей образ <i class="приклад-позначка">· приклад</i></span>
+    <p class="чому">Молочний верх і штани в один тон тягнуть лінію вгору, а чорний тренч тримає її під дощем і робить вечір вечором.</p>
+    <div class="варіанти"><span class="варіант">вдягну як є</span><span class="варіант">змінила б одну річ</span><span class="варіант">не вдягну</span></div>
+  </div>
+  <nav class="вкладки"><span class="вкладка">Сценарій</span><span class="вкладка поточна">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
+</div>
+<figcaption><b>5 · Образ.</b> Ліворуч — «формула»: колонка площин за часткою кожної речі в образі; той самий колір — мітка речі в списку.</figcaption>
+</figure>
+
+</main>
+</body>
+</html>

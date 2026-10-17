@@ -2,9 +2,10 @@
 """Рядок 5627 (реєстр 5616, клас Г8): одна річ крамниці — кілька записів каталогу. Факт: групи з тією самою назвою,
 кольором і крамницею — і скільки з них мають той самий перший знімок (підтверджений дубль); записи з розміром у назві «(11, S, …)» (оферта на розмір); групи `group_id`; пари записів з
 однаковим першим знімком під різними назвами (дві мовні версії сторінки). Запуск: python3 джерела/проби/каталог_проблеми_г_дублі.py"""
-import collections, gzip, os, re                                               # noqa: E401
+import collections, gzip, os, re, sys                                             # noqa: E401
 К = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
-xml = gzip.open(os.path.join(К, "каталог_повний.xml.gz"), "rt", encoding="utf-8").read()
+xml = (open(sys.argv[1], encoding="utf-8") if len(sys.argv) > 1 else
+       gzip.open(os.path.join(К, "каталог_повний.xml.gz"), "rt", encoding="utf-8")).read()   # аргумент — файл ПІСЛЯ чистки
 def запис(о):
     п = lambda ім: (re.findall(r'<param name="%s">([^<]*)<' % ім, о) or [""])[0]   # noqa: E731
     return {"назва": re.search(r"<name>([^<]*)<", о).group(1), "м": п("магазин"), "колір": п("Колір"),
@@ -31,7 +32,7 @@ print("той самий url у кількох записах: %d url, %d зап
 перше = collections.defaultdict(set)
 for з in зз:
     if з["фото"]:
-        перше[(з["м"], re.sub(r"\?.*", "", з["фото"][0]).rsplit("/", 1)[-1])].add(з["назва"])
+        перше[(з["м"], re.sub(r"\?.*", "", з["фото"][0]))].add(з["назва"])
 мови = [(к, н) for к, н in перше.items() if len(н) == 2 and sum(1 for х in н if not re.search(r"[а-яіїєґ]", х.lower())) == 1]
 print("перший знімок спільний рівно для двох назв, одна з них без кирилиці (мовні двійники): %d · %s · %s" % (len(мови),
       collections.Counter(к[0] for к, _ in мови).most_common(4), [sorted(н) for _, н in мови[:1]]))

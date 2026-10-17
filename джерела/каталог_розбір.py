@@ -28,6 +28,10 @@ color_name, length, shaft), крій — із `силует_крої.КРОЇ`. 
 ядро досі писало українське слово без переліку (рукав, виріз, каблук, оздоба) або де поля не було
 (частини комплекту, чому кольорів кілька, де названо колір, метал тілом чи фурнітурою, класи
 вето). Кожне поле має "unknown" — опори в тексті крамниці нема, вигадувати не можна.
+Поля рядків 6425–6428 (склад, мірки, конструкція одягу, взуття й сумки) — ті, що #1028 знімає з
+коду без заміни; їхні переліки — значення, які пише фід і порівнює читач на main. Числові поля
+(`Мірка`: `*_pct`, `*_cm`) — число й одиниця з цитатою; число тримається, лише коли цитата
+містить його цифрами (код звіряє цифри, не слова).
 
 КОЖЕН КОД — З ЦИТАТОЮ (РЗ-К, рядок дошки 404; власник 01.10: «головне — правдиві коди без
 вигадок»). Перший повний розбір MamayLM вигадував, коли крамниця мовчить: ж-01232 «СУКНЯ №1081
@@ -36,7 +40,8 @@ color_name, length, shaft), крій — із `силует_крої.КРОЇ`. 
 `quote` — дослівний уривок тексту ЦІЄЇ речі (назва, опис, поля картки), `value` — код.
 Код лишається, лише коли `мовний_шар.цитата_тримає` знаходить уривок підрядком (без словника — код
 слів не читає, п.12); інакше поле стає "unknown" і в причинах речі — рядок `invented`. Без цитати
-обходяться лише "unknown", `not_applicable` («поля в такої речі не буває») і поля, що виводяться
+обходяться лише "unknown", `not_applicable` («поля в такої речі не буває» — лише там, де слот чи
+тип речі стоїть у таблиці `НЕМА_ПОЛЯ`; інакше це заповнювач тиші, рядки 2681–2682) і поля, що виводяться
 з іншого коду ТАБЛИЦЕЮ: слот — із типу (`внутрішня_мова.СЛОТ_ТИПУ`), `color_from` — з того, у
 якій частині тексту стоїть цитата кольору. МЕЖА: підрядок доводить, що слова є в тексті, і не
 доводить, що вони кажуть саме цей код («сукня» тримає і `sundress`); це міряє еталон очима (п.16).
@@ -85,7 +90,8 @@ import силует_крої as СК             # noqa: E402
 UNKNOWN = ВМ.UNKNOWN
 # «Поля в такої речі не буває» (рукав у штанів, каблук у сумки) — не «невідомо»: перший повний
 # розбір писав тут «no», і 5 579 значень ставали unknown, невідмінним від «модель не знає»
-# (рядок 352 гілки РЗ-1). Цитати не потребує: це про вид речі, а не про слова крамниці.
+# (рядок 352 гілки РЗ-1). Цитати не потребує: це про вид речі, а не про слова крамниці — тому
+# приймається лише там, де поля нема за таблицею слот/тип → поле (`НЕМА_ПОЛЯ`, рядки 2681–2682).
 НЕ_СТОСУЄТЬСЯ = "not_applicable"
 ЦИТАТА, ЗНАЧЕННЯ = "quote", "value"
 СТЕЛЯ_ЦИТАТИ = 120          # знаків; довша — переказ, а не уривок, і граматика її не пустить
@@ -128,27 +134,91 @@ def _коди(група, на=False):
 КОЛІР_ЗВІДКИ = ["param", "name", "description", "several", "not_stated", UNKNOWN]
 ВЕТО_КЛЮЧІ = ("stripes", "big_print", "print", "shine", "oversize", "tight")
 
+# ── ПОЛЯ, ЯКІ #1028 ЗНІМАЄ З КОДУ БЕЗ ЗАМІНИ (рядки 6425–6428) ───────────────
+# Кожне має читача на main, і перелік кодів — рівно значення, які пише фід і порівнює читач
+# (у дужках — ключ запису й читач). Оверсайз уже стоїть окремо від крою (`veto.oversize`), матеріал
+# верху — `material`, стійка й сорочковий комір — `neckline`; нових полів для них нема.
+ТРИ_НА = ["yes", "no", НЕ_СТОСУЄТЬСЯ, UNKNOWN]
+РІД_ТКАНИНИ = ["knit", "woven", НЕ_СТОСУЄТЬСЯ, UNKNOWN]        # рід_тканини_слово · силует_крої
+# текстура · суд_річ, формальність, суд_інтерес, композитор_річ, колір_нейтралі, колір_річ
+ТЕКСТУРА = ["denim", "knit_fine", "knit_chunky", "leather", "patent", "satin", "silk_shine",
+            "smooth_matte", "smooth_shine", "tweed_boucle", НЕ_СТОСУЄТЬСЯ, UNKNOWN]
+МІРНІСТЬ = ["runs_small", "true_to_size", "runs_large", UNKNOWN]   # розмірність · аксесуари_розмір
+РУКАВ_КРІЙ = ["set_in", "raglan", НЕ_СТОСУЄТЬСЯ, UNKNOWN]      # рукав · верхнє_стан, верхнє_пропорція
+КОМІР = ["lapel", "shawl", "turn_down", "none", НЕ_СТОСУЄТЬСЯ, UNKNOWN]   # комір · верхнє_*
+ЗАСТІБКА = ["zip", "buttons", "none", НЕ_СТОСУЄТЬСЯ, UNKNOWN]   # застібка · верхнє_стан
+БОРТ = ["single_breasted", "double_breasted", НЕ_СТОСУЄТЬСЯ, UNKNOWN]    # бортність · верхнє_*
+ВОРС = ["teddy", "shaggy", "boucle", "long_pile", НЕ_СТОСУЄТЬСЯ, UNKNOWN]  # ворс · верхнє_пропорція
+НАПОВНЮВАЧ = ["down", "sintepon", "hollofiber", "isosoft", "wadding", "thinsulate", "none",
+              НЕ_СТОСУЄТЬСЯ, UNKNOWN]                          # наповнювач · верхнє_погода, суд_погода
+ПІДОШВА = ["smooth", "leather", "lug", "polyurethane", "eva", "tpr", НЕ_СТОСУЄТЬСЯ, UNKNOWN]
+ПОВНОТА = ["narrow", "medium", "wide", НЕ_СТОСУЄТЬСЯ, UNKNOWN]  # повнота · аксесуари_розмір
+КРІПЛЕННЯ_ПІДОШВИ = ["stitched", "glued", НЕ_СТОСУЄТЬСЯ, UNKNOWN]   # ремонтопридатна · аксесуари_*
+ФОРМАТ_СУМКИ = ["small", "medium", "large", НЕ_СТОСУЄТЬСЯ, UNKNOWN]  # формат · аксесуари_структура
+
+
+class Мірка(tuple):
+    """Числове поле: кортеж рядкових форм, що стоять замість числа (`not_applicable`, коли `на`,
+    і "unknown"), з одиницями, які приймає поле, і стелею числа. Рядкові форми — кортежем, щоб
+    поле читалось усюди, де читаються переліки (`НЕ_СТОСУЄТЬСЯ in коди`, `ВМ.невідомо`)."""
+
+    def __new__(клас, одиниці, стеля, на=True):
+        мірка = super().__new__(клас, ([НЕ_СТОСУЄТЬСЯ] if на else []) + [UNKNOWN])
+        мірка.одиниці, мірка.стеля = list(одиниці), стеля
+        return мірка
+
+
+ОДИНИЦЯ = "unit"
+ВІДСОТОК = ("percent",)
+ДОВЖИНА = ("cm", "mm", "m", "in")
+# Стеля числа — у сантиметрах (чи відсотках): «80 mm» каблука й «8 cm» — те саме число під стелею.
+У_СТЕЛЮ = {"percent": 1, "cm": 1, "mm": 0.1, "m": 100, "in": 2.54}
+
 # ── ПОЛЯ РОЗБОРУ: шлях → (перелік кодів, опис для моделі) ────────────────────
 # Шлях «а.б» — поле в обʼєкті, «а[]» — список кодів, «а[].б» — поле обʼєкта в списку. Один
 # словник тримає і скелет промпта, і обидві схеми, і перевірку відповіді: розійтись їм нема де.
 # Опис — англійською: його читає модель у скелеті промпта (РЗ-К).
 ПОЛЯ = (
     ("slot", _коди("slot"), "place of the item in an outfit"),
-    ("item_type", _коди("item_type"), "item type"),
+    ("item_type", _коди("item_type", на=True), "item type"),
     ("set_kind", НАБІР, "whether the item is sold as a set, and which"),
     ("set_parts[].slot", _коди("slot"), "place of this part of the set"),
     ("set_parts[].item_type", _коди("item_type"), "type of this part of the set"),
     ("fabric", _коди("fabric", на=True), "fabric of the item"),
     ("material", _коди("material", на=True), "upper material of shoes, bag or belt"),
+    ("fabric_kind", РІД_ТКАНИНИ, "knitted or woven fabric"),
+    ("texture", ТЕКСТУРА, "surface of the fabric or material"),
+    ("elastane_pct", Мірка(ВІДСОТОК, 100), "share of elastane in the composition"),
+    ("wool_pct", Мірка(ВІДСОТОК, 100), "share of wool in the composition"),
     ("cut", КРІЙ, "cut"),
     ("length", _коди("length", на=True), "length"),
+    ("length_cm", Мірка(ДОВЖИНА, 400), "length of the garment as a measure"),
+    ("size_fit", МІРНІСТЬ, "how the item runs against its size"),
     ("sleeve", РУКАВ, "sleeve"),
+    ("sleeve_cut", РУКАВ_КРІЙ, "how the sleeve is set into the body"),
     ("neckline", ВИРІЗ, "neckline"),
+    ("collar", КОМІР, "collar of a jacket, coat or dress"),
+    ("closure", ЗАСТІБКА, "how the item fastens"),
+    ("breasted", БОРТ, "single or double row of buttons"),
+    ("belt", ТРИ_НА, "comes with a belt or tie"),
+    ("elastic_waist", ТРИ_НА, "elastic waistband"),
+    ("hood", ТРИ_НА, "has a hood"),
+    ("fur_trim", ТРИ_НА, "fur trim"),
+    ("pile", ВОРС, "pile of the fabric surface"),
+    ("quilted", ТРИ_НА, "quilted"),
+    ("filling", НАПОВНЮВАЧ, "insulation filling"),
     ("vamp", ВИРІЗ_СТОПИ, "how high the shoe covers the foot"),
     ("shaft", _коди("shaft", на=True), "where the boot shaft ends"),
     ("heel.present", КАБЛУК_Є, "is there a heel"),
     ("heel.shape", КАБЛУК_ФОРМА, "heel shape"),
     ("heel.height", КАБЛУК_ВИСОТА, "heel height"),
+    ("heel.height_cm", Мірка(ДОВЖИНА, 40), "heel height as a measure"),
+    ("sole", ПІДОШВА, "material or tread of the sole"),
+    ("shoe_width", ПОВНОТА, "width of the shoe"),
+    ("sole_attachment", КРІПЛЕННЯ_ПІДОШВИ, "sole stitched or glued"),
+    ("bag_size", ФОРМАТ_СУМКИ, "size of the bag"),
+    ("strap_cm", Мірка(ДОВЖИНА, 400), "full length of the bag strap"),
+    ("chain_cm", Мірка(ДОВЖИНА, 400), "length of the necklace or its chain"),
     ("metal", МЕТАЛ, "metal of the item"),
     ("metal_where", МЕТАЛ_ДЕ, "metal is the body of the item or only its hardware"),
     ("color_main", _коди("color_name"), "colour of the item itself"),
@@ -164,6 +234,75 @@ def _коди(група, на=False):
 # слів (`_вивести`). `color_from` модель угадувала («де в тексті колір») — тепер це місце, де
 # сторож знайшов цитату `color_main`, тобто факт, а не відповідь.
 ВИВЕДЕНІ = frozenset(("color_from",))
+
+# ── ДЕ ПОЛЯ НЕМА: `not_applicable` — ЛИШЕ ЗА ТАБЛИЦЕЮ КОД→КОД (рядки 2681, 2682) ─────
+# `not_applicable` не потребує цитати, і MamayLM зробила з нього заповнювач: у трьох прогонах
+# еталону (РЗ-404-Н, `аудит/розбір_каталогу/404_а1–а3`) він найчастіше значення, 304–317 на прогін,
+# зокрема крій, довжина й рукав пальта чи сукні та тканина сукні — поля, які в речі є, а крамниця
+# про них мовчить. Тиша крамниці — "unknown", а не «поля не буває». Тому код приймає
+# `not_applicable` лише там, де поля нема за видом речі: слот (чи тип) стоїть у `НЕМА_ПОЛЯ[поле]`;
+# інакше — "unknown" і рядок `invented` (`_поля_нема`). Таблиця — кошик А (п.12): коди слота й типу
+# → поле, слів не читає. Невідомий слот — поля могло й бути, тож теж "unknown". «Аксесуар»
+# (`accessory`) — не названий вид, у таблиці його нема ніде. Та сама таблиця пише правило промпта.
+_ПРИКРАСИ = ("jewelry", "earrings", "collar_necklace", "necklace", "brooch", "bracelet", "ring", "watch")
+_ДРІБНЕ = ("scarf", "headwear", "belt", "tights", "socks", "glasses", "gloves")
+_ПОЗА_ВЗУТТЯМ = tuple(к for к in ВМ.ТАБЛИЦЯ["slot"] if к not in ("shoes", "accessory"))
+# Взуття без халяви — типи слота shoes, крім чобіт і черевиків (`внутрішня_мова.СЛОТ_ТИПУ`).
+_БЕЗ_ХАЛЯВИ = ("ballet_flats", "mules", "espadrilles", "pumps", "dress_shoes", "moccasins", "loafers",
+               "sneakers", "plimsolls", "heeled_sandals", "sandals")
+_БЕЗ_РУКАВА = ("bottom", "shoes", "bag") + _ПРИКРАСИ + _ДРІБНЕ
+_БЕЗ_КРОЮ = ("shoes", "bag") + _ПРИКРАСИ + _ДРІБНЕ
+_БЕЗ_ТКАНИНИ = _ПРИКРАСИ + ("glasses", "shoes", "bag", "belt")
+# Ворс, хутро, простібка, утеплювач і застібка бувають і на взутті та сумках; їх нема лише в
+# прикрас, окулярів і тонкого (колготи, шкарпетки).
+_ТВЕРДЕ_Й_ТОНКЕ = _ПРИКРАСИ + ("glasses", "tights", "socks")
+_ЛИШЕ = lambda *слоти: frozenset(к for к in ВМ.ТАБЛИЦЯ["slot"] if к not in слоти + ("accessory",))
+НЕМА_ПОЛЯ = {
+    # тканину взуття, сумки й паска несе `material` (опис поля), тканини прикрас і окулярів нема
+    "fabric": frozenset(_БЕЗ_ТКАНИНИ),
+    "material": frozenset(к for к in _ПОЗА_ВЗУТТЯМ if к not in ("bag", "belt")),
+    "cut": frozenset(_БЕЗ_КРОЮ),
+    "length": frozenset(_БЕЗ_КРОЮ),     # у взуття — `shaft`
+    "sleeve": frozenset(_БЕЗ_РУКАВА),
+    "neckline": frozenset(_БЕЗ_РУКАВА),
+    "vamp": frozenset(_ПОЗА_ВЗУТТЯМ),
+    "shaft": frozenset(_ПОЗА_ВЗУТТЯМ + _БЕЗ_ХАЛЯВИ),
+    "heel.present": frozenset(_ПОЗА_ВЗУТТЯМ),
+    # форма й висота каблука — ще й у взуття, коли `heel.present` = "no" (`_поля_нема`)
+    "heel.shape": frozenset(_ПОЗА_ВЗУТТЯМ),
+    "heel.height": frozenset(_ПОЗА_ВЗУТТЯМ),
+    # рядки 6425–6428
+    "fabric_kind": frozenset(_БЕЗ_ТКАНИНИ),
+    "texture": frozenset(_ПРИКРАСИ + ("glasses",)),
+    "elastane_pct": frozenset(_БЕЗ_ТКАНИНИ),
+    "wool_pct": frozenset(_БЕЗ_ТКАНИНИ),
+    "length_cm": frozenset(_БЕЗ_КРОЮ),
+    "sleeve_cut": frozenset(_БЕЗ_РУКАВА),
+    "collar": frozenset(_БЕЗ_РУКАВА),
+    "closure": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
+    "breasted": frozenset(_БЕЗ_РУКАВА),
+    "belt": frozenset(_БЕЗ_КРОЮ),
+    "elastic_waist": frozenset(_БЕЗ_КРОЮ),
+    "hood": frozenset(_БЕЗ_КРОЮ),
+    "fur_trim": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
+    "pile": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
+    "quilted": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
+    "filling": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
+    "heel.height_cm": frozenset(_ПОЗА_ВЗУТТЯМ),
+    "sole": frozenset(_ПОЗА_ВЗУТТЯМ),
+    "shoe_width": frozenset(_ПОЗА_ВЗУТТЯМ),
+    "sole_attachment": frozenset(_ПОЗА_ВЗУТТЯМ),
+    "bag_size": _ЛИШЕ("bag"),
+    "strap_cm": _ЛИШЕ("bag"),
+    "chain_cm": _ЛИШЕ("jewelry", "collar_necklace", "necklace"),
+}
+# Тип — другий рід `not_applicable` (6755): слова називають тип, а коду в переліку нема. Таблиці
+# слот → поле для нього нема, тож код вимагає цитату, як для будь-якого коду (`_код`): без неї
+# `not_applicable` на типі знову став би заповнювачем тиші.
+ТИП_БЕЗ_КОДУ = frozenset(("item_type",))
+assert set(НЕМА_ПОЛЯ) == {ш for ш, к, _ in ПОЛЯ if НЕ_СТОСУЄТЬСЯ in к and ш not in ТИП_БЕЗ_КОДУ}, \
+    "кожне поле з not_applicable — у таблиці"
+assert all(к in ВМ.ТАБЛИЦЯ["slot"] or к in ВМ.ТАБЛИЦЯ["item_type"] for в in НЕМА_ПОЛЯ.values() for к in в)
 
 # ── РЯДОК ОСОБЛИВОСТЕЙ: ВІЛЬНИЙ ТЕКСТ, А НЕ КОД (див. докстрінг модуля) ─────
 # Поза `ПОЛЯ` навмисно: `ПОЛЯ` — закриті переліки, які код читає і звіряє зі словниками
@@ -202,6 +341,17 @@ def _коди(група, на=False):
     "color_extra": "фід_розбір._СЕП_КОЛЬОРУ (решта слів поля)", "color_why": "коду нема",
     "color_from": "фід_розбір: param картки, інакше назва", "pattern": "verify.клас_мотиву",
     "decor": "траурний_регістр.святкова_оздоба", "veto": "паспорт_нагоди.ВЕТО_СЛОВА (основи слів)",
+    # рядки 6425–6428: ключ запису фіда, який #1028 знімає без заміни
+    "fabric_kind": "фід_каталог: рід_тканини_слово", "texture": "фід_каталог: текстура",
+    "elastane_pct": "фід_каталог: еластан_%", "wool_pct": "фід_верхнє: вовна_частка (частка 0..1)",
+    "length_cm": "фід_каталог: довжина_виробу_см", "size_fit": "фід_взуття, фід_каталог: розмірність",
+    "sleeve_cut": "фід_верхнє: рукав", "collar": "фід_верхнє: комір (стійка — neckline)",
+    "closure": "фід_верхнє: застібка", "breasted": "фід_верхнє: бортність", "belt": "фід_верхнє: пояс",
+    "elastic_waist": "фід_каталог: талія (belt — поле belt, wrap — cut)", "hood": "фід_верхнє: капюшон",
+    "fur_trim": "фід_верхнє: опушка", "pile": "фід_верхнє: ворс", "quilted": "фід_верхнє: простібка",
+    "filling": "фід_верхнє: наповнювач", "sole": "фід_взуття: підошва", "shoe_width": "фід_взуття: повнота",
+    "sole_attachment": "фід_взуття: ремонтопридатна", "bag_size": "фід_атрибути: формат",
+    "strap_cm": "фід_атрибути: ремінь_см (половина ручки)", "chain_cm": "фід_атрибути: ланцюг_см",
     ОСОБЛИВОСТІ: "коду нема й не буде: рядок читає лише функціональна модель (п.12)",
 }
 
@@ -229,6 +379,9 @@ def скелет():
         перелік = ("<a code from the \"%s\" list>" % _кроки(шлях)[-1][0]
                    if шлях.startswith("set_parts[]") else "|".join(коди))
         лист = {ЦИТАТА: "<%s>" % ЦИТАТА, ЗНАЧЕННЯ: "%s — %s" % (перелік, опис)}
+        if isinstance(коди, Мірка):
+            лист = {ЦИТАТА: "<%s>" % ЦИТАТА, ЗНАЧЕННЯ: "<number>|%s — %s" % ("|".join(коди), опис),
+                    ОДИНИЦЯ: "|".join(коди.одиниці + [UNKNOWN])}
         вузол, кроки = с, _кроки(шлях)
         for і, (ім, список) in enumerate(кроки):
             if і == len(кроки) - 1:
@@ -248,6 +401,28 @@ def _пара(значення):
                            ЗНАЧЕННЯ: значення}}
 
 
+def _лист_відповіді(коди):
+    """Схема листка відповіді: пара з кодом переліку; у `Мірка` — трійка {quote, value, unit}, де
+    value — число або рядкова форма (`not_applicable`, "unknown"), unit — одиниця поля."""
+    if not isinstance(коди, Мірка):
+        return _пара({"enum": коди})
+    лист = _пара({"anyOf": [{"type": "number"}, {"enum": list(коди)}]})
+    лист["required"].append(ОДИНИЦЯ)
+    лист["properties"][ОДИНИЦЯ] = {"enum": коди.одиниці + [UNKNOWN]}
+    return лист
+
+
+def _лист_розбору(коди, опис):
+    """Схема листка `розбір.json`: код переліку; у `Мірка` — {value, unit} або рядкова форма."""
+    if not isinstance(коди, Мірка):
+        return {"description": опис, "enum": коди}
+    число = {"type": "object", "additionalProperties": False, "required": [ЗНАЧЕННЯ, ОДИНИЦЯ],
+             "properties": {ЗНАЧЕННЯ: {"type": "number", "exclusiveMinimum": 0},
+                            ОДИНИЦЯ: {"enum": коди.одиниці}}}
+    return {"description": опис, "x-стеля-см-чи-відсоток": коди.стеля,
+            "anyOf": [число, {"enum": list(коди)}]}
+
+
 def _обʼєкт():
     return {"type": "object", "additionalProperties": False, "required": [], "properties": {}}
 
@@ -264,7 +439,7 @@ def схема_відповіді():
             if ім not in вузол["required"]:
                 вузол["required"].append(ім)
             if і == len(кроки) - 1:
-                лист = _пара({"enum": коди})
+                лист = _лист_відповіді(коди)
                 вузол["properties"][ім] = ({"type": "array", "maxItems": СТЕЛІ_СПИСКІВ[ім],
                                             "items": лист} if список else лист)
                 continue
@@ -294,7 +469,7 @@ def схема():
         вузол, кроки = корінь, _кроки(шлях)
         for і, (ім, список) in enumerate(кроки):
             if і == len(кроки) - 1:
-                лист = {"description": опис, "enum": коди}
+                лист = _лист_розбору(коди, опис)
                 вузол["properties"][ім] = ({"type": "array", "items": лист} if список else лист)
                 continue
             далі = вузол["properties"].setdefault(ім, {})
@@ -315,17 +490,21 @@ def схема():
     return {"$schema": "https://json-schema.org/draft/2020-12/schema", "$id": ВЕРСІЯ,
             "title": "Розбір каталогу Люстерка",
             "description": ("Поля, якими мовна модель описує річ каталогу для коду: коди із "
-                            "закритих переліків, \"not_applicable\" (поля в такої речі не буває) або "
+                            "закритих переліків, \"not_applicable\" (поля в такої речі не буває: "
+                            "лише слоти й типи `x-поля-нема`) або "
                             "\"unknown\" (опори в тексті крамниці нема — вигадувати не можна). "
                             "Модель відповідає парами {quote, value} (`model_answer`); код лишає "
                             "значення лише тоді, коли цитата стоїть у тексті речі. Переліки slot, "
                             "item_type, fabric, material, pattern, color_name, length, shaft — ті "
-                            "самі, що в `внутрішня_мова.ТАБЛИЦЯ`; cut — `силует_крої.КРОЇ`. Поруч "
+                            "самі, що в `внутрішня_мова.ТАБЛИЦЯ`; cut — `силует_крої.КРОЇ`. "
+                            "Числові поля (`*_pct`, `*_cm`) — {value, unit}: число з цитати й "
+                            "одиниця, без перерахунку. Поруч "
                             "із кодами — рядок особливостей `features` англійською для "
                             "функціональної моделі. Породжує файл `каталог_розбір.схема()`; вхід "
                             "моделі — `каталог_розбір.вхід()`."),
             "x-форми-unknown": list(ВМ.ФОРМИ_НЕВІДОМО),
             "x-виведені-кодом": sorted(ВИВЕДЕНІ) + ["slot (СЛОТ_ТИПУ)", "set_parts[].slot (СЛОТ_ТИПУ)"],
+            "x-поля-нема": {ш: sorted(н) for ш, н in НЕМА_ПОЛЯ.items()},
             "x-звідки-код-бере-сьогодні": ЗВІДКИ,
             "$defs": {"catalog_parse": корінь, "model_answer": схема_відповіді()}}
 
@@ -337,7 +516,14 @@ def схема():
 #    цитата (уся назва) тримається підрядком майже завжди й нічого не доводить.
 #  · НАЗВА ТИПУ НЕ ТРИМАЄ ІНШИХ ПОЛІВ: ж-01232 — «СУКНЯ №1081 ШОКОЛАД» і три коди крою без слова.
 #    Сторож цього не відрізнить (підрядок «сукня» стоїть у тексті), тож це має сказати правило.
-#  · `not_applicable` — рядок 352: «sleeve: no» на штанах значило «рукава тут не буває».
+#  · `not_applicable` — рядок 352: «sleeve: no» на штанах значило «рукава тут не буває». Де саме
+#    поля нема, правило каже переліком з `НЕМА_ПОЛЯ` (`_правило_поля_нема`), а не словами «вид
+#    речі»: так MamayLM ставила його на крій і рукав пальта (рядки 2681–2682). Код однаково
+#    приймає лише за таблицею (`_поля_нема`) — правило лише зберігає відповіді.
+#  · ЗАПОВНЮВАЧ І СУСІДНІЙ КОД (рядки 2681, 2682): «звичайний» крій, довжина «до коліна» без
+#    слова про крій чи довжину; «глибокий виріз» як V-подібний, «відкладний комір» як стійка,
+#    «класичне» чи назва моделі як крій. Цитата тут тримається, а код слів не читає (п.12) — це
+#    може сказати лише правило.
 #  · «no»/«none» — це твердження «ознаки нема», і цитата потрібна йому так само (каблук: 19 з 25
 #    «не оголошений» — тиша крамниці не є «без підборів»).
 #  · БЛОКИ ПРО ІНШІ РЕЧІ в описі (доставка, схожі товари з цінами) — цитата з них тримається
@@ -346,18 +532,46 @@ def схема():
 #    фрагментами з цитатою кожен, без маркетингу, бренду, ціни, розміру й обмірів, бо їх модель
 #    переносила з тексту крамниці (К-4/К-5: маркетинг 14→22 % рядків). Висота каблука — форма
 #    взуття, не обмір. Код ці слова НЕ судить (п.12, п.16) — їх тримає лише правило.
+def _правило_поля_нема():
+    """Правило промпта про `not_applicable` — з `НЕМА_ПОЛЯ`: поля з тим самим переліком разом;
+    перелік слотів — коротшим боком («any slot but …», коли так коротше), типи взуття — окремо."""
+    слоти, групи = list(ВМ.ТАБЛИЦЯ["slot"]), {}
+    for шлях, нема in НЕМА_ПОЛЯ.items():
+        групи.setdefault(нема, []).append(шлях)
+    частини = []
+    for нема, поля in групи.items():
+        є = [к for к in слоти if к in нема]
+        решта = [к for к in слоти if к not in нема]
+        опис = "any slot but " + "|".join(решта) if len(решта) < len(є) else "|".join(є)
+        типи = [к for к in ВМ.ТАБЛИЦЯ["item_type"] if к in нема and к not in слоти]
+        частини.append("%s: %s" % (", ".join(поля), опис + ("; item_type " + "|".join(типи) if типи else "")))
+    return ("\"not_applicable\": the field does not exist for this kind of item, quote \"\" (shoes, bags and "
+            "jewellery have no cut, length, sleeve or neckline). Only where the item's slot has no such field — %s; "
+            "heel.shape, heel.height and heel.height_cm also when heel.present is \"no\". Anywhere else the field "
+            "exists: no words about it, \"unknown\"." % "; ".join(частини))
+
+
 _ПРАВИЛА = (
     "Parse only the item named in \"name\". The description may also hold blocks about other "
     "items, delivery or payment: ignore them.",
     "Every field is a pair. \"quote\": the shortest words of this item's name, description or "
     "params that state the value, copied letter for letter in the shop's language, "
     "not translated or retold. \"value\": one code from that field's list.",
-    "No words state it: quote \"\" and value \"unknown\". Never infer a value from what items of "
-    "this type usually are.",
+    "No words state this very feature: quote \"\" and value \"unknown\". Never infer a value from "
+    "what items of this type usually are, never put the most usual code of a list as a default.",
+    "The quote must state the chosen code itself, not a nearby one: how deep a neckline is does "
+    "not state its shape, one kind of collar does not state another, a style or model name does "
+    "not state a cut. Words that fit no code exactly: \"unknown\".",
     "A quote that only names the item type supports slot and item_type and nothing else: not "
     "sleeve, neckline, length, cut, fabric or any other field.",
-    "\"not_applicable\": the field does not exist for this kind of item; quote \"\".",
+    _правило_поля_нема(),
+    "\"item_type\": the quote must name this very type. A kind of dress, top or coat needs its own "
+    "word in the quote: length, colour, fabric and fit words do not name a kind, so a dress with no "
+    "kind named is dress_generic. The words name a type that has no code in the list: value \"not_applicable\" with that quote, never the "
+    "nearest code. The words name no type: \"unknown\".",
     "\"no\" and \"none\": the text says the feature is absent; they need a quote like any value.",
+    "A field with \"unit\" takes a number: \"value\" the number the text gives, \"unit\" its unit, "
+    "the quote holds that number in digits. A range or numbers per size: the first number.",
     "\"set_parts\": only for an item sold as a set, one entry per part; otherwise [].",
     "\"color_main\": the colour of this item, not of other colour variants on sale; other colours "
     "the text names for this item go to \"color_extra\".",
@@ -411,7 +625,7 @@ _ВХІД = (
 СЛУЖБОВІ = frozenset((
     "магазин", "стать", "мова", "знято", "канал", "платформа", "id_магазину", "поля",
     "бал_інформації", "ранг_відбору", "нема_від_магазину", "наявність", "розміри_в_наявності",
-    "матеріал_родина", "каблук_см", "слот", "тип", "силует", "довжина", "довжина_рівень",
+    "матеріал_родина", "склад_непевний", "склад_основа", "каблук_см", "слот", "тип", "силует", "довжина", "довжина_рівень",
     "виріз_тип", "рукав_рівень", "вовна_частка", "назва_показу", "назва_показу_джерело",
     "назва_показу_причина", "опис"))
 # Поля, які лишаються ЗАВЖДИ, навіть маючи двійника «*_джерело»: двійник тут каже лише, ОДКУДИ
@@ -633,7 +847,11 @@ def _код(знач, коди, шлях, причини, частини=None, �
     у `причини`. Значення поза переліком не викидається одразу: спершу `_звести` (РЗ-1) пробує
     впізнати в ньому код. Коли дано `частини` (текст речі), код лишається, лише коли його цитата
     там тримається (`_де_тримається`); інакше "unknown" і рядок `invented`. "unknown" і
-    `not_applicable` цитати не потребують. `цитати` (коли дано) дістає {шлях: (цитата, де)}."""
+    `not_applicable` цитати не потребують (`not_applicable` судить таблиця — `_поля_нема`, коли
+    слот уже відомий) — крім типу (`ТИП_БЕЗ_КОДУ`): «тип названо, коду нема» лишається, лише коли
+    цитата з назвою типу тримається. `цитати` (коли дано) дістає {шлях: (цитата, де)}."""
+    if isinstance(коди, Мірка):
+        return _число(знач, коди, шлях, причини, частини, цитати)
     значення, цитата = _розняти(знач)
     if ВМ.невідомо(значення, коди):
         return UNKNOWN
@@ -645,7 +863,7 @@ def _код(знач, коди, шлях, причини, частини=None, �
             return UNKNOWN
         причини.append("%s: «%s» зведено до «%s»" % (шлях, str(значення)[:40], зведено))
         т = зведено
-    if частини is None or т in (UNKNOWN, НЕ_СТОСУЄТЬСЯ):
+    if частини is None or т == UNKNOWN or (т == НЕ_СТОСУЄТЬСЯ and шлях not in ТИП_БЕЗ_КОДУ):
         return т
     де = _де_тримається(цитата, частини)
     if not де:
@@ -654,6 +872,45 @@ def _код(знач, коди, шлях, причини, частини=None, �
     if цитати is not None:
         цитати[шлях] = (цитата, де)
     return т
+
+
+def _запис_числа(ч):
+    """Число → його записи, якими текст може його писати: «4», «4.5», «4,5» (цілі — без «.0»)."""
+    т = ("%d" % ч) if float(ч).is_integer() else ("%g" % ч)
+    return {т, т.replace(".", ",")}
+
+
+def _число(знач, мірка, шлях, причини, частини=None, цитати=None):
+    """Числове поле моделі {quote, value, unit} → {value, unit} або рядкова форма (`not_applicable`,
+    "unknown"); кожна вада — рядок у `причини`. Число лишається, лише коли воно в межах
+    (0, `мірка.стеля`] (у сантиметрах чи відсотках, `У_СТЕЛЮ`), одиниця — з `мірка.одиниці`, а з `частини` — ще й коли цитата тримається в
+    тексті речі й сама містить це число цифрами (код звіряє цифри, не слова, п.12)."""
+    значення, цитата = _розняти(знач)
+    одиниця = знач.get(ОДИНИЦЯ) if isinstance(знач, dict) else None
+    if isinstance(значення, str) and значення.strip().lower() in мірка:
+        return значення.strip().lower()               # `not_applicable` судить `_поля_нема`
+    if ВМ.невідомо(значення, мірка):
+        return UNKNOWN
+    try:
+        ч = float(str(значення).replace(",", ".")) if not isinstance(значення, bool) else None
+    except ValueError:
+        ч = None
+    if одиниця not in мірка.одиниці:
+        причини.append("%s: одиниця «%s» поза переліком" % (шлях, str(одиниця)[:20]))
+        return UNKNOWN
+    if ч is None or not 0 < ч * У_СТЕЛЮ[одиниця] <= мірка.стеля:
+        причини.append("%s: «%s %s» не число в межах (0, %s]" % (шлях, str(значення)[:40], одиниця,
+                                                                мірка.стеля))
+        return UNKNOWN
+    if частини is not None:
+        де = _де_тримається(цитата, частини)
+        цифри = re.findall(r"\d+(?:[.,]\d+)?", цитата if isinstance(цитата, str) else "")
+        if not де or not _запис_числа(ч) & set(цифри):
+            причини.append(вигадка_рядком(шлях, значення, цитата))
+            return UNKNOWN
+        if цитати is not None:
+            цитати[шлях] = (цитата, де)
+    return {ЗНАЧЕННЯ: int(ч) if ч.is_integer() else ч, ОДИНИЦЯ: одиниця}
 
 
 def _список(знач, коди, шлях, причини, частини=None):
@@ -679,6 +936,26 @@ def _слот(знач, тип, шлях, причини, частини):
     if сказала not in (UNKNOWN, з_таблиці):
         причини.append("%s: з таблиці типу %s — %s, модель сказала %s" % (шлях, тип, з_таблиці, сказала))
     return з_таблиці
+
+
+def _поля_нема(вих, об, причини):
+    """`not_applicable` лишається там, де поля нема за `НЕМА_ПОЛЯ` (слот чи тип речі), а форма й
+    висота каблука — ще й коли `heel.present` = "no"; інакше — "unknown" і рядок `invented`
+    з цитатою моделі. Правка на місці у `вих` (поля вже пройшли `_код`)."""
+    слот, тип = вих.get("slot"), вих.get("item_type")
+    без_каблука = (вих.get("heel") or {}).get("present") == "no"
+    for шлях, нема in НЕМА_ПОЛЯ.items():
+        кроки = [ім for ім, _ in _кроки(шлях)]
+        вузол, сире = вих, об
+        for ім in кроки[:-1]:
+            вузол = вузол.get(ім) or {}
+            сире = сире.get(ім) if isinstance(сире.get(ім), dict) else {}
+        if вузол.get(кроки[-1]) != НЕ_СТОСУЄТЬСЯ or слот in нема or тип in нема:
+            continue
+        if без_каблука and шлях in ("heel.shape", "heel.height", "heel.height_cm"):
+            continue
+        вузол[кроки[-1]] = UNKNOWN
+        причини.append(вигадка_рядком(шлях, НЕ_СТОСУЄТЬСЯ, _розняти(сире.get(кроки[-1]))[1]))
 
 
 # Межа фрагмента — розділовий знак, за яким іде пробіл або кінець рядка (кома в «3,5» — не межа).
@@ -777,7 +1054,8 @@ def з_відповіді(текст, дані=None):
     `дані` — вхід моделі цієї речі (`вхід()`, чи запит із файла прогону). Коли дано — працює
     СТОРОЖ ЦИТАТ (РЗ-К): кожен код лишається, лише коли його цитата стоїть у тексті речі, інакше
     "unknown" і рядок `invented` у причинах; слот — із типу таблицею (`_слот`), `color_from` — з
-    місця цитати кольору (`_звідки_колір`). Без `дані` — читання відповідей v1/v2 як доти (голі
+    місця цитати кольору (`_звідки_колір`), `not_applicable` — лише де поля нема за слотом чи типом
+    (`_поля_нема`). Без `дані` — читання відповідей v1/v2 як доти (голі
     коди без цитат: заглушка стенда, старі проби)."""
     причини = []
     об = _ПР.розібрати_json((текст or "").replace(ВСТАВКА, ""))
@@ -815,6 +1093,7 @@ def з_відповіді(текст, дані=None):
                                    причини, частини)
         вих["set_parts"] = [{к: г[к] for к in ("slot", "item_type")} for г in вих.get("set_parts", [])]
         вих["color_from"] = _звідки_колір(цитати)
+        _поля_нема(вих, об, причини)
         # СПІЛЬНА ЦИТАТА З ТИПОМ — лише вимір, не вирок: «Шовкова сукня» чесно тримає і тип, і
         # тканину. Скільки кодів спираються лише на слова типу, покаже пілот поруч з еталоном.
         тип = цитати.get("item_type")

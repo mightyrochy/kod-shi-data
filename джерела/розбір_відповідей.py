@@ -49,20 +49,16 @@ import дріт_моделі as _Д
         # принт»), хоч крамниця його знає, — колір речі без фото береться звідси, без посилання на джерело
         _ЗП.Поле("outfit", "the chosen outfit: its items with number «n», name and shop, and the shop's data on "
                            "their color («color» as a code, «shop_color» — the shop's own word when it says more, "
-                           "«hex») — a hint for reading the photo and the colour of an item that has no photo; "
-                           "never a source you cite to her",
+                           "«hex») — a hint for reading the photo and the colour of an item that has no photo",
                  треба=True),
         _ЗП.Поле("outfit.items[].photos",
                  "the numbers of this item's photos: every photo stands under its own label «Photo N — …:» "
-                 "among the blocks placed before this object, and the label names the item by its «n»; it is "
-                 "the shop's photo of that one item, often worn by a model or a mannequin with clothes that "
-                 "are not hers; under a label with «not delivered» or «not available» there is no image",
+                 "among the blocks placed before this object, and the label names the item by its «n»; under a "
+                 "label with «not delivered» or «not available» there is no image",
                  як="describe what you see on the photos, not the name; from each photo take only the item of "
                     "its «kind» — a belt, a bag or jewelry is often shown worn with a blouse or a dress: describe "
-                    "the belt, not the blouse; the other clothes in the frame are not part of the outfit and are "
-                    "not mentioned; "
-                    "never take for an item a photo under another number, and when all of its photos are "
-                    "not delivered, describe it by its name and «color»",
+                    "the belt, not the blouse; never take for an item a photo under another number, and when "
+                    "all of its photos are not delivered, describe it by its name and «color»",
                  без="There are no item photos: describe the items by their names; leave «wrong_photos» empty."),
         # рядок 3457 (ЖИВІ-13 №8 рука 2): «Пасок Базовий блакитний» описано блузою з фото пояса — опис
         # ішов за кадром, а не за річчю; рід речі кодом каже, ЩО на кадрі описувати
@@ -76,10 +72,12 @@ import дріт_моделі as _Д
         # Рядок 4282 (ЖИВІ-19 №13 рука 2): другий колір поруч — `photo_colour: green` біля `color: purple` —
         # модель переказувала жінці («Колір тут здається зеленим, але ми обираємо його як фіолетовий»). Розлад
         # розвʼязує код (`фід_кадр_колір.рішення` → колір речі), тож річ несе ОДИН колір, а кадр — лише позначку
-        _ЗП.Поле("outfit.items[].photo_other_colour", "the shop's photos of this item show another colour of the "
-                                                      "same model; the item itself is «color»",
-                 як="give it «color» and say nothing about the colour on its photos — no «looks …, but …»; this "
-                    "is no reason for «wrong_photos» or «swap»: the card already tells her about the photo"),
+        # Рядок 5220 (файл 1551): «бежеві туфлі» в описі під шоколадним кадром картки — колір не їде зовсім
+        _ЗП.Поле("outfit.items[].photo_other_colour", "the shop names one colour of this item and its photos show "
+                                                      "another; which one she gets is not known",
+                 як="do not name the colour of this item and say nothing about the colour on its photos — no "
+                    "«looks …, but …»; this is no reason for «wrong_photos» or «swap»: the card already tells "
+                    "her about the photo"),
         _ЗП.Поле("outfit.items[].no_photo", "this item has no photo of its own among the others",
                  як="describe it by its name and «color»; do not take another item's photo for it"),
         _ЗП.Поле("outfit.items[].hers", "her own item from her photo, not a product",
@@ -93,6 +91,19 @@ import дріт_моделі as _Д
         # складом не може, тож опис їх більше не дістає: склад — лише «outfit» кодами, день — «day» фактами.
         _ЗП.Поле("case", "her occasion: its fields as codes, her own words as quotes; «formality» is an "
                          "internal 1–10 band, for you only"),
+        # Рядки 5885, 5315 (ОЦІНКА-ЖИВІ-1510-Г, Г3, ж4_робота_живіт): `goal_zones` в описі був («case» кодами,
+        # `випадок_для_пакета`), а правила поля — ні; правило «body» («where it sets the eye … waist») і спосіб
+        # носіння вели модель далі: «підперезана червоним паском», «щоб пасок підкреслював найвужчу частину тулуба»
+        # при «приховати живіт». Названу зону ховає крій, сміливе лишається деінде (п.17).
+        _ЗП.Поле("case.goal_zones", "the body zones she wants to draw the eye away from, with any goal",
+                 # Рядок 6621 (ОЦІНКА-ЖИВІ-1016-2, ж4_робота_живіт 08–10): «no tuck that marks the waist» модель
+                 # обходила застереженням — «Tuck the front of the vest slightly … without marking your waist», 3 з 6
+                 # карток; заборона тепер без умови «marks»
+                 як="this comes before «body» and «ways_to_wear»: set the eye on none of these zones — no "
+                    "sentence or way to wear that marks, frames or accentuates them; with belly or hips: no tuck "
+                    "of any kind (not a front or half tuck, not a top tucked into the bottom, whatever it is "
+                    "said to avoid) and no belt at the waist, never «the narrowest part of the torso»; do not name "
+                    "them to her as something to hide; say where the outfit leads the eye instead"),
         # рядок 1427 (СУКНЯ-СМУГА 03.10): «the choice is hers» тут стояло про БУДЬ-ЩО, що сперечається з
         # днем, і модель закінчувала ним 45 з 78 карток рук 1–2 — про речі, які обрала сама («сітка…
         # наскільки це важливо в церкві, вирішуєш ти»). Своє рішення стилістка не віддає жінці назад.
@@ -114,6 +125,8 @@ import дріт_моделі as _Д
         # П.17 (рядок 1427, #599): річ образу — вибір стилістки; річ проти фігури — пояснити, рішення не віддавати
         # рядок 4282 (ЖИВІ-4281 №13 рука 1, `seed3_48`): «cuts_best_on_her: belted» при вільному светрі без
         # пояса — «tuck in just the front hem slightly over your belt»; «що з цим робити» — лише речами образу
+        # рядок 6811 (ЖИВІ-14 №11 рука 1, `seed3_26`): «your O-shape waist» у записі пальта, «your O-shape figure» у
+        # «text» — код фігури (`body.shape`) ішов жінці; межа — ознаки фігури словами крою, і в записі речі теж
         _ЗП.Поле("body", "her figure as the code measured it: height, shape code, zones, and statements — the cuts "
                          "that sit best on her, where a voluminous outfit takes its anchor, where most conditions "
                          "meet on her body",
@@ -123,8 +136,9 @@ import дріт_моделі as _Д
                     "body lacks or what should be hidden; when an item of the outfit works against these "
                     "statements, say so gently and say why you chose it anyway or what to do with it — only "
                     "with the items of «outfit»; «cuts» are cuts of an item, not items to add («belted» — a top "
-                    "with its own belt, never a belt she puts on); never name the shape code, a body type or a "
-                    "number"),
+                    "with its own belt, never a belt she puts on); her figure only in words of the line and the "
+                    "cut — her waist, hips, shoulders, legs — never as the shape code, a letter, an «…-shape», "
+                    "a body type or a number"),
         _ЗП.Поле("body.shape", _Д.ФІГУРА_КОДИ_EN),
         # ОПИС-1 (рядок 1428, K-ACC-12, K-EDG-01): у кожної сумки є три способи (рука, плече, навскоси),
         # і «Як це носити» доти щоразу казало про сумку — 69 рядків із 337, «діагональ» — 39 карток
@@ -134,8 +148,12 @@ import дріт_моделі as _Д
                  як="in «how_to_wear» name a way only when it changes something for this outfit — its effect "
                     "matters here (a line across the torso that already has many, a hem it lands on); a way "
                     "that changes nothing is left out"),
-        _ЗП.Поле("your_declared", "numbers of the items you placed deliberately against a condition",
-                 як="in «how_to_wear» say what to do with them"),
+        # Рядок 3784 (ЖИВІ-14 №11 рука 1): «against a condition» без умови — сумку, яку стилістка ДОДАЛА, опис
+        # прочитав вадою («не поєднується», «потрібно замінити», `swap`); тепер хід несе заяви своєї знахідки
+        _ЗП.Поле("your_declared", "items you kept deliberately although the code found something against them: "
+                                  "«item» — its «n», «statements» — what the code found, as statement codes",
+                 як="this was your choice, not a flaw of the item: never call it a mismatch and never name it "
+                    "in «swap»; in «how_to_wear» say what she does about what the code found"),
         _ЗП.Поле("she_refuses", "what she refused",
                  як="do not advise an item that breaks it and do not call it a compromise; when such an "
                     "item is in the outfit, tell her so plainly"),
@@ -166,15 +184,18 @@ import дріт_моделі as _Д
         "Describe only the items of «outfit»: no suggestions to buy or add more, no items it does not contain — "
         "no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or "
         "she may own it.",
-        "Do not change the outfit yourself. Describe each item as its photo shows it; never compare the photo "
-        "with the name, the shop's data or «color» in «about_items», «text» or «how_to_wear» (no «the name says …, but the "
-        "photo …», no «the code»): a clearly different item or colour goes only into «wrong_photos» or «swap».",
+        "Do not change the outfit yourself. Describe each item as its photo shows it: a clearly different item or "
+        "colour goes only into «wrong_photos» or «swap».",
         "Say each thing about an item once, and do not state a quality and then doubt it.",
         # ПРОЗА-КАРТОК-2 (рядок 1123): «На фото є ще й підібрані сірі штани, але до цього образу належить
         # лише жакет», «Фото я не бачу, тому орієнтуюся на назву», «як сказано в назві» — службова мова
-        # про кадр у кожній картці ПЕР-536; чого бракує на фото, картка вже каже під річчю (п.9)
+        # про кадр у кожній картці ПЕР-536; чого бракує на фото, картка вже каже під річчю (п.9).
+        # Рядок 6220: «не кажи про джерела» стояло ще в полі «outfit», у дужці правила 2 і в «photos» (кадр
+        # з чужим одягом — і в підписі кожного кадру); вада трималась не повторами (1 опис з 30), тож усе
+        # це — одним правилом тут, звірка фото з назвою й даними крамниці — теж
         "Talk to her about the items, never about what you were given: no word about photos, frames, what "
-        "else a frame shows, a photo you could not see, or the name and shop data you went by — the card "
+        "else a frame shows, a photo you could not see, or the name and shop data you went by, and no comparison "
+        "of a photo with them — the card "
         "already shows her the photos and says under an item when it has none.",
         "Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).",
         # рядок 1427: відповідальність за вибір речі — на стилістці (аудит/ПРОДУКТ.md п.17: з поясненням — свідомий вибір)
@@ -194,9 +215,15 @@ import дріт_моделі as _Д
         # рядок 3161(б): річ за річчю — полем `про_речі` з номером, а не рядком прози: модель називала
         # у «named» усі номери, а текст пропускав пальто чи піджак і описував штани, яких нема
         "про_речі[].н": "«n» of the item of «outfit»: one entry for every item of «outfit», in its order",
-        "про_речі[].текст": "prose for her about this one item of its «kind»: what it is, cut, length, color in words, "
-                            "fabric, in one or two sentences, as its photo and data show; it is in her outfit — "
-                            "never say it is not included",
+        # Рядки 4685, 5303: «styled here with matching wide-leg trousers» при бомбері без штанів, кардиган «поверх
+        # в'язаного комплекту» з його фото при сукні — запис речі описував увесь кадр. Код прози не читає (п.12),
+        # тож межа — тут: запис має лише свою річ, а як речі поєднуються — «text» (речі образу, звірені «named»)
+        "про_речі[].текст": "prose for her about this one item alone: what it is, cut, length, color in words, fabric, "
+                            "in one or two sentences, as its photo and data show; it is in her outfit — never say it "
+                            "is not included; no other garment, shoe, bag or accessory — neither one its photo shows "
+                            "it with nor another item of «outfit»: how the items go together belongs to «text»; her "
+                            "figure, if at all, only in words of the line and the cut — never the shape code or an "
+                            "«…-shape»",
         "текст": "prose for her after the items: (1) optional, only when it adds something — how the "
                  "shoes, the outer layer and the accessories go with the rest, in one or two sentences; "
                  "(2) why it works — 3–4 sentences, taking from «day», «palette», «makeup» and «missing» "
@@ -312,6 +339,7 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     `заміна_запасні` — ФОТО-1: `{річ: н, чому, запасні: [речі тими самими полями, що образ]}`, лише
     в зайвому виклику, коли опис назвав річ для заміни, а код знайшов запасні (`заміна_з_фото`).
     `тіло` — її фігура кодами (`hypergraph.тіло_для_опису`, рядок 1422): без неї промпт не несе поля.
+    `свідомі` — `[{н, заяви}]`: річ, яку стилістка поставила проти знахідки коду, і заяви тієї знахідки.
     """
     р = []
     for x in (речі or []):
@@ -332,7 +360,9 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     об = {"версія": _ПР.ВЕРСІЯ, "образ": {"ід": str(образ or "обраний"), "речі": р}}
     if задум:
         об["задум"] = str(задум)[:120]
-    свід = [str(с).strip() for с in (свідомі or []) if str(с or "").strip()]
+    # рядок 3784: хід — номер речі з заявами знахідки, проти якої він стоїть; хід без них опис не дістає
+    свід = [dict(н=str(с["н"]), заяви=list(с["заяви"])) for с in (свідомі or [])
+            if isinstance(с, dict) and str(с.get("н") or "").strip() and с.get("заяви")]
     if свід:
         об["свідомі"] = свід[:4]
     укл = _укладка_опису(канал_3, р)
@@ -513,14 +543,15 @@ def _названо_поза_образом(названо, словник, за
     return поза
 
 
-def опис_відповідь_з_json(текст, кандидати=None, каталог=None, склад=None):
+def опис_відповідь_з_json(текст, кандидати=None, каталог=None, склад=None, запасні=False):
     """`ОПИС_ВІДПОВІДЬ_V1` → проза для жінки, поради й речі з поганим фото (Т-06, крок 3).
 
     Повертає `{текст, як_носити, фото_не_те, фото_не_ті, фото_не_ті_знято, проза,
     помилки, повторний_виклик, заміна?, названо_поза_образом?, про_речі, не_описано?}`. `склад` — id речей картки:
     запис `названо` без номера речі образу (`_названо_поза_образом`, рядок 1429) — це річ, якої
     в образі нема, і опис просять переписати (`повторний_виклик`, один повтор у показі). `заміна` (ФОТО-1) — пропозиція моделі id-ами
-    (`{річ, чому, на?}`) або `{відмова, сире}`, коли номер не резолвився; рішення — `заміна_з_фото`. `фото_не_ті` — id каталогу, у які резолвились
+    (`{річ, чому, на?, на_відкинуто?}`) або `{відмова, сире}`, коли номер не резолвився; рішення — `заміна_з_фото`.
+    `запасні` — чи у вході були `swap_spares` (другий опис): лише тоді «на» без речі пулу — відмова. `фото_не_ті` — id каталогу, у які резолвились
     номери речей із `фото_не_те`; вони й лягають на картку позначкою під річчю.
     `фото_не_ті_знято` — ті, кому код доказом відмовив (`фото_доведено_коду`),
     разом із причиною: зняття позначки називається, а не робиться мовчки.
@@ -581,9 +612,18 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
                    if str(_зм.get("на") or "").strip() else [None])
             _причина_зміни = _зм.get("чому")
             _на_річ = {"на": _на[0]} if _на and _на[0] else {}
-            р["заміна"] = (dict(річ=_рі[0], чому=_причина_зміни, **_на_річ)
-                           if len(_рі) == 1 and _на else
-                           dict(відмова="number_not_resolved", сире=dict(_зм)))
+            # «на» БЕЗ ЗАПАСНИХ У ВХОДІ — НЕ ВІДМОВА (рядок 6810, ЖИВІ-14 №11 рука 1, `seed3_26`): перший опис
+            # дописав вигаданий «#239·06», і вся заміна йшла `number_not_resolved`, хоч сумка резолвилась, —
+            # до запасних не доходила жодна заміна з «на». Обирати «на» можна лише з `swap_spares` (схема
+            # поля), тож без них відкидається лише «на» (сирим — у `на_відкинуто`), а річ іде тим самим
+            # шляхом, що заміна без «на»; відмова — коли не резолвилась річ або «на» відповіді на запасні
+            _на_зайве = not запасні and not _на
+            # річ, що резолвилась, лишається й при відмові: її запис `про_речі` знімає `без_прози_заміни`
+            р["заміна"] = (dict(річ=_рі[0], чому=_причина_зміни, **_на_річ,
+                                **({"на_відкинуто": str(_зм["на"])} if _на_зайве else {}))
+                           if len(_рі) == 1 and (_на or _на_зайве) else
+                           dict(відмова="number_not_resolved", сире=dict(_зм),
+                                **({"річ": _рі[0]} if len(_рі) == 1 else {})))
         _поза = _названо_поза_образом(об.get("названо"), словник, за_ном, склад)
         # ── РІЧ ЗА РІЧЧЮ (рядок 3161(б)) ─────────────────────────────────────────────────────
         # ДО: «Чому цей образ» було однією прозою, а покриття код звіряв лише номерами «named» —
@@ -617,6 +657,28 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
             instead=" ".join(([ПОВТОР_НАЗВАНОГО_EN % ", ".join("«%s»" % w for w in _поза[:8])] if _поза else [])
                              + ([ПОВТОР_НЕ_ОПИСАНО_EN % ", ".join("«%s»" % w for w in _не[:8])] if _не else []))),
             ensure_ascii=False)
+    return р
+
+
+def без_прози_заміни(р):
+    """Опис назвав річ у `swap`, а заміни з цієї відповіді не буде → той самий розбір без запису `про_речі`
+    цієї речі (за її id), з `текст` і `проза` без його абзацу; знятий запис — у `про_речі_знято`.
+
+    Рядок 3783 (ЖИВІ-14 №11 рука 1, рішення менеджера (б)): `swap` сумки код відхилив, а її запис лишився —
+    «Її потрібно замінити для гармонії» під річчю, яка на картці. Слів запису код не читає (п.12), тож знімає
+    його цілим, без повторного виклику моделі (п.21). Прийнята заміна сюди не доходить: картку тоді описує
+    відповідь на запасні (`від_моделі` з `заміна_запасні`), і цей розбір не показується."""
+    ід = str(((р or {}).get("заміна") or {}).get("річ") or "")
+    знято = [x for x in (р.get("про_речі") or []) if ід and str(x.get("id")) == ід]
+    if not знято:
+        return р
+    лишились = [x for x in р["про_речі"] if x not in знято]
+    _абзаци = "\n".join(x["текст"] for x in р["про_речі"])
+    _власний = (р.get("текст") or "")[len(_абзаци) + 1:] if (р.get("текст") or "").startswith(_абзаци + "\n") else None
+    р = dict(р, про_речі=лишились, про_речі_знято=[dict(id=ід, чому="swap_not_applied")])
+    if _власний is not None:
+        р["текст"] = "\n".join([x["текст"] for x in лишились] + [_власний])
+        р["проза"] = "\n".join([р["текст"]] + list(р.get("як_носити") or [])).strip() or None
     return р
 
 
@@ -889,14 +951,34 @@ def образи_з_json(об, кандидати=None, каталог=None):
         if isinstance(речі, str):
             речі = [речі]
         знайдені, невірні, частини, двічі, половини, без_крапки = [], [], {}, [], {}, []
+        голі, з_елементів = [], []
         for x in речі:
+            _бк = len(без_крапки)
             з, н, ч = _розпізнати_речі(str(x), словник, за_ном, поле=True, двічі=двічі, без_крапки=без_крапки)
+            # голий «N» — прочитання без коду магазину: цифри написаного й є номером (злите «N·MM» — ні)
+            if len(без_крапки) > _бк and без_крапки[-1]["номер"][1:].split("·")[0] == \
+                    _НОМЕР_БЕЗ_КРАПКИ_РЕГ.match(без_крапки[-1]["написано"]).group(1):
+                голі.append((без_крапки[-1], з[-1]))
+            з_елементів.append(з)
             двічі += [і for і in з if і in знайдені and і not in двічі]
             for і in з:
                 половини.setdefault(і, set()).add(ч.get(і) or "")
             знайдені += [і for і in з if і not in знайдені]
             невірні += н
             частини.update(ч)
+        # ГОЛИЙ «#N» ПОРУЧ ІЗ НОМЕРАМИ ПОЗА ПУЛОМ — ЗБІГ, А НЕ РІЧ (рядок 4592, ЖИВІ-22 №8 рука 1, `seed3_09`):
+        # «#79» зараховано як «#79·33» (зелені балетки), а решта о1 — «#4230», «#3038», «#2960» — поза пулом:
+        # вигадане число випадково влучило в нумерацію (~477 речей). Код судить лише номери: коли бодай один
+        # номер образу не резолвився, голий «N» без коду магазину річчю не стає й іде в `невірні` під своїм
+        # написанням; злите «N·MM» без крапки (код магазину збігся) лишається
+        if голі and невірні:
+            for бк, і in голі:
+                if sum(і in з for з in з_елементів) == 1:
+                    знайдені.remove(і)
+                    частини.pop(і, None)
+                    половини.pop(і, None)
+                    без_крапки.remove(бк)
+                    невірні.append(бк["написано"])
         # КОМПЛЕКТ, НАЗВАНИЙ ДВІЧІ РІЗНИМИ ПОЛОВИНАМИ («/верх» і «/низ», або цілим і
         # половиною), — це цілий комплект (рядок 208): доти мовчки перемагала остання
         # половина, і образ судився без другої. Зведення назване полем `двічі`.
@@ -1222,6 +1304,18 @@ def адресувати_знахідками(розриви, вердикт):
     return вих
 
 
+def заяви_ходу(хід, знахідки):
+    """Оголошений хід → заяви знахідки, проти якої він стоїть (`{code, values}`): знахідки того самого
+    `правило` серед `знахідки` суду, що судив склад картки. Хід без коду чи з кодом, якого в цьому
+    суді нема, — `[]`: умови, проти якої річ стоїть, опис не дістане (рядок 3784)."""
+    пр = str((хід or {}).get("правило") or "") if isinstance(хід, dict) else ""
+    вих = []
+    for z in (знахідки or []) if пр else []:
+        if isinstance(z, dict) and str(z.get("правило") or "") == пр:
+            вих += [w for w in (z.get("заяви") or []) if isinstance(w, dict) and w.get("code") and w not in вих]
+    return вих
+
+
 def _застосувати_свідомі(знахідки, розриви, речі):
     """Оголошений хід ПОСЛАБЛЮЄ ЛИШЕ ЗНАХІДКУ, ЯКУ НАЗВАВ КОДОМ (×0.6, як K-KOH-03), не ховає
     її: сила лишається видимою, знахідка несе `свідомий`. Код — `правило` оголошення; річ, коли
@@ -1509,6 +1603,10 @@ def речі_з_тексту(текст, перелік=None):
     # Тоді код не вгадує слот словником (`feed.слот` не знав «козаків», розбір 2/8, В-3) і не
     # шукає мітку в назві (В-1). Не вийшло — список рядків, як доти, або розбір прози.
     import руки_без_коду as _РБК
+    # РЯДОК 6065: перелік назвав опис не образом (`is_outfit` no — відмова, питання) — речей нема, і проза
+    # розбором їх не дає: інакше вигаданий моделлю приклад став би карткою під текстом відмови
+    if перелік is not None and _РБК.опис_образ(перелік) is False:
+        return dict(речі=[], без_кольору=[], без_слота=[], надлишок=[], чому="description_not_outfit")
     _структ = _РБК.речі_переліку(перелік)
     if _структ:
         return _речі_структурою(_структ)
@@ -1652,6 +1750,11 @@ def перевірити_образ_моделі(текст, тіло, пере�
     import composer as _КМ
     р = речі_з_тексту(текст, перелік=перелік)
     вих = dict(перевірено=False, розбір=р, знахідки=[], граф=None, вузол=None, блокує=[], рядок_вузла=None, мова=None)
+    if перелік is not None:
+        # рядок 6065: код переліку «опис — образ» (True / False / None — не названо) — картку руки 3–4 показ
+        # ставить лише на True; слів опису код не читає (п.12)
+        import руки_без_коду as _РБК
+        вих["опис_образ"] = _РБК.опис_образ(перелік)
     # рядок 4370 (п.12, сусід рядка 4321): причина — код, не фраза з числом; які речі й скільки
     # їх розібрано (із кольором і слотом), видно з `розбір["речі"]` вище
     if len(р["речі"]) < 2:

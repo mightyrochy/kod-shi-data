@@ -2,7 +2,7 @@
  "$schema": "https://json-schema.org/draft/2020-12/schema",
  "$id": "lyusterko-catalog-parse-v3",
  "title": "Розбір каталогу Люстерка",
- "description": "Поля, якими мовна модель описує річ каталогу для коду: коди із закритих переліків, \"not_applicable\" (поля в такої речі не буває) або \"unknown\" (опори в тексті крамниці нема — вигадувати не можна). Модель відповідає парами {quote, value} (`model_answer`); код лишає значення лише тоді, коли цитата стоїть у тексті речі. Переліки slot, item_type, fabric, material, pattern, color_name, length, shaft — ті самі, що в `внутрішня_мова.ТАБЛИЦЯ`; cut — `силует_крої.КРОЇ`. Поруч із кодами — рядок особливостей `features` англійською для функціональної моделі. Породжує файл `каталог_розбір.схема()`; вхід моделі — `каталог_розбір.вхід()`.",
+ "description": "Поля, якими мовна модель описує річ каталогу для коду: коди із закритих переліків, \"not_applicable\" (поля в такої речі не буває: лише слоти й типи `x-поля-нема`) або \"unknown\" (опори в тексті крамниці нема — вигадувати не можна). Модель відповідає парами {quote, value} (`model_answer`); код лишає значення лише тоді, коли цитата стоїть у тексті речі. Переліки slot, item_type, fabric, material, pattern, color_name, length, shaft — ті самі, що в `внутрішня_мова.ТАБЛИЦЯ`; cut — `силует_крої.КРОЇ`. Числові поля (`*_pct`, `*_cm`) — {value, unit}: число з цитати й одиниця, без перерахунку. Поруч із кодами — рядок особливостей `features` англійською для функціональної моделі. Породжує файл `каталог_розбір.схема()`; вхід моделі — `каталог_розбір.вхід()`.",
  "x-форми-unknown": [
   "unknown",
   "null",
@@ -14,6 +14,686 @@
   "slot (СЛОТ_ТИПУ)",
   "set_parts[].slot (СЛОТ_ТИПУ)"
  ],
+ "x-поля-нема": {
+  "fabric": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "jewelry",
+   "necklace",
+   "ring",
+   "shoes",
+   "watch"
+  ],
+  "material": [
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "cut": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "length": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "sleeve": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "neckline": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "vamp": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "shaft": [
+   "bag",
+   "ballet_flats",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "dress_shoes",
+   "earrings",
+   "espadrilles",
+   "glasses",
+   "gloves",
+   "headwear",
+   "heeled_sandals",
+   "jewelry",
+   "loafers",
+   "moccasins",
+   "mules",
+   "necklace",
+   "outerwear",
+   "plimsolls",
+   "pumps",
+   "ring",
+   "sandals",
+   "scarf",
+   "set",
+   "sneakers",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "heel.present": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "heel.shape": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "heel.height": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "fabric_kind": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "jewelry",
+   "necklace",
+   "ring",
+   "shoes",
+   "watch"
+  ],
+  "texture": [
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "jewelry",
+   "necklace",
+   "ring",
+   "watch"
+  ],
+  "elastane_pct": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "jewelry",
+   "necklace",
+   "ring",
+   "shoes",
+   "watch"
+  ],
+  "wool_pct": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "jewelry",
+   "necklace",
+   "ring",
+   "shoes",
+   "watch"
+  ],
+  "length_cm": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "sleeve_cut": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "collar": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "closure": [
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "jewelry",
+   "necklace",
+   "ring",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "breasted": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "belt": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "elastic_waist": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "hood": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "fur_trim": [
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "jewelry",
+   "necklace",
+   "ring",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "pile": [
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "jewelry",
+   "necklace",
+   "ring",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "quilted": [
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "jewelry",
+   "necklace",
+   "ring",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "filling": [
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "jewelry",
+   "necklace",
+   "ring",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "heel.height_cm": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "sole": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "shoe_width": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "sole_attachment": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "bag_size": [
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "shoes",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "strap_cm": [
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "shoes",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "chain_cm": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "shoes",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ]
+ },
  "x-звідки-код-бере-сьогодні": {
   "slot": "фід_слот.слот (СЛОТ_КЛЮЧІ)",
   "item_type": "фід_слот.тип_речі (ТИП_КЛЮЧІ)",
@@ -37,6 +717,29 @@
   "pattern": "verify.клас_мотиву",
   "decor": "траурний_регістр.святкова_оздоба",
   "veto": "паспорт_нагоди.ВЕТО_СЛОВА (основи слів)",
+  "fabric_kind": "фід_каталог: рід_тканини_слово",
+  "texture": "фід_каталог: текстура",
+  "elastane_pct": "фід_каталог: еластан_%",
+  "wool_pct": "фід_верхнє: вовна_частка (частка 0..1)",
+  "length_cm": "фід_каталог: довжина_виробу_см",
+  "size_fit": "фід_взуття, фід_каталог: розмірність",
+  "sleeve_cut": "фід_верхнє: рукав",
+  "collar": "фід_верхнє: комір (стійка — neckline)",
+  "closure": "фід_верхнє: застібка",
+  "breasted": "фід_верхнє: бортність",
+  "belt": "фід_верхнє: пояс",
+  "elastic_waist": "фід_каталог: талія (belt — поле belt, wrap — cut)",
+  "hood": "фід_верхнє: капюшон",
+  "fur_trim": "фід_верхнє: опушка",
+  "pile": "фід_верхнє: ворс",
+  "quilted": "фід_верхнє: простібка",
+  "filling": "фід_верхнє: наповнювач",
+  "sole": "фід_взуття: підошва",
+  "shoe_width": "фід_взуття: повнота",
+  "sole_attachment": "фід_взуття: ремонтопридатна",
+  "bag_size": "фід_атрибути: формат",
+  "strap_cm": "фід_атрибути: ремінь_см (половина ручки)",
+  "chain_cm": "фід_атрибути: ланцюг_см",
   "features": "коду нема й не буде: рядок читає лише функціональна модель (п.12)"
  },
  "$defs": {
@@ -168,6 +871,24 @@
       "anorak",
       "bomber",
       "poncho",
+      "beanie",
+      "hat",
+      "beret",
+      "cap",
+      "belt",
+      "earrings",
+      "bracelet",
+      "necklace",
+      "collar_necklace",
+      "brooch",
+      "watch",
+      "glasses",
+      "gloves",
+      "tights",
+      "socks",
+      "swimsuit",
+      "lingerie",
+      "not_applicable",
       "unknown"
      ]
     },
@@ -305,6 +1026,23 @@
          "anorak",
          "bomber",
          "poncho",
+         "beanie",
+         "hat",
+         "beret",
+         "cap",
+         "belt",
+         "earrings",
+         "bracelet",
+         "necklace",
+         "collar_necklace",
+         "brooch",
+         "watch",
+         "glasses",
+         "gloves",
+         "tights",
+         "socks",
+         "swimsuit",
+         "lingerie",
          "unknown"
         ]
        }
@@ -371,6 +1109,94 @@
       "unknown"
      ]
     },
+    "fabric_kind": {
+     "description": "knitted or woven fabric",
+     "enum": [
+      "knit",
+      "woven",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "texture": {
+     "description": "surface of the fabric or material",
+     "enum": [
+      "denim",
+      "knit_fine",
+      "knit_chunky",
+      "leather",
+      "patent",
+      "satin",
+      "silk_shine",
+      "smooth_matte",
+      "smooth_shine",
+      "tweed_boucle",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "elastane_pct": {
+     "description": "share of elastane in the composition",
+     "x-стеля-см-чи-відсоток": 100,
+     "anyOf": [
+      {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "value": {
+         "type": "number",
+         "exclusiveMinimum": 0
+        },
+        "unit": {
+         "enum": [
+          "percent"
+         ]
+        }
+       }
+      },
+      {
+       "enum": [
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     ]
+    },
+    "wool_pct": {
+     "description": "share of wool in the composition",
+     "x-стеля-см-чи-відсоток": 100,
+     "anyOf": [
+      {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "value": {
+         "type": "number",
+         "exclusiveMinimum": 0
+        },
+        "unit": {
+         "enum": [
+          "percent"
+         ]
+        }
+       }
+      },
+      {
+       "enum": [
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     ]
+    },
     "cut": {
      "description": "cut",
      "enum": [
@@ -414,6 +1240,49 @@
       "unknown"
      ]
     },
+    "length_cm": {
+     "description": "length of the garment as a measure",
+     "x-стеля-см-чи-відсоток": 400,
+     "anyOf": [
+      {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "value": {
+         "type": "number",
+         "exclusiveMinimum": 0
+        },
+        "unit": {
+         "enum": [
+          "cm",
+          "mm",
+          "m",
+          "in"
+         ]
+        }
+       }
+      },
+      {
+       "enum": [
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     ]
+    },
+    "size_fit": {
+     "description": "how the item runs against its size",
+     "enum": [
+      "runs_small",
+      "true_to_size",
+      "runs_large",
+      "unknown"
+     ]
+    },
     "sleeve": {
      "description": "sleeve",
      "enum": [
@@ -424,6 +1293,15 @@
       "elbow",
       "three_quarter",
       "long",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "sleeve_cut": {
+     "description": "how the sleeve is set into the body",
+     "enum": [
+      "set_in",
+      "raglan",
       "not_applicable",
       "unknown"
      ]
@@ -444,6 +1322,106 @@
       "stand_collar",
       "shirt_collar",
       "cowl",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "collar": {
+     "description": "collar of a jacket, coat or dress",
+     "enum": [
+      "lapel",
+      "shawl",
+      "turn_down",
+      "none",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "closure": {
+     "description": "how the item fastens",
+     "enum": [
+      "zip",
+      "buttons",
+      "none",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "breasted": {
+     "description": "single or double row of buttons",
+     "enum": [
+      "single_breasted",
+      "double_breasted",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "belt": {
+     "description": "comes with a belt or tie",
+     "enum": [
+      "yes",
+      "no",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "elastic_waist": {
+     "description": "elastic waistband",
+     "enum": [
+      "yes",
+      "no",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "hood": {
+     "description": "has a hood",
+     "enum": [
+      "yes",
+      "no",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "fur_trim": {
+     "description": "fur trim",
+     "enum": [
+      "yes",
+      "no",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "pile": {
+     "description": "pile of the fabric surface",
+     "enum": [
+      "teddy",
+      "shaggy",
+      "boucle",
+      "long_pile",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "quilted": {
+     "description": "quilted",
+     "enum": [
+      "yes",
+      "no",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "filling": {
+     "description": "insulation filling",
+     "enum": [
+      "down",
+      "sintepon",
+      "hollofiber",
+      "isosoft",
+      "wadding",
+      "thinsulate",
+      "none",
       "not_applicable",
       "unknown"
      ]
@@ -502,8 +1480,152 @@
         "not_applicable",
         "unknown"
        ]
+      },
+      "height_cm": {
+       "description": "heel height as a measure",
+       "x-стеля-см-чи-відсоток": 40,
+       "anyOf": [
+        {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "value",
+          "unit"
+         ],
+         "properties": {
+          "value": {
+           "type": "number",
+           "exclusiveMinimum": 0
+          },
+          "unit": {
+           "enum": [
+            "cm",
+            "mm",
+            "m",
+            "in"
+           ]
+          }
+         }
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
       }
      }
+    },
+    "sole": {
+     "description": "material or tread of the sole",
+     "enum": [
+      "smooth",
+      "leather",
+      "lug",
+      "polyurethane",
+      "eva",
+      "tpr",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "shoe_width": {
+     "description": "width of the shoe",
+     "enum": [
+      "narrow",
+      "medium",
+      "wide",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "sole_attachment": {
+     "description": "sole stitched or glued",
+     "enum": [
+      "stitched",
+      "glued",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "bag_size": {
+     "description": "size of the bag",
+     "enum": [
+      "small",
+      "medium",
+      "large",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "strap_cm": {
+     "description": "full length of the bag strap",
+     "x-стеля-см-чи-відсоток": 400,
+     "anyOf": [
+      {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "value": {
+         "type": "number",
+         "exclusiveMinimum": 0
+        },
+        "unit": {
+         "enum": [
+          "cm",
+          "mm",
+          "m",
+          "in"
+         ]
+        }
+       }
+      },
+      {
+       "enum": [
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     ]
+    },
+    "chain_cm": {
+     "description": "length of the necklace or its chain",
+     "x-стеля-см-чи-відсоток": 400,
+     "anyOf": [
+      {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "value": {
+         "type": "number",
+         "exclusiveMinimum": 0
+        },
+        "unit": {
+         "enum": [
+          "cm",
+          "mm",
+          "m",
+          "in"
+         ]
+        }
+       }
+      },
+      {
+       "enum": [
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     ]
     },
     "metal": {
      "description": "metal of the item",
@@ -798,13 +1920,36 @@
     "set_parts",
     "fabric",
     "material",
+    "fabric_kind",
+    "texture",
+    "elastane_pct",
+    "wool_pct",
     "cut",
     "length",
+    "length_cm",
+    "size_fit",
     "sleeve",
+    "sleeve_cut",
     "neckline",
+    "collar",
+    "closure",
+    "breasted",
+    "belt",
+    "elastic_waist",
+    "hood",
+    "fur_trim",
+    "pile",
+    "quilted",
+    "filling",
     "vamp",
     "shaft",
     "heel",
+    "sole",
+    "shoe_width",
+    "sole_attachment",
+    "bag_size",
+    "strap_cm",
+    "chain_cm",
     "metal",
     "metal_where",
     "color_main",
@@ -956,6 +2101,24 @@
         "anorak",
         "bomber",
         "poncho",
+        "beanie",
+        "hat",
+        "beret",
+        "cap",
+        "belt",
+        "earrings",
+        "bracelet",
+        "necklace",
+        "collar_necklace",
+        "brooch",
+        "watch",
+        "glasses",
+        "gloves",
+        "tights",
+        "socks",
+        "swimsuit",
+        "lingerie",
+        "not_applicable",
         "unknown"
        ]
       }
@@ -1136,6 +2299,23 @@
            "anorak",
            "bomber",
            "poncho",
+           "beanie",
+           "hat",
+           "beret",
+           "cap",
+           "belt",
+           "earrings",
+           "bracelet",
+           "necklace",
+           "collar_necklace",
+           "brooch",
+           "watch",
+           "glasses",
+           "gloves",
+           "tights",
+           "socks",
+           "swimsuit",
+           "lingerie",
            "unknown"
           ]
          }
@@ -1230,6 +2410,126 @@
       }
      }
     },
+    "fabric_kind": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "knit",
+        "woven",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "texture": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "denim",
+        "knit_fine",
+        "knit_chunky",
+        "leather",
+        "patent",
+        "satin",
+        "silk_shine",
+        "smooth_matte",
+        "smooth_shine",
+        "tweed_boucle",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "elastane_pct": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value",
+      "unit"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
+      },
+      "unit": {
+       "enum": [
+        "percent",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "wool_pct": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value",
+      "unit"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
+      },
+      "unit": {
+       "enum": [
+        "percent",
+        "unknown"
+       ]
+      }
+     }
+    },
     "cut": {
      "type": "object",
      "additionalProperties": false,
@@ -1299,6 +2599,65 @@
       }
      }
     },
+    "length_cm": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value",
+      "unit"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
+      },
+      "unit": {
+       "enum": [
+        "cm",
+        "mm",
+        "m",
+        "in",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "size_fit": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "runs_small",
+        "true_to_size",
+        "runs_large",
+        "unknown"
+       ]
+      }
+     }
+    },
     "sleeve": {
      "type": "object",
      "additionalProperties": false,
@@ -1320,6 +2679,28 @@
         "elbow",
         "three_quarter",
         "long",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "sleeve_cut": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "set_in",
+        "raglan",
         "not_applicable",
         "unknown"
        ]
@@ -1353,6 +2734,236 @@
         "stand_collar",
         "shirt_collar",
         "cowl",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "collar": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "lapel",
+        "shawl",
+        "turn_down",
+        "none",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "closure": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "zip",
+        "buttons",
+        "none",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "breasted": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "single_breasted",
+        "double_breasted",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "belt": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "yes",
+        "no",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "elastic_waist": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "yes",
+        "no",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "hood": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "yes",
+        "no",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "fur_trim": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "yes",
+        "no",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "pile": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "teddy",
+        "shaggy",
+        "boucle",
+        "long_pile",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "quilted": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "yes",
+        "no",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "filling": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "down",
+        "sintepon",
+        "hollofiber",
+        "isosoft",
+        "wadding",
+        "thinsulate",
+        "none",
         "not_applicable",
         "unknown"
        ]
@@ -1411,7 +3022,8 @@
      "required": [
       "present",
       "shape",
-      "height"
+      "height",
+      "height_cm"
      ],
      "properties": {
       "present": {
@@ -1483,6 +3095,211 @@
          ]
         }
        }
+      },
+      "height_cm": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "anyOf": [
+          {
+           "type": "number"
+          },
+          {
+           "enum": [
+            "not_applicable",
+            "unknown"
+           ]
+          }
+         ]
+        },
+        "unit": {
+         "enum": [
+          "cm",
+          "mm",
+          "m",
+          "in",
+          "unknown"
+         ]
+        }
+       }
+      }
+     }
+    },
+    "sole": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "smooth",
+        "leather",
+        "lug",
+        "polyurethane",
+        "eva",
+        "tpr",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "shoe_width": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "narrow",
+        "medium",
+        "wide",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "sole_attachment": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "stitched",
+        "glued",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "bag_size": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "small",
+        "medium",
+        "large",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "strap_cm": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value",
+      "unit"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
+      },
+      "unit": {
+       "enum": [
+        "cm",
+        "mm",
+        "m",
+        "in",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "chain_cm": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value",
+      "unit"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
+      },
+      "unit": {
+       "enum": [
+        "cm",
+        "mm",
+        "m",
+        "in",
+        "unknown"
+       ]
       }
      }
     },

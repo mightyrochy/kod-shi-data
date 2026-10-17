@@ -48,11 +48,14 @@ from outfit import ТЕМП_МАПА          # межа «шар зайвий»
 
 
 # ═══════════ 1. СЛОВНИКИ ПОЛІВ ═══════════════════════════════════════════════════
-# СЛОТИ — з таблиці приобличчевих ваг (`колір_річ.SLOT_NEAR_FALLBACK`), а не другим
-# переліком: річ з фото судиться «біля обличчя чи ні» саме цією таблицею, тож слот, якого
-# там нема, був би слотом без ваги. Колготи, шкарпетки й годинник — елементи ваги, не
-# слоти пулу (`міст_пакет.УСІ_СЛОТИ` їх не знає), тож фото такої речі стає «без входу».
-СЛОТИ_РЕЧІ = tuple(с for с in SLOT_NEAR_FALLBACK if с not in ("колготи", "шкарпетки", "годинник"))
+# СЛОТИ — таблиця слотів внутрішньої мови (`внутрішня_мова.ТАБЛИЦЯ["slot"]`), не таблиця ваг (рядок 3911).
+# Доти слоти її речі брались із приобличчевих ваг (`колір_річ.SLOT_NEAR_FALLBACK`) без колгот, шкарпеток і
+# годинника — 17 слотів: рукавичок, окулярів, купальника, білизни, аксесуара там нема, і «мої рукавички»
+# (`own_items` зі `slot: gloves`) у паспорт не лягали — `мовний_шар._її_речі` пропускав слот мовчки. Слоти
+# внутрішньої мови покривають усі елементи одягу (аудит/ПРОДУКТ.md «Слоти», п.17): 25. Вага біля обличчя
+# слота без ваги — «не біля обличчя» (`біля_обличчя`), а її закріплена річ стає в пул своїм слотом
+# (`пул_із_закріпленими`) і в кожен образ (`закріпити_в_образі`) так само, як річ слота пулу.
+СЛОТИ_РЕЧІ = tuple(_ВМ.ТАБЛИЦЯ["slot"].values())
 # Слова кольору — ті самі, якими жнива v2 підписують вимір: лексикон без слів поля
 # кольору крамниць (`verify.ВІКНА_КРАМНИЦЬ`, рядок 137 — вони свідки крамниці, не виміру).
 КОЛЬОРИ = tuple(с for с in V.ЛЕКСИКОН if с not in V.ВІКНА_КРАМНИЦЬ)
@@ -63,6 +66,18 @@ from outfit import ТЕМП_МАПА          # межа «шар зайвий»
 # Матеріал — лише коли фактуру ВИДНО (жнива v2: «матеріал лише коли фактуру видно»);
 # еластан/стрейч/гіпюр/ажур — не те, що видно з фото, а склад чи техніка.
 МАТЕРІАЛИ = tuple(sorted(set(V.ВОЛОКНА.values()) - {"еластан", "стрейч", "гіпюр", "ажур"}))
+# Код тканини (`внутрішня_мова.ТАБЛИЦЯ["fabric"]`) → (ключ текстури шкали §6.4 або None, блиск 0–3): ті самі
+# значення, що `verify.СЛОВО_ТКАНИНИ` дає слову крамниці; відсутній код — невідоме, а не вигадане.
+ТЕКСТУРА_БЛИСК_ТКАНИНИ = {
+    "satin": ("satin", 2), "atlas": ("satin", 2), "silk": ("silk-shine", 1),
+    "tweed": ("tweed-boucle", 0), "boucle": ("tweed-boucle", 0), "denim": ("denim", 0),
+    "leather": ("leather", 1), "faux_leather": ("leather", 1), "suede": ("leather", 0),
+    "nubuck": ("leather", 0), "patent_leather": ("patent", 2),
+    "velvet": (None, 1), "velour": (None, 1),
+    # рядок 5711: вовна, бавовна й віскоза — власні коди шкали (`суд_річ.ТКАНИНА_ФОРМАЛЬНІСТЬ`, широкі смуги);
+    # вовна й бавовна матові, віскоза буває і матовим крепом, і з люстром — її блиску код тканини не дає (None)
+    "wool": ("wool", 0), "cotton": ("cotton", 0), "viscose": ("viscose", None),
+}
 ЧИЯ = ("моя", "хочу купити", "невідомо")
 # Поля, які ставить і міняє ЛИШЕ КОД: модель їх не бачить у схемі й не має права
 # переписати відповіддю (її `речі_з_фото` зливається з паспортом досі поключово).
@@ -441,51 +456,76 @@ def речі_з_json(сирі, фото=None, досі=None, словами=None
 
 
 def _фото_речей():
-    """Оголошення задачі «речі з фото» (ліниво — `збирач_промптів` тягне `протокол`)."""
+    """Оголошення задачі «речі з фото» — одне на розмову й «Оціни мій образ» (ліниво — `збирач_промптів` тягне
+    `протокол`).
+
+    ОДНЕ ОГОЛОШЕННЯ (рядок 6221, п.12, п.17). Доти задач було дві — ця й `оцінка_образу.РЕЧІ` (скелет 0,97, рамка 0,95),
+    і виправлення вад ішли лише в оцінку: підпис «Photo ф1:» перед кадром (5982), форма слота, «пара взуття — одна
+    річ», «фото самого взуття без верху й низу» (5294). У розмові ж15 ті самі вади відтворились: 11 викликів, 35 речей —
+    слот поза кодами 10 (`top_garment`), та сама пара взуття двома записами в 5 викликах, спідниця ф1 записана на ф2.
+    Тепер правила й скелет спільні, а що відрізняє виклики, стоїть полем входу: оцінка шле «outfit» (тоді «in_outfit»
+    має сенс), розмова — «her_items_in_words» (тоді «owner» — з її слів); рядок «як» поля йде лише з полем."""
     global ФОТО_РЕЧЕЙ
     if ФОТО_РЕЧЕЙ is None:
         import збирач_промптів as _ЗП
         ФОТО_РЕЧЕЙ = _ЗП.Оголошення(
             задача="речі_з_фото",
-            роль="You see photos of clothing items that a woman sent. Describe each item on them.",
+            роль="You are a stylist. You see photos a woman sent — of her clothing items, or of an outfit she has put "
+                 "together herself — and you list the items on them.",
             вхід=(
-                _ЗП.Поле("photos", "her photos in the order they are attached: id, width, height", треба=True),
+                _ЗП.Поле("photos", "her photos: id, width, height; each image is attached after the label "
+                                   "«" + _ЗП.ПІДПИС_КАДРУ_EN % "<id>" + ":»", треба=True),
+                # «Оціни мій образ»: вона може показати поруч річ, яку думає вдягти НАТОМІСТЬ (`оцінка_образу._в_образі`)
+                _ЗП.Поле("outfit", "true: the photos show one outfit she has put together herself",
+                         як="\"in_outfit\" is true for items worn together in the outfit; false for an item shown as "
+                            "an alternative to one of them; \"unknown\" when the photo does not show which of them she "
+                            "wears (two pairs side by side, nothing on her)"),
+                # Р-1 (27.09.2026): на фото її речі стоять і чужі — знімок крамниці на моделі, вбрання, у якому
+                # сфотографовано її спідницю. Свідком «річ її» для коду є саме `owner` (`чи_її`), тож модель має право
+                # сказати «не знаю, чия»; без її слів «mine» не читається зовсім (рядок 1882, `речі_з_відповіді_фото`).
                 _ЗП.Поле("her_items_in_words", "her own items as she described them in words",
-                         як="an item on a photo that is one of those with status \"has\" has owner \"mine\""),
-                _ЗП.Поле("codes", "allowed codes of the item fields", треба=True),
+                         як="an item on a photo that is one of those with status \"has\" has owner \"mine\"; any other "
+                            "item on her photos — a shop photo on a model, the outfit she wore for the shot — is not "
+                            "hers: its owner is \"unknown\""),
+                _ЗП.Поле("codes", "allowed codes for item fields", треба=True),
                 # повтор після нечитаної відповіді (як у виклику 0 — один): причину називає розбір
                 _ЗП.Поле("format_error", "why your previous answer could not be read",
                          як="answer again, following \"answer_schema\""),
             ),
+            # Причини рядків — у шапці `оцінка_образу` (розділ 2, «ЧОМУ ЦІ РЯДКИ»): там вони виміряні.
             правила=(
-                "One object per item on the photos — garment, shoes, bag, accessory, jewelry; an item seen "
-                "on several photos is listed once, with the photo where it is seen best.",
-                "\"frame\" is the item's box on its photo in thousandths of the width and height (0–1000), "
-                "tight around the item itself, without background, skin or other items; " + РАМКА_НА_ОКО + ".",
-                "Field values are codes from \"codes\"; what the photo does not show is null.",
-                # Р-1 (27.09.2026): на фото її речі стоять і чужі — знімок крамниці на моделі,
-                # вбрання, у якому сфотографовано її спідницю. Свідком «річ її» для коду є
-                # саме `owner` (`чи_її`), тож модель має право сказати «не знаю, чия».
-                "A photo of one of her items often shows other items too — a shop photo on a "
-                "model, the outfit she wore for the shot: those are not hers, their owner is "
-                "\"unknown\". Only an item her words name is \"mine\".",
+                "List every garment, pair of shoes, bag, accessory and piece of jewelry visible on her photos: one "
+                "object per item. A garment under an open jacket is its own item, and so is each pair of shoes.",
+                "Each photo is a separate picture: \"photo\" is the id from the label right before the image where the "
+                "item itself is drawn. An item seen on several photos is listed once, with the photo where it is seen best.",
+                "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a "
+                "toe, boots also a shaft rising from them; a top has a neckline, shoulders and sleeves or straps; "
+                "a jacket, blazer or coat worn open over another garment is \"outerwear\", the garment under it "
+                "\"top\"; trousers have two legs; a skirt hangs from the waist in one piece.",
+                "A photo of shoes alone has no top or bottom: boot shafts are not trouser legs.",
+                "\"kind\" is the item's exact kind from \"codes.item_type\" within its \"slot\", read from the same shape.",
+                "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
+                "around the item itself, without background, skin or other items; " + РАМКА_НА_ОКО + ".",
+                "Field values are only codes from \"codes\"; what the photo does not show is null.",
+                "Start the answer with the JSON object itself: no description or reasoning before it.",
             ),
             вихід="PHOTO_ITEMS",
             скелет={"items": [{
                 "photo": "<photo id>",
                 "name": "<short English name, as a shop would call the item>",
                 "slot": "<code from codes.slot>",
-                "kind": "<code from codes.item_type: the exact kind of the item, or null>",
+                "kind": "<code from codes.item_type: the exact kind of the item within its slot, or null>",
                 "color": "<code from codes.color: the main color of the item itself>",
                 "fabric": "<code from codes.fabric when the texture is visible, else null>",
                 "cut": "<code from codes.cut or null>",
                 "length": "<code from codes.length or null>",
                 "pattern": "<code from codes.pattern>",
                 "formality": "<code from codes.formality: the occasion step the item suits — " + _БР.ЩАБЛІ_EN + ">",
+                "in_outfit": "<true | false | unknown; null without \"outfit\">",
                 "owner": "<code from codes.owner>",
                 "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
             }]},
-            межі=("лише_вхід",),
+            межі=("лише_вхід", "невідомо"),
             мова_промпту="en",
         )
     return ФОТО_РЕЧЕЙ
@@ -504,6 +544,12 @@ def промпт_фото(фото, власні=None, помилка=None):
     return _json.dumps(_ЗП.зібрати(_фото_речей(), дані), ensure_ascii=False)
 
 
+def підписи_фото(фото):
+    """{ід фото: підпис кадру} — текст перед кожним зображенням виклику (`збирач_промптів.ПІДПИС_КАДРУ_EN`)."""
+    import збирач_промптів as _ЗП
+    return {str(х["ід"]): _ЗП.ПІДПИС_КАДРУ_EN % х["ід"] for х in (фото or []) if isinstance(х, dict) and х.get("ід")}
+
+
 _ПОЛЯ_ФОТО = (("slot", "слот"), ("color", "колір"), ("fabric", "матеріал"), ("cut", "крій"),
               ("length", "довжина"), ("pattern", "принт"))
 
@@ -519,7 +565,7 @@ def речі_з_відповіді_фото(відповідь, фото, дос
     словами несуть слот (`мовний_шар._її_речі`: «блуза» → верх), «mine» моделі тримається лише
     на речі, що стоїть на місці названої (`займають_одне`): модель, що бачила «моя блуза»,
     не робить її штанів і туфель з того самого кадру. Її речі є, а слота не дала жодна
-    (порожні `названі`: річ без слота й типу, слот поза речами образу, усі — «відмова») —
+    (порожні `названі`: річ без слота й типу, усі — «відмова») —
     доказу нема, «mine» теж «невідомо» (автоогляд Codex на #676: доти «mine» лишалось і
     закріплювало кожну річ кадру).
 
@@ -1054,11 +1100,9 @@ def поправка_тла(rgb, m, w, h, стеля=1.25):
     рамка = [i for i in _рамка_кадру(w, h) if not m[i]]
     if len(рамка) < 30:
         return rgb, None
-    тло = [max(1.0, _медіана([rgb[i][к] for i in рамка])) for к in range(3)]
-    L, C_, _h = cs.lch(cs.to_lab(tuple(int(x) for x in тло)))
-    if L < 80 or C_ >= 8:
+    п = _множники_тла([_медіана([rgb[i][к] for i in рамка]) for к in range(3)], стеля)
+    if not п:
         return rgb, None
-    п = [min(стеля, max(1.0, 250.0 / x)) for x in тло]
     return ([tuple(min(255, int(round(p[к] * п[к]))) for к in range(3)) for p in rgb],
             round(sum(п) / 3.0, 3))
 
@@ -1169,7 +1213,7 @@ def виміряти(пікселі, слово_моделі=None, шкіра_he
     шкіра_lab = cs.hx(шкіра_hex) if шкіра_hex else None
     рамка_виміру = "у рамці, яку назвала стилістка" if рамка else "увесь кадр (рамки не названо)"
     m, частка, чому, гілка = _маска(rgb, w, h, шкіра_lab, пікселі.get("ядро"))
-    в = _вимір_плями(rgb, w, h, m, частка, чому, слово_моделі, рамка_виміру)
+    в = dict(_вимір_плями(rgb, w, h, m, частка, чому, слово_моделі, рамка_виміру), гілка=гілка)
     # СЛОВО СТИЛІСТКИ — СВІДОК ВИБОРУ ТЛА (рядок 4684). Рамка всередині речі (гілка 3690: поле з частини боків кольору
     # середини — річ, тло лише від решти) і рамка, зсунута з речі на тло (середина й поле з тих самих боків — тло, а
     # «решта» — сама річ), дають ті самі пікселі; вирішує слово стилістки: коли гілка дала колір поза ним, а тло від країв
@@ -1184,8 +1228,124 @@ def виміряти(пікселі, слово_моделі=None, шкіра_he
               if _у_ядрі(m0, w, h, пікселі["ядро"]) >= ПЛЯМА_В_ЯДРІ else {})
         if в0.get("lab") and not в0.get("спір"):
             в0["чому"] += "; здогад «рамка всередині речі» (%s) дав колір поза словом стилістки — тло від країв з полем" % чому
-            return в0
+            return dict(в0, гілка=ГІЛКИ_ТЛА[0])
     return в
+
+
+# Код гілки виміру ДОТИКУ (рядок 5741, 5810): колір дописаної речі — те, чого вона торкнулась, а не все вікно.
+ГІЛКА_ДОТИКУ = "touch"
+ПРИЧИНА_ДОТИКУ_В_ТЛО = "touch_on_background"   # дотик у тло кадру: виміру нема, кружечок лишається
+ПРИЧИНА_ДОТИКУ_В_ШКІРУ = "touch_on_skin"       # дотик у її шкіру: виміру нема, кружечок лишається
+ДОТИК_ΔE = 20.0           # плями речі навколо дотику: піксель ближче до кольору дотику (ΔE76 у Lab) — та сама річ (складки, тінь)
+ДОТИК_ШКІРА_ΔE = 5.0      # колір дотику ближче до її шкіри — шкіра; вужче за ШКІРА_ΔE: вершкова чи бежева річ (ΔE ≈ 9) — річ
+ДОТИК_ПАТЧ = 0.10         # колір дотику — медіана квадрата з такою півстороною від меншої сторони вікна (≥ 1 px)
+ТЛО_ДОТИКУ_RGB = 28.0     # = ПОРІГ_ТЛА: піксель фото ближче до тла кадру, а пляма сягає краю фото — це тло
+ТЛО_НАЛЕЖИТЬ = 0.85       # пляма тла вкриває більшу частку фото — кадр цілком річ (крупний план), тла в ньому не знаємо
+
+
+def _множники_тла(тло, стеля=1.25):
+    """Канали, що роблять біле тло білим (зі стелею); None — тло не біле (світле L ≥ 80 і безбарвне C < 8)."""
+    т = [max(1.0, float(x)) for x in тло]
+    L, C_, _h = cs.lch(cs.to_lab(tuple(int(x) for x in т)))
+    if L < 80 or C_ >= 8:
+        return None
+    return [min(стеля, max(1.0, 250.0 / x)) for x in т]
+
+
+def _тло_від_країв(rgb, w, h, тло):
+    """Маска пікселів кадру, схожих на тло (RGB-відстань < ТЛО_ДОТИКУ_RGB) і зв'язаних із краєм кадру."""
+    схоже = [_math.dist(p, тло) < ТЛО_ДОТИКУ_RGB for p in rgb]
+    вих, стос = [False] * (w * h), []
+    for i in range(w * h):
+        y, x = divmod(i, w)
+        if схоже[i] and (x in (0, w - 1) or y in (0, h - 1)):
+            вих[i] = True
+            стос.append(i)
+    while стос:
+        y, x = divmod(стос.pop(), w)
+        for yy in range(max(0, y - 1), min(h, y + 2)):
+            for xx in range(max(0, x - 1), min(w, x + 2)):
+                j = yy * w + xx
+                if схоже[j] and not вих[j]:
+                    вих[j] = True
+                    стос.append(j)
+    return вих
+
+
+def _тло_під_дотиком(кадр):
+    """(під_дотиком, тло_rgb, множники) за зменшеним усім фото `кадр` {дані, ширина, висота, x, y}: чи дотик у тлі —
+    пляма кольору країв фото, що сягає краю й не займає майже весь кадр. Без кадру — (False, None, None)."""
+    if not кадр:
+        return False, None, None
+    try:
+        w, h, rgb = розпакувати(кадр)
+        к = max(2, min(w, h) // 40)
+        тло = tuple(_медіана([rgb[i][c] for б in "лвпн" for i in _смуга_боку(w, h, б, {"л": к, "в": к, "п": к, "н": к})])
+                    for c in range(3))
+        м = _тло_від_країв(rgb, w, h, тло)
+        x, y = min(w - 1, max(0, int(кадр["x"] * w))), min(h - 1, max(0, int(кадр["y"] * h)))
+    except (KeyError, TypeError, ValueError):
+        return False, None, None
+    return (м[y * w + x] and sum(м) / float(w * h) < ТЛО_НАЛЕЖИТЬ), тло, _множники_тла(тло)
+
+
+def _пляма_дотику(lab, w, h, старт, центр):
+    """8-зв'язна пляма пікселів, чий Lab ближче ДОТИК_ΔE до `центр`, що містить піксель `старт`."""
+    близько = [_math.dist(l, центр) <= ДОТИК_ΔE for l in lab]
+    вих, стос = [False] * (w * h), [старт]
+    вих[старт] = True
+    while стос:
+        y, x = divmod(стос.pop(), w)
+        for yy in range(max(0, y - 1), min(h, y + 2)):
+            for xx in range(max(0, x - 1), min(w, x + 2)):
+                j = yy * w + xx
+                if близько[j] and not вих[j]:
+                    вих[j] = True
+                    стос.append(j)
+    return вих
+
+
+def виміряти_дотик(пікселі, слово_моделі=None, шкіра_hex=None):
+    """Вікно навколо її дотику по фото → вимір кольору тим самим виглядом, що `виміряти`.
+
+    Міряється річ під пальцем, не все вікно: пляма пікселів кольору дотику (ΔE ≤ `ДОТИК_ΔE`), зв'язана з ним, без
+    шкіри. Дотик у тло кадру (є `пікселі["фото"]` — зменшене ціле фото й місце дотику на ньому) чи в її шкіру виміру
+    не дає: `lab: None` і причина кодом (`ПРИЧИНА_ДОТИКУ_В_ТЛО`/`_В_ШКІРУ`), кружечок лишається їй — її слово
+    сильніше за вимір (`оцінка_образу._слово_сильніше`). Без `фото` тло не відрізняють (колір дотику міряється).
+    `пікселі["дотик"]` = {x, y} — місце дотику у вікні, частками (за замовчуванням — центр)."""
+    w, h, rgb = розпакувати(пікселі)
+    шкіра_lab = cs.hx(шкіра_hex) if шкіра_hex else None
+    д = пікселі.get("дотик") or {}
+    tx, ty = min(w - 1, max(0, int(float(д.get("x", 0.5)) * w))), min(h - 1, max(0, int(float(д.get("y", 0.5)) * h)))
+    рамка = "вікно її дотику"
+    в_тлі, тло, множники = _тло_під_дотиком(пікселі.get("фото"))
+    if в_тлі:
+        hx_тла = "#%02x%02x%02x" % tuple(int(x) for x in тло)
+        return dict(lab=None, маска=0.0, рамка_виміру=рамка, причина=ПРИЧИНА_ДОТИКУ_В_ТЛО, гілка=ГІЛКА_ДОТИКУ,
+                    чому="дотик у тло кадру (колір країв фото %s)" % hx_тла, ненадійний=dict(hex=hx_тла))
+    if множники:
+        rgb = [tuple(min(255, int(round(p[c] * множники[c]))) for c in range(3)) for p in rgb]
+    lab = [cs.to_lab(p) for p in rgb]
+    пів = max(1, int(min(w, h) * ДОТИК_ПАТЧ))
+    патч = [lab[y * w + x] for y in range(max(0, ty - пів), min(h, ty + пів + 1))
+            for x in range(max(0, tx - пів), min(w, tx + пів + 1))]
+    центр = tuple(_медіана([l[c] for l in патч]) for c in range(3))
+    if шкіра_lab is not None and _math.dist(центр, шкіра_lab) < ДОТИК_ШКІРА_ΔE:
+        return dict(lab=None, маска=0.0, рамка_виміру=рамка, причина=ПРИЧИНА_ДОТИКУ_В_ШКІРУ, гілка=ГІЛКА_ДОТИКУ,
+                    чому="дотик у її шкіру")
+    m = _пляма_дотику(lab, w, h, ty * w + tx, центр)
+    чому = "пляма кольору дотику у вікні її дотику по фото"
+    if шкіра_lab is not None:
+        шк = [i for i in range(w * h) if m[i] and _math.dist(lab[i], шкіра_lab) < ШКІРА_ΔE]
+        if шк and len(шк) <= sum(m) / 2:
+            for i in шк:
+                m[i] = False
+            чому += "; шкіру відрізано за твоїм кольором шкіри (%d %% плями)" % round(100 * len(шк) / (len(шк) + sum(m)))
+    if множники:
+        чому += "; тло біле, експозиція ×%.2f" % (sum(множники) / 3.0)
+    частка = sum(m) / float(w * h)
+    в = _вимір_плями(rgb, w, h, m, частка, чому, слово_моделі, рамка, поправка=False)
+    return dict(в, гілка=ГІЛКА_ДОТИКУ, поправка_тла=round(sum(множники) / 3.0, 3) if множники else None)
 
 
 ПЛЯМА_В_ЯДРІ = 0.5       # пляма тла від країв — річ, лише коли щонайменше половина її пікселів лежить у рамці моделі
@@ -1198,12 +1358,13 @@ def _у_ядрі(m, w, h, ядро):
     return sum(в) / float(len(в)) if в else 0.0
 
 
-def _вимір_плями(rgb, w, h, m, частка, чому, слово_моделі, рамка_виміру):
-    """Пляма `m` кадру → вимір `виміряти` (кластери, основний, спір зі словом) або {lab: None, чому}."""
+def _вимір_плями(rgb, w, h, m, частка, чому, слово_моделі, рамка_виміру, поправка=True):
+    """Пляма `m` кадру → вимір `виміряти` (кластери, основний, спір зі словом) або {lab: None, чому}.
+    `поправка=False` — експозицію вже виправлено за тлом усього фото (`виміряти_дотик`)."""
     if частка < МІН_ЧАСТКА:
         return dict(lab=None, маска=частка, рамка_виміру=рамка_виміру,
                     чому="річ не відділилась від тла (%s; пляма %.1f %% кадру)" % (чому, частка * 100))
-    rgb, поправка = поправка_тла(rgb, m, w, h)
+    rgb, поправка = поправка_тла(rgb, m, w, h) if поправка else (rgb, None)
     labs = [cs.to_lab(p) for p, так in zip(rgb, m) if так]
     кл = кластери(labs)
     основний, другий, спір = звести(кл, слово_моделі)
@@ -1711,7 +1872,7 @@ def запис_каталогу(річ):
     if lab:
         з.update(lab=tuple(lab), hex=(вим.get("hex") or cs.hex_з_lab(tuple(lab))),
                  колір=(вим.get("слово") or річ.get("колір")), джерело_кольору="фото жінки")
-    elif річ.get("колір") in V.ЛЕКСИКОН and not річ.get("фото"):
+    elif річ.get("колір") in V.ЛЕКСИКОН and (not річ.get("фото") or річ.get("колір_її_слово")):
         # РІЧ СЛОВАМИ (рядок 157): колір — ЇЇ СЛОВО, і в пул він іде так само, як слово
         # крамниці в каталозі: центр вікна + `колір_не_вимір`. Без цього правила образу, що
         # порівнюють кольори речей, її річ мовчки пропускали (lab нема — речі для них нема);
@@ -1720,14 +1881,29 @@ def запис_каталогу(річ):
         import palettes as _ПЛ
         вікно = V.ЛЕКСИКОН[річ["колір"]]
         з.update(lab=tuple(_ПЛ._центр(вікно)), колір=річ["колір"], джерело_кольору="її слово",
-                 колір_не_вимір=_нвк(вікно, річ["колір"], "her_word", " (фото нема: так вона описала річ)"))
+                 колір_не_вимір=_нвк(вікно, річ["колір"], "her_word",
+                                    " (так вона описала річ: " + ("кадр не дав виміру в межах її слова" if річ.get("фото")
+                                                                   else "фото нема") + ")"))
         з["hex"] = cs.hex_з_lab(з["lab"])
     elif річ.get("колір"):
         з.update(колір=річ["колір"], джерело_кольору="слово стилістки")
     if річ.get("колір"): з["колір_стилістки"] = річ["колір"]   # свідок поруч із виміром (рядок схеми)
     if річ.get("крій"): з["крій"] = річ["крій"]
     if річ.get("довжина"): з["довжина_рівень"] = _ДОВЖИНА_РІВЕНЬ.get(річ["довжина"], річ["довжина"])
-    if річ.get("матеріал"): з.update(матеріал=річ["матеріал"], волокно=річ["матеріал"])
+    if річ.get("матеріал"):
+        з.update(матеріал=річ["матеріал"], волокно=річ["матеріал"])
+        # ТЕКСТУРА Й БЛИСК — З КОДУ ТКАНИНИ (рядки 5297, 5791, п.12): `матеріал` — уже слово моделі зі
+        # списку, тож код слова не читає: слово → код тканини (таблиця внутрішньої мови) → пряма таблиця
+        # `ТЕКСТУРА_БЛИСК_ТКАНИНИ`. Тканина, якої шкала не знає (льон), лишає поля порожніми; блиск None — так само.
+        _кт = _ВМ.код("fabric", річ["матеріал"])
+        if _кт: з["тканина_код"] = _кт
+        _тб = ТЕКСТУРА_БЛИСК_ТКАНИНИ.get(_кт)
+        if _тб:
+            if _тб[0]: з["текстура"] = _тб[0]
+            if _тб[1] is not None: з["блиск"] = _тб[1]
+    # ТИП — З ВИДУ (`kind` відповіді `РЕЧІ`): його читає шар формальності (`формальність.інтервал_типу`);
+    # без виду типу нема, і шар мовчить, а не вгадує його з назви.
+    if річ.get("вид") in _ВМ.ТАБЛИЦЯ["item_type"]: з["тип"] = _ВМ.ключ("item_type", річ["вид"])
     if річ.get("принт"): з["візерунок"] = ("solid" if річ["принт"] == "однотонний" else річ["принт"])
     if річ.get("ошатність") is not None: з["формальність_фото"] = річ["ошатність"]
     return з

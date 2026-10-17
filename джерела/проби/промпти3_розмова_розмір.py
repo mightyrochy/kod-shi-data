@@ -1,0 +1,40 @@
+"""ПРОМПТИ-3 (рядки 6186–6188, 6192): розмір першого ходу «Новорічна вечірка в ресторані, надворі мороз» і фрази
+живих сцен у промпті розмови. Дані виклику — із записаного ходу ЖИВОЇ ПАЧКИ-15 (`claude/zhyvi-pachka-15`, ж2 seed3_01),
+стала частина — з цього `мовний_шар` (на `main` — ДО, на гілці — ПІСЛЯ): та сама вона, інший промпт. Фраза сцени —
+слова живої сцени (`аудит/проби/живі_сцени.txt`) чи їхній переклад у промпті: живий прогін такої сцени міряє заучену
+відповідь, а не тлумачення (рядок 6188). Кращим: правил менше, фраз сцен 0, «ти» — лише в правилі форми й межі.
+Запуск: cd джерела && python3 проби/промпти3_розмова_розмір.py"""
+import json, re, subprocess, sys
+sys.path.insert(0, "."); import мовний_шар as М
+Г = "origin/claude/zhyvi-pachka-15"
+Ф = "аудит/живі_пачка_15/12_ж2_новорічна_мороз/VIDPOVIDI/seed3_01_мовний_шар_хід_розмови.txt"
+subprocess.run(["git", "fetch", "-q", "origin", Г.split("/", 1)[1]])
+записано = subprocess.run(["git", "show", "%s:../%s" % (Г, Ф)], capture_output=True, text=True).stdout
+п = json.loads(записано.split("\n", 1)[1].split("\n\n── ВІДПОВІДЬ (")[0])
+дані = {к: в for к, в in п.items() if к not in ("task", "now")}
+новий = М._ЗП_Р.зібрати(М.РОЗМОВА, дані, мова_тексту="Ukrainian")
+т = json.dumps(новий["task"], ensure_ascii=False)
+print("записаний промпт: %d симв. · цей код: промпт %d, rules %d (%d правил), codes %d, answer_schema %d" % (
+    len(json.dumps(п, ensure_ascii=False)), len(json.dumps(новий, ensure_ascii=False)),
+    sum(map(len, М.РОЗМОВА_ПРАВИЛА)), len(М.РОЗМОВА_ПРАВИЛА), sum(map(len, новий["task"]["codes"])),
+    len(json.dumps(новий["task"]["answer_schema"], ensure_ascii=False))))
+СЦЕНИ = {  # фраза в промпті → сцени, на які вона відповідає
+    r"yoga|a run, a workout": "ж2_спорт_коментар, ж2_спорт_принт, ж2_йога_зранку", r"walking to work": "ж3/ж8_зима, ж7",
+    r"new year": "ж2_новорічна_мороз, ж2/ж7_корпоратив", r"christmas": "ж2_новорічна_мороз (сусід)",
+    r"coffee with": "ж1/ж8_побачення_день, ж2_спорт", r"сховати живіт": "ж4_клуб_приховати, ж4_клуб_дивились",
+    r"без принта": "ж2_спорт_принт", r"«взуття —|«піду в": "ж1_робота_дощ_замша",
+    r"snow or rain said together": "ж3/ж8_зима", r"party in a club": "ж4_клуб_дивились",
+    r"singing, dancing": "ж1_вокал", r"a friend's, a relative's": "ж1/ж4/ж8_весілля",
+    r"rain all day|it may rain": "ж5_прогулянка_дощ, ж1/ж7_можливо_дощ", r"\(august|a beach": "ж1_весілля, ж5_пляж",
+    r"rock club|son's graduation": "ж1_концерт_рок, ж6_випускний", r"no questions to her|elders": "ж7_корпоратив_директор, ж1_ювілей",
+    r"to be looked at": "ж4_клуб_дивились", r"on saturday": "ж3_свято_др, ж1_ювілей", r"«ввечері»|«зранку»": "ввечері/зранку сцен"}
+усього = 0
+for в, сц in СЦЕНИ.items():
+    н = len(re.findall(в, т, re.I)); усього += н
+    if н: print("  %d× %-34s ← %s" % (н, в, сц))
+print("фраз сцен у task: %d · «ти» у task: %d" % (усього, т.count("«ти»")))
+R8 = next(р for р in М.РОЗМОВА_ПРАВИЛА if р.startswith('"formality" is in'))   # рядок 6260: роди R8 — окремо
+РОДИ_R8 = {r"corporate party": "ж2/ж7_корпоратив", r"anniversary": "ж1/ж7_ювілей", r"graduation": "ж6_випускний",
+           r"mother of the bride": "ж6 «я мама»", r"a bank|a court|a notary": "ж3/ж5_співбесіда в банку",
+           r"4–5 by day|\(5–6\)": "ж1/ж8_побачення_день, ж2/ж4/ж6/ж9_побачення_вечір"}
+print("фраз сцен у R8 (formality): %d %s" % (sum(len(re.findall(в, R8)) for в in РОДИ_R8), [сц for в, сц in РОДИ_R8.items() if re.search(в, R8)] or ""))

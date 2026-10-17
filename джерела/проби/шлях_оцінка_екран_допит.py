@@ -12,11 +12,11 @@ exec(open('проби/шлях_оцінка_екран_образ.py', encoding=
 питання = {"free_text": "[фото ф1, ф2] чи поєднуються ці кольори між собою?", "lang": "uk"}
 п = json.loads(О.промпт_оцінки(с, питання))
 print("теми поради в промпті оцінки: %d (поля advice/topics у вході й схемі: %s)" % (
-      sum(1 for к in п if "advice" in к), [к for к in п["task"]["answer_schema"] if "advice" in к] or "нема"))
+      sum(1 for к in п if "advice" in к), [к for к in п["answer_schema"] if "advice" in к] or "нема"))
 д = json.loads(О.промпт_допиту(с, {"free_text": "а якщо з чорними ботильйонами?", "lang": "uk"},
                                  {"answer": "Mostly yes.", "works": ["Khaki suits you."]}))
 print("допит: поля відповіді %s; «previous» у вході: %s; суд і фото ті самі (check %d знахідок)" % (
-      list(д["task"]["answer_schema"]), "previous" in д, len(д["check"].get("findings") or [])))
+      list(д["answer_schema"]), "previous" in д.get("now", {}), len(д["check"].get("findings") or [])))
 н = п["unknown"]
 print("«без входу» у вході моделі: %d записів (%s…); у звіті повним переліком: %d" % (
       len(н), ", ".join(str(х.get("input") or "+".join(х.get("rule") or [])) for х in н[:4]), len(с["без_входу"])))

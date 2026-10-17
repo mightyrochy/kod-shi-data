@@ -106,6 +106,13 @@ def невідомо(v, коди=()):
                            "single_item": "одна_річ", "refusal": "вето", "no_shoes": "нема_взуття",
                            "no_bag": "нема_сумки", "no_outer_layer": "нема_верхнього_шару",
                            "incomplete": "неповний"},
+    # ЧОГО НЕМА НА ФОТО (рядок 5284): предмет `object_absent:<предмет>` картки оцінки — код для мовної моделі,
+    # яка складає рядок «на фото нема …» (слова не пише код, п.12). Лише речі, слоти й метал без носія (рядок 5830):
+    # акцент, нейтраль, кольорова річ, принт — властивості того, що на фото, їх судить чекліст.
+    "absent_object": {"bag": "сумка", "shoes": "взуття", "gloves": "рукавички", "tights": "колготи",
+                      "jewelry": "прикраси", "necklace": "кольє", "metal": "метал",
+                      "top_or_bottom": "верх_низ", "more_pieces": "додаткові_речі",
+                      "outerwear": "верхній_шар", "headwear": "головний_убір", "scarf": "шарф"},
     "occasion": {
         "everyday": "щоденне", "work": "робота", "date": "побачення", "celebration": "свято",
         "wedding_guest": "весілля_гість", "wedding_day": "весілля_денне", "mourning": "траур",
@@ -160,6 +167,11 @@ def невідомо(v, коди=()):
     "part_of_day": {"morning": "ранок", "day": "день", "evening": "вечір", "night": "ніч"},
     # Пора року з дати (рядок 3950, рішення власника 14.10): вхідний факт її дня для всіх рук — `сценарій.пора_року`
     "season": {"winter": "зима", "spring": "весна", "summer": "літо", "autumn": "осінь"},
+    # Місяць події з її слів (рядок 5260): дата, місяць чи свято одного місяця («новорічний корпоратив» — грудень).
+    # Порядок — календарний: номер місяця — місце в таблиці (`сценарій.пора_року_події`)
+    "month": {"january": "січень", "february": "лютий", "march": "березень", "april": "квітень",
+              "may": "травень", "june": "червень", "july": "липень", "august": "серпень",
+              "september": "вересень", "october": "жовтень", "november": "листопад", "december": "грудень"},
     # Погода без числа → число, яке бере код (температура — вхід теплової функції й воріт
     # тканини, і доти це число вгадувала модель виклику 0).
     # МОРОЗ — ВСЕРЕДИНІ СМУГИ «НИЖЧЕ −8 °C», НЕ НА ЇЇ КРАЮ (рядок 3451). Тут стояло −8,0 — нижня
@@ -236,7 +248,15 @@ def невідомо(v, коди=()):
         "bodysuit": "боді", "longsleeve": "лонгслів", "half_coat": "півпальто",
         "down_jacket": "пуховик", "fur_coat": "шуба", "sheepskin_coat": "дублянка", "parka": "парка",
         "raincoat": "плащ", "rain_cape": "дощовик", "windbreaker": "вітровка", "anorak": "анорак",
-        "bomber": "бомбер", "poncho": "пончо"},
+        "bomber": "бомбер", "poncho": "пончо",
+        # 6755 (17.10.2026): типи слотів, у яких доти був лише родовий код або жодного (шапка в еталоні 404
+        # діставала `scarf_generic`, «моно-сережка» — `ring`, пасок — `belt_bag`): модель шукала найближчий
+        # чужий код. Слот кожного — у `СЛОТ_ТИПУ`; сережка, браслет, намисто, кольє, брошка, годинник,
+        # окуляри, рукавички, колготи й шкарпетки названі тим самим словом, що й слот.
+        "beanie": "шапка", "hat": "капелюх", "beret": "берет", "cap": "кепка", "belt": "пасок",
+        "earrings": "сережки", "bracelet": "браслет", "necklace": "намисто", "collar_necklace": "кольє",
+        "brooch": "брошка", "watch": "годинник", "glasses": "окуляри", "gloves": "рукавички",
+        "tights": "колготи", "socks": "шкарпетки", "swimsuit": "купальник", "lingerie": "білизна"},
     "fabric": {
         "wool": "вовна", "cashmere": "кашемір", "mohair": "мохер", "angora": "ангора",
         "alpaca": "альпака", "cotton": "бавовна", "viscose": "віскоза", "tencel": "тенсел",
@@ -399,7 +419,11 @@ def невідомо(v, коди=()):
     "stole": "scarf", "kerchief": "scarf", "twilly": "scarf", "snood": "scarf", "shawl": "scarf",
     "bactus_scarf": "scarf", "scarf_generic": "scarf",
     "headband": "headwear", "bow": "headwear", "hair_clip": "headwear", "hair_tie": "headwear",
-    "ring": "ring", "jewelry_generic": "jewelry"}
+    "beanie": "headwear", "hat": "headwear", "beret": "headwear", "cap": "headwear", "belt": "belt",
+    "earrings": "earrings", "bracelet": "bracelet", "necklace": "necklace",
+    "collar_necklace": "collar_necklace", "brooch": "brooch", "watch": "watch", "glasses": "glasses",
+    "gloves": "gloves", "tights": "tights", "socks": "socks", "swimsuit": "swimwear",
+    "lingerie": "underwear", "ring": "ring", "jewelry_generic": "jewelry"}
 
 
 def ключ(поле, код):
@@ -535,6 +559,7 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     "minute": _число("хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
                      тип="integer", minimum=0, maximum=59),
     "part_of_day": _перелік("part_of_day", "частина доби, коли години не названо"),
+    "month": _перелік("month", "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця"),
     "temperature_c": _число("температура повітря, °C"),
     "weather_feel": _перелік("weather_feel", "погода без числа градусів"),
     "precipitation": _перелік("precipitation", "опади"),
@@ -554,8 +579,10 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
                           "що ще їй важливо в цьому образі, кілька разом: taller — довша лінія, здаватись "
                           "вищою; comfort — зручно рухатись цілий день; strict — строго за нагодою",
                           maxItems=3),
+    # Рядок 6262: приклад опису — родом, без слів живої сцени («сховати живіт» — ж4_клуб_*)
     "goal_zones": _список(_перелік("goal_zone", "зона тіла"),
-                          "зони тіла, від яких вона хоче відвести погляд («сховати живіт» → belly), з будь-якою "
+                          "зони тіла, від яких вона хоче відвести погляд (сховати чи стрункішою зробити зону → її "
+                          "код), з будь-якою "
                           "увагою (goal): ці зони тихі, решта образу — за goal",
                           maxItems=3),
     "makeup": {"description": "макіяж на цей вихід", "type": "object", "additionalProperties": False,
@@ -583,7 +610,8 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     # Рядок 2141: «з моєю блузою з фото» MamayLM не клала нікуди — опис казав лише «описані словами»
     "own_items": _список({"$ref": "#/$defs/own_item"}, "її власні речі, які вона називає словами: усе, що "
                                                        "вона зве своїм («моя», «у мене є», «з моєї шафи», "
-                                                       "«з фото»), — кожна річ окремо"),
+                                                       "«з фото»), — кожна річ окремо; слот, тип і тканина — "
+                                                       "завжди, кодом з її слів або \"unknown\""),
     "question": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="питання, яке вона ставить стилістці"),
     # ── ВНУТРІШНЯ МОВА НЕСЕ ВСЕ РЕЧЕННЯ, А НЕ ЛИШЕ ЗАКРИТИЙ ПЕРЕЛІК (М-1, В-1/В-5/В-6) ──
     # «Для походу на концерт»: коду нагоди нема → нагода гинула, а подія не судила нічого.
@@ -612,6 +640,8 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     "status": _перелік("own_item_status", "has — ця річ буде в образі; maybe — не певна; "
                                           "not_wanted — цієї своєї речі не хоче")},
     **{к: v for к, v in РІЧ_У_СЛОВАХ.items() if к not in ("zone", "feature")})
+# Ознаки її речі, які модель пише завжди — кодом або "unknown" (`схема()`: `required` у `own_item`).
+ЇЇ_РІЧ_КОДИ = ("slot", "item_type", "fabric")
 
 # ── КОМЕНТАР ДАЄ ТЕ САМЕ, ЩО КНОПКИ, І БІЛЬШЕ (КВ-1, слово власника 28.09) ─────────────
 # «Основний упор — на детальні враження в полі (текстом чи голосом)», кнопки — допоміжні. Отже
@@ -650,6 +680,26 @@ _ЗСУВ = lambda опис: _перелік("direction", опис)
     "wants": _список({"$ref": "#/$defs/thing"}, "чого вона хотіла б натомість"),
     "vetoes": _список({"$ref": "#/$defs/thing"}, "чого вона не хоче"),
     "note": dict(_АБО_НЕВІДОМО(_ВІЛЬНИЙ), description="решта сказаного, що не лягає в поля вище"),
+}
+
+# ВИПРАВЛЕННЯ ПЕРЕЛІКУ РЕЧЕЙ ЇЇ СЛОВАМИ (рядок 5742). Перелік «Що я бачу на фото» вона правила дотиками (рядок 5741);
+# тут те саме словами: «там не штани, а вершкові ботильйони, чорні — запасні». Дія — тієї самої форми, що дотик
+# (`оцінка_образу.виправити_речі`): op, item, slot, kind, color, in_outfit — коди, слів ядра нема.
+ДІЇ_ПЕРЕЛІКУ = ("remove", "set", "add")
+ВИПРАВЛЕННЯ_ПЕРЕЛІКУ = {
+    "actions": _список({
+        "type": "object", "additionalProperties": False, "required": ["op"],
+        "properties": {
+            "op": {"description": "remove — прибрати річ, якої на фото нема; set — виправити річ, що вже є в переліку "
+                                  "(item — її id); add — дописати річ, якої в переліку нема (item не пишеться)",
+                   "enum": list(ДІЇ_ПЕРЕЛІКУ)},
+            "item": {"type": "string", "description": "id речі з КОНТЕКСТ.items; для add не пишеться"},
+            "slot": _перелік("slot", "місце речі в образі — лише якщо вона назвала місце, а не вид"),
+            "kind": _перелік("item_type", "вид речі, як вона його назвала"),
+            "color": _перелік("color_name", "колір речі, як вона його назвала"),
+            "in_outfit": dict(_АБО_НЕВІДОМО({"type": "boolean"}), description="true — річ у самому образі; false — "
+                              "запасна, замість іншої речі образу; не пишеться, коли вона про це не казала")}},
+        "по одній дії на кожну річ, про яку вона сказала, що в переліку не так"),
 }
 
 # Що означає кожна тема поради й кожне обов'язкове питання — визначення коду для
@@ -815,6 +865,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "card_unknowns_toggle": "напис на кнопці, що розгортає на картці образу згорнутий перелік того, "
                             "що в цьому образі лишилось не перевіреним: кілька слів, без числа, без "
                             "крапки в кінці; лічбу рядків екран допише сам",
+    # ЗАМІНА-МОВЧИТЬ (рядок 6617): заміна відповіла «готово» без речі — раніше жінці не казали нічого
+    "replacement_not_found": "рядок на картці образу біля речі, яку вона позначила на заміну: стилістка "
+                             "не знайшла їй заміни, річ лишилась у образі, а кнопку можна натиснути знову",
     "assembly_refused": "рядок на екрані сценарію, коли образи зібрати не вдалось: що сталось "
                         "і що їй зробити, щоб зібрати",
     # Ч-8 (28.09.2026, рядок 197): доти екран «Оціни мій образ» ставив рядком те, що кинув код
@@ -999,7 +1052,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                        "another very little: more equal areas hold the scheme better (values: "
                                        "most, least — the words of those colours)",
     "big_items_carry_only_some": "the large items of this outfit carry some of these colours and not the "
-                                 "others (values: present, missing — colour words)",
+                                 "others; only the large items were counted, so say a colour is missing on "
+                                 "the large items, never that it is missing from the outfit (values: present, "
+                                 "missing — colour words; counted — slot codes of the large items counted; "
+                                 "on_accessories — missing colours that an accessory of this outfit does "
+                                 "carry: say they are there only on the accessories)",
     "big_items_all_neutral": "the large items of this outfit are neutral",
     # СХЕМА-КАРТКА (02.10.2026, рядки 1294, 1404): велика річ іншого кольору — не нейтраль; свідомий
     # хід стилістки — її рішення; дія під чужою схемою — лише вибір для неї, не доручення
@@ -1204,7 +1261,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ПРОЗА-КАРТОК-2 (рядок 980): підстава не казала, ЧИЄ фото й що саме інше, — і речення губило
     # іменник («на знімку виявився зовсім інший, ніж указана крамницею», 2 з 4 карток ПЕР-531)
     "stylist_swapped_item_after_photo": "after seeing the item photos the stylist replaced one item with "
-                                        "another of the same kind from her selection; the code checked the "
+                                        "another for the same place from her selection; the code checked the "
                                         "outfit again (values: was — the item she took out, now — the item "
                                         "in its place, both as the shop names them: name each in a few words "
                                         "of your own — its kind and its colour — never quote the shop's name; "
@@ -1267,12 +1324,21 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # (`заяви` знахідки), міст складає з них повідомлення виду `card_unchecked`, а речення
     # пише мовна модель. `суть` лишилась діагнозом суду для звіту власника (`етапи`).
     # ── колір лише словом, а не вимір (`колір_річ.без_входу_кольору`) ──────────
+    # Рядок 5227: кожна річ — з `item_id`, і міст дописує `name` — назву речі так, як її підписує картка
+    # (`назва_речі.на_картці`); доти речення звало річ слотом («колір речі верхній шар»)
     "colour_word_shop": "the code knows the colour of the named items only from the shop's word, not from "
-                        "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
+                        "measuring the photo (values: items — items: item_id, name — the item's name on the card, "
+                        "slot — slot code, colour — colour word)",
+    "colour_word_shop_photo_other": "the shop names one colour of the named items and their card photo shows "
+                                    "another, so the code knows neither for sure (values: items — items: item_id, "
+                                    "name — the item's name on the card, slot — slot code, colour — the shop's "
+                                    "colour word, photo — the colour on the photo)",
     "colour_word_model": "the code knows the colour of the named items only from the model's word, not from "
-                         "measuring the photo (values: items — items: slot — slot code, colour — colour word)",
+                         "measuring the photo (values: items — items: item_id, name — the item's name on the card, "
+                         "slot — slot code, colour — colour word)",
     "colour_word_not_photo": "the colour of the named items comes from a word, not from measuring the photo "
-                             "(values: items — items: slot — slot code, colour — colour word)",
+                             "(values: items — items: item_id, name — the item's name on the card, slot — slot "
+                             "code, colour — colour word)",
     "cannot_tell_item_holds_scheme_hue": "so the code cannot tell whether the item holds the hue of the "
                                          "chosen palette scheme",
     "cannot_tell_look_contrast_matches_hers": "so the code cannot tell whether the outfit's contrast matches "
@@ -1315,13 +1381,21 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "for the code, not for her), so two colours measured from photos cannot "
                                         "settle whether two items sit on one lightness",
     "cannot_tell_lightness_structure": "so the code cannot tell which structure of light and dark the outfit "
-                                       "carries",
+                                       "carries (values, when given: items — the items for which the code does "
+                                       "not know whether they are a surface or an accent: item_id, name — the "
+                                       "item's name on the card, slot — slot code)",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
-                                         "differ visibly",
+                                         "differ visibly (values, when given: items — the neutrals' items: "
+                                         "item_id, name — the item's name on the card, slot — slot code)",
+    # Рядок 5226: річ, що за вікном слова лише «можливо» нейтраль (блакитний, зелений, оливковий), — не
+    # «дві нейтралі» й не «нейтраль біля обличчя»: код не знає, чи вона нейтраль узагалі
+    "cannot_tell_item_is_neutral": "so the code cannot tell whether the named item is a neutral at all, and the "
+                                   "rules about neutrals did not judge it",
     "cannot_tell_neutral_near_face_temperature": "so the code cannot tell whether a neutral near her face "
                                                  "matches her temperature",
     "cannot_tell_two_different_whites": "so the code cannot tell whether the outfit has two different whites, "
-                                        "cream and optical",
+                                        "cream and optical (values, when given: items — the whites' items: "
+                                        "item_id, name — the item's name on the card, slot — slot code)",
     "cannot_tell_accessory_spends_chroma": "so the code cannot tell whether a loud accessory spends the budget "
                                            "of loud colours next to another loud item",
     "cannot_tell_chroma_budget_exceeded": "so the code cannot tell whether the outfit has more loud colours "
@@ -1334,11 +1408,32 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "accent role the palette scheme gave its slot",
     "cannot_tell_colour_families_over_limit": "so the code cannot tell whether the outfit holds more than three "
                                               "colour families",
+    "cannot_tell_prints_share_colour": "so the code cannot tell whether the prints of the mix share a colour",
+    "cannot_tell_shoes_cut_leg_line": "so the code cannot tell whether the shoes match the leg or the bottom in "
+                                      "lightness or cut the leg line",
+    "cannot_tell_shoe_edge_contrast": "so the code cannot tell whether the high-cut shoe edge contrasts with the leg",
     "cannot_tell_two_loud_colours_clash": "so the code cannot tell whether two loud colours compete for "
                                           "attention",
     "cannot_tell_items_intensity_match": "so the code cannot tell whether the outfit's items match in colour "
                                          "saturation",
     "cannot_tell_coordination_rank": "so the code cannot tell how well the outfit's colours are coordinated",
+    # Рядок 2851: правила світлоти й гучності кольору однієї речі, коли колір — вікно слова, а вікно лежить
+    # по обидва боки порога (`outfit.елементи`: L*/C* такого елемента нема, судять межі вікна)
+    "cannot_tell_face_contrast_matches_hers": "so the code cannot tell whether the jump of lightness near her "
+                                              "face matches her own contrast",
+    "cannot_tell_near_white_at_wedding": "so the code cannot tell whether the item reads as wedding white on "
+                                         "photos",
+    "cannot_tell_colour_too_loud_for_occasion": "so the code cannot tell whether the item's colour is louder "
+                                                "than the occasion allows",
+    "cannot_tell_lightness_fits_occasion": "so the code cannot tell whether the item's lightness fits the time "
+                                           "of the occasion",
+    "cannot_tell_chroma_too_high_for_photo": "so the code cannot tell whether the item's colour is too bright "
+                                             "for flash photos",
+    "cannot_tell_colour_holds_attention": "so the code cannot tell whether the item's colour draws the eye",
+    "cannot_tell_colour_left_under_coat": "so the code cannot tell whether the colour of the outfit stays "
+                                          "hidden under the coat",
+    "cannot_tell_dark_fitted_in_sun": "so the code cannot tell whether the fitted item is dark enough to "
+                                      "get hot in the sun",
     # ── правила, яким входу нема ніде (`верхнє_суд.БЕЗ_ВХОДУ`, `аксесуари_суд.БЕЗ_ВХОДУ`) ──
     "no_input_outer_warmth": "nobody publishes the warmth of an outer layer as a number, so the code judges "
                              "whether it is enough for this weather only by the item's type",
@@ -1510,7 +1605,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
                                         "ordinary straight cut; what follows holds only if the cut really is "
-                                        "such",
+                                        "such (values: items — the only items without a declared cut: item_id, "
+                                        "name — the item's name on the card; the other items keep their declared "
+                                        "cut)",
     # МОВА ПРО РІЧ І ЛІНІЮ (28.09.2026, Ф-2): текст заяви їде мовній моделі, тож
     # заборона корпусу на «ховає» (R-ONB-06, R-LNG-01) діє тут так само, як у `суть`.
     # Було: "a straight boxy cut hides her defined waist" — річ діє на тіло. Стало:
@@ -1602,6 +1699,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "coordination_not_computed": "the code did not compute how well the outfit's colours are coordinated",
     "coordination_rank_not_computed": "the coordination of the outfit's colours is computed, but it gave no "
                                       "place among the other outfits",
+    # K-COMP-01: розлад чи надкоординація образу проти набору кандидатів (рядок 6281)
+    "colour_coordination_off_optimum": "the outfit's colours are off the moderate-coordination optimum among the "
+                                       "candidates (values: side — matchy: more coordinated than most, or discord: "
+                                       "more divergent; off — distance from the optimum, 0 is the optimum)",
+    "more_colour_distance_between_slots": "take a candidate whose slots are further apart in colour: another family "
+                                          "in one slot",
+    "less_colour_distance_between_slots": "take a candidate whose slots are closer in colour: one slot in a neutral "
+                                          "or in the family of another",
     "coordination_rank_homogeneous": "the outfit has no place by colour coordination: all candidates are the "
                                      "same in colour",
     "feature_and_item_indistinguishable": "a feature of her face and the item near it are the same colour in "
@@ -1648,13 +1753,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ── верхній шар (`верхнє_*`) ───────────────────────────────────────────────
     "outer_edges_gap_no_length": "the code does not know the distance between the edge of the outer layer and "
                                  "the edge of the item under it: the cards carry no lengths (values: items — "
-                                 "item names)",
+                                 "items: item_id, name — the item's name on the card)",
     "outer_edges_coincide_sources_disagree": "the edges of the outer layer and the item under it coincide "
                                              "exactly, and the sources disagree about that; the code takes no "
-                                             "side (values: items — item names)",
+                                             "side (values: items — items: item_id, name — the item's name on "
+                                             "the card)",
     "cascade_declared_no_penalty": "the edges of the layers stand in even steps: the code counts such a "
                                    "cascade as intended and does not penalise close edges (values: items — "
-                                   "item names)",
+                                   "items: item_id, name — the item's name on the card)",
     "outer_ease_not_in_feed": "the cards do not carry the width ease of the layers, so the code does not "
                               "check whether one layer lies comfortably over another (values: items — item "
                               "names)",
@@ -1714,8 +1820,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "colour, cut, length, fabric, pattern, shine)",
     "photo_shows_other_colour": "in the card's photo the code sees a different colour than the one the item "
                                 "is described and judged by: the shop may have shown another colour of the "
-                                "model or named it differently (values: items — items: slot — slot code, "
-                                "colour — the item's colour, photo — the colour in the photo)",
+                                "model or named it differently (values: items — items: item_id, name — the item's "
+                                "name on the card, slot — slot code, colour — the item's colour, photo — the "
+                                "colour in the photo)",
     # ── СТРУКТУРА ОБРАЗУ: БЛОКЕРИ КОДАМИ (П-6, `суд_від_моделі.структура_образу_заяви`) ──
     "no_top_bottom_or_dress": "the outfit has neither of these foundations and no dress to replace them: "
                               "without them these are accessories, not an outfit (values: missing — the slot "
@@ -1733,6 +1840,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "no_bag": "no bag, and the occasion requires one",
     "needs_third_piece": "needs one more piece beyond top, bottom, shoes: outer layer, jewellery, belt, scarf "
                          "or hat",
+    # рядок 6635: хибні рядки брифа руки 2 (зламані K-CRA-01, K-OUT-33, K-FIT-03; перелік власника 15.10)
+    "no_third_piece": "top, bottom and shoes are already the whole outfit: no third piece, neither a layer nor "
+                      "a strong accessory",
     "too_few_items": "too few items in the outfit for this occasion (values: count — how many there are, "
                      "minimum — how many are needed at least)",
     "single_item_not_outfit": "one item is not an outfit yet: add at least shoes, or a top or a bottom to a "
@@ -2215,6 +2325,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "temperature"
                                         "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "move_colour_to_hat_scarf_gloves": "move the colour into the hat, scarf or gloves",
+    # рядок 3340: рукавиць у пулі нема — ті самі заяви без них
+    "cold_hat_scarf_carry_no_colour": "in hard frost mostly the outer layer and the accessories are "
+                                      "visible, and the hat and the scarf are quiet here: all the colour "
+                                      "stayed under the coat (values: temperature_c — the temperature"
+                                      "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+    "move_colour_to_hat_scarf": "move the colour into the hat or the scarf",
     # рядок 3161а: K-WEA-01 — нижче −8 °C у образі нема ні шапки, ні шарфа
     "frost_head_neck_uncovered": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay "
                                  "open, and no outer layer covers them (values: temperature_c — the "
@@ -2533,7 +2649,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                             "band, which is semantics rather than a thermometer (values: temperature_c — the "
                             "day's temperature, band — the fabric's band from and to, direction — warmer or "
                             "colder, fabrics — fabric codes"
-                            "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                            "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it"
+                            "; season — instead of both when she named no weather: the season of her day, and band "
+                            "is then absent)",
     "same_item_in_day_band_fabric": "the same item in a fabric of the day's band, or the same colour and cut "
                                     "without the seasonal fabric",
     # ── П-6 хвиля 5: посадка, край, поділ, носіння, розмір аксесуарів, погода, інтерес — що і як полагодити ──
@@ -2578,7 +2696,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "long_day_items_unbearable": "over a long day (hours) items in these slots become unbearable in their own "
                                  "way: they demand attention while worn",
     "shoe_type_outside_temp_band": "shoe type outside the day's temperature band (temp_c"
-                                   "; weather_feel — instead of temp_c when she named no degrees, the weather as she put it)",
+                                   "; weather_feel — instead of temp_c when she named no degrees, the weather as she put it"
+                                   "; season — instead of both when she named no weather: the season of her day)",
+    # Рядок 5261: пора року без градусів — руки чи плечі голі, і над ними нічого
+    "bare_arms_in_cold_season": "arms or shoulders stay bare and nothing of the look goes over them, while the "
+                                "season of her day is cold or changeable (values: season, zones — the bare zones)",
+    "sleeved_layer_over_bare_arms": "a layer with sleeves over it — a jacket, a cardigan or an outer layer",
     "take_from_day_band": "take from the day's band: types, or density den (DEN)",
     "tights_den_off_day_band": "the tights' denier is outside the day's band (values: den — the denier, band "
                                "— the day's band; need — denser or thinner)",
@@ -2683,6 +2806,22 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "accent_colour_or_print_near_face": "an accent colour or print in the slot nearest the face",
     "item_removable_no_metric_drops": "the item can go: without it no metric of the look drops",
     "remove_this_item": "remove this item",
+    "item_formality_unknown": "the formality of these items is unknown; their level cannot be judged",
+    "use_target_formality_band": "choose items for the target formality band (values: band — from and to)",
+    "choose_high_heel": "choose a pair with a high heel (values: heel_cm — from)",
+    "cut_clings_at_level": "a cut that clings at this level",
+    "opposite_metal_near_face": "put the metal opposite to her warmth near the face (values: metal — the metal "
+                                "to put, lead — the leading one now)",
+    "same_item_in_opposite_season_fabric": "the same item in a fabric of the opposite season (values: band — "
+                                           "from and to, °C)",
+    "volume_top_and_bottom_no_anchor": "a loose cut both on top and at the bottom, with no fitted level",
+    "registers_at_equal_weight": "mix styles freely: several style languages sound at equal weight, none leads",
+    "loud_accessory_no_echo": "the bag or jewellery in a loud colour that nothing else in the outfit repeats; the "
+                              "accessory need not echo anything",
+    "second_register_equal_weight": "bring a second style to the same weight as the leading one, so that "
+                                    "neither leads (values: registers — the leading one and the second)",
+    "loud_accessory_without_role": "replace the accessory with a loud one in a tone that nothing else in the "
+                                   "outfit repeats (values: slot — slot code, chroma_from — loud from this C*)",
     # ── оцінка її власного образу з фото: чого на кадрі не знайшлось (Ч-8, рядок 197) ──
     "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one; "
                                 "`items_without_photo`: items were named but not on which of her photos, so none could be "
@@ -2781,6 +2920,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                            "conceal (values: loudness — the colour's loudness, ceiling — the "
                                            "ceiling, area_pct — its area in the outfit as a percentage, when "
                                            "known)",
+    "colour_holds_attention_in_goal_zone": "the item's colour holds attention in a body zone she wants to draw "
+                                           "the eye away from (values: loudness — the colour's loudness, "
+                                           "ceiling — the ceiling, zones — those zones, area_pct — its area in "
+                                           "the outfit as a percentage, when known)",
+    "item_draws_eye_by_itself_in_goal_zone": "the item draws the eye not by its colour but by itself, in a body "
+                                             "zone she wants to draw the eye away from (values: witnesses — what "
+                                             "draws the eye: open_zone, festive_trim, shine; zones — the zones it "
+                                             "opens; shine_class — the class of its shine)",
     "item_draws_eye_by_itself_goal_conceal": "the item draws the eye not by its colour but by itself, and her "
                                              "goal for this outing is conceal (values: witnesses — what draws "
                                              "the eye: open_zone, festive_trim, shine; zones — the zones it "
@@ -2817,12 +2964,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "this kind outside the palette)",
     "break_nothing_outside_palette": "no eligible kind holds an item outside the palette: there is nothing to "
                                      "break the palette with",
-    # ── стеля пулу під бюджет символів (`міст_пакет`, ВМ-3а, рядок 247) ─────────────
+    # ── стеля пулу під бюджет токенів (`міст_пакет`, ВМ-3а, рядок 247; токени — рядок 5541) ──
     # Числа зрізу — поля того самого запису (`K`, `K_запитано`, `K_віддано`, `унікальних`,
-    # `символів`, `пул_символів`, `бюджет`); заява каже лише те, чого в полях нема.
-    "pool_cut_to_budget": "the full pool was over the character budget of the item list, so it was cut by the "
+    # `символів`, `пул_токенів`, `бюджет`); заява каже лише те, чого в полях нема.
+    "pool_cut_to_budget": "the full pool was over the token budget of the item list, so it was cut by the "
                           "stratified sampler: a floor of items per kind, the rest in proportion to what each "
-                          "kind has (values: full_chars — characters of the full list; floor — items per kind)",
+                          "kind has (values: full_tokens — tokens of the full list; floor — items per kind)",
     "pool_budget_not_met": "the budget is not met: even the smallest possible sample is over it, and the "
                            "smallest possible pool was given",
     "pool_sampler_gave_other_than_asked": "the sampler gave a different number of items than was requested "
@@ -2927,6 +3074,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                "and formality are judged with the rest; open shoes, thin tights and bare ankles "
                                "are a mistake here, not a style (values: temperature_c"
                                "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+    "cold_outer_layer_optional": "in this cold the outer layer is optional: the outfit stands without it; open "
+                                 "shoes and bare ankles are fine here (values: temperature_c; weather_feel — "
+                                 "instead of temperature_c when she named no degrees, the weather as she put it)",
     "precipitation_shoes_materials": "precipitation: closed shoes, no fabric soles, no suede or nubuck; "
                                      "materials afraid of water stay out of the outfit",
     "precipitation_water_shy_materials_with_condition": "precipitation: closed shoes, no fabric soles; suede, "
@@ -3012,6 +3162,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "no_hem_at": "no hem of any item ends at these points — they are the widest points of her body; other "
                  "lengths are free (values: at — body landmarks)",
     "top_hem_at": "the hem of the top item ends at one of these points (values: at — body landmarks)",
+    "hem_at": "the hems of the items end at these points — they are the widest points of her body, and the hem "
+              "stresses them (values: at — body landmarks)",
     "pair_wider_zone": "one half of her body is wider than the other: volume or structure on the narrower half, "
                        "a clean line on the wider one; clinging on the narrower half does not make up for the "
                        "difference (values: wider — top or bottom; narrower; difference_pct — the difference of "
@@ -3118,7 +3270,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
 # ~1 350 знаків кирилиці від коду на виклик. ЩО ТЕПЕР. На дроті — код порушення
 # (`language_gate.КОДИ_ПОРУШЕНЬ`: ід правила гейта → код) і збіги з її тексту; що не так і що
 # натомість, модель читає у визначенні коду. Українські `суть` і `дозволено` лишаються в гейті —
-# для звіту власника; ід правил на дріт не йдуть, як і доти (Р-1).
+# для звіту власника; ід правил у визначеннях кодів порушень мови на дріт не йдуть (Р-1, мова_046); ід у визначеннях
+# `ЗАЯВИ` лишаються — це код внутрішньої мови (п.12), обидві моделі читають їх у `statement_codes`.
 ПОРУШЕННЯ_МОВИ = {
     "russian_in_text": "Russian in the text for her: a Russian word, ending or letter. Instead: the same "
                        "meaning in Ukrainian, without a single Russian word or ending (R-LNG-UA)",
@@ -3302,10 +3455,15 @@ if _спільні:
     'metal_surface_share': 'The check needs measured metal surface share from enrichment v2; named metal is not coverage.',
     'shared_photo': 'The named item fields are unknown because the shop photo is shared with other products (R-FEED-06).',
     'item_surface': 'Texture and fibre are unknown for the listed items; known counts cannot establish equal surfaces.',
+    'colour_measure': 'The colour of the listed items is a word window, not a measurement; their chroma may lie on either side of the interest threshold.',
     'scheme_choice': 'The stylist or woman choice of the palette scheme was not supplied to the judge.',
     'passport_author': 'The language model conversation author of the passport was not supplied to the judge.',
     'point_input_unknown': 'The referenced checklist point lacks its required input. Do not treat this as a pass.',
     'rule_input_unknown': 'The referenced producer rule lacks input; input and detail identify its missing coded facts and statements carry its context. Source fields name producer references, not conclusions.',
+})
+ЗАЯВИ.update({
+    "replacement_item_not_found": "no replacement of the same kind was found for the item she marked; the item stays in the outfit, the other outfits are unchanged",
+    "replacement_can_try_again": "she can press the replace button on the item again",
 })
 ЗАЯВИ.update({
     "passport_tiles_only": "There is no passport from conversation; the scenario only came from tiles.",
@@ -3483,9 +3641,13 @@ def схема():
                           "properties": {"free_text": {"type": "string"},
                                          "lang": {"type": "string", "description": "мова тексту, BCP 47"}}},
             "thing": об(РІЧ_У_СЛОВАХ, "річ чи ознака, про яку вона говорить"),
-            "own_item": об(ЇЇ_РІЧ, "її власна річ", required=["name", "status"]),
+            # СЛОТ, ТИП І ТКАНИНА — ЗАВЖДИ, КОДОМ АБО "unknown" (рядки 4050, 4051): «своє взуття з фото» модель дала
+            # лише `name` — річ трималась, а в паспорт не лягала (слота нема звідки, код слів не читає, п.12);
+            # «замшеві чоботи» — без `fabric`, і K-WEA-01 (замша в дощ) речі входу не мала.
+            "own_item": об(ЇЇ_РІЧ, "її власна річ", required=["name", "status", *ЇЇ_РІЧ_КОДИ]),
             "scenario": об(СЦЕНАРІЙ, "сценарій виходу з її слів цього ходу"),
             "verdict_comment": об(КОМЕНТАР_ВЕРДИКТУ, "її коментар до образу"),
+            "review_items_fix": об(ВИПРАВЛЕННЯ_ПЕРЕЛІКУ, "її слова про те, що не так у переліку речей з фото"),
             "catalog_item": об(РІЧ_КАТАЛОГУ, "річ каталогу", required=["id", "name"]),
             "stylist_reply": об(РЕПЛІКА, "що стилістка каже їй цього ходу, внутрішньою мовою"),
             "reply_text": об({"text": {"type": "string", "description": "текст для неї її мовою"}},

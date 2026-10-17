@@ -46,7 +46,9 @@ def шлях(u): return '/tmp/фото_огляд/' + hashlib.md5(u.encode()).he
 def тягти(u):
     p = шлях(u)
     if not os.path.exists(p) or os.path.getsize(p) == 0:
-        subprocess.run(['curl', '-sS', '-L', '-m', '40', '-o', p, u], capture_output=True)
+        # attico.ua віддає 403 голому curl (рядок 2762): браузерний User-Agent і Referer з власної крамниці
+        subprocess.run(['curl', '-sS', '-L', '-m', '40', '-A', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+                        '-e', '/'.join(u.split('/')[:3]) + '/', '-o', p, u], capture_output=True)
     return p
 урли = [фото_картки(x) for xs in вибір.values() for x in xs]
 with cf.ThreadPoolExecutor(12) as ex: list(ex.map(тягти, [u for u in урли if u]))

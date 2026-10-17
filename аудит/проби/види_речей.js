@@ -6,9 +6,18 @@
 /* ВМ-2 (01.10.2026): англійська задача називає схему латинкою (`протокол.НАЗВИ_ВІДПОВІДІ_EN`);
    стенд маршрутизує за ім'ям схеми коду — тож латинське ім'я вертається до нього тут, в одному місці */
 const НАЗВИ_EN = {OUTFITS_V1: 'ОБРАЗИ_V1', CHOICE_V1: 'ВИБІР_V1', DESCRIPTION_V1: 'ОПИС_ВІДПОВІДЬ_V1',
-                  ITEM_RATINGS_V1: 'ОЦІНКИ_V1', TOURNAMENT_V1: 'ТУРНІР_V1'};
+                  ITEM_RATINGS_V1: 'ОЦІНКИ_V1', TOURNAMENT_V1: 'ТУРНІР_V1', COMPLETION_V1: 'ДОПОВНЕННЯ_V1'};
 const відповідьЗадачі = об => {
   const в = об && ((об.завдання || об.task || {}).відповідь || (об.завдання || об.task || {}).answer);
+  /* Рядок 5935: складання й ремонт (скелет наприкінці) імені схеми в «task» не мають — схема «answer_schema»
+     останнім ключем, і її «outfits» кажуть ОБРАЗИ_V1 */
+  if (!в && об && об.task && об.answer_schema && 'outfits' in об.answer_schema) return 'ОБРАЗИ_V1';
+  /* Рядок 6651: вибір без імені схеми в «task» (скелет наприкінці) — схема має «chosen» */
+  if (!в && об && об.task && об.answer_schema && 'chosen' in об.answer_schema) return 'ВИБІР_V1';
+  /* Рядок 6450: оцінка образу — теж скелет наприкінці; її схема має «verdict», а допит на її місці — лише «answer»
+     з хвостом «now» (ті самі дані: «outfit», «check») — обидва вертаються до OUTFIT_REVIEW_V1, як доти */
+  if (!в && об && об.task && об.answer_schema && об.outfit && об.check
+      && ('verdict' in об.answer_schema || об.now)) return 'OUTFIT_REVIEW_V1';
   return НАЗВИ_EN[в] || в;
 };
 const ВИД_ТИПУ = {сукня: ['evening_dress', 'cocktail_dress', 'sheath_dress', 'sundress', 'jumpsuit'],
@@ -45,11 +54,24 @@ function видРечі(р){
   for (const [рег, вид] of ВИД_НАЗВИ) if (рег.test(р.name || р.features || р.fe || '')) return вид;
   return 'інше';
 }
+/* ПУЛ ТАБЛИЦЕЮ (рядок 5540): `pool` — {cols, rows}; рядок — значення в порядку колонок, null — ключа
+   нема, обʼєкт у кінці рядка — решта ключів (`збирач_промптів.таблиця`). Перелік обʼєктів (main до
+   5540) — як є; не пул — null. */
+function рядкиПулу(pool){
+  if (Array.isArray(pool)) return pool;
+  if (!pool || !Array.isArray(pool.cols) || !Array.isArray(pool.rows)) return null;
+  return pool.rows.map(р => {
+    const о = {};
+    pool.cols.forEach((к, i) => { if (р[i] !== null && р[i] !== undefined) о[к] = р[i]; });
+    const решта = р.length > pool.cols.length ? р[р.length - 1] : null;
+    return решта && typeof решта === 'object' ? Object.assign(о, решта) : о;
+  });
+}
 /* пул за видами: український пакет (main) — як є; англійський перелік — за `видРечі` */
 function пулЗаВидами(об){
   if (об.пул) return об.пул;
   const п = {};
-  for (const р of (об.pool || [])) { const в = р.two_piece ? 'комплект' : видРечі(р); (п[в] = п[в] || []).push({...р, н: р.n, назва: р.name || р.fe || р.features}); }
+  for (const р of (рядкиПулу(об.pool) || [])) { const в = р.two_piece ? 'комплект' : видРечі(р); (п[в] = п[в] || []).push({...р, н: р.n, назва: р.name || р.fe || р.features}); }
   return п;
 }
-module.exports = {відповідьЗадачі, видРечі, пулЗаВидами, ВИД_ТИПУ};
+module.exports = {відповідьЗадачі, видРечі, пулЗаВидами, рядкиПулу, ВИД_ТИПУ};
