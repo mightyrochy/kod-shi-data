@@ -721,7 +721,6 @@
   "texture": "фід_каталог: текстура",
   "elastane_pct": "фід_каталог: еластан_%",
   "wool_pct": "фід_верхнє: вовна_частка (частка 0..1)",
-  "composition_parts": "жниварка.склад_основа_із: перша частина складу за позицією",
   "length_cm": "фід_каталог: довжина_виробу_см",
   "size_fit": "фід_взуття, фід_каталог: розмірність",
   "sleeve_cut": "фід_верхнє: рукав",
@@ -1197,26 +1196,6 @@
        ]
       }
      ]
-    },
-    "composition_parts": {
-     "type": "array",
-     "description": "частини складу порядком тексту",
-     "items": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-       "role": {
-        "description": "role of this part of the composition",
-        "enum": [
-         "main",
-         "lining",
-         "trim",
-         "filling",
-         "unknown"
-        ]
-       }
-      }
-     }
     },
     "cut": {
      "description": "cut",
@@ -1945,7 +1924,6 @@
     "texture",
     "elastane_pct",
     "wool_pct",
-    "composition_parts",
     "cut",
     "length",
     "length_cm",
@@ -2549,42 +2527,6 @@
         "percent",
         "unknown"
        ]
-      }
-     }
-    },
-    "composition_parts": {
-     "type": "array",
-     "maxItems": 4,
-     "items": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-       "role"
-      ],
-      "properties": {
-       "role": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-         "quote",
-         "value"
-        ],
-        "properties": {
-         "quote": {
-          "type": "string",
-          "maxLength": 120
-         },
-         "value": {
-          "enum": [
-           "main",
-           "lining",
-           "trim",
-           "filling",
-           "unknown"
-          ]
-         }
-        }
-       }
       }
      }
     },

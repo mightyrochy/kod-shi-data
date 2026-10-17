@@ -84,7 +84,7 @@ import збирач_промптів as ЗП                 # noqa: E402
 # групи ключа, а не 46 полів поодинці: так рішення коротке, а виклик рядка все одно вужчий за річ.
 ГРУПИ = {
     "kind": ("slot", "item_type", "set_kind", "set_parts[].slot", "set_parts[].item_type"),
-    "fibre": ("fabric", "material", "fabric_kind", "texture", "elastane_pct", "wool_pct", "composition_parts[].role"),
+    "fibre": ("fabric", "material", "fabric_kind", "texture", "elastane_pct", "wool_pct"),
     "fit": ("cut", "size_fit", "elastic_waist", "belt", "veto.oversize", "veto.tight"),
     "length": ("length", "length_cm", "shaft"),
     "sleeve_neck": ("sleeve", "sleeve_cut", "neckline", "collar"),
@@ -101,9 +101,6 @@ assert sorted(ш for г in ГРУПИ.values() for ш in г) == sorted(_ПИШЕ
 # Правила, які йдуть у виклик рядка лише тоді, коли в ньому є група, якої вони стосуються.
 ПРАВИЛА_ГРУП = {
     "kind": "\"set_parts\": only when the row says the item is sold as a set, one entry per part; otherwise [].",
-    "fibre": "\"composition_parts\": one entry per part of the fibre composition, in the order the row gives them; quote "
-             "the label of the part, or its fibres when it has no label; \"role\": main for the item's own fabric. [] when "
-             "the row gives one part or none.",
     "colour": "\"color_main\": the colour this row gives the item itself; other colours it names for this "
               "item go to \"color_extra\".",
     "metal": "\"metal_where\": the metal is the body of the item or only its hardware.",
