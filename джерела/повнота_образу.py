@@ -643,6 +643,11 @@ def промпт_вибору(образи, випадок=None, без_фото
     },
     межі=("лише_вхід",),
     мова_промпту="en",
+    # рядок 6756: «answer»: "CHOICE_V1" у «task» читався як місце для відповіді (вибір 5 з 14 живих викликів загорнув
+    # її в {"answer": {…}}); форму несе лише «answer_schema», як у ремонті й складанні
+    скелет_наприкінці=True,
+    наприкінці="Now write your answer: one object of the form above, from {\"version\" to the brace that closes it. "
+               "The answer is over at that brace.",
 )
 
 
