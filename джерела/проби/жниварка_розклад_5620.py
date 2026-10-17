@@ -1,40 +1,35 @@
-"""5620: offline-фікстура готовності; не виконує жнив і не доводить свіжості."""
+"""5620: тільки виправний diff активного ланцюжка; жнив і мережі немає."""
+import copy
 import importlib.util
 from pathlib import Path
 import tempfile
 import yaml
 def main():
-    """Перевіряє розклад на синтетичних контрактах без запуску виконавця."""
+    """Звіряє живі YAML-вузли й відмову для вимкнених та сторонніх кроків."""
     корінь = Path(__file__).resolve().parents[2]
     сп = importlib.util.spec_from_file_location("розклад", корінь / "zhnyvarka/розклад.py")
     м = importlib.util.module_from_spec(сп); сп.loader.exec_module(м)
-    workflow = (корінь / ".github/workflows/zhnyva.yml").read_text()
-    схема = yaml.load(workflow, Loader=yaml.BaseLoader)
+    схема = yaml.load((корінь / ".github/workflows/zhnyva.yml").read_text(), Loader=yaml.BaseLoader)
     assert схема["on"]["schedule"] == [{"cron": "17 3 * * 1"}]
-    assert схема["jobs"]["harvest"]["needs"] == "schedule-readiness"
-    assert "needs.schedule-readiness.outputs.ready == 'true'" in схема["jobs"]["harvest"]["if"]
-    assert схема["jobs"]["harvest"]["timeout-minutes"] == "${{ github.event_name == 'schedule' && 10 || 340 }}"
+    assert м._ланцюжок(схема) is True
+    базові = схема["jobs"]["harvest"]["steps"]
+    в = next(і for і, к in enumerate(базові) if к.get("id") == "restore")
+    з = next(і for і, к in enumerate(базові) if к.get("id") == "harvest")
+    а = next(і for і, к in enumerate(базові) if к.get("with", {}).get("name") == "${{ steps.restore.outputs.artifact }}")
+    вади = [("disabled", в, "if", "false"), ("continue", в, "continue-on-error", "true"),
+            ("dead", з, "run", "if false; then\n" + базові[з]["run"] + "\nfi"),
+            ("journal", з, "env", {"JOURNAL_ROOT": "/tmp/інший"}),
+            ("pause", з, "run", базові[з]["run"].replace('--пауза "$HARVEST_PAUSE"', ""))]
+    for назва, і, ключ, знач in вади:
+        х = copy.deepcopy(схема); х["jobs"]["harvest"]["steps"][і][ключ] = знач
+        assert м._ланцюжок(х) is False, назва
+    х = copy.deepcopy(схема); х["jobs"]["other"] = {"steps": [х["jobs"]["harvest"]["steps"].pop(в)]}
+    assert м._ланцюжок(х) is False
+    х = copy.deepcopy(схема); х["jobs"]["harvest"]["steps"][а]["with"]["path"] = "/tmp/інший"
+    assert м._ланцюжок(х) is False
+    х = copy.deepcopy(схема); х["jobs"]["harvest"]["steps"][в], х["jobs"]["harvest"]["steps"][а] = х["jobs"]["harvest"]["steps"][а], х["jobs"]["harvest"]["steps"][в]
+    assert м._ланцюжок(х) is False
     with tempfile.TemporaryDirectory() as т:
-        р = Path(т); (р / "zhnyvarka").mkdir(); (р / ".github/workflows").mkdir(parents=True)
-        assert м.готовність(р)[0] is False
-        # Синтетичні ознаки контракту, не перенесення runtime незлитої #1366.
-        for ім in ("журнал_артефакт.py", "журнал_проходу.py"):
-            (р / "zhnyvarka" / ім).write_text("")
-        (р / "zhnyvarka/виконавець.py").write_text('from журнал_проходу import ЖурналПроходу\nпрапорці = ["--журнал", "--без-огляду"]\n')
-        ш = р / ".github/workflows/zhnyva.yml"; ш.write_text(workflow)
-        assert м.готовність(р)[0] is False  # Старий force/push не стає готовим від самих файлів.
-        # Додаємо тільки декларативні токени майбутнього контракту.
-        ознаки = '\n'.join(['python3 zhnyvarka/журнал_артефакт.py', '--журнал "$JOURNAL_ROOT" --без-огляду',
-            'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02', "always() && steps.restore.outcome == 'success'",
-            'steps.restore.outputs.artifact', '${{ runner.temp }}/жнива-журнал/ідентичність.json',
-            '${{ runner.temp }}/жнива-журнал/проходи/', '${{ runner.temp }}/жнива-журнал/сирі/',
-            'if-no-files-found: error', 'retention-days: 30', 'actions: read'])
-        безпечний = '\n'.join(л for л in workflow.splitlines() if 'git push' not in л) + '\n' + ознаки
-        ш.write_text(безпечний); assert м.готовність(р)[0] is True
-        ш.write_text(безпечний + '\n      HARVEST_SHOPS: ${{ inputs.shops }}')
-        assert м.готовність(р)[0] is False
-        ш.write_text(безпечний.replace('--пауза "$HARVEST_PAUSE"', ''))
-        assert м.готовність(р)[0] is False
-    print('5620: cron/ліміти перевірені; missing/unsafe/override/pause → skip; фікстура контракту → ready; HTTP/MODEL/GPU 0')
-
+        assert м.готовність(Path(т))[0] is False
+    print("5620 fixdiff: active ready; disabled/continue/dead/unrelated/journal/pause/upload/order/missing → skip; HTTP/MODEL/GPU 0")
 if __name__ == "__main__": main()

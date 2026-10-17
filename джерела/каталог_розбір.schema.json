@@ -755,6 +755,39 @@
      "type": "string",
      "description": "id речі в каталозі; його дописує прогін, у моделі його не питають — вона не має чого echo-їти"
     },
+    "listing_kind": {
+     "description": "kind of page or listing represented by this record",
+     "enum": [
+      "item",
+      "section",
+      "interface",
+      "review",
+      "promo",
+      "gift_card",
+      "out_of_scope",
+      "unknown"
+     ]
+    },
+    "audience": {
+     "description": "who the item is intended for, only when stated",
+     "enum": [
+      "women",
+      "men",
+      "kids",
+      "unisex",
+      "unknown"
+     ]
+    },
+    "name_language": {
+     "description": "language of the shop item name; quote the name",
+     "enum": [
+      "uk",
+      "ru",
+      "en",
+      "mixed",
+      "unknown"
+     ]
+    },
     "slot": {
      "description": "place of the item in an outfit",
      "enum": [
@@ -1914,6 +1947,9 @@
    "type": "object",
    "additionalProperties": false,
    "required": [
+    "listing_kind",
+    "audience",
+    "name_language",
     "slot",
     "item_type",
     "set_kind",
@@ -1961,6 +1997,78 @@
     "features"
    ],
    "properties": {
+    "listing_kind": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "item",
+        "section",
+        "interface",
+        "review",
+        "promo",
+        "gift_card",
+        "out_of_scope",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "audience": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "women",
+        "men",
+        "kids",
+        "unisex",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "name_language": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "uk",
+        "ru",
+        "en",
+        "mixed",
+        "unknown"
+       ]
+      }
+     }
+    },
     "slot": {
      "type": "object",
      "additionalProperties": false,
