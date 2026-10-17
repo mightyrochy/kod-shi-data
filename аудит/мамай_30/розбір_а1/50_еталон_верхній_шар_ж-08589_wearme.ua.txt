@@ -1,0 +1,102 @@
+── ЗАПИТ
+{"task": {"role": "You read one shop item and write its fields as codes, each backed by a quote from the item's own text.", "rules": ["Parse only the item named in \"name\". The description may also hold blocks about other items, delivery or payment: ignore them.", "Every field is a pair. \"quote\": the shortest words of this item's name, description or params that state the value, copied letter for letter in the shop's language, not translated or retold. \"value\": one code from that field's list.", "No words state this very feature: quote \"\" and value \"unknown\". Never infer a value from what items of this type usually are, never put the most usual code of a list as a default.", "The quote must state the chosen code itself, not a nearby one: how deep a neckline is does not state its shape, one kind of collar does not state another, a style or model name does not state a cut. Words that fit no code exactly: \"unknown\".", "A quote that only names the item type supports slot and item_type and nothing else: not sleeve, neckline, length, cut, fabric or any other field.", "\"not_applicable\": the field does not exist for this kind of item, quote \"\" (shoes, bags and jewellery have no cut, length, sleeve or neckline). Only where the item's slot has no such field — fabric, fabric_kind, elastane_pct, wool_pct: shoes|bag|belt|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|watch; material: any slot but shoes|bag|belt|accessory; cut, length, length_cm, belt, elastic_waist, hood: any slot but top|bottom|dress|set|outerwear|swimwear|underwear|accessory; sleeve, neckline, sleeve_cut, collar, breasted: any slot but top|dress|set|outerwear|swimwear|underwear|accessory; vamp, heel.present, heel.shape, heel.height, heel.height_cm, sole, shoe_width, sole_attachment: any slot but shoes|accessory; shaft: any slot but shoes|accessory; item_type ballet_flats|mules|espadrilles|pumps|dress_shoes|moccasins|loafers|sneakers|plimsolls|heeled_sandals|sandals; texture: jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|watch; closure, fur_trim, pile, quilted, filling: tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|watch; bag_size, strap_cm: any slot but bag|accessory; chain_cm: any slot but jewelry|collar_necklace|necklace|accessory; heel.shape, heel.height and heel.height_cm also when heel.present is \"no\". Anywhere else the field exists: no words about it, \"unknown\".", "\"item_type\": the quote must name this very type. A kind of dress, top or coat needs its own word in the quote: length, colour, fabric and fit words do not name a kind, so a dress with no kind named is dress_generic. The words name a type that has no code in the list: value \"not_applicable\" with that quote, never the nearest code. The words name no type: \"unknown\".", "\"no\" and \"none\": the text says the feature is absent; they need a quote like any value.", "A field with \"unit\" takes a number: \"value\" the number the text gives, \"unit\" its unit, the quote holds that number in digits. A range or numbers per size: the first number.", "\"set_parts\": only for an item sold as a set, one entry per part; otherwise [].", "\"color_main\": the colour of this item, not of other colour variants on sale; other colours the text names for this item go to \"color_extra\".", "\"metal_where\": the metal is the body of the item or only its hardware.", "\"veto\": about this item; \"yes\" when the feature is there, \"no\" when the text says it is not.", "\"features\": the nuances the codes do not carry, one fragment each: shade as the shop names it, texture and weave, fibre content and weight, fit, construction, fastenings, hardware, trim, heel and sole. Each fragment: \"quote\" as above, \"value\" the same in plain English, 2-6 words, no codes. Up to 30 words in all. No marketing or judgement, brand or model name, price, size or measurements; [] when the text gives nothing beyond the codes."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "CATALOG_PARSE_V3", "answer_schema": {"listing_kind": {"quote": "<quote>", "value": "item|section|interface|review|promo|gift_card|out_of_scope|unknown — kind of page or listing represented by this record"}, "audience": {"quote": "<quote>", "value": "women|men|kids|unisex|unknown — who the item is intended for, only when stated"}, "name_language": {"quote": "<quote>", "value": "uk|ru|en|mixed|unknown — language of the shop item name; quote the name"}, "slot": {"quote": "<quote>", "value": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory|unknown — place of the item in an outfit"}, "item_type": {"quote": "<quote>", "value": "evening_dress|cocktail_dress|suit|sheath_dress|sundress|blazer|over_knee_boots|chelsea_boots|ugg_boots|ballet_flats|mules|espadrilles|pumps|dress_shoes|moccasins|loafers|sneakers|plimsolls|ankle_boots|boots|heeled_sandals|sandals|clutch|backpack|tote|baguette_bag|hobo_bag|crossbody_bag|bucket_bag|belt_bag|briefcase|saddle_bag|hoodie|sportswear|loungewear|leggings|jeans|t_shirt|shirt|blouse|knitwear|cardigan|sweater|shorts|jumpsuit|skirt|trousers|coat|trench_coat|jacket|vest|top_garment|stole|kerchief|twilly|snood|shawl|bactus_scarf|ring|headband|bow|hair_clip|hair_tie|scarf_generic|jewelry_generic|bag_generic|dress_generic|two_piece_set|casual_suit|bodysuit|longsleeve|half_coat|down_jacket|fur_coat|sheepskin_coat|parka|raincoat|rain_cape|windbreaker|anorak|bomber|poncho|beanie|hat|beret|cap|belt|earrings|bracelet|necklace|collar_necklace|brooch|watch|glasses|gloves|tights|socks|swimsuit|lingerie|not_applicable|unknown — item type"}, "set_kind": {"quote": "<quote>", "value": "suit|casual_suit|set|jewelry_set|not_a_set|unknown — whether the item is sold as a set, and which"}, "set_parts": [{"slot": {"quote": "<quote>", "value": "<a code from the \"slot\" list> — place of this part of the set"}, "item_type": {"quote": "<quote>", "value": "<a code from the \"item_type\" list> — type of this part of the set"}}], "fabric": {"quote": "<quote>", "value": "wool|cashmere|mohair|angora|alpaca|cotton|viscose|tencel|lyocell|modal|linen|silk|polyester|polyamide|nylon|acrylic|elastane|stretch|denim|satin|atlas|chiffon|muslin|batiste|tweed|boucle|corduroy|velvet|jersey|knitted|suede|faux_leather|leather|patent_leather|nubuck|velour|lace|guipure|openwork|woven|not_applicable|unknown — fabric of the item"}, "material": {"quote": "<quote>", "value": "leather|suede|faux_leather|patent_leather|velour|nubuck|not_applicable|unknown — upper material of shoes, bag or belt"}, "fabric_kind": {"quote": "<quote>", "value": "knit|woven|not_applicable|unknown — knitted or woven fabric"}, "texture": {"quote": "<quote>", "value": "denim|knit_fine|knit_chunky|leather|patent|satin|silk_shine|smooth_matte|smooth_shine|tweed_boucle|not_applicable|unknown — surface of the fabric or material"}, "elastane_pct": {"quote": "<quote>", "value": "<number>|not_applicable|unknown — share of elastane in the composition", "unit": "percent|unknown"}, "wool_pct": {"quote": "<quote>", "value": "<number>|not_applicable|unknown — share of wool in the composition", "unit": "percent|unknown"}, "cut": {"quote": "<quote>", "value": "skinny|straight|tapered|wide|flared|culottes|pencil|a-line|full|pleated|bias-slip|bodycon|fitted|regular|relaxed|oversized|belted|wrap|peplum|shift|sheath|empire|double-breasted|not_applicable|unknown — cut"}, "length": {"quote": "<quote>", "value": "mini|mid_thigh|knee|midi|maxi|waist|not_applicable|unknown — length"}, "length_cm": {"quote": "<quote>", "value": "<number>|not_applicable|unknown — length of the garment as a measure", "unit": "cm|mm|m|in|unknown"}, "size_fit": {"quote": "<quote>", "value": "runs_small|true_to_size|runs_large|unknown — how the item runs against its size"}, "sleeve": {"quote": "<quote>", "value": "sleeveless|straps|cap|short|elbow|three_quarter|long|not_applicable|unknown — sleeve"}, "sleeve_cut": {"quote": "<quote>", "value": "set_in|raglan|not_applicable|unknown — how the sleeve is set into the body"}, "neckline": {"quote": "<quote>", "value": "round|v_neck|deep_v|square|boat|halter|one_shoulder|off_shoulder|strapless|turtleneck|stand_collar|shirt_collar|cowl|not_applicable|unknown — neckline"}, "collar": {"quote": "<quote>", "value": "lapel|shawl|turn_down|none|not_applicable|unknown — collar of a jacket, coat or dress"}, "closure": {"quote": "<quote>", "value": "zip|buttons|none|not_applicable|unknown — how the item fastens"}, "breasted": {"quote": "<quote>", "value": "single_breasted|double_breasted|not_applicable|unknown — single or double row of buttons"}, "belt": {"quote": "<quote>", "value": "yes|no|not_applicable|unknown — comes with a belt or tie"}, "elastic_waist": {"quote": "<quote>", "value": "yes|no|not_applicable|unknown — elastic waistband"}, "hood": {"quote": "<quote>", "value": "yes|no|not_applicable|unknown — has a hood"}, "fur_trim": {"quote": "<quote>", "value": "yes|no|not_applicable|unknown — fur trim"}, "pile": {"quote": "<quote>", "value": "teddy|shaggy|boucle|long_pile|not_applicable|unknown — pile of the fabric surface"}, "quilted": {"quote": "<quote>", "value": "yes|no|not_applicable|unknown — quilted"}, "filling": {"quote": "<quote>", "value": "down|sintepon|hollofiber|isosoft|wadding|thinsulate|none|not_applicable|unknown — insulation filling"}, "vamp": {"quote": "<quote>", "value": "low|high|not_applicable|unknown — how high the shoe covers the foot"}, "shaft": {"quote": "<quote>", "value": "ankle|calf|knee|thigh|not_applicable|unknown — where the boot shaft ends"}, "heel": {"present": {"quote": "<quote>", "value": "yes|no|not_applicable|unknown — is there a heel"}, "shape": {"quote": "<quote>", "value": "thin|block|wedge|platform|not_applicable|unknown — heel shape"}, "height": {"quote": "<quote>", "value": "flat|low|mid|high|not_applicable|unknown — heel height"}, "height_cm": {"quote": "<quote>", "value": "<number>|not_applicable|unknown — heel height as a measure", "unit": "cm|mm|m|in|unknown"}}, "sole": {"quote": "<quote>", "value": "smooth|leather|lug|polyurethane|eva|tpr|not_applicable|unknown — material or tread of the sole"}, "shoe_width": {"quote": "<quote>", "value": "narrow|medium|wide|not_applicable|unknown — width of the shoe"}, "sole_attachment": {"quote": "<quote>", "value": "stitched|glued|not_applicable|unknown — sole stitched or glued"}, "bag_size": {"quote": "<quote>", "value": "small|medium|large|not_applicable|unknown — size of the bag"}, "strap_cm": {"quote": "<quote>", "value": "<number>|not_applicable|unknown — full length of the bag strap", "unit": "cm|mm|m|in|unknown"}, "chain_cm": {"quote": "<quote>", "value": "<number>|not_applicable|unknown — length of the necklace or its chain", "unit": "cm|mm|m|in|unknown"}, "metal": {"quote": "<quote>", "value": "gold|rose_gold|white_gold|silver|steel|brass|bronze|copper|platinum|none|unknown — metal of the item"}, "metal_where": {"quote": "<quote>", "value": "body|hardware|both|none|unknown — metal is the body of the item or only its hardware"}, "color_main": {"quote": "<quote>", "value": "black|white|grey|graphite|beige|cream|milky|sand|taupe|camel|latte|cocoa|brown|chocolate|red|burgundy|cherry|raspberry|brick|terracotta|ginger|coral|orange|peach|yellow|lemon|mustard|golden|khaki|olive|green|pine_green|mint|turquoise|petrol|light_blue|denim_blue|blue|navy|lilac|purple|plum|magenta|fuchsia|pink|rose|powder_pink|silvery|pearly|creamy|mocha|cappuccino|powder|soft_pink|emerald|electric_blue|unknown — colour of the item itself"}, "color_extra": [{"quote": "<quote>", "value": "black|white|grey|graphite|beige|cream|milky|sand|taupe|camel|latte|cocoa|brown|chocolate|red|burgundy|cherry|raspberry|brick|terracotta|ginger|coral|orange|peach|yellow|lemon|mustard|golden|khaki|olive|green|pine_green|mint|turquoise|petrol|light_blue|denim_blue|blue|navy|lilac|purple|plum|magenta|fuchsia|pink|rose|powder_pink|silvery|pearly|creamy|mocha|cappuccino|powder|soft_pink|emerald|electric_blue|unknown — other colours the text names for this item"}], "color_why": {"quote": "<quote>", "value": "one_color|two_colors|print_colors|trim|hardware|lining|variants|unknown — why there are several colours"}, "pattern": {"quote": "<quote>", "value": "solid|polka_dot|floral|stripes|check|animal_print|camouflage|geometric|abstract|lace_motif|embroidery|print_generic|unknown — pattern"}, "decor": [{"quote": "<quote>", "value": "sequins|rhinestones|beads|pearls|tulle|feathers|lurex|glitter|metallic|embroidery|lace_trim|ruffles|bow|fringe|chain|studs|cutouts|none|unknown — decoration"}], "veto": {"stripes": {"quote": "<quote>", "value": "yes|no|unknown — stripes on the item"}, "big_print": {"quote": "<quote>", "value": "yes|no|unknown — big print on the item"}, "print": {"quote": "<quote>", "value": "yes|no|unknown — any print on the item"}, "shine": {"quote": "<quote>", "value": "yes|no|unknown — shine of fabric or trim"}, "oversize": {"quote": "<quote>", "value": "yes|no|unknown — oversized volume"}, "tight": {"quote": "<quote>", "value": "yes|no|unknown — tight fit"}}, "features": [{"quote": "<quote>", "value": "<a nuance of this item in plain English>"}]}, "input": ["\"name\" — the shop's name of the item", "\"description\" — the shop's description", "\"params\" — fields of the shop card: key and value"]}, "name": "Пальто подовжене класичне на запах з поясом", "description": "Опис:", "params": {"адаптер": "shopify v1", "колір": "Чорний", "розміри": "XS, S, M, L, XL, XXL, XXXL", "категорія_магазину": "Пальто демі", "~тип": "Пальто демі", "~бренд": "Wear Me", "~теги": "2023, classic, кашемір", "~material": "Кашемір"}}
+
+── ВІДПОВІДЬ
+{
+  "listing_kind": {
+    "quote": "на запах з поясом",
+    "value": "item"
+  },
+  "audience": {"quote": "", "value": "unknown"},
+  "name_language": {"quote": "Пальто подовжене класичне на запах з поясом", "value": "ru"},
+  "slot": {"quote": "пальто", "value": "outerwear"},
+  "item_type": {
+    "quote": "подовжене класичне пальто",
+    "value": "coat"
+  },
+  "set_kind": {"quote": "", "value": "not_a_set"},
+  "set_parts": [],
+  "fabric": {
+    "quote": "кашемір",
+    "value": "cashmere"
+  },
+  "material": {"quote": "", "value": "unknown"},
+  "fabric_kind": {"quote": "", "value": "not_applicable"},
+  "texture": {"quote": "", "value": "unknown"},
+  "elastane_pct": {"quote": "", "value": "unknown", "unit": "percent"},
+  "wool_pct": {
+    "quote": "кашемір",
+    "value": "unknown",
+    "unit": "percent"
+  },
+  "cut": {"quote": "", "value": "unknown"},
+  "length": {
+    "quote": "подовжене пальто",
+    "value": "maxi"
+  },
+  "length_cm": {"quote": "", "value": "unknown", "unit": "cm"},
+  "size_fit": {"quote": "", "value": "unknown"},
+  "sleeve": {"quote": "", "value": "not_applicable"},
+  "sleeve_cut": {"quote": "", "value": "unknown"},
+  "neckline": {"quote": "", "value": "unknown"},
+  "collar": {"quote": "", "value": "unknown"},
+  "closure": {
+    "quote": "на запах",
+    "value": "none"
+  },
+  "breasted": {"quote": "", "value": "unknown"},
+  "belt": {
+    "quote": "з поясом",
+    "value": "yes"
+  },
+  "elastic_waist": {"quote": "", "value": "no"},
+  "hood": {"quote": "", "value": "no"},
+  "fur_trim": {"quote": "", "value": "no"},
+  "pile": {"quote": "", "value": "not_applicable"},
+  "quilted": {"quote": "", "value": "no"},
+  "filling": {"quote": "", "value": "unknown"},
+  "vamp": {"quote": "", "value": "not_applicable"},
+  "shaft": {"quote": "", "value": "not_applicable"},
+  "heel": {
+    "present": {
+      "quote": "",
+      "value": "no"
+    },
+    "shape": {
+      "quote": "",
+      "value": "unknown"
+    },
+    "height": {
+      "quote": "",
+      "value": "flat"
+    },
+    "height_cm": {"quote": "", "value": "unknown", "unit": "cm"}
+  },
+  "sole": {"quote": "", "value": "unknown"},
+  "shoe_width": {"quote": "", "value": "not_applicable"},
+  "sole_attachment": {"quote": "", "value": "unknown"},
+  "bag_size": {"quote": "", "value": "not_applicable"},
+  "strap_cm": {"quote": "", "value": "unknown", "unit": "cm"},
+  "chain_cm": {"quote": "", "value": "unknown", "unit": "cm"},
+  "metal": {"quote": "", "value": "none"},
+  "metal_where": {"quote": "", "value": "none"},
+  "color_main": {
+    "quote": "чорний",
+    "value": "black"
+  },
+  "color_extra": [],
+  "color_why": {"quote": "", "value": "unknown"},
+  "pattern": {"quote": "", "value": "solid"},
+  "decor": [
+  ],
+  "veto": {
+    "stripes": {"quote": "", "value": "no"},
+    "big_print": {"quote": "", "value": "no"},
+    "print": {"quote": "", "value": "no"},
+    "shine": {"quote": "", "value": "no"},
+    "oversize": {"quote": "", "value": "no"},
+    "tight": {"quote": "", "value": "no"}
+  },
+  "features": [
+  ]
+}
