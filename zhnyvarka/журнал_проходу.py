@@ -62,9 +62,12 @@ class ЖурналПроходу:
         return bool(відомо and відомо[0] == '1' and self.звіт()["pending"])
 
     def перелік(self, адреси):
-        """Починає новий прохід; відсутність адреси не видаляє давніх результатів."""
+        """Замінює активну чергу знімком переліку, зберігаючи давні відповіді й картки."""
         with self.база:
-            self.база.execute("UPDATE черга SET стан='PENDING'")
+            if адреси:
+                self.база.execute("DELETE FROM черга")
+            else:
+                self.база.execute("UPDATE черга SET стан='PENDING'")
             for url in dict.fromkeys(адреси):
                 self.база.execute("INSERT OR IGNORE INTO черга VALUES (?,'PENDING',NULL)", (url,))
             # Порожня розвідка не доводить вичерпання асортименту.
