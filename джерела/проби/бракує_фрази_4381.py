@@ -15,7 +15,11 @@ def фрази(x, в_бракує=False, k=None):
         return [f for кл, v in x.items() for f in фрази(v, в_бракує or кл == "бракує", кл)]
     if isinstance(x, (list, tuple)):
         return [f for v in x for f in фрази(v, в_бракує, k)]
-    return [x] if в_бракує and isinstance(x, str) and len(set(СЛОВО.findall(x))) >= 2 else []
+    if not (в_бракує and isinstance(x, str)):
+        return []
+    # код `поле числа=… [id, id]` — не фраза: id в дужках, імена полів із «_», числа межі `ключ=значення`
+    решта = re.sub(r"\[[^\]]*\]|\S*[_=]\S*", " ", x)
+    return [x] if СЛОВО.search(решта) else []
 
 
 всього, ф, бракує_записів = 0, [], 0
