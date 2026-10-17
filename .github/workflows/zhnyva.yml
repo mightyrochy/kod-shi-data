@@ -6,6 +6,9 @@
 name: жнива
 
 on:
+  # §3.2 плану: один щотижневий інкрементний прохід. До #1366 — лише явний skip.
+  schedule:
+    - cron: "17 3 * * 1"
   workflow_dispatch:
     inputs:
       shops:
@@ -37,11 +40,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  schedule-readiness:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      ready: ${{ steps.readiness.outputs.ready }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: готовність безпечного журналу з #1366
+        id: readiness
+        run: python3 zhnyvarka/розклад.py
   harvest:
+    needs: schedule-readiness
+    if: always() && (github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && needs.schedule-readiness.outputs.ready == 'true'))
+    env:
+      HARVEST_SHOPS: ${{ github.event_name == 'schedule' && 'ricamare.com.ua' || inputs.shops }}
+      HARVEST_TRANSPORT: ${{ github.event_name == 'schedule' && 'браузер' || inputs.transport }}
+      HARVEST_CEILING: ${{ github.event_name == 'schedule' && '25' || inputs.ceiling }}
+      HARVEST_SECONDS: ${{ github.event_name == 'schedule' && '180' || inputs.seconds }}
+      HARVEST_PARALLEL: ${{ github.event_name == 'schedule' && '1' || inputs.parallel }}
+      HARVEST_PAUSE: ${{ github.event_name == 'schedule' && '2' || '0.8' }}
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    timeout-minutes: 340
+    timeout-minutes: ${{ github.event_name == 'schedule' && 10 || 340 }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -66,8 +89,8 @@ jobs:
       - name: жнива
         working-directory: zhnyvarka
         run: |
-          python3 виконавець.py --рецепти рецепти.tsv --магазини "${{ inputs.shops }}" --транспорт "${{ inputs.transport }}" \
-            --стеля "${{ inputs.ceiling }}" --секунд-на-магазин "${{ inputs.seconds }}" --паралельно "${{ inputs.parallel }}" \
+          python3 виконавець.py --рецепти рецепти.tsv --магазини "$HARVEST_SHOPS" --транспорт "$HARVEST_TRANSPORT" \
+            --стеля "$HARVEST_CEILING" --секунд-на-магазин "$HARVEST_SECONDS" --паралельно "$HARVEST_PARALLEL" --пауза "$HARVEST_PAUSE" \
             2>&1 | tee жнива_лог.txt
           echo "=== зведення_жнив.tsv ==="; cat зведення_жнив.tsv
       - name: журнал і огляд → гілка zhnyva-data
