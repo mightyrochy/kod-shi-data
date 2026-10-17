@@ -1,0 +1,37 @@
+── ПРОМПТ (2522 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green silk blend sheath dress, A-line cut, midi length reaching just below the knee, forest green color (#0a3d2e), heavy crepe fabric to provide warmth against the frost.\nCharcoal grey tailored wool blazer, structured fit with notched lapels, hip length hitting the mid-thigh, deep charcoal color (#36454f), fine worsted wool fabric for a polished look.\nClassic black patent leather pumps, pointed toe silhouette, ankle height, jet black color (#000000), smooth synthetic leather material.\nDiamond crystal drop earrings, teardrop shape, medium length reaching the collarbone, clear to icy blue gradient color (#eefcfd), rhinestone crystals on a silver-tone metal setting.\nThis outfit balances the frosty autumn weather with the upscale restaurant setting by layering a warm wool blazer over a structured silk dress that maintains an elegant silhouette. The rich emerald green of the dress complements her warm skin tones while offering a festive yet sophisticated color suitable for a New Year's celebration. Adding classic black pumps and sparkling crystal earrings elevates the ensemble to meet the formal and smart dress codes without appearing overly stiff."}
+
+── ВІДПОВІДЬ (991 симв., 156.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "A-line cut, midi length reaching just below the knee, heavy crepe fabric to provide warmth against the frost.",
+      "slot": "dress",
+      "color_hex": "#0a3d2e",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "Tailored structured fit with notched lapels, hip length hitting the mid-thigh, fine worsted wool fabric for a polished look.",
+      "slot": "outerwear",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "Pointed toe silhouette, ankle height, smooth synthetic leather material.",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "drop earrings",
+      "details": "Teardrop shape, medium length reaching the collarbone, rhinestone crystals on a silver-tone metal setting.",
+      "slot": "earrings",
+      "color_hex": "#eefcfd",
+      "worn": true
+    }
+  ]
+}
