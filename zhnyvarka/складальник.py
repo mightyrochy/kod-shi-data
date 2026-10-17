@@ -302,9 +302,11 @@ def _shopify_варіанти(шапка, записи, тека):
     шв = importlib.import_module("shopify_варіанти")
     ва = importlib.import_module("woo_варіанти")
     знімки = ва.читати_знімки(тека)
+    ж = importlib.import_module("жниварка")
+    магазини = {м["домен"]: м for м in ж.читати_магазини(os.path.join(os.path.dirname(os.path.abspath(__file__)), "магазини.tsv"))}
     нові, відповідність, зб, км, звіт, черга = шв.перебрати(
         записи, знімки, шв.читати_рецепти(), ва.читати_json_gz(ва.ЗБАГАЧЕННЯ), ва.читати_json_gz(ва.КАДРИ)["записи"],
-        datetime.date.today().isoformat())
+        datetime.date.today().isoformat(), ж, магазини)
     писати_записи(шапка, нові)
     ва.писати_json_gz(зб, ва.ЗБАГАЧЕННЯ, sort_keys=True, separators=(",", ":"))
     повні = ва.читати_json_gz(ва.КАДРИ)
