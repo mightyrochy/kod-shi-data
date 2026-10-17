@@ -7,7 +7,7 @@
 частка речей без номера пулу, без кольору й L; записи заміру до правки 4350 її не несуть — «—»."""
 import gzip, json, glob, os, re, statistics as С, sys, collections as K
 
-ЕХО = re.compile(r'\n\s{0,4}"(fixes|not_run_everywhere|set|showcase|verdict|case|day)"\s*:')
+ЕХО = re.compile(r'\n\s{0,4}"(fixes|not_run_everywhere|set|showcase|verdict|case)"\s*:')
 ключ_опори = lambda z: (z.get("правило"), next((з.get("code") for з in z.get("заяви") or [] if isinstance(з, dict)), None))
 речі = lambda z: {у.get("річ") for у in z.get("учасники") or []} or set(z.get("речі") or [])
 # Лічба, що береться з поля, якого запис боку не має (ДО: образів після ремонту й «chosen» нема), друкується «—», не 0.

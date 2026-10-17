@@ -248,7 +248,15 @@ def невідомо(v, коди=()):
         "bodysuit": "боді", "longsleeve": "лонгслів", "half_coat": "півпальто",
         "down_jacket": "пуховик", "fur_coat": "шуба", "sheepskin_coat": "дублянка", "parka": "парка",
         "raincoat": "плащ", "rain_cape": "дощовик", "windbreaker": "вітровка", "anorak": "анорак",
-        "bomber": "бомбер", "poncho": "пончо"},
+        "bomber": "бомбер", "poncho": "пончо",
+        # 6755 (17.10.2026): типи слотів, у яких доти був лише родовий код або жодного (шапка в еталоні 404
+        # діставала `scarf_generic`, «моно-сережка» — `ring`, пасок — `belt_bag`): модель шукала найближчий
+        # чужий код. Слот кожного — у `СЛОТ_ТИПУ`; сережка, браслет, намисто, кольє, брошка, годинник,
+        # окуляри, рукавички, колготи й шкарпетки названі тим самим словом, що й слот.
+        "beanie": "шапка", "hat": "капелюх", "beret": "берет", "cap": "кепка", "belt": "пасок",
+        "earrings": "сережки", "bracelet": "браслет", "necklace": "намисто", "collar_necklace": "кольє",
+        "brooch": "брошка", "watch": "годинник", "glasses": "окуляри", "gloves": "рукавички",
+        "tights": "колготи", "socks": "шкарпетки", "swimsuit": "купальник", "lingerie": "білизна"},
     "fabric": {
         "wool": "вовна", "cashmere": "кашемір", "mohair": "мохер", "angora": "ангора",
         "alpaca": "альпака", "cotton": "бавовна", "viscose": "віскоза", "tencel": "тенсел",
@@ -411,7 +419,11 @@ def невідомо(v, коди=()):
     "stole": "scarf", "kerchief": "scarf", "twilly": "scarf", "snood": "scarf", "shawl": "scarf",
     "bactus_scarf": "scarf", "scarf_generic": "scarf",
     "headband": "headwear", "bow": "headwear", "hair_clip": "headwear", "hair_tie": "headwear",
-    "ring": "ring", "jewelry_generic": "jewelry"}
+    "beanie": "headwear", "hat": "headwear", "beret": "headwear", "cap": "headwear", "belt": "belt",
+    "earrings": "earrings", "bracelet": "bracelet", "necklace": "necklace",
+    "collar_necklace": "collar_necklace", "brooch": "brooch", "watch": "watch", "glasses": "glasses",
+    "gloves": "gloves", "tights": "tights", "socks": "socks", "swimsuit": "swimwear",
+    "lingerie": "underwear", "ring": "ring", "jewelry_generic": "jewelry"}
 
 
 def ключ(поле, код):
@@ -850,6 +862,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "card_unknowns_toggle": "напис на кнопці, що розгортає на картці образу згорнутий перелік того, "
                             "що в цьому образі лишилось не перевіреним: кілька слів, без числа, без "
                             "крапки в кінці; лічбу рядків екран допише сам",
+    # ЗАМІНА-МОВЧИТЬ (рядок 6617): заміна відповіла «готово» без речі — раніше жінці не казали нічого
+    "replacement_not_found": "рядок на картці образу біля речі, яку вона позначила на заміну: стилістка "
+                             "не знайшла їй заміни, річ лишилась у образі, а кнопку можна натиснути знову",
     "assembly_refused": "рядок на екрані сценарію, коли образи зібрати не вдалось: що сталось "
                         "і що їй зробити, щоб зібрати",
     # Ч-8 (28.09.2026, рядок 197): доти екран «Оціни мій образ» ставив рядком те, що кинув код
@@ -3431,6 +3446,10 @@ if _спільні:
     'passport_author': 'The language model conversation author of the passport was not supplied to the judge.',
     'point_input_unknown': 'The referenced checklist point lacks its required input. Do not treat this as a pass.',
     'rule_input_unknown': 'The referenced producer rule lacks input; input and detail identify its missing coded facts and statements carry its context. Source fields name producer references, not conclusions.',
+})
+ЗАЯВИ.update({
+    "replacement_item_not_found": "no replacement of the same kind was found for the item she marked; the item stays in the outfit, the other outfits are unchanged",
+    "replacement_can_try_again": "she can press the replace button on the item again",
 })
 ЗАЯВИ.update({
     "passport_tiles_only": "There is no passport from conversation; the scenario only came from tiles.",
