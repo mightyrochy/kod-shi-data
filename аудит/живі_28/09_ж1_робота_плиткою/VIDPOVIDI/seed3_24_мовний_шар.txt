@@ -1,0 +1,55 @@
+── ПРОМПТ (7715 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Кардиган Хмаринка ваніль · kind code: cardigan · colour code: camel · about it: text н=1
+2 — Сумка жіноча Antigona Vanity · kind code: bag_generic · colour code: pink · about it: text н=2
+3 — Кімоно з кишенями та поясом · kind code: belt · colour code: green · about it: text н=3
+4 — Штани з вовни ягнят молочні · kind code: trousers · colour code: white · about it: text н=4
+5 — Черевики жіночі, ATTICO, замша, колір коричневий · kind code: ankle_boots · colour code: brown · about it: text н=5
+6 — В’язаний палантин із виразним орнаментом RUTA капучино + айворі · kind code: stole · colour code: cappuccino · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; camel — кемел; cappuccino — капучино; green — зелений; pink — рожевий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This is the cloud-like cardigan in a soft camel hue, featuring a relaxed V-neck and large pearl buttons. It is made of a sheer, open-knit fabric that drapes gently over your frame.",
+"2": "The Antigoya Vanity bag is a structured piece in delicate pink, distinguished by a top zipper closure and the classic Givenchy logo plaque on the front.",
+"3": "It is the kimono-style robe shown with its tie belt in a deep green velvet, which brings texture and warmth to the ensemble.",
+"4": "The trousers are cut from soft, creamy white wool, offering a clean and elegant silhouette that elongates your legs.",
+"5": "These ATTICO ankle boots feature rich brown suede with contrasting lighter panels and a thick platform sole, providing comfort for the day.",
+"6": "The RUTA stole displays a striking geometric pattern in cappuccino and ivory tones, crafted from a soft knitted material perfect to drape over your shoulders.",
+"7": "Your look combines the warmth of autumn with a sophisticated work-appropriate aesthetic, blending textures like camel wool, green velvet, pink leather, and brown suede into one cohesive whole. The soft camel cardigan serves as the perfect neutral anchor, while the white trousers keep the silhouette clean and light. This outfit works beautifully because it balances cozy knits with structured leather and velvet, creating an ensemble that is both professional and comfortable enough for a full day at the office. The palette leans into earthy tones punctuated by the pop of pink in the handbag.",
+"8": "Tuck the kimono belt loosely into the waistband of your trousers to define your silhouette while keeping the robe draped open over the cardigan.",
+"9": "Drape the patterned stole casually over one shoulder or tie it lightly around your neck to soften the neckline of the camel knit.",
+"10": "Кардиган Хмаринка ваніль, Сумка жіноча Antigona Vanity, Кімоно з кишенями та поясом, Штани з вовни ягнят молочні, Черевики жіночі, ATTICO, замша, колір коричневий, В’язаний палантин із виразним орнаментом RUTA капучино + айворі — This register mix of preppy, classic, and boho serves your office intent by balancing structure with seasonal warmth, turning potential genre noise into a thoughtful, layered aesthetic."
+}
+
+── ВІДПОВІДЬ (2377 симв., 87.8 с, HTTP 200) ──
+```json
+{
+"1": "Це кардиган Хмаринка ваніль у м’якому кемел-відтінку з розслабленим V-подібним вирізом і великими перламутровими ґудзиками. Він виготовлений із прозорої, відкритої в’язаної тканини, яка ніжно драпірується по твоїй фігурі.",
+"2": "Сумка жіноча Antigona Vanity — це структурований виріб у делікатному рожевому кольорі, який виділяється застібкою-блискавкою зверху та класичною табличкою з логотипом Givenchy на передній частині.",
+"3": "Це кімоно-подібний халат, показаний із зав’язаним поясом у глибокому зеленому оксамиті, який додає текстури й тепла всьому ансамблю.",
+"4": "Штани пошиті з м’якої кремово-білої вовни, пропонуючи чистий і елегантний силует, що видовжує твої ноги.",
+"5": "Ці черевики жіночі ATTICO мають насичений коричневий замш із контрастними світлішими панелями та товстою платформою, забезпечуючи комфорт протягом дня.",
+"6": "В’язаний палантин RUTA демонструє вражаючий геометричний візерунок у кавових і айворі відтінках, виготовлений із м’якого в’язаного матеріалу, який чудово підійде для того, щоб накинути собі на плечі.",
+"7": "Твій образ поєднує тепло осені з вишуканою естетикою, придатною для роботи, змішуючи текстури, такі як кемел-шерсть, зелений оксамит, рожева шкіра та коричневий замш в одне ціле. М’який кардиган Хмаринка ваніль слугує ідеальним нейтральним акцентом, а білі штани зберігають силует чистим і легким. Цей образ чудово працює, тому що він збалансовує затишні в’язані вироби зі структурованою шкірою та оксамитом, створюючи ансамбль, який є одночасно професійним і достатньо комфортним для цілого дня на роботі. Палітра схиляється до земляних тонів, підкреслених яскравим рожевим акцентом у сумці.",
+"8": "Недбало заправ пояс кімоно в талію штанів, щоб окреслити твою фігуру, залишаючи халат розгорнутим поверх кардигану.",
+"9": "Легко накинь палантин із візерунком на одне плече або зав’яжи його навколо шиї, щоб пом’якшити виріз горловини кемел-в’язаного виробу.",
+"10": "Кардиган Хмаринка ваніль, Сумка жіноча Antigona Vanity, Кімоно з кишенями та поясом, Штани з вовни ягнят молочні, Черевики жіночі ATTICO замша коричневого кольору, В’язаний палантин із виразним орнаментом RUTA капучино + айворі — Цей мікс преппі, класичного та бохо стилів слугує твоєму офіційному призначенню, збалансовуючи структуру з сезонним теплом, перетворюючи потенційний жанровий шум на продуману, багатошарову естетику."
+}
+```

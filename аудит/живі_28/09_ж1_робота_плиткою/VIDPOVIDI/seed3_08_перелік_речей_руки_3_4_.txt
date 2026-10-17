@@ -1,0 +1,51 @@
+── ПРОМПТ (2379 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored wool-blend blazer in a structured lapel cut with mid-thigh length and #5D4037 brown hue; classic straight-leg trousers in high-twist cotton with knee-length fall and #F5F5DC beige tone; leather oxford pump with pointed toe and 8cm heel finished in #8B0000 deep red; pearl stud earrings in round shape, a slim gold watch with minimal face, and a structured leather tote bag in tan hide. This ensemble works because the warm autumnal tones of the brown jacket and beige pants harmonize beautifully with her neutral skin undertones and honey-blonde hair while complementing her green eyes. The crisp textures of wool and cotton provide the professional polish required for an office setting without feeling restrictive or too heavy for daytime wear. The addition of a single pop of deep red in the shoes adds a confident, modern touch to the otherwise classic neutral palette, perfectly balancing her wish for style with the demands of a work environment where no outer layer is needed as temperatures remain mild at +20 °C."}
+
+── ВІДПОВІДЬ (1051 симв., 137.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Tailored wool-blend blazer",
+      "details": "structured lapel cut with mid-thigh length",
+      "slot": "outerwear",
+      "color_hex": "#5D4037",
+      "worn": true
+    },
+    {
+      "name": "Classic straight-leg trousers",
+      "details": "high-twist cotton with knee-length fall",
+      "slot": "bottom",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "Leather oxford pump",
+      "details": "pointed toe with 8cm heel",
+      "slot": "shoes",
+      "color_hex": "#8B0000",
+      "worn": true
+    },
+    {
+      "name": "Pearl stud earrings",
+      "details": "round shape",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Slim gold watch",
+      "details": "minimal face",
+      "slot": "watch",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Structured leather tote bag",
+      "details": "in tan hide",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
