@@ -1,0 +1,51 @@
+── ПРОМПТ (2682 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Deep charcoal wool overcoat in a straight cut falling to mid-calf, #2b2b2b, heavy merino blend.  \nOversized black turtleneck sweater with a subtle ribbed texture and a relaxed fit, #1c1c1c, fine gauge cotton and wool mix.  \nHigh-waisted wide-leg trousers in matte black fabric with a fluid drape and ankle-length hem, #0f0f0f, structured twill.  \nMinimalist silver pendant necklace on a thin chain, #e8e8e8, polished sterling silver.  \nSimple stud earrings in oxidized silver, #c0c0c0, smooth metal.  \nClosed-toe leather pumps with a low block heel in a deep black shade and sleek silhouette, #1a1a1a, soft calfskin.  \n\nThis outfit honors the solemnity of a morning funeral while respecting her specific request for a \"smart\" or \"formal\" dress code without crossing into ceremonial white-tie attire. The dark, matte fabrics provide a respectful visual weight suitable for autumn daylight and mourning customs, creating a unified somber palette that complements her skin tone. By choosing wide-leg trousers and a straight overcoat instead of traditional suits or gowns, the ensemble balances dignity with a modern, understated elegance appropriate for an early morning service. The minimal silver accessories add just enough subtle detail to elevate the look without drawing attention away from the gravity of the occasion."}
+
+── ВІДПОВІДЬ (1268 симв., 203.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Overcoat",
+      "details": "straight cut falling to mid-calf, heavy merino blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#2b2b2b",
+      "worn": true
+    },
+    {
+      "name": "Turtleneck sweater",
+      "details": "oversized with a subtle ribbed texture and a relaxed fit, fine gauge cotton and wool mix",
+      "slot": "top",
+      "color_hex": "#1c1c1c",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg trousers",
+      "details": "high-waisted with a fluid drape and ankle-length hem, structured twill fabric",
+      "slot": "bottom",
+      "color_hex": "#0f0f0f",
+      "worn": true
+    },
+    {
+      "name": "Pendant necklace",
+      "details": "minimalist on a thin chain, polished sterling silver",
+      "slot": "collar_necklace",
+      "color_hex": "#e8e8e8",
+      "worn": true
+    },
+    {
+      "name": "Stud earrings",
+      "details": "simple in smooth oxidized silver metal",
+      "slot": "earrings",
+      "color_hex": "#c0c0c0",
+      "worn": true
+    },
+    {
+      "name": "Pumps",
+      "details": "closed-toe leather with a low block heel and sleek silhouette, soft calfskin",
+      "slot": "shoes",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    }
+  ]
+}
