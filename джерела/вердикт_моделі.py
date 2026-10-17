@@ -154,7 +154,7 @@ _РЯДОК_ACTION = ("«action» in «done» is one word: fixed — the finding
 _РЯДОК_ОБРАЗ_ВІДПОВІДІ = ("An outfit of the answer is «your_outfit» after your work, with the same «id» and with "
                           "«done»; «structure», «findings», «keep», «checklist» and «knot» stay out of the answer.")
 _РЯДОК_КІНЕЦЬ = ("Write the answer object itself: it begins with {\"version\" and ends with the brace that closes "
-                 "it, right after «needed». Do not put it under «answer»; after that brace the answer is over.")
+                 "it, right after «needed». Do not wrap it in another object; after that brace the answer is over.")
 # Без гейтів у вердикті — ті самі правила без «done»
 _БЕЗ_ГЕЙТІВ = {
     _РЯДОК_ЗАУВАЖЕННЯ: _РЯДОК_ЗАУВАЖЕННЯ.replace("; a remark needs no entry in «done»", ""),
@@ -289,6 +289,9 @@ _БЕЗ_ГЕЙТІВ = {
         # відповідей заміру РЕМОНТ-1 після «needed» стоїть «input» (у 10 — `null`, у 7 — увесь `task.input`,
         # 9–12,7 тис. симв.), і 7 з 13 обрізаних об стелю 4000 т. обрізано саме на ньому (до правила, у заміру ГГ-1,
         # «input» не писала жодна з 33). Тут кінець названо місцем — дужка після «needed», — а не переліком.
+        # РЕМОНТ-3 (рядок 6785): і без «answer» — правило називало словом ключ обгортки, якого в
+        # промпті ремонту нема («task» ремонту ключа «answer» не несе), а обгортка `"answer": {` лишалась у 3 з 14
+        # живих сцен. Та сама форма, що `КІНЕЦЬ_ВІДПОВІДІ_EN`: «не обгортай іншим обʼєктом», без імені ключа.
         _РЯДОК_КІНЕЦЬ,
     ),
     вихід="ОБРАЗИ_V1",
