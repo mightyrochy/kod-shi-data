@@ -3302,11 +3302,11 @@
          },
          {
           "const": "selection_removed_item_from_stylist_look",
-          "description": "the named item was removed from the stylist's outfit (values: item — the item's name)"
+          "description": "the selection removed the named item from the stylist's outfit (values: item — the item's name)"
          },
          {
           "const": "selection_swapped_item_from_stylist_look",
-          "description": "the named item was replaced with another one from the same selection (values: was — what it was, now — what it is now)"
+          "description": "the selection replaced the named item of the stylist's outfit with another one from the same selection (values: was — what it was, now — what it is now)"
          },
          {
           "const": "stylist_swapped_item_after_photo",
@@ -3850,7 +3850,7 @@
          },
          {
           "const": "face_frame_carrier_no_palette_data",
-          "description": "an item near the face could widen the choice of tops, but this time the code had no palette data for that (values: item — item name)"
+          "description": "an item near the face could widen the choice of tops, but this time the code had no palette data for that (values: item — item name; item_id)"
          },
          {
           "const": "glasses_pairs_count_unknown",
@@ -3858,7 +3858,7 @@
          },
          {
           "const": "scarf_size_unknown",
-          "description": "the card does not name the scarf's size, so the code does not know which knots and ways of wearing are possible (values: item — item name)"
+          "description": "the card does not name the scarf's size, so the code does not know which knots and ways of wearing are possible (values: item — item name; item_id)"
          },
          {
           "const": "item_length_unknown_edge_default",
@@ -3878,7 +3878,7 @@
          },
          {
           "const": "item_longer_than_her_body",
-          "description": "on her own height this item is longer than her body from the point the shop measures it, so its hem reaches the floor and the extra length pools there (values: slot — slot code; excess_cm — how many centimetres longer)"
+          "description": "on her height the item is longer than her body from the shop's measuring point: the hem pools on the floor (values: excess_cm)"
          },
          {
           "const": "declared_length_outside_body",
@@ -3954,7 +3954,7 @@
          },
          {
           "const": "fabric_stretches_ease_below_woven_min",
-          "description": "the item's width ease at this level is below the minimum for non-stretch woven cloth, but the declared composition has elastane, so whether it goes on freely is decided by the stretch, which the code does not measure (values: level — body level code, elastane_percent — the share the shop declares)"
+          "description": "the ease is below the woven minimum: the declared elastane, unmeasured, decides if it goes on freely (values: level — body level; elastane_percent)"
          },
          {
           "const": "claim_zone_tented",
@@ -3998,7 +3998,7 @@
          },
          {
           "const": "shoe_cut_irrelevant_leg_covered",
-          "description": "the shoe's cut-line decides nothing here: a long bottom covers the leg (values: item — item name)"
+          "description": "the shoe's cut-line decides nothing here: a long bottom covers the leg (values: item — item name; item_id)"
          },
          {
           "const": "dress_formality_no_photo_score",
@@ -4094,11 +4094,11 @@
          },
          {
           "const": "heel_height_unknown_comfort_ceiling",
-          "description": "the pair has a heel, but the card does not say its height, so the code did not check it against the limit for a comfortable outing (values: item — item name)"
+          "description": "the pair has a heel, but the card does not say its height, so the code did not check it against the limit for a comfortable outing (values: item — item name; item_id)"
          },
          {
           "const": "heel_height_unknown_wear_cost",
-          "description": "the pair has a heel, but the card does not say its height, so the code does not count the wearing cost for the feet (values: item — item name)"
+          "description": "the pair has a heel, but the card does not say its height, so the code does not count the wearing cost for the feet (values: item — item name; item_id)"
          },
          {
           "const": "wear_cost_no_duration_surface",
@@ -4106,7 +4106,7 @@
          },
          {
           "const": "sole_grip_unknown_ice",
-          "description": "the card does not say whether the sole grips on ice, and today there is black ice (values: item — item name)"
+          "description": "the card does not say whether the sole grips on ice, and today there is black ice (values: item — item name; item_id)"
          },
          {
           "const": "no_light_outer_layer_in_catalogue",
@@ -4134,23 +4134,23 @@
          },
          {
           "const": "outer_ease_not_in_feed",
-          "description": "the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — item names)"
+          "description": "the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — items: item_id, name — the item's name on the card)"
          },
          {
           "const": "fitted_outer_over_knit_cut_unknown",
-          "description": "the code does not know whether a fitted layer goes over a knit top: the card does not name the knit top's cut (values: outer — the layer's name; top — the top's name)"
+          "description": "the code does not know whether a fitted layer goes over a knit top: the card does not name the knit top's cut (values: outer — the layer; top — the knit top: item_id, name — the name on the card)"
          },
          {
           "const": "front_v_depth_no_body_input",
-          "description": "the code computed the depth of the outer layer's neckline, but has nothing to apply it to: it does not know her under-bust girth or neck length (values: item — item name)"
+          "description": "the code computed the depth of the outer layer's neckline, but has nothing to apply it to: it does not know her under-bust girth or neck length (values: item — item name; item_id)"
          },
          {
           "const": "outer_shoulder_not_measured",
-          "description": "the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name)"
+          "description": "the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name; item_id)"
          },
          {
           "const": "outer_composition_unknown_salt",
-          "description": "the card does not name the outer layer's composition, so the code does not know whether road salt damages it (values: item — item name)"
+          "description": "the card does not name the outer layer's composition, so the code does not know whether road salt damages it (values: item — item name; item_id)"
          },
          {
           "const": "size_is_label_not_fit",
@@ -4238,7 +4238,7 @@
          },
          {
           "const": "no_shoes",
-          "description": "the outfit has no shoes, and without them it is not ready: add a pair for the occasion"
+          "description": "no shoes, so the outfit is not ready: add a pair for the occasion"
          },
          {
           "const": "no_bag",
@@ -4246,7 +4246,7 @@
          },
          {
           "const": "needs_third_piece",
-          "description": "needs one more piece beyond top, bottom, shoes: outer layer, jewellery, belt, scarf or hat"
+          "description": "a piece beyond top, bottom and shoes: outer layer, jewellery, belt, scarf or hat"
          },
          {
           "const": "no_third_piece",
@@ -4254,7 +4254,7 @@
          },
          {
           "const": "too_few_items",
-          "description": "too few items in the outfit for this occasion (values: count — how many there are, minimum — how many are needed at least)"
+          "description": "too few items for this occasion"
          },
          {
           "const": "single_item_not_outfit",
@@ -4290,11 +4290,11 @@
          },
          {
           "const": "off_palette_colour_contrast_mismatch",
-          "description": "the outfit has a colour outside the palette, and the outfit's contrast does not match her own, so there is nothing to carry that colour (values: lightness_range — the outfit's lightness range from and to, equal numbers mean a measurement; her_level — her contrast level: low, medium, high; on_windows — true when the judgement rests on the windows of colour words, not on a measurement)"
+          "description": "an off-palette colour has no carrier: the outfit's contrast is not hers (values: lightness_range — equal ends: measured; her_level; on_windows — from colour words, not measured)"
          },
          {
           "const": "match_contrast_or_move_colour",
-          "description": "match the outfit's contrast to hers, or move the off-palette colour away from the face"
+          "description": "match the outfit's contrast to hers, or move the off-palette colour from the face"
          },
          {
           "const": "colours_off_her_combination_logic",
@@ -4330,7 +4330,7 @@
          },
          {
           "const": "accent_not_from_eyes",
-          "description": "the slot carries the accent, and its hue is not from the family of her eyes; an eye-family accent is the first move in order, not a requirement (values: slot — slot code, hue — the accent's hue in degrees, eye_arcs — the hue arcs of her eyes)"
+          "description": "the accent's hue is outside her eye family — the first move, not a requirement (values: hue — degrees)"
          },
          {
           "const": "complementary_pair_not_muted",
@@ -4426,7 +4426,7 @@
          },
          {
           "const": "formula_taken_as_ready",
-          "description": "the scheme was taken as a ready answer while the outfit fails points of the blandness floor: the formula is a starting point, not a verdict (values: scheme — scheme code, blandness_failed — how many blandness points are failed)"
+          "description": "the scheme, a starting point, was taken as ready while blandness-floor points fail (values: blandness_failed — how many)"
          },
          {
           "const": "walk_failed_blandness_points",
@@ -4498,11 +4498,11 @@
          },
          {
           "const": "price_top_quarter_of_slot",
-          "description": "the item is in the top quarter of its slot by price per outfit, that is its price divided by the number of outfits of the selection it can stand in; this is a lower estimate, not a forecast of wearings (values: slot — slot code, cheaper — how many items of the slot are cheaper per outfit, of — out of how many, reach — in how many outfits of the selection it can stand; resoleable — for shoes: true means a stitched sole and the pair can be resoled, false means glued)"
+          "description": "in the top quarter of its slot by price per outfit it can stand in — a lower estimate, not a forecast of wear (values: cheaper, of — slot items cheaper per outfit, out of; reach — outfits it fits; resoleable — stitched sole)"
          },
          {
           "const": "compare_with_cheaper_in_slot",
-          "description": "compare it with the items of the same slot in the selection that are cheaper per outfit (values: cheaper — how many of them there are)"
+          "description": "compare it with this slot's items cheaper per outfit"
          },
          {
           "const": "shoes_cut_leg_line",
@@ -4598,11 +4598,11 @@
          },
          {
           "const": "no_third_piece_dressed_not_styled",
-          "description": "the outfit has only the base and no layer or accessory: that is \"dressed\", while \"styled\" starts with the third piece (values: items — how many items are in the outfit)"
+          "description": "base only, no layer or accessory: «dressed»; «styled» starts with a third piece"
          },
          {
           "const": "add_layer_or_strong_accessory",
-          "description": "add one layer — a jacket, a cardigan or a vest — or one strong accessory: a belt, a scarf, a striking piece of jewellery"
+          "description": "add a layer (jacket, cardigan, vest) or a strong accessory (belt, scarf, bold jewellery)"
          },
          {
           "const": "focus_count_over_ceiling",
@@ -4874,7 +4874,7 @@
          },
          {
           "const": "lightness_off_occasion_window",
-          "description": "the item's lightness is outside the window the occasion or the time of day asks for (values: lightness — the item's lightness, window — the window from and to, occasion — occasion code)"
+          "description": "the item's lightness is outside the window of the occasion or time of day"
          },
          {
           "const": "same_silhouette_deeper",
@@ -5018,7 +5018,7 @@
          },
          {
           "const": "chroma_gap_between_items",
-          "description": "the outfit's items do not match in intensity: compatibility rests on nearness of saturation, not on the relation of hues (values: gap — the chroma gap in OKLab, threshold — the threshold; louder — which of the two items of the finding is louder: 1 or 2; on_windows — true when the judgement rests on the windows of colour words, not on a measurement)"
+          "description": "the items differ in saturation, and matching rests on it, not on hue (values: gap, threshold — OKLab chroma; louder — item 1 or 2; on_windows — from colour words, not measured)"
          },
          {
           "const": "match_chroma_register",
@@ -5214,7 +5214,7 @@
          },
          {
           "const": "outer_will_not_fit_over_bulky",
-          "description": "the outer layer will not fit over the bulky item under it (values: outer — the layer's name, under — the name of the item under it)"
+          "description": "the outer layer will not fit over the bulky item under it (values: outer — the layer, under — the item under it: item_id, name — the name on the card)"
          },
          {
           "const": "thin_fitted_top_under_or_bulky_without_jacket",
@@ -5222,7 +5222,7 @@
          },
          {
           "const": "two_high_necklines_stacked",
-          "description": "two high necklines one on top of the other (values: upper, lower — the names of the items)"
+          "description": "two high necklines one on top of the other (values: upper, lower — the items: item_id, name — the name on the card)"
          },
          {
           "const": "open_neckline_on_top_or_one_high_neck",
@@ -5430,11 +5430,11 @@
          },
          {
           "const": "scheme_tonal_tone_not_on_large_items",
-          "description": "the tonal scheme promises one tone on all items with small lightness steps, and none of the outfit's measured large items carries that tone: a coloured accessory alone is not a tonal outfit (values: scheme — scheme code, large_measured — how many large items were measured, on_tone — slot codes of the items that do carry the tone)"
+          "description": "no measured large item carries the tonal scheme's tone, and an accessory alone is not tonal (values: on_tone, off_tone — measured slots on and off it; unmeasured — slots it may be on too)"
          },
          {
           "const": "swap_large_item_to_scheme_tone",
-          "description": "swap one large item, best of all in this slot, for one in the scheme's tone from the selection, a lightness step away from the others (values: slot — slot code)"
+          "description": "swap one large item, best in this slot, for a selection one in the scheme's tone, a lightness step from the rest"
          },
          {
           "const": "swap_one_item_to_colour_in_slot",
@@ -5474,19 +5474,19 @@
          },
          {
           "const": "outfit_hero_count_off",
-          "description": "an outfit is led by one striking item: in the named outfits there is none, or there are two and they compete (values: without — the ids of the outfits with no hero, with_two — the ids of those with two)"
+          "description": "one striking item leads an outfit; these have none or two (values: without, with_two — outfit ids)"
          },
          {
           "const": "one_hero_per_outfit",
-          "description": "give each named outfit exactly one striking item: add an anchor where there is none, and quieten one of the two where there are two"
+          "description": "one striking item per named outfit: add one or quieten one of two"
          },
          {
           "const": "tension_knot",
-          "description": "the outfit's knot of tension, the place where the largest number of findings meet (values: node — the code of a slot, a body level or a zone, or whole_outfit; tension — the tension; edges — how many findings are on it; linked — the codes of the slots tied to it by those findings)"
+          "description": "the knot of tension, where most findings meet (values: node — slot, body level, zone or whole_outfit; edges — findings on it; linked — slots tied to it)"
          },
          {
           "const": "change_one_item_of_bundle",
-          "description": "the knot is held by a bundle of items: change one item out of it"
+          "description": "a bundle of items holds the knot: change one of them"
          },
          {
           "const": "change_item_in_knot_slot",
@@ -5566,11 +5566,11 @@
          },
          {
           "const": "hem_without_shoes_unjudged",
-          "description": "no pair in the look, so the lower proportion with the hem cannot be judged"
+          "description": "no pair, so the lower proportion with the hem is unjudged"
          },
          {
           "const": "add_shoes_compose_with_hem",
-          "description": "add a pair and set the lower proportion with it: occasion → base → pair and hem together → accessories"
+          "description": "add a pair and set the lower proportion with it: occasion → base → pair with hem → accessories"
          },
          {
           "const": "pair_tone_vs_leg_proportion",
@@ -6650,7 +6650,7 @@
          },
          {
           "const": "not_default_formula",
-          "description": "the outfit differs from the default «neutral base + one accent»: neutrals, at most one accent and no print are the default"
+          "description": "the outfit is not the default «neutral base + at most one accent, no print»"
          },
          {
           "const": "texture_adds",
@@ -6730,7 +6730,7 @@
          },
          {
           "const": "price_per_combinations",
-          "description": "the price is divided by the number of combinations the item enters, not by itself (K-PRC-01)"
+          "description": "the price is divided by the combinations the item enters (K-PRC-01)"
          },
          {
           "const": "repairable_shoes",
