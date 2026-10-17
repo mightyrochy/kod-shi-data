@@ -1629,10 +1629,17 @@ def факти_з_картки(html_текст, url, селектори=None):
                 a, b = tx.split(":", 1)
                 if 2 < len(a) < 40 and not (a[-1:].isdigit() and b.strip()[:2].isdigit()):     # «Пн-Нд 12:00» — години, не ключ
                     додати(li, None, li, a, b)
-    for ряд in суп.select("div.properties-group__item"):
-        клітини = ряд.find_all("span", recursive=False)
-        if len(клітини) == 2 and в_межах(ряд):
-            додати(ряд, клітини[0], клітини[1])
+    for ряд in суп.select("div.properties-group__item, div.properties__item"):
+        if not в_межах(ряд):
+            continue
+        ключ = ряд.select_one(".properties-group__name, .properties__title")
+        значення = ряд.select_one(".properties-group__value, .properties__value")
+        if ключ is not None and значення is not None:
+            додати(ряд, ключ, значення)
+        else:
+            клітини = ряд.find_all("span", recursive=False)
+            if len(клітини) == 2:
+                додати(ряд, клітини[0], клітини[1])
     for абзац in суп.find_all("p"):          # «<p><strong>Матеріал:</strong> 62% віскоза</p>»: підпис виділено розміткою
         жирний = абзац.find(["strong", "b"])
         tx, a = _текст(абзац, 300), _текст(жирний, 80) if жирний is not None else ""
