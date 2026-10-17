@@ -20,7 +20,7 @@ def вхід_шару(файл, лишити):
     опис = json.loads(subprocess.run(["node", "-e", JS, os.path.join(К, "показ.html"), лишити, файл],
                                      capture_output=True, text=True, check=True).stdout)
     пр = json.loads(М.мова({"тексти": {"опис": опис}}))["промпт"]
-    return пр, json.loads(пр[пр.index("ТЕКСТИ:") + 8:])[0]["текст"]
+    return пр, json.loads(пр[пр.index("ТЕКСТИ:") + 8:])["1"]
 
 
 for тека in sys.argv[1:]:
