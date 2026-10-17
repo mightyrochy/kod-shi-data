@@ -5,6 +5,9 @@
 name: жнива
 
 on:
+  # Обмежений щотижневий прохід; невідповідний ланцюжок збереження дає явний skip.
+  schedule:
+    - cron: "17 3 * * 1"
   workflow_dispatch:
     inputs:
       shops:
@@ -37,9 +40,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  harvest:
+  schedule-readiness:
+    if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
-    timeout-minutes: 340
+    timeout-minutes: 2
+    outputs:
+      ready: ${{ steps.readiness.outputs.ready }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - run: python3 -m pip install --quiet --only-binary=:all: PyYAML==6.0.3
+      - name: готовність безпечного журналу з #1366
+        id: readiness
+        run: python3 zhnyvarka/розклад.py
+  harvest:
+    needs: schedule-readiness
+    if: always() && (github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && needs.schedule-readiness.outputs.ready == 'true'))
+    env:
+      HARVEST_SHOPS: ${{ github.event_name == 'schedule' && 'ricamare.com.ua' || inputs.shops }}
+      HARVEST_TRANSPORT: ${{ github.event_name == 'schedule' && 'браузер' || inputs.transport }}
+      HARVEST_CEILING: ${{ github.event_name == 'schedule' && '25' || inputs.ceiling }}
+      HARVEST_SECONDS: ${{ github.event_name == 'schedule' && '180' || inputs.seconds }}
+      HARVEST_PARALLEL: ${{ github.event_name == 'schedule' && '1' || inputs.parallel }}
+      HARVEST_PAUSE: ${{ github.event_name == 'schedule' && '2' || '0.8' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ github.event_name == 'schedule' && 10 || 340 }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -57,16 +84,11 @@ jobs:
         working-directory: zhnyvarka
         env:
           JOURNAL_ROOT: ${{ runner.temp }}/жнива-журнал
-          HARVEST_SHOPS: ${{ inputs.shops }}
-          HARVEST_TRANSPORT: ${{ inputs.transport }}
-          HARVEST_CEILING: ${{ inputs.ceiling }}
-          HARVEST_SECONDS: ${{ inputs.seconds }}
-          HARVEST_PARALLEL: ${{ inputs.parallel }}
         run: |
           set -euo pipefail
           python3 виконавець.py --журнал "$JOURNAL_ROOT" --без-огляду --рецепти рецепти.tsv \
             --магазини "$HARVEST_SHOPS" --транспорт "$HARVEST_TRANSPORT" \
-            --стеля "$HARVEST_CEILING" --секунд-на-магазин "$HARVEST_SECONDS" --паралельно "$HARVEST_PARALLEL" \
+            --стеля "$HARVEST_CEILING" --секунд-на-магазин "$HARVEST_SECONDS" --паралельно "$HARVEST_PARALLEL" --пауза "$HARVEST_PAUSE" \
             2>&1 | tee "$JOURNAL_ROOT/жнива_лог.txt"
           cat "$JOURNAL_ROOT/зведення_жнив.tsv"
       - name: діагностика каталогу після жнив
