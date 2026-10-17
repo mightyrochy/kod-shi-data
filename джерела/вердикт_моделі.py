@@ -197,13 +197,14 @@ _БЕЗ_ГЕЙТІВ = {
                                    "that hold a colour in her palette: «statements» (codes defined in "
                                    "\"statement_codes\") and the «items» that carry it; not a finding",
                  як="information, not an order: when you change an item that carries it, know what goes with it"),
+        # рядок 5295: неперевірені пункти — назвою коду, без визначення в «statement_codes»
         _ЗП.Поле("verdict[].checklist", "by area, the points the outfit «failed»: «excess» — what is already "
-                                        "too much, «blandness» — what is lacking, both weigh the same; "
-                                        "«not_run» — points the code did not check; each point is a code "
-                                        "defined in \"statement_codes\""),
+                                        "too much, «blandness» — what is lacking, both weigh the same; each "
+                                        "failed point is a code defined in \"statement_codes\"; «not_run» — "
+                                        "points the code did not check, named by code without a definition"),
         _ЗП.Поле("fixes", "the code's repair texts by key"),
-        _ЗП.Поле("not_run_everywhere", "by area, the checklist points the code did not check in any outfit; "
-                                       "each point is a code defined in \"statement_codes\""),
+        _ЗП.Поле("not_run_everywhere", "by area, the checklist points the code did not check in any outfit, "
+                                       "named by code without a definition"),
         _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination, findings about the set"),
         # ВИРВА-СМІЛИВІСТЬ (рядки 841, 886; п.17): доза сміливого за її наміром — і на кроці 10→5
         _ЗП.Поле("set.bold", "her «intent» asks to stand out; these outfits the code measured as bold, "
