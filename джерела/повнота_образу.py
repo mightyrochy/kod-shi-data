@@ -641,7 +641,7 @@ def промпт_вибору(образи, випадок=None, без_фото
         "прибрати": "«n» of an item to remove: only when a blocker says two items are of one kind — the "
                     "weaker of the two",
     },
-    межі=("лише_вхід",),
+    межі=("лише_вхід", "звертання"),
     мова_промпту="en",
 )
 
