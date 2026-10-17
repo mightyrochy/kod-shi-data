@@ -96,9 +96,13 @@ import дріт_моделі as _Д
         # носіння вели модель далі: «підперезана червоним паском», «щоб пасок підкреслював найвужчу частину тулуба»
         # при «приховати живіт». Названу зону ховає крій, сміливе лишається деінде (п.17).
         _ЗП.Поле("case.goal_zones", "the body zones she wants to draw the eye away from, with any goal",
+                 # Рядок 6621 (ОЦІНКА-ЖИВІ-1016-2, ж4_робота_живіт 08–10): «no tuck that marks the waist» модель
+                 # обходила застереженням — «Tuck the front of the vest slightly … without marking your waist», 3 з 6
+                 # карток; заборона тепер без умови «marks»
                  як="this comes before «body» and «ways_to_wear»: set the eye on none of these zones — no "
-                    "sentence or way to wear that marks, frames or accentuates them (with belly or hips: no "
-                    "belt or tuck that marks the waist, never «the narrowest part of the torso»); do not name "
+                    "sentence or way to wear that marks, frames or accentuates them; with belly or hips: no tuck "
+                    "of any kind (not a front or half tuck, not a top tucked into the bottom, whatever it is "
+                    "said to avoid) and no belt at the waist, never «the narrowest part of the torso»; do not name "
                     "them to her as something to hide; say where the outfit leads the eye instead"),
         # рядок 1427 (СУКНЯ-СМУГА 03.10): «the choice is hers» тут стояло про БУДЬ-ЩО, що сперечається з
         # днем, і модель закінчувала ним 45 з 78 карток рук 1–2 — про речі, які обрала сама («сітка…
@@ -141,8 +145,12 @@ import дріт_моделі as _Д
                  як="in «how_to_wear» name a way only when it changes something for this outfit — its effect "
                     "matters here (a line across the torso that already has many, a hem it lands on); a way "
                     "that changes nothing is left out"),
-        _ЗП.Поле("your_declared", "numbers of the items you placed deliberately against a condition",
-                 як="in «how_to_wear» say what to do with them"),
+        # Рядок 3784 (ЖИВІ-14 №11 рука 1): «against a condition» без умови — сумку, яку стилістка ДОДАЛА, опис
+        # прочитав вадою («не поєднується», «потрібно замінити», `swap`); тепер хід несе заяви своєї знахідки
+        _ЗП.Поле("your_declared", "items you kept deliberately although the code found something against them: "
+                                  "«item» — its «n», «statements» — what the code found, as statement codes",
+                 як="this was your choice, not a flaw of the item: never call it a mismatch and never name it "
+                    "in «swap»; in «how_to_wear» say what she does about what the code found"),
         _ЗП.Поле("she_refuses", "what she refused",
                  як="do not advise an item that breaks it and do not call it a compromise; when such an "
                     "item is in the outfit, tell her so plainly"),
@@ -204,9 +212,13 @@ import дріт_моделі as _Д
         # рядок 3161(б): річ за річчю — полем `про_речі` з номером, а не рядком прози: модель називала
         # у «named» усі номери, а текст пропускав пальто чи піджак і описував штани, яких нема
         "про_речі[].н": "«n» of the item of «outfit»: one entry for every item of «outfit», in its order",
-        "про_речі[].текст": "prose for her about this one item of its «kind»: what it is, cut, length, color in words, "
-                            "fabric, in one or two sentences, as its photo and data show; it is in her outfit — "
-                            "never say it is not included",
+        # Рядки 4685, 5303: «styled here with matching wide-leg trousers» при бомбері без штанів, кардиган «поверх
+        # в'язаного комплекту» з його фото при сукні — запис речі описував увесь кадр. Код прози не читає (п.12),
+        # тож межа — тут: запис має лише свою річ, а як речі поєднуються — «text» (речі образу, звірені «named»)
+        "про_речі[].текст": "prose for her about this one item alone: what it is, cut, length, color in words, fabric, "
+                            "in one or two sentences, as its photo and data show; it is in her outfit — never say it "
+                            "is not included; no other garment, shoe, bag or accessory — neither one its photo shows "
+                            "it with nor another item of «outfit»: how the items go together belongs to «text»",
         "текст": "prose for her after the items: (1) optional, only when it adds something — how the "
                  "shoes, the outer layer and the accessories go with the rest, in one or two sentences; "
                  "(2) why it works — 3–4 sentences, taking from «day», «palette», «makeup» and «missing» "
@@ -322,6 +334,7 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     `заміна_запасні` — ФОТО-1: `{річ: н, чому, запасні: [речі тими самими полями, що образ]}`, лише
     в зайвому виклику, коли опис назвав річ для заміни, а код знайшов запасні (`заміна_з_фото`).
     `тіло` — її фігура кодами (`hypergraph.тіло_для_опису`, рядок 1422): без неї промпт не несе поля.
+    `свідомі` — `[{н, заяви}]`: річ, яку стилістка поставила проти знахідки коду, і заяви тієї знахідки.
     """
     р = []
     for x in (речі or []):
@@ -342,7 +355,9 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     об = {"версія": _ПР.ВЕРСІЯ, "образ": {"ід": str(образ or "обраний"), "речі": р}}
     if задум:
         об["задум"] = str(задум)[:120]
-    свід = [str(с).strip() for с in (свідомі or []) if str(с or "").strip()]
+    # рядок 3784: хід — номер речі з заявами знахідки, проти якої він стоїть; хід без них опис не дістає
+    свід = [dict(н=str(с["н"]), заяви=list(с["заяви"])) for с in (свідомі or [])
+            if isinstance(с, dict) and str(с.get("н") or "").strip() and с.get("заяви")]
     if свід:
         об["свідомі"] = свід[:4]
     укл = _укладка_опису(канал_3, р)
@@ -591,9 +606,11 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
                    if str(_зм.get("на") or "").strip() else [None])
             _причина_зміни = _зм.get("чому")
             _на_річ = {"на": _на[0]} if _на and _на[0] else {}
+            # річ, що резолвилась, лишається й при відмові: її запис `про_речі` знімає `без_прози_заміни`
             р["заміна"] = (dict(річ=_рі[0], чому=_причина_зміни, **_на_річ)
                            if len(_рі) == 1 and _на else
-                           dict(відмова="number_not_resolved", сире=dict(_зм)))
+                           dict(відмова="number_not_resolved", сире=dict(_зм),
+                                **({"річ": _рі[0]} if len(_рі) == 1 else {})))
         _поза = _названо_поза_образом(об.get("названо"), словник, за_ном, склад)
         # ── РІЧ ЗА РІЧЧЮ (рядок 3161(б)) ─────────────────────────────────────────────────────
         # ДО: «Чому цей образ» було однією прозою, а покриття код звіряв лише номерами «named» —
@@ -627,6 +644,28 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
             instead=" ".join(([ПОВТОР_НАЗВАНОГО_EN % ", ".join("«%s»" % w for w in _поза[:8])] if _поза else [])
                              + ([ПОВТОР_НЕ_ОПИСАНО_EN % ", ".join("«%s»" % w for w in _не[:8])] if _не else []))),
             ensure_ascii=False)
+    return р
+
+
+def без_прози_заміни(р):
+    """Опис назвав річ у `swap`, а заміни з цієї відповіді не буде → той самий розбір без запису `про_речі`
+    цієї речі (за її id), з `текст` і `проза` без його абзацу; знятий запис — у `про_речі_знято`.
+
+    Рядок 3783 (ЖИВІ-14 №11 рука 1, рішення менеджера (б)): `swap` сумки код відхилив, а її запис лишився —
+    «Її потрібно замінити для гармонії» під річчю, яка на картці. Слів запису код не читає (п.12), тож знімає
+    його цілим, без повторного виклику моделі (п.21). Прийнята заміна сюди не доходить: картку тоді описує
+    відповідь на запасні (`від_моделі` з `заміна_запасні`), і цей розбір не показується."""
+    ід = str(((р or {}).get("заміна") or {}).get("річ") or "")
+    знято = [x for x in (р.get("про_речі") or []) if ід and str(x.get("id")) == ід]
+    if not знято:
+        return р
+    лишились = [x for x in р["про_речі"] if x not in знято]
+    _абзаци = "\n".join(x["текст"] for x in р["про_речі"])
+    _власний = (р.get("текст") or "")[len(_абзаци) + 1:] if (р.get("текст") or "").startswith(_абзаци + "\n") else None
+    р = dict(р, про_речі=лишились, про_речі_знято=[dict(id=ід, чому="swap_not_applied")])
+    if _власний is not None:
+        р["текст"] = "\n".join([x["текст"] for x in лишились] + [_власний])
+        р["проза"] = "\n".join([р["текст"]] + list(р.get("як_носити") or [])).strip() or None
     return р
 
 
@@ -1229,6 +1268,18 @@ def адресувати_знахідками(розриви, вердикт):
             if len(правила) == 1:
                 р = dict(р, правило=правила.pop())
         вих.append(р)
+    return вих
+
+
+def заяви_ходу(хід, знахідки):
+    """Оголошений хід → заяви знахідки, проти якої він стоїть (`{code, values}`): знахідки того самого
+    `правило` серед `знахідки` суду, що судив склад картки. Хід без коду чи з кодом, якого в цьому
+    суді нема, — `[]`: умови, проти якої річ стоїть, опис не дістане (рядок 3784)."""
+    пр = str((хід or {}).get("правило") or "") if isinstance(хід, dict) else ""
+    вих = []
+    for z in (знахідки or []) if пр else []:
+        if isinstance(z, dict) and str(z.get("правило") or "") == пр:
+            вих += [w for w in (z.get("заяви") or []) if isinstance(w, dict) and w.get("code") and w not in вих]
     return вих
 
 
