@@ -1,0 +1,40 @@
+── ПРОМПТ (6230 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Jacket with front panel · kind code: jacket · colour code: khaki
+2 — Skirt · kind code: skirt · colour code: burgundy
+3 — Ankle boots (beige) · kind code: ankle_boots · colour code: milky
+4 — Ankle boots (black) · kind code: ankle_boots · colour code: black
+5 — Спідниця міні твідова, бежева · kind code: skirt · colour code: beige · new item of text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun. An item given as the new item of a text (new item of text н=M) is what that text advises her to take in place of her own item: wherever that text speaks of the new thing, it is this item, of its kind and its colour, whatever the English text says; her own item there keeps its own name.
+
+Colour codes: beige — бежевий; black — чорний; burgundy — бордовий; khaki — хакі; milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "Your look feels a bit off-balance because the bold burgundy skirt clashes with your skin tone and the green jacket, while the milky beige boots break the line of your legs. To fix this, try switching to black ankle boots instead—they would blend perfectly with the skirt and help you carry the darker colors more smoothly.",
+"2": "The beige tone in your milky boots matches your personal palette and adds a soft highlight near your feet without creating too much contrast.",
+"3": "Your upper jacket, the skirt, and the boots form a neat, continuous shape that suits your occasion well.",
+"4": "Swapping your burgundy skirt for a beige one would soften the colors and make them feel more harmonious with your skin tone, turning this into a cohesive ensemble."
+}
+
+── ВІДПОВІДЬ (755 симв., 9.1 с, HTTP 200) ──
+{
+"1": "Твій образ виглядає трохи негармонійно, адже яскравий бордовий спідниця конфліктує з твоїм тон шкіри та зеленою курткою, а молочні бежеві чоботи порушують лінію ніг. Щоб виправити це, спробуй замінити їх на чорні лофери — вони ідеально поєднаються зі спідницею та допоможуть тобі легше носити темніші кольори.",
+"2": "Бежевий відтінок у твоїх молочних чоботів відповідає твоєму особистому палітру та додає м'якого акценту біля ніг, не створюючи зайвого контрасту.",
+"3": "Твоя верхня куртка, спідниця та чоботи утворюють акуратний, безперервний силует, який ідеально підходить до твоєї події.",
+"4": "Заміна бордової спідниці на бежеву пом'якшить кольори та зробить їх більш гармонійними з твоїм тон шкіри, перетворивши цей образ на єдине ціле."
+}
