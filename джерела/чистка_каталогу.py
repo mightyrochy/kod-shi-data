@@ -477,7 +477,10 @@ def двійники_товару(корінь):
     """[(двійник-офер, ключ, лишений-офер)] — повтори тієї самої речі в каталозі."""
     усі = list(корінь.iter("offer"))
     кадри = [_адреса_кадру(next((p.text for p in o.findall("picture") if p.text), "")) for o in усі]
-    скільки = collections.Counter(кадри)
+    моделі = collections.defaultdict(set)
+    for o, к in zip(усі, кадри):
+        моделі[к].add((o.findtext("vendorCode") or "").strip() or _адреса_речі(o.findtext("url")))
+    скільки = {к: len(м) for к, м in моделі.items()}
     лишені, двійники = {}, []
     for o, к in zip(усі, кадри):
         адр = _адреса_речі(o.findtext("url"))
