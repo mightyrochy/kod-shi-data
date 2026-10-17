@@ -1,0 +1,30 @@
+── ПРОМПТ (2229 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Soft, breathable merino wool-blend top, relaxed fit, crew neck, heather grey, hex #D3D3D3, lightweight knit fabric.  \nElastic-waist tapered jogger pants, straight leg with side pockets, charcoal grey, hex #36454F, stretch cotton-spandex blend.  \nMinimalist canvas slip-on sneakers, low profile sole, off-white, hex #FAFAFA, durable synthetic upper.  \nThis outfit works perfectly for a morning yoga session because the natural fibers of the top manage temperature fluctuations typical of autumn mornings while maintaining comfort during movement. The dark trousers provide a sleek, everyday look that transitions easily from the studio to a casual walk afterward without feeling too dressed up or too sloppy. By avoiding restrictive layers, the ensemble allows for full range of motion required in yoga poses while adhering to her preference for home and everyday casual styles."}
+
+── ВІДПОВІДЬ (677 симв., 157.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "top",
+      "details": "Soft, breathable merino wool-blend relaxed fit crew neck lightweight knit fabric",
+      "slot": "top",
+      "color_hex": "#D3D3D3",
+      "worn": true
+    },
+    {
+      "name": "pants",
+      "details": "Elastic-waist tapered jogger pants straight leg with side pockets stretch cotton-spandex blend",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "sneakers",
+      "details": "Minimalist canvas slip-on sneakers low profile sole durable synthetic upper",
+      "slot": "shoes",
+      "color_hex": "#FAFAFA",
+      "worn": true
+    }
+  ]
+}
