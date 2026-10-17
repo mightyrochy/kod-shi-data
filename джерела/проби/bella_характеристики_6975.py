@@ -20,7 +20,7 @@ def main():
     print("СИНТЕТИЧНИЙ DOM, не HTTP/покриття: sha256", hashlib.sha256(тіло).hexdigest())
     print("пари", len(ф["характеристики_сирі"]), "очікується", len(очікувані), ф["характеристики_сирі"])
     assert ф["характеристики_сирі"] == очікувані
-    assert селектори == {"характеристик": "div.properties-group__item"}
+    assert селектори == {"характеристик": "div.properties-group__item, div.properties__item"}
     старе = '<h1>fixture</h1><table><tr><td>Поле А</td><td>А</td></tr></table><dl><dt>Поле Б</dt><dd>Б</dd></dl><ul><li><span>Поле В</span><span>В</span></li></ul><p><b>Поле Г:</b> Г</p>'
     assert len(Ж.факти_з_картки(старе, "https://example.test/product/fixture")["характеристики_сирі"]) == 4
     print("Старі формати table/dl/li/p: 4/4; зайві span, навігація, рекомендації та чужий блок відкинуті")
