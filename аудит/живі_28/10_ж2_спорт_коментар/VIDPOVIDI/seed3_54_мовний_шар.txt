@@ -1,0 +1,60 @@
+── ПРОМПТ (8370 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лонгслів мохеровий шоколад · kind code: longsleeve · colour code: chocolate · about it: text н=1
+2 — Картата спідниця-олівець в діловому стилі Прада · kind code: skirt · colour code: silvery · about it: text н=2
+3 — Піджак шоколад з акцентними плечима · kind code: blazer · colour code: chocolate · about it: text н=3
+4 — Пасок з пір’ям 2 тауп · kind code: belt · colour code: taupe · about it: text н=4
+5 — Шапка зимова велюрова · kind code: headwear · colour code: brown · about it: text н=5
+6 — Балетки напівпрозорі в сітку з круглим мисом · kind code: ballet_flats · colour code: burgundy · about it: text н=6
+7 — Сумка жіноча Salon · kind code: bag_generic · colour code: red · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; burgundy — бордовий; chocolate — шоколадний; red — червоний; silvery — срібний; taupe — тауп.
+
+ТЕКСТИ:
+{
+"1": "This chocolate long-sleeve top has a relaxed, slightly sheer knit that drapes softly over the body, creating an effortless silhouette perfect for layering or wearing on its own during cooler mornings.",
+"2": "The silvery-grey plaid pencil skirt features a high waist, sharp vertical lines from the check pattern, and a functional front slit that adds subtle movement without sacrificing polish or comfort.",
+"3": "This chocolate blazer is cut with structured shoulders and clean lapels, giving you a polished outer layer that can be worn open or closed depending on how much coverage you want at any moment.",
+"4": "The taupe feathered belt sits at the natural waist with a soft fringe detail that catches light and adds texture without bulk, allowing it to cinch your waist gently while still feeling feminine.",
+"5": "This pink ribbed beanie is slouchy-knit for comfort and warmth, with a snug cuff that holds it in place even when moving through yoga poses or walking briskly outside in the morning.",
+"6": "These burgundy ballet flats feature a rounded toe, a smooth mesh-like upper, and a low-profile sole that offers quiet comfort without compromising elegance—ideal for hours of standing or walking after yoga.",
+"7": "This red structured bag has a rectangular shape with a top handle, glossy leather finish, and polished gold-tone hardware that elevates the whole outfit while remaining practical for carrying your daily essentials.",
+"8": "I put a chocolate long-sleeve top with a relaxed, sheer finish under a tailored chocolate blazer to soften your silhouette while keeping the look polished. The skirt you chose is silvery-grey plaid with a high waist and front slit—a perfect contrast to the dark brown of the tops, and it adds movement without breaking the autumn palette. I added a taupe feathered belt to cinch the waist where you want it marked, a burgundy pair of ballet flats that are comfortable yet elegant enough for coffee dates, and a soft pink beanie to keep you warm in the morning chill. A red structured bag with gold hardware brings a bold pop that matches your shoes without clashing, giving you something to carry essentials while still feeling effortless.",
+"9": "Leave the blazer unbuttoned for a relaxed, layered look, or button it just at the waistline if you want more structure during the morning yoga session.",
+"10": "Tuck the feathered belt into the skirt’s high waist and let it drape naturally over the hips—it adds definition without tightening your shape.",
+"11": "Keep the beanie on when stepping outside in the crisp autumn air, but take it off for your coffee date so your long hair can fall freely around your face.",
+"12": "Піджак шоколад з акцентними плечима — The chocolate blazer anchors the green accent while keeping the outfit grounded in warm neutrals."
+}
+
+── ВІДПОВІДЬ (3067 симв., 133.5 с, HTTP 200) ──
+```json
+{
+  "1": "Цей мохеровий лонгслів шоколадного кольору має вільний, трохи прозорий трикотаж, який м’яко драпірується по тілу, створюючи невимушений силует ідеальний для носіння поверх іншого одягу або самостійно під час холодніших ранків.",
+  "2": "Сріблясто-сіра картата спідниця-олівець має високу талію, чіткі вертикальні лінії від візерунка клітки та функціональний розріз спереду, який додає непомітного руху без шкоди для елегантності чи комфорту.",
+  "3": "Цей шоколадний піджак виконаний з акцентними плечима і має чіткі лацкани, що дарують тобі вишукану верхню частину гардеробу, яку можна носити відкритою або застебнутою залежно від того, скільки покриття ти хочеш у будь-який момент.",
+  "4": "Тауповий пасок з пір’ям зручно сидить на талії з м’яким бахромчастим декором, який привертає світло і додає текстури без об’ємності. Він ніжно підкреслює твою талію, залишаючись водночас жіночним.",
+  "5": "Ця рожева ребриста шапка в’язана вільно для комфорту і тепла, з затишним манжетом, який утримує її на місці навіть під час руху під час йоги чи швидкої ходьби зранку.",
+  "6": "Ці бордові балетки мають заокруглений носок, гладку мереживну верхню частину і плоску підошву, яка забезпечує тихий комфорт без шкоди для елегантності — ідеально підходять для тривалого перебування на ногах або ходьби після йоги.",
+  "7": "Ця червона сумка має прямокутну форму з верхньою ручкою, глянцеву шкіряну обробку та поліроване золотисте металеве оздоблення, що підкреслює весь образ, залишаючись при цьому практичною для носіння твоїх повсякденних речей.",
+  "8": "Я одягла шоколадний лонгслів вільного крою з прозорою обробкою поверх елегантного шоколадного блейзера, щоб пом’якшити силует і зберегти витончений образ. Твою спідницю сріблясто-сірого картатого малюнка обрано з високою талією і розрізом спереду — це чудова протиставлення до темного коричневого кольору верху, яке додає руху без порушення осінньої палітри. Я доповнила образ тауповим паском з пір’ям для підкреслення лінії талії у потрібному місці, бордовими балетками, які зручні і досить елегантні для кавових зустрічей, а також м’якою рожевою шапкою, щоб зігріти тебе в прохолодний осінній ранок. Червона сумка з золотистим металевим оздобленням дарує яскравий акцент, що поєднується з твоїми туфлями без конфлікту, надаючи тобі місце для зберігання необхідних речей і при цьому залишаючись невимушеною.",
+  "9": "Залиш піджак розстебнутим для недбалого багатошарового образу або застегни його в області талії, якщо ти хочеш більше структури під час ранкової йоги.",
+  "10": "Поклади пасок з пір’ям у високу талію спідниці і дай йому вільно драпіруватися по стегнах — він додає виразності без надмірного стягування твого силуету.",
+  "11": "Надягай шапку, коли виходиш на вулицю в прохолодне осіннє повітря, але знімай її під час кавової зустрічі, щоб твоє довге волосся могло вільно спадати по обличчю.",
+  "12": "Піджак шоколад з акцентними плечима — Піджак шоколадного кольору з акцентними плечима допомагає виділити зелений відтінок і підтримувати образ у теплих нейтральних тонах."
+}
+```

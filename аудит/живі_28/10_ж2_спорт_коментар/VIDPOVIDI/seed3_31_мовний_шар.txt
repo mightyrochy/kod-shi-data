@@ -1,0 +1,52 @@
+── ПРОМПТ (7421 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Светр з круглою горловиною та підплічниками · kind code: sweater · colour code: graphite · about it: text н=1
+2 — Джинси WIDE LEG сірі · kind code: jeans · colour code: grey · about it: text н=2
+3 — Жіноча сумка через плече шкіряна червона · kind code: crossbody_bag · colour code: red · about it: text н=3
+4 — Балетки жіночі, ATTICO, замша, колір темно-коричневий · kind code: ballet_flats · colour code: brown · about it: text н=4
+5 — Куртка-бомбер SIGNATURE з коміром-стійкою · kind code: jacket · colour code: khaki · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; graphite — графіт; grey — сірий; khaki — хакі; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "A soft graphite turtleneck sweater with dropped shoulders and ribbed cuffs, designed for comfort without sacrificing style. Its relaxed fit drapes gently over the frame, making movement effortless.",
+"2": "Wide-leg grey jeans cut straight through the thigh and tapering slightly at the ankle, offering both structure and ease. The muted wash pairs beautifully with your other pieces.",
+"3": "A bold red crossbody bag with a glossy crocodile texture and a sleek gold buckle clasp that catches the light subtly. It adds a touch of energy to your otherwise neutral look.",
+"4": "Dark brown suede ballet flats with a low profile and flexible sole, crafted for all-day wear. Their rounded toe and slip-on design make them ideal for yoga or strolling.",
+"5": "A khaki-toned bomber jacket with a high stand collar and structured shoulders that define the upper body. Made from smooth material, it offers warmth without bulk, and its cropped length keeps the silhouette clean.",
+"6": "You start your morning yoga in a cozy grey turtleneck sweater, which feels perfect for gentle stretches and breathwork. After the session, you slip into the same top with wide-leg grey jeans—relaxed but polished enough for coffee with friends later. The khaki bomber jacket wraps around you like a soft shield, easy to take off when it gets warm or layer on if needed. Your dark brown suede flats keep your feet comfortable through all the movement, while the bright red crocodile-pattern bag adds a playful pop of color to your quiet day.",
+"7": "Leave the bomber jacket off at yoga class for ease of movement—pull it back on later when you meet up for coffee",
+"8": "Tuck the sweater hem slightly into the jeans at the front to highlight your waist, keeping the relaxed fit in mind",
+"9": "Светр з круглою горловиною та підплічниками, Куртка-бомбер SIGNATURE з коміром-стійкою, Джинси WIDE LEG сірі — The claim of excessive volume is resolved here because the relaxed hoodie specifically balances your shoulder width, creating a necessary soft structure for the active day."
+}
+
+── ВІДПОВІДЬ (2047 симв., 107.5 с, HTTP 200) ──
+```json
+{
+"1": "М'який графітовий светр з круглою горловиною та спущеними плечима й ребристими манжетами, створений для комфорту без втрати стилю. Його вільний крій легко драпірується по фігурі, роблячи рухи невимушеними.",
+"2": "Широкі сірі джинси прямого крою від стегна й злегка звужені до щиколотки, що дарують і структуру, і свободу. Приглушений колір чудово поєднується з твоїми іншими речами.",
+"3": "Яскраво-червона шкіряна сумка через плече з блискучою текстурою крокодила та витонченою золотою застібкою, яка ледь помітно відбиває світло. Вона додає енергії твоєму нейтральному образу.",
+"4": "Темно-коричневі замшеві балетки з низьким профілем і гнучкою підошвою, створені для комфорту протягом усього дня. Заокруглений носок і дизайн без застібок роблять їх ідеальними для йоги або прогулянок.",
+"5": "Хакі бомбер з високим стійкою та структурованими плечима, які окреслюють верхню частину тіла. Зроблений з гладкої тканини, він дарує тепло без об'ємності, а його укорочена довжина підтримує чистий силует.",
+"6": "Ти починаєш ранкову йогу в зручному сірому светрі, який ідеально відчувається для легких розтяжок і дихальних практик. Після заняття ти одягаєш той самий светр з широкими сірими джинсами — вільно й водночас витончено для кави з друзями пізніше. Хакі бомбер обгортає тебе, як м'який щит, легко зняти, якщо стане занадто тепло, або одягнути наверх, коли потрібно. Твої темно-коричневі замшеві балетки роблять твої ноги комфортними під час усіх рухів, а яскраво-червона сумка крокодилового кольору додає грайливий акцент до тихого дня.",
+"7": "Залиш бомбер вдома на занятті з йоги для більшої свободи руху — одягни його пізніше при зустрічі за кавою",
+"8": "Злегка підверни низ светра спереду, щоб підкреслити талію, зберігаючи вільний крій",
+"9": "Светр з круглою горловиною та підплічниками, Бомбер SIGNATURE з коміром-стійкою, Джинси WIDE LEG сірі — Заперечення надмірної об’ємності вирішено тут, оскільки вільний худі конкретно балансує ширину твоїх плечей, створюючи необхідну м'яку структуру для активного дня."
+}
+```

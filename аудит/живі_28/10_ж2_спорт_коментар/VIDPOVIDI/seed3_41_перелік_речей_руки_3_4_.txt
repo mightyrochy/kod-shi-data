@@ -1,0 +1,44 @@
+── ПРОМПТ (2128 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A relaxed, drape-knit top in a soft heathered taupe (#B09B8A) with a flowing A-line silhouette that falls just above the hip, paired with high-waisted wide-leg trousers in a muted olive green (#5F6C5F) that skim the body comfortably from waist to ankle. The ensemble is grounded in supple suede ankle boots with a low block heel and a round toe, finished in a warm cognac brown (#8B6F47). Minimalist gold hoop earrings and a small woven crossbody bag in natural tan complete the look. This outfit works because the breathable knit fabrics and loose silhouettes allow for unrestricted movement during yoga while transitioning seamlessly to a coffee date, the earthy color palette complements her skin tone beautifully without feeling overly dressed up for a casual autumn morning."}
+
+── ВІДПОВІДЬ (945 симв., 220.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "drape-knit top",
+      "details": "relaxed cut with flowing A-line silhouette that falls just above the hip",
+      "slot": "top",
+      "color_hex": "#B09B8A",
+      "worn": true
+    },
+    {
+      "name": "wide-leg trousers",
+      "details": "high-waisted, skim the body comfortably from waist to ankle",
+      "slot": "bottom",
+      "color_hex": "#5F6C5F",
+      "worn": true
+    },
+    {
+      "name": "suede ankle boots",
+      "details": "low block heel with round toe",
+      "slot": "shoes",
+      "color_hex": "#8B6F47",
+      "worn": true
+    },
+    {
+      "name": "gold hoop earrings",
+      "details": "minimalist design",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "woven crossbody bag",
+      "details": "small size in natural tan finish",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

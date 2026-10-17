@@ -1,0 +1,87 @@
+── ПРОМПТ (10975 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа й слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_unchecked — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- as_top — верх.
+- bag_handle — сумка.
+- bottom — низ.
+- crossbody — кросбоді.
+- hair — волосся.
+- hand — рука.
+- neck — шия.
+- outerwear — верхній шар.
+- scarf — шарф.
+- shoulder — плече.
+- shoulders — плечі.
+- top — верх.
+- waist — до талії / талія.
+- wrist — зап'ясток.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+Коли в номері кілька заяв, кожна стоїть у тексті своїм змістом: жодна не випадає і не зливається з іншою, а дія однієї заяви не переходить на речі іншої — чому сказано окремо, що зроблено окремо.
+
+ЗАЯВИ:
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_look_follows_her_combinations — so the code cannot tell whether the outfit's colours follow the logic of her combinations.
+- cannot_tell_accent_echoed — so the code cannot tell whether the accent colour repeats elsewhere in the outfit.
+- cannot_tell_item_off_palette — so the code cannot tell whether the item's colour lies outside her palette.
+- cannot_tell_colour_from_eyes — so the code cannot tell whether the colour comes from the family of her eyes.
+- cannot_tell_item_is_neutral — so the code cannot tell whether the named item is a neutral at all, and the rules about neutrals did not judge it.
+- cannot_tell_accessory_spends_chroma — so the code cannot tell whether a loud accessory spends the budget of loud colours next to another loud item.
+- cannot_tell_item_side_near_face — so the code cannot tell whether the item near the face lies on the yellow-blue side opposite to her eyes.
+- cannot_tell_accent_role_chroma — so the code cannot tell whether the item is colourful enough for the accent role the palette scheme gave its slot.
+- cannot_tell_face_contrast_matches_hers — so the code cannot tell whether the jump of lightness near her face matches her own contrast.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- scarf_near_face_way_unknown — whether she wears this scarf near the face; which top suits her depends on it, since a scarf near the face carries colour there by itself (values: item — item name; ways — codes of wearing ways: neck, hair, shoulders).
+- scarf_size_unknown — the card does not name the scarf's size, so the code does not know which knots and ways of wearing are possible (values: item — item name; item_id).
+- item_length_unknown_edge_default — the cards do not carry the length of the named items: the usual edge for such an item was taken, so the code does not know where exactly it lands on the body (values: slots — slot codes).
+- fabric_season_not_judged_indoors — the code does not judge fabric seasonality indoors (values: slot — slot code).
+- outer_edges_coincide_sources_disagree — the edges of the outer layer and the item under it coincide exactly, and the sources disagree about that; the code takes no side (values: items — items: item_id, name — the item's name on the card).
+- outer_ease_not_in_feed — the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — items: item_id, name — the item's name on the card).
+- front_v_depth_no_body_input — the code computed the depth of the outer layer's neckline, but has nothing to apply it to: it does not know her under-bust girth or neck length (values: item — item name; item_id).
+- outer_shoulder_not_measured — the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name; item_id).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- cut_from_shop_photo_differs — the cut was taken from the shop's word, and the photo shows another one (values: items — the items: slot — slot code, shop — the cut by the shop, photo — the cut from the photo; the cut names are in English, retell them in her language).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "item_length_unknown_edge_default", "values": {"slots": ["top"]}}]},
+{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "outer_shoulder_not_measured", "values": {"item": {"free_text": "Стильна жіноча куртка з капюшоном для осені та весни без хутра Snow Owl (коричневий, L)", "lang": "uk"}, "item_id": "ж-05137@bella-bicchi.com"}}]},
+{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-16847@wearme.ua", "slot": "scarf", "colour": "рожевий", "name": {"free_text": "Шарф кашемір однотонний рожевий", "lang": "uk"}}]}}, {"code": "cannot_tell_face_contrast_matches_hers"}, {"code": "cannot_tell_item_side_near_face"}, {"code": "cannot_tell_item_is_neutral"}, {"code": "cannot_tell_accent_role_chroma"}, {"code": "cannot_tell_item_holds_scheme_hue"}, {"code": "cannot_tell_item_off_palette"}, {"code": "cannot_tell_colour_from_eyes"}, {"code": "cannot_tell_look_follows_her_combinations"}, {"code": "cannot_tell_accent_echoed"}, {"code": "cannot_tell_accessory_spends_chroma"}]},
+{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "fabric_season_not_judged_indoors", "values": {"slot": "top"}}]},
+{"н": 5, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "top", "range": "42–56"}, {"slot": "bottom", "range": "42–50"}]}}, {"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "bottom", "range": "42–50"}, {"slot": "outerwear", "range": "42 і M–XXXL"}]}}]},
+{"н": 6, "вид": "card_unchecked", "заяви": [{"code": "cut_from_shop_photo_differs", "values": {"items": [{"slot": "outerwear", "shop": "straight", "photo": "relaxed"}]}}]},
+{"н": 7, "вид": "card_unchecked", "заяви": [{"code": "scarf_size_unknown", "values": {"item": {"free_text": "Шарф кашемір однотонний рожевий", "lang": "uk"}, "item_id": "ж-16847@wearme.ua"}}]},
+{"н": 8, "вид": "card_unchecked", "заяви": [{"code": "outer_edges_coincide_sources_disagree", "values": {"items": [{"item_id": "ж-05137@bella-bicchi.com", "name": {"free_text": "Стильна жіноча куртка з капюшоном для осені та весни без хутра Snow Owl (коричневий, L)", "lang": "uk"}}, {"item_id": "ж-06024@dolcedonna.com.ua", "name": {"free_text": "Спідниця-олівець з вовняної тканини Габріель", "lang": "uk"}}]}}]},
+{"н": 9, "вид": "card_unchecked", "заяви": [{"code": "outer_ease_not_in_feed", "values": {"items": [{"item_id": "ж-04162@dolcedonna.com.ua", "name": {"free_text": "Сіра романтична блуза з шовку Хакуба", "lang": "uk"}}, {"item_id": "ж-05137@bella-bicchi.com", "name": {"free_text": "Стильна жіноча куртка з капюшоном для осені та весни без хутра Snow Owl (коричневий, L)", "lang": "uk"}}]}}]},
+{"н": 10, "вид": "card_unchecked", "заяви": [{"code": "front_v_depth_no_body_input", "values": {"item": {"free_text": "Стильна жіноча куртка з капюшоном для осені та весни без хутра Snow Owl (коричневий, L)", "lang": "uk"}, "item_id": "ж-05137@bella-bicchi.com"}}]},
+{"н": 11, "вид": "card_unchecked", "заяви": [{"code": "scarf_near_face_way_unknown", "values": {"item": {"free_text": "Шарф кашемір однотонний", "lang": "uk"}, "ways": ["neck", "hair", "shoulders"]}}]},
+{"н": 12, "вид": "card_unchecked", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Жіноча сумка тоут шкіряна коричнева", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}, {"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Шарф кашемір однотонний", "lang": "uk"}, "ways": ["neck", "hair", "shoulders", "waist", "bag_handle", "wrist", "as_top"]}}]}
+]
+
+── ВІДПОВІДЬ (1298 симв., 95.0 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю, де на тілі має закінчуватися верх.",
+  "2": "Не можу сказати, яка ширина плеча в цій куртці.",
+  "3": "Я не знаю колір цього шарфа з точністю. Також я не знаю, чи він гармонійно поєднується з твоїми кольорами очей та обраною палітрою. Не можу сказати, чи підходить його тон до твоєї зовнішності або чи є він нейтральним. Та й взагалі – чи добре ця шаль буде виглядати як акцент в образі.",
+  "4": "Я не знаю, наскільки сезонний цей верх для носіння в приміщенні.",
+  "5": "Не можу сказати про розмір цих речей, адже я бачу лише цифру з етикетки. Та й взагалі – чи добре вони тобі сидять.",
+  "6": "З одягу на фото випливає вільний крій, а магазин називає його прямим.",
+  "7": "Я не знаю розмір цього шарфа і тому мені важко сказати, як можна його зав’язати або носити.",
+  "8": "Отвори куртки та спідниці збігаються рівно в один момент. Джерела розходяться щодо такого факту – я не можу обрати жоден бік.",
+  "9": "Не знаю, чи вільно ця блуза та куртка будуть лежати одна на одній.",
+  "10": "Я не можу сказати про глибину вирізу цієї куртки. Для цього мені потрібні твої мірки обхвату під грудьми та довжини шиї.",
+  "11": "Не знаю, чи носиш ти цей шарф біля лиця.",
+  "12": "Ти ще не обрала спосіб носіння сумки. Також я не знаю, як саме ти хочеш носити шарф."
+}
+```

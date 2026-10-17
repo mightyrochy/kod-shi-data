@@ -1,0 +1,51 @@
+── ПРОМПТ (2290 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Morning Sweat-Wicking Long-Sleeve Top, relaxed fit, length falling to hip, color #d1ab86, moisture-wicking synthetic blend. High-Waisted Yoga Joggers, tapered ankle cut, full-length, color #e0bd9a, soft stretch cotton-jersey outer layer with subtle texture. Minimalist Leather Ankle Boots, block heel, mid-calf length, color #745a3b, smooth genuine leather. Gold-Tone Layered Necklace set, adjustable chain length, brushed finish, mixed gold hues, lightweight plated brass; small structured crossbody bag in earth-toned suede; sheer silk scarf tied loosely around neck. This ensemble bridges the active morning practice with the relaxed café gathering seamlessly. The neutral tonal palette flows from her natural skin tones while the joggers offer unrestricted movement for yoga poses. A light outer layer like a denim jacket or cardigan could be added if the autumn chill persists, though currently none is needed for the daylight forecast."}
+
+── ВІДПОВІДЬ (1277 симв., 173.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Morning Sweat-Wicking Long-Sleeve Top",
+      "details": "relaxed fit, length falling to hip, moisture-wicking synthetic blend",
+      "slot": "top",
+      "color_hex": "#d1ab86",
+      "worn": true
+    },
+    {
+      "name": "High-Waisted Yoga Joggers",
+      "details": "tapered ankle cut, full-length, soft stretch cotton-jersey outer layer with subtle texture",
+      "slot": "bottom",
+      "color_hex": "#e0bd9a",
+      "worn": true
+    },
+    {
+      "name": "Minimalist Leather Ankle Boots",
+      "details": "block heel, mid-calf length, smooth genuine leather",
+      "slot": "shoes",
+      "color_hex": "#745a3b",
+      "worn": true
+    },
+    {
+      "name": "Gold-Tone Layered Necklace set",
+      "details": "adjustable chain length, brushed finish, mixed gold hues, lightweight plated brass",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "small structured crossbody bag",
+      "details": "earth-toned suede",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "sheer silk scarf",
+      "details": "tied loosely around neck",
+      "slot": "scarf",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
