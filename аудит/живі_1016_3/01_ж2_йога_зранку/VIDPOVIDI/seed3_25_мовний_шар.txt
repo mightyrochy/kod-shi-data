@@ -1,0 +1,49 @@
+── ПРОМПТ (7393 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Черевики Гранж жіночі · kind code: ankle_boots · colour code: red · about it: text н=1
+2 — Жіноча сумка Welfare рожева · kind code: bag_generic · colour code: pink · about it: text н=2
+3 — Топ сатиновий з сіткою смарагд · kind code: t_shirt · colour code: emerald · about it: text н=3
+4 — Вкорочені джинси straight leg з синього деніму · kind code: jeans · colour code: blue · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: blue — синій; emerald — смарагд; pink — рожевий; red — червоний.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "These are glossy red leather ankle boots with a chunky off-white lug sole and fluffy faux-fur lining at the collar; they offer sturdy support for active movement while adding a pop of warmth to your autumn look."},
+{"н": 2, "текст": "A rectangular crossbody bag in dusty pink pebbled leather with a silver-tone clasp and a long thin strap that lets you wear it across the body for hands-free convenience during your day."},
+{"н": 3, "текст": "An emerald green sleeveless top made of smooth satin fabric with sheer mesh panels at the neckline and back; its V-neck and spaghetti straps flatter your defined waist and complement your shape without adding bulk."},
+{"н": 4, "текст": "Straight-leg jeans in medium wash blue denim that fall just above the ankle, offering a clean line that balances your hips and lets you move freely with a polished yet comfortable silhouette."},
+{"н": 5, "текст": "You have a bright emerald top with sheer mesh sleeves and delicate straps, paired with straight-cut blue jeans that hit just above the ankle. The look is grounded by chunky red leather ankle boots with thick soles and faux-fur lining, finished with a dusty pink rectangular crossbody bag featuring a silver clasp. Your outfit works as a polished take on active wear: the sleek top and clean denim suit your defined waist and balanced proportions while still looking ready for movement. The rich emerald of the top sets an elegant tone that contrasts beautifully against your skin, while the red boots add warmth to your autumn morning. The pink bag brings a soft, natural touch that harmonizes with both the green and blue without competing."},
+{"н": 6, "текст": "The straight legs of the jeans balance your hips nicely and keep the focus on your vertical lines as you move."},
+{"н": 7, "текст": "Топ сатиновий з сіткою смарагд — Kept the emerald satin top as the single focal point, ensuring it remains the only loud color to satisfy the 'one hero' rule."},
+{"н": 8, "текст": "Топ сатиновий з сіткою смарагд — The top being sleeveless is an acceptable risk for an autumn morning yoga session as long as it serves as the intended visual hero, which it does by providing a strong contrasting anchor to the neutral base layers."}
+]
+
+── ВІДПОВІДЬ (2222 симв., 65.1 с, HTTP 200) ──
+```json
+{
+  "1": "Це глянцеві червоні шкіряні черевики з масивною біло-кремовою підошвою та пухнастим штучним хутром на комірі; вони забезпечують стійку підтримку для активних рухів, водночас додаючи нотку тепла до твого осіннього образу.",
+  "2": "Прямокутна сумка-кросбоді з матової рожевої шкіри зі сріблястою застібкою та довгою тонким ремінцем, який дозволяє носити її через тіло для зручності під час твого дня без зайвих рук.",
+  "3": "Безрукавний топ смарагдового кольору з гладкої сатинової тканини з прозорими сітчастими вставками на вирізі та спині; його V-подібний виріз і тонкі бретельки підкреслюють твою тонку талію та доповнюють твою фігуру, не додаючи зайвого об’єму.",
+  "4": "Прямі джинси середньої синяви з деніму, які закінчуються трохи вище щиколотки, пропонуючи чітку лінію, що врівноважує твої стегна та дозволяє вільно рухатися у полірованому й водночас комфортному силуеті.",
+  "5": "У тебе яскравий смарагдовий топ з сітчастими рукавами та ніжними бретельками, поєднаний із прямими блакитними джинсами, які закінчуються трохи вище щиколотки. Образ доповнюють масивні червоні шкіряні черевики на товстій підошві з штучним хутряним оздобленням і пильно-рожева прямокутна сумка-кросбоді зі сріблястою застібкою. Твій образ виглядає як елегантна версія активного одягу: гладкий топ і чисті джинси підкреслюють твою тонку талію та збалансовані пропорції, залишаючись при цьому готовими до руху. Багатий смарагдовий колір топу створює елегантний тон, який чудово контрастує зі шкірою, а червоні черевики додають тепла твоєму осінньому ранку. Рожева сумка надає м’який природний акцент, що гармонує як із зеленим, так і з блакитним без зайвої конкуренції.",
+  "6": "Прямі штанини джинсів чудово врівноважують твої стегна та підтримують увагу на вертикальних лініях у русі." ,
+  "7": "Топ сатиновий з сіткою смарагд — Зберіг смарагдовий сатиновий топ як єдиний яскравий акцент, щоб він залишався головним героєм і задовольняв правило «одного героя».",
+  "8": "Топ сатиновий з сіткою смарагд — Відсутність рукавів у топу прийнятна для осіннього ранкового заняття йогою, якщо він служить наміченим візуальним героєм, що він і робить, надаючи сильний контрастний акцент до нейтральних базових шарів."
+}
+```

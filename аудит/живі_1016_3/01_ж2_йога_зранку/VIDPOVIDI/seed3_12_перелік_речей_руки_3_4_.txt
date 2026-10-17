@@ -1,0 +1,23 @@
+── ПРОМПТ (2120 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "High-waisted athletic leggings, wide-leg cut with a dropped crotch for freedom of movement, reaching full length to the ankle, color Forest Green (#225533), fabric moisture-wicking nylon-spandex blend.\nMinimalist performance sneakers, sleek low-profile silhouette, color Charcoal Grey (#36454F), rubber and mesh synthetic upper.\nThis outfit works because the wide-leg leggings allow for unrestricted flow during morning yoga poses while the moisture-wicking fabric keeps you dry under the autumn daylight. The deep forest green provides a grounding, earthy tone that connects with the natural light of early morning without being overpowering. The sleek charcoal sneakers offer essential grip and support for movement without adding unnecessary bulk to your silhouette."}
+
+── ВІДПОВІДЬ (504 симв., 151.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "leggings",
+      "details": "High-waisted athletic wide-leg cut with a dropped crotch for freedom of movement, reaching full length to the ankle",
+      "slot": "bottom",
+      "color_hex": "#225533",
+      "worn": true
+    },
+    {
+      "name": "sneakers",
+      "details": "Minimalist performance sleek low-profile silhouette rubber and mesh synthetic upper",
+      "slot": "shoes",
+      "color_hex": "#36454F",
+      "worn": true
+    }
+  ]
+}

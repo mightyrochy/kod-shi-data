@@ -1,0 +1,30 @@
+── ПРОМПТ (2352 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A high-waisted sports leggings with a relaxed, tapered cut and ankle length in color #d1ab86 made from 80% recycled nylon and 20% spandex.\nA cropped zip-front athletic jacket with a straight silhouette and hip length in color #e0bd9a crafted from lightweight technical windbreaker fabric.\nWhite minimalist running shoes with a breathable mesh upper and neutral sole construction.\n\nThis outfit works perfectly for an early autumn morning yoga session by balancing warmth and mobility; the lightweight technical jacket provides a necessary shield against the crisp fall air without restricting movement, while the relaxed leggings offer essential stretch and support during flow sequences. The earthy color palette of warm beige tones harmonizes with the natural daylight setting, creating a grounded and calming aesthetic suitable for a mindful practice. Choosing neutral footwear keeps the visual focus on your posture and breath, ensuring you stay connected to your own body throughout the session."}
+
+── ВІДПОВІДЬ (613 симв., 150.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sports leggings",
+      "details": "high-waisted, relaxed tapered cut, ankle length",
+      "slot": "bottom",
+      "color_hex": "#d1ab86",
+      "worn": true
+    },
+    {
+      "name": "athletic jacket",
+      "details": "cropped, zip-front, straight silhouette, hip length",
+      "slot": "top",
+      "color_hex": "#e0bd9a",
+      "worn": true
+    },
+    {
+      "name": "running shoes",
+      "details": "minimalist, breathable mesh upper, neutral sole construction",
+      "slot": "shoes",
+      "color_hex": "#ffffff",
+      "worn": true
+    }
+  ]
+}
