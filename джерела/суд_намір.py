@@ -55,7 +55,8 @@ def намір_комфорту(речі, intent="conventional", мета_важ
             h = None
         if h is None:
             if р.get("каблук") is True:
-                заяви = [_ВМ.заява("heel_height_unknown_comfort_ceiling", item=_ВМ.вільний(назва, межа=44))]
+                заяви = [_ВМ.заява("heel_height_unknown_comfort_ceiling", item=_ВМ.вільний(назва),
+                                     item_id=р.get("id"))]
                 зн.append(dict(_зн("K-PER-00", "питання", _ВМ.суть_кодом(заяви, [р]), [назва],
                     "картка каже «каблук», але не каже скільки; стеля %g см (K-SHO-16) "
                     "без числа не застосовна" % стеля,
