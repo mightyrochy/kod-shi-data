@@ -1,0 +1,57 @@
+── ПРОМПТ (4944 симв.) ──
+{"task": {"role": "You are a personal stylist. Put together one outfit for her case.", "rules": ["Choose exactly one different item for replacement.slot, considering the entire fixed outfit. Return only that item, never a rebuilt outfit. If no eligible different item exists, return an empty item list. Do not invent a catalogue item or reuse an item already worn."], "limits": ["Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "own": "<id from her_items or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"case\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words", "\"formality\" — the level of dress she named: home (loungewear at home; athleisure) < everyday (jeans, T-shirt and sneakers; neat casual, dark denim) < neat (textured jacket, refined knit, loafers; blazer with trousers, sheath dress) < smart (suit without tie, cocktail dress) < formal (business suit) < very_smart (tuxedo, evening gown) < ceremonial (white tie, full evening dress)", "\"person\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm", "\"main_color\" — the main color and who chose it: her (she did), code_she_kept_it (suggested to her, she kept it), her_item_photo (the color of her item on a photo); build the outfit around it", "\"replacement\" — one rejected item and the unchanged items of her outfit; replace only the rejected item in its slot; fit the choice to every unchanged item; leave all other items unchanged; do not return the rejected item", "\"format_error\" — the code of why your previous answer to this same message could not be used; answer again: one JSON object following \"answer_schema\" with exactly one item, its \"worn\" true"]}, "case": {"event": "робочий день в офісі", "occasion": "work", "place": "office_creative", "formality": ["neat"], "season": "autumn"}, "person": {"skin_hex": ["#deb295", "#d8a98c", "#e2ba9f"], "hair_hex": ["#f1dbaa", "#d9bf88"], "eyes_hex": "#759087", "height_cm": 168, "girths_cm": {"shoulders": 98, "bust": 92, "waist": 74, "hips": 99}}, "main_color": {"name": "lilac", "hex": "#b89cc8", "chosen_by": "her"}, "replacement": {"slot": "outerwear", "rejected": {"n": null, "name": "Вовняний блейзер", "details": ["s", "t", "r", "u", "c", "t", "u", "r", "e", "d", " ", "s", "h", "o", "u", "l", "d", "e", "r", " ", "c", "u", "t", ",", " ", "m", "i", "d", "-", "l", "e", "n", "g", "t", "h", " ", "h", "e", "m", "l", "i", "n", "e", ",", " ", "w", "a", "r", "m", "-", "t", "o", "n", "e", "d", " ", "f", "a", "b", "r", "i", "c"], "hex": "#c6a882", "family": "neutral_warm", "kind": "outerwear"}, "fixed_outfit": [{"n": null, "name": "Шовкова сорочка-блуза з бавовни", "details": ["r", "e", "l", "a", "x", "e", "d", " ", "f", "i", "t", ",", " ", "k", "n", "e", "e", "-", "l", "e", "n", "g", "t", "h", " ", "h", "e", "m", "l", "i", "n", "e", ",", " ", "l", "i", "g", "h", "t", "w", "e", "i", "g", "h", "t", " ", "w", "o", "v", "e", "n", " ", "m", "a", "t", "e", "r", "i", "a", "l"], "hex": "#6b7f6d", "kind": "top"}, {"n": null, "name": "Штани широкого крою", "details": ["t", "a", "p", "e", "r", "e", "d", " ", "a", "n", "k", "l", "e", ",", " ", "f", "u", "l", "l", "-", "l", "e", "n", "g", "t", "h", " ", "l", "e", "g", " ", "o", "p", "e", "n", "i", "n", "g", ",", " ", "s", "o", "f", "t", " ", "p", "o", "n", "t", "e", " ", "k", "n", "i", "t", " ", "f", "a", "b", "r", "i", "c"], "hex": "#4f5053", "family": "neutral_cool", "kind": "bottom"}, {"n": null, "name": "Шкіряні лофери", "details": ["p", "o", "i", "n", "t", "e", "d", " ", "t", "o", "e", ",", " ", "m", "i", "d", "-", "h", "e", "i", "g", "h", "t", " ", "b", "l", "o", "c", "k", " ", "h", "e", "e", "l", ",", " ", "s", "m", "o", "o", "t", "h", " ", "c", "a", "l", "f", " ", "l", "e", "a", "t", "h", "e", "r", " ", "m", "a", "t", "e", "r", "i", "a", "l"], "hex": "#5d4037", "family": "neutral_warm", "kind": "shoes"}, {"n": null, "name": "Золотий кулон на ланцюжку", "hex": "#deb295", "family": "neutral_warm", "kind": "necklace"}, {"n": null, "name": "Мінімалістичні сережки-конго", "hex": "#808080", "family": "neutral_achromatic", "kind": "earrings"}]}, "format_error": "replacement_not_one_item"}
+
+── ВІДПОВІДЬ (1517 симв., 15.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk-Blend Relaxed Fit Blouse",
+      "details": "relaxed fit, knee-length length, lightweight woven material",
+      "slot": "top",
+      "color_hex": "#6b7f6d",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "Tapered Ankle Full-Length Leg Opening Soft Ponte Knit Trousers",
+      "details": "tapered ankle, full-length length, leg opening, soft ponte knit fabric",
+      "slot": "bottom",
+      "color_hex": "#4f5053",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "Pointed Toe Mid-Height Blocky Heel Smooth Calfskin Leather Loafers",
+      "details": "pointed toe, mid-height blocky heel, smooth calfskin leather material",
+      "slot": "shoes",
+      "color_hex": "#5d4037",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "Gold Pendant on Chain Necklace",
+      "details": "gold pendant hanging from a delicate chain",
+      "slot": "necklace",
+      "color_hex": "#deb295",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "Minimalist Congo Stud Earrings",
+      "details": "small geometric stud design in metal finish",
+      "slot": "earrings",
+      "color_hex": "#808080",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "Lilac Structured Blazer",
+      "details": "tailored structured fit, mid-length length, lined construction, soft wool blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#b89cc8",
+      "own": null,
+      "worn": true
+    }
+  ]
+}

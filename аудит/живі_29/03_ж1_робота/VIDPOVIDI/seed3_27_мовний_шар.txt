@@ -1,0 +1,82 @@
+── ПРОМПТ (9401 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа й слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_unchecked — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- as_top — верх.
+- bag_handle — сумка.
+- bottom — низ.
+- crossbody — кросбоді.
+- hair — волосся.
+- hand — рука.
+- neck — шия.
+- scarf — шарф.
+- shoes — взуття.
+- shoulder — плече.
+- shoulders — плечі.
+- uk — українська.
+- waist — до талії / талія.
+- wrist — зап'ясток.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+Коли в номері кілька заяв, кожна стоїть у тексті своїм змістом: жодна не випадає і не зливається з іншою, а дія однієї заяви не переходить на речі іншої — чому сказано окремо, що зроблено окремо.
+
+ЗАЯВИ:
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_look_contrast_matches_hers — so the code cannot tell whether the outfit's contrast matches her own.
+- cannot_tell_item_off_palette — so the code cannot tell whether the item's colour lies outside her palette.
+- cannot_tell_colour_from_eyes — so the code cannot tell whether the colour comes from the family of her eyes.
+- cannot_tell_item_is_neutral — so the code cannot tell whether the named item is a neutral at all, and the rules about neutrals did not judge it.
+- cannot_tell_accent_muted_on_low_contrast — so the code cannot tell whether the single accent colour is muted enough for her low contrast.
+- cannot_tell_accent_role_chroma — so the code cannot tell whether the item is colourful enough for the accent role the palette scheme gave its slot.
+- cannot_tell_items_intensity_match — so the code cannot tell whether the outfit's items match in colour saturation.
+- cannot_tell_face_contrast_matches_hers — so the code cannot tell whether the jump of lightness near her face matches her own contrast.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- scarf_near_face_way_unknown — whether she wears this scarf near the face; which top suits her depends on it, since a scarf near the face carries colour there by itself (values: item — item name; ways — codes of wearing ways: neck, hair, shoulders).
+- scarf_size_unknown — the card does not name the scarf's size, so the code does not know which knots and ways of wearing are possible (values: item — item name; item_id).
+- item_length_unknown_edge_default — the cards do not carry the length of the named items: the usual edge for such an item was taken, so the code does not know where exactly it lands on the body (values: slots — slot codes).
+- shoe_cut_irrelevant_leg_covered — the shoe's cut-line decides nothing here: a long bottom covers the leg (values: item — item name; item_id).
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- cut_from_photo_shop_differs — the cut was read from the photo, and the shop names another one (values: items — the items: slot — slot code, shop — the cut by the shop, photo — the cut from the photo; the cut names are in English, retell them in her language).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "item_length_unknown_edge_default", "values": {"slots": ["bottom", "shoes"]}}]},
+{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Кросівки жіночі, ATTICO, замша/текстиль, колір бежевий", "lang": "uk"}, "item_id": "ж-09715@attico.ua"}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "shoe_cut_irrelevant_leg_covered", "values": {"item": {"free_text": "Кросівки жіночі, ATTICO, замша/текстиль, колір бежевий", "lang": "uk"}, "item_id": "ж-09715@attico.ua"}}]},
+{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-08316@rito.ua", "slot": "scarf", "colour": "синій", "name": {"free_text": "Хустка з м'якої вовни ягнят синя", "lang": "uk"}}]}}, {"code": "cannot_tell_face_contrast_matches_hers"}, {"code": "cannot_tell_item_is_neutral"}, {"code": "cannot_tell_items_intensity_match"}, {"code": "cannot_tell_accent_role_chroma"}, {"code": "cannot_tell_item_holds_scheme_hue"}, {"code": "cannot_tell_item_off_palette"}, {"code": "cannot_tell_look_contrast_matches_hers"}, {"code": "cannot_tell_colour_from_eyes"}, {"code": "cannot_tell_accent_muted_on_low_contrast"}]},
+{"н": 5, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "bottom", "range": "36"}]}}]},
+{"н": 6, "вид": "card_unchecked", "заяви": [{"code": "cut_from_photo_shop_differs", "values": {"items": [{"slot": "bottom", "shop": "wide", "photo": "straight"}]}}]},
+{"н": 7, "вид": "card_unchecked", "заяви": [{"code": "scarf_size_unknown", "values": {"item": {"free_text": "Хустка з м'якої вовни ягнят синя", "lang": "uk"}, "item_id": "ж-08316@rito.ua"}}]},
+{"н": 8, "вид": "card_unchecked", "заяви": [{"code": "scarf_near_face_way_unknown", "values": {"item": {"free_text": "Хустка з м'якої вовни ягнят синя", "lang": "uk"}, "ways": ["neck", "hair", "shoulders"]}}]},
+{"н": 9, "вид": "card_unchecked", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Сумка жіноча, ATTICO, шкіра, колір кремовий", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}, {"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Хустка з м'якої вовни ягнят синя", "lang": "uk"}, "ways": ["neck", "hair", "shoulders", "waist", "bag_handle", "wrist", "as_top"]}}]},
+{"н": 10, "вид": "card_unchecked", "заяви": [{"code": "items_register_unknown", "values": {"count": 2}}]}
+]
+
+── ВІДПОВІДЬ (895 симв., 74.5 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю, де саме закінчуються штани та взуття на твоєму тілі.",
+  "2": "Не перевірила розмір кросівок. Не знаю твою довжину стопи й внутрішню устілку цих кросівок.",
+  "3": "Довжина халяви кросівок не має значення, бо їх закриває низ одягу.",
+  "4": "Я бачу лише назву кольору хустки — синій. Не знаю, чи він підходить до твоєї зовнішності та палітри, чи достатньо яскравий для акценту, і чи не випадає з твоїх улюблених відтінків.",
+  "5": "Не можу сказати, як саме сидить на тобі низ розміру 36. Потрібні ще заміри.",
+  "6": "На фото штани сидять прямо, а в магазині їх називають широкими.",
+  "7": "Я не знаю розмір хустки з вовни ягнят.",
+  "8": "Не обрала спосіб носити цю синю хустку: біля обличчя чи ні. Від цього залежить, який верх підібрати.",
+  "9": "Ти ще не вирішила, як носити сумку та хустку з вовни ягнят.",
+  "10": "Не можу визначити стиль двох речей."
+}
+```

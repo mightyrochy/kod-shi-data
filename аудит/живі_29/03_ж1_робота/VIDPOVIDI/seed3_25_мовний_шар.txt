@@ -1,0 +1,49 @@
+── ПРОМПТ (7114 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Костюм бежевий EDIT · kind code: suit · colour code: beige · about it: text н=1
+2 — Човники жіночі Tamaris темно-бежеві · kind code: pumps · colour code: beige · about it: text н=2
+3 — Жіноча сумка Welfare синя · kind code: bag_generic · colour code: blue · about it: text н=3
+4 — Ремінь жіночий Welfare чорний · kind code: belt · colour code: black · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; blue — синій.
+
+ТЕКСТИ:
+{
+"1": "Your set includes a sleeveless V-neck vest top with a front button row and wide-leg trousers in the same soft beige tone. The fabric drapes gently from shoulder to ankle, offering an effortless drape that suits your defined waist while keeping the upper body relaxed.",
+"2": "These pointed-toe pumps are crafted in dark beige suede with a refined stiletto heel, adding height without sacrificing comfort for long days at work.",
+"3": "Your handbag is a structured piece made from multicolored woven fabric with brown leather straps and hardware. The playful texture brings depth to your neutral palette while maintaining a sophisticated edge perfect for an office creative setting.",
+"4": "This slim black belt features a simple metal buckle and smooth leather construction, ready to cinch your waist or serve as a standalone accessory when layered over your set.",
+"5": "Your beige two-piece set sets a polished yet relaxed tone for your office day, with its clean lines and soft fabric letting you feel composed without feeling stiff. The dark-beige pumps ground the look in comfort and elegance, while the colorful woven bag adds an unexpected pop that keeps things fresh even after long hours at your desk. You can layer the slim black belt over your waist if needed to define your shape further, but it works beautifully left off too.",
+"6": "Keep your hair down and loose around your shoulders for a soft, approachable look that matches the set’s relaxed silhouette.",
+"7": "Ремінь жіночий Welfare чорний, Костюм бежевий EDIT — I accept this contrast finding as a deliberate choice because the sharp jump between the dark belt and your skin tone highlights your jawline without disrupting the outfit's cohesive, professional aesthetic.",
+"8": "Костюм бежевий EDIT — The top is listed as 'relaxed', but paired with a fitted midi skirt it creates a balanced pair_balance condition by contrasting volume at the shoulder with structure at the waist."
+}
+
+── ВІДПОВІДЬ (2114 симв., 90.5 с, HTTP 200) ──
+```json
+{
+"1": "Твій комплект складається з жилету без рукавів із V-подібним вирізом і рядом ґудзиків спереду та широких штанів вільного крою в тому ж м’якому бежевому тоні. Тканина ніжно спадає від плеча до щиколотки, створюючи легкий силует, який підкреслює твою витончену талію, залишаючи верхню частину тіла розслабленою.",
+"2": "Ці туфлі-човники з загостреним носком виконані з темно-бежевої замші зі стійким каблуком-шпилькою, додають зросту без шкоди для комфорту протягом довгих робочих днів.",
+"3": "Твоя сумка — це структурована модель із різнокольорового плетеного полотна з коричневими шкіряними ремінцями та фурнітурою. Грайлива текстура додає глибини твоєму нейтральному палітрі, зберігаючи при цьому вишуканий акцент, ідеальний для креативного офісного середовища.",
+"4": "Цей тонкий чорний ремінь має просту металеву пряжку та гладку шкіряну конструкцію, готовий підкреслити твою талію або послужити самостійним аксесуаром при нашаруванні поверх комплекту.",
+"5": "Твій бежевий комплект складається з двох частин і створює вишуканий, але розслаблений тон для твого робочого дня завдяки чистим лініям і м’якій тканині, що дозволяє тобі почуватися зібраною без відчуття скутості. Темно-бежеві туфлі-човники підкреслюють образ комфортом та елегантністю, а кольорова плетена сумка додає несподіваний акцент, який освіжає навіть після довгих годин за робочим столом. Ти можеш накинути тонкий чорний ремінь поверх талії, якщо потрібно, щоб ще більше підкреслити свою фігуру, але він чудово виглядає і без нього.",
+"6": "Залиш своє волосся розпущеним навколо плечей для м’якого, привабливого вигляду, який відповідає розслабленому силуету комплекту.",
+"7": "Ремінь жіночий Welfare чорний, Костюм бежевий EDIT — Я приймаю це контрастне поєднання як свідомий вибір, тому що різкий перехід між темним ременем і тоном твоєї шкіри підкреслює лінію щелепи без порушення цілісної професійної естетики комплекту.",
+"8": "Костюм бежевий EDIT — Жилет вказаний як 'вільний', але поєднаний із приталеною міді-спідницею, він створює збалансований образ за рахунок контрасту об’єму на плечах і структури в талії."
+}
+```
