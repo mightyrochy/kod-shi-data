@@ -1,0 +1,78 @@
+── ПРОМПТ (9800 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня міді бохо з крепу · kind code: dress_generic · colour code: olive · about it: text н=1
+2 — Піджак однобортний шоколад · kind code: blazer · colour code: chocolate · about it: text н=2
+3 — Чоботи із замші червоного кольору · kind code: boots · colour code: red · about it: text н=3
+4 — Пасок з пірʼям какао · kind code: belt · colour code: cocoa · about it: text н=4
+5 — Базовий обруч шоколадний · kind code: headband · colour code: chocolate · about it: text н=5
+6 — Шарф кашемір двосторонній · kind code: scarf_generic · colour code: chocolate · about it: text н=6
+7 — Сумка жіноча червона · kind code: bag_generic · colour code: red · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: chocolate — шоколадний; cocoa — какао; olive — оливковий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a long, olive green boho-style dress made of soft crepe fabric. It features a relaxed sleeveless cut with gentle tiered ruffles flowing from the waist down to the ankles, creating a romantic and comfortable silhouette that moves beautifully with you.",
+"2": "The top of your ensemble is a structured chocolate-colored single-breasted blazer. It has a classic lapel collar, functional pockets, and a tailored fit that drapes elegantly over your shoulders while adding a sophisticated, formal edge to the softer dress underneath.",
+"3": "Your footwear is a pair of knee-high boots crafted from rich red suede. They sit on a sturdy wooden block heel with a pointed toe, offering both height and stability while adding a vibrant, luxurious accent that contrasts sharply against the darker tones of the outfit.",
+"4": "This is a delicate belt featuring a wide fabric strap in cocoa brown with a unique feathered detail at the side. Designed to be tied into a bow around your waist, it adds texture and a feminine touch while cinching the dress to highlight your figure.",
+"5": "A smooth, chocolate brown satin headband designed to sit comfortably on your hair. Its simple, continuous curve holds your curls in place with a sleek, polished finish that adds a touch of elegance without being overly ornate.",
+"6": "This is a luxurious two-tone cashmere scarf blending shades of chocolate and blush pink. It features soft fringes along the edges and is designed to be worn loosely for warmth and style, adding a cozy yet chic layer to your look.",
+"7": "A compact red clutch bag made from smooth leather. It features a minimalist design with a top handle and discreet branding, making it the perfect accessory to carry your essentials while adding a bold splash of color to your outfit.",
+"8": "This outfit brings together a long olive green tiered dress, an oversized chocolate blazer, knee-high red suede boots, a feathered cocoa belt, a chocolate satin headband, a two-tone chocolate scarf, and a classic red clutch. The deep chocolate tones of your top layers and accessories ground the fresh look of the olive dress, while the striking red of the boots and bag add a festive pop perfect for a New Year's celebration. The silhouette is elegant and balanced, drawing the eye vertically to highlight your figure.",
+"9": "Keep the blazer unbuttoned to show off the dress's shape, but use the feathered belt at the waist to define your curves before you take it off later for dancing.",
+"10": "Wrap the two-tone scarf loosely around your neck so the fringe falls naturally over the jacket for a touch of warmth against the frosty evening air.",
+"11": "Tuck your hair up with the headband to keep it out of the way and let the jewelry on your ears shine as you mingle.",
+"12": "Чоботи із замші червоного кольору — The red boots provide the necessary festive accent color to break the neutral palette while maintaining elegance.",
+"13": "Шарф кашемір двосторонній — The scarf wraps around your neck for warmth against the frost, carrying the warm brown tones of the outfit.",
+"14": "Базовий обруч шоколадний — The headband covers your ears and adds a touch of warmth without compromising the formal silhouette.",
+"15": "Сукня міді бохо з крепу — The dress is chosen as a skirt to layer under the jacket, creating a balanced look where the top half feels dressed up.",
+"16": "Шарф кашемір двосторонній — The cashmere scarf adds warmth and introduces color to counteract the monotony of the dark palette while protecting against the frost.",
+"17": "Базовий обруч шоколадний — The headband ensures your neck remains covered in the cold, completing the warm layering strategy without adding bulk.",
+"18": "Пасок з пірʼям какао — The red leather belt introduces a vibrant splash of color that anchors the look and prevents it from being too sombre for a celebration.",
+"19": "Шарф кашемір двосторонній — The cashmere scarf adds essential warmth for the frosty weather while introducing soft color to the cool-toned outfit.",
+"20": "Базовий обруч шоколадний — The headband keeps your neck warm in the freezing air without disrupting the outfit's clean lines.",
+"21": "Чоботи із замші червоного кольору — The burgundy suede boots add warmth and a festive pop of color, essential for the New Year's celebration in frosty weather."
+}
+
+── ВІДПОВІДЬ (4203 симв., 139.9 с, HTTP 200) ──
+```json
+{
+"1": "Це довга оливково-зелена бохо-сукня з м’якої крепової тканини. Вона має вільний безрукавний крій із ніжними ярусними воланами, що спадають від талії до щиколоток, створюючи романтичний і комфортний силует, який гарно рухається разом із тобою.",
+"2": "Верх твого образу — це структурований шоколадний однобортний піджак. Він має класичний лацкан, функціональні кишені та приталений крій, що елегантно драпірує плечі й додає вишуканого, формального акценту до м’якшої сукні знизу.",
+"3": "Твоє взуття — це пара чобіт до коліна з червоної замші. Вони сидять на міцному дерев’яному блочному підборі з загостреним носком, пропонуючи висоту та стійкість і додаючи яскравий, розкішний акцент, який різко контрастує з темнішими тонами вбрання.",
+"4": "Це ніжний пасок із широкою тканинною стрічкою кольору какао з унікальною пір’яною деталлю на боці. Він призначений для зав’язування бантиком навколо талії, додаючи текстури й жіночного штриха, водночас підкреслюючи твою фігуру.",
+"5": "Гладкий шоколадний атласний обруч для волосся, який зручно сидить на твоєму волоссі. Його простий, безперервний вигин утримує кучері на місці з елегантним і полірованим фінішем, додаючи штрих вишуканості, не будучи надмірно пишним.",
+"6": "Це розкішна двостороння кашемірова шаль, що поєднує відтінки шоколадного та блідо-рожевого. Вона має м’які бахрому на краях і призначена для вільного носіння заради тепла й стилю, додаючи затишний, але шикарний шар до твого образу.",
+"7": "Компактна червона шкіряна клатч-сумка. Вона має мінімалістичний дизайн із верхньою ручкою та стриманим брендингом, що робить її ідеальним аксесуаром для носіння необхідних речей, водночас додаючи сміливий сплеск кольору до твого вбрання.",
+"8": "Цей образ поєднує довгу оливково-зелену ярусну сукню, шоколадний піджак оверсайз, червоні замшеві чоботи до коліна, какао пасок з пір’ям, шоколадний атласний обруч для волосся, двосторонню шоколадну шаль і класичну червону клатч-сумку. Глибокі шоколадні тони твоїх верхніх шарів та аксесуарів підкреслюють свіжий вигляд оливкової сукні, а яскравий червоний колір чобіт і сумки додає святкового акценту, який чудово підходить для новорічного святкування. Силует елегантний і збалансований, привертаючи увагу вертикально, щоб підкреслити твою фігуру.",
+"9": "Залиш піджак розстебнутим, щоб показати форму сукні, але використовуй пасок з пір’ям на талії, щоб окреслити свої вигини перед тим, як його зняти для танців." ,
+"10": "Оберни двосторонню шаль вільно навколо шиї так, щоб бахрома природно спадала поверх піджака заради тепла в морозне вечірнє повітря.",
+"11": "Заколюй волосся обручем для волосся, щоб воно не заважало й дозволь прикрасам на твоїх вухах сяяти, поки ти спілкуєшся." ,
+"12": "Чоботи із замші червоного кольору — Червоні чоботи надають необхідний святковий акцентний колір, щоб розбавити нейтральну палітру, зберігаючи при цьому елегантність.",
+"13": "Шарф кашемір двосторонній — Шаль обертається навколо твоєї шиї для тепла проти морозу, переносячи теплі коричневі тони вбрання." ,
+"14": "Базовий обруч шоколадний — Обруч покриває твої вуха й додає штрих тепла без шкоди для формального силуету.",
+"15": "Сукня міді бохо з крепу — Сукню обрано як спідницю, щоб одягнути під піджак, створюючи збалансований вигляд, де верхня частина відчувається ошатно." ,
+"16": "Шарф кашемір двосторонній — Кашемірова шаль додає тепла й вводить колір, щоб протидіяти монотонності темної палітри під час захисту від морозу.",
+"17": "Базовий обруч шоколадний — Обруч тримає твою шию в теплі на холодному повітрі без порушення чистих ліній образу." ,
+"18": "Пасок з пірʼям какао — Червоний шкіряний пасок додає яскравий сплеск кольору, який закріплює образ і не дозволяє йому бути надто похмурим для святкування.",
+"19": "Шарф кашемір двосторонній — Кашемірова шаль додає необхідне тепло в морозну погоду, водночас вводячи м’які кольори до прохолодного тонового образу." ,
+"20": "Базовий обруч шоколадний — Обруч тримає твою шию в теплі на холодному повітрі без порушення чистих ліній образу.",
+"21": "Чоботи із замші червоного кольору — Бургундські замшеві чоботи додають тепла й святкового акцентного кольору, що є необхідним для новорічного святкування в морозну погоду."
+}
+```
