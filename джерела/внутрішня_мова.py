@@ -2783,6 +2783,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "cut_clings_at_level": "a cut that clings at this level",
     "opposite_metal_near_face": "put the metal opposite to her warmth near the face (values: metal — the metal "
                                 "to put, lead — the leading one now)",
+    "same_item_in_opposite_season_fabric": "the same item in a fabric of the opposite season (values: band — "
+                                           "from and to, °C)",
     # ── оцінка її власного образу з фото: чого на кадрі не знайшлось (Ч-8, рядок 197) ──
     "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one; "
                                 "`items_without_photo`: items were named but not on which of her photos, so none could be "
