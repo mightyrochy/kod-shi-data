@@ -155,6 +155,10 @@ def _коди(група, на=False):
 ПОВНОТА = ["narrow", "medium", "wide", НЕ_СТОСУЄТЬСЯ, UNKNOWN]  # повнота · аксесуари_розмір
 КРІПЛЕННЯ_ПІДОШВИ = ["stitched", "glued", НЕ_СТОСУЄТЬСЯ, UNKNOWN]   # ремонтопридатна · аксесуари_*
 ФОРМАТ_СУМКИ = ["small", "medium", "large", НЕ_СТОСУЄТЬСЯ, UNKNOWN]  # формат · аксесуари_структура
+# Роль частини складу (рядок 6897): основа речі, підкладка, оздоба, наповнювач — `жниварка.склад_основа_із` бере частину
+# `main`. Підпис частини («Підкладка:», «Основна тканина») — слово крамниці, і код його не читає (п.12): роль каже модель із
+# цитатою підпису (п.16). `trim` і `lining` — ті самі коди, що в `КОЛІР_ЧОМУ`.
+РОЛЬ_ЧАСТИНИ = ["main", "lining", "trim", "filling", UNKNOWN]
 
 
 class Мірка(tuple):
@@ -190,6 +194,7 @@ class Мірка(tuple):
     ("texture", ТЕКСТУРА, "surface of the fabric or material"),
     ("elastane_pct", Мірка(ВІДСОТОК, 100), "share of elastane in the composition"),
     ("wool_pct", Мірка(ВІДСОТОК, 100), "share of wool in the composition"),
+    ("composition_parts[].role", РОЛЬ_ЧАСТИНИ, "role of this part of the composition"),
     ("cut", КРІЙ, "cut"),
     ("length", _коди("length", на=True), "length"),
     ("length_cm", Мірка(ДОВЖИНА, 400), "length of the garment as a measure"),
@@ -334,8 +339,9 @@ assert all(к in ВМ.ТАБЛИЦЯ["slot"] or к in ВМ.ТАБЛИЦЯ["item_
 СТЕЛЯ_ФРАГМЕНТІВ = 12
 СТЕЛЯ_ФРАГМЕНТА = 80        # знаків англійського фрагмента
 # Стелі списків кодів у схемі відповіді: без них граматика пускає довільно довгий список.
-СТЕЛІ_СПИСКІВ = {"set_parts": 4, "color_extra": 4, "decor": 6, ОСОБЛИВОСТІ: СТЕЛЯ_ФРАГМЕНТІВ}
+СТЕЛІ_СПИСКІВ = {"set_parts": 4, "composition_parts": 4, "color_extra": 4, "decor": 6, ОСОБЛИВОСТІ: СТЕЛЯ_ФРАГМЕНТІВ}
 
+ОПИСИ_СПИСКІВ = {"set_parts": "частини набору", "composition_parts": "частини складу порядком тексту"}
 ПЕРЕЛІКИ = {ш: к for ш, к, _ in ПОЛЯ}
 ОПИСИ = {ш: о for ш, _, о in ПОЛЯ}
 ОПИСИ[ОСОБЛИВОСТІ] = ОПИС_ОСОБЛИВОСТЕЙ
@@ -356,6 +362,7 @@ assert all(к in ВМ.ТАБЛИЦЯ["slot"] or к in ВМ.ТАБЛИЦЯ["item_
     # рядки 6425–6428: ключ запису фіда, який #1028 знімає без заміни
     "fabric_kind": "фід_каталог: рід_тканини_слово", "texture": "фід_каталог: текстура",
     "elastane_pct": "фід_каталог: еластан_%", "wool_pct": "фід_верхнє: вовна_частка (частка 0..1)",
+    "composition_parts": "жниварка.склад_основа_із: перша частина складу за позицією",
     "length_cm": "фід_каталог: довжина_виробу_см", "size_fit": "фід_взуття, фід_каталог: розмірність",
     "sleeve_cut": "фід_верхнє: рукав", "collar": "фід_верхнє: комір (стійка — neckline)",
     "closure": "фід_верхнє: застібка", "breasted": "фід_верхнє: бортність", "belt": "фід_верхнє: пояс",
@@ -487,7 +494,7 @@ def схема():
             далі = вузол["properties"].setdefault(ім, {})
             if список:
                 далі.setdefault("type", "array")
-                далі.setdefault("description", "частини набору")
+                далі.setdefault("description", ОПИСИ_СПИСКІВ[ім])
                 далі = далі.setdefault("items", {})
             далі.setdefault("type", "object")
             далі.setdefault("additionalProperties", False)
@@ -585,6 +592,9 @@ _ПРАВИЛА = (
     "A field with \"unit\" takes a number: \"value\" the number the text gives, \"unit\" its unit, "
     "the quote holds that number in digits. A range or numbers per size: the first number.",
     "\"set_parts\": only for an item sold as a set, one entry per part; otherwise [].",
+    "\"composition_parts\": one entry per part of the fibre composition, in the order the text gives them; quote the "
+    "label of the part, or its fibres when it has no label; \"role\": main for the item's own fabric. [] when the text "
+    "gives one part or none.",
     "\"color_main\": the colour of this item, not of other colour variants on sale; other colours "
     "the text names for this item go to \"color_extra\".",
     "\"metal_where\": the metal is the body of the item or only its hardware.",
