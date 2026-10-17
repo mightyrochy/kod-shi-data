@@ -1,0 +1,44 @@
+── ПРОМПТ (2402 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool blend blazer with a subtle herringbone weave in forest green (#2f4f4f), tailored cut with single-button closure and notch lapels, hip-length, rich wool and linen.\nHeavyweight dark wash denim jeans in indigo blue (#0d1b2a), relaxed straight-leg fit that hits at mid-calf without dragging, knee-length, 100% organic cotton.\nLeather ankle boots with a low block heel in deep burgundy red (#800020), rounded toe, shaft reaching just below the calf, full-grain leather.\nGold vermeil hoop earrings and a matching delicate pendant necklace in warm yellow gold (#ffd700).\nThis ensemble strikes the perfect balance for a park date on an autumn day by combining the structured elegance of the green blazer with the relaxed comfort of dark denim. The deep burgundy boots tie the color palette together while adding warmth suitable for cooler fall air, ensuring she stays comfortable during the walk through the trees. Gold jewelry complements her skin tone and adds a touch of sparkle against the natural daylight backdrop without appearing overly formal."}
+
+── ВІДПОВІДЬ (1018 симв., 186.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "subtle herringbone weave tailored cut with single-button closure and notch lapels, hip-length rich wool and linen",
+      "slot": "outerwear",
+      "color_hex": "#2f4f4f",
+      "worn": true
+    },
+    {
+      "name": "jeans",
+      "details": "relaxed straight-leg fit that hits at mid-calf without dragging knee-length 100% organic cotton",
+      "slot": "bottom",
+      "color_hex": "#0d1b2a",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "low block heel rounded toe shaft reaching just below the calf full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#800020",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "hoop",
+      "slot": "jewelry",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate pendant",
+      "slot": "collar_necklace",
+      "color_hex": "#ffd700",
+      "worn": true
+    }
+  ]
+}

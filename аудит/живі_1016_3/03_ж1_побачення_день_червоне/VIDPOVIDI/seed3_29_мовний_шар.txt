@@ -1,0 +1,58 @@
+── ПРОМПТ (7945 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лонгслів мохеровий пудра · kind code: longsleeve · colour code: powder · about it: text н=1
+2 — Двійка класичні бермуди + жилетка приталена пломбір · kind code: vest · colour code: white · about it: text н=2
+3 — Лофери замшеві (Other Brand) · kind code: loafers · colour code: beige · about it: text н=3
+4 — Сумка Crush зі шкіри з биркою · kind code: bag_generic · colour code: burgundy · about it: text н=4
+5 — Кардиган Ромби пудра · kind code: cardigan · colour code: powder · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; burgundy — бордовий; powder — пудра; white — білий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This long sleeve top is crafted from a soft mohair fabric in a warm powder pink shade. It has a relaxed silhouette with a crew neckline and long sleeves that provide comfort without restriction."},
+{"н": 2, "текст": "The classic cream bermuda shorts feature a tailored fit with structured sides and a high waistline. They include a matching vest layer that creates a polished, put-together look perfect for an evening outing."},
+{"н": 3, "текст": "These beige suede loafers are slip-on style with a classic tassel strap across the top and a comfortable flat sole. The smooth leather finish adds a touch of sophistication to any outfit."},
+{"н": 4, "текст": "A compact burgundy chain bag with a distinctive 'B' logo closure offers both style and functionality. Its rich deep red tone contrasts beautifully against your lighter colored clothes for visual interest."},
+{"н": 5, "текст": "This powder pink cardigan features an intricate open-knit diamond pattern across the front with wide balloon sleeves. It includes a matching white belt that cinches at your waist to create definition."},
+{"н": 6, "текст": "You're wearing a soft pink mohair long sleeve that drapes gently over your frame, paired with classic cream bermuda shorts and a fitted waist vest for structure. On your feet are cozy beige suede loafers with a tassel detail, and you carry a small burgundy chain bag that adds a rich pop of color. Over the top, there is a light pink open cardigan with a delicate geometric pattern to keep things airy."},
+{"н": 7, "текст": "The mohair knit feels so soft against your skin on a crisp autumn day in the park."},
+{"н": 8, "текст": "You can take the cardigan off when you get warm from walking around the park or sitting by the coffee shop later."},
+{"н": 9, "текст": "Двійка класичні бермуди + жилетка приталена пломбір — Kept as fitted vest to define waist and lead to target X shape, replacing relaxed long sleeve for structure."},
+{"н": 10, "текст": "Лофери замшеві (Other Brand) — Kept loafers; no change required as they continue leg line and match tone."},
+{"н": 11, "текст": "Сумка Crush зі шкіри з биркою — Added burgundy leather tote. Answers her request for jewelry_generic (interpreted as bag) and provides needed third piece/layer structure."},
+{"н": 12, "текст": "Лонгслів мохеровий пудра, Двійка класичні бермуди + жилетка приталена пломбір, Лофери замшеві (Other Brand), Сумка Crush зі шкіри з биркою, Кардиган Ромби пудра — The inclusion of five items creates a layered, textured look rather than a sparse one that feels unfinished for a date; the additional vest adds essential waist definition which was missing in the initial configuration."}
+]
+
+── ВІДПОВІДЬ (2603 симв., 109.9 с, HTTP 200) ──
+```json
+{
+  "1": "Цей лонгслів з довгими рукавами виготовлений із м’якої мохерової тканини теплого пудрово-рожевого відтінку. Він має вільний силует, круглий виріз і довгі рукави, які забезпечують комфорт без обмежень.",
+  "2": "Класичні кремові бермуди мають приталений крій із структурованими боками та високою лінією талії. Вони включають відповідний жилет, який створює вишуканий і зібраний образ, ідеальний для вечірнього заходу.",
+  "3": "Ці бежеві замшеві лофери мають форму-сліпер з класичною бахромою на верхній частині та зручною плоскою підошвою. Гладка шкіряна обробка додає нотку вишуканості будь-якому образу.",
+  "4": "Компактна бордова сумка на ланцюжку з характерним застібкою у вигляді літери «B» пропонує стиль і функціональність. Її насичений темно-червоний відтінок чудово контрастує з твоїм світлим одягом, створюючи візуальний інтерес.",
+  "5": "Цей пудрово-рожевий кардиган має складний в’язаний ромбоподібний малюнок спереду та широкі рукави-ліхтарики. Він включає відповідний білий пояс, який підкреслює твою талію і створює витонченість.",
+  "6": "Ти носиш м’який пудрово-рожевий мохеровий лонгслів, що ніжно облягає твій силует, у поєднанні з класичними кремовими бермудами та приталеним жилетом для структури. На ногах — затишні бежеві замшеві лофери з бахромою, а в руках ти тримаєш маленьку бордову сумку на ланцюжку, яка додає насичений колірний акцент. Зверху одягнений легкий пудрово-рожевий кардиган із ніжним геометричним візерунком для легкості.",
+  "7": "Мохерова в’язка така м’яка на твоїй шкірі прохолодного осіннього дня у парку.",
+  "8": "Ти можеш зняти кардиган, коли тобі стане жарко від прогулянки по парку або сидіння біля кав’ярні пізніше.",
+  "9": "Двійка класичні бермуди + жилетка приталена пломбір — Збережено як приталений жилет для визначення талії і досягнення цільової X-подібної форми, замінено вільний лонгслів на структуру.",
+  "10": "Лофери замшеві (Other Brand) — Збережено лофери; змін не потрібно, оскільки вони продовжують лінію ніг і гармонують з тоном.",
+  "11": "Сумка Crush зі шкіри з биркою — Додано бордову сумку-тоут. Задовольняє її запит на bag_generic (інтерпретовано як сумка) та надає необхідну третю частину/шар структури.",
+  "12": "Лонгслів мохеровий пудра, Двійка класичні бермуди + жилетка приталена пломбір, Лофери замшеві (Other Brand), Сумка Crush зі шкіри з биркою, Кардиган Ромби пудра — Включення п’яти предметів створює багатошаровий і текстурований вигляд замість розрідженого, який здається незавершеним для побачення; додатковий жилет додає важливе визначення талії, якого не було у початковій конфігурації."
+}
+```

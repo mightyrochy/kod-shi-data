@@ -1,0 +1,37 @@
+── ПРОМПТ (2290 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Rib knit turtleneck sweater, relaxed fit, hip length, deep crimson (#8A0303), soft cotton wool.\nWool-blend wide-leg trousers, tailored straight cut, ankle length, forest green (#2F4F4F), structured felt fabric.\nLeather Chelsea boots, sleek low-cut silhouette, mid-calf height, chestnut brown (#9D5B47), smooth grained leather.\n18k gold hoop earrings, medium circle shape, open back design, polished metal, solid gold.\n\nThis outfit strikes the perfect balance between cozy autumn warmth and polished elegance for a first date. The deep crimson sweater adds a romantic pop of color that aligns with her wish for red jewelry accents, while the forest green trousers offer a sophisticated, textured contrast suitable for a park setting. Leather Chelsea boots provide practical comfort for walking on uneven paths without sacrificing style, and the gold hoops serve as a refined focal point that elevates the entire look from casual to neat."}
+
+── ВІДПОВІДЬ (788 симв., 186.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "turtleneck sweater",
+      "details": "rib knit, relaxed fit, hip length",
+      "slot": "top",
+      "color_hex": "#8A0303",
+      "worn": true
+    },
+    {
+      "name": "wide-leg trousers",
+      "details": "tailored straight cut, ankle length, wool-blend",
+      "slot": "bottom",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "Chelsea boots",
+      "details": "leather, sleek low-cut silhouette, mid-calf height",
+      "slot": "shoes",
+      "color_hex": "#9D5B47",
+      "worn": true
+    },
+    {
+      "name": "hoop earrings",
+      "details": "18k gold, medium circle shape, open back design, polished metal",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

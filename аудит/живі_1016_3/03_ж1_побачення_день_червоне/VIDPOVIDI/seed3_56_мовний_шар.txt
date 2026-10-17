@@ -1,0 +1,64 @@
+── ПРОМПТ (8528 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Шовковий топ у базовому бежевому відтінку · kind code: t_shirt · colour code: beige · about it: text н=1
+2 — Штани лляні, світло-бежеві · kind code: trousers · colour code: beige · about it: text н=2
+3 — LeBERDES Лофери рожеві · kind code: loafers · colour code: pink · about it: text н=3
+4 — Обруч Бетті зі стразами та перлинами пудровий · kind code: headband · colour code: powder_pink · about it: text н=4
+5 — Мінісумка з текстурованої шкіри · kind code: bag_generic · colour code: peach · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; peach — персиковий; pink — рожевий; powder_pink — пудровий.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "This beige top features a soft, slip-style neckline with delicate spaghetti straps and a fitted waist that accentuates your figure. Its smooth fabric drapes elegantly over the hips, creating a clean line from shoulder to hip."},
+{"н": 2, "текст": "These wide-leg trousers are crafted from lightweight linen in a light beige shade, offering effortless comfort with a relaxed yet structured fit. The elastic waistband and drawstring allow for easy movement while maintaining a polished silhouette."},
+{"н": 3, "текст": "These pink loafers are made from soft suede with a low-profile sole and a decorative bow across the vamp, adding a romantic touch to any outfit. Their sleek design ensures they stay stylish yet understated for everyday wear."},
+{"н": 4, "текст": "This pink headband is embellished with shimmering pearls and sparkling crystals, set against a velvet base that catches the light beautifully. Its curved shape sits comfortably atop your head, adding just the right amount of glamour to complete your ensemble."},
+{"н": 5, "текст": "This mini bag features a textured surface in a warm peach tone, complemented by a slender strap that can be worn across the body or on the shoulder. Its compact size makes it ideal for carrying essentials during an outing."},
+{"н": 6, "текст": "This soft beige top paired with the matching wide-leg trousers creates a gentle, relaxed silhouette perfect for a casual autumn day. The blush loafers add a delicate touch of femininity without being too formal, while the pearl-adorned headband introduces a hint of playful elegance to complete your look. The peach handbag brings warmth and texture, balancing the neutral tones with its vibrant pop of color."},
+{"н": 7, "текст": "Keep the top untucked to highlight the defined waistline and maintain a streamlined silhouette. Wear the loafers flat for comfort while walking through the park."},
+{"н": 8, "текст": "Шовковий топ у базовому бежевому відтінку — Kept as the central top piece, its silk texture providing the necessary interest over the jersey shirt's simplicity."},
+{"н": 9, "текст": "Штани лляні, світло-бежеві — Replaces the shorts with relaxed linen trousers to create a balanced silhouette suitable for walking in a park."},
+{"н": 10, "текст": "LeBERDES Лофери рожеві — Swapped the beige dress shoes for pink loafers to add a subtle pop of color that complements the overall palette."},
+{"н": 11, "текст": "Обруч Бетті зі стразами та перлинами пудровий — Added as a headband to introduce a soft pink accent without overwhelming the neutral tones."},
+{"н": 12, "текст": "Шовковий топ у базовому бежевому відтінку — Replaces the relaxed cotton t-shirt with bodycon silk to fix the boxy cut issue and add a textural focal point near the face."},
+{"н": 13, "текст": "Обруч Бетті зі стразами та перлинами пудровий — Pink headband adds a delicate touch of color that ties into the overall soft aesthetic."},
+{"н": 14, "текст": "LeBERDES Лофери рожеві — Pink loafers provide a comfortable yet stylish footwear option that complements the headband."},
+{"н": 15, "текст": "Шовковий топ у базовому бежевому відтінку — Beige silk top acts as a neutral base that allows the pink accents to shine without competing for attention."}
+]
+
+── ВІДПОВІДЬ (3163 симв., 70.7 с, HTTP 200) ──
+```json
+{
+  "1": "Цей бежевий топ має м’який, виріз-сліп зі ніжними спагеті-бретельками та приталений силует у талії, який підкреслює твою фігуру. Його гладка тканина елегантно драпірується на стегнах, створюючи чисту лінію від плеча до стегна.",
+  "2": "Ці широкі штани виготовлені з легкої лляної тканини світло-бежевого кольору, пропонуючи бездоганний комфорт із розслабленим, але структурованим силуетом. Еластичний пояс і шнурок дозволяють вільно рухатися, зберігаючи при цьому вишуканий образ.",
+  "3": "Ці рожеві лофери зроблені з м’якої замші з низькою підошвою та декоративною стрічкою на носку, додаючи романтичний штрих до будь-якого образу. Їхній елегантний дизайн гарантує, що вони залишаться стильними й водночас стриманими для повсякденного носіння.",
+  "4": "Цей рожевий обруч прикрашений блискучими перлинами та сяючими кристалами на оксамитовій основі, яка красиво відбиває світло. Його вигнута форма зручно сидить на голові, додаючи саме ту кількість гламуру для завершення твого ансамблю.",
+  "5": "Ця міні-сумка має текстуровану поверхню теплого персикового кольору, доповнену тонким ремінцем, який можна носити через тіло або на плечі. Її компактний розмір робить її ідеальною для носіння необхідних дрібниць під час прогулянки.",
+  "6": "Цей м’який бежевий топ у поєднанні з відповідними широкими штанами створює ніжний, розслаблений силует, який чудово підходить для невимушеного осіннього дня. Рожеві лофери додають делікатну нотку жіночності без надмірної офіційності, а обруч з перлинами вводить грайливий елемент вишуканості для завершення твого образу. Персикова сумочка привносить тепло та текстуру, балансуючи нейтральні тони своїм яскравим акцентом кольору.",
+  "7": "Залиш топ не заправленим у штани, щоб підкреслити визначену лінію талії та зберегти стрункий силует. Носи лофери на плоскій підошві для комфорту під час прогулянки в парку.",
+  "8": "Шовковий топ базового бежевого кольору — Залишено як центральний верхній елемент, його шовкова текстура надає необхідний інтерес над простотою трикотажної сорочки.",
+  "9": "Лляні штани світло-бежевого кольору — Замінено шорти на розслаблені лляні брюки для створення збалансованого силуету, який підходить для прогулянки в парку.",
+  "10": "LeBERDES Рожеві лофери — Замість бежевих туфель одягнуто рожеві лофери, щоб додати ніжний акцент кольору, що гармоніює з загальною палітрою.",
+  "11": "Обруч Бетті зі стразами та перлинами пудрового кольору — Додано обруч для волосся, який вводить м’який рожевий акцент без перевантаження нейтральних тонів.",
+  "12": "Шовковий топ базового бежевого кольору — Замінено трикотажну футболку на шовк-облягання, щоб виправити коробчатий крій і додати текстурний фокус поблизу обличчя.",
+  "13": "Обруч Бетті зі стразами та перлинами пудрового кольору — Рожевий обруч додає делікатну нотку кольору, яка гармоніює з загальною м’якою естетикою.",
+  "14": "LeBERDES Рожеві лофери — Рожеві лофери забезпечують зручний і стильний варіант взуття, який доповнює обруч для волосся.",
+  "15": "Шовковий топ базового бежевого кольору — Бежевий шовковий топ слугує нейтральною основою, яка дозволяє рожевим акцентам сяяти без конкуренції за увагу."
+}
+```
