@@ -1258,7 +1258,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ПРОЗА-КАРТОК-2 (рядок 980): підстава не казала, ЧИЄ фото й що саме інше, — і речення губило
     # іменник («на знімку виявився зовсім інший, ніж указана крамницею», 2 з 4 карток ПЕР-531)
     "stylist_swapped_item_after_photo": "after seeing the item photos the stylist replaced one item with "
-                                        "another of the same kind from her selection; the code checked the "
+                                        "another for the same place from her selection; the code checked the "
                                         "outfit again (values: was — the item she took out, now — the item "
                                         "in its place, both as the shop names them: name each in a few words "
                                         "of your own — its kind and its colour — never quote the shop's name; "
@@ -1378,7 +1378,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "for the code, not for her), so two colours measured from photos cannot "
                                         "settle whether two items sit on one lightness",
     "cannot_tell_lightness_structure": "so the code cannot tell which structure of light and dark the outfit "
-                                       "carries",
+                                       "carries (values, when given: items — the items for which the code does "
+                                       "not know whether they are a surface or an accent: item_id, name — the "
+                                       "item's name on the card, slot — slot code)",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
                                          "differ visibly (values, when given: items — the neutrals' items: "
                                          "item_id, name — the item's name on the card, slot — slot code)",
@@ -1748,13 +1750,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ── верхній шар (`верхнє_*`) ───────────────────────────────────────────────
     "outer_edges_gap_no_length": "the code does not know the distance between the edge of the outer layer and "
                                  "the edge of the item under it: the cards carry no lengths (values: items — "
-                                 "item names)",
+                                 "items: item_id, name — the item's name on the card)",
     "outer_edges_coincide_sources_disagree": "the edges of the outer layer and the item under it coincide "
                                              "exactly, and the sources disagree about that; the code takes no "
-                                             "side (values: items — item names)",
+                                             "side (values: items — items: item_id, name — the item's name on "
+                                             "the card)",
     "cascade_declared_no_penalty": "the edges of the layers stand in even steps: the code counts such a "
                                    "cascade as intended and does not penalise close edges (values: items — "
-                                   "item names)",
+                                   "items: item_id, name — the item's name on the card)",
     "outer_ease_not_in_feed": "the cards do not carry the width ease of the layers, so the code does not "
                               "check whether one layer lies comfortably over another (values: items — item "
                               "names)",
@@ -1814,8 +1817,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "colour, cut, length, fabric, pattern, shine)",
     "photo_shows_other_colour": "in the card's photo the code sees a different colour than the one the item "
                                 "is described and judged by: the shop may have shown another colour of the "
-                                "model or named it differently (values: items — items: slot — slot code, "
-                                "colour — the item's colour, photo — the colour in the photo)",
+                                "model or named it differently (values: items — items: item_id, name — the item's "
+                                "name on the card, slot — slot code, colour — the item's colour, photo — the "
+                                "colour in the photo)",
     # ── СТРУКТУРА ОБРАЗУ: БЛОКЕРИ КОДАМИ (П-6, `суд_від_моделі.структура_образу_заяви`) ──
     "no_top_bottom_or_dress": "the outfit has neither of these foundations and no dress to replace them: "
                               "without them these are accessories, not an outfit (values: missing — the slot "
@@ -2317,6 +2321,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "temperature"
                                         "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
     "move_colour_to_hat_scarf_gloves": "move the colour into the hat, scarf or gloves",
+    # рядок 3340: рукавиць у пулі нема — ті самі заяви без них
+    "cold_hat_scarf_carry_no_colour": "in hard frost mostly the outer layer and the accessories are "
+                                      "visible, and the hat and the scarf are quiet here: all the colour "
+                                      "stayed under the coat (values: temperature_c — the temperature"
+                                      "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+    "move_colour_to_hat_scarf": "move the colour into the hat or the scarf",
     # рядок 3161а: K-WEA-01 — нижче −8 °C у образі нема ні шапки, ні шарфа
     "frost_head_neck_uncovered": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay "
                                  "open, and no outer layer covers them (values: temperature_c — the "
