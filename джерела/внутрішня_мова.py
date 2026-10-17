@@ -3503,6 +3503,7 @@ def визначення_заяв(коди):
  'belt_as_repair_tool_outer': 'the belt as a repair tool of the outer layer',
  'belt_knot_position_by_state': 'the position of the belt knot follows the state',
  'belt_precondition_met': 'the belt precondition is met: the waist is expressed',
+ 'finding_fired': 'a finding of the rule fired on this outfit (values hold its summary code)',
  'checklist_counts': 'the counts of one side of the checklists (values: totals per state)',
  'calf_measured_no_leg_maximum': 'the calf is measured, and there is no maximum on the leg',
  'carrier_candidate_wearing_way_not_chosen': 'a carrier candidate exists, but the way of wearing is not chosen',
