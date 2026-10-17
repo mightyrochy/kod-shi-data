@@ -8,7 +8,7 @@ import bridge as Б, правило_руки2 as П, формальність as
 стар = П.жереб; нове = hasattr(П, 'хибний_щабель')
 знайти = lambda в: (([в] if в.get('ремонт_заяви') and в.get('сила_нп', 0) > 0 else []) + sum((знайти(x) for x in в.values()), []) if isinstance(в, dict)
                    else sum((знайти(x) for x in в), []) if isinstance(в, list) else [])
-for код in ('K-CRA-01', 'K-KOH-02', 'K-OUT-33', 'K-SHO-16', 'K-FIT-03', 'K-BOD-02'):
+for код in ('K-CRA-01', 'K-KOH-02', 'K-SHO-16', 'K-FIT-03', 'K-BOD-02'):   # K-OUT-33 (6760) — стан «накинуто», проба `рука2_хибні_контекст`
     вх, запис, хибне = dict(вх0, **ІНШЕ.get(код, {})), П.ЗА_ІД[код], нове and код in П.ХИБНІ_ПРАВИЛА
     П.жереб = lambda *а, **к: (П.злити([запис]), [код], {}, dict(дія='pool', чому=None))
     з = json.loads(Б.виклик('запити', json.dumps(вх, ensure_ascii=False))); assert not з.get('помилка'), з
@@ -33,7 +33,7 @@ for код in ('K-CRA-01', 'K-KOH-02', 'K-OUT-33', 'K-SHO-16', 'K-FIT-03', 'K-BO
     if хибне:
         assert активні and дії and all('правильна' in т and 'хибна' in т for т in дії)
         assert all(т.get('сила') and т.get('суть') and т.get('речі') and т.get('сила_нп', 0) > 0 for т in дії if т.get('дія') != 'drop_correct_advice')
-        assert код != 'K-KOH-02' or any(т.get('хибна') == [3.0, 3.0] for т in дії); assert код != 'K-BOD-02' or 'invert_cut_rank' in пул_рек; assert код != 'K-OUT-33' or (not п2['пул'].get('верхній_шар') and рек.get('без_пальта'))
+        assert код != 'K-KOH-02' or any(т.get('хибна') == [3.0, 3.0] for т in дії); assert код != 'K-BOD-02' or 'invert_cut_rank' in пул_рек
     відбиток = lambda п: hashlib.sha256(json.dumps(п, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     print(json.dumps(dict(правило=код, нове=нове, хибне=хибне, нормальний_пакет=відбиток(п1), активних_ремонтів=len(активні), пул_різниця=з['поломка'].get('пул_різниця'), верхній_шар_1=len(п1['пул'].get('верхній_шар') or []), верхній_шар_2=len(п2['пул'].get('верхній_шар') or []), пул_рекомендації=sorted(set(пул_рек)), дії=дії, обмеження=рек), ensure_ascii=False), flush=True)
     assert not П.вимкнені() and not getattr(П, 'зламані', lambda: ())()
