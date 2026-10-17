@@ -567,8 +567,10 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
                           "що ще їй важливо в цьому образі, кілька разом: taller — довша лінія, здаватись "
                           "вищою; comfort — зручно рухатись цілий день; strict — строго за нагодою",
                           maxItems=3),
+    # Рядок 6262: приклад опису — родом, без слів живої сцени («сховати живіт» — ж4_клуб_*)
     "goal_zones": _список(_перелік("goal_zone", "зона тіла"),
-                          "зони тіла, від яких вона хоче відвести погляд («сховати живіт» → belly), з будь-якою "
+                          "зони тіла, від яких вона хоче відвести погляд (сховати чи стрункішою зробити зону → її "
+                          "код), з будь-якою "
                           "увагою (goal): ці зони тихі, решта образу — за goal",
                           maxItems=3),
     "makeup": {"description": "макіяж на цей вихід", "type": "object", "additionalProperties": False,
@@ -1395,6 +1397,23 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "cannot_tell_items_intensity_match": "so the code cannot tell whether the outfit's items match in colour "
                                          "saturation",
     "cannot_tell_coordination_rank": "so the code cannot tell how well the outfit's colours are coordinated",
+    # Рядок 2851: правила світлоти й гучності кольору однієї речі, коли колір — вікно слова, а вікно лежить
+    # по обидва боки порога (`outfit.елементи`: L*/C* такого елемента нема, судять межі вікна)
+    "cannot_tell_face_contrast_matches_hers": "so the code cannot tell whether the jump of lightness near her "
+                                              "face matches her own contrast",
+    "cannot_tell_near_white_at_wedding": "so the code cannot tell whether the item reads as wedding white on "
+                                         "photos",
+    "cannot_tell_colour_too_loud_for_occasion": "so the code cannot tell whether the item's colour is louder "
+                                                "than the occasion allows",
+    "cannot_tell_lightness_fits_occasion": "so the code cannot tell whether the item's lightness fits the time "
+                                           "of the occasion",
+    "cannot_tell_chroma_too_high_for_photo": "so the code cannot tell whether the item's colour is too bright "
+                                             "for flash photos",
+    "cannot_tell_colour_holds_attention": "so the code cannot tell whether the item's colour draws the eye",
+    "cannot_tell_colour_left_under_coat": "so the code cannot tell whether the colour of the outfit stays "
+                                          "hidden under the coat",
+    "cannot_tell_dark_fitted_in_sun": "so the code cannot tell whether the fitted item is dark enough to "
+                                      "get hot in the sun",
     # ── правила, яким входу нема ніде (`верхнє_суд.БЕЗ_ВХОДУ`, `аксесуари_суд.БЕЗ_ВХОДУ`) ──
     "no_input_outer_warmth": "nobody publishes the warmth of an outer layer as a number, so the code judges "
                              "whether it is enough for this weather only by the item's type",
@@ -1660,6 +1679,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "coordination_not_computed": "the code did not compute how well the outfit's colours are coordinated",
     "coordination_rank_not_computed": "the coordination of the outfit's colours is computed, but it gave no "
                                       "place among the other outfits",
+    # K-COMP-01: розлад чи надкоординація образу проти набору кандидатів (рядок 6281)
+    "colour_coordination_off_optimum": "the outfit's colours are off the moderate-coordination optimum among the "
+                                       "candidates (values: side — matchy: more coordinated than most, or discord: "
+                                       "more divergent; off — distance from the optimum, 0 is the optimum)",
+    "more_colour_distance_between_slots": "take a candidate whose slots are further apart in colour: another family "
+                                          "in one slot",
+    "less_colour_distance_between_slots": "take a candidate whose slots are closer in colour: one slot in a neutral "
+                                          "or in the family of another",
     "coordination_rank_homogeneous": "the outfit has no place by colour coordination: all candidates are the "
                                      "same in colour",
     "feature_and_item_indistinguishable": "a feature of her face and the item near it are the same colour in "
@@ -2747,6 +2774,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "accent_colour_or_print_near_face": "an accent colour or print in the slot nearest the face",
     "item_removable_no_metric_drops": "the item can go: without it no metric of the look drops",
     "remove_this_item": "remove this item",
+    "item_formality_unknown": "the formality of these items is unknown; their level cannot be judged",
+    "use_target_formality_band": "choose items for the target formality band (values: band — from and to)",
+    "choose_high_heel": "choose a pair with a high heel (values: heel_cm — from)",
+    "cut_clings_at_level": "a cut that clings at this level",
     # ── оцінка її власного образу з фото: чого на кадрі не знайшлось (Ч-8, рядок 197) ──
     "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one; "
                                 "`items_without_photo`: items were named but not on which of her photos, so none could be "

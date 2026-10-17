@@ -229,7 +229,9 @@ def бюджет_хроми(E, F, intent=None):
     for i in range(len(гучні)):
         for j in range(i+1, len(гучні)):
             g1, g2 = гучні[i], гучні[j]
-            if g1.get("h") is None or g2.get("h") is None: continue
+            # тону нема лише в записі без кольору; елемент-вікно тону-точки не несе (h None, рядок 2851),
+            # і його тон судять межі дуги в `відношення` нижче
+            if any(g.get("h") is None and не_вимір(g) is None for g in (g1, g2)): continue
             if g1["площа"] is None or g2["площа"] is None:
                 без_площі.append((g1["хто"], g2["хто"])); continue
             if g1["площа"] < 0.10 or g2["площа"] < 0.10:
@@ -486,7 +488,8 @@ def _сирота_відлуння(es, nm, слот, площа, фокус, int
              сім_я=nm, чому="другий носій акценту — найдешевший спосіб зібрати образ"),
         ламається="якщо зона оголошена фокусною і акцент там — це пуант, не шум; "
                   "без оголошеного фокусу відрізнити неможливо",
-        заяви=[_ВМ.заява("accent_orphan", colour=_колір_код(nm), hue=round(es[0]["h"]), slot=_сл_код(слот),
+        заяви=[_ВМ.заява("accent_orphan", colour=_колір_код(nm), slot=_сл_код(слот),
+                         **({"hue": round(es[0]["h"])} if es[0].get("h") is not None else {}),
                          **({"on_windows": True} if вікна else {}))],
         ремонт_заяви=None if свідомий else [_ВМ.заява("echo_accent_or_declare_focus")],
         поріг=C["focus_area"], вимір=площа), intent)

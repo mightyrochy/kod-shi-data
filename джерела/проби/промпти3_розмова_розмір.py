@@ -33,3 +33,8 @@ for в, сц in СЦЕНИ.items():
     н = len(re.findall(в, т, re.I)); усього += н
     if н: print("  %d× %-34s ← %s" % (н, в, сц))
 print("фраз сцен у task: %d · «ти» у task: %d" % (усього, т.count("«ти»")))
+R8 = next(р for р in М.РОЗМОВА_ПРАВИЛА if р.startswith('"formality" is in'))   # рядок 6260: роди R8 — окремо
+РОДИ_R8 = {r"corporate party": "ж2/ж7_корпоратив", r"anniversary": "ж1/ж7_ювілей", r"graduation": "ж6_випускний",
+           r"mother of the bride": "ж6 «я мама»", r"a bank|a court|a notary": "ж3/ж5_співбесіда в банку",
+           r"4–5 by day|\(5–6\)": "ж1/ж8_побачення_день, ж2/ж4/ж6/ж9_побачення_вечір"}
+print("фраз сцен у R8 (formality): %d %s" % (sum(len(re.findall(в, R8)) for в in РОДИ_R8), [сц for в, сц in РОДИ_R8.items() if re.search(в, R8)] or ""))

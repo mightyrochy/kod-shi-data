@@ -79,6 +79,9 @@ import внутрішня_мова as _ВМ
         "she has shown or described no item, speak of no particular item.",
         "Name no shops, brands, prices or links: you do not see the catalogue.",
         "Two to four sentences.",
+        # Рядок 6307 (ж15, `"language": "English"`): на українське питання 4 з 11 відповідей — українською, одна на «ви»
+        # («Ваші м'які чоботи…»); межа «для_неї» називає «ти» лише англійським «you». Правило — як у ДОВІДКИ й ОЦІНКИ.
+        "Write in the language of \"language\", whatever language her question is in.",
     ),
     вихід="LOOK_ANSWER",
     межі=("лише_вхід", "для_неї", "без_чисел_тіла", "без_шкал"),

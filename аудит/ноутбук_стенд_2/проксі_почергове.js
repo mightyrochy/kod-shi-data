@@ -28,6 +28,14 @@ async function потрібна(м){
   console.log('перемикання #' + перемикань + ' → ' + м + ' ctx ' + (CTX[м] || 16384) + ' · ' + (Date.now() - t) + ' мс');
 }
 const сервер = http.createServer((req, res) => {
+  // Прилад 5190 перевіряє цю можливість ДО POST: старий проксі може його повторити.
+  if (req.method === 'GET' && req.url === '/.well-known/lyusterko-5190') {
+    res.writeHead(200, {'content-type': 'application/json'});
+    res.end(JSON.stringify({protocol: '5190-once-v1', post_retries: 0}));
+    return;
+  }
+  const безПовтору5190 = req.method === 'POST' && req.url === '/v1/chat/completions'
+    && req.headers['x-lyusterko-once'] === '5190-once-v1';
   const ч = []; req.on('data', d => ч.push(d)); req.on('end', () => {
     const тіло = Buffer.concat(ч);
     черга = черга.then(() => new Promise(рух => {
@@ -46,7 +54,7 @@ const сервер = http.createServer((req, res) => {
         });
         up.on('error', e => {
           if (кінець) return;
-          if (n < 2 && !res.headersSent) { console.log('повтор після ' + e); return setTimeout(() => спроба(n + 1), 3000); }
+          if (!безПовтору5190 && n < 2 && !res.headersSent) { console.log('повтор після ' + e); return setTimeout(() => спроба(n + 1), 3000); }
           відповісти(502, String(e)); ok('502 ' + e);
         });
         up.end(тіло);

@@ -79,9 +79,9 @@
 ЧОГО ЖНИВАРКА НЕ РОБИТЬ (навмисно): не міряє колір з фото (це feed.колір_з_фото), не виводить
 тип речі/формальність (feed.тип_речі), не судить образ. Вона віддає факти з провенансом.
 """
-import argparse, collections, concurrent.futures, datetime, gzip, html, io, json, os, re, sys, threading, time
+import argparse, collections, concurrent.futures, csv, datetime, gzip, html, io, json, os, re, sys, threading, time
 import xml.etree.ElementTree as ET
-from urllib.parse import urljoin, urlparse, urlunparse, parse_qsl, urlencode
+from urllib.parse import urljoin, urlparse, urlunparse, parse_qs, parse_qsl, urlencode
 
 try:
     import requests
@@ -731,27 +731,104 @@ def shopify_products_json(транспорт, база, лог, стеля):
     return вих
 
 
-def woo_store_api(транспорт, база, лог, стеля):
-    """WooCommerce Store API: /wp-json/wc/store/v1/products — публічний без ключа."""
-    вих, сторінка = [], 1
-    шлях = "/wp-json/wc/store/v1/products"
-    while len(вих) < стеля and сторінка <= 60:
-        r = транспорт.get(urljoin(база, "%s?per_page=100&page=%d" % (шлях, сторінка)))
-        if сторінка == 1 and шлях.endswith("v1/products") and (r["код"] != 200 or not (r["тіло"] or "").lstrip().startswith("[")):
-            шлях = "/wp-json/wc/store/products"                      # старіший Woo без v1 (v2 пробувала обидва)
-            r = транспорт.get(urljoin(база, "%s?per_page=100&page=%d" % (шлях, сторінка)))
-        if r["код"] != 200 or not r["тіло"] or not r["тіло"].lstrip().startswith("["):
-            break
+# ── WOO STORE API → ВАРІАНТ КОЛЬОРУ (рядок 5652; проєкт `жниварка_логіка_2026-10-15.md` §3.1, §3.5) ──────
+# Одиниця речі пулу — варіант кольору: його напис (значення атрибута, дослівно), кадр, який прив'язала
+# платформа (зображення варіації), і розміри з `is_in_stock`. Список товарів Store API кадрів і наявності
+# варіацій не дає, тому варіації беруться окремим запитом `type=variation&parent=…`. Який атрибут — колір,
+# а який — розмір, каже рецепт крамниці КОДОМ таксономії (`pa_color`), код слів не читає (п.12).
+РЕЦЕПТИ_TSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "рецепти.tsv")
+_ПОЛЯ_ВАРІАЦІЇ = "id,parent,sku,permalink,is_in_stock,images"
+
+
+def woo_рецепт(домен, шлях=None):
+    """{"колір": "pa_color", "розмір": "pa_size"} — коди таксономій атрибутів з колонок рецепта крамниці
+    (`атрибут_кольору`, `атрибут_розміру`); None — рецепта нема, і крамниця йде як доти, одним записом на товар."""
+    шлях = шлях or РЕЦЕПТИ_TSV
+    if not os.path.exists(шлях):
+        return None
+    with io.open(шлях, encoding="utf-8") as f:
+        for р in csv.DictReader(f, delimiter="\t"):
+            if (р.get("домен") or "").strip().lower().replace("www.", "") == (домен or "").strip().lower().replace("www.", ""):
+                колір = (р.get("атрибут_кольору") or "").strip()
+                return dict(колір=колір, розмір=(р.get("атрибут_розміру") or "").strip()) if колір else None
+    return None
+
+
+def woo_варіації(транспорт, база, товари, лог, пачка=8, стеля_сторінок=80):
+    """Варіації змінних товарів: `сирий["_варіації"]` = [dict(ід, адреса, є, кадри)] за товар. Запит — пачкою
+    батьків; не відповів — ключа в товару нема, і він іде як доти. → скільки товарів дістали варіації."""
+    змінні = [т for т in товари if (т.get("type") == "variable" or т.get("variations")) and т.get("id")]
+    дістали = 0
+    for i in range(0, len(змінні), пачка):
+        група = змінні[i:i + пачка]
+        за_ід = {т["id"]: [] for т in група}
+        сторінка, ок = 1, True
+        while сторінка <= стеля_сторінок:
+            r = транспорт.get(urljoin(база, "/wp-json/wc/store/v1/products?type=variation&parent=%s&per_page=100&page=%d&_fields=%s"
+                                      % (",".join(str(т["id"]) for т in група), сторінка, _ПОЛЯ_ВАРІАЦІЇ)))
+            if r["код"] != 200 or not r["тіло"] or not r["тіло"].lstrip().startswith("["):
+                ок = False
+                break
+            try:
+                д = json.loads(r["тіло"])
+            except Exception:
+                ок = False
+                break
+            for в in д:
+                if в.get("parent") in за_ід:
+                    за_ід[в["parent"]].append(dict(ід=в.get("id"), адреса=канонічна_з_запитом(в.get("permalink"), база),
+                                                   є=bool(в.get("is_in_stock")),
+                                                   кадри=[канонічна(x.get("src"), база) for x in (в.get("images") or []) if x.get("src")]))
+            if len(д) < 100:
+                break
+            сторінка += 1
+        if ок:
+            for т in група:
+                т["_варіації"] = за_ід[т["id"]]
+                дістали += 1
+    лог("  woo варіації: %d з %d змінних товарів" % (дістали, len(змінні)))
+    return дістали
+
+
+def канонічна_з_запитом(url, база=None):
+    """Адреса варіації лишає запит `attribute_pa_…` (він і називає варіант); решта — як `канонічна`."""
+    if not url:
+        return ""
+    u = urlparse(urljoin(база or "", url.strip()))
+    шлях = re.sub(r"/{2,}", "/", u.path or "/")
+    return urlunparse((u.scheme or "https", u.netloc.lower(), шлях, "", u.query, ""))
+
+
+def woo_store_api(транспорт, база, лог, стеля, рецепт=None, лише=None):
+    """WooCommerce Store API: /wp-json/wc/store/v1/products — публічний без ключа. З рецептом крамниці
+    (`woo_рецепт`) змінним товарам дістаються ще варіації (`woo_варіації`); `лише` — набір id товарів, чиї
+    варіації потрібні (решта йде без них)."""
+    вих, бачені, шлях, розмір = [], set(), "/wp-json/wc/store/v1/products", 100
+    # maxa віддає товар із сотнями варіацій по секунді: сотня не вкладається в таймаут. Тому при невдачі розмір
+    # половиниться, а сторінка рахується від зсуву (скільки товарів уже взято); повтори відсіюються за id.
+    while len(вих) < стеля and len(вих) < 6000:
+        r = транспорт.get(urljoin(база, "%s?per_page=%d&page=%d" % (шлях, розмір, len(бачені) // розмір + 1)))
+        if r["код"] != 200 or not (r["тіло"] or "").lstrip().startswith("["):
+            if розмір > 10:
+                розмір = max(10, розмір // 2)
+            elif not вих and шлях.endswith("v1/products"):
+                шлях, розмір = "/wp-json/wc/store/products", 100       # старіший Woo без v1 (v2 пробувала обидва)
+            else:
+                break
+            continue
         try:
             д = json.loads(r["тіло"])
         except Exception:
             break
-        if not д:
-            break
-        for т in д:
+        нові = [т for т in д if т.get("id") not in бачені]
+        for т in нові:
+            бачені.add(т.get("id"))
             вих.append(dict(канал="woo:wc/store", сирий=т, url=канонічна(т.get("permalink") or "", база)))
-        сторінка += 1
+        if not нові or len(д) < розмір:
+            break
     лог("  woo wc/store: %d товарів" % len(вих))
+    if рецепт and шлях.endswith("v1/products"):
+        woo_варіації(транспорт, база, [в["сирий"] for в in вих if лише is None or в["сирий"].get("id") in лише], лог)
     return вих
 
 
@@ -1513,10 +1590,84 @@ def факти_shopify(т, база):
     return вих
 
 
-def факти_woo(т, база):
-    """Store API → факти. Ціни в дрібних одиницях (currency_minor_unit)."""
+def варіанти_woo(т, база, рецепт):
+    """Товар Store API → [dict] варіантів кольору або None (рецепта чи атрибута кольору нема, чи варіації не
+    дісталися: тоді товар іде одним записом, як доти). Колір і розмір знаходить КОД таксономії з рецепта,
+    слово кольору — значення терма дослівно; запит `attribute_<таксономія>=<слаг>` в адресі варіації з'єднує
+    варіацію з термом (слаг — код, не слово).
+      · колір не варіація чи терм один → один варіант, кадри — уся галерея товару (інших кольорів тут нема);
+      · кольорів ≥ 2 → варіант на терм; кадр варіанта — зображення його варіацій (платформа прив'язала), крім
+        тих, що стоять і в іншого кольору (запасне зображення товару) — таких `кадри` не мають, «невідомі».
+    Поля варіанта: слаг, слово, за_замовч, кадри, кадри_джерело (woo:images | woo:variations | None), розміри,
+    розміри_в_наявності, розміри_джерело, є, ід_варіацій, кольорів_у_товарі."""
+    if not рецепт or not рецепт.get("колір"):
+        return None
+    атр = {(a.get("taxonomy") or a.get("name") or ""): a for a in т.get("attributes") or []}
+    кол = атр.get(рецепт["колір"])
+    терми = [x for x in ((кол or {}).get("terms") or []) if x.get("name")]
+    if not терми:
+        return None
+    розм = атр.get(рецепт.get("розмір") or "") or {}
+    назва_розміру = {x.get("slug"): x.get("name") for x in розм.get("terms") or []}
+    вар = т.get("_варіації")
+    ключ_к, ключ_р = "attribute_" + рецепт["колір"], "attribute_" + (рецепт.get("розмір") or "-")
+    галерея = list(dict.fromkeys(канонічна(i.get("src"), база) for i in (т.get("images") or []) if i.get("src")))
+
+    def запит(в):
+        return parse_qs(urlparse(в["адреса"]).query)
+
+    def розміри_з(варіації):
+        """(усі розміри, розміри в наявності) варіацій; нема розмірного атрибута — розмірів нема."""
+        усі, є = [], []
+        for в in варіації:
+            с = (запит(в).get(ключ_р) or [""])[0]
+            if not с:
+                continue
+            н = str(назва_розміру.get(с) or с).upper()
+            усі.append(н)
+            if в["є"]:
+                є.append(н)
+        return list(dict.fromkeys(усі)), list(dict.fromkeys(є))
+
+    if вар is None and (т.get("variations") or т.get("type") == "variable"):
+        return None                                     # варіації не дісталися — наявності розмірів не знаємо
+    вар = вар or []
+    один = len(терми) == 1 or not кол.get("has_variations")
+    if один:
+        слово = ", ".join(x["name"] for x in терми)
+        if вар:
+            усі, є = розміри_з(вар)
+            ввімк, дж = any(в["є"] for в in вар), "woo:variations"
+        else:                                           # проста річ: розміри — терми атрибута, наявність — товару
+            ввімк = bool(т.get("is_in_stock"))
+            усі = [str(x["name"]).upper() for x in розм.get("terms") or [] if x.get("name")]
+            є, дж = (усі if ввімк else []), ("woo:attributes" if усі else None)
+        return [dict(слаг=терми[0].get("slug"), слово=слово, за_замовч=bool(терми[0].get("default")), кадри=галерея,
+                     кадри_джерело="woo:images" if галерея else None, розміри=усі, розміри_в_наявності=є, є=ввімк,
+                     розміри_джерело=дж, ід_варіацій=[в["ід"] for в in вар], кольорів_у_товарі=len(терми))]
+    за_кольором = {x["slug"]: [в for в in вар if (запит(в).get(ключ_к) or [""])[0] == x["slug"]] for x in терми}
+    зображення = {с: list(dict.fromkeys(к for в in вв for к in в["кадри"])) for с, вв in за_кольором.items()}
+    лічба = collections.Counter(к for кк in зображення.values() for к in кк)
+    вих = []
+    for x in терми:
+        вв = за_кольором[x["slug"]]
+        if not вв:
+            continue                                    # терм є, а варіації цього кольору немає — продати його не можна
+        власні = [к for к in зображення[x["slug"]] if лічба[к] == 1]
+        усі, є = розміри_з(вв)
+        вих.append(dict(слаг=x["slug"], слово=x["name"], за_замовч=bool(x.get("default")), кадри=власні,
+                        кадри_джерело="woo:variations" if власні else None, розміри=усі, розміри_в_наявності=є,
+                        є=any(в["є"] for в in вв), розміри_джерело="woo:variations", ід_варіацій=[в["ід"] for в in вв],
+                        кольорів_у_товарі=len(терми)))
+    return вих or None
+
+
+def факти_woo(т, база, рецепт=None):
+    """Store API → факти. Ціни в дрібних одиницях (currency_minor_unit). З рецептом крамниці (`woo_рецепт`) —
+    факт на варіант кольору (`варіанти_woo`), інакше один на товар."""
     ц = т.get("prices") or {}
-    div = 10 ** int(ц.get("currency_minor_unit") or 2)
+    мінор = ц.get("currency_minor_unit")
+    div = 10 ** (2 if мінор is None or мінор == "" else int(мінор))     # 0 — це «без копійок» (attico, morandi), а не «не вказано»
     сира_ціна = _ціна_число(ц.get("price"))
     if div > 1 and сира_ціна and сира_ціна / div < ЦІНА_МІН <= сира_ціна:
         div = 1                       # магазин оголосив minor_unit=2, а поклав гривні (feelyou 06.09: 899 → 8.99)
@@ -1535,19 +1686,37 @@ def факти_woo(т, база):
             хар[k] = ", ".join(x.get("name") for x in (a.get("terms") or []) if x.get("name"))
     сирі = [[a.get("name") or "", ", ".join(x.get("name") for x in (a.get("terms") or []) if x.get("name"))] for a in т.get("attributes") or []]
     стан = "є" if т.get("is_in_stock") else ("під замовлення" if т.get("is_on_backorder") else "нема")
-    return [dict(назва=розекранувати(т.get("name") or ""), назва_джерело="woo",
-                 опис=розекранувати(re.sub(r"<[^>]+>", " ", (т.get("description") or т.get("short_description") or "")))[:8000] or None,
-                 ціна=гр(ц.get("price")), ціна_стара=(гр(ц.get("regular_price")) if ц.get("sale_price") and ц.get("regular_price") != ц.get("price") else None),
-                 валюта=ц.get("currency_code"), available=(стан != "нема"), наявність=стан, id_магазину=str(т.get("id") or ""),
-                 характеристики_сирі=[x for x in сирі if x[0] and x[1]], свотчі=[], таблиця_мірок=None,
+    загальне = dict(назва=розекранувати(т.get("name") or ""), назва_джерело="woo",
+                    опис=розекранувати(re.sub(r"<[^>]+>", " ", (т.get("description") or т.get("short_description") or "")))[:8000] or None,
+                    ціна=гр(ц.get("price")), ціна_стара=(гр(ц.get("regular_price")) if ц.get("sale_price") and ц.get("regular_price") != ц.get("price") else None),
+                    валюта=ц.get("currency_code"), id_магазину=str(т.get("id") or ""),
+                    свотчі=[], таблиця_мірок=None, крихти=[c.get("name") for c in (т.get("categories") or []) if c.get("name")],
+                    бренд=None, колір_ld=None, мова_альт=None, варіанти=[], url=канонічна(т.get("permalink") or "", база))
+    варіанти = варіанти_woo(т, база, рецепт)
+    if варіанти is not None:
+        # Артикул товару Woo — його власний (в sunwin він несе слово кольору головної варіації), тож у `артикул`
+        # не йде: модель називає id товару, артикул лишається характеристикою магазину.
+        сирі_без_кольору = [x for x in сирі if x[0] and x[1] and x[0] != (атр_назва(т, рецепт["колір"]) or "")]
+        return [dict(загальне, available=в["є"], наявність="є" if в["є"] else "нема",
+                     характеристики_сирі=сирі_без_кольору + ([["Артикул (магазин)", т["sku"]]] if т.get("sku") else []),
+                     фото=в["кадри"], фото_джерело=в["кадри_джерело"] or "woo:невідомо",
+                     характеристики=dict({k: v for k, v in хар.items() if k != "колір"}, колір=в["слово"]),
+                     розміри=в["розміри"], розміри_в_наявності=в["розміри_в_наявності"],
+                     розміри_джерело=в["розміри_джерело"],
+                     артикул=None, group_id=str(т.get("id") or ""))
+                for в in варіанти]
+    return [dict(загальне, available=(стан != "нема"), наявність=стан,
+                 характеристики_сирі=[x for x in сирі if x[0] and x[1]],
                  фото=[оригінал_фото(канонічна(i.get("src"), база)) for i in (т.get("images") or []) if i.get("src")], фото_джерело="woo:images",
-                 крихти=[c.get("name") for c in (т.get("categories") or []) if c.get("name")],
                  характеристики=хар, розміри=[str(x).upper() for x in розміри if x],
                  розміри_в_наявності=([str(x).upper() for x in розміри if x] if т.get("is_in_stock") else []),
                  розміри_джерело="woo:attributes" if розміри else None,
-                 бренд=None, артикул=(т.get("sku") or None), колір_ld=None, мова_альт=None,
-                 group_id=str(т.get("parent") or т.get("id") or ""), варіанти=[],
-                 url=канонічна(т.get("permalink") or "", база))]
+                 артикул=(т.get("sku") or None), group_id=str(т.get("parent") or т.get("id") or ""))]
+
+
+def атр_назва(т, таксономія):
+    """Напис атрибута (його `name`) за кодом таксономії — щоб не класти колір двічі в сирі характеристики."""
+    return next((a.get("name") for a in т.get("attributes") or [] if a.get("taxonomy") == таксономія), None)
 
 
 def факти_yml(с, база):
@@ -2168,8 +2337,9 @@ def зібрати_магазин(маг, транспорт, стеля, лог
         к = shopify_products_json(транспорт, база, лог, стеля)
         return [dict(c, факти=факти_shopify(c["сирий"], база)) for c in к], "shopify"
     def _woo():
-        к = woo_store_api(транспорт, база, лог, стеля)
-        return [dict(c, факти=факти_woo(c["сирий"], база)) for c in к], "woo"
+        рецепт = woo_рецепт(маг["домен"])
+        к = woo_store_api(транспорт, база, лог, стеля, рецепт=рецепт)
+        return [dict(c, факти=факти_woo(c["сирий"], база, рецепт)) for c in к], "woo"
     def _yml(адреси):
         for u in адреси:
             пр = транспорт.get(u, тип="bytes", ліміт=300_000)
