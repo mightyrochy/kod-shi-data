@@ -421,7 +421,8 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
 # нема (рядок 5901: короткі ключі нічого не економили, а просили читати легенду).
 ОПИС_ТИПОВИХ = {
     "in_arc": "the color lies inside her palette's scheme arc",
-    "branch": "core, edge or break of her palette",
+    "branch": "core or edge: both inside her palette; choose edge as freely as core. "
+              "break: outside her palette; declare it in deliberate, as with any condition you break",
     "L_from": "where the lightness came from",
     "hem_from": "where the hem came from",
 }
@@ -985,7 +986,7 @@ def _ошатність_заяви(код_заяви, в):
     "weather_layers": ("K-WEA-01", ("pool:пакет_моделі._жорстке_відсічення", "pool:composer.зібрати",
                                     "judge:суд_погода.погода", "wire:day.temperature_c")),
     # хибний рядок руки 2 (рядок 6635) іде туди ж, куди справний: у промпт складання — ні
-    **{к: ("K-OUT-33", ("pool:суд_погода.пальта_пулу", "judge:суд_погода.пальтова_смуга", "wire:coat_required"))
+    **{к: ("K-WEA-01", ("pool:суд_погода.пальта_пулу", "judge:суд_погода.пальтова_смуга", "wire:coat_required"))
        for к in ("cold_outer_layer_counts", "cold_outer_layer_optional")},
     "precipitation_shoes_materials": ("K-WEA-01", ("pool:пакет_моделі._жорстке_відсічення",
                                                    "judge:суд_погода.погода", "wire:day.precipitation")),
@@ -1706,8 +1707,6 @@ def пакет(п):
             вих.pop("she_refuses")
     if о.get("пальто"):
         вих["coat_required"] = True
-    if о.get("без_пальта"):
-        вих["coat_forbidden"] = True
     # ── ПРАВИЛА СТИЛЮ — ЗАЯВАМИ ВНУТРІШНЬОЇ МОВИ (ВМ-1, аудит/ПРОДУКТ.md п.12) ─────────────
     # Доти `style_rules` несли українські речення брифа (стенд, сід 3, «робочий день в
     # офісі»: 4 396 симв., 3 195 кириличних літер). Тепер кожен рядок брифа несе `заява`
