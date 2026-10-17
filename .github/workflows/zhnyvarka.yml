@@ -69,6 +69,7 @@ jobs:
               --потоки 4 --хвилин-на-магазин 2 --дедлайн-хвилин 25 --вихід жнива_проба 2>&1 | tee лог_жнив.txt
           fi
       - name: підготувати артефакт
+        if: always()
         run: |
           set -e
           mkdir -p артефакт/сирі
@@ -76,7 +77,8 @@ jobs:
           cp -f zhnyvarka/жнива_сирі_проба/*.json.gz артефакт/сирі/ 2>/dev/null || true
           cp -f zhnyvarka/лог_жнив.txt "артефакт/лог_${{ strategy.job-index }}.txt" 2>/dev/null || true
           ls -la артефакт артефакт/сирі
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: zhnyva-${{ strategy.job-index }}
           path: артефакт/
@@ -101,7 +103,8 @@ jobs:
           pattern: zhnyva-*
           path: зібране
           merge-multiple: true
-      - name: злиття і коміт
+      - name: злиття
+        id: assemble
         run: |
           set -e
           echo "=== що завантажено ==="; find зібране -type f | head -60 || true
@@ -120,7 +123,34 @@ jobs:
           echo "=== $OUT/звіт_жнив.md ==="; head -60 "$OUT/звіт_жнив.md"
           echo "=== розміри ==="; ls -lh "$OUT" | tail -n +2
           echo "Сирі жнива — в артефактах цього запуску (Actions → run → Artifacts), у repo не комітяться."
-          cd ..
+      - name: діагностика каталогу після жнив
+        if: always()
+        continue-on-error: true
+        run: |
+          if [ "${{ inputs.mode }}" = "повний" ]; then OUT=жнива; else OUT=жнива_проба; fi
+          CATALOG="zhnyvarka/$OUT/каталог_повний.xml"
+          # Старий файл checkout не видаємо за вихід невдалого складання.
+          if [ "${{ steps.assemble.outcome }}" != "success" ]; then CATALOG="$RUNNER_TEMP/каталог_жнив_відсутній.xml"; fi
+          python3 джерела/прилади/звіт_після_жнив.py --вихід "zhnyvarka/$OUT" \
+            --каталог "$CATALOG" \
+            --стан "жнива: ${{ needs.harvest.result }}; складання: ${{ steps.assemble.outcome }}"
+      - name: зберегти звіт прогону
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: zhnyvarka-diagnostics
+          path: |
+            zhnyvarka/жнива/діагностика_каталогу.*
+            zhnyvarka/жнива/звіт_жнив.md
+            zhnyvarka/жнива_проба/діагностика_каталогу.*
+            zhnyvarka/жнива_проба/звіт_жнив.md
+          if-no-files-found: warn
+          retention-days: 30
+      - name: коміт результату
+        if: ${{ !cancelled() && steps.assemble.outcome == 'success' }}
+        run: |
+          set -e
+          if [ "${{ inputs.mode }}" = "повний" ]; then OUT=жнива; else OUT=жнива_проба; fi
           git config user.name "жниварка"
           git config user.email "zhnyvarka@users.noreply.github.com"
           # У repo — лише звіт, journal і каталоги. Сирі жнива (десятки МБ) лишаються артефактом
