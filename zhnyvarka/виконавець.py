@@ -8,10 +8,12 @@
   python3 виконавець.py --стеля 150 --секунд-на-магазин 900
 
 Вихід
-  сирі/<домен>.jsonl   — журнал: один JSON на адресу (url, хеш, дата, стан, бал, картка). Повторний запуск
-                          пропускає вже взяті картки; дедлайн обмежує ніч, не каталог.
-  сирі/<домен>.стан.json — курсор пошуку (розділи/сторінки, sitemap), помилки, лічильники.
-  огляд/<домен>.jpg    — контактний аркуш: 6 карток із найвищим балом, фото + підпис — «подивитись очима».
+  <журнал>/сирі/<домен>.jsonl   — журнал: один JSON на адресу (url, хеш, дата, стан, бал, картка). Повторний запуск
+                          зберігає історію; нова черга карток — <журнал>/проходи/<домен>/черга.sqlite3.
+                          Незавершений прохід бере тільки pending; після завершення — новий обхід.
+                          Це шлях виконавця.py; start.py запускає інший збирач жниварка.py.
+  <журнал>/сирі/<домен>.стан.json — курсор пошуку (розділи/сторінки, sitemap), помилки, лічильники.
+  <журнал>/огляд/<домен>.jpg    — контактний аркуш: 6 карток із найвищим балом, фото + підпис — «подивитись очима».
   зведення_жнив.tsv    — рядок на магазин: карток, з них повних, середній бал, причини відмов.
 
 ГЕЙТ ПОВНОТИ (рішення власника 07.09):
@@ -27,6 +29,8 @@
 """
 import argparse, asyncio, csv, datetime, hashlib, json, os, re, sys, time, threading
 from urllib.parse import urlparse, urljoin
+from pathlib import Path
+from журнал_проходу import ЖурналПроходу, відбиток_рецепта
 
 ВЕРСІЯ = "виконавець v1 · 2026-09-07"
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -372,15 +376,21 @@ def завершити(к):
 class Виконавець:
     def __init__(self, a):
         self.a = a
-        os.makedirs("сирі", exist_ok=True); os.makedirs("огляд", exist_ok=True)
+        self.корінь = Path(a.журнал).expanduser().resolve()
+        if self.корінь.is_relative_to(Path(__file__).resolve().parents[1]) or any(
+                (предок / ".git").exists() for предок in (self.корінь, *self.корінь.parents)):
+            raise ValueError("JOURNAL_INSIDE_REPOSITORY")
+        (self.корінь / "сирі").mkdir(parents=True, exist_ok=True)
+        (self.корінь / "огляд").mkdir(exist_ok=True)
+        self.проходи = {}
         self.замок = threading.Lock()
-        self.зведення = "зведення_жнив.tsv"
+        self.зведення = self.корінь / "зведення_жнив.tsv"
         if not os.path.exists(self.зведення):
             open(self.зведення, "w", encoding="utf-8").write("дата\tдомен\tсімейство\tтранспорт\tадрес_знайдено\tвідкрито\tкарток\tнижче_порогу\tнеповна_розбірка\tросійських\tне_картка\tзбоїв\tсередній_бал\tсекунд\tнотатка\n")
 
     # ── журнал ──
     def _журнал(self, домен):
-        ш = f"сирі/{домен}.jsonl"
+        ш = str(self.корінь / "сирі" / f"{домен}.jsonl")
         взято = {}
         if os.path.exists(ш):
             for р in open(ш, encoding="utf-8"):
@@ -391,12 +401,16 @@ class Виконавець:
         return ш, взято
 
     def _стан(self, домен):
-        ш = f"сирі/{домен}.стан.json"
+        ш = str(self.корінь / "сирі" / f"{домен}.стан.json")
         return ш, (json.load(open(ш, encoding="utf-8")) if os.path.exists(ш) else {"розділи": {}, "sitemap": [], "помилки": []})
 
     def _пиши(self, ш, зап):
         with self.замок, open(ш, "a", encoding="utf-8") as f:
             f.write(json.dumps(зап, ensure_ascii=False) + "\n")
+            f.flush(); os.fsync(f.fileno())
+        домен = домен_із(зап["url"])
+        if домен in self.проходи:
+            self.проходи[домен].завершити(зап)
 
     async def усі(self, рецепти):
         from playwright.async_api import async_playwright
@@ -421,8 +435,13 @@ class Виконавець:
             except Exception as e:  # noqa
                 л["нотатка"] = "збій: " + str(e).splitlines()[0][:160]
             finally:
+                прохід = self.проходи.pop(домен, None)
+                if прохід:
+                    л["нотатка"] += " | черга=" + json.dumps(прохід.звіт(), ensure_ascii=False)
+                    прохід.закрити()
                 try:
-                    await self._огляд(контекст, домен)
+                    if not self.a.без_огляду:
+                        await self._огляд(контекст, домен)
                 except Exception as e:  # noqa
                     л["нотатка"] += " | огляд: " + str(e).splitlines()[0][:80]
                 try:
@@ -454,22 +473,26 @@ class Виконавець:
         if сім == "api":
             лог(f"{р['домен']}: API з рецепта ({р['пошук'][:60]}) ще не підключено — йду списками")
             л["нотатка"] = "api→список; "
-        адреси = await (self._horoshop_адреси(контекст, р, л, корінь) if сім == "horoshop" else self._список_адреси(контекст, р, л, корінь))
-        if сім != "horoshop" and (len(адреси) < 30 or "sitemap" in (р.get("пошук") or "")):
-            з_мапи = await self._sitemap_адреси(контекст, р, л, корінь)
-            л["нотатка"] += f"sitemap +{len(з_мапи)}; "
-            адреси = list(dict.fromkeys(адреси + з_мапи))
-        л["адрес"] = len(адреси)
+        прохід = ЖурналПроходу(self.корінь / "проходи", р["домен"], відбиток_рецепта(р), self.a.оновити_перелік, ш)
+        self.проходи[р["домен"]] = прохід
+        if not прохід.продовження():
+            адреси = await (self._horoshop_адреси(контекст, р, л, корінь) if сім == "horoshop" else self._список_адреси(контекст, р, л, корінь))
+            if сім != "horoshop" and (len(адреси) < 30 or "sitemap" in (р.get("пошук") or "")):
+                з_мапи = await self._sitemap_адреси(контекст, р, л, корінь)
+                л["нотатка"] += f"sitemap +{len(з_мапи)}; "
+                адреси = list(dict.fromkeys(адреси + з_мапи))
+            прохід.перелік(адреси)
+        л["адрес"] = прохід.звіт()["total"]
+        адреси = прохід.очікують()
         сторінка = await контекст.new_page()
         await сторінка.route("**/*", lambda route: route.abort() if route.request.resource_type in ("image", "media", "font") else route.continue_())
         n = 0
         for url in адреси:
-            if url in взято and взято[url] != "збій":
-                continue
             if n >= self.a.стеля:
                 л["нотатка"] += f"стеля {self.a.стеля}; "
                 break
             n += 1
+            прохід.почати(url)
             await self._картка(сторінка, р, л, ш, url)
             await сторінка.wait_for_timeout(int(self.a.пауза * 1000))
 
@@ -523,7 +546,7 @@ class Виконавець:
             л["нотатка"] += "sitemap: " + str(e)[:80] + "; "
         рх = re.compile(р["річ_regex"]) if р.get("річ_regex") else None
         адреси = [a for a in dict.fromkeys(адреси) if not _СЛУЖБОВЕ.search(a) and (not рх or рх.search(urlparse(a).path))]
-        json.dump(стан, open(f"сирі/{р['домен']}.стан.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        json.dump(стан, open(str(self.корінь / "сирі" / f"{р['домен']}.стан.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         return адреси
 
     async def _sitemap_адреси(self, контекст, р, л, корінь):
@@ -636,6 +659,10 @@ class Виконавець:
             try: await сторінка.wait_for_load_state("networkidle", timeout=4_000)
             except Exception: pass  # noqa
             html = await сторінка.content()
+            прохід = self.проходи.get(р["домен"])
+            if прохід and r:
+                зап["відповідь"] = прохід.відповідь(url, r.status, await r.body(),
+                    (await r.all_headers()).get("content-type", ""), сторінка.url)
             л["відкрито"] += 1
             if re.search(r"cf-chl|challenge-platform|Just a moment|Attention Required|перевірка браузера", html[:8000], re.I) or (r and r.status in (403, 429, 503)):
                 л["заслон"] = л.get("заслон", 0) + 1
@@ -663,7 +690,7 @@ class Виконавець:
 
     async def _огляд(self, контекст, домен):
         """Контактний аркуш 3×2: шість карток з найвищим балом — фото + назва/колір/бал. Для очей."""
-        ш = f"сирі/{домен}.jsonl"
+        ш = str(self.корінь / "сирі" / f"{домен}.jsonl")
         if not os.path.exists(ш):
             return
         картки = []
@@ -697,7 +724,7 @@ class Виконавець:
             d.text((x + 10, y + 396), (к["назва"] or "")[:40], fill="black", font=шрифт)
             d.text((x + 10, y + 418), f"{к.get('колір','')[:18]} · {к.get('ціна','')[:12]} · бал {з['бал']}", fill="black", font=шрифт)
             d.text((x + 10, y + 440), (к.get("слот_шлях") or "")[:44], fill="gray", font=шрифт)
-        аркуш.save(f"огляд/{домен}.jpg", quality=80)
+        аркуш.save(str(self.корінь / "огляд" / f"{домен}.jpg"), quality=80)
 
 
 def читати_рецепти(шлях):
@@ -709,6 +736,10 @@ def читати_рецепти(шлях):
 
 def main(argv=None):
     п = argparse.ArgumentParser(description=ВЕРСІЯ)
+    п.add_argument("--журнал", default=str(Path.home() / ".cache" / "liusterko" / "harvest"),
+                   help="корінь журналу поза репозиторієм; той самий шлях відновлює незавершений прохід")
+    п.add_argument("--оновити-перелік", action="store_true", help="нове джерело під час часткового проходу: перечитати перелік і всі картки")
+    п.add_argument("--без-огляду", action="store_true", help="не завантажувати кадри для контактного аркуша")
     п.add_argument("--рецепти", default="рецепти.tsv")
     п.add_argument("--магазини", default="усі")
     п.add_argument("--транспорт", default="http,браузер", help="які транспорти брати: http,браузер | дім")
