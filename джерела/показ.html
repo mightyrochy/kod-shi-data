@@ -919,6 +919,7 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
 .річ{position:relative}
 .річ.замінити::before{content:"";position:absolute;left:-10px;top:6px;bottom:6px;width:3px;border-radius:2px;background:var(--чорнило)}
 /* відповідь біля самої речі: видна лише коли річ позначена */
+.річ .заміни-нема{font-size:12px;line-height:1.35;color:var(--чорнило);margin-top:4px}
 .річ .відп-заміни{display:none;font-size:11.5px;line-height:1.35;color:var(--чорнило);margin-top:3px}
 .річ.замінити .відп-заміни{display:block}
 .разом{display:flex;justify-content:flex-end;align-items:baseline;gap:10px;padding:12px 18px 0;font-size:13px;color:var(--олівець)}
@@ -3046,6 +3047,7 @@ async function замінитиРічП(поз, ід, кнопка){
   виглядКнопкиЗаміниП(кнопка, true);
   кнопка.closest('.річ')?.classList.add('замінити');
   вузол.querySelectorAll('.відп-заміни,.не-ця-рядок').forEach(р => { р.hidden = true; });
+  вузол.querySelectorAll('.заміни-нема').forEach(р => р.remove());
   малюватиНеЦяП(true);
   питатиЧомуНеЦяП(поз, String(ід), стара.назва);
   позначитиЗмінуП(поз);
@@ -3081,6 +3083,23 @@ async function замінитиРічП(поз, ід, кнопка){
       else стан = {...заміна, стан:р.стан, відповіді};
     }
     if (!чинний()) return;
+    if (р?.готово && !р.річ){
+      /* Заміни нема (рядок 6617): річ лишається, позначка знята, жінці — речення на картці, кнопка знову жива. */
+      етап.чому = String(р.чому || 'replacement_no_eligible_item');
+      НЕ_ЦЯ_П.delete(String(ід)); в.замінити = в.замінити.filter(х => х !== String(ід));
+      виглядКнопкиЗаміниП(кнопка, false); кнопка.closest('.річ')?.classList.remove('замінити');
+      малюватиНеЦяП(true);
+      картка.етапи = {...(картка.етапи || {}), заміни:[...((картка.етапи || {}).заміни || []), етап]};
+      const м = await повідомленнямП({нема:{kind:'replacement_not_found', statements:[
+        {code:'replacement_item_not_found'}, {code:'replacement_can_try_again'}]}}, 'replace_item');
+      if (чинний()){
+        const рядок = кнопка.closest('.річ')?.querySelector('.н'); рядок?.querySelector('.заміни-нема')?.remove();
+        if (рядок) рядок.appendChild(ел('div', 'заміни-нема', м.тексти.нема || ''));
+        етап.закінчено = Date.now(); етап.застаріло = false;
+        if (window.зберегтиОбраз) await window.зберегтиОбраз();
+      }
+      return;
+    }
     if (!р?.готово || !р.річ) throw new Error(р?.чому || 'replacement_no_eligible_item');
     let нова = р.річ;
     if (String(картка.рука) === '1' || String(картка.рука) === '2'){
@@ -9877,6 +9896,7 @@ const НАПИС_БЕЗ_ШАРУ_П = {
   card_added_by_selection: 'Що дібрав добір — без пояснення словами',
   card_item_swapped: 'Стилістка замінила річ після фото — без пояснення словами',
   assembly_refused: 'Образи не зібрались — без пояснення словами',
+  replacement_not_found: 'Заміни не знайдено — натисни ще раз або обери іншу річ',
   review_refused: 'Оцінити не вдалось — без пояснення словами',
   card_without_description: 'Пояснення до образу не вийшло — без подробиці словами',
   /* card_unchecked — навмисно НЕМА: правило Ч-2 (без шару блоку «код не знає» нема) */
