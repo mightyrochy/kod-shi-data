@@ -17,7 +17,8 @@ def суд(правда, опора, в, текстова=True):
 def з_розбору(р, взуття):
     """Запис `розбір.json` → коди полів еталону: у взуття довжина — халява; тканина, а коли її нема, — матеріал верху."""
     ч = lambda к: None if р.get(к) in (None, 'unknown', 'none') and к != 'metal' else р.get(к)
-    return dict(slot=ч('slot'), item_type=ч('item_type'), length=ч('shaft' if взуття else 'length'), sleeve=ч('sleeve'),
+    тип = None if р.get('item_type') == 'not_applicable' else ч('item_type')   # «тип без коду» (6755) — тиша, як unknown
+    return dict(slot=ч('slot'), item_type=тип, length=ч('shaft' if взуття else 'length'), sleeve=ч('sleeve'),
                 neckline=ч('neckline'), cut=ч('cut'), fabric=ч('fabric') or ч('material'), pattern=ч('pattern'), color=ч('color_main'),
                 shine=(р.get('veto') or {}).get('shine'), metal=ч('metal'), set_parts=sorted(п.get('item_type') for п in р.get('set_parts') or []))
 лік, деталь = collections.defaultdict(collections.Counter), collections.Counter()

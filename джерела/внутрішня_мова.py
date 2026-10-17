@@ -248,7 +248,15 @@ def невідомо(v, коди=()):
         "bodysuit": "боді", "longsleeve": "лонгслів", "half_coat": "півпальто",
         "down_jacket": "пуховик", "fur_coat": "шуба", "sheepskin_coat": "дублянка", "parka": "парка",
         "raincoat": "плащ", "rain_cape": "дощовик", "windbreaker": "вітровка", "anorak": "анорак",
-        "bomber": "бомбер", "poncho": "пончо"},
+        "bomber": "бомбер", "poncho": "пончо",
+        # 6755 (17.10.2026): типи слотів, у яких доти був лише родовий код або жодного (шапка в еталоні 404
+        # діставала `scarf_generic`, «моно-сережка» — `ring`, пасок — `belt_bag`): модель шукала найближчий
+        # чужий код. Слот кожного — у `СЛОТ_ТИПУ`; сережка, браслет, намисто, кольє, брошка, годинник,
+        # окуляри, рукавички, колготи й шкарпетки названі тим самим словом, що й слот.
+        "beanie": "шапка", "hat": "капелюх", "beret": "берет", "cap": "кепка", "belt": "пасок",
+        "earrings": "сережки", "bracelet": "браслет", "necklace": "намисто", "collar_necklace": "кольє",
+        "brooch": "брошка", "watch": "годинник", "glasses": "окуляри", "gloves": "рукавички",
+        "tights": "колготи", "socks": "шкарпетки", "swimsuit": "купальник", "lingerie": "білизна"},
     "fabric": {
         "wool": "вовна", "cashmere": "кашемір", "mohair": "мохер", "angora": "ангора",
         "alpaca": "альпака", "cotton": "бавовна", "viscose": "віскоза", "tencel": "тенсел",
@@ -411,7 +419,11 @@ def невідомо(v, коди=()):
     "stole": "scarf", "kerchief": "scarf", "twilly": "scarf", "snood": "scarf", "shawl": "scarf",
     "bactus_scarf": "scarf", "scarf_generic": "scarf",
     "headband": "headwear", "bow": "headwear", "hair_clip": "headwear", "hair_tie": "headwear",
-    "ring": "ring", "jewelry_generic": "jewelry"}
+    "beanie": "headwear", "hat": "headwear", "beret": "headwear", "cap": "headwear", "belt": "belt",
+    "earrings": "earrings", "bracelet": "bracelet", "necklace": "necklace",
+    "collar_necklace": "collar_necklace", "brooch": "brooch", "watch": "watch", "glasses": "glasses",
+    "gloves": "gloves", "tights": "tights", "socks": "socks", "swimsuit": "swimwear",
+    "lingerie": "underwear", "ring": "ring", "jewelry_generic": "jewelry"}
 
 
 def ключ(поле, код):

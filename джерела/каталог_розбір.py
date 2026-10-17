@@ -180,7 +180,7 @@ class Мірка(tuple):
 # Опис — англійською: його читає модель у скелеті промпта (РЗ-К).
 ПОЛЯ = (
     ("slot", _коди("slot"), "place of the item in an outfit"),
-    ("item_type", _коди("item_type"), "item type"),
+    ("item_type", _коди("item_type", на=True), "item type"),
     ("set_kind", НАБІР, "whether the item is sold as a set, and which"),
     ("set_parts[].slot", _коди("slot"), "place of this part of the set"),
     ("set_parts[].item_type", _коди("item_type"), "type of this part of the set"),
@@ -296,7 +296,12 @@ _ЛИШЕ = lambda *слоти: frozenset(к for к in ВМ.ТАБЛИЦЯ["slot
     "strap_cm": _ЛИШЕ("bag"),
     "chain_cm": _ЛИШЕ("jewelry", "collar_necklace", "necklace"),
 }
-assert set(НЕМА_ПОЛЯ) == {ш for ш, к, _ in ПОЛЯ if НЕ_СТОСУЄТЬСЯ in к}, "кожне поле з not_applicable — у таблиці"
+# Тип — другий рід `not_applicable` (6755): слова називають тип, а коду в переліку нема. Таблиці
+# слот → поле для нього нема, тож код вимагає цитату, як для будь-якого коду (`_код`): без неї
+# `not_applicable` на типі знову став би заповнювачем тиші.
+ТИП_БЕЗ_КОДУ = frozenset(("item_type",))
+assert set(НЕМА_ПОЛЯ) == {ш for ш, к, _ in ПОЛЯ if НЕ_СТОСУЄТЬСЯ in к and ш not in ТИП_БЕЗ_КОДУ}, \
+    "кожне поле з not_applicable — у таблиці"
 assert all(к in ВМ.ТАБЛИЦЯ["slot"] or к in ВМ.ТАБЛИЦЯ["item_type"] for в in НЕМА_ПОЛЯ.values() for к in в)
 
 # ── РЯДОК ОСОБЛИВОСТЕЙ: ВІЛЬНИЙ ТЕКСТ, А НЕ КОД (див. докстрінг модуля) ─────
@@ -540,7 +545,8 @@ def _правило_поля_нема():
         опис = "any slot but " + "|".join(решта) if len(решта) < len(є) else "|".join(є)
         типи = [к for к in ВМ.ТАБЛИЦЯ["item_type"] if к in нема and к not in слоти]
         частини.append("%s: %s" % (", ".join(поля), опис + ("; item_type " + "|".join(типи) if типи else "")))
-    return ("\"not_applicable\" only where the item's slot has no such field, quote \"\" — %s; "
+    return ("\"not_applicable\": the field does not exist for this kind of item, quote \"\" (shoes, bags and "
+            "jewellery have no cut, length, sleeve or neckline). Only where the item's slot has no such field — %s; "
             "heel.shape, heel.height and heel.height_cm also when heel.present is \"no\". Anywhere else the field "
             "exists: no words about it, \"unknown\"." % "; ".join(частини))
 
@@ -559,6 +565,10 @@ _ПРАВИЛА = (
     "A quote that only names the item type supports slot and item_type and nothing else: not "
     "sleeve, neckline, length, cut, fabric or any other field.",
     _правило_поля_нема(),
+    "\"item_type\": the quote must name this very type. A kind of dress, top or coat needs its own "
+    "word in the quote: length, colour, fabric and fit words do not name a kind, so a dress with no "
+    "kind named is dress_generic. The words name a type that has no code in the list: value \"not_applicable\" with that quote, never the "
+    "nearest code. The words name no type: \"unknown\".",
     "\"no\" and \"none\": the text says the feature is absent; they need a quote like any value.",
     "A field with \"unit\" takes a number: \"value\" the number the text gives, \"unit\" its unit, "
     "the quote holds that number in digits. A range or numbers per size: the first number.",
@@ -838,7 +848,8 @@ def _код(знач, коди, шлях, причини, частини=None, �
     впізнати в ньому код. Коли дано `частини` (текст речі), код лишається, лише коли його цитата
     там тримається (`_де_тримається`); інакше "unknown" і рядок `invented`. "unknown" і
     `not_applicable` цитати не потребують (`not_applicable` судить таблиця — `_поля_нема`, коли
-    слот уже відомий). `цитати` (коли дано) дістає {шлях: (цитата, де)}."""
+    слот уже відомий) — крім типу (`ТИП_БЕЗ_КОДУ`): «тип названо, коду нема» лишається, лише коли
+    цитата з назвою типу тримається. `цитати` (коли дано) дістає {шлях: (цитата, де)}."""
     if isinstance(коди, Мірка):
         return _число(знач, коди, шлях, причини, частини, цитати)
     значення, цитата = _розняти(знач)
@@ -852,7 +863,7 @@ def _код(знач, коди, шлях, причини, частини=None, �
             return UNKNOWN
         причини.append("%s: «%s» зведено до «%s»" % (шлях, str(значення)[:40], зведено))
         т = зведено
-    if частини is None or т in (UNKNOWN, НЕ_СТОСУЄТЬСЯ):
+    if частини is None or т == UNKNOWN or (т == НЕ_СТОСУЄТЬСЯ and шлях not in ТИП_БЕЗ_КОДУ):
         return т
     де = _де_тримається(цитата, частини)
     if not де:
