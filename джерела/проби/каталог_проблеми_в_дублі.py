@@ -9,22 +9,19 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import feed, фід_слот as ФС, чистка_каталогу as ЧК
 оф = [o for o in feed.читати_yml(sys.argv[1] if len(sys.argv) > 1 else feed.каталог_на_диску())[0]
       if o.get("available") is not False]
-гр = C.defaultdict(list)
-for o in оф:
-    гр[(o["магазин"], ФС.назва_для_людини(o).lower())].append(o)
-повт = [г for г in гр.values() if len(г) > 1]
-зайві = sum(len(г) - 1 for г in повт)
-двійн = sum(len(г) - len({(x.get("колір_назва") or "").lower() for x in г}) for г in повт)
+# двійники — за першим кадром, не за назвою (код слів не читає, п.12): кадр, що стоїть на ≥ 3 моделях крамниці
+# (різних group_id), службовий; решта записів з тим самим кадром — повтор речі
 кадр1 = lambda x: ЧК._адреса_кадру((x.get("фото") or [""])[0])
-стоїть = C.Counter((o["магазин"], кадр1(o)) for o in оф if o.get("фото"))   # кадр на ≥ 3 записах — службовий, ключем не є
-# запис без кадру (варіант Woo, чий кадр платформа не назвала) — не «той самий кадр»: порожнє не збігається з порожнім
-тойкадр = sum(len([x for x in г if x.get("фото")]) - len({кадр1(x) for x in г if x.get("фото")}) for г in повт
-              if all(стоїть[(x["магазин"], кадр1(x))] < 3 for x in г if x.get("фото")))
-print("наявних оферів %d · груп «крамниця+назва» з повтором %d · зайвих оферів %d"
-      % (len(оф), len(повт), зайві))
-print("  з них з тим самим словом кольору крамниці %d (інше слово — %d) · з тим самим першим кадром %d "
-      "(повні двійники) · крамниці %s" % (двійн, зайві - двійн, тойкадр,
-                                         dict(C.Counter(г[0]["магазин"] for г in повт).most_common(4))))
+за_кадром = C.defaultdict(list)
+for o in оф:
+    if o.get("фото"):
+        за_кадром[(o["магазин"], кадр1(o))].append(o)
+служб = {к for к, г in за_кадром.items() if len({x.get("group_id") or x["id"] for x in г}) >= 3}
+повт = [г for к, г in за_кадром.items() if к not in служб and len(г) > 1]
+print("наявних оферів %d · службових кадрів (≥ 3 моделі) %d · груп з тим самим першим кадром %d · двійників (зайвих оферів) %d · крамниці %s"
+      % (len(оф), len(служб), len(повт), sum(len(г) - 1 for г in повт),
+         dict(C.Counter(г[0]["магазин"] for г in повт).most_common(4))))
+print("  приклади для очей:", [(г[0]["магазин"], [x["id_жниварки"] for x in г[:3]], г[0]["назва"][:30]) for г in повт[:8]])
 g = C.Counter(o.get("group_id") for o in оф if o.get("group_id"))
 print("group_id: груп із > 1 офером %d · оферів у них %d"
       % (sum(1 for v in g.values() if v > 1), sum(v for v in g.values() if v > 1)))
