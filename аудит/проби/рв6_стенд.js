@@ -1711,7 +1711,8 @@ function відповісти(текст) {
     return {тип: 'ОЦІНКА: відповідь', текст: JSON.stringify({
       answer: т('Yes, these colors go together; one change would make the outfit calmer.'),
       verdict: зміна ? 'wear_with_change' : 'wear_as_is', works,
-      change: зміна ? [{id: зміна.id, text: т(зміна.with_own ? 'Your other pair from the photo removes the second white.'
+      /* рядок 6459: «items» зміни мусять нести річ, яку вона міняє (`replace`) — без цілі сторож знімає зміну */
+      change: зміна ? [{id: зміна.id, items: зміна.replace || [], text: т(зміна.with_own ? 'Your other pair from the photo removes the second white.'
                                                             : 'This pair from the shop removes the second white.')}] : [],
       unknown: невідоме})};
   }
