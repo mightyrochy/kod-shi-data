@@ -19,7 +19,7 @@ def з_розбору(р, взуття):
     ч = lambda к: None if р.get(к) in (None, 'unknown', 'none') and к != 'metal' else р.get(к)
     тип = None if р.get('item_type') == 'not_applicable' else ч('item_type')   # «тип без коду» (6755) — тиша, як unknown
     return dict(slot=ч('slot'), item_type=тип, length=ч('shaft' if взуття else 'length'), sleeve=ч('sleeve'),
-                neckline=ч('neckline'), cut=ч('cut'), fabric=ч('fabric') or ч('material'), pattern=ч('pattern'), color=ч('color_main'),
+                neckline=ч('neckline'), cut=ч('cut'), fabric=ч('fabric') or (None if ч('material') == 'not_applicable' else ч('material')), pattern=ч('pattern'), color=ч('color_main'),
                 shine=(р.get('veto') or {}).get('shine'), metal=ч('metal'), set_parts=sorted(п.get('item_type') for п in р.get('set_parts') or []))
 лік, деталь = collections.defaultdict(collections.Counter), collections.Counter()
 нове = json.load(open(sys.argv[1], encoding='utf-8')) if len(sys.argv) > 1 else None
