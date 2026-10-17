@@ -136,13 +136,18 @@ def вибрати_зі_слота(речі, квота, сід=0):
     for r in речі:
         if isinstance(r, dict) and "_доза" in r:
             дози[_гілка_вибірки(r)].append(r)
+    # Її явний колір сильніший за дозу; чинна межа утримання лишається всередині квоти.
+    явні = {id(r) for r in [r for r in речі if isinstance(r, dict) and r.get(ПОЛЕ_УТРИМАННЯ)]
+            [:max(0, min(МІН_ОБОВЯЗКОВОГО, квота))]} if дози else set()
     цілі = {г: min(int(r["_доза"]) for r in рч) for г, рч in дози.items()}
     без_нижньої = len(речі) - sum(map(len, дози.values())) + sum(
         min(len(рч), цілі[г]) for г, рч in дози.items() if г != "нижче смуги")
     лишити = set()
     for г, рч in дози.items():
         ціль = max(цілі[г], квота - без_нижньої) if г == "нижче смуги" else цілі[г]
-        лишити.update(id(r) for r in _перемішати(list(рч), сід, сіль("dose"))[:ціль])
+        тримати = [r for r in рч if id(r) in явні]
+        решта = _перемішати([r for r in рч if id(r) not in явні], сід, сіль("dose"))
+        лишити.update(id(r) for r in тримати + решта[:max(0, ціль - len(тримати))])
     if дози:
         речі = [r for r in речі if not (isinstance(r, dict) and "_доза" in r) or id(r) in лишити]
     if квота >= len(речі):
