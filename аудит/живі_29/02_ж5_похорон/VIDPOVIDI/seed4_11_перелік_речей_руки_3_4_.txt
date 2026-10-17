@@ -1,0 +1,44 @@
+── ПРОМПТ (2486 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black wool overcoat, classic cut reaching mid-calf length, charcoal grey, heavy worsted wool.\nCharcoal grey tailored trousers, straight-leg silhouette with a sharp crease, knee-length hem, fine twill fabric.\nIvory white high-collar button-up shirt, relaxed yet structured fit, chest-down length, crisp cotton poplin.\nDark brown leather loafers, sleek slip-on design, ankle-high coverage, full-grain calfskin leather.\nBlack silk pocket square, square fold style, long tail draping over the jacket, lustrous satin weave.\n\nThis ensemble strikes a respectful balance between solemnity and dignity for an autumn morning funeral service. The charcoal tones of the coat and trousers offer a somber yet refined aesthetic appropriate for mourning traditions, while the ivory shirt adds a necessary touch of brightness to the dark palette. A brown leather loafer replaces the black often associated with funerals, providing a subtle personal warmth without violating the strict dress code expectations. Finally, the silk pocket square serves as a discreet focal point that honors the deceased with elegance rather than overwhelming grandeur."}
+
+── ВІДПОВІДЬ (986 симв., 162.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "overcoat",
+      "details": "classic cut reaching mid-calf length, heavy worsted wool",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight-leg silhouette with a sharp crease, knee-length hem",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "shirt",
+      "details": "high-collar button-up, relaxed yet structured fit, chest-down length",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "sleek slip-on design, ankle-high coverage",
+      "slot": "shoes",
+      "color_hex": "#5C4033",
+      "worn": true
+    },
+    {
+      "name": "pocket square",
+      "details": "square fold style, long tail draping over the jacket",
+      "slot": "accessory",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}
