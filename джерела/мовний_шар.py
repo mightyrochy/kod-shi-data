@@ -810,7 +810,11 @@ def прийняти(розмітка, відповідь):
         поля=_ВМ.ВИПРАВЛЕННЯ_ПЕРЕЛІКУ,
         правила=("One action — one item. An item she called wrong (not this, but that) is corrected with set over its "
                  "id: the new kind and colour she named, without slot — the place follows from the kind. An item the "
-                 "list does not have at all — add with the kind and colour she named.",),
+                 "list does not have at all — add with the kind and colour she named.",
+                 # рядок 6758: «…чорні — запасні» давало `add ankle_boots black` поруч із наявними чорними — двоє
+                 # чорних ботильйонів в образі; «запасна» — це місце речі в образі, а не нова річ
+                 "An item of the list she calls a spare (kept instead of another item, not worn in the look) is "
+                 "already there: set over its id with in_outfit: false, and no add for it.",),
         опис={
             "actions": "one action per item she said is wrong in the list",
             "actions.op": "remove — take away an item that is not in the photo; set — correct an item already in the list "
