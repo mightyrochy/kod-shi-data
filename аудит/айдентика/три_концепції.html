@@ -1,0 +1,1137 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Кіновар, Вербівка, Люстерко</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Три концепції айдентики Люстерка в одному файлі (рядок 5213, етапи 1–2). Екрани — ті самі, що в
+   концепція_1..3.html; стилі кожної обмежено класом .к1 / .к2 / .к3. */
+@font-face{font-family:"KyivType Titling";font-weight:1 1000;font-display:swap;
+  src:url("шрифти/KyivTypeTitling-VarGX.ttf") format("truetype"),url("../../шрифти/KyivTypeTitling-VarGX.ttf") format("truetype")}
+@font-face{font-family:"KyivType Serif";font-weight:1 1000;font-display:swap;
+  src:url("шрифти/KyivTypeSerif-VarGX.ttf") format("truetype"),url("../../шрифти/KyivTypeSerif-VarGX.ttf") format("truetype")}
+@font-face{font-family:"Fixel Text";font-weight:400;font-display:swap;
+  src:url("шрифти/FixelText-Regular.woff2") format("woff2"),url("../тести/інструкція_тестувальниць/шрифти/FixelText-Regular.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-weight:500;font-display:swap;
+  src:url("шрифти/FixelText-Medium.woff2") format("woff2"),url("../тести/інструкція_тестувальниць/шрифти/FixelText-Medium.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-weight:600;font-display:swap;
+  src:url("шрифти/FixelText-SemiBold.woff2") format("woff2"),url("../тести/інструкція_тестувальниць/шрифти/FixelText-SemiBold.woff2") format("woff2")}
+
+/* Розкладка: концепції йдуть послідовно, кожна цілком — голова, екрани 390×844, опис; паралельно — лише
+   підсумкова таблиця порівняння; далі порада й джерела. */
+:root{
+  --тло:#E4E5E3; --аркуш-ст:#F6F6F4; --текст-ст:#1E1F21; --сірий-ст:#595C61; --лінія-ст:#CDD0D2;
+  --к1-колір:#B2321C; --к2-колір:#21505B; --к3-колір:#5A666C; --на-кольорі:#FFFFFF; --край-зразка:rgb(30 31 33 / .18);
+  /* оболонка окремих файлів концепцій — ті самі ролі */
+  --текст-оболонки:var(--текст-ст); --сірий-оболонки:var(--сірий-ст); --рамка-оболонки:transparent;
+  --заголовок-ст:"KyivType Titling","Arsenal",Georgia,serif; --текст-шр:"Fixel Text",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --тло:#18191A; --аркуш-ст:#222426; --текст-ст:#E9EAE8; --сірий-ст:#A3A7AB; --лінія-ст:#393C3F;
+  --к1-колір:#E0674F; --к2-колір:#5FA3B1; --к3-колір:#A9B5BB; --на-кольорі:#141516; --край-зразка:rgb(233 234 232 / .22); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --тло:#18191A; --аркуш-ст:#222426; --текст-ст:#E9EAE8; --сірий-ст:#A3A7AB; --лінія-ст:#393C3F;
+  --к1-колір:#E0674F; --к2-колір:#5FA3B1; --к3-колір:#A9B5BB; --на-кольорі:#141516; --край-зразка:rgb(233 234 232 / .22); color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--тло);color:var(--текст-ст);font:15px/1.55 var(--текст-шр);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 56px}
+a{color:inherit;text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--к2-колір);outline-offset:2px}
+.сторінка{max-width:1258px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:44px}
+.сторінка > *{min-width:0}
+.надпис{font-size:12.5px;color:var(--сірий-ст);letter-spacing:.02em}
+h1{font:500 clamp(34px,5vw,52px)/1.02 var(--заголовок-ст);font-variation-settings:"CONT" 640;margin:6px 0 14px;text-wrap:balance}
+h2{font:500 28px/1.1 var(--заголовок-ст);font-variation-settings:"CONT" 560;margin:0 0 10px;text-wrap:balance}
+.шапка-ст{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:40px;align-items:start}
+.шапка-ст p{margin:0 0 10px;max-width:66ch}
+.дрібно{font-size:13px;color:var(--сірий-ст)}
+.порада{background:var(--аркуш-ст);padding:20px 22px;border-top:3px solid var(--к3-колір)}
+.порада .надпис{display:block;margin-bottom:4px}
+.порада b{display:block;font:500 21px/1.2 var(--заголовок-ст);font-variation-settings:"CONT" 560;margin-bottom:8px}
+.порада p{margin:0;font-size:14px}
+@media (max-width:900px){.шапка-ст{grid-template-columns:minmax(0,1fr)}}
+
+/* концепції — послідовно: голова, екрани, опис */
+.концепція{display:grid;gap:26px;padding-top:34px;border-top:1px solid var(--лінія-ст)}
+.голова{display:grid;gap:8px;max-width:76ch}
+.голова .рядок{display:flex;align-items:center;gap:12px}
+.мітка-к{display:inline-grid;place-items:center;min-width:34px;height:26px;padding:0 6px;font:600 12px/1 var(--текст-шр);letter-spacing:.06em;color:var(--на-кольорі)}
+.к1-мітка .мітка-к,.мітка-к.к1-тло{background:var(--к1-колір)}
+.к2-мітка .мітка-к,.мітка-к.к2-тло{background:var(--к2-колір)}
+.к3-мітка .мітка-к,.мітка-к.к3-тло{background:var(--к3-колір)}
+.голова b{font:500 34px/1.05 var(--заголовок-ст);font-variation-settings:"CONT" 600;text-wrap:balance}
+.голова .корінь{font-size:13px;color:var(--сірий-ст)}
+.голова p{margin:0;font-size:16px}
+.екрани{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:34px;min-width:0}
+.телефон{margin:0;display:grid;gap:10px;align-content:start;min-width:0;max-width:390px;width:100%}
+.fit{width:100%;max-width:390px;overflow:hidden;border-radius:22px}
+.телефон .екран{border-radius:22px;box-shadow:0 1px 2px rgb(20 22 26 / .08),0 8px 24px rgb(20 22 26 / .10)}
+.телефон figcaption{font-size:12.5px;color:var(--сірий-ст);line-height:1.45}
+.телефон figcaption b{color:var(--текст-ст);font-weight:600}
+.опис{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 44px}
+.блок{min-width:0;font-size:13.5px;padding:14px 0 10px;border-top:1px solid var(--лінія-ст)}
+.блок h3{margin:0 0 8px;font:600 13px/1.2 var(--текст-шр)}
+.блок ul,.блок ol{margin:0;padding-left:18px;display:grid;gap:4px}
+.блок dl{margin:0;display:grid;grid-template-columns:76px minmax(0,1fr);gap:5px 12px}
+.блок dt{color:var(--сірий-ст)}
+.блок dd{margin:0}
+.блок p{margin:0 0 6px}
+.зразки{list-style:none;padding:0!important;gap:5px!important}
+.зразки li{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:8px;align-items:center}
+.зразки i{width:16px;height:16px;box-shadow:inset 0 0 0 1px var(--край-зразка)}
+.зразки code{font-size:12px;color:var(--сірий-ст);font-variant-numeric:tabular-nums}
+@media (max-width:800px){.опис{grid-template-columns:minmax(0,1fr)}}
+
+.зміст-ст{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:14px}
+/* таблиці */
+.таблиця{overflow-x:auto;background:var(--аркуш-ст)}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:10px 14px;border-bottom:1px solid var(--лінія-ст)}
+thead th{font-weight:600;white-space:nowrap}
+tbody th{font-weight:400;color:var(--сірий-ст);width:18%}
+td.число{font-variant-numeric:tabular-nums}
+.два{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:44px}
+.два ol,.два ul{margin:0;padding-left:20px;display:grid;gap:6px}
+.два p{margin:10px 0 0}
+@media (max-width:900px){.два{grid-template-columns:minmax(0,1fr)}}
+.джерела{columns:2 360px;column-gap:44px;margin:0;padding-left:18px;font-size:13.5px}
+.джерела li{break-inside:avoid;margin-bottom:6px}
+footer{border-top:1px solid var(--лінія-ст);padding-top:14px;font-size:12.5px;color:var(--сірий-ст)}
+footer code,p code,li code{font-size:12px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+
+/* ——— екрани концепцій ——— */
+.екран{width:390px;height:844px;position:relative;overflow:hidden;isolation:isolate}
+.к1{--аркуш:#FAF8F3;--поле:#F0EDE5;--чорнило:#1E1C19;--олівець:#6A655C;--лінія:#DCD6CA;--кіновар:#B2321C;--кіновар-тло:#F6E3DC;--біле:#FFFFFF;--титул:"KyivType Titling","Arsenal",Georgia,serif;--голос:"KyivType Serif","Arsenal",Georgia,serif;--текст:"Fixel Text",system-ui,sans-serif}
+.к1 .екран{width:390px;height:844px;position:relative;overflow:hidden;background:var(--аркуш);color:var(--чорнило);
+  font:15px/1.5 var(--текст);outline:1px solid var(--рамка-оболонки);
+  background-image:linear-gradient(90deg,var(--поле) 0 22px,var(--лінія) 22px 23px,transparent 23px)}
+.к1 .екран *{box-sizing:border-box}
+.к1 .вміст{position:absolute;inset:0 0 70px 0;padding:18px 20px 0 40px;display:flex;flex-direction:column;gap:14px}
+.к1 .шапка{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.к1 .знак{font:500 27px/1 var(--титул);font-variation-settings:"CONT" 900;letter-spacing:.01em}
+.к1 .знак i{font-style:normal;color:var(--кіновар)}
+.к1 .шапка-дії{display:flex;gap:14px;align-items:center;font-size:13px;color:var(--олівець)}
+.к1 .ніч{width:34px;height:34px;border-radius:50%;border:1px solid var(--лінія);display:grid;place-items:center;font-size:11px}
+.к1 .рубрика{font:600 11px/1.2 var(--текст);letter-spacing:.14em;text-transform:uppercase;color:var(--кіновар)}
+.к1 .рубрика.сіра{color:var(--олівець)}
+.к1 .фоліо{position:absolute;left:0;width:22px;top:120px;writing-mode:vertical-rl;transform:rotate(180deg);
+  font:500 10px/22px var(--текст);letter-spacing:.2em;text-transform:uppercase;color:var(--олівець);text-align:center}
+.к1 .фоліо b{color:var(--кіновар);font-weight:600}
+.к1 .з-буквицею{font:500 31px/1.08 var(--титул);font-variation-settings:"CONT" 520;margin:0;text-wrap:pretty}
+.к1 .буквиця{float:left;font:600 104px/.78 var(--титул);font-variation-settings:"CONT" 1000;color:var(--кіновар);
+  margin:6px 8px 0 -4px}
+.к1 .з-буквицею em{font-style:normal;color:var(--кіновар)}
+.к1 .підзаголовок{margin:0;color:var(--олівець);font-size:15px;clear:both}
+.к1 .пілкроу{color:var(--кіновар);font-weight:600;margin-right:4px}
+.к1 .глоса{font-size:13px;color:var(--олівець);margin:0}
+.к1 .дія{display:flex;align-items:center;justify-content:center;gap:10px;height:48px;padding:0 20px;border:0;
+  background:var(--кіновар);color:var(--біле);font:600 15px/1 var(--текст);letter-spacing:.01em}
+.к1 .дія.тиха{background:transparent;color:var(--чорнило);border:1px solid var(--чорнило)}
+.к1 .дія svg{width:18px;height:18px}
+.к1 .рядок-дій{display:flex;gap:10px}
+.к1 .рядок-дій .дія:last-child{flex:1}
+.к1 .закладки{position:absolute;left:0;right:0;bottom:0;height:70px;background:var(--аркуш);border-top:1px solid var(--лінія);
+  display:grid;grid-template-columns:repeat(4,1fr);padding-left:22px}
+.к1 .закладка{position:relative;display:grid;place-items:center;padding-top:20px;font-size:12px;color:var(--олівець)}
+.к1 .закладка.поточна{color:var(--чорнило);font-weight:600}
+.к1 .закладка.поточна::before{content:"";position:absolute;top:-1px;left:50%;width:12px;height:22px;margin-left:-6px;
+  background:var(--кіновар);clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
+.к1 .зміст{display:grid;gap:0;margin:0;padding:0;list-style:none}
+.к1 .зміст li{display:flex;align-items:baseline;gap:6px;padding:7px 0;border-bottom:1px solid var(--лінія);font-size:14px}
+.к1 .зміст .під{color:var(--олівець);white-space:nowrap}
+.к1 .зміст .відточ{flex:1;border-bottom:1px dotted var(--олівець);transform:translateY(-4px);min-width:12px}
+.к1 .зміст .зн{text-align:right}
+.к1 .зміст .зн.типово{color:var(--олівець)}
+.к1 .рядок-поля{display:grid;gap:4px}
+.к1 .рядок-поля label{font-size:13px;color:var(--олівець)}
+.к1 .рядок-поля .лінія-письма{height:38px;border-bottom:1px solid var(--чорнило);font:17px/38px var(--голос);color:var(--олівець)}
+.к1 .прапорець{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.к1 .прапорець span:first-child{flex:none;width:18px;height:18px;border:1px solid var(--чорнило);margin-top:1px}
+.к1 .лист{position:relative;background:var(--біле);border:1px solid var(--лінія);padding:16px 16px 60px 30px;
+  background-image:repeating-linear-gradient(180deg,transparent 0 27px,var(--лінія) 27px 28px);background-position:0 12px}
+.к1 .лист::before{content:"";position:absolute;top:0;bottom:0;left:20px;width:1px;background:var(--кіновар);opacity:.55}
+.к1 .лист p{margin:0;font:18px/28px var(--голос);color:var(--олівець)}
+.к1 .лист .кнопки{position:absolute;right:12px;bottom:12px;display:flex;gap:8px}
+.к1 .кр{width:40px;height:40px;border-radius:50%;border:1px solid var(--лінія);background:var(--біле);display:grid;place-items:center;color:var(--чорнило)}
+.к1 .кр.їде{background:var(--кіновар);border-color:var(--кіновар);color:var(--біле)}
+.к1 .кр svg{width:19px;height:19px}
+.к1 .приклади{display:grid;gap:4px;margin:0;padding:0;list-style:none;font-size:14px}
+.к1 .плитки{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--чорнило)}
+.к1 .плитка{padding:8px 6px 9px 0;border-bottom:1px solid var(--лінія);display:grid;gap:1px;align-content:start;min-height:54px}
+.к1 .плитка b{font:500 13px/1.2 var(--текст)}
+.к1 .плитка small{font-size:10.5px;line-height:1.25;color:var(--олівець)}
+.к1 .плитка.інше b{color:var(--кіновар)}
+.к1 .вона{align-self:flex-end;max-width:84%;padding:10px 14px;background:var(--поле);font-size:15px}
+.к1 .стилістка{display:grid;gap:6px;font:17px/1.42 var(--голос)}
+.к1 .стилістка .хто{font:600 11px/1 var(--текст);letter-spacing:.14em;text-transform:uppercase;color:var(--кіновар)}
+.к1 .нота{font:13px/1.4 var(--текст);color:var(--олівець)}
+.к1 .паспорт{border:1px solid var(--чорнило);background:var(--біле);padding:12px 14px 14px;display:grid;gap:8px}
+.к1 .паспорт-шапка{display:flex;justify-content:space-between;align-items:baseline}
+.к1 .паспорт-шапка b{font:500 19px/1.1 var(--титул);font-variation-settings:"CONT" 500}
+.к1 .паспорт-шапка small{font-size:12px;color:var(--олівець)}
+.к1 .додати{font-size:13px;color:var(--олівець)}
+.к1 .додати b{color:var(--чорнило);font-weight:500}
+.к1 .так-ні{display:flex;align-items:center;gap:10px;font-size:14px}
+.к1 .так-ні span{padding:4px 12px;border:1px solid var(--чорнило);border-radius:999px}
+.к1 .швидкі{display:flex;gap:6px;overflow:hidden;white-space:nowrap}
+.к1 .швидкі span{padding:7px 12px;border:1px solid var(--лінія);border-radius:999px;font-size:13px;background:var(--біле)}
+.к1 .швидкі span:last-child{color:var(--кіновар);border-color:var(--кіновар)}
+.к1 .ввід{display:flex;align-items:center;gap:8px;height:48px;padding:0 6px 0 14px;border:1px solid var(--чорнило);background:var(--біле)}
+.к1 .ввід > span:first-child{flex:1;color:var(--олівець);font-size:15px}
+.к1 .ввід .кр{width:36px;height:36px}
+.к1 .низ-розмови{position:absolute;left:40px;right:20px;bottom:82px;display:grid;gap:8px}
+.к1 .чипи{display:flex;flex-wrap:wrap;gap:6px}
+.к1 .чип{padding:7px 12px;border:1px solid var(--лінія);border-radius:999px;font-size:13px;background:var(--біле)}
+.к1 .чип.обр{border-color:var(--чорнило);background:var(--чорнило);color:var(--аркуш)}
+.к1 .таблиця-фарб{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 8px}
+.к1 .фарба{display:grid;gap:4px;font:12.5px/1.15 var(--голос)}
+.к1 .фарба i{display:block;height:40px;border:1px solid rgba(0,0,0,.08)}
+.к1 .фарба small{font:10px/1.2 var(--текст);color:var(--олівець)}
+.к1 .фарба.обр i{outline:2px solid var(--кіновар);outline-offset:2px}
+.к1 .фарба.стил{align-content:start}
+.к1 .фарба.стил i{background:repeating-linear-gradient(135deg,var(--біле) 0 6px,var(--поле) 6px 12px)}
+.к1 .схеми{display:grid;gap:0;margin:0;padding:0;list-style:none}
+.к1 .схеми li{display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--лінія);font-size:13.5px}
+.к1 .схеми li.обр{font-weight:600}
+.к1 .схеми li.обр .вага{color:var(--кіновар)}
+.к1 .смужка{display:flex;height:16px}
+.к1 .смужка i{flex:1}
+.к1 .смужка i:first-child{flex:2.2}
+.к1 .вага{font-size:12px;color:var(--олівець)}
+.к1 .рідша{grid-column:2/4;font-size:11.5px;color:var(--олівець);font-weight:400;margin-top:-4px}
+.к1 .пейджер{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--олівець)}
+.к1 .пейджер b{font:500 22px/1 var(--титул);font-variation-settings:"CONT" 600;color:var(--чорнило)}
+.к1 .вклейка{background:var(--біле);border:1px solid var(--лінія);padding:6px;position:relative}
+.к1 .вклейка::after{content:"";position:absolute;inset:3px;border:1px solid var(--лінія);pointer-events:none}
+.к1 .вклейка > svg{display:block;width:100%;height:auto}
+.к1 .вклейка div svg{display:inline-block}
+.к1 .підпис-вклейки{display:flex;justify-content:space-between;font-size:11px;color:var(--олівець);margin-top:4px}
+.к1 .речі{display:grid;margin:0;padding:0;list-style:none}
+.к1 .речі li{display:grid;grid-template-columns:1fr auto;column-gap:10px;padding:6px 0;border-bottom:1px solid var(--лінія)}
+.к1 .речі .назва{font:500 11.5px/1.3 var(--текст);letter-spacing:.02em;text-transform:uppercase;display:flex;gap:6px}
+.к1 .речі .назва .відточ{flex:1;border-bottom:1px dotted var(--олівець);transform:translateY(-4px);min-width:10px}
+.к1 .речі .ціна{font:500 13px/1.3 var(--текст);font-variant-numeric:tabular-nums;text-align:right}
+.к1 .речі .де{font-size:11.5px;color:var(--олівець)}
+.к1 .речі .замінити{font-size:11.5px;color:var(--кіновар);text-align:right}
+.к1 .разом{display:flex;justify-content:space-between;font-weight:600;padding-top:6px;font-variant-numeric:tabular-nums}
+.к1 .чому{font:16px/1.42 var(--голос);margin:0}
+.к1 .чому .буквиця-мала{float:left;font:600 46px/.8 var(--титул);font-variation-settings:"CONT" 1000;color:var(--кіновар);margin:4px 6px 0 0}
+.к1 .приклад-позначка{font-size:10.5px;color:var(--олівець);font-style:normal}
+.к2{--льон:#ECEBE6;--біле:#FFFFFF;--чорне:#141518;--графіт:#5C5E63;--тонка:#D3D2CC;--п1:#21505B;--п2:#9E4730;--п3:#D8B0A6;--п4:#2E4B3D;--п5:#C9A23A;--титул:"KyivType Titling","Arsenal",Georgia,serif;--голос:"KyivType Serif","Arsenal",Georgia,serif;--текст:"Fixel Text",system-ui,sans-serif}
+.к2 .екран{width:390px;height:844px;position:relative;overflow:hidden;background:var(--льон);color:var(--чорне);
+  font:15px/1.5 var(--текст);outline:1px solid var(--рамка-оболонки);isolation:isolate}
+.к2 .екран *{box-sizing:border-box}
+.к2 .площини{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.к2 .вміст{position:absolute;inset:0 0 66px 0;padding:18px 20px 0;display:flex;flex-direction:column;gap:14px}
+.к2 .шапка{display:flex;align-items:center;justify-content:space-between}
+.к2 .знак{font:850 25px/1 var(--титул);font-variation-settings:"CONT" 0;letter-spacing:-.01em}
+.к2 .шапка-дії{display:flex;gap:14px;align-items:center;font-size:13px;color:var(--графіт)}
+.к2 .ніч{width:32px;height:32px;display:grid;place-items:center;font-size:11px;background:var(--біле)}
+.к2 .великий{font:850 46px/1.08 var(--титул);font-variation-settings:"CONT" 0;margin:0;letter-spacing:-.02em;text-wrap:balance}
+.к2 .великий em{font-style:normal;color:var(--біле);background:var(--чорне);padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.к2 .підзаголовок{margin:0;color:var(--графіт);font-size:14.5px}
+.к2 .стібок{outline:1.5px dashed currentColor;outline-offset:-5px}
+.к2 .дія{display:flex;align-items:center;justify-content:center;gap:10px;height:50px;padding:0 20px;background:var(--чорне);color:var(--біле);
+  font:600 15px/1 var(--текст);outline:1.5px dashed rgba(255,255,255,.55);outline-offset:-6px}
+.к2 .дія.тиха{background:var(--біле);color:var(--чорне);outline-color:var(--тонка)}
+.к2 .дія svg{width:18px;height:18px}
+.к2 .рядок-дій{display:flex;gap:10px}
+.к2 .рядок-дій .дія:last-child{flex:1}
+.к2 .нитка{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--графіт)}
+.к2 .нитка i{width:28px;height:6px;background:var(--тонка)}
+.к2 .нитка i.було{background:var(--чорне)}
+.к2 .нитка i.тут{background:var(--п2)}
+.к2 .нитка b{color:var(--чорне);font-weight:600;margin-right:4px}
+.к2 .вкладки{position:absolute;left:0;right:0;bottom:0;height:66px;background:var(--біле);display:grid;grid-template-columns:repeat(4,1fr);font-size:12.5px}
+.к2 .вкладка{display:grid;place-items:center;color:var(--графіт)}
+.к2 .вкладка.поточна{background:var(--чорне);color:var(--біле);font-weight:600}
+.к2 .диптих{position:relative;height:278px;margin:0 -20px}
+.к2 .диптих .підпис{position:absolute;bottom:14px;font:600 12px/1 var(--текст);letter-spacing:.12em;text-transform:uppercase}
+.к2 .варіанти{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.к2 .варіант{min-height:46px;display:grid;place-items:center;text-align:center;background:var(--біле);font-size:13.5px;padding:4px}
+.к2 .варіант.обр{background:var(--чорне);color:var(--біле);outline:1.5px dashed rgba(255,255,255,.6);outline-offset:-5px}
+.к2 .ще-питання{display:grid;gap:0;margin:0;padding:0;list-style:none}
+.к2 .ще-питання li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1.5px dashed var(--тонка);font-size:14px}
+.к2 .ще-питання li span:last-child{margin-left:auto;color:var(--графіт);font-size:12.5px}
+.к2 .пара{display:flex;width:30px;height:18px;flex:none}
+.к2 .пара i{flex:1}
+.к2 .лист{position:relative;background:var(--біле);padding:16px 16px 62px;transform:rotate(-1.6deg);transform-origin:left top;margin-right:8px}
+.к2 .лист::after{content:"";position:absolute;inset:6px;border:1.5px dashed var(--тонка);pointer-events:none}
+.к2 .лист p{margin:0;font:16.5px/1.45 var(--текст);color:var(--графіт)}
+.к2 .лист .кнопки{position:absolute;right:14px;bottom:14px;display:flex;gap:8px;z-index:1}
+.к2 .кр{width:40px;height:40px;display:grid;place-items:center;background:var(--льон);color:var(--чорне)}
+.к2 .кр.їде{background:var(--чорне);color:var(--біле)}
+.к2 .кр svg{width:19px;height:19px}
+.к2 .приклади{display:flex;flex-wrap:wrap;gap:6px}
+.к2 .приклади span{background:var(--біле);padding:6px 10px;font-size:13px}
+.к2 .плитки{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.к2 .плитка{background:var(--біле);padding:8px 7px;min-height:66px;display:grid;align-content:start;gap:3px;position:relative}
+.к2 .плитка svg{width:16px;height:16px}
+.к2 .плитка b{font:500 12.5px/1.15 var(--текст)}
+.к2 .плитка small{font-size:10px;line-height:1.2;color:var(--графіт)}
+.к2 .плитка.інше{background:var(--чорне);color:var(--біле)}
+.к2 .плитка.інше small{color:#C9C9CC}
+.к2 .мітка{font:600 11px/1.2 var(--текст);letter-spacing:.14em;text-transform:uppercase;color:var(--графіт)}
+.к2 .вона{align-self:flex-end;max-width:82%;padding:11px 14px;background:var(--п3);font-size:15px}
+.к2 .стилістка{background:var(--біле);padding:12px 14px 12px 18px;position:relative;font:16.5px/1.42 var(--голос)}
+.к2 .стилістка::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--п1)}
+.к2 .стилістка small{display:block;font:13px/1.4 var(--текст);color:var(--графіт);margin-top:6px}
+.к2 .паспорт{background:var(--біле);padding:14px 14px 14px;display:grid;gap:9px;position:relative;overflow:hidden}
+.к2 .паспорт::before{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;background:var(--п2);border-radius:50%;opacity:.95}
+.к2 .паспорт::after{content:"";position:absolute;right:28px;top:-12px;width:46px;height:80px;background:var(--п1);transform:rotate(18deg)}
+.к2 .паспорт-шапка{position:relative;z-index:1;display:grid}
+.к2 .паспорт-шапка b{font:850 22px/1 var(--титул);font-variation-settings:"CONT" 0}
+.к2 .паспорт-шапка small{font-size:12px;color:var(--графіт)}
+.к2 .рядки{display:grid;margin:0;padding:0;list-style:none;position:relative;z-index:1}
+.к2 .рядки li{display:grid;grid-template-columns:104px 1fr;gap:8px;padding:6px 0;border-top:1.5px dashed var(--тонка);font-size:14px}
+.к2 .рядки .під{color:var(--графіт);font-size:12.5px;padding-top:1px}
+.к2 .рядки .типово{color:var(--графіт)}
+.к2 .так-ні{display:flex;gap:6px;align-items:center;font-size:14px}
+.к2 .так-ні span{background:var(--льон);padding:6px 12px}
+.к2 .так-ні span:first-child{background:none;padding-left:0}
+.к2 .низ-розмови{position:absolute;left:20px;right:20px;bottom:76px;display:grid;gap:8px}
+.к2 .швидкі{display:flex;gap:5px;white-space:nowrap;overflow:hidden}
+.к2 .швидкі span{background:var(--біле);padding:7px 11px;font-size:13px}
+.к2 .ввід{display:flex;align-items:center;gap:6px;height:48px;padding:0 5px 0 14px;background:var(--біле)}
+.к2 .ввід > span:first-child{flex:1;color:var(--графіт)}
+.к2 .ввід .кр{width:38px;height:38px}
+.к2 .ковдра{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:44px;gap:3px}
+.к2 .клапоть{position:relative;display:flex;align-items:flex-end;padding:4px 6px;font:11px/1.1 var(--текст);color:var(--біле)}
+.к2 .клапоть.світлий{color:var(--чорне)}
+.к2 .клапоть.обр{outline:2px dashed currentColor;outline-offset:-6px;padding:10px 12px}
+.к2 .клапоть.стил{background:repeating-linear-gradient(135deg,var(--біле) 0 5px,var(--тонка) 5px 6px);color:var(--чорне)}
+.к2 .чипи{display:flex;flex-wrap:wrap;gap:5px}
+.к2 .чип{background:var(--біле);padding:7px 11px;font-size:13px}
+.к2 .чип.обр{background:var(--чорне);color:var(--біле)}
+.к2 .схеми{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.к2 .схема{background:var(--біле);padding:8px;display:grid;gap:6px;font-size:12.5px}
+.к2 .схема .компо{height:34px;display:flex}
+.к2 .схема b{font-weight:600}
+.к2 .схема small{color:var(--графіт)}
+.к2 .схема.обр{outline:2px dashed var(--чорне);outline-offset:-4px}
+.к2 .пейджер{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--графіт)}
+.к2 .пейджер b{font:850 26px/1 var(--титул);font-variation-settings:"CONT" 0;color:var(--чорне)}
+.к2 .образ-верх{display:grid;grid-template-columns:44px 1fr;gap:8px;height:248px}
+.к2 .формула{display:flex;flex-direction:column;gap:2px}
+.к2 .формула i{display:block}
+.к2 .колаж{background:var(--біле);position:relative}
+.к2 .колаж svg{width:100%;height:100%;display:block}
+.к2 .речі{display:grid;margin:0;padding:0;list-style:none;background:var(--біле)}
+.к2 .речі li{display:grid;grid-template-columns:8px 1fr auto;column-gap:10px;padding:7px 12px 7px 0;border-bottom:1.5px dashed var(--тонка)}
+.к2 .речі li i{grid-row:1/3;align-self:stretch}
+.к2 .речі .назва{font:500 11.5px/1.3 var(--текст);text-transform:uppercase;letter-spacing:.02em}
+.к2 .речі .ціна{font:600 13px/1.3 var(--текст);font-variant-numeric:tabular-nums;text-align:right}
+.к2 .речі .де{font-size:11.5px;color:var(--графіт)}
+.к2 .речі .замінити{font-size:11.5px;text-align:right;text-decoration:underline;text-decoration-style:dashed;text-underline-offset:3px}
+.к2 .разом{display:flex;justify-content:space-between;font-weight:600;padding:2px 0;font-variant-numeric:tabular-nums}
+.к2 .чому{margin:0;font:15.5px/1.42 var(--голос)}
+.к2 .приклад-позначка{font-size:10.5px;color:var(--графіт);font-style:normal;letter-spacing:0;text-transform:none}
+.к3{--стіна:#EEF0EF;--біле:#FFFFFF;--чорне:#1F2226;--олівець:#5F656A;--тонка:#D2D6D6;--скло-1:#E8ECED;--скло-2:#C3CBCE;--оправа:#B7BEC1;--оправа-край:#848D91;--льон:#E9E2D3;--п1:#21505B;--п2:#9E4730;--п3:#D8B0A6;--титул:"KyivType Titling","Arsenal",Georgia,serif;--голос:"KyivType Serif","Arsenal",Georgia,serif;--текст:"Fixel Text",system-ui,sans-serif}
+.к3 .екран{width:390px;height:844px;position:relative;overflow:hidden;background:var(--стіна);color:var(--чорне);
+  font:15px/1.5 var(--текст);outline:1px solid var(--рамка-оболонки)}
+.к3 .екран *{box-sizing:border-box}
+.к3 .шапка{position:absolute;top:16px;left:20px;right:20px;height:34px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;font-size:13px;color:var(--олівець)}
+.к3 .шапка .знак{font:500 22px/1 var(--титул);font-variation-settings:"CONT" 700;color:var(--чорне)}
+.к3 .шапка .праворуч{justify-self:end;display:flex;gap:12px;align-items:center}
+.к3 .ніч{width:30px;height:30px;border-radius:50%;border:1px solid var(--тонка);display:grid;place-items:center;font-size:10.5px}
+.к3 .люстро{position:absolute;left:39px;top:62px;width:312px;height:352px}
+.к3 .скло{position:absolute;left:26px;top:14px;width:260px;height:330px;border-radius:50%;overflow:hidden;
+  background:linear-gradient(158deg,var(--скло-1) 0%,var(--скло-2) 42%,#EEF2F3 58%,#BAC3C6 100%);
+  box-shadow:0 0 0 1px var(--оправа-край),0 0 0 8px var(--оправа),0 0 0 9px var(--оправа-край),0 14px 28px rgba(31,34,38,.16);
+  display:grid;place-items:center;text-align:center}
+.к3 .скло.туман{background:radial-gradient(120% 90% at 40% 35%,#F7F8F8 0%,#E3E7E8 55%,#D3D9DB 100%)}
+.к3 .скло.біле{background:#fff}
+.к3 .скло.зворот{background:radial-gradient(90% 80% at 45% 35%,#5B4637 0%,#3E2F25 70%,#33271F 100%)}
+.к3 .скло.золото-срібло{box-shadow:0 14px 28px rgba(31,34,38,.16)}
+.к3 .оправа-пів{position:absolute;left:17px;top:5px;width:278px;height:348px;border-radius:50%;background:linear-gradient(90deg,#C9A227 50%,#B8BDC2 50%);box-shadow:0 0 0 1px var(--оправа-край)}
+.к3 .оправа-пів span{position:absolute;bottom:58px;font:600 10px/1 var(--текст);letter-spacing:.14em;text-transform:uppercase;color:var(--чорне);background:var(--стіна);padding:3px 6px}
+.к3 .рушник{position:absolute;left:0;top:0;width:312px;height:262px;pointer-events:none}
+.к3 .під-склом{position:absolute;left:20px;right:20px;top:422px;bottom:66px;display:flex;flex-direction:column;gap:12px}
+.к3 .поступ{display:flex;justify-content:center;gap:6px;font-size:11.5px;color:var(--олівець);flex-wrap:wrap}
+.к3 .поступ span{display:flex;align-items:center;gap:5px}
+.к3 .поступ span::before{content:"";width:8px;height:8px;border-radius:50%;border:1px solid var(--олівець)}
+.к3 .поступ span.тут{color:var(--чорне);font-weight:600}
+.к3 .поступ span.тут::before{background:var(--п2);border-color:var(--п2)}
+.к3 .заголовок{font:500 26px/1.1 var(--титул);font-variation-settings:"CONT" 640;margin:0;text-align:center;text-wrap:balance}
+.к3 .мітка{font:600 11px/1.2 var(--текст);letter-spacing:.13em;text-transform:uppercase;color:var(--олівець)}
+.к3 .варіанти{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.к3 .варіант{min-height:44px;border-radius:999px;border:1px solid var(--тонка);background:var(--біле);display:grid;place-items:center;font-size:13.5px;text-align:center;padding:2px 8px;line-height:1.15}
+.к3 .варіант.обр{background:var(--чорне);border-color:var(--чорне);color:var(--біле)}
+.к3 .дія{display:flex;align-items:center;justify-content:center;gap:10px;height:50px;border-radius:999px;background:var(--чорне);color:var(--біле);font:600 15px/1 var(--текст)}
+.к3 .дія.тиха{background:transparent;color:var(--чорне);border:1px solid var(--чорне);padding:0 22px}
+.к3 .дія svg{width:18px;height:18px}
+.к3 .рядок-дій{display:flex;gap:10px}
+.к3 .рядок-дій .дія:last-child{flex:1}
+.к3 .сторони{position:absolute;left:0;right:0;bottom:0;height:62px;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--тонка);background:var(--стіна)}
+.к3 .сторона{display:grid;place-items:center;padding-top:10px;font-size:12px;color:var(--олівець);position:relative}
+.к3 .сторона.тут{color:var(--чорне);font-weight:600}
+.к3 .сторона.тут::before{content:"";position:absolute;top:9px;width:10px;height:13px;border-radius:50%;border:1.5px solid var(--чорне);background:linear-gradient(158deg,#fff,var(--скло-2))}
+.к3 .лист{position:absolute;left:30px;right:26px;top:350px;height:198px;background:var(--біле);transform:rotate(1.8deg);
+  box-shadow:0 6px 16px rgba(31,34,38,.12);padding:62px 18px 0 18px;z-index:0}
+.к3 .лист p{margin:0;font:16px/1.45 var(--голос);color:var(--олівець)}
+.к3 .лист .кнопки{position:absolute;right:12px;bottom:12px;display:flex;gap:8px}
+.к3 .кр{width:40px;height:40px;border-radius:50%;border:1px solid var(--тонка);background:var(--біле);display:grid;place-items:center}
+.к3 .кр.їде{background:var(--чорне);border-color:var(--чорне);color:var(--біле)}
+.к3 .кр svg{width:18px;height:18px}
+.к3 .люстро.над{z-index:1}
+.к3 .плитки{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.к3 .плитка{border:1px solid var(--тонка);background:var(--біле);border-radius:12px;padding:7px 8px;display:grid;align-content:start;gap:1px;min-height:50px}
+.к3 .плитка b{font:500 12.5px/1.15 var(--текст)}
+.к3 .плитка small{font-size:10px;line-height:1.2;color:var(--олівець)}
+.к3 .приклади{display:flex;gap:6px;white-space:nowrap;overflow:hidden;font-size:12.5px}
+.к3 .приклади span{border-bottom:1px dashed var(--олівець);color:var(--олівець)}
+.к3 .відбиття{width:220px;display:grid;gap:4px;color:#2B3135;justify-items:center}
+.к3 .відбиття .мітка{font-size:9.5px;color:#4F585D}
+.к3 .відбиття .гол{font:500 30px/1 var(--титул);font-variation-settings:"CONT" 760}
+.к3 .відбиття .р{display:block;font-size:12.5px;line-height:1.3}
+.к3 .відбиття .р small{font-size:9px;margin-right:5px;letter-spacing:.12em;text-transform:uppercase;color:#56606A}
+.к3 .відбиття .типово{color:#56606A}
+.к3 .дощ{position:absolute;inset:0;background:repeating-linear-gradient(102deg,transparent 0 18px,rgba(255,255,255,.45) 18px 19px,transparent 19px 41px);opacity:.8}
+.к3 .так-ні{display:flex;justify-content:center;gap:6px;font-size:12px;margin-top:4px}
+.к3 .так-ні span{padding:3px 10px;border-radius:999px;border:1px solid #6F7A80}
+.к3 .так-ні span:first-child{border:0;padding:3px 0}
+.к3 .вона{align-self:flex-end;font-size:13px;color:var(--олівець);max-width:90%;text-align:right}
+.к3 .вона b{color:var(--чорне);font-weight:500}
+.к3 .субтитр{font:17px/1.4 var(--голос);text-align:center;margin:0}
+.к3 .субтитр small{display:block;font:12.5px/1.4 var(--текст);color:var(--олівець);margin-top:4px}
+.к3 .швидкі{display:flex;gap:5px;white-space:nowrap;overflow:hidden}
+.к3 .швидкі span{border:1px solid var(--тонка);background:var(--біле);border-radius:999px;padding:6px 11px;font-size:12.5px}
+.к3 .ввід{display:flex;align-items:center;gap:6px;height:46px;border-radius:999px;border:1px solid var(--тонка);background:var(--біле);padding:0 4px 0 16px}
+.к3 .ввід > span:first-child{flex:1;color:var(--олівець);font-size:14.5px}
+.к3 .ввід .кр{width:38px;height:38px}
+.к3 .чипи{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.к3 .чип{border:1px solid var(--тонка);background:var(--біле);border-radius:999px;padding:5px 11px;font-size:12.5px}
+.к3 .чип.обр{background:var(--чорне);border-color:var(--чорне);color:var(--біле)}
+.к3 .намистини{display:flex;justify-content:space-between;align-items:flex-start}
+.к3 .нам{display:grid;justify-items:center;gap:3px;font-size:10.5px;color:var(--олівець);width:44px;text-align:center;line-height:1.1}
+.к3 .нам i{width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.к3 .нам.обр{color:var(--чорне);font-weight:600}
+.к3 .нам.обр i{box-shadow:0 0 0 2px var(--стіна),0 0 0 3.5px var(--чорне)}
+.к3 .нам.стил i{background:repeating-linear-gradient(135deg,#fff 0 4px,var(--тонка) 4px 5px)}
+.к3 .схеми{display:grid;margin:0;padding:0;list-style:none}
+.к3 .схеми li{display:grid;grid-template-columns:76px 1fr auto;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--тонка);font-size:13px}
+.к3 .схеми li.обр{font-weight:600}
+.к3 .схеми svg{width:76px;height:16px;display:block}
+.к3 .вага{font-size:11.5px;color:var(--олівець);font-weight:400}
+.к3 .точка{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--біле);border:1.5px solid var(--чорне);display:grid;place-items:center;font-size:10px;font-weight:600}
+.к3 .точка.тут{background:var(--чорне);color:var(--біле)}
+.к3 .виноска{position:absolute;left:44px;top:246px;background:var(--чорне);color:var(--біле);border-radius:10px;padding:5px 10px;font-size:11.5px;line-height:1.25;text-align:left;white-space:nowrap}
+.к3 .виноска small{display:block;color:#C9CDD0;font-size:10px}
+.к3 .речі{display:grid;margin:0;padding:0;list-style:none}
+.к3 .речі li{display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--тонка);font-size:11.5px}
+.к3 .речі li .н{font-size:10px;font-weight:600;color:var(--олівець)}
+.к3 .речі li .назва{text-transform:uppercase;letter-spacing:.02em;line-height:1.25}
+.к3 .речі li .назва small{display:block;text-transform:none;letter-spacing:0;color:var(--олівець);font-size:10.5px}
+.к3 .речі li .ціна{font-weight:600;font-variant-numeric:tabular-nums}
+.к3 .речі li.тут{background:linear-gradient(90deg,transparent,rgba(158,71,48,.07))}
+.к3 .разом{display:flex;justify-content:space-between;font-weight:600;font-size:13.5px;font-variant-numeric:tabular-nums}
+.к3 .чому{font:14.5px/1.4 var(--голос);margin:0;text-align:center}
+.к3 .приклад-позначка{font-size:10px;color:var(--олівець);font-family:var(--текст)}
+.к3 .гравюра{display:grid;gap:10px;justify-items:center;color:#D9C38E}
+.к3 .гравюра b{font:500 34px/1 var(--титул);font-variation-settings:"CONT" 900}
+.к3 .гравюра small{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#BFA978}
+.к3 .емаль{display:flex;gap:10px}
+.к3 .емаль i{width:26px;height:26px;border-radius:50%;box-shadow:0 0 0 2px #B79A5C,inset 0 2px 3px rgba(0,0,0,.25)}
+.к3 .рядки{display:grid;margin:0;padding:0;list-style:none}
+.к3 .рядки li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:6px 0;border-bottom:1px solid var(--тонка);font-size:13.5px}
+.к3 .рядки li small{grid-column:1;font-size:11.5px;color:var(--олівець)}
+.к3 .рядки li .пр{grid-row:1/3;grid-column:2;align-self:center;font-size:12px;color:var(--олівець);text-align:right}
+.к3 .рядки .група{font:600 10.5px/1 var(--текст);letter-spacing:.13em;text-transform:uppercase;color:var(--олівець);padding:8px 0 2px;border:0;display:block}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="к1-і-камера" viewBox="0 0 24 24"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="13.2" r="3.4" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="к1-і-мікрофон" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="к1-і-стрілка" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+    <symbol id="к1-і-плюс" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+    <!-- речі (умовні силуети замість фото крамниць; фото речі — завжди на білому) -->
+    <symbol id="к1-р-тренч" viewBox="0 0 100 130"><path d="M37 6 50 20 63 6 82 15 94 78 83 80 77 44 79 124H21L23 44 17 80 6 78 18 15Z"/><path d="M50 20V124M37 6l7 30M63 6l-7 30" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/><rect x="21" y="62" width="58" height="5" fill="rgba(255,255,255,.12)"/></symbol>
+    <symbol id="к1-р-кардиган" viewBox="0 0 100 130"><path d="M36 8 50 40 64 8 82 16 92 96 82 98 76 50 76 120H54L50 40 46 120H24V50L18 98 8 96 18 16Z"/></symbol>
+    <symbol id="к1-р-штани" viewBox="0 0 100 130"><path d="M28 6H72L80 124H58L50 44 42 124H20Z"/><path d="M28 14H72" fill="none" stroke="rgba(0,0,0,.08)" stroke-width="2"/></symbol>
+    <symbol id="к1-р-кросівки" viewBox="0 0 120 60"><path d="M8 38C9 24 24 18 34 18L52 16C60 28 76 30 92 31L108 34C115 37 115 44 112 48H10Z"/><rect x="8" y="46" width="106" height="7" fill="rgba(0,0,0,.14)"/></symbol>
+    <symbol id="к1-р-клатч" viewBox="0 0 100 60"><rect x="6" y="10" width="88" height="44" rx="3"/><path d="M6 13 50 36 94 13" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.5"/></symbol>
+  </defs>
+</svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="к2-і-камера" viewBox="0 0 24 24"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="13.2" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="к2-і-мікрофон" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="к2-і-стрілка" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <!-- знаки плиток: прості геометричні фігури, як у супрематичних ескізах -->
+    <symbol id="к2-ф-коло" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/></symbol>
+    <symbol id="к2-ф-квадрат" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12"/></symbol>
+    <symbol id="к2-ф-трикутник" viewBox="0 0 16 16"><path d="M8 1.5 15 14.5H1Z"/></symbol>
+    <symbol id="к2-ф-смуга" viewBox="0 0 16 16"><rect x="1" y="6" width="14" height="4" transform="rotate(-20 8 8)"/></symbol>
+    <symbol id="к2-ф-хрест" viewBox="0 0 16 16"><path d="M6 1h4v5h5v4h-5v5H6v-5H1V6h5Z"/></symbol>
+    <symbol id="к2-ф-півколо" viewBox="0 0 16 16"><path d="M1 12a7 7 0 0 1 14 0Z"/></symbol>
+    <symbol id="к2-ф-ромб" viewBox="0 0 16 16"><path d="M8 1 15 8 8 15 1 8Z"/></symbol>
+    <symbol id="к2-р-тренч" viewBox="0 0 100 130"><path d="M37 6 50 20 63 6 82 15 94 78 83 80 77 44 79 124H21L23 44 17 80 6 78 18 15Z"/><rect x="21" y="62" width="58" height="5" fill="rgba(255,255,255,.12)"/></symbol>
+    <symbol id="к2-р-кардиган" viewBox="0 0 100 130"><path d="M36 8 50 40 64 8 82 16 92 96 82 98 76 50 76 120H54L50 40 46 120H24V50L18 98 8 96 18 16Z"/></symbol>
+    <symbol id="к2-р-штани" viewBox="0 0 100 130"><path d="M28 6H72L80 124H58L50 44 42 124H20Z"/></symbol>
+    <symbol id="к2-р-кросівки" viewBox="0 0 120 60"><path d="M8 38C9 24 24 18 34 18L52 16C60 28 76 30 92 31L108 34C115 37 115 44 112 48H10Z"/><rect x="8" y="46" width="106" height="7" fill="rgba(0,0,0,.14)"/></symbol>
+    <symbol id="к2-р-клатч" viewBox="0 0 100 60"><rect x="6" y="10" width="88" height="44"/><path d="M6 13 50 36 94 13" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.5"/></symbol>
+  </defs>
+</svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="к3-в-її" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#9E4730"/><rect x="14" y="10" width="4" height="4" fill="#9E4730"/><rect x="22" y="10" width="4" height="4" fill="#9E4730"/><rect x="10" y="14" width="4" height="4" fill="#9E4730"/><rect x="26" y="14" width="4" height="4" fill="#9E4730"/><rect x="6" y="18" width="4" height="4" fill="#9E4730"/><rect x="30" y="18" width="4" height="4" fill="#9E4730"/><rect x="10" y="22" width="4" height="4" fill="#9E4730"/><rect x="26" y="22" width="4" height="4" fill="#9E4730"/><rect x="14" y="26" width="4" height="4" fill="#9E4730"/><rect x="22" y="26" width="4" height="4" fill="#9E4730"/><rect x="18" y="30" width="4" height="4" fill="#9E4730"/><rect x="18" y="18" width="4" height="4" fill="#21505B"/><rect x="14" y="18" width="4" height="4" fill="#21505B"/><rect x="22" y="18" width="4" height="4" fill="#21505B"/><rect x="18" y="14" width="4" height="4" fill="#21505B"/><rect x="18" y="22" width="4" height="4" fill="#21505B"/><rect x="0" y="0" width="36" height="2" fill="#D8B0A6"/><rect x="0" y="36" width="36" height="2" fill="#D8B0A6"/></pattern>
+    <pattern id="к3-в-нейтр" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#21505B"/><rect x="14" y="10" width="4" height="4" fill="#21505B"/><rect x="22" y="10" width="4" height="4" fill="#21505B"/><rect x="10" y="14" width="4" height="4" fill="#21505B"/><rect x="26" y="14" width="4" height="4" fill="#21505B"/><rect x="6" y="18" width="4" height="4" fill="#21505B"/><rect x="30" y="18" width="4" height="4" fill="#21505B"/><rect x="10" y="22" width="4" height="4" fill="#21505B"/><rect x="26" y="22" width="4" height="4" fill="#21505B"/><rect x="14" y="26" width="4" height="4" fill="#21505B"/><rect x="22" y="26" width="4" height="4" fill="#21505B"/><rect x="18" y="30" width="4" height="4" fill="#21505B"/><rect x="18" y="18" width="4" height="4" fill="#9E4730"/><rect x="14" y="18" width="4" height="4" fill="#9E4730"/><rect x="22" y="18" width="4" height="4" fill="#9E4730"/><rect x="18" y="14" width="4" height="4" fill="#9E4730"/><rect x="18" y="22" width="4" height="4" fill="#9E4730"/><rect x="0" y="0" width="36" height="2" fill="#F6F3EC"/><rect x="0" y="36" width="36" height="2" fill="#F6F3EC"/></pattern>
+    <pattern id="к3-в-компл" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#21505B"/><rect x="14" y="10" width="4" height="4" fill="#21505B"/><rect x="22" y="10" width="4" height="4" fill="#21505B"/><rect x="10" y="14" width="4" height="4" fill="#21505B"/><rect x="26" y="14" width="4" height="4" fill="#21505B"/><rect x="6" y="18" width="4" height="4" fill="#21505B"/><rect x="30" y="18" width="4" height="4" fill="#21505B"/><rect x="10" y="22" width="4" height="4" fill="#21505B"/><rect x="26" y="22" width="4" height="4" fill="#21505B"/><rect x="14" y="26" width="4" height="4" fill="#21505B"/><rect x="22" y="26" width="4" height="4" fill="#21505B"/><rect x="18" y="30" width="4" height="4" fill="#21505B"/><rect x="18" y="18" width="4" height="4" fill="#A4583E"/><rect x="14" y="18" width="4" height="4" fill="#A4583E"/><rect x="22" y="18" width="4" height="4" fill="#A4583E"/><rect x="18" y="14" width="4" height="4" fill="#A4583E"/><rect x="18" y="22" width="4" height="4" fill="#A4583E"/><rect x="0" y="0" width="36" height="2" fill="#B9A58A"/><rect x="0" y="36" width="36" height="2" fill="#B9A58A"/></pattern>
+    <pattern id="к3-в-аналог" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#21505B"/><rect x="14" y="10" width="4" height="4" fill="#21505B"/><rect x="22" y="10" width="4" height="4" fill="#21505B"/><rect x="10" y="14" width="4" height="4" fill="#21505B"/><rect x="26" y="14" width="4" height="4" fill="#21505B"/><rect x="6" y="18" width="4" height="4" fill="#21505B"/><rect x="30" y="18" width="4" height="4" fill="#21505B"/><rect x="10" y="22" width="4" height="4" fill="#21505B"/><rect x="26" y="22" width="4" height="4" fill="#21505B"/><rect x="14" y="26" width="4" height="4" fill="#21505B"/><rect x="22" y="26" width="4" height="4" fill="#21505B"/><rect x="18" y="30" width="4" height="4" fill="#21505B"/><rect x="18" y="18" width="4" height="4" fill="#3E7A86"/><rect x="14" y="18" width="4" height="4" fill="#3E7A86"/><rect x="22" y="18" width="4" height="4" fill="#3E7A86"/><rect x="18" y="14" width="4" height="4" fill="#3E7A86"/><rect x="18" y="22" width="4" height="4" fill="#3E7A86"/><rect x="0" y="0" width="36" height="2" fill="#2E4B3D"/><rect x="0" y="36" width="36" height="2" fill="#2E4B3D"/></pattern>
+    <pattern id="к3-в-тон" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#21505B"/><rect x="14" y="10" width="4" height="4" fill="#21505B"/><rect x="22" y="10" width="4" height="4" fill="#21505B"/><rect x="10" y="14" width="4" height="4" fill="#21505B"/><rect x="26" y="14" width="4" height="4" fill="#21505B"/><rect x="6" y="18" width="4" height="4" fill="#21505B"/><rect x="30" y="18" width="4" height="4" fill="#21505B"/><rect x="10" y="22" width="4" height="4" fill="#21505B"/><rect x="26" y="22" width="4" height="4" fill="#21505B"/><rect x="14" y="26" width="4" height="4" fill="#21505B"/><rect x="22" y="26" width="4" height="4" fill="#21505B"/><rect x="18" y="30" width="4" height="4" fill="#21505B"/><rect x="18" y="18" width="4" height="4" fill="#4A7480"/><rect x="14" y="18" width="4" height="4" fill="#4A7480"/><rect x="22" y="18" width="4" height="4" fill="#4A7480"/><rect x="18" y="14" width="4" height="4" fill="#4A7480"/><rect x="18" y="22" width="4" height="4" fill="#4A7480"/><rect x="0" y="0" width="36" height="2" fill="#9DB6BC"/><rect x="0" y="36" width="36" height="2" fill="#9DB6BC"/></pattern>
+    <pattern id="к3-в-тріада" width="36" height="40" patternUnits="userSpaceOnUse"><rect width="36" height="40" fill="#E9E2D3"/><rect x="18" y="6" width="4" height="4" fill="#21505B"/><rect x="14" y="10" width="4" height="4" fill="#21505B"/><rect x="22" y="10" width="4" height="4" fill="#21505B"/><rect x="10" y="14" width="4" height="4" fill="#21505B"/><rect x="26" y="14" width="4" height="4" fill="#21505B"/><rect x="6" y="18" width="4" height="4" fill="#21505B"/><rect x="30" y="18" width="4" height="4" fill="#21505B"/><rect x="10" y="22" width="4" height="4" fill="#21505B"/><rect x="26" y="22" width="4" height="4" fill="#21505B"/><rect x="14" y="26" width="4" height="4" fill="#21505B"/><rect x="22" y="26" width="4" height="4" fill="#21505B"/><rect x="18" y="30" width="4" height="4" fill="#21505B"/><rect x="18" y="18" width="4" height="4" fill="#C9A23A"/><rect x="14" y="18" width="4" height="4" fill="#C9A23A"/><rect x="22" y="18" width="4" height="4" fill="#C9A23A"/><rect x="18" y="14" width="4" height="4" fill="#C9A23A"/><rect x="18" y="22" width="4" height="4" fill="#C9A23A"/><rect x="0" y="0" width="36" height="2" fill="#9E4730"/><rect x="0" y="36" width="36" height="2" fill="#9E4730"/></pattern>
+    <symbol id="к3-і-камера" viewBox="0 0 24 24"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="13.2" r="3.4" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="к3-і-мікрофон" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="к3-і-стрілка" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+    <!-- кілковий рушник над люстерком: орнамент лише на кінцях, як на справжньому рушнику -->
+    <symbol id="к3-рушник" viewBox="0 0 312 262">
+      <path d="M8 2H304L298 30H14Z" fill="#E9E2D3"/>
+      <path d="M8 2H304" stroke="#D7CDB9" stroke-width="1"/>
+      <path d="M14 22H298" stroke="#BFB39B" stroke-width="1" stroke-dasharray="3 3"/>
+      <rect x="0" y="12" width="40" height="232" fill="#E9E2D3"/>
+      <rect x="272" y="12" width="40" height="232" fill="#E9E2D3"/>
+      <rect x="2" y="120" width="36" height="120" style="fill:var(--кінці,#E9E2D3)"/>
+      <rect x="274" y="120" width="36" height="120" style="fill:var(--кінці,#E9E2D3)"/>
+      <path d="M2 116H38M274 116H310" stroke="#BFB39B" stroke-dasharray="3 3"/>
+      <path d="M3 244v16M7 244v14M11 244v17M15 244v14M19 244v16M23 244v14M27 244v17M31 244v14M35 244v16M277 244v16M281 244v14M285 244v17M289 244v14M293 244v16M297 244v14M301 244v17M305 244v14M309 244v16" stroke="#D2C6AE" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="к3-р-тренч" viewBox="0 0 100 130"><path d="M37 6 50 20 63 6 82 15 94 78 83 80 77 44 79 124H21L23 44 17 80 6 78 18 15Z"/><rect x="21" y="62" width="58" height="5" fill="rgba(255,255,255,.12)"/></symbol>
+    <symbol id="к3-р-кардиган" viewBox="0 0 100 130"><path d="M36 8 50 40 64 8 82 16 92 96 82 98 76 50 76 120H54L50 40 46 120H24V50L18 98 8 96 18 16Z"/></symbol>
+    <symbol id="к3-р-штани" viewBox="0 0 100 130"><path d="M28 6H72L80 124H58L50 44 42 124H20Z"/></symbol>
+    <symbol id="к3-р-кросівки" viewBox="0 0 120 60"><path d="M8 38C9 24 24 18 34 18L52 16C60 28 76 30 92 31L108 34C115 37 115 44 112 48H10Z"/><rect x="8" y="46" width="106" height="7" fill="rgba(0,0,0,.14)"/></symbol>
+    <symbol id="к3-р-клатч" viewBox="0 0 100 60"><rect x="6" y="10" width="88" height="44" rx="3"/><path d="M6 13 50 36 94 13" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.5"/></symbol>
+    <symbol id="к3-обличчя" viewBox="0 0 200 240"><ellipse cx="100" cy="98" rx="46" ry="58" fill="#E7CDBB"/><path d="M54 92c0-52 92-52 92 0-6-26-26-36-46-36s-40 10-46 36Z" fill="#5A3B2A"/><path d="M26 240c6-58 42-78 74-78s68 20 74 78Z" fill="#E7CDBB"/></symbol>
+  </defs>
+</svg>
+
+<div class="сторінка">
+
+<header class="шапка-ст">
+  <div>
+    <div class="надпис">Люстерко · рядок 5213 · етапи 1–2 з п'яти · 16 жовтня 2026</div>
+    <h1>Кіновар, Вербівка, Люстерко</h1>
+    <p>Три концепції української айдентики Люстерка. Кожна спирається на одне назване першоджерело й доводить
+    до системи один прийом: літеру й сторінку, колір і площину або предмет і поведінку. Третя — новий спосіб
+    роботи в Люстерку, а не лише новий вигляд.</p>
+    <p class="дрібно">Макети 390×844 на одному сценарії: «Іду на побачення в ресторан, увечері. Обіцяють дощ».
+    Тексти взято з показу дослівно; пояснення образу, якого показ не має, позначено «приклад». Речі й ціни — з
+    каталогу, фото речей замінено умовними силуетами на білому. Шрифти справжні: Kyiv*Type і Fixel, ті самі файли,
+    що в показі.</p>
+  </div>
+  <aside class="порада">
+    <span class="надпис">Порада</span>
+    <b>К3 «Люстерко в рушнику» — як напрям</b>
+    <p>Лише К3 міняє спосіб роботи, про який писав власник: те, що зрозуміла стилістка, завжди видно в склі,
+    а заміна речі — дотик по склу. Вона ж найдорожча й відступає від правила п.7 «розмова — чат з аркушем листа»,
+    тож перед упровадженням — клікабельний прототип і тестувальниці. Якщо потрібне швидке впровадження без
+    зміни розкладки — К1.</p>
+  </aside>
+</header>
+
+<nav class="зміст-ст" aria-label="Зміст"><a href="#к1">К1 «Кіновар»</a><a href="#к2">К2 «Вербівка»</a><a href="#к3">К3 «Люстерко в рушнику»</a><a href="#порівняння">Порівняння</a><a href="#дослідження">Дослідження</a></nav>
+
+<section class="концепція к1-мітка" id="к1" aria-label="К1">
+  <div class="голова">
+      <div class="рядок"><span class="мітка-к">К1</span><b>Кіновар</b></div>
+      <span class="корінь">Острозька Біблія у дві фарби · Нарбутова «Абетка» · Kyiv*Type</span>
+      <p>Люстерко як рукописна книжка. Кожен екран — сторінка з полем і буквицею. Чорне — текст, кіновар — лише
+      те, що веде: наступна дія, поточне місце, рубрика. Речі образу — «зміст» із відточієм до ціни.</p>
+  </div>
+  <div class="екрани"><figure class="телефон к1"><div class="fit"><div class="екран" id="к1-е1">
+  <div class="фоліо">Крок <b>1</b> з 3</div>
+  <div class="вміст">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
+    <div class="рубрика">Крок 1 з 3 · Про тебе <span class="сіра">· До лиця · Фігура</span></div>
+    <h2 class="з-буквицею"><span class="буквиця">Л</span>юстерко покаже те, що тобі <em>пасує.</em></h2>
+    <p class="підзаголовок">Три кроки — і далі ти лише кажеш, куди йдеш.</p>
+    <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:12px;align-items:end">
+      <div>
+        <div class="вклейка" style="height:190px;display:grid;place-items:center;text-align:center;font-size:13px">
+          <div><svg width="26" height="26"><use href="#к1-і-плюс"/></svg><br>Додати портрет</div></div>
+        <div class="глоса" style="margin-top:6px">Портрет — для кольорів</div>
+      </div>
+      <div>
+        <div class="вклейка" style="height:150px;display:grid;place-items:center;text-align:center;font-size:13px">
+          <div><svg width="26" height="26"><use href="#к1-і-плюс"/></svg><br>На повний зріст</div></div>
+        <div class="глоса" style="margin-top:6px">На повний зріст — для приміряння</div>
+      </div>
+    </div>
+    <p class="глоса"><span class="пілкроу">¶</span>Щойно додаси портрет, кольори зчитаються самі.</p>
+    <div class="рядок-поля">
+      <span class="рубрика">Як тебе звати</span>
+      <label for="ім1">Ім'я або псевдонім</label>
+      <div class="лінія-письма" id="к1-ім1">напр., Оля К.</div>
+    </div>
+    <div class="прапорець"><span></span><span>Дозволяю записати мої відтінки разом із вердиктами<br><span style="color:var(--олівець)">Без згоди вердикт запишеться без кольорів.</span></span></div>
+    <div class="рядок-дій" style="margin-top:auto;margin-bottom:12px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#к1-і-стрілка"/></svg></span></div>
+  </div>
+</div></div><figcaption><b>1 · Знайомство.</b> Буквиця відкриває кожен екран, як розділ у рукописі; поради — глосою на полі з ¶.</figcaption></figure><figure class="телефон к1"><div class="fit"><div class="екран" id="к1-е2">
+  <div class="фоліо">Сценарій</div>
+  <div class="вміст">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
+    <h2 class="з-буквицею" style="font-size:34px"><span class="буквиця">К</span>уди ти <em>збираєшся?</em></h2>
+    <div class="лист" style="clear:both">
+      <p>Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.</p>
+      <div class="кнопки"><span class="кр" title="Додати фото речі"><svg><use href="#к1-і-камера"/></svg></span><span class="кр" title="Сказати голосом"><svg><use href="#к1-і-мікрофон"/></svg></span><span class="кр їде" title="Надіслати"><svg><use href="#к1-і-стрілка"/></svg></span></div>
+    </div>
+    <ul class="приклади">
+      <li><span class="пілкроу">¶</span>Іду на побачення в ресторан, увечері. Обіцяють дощ</li>
+      <li><span class="пілкроу">¶</span>Завтра презентація для клієнта в офісі</li>
+      <li><span class="пілкроу">¶</span>Прогулянка з дитиною в парку, +8 і вітер</li>
+    </ul>
+    <div style="display:grid;gap:6px">
+      <span class="рубрика сіра">Або заповнити рукою</span>
+      <div class="плитки">
+        <div class="плитка"><b>Спорт, активність</b></div>
+        <div class="плитка"><b>Подорож</b><small>у дорозі: переліт, поїзд</small></div>
+        <div class="плитка"><b>Звичайний день</b><small>прогулянка, справи</small></div>
+        <div class="плитка"><b>Побачення</b></div>
+        <div class="плитка"><b>Театр, концерт</b></div>
+        <div class="плитка"><b>Робота</b><small>зустріч, презентація, співбесіда</small></div>
+        <div class="плитка"><b>Свято, вечірка</b><small>день народження, Новий рік</small></div>
+        <div class="плитка інше"><b>Інше</b><small>скажу словами</small></div>
+      </div>
+    </div>
+  </div>
+  <nav class="закладки"><span class="закладка поточна">Сценарій</span><span class="закладка">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
+</div></div><figcaption><b>2 · Аркуш листа.</b> Розлінований аркуш із полем кіноварю; 7 плиток + «Інше» — тихим змістом під листом, без іконок.</figcaption></figure><figure class="телефон к1"><div class="fit"><div class="екран" id="к1-е3">
+  <div class="фоліо">Сценарій</div>
+  <div class="вміст" style="gap:12px">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
+    <div class="вона">Іду на побачення в ресторан, увечері. Обіцяють дощ</div>
+    <div class="стилістка"><span class="хто">Стилістка</span>Зрозуміла: побачення в ресторані ввечері, під дощем. Наскільки ошатно там буде?
+      <span class="нота">Можна не відповідати — образи зберуться й так.</span></div>
+    <div class="паспорт">
+      <div class="паспорт-шапка"><b>Новий сценарій</b><small>не збережений</small></div>
+      <ul class="зміст">
+        <li><span class="під">Нагода</span><span class="відточ"></span><span class="зн">Побачення</span></li>
+        <li><span class="під">Де</span><span class="відточ"></span><span class="зн">Заклад <span class="типово" style="color:var(--олівець)">— типово для нагоди</span></span></li>
+        <li><span class="під">Ошатність</span><span class="відточ"></span><span class="зн типово">не обрано</span></li>
+        <li><span class="під">Коли й погода</span><span class="відточ"></span><span class="зн">ввечері, дощ</span></li>
+        <li><span class="під">Палітра</span><span class="відточ"></span><span class="зн типово">хай обере стилістка</span></li>
+      </ul>
+      <div class="додати"><b>Додати</b> · макіяж, прикраси, мета</div>
+      <div class="так-ні"><span style="border:0;padding:0">Усе правильно?</span><span>так</span><span>поправити</span></div>
+      <span class="дія">Зібрати образи <svg><use href="#к1-і-стрілка"/></svg></span>
+    </div>
+  </div>
+  <div class="низ-розмови">
+    <div class="швидкі"><span>буденно</span><span>охайно буденно</span><span>ділово, м'яко</span><span>на твій розсуд</span></div>
+    <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#к1-і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#к1-і-стрілка"/></svg></span></div>
+  </div>
+  <nav class="закладки"><span class="закладка поточна">Сценарій</span><span class="закладка">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
+</div></div><figcaption><b>3 · Розмова.</b> Її слова — Fixel, голос стилістки — Kyiv*Type Serif; сценарій — «зміст» із відточієм, «типово» — сірим.</figcaption></figure><figure class="телефон к1"><div class="fit"><div class="екран" id="к1-е4">
+  <div class="фоліо">Палітра</div>
+  <div class="вміст" style="gap:12px">
+    <div class="шапка"><span style="font-size:13px">← До сценарію</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
+    <h2 class="з-буквицею"><span class="буквиця" style="font-size:88px">П</span>алітра <em>образу.</em></h2>
+    <p class="глоса" style="clear:both;font-size:14px">Основа — головний колір, на якому стоїть образ. Не знаєш — лиши «хай обере стилістка».</p>
+    <div style="display:grid;gap:6px"><span class="рубрика">Гама</span>
+      <div class="чипи"><span class="чип">хай обере стилістка</span><span class="чип">приглушені</span><span class="чип обр">середні</span><span class="чип">насичені</span></div></div>
+    <div style="display:grid;gap:8px"><span class="рубрика">Основа</span>
+      <div class="таблиця-фарб">
+        <div class="фарба стил"><i></i>хай обере стилістка</div>
+        <div class="фарба обр"><i style="background:#F6F3EC"></i>білий<small>нейтраль · стилістка</small></div>
+        <div class="фарба"><i style="background:#9C9B97"></i>сірий<small>нейтраль</small></div>
+        <div class="фарба"><i style="background:#3A3C40"></i>графіт<small>нейтраль</small></div>
+        <div class="фарба"><i style="background:#D8B0A6"></i>пудровий<small>м'яка</small></div>
+        <div class="фарба"><i style="background:#9E4730"></i>цегляний</div>
+        <div class="фарба"><i style="background:#2E4B3D"></i>хвойний</div>
+        <div class="фарба"><i style="background:#21505B"></i>петроль</div>
+      </div>
+      <span class="глоса"><span class="пілкроу">¶</span>ще 6 основ у цій гамі — не радимо, але можна</span></div>
+    <div style="display:grid;gap:4px"><span class="рубрика">Схема</span>
+      <ul class="схеми">
+        <li class="обр"><span class="смужка"><i style="background:#F6F3EC;outline:1px solid #ddd"></i><i style="background:#9C9B97"></i><i style="background:#1E1C19"></i></span>нейтрали+акцент<span class="вага">найходовіша</span></li>
+        <li><span class="смужка"><i style="background:#F6F3EC;outline:1px solid #ddd"></i><i style="background:#B9A58A"></i><i style="background:#5D6C7C"></i></span>приглушена комплементарна<span class="вага">звичайна</span></li>
+        <li><span class="смужка"><i style="background:#F6F3EC;outline:1px solid #ddd"></i><i style="background:#E7DCC8"></i><i style="background:#C9B79B"></i></span>аналогова<span class="вага">звичайна</span></li>
+        <li><span class="смужка"><i style="background:#F6F3EC;outline:1px solid #ddd"></i><i style="background:#E4E2DC"></i><i style="background:#CFCCC4"></i></span>тональна<span class="вага">на межі</span></li>
+        <li><span class="смужка"><i style="background:#F6F3EC;outline:1px solid #ddd"></i><i style="background:#9E4730"></i><i style="background:#21505B"></i></span>тріада<span class="вага">помітна</span></li>
+      </ul></div>
+  </div>
+  <nav class="закладки"><span class="закладка поточна">Сценарій</span><span class="закладка">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
+</div></div><figcaption><b>4 · Палітра.</b> Основи — «таблиця фарб» друкаря з підписами Serif; вибір — рамка кіноварю; рідші схеми стоять поруч, клікабельні.</figcaption></figure><figure class="телефон к1"><div class="fit"><div class="екран" id="к1-е5">
+  <div class="фоліо">Образи · <b>1</b> / 4</div>
+  <div class="вміст" style="gap:10px">
+    <div class="пейджер"><span>‹</span><b>Перший образ</b><span>1 / 4 ›</span></div>
+    <div>
+      <div class="вклейка">
+        <svg viewBox="0 0 340 210" role="img" aria-label="Колаж речей образу">
+          <rect width="340" height="210" fill="#fff"/>
+          <use href="#к1-р-кардиган" x="118" y="12" width="104" height="134" fill="#EFE8DA" stroke="#CFC6B4"/>
+          <use href="#к1-р-тренч" x="14" y="6" width="120" height="156" fill="#1F1D1B"/>
+          <use href="#к1-р-штани" x="206" y="26" width="98" height="128" fill="#E6DECF" stroke="#CFC6B4"/>
+          <use href="#к1-р-кросівки" x="140" y="154" width="112" height="52" fill="#D6C1A2"/>
+          <use href="#к1-р-клатч" x="262" y="150" width="70" height="44" fill="#C7C8CA"/>
+        </svg>
+      </div>
+      <div class="підпис-вклейки"><span>Фото крамниць · на білому</span><span>5 речей</span></div>
+    </div>
+    <ul class="речі">
+      <li><span class="назва">Тренч чорний лляний<span class="відточ"></span></span><span class="ціна">6 999 ₴</span><span class="де">alot.com.ua</span><span class="замінити">↔ замінити</span></li>
+      <li><span class="назва">Подовжений кардиган на ґудзиках Porto молоко<span class="відточ"></span></span><span class="ціна">3 150 ₴</span><span class="де">25union.com.ua</span><span class="замінити">↔ замінити</span></li>
+      <li><span class="назва">Штани від двобортного костюму…<span class="відточ"></span></span><span class="ціна">1 990 ₴</span><span class="де">maryline.ua</span><span class="замінити">↔ замінити</span></li>
+      <li><span class="назва">Анатомічні кросівки бежеві<span class="відточ"></span></span><span class="ціна">3 000 ₴</span><span class="де">kasandra.ua</span><span class="замінити">↔ замінити</span></li>
+      <li><span class="назва">Клатч жіночий, ATTICO, світло-сірий<span class="відточ"></span></span><span class="ціна">2 399 ₴</span><span class="де">attico.ua</span><span class="замінити">↔ замінити</span></li>
+    </ul>
+    <div class="разом"><span>Разом</span><span>17 538 ₴</span></div>
+    <span class="рубрика">Чому цей образ <i class="приклад-позначка">· приклад</i></span>
+    <p class="чому"><span class="буквиця-мала">М</span>олочний верх і штани в один тон тягнуть лінію вгору, а чорний тренч тримає її під дощем і робить вечір вечором.</p>
+    <div style="display:grid;gap:6px;margin-top:2px"><span class="рубрика сіра">Вдягнеш?</span>
+      <div class="чипи"><span class="чип">вдягну як є</span><span class="чип">змінила б одну річ</span><span class="чип">не вдягну</span></div></div>
+  </div>
+  <nav class="закладки"><span class="закладка">Сценарій</span><span class="закладка поточна">Образи</span><span class="закладка">Оцінити</span><span class="закладка">Профіль</span></nav>
+</div></div><figcaption><b>5 · Картка образу.</b> Колаж — вклейка в подвійній рамці; речі — зміст із відточієм до ціни; «замінити» міняє річ лише в цьому образі.</figcaption></figure></div>
+  <div class="опис"><div class="блок"><h3>Шлях жінки</h3><dl>
+      <dt>Профіль</dt><dd>три кроки, як у показі; кожен відкривається буквицею, поради — глосою з ¶</dd>
+      <dt>Сценарій</dt><dd>розлінований аркуш листа з полем кіноварю; 7 плиток + «Інше» — тихим змістом під листом; паспорт — «зміст» з відточієм</dd>
+      <dt>Палітра</dt><dd>окремий екран; основи — таблиця фарб друкаря</dd>
+      <dt>Збирання</dt><dd>верстат лишається, статуси ті самі</dd>
+      <dt>Образи</dt><dd>по одному, «1 / 4»; речі — зміст до ціни, «замінити» кіновар'ю</dd></dl></div><div class="блок"><h3>Палітра й контраст (WCAG)</h3><ul class="зразки">
+      <li><i style="background:#FAF8F3"></i>аркуш, тло<code>#FAF8F3</code></li>
+      <li><i style="background:#F0EDE5"></i>поле сторінки<code>#F0EDE5</code></li>
+      <li><i style="background:#1E1C19"></i>чорнило: текст (16,0 : 1)<code>#1E1C19</code></li>
+      <li><i style="background:#6A655C"></i>олівець: другорядне (5,5 : 1)<code>#6A655C</code></li>
+      <li><i style="background:#B2321C"></i>кіновар: дія, рубрика (біле на ній 6,2 : 1)<code>#B2321C</code></li></ul>
+      <p class="дрібно" style="margin-top:8px">Один акцент — кіновар; золото йде. Ніч не намальована.</p></div><div class="блок"><h3>Шрифти</h3><ul>
+      <li>Kyiv*Type Titling, контраст CONT 900–1000 — знак, буквиці, заголовки</li>
+      <li>Kyiv*Type Serif — голос стилістки й підписи фарб</li>
+      <li>Fixel Text 400 / 500 / 600 — розмова й керування</li></ul></div><div class="блок"><h3>Один прийом — і що прибирається</h3><p><b>Рубрикація</b>: кіновар лише для того, що веде; буквиця; ¶ для порад; «зміст» з відточієм.</p>
+      <p class="дрібно">Прибирається: мережка, витинанка, намистини-чипи, «ї»-крапки, скоси Кричевського.</p></div><div class="блок"><h3>Рішення власника</h3><ol>
+      <li>Кіновар замість золота як єдиний акцент.</li>
+      <li>Буквиця на кожному екрані чи лише на першому екрані розділу.</li>
+      <li>Прибрати мережку, витинанку, намистини й «ї»-крапки.</li>
+      <li>Речі образу — «змістом» з відточієм до ціни.</li></ol></div><div class="блок"><h3>Ризики</h3><p>Найтихіша: може видатися «просто гарною редакційною версткою»; світле тло з засічками й червоним акцентом — поширений вигляд. Буквиці щодня можуть набриднути.</p></div><div class="блок"><h3>Упровадження (оцінка)</h3><p><b>6 нарядів</b>: токени й акцент; буквиця й рубрики; аркуш листа й плитки; паспорт-зміст; таблиця фарб; картка-зміст і прибирання мотивів. Нової логіки нема.</p></div><div class="блок"><h3>Перевірка на тестувальницях</h3><p>Екран без знака серед двох чужих — чи впізнають; чи знаходять «замінити» в змісті; чи читається ціна через відточіє.</p></div></div>
+</section>
+
+<section class="концепція к2-мітка" id="к2" aria-label="К2">
+  <div class="голова">
+      <div class="рядок"><span class="мітка-к">К2</span><b>Вербівка</b></div>
+      <span class="корінь">Вербівка й Скопці 1915–1917 · Екстер · Богомазов · ковдра Делоне</span>
+      <p>Київський авангард, вишитий руками. Площини, коло, смуга; межа — «стібок» (пунктир). Колір площин
+      береться з її палітри, хром лише чорно-білий, тож інтерфейс щоразу зібраний з її барв.</p>
+  </div>
+  <div class="екрани"><figure class="телефон к2"><div class="fit"><div class="екран" id="к2-е1">
+  <div class="вміст">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
+    <div class="нитка"><b>Крок 2 з 3</b><i class="було"></i><i class="тут"></i><i></i><span>До лиця</span></div>
+    <h2 class="великий">Що тобі <em>до лиця.</em></h2>
+    <p class="підзаголовок">З яким полем обличчя живіше? Правильної відповіді нема — є твоя.</p>
+    <div class="диптих">
+      <svg viewBox="0 0 390 278" width="390" height="278" aria-label="Обличчя між золотом і сріблом">
+        <polygon points="0,18 214,0 196,278 0,278" fill="#C9A227"/>
+        <polygon points="214,0 390,30 390,278 196,278" fill="#B8BDC2"/>
+        <circle cx="200" cy="132" r="78" fill="#F1E3D8"/>
+        <circle cx="200" cy="132" r="78" fill="none" stroke="#141518" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <ellipse cx="200" cy="120" rx="34" ry="42" fill="#E4CDBD"/>
+        <path d="M150 210c10-34 90-34 100 0" fill="#E4CDBD"/>
+        <rect x="24" y="226" width="60" height="6" fill="#141518"/>
+      </svg>
+      <span class="підпис" style="left:24px;color:#141518">Золото</span>
+      <span class="підпис" style="right:24px;color:#141518">Срібло</span>
+    </div>
+    <div class="мітка">Золото чи срібло біля обличчя</div>
+    <div class="варіанти"><span class="варіант обр">Золото</span><span class="варіант">Срібло</span><span class="варіант">Обидва однаково</span></div>
+    <ul class="ще-питання">
+      <li><span class="пара"><i style="background:#fff"></i><i style="background:#F4E9D2"></i></span>Білий чи молочний<span>далі</span></li>
+      <li><span class="пара"><i style="background:#C8B49D"></i><i style="background:#A9B0BA"></i></span>Теплі чи холодні нейтралі<span>далі</span></li>
+    </ul>
+    <div class="рядок-дій" style="margin-top:auto;margin-bottom:12px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#к2-і-стрілка"/></svg></span></div>
+  </div>
+</div></div><figcaption><b>1 · Знайомство.</b> Питання «золото чи срібло» стає композицією: дві площини й обличчя між ними; обране — чорним зі «стібком».</figcaption></figure><figure class="телефон к2"><div class="fit"><div class="екран" id="к2-е2">
+  <svg class="площини" viewBox="0 0 390 844" preserveAspectRatio="none" aria-hidden="true">
+    <rect x="262" y="150" width="170" height="170" fill="var(--п1)" transform="rotate(14 346 235)"/>
+    <circle cx="300" cy="372" r="56" fill="var(--п2)"/>
+  </svg>
+  <div class="вміст">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
+    <h2 class="великий" style="font-size:54px;max-width:300px">Куди ти <em>збираєшся?</em></h2>
+    <div class="лист">
+      <p>Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.</p>
+      <div class="кнопки"><span class="кр" title="Додати фото речі"><svg><use href="#к2-і-камера"/></svg></span><span class="кр" title="Сказати голосом"><svg><use href="#к2-і-мікрофон"/></svg></span><span class="кр їде" title="Надіслати"><svg><use href="#к2-і-стрілка"/></svg></span></div>
+    </div>
+    <div class="приклади"><span>Іду на побачення в ресторан, увечері. Обіцяють дощ</span><span>Завтра презентація для клієнта в офісі</span><span>Прогулянка з дитиною в парку, +8 і вітер</span></div>
+    <div style="display:grid;gap:6px">
+      <span class="мітка">Або заповнити рукою</span>
+      <div class="плитки">
+        <div class="плитка"><svg style="fill:var(--п2)"><use href="#к2-ф-смуга"/></svg><b>Спорт, активність</b></div>
+        <div class="плитка"><svg style="fill:var(--п1)"><use href="#к2-ф-трикутник"/></svg><b>Подорож</b><small>у дорозі: переліт, поїзд</small></div>
+        <div class="плитка"><svg style="fill:var(--п4)"><use href="#к2-ф-квадрат"/></svg><b>Звичайний день</b><small>прогулянка, справи</small></div>
+        <div class="плитка"><svg style="fill:var(--п3)"><use href="#к2-ф-коло"/></svg><b>Побачення</b></div>
+        <div class="плитка"><svg style="fill:var(--п1)"><use href="#к2-ф-півколо"/></svg><b>Театр, концерт</b></div>
+        <div class="плитка"><svg style="fill:var(--чорне)"><use href="#к2-ф-ромб"/></svg><b>Робота</b><small>зустріч, презентація, співбесіда</small></div>
+        <div class="плитка"><svg style="fill:var(--п2)"><use href="#к2-ф-хрест"/></svg><b>Свято, вечірка</b><small>день народження, Новий рік</small></div>
+        <div class="плитка інше"><b>Інше</b><small>скажу словами</small></div>
+      </div>
+    </div>
+  </div>
+  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
+</div></div><figcaption><b>2 · Аркуш листа.</b> Аркуш — біла площина з вишитою межею поверх композиції з її кольорів; плитки — фігури замість піктограм.</figcaption></figure><figure class="телефон к2"><div class="fit"><div class="екран" id="к2-е3">
+  <div class="вміст" style="gap:12px">
+    <div class="шапка"><span class="знак">люстерко</span><span class="шапка-дії"><span>Збережені</span><span>Новий</span><span class="ніч">Ніч</span></span></div>
+    <div class="вона">Іду на побачення в ресторан, увечері. Обіцяють дощ</div>
+    <div class="стилістка">Зрозуміла: побачення в ресторані ввечері, під дощем. Наскільки ошатно там буде?
+      <small>Можна не відповідати — образи зберуться й так.</small></div>
+    <div class="паспорт">
+      <div class="паспорт-шапка"><b>Новий сценарій</b><small>не збережений</small></div>
+      <ul class="рядки">
+        <li><span class="під">Нагода</span><span>Побачення</span></li>
+        <li><span class="під">Де</span><span>Заклад <span class="типово">— типово для нагоди</span></span></li>
+        <li><span class="під">Ошатність</span><span class="типово">не обрано</span></li>
+        <li><span class="під">Коли й погода</span><span>ввечері, дощ</span></li>
+        <li><span class="під">Палітра</span><span class="типово">хай обере стилістка</span></li>
+        <li><span class="під">Додати</span><span class="типово">макіяж, прикраси, мета</span></li>
+      </ul>
+      <div class="так-ні"><span>Усе правильно?</span><span>так</span><span>поправити</span></div>
+      <span class="дія">Зібрати образи <svg><use href="#к2-і-стрілка"/></svg></span>
+    </div>
+  </div>
+  <div class="низ-розмови">
+    <div class="швидкі"><span>буденно</span><span>охайно буденно</span><span>ділово, м'яко</span><span>на твій розсуд</span></div>
+    <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#к2-і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#к2-і-стрілка"/></svg></span></div>
+  </div>
+  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
+</div></div><figcaption><b>3 · Розмова.</b> Її слова — на площині її пудрового; голос стилістки — Serif на білому зі смугою петролю; паспорт — «вишиті» рядки.</figcaption></figure><figure class="телефон к2"><div class="fit"><div class="екран" id="к2-е4">
+  <div class="вміст" style="gap:11px">
+    <div class="шапка"><span style="font-size:13px">← До сценарію</span><span class="шапка-дії"><span class="ніч">Ніч</span></span></div>
+    <h2 class="великий" style="font-size:44px">Палітра <em>образу.</em></h2>
+    <p class="підзаголовок">Основа — головний колір, на якому стоїть образ. Не знаєш — лиши «хай обере стилістка».</p>
+    <span class="мітка">Гама</span>
+    <div class="чипи"><span class="чип">хай обере стилістка</span><span class="чип">приглушені</span><span class="чип обр">середні</span><span class="чип">насичені</span></div>
+    <span class="мітка">Основа</span>
+    <div class="ковдра">
+      <div class="клапоть стил" style="grid-column:span 2">хай обере стилістка</div>
+      <div class="клапоть обр" style="grid-column:span 4;grid-row:span 2;background:var(--п1)">петроль · стилістка</div>
+      <div class="клапоть" style="grid-column:span 2;background:var(--п2)">цегляний</div>
+      <div class="клапоть" style="grid-column:span 3;background:var(--п4)">хвойний</div>
+      <div class="клапоть світлий" style="grid-column:span 3;background:var(--п3)">пудровий · м'яка</div>
+      <div class="клапоть" style="grid-column:span 2;background:#5B2E48">сливовий</div>
+      <div class="клапоть" style="grid-column:span 2;background:#3A3C40">графіт · нейтраль</div>
+      <div class="клапоть світлий" style="grid-column:span 2;background:#F6F3EC">білий · нейтраль</div>
+    </div>
+    <span class="підзаголовок" style="font-size:12.5px">ще 6 основ у цій гамі — не радимо, але можна</span>
+    <span class="мітка">Схема</span>
+    <div class="схеми">
+      <div class="схема обр"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:#F6F3EC"></i><i style="flex:1;background:var(--п2)"></i></span><span><b>нейтрали+акцент</b> · <small>найходовіша</small></span></div>
+      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:#B9A58A"></i><i style="flex:1;background:#A4583E"></i></span><span><b>приглушена комплементарна</b> · <small>звичайна</small></span></div>
+      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:var(--п4)"></i><i style="flex:1;background:#3E7A86"></i></span><span><b>аналогова</b> · <small>звичайна</small></span></div>
+      <div class="схема"><span class="компо"><i style="flex:6;background:var(--п1)"></i><i style="flex:3;background:var(--п2)"></i><i style="flex:1;background:var(--п5)"></i></span><span><b>тріада</b> · <small>помітна</small></span></div>
+    </div>
+  </div>
+  <nav class="вкладки"><span class="вкладка поточна">Сценарій</span><span class="вкладка">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
+</div></div><figcaption><b>4 · Палітра.</b> Основи — ковдра з клаптів: обрана основа найбільша, сусіди видно поруч. Схема — пропорція 6 : 3 : 1, а не три однакові кружечки.</figcaption></figure><figure class="телефон к2"><div class="fit"><div class="екран" id="к2-е5">
+  <div class="вміст" style="gap:10px">
+    <div class="пейджер"><span>‹ попередній</span><b>Перший образ</b><span>1 / 4 ›</span></div>
+    <div class="образ-верх">
+      <div class="формула" aria-label="Кольори образу за площею">
+        <i style="flex:40;background:#1F1D1B"></i><i style="flex:24;background:#EFE8DA"></i><i style="flex:20;background:#E6DECF"></i><i style="flex:9;background:#D6C1A2"></i><i style="flex:7;background:#C7C8CA"></i>
+      </div>
+      <div class="колаж">
+        <svg viewBox="0 0 300 248" aria-label="Колаж речей образу">
+          <use href="#к2-р-кардиган" x="100" y="16" width="100" height="130" fill="#EFE8DA" stroke="#D3CAB8"/>
+          <use href="#к2-р-тренч" x="8" y="8" width="118" height="154" fill="#1F1D1B"/>
+          <use href="#к2-р-штани" x="186" y="22" width="96" height="126" fill="#E6DECF" stroke="#D3CAB8"/>
+          <use href="#к2-р-кросівки" x="110" y="170" width="118" height="56" fill="#D6C1A2"/>
+          <use href="#к2-р-клатч" x="236" y="176" width="58" height="36" fill="#C7C8CA"/>
+        </svg>
+      </div>
+    </div>
+    <ul class="речі">
+      <li><i style="background:#1F1D1B"></i><span class="назва">Тренч чорний лляний</span><span class="ціна">6 999 ₴</span><span class="де">alot.com.ua</span><span class="замінити">замінити</span></li>
+      <li><i style="background:#EFE8DA"></i><span class="назва">Подовжений кардиган на ґудзиках Porto молоко</span><span class="ціна">3 150 ₴</span><span class="де">25union.com.ua</span><span class="замінити">замінити</span></li>
+      <li><i style="background:#E6DECF"></i><span class="назва">Штани від двобортного костюму…</span><span class="ціна">1 990 ₴</span><span class="де">maryline.ua</span><span class="замінити">замінити</span></li>
+      <li><i style="background:#D6C1A2"></i><span class="назва">Анатомічні кросівки бежеві</span><span class="ціна">3 000 ₴</span><span class="де">kasandra.ua</span><span class="замінити">замінити</span></li>
+      <li><i style="background:#C7C8CA"></i><span class="назва">Клатч жіночий, ATTICO, світло-сірий</span><span class="ціна">2 399 ₴</span><span class="де">attico.ua</span><span class="замінити">замінити</span></li>
+    </ul>
+    <div class="разом"><span>Разом</span><span>17 538 ₴</span></div>
+    <span class="мітка">Чому цей образ <i class="приклад-позначка">· приклад</i></span>
+    <p class="чому">Молочний верх і штани в один тон тягнуть лінію вгору, а чорний тренч тримає її під дощем і робить вечір вечором.</p>
+    <div class="варіанти"><span class="варіант">вдягну як є</span><span class="варіант">змінила б одну річ</span><span class="варіант">не вдягну</span></div>
+  </div>
+  <nav class="вкладки"><span class="вкладка">Сценарій</span><span class="вкладка поточна">Образи</span><span class="вкладка">Оцінити</span><span class="вкладка">Профіль</span></nav>
+</div></div><figcaption><b>5 · Образ.</b> Ліворуч — «формула»: колонка площин за часткою кожної речі в образі; той самий колір — мітка речі в списку.</figcaption></figure></div>
+  <div class="опис"><div class="блок"><h3>Шлях жінки</h3><dl>
+      <dt>Профіль</dt><dd>питання стають композицією: золото й срібло — дві площини, обличчя між ними</dd>
+      <dt>Сценарій</dt><dd>аркуш листа — біла площина з межею-стібком поверх площин її кольорів; плитки — фігури</dd>
+      <dt>Палітра</dt><dd>основи — «ковдра» з клаптів; схема — пропорція 6 : 3 : 1</dd>
+      <dt>Збирання</dt><dd>верстат, нитки — її основа (у макеті не намальовано)</dd>
+      <dt>Образи</dt><dd>«формула» — колонка площин за часткою кожної речі; той самий колір мітить річ у списку</dd></dl></div><div class="блок"><h3>Палітра й контраст (WCAG)</h3><ul class="зразки">
+      <li><i style="background:#ECEBE6"></i>льон, тло<code>#ECEBE6</code></li>
+      <li><i style="background:#FFFFFF"></i>біле: площини керування<code>#FFFFFF</code></li>
+      <li><i style="background:#141518"></i>чорне: текст, кнопка (15,3 : 1)<code>#141518</code></li>
+      <li><i style="background:#5C5E63"></i>графіт: другорядне (5,4 : 1)<code>#5C5E63</code></li>
+      <li><i style="background:#21505B"></i>її петроль — приклад (біле 8,9 : 1)<code>#21505B</code></li>
+      <li><i style="background:#9E4730"></i>її цегляний (біле 6,2 : 1)<code>#9E4730</code></li>
+      <li><i style="background:#D8B0A6"></i>її пудровий (чорне 9,3 : 1)<code>#D8B0A6</code></li></ul>
+      <p class="дрібно" style="margin-top:8px">Площини беруться з профілю; без профілю — лише чорне й біле.</p></div><div class="блок"><h3>Шрифти</h3><ul>
+      <li>Kyiv*Type Titling, вага 850, CONT 0 — важкі заголовки без контрасту, знак</li>
+      <li>Kyiv*Type Serif — голос стилістки</li>
+      <li>Fixel Text 400 / 500 / 600 — решта</li></ul></div><div class="блок"><h3>Один прийом — і що прибирається</h3><p><b>Площина й стібок</b>: геометрія з її кольорів, межа — пунктир, як вишита.</p>
+      <p class="дрібно">Прибирається: «біле по білому», витинанка, рушникові смуги, золото.</p></div><div class="блок"><h3>Рішення власника</h3><ol>
+      <li>Хром бере кольори з палітри профілю; без профілю — чорне й біле.</li>
+      <li>Важкий Kyiv*Type без контрасту для заголовків.</li>
+      <li>«Формула» образу ліворуч від колажу.</li>
+      <li>Основи палітри — «ковдрою» замість сітки.</li></ol></div><div class="блок"><h3>Ризики</h3><p>Найгучніша: площини можуть сперечатися з фото речей. Без профілю кольорів нема — потрібен продуманий нейтральний стан. «Ковдра» менш звична за сітку.</p></div><div class="блок"><h3>Упровадження (оцінка)</h3><p><b>8 нарядів</b>: токени й хром; площини з палітри й стан без профілю; стібок; плитки-фігури; ковдра; формула образу; ніч; ноутбук. Нова логіка — колір хрому з профілю.</p></div><div class="блок"><h3>Перевірка на тестувальницях</h3><p>Чи не заважають площини фото речей; чи помічають, що кольори інтерфейсу — її; чи зрозуміла «формула» образу.</p></div></div>
+</section>
+
+<section class="концепція к3-мітка" id="к3" aria-label="К3">
+  <div class="голова">
+      <div class="рядок"><span class="мітка-к">К3</span><b>Люстерко в рушнику</b></div>
+      <span class="корінь">Кілковий рушник над дзеркалом · люстерко · Сковорода, «пізнай себе»</span>
+      <p>Замість екранів і вкладок — один предмет. У склі видно те, що стилістка зрозуміла; під склом — розмова.
+      Кінці рушника над люстерком вишиваються її кольорами; профіль — зворот люстерка.</p>
+  </div>
+  <div class="екрани"><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е1">
+  <div class="шапка"><span></span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="оправа-пів"><span style="left:-14px">Золото</span><span style="right:-14px">Срібло</span></div>
+    <div class="скло туман золото-срібло"><svg width="200" height="240" style="filter:blur(2.2px);opacity:.75;margin-top:60px"><use href="#к3-обличчя"/></svg></div>
+    <svg class="рушник"><use href="#к3-рушник"/></svg>
+  </div>
+  <div class="під-склом">
+    <div class="поступ"><span class="тут">Ще туманно</span><span>Проступають обриси</span><span>Вимальовується</span><span>Готово</span></div>
+    <div style="display:grid;gap:4px;justify-items:center"><span class="мітка">Крок 2 з 3 · До лиця</span>
+      <h2 class="заголовок">Що тобі до лиця.</h2></div>
+    <div style="display:grid;gap:7px"><span class="мітка" style="text-align:center">Золото чи срібло біля обличчя</span>
+      <div class="варіанти"><span class="варіант">Золото</span><span class="варіант">Срібло</span><span class="варіант">Обидва однаково</span></div></div>
+    <div class="рядок-дій" style="margin-top:auto;margin-bottom:10px"><span class="дія тиха">Назад</span><span class="дія">Далі <svg><use href="#к3-і-стрілка"/></svg></span></div>
+  </div>
+</div></div><figcaption><b>1 · Знайомство.</b> Оправа сама стає питанням: ліва половина золота, права срібна, обличчя між ними. Рушник ще полотняний — профілю нема.</figcaption></figure><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е2">
+  <div class="шапка"><span>Збережені</span><span class="знак">люстерко</span><span class="праворуч"><span>Новий</span><span class="ніч">Ніч</span></span></div>
+  <div class="лист">
+    <p>Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.</p>
+    <div class="кнопки"><span class="кр" title="Додати фото речі"><svg><use href="#к3-і-камера"/></svg></span><span class="кр" title="Сказати голосом"><svg><use href="#к3-і-мікрофон"/></svg></span><span class="кр їде" title="Надіслати"><svg><use href="#к3-і-стрілка"/></svg></span></div>
+  </div>
+  <div class="люстро над">
+    <div class="скло туман"><span style="font:400 33px/1.15 var(--голос);font-variation-settings:'CONT' 200;color:#66727A;text-shadow:0 0 6px rgba(255,255,255,.9);filter:blur(.35px);max-width:190px">Куди ти збираєшся?</span></div>
+    <svg class="рушник" style="--кінці:url(#к3-в-її)"><use href="#к3-рушник"/></svg>
+  </div>
+  <div class="під-склом" style="top:566px;gap:8px">
+    <div class="приклади"><span>Іду на побачення в ресторан, увечері. Обіцяють дощ</span><span>Завтра презентація для клієнта в офісі</span></div>
+    <span class="мітка">Або заповнити рукою</span>
+    <div class="плитки">
+      <div class="плитка"><b>Спорт, активність</b></div>
+      <div class="плитка"><b>Подорож</b><small>у дорозі: переліт, поїзд</small></div>
+      <div class="плитка"><b>Звичайний день</b><small>прогулянка, справи</small></div>
+      <div class="плитка"><b>Побачення</b></div>
+      <div class="плитка"><b>Театр, концерт</b></div>
+      <div class="плитка"><b>Робота</b><small>зустріч, презентація…</small></div>
+      <div class="плитка"><b>Свято, вечірка</b><small>день народження…</small></div>
+      <div class="плитка" style="border-style:dashed"><b>Інше</b><small>скажу словами</small></div>
+    </div>
+  </div>
+  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
+</div></div><figcaption><b>2 · Аркуш листа.</b> На запітнілому склі — «Куди ти збираєшся?», ніби пальцем; лист засунуто за раму. Кінці рушника вже вишито її кольорами.</figcaption></figure><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е3">
+  <div class="шапка"><span>Збережені</span><span class="знак">люстерко</span><span class="праворуч"><span>Новий</span><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="скло"><div class="дощ"></div>
+      <div class="відбиття" style="position:relative">
+        <span class="мітка">Новий сценарій</span>
+        <span class="гол">Побачення</span>
+        <span class="р"><small>Де</small>Заклад <span class="типово">— типово</span></span>
+        <span class="р"><small>Ошатність</small><span class="типово">не обрано</span></span>
+        <span class="р"><small>Коли й погода</small>ввечері, дощ</span>
+        <span class="р"><small>Палітра</small><span class="типово">хай обере стилістка</span></span>
+        <span class="р" style="font-size:11px"><span class="типово">+ макіяж, прикраси, мета</span></span>
+        <div class="так-ні"><span>Усе правильно?</span><span>так</span><span>поправити</span></div>
+      </div></div>
+    <svg class="рушник" style="--кінці:url(#к3-в-її)"><use href="#к3-рушник"/></svg>
+  </div>
+  <div class="під-склом" style="gap:9px">
+    <div class="вона">ти: <b>Іду на побачення в ресторан, увечері. Обіцяють дощ</b></div>
+    <p class="субтитр">Зрозуміла: побачення в ресторані ввечері, під дощем. Наскільки ошатно там буде?<small>Можна не відповідати — образи зберуться й так.</small></p>
+    <div class="швидкі"><span>буденно</span><span>охайно буденно</span><span>ділово, м'яко</span><span>на твій розсуд</span></div>
+    <div class="ввід"><span>Напиши стилістці…</span><span class="кр"><svg><use href="#к3-і-мікрофон"/></svg></span><span class="кр їде"><svg><use href="#к3-і-стрілка"/></svg></span></div>
+    <span class="дія">Зібрати образи <svg><use href="#к3-і-стрілка"/></svg></span>
+  </div>
+  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
+</div></div><figcaption><b>3 · Розмова.</b> Скло — паспорт: що стилістка зрозуміла (дощ — на склі). Її відповідь — субтитром під склом; рядок правиться дотиком по склу.</figcaption></figure><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е4">
+  <div class="шапка"><span>← До сценарію</span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="скло" style="background:radial-gradient(90% 80% at 40% 30%,#2E6672 0%,#21505B 55%,#173C45 100%)"><svg width="200" height="240" style="margin-top:96px"><use href="#к3-обличчя"/></svg></div>
+    <svg class="рушник" style="--кінці:url(#к3-в-нейтр)"><use href="#к3-рушник"/></svg>
+  </div>
+  <div class="під-склом" style="gap:9px">
+    <div style="display:grid;gap:2px;justify-items:center"><h2 class="заголовок" style="font-size:23px">Палітра образу.</h2>
+      <span style="font-size:12px;color:var(--олівець);text-align:center">Основа — головний колір, на якому стоїть образ. Не знаєш — лиши «хай обере стилістка».</span></div>
+    <div class="чипи"><span class="чип">хай обере стилістка</span><span class="чип">приглушені</span><span class="чип обр">середні</span><span class="чип">насичені</span></div>
+    <div class="намистини">
+      <span class="нам стил"><i></i>хай обере</span>
+      <span class="нам обр"><i style="background:#21505B"></i>петроль</span>
+      <span class="нам"><i style="background:#9E4730"></i>цегляний</span>
+      <span class="нам"><i style="background:#2E4B3D"></i>хвойний</span>
+      <span class="нам"><i style="background:#D8B0A6"></i>пудровий</span>
+      <span class="нам"><i style="background:#F6F3EC"></i>білий</span>
+    </div>
+    <ul class="схеми">
+      <li class="обр"><svg><rect width="76" height="16" fill="url(#к3-в-нейтр)"/></svg>нейтрали+акцент<span class="вага">найходовіша</span></li>
+      <li><svg><rect width="76" height="16" fill="url(#к3-в-компл)"/></svg>приглушена комплементарна<span class="вага">звичайна</span></li>
+      <li><svg><rect width="76" height="16" fill="url(#к3-в-аналог)"/></svg>аналогова<span class="вага">звичайна</span></li>
+      <li><svg><rect width="76" height="16" fill="url(#к3-в-тріада)"/></svg>тріада<span class="вага">помітна</span></li>
+    </ul>
+  </div>
+  <nav class="сторони"><span class="сторона тут">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
+</div></div><figcaption><b>4 · Палітра.</b> У склі — її обличчя на тлі обраної основи (петроль). Кожна схема — смужка вишивки; обрана перевишиває кінці рушника.</figcaption></figure><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е5">
+  <div class="шапка"><span>‹ 1 / 4 ›</span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="скло біле">
+      <svg viewBox="0 0 260 330" width="260" height="330" aria-label="Образ у склі">
+        <use href="#к3-р-кардиган" x="92" y="58" width="92" height="120" fill="#EFE8DA" stroke="#D3CAB8"/>
+        <use href="#к3-р-тренч" x="24" y="52" width="104" height="136" fill="#1F1D1B"/>
+        <use href="#к3-р-штани" x="148" y="64" width="86" height="112" fill="#E6DECF" stroke="#D3CAB8"/>
+        <use href="#к3-р-кросівки" x="58" y="200" width="104" height="50" fill="#D6C1A2"/>
+        <use href="#к3-р-клатч" x="166" y="206" width="56" height="34" fill="#C7C8CA"/>
+      </svg>
+      <span class="точка" style="left:70px;top:70px">1</span><span class="точка" style="left:132px;top:84px">2</span><span class="точка" style="left:200px;top:96px">3</span>
+      <span class="точка тут" style="left:100px;top:208px">4</span><span class="точка" style="left:190px;top:200px">5</span>
+      <span class="виноска">↔ замінити<small>лише в цьому образі</small></span>
+    </div>
+    <svg class="рушник" style="--кінці:url(#к3-в-нейтр)"><use href="#к3-рушник"/></svg>
+  </div>
+  <div class="під-склом" style="gap:7px">
+    <h2 class="заголовок" style="font-size:23px">Перший образ</h2>
+    <p class="чому">Молочний верх і штани в один тон тягнуть лінію вгору, а чорний тренч тримає її під дощем. <span class="приклад-позначка">приклад</span></p>
+    <ul class="речі">
+      <li><span class="н">1</span><span class="назва">Тренч чорний лляний<small>alot.com.ua</small></span><span class="ціна">6 999 ₴</span></li>
+      <li><span class="н">2</span><span class="назва">Подовжений кардиган Porto молоко<small>25union.com.ua</small></span><span class="ціна">3 150 ₴</span></li>
+      <li><span class="н">3</span><span class="назва">Штани від двобортного костюму…<small>maryline.ua</small></span><span class="ціна">1 990 ₴</span></li>
+      <li class="тут"><span class="н">4</span><span class="назва">Анатомічні кросівки бежеві<small>kasandra.ua</small></span><span class="ціна">3 000 ₴</span></li>
+      <li><span class="н">5</span><span class="назва">Клатч ATTICO, світло-сірий<small>attico.ua</small></span><span class="ціна">2 399 ₴</span></li>
+    </ul>
+    <div class="разом"><span>Разом</span><span>17 538 ₴</span></div>
+    <div class="варіанти"><span class="варіант">вдягну як є</span><span class="варіант">змінила б одну річ</span><span class="варіант">не вдягну</span></div>
+  </div>
+  <nav class="сторони"><span class="сторона">Сценарій</span><span class="сторона тут">Образи</span><span class="сторона">Оцінити</span><span class="сторона">Профіль</span></nav>
+</div></div><figcaption><b>5 · Образ.</b> Образ — у склі, на білому; речі пронумеровано точками. Дотик по речі — «замінити» лише її; інші образи й решта цього стоять.</figcaption></figure><figure class="телефон к3"><div class="fit"><div class="екран" id="к3-е6">
+  <div class="шапка"><span></span><span class="знак">люстерко</span><span class="праворуч"><span class="ніч">Ніч</span></span></div>
+  <div class="люстро">
+    <div class="скло зворот"><div class="гравюра"><small>Твій профіль</small><b>Оля К.</b>
+      <div class="емаль"><i style="background:#E7CDBB"></i><i style="background:#5A3B2A"></i><i style="background:#6B7F5E"></i></div>
+      <small>шкіра · волосся · очі</small></div></div>
+    <svg class="рушник" style="--кінці:url(#к3-в-її)"><use href="#к3-рушник"/></svg>
+  </div>
+  <div class="під-склом" style="gap:0">
+    <ul class="рядки">
+      <li class="група">Про тебе</li>
+      <li>Фото<small>портрет і на повний зріст</small><span class="пр">2 фото</span></li>
+      <li>Твої кольори<small>зчитано з портрета</small><span class="пр">3 зразки</span></li>
+      <li>Що тобі до лиця<small>метали, білий, нейтралі</small><span class="пр">золото · чистий білий<br>теплі · яскраві, помітні</span></li>
+      <li class="група">Фігура</li>
+      <li>Обхвати<small>плечі · груди · талія · стегна · зріст</small><span class="пр">96 · 94 · 76 · 100</span></li>
+      <li>Розширені виміри<small>для взуття, капелюхів, посадки на нозі</small><span class="пр">2 з 6</span></li>
+    </ul>
+  </div>
+  <nav class="сторони"><span class="сторона">Сценарій</span><span class="сторона">Образи</span><span class="сторона">Оцінити</span><span class="сторона тут">Профіль</span></nav>
+</div></div><figcaption><b>6 · Профіль.</b> Зворот люстерка: ім'я й емаль її кольорів; рядки огляду — ті самі, що в показі, кожен відкриває свій аркуш.</figcaption></figure></div>
+  <div class="опис"><div class="блок"><h3>Шлях жінки</h3><dl>
+      <dt>Профіль</dt><dd>туман у склі розходиться з кожним кроком: «Ще туманно → … → Готово»; оправа сама питає «золото чи срібло»; далі профіль — зворот люстерка</dd>
+      <dt>Сценарій</dt><dd>на запітнілому склі — «Куди ти збираєшся?», лист засунуто за раму; після відповіді в склі — паспорт, правка дотиком по склу; репліка стилістки — субтитром</dd>
+      <dt>Палітра</dt><dd>у склі — обличчя на тлі основи; схеми — смужки вишивки; обрана перевишиває рушник</dd>
+      <dt>Збирання</dt><dd>той самий туман у склі замість окремого екрана</dd>
+      <dt>Образи</dt><dd>образ у склі з точками речей; дотик по речі — «замінити» лише її</dd></dl></div><div class="блок"><h3>Палітра й контраст (WCAG)</h3><ul class="зразки">
+      <li><i style="background:#EEF0EF"></i>стіна, тло<code>#EEF0EF</code></li>
+      <li><i style="background:linear-gradient(158deg,#E8ECED,#C3CBCE)"></i>скло<code>#E8ECED → #C3CBCE</code></li>
+      <li><i style="background:#1F2226"></i>чорне: текст, кнопка (14,0 : 1)<code>#1F2226</code></li>
+      <li><i style="background:#5F656A"></i>олівець: другорядне (5,2 : 1)<code>#5F656A</code></li>
+      <li><i style="background:#E9E2D3"></i>льон рушника<code>#E9E2D3</code></li>
+      <li><i style="background:#66727A"></i>напис на запітнілому склі (≥ 3,5 : 1, кегль 33)<code>#66727A</code></li></ul>
+      <p class="дрібно" style="margin-top:8px">Вишивка рушника — її палітра; обрана схема перевишиває кінці.</p></div><div class="блок"><h3>Шрифти</h3><ul>
+      <li>Kyiv*Type Titling, CONT 600–760 — знак, заголовки, нагода в склі</li>
+      <li>Kyiv*Type Serif — субтитр стилістки, напис на склі</li>
+      <li>Fixel Text 400 / 500 / 600 — керування</li></ul></div><div class="блок"><h3>Один прийом — і що прибирається</h3><p><b>Рушник над люстерком</b>: орнамент лише на кінцях і лише з її кольорів; скло — носій змісту.</p>
+      <p class="дрібно">Прибирається: усе інше ремісниче; чипи-намистини лишаються.</p></div><div class="блок"><h3>Рішення власника</h3><ol>
+      <li>Паспорт — у склі, розмова — субтитром з історією за дотиком. Це відступ від п.7 «розмова — чат з аркушем листа».</li>
+      <li>Рушник над люстерком: так / лише на звороті / ні.</li>
+      <li>Профіль — зворот люстерка замість вкладки-огляду.</li>
+      <li>Туман-статуси на все знайомство й збирання.</li></ol></div><div class="блок"><h3>Ризики</h3><p>Найдорожча: інша розкладка (зачіпає <code>розмістити_розкладку</code> і ноутбук). Скло тісне: довгий паспорт і 5+ речей прокручуються в склі. Рушник межує з кітчем. Без перевірки з людьми не впроваджувати.</p></div><div class="блок"><h3>Упровадження (оцінка)</h3><p><b>12 нарядів</b>: розкладка-люстерко (і ≥ 900 px); паспорт у склі з правкою дотиком; субтитр та історія; туман-поступ; рушник з палітри; лист за рамою; палітра в склі; образ у склі з локальною заміною; зворот-профіль; ніч; доступність скла; прототип для тестувальниць.</p></div><div class="блок"><h3>Перевірка на тестувальницях</h3><p>Чи розуміють, що в склі — їхній сценарій і його можна правити дотиком; чи знаходять профіль на звороті; рушник — свій чи кітч; скільки секунд до «Зібрати образи».</p></div></div>
+</section>
+
+<section aria-labelledby="порівняння">
+  <h2 id="порівняння">Порівняння</h2>
+  <div class="таблиця"><table>
+    <thead><tr><th></th><th><span class="мітка-к к1-тло">К1</span> «Кіновар»</th><th><span class="мітка-к к2-тло">К2</span> «Вербівка»</th><th><span class="мітка-к к3-тло">К3</span> «Люстерко в рушнику»</th></tr></thead>
+    <tbody>
+      <tr><th>Як жінка працює</th><td>сторінками й вкладками, як зараз</td><td>як зараз, але екран зібрано з її кольорів</td><td>один предмет: скло показує, розмова під ним</td></tr>
+      <tr><th>Носій айдентики</th><td>літера й сторінка</td><td>колір і площина</td><td>предмет і поведінка</td></tr>
+      <tr><th>Українське джерело</th><td>Острозька Біблія (дві фарби, ініціали), Нарбутова «Абетка»</td><td>Вербівка й Скопці 1915–1917, Екстер, Богомазов, ковдра Делоне</td><td>кілковий рушник над дзеркалом, «люстерко», Сковорода</td></tr>
+      <tr><th>Розкладка п.7</th><td>без змін</td><td>без змін</td><td>паспорт у склі й субтитр замість стрічки — рішення власника</td></tr>
+      <tr><th>Новий спосіб роботи</th><td>нема</td><td>частково: колір з профілю</td><td>так</td></tr>
+      <tr><th>Шрифти</th><td colspan="3">У всіх трьох — ті самі файли, що в показі: Titling 214,8 КБ і Serif 192,5 КБ (TTF, змінні осі <code>wght</code> і <code>CONT</code>, без перепакування за ліцензією), Fixel Text 46,0 / 55,6 / 56,0 КБ (woff2). Різниться лише роль і положення осі контрасту.</td></tr>
+      <tr><th>Екранів у макеті</th><td class="число">5</td><td class="число">5</td><td class="число">6 (зі зворотом-профілем)</td></tr>
+      <tr><th>Рішень власника</th><td class="число">4</td><td class="число">4</td><td class="число">4</td></tr>
+      <tr><th>Нарядів (оцінка)</th><td class="число">6</td><td class="число">8</td><td class="число">12</td></tr>
+      <tr><th>Ризик</th><td>низький</td><td>середній</td><td>високий</td></tr>
+      <tr><th>Що покажуть тестувальниці</th><td>чи впізнають без знака</td><td>чи площини не заважають речам</td><td>чи зрозуміло, що скло — сценарій, і скільки часу до образів</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="два">
+  <div>
+    <h2>Чому К3</h2>
+    <ol>
+      <li>Власник просив «можливо навіть з глобально новим підходом до роботи у люстерку». З трьох лише К3 змінює спосіб роботи, а не вигляд.</li>
+      <li>Метафора назви стає поведінкою: що зрозуміла стилістка — видно в склі; заміна речі — дотик по склу, решта образу стоїть (п.7 «Замінити»).</li>
+      <li>Айдентика несе дані: рушник вишивається її палітрою й показує обрану схему; без профілю він полотняний.</li>
+      <li>Ризики великі, тому етап 4 — клікабельний прототип К3 і 6–8 тестувальниць до впровадження.</li>
+    </ol>
+    <p>З К1 варто взяти правило одного акценту на екран; з К2 — «формулу» образу й пропорцію схеми 6 : 3 : 1.</p>
+  </div>
+  <div>
+    <h2>Що далі</h2>
+    <ol>
+      <li>Власник обирає концепцію чи поєднання й відповідає на її «Рішення власника». Питання ставить менеджер.</li>
+      <li>Етап 4 — клікабельний прототип 390×844 обраної концепції з робочими станами: очікування, помилка, порожній профіль, ніч, ноутбук.</li>
+      <li>Тестувальниці різного віку проходять прототип поруч із чинним показом.</li>
+      <li>Етап 5 — упровадження малими нарядами за переліком концепції.</li>
+    </ol>
+  </div>
+</section>
+
+<section aria-labelledby="дослідження">
+  <h2 id="дослідження">Дослідження — головне</h2>
+  <p class="дрібно" style="margin:0 0 12px;max-width:80ch">Повний текст з позначками перевірки кожного джерела — <code>аудит/дослідження_research/айдентика_2026-10-16.md</code>. Тут — опори концепцій і межі.</p>
+  <ul class="джерела">
+    <li>Регіони вишивки: більшість традицій одно-двоколірні, Полісся й Поділля — червоне з чорним — <a href="https://www.encyclopediaofukraine.com/display.asp?linkpath=pages%5CE%5CM%5CEmbroidery.htm">Encyclopedia of Ukraine</a>.</li>
+    <li>Решетилівська «білим по білому» — у Національному переліку з 2017 р. — <a href="https://www.kmu.gov.ua/news/250103056">КМУ</a>.</li>
+    <li>Кілкові рушники вішали «над дзеркалом, … вікном, дверима, фотопортретами» — <a href="https://www.dnipro.libr.dp.ua/Vishivka_rushniki_ornamenti">ДніпроКультура</a>.</li>
+    <li>Острозька Біблія 1581 р. — друк у дві фарби, заставки, ініціали — <a href="https://rivne.ua.museum-digital.org/pdf/object/52961.pdf?lang=uk">Рівненський музей</a>.</li>
+    <li>Нарбутова «Абетка»: 14 літер 1917 р. і ще 3 — 1919 — <a href="https://texty.org.ua/articles/102318/kym-buv-ta-yaku-estetyku-tvoryv-avtor-ukrayinskyh-hroshej-georhij-narbut/">Texty</a>.</li>
+    <li>Ескізи Екстер, Малевича й інших вишивали майстрині українських артілей; виставки 1915 і 1917 рр. — <a href="https://www.metmuseum.org/research-centers/leonard-a-lauder-research-center/research-resources/modern-art-index-project/davydova-n">Met, N. Davydova</a>.</li>
+    <li>«Modernism in Ukraine, 1900–1930s», Royal Academy 2024 — <a href="https://www.studiointernational.com/index.php/in-the-eye-of-the-storm-modernism-in-ukraine-1900-1930s-review-royal-academy-london">Studio International</a>.</li>
+    <li>Єрмилов: конструктивізм разом із народними узорами — <a href="https://www.encyclopediaofukraine.com/pages%5CY%5CE%5CYermilovVasyl.htm">Encyclopedia of Ukraine</a>; шрифт Ukraine NOW — <a href="https://en.wikipedia.org/wiki/Ukraine_NOW">Wikipedia</a>.</li>
+    <li>NAMU: кожна літера назви — окрема епоха — <a href="https://lb.ua/culture/2018/12/21/415607_natsionalniy_hudozhestvenniy_muzey.html">LB.ua</a>.</li>
+    <li>Дія: проста мова, форма з 58 полів до 12 — <a href="https://kyivpost.com/technology/tackling-corruption-in-style-as-agencies-design-e-gov-strategy.html">Kyiv Post</a>.</li>
+    <li>ЮНЕСКО: <a href="https://ich.unesco.org/en/RL/petrykivka-decorative-painting-as-a-phenomenon-of-the-ukrainian-ornamental-folk-art-00893">петриківка</a>, <a href="https://ich.unesco.org/en/RL/tradition-of-kosiv-painted-ceramics-01456">косівська кераміка</a>, <a href="https://www.kmu.gov.ua/en/news/krimskotatarskij-ornament-ornek-vklyucheno-do-reprezentativnogo-spisku-nematerialnoyi-kulturnoyi-spadshchini-lyudstva">Örnek</a>, <a href="https://ich.unesco.org/en/decisions/19.COM/7.B.14">писанка</a>.</li>
+    <li>Шароварщина — визначення — <a href="https://ekmair.ukma.edu.ua/items/a3706581-c927-4ab5-8ca8-3f66b1bc7ee5/full">Єрмолаєва, Нікішенко, 2017</a>; вишиванка-уніформа — <a href="https://zaxid.net/mimikriya_u_vishivantsi_n1500369">Расевич</a>.</li>
+    <li>Не брати: колосок (BEVZA зняла «П'ять колосків» після критики Музею Голодомору — <a href="https://life.pravda.com.ua/society/brend-bevza-znyav-iz-prodazhu-yalinkovi-prikrasi-p-yat-koloskiv-311642">УП.Життя</a>), тризуб, калину, рушник-бордюр, петриківку як шпалери.</li>
+    <li>Розбір ChatGPT: лишаються ієрархія «людина → одяг → керування → знаки», множина авторських традицій, принцип NAMU, метафора люстерка в поведінці; банальні — три напрями «ательє / редакція / світло» і «нейтральне тло + один акцент».</li>
+  </ul>
+</section>
+
+<footer>Окремі сторінки концепцій — <code>аудит/айдентика/концепція_1.html</code>, <code>концепція_2.html</code>, <code>концепція_3.html</code>; знімки Chromium 390×844 — гілка <code>claude/hvylia17-z1-znimky</code>; PR #1226.</footer>
+
+</div>
+<script>
+/* Телефон 390×844 масштабується до ширини колонки — екрани стоять один під одним, без прокрутки вбік. */
+(function(){
+  var Z = window.CSS && CSS.supports && CSS.supports('zoom','0.5');
+  function fit(){
+    document.querySelectorAll('.fit').forEach(function(box){
+      var f = box.firstElementChild, z = Math.min(1, box.clientWidth / 390);
+      if (Z) { f.style.zoom = z; }
+      else { f.style.transform = 'scale(' + z + ')'; f.style.transformOrigin = '0 0'; box.style.height = (844 * z) + 'px'; }
+    });
+  }
+  fit();
+  window.addEventListener('resize', fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
+</script>
+</body>
+</html>
