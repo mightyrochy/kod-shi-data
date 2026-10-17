@@ -1,0 +1,51 @@
+── ПРОМПТ (2449 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Heavy wool coat, straight cut, knee length, #2a2530, dense felt.\nSilk-blend blouse, tailored fit, hip length, #f2dcd6, smooth weave.\nHigh-waisted wide-leg trousers, tapered ankle, calf length, #7fa6c8, thick ponte knit.\nLeather ankle boots, rounded toe, mid-calf height, #1c191b, water-resistant calfskin.\nWool-blend scarf, loose drape, shoulder length, #aeb2ba, soft merino blend.\nPearl stud earrings, small gauge, earlobe length, white luster, freshwater pearls set in sterling silver.\n\nThis outfit works perfectly for a brisk winter walk to work because the thick felt coat and water-resistant boots provide essential protection against -15°C temperatures, falling snow, and salted roads. The straight cut of the coat and wide-leg trousers create a long, vertical line that ensures warmth without bulk, while the wool-blend scarf adds an extra layer of insulation around the neck. Neutral dark tones dominate to keep you warm and professional, with subtle accents in your skin tone, eye color, and hair hex codes ensuring the look feels personalized yet polished for the office environment."}
+
+── ВІДПОВІДЬ (1228 симв., 210.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "coat",
+      "details": "Heavy wool, straight cut, knee length, dense felt",
+      "slot": "outerwear",
+      "color_hex": "#2a2530",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "Silk-blend, tailored fit, hip length, smooth weave",
+      "slot": "top",
+      "color_hex": "#f2dcd6",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "High-waisted wide-leg, tapered ankle, calf length, thick ponte knit",
+      "slot": "bottom",
+      "color_hex": "#7fa6c8",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "Leather ankle boots, rounded toe, mid-calf height, water-resistant calfskin",
+      "slot": "shoes",
+      "color_hex": "#1c191b",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "Wool-blend, loose drape, shoulder length, soft merino blend",
+      "slot": "scarf",
+      "color_hex": "#aeb2ba",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "Pearl stud earrings, small gauge, earlobe length, white luster, freshwater pearls set in sterling silver",
+      "slot": "earrings",
+      "color_hex": "null",
+      "worn": true
+    }
+  ]
+}

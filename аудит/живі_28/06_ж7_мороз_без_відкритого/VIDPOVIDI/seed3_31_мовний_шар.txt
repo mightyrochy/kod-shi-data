@@ -1,0 +1,60 @@
+── ПРОМПТ (8278 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня максі зі стразами молочний · kind code: dress_generic · colour code: milky · about it: text н=1
+2 — Намисто з 5 рядів перлин біле · kind code: jewelry_generic · colour code: white · about it: text н=2
+3 — Жіноча сумка Welfare бежева · kind code: bag_generic · colour code: beige · about it: text н=3
+4 — Чоботи SAFARI замшеві з відкритим мисом · kind code: boots · colour code: beige · about it: text н=4
+5 — Ремінь жіночий Welfare рудий · kind code: belt · colour code: ginger · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; ginger — рудий; milky — молочний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This is a milky white silk slip dress with a deep V-neckline and delicate spaghetti straps, featuring subtle sparkles that catch the light without being overpowering. Its fluid, A-line silhouette drapes elegantly over your hips and thighs, reaching just above your ankles to create a sophisticated and effortless look.",
+"2": "This is a luxurious multi-strand pearl necklace featuring five distinct tiers of lustrous white pearls, all gathered at the top with a contrasting black satin bow that adds a modern, chic element to this classic piece.",
+"3": "This is a sophisticated beige leather tote bag featuring clean lines and structured panels, accented by a sleek silver-toned clasp closure on the front flap and comfortable top handles that are perfect for carrying your daily essentials.",
+"4": "These are soft beige suede boots featuring a plush, slip-on design that fits snugly around your calf, opening at the toe to create a stylish peep-toe silhouette that adds an air of relaxed elegance to your polished office look.",
+"5": "This is a refined ginger leather belt featuring smooth stitching and a sturdy silver-toned rectangular buckle that provides a crisp contrast against the softer textures of your outfit while defining your silhouette with a clean, professional edge.",
+"6": "You have chosen a milky silk dress with delicate sparkles that flows softly to your ankles, paired with a striking multi-layered pearl necklace that adds an elegant touch. Completing the ensemble is a structured beige leather tote bag and matching suede open-toe boots in a soft camel tone, all held together by a warm ginger belt that defines your waistline.",
+"7": "Since the weather is harsh with snow and frost, I suggest wearing a long wool coat over the dress to keep you warm while walking to the office.",
+"8": "Жіноча сумка Welfare бежева — I swapped the bag for this beige leather one because its winter form (unknown material) is risky on salted roads, but it provides the necessary structure to carry your work items.",
+"9": "Намисто з 5 рядів перлин біле — I keep this pearl necklace as a tonal echo of the dress's milky tone, rather than switching to metal which might clash with the velvet.",
+"10": "Сукня максі зі стразами молочний — I keep the dress without shoes because it is a midi length that needs to float; I will add boots later to complete the l",
+"11": "Сукня максі зі стразами молочний — I keep this dress as your hero item because you specifically wanted a single statement piece, even though it lacks layer",
+"12": "Сукня максі зі стразами молочний, Чоботи SAFARI замшеві з відкритим мисом — I accept the layering gate because this -15°C snow day requires warmth, and while the layers are few, the hero dress provides a necessary visual statement that defines your intent, making the outfit viable despite the cold.",
+"13": "Сукня максі зі стразами молочний — Pink velvet skirt adds texture and color outside palette arc for visual interest."
+}
+
+── ВІДПОВІДЬ (3020 симв., 110.8 с, HTTP 200) ──
+```json
+{
+"1": "Це біла шовкова сукня-комбінація кольору молока з глибоким V-подібним вирізом і ніжними спагеті-бретельками, прикрашена ледь помітними блискітками, які ловлять світло без надмірності. Її струмлива силуетна форма А елегантно драпірується на стегнах і гомілках, сягаючи трохи вище щиколоток, створюючи вишуканий і невимушений образ.",
+"2": "Це розкішне намисто з п’яти рядів перлів кольору слонової кістки, всі вони зібрані зверху в контрастну чорну атласну бантку, яка додає сучасного та елегантного акценту до цього класичного виробу.",
+"3": "Це солідна бежева шкіряна сумка-тоут з чистими лініями і структурованими панелями, прикрашена стильною сріблястою застібкою на передній клапані та зручними ручками зверху, які чудово підходять для носіння твоїх щоденних речей.",
+"4": "Це м’які бежеві замшеві чоботи з плюшевим дизайном без шнурків, який щільно облягає твою гомілку і відкривається на пальцях ніг, створюючи стильний силует із відкритою передньою частиною, що додає нотку розслабленої елегантності до твого вишуканого офісного образу.",
+"5": "Це витончений рудий шкіряний ремінь з гладким швом і міцною прямокутною сріблястою пряжкою, яка створює чіткий контраст із м’якішими текстурами твого вбрання та підкреслює твою фігуру чистою професійною лінією.",
+"6": "Ти обрала білу шовкову сукню кольору молока з ніжними блискітками, яка плавно спадає до щиколоток, у поєднанні зі сміливим багатошаровим перловим намистом, яке додає елегантного акценту. Завершують ансамбль структурована бежева шкіряна сумка-тоут і відповідні замшеві чоботи з відкритою передньою частиною кольору кемел, які тримаються разом теплим рудим ременем, що підкреслює твою талію.",
+"7": "Оскільки погода сувора зі снігом і морозом, я пропоную одягнути довге вовняне пальто поверх сукні, щоб ти не змерзла дорогою на роботу.",
+"8": "Жіноча сумка Welfare бежева — Я замінила сумку на цю шкіряну бежеву, оскільки її зимовий варіант (матеріал невідомий) ризикований на посипаних сіллю дорогах, але він забезпечує необхідну структуру для носіння твоїх робочих речей.",
+"9": "Намисто з 5 рядів перлин біле — Я залишаю це перлове намисто як тональний відгук до кольору молока сукні, а не переходжу на метал, який може конфліктувати з оксамитом.",
+"10": "Сукня максі зі стразами молочний — Я залишаю цю сукню без взуття, тому що це міді-довжина, яка має вільно спадати; я додам чоботи пізніше, щоб завершити образ",
+"11": "Сукня максі зі стразами молочний — Я залишаю цю сукню як твій головний елемент, тому що ти конкретно хотіла одну виразну річ, навіть якщо вона не має шарів.",
+"12": "Сукня максі зі стразами молочний, Чоботи SAFARI замшеві з відкритим мисом — Я приймаю компроміс із шарами, тому що цей день зі снігом -15°C вимагає тепла, і хоча шарів небагато, головна сукня надає необхідну візуальну заяву, яка визначає твій намір, роблячи образ життєздатним попри холод.",
+"13": "Сукня максі зі стразами молочний — Рожева оксамитова спідниця додає текстури та кольору поза колірною палітрою для візуального інтересу."
+}
+```
