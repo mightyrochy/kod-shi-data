@@ -1,0 +1,50 @@
+── ПРОМПТ (7214 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Бежева сукня з вовни та кашеміру · kind code: dress_generic · colour code: beige · about it: text н=1
+2 — Кардиган Повітря блакитний · kind code: cardigan · colour code: light_blue · about it: text н=2
+3 — Лосини базові з широким поясом · kind code: leggings · colour code: brown · about it: text н=3
+4 — Жіночі туфлі сірі велюрові · kind code: dress_shoes · colour code: grey · about it: text н=4
+5 — Сумка жіноча Big Bambino · kind code: bag_generic · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; grey — сірий; light_blue — блакитний.
+
+ТЕКСТИ:
+{
+"1": "A soft beige knit dress with a classic round neck and long sleeves, falling just above the knee. Its gentle drape and subtle texture create a warm, welcoming silhouette that feels perfect for an autumn evening.",
+"2": "A delicate light blue mesh cardigan with wide, flowing sleeves and pearl-embellished buttons down the front. The airy fabric adds a touch of romance without heaviness, letting it layer effortlessly over your dress.",
+"3": "A brown ribbed knit belt with a sleek, minimalist buckle that wraps snugly around your waist. Its stretchy fabric hugs your curves gently while defining your silhouette with a modern, clean line.",
+"4": "Pointed-toe pumps in soft grey suede with a slender heel, offering height and sophistication without sacrificing comfort. The muted tone grounds the outfit and adds quiet confidence to your step.",
+"5": "A structured beige woven clutch with black leather trim and a bold gold U-shaped clasp that opens the flap for easy access. Its geometric texture adds subtle interest without overwhelming the simplicity of your look.",
+"6": "This look brings warmth and elegance to your first date at the park, blending a soft beige dress with a sheer sky-blue cardigan for a light autumn layer. The brown belt cinches your waist to highlight your natural curves, while the grey suede pumps add a touch of polish that balances the relaxed vibe. A woven beige bag finishes the ensemble, tying in your neutral base perfectly. It's an outfit that feels both effortless and put-together, just right for strolling through the park or sitting under a tree.",
+"7": "Tuck the hem of the striped top into the wide-leg trousers to keep your silhouette clean.",
+"8": "Лосини базові з широким поясом — Choosing a grey belt as an accent deliberately breaks the pink and silver flow, adding structure to define the waist and balancing the volume of the skirt with a neutral anchor."
+}
+
+── ВІДПОВІДЬ (2047 симв., 102.5 с, HTTP 200) ──
+```json
+{
+  "1": "М'яка бежева в'язана сукня з класичним круглим вирізом і довгими рукавами, що закінчуються трохи вище коліна. Її ніжний спад і ледь помітна текстура створюють теплий, привітний силует, який здається просто чудовим для осіннього вечора.",
+  "2": "Ніжна блакитна мереживна кардиганка з широкими рукавами-водоспадом і ґудзиками, прикрашеними перлами, спереду. Повітряна тканина додає нотку романтики без зайвої тяжкості, дозволяючи їй легко надіватися поверх твоєї сукні.",
+  "3": "Коричневий ребристий в'язаний пояс з елегантним мінімалістичним пряжкою, який щільно обхоплює твою талію. Його еластична тканина ніжно підкреслює вигини твоєї фігури, водночас визначаючи силует сучасною, чистою лінією.",
+  "4": "Туфлі-човники з загостреним носком із м'якої сірої замші на тонкому каблуці, що дарують висоту та вишуканість без шкоди для комфорту. Приглушений відтінок завершує образ і додає впевненості у твій крок.",
+  "5": "Структурована бежева ткана сумка-клатч з чорною шкіряною окантовкою та сміливим золотим U-подібним затискачем, який відкриває клапан для зручного доступу. Її геометрична текстура додає ледь помітної цікавості без перевантаження простоти твого образу.",
+  "6": "Цей образ приносить тепло та елегантність на твоє перше побачення в парку, поєднуючи м'яку бежеву сукню з прозорою блакитною кардиганкою для легкої осінньої шаруватості. Коричневий пояс підкреслює твою талію, щоб виділити природні вигини, а сірі замшеві туфлі додають нотку вишуканості, яка збалансовує розслаблений настрій. Ткана бежева сумка завершує ансамбль, ідеально поєднуючись із твоєю нейтральною основою. Це образ, який здається одночасно без зусиль і охайним, саме те, що потрібно для прогулянки парком або сидіння під деревом.",
+  "7": "Заправ трохи подолу смугастої футболки у широкі штани, щоб зберегти твій силует чистим." ,
+  "8": "Лосини базові з широким поясом — Вибір сірого ременя як акценту навмисно порушує рожево-срібний потік, додаючи структуру для визначення талії та балансуючи об’єм спідниці нейтральним елементом."
+}
+```

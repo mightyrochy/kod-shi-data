@@ -1,0 +1,59 @@
+── ПРОМПТ (8256 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Бежева сукня без рукавів із шовку · kind code: dress_generic · colour code: beige · about it: text н=1
+2 — Сумка жіноча small Turismo · kind code: bag_generic · colour code: brown · about it: text н=2
+3 — Круглі сережки-цвяшки із золота · kind code: jewelry_generic · colour code: golden · about it: text н=3
+4 — Взуття · kind code: shoes · colour code: beige · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; golden — золотий.
+
+ТЕКСТИ:
+{
+"1": "This beige dress is made of soft chiffon and features a relaxed V-neckline with a central front zipper. The fabric has a classic plaid pattern in varying shades of light neutral tones, creating an effortless look that falls straight from the gathered waist to a comfortable knee-length hem.",
+"2": "This structured handbag is crafted from pebbled brown leather with a distinct knot design adorning the front strap. It features two top handles and a compact dome shape, offering a polished contrast to the lighter dress you are wearing.",
+"3": "These earrings are classic spherical studs finished in warm gold metal with a subtle pearl-like sheen. They sit cleanly against the skin without extending beyond the earlobe.",
+"4": "These shoes are crafted from soft suede in a matching beige tone, featuring a cozy white shearling lining peeking out at the top. They have a moccasin-style construction with decorative stitching and a chunky rubber sole for comfortable walking.",
+"5": "I have chosen this look for you to start your evening in the park perfectly. You are wearing a sleeveless beige chiffon dress with a gentle plaid print that falls softly to your knees, which I love how it plays with the light during the autumn daylight. Your dark brown leather handbag with its unique knot detail adds a touch of sophisticated weight to your silhouette, while your warm beige suede moccasin-style shoes with plush lining will keep you comfortable as you stroll. To complete the ensemble, the pair of small golden pearl studs catches the light without drawing too much attention away from the dress itself.",
+"6": "Take the sleeveless chiffon dress off and wrap it in a thin layer if you feel a breeze at the park.",
+"7": "The dark brown handbag with its knot detail is meant to be carried by hand, but you can also slip an arm through the side handle for support.",
+"8": "If the golden pearls feel too light on your figure, let them sit close to your ears so they anchor softly rather than float.",
+"9": "Взуття — I added beige suede shoes to complete the hem proportion and add the missing footwear required for walking in the park during autumn, matching the bag's tone.",
+"10": "Круглі сережки-цвяшки із золота — The yellow earrings add a necessary pop of color to the warm neutral scheme, echoing the golden tones of the jewelry slot to keep the look from being too monotonous while respecting your desire for a soft palette.",
+"11": "Бежева сукня без рукавів із шовку — Even though autumn is cool, a wrap dress like this defines the waist and flatters your figure for a date; you can wear light layers inside or bring a jacket if the temperature drops, as the occasion calls for style over heavy insulation at first sight.",
+"12": "Бежева сукня без рукавів із шовку — The silk dress is formal but works here as an anchor for the tonal scheme and meets the occasion formality; it holds the scheme's lightness and mutedness.",
+"13": "Взуття — I added beige suede shoes to finish the hem proportion and add the missing footwear required for walking in the park during autumn."
+}
+
+── ВІДПОВІДЬ (2934 симв., 97.4 с, HTTP 200) ──
+```json
+{
+"1": "Ця бежева сукня виготовлена з м’якого шифону та має розслаблений V-подібний виріз із центральною передньою блискавкою. Тканина має класичний картатий візерунок у різних відтінках світлих нейтральних тонів, створюючи безтурботний образ, який спадає прямо від зібраної талії до комфортної довжини колін.",
+"2": "Ця структурована сумка виготовлена з тисненої коричневої шкіри з унікальним вузлом на передній лямці. Вона має дві верхні ручки та компактну куполоподібну форму, пропонуючи елегантний контраст до світлішої сукні, яку ти носиш.",
+"3": "Ці сережки — класичні сферичні цвяшки з теплим золотим металом із ледь помітним перламутровим блиском. Вони сидять рівно на шкірі без виходу за межі мочки вуха.",
+"4": "Це взуття виготовлене з м’якої замші у відповідному бежевому тоні, має теплу білу підкладку зі штучного хутра, яка трохи видно зверху. Воно має конструкцію на кшталт мокасин із декоративним швом і масивну гумову підошву для комфортної ходьби.",
+"5": "Я обрала цей образ для тебе, щоб ти чудово розпочала свій вечір у парку. Ти одягнена в безрукавну бежеву шовкову сукню з ніжним картатим візерунком, яка м’яко спадає до колін — мені дуже подобається, як вона грає зі світлом під час осіннього сонячного дня. Твоя темно-коричнева шкіряна сумка з унікальною деталлю вузла додає вишуканої ваги твоїй фігурі, а теплі бежеві замшеві мокасини з пухкою підкладкою збережуть тебе в комфорті, коли ти прогулюватимешся. Щоб завершити ансамбль, пара маленьких золотих перлових цвяшків ловить світло без надмірної уваги до самої сукні.",
+"6": "Зніми безрукавну шовкову сукню та загорни її в тонкий шар, якщо відчуєш вітерець у парку.",
+"7": "Темно-коричневу сумку з вузлом слід носити в руці, але ти також можеш просунути руку через бічну лямку для підтримки.",
+"8": "Якщо золоті перли здаються тобі надто легкими на фігурі, дай їм сидіти близько до твоїх вух, щоб вони м’яко кріпилися, а не плавали.",
+"9": "Взуття — Я додала бежеві замшеві туфлі, щоб завершити пропорцію подолу та додати відсутнє взуття для прогулянок у парку восени, поєднуючи тон сумки.",
+"10": "Круглі сережки-цвяшки із золота — Жовті сережки додають необхідний колірній схемі яскравий акцент, відлунюючи золоті тони ювелірного слоту, щоб образ не був надто монотонним, поважаючи твоє бажання м’якої палітри.",
+"11": "Бежева сукня без рукавів із шовку — Хоча восени прохолодно, плаття-обгортка, як це, підкреслює талію і прикрашає твою фігуру для побачення; ти можеш носити легкі шари всередині або взяти з собою куртку, якщо похолоднішає, адже на першому погляді важливий стиль, а не важка ізоляція.",
+"12": "Бежева сукня без рукавів із шовку — Шовкова сукня є формальною, але тут вона слугує основою для тональної схеми та відповідає урочистості події; вона зберігає легкість і приглушеність схеми.",
+"13": "Взуття — Я додала бежеві замшеві туфлі, щоб завершити пропорцію подолу та додати відсутнє взуття для прогулянок у парку восени."
+}
+```

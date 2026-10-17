@@ -1,0 +1,70 @@
+── ПРОМПТ (8298 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Світшот з трьохнитки з начосом · kind code: hoodie · colour code: grey · about it: text н=1
+2 — Сукня міді з ґудзиками · kind code: dress_generic · colour code: khaki · about it: text н=2
+3 — Взуття · kind code: shoes · colour code: beige · about it: text н=3
+4 — Сумка жіноча, ATTICO, шкіра, колір кремовий · kind code: bag_generic · colour code: creamy · about it: text н=4
+5 — Шапка з вовни · kind code: headwear · colour code: beige · about it: text н=5
+6 — Пара сережок Kvitka · kind code: jewelry_generic · colour code: golden · about it: text н=6
+7 — Ремінь жіночий Welfare рудий · kind code: belt · colour code: ginger · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; creamy — кремовий; ginger — рудий; golden — золотий; grey — сірий; khaki — хакі.
+
+ТЕКСТИ:
+{
+"1": "The grey hoodie is soft and relaxed, offering a comfortable feel that pairs well with the more structured dress underneath.",
+"2": "The green patterned midi dress adds elegance to your outfit, featuring a geometric design that stands out against the neutral tones of the other pieces.",
+"3": "Beige suede shoes provide warmth and texture, complementing the autumn season while maintaining a polished look.",
+"4": "The cream-colored bag offers a sleek finish to your ensemble, its smooth leather adding sophistication to your overall style.",
+"5": "The beige knitted hat adds a cozy touch to your look, perfect for cooler autumn days in the park.",
+"6": "Golden flower-shaped earrings bring a delicate yet eye-catching element to your outfit, adding a subtle shine to your ensemble.",
+"7": "The brown leather belt cinches at the waist, accentuating your figure and adding a classic touch to your look.",
+"8": "You are wearing a cozy grey hoodie paired with a green patterned midi dress, which creates an interesting mix of casual and stylish vibes. The outfit is completed by beige suede shoes, a cream-colored bag, a beige knitted hat, golden flower-shaped earrings, and a brown leather belt. This look works perfectly for your first date in the park during autumn daylight, offering both comfort and a touch of sophistication that suits the occasion well.",
+"9": "Tuck the hoodie into the waistband of your dress for a more defined silhouette if you prefer structure.",
+"10": "Layer the hoodie over the dress for a cozy look on cooler days.",
+"11": "Let the earrings catch the sunlight as you walk through the park to add a delicate sparkle.",
+"12": "Ремінь жіночий Welfare рудий — the ginger belt introduces a third color that breaks the tonal scheme slightly but defines your waist and connects the cool grey top to the warm beige shoes.",
+"13": "Світшот з трьохнитки з начосом, Сукня міді з ґудзиками — its tonal harmony and balanced registers serve your day perfectly despite lacking a single dominant genre.",
+"14": "Ремінь жіночий Welfare рудий — the ginger belt breaks the monochrome flow slightly but defines your waist which is marked, adding a soft contrast step near your face area via the jewelry it pairs with.",
+"15": "Світшот з трьохнитки з начосом — the grey hoodie is below band but I chose it to create a cool-warm contrast that works because your palette allows graphite as a neutral axis, making this combination feel intentional rather than casual.",
+"16": "Ремінь жіночий Welfare рудий — the ginger belt defines your waist and adds a soft contrast step near your face area via the jewelry it pairs with, avoiding a flat monochrome look.",
+"17": "Взуття — beige suede flats finish the outfit's lower third, judging the hem proportion and continuing the tonal column from skin to floor."
+}
+
+── ВІДПОВІДЬ (2834 симв., 109.1 с, HTTP 200) ──
+```json
+{
+"1": "Сірий світшот з трьохнитки з начосом м’який і вільний, даруючи комфортне відчуття, яке добре поєднується зі структурованішою сукнею під ним.",
+"2": "Зелена сукня-міді у візерунок додає елегантності твоєму образу, маючи геометричний дизайн, який виділяється на тлі нейтральних тонів інших речей.",
+"3": "Бежеві замшеві черевики дарують тепло та текстуру, доповнюючи осінній сезон і зберігаючи при цьому охайний вигляд.",
+"4": "Кремова сумка завершує твій ансамбль, її гладка шкіра додає твоєму загальному стилю витонченості.",
+"5": "Бежева в’язана шапка дарує затишний штрих до твого образу, ідеально підходячи для прохолодних осінніх днів у парку.",
+"6": "Золоті сережки-квіточки додають делікатний, але привертаючий увагу елемент до твого вбрання, даруючи твоєму ансамблю ледь помітне сяйво.",
+"7": "Рудий шкіряний ремінь підкреслює талію, акцентуючи фігуру і додаючи класичний штрих до твого образу.",
+"8": "Ти одягнена у затишний сірий світшот з трьохнитки з начосом в парі із зеленою сукнею-міді у візерунок, що створює цікаве поєднання невимушених і стильних вайбів. Образ доповнюють бежеві замшеві черевики, кремова сумка, бежева в’язана шапка, золоті сережки-квіточки та рудий шкіряний ремінь. Цей образ чудово підходить для твого першого побачення у парку восени при денному світлі, даруючи як комфорт, так і штрих вишуканості, що відповідає випадку.",
+"9": "Засунь світшот в пояс сукні, якщо ти віддаєш перевагу більш чітким формам.",
+"10": "Одягни світшот поверх сукні для затишного образу у прохолодні дні.",
+"11": "Дозволь сережкам ловити сонячне світло, коли ти йдеш парком, щоб додати делікатне сяйво.",
+"12": "Рудий ремінь Welfare вносить третій колір, який трохи розбиває тональну схему, але підкреслює твою талію і з’єднує сірий світшот із теплими бежевими черевиками.",
+"13": "Сірий світшот з трьохнитки з начосом і сукня-міді з ґудзиками — їх тональна гармонія та збалансовані регістри чудово служать твоєму дню, незважаючи на відсутність єдиного домінуючого жанру.",
+"14": "Рудий ремінь Welfare трохи розбиває монохромний потік, але підкреслює твою талію, яка позначена, додаючи м’який контрастний штрих біля твоєї зони обличчя завдяки прикрасам, з якими він гармонує.",
+"15": "Сірий світшот з трьохнитки з начосом — його низ знаходиться під поясом сукні, але я обрала його для створення контрасту між холодним і теплим кольорами, який працює тому, що твоя палітра дозволяє графіт як нейтральну вісь, роблячи цю комбінацію відчутною навмисною, а не випадковою.",
+"16": "Рудий ремінь Welfare підкреслює твою талію і додає м’який контрастний штрих біля твоєї зони обличчя завдяки прикрасам, з якими він гармонує, уникаючи плоскої монохромної картинки.",
+"17": "Бежеві замшеві балетки завершують нижню третину образу, оцінюючи пропорції подолу і продовжуючи тональну лінію від шкіри до підлоги."
+}
+```

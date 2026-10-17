@@ -1,0 +1,30 @@
+── ПРОМПТ (2192 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blue denim jeans, straight cut, mid-length knee hem, classic indigo (#2C3E50), sturdy cotton twill with subtle stone-wash finish.\nTan leather sneakers, relaxed silhouette, low-top ankle height, warm cognac (#C19A6B), smooth grained calfskin with vulcanized rubber sole.\nOatmeal structured cardigan, cropped length hitting above hip, boxy fit with button closure, soft cream (#F5EBE3), chunky ribbed knit wool blend.\nThis look balances her request for jeans with the need for a polished appearance suitable for an autumn date in daylight. The neutral oatmeal and tan tones complement her skin tones while the structured cardigan elevates casual denim into a \"neat\" style appropriate for a first meeting outdoors. It provides enough warmth for the season without feeling heavy, allowing comfort and confidence as she walks through the park."}
+
+── ВІДПОВІДЬ (696 симв., 186.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "denim jeans",
+      "details": "straight cut with mid-length knee hem, sturdy cotton twill fabric with stone-wash finish",
+      "slot": "bottom",
+      "color_hex": "#2C3E50",
+      "worn": true
+    },
+    {
+      "name": "leather sneakers",
+      "details": "relaxed silhouette, low-top ankle height with vulcanized rubber sole",
+      "slot": "shoes",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "structured cardigan",
+      "details": "cropped length hitting above hip, boxy fit with button closure, chunky ribbed knit",
+      "slot": "top",
+      "color_hex": "#F5EBE3",
+      "worn": true
+    }
+  ]
+}

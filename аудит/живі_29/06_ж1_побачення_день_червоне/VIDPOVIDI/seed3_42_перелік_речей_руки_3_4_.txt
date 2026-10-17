@@ -1,0 +1,51 @@
+── ПРОМПТ (2482 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "High-contrast denim jacket, straight-cut mid-wash blue, knee-length hem, crisp cotton twill.\nSlim-fit jeans, tapered ankle, dark indigo color #191970, durable stretch denim with subtle texture.\nWhite ribbed-knit crewneck sweater, relaxed fit with dropped shoulders, soft merino wool blend.\nChunky leather sneakers, white upper with gum sole, medium top-down height, smooth calfskin leather.\nMinimalist silver pendant necklace, 18mm oval link chain, polished sterling silver.\nTinted round-frame sunglasses, tortoise-shell acetate, dark grey lenses for sunny autumn light.\n\nThis outfit strikes the perfect balance between relaxed comfort and intentional style for a first date in the park. The classic jean-on-jeans combination adheres to her specific wish while the contrasting white sweater and denim jacket add visual interest against the autumn foliage. Footwear is kept practical yet polished with chunky leather sneakers that handle outdoor terrain without sacrificing elegance. Finally, accessories like the silver pendant and sunglasses add a touch of personality suitable for daylight hours without feeling overdressed."}
+
+── ВІДПОВІДЬ (1295 симв., 192.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "denim jacket",
+      "details": "high-contrast, straight-cut mid-wash blue, knee-length hem, crisp cotton twill",
+      "slot": "outerwear",
+      "color_hex": "#5D6F80",
+      "worn": true
+    },
+    {
+      "name": "jeans",
+      "details": "slim-fit, tapered ankle, durable stretch denim with subtle texture",
+      "slot": "bottom",
+      "color_hex": "#191970",
+      "worn": true
+    },
+    {
+      "name": "sweater",
+      "details": "white ribbed-knit crewneck, relaxed fit with dropped shoulders, soft merino wool blend",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "sneakers",
+      "details": "chunky leather, white upper with gum sole, medium top-down height, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "minimalist silver pendant, 18mm oval link chain, polished sterling silver",
+      "slot": "jewelry",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "sunglasses",
+      "details": "tinted round-frame, tortoise-shell acetate, dark grey lenses",
+      "slot": "glasses",
+      "color_hex": "#404040",
+      "worn": true
+    }
+  ]
+}
