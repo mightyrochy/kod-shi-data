@@ -1,4 +1,4 @@
-"""Рядки 3661, 3662, 3380 (наряд МОВА-2): записані ходи розмови ЖИВІ-12/13/14 (VIDPOVIDI гілок живих) — тим самим
+"""Рядки 3661, 3662, 3380 (наряд МОВА-2): записані ходи розмови ЖИВІ-14 і 1016-1 (VIDPOVIDI гілок `zhyvi-pachka-14`, `zhyvi-1016-1`; гілок 12/13 уже нема) — тим самим
 кодом `прийняти_розмову` → `паспорт_з_шару`. Друкує кожен хід, де модель дала `hour`, `event` чи `place_words`:
 година й пора, що стали в паспорт; вільний текст — сире значення моделі (до) і що взяв шов (після); `place_words`,
 яке не дійшло до паспорта, — чи є слід у `не_взято_кодом`, і місце паспорта. Слова тут читає ПРОБА, не код.
@@ -7,14 +7,16 @@ import json, subprocess, sys
 sys.path.insert(0, "."); import мовний_шар as М
 git = lambda *а: subprocess.run(["git", "-c", "core.quotepath=false", *а], capture_output=True, text=True).stdout
 сире = lambda x: x.get("value", x.get("quote")) if isinstance(x, dict) else x
-for ж in ("12", "13", "14"):
+for ж, тека in (("pachka-14", "пачка_14"), ("1016-1", "1016_1")):
     г = "origin/claude/zhyvi-%s" % ж
-    for ф in git("ls-tree", "-r", "--name-only", г, "../аудит/живі_%s" % ж).split():
+    git("fetch", "-q", "origin", "claude/zhyvi-%s" % ж)
+    for ф in git("ls-tree", "-r", "--name-only", г, "../аудит/живі_%s" % тека).split():
         if "хід_розмови" not in ф:
             continue
         с = git("show", "%s:%s" % (г, ф))
         відп = с.split("── ВІДПОВІДЬ", 1)[1].split("──", 1)[1]
-        u = (М._обʼєкт(відп)[0] or {}).get("update") if isinstance(М._обʼєкт(відп)[0], dict) else None
+        об = М._обʼєкт(відп.replace('\\"', '"'))[0]
+        u = об.get("update") if isinstance(об, dict) else None
         if not isinstance(u, dict) or not {"hour", "event", "place_words"} & set(u):
             continue
         нове = json.loads(с.split("\n", 1)[1].split("── ВІДПОВІДЬ")[0])["her_new_message"]

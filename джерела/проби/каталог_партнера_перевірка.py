@@ -15,7 +15,7 @@ def поля(о):
          if в}
     п |= {е.get("name"): _Т(е) for е in о.findall("param")} | {
         е.findtext(_G + "attribute_name"): е.findtext(_G + "attribute_value") for е in о.iter(_G + "product_detail")}
-    фото = [_Т(е) for е in о if е.tag in ("picture", _G + "image_link", _G + "additional_image_link")]
+    фото = [_Т(е) for е in о if е.tag in ("picture", _G + "image_link", _G + "additional_image_link") and _Т(е)]
     return dict(п, фото=len(фото)), фото
 def рівень(п, фото, кратний, спільні):
     """Повертає (досягнутий рівень 0–3, -1 — нижче Р0; чого бракує до наступного). Р1 має ще три правила формату."""
@@ -36,6 +36,8 @@ def звіт(шлях):
     спільні = collections.Counter(ф for ф, _ in {(ф, _ВАР(п)) for _, п, фф in оф for ф in фф})       # варіантів на фото
     образи = {_ВАР(п) for і, п, _ in оф if і in посил}
     підс = [(і, *рівень(dict(п, образ=_ВАР(п) in образи), фф, п.get("модель") and групи[_ВАР(п)] > 1, спільні)) for і, п, фф in оф]
+    if not підс:
+        return print("%s: порожній фід — нижче Р0" % шлях.name)
     ч = collections.Counter(р for _, р, _ in підс)
     фід = max(р for р in range(-1, 4) if sum(ч[x] for x in range(р, 4)) >= _К["поріг"] * len(підс))
     print("%s: рівень фіда %s · оферів %d (%s)" % (шлях.name, _Р(фід), len(підс), " · ".join("%s %d" % (_Р(р), ч[р]) for р in range(3, -2, -1))))
