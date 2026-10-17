@@ -154,7 +154,7 @@ def об_єм(t, об, intent="conventional"):
     зн = _над_дефолтним_кроєм(зн, дефолтний_крій(об), заяви=[_ВМ.заява(
         "claim_volume_without_anchor_no_shape" if без_форми else "claim_volume_without_anchor")])
     import trace as _СЛ
-    _СЛ.запис("K-SIL-03", "об'єм без якоря × статура (§10.2 теми-3)", "silhouette.об_єм",
+    _СЛ.запис("K-SIL-03", "volume_without_anchor_times_build", "silhouette.об_єм",
               значення="відношення площ %.2f; %s" % (к, нота_ст), сила=зн.get("сила_нп"))
     import правило_руки2 as _ПР2     # зламане руці 2 — справна порада в тінь (`_хибний_об_єм`)
     return [_ПР2.придушити(зн, "anchor_volume", "volume_top_and_bottom_no_anchor")]
