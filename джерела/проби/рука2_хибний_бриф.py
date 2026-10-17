@@ -1,14 +1,15 @@
-"""6635: рядки брифа зламаного правила в руки 2 — є й хибні, не зняті; пакет руки 1 незмінний. Аргумент: джерела ДО."""
+"""6635, 6792: рядки брифа зламаного правила в руки 2 — є й хибні, не зняті; пакет руки 1 незмінний. Аргумент: джерела ДО."""
 import pathlib, sys, os, json, hashlib, re
 sys.path.insert(0, sys.argv[1] if len(sys.argv) > 1 else str(pathlib.Path(__file__).resolve().parent.parent)); os.chdir(sys.path[0])
 import bridge as Б, правило_руки2 as П, fit as ПС, hypergraph as Г
 вх0 = dict(json.load(open('стенд_вх.json')), каталог='каталог_повний.xml', сід=3, сценарій=dict(нагода='побачення', місце='ресторан', година=20, темп_c=5, ошатність=[4, 5]))
-ІНШЕ = {'K-BOD-02': dict(обхвати=dict(плечі=92, груди=90, талія=72, стегна=108, високе_стегно=96))}   # тіло з роллю зон, як `рука2_хибні_каталог`
+ІНШЕ = {'K-BOD-02': dict(обхвати=dict(плечі=92, груди=90, талія=72, стегна=108, високе_стегно=96)),   # вхід — як `рука2_хибні_каталог`
+        'R-COL-16': dict(очі='#6b4a2e'), 'K-COL-06-M': dict(драп_сирий=dict(метал='золото'))}
 стар, нове = П.жереб, hasattr(П, 'бриф_руки2')
 відбиток = lambda п: hashlib.sha256(json.dumps(п, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 def заяви(промпт, код):   # значення заяв `код` у style_rules промпта складання
     return [json.JSONDecoder().raw_decode(промпт, m.end() - 1)[0] for m in re.finditer('"%s":{' % код, промпт)]
-for код in ('K-BOD-02', 'K-FIT-03', 'K-CRA-01', 'K-KOH-02', 'K-OUT-33'):
+for код in ('K-BOD-02', 'K-FIT-03', 'K-CRA-01', 'K-KOH-02', 'K-OUT-33', 'R-COL-16', 'K-COL-06-M', 'K-REG-01', 'K-SIL-03', 'K-ACC-01'):
     вх, запис = dict(вх0, **ІНШЕ.get(код, {})), П.ЗА_ІД[код]
     П.жереб = lambda *а, **к: (П.злити([запис]), [код], {}, dict(дія='pool', чому=None))
     з = json.loads(Б.виклик('запити', json.dumps(вх, ensure_ascii=False))); assert not з.get('помилка'), з

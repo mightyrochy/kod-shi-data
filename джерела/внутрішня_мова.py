@@ -2796,6 +2796,18 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "use_target_formality_band": "choose items for the target formality band (values: band — from and to)",
     "choose_high_heel": "choose a pair with a high heel (values: heel_cm — from)",
     "cut_clings_at_level": "a cut that clings at this level",
+    "opposite_metal_near_face": "put the metal opposite to her warmth near the face (values: metal — the metal "
+                                "to put, lead — the leading one now)",
+    "same_item_in_opposite_season_fabric": "the same item in a fabric of the opposite season (values: band — "
+                                           "from and to, °C)",
+    "volume_top_and_bottom_no_anchor": "a loose cut both on top and at the bottom, with no fitted level",
+    "registers_at_equal_weight": "mix styles freely: several style languages sound at equal weight, none leads",
+    "loud_accessory_no_echo": "the bag or jewellery in a loud colour that nothing else in the outfit repeats; the "
+                              "accessory need not echo anything",
+    "second_register_equal_weight": "bring a second style to the same weight as the leading one, so that "
+                                    "neither leads (values: registers — the leading one and the second)",
+    "loud_accessory_without_role": "replace the accessory with a loud one in a tone that nothing else in the "
+                                   "outfit repeats (values: slot — slot code, chroma_from — loud from this C*)",
     # ── оцінка її власного образу з фото: чого на кадрі не знайшлось (Ч-8, рядок 197) ──
     "review_no_items_on_photo": "no item was found in the frames she sent (values: why — the reason, when there is one; "
                                 "`items_without_photo`: items were named but not on which of her photos, so none could be "

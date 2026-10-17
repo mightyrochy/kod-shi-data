@@ -678,7 +678,7 @@ import внутрішня_мова as _ВМ_П
         # рядок 3160: знахідок ще нема — хід без ід знахідки нічого не послаблює
         "образи[].свідомо[].знахідка": "only in an answer to a verdict; here leave it out",
     }),
-    межі=("лише_вхід",),
+    межі=("лише_вхід", "звертання"),
     мова_промпту="en",
     скелет_наприкінці=True,
 )
@@ -1978,7 +1978,8 @@ def _жорстке_відсічення(r, темп_c=None, вето=None, ош
     `winter_item_off_temperature`, `winter_headwear_off_temperature`,
     `warm_scarf_off_temperature`, `summer_item_off_temperature`,
     `summer_headwear_off_temperature`, `open_shoes_off_temperature`,
-    `shoes_off_temperature`, `fabric_off_temperature`, `wet_weather_material_veto`,
+    `shoes_off_temperature`, `fabric_off_temperature` (`fabric_in_season_hand_2` — K-MAT-03, зламане
+    руці 2), `wet_weather_material_veto`,
     `person_veto:<її слово>` (після двокрапки — ЦИТАТА жінки, не слово коду),
     `marked_not_this`, `set_only_in_own_slot`, `person_hard_no:<її слово>`,
     `no_photo_shop_forbids` / `no_photo_none_opened` (їх дає сам фід) і
@@ -2112,10 +2113,18 @@ def _жорстке_відсічення(r, темп_c=None, вето=None, ош
         if см and len(см) == 2:
             try:
                 import verify as _V_тк    # холодна тканина в мороз — у сезоні (рядок 3161а)
-                if _V_тк.поза_смугою_тканини(см, темп_c) > ДОПУСК_ТКАНИНИ_C:
+                _поза_тк = _V_тк.поза_смугою_тканини(см, темп_c)
+                import правило_руки2 as _ПР2
+                if _ПР2.зламане("K-MAT-03"):
+                    # 5571 (перелік власника 15.10): зламане руці 2 — «тканина протилежного сезону»:
+                    # у пулі лишаються речі поза смугою дня, тканина по сезону — геть
+                    if _поза_тк <= ДОПУСК_ТКАНИНИ_C:
+                        _ПР2.рекомендація("K-MAT-03", "pool", "fabric_in_day_band", "fabric_opposite_season",
+                                          "keep_opposite_season_fabric", раз=True, слот=сл)
+                        return "fabric_in_season_hand_2"
+                elif _поза_тк > ДОПУСК_ТКАНИНИ_C:
                     # Р2-2б: тканина проти градусів дня (K-MAT-03) вимкнена руці 2 — річ
                     # лишається в пулі, а що відсікло б, лягає в тінь
-                    import правило_руки2 as _ПР2
                     if not _ПР2.торкнулось("K-MAT-03", "pool", слот=сл):
                         return "fabric_off_temperature"
             except (TypeError, ValueError, IndexError):
