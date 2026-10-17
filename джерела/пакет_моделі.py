@@ -458,7 +458,11 @@ import внутрішня_мова as _ВМ_П
                     "\"%s\" — never \"%s Olive midi skirt …\" and never an object {\"n\": …}; the code "
                     "already knows every field of the item." % (ПРИКЛАД_НОМЕРА, ПРИКЛАД_НОМЕРА))
 ПОЛЯ_ОБРАЗІВ_EN = {
-    "образи[].підпис": "3–5 words: the idea of the outfit",
+    # рядок 6780 (Ж:01 ж2_йога_зранку, рука 2 о1): підпис «Cozy velour hoodie and grey leggings» стояв над річчю типу
+    # `trousers`, а не легінсами пулу (`leggings` — 15 речей), і обіцяв не той одяг. Підпис називає лише речі свого
+    # образу, кожну — її «type» у пулі; слів підпису код не звіряє (п.12).
+    "образи[].підпис": "3–5 words: the idea of the outfit; an item it names is one of this outfit's items, called "
+                       "by its «type»",
     "образи[].речі": "«n» of the item alone, e.g. \"%s\"" % ПРИКЛАД_НОМЕРА,
     # рядок 1427: «the choice is hers» — лише про її бажання; за свою річ стилістка каже, чому вона
     "образи[].день": "one sentence, up to 25 words: how this outfit lives through her day; where something she "
