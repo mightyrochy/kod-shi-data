@@ -1,6 +1,6 @@
 #!/bin/sh
 # Усі виміри послідовно (по одному процесу виміру за раз), uptime до/після кожного.
-SP=/tmp/claude-0/-home-user-kod-shi-data/66b2c79f-d82f-57ad-bcfa-0413f82df806/scratchpad/D
+SP=${SP:?задайте SP — теку вимірів: wt (клон), стенд, pyodide, cpy, скрипти, прогони}
 export CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome NODE_PATH=$SP/wt/джерела/node_modules
 L=$SP/прогони/драйвер.log
 крок(){ echo "== $1 $(date +%T) $(uptime | sed 's/.*load average: //')" >> $L; }
