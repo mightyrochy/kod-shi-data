@@ -1,0 +1,52 @@
+── ПРОМПТ (7143 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня з шовковистої віскози з тенселом — це ніжність · kind code: dress_generic · colour code: camel · about it: text н=1
+2 — Кардиган «Cozytte» кемел · kind code: cardigan · colour code: camel · about it: text н=2
+3 — Шарф об'ємний з дредами · kind code: scarf_generic · colour code: beige · about it: text н=3
+4 — Черевики жіночі, ATTICO, шкіра, колір темно-коричневий · kind code: ankle_boots · colour code: brown · about it: text н=4
+5 — Сумка з рафії з в’язаними квітами · kind code: bag_generic · colour code: brown · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; camel — кемел.
+
+ТЕКСТИ:
+{
+"1": "This dress is made from a blend of silky viscose and TENCEL, offering a soft and comfortable feel. It features a high collar with a zipper detail that adds a stylish edge to the design.",
+"2": "The cardigan is crafted from a soft camel-colored fabric, providing warmth and comfort. Its relaxed fit ensures ease of movement while maintaining a chic appearance.",
+"3": "The large beige scarf with textured details adds a luxurious touch to your outfit. It can be wrapped around your neck for warmth or draped stylishly over your shoulders.",
+"4": "These dark brown ankle boots are made of leather, providing both style and comfort. They complement the neutral tones of your outfit perfectly.",
+"5": "The large bag with woven floral details adds a unique and stylish element to your ensemble. Its textured design complements the softness of your dress and cardigan.",
+"6": "You are wearing a cozy camel-colored dress made of silky viscose and TENCEL, featuring a high collar with a zipper detail that adds a modern touch. Over the dress, you have a relaxed camel cardigan that drapes beautifully, enhancing your silhouette without adding bulk. Your feet are adorned in dark brown ankle boots, providing both comfort and style for walking around the office or outside. Complementing the outfit is a large beige scarf with textured details, adding warmth and a touch of elegance to your ensemble.",
+"7": "Pair the dress with the cardigan for a layered look that can be easily adjusted by taking off the cardigan when needed.",
+"8": "Сукня з шовковистої віскози з тенселом — це ніжність — This dress answers the 'hide belly' goal and fits the creative office formality level.",
+"9": "Кардиган «Cozytte» кемел — The camel loafers bridge the hem to the floor, judging the lower proportion correctly for walking."
+}
+
+── ВІДПОВІДЬ (1822 симв., 30.9 с, HTTP 200) ──
+```json
+{
+"1": "Ця сукня виготовлена з поєднання шовковистої віскози та тенселу, що забезпечує м’який і комфортний дотик. Вона має високий комір із деталями на блискавці, які додають стильний акцент дизайну.",
+"2": "Кардиган виготовлений з м’якої тканини кемел-кольору, що забезпечує тепло та затишок. Його вільний крій гарантує свободу рухів і водночас підтримує елегантний вигляд.",
+"3": "Великий бежевий шарф із текстурними деталями додає розкішного штриха до твого образу. Ти можеш обернути його навколо шиї для тепла або стильно накинути на плечі.",
+"4": "Ці темно-коричневі черевики зроблені зі шкіри, забезпечуючи як стиль, так і комфорт. Вони чудово доповнюють нейтральні тони твого образу.",
+"5": "Велика сумка з плетінками та квітковими деталями додає унікальний і стильний елемент твоєму ансамблю. Її текстурний дизайн підкреслює м’якість сукні та кардигану.",
+"6": "Ти одягнена в затишну кемел-кольорову сукню з шовковистої віскози та тенселу, яка має високий комір із деталями на блискавці, що додає сучасний штрих. Зверху ти одягла розслаблений кардиган кемел-кольору, який гарно драпірується і підкреслює твою фігуру без зайвого об’єму. Твої ноги прикрашені темно-коричневими черевиками, які забезпечують як комфорт, так і стиль для прогулянок по офісу чи на вулиці. Доповнюючи образ, великий бежевий шарф із текстурними деталями додає тепла та нотку елегантності твоєму ансамблю.",
+"7": "Поєднай сукню з кардиганом для багатошарового образу, який легко можна відрегулювати, просто знявши кардиган за потреби.",
+"8": "Сукня з шовковистої віскози з тенселом — це ніжність — Ця сукня відповідає меті «приховати живіт» і підходить для рівня творчої офіційної форми одягу.",
+"9": "Кардиган «Cozytte» кемел — Кемел-кольорові лофери з’єднують поділ із землею, правильно оцінюючи нижню пропорцію для ходьби."
+}
+```
