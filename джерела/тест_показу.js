@@ -155,6 +155,15 @@ if (ЗІБРАНИЙ) {
    (рядок 69 дошки: два окремі списки плейсхолдерів розійшлись). */
 const { прочитатиДовідникJSON, підставитиШаблон } = require("./показ_шаблон.js");
 const ДОВІДНИК_JSON = прочитатиДовідникJSON(__dirname);
+const КЕШ_СТАНУ_СЦЕНАРІЮ = new Map();
+function станСценаріюPython(дані){
+  const ключ = JSON.stringify(дані);
+  if (!КЕШ_СТАНУ_СЦЕНАРІЮ.has(ключ)) КЕШ_СТАНУ_СЦЕНАРІЮ.set(ключ, JSON.parse(
+    require('child_process').execFileSync('python3', ['-c',
+      'import sys, bridge; print(bridge.виклик("стан_сценарію", sys.stdin.read()))'],
+      {cwd: __dirname, input: ключ, encoding: 'utf8'})));
+  return КЕШ_СТАНУ_СЦЕНАРІЮ.get(ключ);
+}
 
 function підставити(html, фід, підпис) {
   if (ЗІБРАНИЙ) {
@@ -212,6 +221,12 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
         return і;
       };
     }});
+  /* Чистий preflight читає справжній Python; модельні заглушки окремих сцен
+     лишаються власниками своїх викликів і не мусять дублювати K-IO-01 чи погоду. */
+  const w = дом.window;
+  let містСцени = w.містП;
+  const міст = async (ім, дані) => ім === 'стан_сценарію' ? станСценаріюPython(дані) : містСцени(ім, дані);
+  Object.defineProperty(w, 'містП', {configurable: true, get: ()=>міст, set: ф=>{ містСцени = ф; }});
   дом.window.addEventListener("error", e => помилки.push(String(e.message)));
   return {дом, w: дом.window, d: дом.window.document, помилки};
 }
