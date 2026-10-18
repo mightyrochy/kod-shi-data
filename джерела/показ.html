@@ -11745,6 +11745,8 @@ async function приміряти(поз){
 const МОДУЛІ_ПОКАЗУ = "__МОДУЛІ_ПОКАЗУ__";
 const ЗБІРКА_ПОКАЗУ = "__ЗБІРКА_ПОКАЗУ__";
 const ВІДБИТОК_ПОКАЗУ = "__ВІДБИТОК__";
+const КЕШ_PYODIDE_П = false;
+const ПЕРЕВІРКА_БАЙТКОДУ_П = "";
 
 /* ── ЧИ Є НОВІША ЗБІРКА ──────────────────────────────────────────────────
    GitHub Pages віддає index.html з max-age=600, а відновлена вкладка й вбудовані
@@ -11791,8 +11793,15 @@ window.ОСТАННІЙ_РУХ_П = Date.now();
 window.ЗАВАНТАЖЕНО_П = {файлів: 0, байтів: 0};
 (function(){
   const _f = window.fetch;
-  window.fetch = function(){ window.ОСТАННІЙ_РУХ_П = Date.now();
-    return _f.apply(this, arguments).then(в=>{
+  window.fetch = function(вхід, умови){ window.ОСТАННІЙ_РУХ_П = Date.now();
+    /* Лише незмінні ресурси конкретної версії Pyodide: решта запитів зберігає свої умови. */
+    if (КЕШ_PYODIDE_П){
+      const адреса = new URL(typeof вхід === 'string' || вхід instanceof URL ? вхід : вхід.url, location.href);
+      const метод = (умови && умови.method) || (вхід && вхід.method) || 'GET';
+      if (метод === 'GET' && ДЗЕРКАЛА_П.some(([, база]) => адреса.href.startsWith(база)))
+        умови = Object.assign({}, умови, {cache:'force-cache'});
+    }
+    return _f.call(this, вхід, умови).then(в=>{
       /* скільки вже прийшло — для рядка стану під час підняття Pyodide */
       try{ window.ЗАВАНТАЖЕНО_П.файлів++;
            window.ЗАВАНТАЖЕНО_П.байтів += (+(в.headers && в.headers.get('content-length')) || 0); }catch(_){}
@@ -11852,6 +11861,7 @@ function підняти_міст_показу(){
     $('пал-стан').textContent = 'Ще мить…';
     const бін = Uint8Array.from(atob(МОДУЛІ_ПОКАЗУ), c=>c.charCodeAt(0));
     пд.unpackArchive(бін.buffer, 'zip', {extractDir: '/показ'});
+    if (ПЕРЕВІРКА_БАЙТКОДУ_П) await пд.runPythonAsync(ПЕРЕВІРКА_БАЙТКОДУ_П);
     await пд.runPythonAsync(
       'import sys, os\n' +
       'sys.path.insert(0, "/показ"); os.chdir("/показ")\n' +
