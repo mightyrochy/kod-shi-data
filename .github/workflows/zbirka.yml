@@ -52,20 +52,11 @@ on:
 permissions:
   contents: read
 
-# ОДНА ЗБІРКА ВОДНОЧАС. `cancel-in-progress: false` — перервана посеред коміту
-# збірка гірша за чергу.
-# ЧОГО ЦЕ НЕ РОБИТЬ, І ЦЕ ТРЕБА СКАЗАТИ ВГОЛОС: від гонки з жнивами група тут
-# не рятує. `zhnyva.yml`, `zhnyvarka.yml` і `rozvidka.yml` теж комітять у `main`,
-# але кожен у ВЛАСНІЙ групі (`zhnyva`, `zhnyvarka`, `rozvidka`), а спільна група
-# вимагала б правити ті три файли — вони поза межами цього наряду. Тому від
-# гонки боронить не група, а `git pull --rebase` перед push у кроці коміту.
-# ПРО PR: кожен PR дістає ВЛАСНУ групу (`…-refs/pull/N/merge`), інакше
-# перевірки всіх відкритих PR стали б у чергу за збіркою `main` і чекали б по
-# кілька хвилин на порожньому місці. Збірки `main` як стояли в одній черзі, так
-# і стоять.
+# PR має власну групу: нова голова скасовує застарілий прогін цього PR.
+# Публікацію main не перериваємо посеред коміту; її група лишається окремою.
 concurrency:
   group: збірка-показу-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # КЛЮЧ JOB'А — ASCII, І ЦЕ НЕ СТИЛЬ, А ВИМОГА GITHUB: `jobs.<job_id>` мусить
@@ -209,25 +200,6 @@ jobs:
       - name: протокол
         working-directory: джерела
         run: python3 тест_протоколу.py
-
-      # РЯДОК 96 ДОШКИ: ДО ЦЬОГО КРОКУ CI НЕ БАЧИВ ЧЕРВОНИХ РОЗДІЛІВ ГЕЙТІВ.
-      # Секція §141 стояла червоною на `main` з #162 до #167 (патч фасаду не
-      # доходив до `палітра_нейтраль`), а CI лишався зеленим — прилад узагалі
-      # не входив у workflow. Кожен код виходу вже двійковий (V02/V34): «ВПАЛО
-      # 0» → 0, інакше 1. Вимірювання цього прогону: локально ~2 хв 49 с — той
-      # самий вхід, що й тут (почищений каталог із кроку вище); окремий
-      # паралельний job на runner-і не потрібен, поки разом із контрактами це
-      # лишається помітно нижче ~5 хв.
-      - name: розділи гейтів (ВПАЛО має лишатись 0)
-        working-directory: джерела
-        run: python3 прилади/розділи_гейтів.py
-
-      # ТОЙ САМИЙ РЯДОК: `audit_contracts.py` теж жив лише в чужих руках.
-      # Код виходу вже двійковий (Н-00-08): «КОНТРАКТИ ЦІЛІ» → 0, інакше —
-      # сума розривів і мовчання. Вимірювання: локально ~18 с.
-      - name: контракти (мають лишатись цілі)
-        working-directory: джерела
-        run: python3 audit_contracts.py
 
       - name: компілятор байткоду повного показу
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -389,13 +361,115 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+  # Та сама батарея й контракти, власний checkout і ті самі входи.
+  # Вони не читають виходів perevirka, тому виконуються паралельно з нею.
+  rozdily:
+    name: розділи й контракти
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: залежності батареї показу
+        working-directory: джерела
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: розпакувати каталоги й почистити фід
+        working-directory: джерела
+        run: |
+          python3 -c "import чистка_каталогу as ч, feed as Ф; print('фід:', ч.забезпечити_чистим('каталог_повний.xml')); print('фікстура:', Ф.каталог_на_диску('каталог_brief.xml'))"
+
+      - name: розділи гейтів (ВПАЛО має лишатись 0)
+        working-directory: джерела
+        run: python3 прилади/розділи_гейтів.py
+
+      # ТОЙ САМИЙ РЯДОК: `audit_contracts.py` теж жив лише в чужих руках.
+      # Код виходу вже двійковий (Н-00-08): «КОНТРАКТИ ЦІЛІ» → 0, інакше —
+      # сума розривів і мовчання. Вимірювання: локально ~18 с.
+      - name: контракти (мають лишатись цілі)
+        working-directory: джерела
+        run: python3 audit_contracts.py
+
+
+  # Повна історія правил — звіт, а не умова запуску збірки (п.3).
+  # Job не входить у needs; навіть помилка підготовки не блокує публікацію.
+  pravyla:
+    name: звіт правил (не гейт)
+    continue-on-error: true
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: повна історія правил (межа 180 с)
+        id: pravyla
+        continue-on-error: true
+        working-directory: джерела
+        run: |
+          set +e
+          set -o pipefail
+          timeout --signal=TERM --kill-after=5s 180s python3 -u правила.py --md "${RUNNER_TEMP}/правила.md" 2>&1 | tee "${RUNNER_TEMP}/правила.log"
+          STATUS=("${PIPESTATUS[@]}")
+          echo "kod=${STATUS[0]}" >> "$GITHUB_OUTPUT"
+          echo "log_kod=${STATUS[1]}" >> "$GITHUB_OUTPUT"
+          # Справжня відмова лишається failure у outcome кроку. Після
+          # continue-on-error вона не стає блокувальним гейтом.
+          if [ "${STATUS[0]}" -ne 0 ]; then
+            exit "${STATUS[0]}"
+          fi
+          exit "${STATUS[1]}"
+
+      - name: стан звіту правил у підсумок
+        if: always()
+        env:
+          REPORT_RC: ${{ steps.pravyla.outputs.kod }}
+          LOG_RC: ${{ steps.pravyla.outputs.log_kod }}
+          REPORT_OUTCOME: ${{ steps.pravyla.outcome }}
+        run: |
+          {
+            echo "### Правила — звіт, не гейт"
+            echo "- Стан кроку: ${REPORT_OUTCOME:-НЕ ВИКОНАНО}; код процесу: ${REPORT_RC:-НЕ ВИМІРЯНО}; код запису логу: ${LOG_RC:-НЕ ВИМІРЯНО}."
+            case "${REPORT_RC}" in
+              124|137) echo "- Часову межу 180 с вичерпано або процес примусово завершено; повний звіт НЕ ОТРИМАНО." ;;
+              0) echo "- Процес завершився. Код 0 не є оцінкою правил; числа й відсутність входу читаються в логу." ;;
+              "") echo "- Код процесу відсутній: звіт не завершився або крок не запускався; успіх не встановлено." ;;
+              *) echo "- Процес відмовив; частковий вивід не є повним звітом." ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: лог і отриманий довідник правил
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pravyla-zvit
+          path: |
+            ${{ runner.temp }}/правила.log
+            ${{ runner.temp }}/правила.md
+          if-no-files-found: warn
+          retention-days: 7
+
   zbirka:
     permissions:
       contents: write
     name: зібрати показ-повний
     # ЗБІРКА ЙДЕ ЛИШЕ ПІСЛЯ ЗЕЛЕНОЇ ПЕРЕВІРКИ. Раніше вона була першою й єдиною
     # — тому й комітила артефакт зі зламаних джерел.
-    needs: perevirka
+    needs: [perevirka, rozdily]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
