@@ -435,6 +435,14 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
 # до рядка 5901), а повний — ні: `color_disputed` можна прочитати кольором речі, `hex` при `L_from: word` —
 # виміром. Шапка називає лише ті, що в цьому переліку є: ключ, якого нема, коштував би рядок і не назвав би нічого.
 ОПИС_КЛЮЧІВ = {
+    "knowledge": "Facts for color, composition and metal, joined to actual item rows through knowledge_legend. "
+                 "Each fact has status, value, source and applicability with its own source. Sources refer to existing "
+                 "color_point/color_window, metal_code/metal_variants; *_missing has no fact, composition_raw "
+                 "is unparsed shop text, not coded composition. Statuses: measured — a known value from its source; "
+                 "range — only the given range or alternatives are known; unknown — no supported fact, "
+                 "never absence; not_applicable — the property does not apply, never absence. "
+                 "Raw material text is not a coded composition. Color hex with range is a centre, not a measurement",
+    "color_range": "[L0,L1,C0,C1,hue arc or null] from the existing color window; not a point measurement",
     "cut": "cut — in the cut words of the item's own kind, the same as `cuts_best_on_her`; several joined "
            "with | when the shop word fits several of them",
     "shop_color": "the shop's own word for the colour, as the shop wrote it; `color` is the code's name for it",
@@ -634,6 +642,9 @@ def річ(r, короткий=False, пул=False, слот=None):
         о["features"] = r["features"].strip()
     if "item_type" in о:                 # розбір назвав вид речі — рід уже випливає з нього
         о.pop("kind", None)
+    if r.get("знання"):
+        import знання_речі as _ЗН
+        о.update(_ЗН.на_дріт(r["знання"], має_точку=bool(о.get("hex") or о.get("lab"))))
     вих = _скоротити(о) if розб else о
     if пул:
         for ключ, типове in ТИПОВІ_ПУЛУ.items():

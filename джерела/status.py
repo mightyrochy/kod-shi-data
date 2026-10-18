@@ -186,6 +186,8 @@
 # «система → прилади» розірване, і список поменшав з 39 до 32 тим самим явним
 # рішенням, яким він колись виріс.
 МОДУЛІ_ПРОДУКТУ = (
+    "знання_речі",
+    "знання_дріт",
     "accessory", "areas", "bases", "bridge", "brief",
     "colorspace", "composer", "coordination", "extract", "face_contrast",
     "feed", "fit", "graph", "hypergraph", "language_gate",
