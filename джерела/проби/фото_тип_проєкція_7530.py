@@ -6,6 +6,11 @@ def projection():
     overlay = dict(version=Ф.ВЕРСІЯ_ФАЙЛА, records=[r])
     result = Ф.проєкція_каталогу(overlay, m, receipt)
     assert result["records"]["synthetic"]["slot"] == "top"
+    assert result["records"]["synthetic"]["target"] == "unique"
+    assert result["records"]["synthetic"]["bbox"] == [0, 0, 1000, 1000]
+    amb = dict(target="ambiguous", item_type="unknown", bbox=None, reason="multiple_objects")
+    record = Ф.спостереження(json.dumps(amb), sku="synthetic", image_sha256="a"*64, image_url=r["image"]["url"], crop=None, model_id="synthetic", model_revision="fixture")
+    assert Ф.проєкція(record, sku="synthetic", image_sha256="a"*64, image_url=r["image"]["url"])["reason"] == "multiple_objects"
     assert "measured" not in json.dumps(result)
     args = dict(sku=r["sku"], image_sha256="f" * 64, image_url=r["image"]["url"])
     assert Ф.проєкція(r, **args)["errors"] == ["image_mismatch"]

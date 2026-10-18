@@ -218,6 +218,7 @@ def проєкція(record, *, sku, image_sha256, image_url, crop=None):
             р = dict(status="invalid", observation=None, errors=["image_mismatch"])
     тип = р["observation"]["item_type"] if р["status"] == "classified" else "unknown"
     return dict(status=р["status"], item_type=тип, slot=_С.СЛОТ_ТИПУ.get(тип), errors=р["errors"],
+                **{к: р["observation"].get(к) if р["observation"] else None for к in ("target", "bbox", "reason")},
                 provenance=dict(image=record["image"], producer=record["producer"]) if isinstance(record, dict) and р["status"] != "invalid" else None)
 
 

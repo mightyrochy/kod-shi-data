@@ -397,7 +397,7 @@ def фото_тип_речі(offer, фото_типи):
         return {}
     if р["provenance"]["image"]["url"] not in (offer.get("фото") or []):
         return {"visible_item_type": dict(status="unknown", item_type="unknown", slot=None,
-                errors=["current_url_mismatch"], provenance=None)}
+                target=None, bbox=None, reason=None, errors=["current_url_mismatch"], provenance=None)}
     return {"visible_item_type": р}
 
 
