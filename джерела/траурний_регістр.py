@@ -420,6 +420,39 @@ def метал_біля_обличчя(r):
                                      or str(r.get("тип") or "") in ТИПИ_МЕТАЛ_БІЛЯ_ОБЛИЧЧЯ)
 
 
+def стан_металу_біля_обличчя(річ):
+    """Відомо / невідомо, чи річ несе металеву прикрасу біля обличчя.
+
+    Загальна прикраса не має доведеного місця: навіть відомий метал не каже,
+    що це каблучка. Відсутній код металу ніколи не стає його відсутністю.
+    Межа — металеві прикраси K-OCC-01, не вся фурнітура одягу.
+    """
+    import знання_речі as _ЗН
+    import внутрішня_мова as _ВМ
+    тип = _ЗН.тип_кодом(річ)
+    слот = _ВМ.СЛОТ_ТИПУ.get(тип)
+    біля = (річ.get("слот") in МЕТАЛ_БІЛЯ_ОБЛИЧЧЯ_СЛОТИ
+            or тип in ("earrings", "necklace", "collar_necklace", "headband", "hair_clip"))
+    if тип == "jewelry_generic" or (not тип and річ.get("слот") == "прикраси"):
+        return _ЗН.факт("unknown", None, "jewelry_position_unknown")
+    if біля:
+        метал = _ЗН.властивість(річ, "metal")
+        if метал["status"] in ("measured", "range"):
+            return _ЗН.факт("measured", "present", метал["source"])
+        return метал
+    if тип and слот:
+        return _ЗН.факт("measured", "absent", "mourning_jewelry_position")
+    if річ.get("слот") in ("браслет", "каблучка", "брошка", "годинник"):
+        return _ЗН.факт("measured", "absent", "mourning_jewelry_position")
+    return _ЗН.факт("unknown", None, "item_type_missing")
+
+
+def без_металу_біля_обличчя(речі):
+    """Довести відсутність металевих прикрас за всіма фактичними речами образу."""
+    стани = [стан_металу_біля_обличчя(р) for р in речі]
+    return bool(стани) and all(с["status"] == "measured" and с["value"] == "absent" for с in стани)
+
+
 def _блиск_кодом(v):
     """Блиск 0–3 числом або None (нема, не число, булеве)."""
     return v if isinstance(v, int) and not isinstance(v, bool) and 0 <= v <= 3 else None
