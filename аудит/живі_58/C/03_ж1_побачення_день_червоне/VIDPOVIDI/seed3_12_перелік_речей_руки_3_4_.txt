@@ -1,0 +1,44 @@
+── ПРОМПТ (2364 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Crisp red wool blend blazer, tailored fit, knee-length cut, vibrant red #DC143C color, fine knit fabric.\nMerino wool turtleneck sweater, slim silhouette, hip length, deep crimson #800000 color, soft thermal fabric.\nHigh-waisted dark denim jeans, straight leg cut, mid-calf length, charcoal black #36454F color, sturdy cotton fabric.\nLeather ankle boots, block heel, calf height, burnt orange #CC5500 color, smooth full-grain fabric.\nMinimalist gold hoop earrings, 1.5 cm diameter, polished metal finish, lightweight alloy fabric.\n\nThis outfit strikes the perfect balance between romantic date-night vibes and autumnal comfort for a park setting. The rich red tones in the blazer and sweater harmonize beautifully with the changing fall foliage, while the dark denim grounds the look in everyday elegance suitable for walking. Textured layers add warmth without bulk, ensuring she stays cozy during cool daylight hours, and the leather boots provide both style and practical traction on potentially damp paths."}
+
+── ВІДПОВІДЬ (1074 симв., 102.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "Crisp red wool blend, tailored fit, knee-length cut, fine knit fabric",
+      "slot": "outerwear",
+      "color_hex": "#DC143C",
+      "worn": true
+    },
+    {
+      "name": "Sweater",
+      "details": "Merino wool turtleneck, slim silhouette, hip length, soft thermal fabric",
+      "slot": "top",
+      "color_hex": "#800000",
+      "worn": true
+    },
+    {
+      "name": "Jeans",
+      "details": "High-waisted dark denim, straight leg cut, mid-calf length, sturdy cotton fabric",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Boots",
+      "details": "Leather ankle boots with block heel, calf height, smooth full-grain fabric",
+      "slot": "shoes",
+      "color_hex": "#CC5500",
+      "worn": true
+    },
+    {
+      "name": "Earrings",
+      "details": "Minimalist gold hoop, 1.5 cm diameter, polished metal finish, lightweight alloy fabric",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

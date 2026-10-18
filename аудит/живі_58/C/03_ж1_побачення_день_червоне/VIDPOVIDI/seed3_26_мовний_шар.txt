@@ -1,0 +1,62 @@
+── ПРОМПТ (8668 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня жіноча міні з перекрутом · kind code: dress_generic · colour code: red · about it: text н=1
+2 — Туфлі Bav шкіряні бежеві · kind code: dress_shoes · colour code: beige · about it: text н=2
+3 — Прикраса · kind code: jewelry_generic · about it: text н=3
+4 — Шарф об'ємний з дредами · kind code: scarf_generic · colour code: milky · about it: text н=4
+5 — Сумка Золота лілія · kind code: bag_generic · colour code: golden · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; golden — золотий; milky — молочний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a bright red mini dress covered in small white polka dots, featuring a round neckline and short sleeves. The fitted bodice flows into a flared skirt that creates a classic A-line shape, sitting comfortably at the hip.",
+"2": "These are elegant beige leather loafers with a sturdy block heel and a pointed toe. They have a smooth finish and a simple strap detail across the vamp for a refined look.",
+"3": "This is a statement silver body chain featuring three strands of pearls around the neck that merge into a central column of blue crystals running down to the waist, finished with pearl chains at the hips.",
+"4": "A soft, milky white oversized scarf made from a plush fabric with long, delicate fringes along the edges.",
+"5": "This is a crossbody bag with a vibrant floral pattern in shades of blue, green, red, and orange on the main compartment, contrasted by a solid navy blue base and matching strap.",
+"6": "I chose a vibrant red dress with white polka dots and a playful A-line silhouette to set a joyful tone for our date in the autumn park. To ground this bright look, I picked elegant beige block-heel loafers that will keep you comfortable while walking on the grass. A striking silver body chain with blue crystal details runs down your torso, adding a modern, edgy touch that contrasts beautifully with the classic dress. Finally, a soft milky white scarf offers warmth and a gentle pop of neutral color against your red outfit. This ensemble works perfectly: the red draws eyes to your face, the structured waist highlights your defined figure, and the mix of patterns and solids keeps the look interesting without being overwhelming.",
+"7": "Tuck the milky white scarf loosely around your neck or drape it over one shoulder to add a relaxed, effortless vibe perfect for a park stroll.",
+"8": "Прикраса — Pearl necklace replaces blue jewelry to match the red scheme's tone and avoid off-palette clash near the face, answering the 'red' wish by using a neutral that complements rather than contrasts too harshly.",
+"9": "Шарф об'ємний з дредами — Scarf stays as a soft neutral accent (milky) to balance the red dress without adding another color family, keeping the outfit focused on the red wish.",
+"10": "Сукня жіноча міні з перекрутом — This outfit breaks the tonal scheme gate by using off-tone neutrals (beige shoes, milky scarf) as deliberate grounding elements, which serves your intent by avoiding a monochromatic flatness and ensuring the red remains the sole dominant focus without competing accents near the face.",
+"11": "Сукня жіноча міні з перекрутом — The dress is red (her wish) and fits the everyday formality; neutral grey jewelry anchors the look without competing with the base.",
+"12": "Туфлі Bav шкіряні бежеві — White loafers replace brown loafers to create a clearer lightness step from the red skirt, matching the occasion's formality range and avoiding heavy contrast near the face.",
+"13": "Сукня жіноча міні з перекрутом — Added as a third piece (red mini dress) to break the mono-object silhouette and add a second red-family item for variety, answering your 'red' wish directly while keeping the pink dress as the hero.",
+"14": "Сукня жіноча міні з перекрутом — Added as a third piece (red mini dress) to introduce red-family tone and break the purple dominance, answering your 'red' wish directly while keeping the lilac dress as the hero for elegance."
+}
+
+── ВІДПОВІДЬ (3642 симв., 74.7 с, HTTP 200) ──
+```json
+{
+"1": "Це яскрава червона мінісукня в дрібний білий горошок з круглим вирізом і короткими рукавами. Приталений ліф переходить у розкльошену спідницю, що створює класичний силует «трапеція», зручно сидячи на стегнах.",
+"2": "Це елегантні бежеві шкіряні лофери з міцним широким підбором і загостреним носком. Вони мають гладку поверхню та простий ремінець через верх для вишуканого вигляду.",
+"3": "Це срібний бодічейн, що вирізняється трьома нитками перлів навколо шиї, які зливаються в центральний стовпчик синіх кристалів, що тягнеться до талії, і закінчуються ланцюжками з перлів на стегнах.",
+"4": "М'який молочно-білий об'ємний шарф із плюшевої тканини з довгими ніжними китицями по краях.",
+"5": "Це сумка через плече з яскравим квітковим візерунком у відтінках синього, зеленого, червоного та оранжевого на основному відділенні, що контрастує із суцільною темно-синьою основою та відповідним ремінцем.",
+"6": "Я обрала яскраву червону сукню з білим горошком і грайливим силуетом «трапеція», щоб створити радісний настрій для нашого побачення в осінньому парку. Щоб заземлити цей яскравий образ, я підібрала елегантні бежеві лофери на широкому каблуці, які зроблять тебе комфортною під час прогулянки по траві. Ефектний срібний бодічейн із синіми кристалами додає сучасного зухвалого акценту, який чудово контрастує з класичною сукнею. Насамкінець, м’який молочно-білий шарф дарує тепло та ніжний нейтральний колір до твого червоного вбрання. Цей ансамбль працює ідеально: червоний привертає увагу до обличчя, структурована талія підкреслює твою фігуру, а поєднання візерунків і однотонних кольорів робить образ цікавим без надмірності.",
+"7": "Недбало накинь молочно-білий шарф навколо шиї або драпіруй його через одне плече, щоб додати розслабленого невимушеного настрою, ідеального для прогулянки парком.",
+"8": "Прикраса — Намисто з перлів замінює сині прикраси, щоб відповідати тону червоної схеми та уникнути невідповідності поблизу обличчя, задовольняючи твоє бажання «червоного», використовуючи нейтральний колір, який доповнює його, а не надто контрастує.",
+"9": "Шарф об'ємний з дредами — Шарф залишається м’яким нейтральним акцентом (молочним), щоб збалансувати червону сукню без додавання іншої колірної гами, зберігаючи фокус образу на твоєму бажанні «червоного».",
+"10": "Сукня жіноча міні з перекрутом — Цей образ порушує правило тональної схеми за допомогою нейтральних кольорів (бежеві туфлі, молочний шарф) як навмисних елементів для заземлення, що відповідає твоєму наміру уникнути монохромної плоскості та забезпечує те, щоб червоний залишався єдиним домінантним фокусом без конкуруючих акцентів поблизу обличчя.",
+"11": "Сукня жіноча міні з перекрутом — Сукня червона (твоє бажання) і відповідає повсякденному рівню формальності; нейтральні сірі прикраси підтримують образ без конкуренції з базовим кольором поблизу обличчя.",
+"12": "Туфлі Bav шкіряні бежеві — Білі лофери замінюють коричневі, щоб створити більш світлий перехід від червоної спідниці, відповідаючи рівню формальності заходу та уникаючи сильного контрасту поблизу обличчя.",
+"13": "Сукня жіноча міні з перекрутом — Додана як третій елемент (червона мінісукня), щоб порушити моно-об’єктний силует і додати другий предмет червоної гами для різноманітності, безпосередньо задовольняючи твоє бажання «червоного», зберігаючи при цьому рожеву сукню як головну героїню.",
+"14": "Сукня жіноча міні з перекрутом — Додана як третій елемент (червона мінісукня), щоб ввести червоний тон і порушити домінування фіолетового, безпосередньо задовольняючи твоє бажання «червоного», зберігаючи при цьому лілову сукню як головну героїню для вишуканості."
+}
+```
