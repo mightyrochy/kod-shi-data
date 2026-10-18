@@ -545,9 +545,6 @@ def річ(r, короткий=False, пул=False, слот=None):
     if not isinstance(r, dict):
         return r
     о = {"n": r.get("н"), "name": r.get("назва")}
-    if r.get("знання"):
-        import знання_речі as _ЗН
-        о.update(_ЗН.на_дріт(r["знання"]))
     if r.get("ціна") is not None:
         о["price"] = _число(r["ціна"])
     for ключ, v in (
@@ -644,6 +641,9 @@ def річ(r, короткий=False, пул=False, слот=None):
         о["features"] = r["features"].strip()
     if "item_type" in о:                 # розбір назвав вид речі — рід уже випливає з нього
         о.pop("kind", None)
+    if r.get("знання"):
+        import знання_речі as _ЗН
+        о.update(_ЗН.на_дріт(r["знання"], має_точку=bool(о.get("hex") or о.get("lab"))))
     вих = _скоротити(о) if розб else о
     if пул:
         for ключ, типове in ТИПОВІ_ПУЛУ.items():

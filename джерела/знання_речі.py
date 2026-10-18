@@ -94,7 +94,7 @@ def знання(річ):
         "applicability": "unknown", "source": ДЖЕРЕЛА_МАТРИЦІ[в]})) for в in ВЛАСТИВОСТІ}
 
 
-def на_дріт(дані):
+def на_дріт(дані, має_точку=False):
     """Передати статуси трьох властивостей без повторення матриці на кожній речі.
 
     Старі поля моделі лишаються. Значення діапазону кольору та відомого металу
@@ -103,6 +103,8 @@ def на_дріт(дані):
     вих = {"knowledge": [[дані[в]["status"], дані[в]["source"]] for в in ВЛАСТИВОСТІ]}
     if дані["color"]["status"] == "range":
         вих["color_range"] = дані["color"]["value"]
+    elif дані["color"]["status"] == "measured" and not має_точку:
+        вих["lab"] = дані["color"]["value"]
     if дані["metal"]["status"] in ("measured", "range"):
         вих["metal"] = дані["metal"]["value"]
     return вих
