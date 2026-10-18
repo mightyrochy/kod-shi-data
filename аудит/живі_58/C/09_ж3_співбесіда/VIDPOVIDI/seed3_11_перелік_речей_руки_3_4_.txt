@@ -1,0 +1,51 @@
+── ПРОМПТ (2517 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cream wool-blend blazer, structured shoulder cut, elbow length, #F5F0E6, fine brushed weave\nCharcoal grey tapered trousers, mid-rise waist with clean front pleats, full ankle length, #3E4247, high-twist worsted wool\nWhite crisp cotton blouse, classic pointed collar with a relaxed drape front, hip length, #FFFFFF, poplin weave\nNude leather block-heel pumps, almond toe, 8 cm heel height, #C5B6A9, soft calfskin grain\nPearl stud earrings, round 8mm diameter, lustrous surface, #E0DDDB, cultured freshwater pearl\nGold thin chain necklace, delicate link design resting at collarbone, #FFD700, solid 14k yellow gold\n\nThis outfit balances the \"neat\" and \"formal\" requirements by pairing a structured charcoal wool trouser suit with a refined white cotton blouse, projecting immediate professionalism suitable for a bank analyst interview. The cream blazer adds a touch of approachable warmth appropriate for an autumn morning without crossing into overly casual territory like denim or sneakers. Completing the look with nude block heels and subtle pearl jewelry ensures the focus remains on your qualifications while adhering to conservative banking standards."}
+
+── ВІДПОВІДЬ (1205 симв., 99.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Cream wool-blend blazer",
+      "details": "structured shoulder cut, elbow length",
+      "slot": "outerwear",
+      "color_hex": "#F5F0E6",
+      "worn": true
+    },
+    {
+      "name": "Charcoal grey tapered trousers",
+      "details": "mid-rise waist with clean front pleats, full ankle length",
+      "slot": "bottom",
+      "color_hex": "#3E4247",
+      "worn": true
+    },
+    {
+      "name": "White crisp cotton blouse",
+      "details": "classic pointed collar with a relaxed drape front, hip length",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "Nude leather block-heel pumps",
+      "details": "almond toe, 8 cm heel height",
+      "slot": "shoes",
+      "color_hex": "#C5B6A9",
+      "worn": true
+    },
+    {
+      "name": "Pearl stud earrings",
+      "details": "round 8mm diameter, lustrous surface",
+      "slot": "earrings",
+      "color_hex": "#E0DDDB",
+      "worn": true
+    },
+    {
+      "name": "Gold thin chain necklace",
+      "details": "delicate link design resting at collarbone",
+      "slot": "necklace",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}
