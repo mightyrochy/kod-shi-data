@@ -11760,7 +11760,8 @@ function шляхОновлення(нова, адреса){
   return у.pathname + у.search + у.hash;
 }
 async function перевіритиНовішуЗбірку(){
-  if (!/^https?:$/.test(location.protocol) || ЗБІРКА_ПОКАЗУ.indexOf('показ') < 0) return;
+  if (!/^https?:$/.test(location.protocol) ||
+      (!/^[0-9a-f]{40}$/.test(ЗБІРКА_ПОКАЗУ) && ЗБІРКА_ПОКАЗУ.indexOf('показ') < 0)) return;
   try{
     const відп = await fetch(new URL(ФАЙЛ_ЗБІРКИ, location.href).pathname + '?t=' + Date.now(), {cache:'no-store'});
     if (!відп.ok){ console.warn('штамп збірки: ' + ФАЙЛ_ЗБІРКИ + ' → ' + відп.status); return; }
