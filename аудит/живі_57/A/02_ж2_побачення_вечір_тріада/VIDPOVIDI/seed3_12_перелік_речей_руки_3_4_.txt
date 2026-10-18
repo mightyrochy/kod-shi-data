@@ -1,0 +1,39 @@
+── ПРОМПТ (2343 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green silk blouse with a relaxed wrap cut and mid-length hem, #0a6d52, flowing chiffon.\nTailored charcoal grey wool-blend wide-leg trousers with a high waist and cropped ankle length, #3f4145, structured tweed.\nBlack leather ankle boots with a moderate block heel, #0f0f0f, smooth calfskin.\nGold vermeil hoop earrings and a delicate pearl pendant necklace, #ffd700, polished metal.\n\nThis outfit strikes the perfect balance between date-night allure and casual restaurant comfort, utilizing deep emerald tones that complement her warm skin undertones while appearing sophisticated under evening artificial light. The relaxed silhouette of the blouse paired with structured wide-leg trousers creates a flattering elongation effect without clinging to specific measurements, ensuring elegance in a low-key setting. The neutral charcoal and black accessories ground the vibrant top, adhering to her wish for a refined yet effortless look that avoids being overly formal or restrictive."}
+
+── ВІДПОВІДЬ (843 симв., 91.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blouse",
+      "details": "Relaxed wrap cut with mid-length hem, flowing chiffon fabric",
+      "slot": "top",
+      "color_hex": "#0a6d52"
+    },
+    {
+      "name": "Trousers",
+      "details": "Tailored wide-leg trousers with high waist and cropped ankle length, structured tweed fabric",
+      "slot": "bottom",
+      "color_hex": "#3f4145"
+    },
+    {
+      "name": "Boots",
+      "details": "Ankle boots with moderate block heel, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#0f0f0f"
+    },
+    {
+      "name": "Earrings",
+      "details": "Hoop earrings",
+      "slot": "earrings",
+      "color_hex": "#ffd700"
+    },
+    {
+      "name": "Necklace",
+      "details": "Delicate pendant",
+      "slot": "necklace",
+      "color_hex": "#ffd700"
+    }
+  ]
+}
