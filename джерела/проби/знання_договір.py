@@ -14,13 +14,13 @@ def головна():
         р.update(id="fixture", тип="dress_generic")
         факт = З.властивість(р, "color")
         дріт = Д.річ(П._річ_пулу(р, {}))
-        assert факт["status"] == стан and дріт["knowledge"][0][0] == стан
+        assert факт["status"] == стан and дріт["knowledge"]["color"]["status"] == стан
         if стан == "range":
             assert дріт["color_range"] == факт["value"]
-        print("color", стан, "→", дріт["knowledge"][0])
+        print("color", стан, "→", дріт["knowledge"]["color"])
     рядок = П._рядки_кандидатів({}, {}, None, {"_кандидати": {"сукня": [dict(вікно, id="projection", тип="dress_generic", метал="gold")]}})["сукня"][0]
     дріт = Д.річ(П._річ_пулу(рядок, {}))
-    assert дріт["knowledge"][0][0] == "range" and дріт["metal"] == "gold"
+    assert дріт["knowledge"]["color"]["status"] == "range" and дріт["metal"] == "gold"
     assert З.властивість({"hex": "#123456", "осі": {"L_from": "word"}}, "color")["status"] == "unknown"
     р = {"тип": "jewelry_generic", "матеріал": "raw fixture", "метал": None}
     assert З.властивість(р, "composition")["status"] == "unknown"

@@ -435,7 +435,8 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
 # до рядка 5901), а повний — ні: `color_disputed` можна прочитати кольором речі, `hex` при `L_from: word` —
 # виміром. Шапка називає лише ті, що в цьому переліку є: ключ, якого нема, коштував би рядок і не назвав би нічого.
 ОПИС_КЛЮЧІВ = {
-    "knowledge": "[status, source] pairs in order [color, composition, metal]. Sources refer to existing "
+    "knowledge": "Facts for color, composition and metal, joined to actual item rows through knowledge_legend. "
+                 "Each fact has status, value, source and applicability with its own source. Sources refer to existing "
                  "color_point/color_window, metal_code/metal_variants; *_missing has no fact, composition_raw "
                  "is unparsed shop text, not coded composition. Statuses: measured — a known value from its source; "
                  "range — only the given range or alternatives are known; unknown — no supported fact, "
