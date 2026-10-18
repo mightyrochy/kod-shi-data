@@ -255,7 +255,8 @@ def перевірити_кадри(manifest, receipt):
     verified = {}
     for key in ids:
         r = records.get(key)
-        if not isinstance(r, dict) or not _хеш(r.get("image_sha256")) or r.get("bytes_sha256") != r["image_sha256"]:
+        потрібні = {"sku", "source_kind", "source_id", "image_sha256", "bytes_sha256", "image_url", "crop"}
+        if not isinstance(r, dict) or not потрібні.issubset(r) or not _хеш(r["image_sha256"]) or r["bytes_sha256"] != r["image_sha256"]:
             return invalid("invalid_capture_record")
         sku = r.get("sku")
         kind = r.get("source_kind")
