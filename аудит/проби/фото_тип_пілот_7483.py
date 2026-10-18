@@ -198,7 +198,7 @@ def експортувати_очам(маніфест, тека):
     тека.mkdir(parents=True, exist_ok=True)
     огляд = []
     рядки = прочитати(маніфест)
-    for р in рядки:
+    for р in sorted(рядки, key=lambda р: р["blind_id"]):
         if р.get("prepare_status") != "ready":
             continue
         файл = (джерело / р["prepared_path"]).resolve()
@@ -250,6 +250,9 @@ def прийняти_підготовку(маніфест, receipt):
     квитанція = json.loads(Path(receipt).read_text(encoding="utf-8"))
     if квитанція.get("blind") is not True or not квитанція.get("reviewer") or квитанція.get("prepared_manifest_sha256") != хеш(Path(маніфест).read_bytes()):
         raise ValueError("blind_gold_receipt_missing_or_mismatched")
+    очі = квитанція.get("eye_reviewer")
+    if not isinstance(очі, dict) or any(not isinstance(очі.get(к), str) or not очі[к].strip() for к in ("id", "session_id", "model")):
+        raise ValueError("independent_eye_identity_required")
     gold_sha = квитанція.get("gold_sha256", "")
     if len(gold_sha) != 64 or any(с not in "0123456789abcdef" for с in gold_sha):
         raise ValueError("gold_sha256_required")
@@ -291,6 +294,8 @@ def виконати(маніфест, receipt, шлях_контракту, mod
         raise ValueError("explicit_model_revision_and_bounded_params_required")
     endpoint = локальна_адреса(адреса)
     рядки, квитанція = прийняти_підготовку(маніфест, receipt)
+    if квитанція["eye_reviewer"]["model"].strip() == model_id:
+        raise ValueError("independent_eye_model_required")
     модуль, пакет = контракт(шлях_контракту)
     capture = json.loads((Path(маніфест).resolve().parent / "capture-manifest.json").read_text(encoding="utf-8"))
     if модуль.перевірити_кадри(capture, квитанція)["status"] != "verified":
