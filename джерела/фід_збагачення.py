@@ -352,6 +352,19 @@ def читати_збагачення(тека=None):
     return {}
 
 
+def ключ_фото_типу(тека=None):
+    """Optional файли входять також у ключ живої бази, не лише таблиці збирача."""
+    import фото_тип_контракт as ФТ
+    тека = тека or os.path.dirname(os.path.abspath(__file__)) or "."
+    ключ = []
+    for імя in ФТ.ФАЙЛИ:
+        файл = next((ш for ш in (os.path.join(тека, імя), os.path.join(тека, імя + ".gz")) if os.path.exists(ш)), None)
+        if файл:
+            ст = os.stat(файл)
+            ключ.append((файл, ст.st_mtime_ns, ст.st_size))
+    return tuple(ключ)
+
+
 def читати_фото_тип(тека=None):
     """Optional overlay + незалежні capture/receipt; без HTTP і старих SHA кешу.
 
