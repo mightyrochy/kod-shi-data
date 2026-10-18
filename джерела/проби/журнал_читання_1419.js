@@ -1,5 +1,4 @@
-/* Журнал П3: повторні читання, зміни й інша вкладка на справжньому fake-indexeddb.
-   Запуск із кореня: NODE_PATH=джерела/node_modules node джерела/проби/журнал_читання_1419.js */
+/* Журнал П3: повтори, зміни, вкладки й стара збірка. Запуск із кореня: NODE_PATH=джерела/node_modules node джерела/проби/журнал_читання_1419.js */
 const fs = require('fs'), path = require('path'), assert = require('assert/strict');
 const {indexedDB, IDBObjectStore} = require('fake-indexeddb');
 const джерело = fs.readFileSync(path.join(__dirname, '..', 'показ.html'), 'utf8');
@@ -12,8 +11,7 @@ const оригінал = IDBObjectStore.prototype.getAll;
 IDBObjectStore.prototype.getAll = function(...а){ if (this.name === 'вердикти') читань++; return оригінал.apply(this, а); };
 (async()=>{
   const d = await new Promise((рез, від)=>{
-    const r = indexedDB.open('проба-журналу-1419', 3);
-    r.onupgradeneeded = ()=>{ r.result.createObjectStore('вердикти', {autoIncrement:true}); r.result.createObjectStore('кв'); };
+    const r = indexedDB.open('проба-журналу-1419', 3); r.onupgradeneeded = ()=>{ r.result.createObjectStore('вердикти', {autoIncrement:true}); r.result.createObjectStore('кв'); };
     r.onsuccess = ()=>рез(r.result); r.onerror = ()=>від(r.error);
   });
   const читач = ()=>{
@@ -34,7 +32,9 @@ IDBObjectStore.prototype.getAll = function(...а){ if (this.name === 'верди
   await другий.tx(d,'вердикти','readwrite',s=>s.add({етапи:'{}',рука:'інша вкладка'})); assert.equal((await перший.усіВердикти()).length,3); assert.equal(читань,5);
   await assert.rejects(перший.tx(d,'вердикти','readwrite',s=>{ s.add({рука:'відкочено'}); s.transaction.abort(); })); assert.equal((await перший.усіВердикти()).length,3);
   const доФокусу=читань, почате=перший.усіВердикти(); перший.події.focus(); await почате; await перший.усіВердикти(); assert.equal(читань,доФокусу+2);
+  const старий=d.transaction('вердикти','readwrite'); старий.objectStore('вердикти').add({етапи:'{}',рука:'стара збірка'}); await new Promise(рез=>{ старий.oncomplete=рез; });
+  перший.події.click(); assert.equal((await перший.усіВердикти()).length,4);
   await перший.tx(d,'вердикти','readwrite',s=>s.add({етапи:'x'.repeat(9*1024*1024)})); const до=читань;
-  assert.equal((await перший.усіВердикти()).length,4); await перший.усіВердикти(); assert.equal(читань,до+2);
+  assert.equal((await перший.усіВердикти()).length,5); await перший.усіВердикти(); assert.equal(читань,до+2);
   console.log('Журнал: 16 повторів → 1 повне читання; зміни, оцінка, позначка, інша вкладка, відкат, ізоляція, межа — пройдено'); d.close();
 })().catch(помилка=>{ console.error(помилка); process.exitCode=1; });
