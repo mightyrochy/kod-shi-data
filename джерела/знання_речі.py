@@ -35,7 +35,7 @@ _ТКАНИННІ = frozenset(("top", "bottom", "dress", "set", "outerwear", "sc
 def тип_кодом(річ):
     """Тип із чинного enum: код або ключ ядра; незнайоме не вгадувати з назви."""
     тип = річ.get("тип")
-    return тип if тип in _ВМ.ТАБЛИЦЯ["item_type"] else _ВМ.код("item_type", тип)
+    return тип if isinstance(тип, str) and тип in _ВМ.ТАБЛИЦЯ["item_type"] else _ВМ.код("item_type", тип)
 
 
 def факт(статус, значення, джерело):
@@ -71,10 +71,10 @@ def властивість(річ, властивість):
         return факт("unknown", None, "color_missing")
     if властивість == "metal":
         метал = річ.get("метал")
-        код = метал if метал in _ВМ.ТАБЛИЦЯ["metal"] else _ВМ.код("metal", метал)
+        код = метал if isinstance(метал, str) and метал in _ВМ.ТАБЛИЦЯ["metal"] else _ВМ.код("metal", метал)
         варіанти = річ.get("метал_варіанти")
-        if варіанти:
-            коди = [v if v in _ВМ.ТАБЛИЦЯ["metal"] else _ВМ.код("metal", v) for v in варіанти]
+        if isinstance(варіанти, (list, tuple)) and варіанти:
+            коди = [v if isinstance(v, str) and v in _ВМ.ТАБЛИЦЯ["metal"] else _ВМ.код("metal", v) for v in варіанти]
             if all(коди):
                 return факт("range", коди, "metal_variants")
         if код:
