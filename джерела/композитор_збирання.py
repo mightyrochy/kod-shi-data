@@ -159,9 +159,9 @@ def зібрати_кроками(F, каталог, вікна=None, тіло=N
             except (TypeError, ValueError): _lo = None
         _тримає = ((_lo is not None and _lo >= 7)
                    or (str(kw.get("дрес_код") or "").lower().replace(" ", "_").replace("-", "_") in ("business_formal", "cocktail", "black_tie", "smart", "formal", "формальний", "вечірній"))
-                   or (kw.get("опади") not in (None, "", "ні", 0, False))
-                   or ((kw.get("вітер") or 0) and float(kw.get("вітер") or 0) >= 6)
-                   or (kw.get("_формат") in ("просто неба", "змішано") and float(_темп) < 22))
+                   or (_СЦ.канон_опади(kw.get("опади"), _темп) not in (None, _СЦ.ОПАДИ_НІ))
+                   or ((kw.get("вітер") or 0) and float(kw.get("вітер") or 0) >= _СЦ.ВІТЕР_ПОМІТНИЙ)
+                   or (kw.get("_формат") in ("просто неба", "змішано") and float(_темп) < _СЦ.ЗНІМНИЙ_ДО_C))
         # Ч-10 (рядок 223): нота — ЗАЯВА з числами. `held_by` каже, ЩО саме втримало шар:
         # той самий свідок, що в `_тримає`, а не друге його читання.
         _держить_код = ("dress_code"
