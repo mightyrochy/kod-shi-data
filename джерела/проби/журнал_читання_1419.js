@@ -33,7 +33,7 @@ IDBObjectStore.prototype.getAll = function(...а){ if (this.name === 'верди
   await assert.rejects(перший.tx(d,'вердикти','readwrite',s=>{ s.add({рука:'відкочено'}); s.transaction.abort(); })); assert.equal((await перший.усіВердикти()).length,3);
   const доФокусу=читань, почате=перший.усіВердикти(); перший.події.focus(); await почате; await перший.усіВердикти(); assert.equal(читань,доФокусу+2);
   const старий=d.transaction('вердикти','readwrite'); старий.objectStore('вердикти').add({етапи:'{}',рука:'стара збірка'}); await new Promise(рез=>{ старий.oncomplete=рез; });
-  перший.події.click(); assert.equal((await перший.усіВердикти()).length,4);
+  перший.події.focus(); assert.equal((await перший.усіВердикти()).length,4);
   await перший.tx(d,'вердикти','readwrite',s=>s.add({етапи:'x'.repeat(9*1024*1024)})); const до=читань;
   assert.equal((await перший.усіВердикти()).length,5); await перший.усіВердикти(); assert.equal(читань,до+2);
   console.log('Журнал: 16 повторів → 1 повне читання; зміни, оцінка, позначка, інша вкладка, відкат, ізоляція, межа — пройдено'); d.close();

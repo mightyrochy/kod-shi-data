@@ -2287,9 +2287,7 @@ async function читатиЖурналП(){
 }
 window.addEventListener('focus', скинутиКешЖурналуП);
 window.addEventListener('pagehide', скинутиКешЖурналуП);
-/* Нова дія перечитує й запис старої вкладки, що ще не пише ревізії. */
-window.addEventListener('click', скинутиКешЖурналуП, true);
-window.addEventListener('keydown', скинутиКешЖурналуП, true);
+/* Новий writer видимий за ревізією; давній без неї — після повернення focus. */
 async function усіВердикти(){
   return (await читатиЖурналП()).map(р=>р.зап);
 }
