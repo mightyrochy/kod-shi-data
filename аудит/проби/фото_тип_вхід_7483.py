@@ -1,7 +1,7 @@
 """Відтворюваний добір пілота 7483 зі збережених даних, без мережі й gold.
 
 Старі слоти, каталог і хеші — лише стратифікація, не спостереження кадру.
-Негативні кадри мусить надати очна перевірка; порожні місця блокують infer.
+Службові URL — кандидати негативної групи; їхній клас встановлюють очі.
 """
 import argparse
 import collections
@@ -123,7 +123,8 @@ def кандидат(рядок, страта, запис, підказки, д�
     """Зберігає точну прив'язку кадру й окремо непідтверджені старі дані."""
     ід = '7483-real-' + хеш(рядок['id'] + '\n' + рядок['форма_URL'])[:16]
     вихід = основа(ід, 'real', джерело)
-    вихід.update(sku=рядок['id'], source_url=запис['url'],
+    вихід.update(sku=рядок['id'], source_kind='product', source_id=рядок['id'],
+                 source_url=запис['url'],
                  item_page_url=запис['url'], image_url=рядок['форма_URL'],
                  stratum=страта, ready_for_download=True)
     вихід['known_old_metadata'] = {
@@ -138,6 +139,36 @@ def кандидат(рядок, страта, запис, підказки, д�
     return вихід
 
 
+def контролі(службові, рядки, джерело, зерно):
+    """Бере точні службові URL без припущення про видимий зміст кадру."""
+    зайняті = {р['image_url'] for р in рядки}
+    записи = []
+    for домен, адреси in службові.items():
+        for адреса, лічба in адреси.items():
+            if вебадреса(адреса) and адреса not in зайняті:
+                записи.append((домен, адреса, лічба))
+    записи.sort(key=lambda з: хеш(f'{зерно}\nservice_control\n{з[0]}\n{з[1]}'))
+    вихід = []
+    for домен, адреса, лічба in записи:
+        if адреса in зайняті:
+            continue
+        зайняті.add(адреса)
+        ід = '7483-control-' + хеш(домен + '\n' + адреса)[:16]
+        рядок = основа(ід, 'negative', джерело)
+        екранувати = lambda текст: текст.replace('~', '~0').replace('/', '~1')
+        рядок.update(source_kind='service_control', source_id=ід,
+                     source_url=адреса, image_url=адреса,
+                     frame_target='service_candidate', stratum='service_control_candidate',
+                     ready_for_download=True,
+                     source_record_pointer='/' + екранувати(домен) + '/' + екранувати(адреса),
+                     known_old_metadata={'usage': 'stratification_only_not_gold_not_model_input',
+                                         'service_domain': домен, 'service_occurrences': лічба})
+        вихід.append(рядок)
+        if len(вихід) == КІЛЬКІСТЬ['negative']:
+            return вихід
+    raise ValueError(f'Службових URL лише {len(вихід)}, потрібно20')
+
+
 def калібрування(рядки, зерно):
     """Позначає 40 місць як підмножину 120, без повторного кадру."""
     for роль in ('real', 'negative'):
@@ -147,33 +178,29 @@ def калібрування(рядки, зерно):
             рядок['calibration'] = True
 
 
-def зібрати(корпус, каталог, джерело, зерно):
-    """Повертає 100 реальних кандидатів та 20 чесно незаповнених негативів."""
+def зібрати(корпус, каталог, службові, джерело, зерно):
+    """Повертає 100 товарних і 20 службових кадрів без призначення gold."""
     індекс = перевірити(корпус, каталог, джерело)
     підказки = ознаки(корпус, індекс)
     рядки = [кандидат(р, с, індекс[р['id']], підказки[р['id']], джерело)
              for р, с in добрати(корпус, підказки, зерно)]
-    for номер in range(1, КІЛЬКІСТЬ['negative'] + 1):
-        запис = основа(f'7483-negative-pending-{номер:03}', 'negative', джерело)
-        запис.update(stratum='negative_pending_eye', frame_target='pending_eye',
-                      target_binding=None, known_old_metadata=None,
-                      pending_reason='Очі мають надати справжній негативний кадр і точну прив’язку')
-        рядки.append(запис)
+    рядки.extend(контролі(службові, рядки, джерело, зерно))
     калібрування(рядки, зерно)
     return рядки, підказки
 
 
 def зведення(рядки, підказки, походження):
-    """Рахує готовність, не видаючи резерв місць за наявні негативні фото."""
+    """Рахує URL, не видаючи службове походження за підтверджений клас."""
     реальні = [р for р in рядки if р['role'] == 'real']
     відомі = [(р['known_old_metadata']['historical_frame_metadata'] or {}).get('sha256')
               for р in реальні]
     return {'provenance': походження, 'candidate_slots': len(рядки),
-            'real_candidates': len(реальні), 'negative_frames_supplied': 0,
-            'negative_slots_pending_eye': КІЛЬКІСТЬ['negative'], 'infer_ready': False,
+            'real_candidates': len(реальні), 'negative_candidate_urls': КІЛЬКІСТЬ['negative'],
+            'negative_gold_verified': 0, 'infer_ready': False,
             'strata': dict(collections.Counter(р['stratum'] for р in рядки)),
             'available_hints': {с: sum(п[с] for п in підказки.values()) for с, _ in СТРАТИ},
             'unique_real_urls': len({р['image_url'] for р in реальні}),
+            'unique_all_urls': len({р['image_url'] for р in рядки}),
             'known_historical_hashes': sum(bool(х) for х in відомі),
             'unique_known_historical_hashes': len({х for х in відомі if х}),
             'actual_pixels_verified': 0, 'gold_assigned': 0,
@@ -184,25 +211,30 @@ def зведення(рядки, підказки, походження):
 def main():
     """Пише JSONL та коротке зведення, не завантажуючи жодного зображення."""
     парсер = argparse.ArgumentParser(description=__doc__)
-    for назва in ('corpus', 'catalog', 'source-sha', 'output', 'summary'):
+    for назва in ('corpus', 'catalog', 'service', 'source-sha', 'output', 'summary'):
         парсер.add_argument('--' + назва, required=True)
     парсер.add_argument('--seed', default='7483-120-v1')
     арг = парсер.parse_args()
     корпус, хешкорпусу = читати(арг.corpus)
     каталог, хешкаталогу = читати(арг.catalog)
-    рядки, підказки = зібрати(корпус, каталог, арг.source_sha, арг.seed)
+    службові, хешслужбових = читати(арг.service)
+    рядки, підказки = зібрати(корпус, каталог, службові, арг.source_sha, арг.seed)
     походження = {'source_sha': арг.source_sha, 'corpus_sha256': хешкорпусу,
                   'catalog_sha256': хешкаталогу, 'seed': арг.seed,
+                  'service_manifest_sha256': хешслужбових,
                   'selector_sha256': хеш(Path(__file__).read_bytes())}
     for рядок in рядки:
         рядок['selection_provenance'] = походження
+        if рядок['source_kind'] == 'service_control':
+            рядок['source_file'] = 'джерела/каталог_службові_кадри.json.gz'
+            рядок['source_file_sha256'] = хешслужбових
     текст = ''.join(json.dumps(р, ensure_ascii=False, sort_keys=True) + '\n' for р in рядки)
     Path(арг.output).write_text(текст, encoding='utf-8')
     звіт = зведення(рядки, підказки, походження)
     звіт['manifest_sha256'] = хеш(текст)
     Path(арг.summary).write_text(json.dumps(звіт, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({к: звіт[к] for к in ('candidate_slots', 'real_candidates',
-          'negative_frames_supplied', 'infer_ready', 'manifest_sha256')}, ensure_ascii=False))
+          'negative_candidate_urls', 'infer_ready', 'manifest_sha256')}, ensure_ascii=False))
 
 
 if __name__ == '__main__':
