@@ -2505,6 +2505,9 @@ function підсумокМоделі(){
     видно: ['е-профіль', 'е-лице', 'е-мірки', 'е-випадок'].filter(і => (document.getElementById(і) || {}).style && document.getElementById(і).style.display !== 'none'),
     кнопка: (document.getElementById('н-далі-текст') || {}).textContent}));
   if (ПРАВИЛО_РУКИ2){
+    /* Сторінка піднімає міст показу лише за потреби (палітра, оцінка), а до знайомства його нема: без цього виклику
+       очікування нижче 120 с стояло даремно. Той самий шлях, що в сторінки. */
+    await стор.evaluate(async () => { await підняти_міст_показу(); });
     await стор.waitForFunction(() => typeof pyodide_показу !== 'undefined' && pyodide_показу, null, {timeout: 120000});
     const код = fs.readFileSync(path.join(__dirname, 'рв6_правило_руки2.py'), 'utf8');
     await стор.evaluate(async ([код, ід]) => {
