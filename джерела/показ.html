@@ -11850,7 +11850,8 @@ function підняти_міст_показу(){
   if (!ПІДЙОМ_МОСТА_П) ПІДЙОМ_МОСТА_П = (async ()=>{
     const пд = await підняти_pyodide_показу();
     $('пал-стан').textContent = 'Ще мить…';
-    const бін = Uint8Array.from(atob(МОДУЛІ_ПОКАЗУ), c=>c.charCodeAt(0));
+    const архів = atob(МОДУЛІ_ПОКАЗУ), бін = new Uint8Array(архів.length);
+    for (let і = 0; і < архів.length; і++) бін[і] = архів.charCodeAt(і);
     пд.unpackArchive(бін.buffer, 'zip', {extractDir: '/показ'});
     await пд.runPythonAsync(
       'import sys, os\n' +
