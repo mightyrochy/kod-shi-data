@@ -20,7 +20,7 @@ import слоти as СЛ
 
 ПРОТОКОЛ = "photo-type-pilot-7483-v1"
 ПІЛОТ = {"real": 100, "negative": 20}
-СТАНИ_GOLD = {"resolved", "ambiguous", "target_not_visible", "negative_coded_join_control"}
+СТАНИ_GOLD = {"resolved", "unknown", "ambiguous", "target_not_visible", "negative_coded_join_control"}
 
 
 def _json(текст):
@@ -124,6 +124,10 @@ def оцінити(маніфест, gold, результати, receipt, *, к�
             or not isinstance(gold.get("annotations"), list)):
         raise ValueError("invalid_input_container")
     пакет = пакет_контракту()
+    причини_невідомого = {п for варіант in пакет["schema"]["oneOf"]
+        if варіант["properties"]["target"].get("enum") == ["unique"]
+        and варіант["properties"]["item_type"].get("enum") == ["unknown"]
+        for п in варіант["properties"]["reason"]["enum"]}
     помилки, неповне, ledger = [], [], []
     м = _індекс(маніфест, "manifest", помилки)
     blind = _індекс(gold.get("annotations", []), "gold_blind", помилки, ключ="blind_id")
@@ -221,6 +225,8 @@ def оцінити(маніфест, gold, результати, receipt, *, к�
                     or not еталон.get("evidence_id") or _час(еталон.get("reviewed_at_utc")) is None):
                 помилки.append({"kind": "gold_not_independent_eye", "sample_id": ід})
             стан = еталон.get("status")
+            if стан == "unknown" and еталон.get("reason") not in причини_невідомого:
+                помилки.append({"kind": "gold_unknown_reason", "sample_id": ід})
             if стан not in СТАНИ_GOLD:
                 помилки.append({"kind": "gold_status", "sample_id": ід})
             if стан == "negative_coded_join_control":
