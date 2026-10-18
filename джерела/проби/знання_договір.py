@@ -21,6 +21,7 @@ def головна():
     рядок = П._рядки_кандидатів({}, {}, None, {"_кандидати": {"сукня": [dict(вікно, id="projection", тип="dress_generic", метал="gold")]}})["сукня"][0]
     дріт = Д.річ(П._річ_пулу(рядок, {}))
     assert дріт["knowledge"][0][0] == "range" and дріт["metal"] == "gold"
+    assert З.властивість({"hex": "#123456", "осі": {"L_from": "word"}}, "color")["status"] == "unknown"
     р = {"тип": "jewelry_generic", "матеріал": "raw fixture", "метал": None}
     assert З.властивість(р, "composition")["status"] == "unknown"
     assert З.властивість(р, "metal")["status"] == "unknown"

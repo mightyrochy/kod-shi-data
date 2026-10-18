@@ -64,6 +64,10 @@ def властивість(річ, властивість):
                 межі = _К.межі_кольору(річ)
                 if межі is not None:
                     return факт("range", межі, "color_window")
+            elif ((річ.get("осі") or {}).get("L_from") in ("word", "word_or_photo")
+                  or річ.get("джерело_кольору") == "назва_вікно"):
+                # Старий запис уже втратив саме вікно: hex-центр не відновлює його.
+                return факт("unknown", None, "color_provenance_missing")
             else:
                 точка = _К.точка_кольору(річ)
                 if точка is not None:
