@@ -47,6 +47,10 @@ on:
       - '!джерела/аудит/ДОСЯЖНІСТЬ.md'
       - 'каталог_повний.xml.gz'
       - '.github/workflows/zbirka.yml'
+      # ПР-1 (слово власника 18.10): PR дошки не править, а пише рядки у `аудит/дошка/<гілка>.md`;
+      # згортає їх у `аудит/БЕКЛОГ.md` крок «згорнути дошку» job'а `zbirka` — тим самим комітом, що й збірка.
+      # Push, де змінились лише ці файли, ганяє лише `zminy` і `zbirka` (секунди): важкі job'и пропущено.
+      - 'аудит/дошка/**'
   workflow_dispatch:
 
 permissions:
@@ -59,6 +63,37 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Що змінилось у push. `lyshe_doshka=true` — усі змінені файли лежать у `аудит/дошка/`: тоді важкі
+  # job'и (`perevirka`, `rozdily`, `pravyla`) пропущено, а `zbirka` лише згортає дошку, не чіпаючи
+  # `index.html`. Усе, чого не вдалося з'ясувати (не push, нова гілка, `before` не дістати), — `false`,
+  # тобто повна збірка, як і було.
+  zminy:
+    name: що змінилось у push
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      lyshe_doshka: ${{ steps.zmina.outputs.lyshe_doshka }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 1
+
+      - name: чи змінилась лише дошка
+        id: zmina
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          lyshe=false
+          if [ "${GITHUB_EVENT_NAME}" = push ] && [ -n "${BEFORE//0/}" ] \
+             && git fetch --no-tags --depth=1 origin "${BEFORE}" 2>/dev/null; then
+            zminy=$(git -c core.quotepath=off diff --name-only "${BEFORE}" "${GITHUB_SHA}")
+            if [ -n "${zminy}" ] && ! printf '%s\n' "${zminy}" | grep -qv '^аудит/дошка/'; then
+              lyshe=true
+            fi
+          fi
+          echo "lyshe_doshka=${lyshe}" >> "$GITHUB_OUTPUT"
+          echo "лише дошка: ${lyshe}" >> "$GITHUB_STEP_SUMMARY"
+
   # КЛЮЧ JOB'А — ASCII, І ЦЕ НЕ СТИЛЬ, А ВИМОГА GITHUB: `jobs.<job_id>` мусить
   # починатися з літери або `_` і містити лише [A-Za-z0-9_-]. Тут колись стояло
   # `зібрати`, і наслідок був не косметичний — workflow не запускався ЖОДНОГО
@@ -68,6 +103,8 @@ jobs:
   # Людське ім'я живе в `name:` — воно рядок, і кирилиця там законна.
   perevirka:
     name: перевірка джерел
+    needs: zminy
+    if: needs.zminy.outputs.lyshe_doshka != 'true'
     runs-on: ubuntu-latest
     steps:
       # `fetch-depth: 0` — НЕ «про всяк випадок». Проби поділу нижче звіряють поточний
@@ -81,6 +118,12 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
+
+      # ПР-1: файли `аудит/дошка/*.md` цього PR мають згортатися в дошку `main` без помилок. Лише на PR:
+      # на `main` помилку згортання показує сам `zbirka` ПІСЛЯ публікації, щоб поганий рядок не зупиняла збірку.
+      - name: файли дошки згортаються (лише перевірка)
+        if: github.event_name == 'pull_request'
+        run: python3 джерела/прилади/згорнути_дошку.py --лише-перевірити
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -355,6 +398,8 @@ jobs:
   # Вони не читають виходів perevirka, тому виконуються паралельно з нею.
   rozdily:
     name: розділи й контракти
+    needs: zminy
+    if: needs.zminy.outputs.lyshe_doshka != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -394,6 +439,8 @@ jobs:
   # Job не входить у needs; навіть помилка підготовки не блокує публікацію.
   pravyla:
     name: звіт правил (не гейт)
+    needs: zminy
+    if: needs.zminy.outputs.lyshe_doshka != 'true'
     continue-on-error: true
     timeout-minutes: 10
     runs-on: ubuntu-latest
@@ -459,7 +506,10 @@ jobs:
     name: зібрати показ-повний
     # ЗБІРКА ЙДЕ ЛИШЕ ПІСЛЯ ЗЕЛЕНОЇ ПЕРЕВІРКИ. Раніше вона була першою й єдиною
     # — тому й комітила артефакт зі зламаних джерел.
-    needs: [perevirka, rozdily]
+    # Умова — ті самі «обидві зелені», окрім push лише з `аудит/дошка/`: тоді `perevirka` і `rozdily`
+    # пропущено (`zminy`), збірки нема, і job лише згортає дошку.
+    needs: [zminy, perevirka, rozdily]
+    if: ${{ !cancelled() && needs.zminy.result == 'success' && (needs.zminy.outputs.lyshe_doshka == 'true' || (needs.perevirka.result == 'success' && needs.rozdily.result == 'success')) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -470,6 +520,7 @@ jobs:
 
       # Артефакт цього прогону для того самого checkout SHA; не збираємо вдруге.
       - name: перевірений показ із перевірки
+        if: needs.zminy.outputs.lyshe_doshka != 'true'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: pokaz-povnyi-${{ github.sha }}
@@ -477,6 +528,7 @@ jobs:
 
       # Звіряємо переданий вантаж із checkout цього job до коміту артефакта.
       - name: звірка вантажу з джерелами
+        if: needs.zminy.outputs.lyshe_doshka != 'true'
         working-directory: джерела
         run: python3 звірка_вантажу.py
 
@@ -492,34 +544,58 @@ jobs:
       # те саме ДО злиття. На PR крок коштує секунди, а файл, який він кладе,
       # нікуди звідси не їде — наступний крок пропущено.
       - name: свіжий звіт досяжності з перевірки
+        if: needs.zminy.outputs.lyshe_doshka != 'true'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: dosiazhnist-zvit
           path: джерела/аудит
+
+      # ЗГОРТАННЯ ДОШКИ (ПР-1). Файли `аудит/дошка/**/*.md` → рядки `аудит/БЕКЛОГ.md`, файли видалено; далі
+      # їх бере той самий коміт, що й збірка, — другого комітера на `main` нема. Помилка згортання НЕ
+      # зупиняє публікацію (`continue-on-error`): справні файли згорнуто, хиби названо в журналі, а
+      # останній крок робить прогін червоним ПІСЛЯ коміту.
+      - name: згорнути дошку
+        id: zghortannia
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        run: |
+          set +e
+          python3 джерела/прилади/згорнути_дошку.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+          exit "${PIPESTATUS[0]}"
 
       # Публікація лише в main: PR збирає й перевіряє продукт без коміту.
       # Артефакт і звіт належать checkout цього прогону. Якщо main уже
       # просунувся, його штатна збірка опублікує свій результат.
       - name: закомітити артефакт
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          LYSHE_DOSHKA: ${{ needs.zminy.outputs.lyshe_doshka }}
         run: |
           set -e
           SOURCE_SHA=$(git rev-parse HEAD)
-          SHTAMP=$(grep -o 'const ЗБІРКА_ПОКАЗУ = "[^"]*"' index.html | head -1 | sed 's/.*= "//; s/"$//')
-          if [ "${SHTAMP}" != "${SOURCE_SHA}" ]; then
-            echo "штамп ${SHTAMP} не відповідає джерелам ${SOURCE_SHA} — публікацію зупинено"
-            exit 1
+          if [ "${LYSHE_DOSHKA}" = "true" ]; then
+            git add -A аудит/БЕКЛОГ.md
+            git add -A аудит/дошка 2>/dev/null || true
+            MSG="дошка: згорнуто файли аудит/дошка (${SOURCE_SHA})"
+          else
+            SHTAMP=$(grep -o 'const ЗБІРКА_ПОКАЗУ = "[^"]*"' index.html | head -1 | sed 's/.*= "//; s/"$//')
+            if [ "${SHTAMP}" != "${SOURCE_SHA}" ]; then
+              echo "штамп ${SHTAMP} не відповідає джерелам ${SOURCE_SHA} — публікацію зупинено"
+              exit 1
+            fi
+            printf '%s' "${SHTAMP}" > build.txt
+            ZVIT="джерела/аудит/ДОСЯЖНІСТЬ.md"
+            git add index.html build.txt "${ZVIT}" аудит/БЕКЛОГ.md
+            git add -A аудит/дошка 2>/dev/null || true
+            MSG="збірка: ${SHTAMP}"
           fi
-          printf '%s' "${SHTAMP}" > build.txt
-          ZVIT="джерела/аудит/ДОСЯЖНІСТЬ.md"
-          git add index.html build.txt "${ZVIT}"
           if git diff --cached --quiet; then
-            echo "артефакт, штамп і звіт не змінились — коміту нема"
+            echo "артефакт, штамп, звіт і дошка не змінились — коміту нема"
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "збірка: ${SHTAMP}"
+          git commit -m "${MSG}"
 
           # Не переносимо старий вихід на нову базу. Звичайний push має
           # батьком лише SOURCE_SHA; просування main після fetch відбиває
@@ -538,4 +614,11 @@ jobs:
             echo "push відбито (спроба ${sproba}) — перед повтором звіримо SHA main"
           done
           echo "п'ять спроб push не пройшли без просування main — публікація не відбулась"
+          exit 1
+
+      # Кінець прогону: згортання, що не вдалось, робить його червоним уже після публікації.
+      - name: згортання дошки — помилки
+        if: always() && steps.zghortannia.outcome == 'failure'
+        run: |
+          echo "згортання аудит/дошка не вдалось повністю — файли з помилкою лишились, див. крок «згорнути дошку»" | tee -a "$GITHUB_STEP_SUMMARY"
           exit 1
