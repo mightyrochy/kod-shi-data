@@ -1,0 +1,54 @@
+── ПРОМПТ (7688 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Чорна сорочка оверсайз · kind code: shirt · colour code: black · about it: text н=1
+2 — Сірі штани з защипами на талії і стрілками · kind code: trousers · colour code: grey · about it: text н=2
+3 — Жіночі туфлі бордові шкіряні · kind code: dress_shoes · colour code: burgundy · about it: text н=3
+4 — Підвіска Silver Love · kind code: jewelry_generic · colour code: silvery · about it: text н=4
+5 — Сумка жіноча червона · kind code: bag_generic · colour code: red · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; burgundy — бордовий; grey — сірий; red — червоний; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This black top is an oversized shirt with a relaxed silhouette and dropped shoulders that set your frame wide and draw the eye upward. Its deep V-neckline balances the volume of the sleeves, giving the outfit structure without looking heavy.",
+"2": "These grey trousers feature side slits that add movement to every step, keeping the look light despite the relaxed, wide-leg cut. Their neutral tone acts as a perfect base for the dark top and the pop of colour at your feet.",
+"3": "These burgundy dress shoes are pointed and sleek, offering an elegant finish to your legs that works perfectly with an evening date. Their deep, warm tone echoes the red bag, tying your outfit together without overwhelming the look.",
+"4": "This silvery necklace is a delicate chain that sits softly against your skin, providing just enough sparkle to catch the restaurant's light without competing with your features. Its quiet elegance complements the black and grey of your clothes.",
+"5": "This red bag has a classic curved shape with gold hardware that adds a touch of glamour to your ensemble. Its vibrant hue provides a necessary contrast to the monochrome layers, grounding the look with colour while remaining sophisticated for the evening.",
+"6": "We chose a sharp black oversized shirt to frame your silhouette and grey trousers with side slits that keep the look light. The burgundy shoes and red bag bring warmth to your autumn evening, while the silvery necklace catches the restaurant's light without competing for attention.",
+"7": "Wear the shirt untucked over the wide trousers so the relaxed top balances the roomy legs.",
+"8": "Жіночі туфлі бордові шкіряні — These burgundy dress shoes match the palette scheme's accent color and continue your leg line under the midi hem, solving the proportion issue.",
+"9": "Підвіска Silver Love — This outfit holds attention through color concentration rather than volume; the single statement of burgundy shoes against a dark base creates a sharp focal point that serves your 'express' intent without needing extra layers or jewelry.",
+"10": "Жіночі туфлі бордові шкіряні, Сумка жіноча червона — The red clutch and burgundy shoes coordinate perfectly in the same hue family, creating a unified accent column that looks intentional and polished rather than accidental, satisfying your goal to be memorable with a single strong idea."
+}
+
+── ВІДПОВІДЬ (1991 симв., 71.4 с, HTTP 200) ──
+```json
+{
+"1": "Ця чорна сорочка оверсайз — це вільна модель з розширеними плечима, які роблять твою фігуру ширшою і привертають увагу до верху. Її глибокий V-подібний виріз балансує об’єм рукавів, надаючи образу структуру без зайвої тяжкості.",
+"2": "Ці сірі штани мають бічні розрізи, які додають руху кожному кроку і роблять образ легким попри вільний крій та широкі штанини. Їх нейтральний відтінок чудово підходить до темної сорочки і яскравого акценту на ногах.",
+"3": "Ці бордові туфлі-човники мають загострений мисок, що додає елегантності твоїм ногам. Їх теплий відтінок перегукується з кольором сумки і гармонійно завершує образ.",
+"4": "Цей срібний кулон — це ніжний ланцюжок, який м’яко прилягає до твоєї шкіри. Він додає достатньо блиску, щоб заграти у світлі ресторану, не відволікаючи уваги від твоїх рис.",
+"5": "Ця червона сумка має класичну вигнуту форму з золотою фурнітурою, яка надає твоєму ансамблю нотку гламуру. Її яскравий колір створює необхідний контраст до монохромних шарів і робить образ завершеним.",
+"6": "Ми обрали чорну сорочку оверсайз, щоб підкреслити твою фігуру, та сірі штани з бічними розрізами для легкості. Бордові туфлі й червона сумка додають тепла твоєму осінньому вечору, а срібний кулон заграє у світлі ресторану.",
+"7": "Одягни сорочку навипуск поверх штанів, щоб вільний верх збалансував просторі штанини.",
+"8": "Бордові туфлі-човники — ці туфлі підкреслюють колірну гаму і продовжують лінію ніг під міді-под’яником, вирішуючи питання пропорцій.",
+"9": "Срібний кулон Love — Цей образ привертає увагу завдяки концентрації кольору, а не об’єму. Різкий акцент бордових туфель на темному тлі створює чітку фокусну точку і задовольняє твоє бажання виразити себе без зайвих шарів чи аксесуарів.",
+"10": "Бордові туфлі-човники, червона сумка — ці речі чудово поєднуються в одній колірній гамі і створюють єдину акцентну лінію. Це виглядає продумано й елегантно, а не випадково, задовольняючи твоє бажання запам’ятатися завдяки сильній ідеї."
+}
+```
