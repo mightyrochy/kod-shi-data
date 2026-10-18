@@ -13,6 +13,7 @@ import json as _json_
 import протокол as _ПР
 import дріт_моделі as _Д
 import outfit as _О
+import формальність as _ФОРМ
 import brief as _БР_Щ  # щаблі ошатності кодами для стилістки (НГ-3)
 # К-3 (27.09.2026): коди розбору каталогу й рядок особливостей речі. Модуль читає файл
 # розбору поруч із собою (у вантажі показу — поруч у вантажі) і тримає перемикач короткого
@@ -1959,25 +1960,20 @@ def _жорстке_відсічення(r, темп_c=None, вето=None, ош
         return str(r[_ПОЛЕ_БЕЗ_ПОКАЗУ])
     if _НЕ_ОДЯГ_ДЛЯ_ВИПАДКУ.search(назва):
         return "not_clothing_for_occasion"
-    # пляжне взуття при рівні події від 4 (офіс, театр, весілля) — тема-10: шльопанці/сланці/слайди — щабель 1–2
-    if (r.get("слот") == "взуття" and ошатність and re.search(r"шльопан|сланц|в.єтнамк|слайд", назва, re.I)):
-        try:
-            if min(float(ошатність[0]), float(ошатність[1])) >= 4:
-                return "beach_shoes_below_event_level"
-        except (TypeError, ValueError, IndexError):
-            pass
     сл = r.get("слот") or ""
-    # РІВЕНЬ ПОДІЇ — ПО ВСІХ СЛОТАХ, НЕ ЛИШЕ ВЗУТТЯ (05.09, аудит слотів: в офіс formal ішли
-    # 17 футболок, джинси, спортивні костюми, кепка; тип-інтервал їх пропускав)
+    # П.17: лише явно буденне з розривом ≥3; смуга та сама, що в пулі й суді.
     if ошатність:
         try:
             _lo = min(float(ошатність[0]), float(ошатність[1]))
         except (TypeError, ValueError, IndexError):
             _lo = None
-        if _lo is not None:
-            if _lo >= 6 and re.search(r"худі|світшот|спортивн|джогер|треник|бейсбол|кепк|рюкзак|пляжн", назва, re.I):
+        _, _стеля = _ФОРМ.інтервал_формальності(r)
+        if _lo is not None and _стеля is not None and _стеля <= _lo - 3:
+            if сл == "взуття" and re.search(r"шльопан|сланц|в.єтнамк|слайд", назва, re.I):
+                return "beach_shoes_below_event_level"
+            if re.search(r"худі|світшот|спортивн|джогер|треник|бейсбол|кепк|рюкзак|пляжн", назва, re.I):
                 return "sport_or_beach_below_event_level"
-            if _lo >= 7 and re.search(r"джинс|футболк|майк[аи]\b|кроп[- ]?топ|бандо", назва, re.I):
+            if re.search(r"джинс|футболк|майк[аи]\b|кроп[- ]?топ|бандо", назва, re.I):
                 return "below_event_level_by_more_than_a_step"
     if темп_c is not None:
         _t = float(темп_c)

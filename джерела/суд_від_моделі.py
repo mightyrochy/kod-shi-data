@@ -2366,10 +2366,9 @@ def нижче_смуги_образу(ід, за_ід, сценарій=None, �
         if not код:
             continue
         l, h = _КП._ФОРМ.інтервал_формальності(r)
-        ф = r.get("формальність_фото")
-        стеля = h if h is not None else (float(ф) if isinstance(ф, int) and not isinstance(ф, bool) else lo)
+        стеля = h
         сила = "strong" if стеля <= lo - 2 else "soft"
-        річ_ф = [l, h] if h is not None else ф
+        річ_ф = [l, h]
         за = "deliberate" if str(і) in пояснені else ("her_wish" if str(і) in її_бажання else None)
         if за:
             з = _РЕЄСТР_НС._зн(
