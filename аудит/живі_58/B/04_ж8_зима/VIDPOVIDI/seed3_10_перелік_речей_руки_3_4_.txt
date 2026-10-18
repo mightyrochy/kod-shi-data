@@ -1,0 +1,51 @@
+── ПРОМПТ (2570 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Heavy wool-blend coat in charcoal gray (#3e4245) with a structured shoulder cut and mid-calf length to protect against the frost.\nThick merino wool turtleneck sweater in forest green (#1d3b2f) in an oversized silhouette for warmth without bulk.\nTailored wool trousers in camel (#c19a6b) with a relaxed fit and full length to cover the shoes completely from snow.\nLeather Chelsea boots in deep brown (#584032) with thick rubber soles for traction on salted, icy roads.\nSilver stud earrings in 925 sterling silver and a wool blend scarf in navy blue (#1e2a46) to add contrast against the dark coat.\nThis outfit works because the layered textures of heavy wool and leather ensure warmth against the -10°C frost and slippery conditions, while the neutral base allows the rich forest green top to serve as a professional yet personal focal point. The tailored trousers and structured coat maintain a neat silhouette suitable for an office environment, whereas the sturdy Chelsea boots provide essential safety on winter streets without sacrificing style. Every element adheres to your request for warmth and practicality, respecting the need for snow coverage while keeping the look refined enough for your work occasion."}
+
+── ВІДПОВІДЬ (1009 симв., 83.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend coat",
+      "details": "structured shoulder cut and mid-calf length",
+      "slot": "outerwear",
+      "color_hex": "#3e4245",
+      "worn": true
+    },
+    {
+      "name": "merino wool turtleneck sweater",
+      "details": "oversized silhouette",
+      "slot": "top",
+      "color_hex": "#1d3b2f",
+      "worn": true
+    },
+    {
+      "name": "wool trousers",
+      "details": "relaxed fit and full length",
+      "slot": "bottom",
+      "color_hex": "#c19a6b",
+      "worn": true
+    },
+    {
+      "name": "leather Chelsea boots",
+      "details": "thick rubber soles",
+      "slot": "shoes",
+      "color_hex": "#584032",
+      "worn": true
+    },
+    {
+      "name": "silver stud earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "wool blend scarf",
+      "details": "",
+      "slot": "scarf",
+      "color_hex": "#1e2a46",
+      "worn": true
+    }
+  ]
+}

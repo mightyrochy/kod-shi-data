@@ -1,0 +1,51 @@
+── ПРОМПТ (2475 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend overcoat, straight cut, mid-calf length, charcoal gray #36454F, heavy felt weave.\nMerino wool turtleneck sweater, fitted crew neck, ribbed hem, ivory white #FFFFF0, soft knit texture.\nTrousers, slim straight leg, ankle length, black #000000, twill fabric with subtle sheen.\nLeather ankle boots, block heel, shaft reaching just below calf, glossy black #0D0B0C, waterproof treated leather.\nSilk-lined wool scarf, loosely draped, solid deep crimson #8B0000, lightweight drapey weave.\nMatte finish leather gloves, fingerless design for phone use, dark brown #3E2723, soft lambskin.\nThis outfit prioritizes warmth and protection against the -10°C frost and snowy conditions while strictly adhering to your request for an everyday to neat work aesthetic. The heavy overcoat acts as a necessary thermal barrier without compromising the refined look you desire, featuring a neutral palette that remains professional yet approachable. Textured layers like the turtleneck and scarf add visual interest under the coat, ensuring comfort during your walk without sacrificing the polished appearance required for your job."}
+
+── ВІДПОВІДЬ (1226 симв., 87.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool-blend overcoat",
+      "details": "straight cut, mid-calf length, heavy felt weave",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Merino wool turtleneck sweater",
+      "details": "fitted crew neck, ribbed hem, soft knit texture",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "slim straight leg, ankle length, twill fabric with subtle sheen",
+      "slot": "bottom",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "block heel, shaft reaching just below calf, glossy finish",
+      "slot": "shoes",
+      "color_hex": "#0D0B0C",
+      "worn": true
+    },
+    {
+      "name": "Silk-lined wool scarf",
+      "details": "loosely draped, solid color, lightweight drapey weave",
+      "slot": "scarf",
+      "color_hex": "#8B0000",
+      "worn": true
+    },
+    {
+      "name": "Matte finish leather gloves",
+      "details": "fingerless design for phone use, soft lambskin",
+      "slot": "gloves",
+      "color_hex": "#3E2723",
+      "worn": true
+    }
+  ]
+}

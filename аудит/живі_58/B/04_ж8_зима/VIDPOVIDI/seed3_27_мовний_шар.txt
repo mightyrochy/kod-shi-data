@@ -1,0 +1,53 @@
+── ПРОМПТ (7671 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Светр-кейп вовняний Марібо · kind code: sweater · colour code: black · about it: text н=1
+2 — Асиметрична бавовняна спідниця на запах бежевого кольору Емі · kind code: skirt · colour code: beige
+3 — Ботильйони коричневі DOUBLE на шкірі · kind code: ankle_boots · colour code: brown · about it: text н=2
+4 — Жіноча сумка тоут шкіряна чорна · kind code: tote · colour code: black · about it: text н=3
+5 — Пасок з пір’ям декольте світла пудра · kind code: belt · colour code: powder · about it: text н=4
+6 — Пальто з кашеміру прямого крою · kind code: coat · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; powder — пудра.
+
+ТЕКСТИ:
+{
+"1": "This black wool cape top features an open-front design with wide, flowing sleeves that drape elegantly over the shoulders. Its relaxed fit provides a cozy layer that transitions smoothly from day to evening, offering both warmth and sophisticated structure.",
+"2": "Cobalt blue ankle boots crafted from premium leather with a subtle sheen. Designed with a comfortable wedge heel and a secure side zipper, they provide all-day comfort while elevating even the simplest outfits with their modern edge.",
+"3": "A sleek black leather tote bag with clean lines and a secure zippered pocket. Its structured shape holds your essentials securely while adding a polished, professional touch to any outfit.",
+"4": "This powder-soft pastel belt is delicately woven with fine metallic threads that catch the light subtly. Its slender profile and gentle curve add a whisper of sparkle without overpowering your outfit, making it ideal for both casual daytime wear and evening events.",
+"5": "This long black cashmere coat boasts a tailored silhouette with a cinched waist for definition and a sharp collar that frames the neck beautifully. Its smooth fabric and refined cut offer understated luxury and warmth without bulk.",
+"6": "I have put together a look that balances your warm beige skirt with the crisp, professional tones of black and powder. The cream knit cape offers soft comfort under your structured wool coat, while the brown wedge ankle boots will keep you steady on any frost or snow. This ensemble moves you through your workday with ease, keeping your focus sharp despite the cold.",
+"7": "Tuck your top into your skirt to highlight your waist and create a clean vertical line that leads the eye upward.",
+"8": "Пасок з пір’ям декольте світла пудра — This light taupe belt replaces the red one to quiet the face area and keep the palette neutral, allowing the beige skirt to stand as the accent without clashing.",
+"9": "Светр-кейп вовняний Марібо, Пальто з кашеміру прямого крою — The gate warns the relaxed sweater cape might not fit over bulky layers, but since the coat is worn as an outermost layer over the cape, it solves the cold exposure issue without needing to squeeze layers beneath, making this the right structural choice for her warmth goal."
+}
+
+── ВІДПОВІДЬ (2360 симв., 60.3 с, HTTP 200) ──
+```json
+{
+"1": "Цей чорний вовняний кейп-светр має відкритий дизайн спереду з широкими рукавами, що елегантно спадають на плечі. Його вільний крій дарує затишний шар, який плавно переходить від дня до вечора, пропонуючи як тепло, так і вишукану структуру.",
+"2": "Кобальтово-сині ботильйони з якісної шкіри з ледь помітним блиском. Вони мають зручний клиноподібний каблук та надійну бічну застібку-блискавку, забезпечуючи комфорт протягом усього дня і піднімаючи навіть найпростіші образи завдяки своєму сучасному вигляду.",
+"3": "Стильна чорна шкіряна сумка тоут з чистими лініями та надійною кишенею-блискавкою. Її структурована форма безпечно вміщує всі необхідні речі, додаючи вишуканий і професійний штрих до будь-якого образу.",
+"4": "Цей пудрово-м’який пастельний пояс делікатно переплетений тонкими металевими нитками, які ледь помітно ловлять світло. Його витончений профіль та ніжний вигин додають легкого блиску без надмірності, роблячи його ідеальним як для повсякденного денного носіння, так і для вечірніх заходів.",
+"5": "Це довге чорне кашемірове пальто має елегантний силует з підкресленою талією для визначення фігури та гострим коміром, який красиво обрамлює шию. Його гладка тканина і вишуканий крій пропонують ненав’язливу розкіш і тепло без об’єму.",
+"6": "Я підібрала образ, що гармонійно поєднує теплий бежевий колір твоєї спідниці з чіткими професійними тонами чорного та пудри. Кремовий в’язаний кейп дарує м’який комфорт під твоїм структурованим вовняним пальтом, а коричневі ботильйони на клиноподібному каблуці забезпечать тобі стійкість у будь-яку ожеледицю чи сніг. Цей ансамбль дозволить тобі легко пройти через робочий день, зберігаючи твою увагу гострою попри холод.",
+"7": "Заправ свій верх в спідницю, щоб підкреслити талію і створити чітку вертикальну лінію, яка привертає погляд догори.",
+"8": "Пасок з пір’ям декольте світла пудра — Цей бежевий пояс замінює червоний, щоб заспокоїти зону обличчя і зберегти нейтральну палітру, дозволяючи бежевій спідниці стати акцентом без конфлікту.",
+"9": "Светр-кейп вовняний Марібо, Пальто з кашеміру прямого крою — Попередження про те, що кейп може не поміститися на об’ємних шарах, але оскільки пальто одягається як верхній шар поверх кейпу, це вирішує проблему холоду без необхідності тиснути шари під ним, роблячи цей вибір правильним з точки зору твого бажання зігрітися."
+}
+```
