@@ -5,16 +5,16 @@
 const fs = require('fs'), path = require('path'), assert = require('assert/strict');
 const після = fs.readFileSync(path.join(__dirname, '..', 'показ.html'), 'utf8');
 const до = process.argv[2] ? fs.readFileSync(process.argv[2], 'utf8') : null;
-function читач(джерело, клон){
+function читач(джерело){
   let великих = 0;
   const парсер = Object.create(JSON);
   парсер.parse = т => { if (typeof т === 'string' && т.length >= 1000000) великих++; return JSON.parse(т); };
   const поч = джерело.indexOf("const ЗВІТ_ФОРМАТ =");
   const кін = джерело.indexOf("/* ── ОДИН ВЕРДИКТ — ОДИН РЯДОК ФАЙЛА", поч);
   assert(поч >= 0 && кін > поч, 'межі читача звіту');
-  return Object.assign(new Function('JSON', 'structuredClone',
+  return Object.assign(new Function('JSON',
     "const пристрій = 'проба'; const ШАПКА = [];\n" + джерело.slice(поч, кін)
-    + "\nreturn {розібратиПоле, звітВердиктів, злитиВердикт};")(парсер, клон), {великих: () => великих});
+    + "\nreturn {розібратиПоле, звітВердиктів, злитиВердикт};")(парсер), {великих: () => великих});
 }
 const коли = new Date('2026-10-18T00:00:00Z');
 const етапи = [1500000, 2200000].map((н, і) => JSON.stringify({
@@ -38,9 +38,8 @@ function корпус(ч){
 }
 const старий = до ? читач(до) : null;
 const базовий = старий ? корпус(старий) : null;
-for (const [назва, клон] of [['без structuredClone', undefined],
-    ...(typeof structuredClone === 'function' ? [['зі structuredClone', structuredClone]] : [])]){
-  const ч = читач(після, клон), факт = корпус(ч);
+{
+  const ч = читач(після), факт = корпус(ч);
   assert.equal(ч.великих(), 2, 'два різні великі етапи розбираються раз');
   if (базовий) assert.deepEqual(факт, базовий, 'розгорнутий звіт ДО = ПІСЛЯ');
   const з = ч.звітВердиктів(записи(), коли);
@@ -56,13 +55,17 @@ for (const [назва, клон] of [['без structuredClone', undefined],
   const об = [{прогін:'об', етапи:{прогін:{код:'свій'}, розмова:{}, суд:{код:'рука'}}}];
   const було = JSON.stringify(об); ч.звітВердиктів(об, коли);
   assert.equal(JSON.stringify(об), було, 'об’єктні етапи не втрачають спільного');
+  const глибокий = '['.repeat(12000) + '0' + ']'.repeat(12000);
+  let вкладений = ч.розібратиПоле(глибокий);
+  for (let і = 0; і < 12000; і++) вкладений = вкладений[0];
+  assert.equal(вкладений, 0, 'глибокий JSON без рекурсії копіювання');
   const давній = '{"суд":{"код":"давній"}}';
   ч.розібратиПоле(давній);
   for (let і = 0; і < 20; і++) ч.розібратиПоле(JSON.stringify({код: і}));
   assert.equal(ч.розібратиПоле(давній).суд.код, 'давній', 'витіснений запис читається знову');
   const завеликий = JSON.stringify({текст:'x'.repeat(9 * 1024 * 1024)});
   assert.equal(ч.розібратиПоле(завеликий).текст.length, 9 * 1024 * 1024, 'запис поза кешем не обрізається');
-  console.log(назва + ': великі розбори 32 → 2; повтори, зміни, помилки, об’єктні етапи, витіснення — без втрати');
+  console.log('Великі розбори 32 → 2; повтори, зміни, помилки, об’єктні етапи, витіснення — без втрати');
 }
 if (старий) { assert.equal(старий.великих(), 32); console.log('ДО → ПІСЛЯ: розгорнутий звіт тотожний'); }
 else console.log('ДО не задано: порівняння з базою не виконано');
