@@ -1364,10 +1364,15 @@ def зібрати_показ(джерело, вихід, збірка=None, п�
             raise SystemExit("у показі нема плейсхолдера %s" % пл)
     сирі_zip, імена = _зібрати_zip_показу(джерело, повний, каталог)
     b64 = base64.b64encode(сирі_zip).decode("ascii")
-    # Штамп називає checkout, із якого зібрано вантаж. GitHub на PR
-    # перевіряє коміт злиття, тому беремо HEAD джерел, а не SHA з події.
-    збірка = збірка or subprocess.check_output(
-        ["git", "-C", джерело, "rev-parse", "HEAD"], text=True).strip()
+    # Штамп називає checkout, із якого зібрано вантаж. Копія без Git
+    # лишається придатною для локальної збірки, але не для публікації як SHA.
+    if not збірка:
+        try:
+            збірка = subprocess.check_output(
+                ["git", "-C", джерело, "rev-parse", "HEAD"],
+                text=True, stderr=subprocess.DEVNULL).strip()
+        except (OSError, subprocess.CalledProcessError):
+            збірка = "джерела без SHA"
     # Відбиток береться лише з .py: каталог у нього не входить, інакше зміна
     # каталогу читалась би як розходження ВЕРСІЙ КОДУ.
     відб = _відбиток(джерело, [i[:-3] for i in імена if i.endswith(".py")])
