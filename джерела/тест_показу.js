@@ -155,6 +155,15 @@ if (ЗІБРАНИЙ) {
    (рядок 69 дошки: два окремі списки плейсхолдерів розійшлись). */
 const { прочитатиДовідникJSON, підставитиШаблон } = require("./показ_шаблон.js");
 const ДОВІДНИК_JSON = прочитатиДовідникJSON(__dirname);
+const КЕШ_СТАНУ_СЦЕНАРІЮ = new Map();
+function станСценаріюPython(дані){
+  const ключ = JSON.stringify(дані);
+  if (!КЕШ_СТАНУ_СЦЕНАРІЮ.has(ключ)) КЕШ_СТАНУ_СЦЕНАРІЮ.set(ключ, JSON.parse(
+    require('child_process').execFileSync('python3', ['-c',
+      'import sys, bridge; print(bridge.виклик("стан_сценарію", sys.stdin.read()))'],
+      {cwd: __dirname, input: ключ, encoding: 'utf8'})));
+  return КЕШ_СТАНУ_СЦЕНАРІЮ.get(ключ);
+}
 
 function підставити(html, фід, підпис) {
   if (ЗІБРАНИЙ) {
@@ -171,10 +180,17 @@ function підставити(html, фід, підпис) {
 
 function сторінка({url, фід = "каталог_brief.xml", підпис = "каталог_стенд.xml · 639 речей", idb = null} = {}) {
   let html = підставити(шаблон, фід, підпис)
+    .replace('async function містП(ім, дані){', 'async function містБезСтануП(ім, дані){')
     .replace(/<script [^>]*src="https:\/\/cdn\.jsdelivr\.net[^"]*"[^>]*><\/script>/, "<script>window.loadPyodide=null;</script>");
   const помилки = [];
   const дом = new JSDOM(html, {runScripts: "dangerously", pretendToBeVisual: true, url,
     beforeParse(w) {
+      /* Чистий preflight читає справжній Python; модельні заглушки сцен
+         лишаються власниками своїх викликів, без JS-копії K-IO-01 чи погоди. */
+      let містСцени = null;
+      const міст = async (ім, дані) => ім === 'стан_сценарію' ? станСценаріюPython(дані)
+        : (містСцени || w.містБезСтануП)(ім, дані);
+      Object.defineProperty(w, 'містП', {configurable: true, get: ()=>міст, set: ф=>{ містСцени = ф; }});
       w.indexedDB = idb || new IDBFactory(); w.IDBKeyRange = IDBKeyRange;
       w.fetch = () => Promise.reject(new Error("мережі в тесті нема"));
       w.scrollTo = () => {};
