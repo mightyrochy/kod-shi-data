@@ -44,6 +44,8 @@ for (const к of Object.keys(process.env)){
 const СЛАБКА = require(path.join(__dirname, 'слабка_модель.js'));
 /* CHASY=1 / ZATRYMKA=… — годинник збору (наряд Ш-1, `часи_збору.js`); без них — як доти */
 const ЧАСИ = require(path.join(__dirname, 'часи_збору.js'));
+/* ZAPYS_VYKLYKIV=<файл> — входи мосту прогону для знімка Pyodide (крок 0.2-А, `запис_викликів.js`) */
+const ЗАПИС_ВИКЛИКІВ = require(path.join(__dirname, 'запис_викликів.js'));
 /* відсічення позначки жінки мусить бути названо, лише коли позначена річ була серед кандидатів (ЖИВІ-21 №13) */
 const { відсіченняНазване } = require(path.join(__dirname, 'відсічення_назване.js'));
 const БАЗА = process.argv[2] || 'http://127.0.0.1:8765', КОРІНЬ = process.argv[3] || process.cwd();
@@ -2475,6 +2477,7 @@ function підсумокМоделі(){
      нічого б не зробив, і стенд списав би це на продукт. */
   await стор.waitForFunction(() => typeof РЕЖИМ !== 'undefined'
       && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
+  await ЗАПИС_ВИКЛИКІВ.встановити(стор);
   console.log('сторінка піднята за', ч(), '· збірка:', await стор.evaluate(() => ЗБІРКА_ПОКАЗУ),
               '· єдина сторінка:', await стор.evaluate(() => ЄДИНА_СТОРІНКА));
   /* PLYTKY=1 (рядок 1409) — лічильник ходів мовної моделі за `де` (chat | tiles): скільки разів і яким запитом
