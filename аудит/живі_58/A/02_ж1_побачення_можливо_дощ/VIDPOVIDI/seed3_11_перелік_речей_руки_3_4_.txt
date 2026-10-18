@@ -1,0 +1,51 @@
+── ПРОМПТ (2668 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wool-blend blazer, tailored fit, mid-thigh length, charcoal grey #36454F, heavy knit fabric.\nHigh-neck silk blouse, relaxed silhouette, hip length, cream white #FFFDD0, soft crepe fabric.\nStraight-leg dark denim jeans, ankle hem, black #000000, rigid cotton twill fabric.\nLeather pointed-toe pumps, moderate heel height, espresso brown #3B1F1F, smooth calfskin leather.\nGold-tone geometric stud earrings, small diameter, brushed metal finish.\nTextured wool wrap scarf, loose drape, mustard yellow #FFDB58, bouclé fabric.\n\nThis outfit strikes a perfect balance between the requested neat and formal dress codes by combining a sophisticated blazer with refined dark denim, creating an elevated yet approachable look suitable for a casual restaurant date. The autumn weather is accommodated by a stylish outer layer and a warm scarf while the pump shoes ensure she remains comfortable enough to walk through possible rain without feeling underdressed. The deep charcoal and cream palette reads as polished against typical evening artificial lighting, allowing the subtle gold accents of her earrings to catch the eye during conversation. This ensemble respects her wish for a romantic date night by prioritizing textures and colors that feel intentional and flattering without being overly rigid or cold."}
+
+── ВІДПОВІДЬ (1178 симв., 67.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured wool-blend, tailored fit, mid-thigh length, heavy knit fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "high-neck, relaxed silhouette, hip length, soft crepe fabric",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "jeans",
+      "details": "straight-leg, ankle hem, rigid cotton twill fabric",
+      "slot": "bottom",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "leather pointed-toe, moderate heel height, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#3B1F1F",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "gold-tone geometric studs, small diameter, brushed metal finish",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "textured wool wrap, loose drape, bouclé fabric",
+      "slot": "scarf",
+      "color_hex": "#FFDB58",
+      "worn": true
+    }
+  ]
+}
