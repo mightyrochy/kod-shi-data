@@ -4608,6 +4608,14 @@ function порожнєЗвіту(x){
 const РОЗБІР_ЖУРНАЛУ_П = new Map();
 const МЕЖА_РОЗБОРУ_П = {записів: 16, символів: 8 * 1024 * 1024};
 let СИМВОЛІВ_РОЗБОРУ_П = 0;
+/* Копія лише JSON-дерева; запасний шлях потрібен середовищам без structuredClone
+   (зокрема jsdom у пробах). fromEntries зберігає ключ "__proto__" як дані. */
+function копіяРозборуП(о){
+  if (typeof structuredClone === 'function') return structuredClone(о);
+  const копія = в => Array.isArray(в) ? в.map(копія)
+    : (в && typeof в === 'object') ? Object.fromEntries(Object.entries(в).map(([к, з]) => [к, копія(з)])) : в;
+  return копія(о);
+}
 function розібратиПоле(x){
   if (typeof x !== 'string') return x;
   let о;
@@ -4629,7 +4637,7 @@ function розібратиПоле(x){
       СИМВОЛІВ_РОЗБОРУ_П += x.length;
     }
   }
-  return structuredClone(о);
+  return копіяРозборуП(о);
 }
 /* Ключі одного вердикта: спершу ті, що в `ШАПКА` (сталий порядок — діагност
    бачить рядки на тому самому місці), далі поля запису, яких у шапці НЕМА.
@@ -4675,7 +4683,8 @@ function звітВердиктів(вс, коли){
     const о = {};
     for (const к of ключіВердикта(зап)){
       const v = ПОЛЯ_JSON.indexOf(к) >= 0 ? розібратиПоле(зап[к]) : зап[к];
-      if (!порожнєЗвіту(v)) о[к] = v;
+      if (!порожнєЗвіту(v)) о[к] = к === 'етапи' && v && typeof v === 'object' && !Array.isArray(v)
+        ? Object.assign({}, v) : v;
     }
     return о;
   });
