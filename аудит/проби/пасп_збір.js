@@ -23,7 +23,7 @@ const PAGE = process.env.PAGE || path.join(__dirname, '..', '..', 'index.html'),
   for (const [і, v] of [['мр-плечі', 108], ['мр-груди', 104], ['мр-талія', 78], ['мр-стегна', 106], ['мр-зріст', 167]]) await с.fill('#' + і, String(v));
   await с.click('#н-далі');
   await с.waitForFunction(() => РЕЖИМ === 'сценарій' && ПРОФІЛЬ_СТВОРЕНО, null, { timeout: 60000 });
-  await с.evaluate(() => { window.__з = 0; const о = містП; window.містП = (ім, д) => { if (ім === 'запити') window.__з++; return о(ім, д); }; });
+  await с.evaluate(() => { window.__з = 0; const о = містП; window.містП = (ім, д, ...а) => { if (ім === 'запити') window.__з++; return о(ім, д, ...а); }; });
   const питання0 = await с.evaluate(() => { const е = document.getElementById('зб-питання'); return е ? !е.hidden : 'нема елемента'; });
   await с.evaluate(() => { document.getElementById('сц-картка').hidden = false; });
   await с.evaluate(() => document.getElementById('зб-зібрати').onclick());

@@ -760,10 +760,10 @@ def brief(F, intent, source="uncontrolled"):
 def feature_votes(F, lab, intent):
     """Як КОЖНА риса голосує за конкретний колір — окремо, без злиття."""
     L,C,h=lch(lab); cm=c_max(L,h); rel=C/cm if cm>1e-6 else 0
-    from колір_відношення import сила_точки_в_дузі   # тон — тим самим вікном з силою, що суд і добір (рядок 4780)
+    from колір_відношення import сила_точки_в_дузі, КРАЙ_ДУГИ   # тон — тим самим вікном з силою, що суд і добір (рядок 4780)
     SP=spectra_by_feature(F,intent); out={}
     for nm,sp in SP.items():
-        in_h=(any(сила_точки_в_дузі(C,h,a)>=0.5 for a in sp["тон"]) if sp["тон"] else None)
+        in_h=(any(сила_точки_в_дузі(C,h,a)>=КРАЙ_ДУГИ for a in sp["тон"]) if sp["тон"] else None)
         in_L=[k for k,(lo,hi) in sp["світлота"].items() if lo<=L<=hi]
         in_C=sp["хрома"][0]<=rel<=sp["хрома"][1]
         out[nm]=dict(тон=("н/д" if in_h is None else "так" if in_h else "ні"),
