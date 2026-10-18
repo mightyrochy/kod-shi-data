@@ -97,12 +97,12 @@ async function обгорнути(стор){
       return '';
     };
     const оМіст = window.містП;
-    window.містП = async function(ім, д){
+    window.містП = async function(ім, д, ...решта){
       const з = {к: 'код', ім, т0: тепер(), поз: Ч.поз, що: підпис(ім, д)};
       if (з.поз == null && д && д.текст_моделі != null && вихідПоз.has(String(д.текст_моделі))) з.поз = вихідПоз.get(String(д.текст_моделі));
       П.push(з);
       try {
-        const р = await оМіст.call(this, ім, д);
+        const р = await оМіст.call(this, ім, д, ...решта);
         try {
           if (ім === 'запити' && р && р.руки){
             for (const [рука, т] of Object.entries(р.руки)) if (т) рукаПромпт.set(рука, String(т));
