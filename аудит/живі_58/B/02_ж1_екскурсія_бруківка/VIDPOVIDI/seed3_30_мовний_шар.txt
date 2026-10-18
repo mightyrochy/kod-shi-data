@@ -1,0 +1,50 @@
+── ПРОМПТ (7619 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Гольф базовий бежевий гладкої в’язки · kind code: sweater · colour code: beige · about it: text н=1
+2 — Штани сатинові молочні · kind code: trousers · colour code: milky · about it: text н=2
+3 — Жіноче вовняне пальто з капюшоном кемел/теракот на осінь-весну Stella Polare (кемел, 42) · kind code: coat · colour code: camel · about it: text н=3
+4 — LeBERDES Туфлі бордові · kind code: dress_shoes · colour code: burgundy · about it: text н=4
+5 — Сумка “COQUETTE MINI” бежева · kind code: bag_generic · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; burgundy — бордовий; camel — кемел; milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "The beige turtleneck sweater features a smooth knit fabric that hugs your body without feeling restrictive, offering excellent breathability for an autumn day. Its high neckline and fitted silhouette create a clean foundation that pairs perfectly with any trousers.",
+"2": "These milky satin trousers showcase a fluid drape that moves gracefully as you walk on cobblestones, while the subtle sheen adds an unexpected touch of glamour to your casual ensemble. The relaxed fit ensures comfort during long walks while maintaining a polished appearance.",
+"3": "The camel wool coat with hood features a structured silhouette that wraps elegantly around your figure, creating a sophisticated outer layer perfect for transitional weather. Its warm tone harmonizes beautifully with the beige and burgundy pieces below, while the belt detail cinches at your waist to define your shape.",
+"4": "The burgundy leather pumps offer a sleek pointed toe design that elongates your legs while providing all-day comfort for extensive walking. The rich deep red color serves as the perfect focal point, drawing the eye and adding instant sophistication to your ensemble.",
+"5": "This beige structured handbag features clean geometric lines that complement the tailored feel of your outfit while offering practical storage for essentials. Its neutral tone ties together all the colors in your look, creating a cohesive and polished appearance throughout your day.",
+"6": "This outfit brings you the softness and elegance needed for a full day walking the old town. The beige turtleneck sweater provides a comfortable base that doesn't restrict your movement, while the milky satin trousers add a touch of luxury to your casual look. The camel wool coat with hood offers warmth against the cool autumn air without feeling heavy, and the burgundy pumps give you an instant boost of color that stands out beautifully in the grey cobblestone streets. Finally, the beige structured bag completes the set with its clean lines and neutral tone.",
+"7": "Tuck the sweater slightly at the front to define your waist before putting on the coat",
+"8": "LeBERDES Туфлі бордові — I chose this burgundy shoe to break the monochromatic beige look for a bit of contrast, adding depth to the outfit."
+}
+
+── ВІДПОВІДЬ (2167 симв., 59.0 с, HTTP 200) ──
+```json
+{
+"1": "Бежевий гольф має гладку в’язку тканину, яка облягає твоє тіло без відчуття обмеження, забезпечуючи чудову повітропроникність для осіннього дня. Його високий виріз і приталений силует створюють чисту основу, що чудово поєднується з будь-якими штанами.",
+"2": "Ці молочні сатинові штани демонструють плавний спад, який граційно рухається під час ходьби бруківкою, а ледь помітний блиск додає несподіваний штрих гламуру до твого повсякденного образу. Вільний крій забезпечує комфорт протягом тривалих прогулянок, зберігаючи при цьому вишуканий вигляд.",
+"3": "Кемелове пальто з капюшоном має структурований силует, який елегантно обгортається навколо твоєї фігури, створюючи витончений верхній шар ідеальний для перехідної погоди. Його теплий відтінок гармонійно поєднується з бежевими та бордовими речами нижче, а пояс підкреслює твою талію.",
+"4": "Бордові шкіряні туфлі мають елегантний загострений носок, який видовжує ноги, забезпечуючи комфорт протягом усього дня для тривалих прогулянок. Глибокий червоний колір слугує ідеальним акцентом, привертаючи увагу та додаючи миттєвої вишуканості твоєму образу.",
+"5": "Ця бежева структурована сумка має чисті геометричні лінії, які доповнюють охайний вигляд твого вбрання, пропонуючи практичне місце для зберігання необхідних речей. Її нейтральний тон поєднує всі кольори у твоєму образі, створюючи цілісний і елегантний вигляд протягом дня.",
+"6": "Цей образ дарує тобі м’якість та елегантність, потрібні для повного дня прогулянок старовинним містом. Бежевий гольф забезпечує комфортну основу, яка не обмежує твої рухи, а молочні сатинові штани додають штрих розкоші до твого повсякденного образу. Кемелове пальто з капюшоном дарує тепло в прохолодне осіннє повітря без відчуття тяжкості, а бордові туфлі миттєво підкреслюють колір, який чудово виділяється на сірій бруківці. Насамкінець, бежева структурована сумка завершує образ своїми чистими лініями та нейтральним тоном.",
+"7": "Злегка заправ гольф спереду, щоб підкреслити твою талію перед тим, як одягнути пальто",
+"8": "LeBERDES Туфлі бордові — Я обрала це бордове взуття, щоб трохи розбавити монохромний бежевий образ і додати глибини."
+}
+```

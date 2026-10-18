@@ -1,0 +1,51 @@
+── ПРОМПТ (2357 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Midi trench coat, boxy cut, knee length, stone grey #dcdcdc, waxed cotton blend\nSlim-fit straight trousers, ankle length, deep forest green #1a3c34, heavy-weight organic twill\nKnit sweater turtleneck, relaxed fit with dropped shoulders, chestnut brown #8b5e3c, fine-gauge merino wool\nChunky leather combat boots, mid-calf height, dark chocolate #3e2723, full-grain leather\nGold vermeil hoop earrings, 1.5 cm diameter, polished finish\nLeather crossbody bag, structured shape with a flap closure, saddle tan #c6a78e, soft leather\n\nThis ensemble balances the crisp air of an autumn day in the park with durable comfort for walking on cobblestones all day long. The earthy color palette of stone, forest green, and chestnut harmonizes beautifully with her warm skin tones and golden hair while blending effortlessly into the historic city setting. Textured layers like the waxed coat and heavy twill trousers provide necessary warmth against the cool weather without sacrificing style or ease of movement."}
+
+── ВІДПОВІДЬ (1179 симв., 81.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Midi trench coat",
+      "details": "boxy cut, knee length, waxed cotton blend",
+      "slot": "outerwear",
+      "color_hex": "#dcdcdc",
+      "worn": true
+    },
+    {
+      "name": "Slim-fit straight trousers",
+      "details": "ankle length, heavy-weight organic twill",
+      "slot": "bottom",
+      "color_hex": "#1a3c34",
+      "worn": true
+    },
+    {
+      "name": "Knit sweater turtleneck",
+      "details": "relaxed fit with dropped shoulders, fine-gauge merino wool",
+      "slot": "top",
+      "color_hex": "#8b5e3c",
+      "worn": true
+    },
+    {
+      "name": "Chunky leather combat boots",
+      "details": "mid-calf height, full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#3e2723",
+      "worn": true
+    },
+    {
+      "name": "Gold vermeil hoop earrings",
+      "details": "1.5 cm diameter, polished finish",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Leather crossbody bag",
+      "details": "structured shape with a flap closure, soft leather",
+      "slot": "bag",
+      "color_hex": "#c6a78e",
+      "worn": true
+    }
+  ]
+}
