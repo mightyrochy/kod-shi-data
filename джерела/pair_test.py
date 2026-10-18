@@ -18,6 +18,7 @@
   · речі — слот + хекс + два рівні тіла (звідки докуди сидить виріб).
 Сегментація не потрібна. Завантаження картинок не потрібне.
 """
+import слоти as _СЛОТИ
 import math, random, json
 from colorspace import hx, lch, de00, features, адаптувати
 import outfit
@@ -163,7 +164,7 @@ def збудувати(T, H, речі):
         g = m[r["id"]]
         out.append(dict(id=r["id"], слот=r["слот"], hex=r["hex"],
                         площа=g["площа"], джерело_площі=g["джерело_площі"],
-                        near=g["near"] if r["слот"] not in ("сумка", "прикраси") else None,
+                        near=g["near"] if r["слот"] not in _СЛОТИ.група('сумка', 'прикраси') else None,
                         **{k: v for k, v in r.items()
                            if k in ("виріз", "візерунок", "текстура", "розстібнуте")}))
     return out
