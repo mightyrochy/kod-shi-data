@@ -22,6 +22,22 @@ _КЛЮЧІ = frozenset(("target", "item_type", "bbox", "reason"))
 _ЗАПИС = frozenset(("version", "sku", "image", "producer", "raw_response", "raw_response_sha256", "visible_item_type", "status", "errors", "capture"))
 
 
+# Межа файлів поза ядром: audit runner є писачем, evaluator — читачем.
+# Receipt видає root/QA після bytes-перевірки; жоден код тут не генерує приймання.
+ЗОВНІШНІ_ВХОДИ = {
+    "bytes_sha256": "аудит/проби/фото_тип_пілот_7483.py:завантажити → capture-manifest.json records: SHA завантажених bytes",
+    "contract_record": "аудит/проби/фото_тип_пілот_7483.py:виконати → results.jsonl: спостереження для product, null для control",
+    "dataset_revision": "runner:завантажити (--dataset-revision Git40) → capture-manifest.json; root/QA повторює у receipt",
+    "dataset_sha256": "runner:підготувати → SHA canonical selection rows; завантажити → capture-manifest.json; root/QA звіряє receipt",
+    "source_kind": "runner:прочитати → product/service_control з selection manifest; завантажити → capture-manifest.json records",
+    "reviewer": "root/QA → окремий visible_item_capture_receipt.v1, ідентифікатор перевірки actual bytes; evaluator лише читає",
+    "evidence_commit": "root/QA → visible_item_capture_receipt.v1, Git40 коміту перевірених bytes-доказів; перевірити_кадри вимагає",
+    "verification": "root/QA → visible_item_capture_receipt.v1, literal actual_bytes_sha256 після перевірки bytes; не самопідпис runner",
+    "verified_capture_ids": "root/QA → visible_item_capture_receipt.v1, явний список перевірених capture IDs; evaluator лише читає",
+    "source_image_sha256": "зовнішній caller спостереження(crop=...) → валідований independent_visual_target crop API, SHA оригіналу; пілот runner пише crop:null",
+}
+
+
 def канонічні_байти(дані):
     """Одна UTF-8 форма JSON для runner, evaluator, схеми й таксономії."""
     return _json.dumps(дані, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
