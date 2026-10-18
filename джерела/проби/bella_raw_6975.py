@@ -21,7 +21,7 @@ def main():
     ф = Ж.факти_з_картки(тіло.decode(), "https://bella-bicchi.com/catalog/zhinoche-palto-stella-polare-122344/", Ж.рецепт_селекторів("bella-bicchi.com"))
     пари = dict(ф["характеристики_сирі"])
     print("ФАКТИЧНИЙ RAW", len(тіло), "sha256", відбиток, "пар", len(пари))
-    assert len(пари) == 18
+    assert len(пари) == 26
     верх = "альпака (alpaca) - 20%, вовна (wool) - 65%, поліамід (polyamide) - 15%"
     підкладка = "ацетат (acetate) – 48%, віскоза (viscose) – 52%"
     assert пари["Матеріал верху"] == верх and пари["Матеріал підкладки"] == підкладка
