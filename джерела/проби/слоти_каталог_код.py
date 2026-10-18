@@ -14,6 +14,9 @@ def main():
                      '<currencyId>UAH</currencyId><categoryId>1</categoryId>'
                      '<param name="Колір">Білий</param><param name="слот">пояс</param>'
                      '<param name="тип">%s</param></offer>' % р[:3] for р in дані)
+    offers += '<offer id="d"><name>Каблучка біла</name><price>100</price>' \
+              '<categoryId>1</categoryId><param name="Колір">Білий</param>' \
+              '<param name="слот">комплект</param><param name="тип">unknown</param></offer>'
     xml = '<yml_catalog><shop><categories><category id="1">пояс</category>' \
           '</categories><offers>' + offers + '</offers></shop></yml_catalog>'
     with tempfile.TemporaryDirectory() as т:
@@ -23,8 +26,10 @@ def main():
                                           кеш=str(Path(т) / 'кеш.json'), збагачення={})
         факт = {str(р['id']).split('@')[0]: (р['слот'], р['тип'])
                 for р in результат['каталог']}
-        assert факт == {р[0]: р[3:] for р in дані}, факт
-    print('ПРОЙДЕНО: три коди пройшли до кінцевого каталогу; назва не змінила слот/тип')
+        очікувано = {р[0]: р[3:] for р in дані}
+        очікувано['d'] = ('комплект', None)
+        assert факт == очікувано, факт
+    print('ПРОЙДЕНО: три коди й один невідомий тип у кінцевому каталозі без підміни назвою')
 
 
 if __name__ == '__main__':
