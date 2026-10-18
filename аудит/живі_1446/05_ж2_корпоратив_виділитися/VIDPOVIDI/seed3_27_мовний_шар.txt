@@ -1,0 +1,52 @@
+── ПРОМПТ (6905 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Коричневий однобортний жакет з поясом · kind code: blazer · colour code: brown
+2 — Лляна бежева спідниця міді в стилі сафарі Алфея · kind code: skirt · colour code: beige · about it: text н=1
+3 — Човники жіночі Tamaris темно-бежеві · kind code: pumps · colour code: beige · about it: text н=2
+4 — Пасок з пірʼям бордо · kind code: belt · colour code: burgundy · about it: text н=3
+5 — Жіноча сумка тоут шкіряна коричнева · kind code: tote · colour code: brown · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; burgundy — бордовий.
+
+ТЕКСТИ:
+{
+"1": "A soft beige midi skirt with an A-line shape that flows from the waist down, offering comfort and elegance for a long evening",
+"2": "Pointed brown suede pumps with a sleek heel that elongate your legs while providing refined support for standing all night",
+"3": "A vibrant burgundy belt adorned with feathers at the front, adding texture and festive flair to the waistline without overpowering the rest of the outfit",
+"4": "A structured brown leather tote bag with dual handles that offers ample space for essentials while complementing your earth-toned palette",
+"5": "You are wearing a brown belted blazer top paired with a beige midi skirt, finished with burgundy feathered belt and brown suede pumps. The outfit carries a festive dinner cocktail formal look through your palette of neutrals plus an accent of deep red metal gold and silver and lets your figure stand tall by drawing the eye to your defined waist.",
+"6": "Tuck the top slightly or leave it open depending on how much you want to show your silhouette",
+"7": "Wear the skirt straight down without tucking in for a clean line that elongates your legs",
+"8": "Carry the bag on your shoulder or hold it in one hand for easy movement through the restaurant",
+"9": "Коричневий однобортний жакет з поясом, Лляна бежева спідниця міді в стилі сафарі Алфея, Човники жіночі Tamaris темно-бежеві, Пасок з пірʼям бордо, Жіноча сумка тоут шкіряна коричнева — This gate exists to flag a missing dress item in my notes, but I have intentionally replaced the skirt with a decorative sash to meet your 'express' goal while maintaining the required cocktail formality."
+}
+
+── ВІДПОВІДЬ (1730 симв., 46.9 с, HTTP 200) ──
+```json
+{
+"1": "М’яка бежева спідниця міді з трапецієподібною формою, що струмує від талії вниз, пропонуючи комфорт і елегантність для довгого вечора",
+"2": "Гостроносі коричневі замшеві туфлі-човники на витонченій підборах, які видовжують твої ноги, водночас забезпечуючи вишукану підтримку при тривалому стоянні",
+"3": "Яскравий бордовий пасок з пір’ям спереду, який додає текстури та святкового шарму в області талії без перевантаження решти образу",
+"4": "Структурована коричнева шкіряна сумка-тоут на двох ручках, яка пропонує достатньо місця для необхідних речей і доповнює твою палітру нейтральних кольорів",
+"5": "Ти одягнена в коричневий жакет з поясом у поєднанні з бежевою спідницею міді, завершений бордовим паском з пір’ям та коричневими замшевими туфлями-човниками. Образ створює святковий коктейльний вечірній вигляд завдяки твоїй нейтральній палітрі плюс акценту глибокого червоного металевого золота і срібла, а також дозволяє твоїй фігурі виглядати високою, привертаючи увагу до твоєї підкресленої талії.",
+"6": "Злегка заправ топ або носи його розстебнутим залежно від того, наскільки ти хочеш показати свій силует",
+"7": "Одягни спідницю прямо без заправляння для чистої лінії, яка видовжує твої ноги",
+"8": "Носи сумку на плечі або тримай її в одній руці для зручного пересування по ресторану",
+"9": "Коричневий однобортний жакет з поясом, Лляна бежева спідниця міді в стилі сафарі Алфея, Човники жіночі Tamaris темно-бежеві, Пасок з пір’ям бордо, Жіноча сумка тоут шкіряна коричнева — Цей прохід існує для позначення відсутнього елемента сукні в моїх нотатках, але я навмисно замінила спідницю декоративним поясом, щоб досягти твоєї мети «експрес», зберігаючи необхідний коктейльний формальний вигляд."
+}
+```

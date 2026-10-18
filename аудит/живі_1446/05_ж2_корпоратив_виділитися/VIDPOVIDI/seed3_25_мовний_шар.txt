@@ -1,0 +1,53 @@
+── ПРОМПТ (7612 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Вовняний двобортний жакет у принт · kind code: blazer · colour code: grey · about it: text н=1
+2 — Штани палаццо беж · kind code: trousers · colour code: beige · about it: text н=2
+3 — Слінгбеки Jacquemus червоні · kind code: pumps · colour code: red · about it: text н=3
+4 — Сумка жіноча Salon · kind code: bag_generic · colour code: red · about it: text н=4
+5 — Хустка з м'якої вовни ягняти темно-червона · kind code: kerchief · colour code: red · about it: text н=5
+6 — Пасок з пір’ям декольте червоний · kind code: belt · colour code: red · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; grey — сірий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "A structured grey blazer featuring a classic double-breasted closure with dark buttons, tailored to your shape to highlight your waistline while keeping the shoulders clean and neat.",
+"2": "Elegant beige palazzo trousers with a wide-leg silhouette that flows smoothly from the hip down to the floor, creating a graceful line that balances the structured jacket above.",
+"3": "A pair of glossy red slingback pumps with a sharp pointed toe and a delicate tassel detail on the vamp, offering both comfort for dinner and a bold splash of festive color.",
+"4": "A sophisticated red handbag with a structured rectangular shape and a distinctive gold-tone clasp mechanism that adds an unexpected yet luxurious architectural detail to your accessory.",
+"5": "A luxurious deep crimson wool scarf, soft and substantial enough to be draped or knotted, providing warmth without compromising on the elegance of your festive outfit.",
+"6": "A vibrant red belt featuring an eye-catching feathered trim along its length, designed to cinch your waist and add a whimsical, party-ready texture to your ensemble.",
+"7": "This ensemble creates a perfect balance between elegant structure and festive warmth for your New Year's dinner. The structured grey blazer anchors the look with a sophisticated houndstooth print, while the fluid beige palazzo trousers provide a soft, sweeping silhouette that flatters your figure. The vibrant red slingbacks and matching handbag introduce a striking pop of color that immediately draws the eye, perfectly capturing the celebratory mood. A deep crimson wool scarf adds an extra layer of richness, offering both texture and warmth for the autumn evening.",
+"8": "Tuck the blouse ends into your high-waisted palazzo trousers to create a clean line at your waist.",
+"9": "Вовняний двобортний жакет у принт, Штани палаццо беж, Слінгбеки Jacquemus червоні, Сумка жіноча Salon, Хустка з м'якої вовни ягняти темно-червона, Пасок з пір’ям декольте червоний — Although the dress code gate suggests a specific gown type, your explicit goal to be memorable and express yourself at this corporate New Year's celebration overrides the standard cocktail protocol; this structured yet bold look serves that intent far better than any quiet alternative."
+}
+
+── ВІДПОВІДЬ (2246 симв., 42.1 с, HTTP 200) ──
+```json
+{
+"1": "Структурований сірий жакет з класичним двобортним застібанням на темні ґудзики, пошитий відповідно до твоєї фігури, щоб підкреслити талію, залишаючи плечі чистими й охайними.",
+"2": "Елегантні бежеві штани палаццо з широкими штанинами, що плавно спадають від стегна до підлоги, створюючи витончену лінію, яка врівноважує структурований жакет зверху.",
+"3": "Пара глянцевих червоних слінгбеків із гострим загостреним носком і ніжним пензликом на шкарпетці, що пропонують комфорт для вечері та сміливий святковий колір.",
+"4": "Вишукана червона сумка з прямокутною формою та виразним золотистим затискачем, який додає несподіваний, але розкішний архітектурний елемент до твого аксесуару.",
+"5": "Розкішна темно-червона вовняна хустка, м’яка й достатньо об’ємна, щоб її можна було накинути або зав’язати, забезпечуючи тепло без шкоди для вишуканості святкового вбрання.",
+"6": "Яскравий червоний пасок з привабливою пір’яною обробкою вздовж усієї довжини, розроблений, щоб підкреслити твою талію й додати грайливу, готову до вечірки текстуру твоєму ансамблю.",
+"7": "Цей образ створює ідеальний баланс між елегантною структурою та святковим теплом для твоєї новорічної вечері. Структурований сірий жакет з класичним принтом у клітинку задає тон вишуканому вигляду, тоді як плавні бежеві штани палаццо забезпечують м’який і розкішний силует, який підкреслює твою фігуру. Яскраві червоні слінгбеки та відповідна сумка додають вражаючий колірний акцент, що одразу привертає увагу, чудово передаючи святковий настрій. Глибока темно-червона вовняна хустка додає додаткового шару розкоші, пропонуючи як текстуру, так і тепло для осіннього вечора.",
+"8": "Заправ кінці блузки у твої високі штани палаццо, щоб створити чисту лінію на талії.",
+"9": "Вовняний двобортний жакет у принт, Штани палаццо беж, Слінгбеки Jacquemus червоні, Сумка жіноча Salon, Хустка з м’якої вовни ягняти темно-червона, Пасок з пір’ям декольте червоний — Хоч і дрес-код вхідних дверей передбачає певний тип сукні, твоя конкретна мета запам’ятатися та виразити себе на цьому корпоративному новорічному святкуванні переважає стандартний коктейльний протокол; цей структурований, але сміливий образ служить цій меті значно краще, ніж будь-яка тиха альтернатива."
+}
+```
