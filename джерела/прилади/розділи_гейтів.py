@@ -531,7 +531,7 @@ def main():
     # де він справді стоїть, щоб наступне перейменування ловилось, а не глушилось.
     _ОФ68 = ('<offer id="%s" available="true"><name>%s</name><price>1</price>'
              '<currencyId>UAH</currencyId><categoryId>%s</categoryId>'
-             '<param name="слот">%s</param><param name="стать">жіноче</param></offer>')
+             '<param name="слот">%s</param><param name="тип">%s</param><param name="стать">жіноче</param></offer>')
     _ФАЙЛ68 = ('<?xml version="1.0" encoding="utf-8"?>\n<yml_catalog date="2026-09-27 10:00">'
                '<shop><name>Люстерко</name><categories>'
                '<category id="1">сукня</category><category id="2">взуття</category>'
@@ -1211,21 +1211,21 @@ def ф():
 
     _ОФЕР72 = ('<offer id="%s" available="true"><name>%s</name><price>1</price>'
                '<currencyId>UAH</currencyId><categoryId>%s</categoryId>'
-               '<param name="слот">%s</param><param name="стать">жіноче</param></offer>')
+               '<param name="слот">%s</param><param name="тип">%s</param><param name="стать">жіноче</param></offer>')
     _КАТ72 = lambda пари: "".join('<category id="%s">%s</category>' % п for п in пари)
     _ФАЙЛ72 = ('<?xml version="1.0" encoding="utf-8"?>\n<yml_catalog date="2026-09-07 10:00">'
                '<shop><name>Люстерко</name>%s<offers>%s</offers></shop></yml_catalog>')
     # v4.0: категорія — шлях магазину; слот оголошено окремим param (жниварка.py:2364-2377)
     _V4_72 = _ФАЙЛ72 % ("<categories>%s</categories>" % _КАТ72((("1", "Жіночі сумки через плече"),
                                                                 ("2", "Жіночі сукні"))),
-                        _ОФЕР72 % ("a-1", "Жакет з бахромою", "1", "сумка")
-                        + _ОФЕР72 % ("a-2", "Сукня міді", "2", "сукня"))
+                        _ОФЕР72 % ("a-1", "Жакет з бахромою", "1", "сумка", "top_garment")
+                        + _ОФЕР72 % ("a-2", "Сукня міді", "2", "сукня", "dress_generic"))
     # старий каталог: категорія — саме ім'я слота (усі 11 категорій каталог_повний.xml такі)
     _СТАР72 = _ФАЙЛ72 % ("<categories>%s</categories>" % _КАТ72((("1", "сумка"), ("2", "сукня"),
                                                                  ("3", "верх"))),
-                         _ОФЕР72 % ("s-1", "Жакет з бахромою", "1", "сумка"))
+                         _ОФЕР72 % ("s-1", "Жакет з бахромою", "1", "сумка", "top_garment"))
     # каталог без блоку <categories>: дописати нікуди — мусить бути названа відмова, не KeyError
-    _БЕЗ72 = _ФАЙЛ72 % (_КАТ72((("1", "сумка"),)), _ОФЕР72 % ("b-1", "Жакет з бахромою", "1", "сумка"))
+    _БЕЗ72 = _ФАЙЛ72 % (_КАТ72((("1", "сумка"),)), _ОФЕР72 % ("b-1", "Жакет з бахромою", "1", "сумка", "top_garment"))
 
 
     def _прогін72(дані):
