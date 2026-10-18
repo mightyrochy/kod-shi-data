@@ -11,6 +11,10 @@
                                                       --pyodide /tmp/pyodide        # кеш: аудит/проби/стенд_pyodide_кеш.sh
   # 3. різниця по викликах
   python3 джерела/прилади/знімок_мосту.py --діф pyo.jsonl cpy.jsonl
+  # 4. рішення доменною мовою (крок 0.2-Б, `знімок_змісту.py`): що вирішено в сцені; лічба змін за розділом і типом
+  python3 джерела/прилади/знімок_мосту.py зміст pyo.jsonl [--json зміст.json]
+  python3 джерела/прилади/знімок_мосту.py зміст --діф pyo.jsonl cpy.jsonl
+  # 5. багато сцен одним запуском (Pyodide двічі, CPython раз, час, зміст): `знімок_сцен.py`
 
 Знімок — рядки JSON: перший про входи (sha256), далі по рядку на виклик `{н, ім, результат | помилка}`, результат — канонічний
 JSON (сортовані ключі, float через `repr`, без пробілів), тож два однакові знімки збігаються байт у байт (`cmp`). Час, версія
@@ -41,9 +45,13 @@ def модулі_зі_сторінки(шлях):
     return base64.b64decode(м.group(1))
 
 
-def підготувати(тека):
-    """Те саме, що `підняти_міст_показу`: модулі в `тека`, вона в `sys.path` і поточна."""
+def підготувати(тека, портативна=None):
+    """Те саме, що `підняти_міст_показу`: модулі в `тека`, вона в `sys.path` і поточна. `портативна` — `математика` (без libm), `множини`
+    (порядок обходу за значенням) чи `обидві` (`знімок_математика.py`, дослід 0.2-Б): однакові в CPython і Pyodide, ставляться до першого імпорту."""
     sys.dont_write_bytecode = True
+    if портативна:
+        import знімок_математика
+        знімок_математика.встановити(тека, портативна)
     if тека not in sys.path:
         sys.path.insert(0, тека)
     os.chdir(тека)
@@ -81,9 +89,11 @@ async def прогнати(входи_текст, лише=None):
 def в_cpython(арг):
     тека = tempfile.mkdtemp(prefix='знімок_показ_')
     zipfile.ZipFile(io.BytesIO(модулі_зі_сторінки(арг.сторінка))).extractall(тека)
-    підготувати(тека)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    підготувати(тека, арг.портативна)
     знімок, час = asyncio.run(прогнати(прочитати(арг.входи), арг.лише))
-    час.update({'середовище': 'cpython', 'версія': sys.version, 'hashseed': os.environ.get('PYTHONHASHSEED')})
+    час.update({'середовище': 'cpython', 'версія': sys.version, 'hashseed': os.environ.get('PYTHONHASHSEED'),
+                'підміна': арг.портативна or 'нема'})
     return знімок, час
 
 
@@ -91,7 +101,7 @@ def в_pyodide(арг):
     """Pyodide живе в Node: `знімок_мосту_pyodide.js` піднімає його з локального кешу й виконує цей самий файл."""
     вихід = tempfile.mkdtemp(prefix='знімок_пд_')
     команда = ['node', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'знімок_мосту_pyodide.js'),
-               арг.сторінка, арг.pyodide, арг.входи, вихід, str(арг.лише or 0)]
+               арг.сторінка, арг.pyodide, арг.входи, вихід, str(арг.лише or 0), арг.портативна or '']
     п = subprocess.run(команда, text=True, capture_output=True)
     if п.returncode:
         sys.exit('Pyodide: rc %d\n%s%s' % (п.returncode, п.stdout[-1500:], п.stderr[-1500:]))
@@ -160,8 +170,18 @@ def діф(шлях_а, шлях_б):
     return len(різні) + (1 if непорівнювані else 0)
 
 
+def підміна(значення):
+    if значення.partition(':')[0] not in ('математика', 'множини', 'обидві'):
+        raise argparse.ArgumentTypeError('математика | множини[:модуль,…] | обидві')
+    return значення
+
+
 def main():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)    # `| head` не друкує трасу
+    if sys.argv[1:2] == ['зміст']:    # рішення доменною мовою: `знімок_змісту.py` (крок 0.2-Б)
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import знімок_змісту
+        return знімок_змісту.main(sys.argv[2:])
     р = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     р.add_argument('середовище', nargs='?', choices=('cpython', 'pyodide'))
     р.add_argument('--діф', nargs=2, metavar=('А', 'Б'), help='різниця двох знімків по викликах')
@@ -170,6 +190,7 @@ def main():
     р.add_argument('--вихід', help='файл знімка (поруч <вихід>.час.json)')
     р.add_argument('--pyodide', default='/tmp/pyodide', help='кеш Pyodide 0.26.4 (середовище pyodide)')
     р.add_argument('--лише', type=int, help='лише перші N викликів')
+    р.add_argument('--портативна', type=підміна, help='дослід причин розбіжності: математика без libm, порядок множин за значенням чи обидва')
     арг = р.parse_args()
     if арг.діф:
         sys.exit(1 if діф(*арг.діф) else 0)
