@@ -1,0 +1,52 @@
+── ПРОМПТ (7410 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Топ із високою горловиною TILIA капучино · kind code: t_shirt · colour code: cappuccino · about it: text н=1
+2 — Жіночі шорти з еко-шкіри принт пітон · kind code: shorts · colour code: beige · about it: text н=2
+3 — Шльопанці жіночі, ATTICO, шкіра, колір коричневий · kind code: sandals · colour code: brown · about it: text н=3
+4 — М'який шарф з бахромою кемел · kind code: scarf_generic · colour code: chocolate · about it: text н=4
+5 — Сумка жіноча Le Grand Bambino · kind code: bag_generic · colour code: brown · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; cappuccino — капучино; chocolate — шоколадний.
+
+ТЕКСТИ:
+{
+"1": "This cappuccino-colored top features a high collar and ribbed fabric that hugs your figure elegantly. Its fitted design accentuates your waist while providing a sleek look suitable for any occasion.",
+"2": "The beige shorts boast an eye-catching animal print on eco-leather, adding a bold yet playful element to your outfit. With their high-waisted cut and black belt detail, they offer both style and comfort.",
+"3": "These brown leather sandals have a casual yet sophisticated vibe with their open-toe design and sturdy heel. Their comfortable fit makes them ideal for long days spent walking around the office.",
+"4": "The chocolate-colored scarf features soft, knitted material with delicate fringes at the ends. It adds a touch of warmth and sophistication to your outfit while being versatile enough for various seasons.",
+"5": "This brown suede handbag has a classic rectangular shape with a top handle and flap closure. Its sleek design complements your outfit perfectly, making it an essential accessory for carrying your essentials in style.",
+"6": "This cappuccino top with its ribbed fabric and high collar brings a soft, refined touch to your ensemble. Paired with beige shorts featuring an animal print, you get a stylish contrast that adds visual interest without feeling too flashy. The chocolate scarf adds a cozy warmth perfect for the autumn weather, while the brown leather sandals offer both comfort and elegance as you move around the office throughout the day.",
+"7": "Tuck in your top to define your waist and create a streamlined silhouette that looks polished during meetings.",
+"8": "Wrap your scarf loosely around your neck or drape it over your shoulders for a more relaxed vibe while still keeping it warm.",
+"9": "Топ із високою горловиною TILIA капучино, Жіночі шорти з еко-шкіри принт пітон — I accept this finding because the tonal harmony between the cappuccino top and beige shorts elevates the animal print into a sophisticated texture rather than a loud pattern, serving your neat office intent beautifully."
+}
+
+── ВІДПОВІДЬ (2016 симв., 40.8 с, HTTP 200) ──
+```json
+{
+"1": "Цей топ капучино має високий комір і ребристу тканину, яка елегантно облягає твою фігуру. Його приталений крій підкреслює талію, надаючи витончений образ, який пасуватиме для будь-якої нагоди.",
+"2": "Бежеві шорти мають помітний анімалістичний принт з екошкіри, додаючи сміливий і водночас грайливий елемент до твого образу. Завдяки високій талії та чорному ремінцю вони пропонують стиль і комфорт.",
+"3": "Ці коричневі шкіряні сандалі мають невимушений, але вишуканий вигляд з відкритим носком і міцним підбором. Їх зручна посадка робить їх ідеальними для довгих днів, проведених на роботі.",
+"4": "Шоколадний шарф має м’яку в’язану тканину з ніжними китицями на кінцях. Він додає нотку тепла та вишуканості до твого образу, водночас залишаючись універсальним для різних сезонів.",
+"5": "Ця коричнева замшева сумка має класичну прямокутну форму з верхньою ручкою і клапаном. Її елегантний дизайн чудово доповнює твій образ, роблячи її незамінним аксесуаром для носіння необхідних речей зі стилем.",
+"6": "Цей топ капучино з ребристою тканиною та високим коміром додає м’який і вишуканий штрих до твого ансамблю. У поєднанні з бежевими шортами з анімалістичним принтом ти отримуєш стильний контраст, який додає візуального інтересу без надмірної помітності. Шоколадний шарф додає затишного тепла, ідеально підходящого для осінньої погоди, тоді як коричневі шкіряні сандалі пропонують комфорт та елегантність протягом усього дня.",
+"7": "Заправ топ всередину шортів, щоб визначити свою талію та створити стрункий силует, який виглядатиме охайно під час нарад.",
+"8": "Недбало обгорни шарф навколо шиї або розкинь його по плечах для більш невимушеного настрою, зберігаючи при цьому тепло.",
+"9": "Топ із високою горловиною TILIA капучино, Жіночі шорти з еко-шкіри принт пітон — Я приймаю цей висновок, тому що тональна гармонія між топом капучино та бежевими шортами підносить анімалістичний принт до вишуканої текстури замість гучного візерунка, чудово слугуючи твоєму охайному офісному образу."
+}
+```
