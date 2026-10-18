@@ -1,0 +1,57 @@
+── ПРОМПТ (7540 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Джемпер жіночий з коміром-поло та візерунком ромби демісезонний · kind code: sweater · colour code: black · about it: text н=1
+2 — Штани з сатину сірий · kind code: trousers · colour code: grey · about it: text н=2
+3 — Черевики шоколадні MARLOW на флісі · kind code: ankle_boots · colour code: chocolate · about it: text н=3
+4 — Підвіска Ocean · kind code: jewelry_generic · colour code: white · about it: text н=4
+5 — Сумка жіноча, ATTICO, шкіра, колір бежевий · kind code: bag_generic · colour code: beige · about it: text н=5
+6 — Жіноче вовняне пальто Comfortemp®, класичний стиль, осінь-весна Stella Polare (чорний, 42) · kind code: coat · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; chocolate — шоколадний; grey — сірий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "A black knit sweater with a polo collar and white geometric diamond lines across the front, featuring long sleeves and ribbed cuffs that fit close to your frame.",
+"2": "Grey satin trousers with a relaxed wide-leg cut and an elasticized waistband that sits comfortably at your natural waistline.",
+"3": "Chocolate leather ankle boots with a square toe, a low block heel, and a decorative buckle strap across the instep that adds a touch of structured edge to your look.",
+"4": "A white pearl necklace composed of evenly spaced round beads that drapes softly around your neck for a timeless, understated elegance.",
+"5": "A beige structured crossbody bag with smooth textured leather, a fold-over flap closure, and dual short shoulder straps that offer practical carry options.",
+"6": "A black wool coat in a classic double-breasted silhouette with wide lapels, deep front pockets, and a knee-length hem that flows gracefully over your figure.",
+"7": "This look brings a refined sense of calm to your workplace with its dark neutral palette anchored by the rich chocolate hue of your boots. The fitted top defines your waistline while the straight trousers balance your silhouette, and the structured wool coat adds polish without weighing you down. Wearing this outfit through your daily commute allows you to maintain professional composure even on a crisp winter morning.",
+"8": "Tuck the sweater into your trousers to highlight your defined waist when sitting for meetings or during presentations.",
+"9": "Черевики шоколадні MARLOW на флісі — The gorpcore boots with a fleece lining are chosen deliberately to withstand -10°C and salt slush, replacing the formal shoes that would slip or freeze.",
+"10": "Джемпер жіночий з коміром-поло та візерунком ромби демісезонний — The knit sweater has a pattern that adds visual interest without breaking the monochrome theme, drawing the eye upward.",
+"11": "Підвіска Ocean — A silvery pendant necklace is chosen to add a touch of elegance and break the monotone of black and grey."
+}
+
+── ВІДПОВІДЬ (2082 симв., 96.4 с, HTTP 200) ──
+```json
+{
+"1": "Чорний в'язаний джемпер з коміром-поло та білими геометричними лініями у вигляді ромбів спереду, має довгі рукави та ребристі манжети, які щільно прилягають до твоєї фігури.",
+"2": "Штани сірого сатину з вільним широким кроєм і еластичним поясом, який зручно сидить на твоїй лінії талії." ,
+"3": "Черевики шоколадного кольору MARLOW зі шкіри з квадратним носком, низьким стійким каблуком і декоративною пряжкою на підйомі, яка додає структурований акцент до твого образу.",
+"4": "Білий перлове намисто, що складається з рівномірно розташованих круглих бусинок, яке м'яко облягає шию та надає позачасову витонченість." ,
+"5": "Бежева сумка-кросбоді структурованого крою зі шкіри гладкої текстури, клапаном на застібці та двома короткими плечовими ремінцями для практичного носіння.",
+"6": "Чорне вовняне пальто в класичному двобортному силуеті з широкими лацканами, глибокими передніми кишенями та довжиною до коліна, яке елегантно спадає по твоїй фігурі." ,
+"7": "Цей образ привносить вишуканий спокій на твоє робоче місце завдяки темній нейтральній палітрі, яку підкреслює насичений шоколадний відтінок твоїх черевиків. Приталений верх визначає лінію талії, а прямі штани збалансовують силует, і структуроване вовняне пальто додає елегантності без зайвого обтяження. Одягнувши цей образ під час щоденної поїздки на роботу, ти зможеш зберегти професійну впевненість навіть у прохолодний зимовий ранок." ,
+"8": "Заправ джемпер у штани, щоб підкреслити твою витончену талію під час засідань або презентацій.",
+"9": "Черевики шоколадні MARLOW на флісі — Горпкор черевики з утепленням із флісу обрані навмисно для того, щоб вони витримували -10°C і соляну кашу, замінюючи формальне взуття, яке б ковзало або замерзало." ,
+"10": "Джемпер жіночий з коміром-поло та візерунком ромби демісезонний — В'язаний джемпер має малюнок, який додає зорового інтересу без порушення монохромної теми, привертаючи увагу вгору." ,
+"11": "Підвіска Ocean — Сріблясте кулонне намисто обрано для того, щоб додати нотку елегантності та розбавити монотонність чорного й сірого кольорів."
+}
+```

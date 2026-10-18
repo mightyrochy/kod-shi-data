@@ -1,0 +1,53 @@
+── ПРОМПТ (7638 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Чорний жакет з фігурними рукавами · kind code: blazer · colour code: black · about it: text н=1
+2 — Спідниця міді пряма з кишенями · kind code: skirt · colour code: beige · about it: text н=2
+3 — Черевики жіночі, RIEKER, шкіра/екошкіра, колір чорний · kind code: ankle_boots · colour code: black · about it: text н=3
+4 — Коричневий шкіряний тоут з биркою · kind code: tote · colour code: brown · about it: text н=4
+5 — Фігурні сережки на ланцюжку · kind code: jewelry_generic · colour code: silvery · about it: text н=5
+6 — Чорне стьобане пальто вище коліна з поясом · kind code: coat · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "The black blazer is cut to fit closely through the waist and hips, ending at a high hip line to keep your figure balanced. Its wide lapels add instant polish for the office setting.",
+"2": "This beige midi skirt falls straight with deep pockets and an elasticized waistband that sits comfortably on your hips. The smooth fabric creates a fluid, clean line from hip to ankle.",
+"3": "The black ankle boots are made of soft leather with a thick, textured platform sole that adds height and grip for walking in snow. Their rounded toe is comfortable enough for all-day wear at work.",
+"4": "This large brown tote bag features two top handles and a relaxed drawstring closure with buckled corners for secure storage. Its medium earth tone complements the neutral palette of your outfit.",
+"5": "The silvery earrings consist of small studs connected by delicate chains to large, smooth spheres that sway slightly as you move. Their metallic finish adds a subtle shine without overpowering the simple lines of your clothes.",
+"6": "This black puffer coat is knee-length with a detachable hood and a cinched waist belt to keep warmth in while maintaining shape. The horizontal quilting adds volume that contrasts nicely with the sleek bottom half of your ensemble.",
+"7": "This monochrome look in black and beige is your go-to for a crisp office day. The tailored blazer provides structure to the upper body while the straight midi skirt creates a clean vertical line down your legs. To stay warm at -10°C, you will wear the belted puffer coat over everything; I chose it because its volume anchors you without hiding your defined waist. For footwear, the black ankle boots with a chunky sole protect against snowy and salted roads while keeping the silhouette sleek.",
+"8": "Pull the belt of the black coat to define your waist before stepping out.",
+"9": "Чорний жакет з фігурними рукавами, Чорне стьобане пальто вище коліна з поясом — I accept the gate on layers because the long black coat over the blazer provides the essential insulation you need for -10°C with snow and salted roads, turning the 'too few' warning into a deliberate survival strategy while keeping your professional look intact."
+}
+
+── ВІДПОВІДЬ (2247 симв., 98.4 с, HTTP 200) ──
+```json
+{
+"1": "Чорний жакет має крій, що щільно облягає талію і стегна, закінчуючись на високій лінії стегон, щоб збалансувати твою фігуру. Його широкі лацкани миттєво додають елегантності для офісного середовища.",
+"2": "Ця бежева спідниця міді має прямий крій із глибокими кишенями та еластичним поясом, який зручно сидить на твоїх стегнах. Гладка тканина створює плавний і чистий силует від стегна до щиколотки.",
+"3": "Чорні черевики мають м’яку шкіру з товстою рифленою підошвою, яка додає висоти та зчеплення для ходьби по снігу. Їхній округлий носок досить комфортний для цілоденної роботи.",
+"4": "Ця велика коричнева сумка-тоут має дві верхні ручки та вільне затяжне закриття з кутами, закріпленими пряжками, для безпечного зберігання. Її середній землистий відтінок доповнює нейтральну палітру твого образу.",
+"5": "Срібні сережки складаються з маленьких пусетів, з’єднаних ніжними ланцюжками з великими гладкими сферами, які трохи розгойдуються під час руху. Їхній металевий блиск додає ледь помітне сяйво без перевантаження простих ліній твого одягу.",
+"6": "Цей чорний пуховик має довжину до коліна, знімний капюшон і пояс на талії для збереження тепла при цьому зберігаючи форму. Горизонтальна стьобання додає об’єм, який гарно контрастує зі стрункою нижньою частиною твого ансамблю.",
+"7": "Цей монохромний образ у чорному і бежевому — це твоя уніформа для робочого дня. Приталений жакет надає структури верхній частині тіла, а пряма спідниця міді створює чисту вертикальну лінію по твоїм ногам. Щоб зігрітися при -10°C, ти одягнеш поясний пуховик поверх усього; я обрала його тому, що його об’єм збалансовує тебе без того, щоб ховати визначену талію. Для взуття чорні черевики на масивній підошві захищають від снігу і посипаних доріг при цьому зберігаючи силует струнким.",
+"8": "Підтягни пояс чорного пальта, щоб підкреслити талію перед виходом.",
+"9": "Чорний жакет з фігурними рукавами, Чорне стьобане пальто вище коліна з поясом — я приймаю принцип багатошаровості, тому що довгий чорний пуховик поверх жакета забезпечує необхідну ізоляцію, яку ти потребуєш при -10°C зі снігом і посипаними дорогами, перетворюючи попередження «занадто мало» на навмисну стратегію виживання при цьому зберігаючи твій професійний образ."
+}
+```
