@@ -1,0 +1,58 @@
+── ПРОМПТ (2969 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Thick wool-blend overcoat in charcoal grey (#36454F), longline cut reaching mid-calf, color charcoal with hex code #36454F, heavy felt fabric.\nWaterproof insulated parka in matte black (#1C1C1C), relaxed fit extending to hips, color black with hex code #1C1C1C, technical nylon fabric.\nTailored wool trousers in deep forest green (#0A280B), straight-leg cut hitting the ankle, color forest green with hex code #0A280B, virgin wool fabric.\nFine-gauge merino sweater in cream white (#F5F5DC), crewneck style falling to hip length, color off-white with hex code #F5F5DC, soft cashmere blend fabric.\nWool-cashmere scarf in navy blue (#000080), fringed ends hanging long past the chest, color navy with hex code #000080, 100% wool fabric.\nLeather gloves in dark brown (#654321), mitten style covering hands to wrists, color dark brown with hex code #654321, full-grain leather fabric.\nCombat-style winter boots in black rubber sole and nubuck upper, mid-calf height, color black with hex code #000000, waterproof rubber and leather fabric.\n\nThis layered ensemble ensures complete protection against the freezing -15°C temperature and falling snow while navigating a salted road. The combination of an outer parka, a tailored coat, and warm wool trousers allows you to stay dry and insulated without overheating during your walk to work. Textured knits and structured fabrics maintain a polished \"neat\" appearance suitable for the office even when covered by heavy winter layers. The dark color palette with cream accents keeps the look visually grounded and professional despite the harsh autumn weather conditions."}
+
+── ВІДПОВІДЬ (1511 симв., 86.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "overcoat",
+      "details": "Thick wool-blend, longline cut reaching mid-calf, heavy felt fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "parka",
+      "details": "Waterproof insulated, relaxed fit extending to hips, technical nylon fabric",
+      "slot": "outerwear",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "Tailored wool, straight-leg cut hitting the ankle, virgin wool fabric",
+      "slot": "bottom",
+      "color_hex": "#0A280B",
+      "worn": true
+    },
+    {
+      "name": "sweater",
+      "details": "Fine-gauge merino, crewneck style falling to hip length, soft cashmere blend fabric",
+      "slot": "top",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "Wool-cashmere, fringed ends hanging long past the chest, 100% wool fabric",
+      "slot": "scarf",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "gloves",
+      "details": "Leather, mitten style covering hands to wrists, full-grain leather fabric",
+      "slot": "gloves",
+      "color_hex": "#654321",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "Combat-style winter, black rubber sole and nubuck upper, mid-calf height, waterproof rubber and leather fabric",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

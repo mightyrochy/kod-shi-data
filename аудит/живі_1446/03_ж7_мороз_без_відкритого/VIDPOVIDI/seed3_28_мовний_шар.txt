@@ -1,0 +1,58 @@
+── ПРОМПТ (7464 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Гольф сірий CHARLIE · kind code: sweater · colour code: grey · about it: text н=1
+2 — Жакет-пальто · kind code: blazer · colour code: silvery · about it: text н=2
+3 — Штани прямого крою · kind code: trousers · colour code: silvery · about it: text н=3
+4 — Ilvi Чоботи зимові · kind code: boots · colour code: beige · about it: text н=4
+5 — Сумка “COQUETTE MINI” бежева · kind code: bag_generic · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; grey — сірий; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "A soft grey knit sweater with a high collar that tucks neatly under the blazer. The fabric feels warm and breathable, perfect for layering without bulk.",
+"2": "A silvery wool-blend blazer with a relaxed fit and subtle texture that adds structure to your look. Its loose cut flows comfortably as you walk.",
+"3": "High-waisted straight-leg trousers in a light silvery shade that elongate your silhouette. The clean lines and slight volume at the hem keep movement easy on snow-covered streets.",
+"4": "Beige leather knee-high boots with a chunky sole that grips well in snowy conditions. Their rounded toe and soft upper add warmth without adding weight to your feet.",
+"5": "A small beige structured handbag with a short top handle and detachable strap. Its smooth finish complements the matte tones of your boots and trousers.",
+"6": "Your outfit is built for a crisp autumn day with snow, so we chose warmth and structure without feeling heavy. The grey sweater offers a soft layer that keeps you warm on the walk to work, while the silvery blazer adds just enough polish to meet your office needs. The straight-leg trousers give you space to move comfortably, and the beige boots protect your feet from the cold and wet ground. Everything comes together in quiet tones of grey, silvery, and beige that feel effortless and put-together as you go through your day.",
+"7": "Tuck a loose scarf or let your collar stay open against the chill without adding bulk to your neck.",
+"8": "Let the blazer rest over the sweater for a layered look that works from morning meeting to late afternoon walk.",
+"9": "Keep the boots clean and dry after each step on salted roads so they stay comfortable and stylish.",
+"10": "Гольф сірий CHARLIE — The grey sweater is the soft inner layer that defines the neckline and adds comfort against the skin; its texture contrasts with the blazer's structure.",
+"11": "Жакет-пальто — This double-breasted coat acts as the primary warmth source and outer layer, replacing the previous insufficient jacket to meet the -15°C requirement.",
+"12": "Штани прямого крою — The straight-leg trousers balance the volume of the blazer and create a clean vertical line from hip to floor, essential for a neat work look."
+}
+
+── ВІДПОВІДЬ (2348 симв., 48.3 с, HTTP 200) ──
+```json
+{
+"1": "М'який сірий трикотажний гольф з високим коміром, який акуратно ховається під жакетом. Тканина відчувається теплою та повітропроникною, ідеальною для багатошаровості без об’єму.",
+"2": "Сріблястий вовняний блейзер вільного крою з ледь помітною текстурою, яка додає структури твоєму образу. Його вільний крій зручно спадає під час ходьби.",
+"3": "Штани прямого крою із завищеною талією світлого сріблястого відтінку, які візуально видовжують силует. Чисті лінії та злегка розкльошені манжети забезпечують легкість рухів на засніжених вулицях.",
+"4": "Бежеві шкіряні ботфорти до коліна з масивною підошвою, яка добре тримається на снігу. Заокруглений носок і м'яка халява додають тепла без зайвої ваги для твоїх ніг.",
+"5": "Невелика структурована бежева сумка з короткою верхньою ручкою та знімним ремінцем. Її гладка поверхня доповнює матові тони твоїх чобіт і штанів.",
+"6": "Твій образ створений для прохолодного осіннього дня зі снігом, тому ми обрали тепло й структуру без відчуття тяжкості. Сірий гольф дарує м'який шар, який тримає тебе в теплі під час прогулянки на роботу, а сріблястий блейзер додає достатньо елегантності для твоїх офісних потреб. Штани прямого крою забезпечують простір для комфортного руху, а бежеві ботфорти захищають ноги від холоду та вогкої землі. Все поєднується в спокійних тонах сірого, сріблястого й бежевого, які виглядають невимушено та доречно протягом дня.",
+"7": "Оберни навколо шиї шарф вільного крою або залиш комір розстебнутим проти холоду без зайвої об’ємності на шиї.",
+"8": "Залишай блейзер злегка накинутим поверх гольфу для багатошарового образу, який підійде як для ранкової зустрічі, так і для вечірньої прогулянки.",
+"9": "Тримай ботфорти чистими та сухими після кожного кроку по посоленій дорозі, щоб вони залишалися комфортними й стильними.",
+"10": "Гольф сірий CHARLIE — Сірий гольф є м'яким внутрішнім шаром, який формує лінію вирізу горловини та додає затишку до шкіри; його текстура контрастує зі структурою блейзера.",
+"11": "Жакет-пальто — Цей двобортний пальта є основним джерелом тепла й верхнім шаром, замінюючи попередній недостатньо теплий жакет для задоволення вимоги -15°C.",
+"12": "Штани прямого крою — Штани прямого крою збалансовують об’єм блейзера та створюють чисту вертикальну лінію від стегна до підлоги, що є необхідним для охайного робочого образу."
+}
+```
