@@ -4,6 +4,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import io
 import json
 import os
+import re
 from pathlib import Path
 import tempfile
 import threading
@@ -96,7 +97,7 @@ class Пілот(unittest.TestCase):
         # Лише транспортна фікстура, не справжня незалежна розмітка чи результат пілота.
         rows = Р.прочитати(self.manifest)
         capture = json.loads((self.evidence / "capture-manifest.json").read_text())
-        value = dict(version="visible_item_capture_receipt.v1", protocol=Р.ПРОТОКОЛ, blind=True, reviewer="FIXTURE_NOT_QA", eye_reviewer={"id": "FIXTURE_NOT_QA", "model": "fixture"},
+        value = dict(version="visible_item_capture_receipt.v1", protocol=Р.ПРОТОКОЛ, blind=True, reviewer="FIXTURE_NOT_QA", eye_reviewer={"id": "FIXTURE_NOT_QA", "session_id": "FIXTURE_SESSION_NOT_QA", "model": "fixture"},
             evidence_commit="f" * 40, gold_sha256="0" * 64,
             prepared_manifest_sha256=Р.хеш(self.manifest.read_bytes()),
             capture_manifest_sha256=Р.хеш(Р.канон(capture)), verified_capture_ids=[r["sample_id"] for r in rows],
@@ -174,6 +175,25 @@ class Пілот(unittest.TestCase):
             Р.підготувати(self.root / "too-many.jsonl", self.root / "not-written.jsonl")
         self.assertEqual(self.posts, [])
 
+    def test_independent_eye_identity_required_before_any_post(self):
+        receipt = json.loads(self.receipt.read_text())
+        invalid = [None, {}, "FIXTURE_NOT_QA"]
+        for key in ("id", "session_id", "model"):
+            invalid.append({k: v for k, v in receipt["eye_reviewer"].items() if k != key})
+            invalid.extend({**receipt["eye_reviewer"], key: value} for value in (None, "", "   ", 1))
+        invalid.append({**receipt["eye_reviewer"], "model": "fixture-local-model"})
+        for eye in invalid:
+            with self.subTest(eye=eye):
+                Р.записати(self.receipt, {**receipt, "eye_reviewer": eye})
+                with self.assertRaisesRegex(ValueError, "independent_eye"):
+                    self.infer()
+                self.assertEqual(self.posts, [])
+        receipt.pop("eye_reviewer")
+        Р.записати(self.receipt, receipt)
+        with self.assertRaisesRegex(ValueError, "independent_eye"):
+            self.infer()
+        self.assertEqual(self.posts, [])
+
     def test_nonpixel_http200_rejected_and_no_proxy_or_redirect(self):
         rows = Р.прочитати(self.prepared)
         rows[0]["image_url"] = self.url + "/html"
@@ -197,6 +217,23 @@ class Пілот(unittest.TestCase):
         self.assertNotIn("role", review)
         for row in [json.loads(line) for line in review.splitlines()]:
             self.assertEqual(Р.хеш((out / row["prepared_path"]).read_bytes()), row["image_sha256"])
+        self.assertEqual(self.posts, [])
+
+    def test_blind_export_order_does_not_reveal_source_groups(self):
+        rows = Р.прочитати(self.manifest)
+        out = self.root / "blind-sorted"
+        Р.експортувати_очам(self.manifest, out)
+        manifest_bytes = (out / "review-manifest.jsonl").read_bytes()
+        html_bytes = (out / "review.html").read_bytes()
+        ids = [r["blind_id"] for r in map(json.loads, manifest_bytes.splitlines())]
+        self.assertEqual(ids, sorted(r["blind_id"] for r in rows))
+        self.assertEqual(re.findall(r"<figcaption>(.*?)</figcaption>", html_bytes.decode()), ids)
+        controls = {r["blind_id"] for r in rows if r["role"] == "negative"}
+        self.assertNotEqual(set(ids[-20:]), controls)
+        Р.jsonl(self.manifest, list(reversed(rows)))
+        Р.експортувати_очам(self.manifest, out)
+        self.assertEqual((out / "review-manifest.jsonl").read_bytes(), manifest_bytes)
+        self.assertEqual((out / "review.html").read_bytes(), html_bytes)
         self.assertEqual(self.posts, [])
 
     def test_wrong_backend_model_never_produces_fact(self):
