@@ -210,7 +210,7 @@ def оцінити(маніфест, gold, результати, receipt, *, к�
             причина = "pending_eye_annotations"
             неповне.append({"kind": причина, "sample_id": ід})
         else:
-            _збіг(вхід, еталон, ("image_sha256", "frame_target"), помилки, ід, "gold")
+            _збіг(вхід, еталон, ("image_sha256",), помилки, ід, "gold")
             reviewer = еталон.get("reviewer") or {}
             if any(к in еталон for к in ("sample_id", "sku", "role", "stratum", "known_old_metadata", "caption", "catalog_type_legacy", "model_response")):
                 помилки.append({"kind": "gold_not_blind_payload", "sample_id": ід})

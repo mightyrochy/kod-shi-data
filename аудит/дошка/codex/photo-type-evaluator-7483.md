@@ -1,0 +1,3 @@
+# Фото-пілот7483 · evaluator #1453
+
+| 7551 | Astra QA нового blind gold контракту7483 | висока | **ЗАКРИТО #1453** | Evaluator вимагав gold.frame_target, хоча blind review приховує source labels: selector має100form+20service_candidate; gold зі спільним form спричиняв20binding_mismatch. Gold тепер прив’язується через opaque blind_id та actual imageSHA, без прихованого target-тега. Source frame_target строго звіряється лише між manifest/results; capture/crop збережено | `аудит/проби/фото_тип_мірило_7483.py` та gold v1 | Synthetic100form+20service_candidate із gold без frame_target приймається тільки як SYNTHETIC_ONLY; окремий source target mismatch у result→FAIL. Actual gold не створювався · виявлено: перевірка; внесено: #1453 |

@@ -36,7 +36,7 @@ class МірилоПілота(unittest.TestCase):
                 image_sha256=М.sha256(frame), prepared_path=filename, prepare_status="ready",
                 known_old_metadata=dict(oldconfirmed=i<30, old_photo_slot="пояс", catalog_slot="пояс"))
             self.manifest.append(row)
-            annotations.append(dict(blind_id=row["blind_id"], image_sha256=row["image_sha256"], frame_target="form",
+            annotations.append(dict(blind_id=row["blind_id"], image_sha256=row["image_sha256"],
                 status="resolved" if real else "target_not_visible", item_type="belt" if real else None,
                 reason=None if real else "not_visible", reviewer=deepcopy(self.reviewer), blind=True,
                 actual_image_bytes_reviewed=True, evidence_id="SYNTHETIC-NOT-REAL-EYE",
@@ -255,6 +255,23 @@ class МірилоПілота(unittest.TestCase):
         self.assertEqual(confirmed,100)
         self.assertEqual(r["metrics"]["false_confirmation"],1)
         self.assertEqual(r["status"],"FAIL")
+
+    def test_blind_gold_does_not_need_hidden_source_target(self):
+        for row,result in zip(self.manifest,self.results):
+            if row["role"] == "negative":
+                row["frame_target"]="service_candidate"
+                result["frame_target"]="service_candidate"
+        self.assertTrue(all("frame_target" not in annotation for annotation in self.gold["annotations"]))
+        r=self.evaluate();self.assertEqual(r["status"],"SYNTHETIC_ONLY")
+        self.assertTrue(all(r["criteria"].values()))
+        self.assertEqual(r["counts"]["coded"],100)
+
+    def test_source_target_manifest_result_binding_stays_strict(self):
+        self.manifest[100]["frame_target"]="service_candidate"
+        self.results[100]["frame_target"]="form"
+        r=self.evaluate();self.assertEqual(r["status"],"FAIL")
+        errors=[e for e in r["errors"] if e["kind"] == "binding_mismatch"]
+        self.assertTrue(any(e["input"] == "results" and e["field"] == "frame_target" for e in errors))
 
 
 if __name__ == "__main__":
