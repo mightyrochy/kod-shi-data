@@ -1,0 +1,37 @@
+── ПРОМПТ (2428 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet blazer with structured shoulders, tailored fit, floor-length hem, deep emerald green (#043326), heavy woven wool.\nSilk satin sheath dress, midi length with a modest neckline, midnight blue (#000C1E), fluid charmeuse fabric.\nPointed-toe stiletto pumps, sleek silhouette, classic black (#000000), smooth calfskin leather.\nDiamond stud earrings and a delicate gold chain necklace to complement the evening light without overpowering the outfit.\n\nThis ensemble strikes the perfect balance between her requested \"formal\" elegance and \"neat\" sophistication for an autumn evening at the office theatre. The rich velvet blazer provides a necessary layer against the cool autumn air while adding texture that catches the artificial stage lighting beautifully. The deep jewel tones of green and blue feel luxurious yet grounded, appropriate for a professional setting without sacrificing the glamour of the performance venue. Together, these pieces create a timeless look that is both polished and ready to transition seamlessly from the office to the theatre curtain call."}
+
+── ВІДПОВІДЬ (896 симв., 66.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Velvet blazer",
+      "details": "Structured shoulders, tailored fit, floor-length hem, heavy woven wool fabric",
+      "slot": "outerwear",
+      "color_hex": "#043326",
+      "worn": true
+    },
+    {
+      "name": "Silk satin sheath dress",
+      "details": "Midi length with a modest neckline, fluid charmeuse fabric",
+      "slot": "dress",
+      "color_hex": "#000C1E",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe stiletto pumps",
+      "details": "Sleek silhouette, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Diamond stud earrings and a delicate gold chain necklace",
+      "details": "Delicate design to complement evening light without overpowering",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
