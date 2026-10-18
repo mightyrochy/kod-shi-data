@@ -1,0 +1,47 @@
+── ПРОМПТ (6990 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Блакитний лляний костюм на 1 ґудзик · kind code: suit · colour code: light_blue · about it: text н=1
+2 — Обруч Шарлотта пісочний · kind code: headband · colour code: sand · about it: text н=2
+3 — LeBERDES Сандалі молочні · kind code: sandals · colour code: milky · about it: text н=3
+4 — Сумка EMMA блакитний · kind code: bag_generic · colour code: light_blue · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: light_blue — блакитний; milky — молочний; sand — пісочний.
+
+ТЕКСТИ:
+{
+"1": "A relaxed light blue linen two-piece suit with an open-front blazer and wide-leg trousers that fall to your ankles. The fabric breathes in autumn daylight, the cut skims your frame without clinging, and the single button at the front lets you wear it casually or cinched slightly if you wish.",
+"2": "A soft sand-colored velvet headband lined along one curve with alternating round and square gold-set stones in clear and iridescent crystal tones. It rests gently atop your hair, adding a touch of refined sparkle that complements your relaxed silhouette without competing for attention.",
+"3": "Milky cream leather sandals with two wide straps secured by polished silver buckles and thick black rubber soles. Their structured yet comfortable design anchors your step through long walks, while the contrast between the pale uppers and dark sole gives quiet visual weight to your grounded movement.",
+"4": "A loose-fitting light blue hobo bag with gathered ruching at the top and a soft drawstring closure finished by a small pearl-like button. Its slouchy silhouette drapes naturally against your hip, echoing the fluidity of your wide trousers while offering effortless carrying comfort.",
+"5": "You wear a relaxed light blue two-piece linen set with wide-leg trousers and an open-front blazer, topped with a sand-colored velvet headband lined in sparkling gold and clear crystals. On your feet are milky cream leather sandals with chunky black soles and silver buckles; you carry the matching soft light-blue hobo bag with its gathered drawstring detail.",
+"6": "Keep the blazer unbuttoned for a breezy, effortless silhouette as you stroll through the park.",
+"7": "Let the wide legs flow freely while the sand-colored headband adds a gentle shimmer that catches daylight without overpowering your look."
+}
+
+── ВІДПОВІДЬ (1873 симв., 49.3 с, HTTP 200) ──
+```json
+{
+  "1": "Розслаблений блакитний лляльний костюм з відкритою блейзером і широкими штанами, що доходять до твоїх щиколоток. Тканина дихає в осінньому сонячному світлі, крій обтікає твою фігуру без прилипання, а один ґудзик спереду дозволяє носити його недбало або злегка затягнутим, якщо ти бажаєш.",
+  "2": "М'який пісочного кольору оксамитовий обруч, викладений по одній лінії чергуючимися круглими та квадратними золотистими камінцями в прозорих і райдужних кристалічних тонах. Він ніжно лежить на твоєму волоссі, додаючи нотку вишуканого блиску, який доповнює твій розслаблений силует без конкуренції за увагу.",
+  "3": "Молочно-кремові шкіряні сандалії з двома широкими ремінцями, закріпленими полірованими срібними пряжками та товстими чорними гумовими підошвами. Їхня структурована, але зручна конструкція підтримує твій крок на довгих прогулянках, а контраст між блідими верхами та темною підошвою надає тиху візуальну вагу твоєму впевненому руху.",
+  "4": "Вільна блакитна сумка-хобо з зібраними складками нагорі та м'яким шнурком, завершеним маленькою перлоподібною ґудзиком. Її недбалий силует природно спадає на твою стегно, відлунюючи плавність широких штанів і пропонуючи безтурботний комфорт для носіння.",
+  "5": "Ти носиш розслаблений блакитний лляльний костюм з широкими брюками та блейзером з відкритим спереду, доповнений пісочним оксамитовим обручем, викладеним блискучим золотом і прозорими кристалами. На твоїх ногах — молочно-кремові шкіряні сандалії з масивними чорними підошвами та срібними пряжками; ти носиш відповідну м'яку блакитну сумку-хобо зі своїм шнурком, що складається в гармошку.",
+  "6": "Залиш блейзер розстебнутим для легкого, недбалого силуету під час прогулянки парком.",
+  "7": "Дозволь широким штанам вільно спадати, а пісочний обруч додасть ніжний блиск, який ловить сонячне світло без переваги над твоїм образом."
+}
+```

@@ -1,0 +1,44 @@
+── ПРОМПТ (2517 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet structured blazer, tailored fit, knee-length hem, midnight blue #000080, fine woven velvet.\nSilk blend sheath midi dress, straight silhouette, ankle length, forest green #228B22, smooth satin weave.\nLeather block-heel pumps, pointed toe, mid-calf height, charcoal grey #36454F, polished calfskin.\nGold geometric hoop earrings, medium gauge, rose gold #B76E79, solid metal alloy.\nSmall structured clutch, boxy shape, wrist-to-hand length, black #000000, textured patent leather.\n\nThis ensemble balances your requested formal elegance with a neat sophistication suitable for an autumn evening at the theatre. The rich velvet of the blazer provides warmth against the cooler season while adding luxury that complements artificial stage lighting, whereas the deep forest green dress offers a classic, refined silhouette without appearing overly heavy. Your chosen color palette creates a harmonious contrast between the cool navy and earthy green tones, ensuring you look polished yet distinct in your outfit. The heel height and metallic accessories elevate the look to match the grandeur of the venue while respecting your specific wishes for formal attire."}
+
+── ВІДПОВІДЬ (1023 симв., 200.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "velvet structured blazer",
+      "details": "tailored fit, knee-length hem, fine woven velvet",
+      "slot": "top",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "silk blend sheath midi dress",
+      "details": "straight silhouette, ankle length, smooth satin weave",
+      "slot": "dress",
+      "color_hex": "#228B22",
+      "worn": true
+    },
+    {
+      "name": "leather block-heel pumps",
+      "details": "pointed toe, mid-calf height, polished calfskin",
+      "slot": "shoes",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "gold geometric hoop earrings",
+      "details": "medium gauge, solid metal alloy",
+      "slot": "earrings",
+      "color_hex": "#B76E79",
+      "worn": true
+    },
+    {
+      "name": "small structured clutch",
+      "details": "boxy shape, wrist-to-hand length, textured patent leather",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

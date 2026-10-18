@@ -1,0 +1,56 @@
+── ПРОМПТ (7886 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Блуза з жаккарда чорного кольору з акцентним вирізом · kind code: blouse · colour code: black · about it: text н=1
+2 — Брюки широкі кежуал · kind code: trousers · colour code: light_blue · about it: text н=2
+3 — Сумка жіноча Big Bambino · kind code: bag_generic · colour code: beige · about it: text н=3
+4 — Туфлі Sergio Rossi блакитні · kind code: dress_shoes · colour code: light_blue · about it: text н=4
+5 — Ремінь із натуральної шкіри, чорний · kind code: belt · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; light_blue — блакитний.
+
+ТЕКСТИ:
+{
+"1": "This black jacquard blouse features a high Mandarin collar, short puffed sleeves, and a dramatic oval keyhole cutout at the center chest. Its textured fabric adds depth without heaviness, and its fitted silhouette flatters your X-shape by defining the waist while allowing movement.",
+"2": "These wide-leg light blue trousers offer a relaxed yet polished drape with a high waistband and front pleats that elongate the leg. The soft fabric flows effortlessly, complementing your figure by balancing the structure of the top.",
+"3": "The beige woven clutch showcases intricate geometric embroidery in a natural fiber, accented with polished gold hardware and a sleek black leather handle. It’s compact enough for evening essentials but luxurious enough to carry your theater ticket and lipstick.",
+"4": "These light blue patent-leather pumps feature a rounded toe, a sturdy block heel, and a smooth finish that reflects ambient light subtly. They ground the outfit with color harmony while providing comfort for standing during intermissions.",
+"5": "This slim black leather belt has a minimalist round buckle with brushed metal hardware. It cinches the waist precisely, enhancing your natural hourglass shape and connecting the blouse to the trousers seamlessly.",
+"6": "This evening look blends modern tailoring with a touch of heritage, anchored by your X-shape. The black jacquard blouse with its structured puff sleeves and keyhole cut creates an elegant vertical line that draws the eye upward, while your wide-leg light blue trousers add fluid movement without overwhelming your figure. The gold accents on the bag echo the warm tones in your eyes, and the soft patina of the blue pumps matches the sky-hue of your trousers for a cohesive, understated glamour perfect for theater.",
+"7": "Drape the black blouse slightly off-shoulder to soften its silhouette and highlight your collarbone without losing formality.",
+"8": "Let the wide-leg trousers fall naturally to the floor—no cuffing—to maintain that elongated vertical line essential for your shape.",
+"9": "Tuck the blouse in cleanly at the waist to emphasize your defined waistline, creating a balanced hourglass effect.",
+"10": "Сумка жіноча Big Bambino — I kept this bag because its neutral warm tone adds depth to the monochromatic base without breaking the tonal scheme, and its size balances your height.",
+"11": "Блуза з жаккарда чорного кольору з акцентним вирізом, Брюки широкі кежуал — I kept this blazer's relaxed hem because it softens the formal occasion, creating a high-low mix that feels intentional"
+}
+
+── ВІДПОВІДЬ (2599 симв., 95.8 с, HTTP 200) ──
+```json
+{
+"1": "Ця чорна блуза з жаккарда має високий комір мандарин, короткі пишні рукави та драматичний овальний виріз на грудях. Її текстурована тканина додає глибини без обтяження, а приталений силует підкреслює твою X-подібну фігуру, визначаючи лінію талії та дозволяючи рух.",
+"2": "Ці широкі блакитні штани пропонують розслаблений і водночас елегантний крій з високою талією та передніми складками, які видовжують ноги. М’яка тканина легко струмує, доповнюючи твою фігуру, балансуючи структуру верху.",
+"3": "Бежева плетінка-клатч має вишукану геометричну вишивку з натурального волокна, прикрашена полірованою золотою фурнітурою та елегантною чорною шкіряною ручкою. Вона досить компактна для вечірніх дрібниць, але достатньо розкішна, щоб покласти туди квиток до театру і помаду.",
+"4": "Ці блакитні лаковані туфлі-човники мають заокруглений носок, стійкий каблук і гладку поверхню, яка ледь помітно відбиває світло. Вони завершують образ гармонійним кольором, забезпечуючи комфорт під час стояння на антракті.",
+"5": "Цей тонкий чорний шкіряний ремінь має мінімалістичну круглу пряжку з матовою металевою фурнітурою. Він точно затягує талію, підкреслюючи твою природну фігуру пісочного годинника і бездоганно поєднуючи блузу зі штанами.",
+"6": "Цей вечірній образ поєднує сучасний крій з ноткою спадщини, заснований на твоїй X-подібній фігурі. Чорна жаккардова блуза з її структурованими пишними рукавами та вирізом створює елегантну вертикальну лінію, яка привертає погляд вгору, а широкі блакитні штани додають плавності без перевантаження твоєї фігури. Золоті акценти на сумці відлунюють теплі тони у твоїх очах, а м’який патина синіх туфель гармонує з небесним кольором твоїх штанів для цільного і стриманого гламуру, який ідеально підходить до театру.",
+"7": "Злегка скинь чорну блузу з плеча, щоб пом’якшити її силует і виділити ключицю без втрати формальності.",
+"8": "Дозволь широким штанам вільно спадати на підлогу — не підвертай їх — щоб зберегти той видовжений вертикальний крій, який так важливий для твоєї фігури.",
+"9": "Заправ блузу в талію чисто і охайно, щоб підкреслити твою виражену лінію талії, створюючи збалансований ефект пісочного годинника.",
+"10": "Сумка жіноча Big Bambino — Я залишила цю сумку, тому що її нейтральний теплий тон додає глибини монохромній основі без порушення тональної схеми, а розмір збалансовує твій зріст.",
+"11": "Блуза з жаккарда чорного кольору з акцентним вирізом, Брюки широкі кежуал — Я залишила цей піджак із розслабленим краєм, тому що він пом’якшує формальний випадок, створюючи високий-низький мікс, який здається навмисним"
+}
+```

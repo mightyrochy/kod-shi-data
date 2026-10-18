@@ -1,0 +1,66 @@
+── ПРОМПТ (9136 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Джемпер з вовни та мохеру на короткий рукав морська хвиля · kind code: sweater · colour code: turquoise · about it: text н=1
+2 — Штани вузькі з льону · kind code: trousers · colour code: light_blue · about it: text н=2
+3 — Шарф об'ємний з дредами · kind code: scarf_generic · colour code: blue · about it: text н=3
+4 — Пасок з пірʼям айворі · kind code: belt · colour code: milky · about it: text н=4
+5 — Браслет кафа манжет (Other Brand) · kind code: jewelry_generic · colour code: golden · about it: text н=5
+6 — Слінгбеки Ombra блакитні · kind code: pumps · colour code: light_blue · about it: text н=6
+7 — Сумка жіноча, ATTICO, екошкіра, колір темно-коричневий · kind code: bag_generic · colour code: brown · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: blue — синій; brown — коричневий; golden — золотий; light_blue — блакитний; milky — молочний; turquoise — бірюзовий.
+
+ТЕКСТИ:
+{
+"1": "A soft turquoise sweater made of wool and mohair with short sleeves and a relaxed fit; its gentle drape complements your X shape by drawing attention to your waist while allowing freedom of movement under the theatre’s warm lighting.",
+"2": "Light blue narrow trousers crafted from breathable linen that offer a clean vertical line down your legs, balancing the volume of the sweater and grounding the outfit with a refined, minimalist silhouette suitable for evening wear.",
+"3": "A wide navy wool scarf with long fringes that adds texture and depth to your ensemble; its rich hue anchors the cooler tones of the outfit and wraps comfortably around your neck or shoulders for warmth during autumn evenings.",
+"4": "A milky-colored feathered belt tied in an elegant bow at the back, which subtly defines your waist without adding bulk; its delicate fabric and soft hue blend seamlessly with the rest of the outfit while adding a touch of romance.",
+"5": "A polished silver cuff bracelet that wraps snugly around your wrist, reflecting ambient light and drawing subtle attention to your hands — perfect for signing programs or adjusting gloves during intermission.",
+"6": "Slingback pumps in a two-tone design of light blue and burgundy with a square toe and thin heel; their structured shape elongates your leg line while offering enough comfort to walk confidently through the theatre lobby and seating area.",
+"7": "A structured dark brown leather tote bag from ATTICO that sits comfortably at your side or on your arm, providing practical storage for your evening essentials while adding a grounded, sophisticated element to your overall look.",
+"8": "You are dressed for an evening at the theatre in a look that feels both neat and formal. The deep turquoise top flows gently over the light blue trousers, creating a soft contrast between volume and line, while the milky belt defines your waist without breaking the outfit’s quiet rhythm. The wide navy scarf adds warmth and texture against the cool tones of the season, and the metallic bracelet catches the stage lights as you move through the aisle. This ensemble lives comfortably through the performance — its layers can be adjusted as the evening unfolds, from the theatre lobby to the final curtain call.",
+"9": "Tuck the turquoise sweater slightly at the front for subtle waist definition without altering its loose drape.",
+"10": "Drape the navy scarf loosely around your neck or over one shoulder to introduce asymmetry that draws attention upward toward your face.",
+"11": "Wear the milky belt low on your hips if you prefer a relaxed silhouette, or higher near your natural waist for more structure — choose based on how you feel in the moment.",
+"12": "Шарф об'ємний з дредами — Included blue knitted scarf to add texture variation without breaking the tonal scheme, addressing the 'blandness' floor while maintaining register balance.",
+"13": "Пасок з пірʼям айворі — Removed ivory belt entirely and replaced with blue knitted scarf to unify the palette within the strict tonal scheme, eliminating the 'print_source' duplication.",
+"14": "Браслет кафа манжет (Other Brand) — The gold bracelet is acceptable because it acts as a deliberate metallic contrast to the cool-toned palette, adding visual interest near the face without violating the tonal integrity of the large items.",
+"15": "Пасок з пірʼям айворі — Chosen for its milky tone to bridge the gap between the cool turquoise and warm skin, ensuring the outfit feels cohesive despite the high chroma of the cardigan."
+}
+
+── ВІДПОВІДЬ (3496 симв., 99.4 с, HTTP 200) ──
+```json
+{
+  "1": "М'який бірюзовий светр з вовни та мохеру на короткий рукав і вільним кроєм; його ніжний спад доповнює твою X-подібну фігуру, привертаючи увагу до твоєї талії, даруючи свободу рухів під теплим світлом театру.",
+  "2": "Блакитні вузькі штани з дихаючого льону, що створюють чисту вертикальну лінію по ногах, врівноважуючи об'єм светра та заземлюючи образ вишуканим мінімалістичним силуетом, який підходить для вечірнього заходу.",
+  "3": "Широкий темно-синій вовняний шарф з довгими китицями, що додає текстури й глибини твоєму ансамблю; його насичений відтінок закріплює прохолодні тони вбрання та зручно огортає твою шию або плечі для тепла під час осінніх вечорів.",
+  "4": "Молочний ремінь з пір'ям, зав'язаний елегантним бантом на спині, який ледь помітно окреслює твою талію без зайвого об’єму; його делікатна тканина й м'який відтінок гармонійно поєднуються з рештою вбрання, додаючи романтичний штрих.",
+  "5": "Полірований срібний браслет-манжета, що щільно облягає твій зап'ясток і відображає навколишнє світло, привертаючи ледь помітну увагу до рук — ідеальний для підпису програм або регулювання рукавичок під час антракту.",
+  "6": "Слінгбеки Ombra блакитного кольору з двотонним дизайном у відтінках блакитного та бордового, квадратним носком і тонким каблуком; їхня структурована форма видовжує лінію ніг, забезпечуючи достатній комфорт для впевненої ходьби фойє й залою театру.",
+  "7": "Структурована темно-коричнева шкіряна сумка від ATTICO, яка зручно лежить на боці або під пахвою, пропонуючи практичне місце для твоїх вечірніх речей і додаючи збалансований елемент до загального образу.",
+  "8": "Ти одягнена для вечора в театрі у вигляді, який поєднує охайність та офіційність. Глибокий бірюзовий светр ніжно спадає на блакитні штани, створюючи м'який контраст між об’ємом і лінією, а молочний ремінь окреслює твою талію без порушення спокійної ритмічності вбрання. Широкий темно-синій шарф додає тепла й текстури до прохолодних тонів сезону, а металевий браслет ловить світло сцени під час руху по проходу. Цей ансамбль комфортно переживе виставу — його шари можна регулювати протягом вечора, від фойє театру до фінального завіси.",
+  "9": "Злегка заправ светр бірюзового кольору спереду для ледь помітного окреслення талії без зміни вільного крою.",
+  "10": "Недбало оберни темно-синій шарф навколо шиї або накинь його на одне плече, щоб додати асиметрії, яка привертає увагу вгору до твого обличчя.",
+  "11": "Одягни молочний ремінь низько на стегнах, якщо ти віддаєш перевагу розслабленому силуету, або вище біля природної талії для більшої структури — обирай відповідно до того, як тобі комфортно в даний момент.",
+  "12": "Шарф об'ємний з дредами — Додано синій шарф, щоб додати текстурну різноманітність без порушення тональної схеми, вирішуючи проблему «бланжності» підлоги та зберігаючи баланс регістра.",
+  "13": "Пасок з пірʼям айворі — Вилучено молочний ремінь і замінено його синім шарфом, щоб об’єднати палітру в межах суворої тональної схеми, усунувши дублювання «print_source».",
+  "14": "Браслет кафа манжет (Other Brand) — Золотий браслет прийнятний, оскільки він діє як навмисний металевий контраст до прохолодної палітри, додаючи візуальний інтерес поблизу обличчя без порушення тональної цілісності великих предметів.",
+  "15": "Пасок з пірʼям айворі — Обрано за його молочний відтінок для створення переходу між прохолодним бірюзовим і теплим кольором шкіри, забезпечуючи відчуття єдності вбрання попри високу насиченість светра."
+}
+```

@@ -1,0 +1,51 @@
+── ПРОМПТ (2436 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet blazer, tailored fit, knee-length hem, midnight blue (#0a0e14), woven wool blend.\nSilk camisole, straight cut, hip-length hem, ivory white (#fffff0), pure silk.\nHigh-waisted trousers, wide-leg silhouette, ankle length, charcoal grey (#36454f), heavy crepe.\nStilettos, pointed toe, moderate heel height, black patent leather (#000000).\nGold drop earrings, medium-sized hoops, polished brass finish (#b8860b).\nSmall structured clutch, rectangular shape, metallic gold exterior (#d4af37), crocodile-embossed leather.\n\nThis outfit bridges the gap between neat and formal requirements while respecting the autumn evening setting at a theatre. The velvet blazer provides the necessary sophistication and warmth for cooler seasonal temperatures without relying on a heavy coat, ensuring comfort under artificial stage lighting. Deep jewel tones contrast elegantly with her skin and hair, creating a refined silhouette that feels confident yet effortless. The combination of luxurious textures like silk, crepe, and velvet elevates the entire look to an occasion-appropriate level."}
+
+── ВІДПОВІДЬ (1142 симв., 197.0 с, HTTP 200) ──
+{
+  "is_outfit": true,
+  "items": [
+    {
+      "name": "velvet blazer",
+      "details": "tailored fit knee-length hem woven wool blend",
+      "slot": "outerwear",
+      "color_hex": "#0a0e14",
+      "worn": true
+    },
+    {
+      "name": "silk camisole",
+      "details": "straight cut hip-length hem pure silk",
+      "slot": "top",
+      "color_hex": "#fffff0",
+      "worn": true
+    },
+    {
+      "name": "high-waisted trousers",
+      "details": "wide-leg silhouette ankle length heavy crepe",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "stilettos",
+      "details": "pointed toe moderate heel height black patent leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "gold drop earrings",
+      "details": "medium-sized hoops polished brass finish",
+      "slot": "earrings",
+      "color_hex": "#b8860b",
+      "worn": true
+    },
+    {
+      "name": "structured clutch",
+      "details": "rectangular shape crocodile-embossed leather",
+      "slot": "bag",
+      "color_hex": "#d4af37",
+      "worn": true
+    }
+  ]
+}
