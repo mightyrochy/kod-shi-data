@@ -1,0 +1,44 @@
+── ПРОМПТ (2320 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured blazer in a deep charcoal grey (#3d3d3f), featuring a sharp tailored cut with single-button closure and notched lapels, crafted from a wool blend fabric. A fitted midi skirt in forest green (#1a472a) with an A-line silhouette falling just below the knee, made of crisp cotton twill. Pointed-toe pumps in black leather (#000000) with a 75 mm stiletto heel for a polished stride. Gold stud earrings (#ffd700) and a slim silver watch to add subtle professional sparkle without overwhelming the look. This ensemble works because the dark, grounding tones convey authority and focus suitable for an autumn office environment while the tailored lines create a streamlined silhouette that balances her proportions perfectly. The mix of wool and cotton fabrics ensures comfort throughout the day's changing indoor temperatures, and the classic shapes adapt effortlessly to daylight visibility, maintaining a crisp appearance without appearing overly stiff or formal."}
+
+── ВІДПОВІДЬ (914 симв., 17.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured cut with single-button closure and notched lapels, made from wool blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#3d3d3f",
+      "worn": true
+    },
+    {
+      "name": "skirt",
+      "details": "A-line silhouette falling just below the knee, made of crisp cotton twill",
+      "slot": "bottom",
+      "color_hex": "#1a472a",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "pointed-toe with a 75 mm stiletto heel",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "stud style",
+      "slot": "earrings",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "watch",
+      "details": "slim design",
+      "slot": "watch",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

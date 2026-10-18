@@ -1,0 +1,51 @@
+── ПРОМПТ (2737 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Navy wool-blend tailored blazer, classic single-breasted cut with notch lapels, knee length, hex code #1B2A41, heavy felted wool.\nOlive silk-trimmed wide-leg trousers, high-waisted relaxed cut, ankle length, hex code #556B2F, fluid crepe de chine.\nCream merino wool knit sweater crewneck, mock-neck style with fine ribbing at cuffs and hem, hip length, hex code #F5F5DC, soft brushed wool.\nTan leather Chelsea boots, sleek streamlined silhouette reaching just above the ankle bone, hex code #C19A6B, smooth calfskin leather.\nSilver geometric link necklace, medium scale with oxidized finish, hex code #C0C0C0, sterling silver metal; small structured handbag in matching tan leather, boxy silhouette with top handle, hex code #D2B48C, full-grain leather.\n\nThis ensemble balances professional polish with autumnal warmth while adhering to strict daylight office etiquette. The navy blazer provides a sharp silhouette against the soft cream sweater, creating a classic power-meets-comfort dynamic suitable for long days of work. Olive trousers ground the look in seasonal earth tones without appearing heavy, allowing the outfit to breathe comfortably indoors under artificial light that mimics day. Silver accessories and tan leather add subtle reflective highlights that catch the office environment's illumination, ensuring you remain visible and confident throughout the afternoon."}
+
+── ВІДПОВІДЬ (1425 симв., 58.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "classic single-breasted cut with notch lapels, knee length, tailored fit from heavy felted wool-blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#1B2A41",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted relaxed cut, wide-leg style, ankle length made of fluid crepe de chine silk-trimmed fabric",
+      "slot": "bottom",
+      "color_hex": "#556B2F",
+      "worn": true
+    },
+    {
+      "name": "sweater",
+      "details": "crewneck with mock-neck style, fine ribbing at cuffs and hem, hip length crafted from soft brushed merino wool knit",
+      "slot": "top",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "sleek streamlined silhouette reaching just above the ankle bone, smooth calfskin leather Chelsea style",
+      "slot": "shoes",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "geometric link design, medium scale with oxidized finish made of sterling silver metal",
+      "slot": "jewelry",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "handbag",
+      "details": "boxy silhouette with top handle, small structured style made of full-grain leather",
+      "slot": "bag",
+      "color_hex": "#D2B48C",
+      "worn": true
+    }
+  ]
+}
