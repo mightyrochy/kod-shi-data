@@ -47,27 +47,53 @@ on:
       - '!джерела/аудит/ДОСЯЖНІСТЬ.md'
       - 'каталог_повний.xml.gz'
       - '.github/workflows/zbirka.yml'
+      # ПР-1 (слово власника 18.10): PR дошки не править, а пише рядки у `аудит/дошка/<гілка>.md`;
+      # згортає їх у `аудит/БЕКЛОГ.md` крок «згорнути дошку» job'а `zbirka` — тим самим комітом, що й збірка.
+      # Push, де змінились лише ці файли, ганяє лише `zminy` і `zbirka` (секунди): важкі job'и пропущено.
+      - 'аудит/дошка/**'
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# ОДНА ЗБІРКА ВОДНОЧАС. `cancel-in-progress: false` — перервана посеред коміту
-# збірка гірша за чергу.
-# ЧОГО ЦЕ НЕ РОБИТЬ, І ЦЕ ТРЕБА СКАЗАТИ ВГОЛОС: від гонки з жнивами група тут
-# не рятує. `zhnyva.yml`, `zhnyvarka.yml` і `rozvidka.yml` теж комітять у `main`,
-# але кожен у ВЛАСНІЙ групі (`zhnyva`, `zhnyvarka`, `rozvidka`), а спільна група
-# вимагала б правити ті три файли — вони поза межами цього наряду. Тому від
-# гонки боронить не група, а `git pull --rebase` перед push у кроці коміту.
-# ПРО PR: кожен PR дістає ВЛАСНУ групу (`…-refs/pull/N/merge`), інакше
-# перевірки всіх відкритих PR стали б у чергу за збіркою `main` і чекали б по
-# кілька хвилин на порожньому місці. Збірки `main` як стояли в одній черзі, так
-# і стоять.
+# PR має власну групу: нова голова скасовує застарілий прогін цього PR.
+# Публікацію main не перериваємо посеред коміту; її група лишається окремою.
 concurrency:
   group: збірка-показу-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Що змінилось у push. `lyshe_doshka=true` — усі змінені файли лежать у `аудит/дошка/`: тоді важкі
+  # job'и (`perevirka`, `rozdily`, `pravyla`) пропущено, а `zbirka` лише згортає дошку, не чіпаючи
+  # `index.html`. Усе, чого не вдалося з'ясувати (не push, нова гілка, `before` не дістати), — `false`,
+  # тобто повна збірка, як і було.
+  zminy:
+    name: що змінилось у push
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      lyshe_doshka: ${{ steps.zmina.outputs.lyshe_doshka }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 1
+
+      - name: чи змінилась лише дошка
+        id: zmina
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          lyshe=false
+          if [ "${GITHUB_EVENT_NAME}" = push ] && [ -n "${BEFORE//0/}" ] \
+             && git fetch --no-tags --depth=1 origin "${BEFORE}" 2>/dev/null; then
+            zminy=$(git -c core.quotepath=off diff --name-only "${BEFORE}" "${GITHUB_SHA}")
+            if [ -n "${zminy}" ] && ! printf '%s\n' "${zminy}" | grep -qv '^аудит/дошка/'; then
+              lyshe=true
+            fi
+          fi
+          echo "lyshe_doshka=${lyshe}" >> "$GITHUB_OUTPUT"
+          echo "лише дошка: ${lyshe}" >> "$GITHUB_STEP_SUMMARY"
+
   # КЛЮЧ JOB'А — ASCII, І ЦЕ НЕ СТИЛЬ, А ВИМОГА GITHUB: `jobs.<job_id>` мусить
   # починатися з літери або `_` і містити лише [A-Za-z0-9_-]. Тут колись стояло
   # `зібрати`, і наслідок був не косметичний — workflow не запускався ЖОДНОГО
@@ -77,6 +103,8 @@ jobs:
   # Людське ім'я живе в `name:` — воно рядок, і кирилиця там законна.
   perevirka:
     name: перевірка джерел
+    needs: zminy
+    if: needs.zminy.outputs.lyshe_doshka != 'true'
     runs-on: ubuntu-latest
     steps:
       # `fetch-depth: 0` — НЕ «про всяк випадок». Проби поділу нижче звіряють поточний
@@ -90,6 +118,12 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
+
+      # ПР-1: файли `аудит/дошка/*.md` цього PR мають згортатися в дошку `main` без помилок. Лише на PR:
+      # на `main` помилку згортання показує сам `zbirka` ПІСЛЯ публікації, щоб поганий рядок не зупиняла збірку.
+      - name: файли дошки згортаються (лише перевірка)
+        if: github.event_name == 'pull_request'
+        run: python3 джерела/прилади/згорнути_дошку.py --лише-перевірити
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -126,13 +160,26 @@ jobs:
       # мережі.
       - name: py_compile на кожен .py у джерела/
         run: |
-          set -u
-          fails=0
-          for f in $(find джерела -name node_modules -prune -o -name '*.py' -print | sort); do
-            python3 -m py_compile "$f" 2>/dev/null || { echo "  ✗ $f"; python3 -m py_compile "$f" || true; fails=$((fails + 1)); }
-          done
-          echo "py_compile: fails $fails"
-          [ "$fails" -eq 0 ]
+          python3 - <<'PY'
+          import os
+          import py_compile
+          import sys
+
+          files = []
+          for root, dirs, names in os.walk("джерела"):
+              dirs[:] = [name for name in dirs if name != "node_modules"]
+              files.extend(os.path.join(root, name) for name in names
+                           if name.endswith(".py") and name != "node_modules")
+          fails = 0
+          for path in sorted(files):
+              try:
+                  py_compile.compile(path, doraise=True)
+              except (py_compile.PyCompileError, OSError) as error:
+                  print(f"  ✗ {path}\n{error}")
+                  fails += 1
+          print(f"py_compile: files {len(files)}; fails {fails}")
+          sys.exit(bool(fails))
+          PY
 
       # РЯДОК 148 ДОШКИ: ДО ЦЬОГО КРОКУ CI НЕ БАЧИВ ПРОБ ПОДІЛУ. 14 проб
       # `проби/поділ_*_ast.py` звіряють, що кожна функція й константа, яка переїхала
@@ -197,32 +244,32 @@ jobs:
         working-directory: джерела
         run: python3 тест_протоколу.py
 
-      # РЯДОК 96 ДОШКИ: ДО ЦЬОГО КРОКУ CI НЕ БАЧИВ ЧЕРВОНИХ РОЗДІЛІВ ГЕЙТІВ.
-      # Секція §141 стояла червоною на `main` з #162 до #167 (патч фасаду не
-      # доходив до `палітра_нейтраль`), а CI лишався зеленим — прилад узагалі
-      # не входив у workflow. Кожен код виходу вже двійковий (V02/V34): «ВПАЛО
-      # 0» → 0, інакше 1. Вимірювання цього прогону: локально ~2 хв 49 с — той
-      # самий вхід, що й тут (почищений каталог із кроку вище); окремий
-      # паралельний job на runner-і не потрібен, поки разом із контрактами це
-      # лишається помітно нижче ~5 хв.
-      - name: розділи гейтів (ВПАЛО має лишатись 0)
-        working-directory: джерела
-        run: python3 прилади/розділи_гейтів.py
+      - name: компілятор байткоду повного показу
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        id: pyc_python
+        with:
+          python-version: '3.12.1'
+          update-environment: false
 
-      # ТОЙ САМИЙ РЯДОК: `audit_contracts.py` теж жив лише в чужих руках.
-      # Код виходу вже двійковий (Н-00-08): «КОНТРАКТИ ЦІЛІ» → 0, інакше —
-      # сума розривів і мовчання. Вимірювання: локально ~18 с.
-      - name: контракти (мають лишатись цілі)
-        working-directory: джерела
-        run: python3 audit_contracts.py
-
-      # Батарея показу — та сама, що впала 18.09. Обов'язкова: без
-      # `continue-on-error`.
-      - name: батарея показу (jsdom)
+      # Збирач сам запускає jsdom по щойно записаному index.html.
+      # Цей обов'язковий крок передає той самий файл стенду й публікації.
+      - name: зібрати показ-повний і перевірити jsdom
         working-directory: джерела
         env:
-          NODE_PATH: node_modules
-        run: node тест_показу.js
+          LYUSTERKO_CATALOG: повний
+          LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
+        run: |
+          set -o pipefail
+          python3 build_артефакт.py . ../index.html показ-повний 2>&1 \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: перевірений показ → job'у публікації
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pokaz-povnyi-${{ github.sha }}
+          path: index.html
+          if-no-files-found: error
+          retention-days: 7
 
       # МІСТ ТЕПЕР БЛОКУЄ: рядок 2 дошки закрито (фікстура фото подавала
       # воркерові заглушки, які він зобовʼязаний викидати). 50 звірок, rc 0
@@ -304,15 +351,15 @@ jobs:
       - name: стенд у браузері (Chromium + Pyodide, 20 звірок)
         id: stend
         continue-on-error: true
+        env:
+          LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
         run: |
           set -o pipefail
           ( cd джерела && ./node_modules/.bin/playwright install --with-deps chromium )
           sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
           mkdir -p "${RUNNER_TEMP}/стенд"
-          # Стенд міряє ЗІБРАНИЙ показ, а не джерела: збираємо його тут же, зі
-          # свіжого дерева PR. Ім'я змінної латиницею — bash не має кириличних
-          # (той самий урок, що для `LYUSTERKO_CATALOG` вище).
-          ( cd джерела && LYUSTERKO_CATALOG=повний python3 build_артефакт.py . "${RUNNER_TEMP}/стенд/index.html" показ-повний )
+          # Ті самі байти, що перевірив збирач і одержить job публікації.
+          cp index.html "${RUNNER_TEMP}/стенд/index.html"
           NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js \
             http://127.0.0.1:8765 "${RUNNER_TEMP}/стенд" "${RUNNER_TEMP}/pyodide" 3 2>&1 | tee стенд.log
 
@@ -357,13 +404,122 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+  # Та сама батарея й контракти, власний checkout і ті самі входи.
+  # Вони не читають виходів perevirka, тому виконуються паралельно з нею.
+  rozdily:
+    name: розділи й контракти
+    needs: zminy
+    if: needs.zminy.outputs.lyshe_doshka != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: залежності батареї показу
+        working-directory: джерела
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: розпакувати каталоги й почистити фід
+        working-directory: джерела
+        run: |
+          python3 -c "import чистка_каталогу as ч, feed as Ф; print('фід:', ч.забезпечити_чистим('каталог_повний.xml')); print('фікстура:', Ф.каталог_на_диску('каталог_brief.xml'))"
+
+      - name: розділи гейтів (ВПАЛО має лишатись 0)
+        working-directory: джерела
+        run: python3 прилади/розділи_гейтів.py
+
+      # ТОЙ САМИЙ РЯДОК: `audit_contracts.py` теж жив лише в чужих руках.
+      # Код виходу вже двійковий (Н-00-08): «КОНТРАКТИ ЦІЛІ» → 0, інакше —
+      # сума розривів і мовчання. Вимірювання: локально ~18 с.
+      - name: контракти (мають лишатись цілі)
+        working-directory: джерела
+        run: python3 audit_contracts.py
+
+
+  # Повна історія правил — звіт, а не умова запуску збірки (п.3).
+  # Job не входить у needs; навіть помилка підготовки не блокує публікацію.
+  pravyla:
+    name: звіт правил (не гейт)
+    needs: zminy
+    if: needs.zminy.outputs.lyshe_doshka != 'true'
+    continue-on-error: true
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: повна історія правил (межа 180 с)
+        id: pravyla
+        continue-on-error: true
+        working-directory: джерела
+        run: |
+          set +e
+          set -o pipefail
+          timeout --signal=TERM --kill-after=5s 180s python3 -u правила.py --md "${RUNNER_TEMP}/правила.md" 2>&1 | tee "${RUNNER_TEMP}/правила.log"
+          STATUS=("${PIPESTATUS[@]}")
+          echo "kod=${STATUS[0]}" >> "$GITHUB_OUTPUT"
+          echo "log_kod=${STATUS[1]}" >> "$GITHUB_OUTPUT"
+          # Справжня відмова лишається failure у outcome кроку. Після
+          # continue-on-error вона не стає блокувальним гейтом.
+          if [ "${STATUS[0]}" -ne 0 ]; then
+            exit "${STATUS[0]}"
+          fi
+          exit "${STATUS[1]}"
+
+      - name: стан звіту правил у підсумок
+        if: always()
+        env:
+          REPORT_RC: ${{ steps.pravyla.outputs.kod }}
+          LOG_RC: ${{ steps.pravyla.outputs.log_kod }}
+          REPORT_OUTCOME: ${{ steps.pravyla.outcome }}
+        run: |
+          {
+            echo "### Правила — звіт, не гейт"
+            echo "- Стан кроку: ${REPORT_OUTCOME:-НЕ ВИКОНАНО}; код процесу: ${REPORT_RC:-НЕ ВИМІРЯНО}; код запису логу: ${LOG_RC:-НЕ ВИМІРЯНО}."
+            case "${REPORT_RC}" in
+              124|137) echo "- Часову межу 180 с вичерпано або процес примусово завершено; повний звіт НЕ ОТРИМАНО." ;;
+              0) echo "- Процес завершився. Код 0 не є оцінкою правил; числа й відсутність входу читаються в логу." ;;
+              "") echo "- Код процесу відсутній: звіт не завершився або крок не запускався; успіх не встановлено." ;;
+              *) echo "- Процес відмовив; частковий вивід не є повним звітом." ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: лог і отриманий довідник правил
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pravyla-zvit
+          path: |
+            ${{ runner.temp }}/правила.log
+            ${{ runner.temp }}/правила.md
+          if-no-files-found: warn
+          retention-days: 7
+
   zbirka:
     permissions:
       contents: write
     name: зібрати показ-повний
     # ЗБІРКА ЙДЕ ЛИШЕ ПІСЛЯ ЗЕЛЕНОЇ ПЕРЕВІРКИ. Раніше вона була першою й єдиною
     # — тому й комітила артефакт зі зламаних джерел.
-    needs: perevirka
+    # Умова — ті самі «обидві зелені», окрім push лише з `аудит/дошка/`: тоді `perevirka` і `rozdily`
+    # пропущено (`zminy`), збірки нема, і job лише згортає дошку.
+    needs: [zminy, perevirka, rozdily]
+    if: ${{ !cancelled() && needs.zminy.result == 'success' && (needs.zminy.outputs.lyshe_doshka == 'true' || (needs.perevirka.result == 'success' && needs.rozdily.result == 'success')) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -372,47 +528,17 @@ jobs:
         with:
           python-version: '3.11'
 
-      # node потрібен збирачеві: `node --check` на JS сторінки — гейт 2 збірки.
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      # Артефакт цього прогону для того самого checkout SHA; не збираємо вдруге.
+      - name: перевірений показ із перевірки
+        if: needs.zminy.outputs.lyshe_doshka != 'true'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          node-version: '22'
+          name: pokaz-povnyi-${{ github.sha }}
+          path: .
 
-      # jsdom-батарея показу — гейт 5 збірки (Н-V01-003). Без неї збирач не
-      # падає, а друкує попередження; у CI ми хочемо саме перевірку.
-      - name: залежності батареї показу
-        working-directory: джерела
-        run: npm ci --ignore-scripts --no-audit --no-fund
-
-      # КРОКУ «розпакувати каталоги й почистити фід» ТУТ БІЛЬШЕ НЕМА, І ЦЕ НЕ
-      # ЗАБУТТЯ (19.09.2026, рядок 57 дошки). Він був відповіддю на дві речі:
-      # без фікстури `каталог_brief.xml` повний зонд тихо міряв ПОРОЖНІЙ пул і
-      # збірка падала на «повний зонд не побачив composer» (виміряно 11.09.2026
-      # першим живим прогоном цього workflow), а без чистки — на «каталог_повний
-      # .xml БРУДНИЙ». Обидві речі тепер робить САМА збірка: `_розпакувати_каталог`
-      # дістає обидва каталоги з `.gz`, `чистка_каталогу.забезпечити_чистим`
-      # чистить фід. Тримати тут ще й крок означало б знов мати два шляхи, з
-      # яких CI-шний ходжений, а людський — ні; саме через це свіжий checkout
-      # був червоний, поки CI був зелений. Чистка ідемпотентна, тож крок у job
-      # `perevirka` вище (він потрібен приладам, які нічого не збирають) збірці
-      # не заважає — на його виході вона надрукує «чистий».
-
-      - name: зібрати показ-повний
-        working-directory: джерела
-        env:
-          # Латиницею: bash не експортує кириличні імена, тож `env:` тут
-          # працює лише з `LYUSTERKO_CATALOG` (див. build_артефакт.py).
-          LYUSTERKO_CATALOG: повний
-        run: |
-          set -o pipefail
-          # Штамп і лічба модулів — у підсумок прогону, щоб не лізти в логи по
-          # одному рядку, заради якого прогін і робиться.
-          python3 build_артефакт.py . ../index.html показ-повний 2>&1 \
-            | tee -a "$GITHUB_STEP_SUMMARY"
-
-      # Вантаж мусить збігатися з джерелами. Після щойно зробленої збірки це
-      # тавтологія — і саме тому крок дешевий, а мовчазний розсинхрон більше
-      # неможливий: код виходу 1 червонить збірку до коміту артефакта.
+      # Звіряємо переданий вантаж із checkout цього job до коміту артефакта.
       - name: звірка вантажу з джерелами
+        if: needs.zminy.outputs.lyshe_doshka != 'true'
         working-directory: джерела
         run: python3 звірка_вантажу.py
 
@@ -428,89 +554,81 @@ jobs:
       # те саме ДО злиття. На PR крок коштує секунди, а файл, який він кладе,
       # нікуди звідси не їде — наступний крок пропущено.
       - name: свіжий звіт досяжності з перевірки
+        if: needs.zminy.outputs.lyshe_doshka != 'true'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: dosiazhnist-zvit
           path: джерела/аудит
 
-      # КОМІТ АРТЕФАКТА — ТІЛЬКИ НА `push` У `main`. На PR збірка виконується
-      # (щоб зламаний збирач не доїхав до `main` мовчки), але нічого не комітить:
-      # гілка PR не місце для зібраного продукту, а на форку `contents: write`
-      # і не дали б.
+      # ЗГОРТАННЯ ДОШКИ (ПР-1). Файли `аудит/дошка/**/*.md` → рядки `аудит/БЕКЛОГ.md`, файли видалено; далі
+      # їх бере той самий коміт, що й збірка, — другого комітера на `main` нема. Помилка згортання НЕ
+      # зупиняє публікацію (`continue-on-error`): справні файли згорнуто, хиби названо в журналі, а
+      # останній крок робить прогін червоним ПІСЛЯ коміту.
+      - name: згорнути дошку
+        id: zghortannia
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        run: |
+          set +e
+          python3 джерела/прилади/згорнути_дошку.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+          exit "${PIPESTATUS[0]}"
+
+      # Публікація лише в main: PR збирає й перевіряє продукт без коміту.
+      # Артефакт і звіт належать checkout цього прогону. Якщо main уже
+      # просунувся, його штатна збірка опублікує свій результат.
       - name: закомітити артефакт
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          LYSHE_DOSHKA: ${{ needs.zminy.outputs.lyshe_doshka }}
         run: |
           set -e
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # ДВА ФАЙЛИ, ОДИН КОМІТ. `джерела/аудит/ДОСЯЖНІСТЬ.md` — такий самий
-          # похідний вихід, як `index.html`: його породжує прилад, а не людина
-          # (шапка самого звіту: «Не редагувати руками»). Доти його ніс у `main`
-          # кожен PR окремо, і через це кожне злиття робило «dirty» усі інші
-          # відкриті PR. Тепер його кладе сюди лише цей крок.
-          # Ім'я змінної латиницею — та сама причина, що й у `SHTAMP` нижче.
-          ZVIT="джерела/аудит/ДОСЯЖНІСТЬ.md"
-          if git diff --quiet -- index.html "${ZVIT}" build.txt; then
-            echo "ні index.html, ні звіт досяжності не змінились — коміту нема"
+          SOURCE_SHA=$(git rev-parse HEAD)
+          if [ "${LYSHE_DOSHKA}" = "true" ]; then
+            git add -A аудит/БЕКЛОГ.md
+            git add -A аудит/дошка 2>/dev/null || true
+            MSG="дошка: згорнуто файли аудит/дошка (${SOURCE_SHA})"
+          else
+            SHTAMP=$(grep -o 'const ЗБІРКА_ПОКАЗУ = "[^"]*"' index.html | head -1 | sed 's/.*= "//; s/"$//')
+            if [ "${SHTAMP}" != "${SOURCE_SHA}" ]; then
+              echo "штамп ${SHTAMP} не відповідає джерелам ${SOURCE_SHA} — публікацію зупинено"
+              exit 1
+            fi
+            printf '%s' "${SHTAMP}" > build.txt
+            ZVIT="джерела/аудит/ДОСЯЖНІСТЬ.md"
+            git add index.html build.txt "${ZVIT}" аудит/БЕКЛОГ.md
+            git add -A аудит/дошка 2>/dev/null || true
+            MSG="збірка: ${SHTAMP}"
+          fi
+          if git diff --cached --quiet; then
+            echo "артефакт, штамп, звіт і дошка не змінились — коміту нема"
             exit 0
           fi
-          # ІМ'Я ЗМІННОЇ — ЛАТИНИЦЕЮ, З ТІЄЇ Ж ПРИЧИНИ, ЩО Й `LYUSTERKO_CATALOG`
-          # вище: bash не має кириличних імен змінних. `ШТАМП=$(...)` — це для
-          # нього не присвоєння, а спроба виконати команду з такою назвою: код
-          # 127, а під `set -e` крок падає. Урок уже був записаний у цьому файлі
-          # для `env:` — і не застосований тут.
-          SHTAMP=$(grep -o 'const ЗБІРКА_ПОКАЗУ = "[^"]*"' index.html | head -1 | sed 's/.*= "//; s/"$//')
-          # ЗІБРАНИЙ ФАЙЛ КЛАДЕТЬСЯ ВБІК ДО БУДЬ-ЯКИХ ІГОР З git. Далі він —
-          # єдине джерело правди про вміст `index.html`.
-          cp index.html "${RUNNER_TEMP}/zibrano.html"
-          # Штамп збірки поруч з index.html: сторінка читає його повз кеш і
-          # показує смужку «Є новіша версія». Той самий коміт, що й index.html.
-          printf '%s' "${SHTAMP}" > build.txt
-          cp build.txt "${RUNNER_TEMP}/build.txt"
-          cp "${ZVIT}" "${RUNNER_TEMP}/dosiazhnist.md"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "${MSG}"
 
-          # ЧОМУ ТУТ БІЛЬШЕ НЕМА `git pull --rebase` (прогін 74, 18.09).
-          # Було: `git pull --rebase origin main || true`. У `main` між нашою
-          # збіркою і push заїхали жнива зі своїм `index.html`, ребейз дав
-          # `CONFLICT (content): Merge conflict in index.html` і СПИНИВСЯ —
-          # а `|| true` це проковтнув. Runner лишився посеред ребейзу, тобто в
-          # detached HEAD, і наступний рядок `git push` відповів
-          # `fatal: You are not currently on a branch`, код 128. Збірка
-          # червона, артефакт не опублікований, причина — у передостанньому
-          # рядку кроку.
-          # ЧОМУ НЕ «РЕБЕЙЗ, АЛЕ З ПРАВИЛЬНОЮ СТОРОНОЮ». Зібраний `index.html`
-          # — це ПРОДУКТ збірки, а не предмет злиття: зливати два різні виходи
-          # одного збирача нема чого, виграти мусить свіжіший. Ребейз тут
-          # зайвий, і до того ж підступний: виміряно на порожньому репозиторії
-          # (19.09.2026), що під ребейзом `-X ours` бере ЧУЖИЙ бік, а не свій
-          # (під час ребейзу «ours» — це нова база, «theirs» — наш коміт, що
-          # переграється). Тобто найочевидніша форма «взяти своє» мовчки
-          # публікує чужий артефакт. Замість вибирати сторону в конфлікті — не
-          # мати конфлікту: взяти чужий коміт цілим і покласти свій файл ЗВЕРХУ.
-          # Detached HEAD при цьому неможливий: `reset --hard` і
-          # `push HEAD:<гілка>` працюють хоч на гілці, хоч поза нею, і жодна
-          # команда нижче не лишає репозиторій посеред операції.
+          # Не переносимо старий вихід на нову базу. Звичайний push має
+          # батьком лише SOURCE_SHA; просування main після fetch відбиває
+          # сам Git. Повтор дозволений тільки доки main лишається SOURCE_SHA.
           for sproba in 1 2 3 4 5; do
-            git add index.html build.txt "${ZVIT}"
-            git commit -m "збірка: ${SHTAMP}" || true
-            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
-              echo "артефакт запушено зі спроби ${sproba}"
+            git fetch --no-tags origin refs/heads/main
+            MAIN_SHA=$(git rev-parse FETCH_HEAD)
+            if [ "${MAIN_SHA}" != "${SOURCE_SHA}" ]; then
+              echo "main ${MAIN_SHA} вже новіший за джерела ${SOURCE_SHA} — застарілу публікацію пропущено" | tee -a "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
-            echo "push відбито (спроба ${sproba}) — беремо чужий коміт і кладемо свій артефакт зверху"
-            git fetch origin "${GITHUB_REF_NAME}"
-            git reset --hard "origin/${GITHUB_REF_NAME}"
-            # ОБИДВА ФАЙЛИ КЛАДУТЬСЯ ЗВЕРХУ, А НЕ ЛИШЕ `index.html`. Інакше
-            # повтор після чужого коміту мовчки ЗАБУВАВ БИ звіт: `reset --hard`
-            # повертає його до чужого стану, і наступний `git add` не мав би
-            # чого комітити.
-            cp "${RUNNER_TEMP}/zibrano.html" index.html
-            cp "${RUNNER_TEMP}/build.txt" build.txt
-            cp "${RUNNER_TEMP}/dosiazhnist.md" "${ZVIT}"
-            if git diff --quiet -- index.html build.txt "${ZVIT}"; then
-              echo "чужий коміт уже несе такий самий index.html і той самий звіт — коміту нема"
+            if git push origin HEAD:refs/heads/main; then
+              echo "артефакт джерел ${SOURCE_SHA} запушено зі спроби ${sproba}"
               exit 0
             fi
+            echo "push відбито (спроба ${sproba}) — перед повтором звіримо SHA main"
           done
-          echo "п'ять спроб push не пройшли — це вже не гонка, а відмова доступу"
+          echo "п'ять спроб push не пройшли без просування main — публікація не відбулась"
+          exit 1
+
+      # Кінець прогону: згортання, що не вдалось, робить його червоним уже після публікації.
+      - name: згортання дошки — помилки
+        if: always() && steps.zghortannia.outcome == 'failure'
+        run: |
+          echo "згортання аудит/дошка не вдалось повністю — файли з помилкою лишились, див. крок «згорнути дошку»" | tee -a "$GITHUB_STEP_SUMMARY"
           exit 1
