@@ -180,16 +180,19 @@ function підставити(html, фід, підпис) {
 
 function сторінка({url, фід = "каталог_brief.xml", підпис = "каталог_стенд.xml · 639 речей", idb = null} = {}) {
   let html = підставити(шаблон, фід, підпис)
-    .replace('async function містП(ім, дані){', 'async function містБезСтануП(ім, дані){')
+    /* Перейменовуємо оголошення, не його параметри: транспорт додає `{ключ}`,
+       але global function не має затерти accessor тестового preflight (7570). */
+    .replace('async function містП(', 'async function містБезСтануП(')
     .replace(/<script [^>]*src="https:\/\/cdn\.jsdelivr\.net[^"]*"[^>]*><\/script>/, "<script>window.loadPyodide=null;</script>");
+  if (!html.includes('async function містБезСтануП(')) throw new Error('тестовий шов містП не змонтовано');
   const помилки = [];
   const дом = new JSDOM(html, {runScripts: "dangerously", pretendToBeVisual: true, url,
     beforeParse(w) {
       /* Чистий preflight читає справжній Python; модельні заглушки сцен
          лишаються власниками своїх викликів, без JS-копії K-IO-01 чи погоди. */
       let містСцени = null;
-      const міст = async (ім, дані) => ім === 'стан_сценарію' ? станСценаріюPython(дані)
-        : (містСцени || w.містБезСтануП)(ім, дані);
+      const міст = async (ім, дані, ...решта) => ім === 'стан_сценарію' ? станСценаріюPython(дані)
+        : (містСцени || w.містБезСтануП)(ім, дані, ...решта);
       Object.defineProperty(w, 'містП', {configurable: true, get: ()=>міст, set: ф=>{ містСцени = ф; }});
       w.indexedDB = idb || new IDBFactory(); w.IDBKeyRange = IDBKeyRange;
       w.fetch = () => Promise.reject(new Error("мережі в тесті нема"));
