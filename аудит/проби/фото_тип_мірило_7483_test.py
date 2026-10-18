@@ -63,10 +63,11 @@ class МірилоПілота(unittest.TestCase):
             if result["contract_record"]:
                 result["contract_record"]["capture"] = dict(id=row["sample_id"], manifest_sha256=self.capture_hash)
 
-    def result(self, row, code):
+    def result(self, row, code, unknown_reason=None):
         """Створити raw/обгортку спільним producer, не дублюючи його перевірку."""
         observation = (dict(target="unique", item_type=code, bbox=[0,0,1000,1000], reason=None)
-                       if code else dict(target="not_visible", item_type="unknown", bbox=None, reason="not_visible"))
+                       if code else dict(target="unique",item_type="unknown",bbox=[0,0,1000,1000],reason=unknown_reason)
+                       if unknown_reason else dict(target="not_visible", item_type="unknown", bbox=None, reason="not_visible"))
         raw = json.dumps(observation)
         record = (спостереження(raw, sku=row["sku"], image_sha256=row["image_sha256"], image_url=row["image_url"],
                   crop=None, model_id="synthetic-qwen", model_revision="synthetic-revision",
@@ -272,6 +273,35 @@ class МірилоПілота(unittest.TestCase):
         r=self.evaluate();self.assertEqual(r["status"],"FAIL")
         errors=[e for e in r["errors"] if e["kind"] == "binding_mismatch"]
         self.assertTrue(any(e["input"] == "results" and e["field"] == "frame_target" for e in errors))
+
+    def test_unique_unknown_gold_is_not_in_resolvable_denominator(self):
+        for i,reason in zip((40,41,42),("occluded","too_small","taxonomy_gap")):
+            self.gold["annotations"][i].update(status="unknown",item_type=None,reason=reason)
+            self.results[i]=self.result(self.manifest[i],None,unknown_reason=reason)
+        r=self.evaluate();self.assertEqual(r["status"],"SYNTHETIC_ONLY")
+        self.assertEqual(r["denominators"]["resolvable"],97)
+        self.assertEqual(r["metrics"]["coverage"],1)
+        self.assertEqual(r["metrics"]["wrong_accepted"],0)
+        self.assertEqual(r["gold_statuses"]["unknown"],3)
+        for reason in ("occluded","too_small","taxonomy_gap"):
+            self.assertEqual(r["unknown_reasons"][reason],1)
+
+    def test_accepted_code_on_unknown_gold_is_still_wrong(self):
+        self.gold["annotations"][40].update(status="unknown",item_type=None,reason="too_small")
+        r=self.evaluate();self.assertEqual(r["status"],"FAIL")
+        self.assertEqual(r["metrics"]["wrong_accepted"],1)
+        self.assertEqual(r["metrics"]["false_confirmation"],1)
+
+    def test_unique_unknown_does_not_relax_negative_cohort(self):
+        self.gold["annotations"][100].update(status="unknown",item_type=None,reason="occluded")
+        self.results[100]=self.result(self.manifest[100],None,unknown_reason="occluded")
+        r=self.evaluate();self.assertEqual(r["status"],"FAIL")
+        self.assertIn("negative_gold_not_negative",self.kinds(r))
+
+    def test_unknown_gold_reason_comes_from_producer_schema(self):
+        self.gold["annotations"][40].update(status="unknown",item_type=None,reason="unproven_guess")
+        r=self.evaluate();self.assertEqual(r["status"],"FAIL")
+        self.assertIn("gold_unknown_reason",self.kinds(r))
 
 
 if __name__ == "__main__":
