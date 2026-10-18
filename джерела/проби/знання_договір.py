@@ -18,6 +18,9 @@ def головна():
         if стан == "range":
             assert дріт["color_range"] == факт["value"]
         print("color", стан, "→", дріт["knowledge"][0])
+    рядок = П._рядки_кандидатів({}, {}, None, {"_кандидати": {"сукня": [dict(вікно, id="projection", тип="dress_generic", метал="gold")]}})["сукня"][0]
+    дріт = Д.річ(П._річ_пулу(рядок, {}))
+    assert дріт["knowledge"][0][0] == "range" and дріт["metal"] == "gold"
     р = {"тип": "jewelry_generic", "матеріал": "raw fixture", "метал": None}
     assert З.властивість(р, "composition")["status"] == "unknown"
     assert З.властивість(р, "metal")["status"] == "unknown"
