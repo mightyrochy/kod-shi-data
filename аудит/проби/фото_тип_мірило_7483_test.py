@@ -234,6 +234,28 @@ class МірилоПілота(unittest.TestCase):
         for raw in ('{"a":1,"a":2}', '{"a":NaN}'):
             with self.assertRaises(ValueError):М._json(raw)
 
+    def test_correct_photo_is_not_necessarily_catalogue_confirmation(self):
+        self.manifest[40]["known_old_metadata"]["catalog_slot"]="взуття"
+        r=self.evaluate()
+        confirmed=sum(n for key,n in r["paired"]["transitions"].items() if key.endswith("_to_confirmed"))
+        self.assertEqual(r["metrics"]["correct"],100)
+        self.assertEqual(r["paired"]["pilot_new_confirmed"],99)
+        self.assertEqual(confirmed,99)
+        self.assertTrue(r["ledger"][40]["correct"])
+        self.assertFalse(r["ledger"][40]["preview_confirmed"])
+        self.assertEqual(r["metrics"]["false_confirmation"],0)
+
+    def test_matching_wrong_catalogue_is_a_false_confirmation(self):
+        self.manifest[40]["known_old_metadata"]["catalog_slot"]="взуття"
+        self.results[40]=self.result(self.manifest[40],"sneakers")
+        r=self.evaluate()
+        confirmed=sum(n for key,n in r["paired"]["transitions"].items() if key.endswith("_to_confirmed"))
+        self.assertEqual(r["metrics"]["correct"],99)
+        self.assertEqual(r["paired"]["pilot_new_confirmed"],confirmed)
+        self.assertEqual(confirmed,100)
+        self.assertEqual(r["metrics"]["false_confirmation"],1)
+        self.assertEqual(r["status"],"FAIL")
+
 
 if __name__ == "__main__":
     unittest.main()

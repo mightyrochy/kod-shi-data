@@ -176,6 +176,7 @@ def оцінити(маніфест, gold, результати, receipt, *, к�
         причина, код, правильний, старий_правильний = None, None, False, False
         frame_verified = False
         хибне_підтвердження = False
+        підтверджено = False
         до = len(помилки)
         роль = вхід.get("role")
         if ((роль == "real" and not вхід.get("sku")) or not вхід.get("stratum") or вхід.get("protocol") != ПРОТОКОЛ
@@ -289,6 +290,7 @@ def оцінити(маніфест, gold, результати, receipt, *, к�
                     хибне_підтвердження = True
                 каталог = (вхід.get("known_old_metadata") or {}).get("catalog_slot")
                 if роль == "real" and каталог == СЛ.КЛЮЧІ.get(СЛ.СЛОТ_ТИПУ.get(код)):
+                    підтверджено = True
                     метрики["pilot_new_confirmed"] += 1
                     if правильний:
                         метрики["pilot_correct_new_confirmed"] += 1
@@ -308,10 +310,10 @@ def оцінити(маніфест, gold, результати, receipt, *, к�
         причина = причина or (None if код else "unknown")
         ledger.append(dict(sample_id=ід, sku=вхід.get("sku"), role=роль, status="coded" if код else "unknown",
                            item_type=код, unknown_reason=причина, gold_status=(еталон or {}).get("status"),
-                           correct=правильний, old_correct=старий_правильний))
+                           correct=правильний, old_correct=старий_правильний, preview_confirmed=підтверджено))
         if роль == "real":
             попередній = (вхід.get("known_old_metadata") or {}).get("oldconfirmed")
-            переходи[f"old_{попередній}_to_" + ("confirmed" if правильний else "unknown_or_not_confirmed")] += 1
+            переходи[f"old_{попередній}_to_" + ("confirmed" if підтверджено else "unknown_or_not_confirmed")] += 1
     відомі = sum(р["status"] == "coded" for р in ledger)
     покриття = метрики["correct"] / метрики["resolvable"] if метрики["resolvable"] else None
     збереження = метрики["old_correct_preserved"] / метрики["old_correct"] if метрики["old_correct"] else None
