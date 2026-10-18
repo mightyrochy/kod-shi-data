@@ -2216,7 +2216,9 @@ function дб(){
     з.onsuccess = ()=>{
       const d = з.result;
       const забути = ()=>{ if (зʼєднанняДбП === d) зʼєднанняДбП = null; };
-      d.onversionchange = ()=>{ забути(); d.close(); };
+      const закрити = d.close.bind(d);
+      d.close = ()=>{ забути(); закрити(); };
+      d.onversionchange = ()=>d.close();
       d.onclose = забути;
       зʼєднанняДбП = d;
       рез(d);
