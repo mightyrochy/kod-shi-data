@@ -3066,7 +3066,10 @@ _ПОЛЯ_EN = {
               "through the judgement of others she wants to pass (that nobody finds fault with her look); "
               "statement — she wants to impress, stand out or be noticed, however she words it — then goal "
               "express is written too, on the same quote; conventional "
-              "— none of these, also when she wants to be unnoticed",
+              "— none of these, also when she wants to be unnoticed; fashion_forward — deliberate bold "
+              "fashion, including excess as a styling move, with at least two sources of interest; "
+              "editorial — an editorial construction where count limits do not apply, with at least "
+              "one source of interest; neither is inferred merely from wanting attention (statement)",
     # Рядок 5211 (рішення власника 15.10 «3б»): мета — дві осі. `goal` — лише скільки уваги; зони й «що ще
     # важливо» — свої поля, з будь-якою увагою (код читає їх окремо: `регістр_уваги`, `реєстр_намір._намір`)
     # Рядок 6188: «щоб на мене дивились», «без питань до неї» (сцени клубу й корпоративу) — тепер рід: помітність, чужий суд
@@ -3958,7 +3961,7 @@ def теми_відкриті(паспорт, сценарій=None):
     дані = set(п.get("поради_дані") or [])
     # поле вже знає паспорт — теми нема на жодному стані (умова кожної теми вимагає «не знає»)
     ст = _ПН._стан_для_поради(сценарій or {}, п, "")
-    знає = {"goal": ст["мета"], "makeup": ст["макіяж"], "movement": ст["рух"] or ст["тривалість"],
+    знає = {"goal": ст["мета_відома"], "makeup": ст["макіяж"], "movement": ст["рух"] or ст["тривалість"],
             "temperature": ст["темп_c"] not in (None, ""), "jewelry": ст["прикраси"], "register": ст["реєстр"],
             "occasion": ст["нагода"] or ст["місце"] or ст["подія"]}
     return [к for к in _ВМ.ТЕМИ_ПОРАДИ if _ВМ.ключ("advice_topic", к) not in дані and not знає.get(к)]
