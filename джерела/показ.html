@@ -2213,10 +2213,17 @@ function дб(){
 }
 function tx(d, ім, режим, дія){
   return new Promise((рез, від)=>{
-    const t = d.transaction(ім, режим), s = t.objectStore(ім);
+    const журнал = ім === 'вердикти' && режим === 'readwrite';
+    if (журнал) скинутиКешЖурналуП();
+    const t = d.transaction(журнал ? ['вердикти', 'кв'] : ім, режим), s = t.objectStore(ім);
+    if (журнал){
+      const кв = t.objectStore('кв'), версія = кв.get(КЛЮЧ_РЕВІЗІЇ_ЖУРНАЛУ_П);
+      версія.onsuccess = ()=>кв.put((версія.result || 0) + 1, КЛЮЧ_РЕВІЗІЇ_ЖУРНАЛУ_П);
+    }
     const r = дія(s);
-    t.oncomplete = ()=>рез(r && r.result);
+    t.oncomplete = ()=>{ if (журнал) скинутиКешЖурналуП(); рез(r && r.result); };
     t.onerror = ()=>від(t.error);
+    if (журнал) t.onabort = ()=>{ скинутиКешЖурналуП(); від(t.error || new Error('journal_write_aborted')); };
   });
 }
 async function пристрій_Id(){
@@ -2230,12 +2237,56 @@ async function пристрій_Id(){
   await tx(d,'кв','readwrite', s=>s.put(нов,'пристрій'));
   return нов;
 }
-async function усіВердикти(){
+/* Читання повертає копію знімка за атомарною ревізією. Новий вердикт, оцінка
+   й позначка вивантаження пишуть ревізію разом із даними через tx(). */
+const КЛЮЧ_РЕВІЗІЇ_ЖУРНАЛУ_П = 'версія_вердиктів';
+const МЕЖА_ЖУРНАЛУ_П = {символів: 8 * 1024 * 1024};
+let КЕШ_ЖУРНАЛУ_П = null, ЧИТАННЯ_ЖУРНАЛУ_П = null;
+function скинутиКешЖурналуП(){
+  КЕШ_ЖУРНАЛУ_П = null; ЧИТАННЯ_ЖУРНАЛУ_П = null;
+}
+async function знімокЖурналуП(){
   const d = await дб();
-  return new Promise((рез,від)=>{
-    const r = d.transaction('вердикти').objectStore('вердикти').getAll();
-    r.onsuccess=()=>рез(r.result||[]); r.onerror=()=>від(r.error);
+  d.addEventListener('versionchange', скинутиКешЖурналуП);
+  d.addEventListener('close', скинутиКешЖурналуП);
+  return new Promise((рез, від)=>{
+    const t = d.transaction(['кв', 'вердикти'], 'readonly');
+    const r = t.objectStore('кв').get(КЛЮЧ_РЕВІЗІЇ_ЖУРНАЛУ_П);
+    let ревізія, рядки, ключі, записи;
+    r.onsuccess = ()=>{
+      ревізія = r.result || 0;
+      if (КЕШ_ЖУРНАЛУ_П && КЕШ_ЖУРНАЛУ_П.ревізія === ревізія){
+        рядки = КЕШ_ЖУРНАЛУ_П.рядки; return;
+      }
+      const s = t.objectStore('вердикти');
+      const к = s.getAllKeys(), з = s.getAll();
+      к.onsuccess = ()=>{ ключі = к.result; };
+      з.onsuccess = ()=>{ записи = з.result; };
+    };
+    t.oncomplete = ()=>{
+      if (!рядки) рядки = (записи || []).map((зап, і)=>({ключ: ключі[і], зап}));
+      КЕШ_ЖУРНАЛУ_П = {ревізія, рядки}; рез(рядки);
+    };
+    t.onerror = ()=>від(t.error);
+    t.onabort = ()=>від(t.error || new Error('journal_read_aborted'));
   });
+}
+async function читатиЖурналП(){
+  if (!ЧИТАННЯ_ЖУРНАЛУ_П){
+    const читання = ЧИТАННЯ_ЖУРНАЛУ_П = знімокЖурналуП();
+    const завершити = ()=>{ if (ЧИТАННЯ_ЖУРНАЛУ_П === читання) ЧИТАННЯ_ЖУРНАЛУ_П = null; };
+    читання.then(завершити, завершити);
+  }
+  const рядки = await ЧИТАННЯ_ЖУРНАЛУ_П, лічба = {символів: 0};
+  const копія = копіяРозборуП(рядки, лічба);
+  if (лічба.символів > МЕЖА_ЖУРНАЛУ_П.символів && КЕШ_ЖУРНАЛУ_П && КЕШ_ЖУРНАЛУ_П.рядки === рядки)
+    КЕШ_ЖУРНАЛУ_П = null;
+  return копія;
+}
+window.addEventListener('focus', скинутиКешЖурналуП);
+window.addEventListener('pagehide', скинутиКешЖурналуП);
+async function усіВердикти(){
+  return (await читатиЖурналП()).map(р=>р.зап);
 }
 /* ── ПОВТОРНЕ ВИВАНТАЖЕННЯ КОШТУВАЛО ПІВ ФАЙЛА (ділянка 6/8, 26.09.2026) ──────
    ЩО БУЛО. Кнопка одна — «Зберегти ВСІ вердикти файлом», — і власник, який надіслав
@@ -2252,15 +2303,7 @@ async function усіВердикти(){
    ставиться ПІСЛЯ складання звіту — у поточному файлі стоять лише попередні
    вивантаження, а не те, що робиться зараз. */
 async function усіВердиктиЗКлючами(){
-  const d = await дб();
-  return new Promise((рез,від)=>{
-    const r = d.transaction('вердикти').objectStore('вердикти').openCursor();
-    const в = [];
-    r.onsuccess = е=>{ const к = е.target.result;
-      if (!к){ рез(в); return; }
-      в.push({ключ: к.key, зап: к.value}); к.continue(); };
-    r.onerror = ()=>від(r.error);
-  });
+  return читатиЖурналП();
 }
 async function позначитиВивантаженіП(ключі, коли){
   if (!(ключі||[]).length) return;
@@ -4610,17 +4653,22 @@ const МЕЖА_РОЗБОРУ_П = {записів: 16, символів: 8 * 10
 let СИМВОЛІВ_РОЗБОРУ_П = 0;
 /* Копія лише JSON-дерева, без залежності від structuredClone у jsdom.
    Обхід стеком не додає межі вкладеності; "__proto__" лишається даними. */
-function копіяРозборуП(о){
-  const корінь = Array.isArray(о) ? [] : {};
-  const стек = [[о, корінь]];
+function копіяРозборуП(о, лічба){
+  const нова = в => Array.isArray(в) ? в.slice() : {...в};
+  const корінь = нова(о), стек = [[о, корінь]];
   while (стек.length){
-    const [звідки, куди] = стек.pop();
+    const [звідки, куди] = стек.pop(), масив = Array.isArray(звідки);
     for (const к of Object.keys(звідки)){
       const в = звідки[к];
-      const копія = в && typeof в === 'object' ? (Array.isArray(в) ? [] : {}) : в;
+      if (лічба && typeof в === 'string') лічба.символів += в.length;
+      if (!(в && typeof в === 'object')){
+        if (масив && !Object.hasOwn(куди, к)) Object.defineProperty(куди, к, {value: в, enumerable: true, writable: true, configurable: true});
+        continue;
+      }
+      const копія = нова(в);
       if (к === '__proto__') Object.defineProperty(куди, к, {value: копія, enumerable: true, writable: true, configurable: true});
       else куди[к] = копія;
-      if (в && typeof в === 'object') стек.push([в, копія]);
+      стек.push([в, копія]);
     }
   }
   return корінь;
@@ -4657,13 +4705,23 @@ function ключіВердикта(зап){
   for (const и of Object.keys(зап)) if (ШАПКА.indexOf(и) < 0) к.push(и);
   return к;
 }
+/* Не серіалізує одиночне поле й не порівнює перше значення із собою. */
+function однаковеПолеЗвітуП(рядки, к){
+  const перше = рядки[0][к];
+  let текст, серіалізовано = false;
+  for (let і = 1; і < рядки.length; і++){
+    if (рядки[і][к] === перше) continue;
+    if (!серіалізовано){ текст = JSON.stringify(перше); серіалізовано = true; }
+    if (JSON.stringify(рядки[і][к]) !== текст) return false;
+  }
+  return true;
+}
 function винестиСпільне(рядки, дозволені){
   const сп = {};
   if (!рядки.length) return сп;
   for (const к of дозволені){
     if (!рядки.every(р => к in р)) continue;
-    const е = JSON.stringify(рядки[0][к]);
-    if (!рядки.every(р => JSON.stringify(р[к]) === е)) continue;
+    if (!однаковеПолеЗвітуП(рядки, к)) continue;
     сп[к] = рядки[0][к];
     for (const р of рядки) delete р[к];
   }
@@ -4672,18 +4730,18 @@ function винестиСпільне(рядки, дозволені){
 function винестиЕтапиПрогону(рядки){
   if (!рядки.length) return null;
   const ет = р => (р.етапи && typeof р.етапи === 'object' && !Array.isArray(р.етапи)) ? р.етапи : null;
-  if (!рядки.every(ет)) return null;
+  const етапи = рядки.map(ет);
+  if (!етапи.every(Boolean)) return null;
   const сп = {};
   for (const к of ЕТАПИ_СПІЛЬНІ){
-    if (!рядки.every(р => к in ет(р))) continue;
-    const е = JSON.stringify(ет(рядки[0])[к]);
-    if (!рядки.every(р => JSON.stringify(ет(р)[к]) === е)) continue;
-    сп[к] = ет(рядки[0])[к];
-    for (const р of рядки) delete ет(р)[к];
+    if (!етапи.every(е => к in е)) continue;
+    if (!однаковеПолеЗвітуП(етапи, к)) continue;
+    сп[к] = етапи[0][к];
+    for (const е of етапи) delete е[к];
   }
   /* Рука, у якої від `етапи` не лишилось нічого свого, не має везти порожній
      обʼєкт: це те саме порожнє поле, якого у файлі не буває. */
-  for (const р of рядки) if (!Object.keys(ет(р)).length) delete р.етапи;
+  етапи.forEach((е, і)=>{ if (!Object.keys(е).length) delete рядки[і].етапи; });
   return Object.keys(сп).length ? сп : null;
 }
 function звітВердиктів(вс, коли){
