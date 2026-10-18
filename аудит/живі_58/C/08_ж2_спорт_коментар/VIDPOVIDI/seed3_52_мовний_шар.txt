@@ -1,0 +1,56 @@
+── ПРОМПТ (7253 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Кардиган жіночий прямого силуету з вовною мериноса демісезонний · kind code: cardigan · colour code: grey · about it: text н=1
+2 — Бавовняна хакі спідниця максі довжини Грейден · kind code: skirt · colour code: khaki · about it: text н=2
+3 — Кросівки червоні з натурального спилку-замші · kind code: sneakers · colour code: red · about it: text н=3
+4 — Поясна сумка з червоної шкіри з лого · kind code: belt_bag · colour code: red · about it: text н=4
+5 — Куртка хакі на зав'язках · kind code: jacket · colour code: green · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: green — зелений; grey — сірий; khaki — хакі; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "A grey, merino wool cardigan with a straight silhouette and ribbed cuffs. It features a classic collar and button-front closure for easy wear.",
+"2": "An olive green, midi-length skirt made of cotton with a tiered design that adds gentle volume to your lower half.",
+"3": "Vibrant red sneakers crafted from natural suede, featuring black accents on the heel and sole for a sporty edge.",
+"4": "A sleek red leather belt bag adorned with the iconic double G logo, perfect for carrying your essentials hands-free.",
+"5": "An olive green trench jacket with a collar and drawstring waist, designed to be layered effortlessly over your other pieces.",
+"6": "This grey merino wool cardigan offers a soft, cozy layer for your morning yoga, while the khaki midi skirt introduces an earthy, relaxed vibe perfect for autumn. The vibrant red sneakers and matching belt bag provide a striking pop of color that instantly brightens your neutral palette. The olive green trench jacket is the ideal finish, ready to shield you from the breeze if needed.",
+"7": "Tuck the top of your cardigan slightly into the skirt or leave it open for an airy feel.",
+"8": "If you need warmth, zip up and tie your belt bag at your natural waist to define your silhouette.",
+"9": "Бавовняна хакі спідниця максі довжини Грейден, Кросівки червоні з натурального спилку-замші — Having exactly one focal point in your shoes lets the green cardigan sing as your statement piece during yoga, so you don't have to choose between comfort and style when switching activities.",
+"10": "Бавовняна хакі спідниця максі довжини Грейден — The skirt is described as 'khaki' but carries a green hue code in the pool; this bridges your neutral base with the accent family.",
+"11": "Кардиган жіночий прямого силуету з вовною мериноса демісезонний — This grey knit is relaxed but fitted at the waist, solving your body knot by defining the narrowest point."
+}
+
+── ВІДПОВІДЬ (2024 симв., 63.6 с, HTTP 200) ──
+```json
+{
+"1": "Сірий кардиган із вовни мериноса прямого силуету з ребристими манжетами. Він має класичний комір і застібку на ґудзики для зручного носіння.",
+"2": "Оливково-зелена бавовняна спідниця міді довжини, виконана в ярусному дизайні, який додає ніжний об’єм твоїй нижній частині тіла.",
+"3": "Яскраві червоні кросівки з натуральної замші, що мають чорні акценти на п'яті та підошві для спортивного вигляду.",
+"4": "Стильна червона шкіряна поясна сумка, прикрашена культовим логотипом GG, ідеально підходить для носіння необхідних речей без рук.",
+"5": "Оливково-зелений тренч із коміром і шнурком на талії, розроблений так, щоб його можна було легко одягати поверх інших твоїх речей.",
+"6": "Цей сірий кардиган з вовни мериноса пропонує м’який, затишний шар для твоєї ранкової йоги, а хакі спідниця міді довжини вносить природну, розслаблену атмосферу, ідеально підходящу для осені. Яскраві червоні кросівки та відповідна поясна сумка надають вражаючий колірний акцент, який миттєво освіжає твою нейтральну палітру. Оливково-зелений тренч — це ідеальне завершення, готовий захистити тебе від вітру, якщо знадобиться.",
+"7": "Злегка заправ кардиган у спідницю або носи його розстебнутим для повітряного відчуття.",
+"8": "Якщо тобі потрібне тепло, замкни тренч і зав’яжи поясну сумку на своїй талії, щоб підкреслити твою фігуру.",
+"9": "Бавовняна хакі спідниця максі довжини Грейден, Кросівки червоні з натурального спилку-замші — Маючи рівно один акцентний елемент у взутті, дозволяє зеленому кардигану стати твоєю головною деталлю під час йоги, тож тобі не доведеться вибирати між комфортом і стилем, коли ти переходиш до інших занять.",
+"10": "Бавовняна хакі спідниця максі довжини Грейден — Спідницю описано як «хакі», але вона має зелений код кольору в базі; це поєднує твій нейтральний фон з акцентною родиною.",
+"11": "Кардиган жіночий прямого силуету з вовною мериноса демісезонний — Цей сірий трикотаж розслаблений, але приталений у талії, вирішуючи твою проблему з тілом, підкреслюючи найвужчу точку."
+}
+```

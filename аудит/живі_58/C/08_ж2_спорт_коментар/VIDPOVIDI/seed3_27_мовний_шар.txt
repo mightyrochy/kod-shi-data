@@ -1,0 +1,50 @@
+── ПРОМПТ (7012 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Гольф в'язаний коричневий · kind code: sweater · colour code: brown · about it: text н=1
+2 — Штани · kind code: trousers · colour code: beige · about it: text н=2
+3 — LeBERDES Лофери бордові · kind code: loafers · colour code: burgundy · about it: text н=3
+4 — Жіноча сумка Welfare рожева · kind code: bag_generic · colour code: pink · about it: text н=4
+5 — Шарф з м'якої вовни ягня темно-червоний · kind code: scarf_generic · colour code: red · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; burgundy — бордовий; pink — рожевий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This ribbed brown turtleneck sweater offers a fitted, elongating cut that highlights your waist and shoulders while providing cozy warmth for the autumn morning.",
+"2": "The dark beige trousers feature a tapered leg that follows your lines gracefully without restricting movement, making them ideal for both yoga flows and casual walks to the cafe.",
+"3": "These burgundy suede loafers bring a sturdy platform sole and a sleek penny detail to your outfit, grounding the soft textures above with a refined yet practical edge.",
+"4": "The dusty pink leather crossbody bag carries a pebbled texture and silver clasp that add subtle sophistication while remaining easy to access during your day out.",
+"5": "This deep red wool scarf drapes elegantly over your shoulders, adding vibrant contrast against your neutral tones while providing the perfect amount of warmth for crisp autumn air.",
+"6": "Your morning yoga starts in comfort with a cozy ribbed brown sweater and soft beige trousers that hug your figure perfectly, while the rich burgundy loafers add a polished touch to your casual look. A chic dusty pink crossbody bag keeps essentials close as you transition from movement to coffee, and a vibrant red wool scarf adds warmth and a splash of color to complete your autumnal ensemble.",
+"7": "Tuck the sweater slightly at the front to emphasize your defined waist for a sharper silhouette during yoga.",
+"8": "Жіноча сумка Welfare рожева — Despite having two focal points which exceeds the usual single focus ceiling, this outfit remains the right choice because its relaxed fit and soft knit perfectly serve your goal of unrestricted movement for yoga, prioritizing comfort over strict stylistic restraint."
+}
+
+── ВІДПОВІДЬ (1683 симв., 105.6 с, HTTP 200) ──
+```json
+{
+"1": "Цей ребристий коричневий гольф пропонує приталений силует, який підкреслює твою талію і плечі, водночас даруючи затишне тепло для осіннього ранку.",
+"2": "Темно-бежеві штани мають звужений низ, що елегантно повторює лінії твого тіла без обмеження рухів, роблячи їх ідеальними як для йоги, так і для прогулянок до кав’ярні.",
+"3": "Ці бордові замшеві лофери мають стійку платформу та витончений пенні-деталі у твоєму образі, збалансовуючи м’які текстури зверху практичним і елегантним акцентом.",
+"4": "Пильно-рожева шкіряна сумка через плече має тиснену фактуру та срібну застібку, які додають витончену вишуканість, залишаючись легкодоступною протягом дня.",
+"5": "Цей темно-червоний вовняний шарф елегантно спадає на твої плечі, створюючи яскравий контраст з нейтральними тонами і даруючи необхідне тепло в прохолодну осінню погоду.",
+"6": "Твій ранковий йога починається у комфорті: затишний коричневий гольф та м’які бежеві штани чудово облягають твою фігуру, а витончені бордові лофери додають завершеності твоєму повсякденному образу. Стильна рожева сумка через плече Welfare тримає необхідні речі під рукою, коли ти переходиш від занять до кави, і яскраво-червоний вовняний шарф дарує тепло та колір для завершення твого осіннього ансамблю.",
+"7": "Злегка заправ гольф спереду, щоб підкреслити витончену талію під час йоги.",
+"8": "Жіноча сумка Welfare рожева — Незважаючи на два акцентні елементи, що перевищують звичайну межу в один фокус, цей образ залишається правильним вибором, адже його розслаблений крій та м’який трикотаж ідеально відповідають твоїй меті — необмежений рух для йоги, пріоритезуючи комфорт над суворими стилістичними обмеженнями."
+}
+```

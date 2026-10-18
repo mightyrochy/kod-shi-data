@@ -1,0 +1,37 @@
+── ПРОМПТ (2226 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Relaxed oversized hoodie in soft charcoal grey, dropped shoulder cut and long length, warm brushed cotton jersey. High-waisted wide-leg trousers in deep olive, straight leg silhouette hitting at mid-calf, durable twill weave. White minimalist leather slip-on sneakers, low-profile design with a clean rubber sole. Delicate gold bar necklace in fine 14k vermeil metal, slender chain length resting lightly on the collarbone. This ensemble perfectly balances her morning yoga session with afternoon coffee, transitioning effortlessly from movement to conversation. The neutral earth tones provide a calming palette suitable for autumn daylight, while the soft textures offer comfort without sacrificing style. Her refusal of high heels is respected with the slip-ons, and the athletic silhouette honors her wish for a sporty yet put-together look that fits the casual dress code."}
+
+── ВІДПОВІДЬ (915 симв., 147.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "hoodie",
+      "details": "relaxed oversized cut with dropped shoulders and long length in soft brushed cotton jersey fabric",
+      "slot": "top",
+      "color_hex": "#708090",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg silhouette with straight leg cut hitting at mid-calf, made of durable twill weave",
+      "slot": "bottom",
+      "color_hex": "#556B2F",
+      "worn": true
+    },
+    {
+      "name": "sneakers",
+      "details": "minimalist slip-on design with low-profile construction and clean rubber sole",
+      "slot": "shoes",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate bar pendant on a slender chain made of fine 14k vermeil metal",
+      "slot": "jewelry",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}
