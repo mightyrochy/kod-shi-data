@@ -51,7 +51,8 @@ def пакет_руки_1(вхід=os.path.join(ТУТ, "стенд_вх.json"))
     тут = os.getcwd()
     os.chdir(ТУТ)                      # стенд_вх називає каталог і кеш відносно джерела/
     try:
-        r = _j.loads(B.виклик("запити", open(вхід, encoding="utf-8").read()))
+        _вх = _j.load(open(вхід, encoding="utf-8")); _вх["кандидати"] = 1
+        r = _j.loads(B.виклик("запити", _j.dumps(_вх, ensure_ascii=False)))
         кат = {c.get("id"): c for c in B.каталог_останнього_пакета()}
     finally:
         os.chdir(тут)

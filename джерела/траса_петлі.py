@@ -15,7 +15,7 @@ def main():
                             "вх.json", "стенд_вх.json") if і and os.path.exists(і)), None)
     if _ВХ is None:
         raise SystemExit("нема входу: покладіть стенд_вх.json поруч або дайте шлях аргументом")
-    вх = json.load(open(_ВХ, encoding="utf-8")); вх["сід"] = 4242
+    вх = json.load(open(_ВХ, encoding="utf-8")); вх["сід"] = 4242; вх["кандидати"] = 1
     вх.setdefault("каталог", __import__("feed").каталог_на_диску())
     print("вхід: %s · каталог: %s" % (_ВХ, os.path.basename(вх["каталог"])))
     t = time.time()
