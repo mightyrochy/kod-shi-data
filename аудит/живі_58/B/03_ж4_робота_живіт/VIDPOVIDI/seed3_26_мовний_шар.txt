@@ -1,0 +1,60 @@
+── ПРОМПТ (8017 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лляний костюм шоколад жилетка приталена і шорти · kind code: suit · colour code: chocolate · about it: text н=1
+2 — Футболка «Ring» чорна · kind code: t_shirt · colour code: black · about it: text н=2
+3 — Коринева шпилька-крабик з лого із золота · kind code: hair_clip · colour code: golden · about it: text н=3
+4 — Лофери замшеві коричневі · kind code: loafers · colour code: brown · about it: text н=4
+5 — Сумка багет Теракотова · kind code: baguette_bag · colour code: terracotta · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; chocolate — шоколадний; golden — золотий; terracotta — теракотовий.
+
+ТЕКСТИ:
+{
+"1": "This chocolate linen casual suit is a set that includes a tailored vest top and high-waisted shorts, cut to fit cleanly without adding bulk to the middle of your torso.",
+"2": "The black T-shirt has a relaxed fit with rolled sleeves and two silver ring details on the front that add subtle interest to your top layer.",
+"3": "This tortoiseshell claw clip has a glossy finish with a gold logo detail, giving you a way to secure your hair while keeping the look light and effortless.",
+"4": "These chocolate suede loafers have a low block heel and a gold horsebit detail that keep your look polished and easy for walking around the office all day.",
+"5": "The terracotta baguette bag features a vibrant multicolored pattern with earthy tones and a long brown strap, adding warmth and movement to your outfit as you move through your workday.",
+"6": "You have the chocolate linen suit and matching loafers that give you a neat look for the office, plus the black T-shirt with ring details as your everyday layer. The terracotta baguette bag and the gold claw hair clip complete the look while keeping it grounded for an autumn day at creative work.",
+"7": "For your creative office day, keep this outfit neat by leaving the T-shirt untucked and letting the suit shorts define your silhouette without needing any tucks or belting.",
+"8": "The loafers have enough comfort for long hours on your feet while still looking polished in an office setting.",
+"9": "Use the claw clip to hold your hair back if you want it off your face during meetings, and let the baguette bag hang freely for easy access when you need to grab things.",
+"10": "Футболка «Ring» чорна — I included this black t-shirt under the vest to provide a base layer that doesn't compete with the main hero items, keeping the outfit from reading too loud.",
+"11": "Лофери замшеві коричневі — These brown suede loafers match the warmth of the chocolate set and continue the leg line without cutting it off.",
+"12": "Лляний костюм шоколад жилетка приталена і шорти, Футболка «Ring» чорна, Коринева шпилька-крабик з лого із золота, Лофери замшеві коричневі, Сумка багет Теракотова — Even though different registers like classic and romantic appear together, this mix creates a modern creative vibe that suits an office where style matters but comfort is priority; the warm neutrals bind these styles into one coherent look.",
+"13": "Футболка «Ring» чорна, Сумка багет Теракотова — The slight chroma gap between your black shirt and the terracotta bag makes them distinct points of interest rather than competing ones, allowing you to switch focus from your face to your hands effortlessly throughout the day."
+}
+
+── ВІДПОВІДЬ (2802 симв., 56.1 с, HTTP 200) ──
+```json
+{
+"1": "Цей шоколадний лляний костюм у повсякденному стилі — це комплект, що включає приталений жилет і шорти з високою талією, пошиті так, щоб вони щільно сиділи без додавання об’єму в середній частині твого торсу.",
+"2": "Чорна футболка має вільний крій із закоченими рукавами та двома срібними кільцями на передній стороні, які додають стриманого інтересу до верхнього шару твоєї одежі.",
+"3": "Цей черепаховий крабик-шпилька має глянцеве покриття із золотою деталлю логотипу, даючи тобі спосіб зафіксувати волосся, зберігаючи при цьому легкий і безтурботний вигляд.",
+"4": "Ці шоколадні замшеві лофери мають невисокий стійкий каблук і золоту деталь у вигляді голови коня, які роблять твій образ доглянутим і зручним для ходьби по офісу цілий день.",
+"5": "Теракотова сумка-багет має яскравий багатобарвний візерунок із земляними тонами та довгим коричневим ремінцем, додаючи теплоти й руху твоєму образу під час робочого дня.",
+"6": "У тебе шоколадний лляний костюм і відповідні лофери, які дають тобі охайний вигляд для офісу, плюс чорна футболка з кільцями як повсякденний шар. Теракотова сумка-багет і золотий крабик-шпилька завершують образ, зберігаючи його приземленим в осінній день на творчій роботі.",
+"7": "Для твого творчого офісного дня збережи цей образ охайним, залишивши футболку не заправленою та дозволивши шортам костюма визначити твою силует без потреби у підгинанні чи поясі.",
+"8": "Лофери мають достатньо комфорту для тривалої роботи на ногах, залишаючись при цьому доглянутими в офісному середовищі.",
+"9": "Використовуй крабик-шпильку, щоб відкинути волосся назад, якщо ти хочеш його забрати з обличчя під час зустрічей, і дозволь сумці-багету вільно висіти для легкого доступу, коли тобі потрібно щось схопити.",
+"10": "Футболка «Ring» чорна — Я включила цю чорну футболку під жилет, щоб створити базовий шар, який не конкурує з основними елементами образу, зберігаючи його від надмірної гучності.",
+"11": "Лофери замшеві коричневі — Ці коричневі замшеві лофери поєднуються із теплом шоколадного комплекту та продовжують лінію ніг без її обрізання.",
+"12": "Лляний костюм шоколад жилетка приталена і шорти, Футболка «Ring» чорна, Коринева шпилька-крабик з лого із золота, Лофери замшеві коричневі, Сумка багет Теракотова — Навіть попри те, що різні стилі, такі як класичний і романтичний, разом створюють сучасний творчий настрій, який підходить для офісу, де стиль має значення, але комфорт є пріоритетом; теплі нейтральні кольори пов’язують ці стилі в один узгоджений образ.",
+"13": "Футболка «Ring» чорна, Сумка багет Теракотова — Легка різниця у насиченості між твоєю чорною футболкою та теракотовою сумкою робить їх окремими точками інтересу замість тих, що конкурують одна з одною, дозволяючи тобі легко переносити фокус від обличчя до рук протягом дня."
+}
+```
