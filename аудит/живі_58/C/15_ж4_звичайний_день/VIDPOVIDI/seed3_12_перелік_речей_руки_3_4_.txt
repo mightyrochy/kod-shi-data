@@ -1,0 +1,37 @@
+── ПРОМПТ (2643 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Layered cotton-blend cardigan, relaxed fit with dropped shoulders, soft oatmeal color (#F5F1E6), brushed fabric for warmth against the autumn chill.\nTailored wool-cotton blend trousers, straight-leg cut hitting just above the ankle, charcoal heather hue (#3A4045), durable twill material that withstands grass and gravel.\nMinimalist leather sneakers, rounded toe with a flat sole, warm taupe shade (#B7A89E), smooth calfskin that pairs effortlessly with casual footwear needs.\nSoft cotton beanie, slouchy knit shape with a folded cuff, deep forest green color (#2F4F4F), fine-gauge wool blend to keep ears warm during park strolls.\nThis outfit works perfectly for an autumn day out because the layered cardigan provides necessary warmth against the season's cooling air while remaining comfortable enough for active play with children. The straight-leg trousers offer a neat silhouette that transitions smoothly from the park grass to a quick stop at the supermarket without looking disheveled. Neutral earth tones like oatmeal and charcoal ensure the look feels cohesive and grounded, allowing any natural fall colors in the background to stand out. The soft beanie adds a cozy finishing touch appropriate for the weather while keeping hands free for managing kids or carrying small items."}
+
+── ВІДПОВІДЬ (889 симв., 174.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Layered cotton-blend cardigan",
+      "details": "relaxed fit with dropped shoulders, brushed fabric for warmth",
+      "slot": "outerwear",
+      "color_hex": "#F5F1E6",
+      "worn": true
+    },
+    {
+      "name": "Tailored wool-cotton blend trousers",
+      "details": "straight-leg cut hitting just above the ankle, durable twill material",
+      "slot": "bottom",
+      "color_hex": "#3A4045",
+      "worn": true
+    },
+    {
+      "name": "Minimalist leather sneakers",
+      "details": "rounded toe with a flat sole, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#B7A89E",
+      "worn": true
+    },
+    {
+      "name": "Soft cotton beanie",
+      "details": "slouchy knit shape with a folded cuff, fine-gauge wool blend",
+      "slot": "headwear",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    }
+  ]
+}

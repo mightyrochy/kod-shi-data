@@ -1,0 +1,37 @@
+── ПРОМПТ (2404 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured knit cardigan in soft camel, relaxed fit reaching mid-hip, #C6A87C, wool blend with fine gauge texture.\nWoven cotton-blend straight-leg trousers in dark olive green, full length, #3D4432, durable twill fabric for comfort during play.\nLeather ankle boots with a low block heel in chestnut brown, mid-calf shaft, #8B4513, smooth calfskin easy to wipe clean after muddy paws.\nWarm wool blend scarf in rust orange with a subtle geometric weave, rectangular shape, #D2691E, lightweight but cozy for cool autumn breezes.\nThis ensemble balances the practicality needed for a park outing and grocery run with the warmth of autumn weather. The relaxed fit of the cardigan and trousers allows her to move freely while holding children, avoiding any restrictive silhouettes. Earthy tones like camel, olive, and rust harmonize naturally with the fall season foliage without feeling too formal or stiff. Textured fabrics provide just enough visual interest for an everyday casual look that transitions effortlessly from playground to supermarket aisles."}
+
+── ВІДПОВІДЬ (764 симв., 173.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "cardigan",
+      "details": "structured knit, relaxed fit reaching mid-hip",
+      "slot": "top",
+      "color_hex": "#C6A87C",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "woven cotton-blend straight-leg, full length",
+      "slot": "bottom",
+      "color_hex": "#3D4432",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "leather with a low block heel, mid-calf shaft",
+      "slot": "shoes",
+      "color_hex": "#8B4513",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "warm wool blend, rectangular shape with subtle geometric weave",
+      "slot": "scarf",
+      "color_hex": "#D2691E",
+      "worn": true
+    }
+  ]
+}
