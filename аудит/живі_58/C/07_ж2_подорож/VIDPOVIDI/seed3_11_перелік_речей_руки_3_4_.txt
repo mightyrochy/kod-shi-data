@@ -1,0 +1,44 @@
+── ПРОМПТ (2277 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Oversized linen-blend blazer in a soft sand hue (#E0D5C1) with a relaxed boxy cut and dropped shoulders, layered over a breathable viscose blouse in a warm oatmeal shade (#F5EEE6) featuring a flowing drape and midi length. The ensemble is grounded by high-waisted wide-leg trousers in natural stone (#C2B9A8), crafted from lightweight crepe that falls just above the ankle to ensure ease during walking. Footwear consists of leather sandals in a tan finish (#D4C5AD) with a low block heel for stability, accessorized with a structured woven tote bag in earthy brown (#8B7355). This outfit works perfectly for the four-hour transit to Barcelona as it combines the requested everyday formality with practical comfort for movement while maintaining an airy aesthetic suited to spring temperatures above 20°C. The neutral palette harmonizes beautifully with her skin tones, creating a polished yet effortless look ready for arrival."}
+
+── ВІДПОВІДЬ (705 симв., 96.6 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "blazer",
+"details": "oversized linen-blend relaxed boxy cut dropped shoulders",
+"slot": "outerwear",
+"color_hex": "#E0D5C1",
+"worn": true
+},
+{
+"name": "blouse",
+"details": "breathable viscose flowing drape midi length",
+"slot": "top",
+"color_hex": "#F5EEE6",
+"worn": true
+},
+{
+"name": "trousers",
+"details": "high-waisted wide-leg lightweight crepe falls just above the ankle",
+"slot": "bottom",
+"color_hex": "#C2B9A8",
+"worn": true
+},
+{
+"name": "sandals",
+"details": "leather low block heel",
+"slot": "shoes",
+"color_hex": "#D4C5AD",
+"worn": true
+},
+{
+"name": "tote bag",
+"details": "structured woven",
+"slot": "bag",
+"color_hex": "#8B7355",
+"worn": true
+}
+]
+}

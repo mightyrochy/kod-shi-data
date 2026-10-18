@@ -1,0 +1,55 @@
+── ПРОМПТ (7728 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Кардиган жіночий в’язаний з широкими рукавами демісезонний · kind code: cardigan · colour code: grey · about it: text н=1
+2 — Топ ажурний на бретельках світло-оливковий · kind code: t_shirt · colour code: olive · about it: text н=2
+3 — Шарф класичний однотонний з бахромою · kind code: scarf_generic · colour code: beige · about it: text н=3
+4 — Спідниця міді плісе · kind code: skirt · colour code: graphite · about it: text н=4
+5 — Кеди червоні · kind code: plimsolls · colour code: red · about it: text н=5
+6 — Жіноча сумка тоут шкіряна коричнева · kind code: tote · colour code: brown · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; graphite — графіт; grey — сірий; olive — оливковий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a soft, heather grey knitted cardigan with wide sleeves and a deep V-neck, designed for ultimate comfort during your journey.",
+"2": "Worn underneath the cardigan, this light olive knit top features delicate straps and a subtle textured pattern across the chest.",
+"3": "A classic beige scarf made of a fine, lightweight fabric with elegant fringe detailing at the ends to add a touch of sophistication.",
+"4": "This midi skirt is crafted from a structured graphite wool-blend fabric, featuring deep front pleats that create graceful movement.",
+"5": "These are bold red plimsolls with white leather overlays and laces, offering a vibrant contrast to your neutral-toned outfit and easy comfort for walking.",
+"6": "A structured brown leather tote bag with dual top handles and a clean design, perfect for carrying all your travel necessities in style.",
+"7": "We chose a soft grey knitted cardigan to keep you comfortable during your long transit, paired with a pleated midi skirt in graphite that will look elegant against any background. To add warmth without looking bulky, we draped the beige scarf around your neck so it adds colour near your face and softness to your shoulders. For your feet, I selected red plimsolls—vibrant sneakers that bring an energetic, youthful spark to your travel look. A large brown leather tote bag completes the set, offering plenty of space for your essentials while maintaining a sophisticated silhouette. The warm grey tones of your top and bottom create a calm, cohesive base, while the red shoes act as a perfect accent, ready to be swapped if you prefer a more subdued look upon arrival.",
+"8": "Wrap the beige scarf loosely around your neck to soften your shoulders or drape it over your head like a hood for extra warmth during the flight.",
+"9": "Кеди червоні — The red plimsolls create a high-cut contrast that lengthens your leg line despite the midi skirt, adding necessary energy and streetwear flair to your otherwise romantic preppy base without breaking your transit routine.",
+"10": "Кардиган жіночий в’язаний з широкими рукавами демісезонний — The cardigan has 'everyday' formality which is correct for transit, but its relaxed fit helps hide your hips while the fitted vest balances your waist definition."
+}
+
+── ВІДПОВІДЬ (2296 симв., 80.2 с, HTTP 200) ──
+```json
+{
+"1": "Це мʼякий сірий вʼязаний кардиган з широкими рукавами та глибоким V-подібним вирізом, розроблений для максимального комфорту під час твоєї подорожі.",
+"2": "Цей світло-оливковий трикотажний топ на тонких бретельках носиться під кардиганом і має ніжну текстуровану фактуру по всій грудях.",
+"3": "Класичний бежевий шарф з легкої тканини та елегантною бахромою на кінцях, щоб додати нотку вишуканості.",
+"4": "Ця спідниця міді виконана зі структурованої графітової вовняної суміші і має глибокі передні складки, які створюють граціозний рух.",
+"5": "Це яскраві червоні кеди з білими шкіряними накладками та шнурками, що пропонують яскравий контраст до твого нейтрального образу і легкий комфорт для ходьби.",
+"6": "Структурована коричнева шкіряна сумка-тоут з двома ручками зверху та лаконічним дизайном, ідеальна для перенесення всіх необхідних речей у стилі під час подорожі.",
+"7": "Ми обрали мʼякий сірий вʼязаний кардиган, щоб ти почувалася комфортно під час довгого рейсу, разом з графітовою плісованою спідницею міді, яка виглядатиме елегантно на будь-якому фоні. Щоб додати тепла без обʼємності, я загорнула бежевий шарф навколо твоєї шиї так, щоб він додавав кольору біля твого обличчя та мʼякості плечам. Для ніг я обрала червоні кеди — енергійні кросівки, які привносять молодий іскрометний акцент у твій образ для подорожі. Велика коричнева шкіряна сумка-тоут завершує комплект, пропонуючи достатньо місця для всіх необхідних речей, зберігаючи водночас витончений силует. Теплі сірі тони твоєї верхньої та нижньої частини створюють спокійну гармонійну основу, а червоні кеди стануть ідеальним акцентом, який ти зможеш замінити на більш стриманий варіант після прибуття.",
+"8": "Загорни бежевий шарф вільно навколо шиї, щоб помʼякшити плечі, або поклади його на голову як капюшон для додаткового тепла під час польоту.",
+"9": "Червоні кеди створюють високий контраст, який видовжує лінію ніг, незважаючи на спідницю міді, додаючи необхідний енергійний вуличний стиль до твого романтичного образу в стилі преппі без порушення звичного ритму подорожі.",
+"10": "Вʼязаний кардиган з широкими рукавами — Кардиган має «щоденну» офіційність, що підходить для подорожей, але його розслаблений крій допомагає приховати стегна, а облягаючий топ врівноважує визначення талії."
+}
+```
