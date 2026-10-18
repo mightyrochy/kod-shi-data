@@ -1,0 +1,51 @@
+── ПРОМПТ (2596 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet blazer with a structured shoulder cut and a mid-length fit in deep forest green (#1a3c34), crafted from heavy-weight woven polyester for warmth. High-waisted tailored trousers with a wide leg silhouette and full length in charcoal gray (#2f3336), made of crisp cotton-blend poplin to maintain their shape. Silk shell necktie in burgundy wine (#5d0a1a), featuring a classic slim knot, designed to add a touch of elegance without requiring a jacket. Pointed-toe pumps with a 7 cm heel in metallic gold (#d4af37), constructed from smooth leather that reflects the theater's lighting. Clutch handbag in black matte fabric (#121212) with a rigid box shape to hold essentials discreetly. Diamond stud earrings in silver-tone metal, offering subtle sparkle without being overpowering. This outfit works because it perfectly bridges the gap between neat and formal dress codes, using rich textures like velvet and silk to stand out under artificial stage lighting. The color palette of deep green, charcoal, and metallic accents feels sophisticated and autumnal without being too heavy for an evening performance. Every element respects your refusal of overly casual items while ensuring you feel comfortable and confident during the show at 19:00."}
+
+── ВІДПОВІДЬ (1378 симв., 185.7 с, HTTP 200) ──
+{
+  "is_outfit": true,
+  "items": [
+    {
+      "name": "Velvet blazer",
+      "details": "structured shoulder cut and a mid-length fit, crafted from heavy-weight woven polyester for warmth",
+      "slot": "outerwear",
+      "color_hex": "#1a3c34",
+      "worn": true
+    },
+    {
+      "name": "High-waisted tailored trousers",
+      "details": "wide leg silhouette and full length, made of crisp cotton-blend poplin to maintain their shape",
+      "slot": "bottom",
+      "color_hex": "#2f3336",
+      "worn": true
+    },
+    {
+      "name": "Silk shell necktie",
+      "details": "classic slim knot, designed to add a touch of elegance without requiring a jacket",
+      "slot": "accessory",
+      "color_hex": "#5d0a1a",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe pumps",
+      "details": "7 cm heel, constructed from smooth leather that reflects the theater's lighting",
+      "slot": "shoes",
+      "color_hex": "#d4af37",
+      "worn": true
+    },
+    {
+      "name": "Clutch handbag",
+      "details": "rigid box shape to hold essentials discreetly, black matte fabric",
+      "slot": "bag",
+      "color_hex": "#121212",
+      "worn": true
+    },
+    {
+      "name": "Diamond stud earrings",
+      "details": "subtle sparkle without being overpowering, silver-tone metal",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

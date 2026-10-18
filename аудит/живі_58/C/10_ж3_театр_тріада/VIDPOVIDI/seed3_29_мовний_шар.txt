@@ -1,0 +1,60 @@
+── ПРОМПТ (7839 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Приталений одноборотний жакет чорного кольору · kind code: blazer · colour code: black · about it: text н=1
+2 — Штани прямого крою з преміум екозамші · kind code: trousers · colour code: camel · about it: text н=2
+3 — Балетки замшеві (Other Brand) · kind code: ballet_flats · colour code: chocolate · about it: text н=3
+4 — Жіноча сумка Welfare чорна · kind code: bag_generic · colour code: black · about it: text н=4
+5 — Коричневий шарф із необробленим краєм · kind code: scarf_generic · colour code: brown · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; camel — кемел; chocolate — шоколадний.
+
+ТЕКСТИ:
+{
+"1": "This is a structured black blazer with a tailored fit, featuring notched lapels and flap pockets that offer a clean, modern silhouette perfect for formal occasions.",
+"2": "These are straight-leg trousers crafted from premium eco-suede in a warm camel tone, offering a soft yet sophisticated look with subtle stitching details at the hem.",
+"3": "These are ballet flats made from rich chocolate suede with delicate lace-up detailing across the vamp, providing comfort and style for an evening outing.",
+"4": "This is a sleek black structured handbag with top handles and subtle metal hardware, designed to carry essentials with effortless elegance.",
+"5": "This is an earthy brown scarf made from natural untreated cotton fabric with a soft fringed edge that adds texture and warmth to your ensemble.",
+"6": "I have chosen a tailored black blazer to frame your silhouette for the evening, paired with straight-leg camel suede trousers that add warmth and elegance. The outfit is completed by chocolate suede ballet flats, a structured black bag, and a brown scarf in untreated cotton to soften the look with its natural texture.",
+"7": "Wear the blazer as a classic layer for the theatre evening; if the venue gets warm, you can easily slip it off without ruining your polished appearance.",
+"8": "Tuck the hem of your top slightly into the waistband of the trousers to define your X-shaped figure and highlight your waistline.",
+"9": "Штани прямого крою з преміум екозамші — I kept this camel trouser to maintain the warm base that contrasts beautifully with your black jacket and skin tone under artificial lights.",
+"10": "Балетки замшеві (Other Brand) — These chocolate ballet flats match the brown family of your scheme and ground the outfit, preventing a severe cold read from the black leather.",
+"11": "Приталений одноборотний жакет чорного кольору — This black blazer anchors the formal requirement; I added magenta earrings to satisfy your triad scheme on a large item near the face.",
+"12": "Штани прямого крою з преміум екозамші — I kept the camel trousers as the warm neutral base, but I will add a brown layer or accessory to carry the pine green family if needed, though currently the brown family is missing from large items.",
+"13": "Приталений одноборотний жакет чорного кольору — I kept this blazer as the core piece, but I need to add a brown item (like a scarf or jacket) to carry the brown family of your scheme, as currently only neutral achromatic is on large items."
+}
+
+── ВІДПОВІДЬ (2556 симв., 99.0 с, HTTP 200) ──
+```json
+{
+"1": "Це приталений одноборотний жакет чорного кольору з відкладним коміром і накладними кишенями, що створює чистий сучасний силует, ідеальний для урочистих подій.",
+"2": "Ці штани прямого крою виготовлені з преміум екозамші теплого кемел кольору, пропонують м'який, але елегантний образ із ледь помітними деталями швів на подолі.",
+"3": "Це балетки зі смарагдово-шоколадної замші з ніжним мереживним оздобленням у передній частині, що забезпечують комфорт і стиль для вечірнього виходу.",
+"4": "Це елегантна чорна сумка структурованого крою з верхніми ручками та непомітною металевою фурнітурою, розроблена для зручного носіння необхідних речей із бездоганною елегантністю.",
+"5": "Це коричневий шарф зі 100% бавовняної тканини необробленого краю з м'якою бахромою, що додає текстуру та тепло твоєму образу.",
+"6": "Я обрала приталений чорний жакет, щоб підкреслити твою фігуру для вечірнього заходу, у поєднанні зі штанами прямого крою з кемел екозамші, які додають тепла та елегантності. Образ завершують шоколадні замшеві балетки, структурована чорна сумка та коричневий шарф із необробленої бавовни, щоб пом’якшити образ його природною текстурою.",
+"7": "Одягни жакет як класичний верхній одяг на театральний вечір; якщо в приміщенні буде спекотно, ти зможеш легко зняти його, не зіпсувавши свій вишуканий зовнішній вигляд.",
+"8": "Злегка заправ верхівку твоєї блузи у пояс штанів, щоб підкреслити твою фігуру типу «Х» і виділити талію.",
+"9": "Штани прямого крою з преміум екозамші — Я залишила ці кемел штани, щоб зберегти теплу основу, яка чудово контрастує з твоєю чорною курткою та тоном шкіри під штучним освітленням.",
+"10": "Балетки замшеві (Other Brand) — Ці шоколадні балетки поєднуються зі смарагдово-коричневою гамою твого образу і завершують його, запобігаючи надто холодному вигляду від чорної шкіри.",
+"11": "Приталений одноборотний жакет чорного кольору — Цей чорний жакет є основною частиною; я додала смарагдові сережки, щоб задовольнити твою триаду на великому предметі поблизу обличчя.",
+"12": "Штани прямого крою з преміум екозамші — Я залишила кемел штани як теплу нейтральну основу, але додам коричневий шар або аксесуар, щоб підтримати смарагдову гаму, якщо це буде потрібно. Наразі лише нейтральна ахроматична гама на великих предметах.",
+"13": "Приталений одноборотний жакет чорного кольору — Я залишила цей жакет як основну частину, але мені потрібен коричневий предмет (наприклад, шарф або куртка), щоб підтримати смарагдову гаму твого образу. Наразі лише нейтральна ахроматична гама на великих предметах."
+}
+```
