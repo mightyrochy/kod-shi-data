@@ -4608,13 +4608,22 @@ function порожнєЗвіту(x){
 const РОЗБІР_ЖУРНАЛУ_П = new Map();
 const МЕЖА_РОЗБОРУ_П = {записів: 16, символів: 8 * 1024 * 1024};
 let СИМВОЛІВ_РОЗБОРУ_П = 0;
-/* Копія лише JSON-дерева; запасний шлях потрібен середовищам без structuredClone
-   (зокрема jsdom у пробах). fromEntries зберігає ключ "__proto__" як дані. */
+/* Копія лише JSON-дерева, без залежності від structuredClone у jsdom.
+   Обхід стеком не додає межі вкладеності; "__proto__" лишається даними. */
 function копіяРозборуП(о){
-  if (typeof structuredClone === 'function') return structuredClone(о);
-  const копія = в => Array.isArray(в) ? в.map(копія)
-    : (в && typeof в === 'object') ? Object.fromEntries(Object.entries(в).map(([к, з]) => [к, копія(з)])) : в;
-  return копія(о);
+  const корінь = Array.isArray(о) ? [] : {};
+  const стек = [[о, корінь]];
+  while (стек.length){
+    const [звідки, куди] = стек.pop();
+    for (const к of Object.keys(звідки)){
+      const в = звідки[к];
+      const копія = в && typeof в === 'object' ? (Array.isArray(в) ? [] : {}) : в;
+      if (к === '__proto__') Object.defineProperty(куди, к, {value: копія, enumerable: true, writable: true, configurable: true});
+      else куди[к] = копія;
+      if (в && typeof в === 'object') стек.push([в, копія]);
+    }
+  }
+  return корінь;
 }
 function розібратиПоле(x){
   if (typeof x !== 'string') return x;
