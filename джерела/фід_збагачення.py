@@ -352,6 +352,42 @@ def читати_збагачення(тека=None):
     return {}
 
 
+def читати_фото_тип(тека=None):
+    """Optional overlay + незалежні capture/receipt; без HTTP і старих SHA кешу.
+
+    Поле існує окремо від legacy форми/кольору. Порожній результат не змінює
+    старого каталогу; ledger показує неприв'язані записи замість удаваного факту.
+    """
+    import gzip
+    import фото_тип_контракт as ФТ
+    тека = тека or os.path.dirname(os.path.abspath(__file__)) or "."
+    дані = []
+    for імя in ФТ.ФАЙЛИ:
+        файл = next((ш for ш in (os.path.join(тека, імя), os.path.join(тека, імя + ".gz")) if os.path.exists(ш)), None)
+        if файл is None:
+            дані.append(None)
+            continue
+        try:
+            with (gzip.open(файл, "rt", encoding="utf-8") if файл.endswith(".gz") else open(файл, encoding="utf-8")) as f:
+                дані.append(json.load(f))
+        except (ValueError, OSError):
+            дані.append(None)
+    if all(v is None for v in дані):
+        return dict(records={}, ledger=dict(records=0, projected=0, unprojected=0, controls_excluded=0), errors=[])
+    return ФТ.проєкція_каталогу(*дані)
+
+
+def фото_тип_речі(offer, фото_типи):
+    """Тільки той exact URL, який є й у поточного SKU; тип/слот не підміняти."""
+    р = фото_типи.get(offer.get("id"))
+    if not isinstance(р, dict) or not isinstance(р.get("provenance"), dict):
+        return {}
+    if р["provenance"]["image"]["url"] not in (offer.get("фото") or []):
+        return {"visible_item_type": dict(status="unknown", item_type="unknown", slot=None,
+                errors=["current_url_mismatch"], provenance=None)}
+    return {"visible_item_type": р}
+
+
 def _збагачення_придатне(зб):
     """Чи можна вірити запису збагачення: без помилки, впевненість ≥ порога, і
     основний колір названий словом лексикону (інакше він не зіставний)."""
