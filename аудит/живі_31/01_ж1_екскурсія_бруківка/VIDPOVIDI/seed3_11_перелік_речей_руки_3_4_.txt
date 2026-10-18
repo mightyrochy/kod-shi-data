@@ -1,0 +1,51 @@
+── ПРОМПТ (2540 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer, relaxed fit, knee-length hem, charcoal grey (#36454F), heavy twill fabric.\nTailored linen trousers, straight leg, ankle length, warm beige (#D2B48C), crisp cotton-linen blend.\nA soft merino knit sweater, crew neck, hip-length cut, rust orange (#B7410E), fine gauge wool.\nRound-toe leather loafers, medium heel, flat sole for comfort on cobblestones, chestnut brown (#91523D), smooth full-grain leather.\nA structured felt fedora hat, wide brim, tan brown (#C19A6B), dense felt material.\nA woven straw tote bag with leather straps, medium size, natural beige (#E8DCD0), sturdy raffia weave.\n\nThis ensemble balances the need for warmth and structure against the cool autumn air while prioritizing comfort for a full day of walking on uneven cobblestones. The relaxed fit blazer and breathable linen trousers allow for unrestricted movement in the park setting without sacrificing the polished look of a \"neat\" or elevated \"everyday\" style. Warm, earthy tones like rust and chestnut harmonize beautifully with the natural fall foliage, creating a cohesive and stylish silhouette that transitions effortlessly from morning daylight to afternoon strolls."}
+
+── ВІДПОВІДЬ (1216 симв., 244.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend blazer",
+      "details": "relaxed fit, knee-length hem, heavy twill fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "tailored linen trousers",
+      "details": "straight leg, ankle length, crisp cotton-linen blend",
+      "slot": "bottom",
+      "color_hex": "#D2B48C",
+      "worn": true
+    },
+    {
+      "name": "merino knit sweater",
+      "details": "crew neck, hip-length cut, fine gauge wool",
+      "slot": "top",
+      "color_hex": "#B7410E",
+      "worn": true
+    },
+    {
+      "name": "round-toe leather loafers",
+      "details": "medium heel, flat sole for comfort on cobblestones, smooth full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#91523D",
+      "worn": true
+    },
+    {
+      "name": "structured felt fedora hat",
+      "details": "wide brim, dense felt material",
+      "slot": "headwear",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "woven straw tote bag",
+      "details": "leather straps, medium size, sturdy raffia weave",
+      "slot": "bag",
+      "color_hex": "#E8DCD0",
+      "worn": true
+    }
+  ]
+}
