@@ -1,0 +1,55 @@
+── ПРОМПТ (7534 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Укорочений піджак блакитний · kind code: blazer · colour code: light_blue · about it: text н=1
+2 — Сірі джинси звуженого крою з вишивкою · kind code: jeans · colour code: grey · about it: text н=2
+3 — Шарф кашемір однотонний синій · kind code: scarf_generic · colour code: blue · about it: text н=3
+4 — Пасок базовий 2 крем · kind code: belt · colour code: creamy · about it: text н=4
+5 — Сірі замшеві кеди · kind code: plimsolls · colour code: grey · about it: text н=5
+6 — Сумка жіноча, ATTICO, екошкіра/текстиль, колір темно-синій · kind code: bag_generic · colour code: blue · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: blue — синій; creamy — кремовий; grey — сірий; light_blue — блакитний.
+
+ТЕКСТИ:
+{
+"1": "This light blue blazer and skirt set is made from a textured fabric that catches the daylight. The cut features structured shoulders, a double-breasted front with two buttons, and pockets at the hip.",
+"2": "These grey jeans have a skinny fit that tapers down to the ankle. The denim has a dark wash with subtle distressing on the thighs and knees for an effortless look.",
+"3": "The royal blue cashmere scarf is draped loosely around your neck, its long fringe hanging freely past your hips to soften the lines of the blazer.",
+"4": "This creamy belt features a rectangular silver buckle and a thin strap that sits flat against the skirt without adding bulk to your waistline.",
+"5": "The light grey suede plimsolls have white laces and a clean rubber sole. The material is soft to the touch, matching the casual vibe of your walk.",
+"6": "This navy blue bag is crafted from durable canvas with two tan leather handles and a detachable shoulder strap. Two white stripes run horizontally across the front pocket for a sporty accent.",
+"7": "You are dressed in a light blue blazer and skirt set that defines your silhouette with its tailored shape. Underneath, grey skinny jeans create a vertical line from your waist down to your ankles. A vibrant royal blue cashmere scarf adds a soft touch around your neck. A creamy belt cinches the waist of the skirt to highlight your figure. You wear light grey suede plimsolls for comfort and style. Finally, a navy blue tote with tan leather handles carries your day's essentials.",
+"8": "Wear the blazer over the jeans if you plan to walk far, letting the jacket protect you from the autumn air while keeping your look sharp.",
+"9": "Сірі замшеві кеди — I replaced the missing shoes with these grey suede loafers instead of white ones to match the cool tone of your skin and the blue top, creating a more cohesive outfit for autumn.",
+"10": "Сірі замшеві кеди — The high cut of these grey loafers near your skin creates a cool, fresh contrast that energizes your autumn look, turning what could be a harsh break into a deliberate, stylish highlight that suits your complexion."
+}
+
+── ВІДПОВІДЬ (2205 симв., 42.2 с, HTTP 200) ──
+```json
+{
+"1": "Цей блакитний піджак і спідниця зроблені з текстурованої тканини, яка ловить сонячне світло. Крій має структуровані плечі, двобортну передню частину з двома ґудзиками та кишені на стегнах.",
+"2": "Ці сірі джинси мають вузький крій, який звужується до щиколотки. Денім має темний відтінок із ледь помітним потертим ефектом на стегнах і колінах для невимушеного вигляду.",
+"3": "Королівсько-синій кашеміровий шарф вільно драпірується навколо твоєї шиї, його довгі бахрома звисають донизу від твоїх стегон, пом’якшуючи лінії піджака.",
+"4": "Цей кремовий пасок має прямокутну срібну пряжку та тонкий ремінець, який щільно прилягає до спідниці без зайвого об’єму в області твоєї талії.",
+"5": "Світло-сірі замшеві кеди мають білі шнурки та чисту гумову підошву. Матеріал м’який на дотик, що відповідає невимушеній атмосфері твоєї прогулянки.",
+"6": "Ця темно-синя сумка виготовлена з міцного полотна з двома ручками з коричневої шкіри та регульованим плечовим ремінцем. Дві білі смужки горизонтально проходять через передню кишеню для спортивного акценту.",
+"7": "Ти одягнена в блакитний піджак і спідницю, які чітко окреслюють твою фігуру своїм елегантним кроєм. Під ними сірі вузькі джинси створюють вертикальну лінію від твоєї талії до щиколоток. Яскраво-синій кашеміровий шарф додає м’якого акценту навколо твоєї шиї. Кремовий пасок підкреслює твою талію на спідниці, виділяючи фігуру. Ти носиш світло-сірі замшеві кеди для комфорту й стилю. Насамкінець, темно-синя сумка з ручками з коричневої шкіри містить усі необхідні речі.",
+"8": "Одягни піджак поверх джинсів, якщо плануєш довго гуляти, дозволяючи йому захистити тебе від осіннього повітря та зберігаючи твій образ стильним.",
+"9": "Сірі замшеві лофери — Я замінила відсутнє взуття цими сірими замшевими лоферами замість білих, щоб вони гармоніювали з прохолодним тоном твоєї шкіри та синьою блузкою, створюючи більш цілісний осінній образ.",
+"10": "Сірі замшеві лофери — Високий крій цих сірих лоферів біля твоєї шкіри створює прохолодний і свіжий контраст, який додає енергії твоєму осінньому образу. Він перетворює те, що могло б бути різким розривом, на навмисний стильний акцент, який підходить до твого кольору обличчя."
+}
+```
