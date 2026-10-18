@@ -4912,7 +4912,7 @@ function підсумокМоделі(){
   const булаКандидатом = ід => стор.evaluate(async ід => {
     const жереб = Math.random; Math.random = () => 0.5;
     try {
-      const р = await містП('запити', Object.assign({}, вхідМостаП(), {не_ця: [], бюджет_символів: 1e9}));
+      const р = await містП('запити', Object.assign({}, вхідМостаП(), {не_ця: [], бюджет_символів: 1e9, пакети: 1}));
       if (Object.values(р.кандидати || {}).some(пул => (пул || []).some(x => x && x.id === ід))) return true;
       const рядок = ((ЗБ.діагноз || []).filter(x => /^pool · cuts=/.test(x)).pop() || '').replace(/^pool · cuts=/, '');
       const справжня = {};
