@@ -1,0 +1,43 @@
+const fs=require('fs'), path=require('path'), cp=require('child_process'), assert=require('assert');
+const {chromium}=require('playwright'), root=process.cwd(), source=path.join(root,'джерела');
+const h=require(path.join(source,'показ_шаблон.js'));
+let html=process.argv[2] ? fs.readFileSync(path.resolve(process.argv[2]),'utf8') : h.підставитиШаблон(fs.readFileSync(path.join(source,'показ.html'),'utf8'),{__МОДУЛІ_ПОКАЗУ__:'ЗАГЛУШКА',__ЗБІРКА_ПОКАЗУ__:'target-2.8-Б',__ВІДБИТОК__:'target',__ФІД_ПОКАЗУ__:'target.xml',__КАТАЛОГ_ПОКАЗУ__:'цільова проба без каталогу',__ДОВІДНИК_ПОКАЗУ__:h.прочитатиДовідникJSON(source)});
+html=html.replace(/<script[^>]+src=[^>]+><\/script>/g,'');
+const a=html.indexOf('async function містП(ім, дані){'), b=html.indexOf('\n}',a)+2;
+html=html.slice(0,a)+`async function містП(ім, дані){
+ if (ім !== 'стан_сценарію') throw new Error('заборонений виклик '+ім);
+ if (window._hold) return new Promise(resolve=>(window._pending ||= []).push({дані,resolve}));
+ return window._pure(дані);
+}`+html.slice(b);
+(async()=>{
+ const browser=await chromium.launch({executablePath:process.env.CHROMIUM,headless:true,args:['--no-sandbox']});
+ const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];
+ page.on('pageerror',e=>errors.push(String(e)));
+ await page.exposeFunction('_pure',d=>JSON.parse(cp.execFileSync('python3',['-c','import sys,bridge; print(bridge.виклик("стан_сценарію",sys.stdin.read()))'],{cwd:source,input:JSON.stringify(d),encoding:'utf8'})));
+ await page.route('**/*',route=>route.request().isNavigationRequest()?route.fulfill({contentType:'text/html',body:html}):route.abort());
+ await page.goto('http://127.0.0.1:29998/');
+ await page.waitForFunction(()=>document.getElementById('зб-картка').style.display!=='');
+ const results=await page.evaluate(async()=>{
+  const $=id=>document.getElementById(id), facts=[];
+  режим('сценарій'); ПАСПОРТ_П=null; ОПАДИ_РУКОЮ_П=false;
+  for(const id of ['сц-нагода','сц-місце','сц-дрес','сц-опади']) $(id).value='';
+  let r=await запитатиСтанСценаріюП(); facts.push(['порожній',r.є_сценарій===false&&!$('зб-питання').hidden]);
+  ПАСПОРТ_П={ошатність:[1,2]};r=await запитатиСтанСценаріюП();facts.push(['лише ошатність',r.є_сценарій&&$('зб-питання').hidden]);
+  ПАСПОРТ_П={нагода:'робота',опади:'sleet'};ВИПАДОК_ЗМІНЕНО_П=false;ОПАДИ_РУКОЮ_П=false;
+  $('сц-нагода').value='робота';r=await запитатиСтанСценаріюП();facts.push(['паспортний sleet',r.код_плитки_опадів==='дощ']);
+  $('сц-нагода').value='побачення';ВИПАДОК_ЗМІНЕНО_П=true;r=await запитатиСтанСценаріюП();facts.push(['лише нагода',!ОПАДИ_РУКОЮ_П&&r.код_плитки_опадів==='дощ']);
+  рукаТоркнуласьП('сц-опади');r=await запитатиСтанСценаріюП();facts.push(['дотик того самого',ОПАДИ_РУКОЮ_П&&r.код_плитки_опадів==='дощ']);
+  const saved=станСценарію();ОПАДИ_РУКОЮ_П=false;застосуватиСценарій(saved);facts.push(['збережено дотик',ОПАДИ_РУКОЮ_П]);
+  ПАСПОРТ_П=null;window._hold=true;window._pending=[];$('сц-опади').value='сніг';
+  const old=запитатиСтанСценаріюП();малюватиПитанняНагодиП();facts.push(['готовність не порожнеча',чиннийСтанСценаріюП()===null&&$('зб-питання').hidden]);$('сц-опади').value='дощ';const fresh=запитатиСтанСценаріюП();
+  const [p0,p1]=window._pending;p1.resolve(await window._pure(p1.дані));await fresh;
+  p0.resolve(await window._pure(p0.дані));const stale=await old;window._hold=false;
+  facts.push(['stale відкинуто',stale===null&&$('сц-опади').value==='дощ'&&чиннийСтанСценаріюП().код_плитки_опадів==='дощ']);
+  facts.push(['бюджет Python',чиннийСтанСценаріюП().застосований_бюджет===43400&&!('бюджет_токенів' in вхідМостаП())]);
+  return facts;
+ });
+ assert(results.every(x=>x[1]),JSON.stringify(results));assert.deepEqual(errors,[]);
+ if(process.env.ЗНІМОК) await page.screenshot({path:path.resolve(process.env.ЗНІМОК),fullPage:false});
+ console.log(JSON.stringify({походження:(process.argv[2]?'артефакт '+process.argv[2]:'шаблон гілки Б')+', справжній Chromium 390×844, міст стану → CPython цього checkout; без моделей/каталогу',results,errors},null,2));
+ await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});
