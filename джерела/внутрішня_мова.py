@@ -21,6 +21,7 @@
 """
 import json as _json_
 import os
+from реєстр_правил import INTENT as _НАМІРИ
 
 UNKNOWN = "unknown"
 ВЕРСІЯ = "lyusterko-internal-v1"
@@ -189,7 +190,7 @@ def невідомо(v, коди=()):
     # +1 °C: ЖИВІ-13 №8 (−15 °C, сніг; число загублене) — сукня + бомбер без шапки лише двома
     # репліками. −10 — середина звичного «морозу» (−5…−15); градусів вона й далі не читає.
     "weather_feel": {"frost": -10.0, "cold": 2.0, "cool": 10.0, "warm": 20.0, "hot": 28.0},
-    "intent": {к: к for к in ("conventional", "statement", "comfort_first", "context_optimal")},
+    "intent": {к: к for к in _НАМІРИ},
     # ── МЕТА — ДВІ ОСІ (рядок 5211, рішення власника 15.10 «3б») ─────────────────────
     # `goal` — лише вісь УВАГИ: тихо (conceal) / звично (flatter) / помітно (express), один вибір.
     # `goal_extra` — «що ще важливо», кілька разом: довша лінія (taller; до 15.10 — четверта мета
@@ -433,6 +434,9 @@ def невідомо(v, коди=()):
     "gloves": "gloves", "tights": "tights", "socks": "socks", "swimsuit": "swimwear",
     "lingerie": "underwear", "ring": "ring", "jewelry_generic": "jewelry"}
 
+
+# Межа відкритості: один об’єкт для паспорта й протоколу; коди — з таблиці вище.
+ЗОНИ_ВЕТО = tuple(ТАБЛИЦЯ["zone"].values())
 
 def ключ(поле, код):
     """Код внутрішньої мови → ключ ядра, або None (unknown, порожньо чи код поза переліком)."""
