@@ -2,8 +2,8 @@
 import importlib, json, os, pathlib, sys, tempfile
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "джерела"))
 from build_байткод import скомпілювати, ПЕРЕВІРКА
-if sys.version_info[:2] != (3, 12):
-    sys.exit("НЕ ПЕРЕВІРЕНО: запустіть цю пробу CPython 3.12")
+if sys.version_info[:3] != (3, 12, 1):
+    sys.exit("НЕ ПЕРЕВІРЕНО: запустіть цю пробу CPython 3.12.1")
 код = b"v = 42\n"; файли = скомпілювати({"проба42.py": код}, sys.executable)
 assert файли == скомпілювати({"проба42.py": код}, sys.executable)
 try:

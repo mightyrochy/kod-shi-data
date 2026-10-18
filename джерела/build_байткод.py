@@ -1,4 +1,4 @@
-"""Байткод повного показу для Python 3.12 у Pyodide 0.26.4.
+"""Байткод повного показу для Python 3.12.1 у Pyodide 0.26.4.
 
 Компілятор окремий від Python збирача; читає рівно запаковані .py, а не локальний __pycache__.
 """
@@ -16,8 +16,8 @@ MAGIC = "cb0d0d0a"
 
 _КОМПІЛЯТОР = r'''
 import base64, importlib.util, json, marshal, sys
-if sys.implementation.name != "cpython" or sys.version_info[:2] != (3, 12):
-    sys.exit("байткод: потрібен CPython 3.12")
+if sys.implementation.name != "cpython" or sys.version_info[:3] != (3, 12, 1):
+    sys.exit("байткод: потрібен CPython 3.12.1")
 if importlib.util.MAGIC_NUMBER.hex() != "cb0d0d0a" or sys.implementation.cache_tag != "cpython-312":
     sys.exit("байткод: несумісний magic або cache_tag")
 модулі = json.load(sys.stdin)
@@ -38,7 +38,8 @@ with open("/показ/байткод.json", encoding="utf-8") as ф:
 _бсум = hashlib.sha256()
 _бпридатних = 0
 _бвідкинуто = []
-_бсумісний = (sys.implementation.cache_tag == _бм["cache_tag"]
+_бсумісний = (sys.version_info[:3] == tuple(_бм["python"])
+                and sys.implementation.cache_tag == _бм["cache_tag"]
                 and importlib.util.MAGIC_NUMBER.hex() == _бм["magic"])
 for _бі, _бмета in sorted(_бм["модулі"].items()):
     _бдж = open("/показ/" + _бі, "rb").read()
@@ -75,9 +76,9 @@ def скомпілювати(модулі, компілятор=None):
     """Повертає свіжі checked-hash .pyc та маніфест SHA для цих самих байтів .py."""
     компілятор = компілятор or os.environ.get("LYUSTERKO_PYC_PYTHON")
     if not компілятор:
-        компілятор = sys.executable if sys.version_info[:2] == (3, 12) else shutil.which("python3.12")
+        компілятор = sys.executable if sys.version_info[:3] == (3, 12, 1) else shutil.which("python3.12")
     if not компілятор:
-        raise RuntimeError("байткод: CPython 3.12 недоступний; задайте LYUSTERKO_PYC_PYTHON")
+        raise RuntimeError("байткод: CPython 3.12.1 недоступний; задайте LYUSTERKO_PYC_PYTHON")
     вхід = {і: base64.b64encode(д).decode("ascii") for і, д in sorted(модулі.items())}
     процес = subprocess.run([компілятор, "-I", "-c", _КОМПІЛЯТОР],
         input=json.dumps(вхід), capture_output=True, text=True, check=False)
@@ -86,7 +87,7 @@ def скомпілювати(модулі, компілятор=None):
     відповідь = json.loads(процес.stdout)
     файли = {і: base64.b64decode(д) for і, д in відповідь["файли"].items()}
     сум = hashlib.sha256()
-    маніфест = {"pyodide": "0.26.4", "magic": MAGIC, "cache_tag": ТЕГ,
+    маніфест = {"pyodide": "0.26.4", "python": [3, 12, 1], "magic": MAGIC, "cache_tag": ТЕГ,
                 "компілятор": відповідь["версія"], "модулі": {}}
     for імя, код in sorted(модулі.items()):
         шлях = "__pycache__/" + імя[:-3] + "." + ТЕГ + ".pyc"
