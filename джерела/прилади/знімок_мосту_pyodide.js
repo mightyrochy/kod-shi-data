@@ -1,10 +1,10 @@
 /* Pyodide 0.26.4 під Node для `знімок_мосту.py` (без браузера): тіло сторінки розпаковується в /показ так само, як це робить
    `підняти_міст_показу`, далі виконується той самий `знімок_мосту.py`, що й під CPython.
-   node знімок_мосту_pyodide.js <index.html> <тека pyodide> <входи.jsonl[.gz]> <тека виходу> [лише N]
+   node знімок_мосту_pyodide.js <index.html> <тека pyodide> <входи.jsonl[.gz]> <тека виходу> [лише N] [математика|множини|обидві]
    Виходи: <тека виходу>/знімок.jsonl, час.json. Мережі нема: `loadPyodide` бере 5 файлів кешу
    (`аудит/проби/стенд_pyodide_кеш.sh`) з диска. */
 const fs = require('fs'), path = require('path'), zlib = require('zlib');
-const [СТОРІНКА, ТЕКА_PYODIDE, ВХОДИ, ВИХІД, ЛИШЕ] = process.argv.slice(2);
+const [СТОРІНКА, ТЕКА_PYODIDE, ВХОДИ, ВИХІД, ЛИШЕ, ПОРТАТИВНА] = process.argv.slice(2);
 
 (async () => {
   const { loadPyodide } = require(path.resolve(ТЕКА_PYODIDE, 'pyodide.js'));
@@ -19,15 +19,16 @@ const [СТОРІНКА, ТЕКА_PYODIDE, ВХОДИ, ВИХІД, ЛИШЕ] = p
   const пд = await loadPyodide({ indexURL: path.resolve(ТЕКА_PYODIDE) + '/' });
   пд.unpackArchive(бін.buffer.slice(бін.byteOffset, бін.byteOffset + бін.byteLength), 'zip', { extractDir: '/показ' });
   пд.FS.writeFile('/tmp/знімок_мосту.py', fs.readFileSync(path.join(__dirname, 'знімок_мосту.py')));
+  пд.FS.writeFile('/tmp/знімок_математика.py', fs.readFileSync(path.join(__dirname, 'знімок_математика.py')));
   пд.FS.writeFile('/tmp/входи.jsonl', входи);
   const підйом_мс = Date.now() - t0;
   const вих = await пд.runPythonAsync(
     'import sys, json\n' +
     'sys.path.insert(0, "/tmp")\n' +
     'import знімок_мосту as З\n' +
-    'З.підготувати("/показ")\n' +
+    'З.підготувати("/показ", ' + (ПОРТАТИВНА ? JSON.stringify(ПОРТАТИВНА) : 'None') + ')\n' +
     'знімок, час = await З.прогнати(open("/tmp/входи.jsonl", encoding="utf-8").read(), ' + (Number(ЛИШЕ) || 'None') + ')\n' +
-    'час.update({"середовище": "pyodide", "версія": sys.version})\n' +
+    'час.update({"середовище": "pyodide", "версія": sys.version, "підміна": "' + (ПОРТАТИВНА || 'нема') + '"})\n' +
     'json.dumps([знімок, час], ensure_ascii=False)\n');
   const [знімок, час] = JSON.parse(вих);
   час.версія_pyodide = пд.version;
