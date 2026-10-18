@@ -1,0 +1,53 @@
+── ПРОМПТ (7297 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Пончо жіноче з напіввовняної пряжі з комірцем демісезонне · kind code: sweater · colour code: black · about it: text н=1
+2 — Коричневий костюм зі штанами з вовни · kind code: suit · colour code: brown
+3 — Лофери жіночі білі · kind code: loafers · colour code: white · about it: text н=2
+4 — Сумка Синя смугаста · kind code: bag_generic · colour code: blue · about it: text н=3
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; blue — синій; brown — коричневий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This black poncho-style sweater features a relaxed fit with a classic polo collar and short sleeves, designed to drape effortlessly over your shoulders. Its soft knit texture contrasts beautifully with the crispness of the white shirt underneath, creating depth without bulk.",
+"2": "These white loafers boast a clean, minimalist silhouette with subtle stitching and a penny detail that adds just enough edge to balance the casual elegance of the outfit. The smooth leather upper complements both the black and brown tones while keeping you comfortable through the evening.",
+"3": "The navy blue crossbody bag features a striking vertical striped pattern in shades of green, teal, and indigo, finished with a solid navy base and gold-tone hardware. Its adjustable strap ensures versatility whether you prefer to carry it across your body or slip it off one shoulder.",
+"4": "You are wearing a black polo-sweater poncho layered over a crisp white shirt, paired with grey pinstripe trousers and classic white loafers. The brown two-piece suit is included in your ensemble to provide structure and warmth as the evening progresses, while the navy blue crossbody bag adds a touch of playful color that anchors the neutral tones.",
+"5": "wear the black poncho open over the white shirt to highlight the layers",
+"6": "let the pinstripes on the trousers add vertical movement to your silhouette",
+"7": "keep the brown suit buttoned or unbuttoned depending on how much you want to emphasize the waist",
+"8": "Пончо жіноче з напіввовняної пряжі з комірцем демісезонне — The relaxed poncho cut softens the waistline without sacrificing warmth, answering the need for comfort.",
+"9": "Коричневий костюм зі штанами з вовни — This two-piece set includes a bodysuit bottom, resolving the 'too few items' blocker and adding structure.",
+"10": "Пончо жіноче з напіввовняної пряжі з комірцем демісезонне, Лофери жіночі білі — Even though this outfit risks being too casual compared to your 'neat' goal, its relaxed texture and warm colors are exactly what you need for dancing comfortably and staying warm in the long evening."
+}
+
+── ВІДПОВІДЬ (2078 симв., 56.6 с, HTTP 200) ──
+```json
+{
+"1": "Цей чорний пончо-светр має вільний крій з класичним коміром поло та короткими рукавами, розроблений так, щоб легко драпіруватися на плечах. Його м’яка трикотажна текстура чудово контрастує зі свіжістю білої сорочки знизу, створюючи глибину без об’ємності.",
+"2": "Ці білі лофери мають чистий мінімалістичний силует з ледь помітним швом і деталями для пенні, які додають достатньо зухвалості, щоб врівноважити невимушену елегантність образу. Гладка шкіряна верхня частина доповнює як чорні, так і коричневі тони, водночас забезпечуючи комфорт протягом вечора.",
+"3": "Синя сумка-кросбоді має вражаючий вертикальний смугастий візерунок у відтінках зеленого, бірюзового та індиго, з однотонною синьою основою та золотистими деталями. Її регульований ремінь забезпечує універсальність, чи хочеш ти носити її через тіло або скинути на одне плече.",
+"4": "Ти вдягнена у чорний пончо-светр з білою сорочкою під ним, поєднаним із сірими штанами в смужку та класичними білими лоферами. Коричневий двобортний костюм включено до твого ансамблю, щоб надати структури й тепла, коли вечір триває, а синя сумка-кросбоді додає нотку грайливого кольору, який підкреслює нейтральні тони.",
+"5": "нось чорне пончо розстебнутим поверх білої сорочки, щоб виділити шари",
+"6": "давай смужкам на штанах додадуть вертикального руху твоєму силуету",
+"7": "застібай або не застібай коричневий костюм залежно від того, як сильно хочеш підкреслити талію",
+"8": "Пончо жіноче з напіввовняної пряжі з комірцем демісезонне — Вільний крій пончо пом’якшує лінію талії без втрати тепла, задовольняючи потребу в комфорті.",
+"9": "Коричневий костюм зі штанами з вовни — Цей двобортний комплект включає комбінезон-низ, вирішуючи проблему «занадто мало речей» і додаючи структури.",
+"10": "Пончо жіноче з напіввовняної пряжі з комірцем демісезонне, Лофери жіночі білі — Хоча цей образ ризикує бути занадто повсякденним порівняно з твоєю метою «охайний», його розслаблена текстура та теплі кольори саме те, що тобі потрібно для комфортного танцювання й збереження тепла протягом довгого вечора."
+}
+```

@@ -1,0 +1,54 @@
+── ПРОМПТ (7534 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Топ «Selva» шоколадний · kind code: t_shirt · colour code: chocolate · about it: text н=1
+2 — Костюм піджак з акцентними плечима та штани прямі синій · kind code: suit · colour code: blue · about it: text н=2
+3 — Сережки Silver Heart · kind code: jewelry_generic · colour code: silvery · about it: text н=3
+4 — Балетки жіночі, ATTICO, замша, колір темно-коричневий · kind code: ballet_flats · colour code: brown · about it: text н=4
+5 — Сумка Синя · kind code: bag_generic · colour code: blue · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: blue — синій; brown — коричневий; chocolate — шоколадний; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This chocolate silk slip top features thin adjustable straps, a square neckline, and a dramatic wide hem that flows over your hips and trousers. Its smooth fabric catches the light gently while its length adds a touch of elegance without overwhelming your figure.",
+"2": "The navy suit jacket has structured shoulders and clean lines, paired with matching straight-leg trousers that fall to just above the ankle. The set comes together in one deep blue tone that balances the rich chocolate tones of your top and shoes.",
+"3": "These silver heart earrings feature a small hoop with a dangling heart charm that catches the light softly against your skin, adding just enough sparkle without overpowering your look.",
+"4": "Your dark brown ballet flats are crafted from soft suede with two wide straps across the top, providing both comfort and understated elegance for an evening out.",
+"5": "This blue crossbody bag features a vibrant geometric embroidery pattern surrounded by solid blue fabric panels and a matching adjustable strap, bringing playful color to your outfit while remaining easy to carry during celebrations.",
+"6": "You have a chocolate silk slip top with flowing drape over dark trousers that fall to just above the ankle, paired with a navy suit jacket and matching straight-leg pants, finished with deep brown ballet flats and silver heart earrings. A blue bag with a colorful embroidered pattern adds a cheerful contrast to your rich palette.",
+"7": "Let the top's long hem drape freely over your trousers without tucking it in to keep the silhouette soft and relaxed.",
+"8": "Wear the navy blazer slightly open at the front to let the red knit underneath peek through for warmth and color.",
+"9": "Carry the blue bag across the body or on one shoulder so the strap sits comfortably against your side.",
+"10": "Топ «Selva» шоколадний, Костюм піджак з акцентними плечима та штани прямі синій, Балетки жіночі, ATTICO, замша, колір темно-коричневий — The gate about leveling off the occasion is accepted because the goal is to be seen comfortably seated; the vertical line of chocolate and black ensures you are flattering without being over-dressed for a friendly birthday dinner."
+}
+
+── ВІДПОВІДЬ (2313 симв., 50.4 с, HTTP 200) ──
+```json
+{
+"1": "Цей шоколадний шовковий топ-комбінація має тонкі регульовані бретельки, квадратне декольте та драматичний широкий поділ, який спадає на твої стегна і штани. Його гладка тканина ніжно відбиває світло, а довжина додає нотку елегантності без того, щоб перевантажувати твою фігуру.",
+"2": "Синій піджак костюма має структуровані плечі та чисті лінії в парі з відповідними прямими брюками, які закінчуються трохи вище щиколотки. Цей комплект поєднується в один глибокий синій тон, який гармонійно доповнює насичені шоколадні відтінки твого топу і туфель.",
+"3": "Ці срібні сережки-сердечка мають маленький обруч з підвіскою у вигляді сердечка, яка ніжно ловить світло на твоїй шкірі, додаючи достатньо блиску без того, щоб перевантажувати твій образ.",
+"4": "Твої темно-коричневі балетки виготовлені з м’якої замші та мають дві широкі стрічки зверху, що забезпечують комфорт і стриману елегантність для вечора на вулиці.",
+"5": "Ця синя сумка через плече має яскравий геометричний візерунок вишивки, оточений панелями з однотонної синьої тканини та регульованим ремінцем, що додає грайливого кольору до твого вбрання і при цьому залишається зручною для носіння під час святкувань.",
+"6": "У тебе шоколадний шовковий топ-комбінація з розслабленим драпіруванням на брюках, які закінчуються трохи вище щиколотки, у парі з синім піджаком костюма та відповідними прямими штанами, доповнених темно-коричневими балетками і срібними сережками-сердечками. Синя сумка з кольоровим візерунком вишивки додає веселий контраст твоєї насиченій палітрі.",
+"7": "Дай подолу топу вільно спадати на твої штани, не заправляючи його всередину, щоб зберегти силует м’яким і розслабленим.",
+"8": "Одягни синій піджак трохи відкритим спереду, щоб показати червоний трикотаж знизу для тепла та кольору.",
+"9": "Носи синю сумку через тіло або на одному плечі так, щоб ремінець зручно прилягав до твого боку.",
+"10": "Топ «Selva» шоколадний, Костюм піджак з акцентними плечима та штани прямі синій, Балетки жіночі, ATTICO, замша, колір темно-коричневий — Мета щодо вирівнювання випадку прийнята, оскільки мета полягає в тому, щоб тебе бачили зручно сидячою; вертикальна лінія шоколадного і чорного кольорів гарантує, що ти маєш чудовий вигляд без того, щоб бути надто одягненою для дружньої вечері з нагоди дня народження."
+}
+```
