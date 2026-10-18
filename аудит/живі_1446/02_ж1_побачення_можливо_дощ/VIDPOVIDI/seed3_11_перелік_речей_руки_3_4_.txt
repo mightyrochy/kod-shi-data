@@ -1,0 +1,44 @@
+── ПРОМПТ (2488 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend blazer, structured lapel cut, knee-length, charcoal grey (#36454F), heavy tweed fabric.\nSilk chiffon blouse, relaxed fit collar, hip-length, ivory white (#FFFFF0), fluid satin fabric.\nHigh-waisted wide-leg trousers, tapered ankle hem, calf-length, deep olive green (#3B4D39), stretch wool fabric.\nLeather block-heel pumps, pointed toe cut, mid-calf height, burgundy red (#800020), smooth calfskin fabric.\nGold hoop earrings, medium-width circular cut, earlobe length, rose gold hue (#B76E79), polished metal alloy.\nWhy this outfit works: This ensemble strikes the perfect balance between neat sophistication and romantic warmth for an autumn evening date at a casual restaurant. The structured charcoal blazer provides instant elegance while the rich olive trousers add a stylish, grounded touch suitable for potential rain or cooler air. Deep jewel tones like burgundy and olive harmonize beautifully with artificial restaurant lighting without appearing overly severe. Completing the look with a flowing ivory silk blouse and gold accessories ensures you feel both refined and effortlessly chic for your special occasion."}
+
+── ВІДПОВІДЬ (901 симв., 85.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured lapel cut, knee-length",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed fit collar, hip-length",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg, tapered ankle hem, calf-length",
+      "slot": "bottom",
+      "color_hex": "#3B4D39",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "block-heel, pointed toe cut, mid-calf height",
+      "slot": "shoes",
+      "color_hex": "#800020",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "medium-width circular cut, earlobe length",
+      "slot": "earrings",
+      "color_hex": "#B76E79",
+      "worn": true
+    }
+  ]
+}

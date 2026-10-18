@@ -1,0 +1,37 @@
+── ПРОМПТ (2251 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet blazer in deep emerald green (#0a3d32), structured fit with notched lapel, knee-length, wool blend.\nSilk-blend sheath dress in midnight blue (#051732), A-line silhouette that skims the hips, mid-calf length, satin finish.\nAnkle boots in polished black leather (#000000), sleek point-toe design with a 7cm heel.\nGold-plated drop earrings with pearl accents (#FFD700).\nThis ensemble strikes the perfect balance between your requested neat and formal dress codes for an autumn evening date at a casual restaurant. The rich velvet blazer provides necessary warmth against possible rain while adding texture that stands out under artificial lighting, paired with a sleek sheath dress that ensures you feel both refined and comfortable. The deep emerald and midnight blue tones complement your warm skin undertones, creating a sophisticated yet approachable look ideal for conversation and dining."}
+
+── ВІДПОВІДЬ (822 симв., 83.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "velvet blazer",
+      "details": "structured fit with notched lapel, knee-length, wool blend",
+      "slot": "outerwear",
+      "color_hex": "#0a3d32",
+      "worn": true
+    },
+    {
+      "name": "silk-blend sheath dress",
+      "details": "A-line silhouette that skims the hips, mid-calf length, satin finish",
+      "slot": "dress",
+      "color_hex": "#051732",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "sleek point-toe design with a 7cm heel, polished black leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "drop earrings",
+      "details": "gold-plated with pearl accents",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}
