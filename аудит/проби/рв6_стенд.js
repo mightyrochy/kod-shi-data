@@ -41,6 +41,8 @@ for (const к of Object.keys(process.env)){
   if (/[\r\n]+$/.test(v)) process.env[к] = v.replace(/[\r\n]+$/, '');
 }
 /* SLABKA=<форма,…> — слабка модель поверх заглушки (рядок 208, `слабка_модель.js`) */
+/* Короткий прохід чотирьох сімей: без збирання образів, які не належать цій сцені. */
+if (process.env.DO === 'produkt') for (const ключ of ['PRODUKT', 'OTSINKA_PRAVKA', 'FOTO_STEND']) process.env[ключ] = '1';
 const СЛАБКА = require(path.join(__dirname, 'слабка_модель.js'));
 /* CHASY=1 / ZATRYMKA=… — годинник збору (наряд Ш-1, `часи_збору.js`); без них — як доти */
 const ЧАСИ = require(path.join(__dirname, 'часи_збору.js'));
@@ -92,6 +94,7 @@ let провалів = 0;
                      ZNIMKY знімає екран відмови замість картки;
      VIDMOVA=1|pryklad — рука 4 відповідає відмовою (рядок 6065): перелік каже `is_outfit` no (1) чи дає прозу з
                      прикладом JSON без коду (pryklad); картки з відмовою — 0, у звіті `description_not_outfit`;
+     DO=produkt   — профілі, сценарії, помада, фото в чаті й правка оцінки; без збору образів;
      PRODUKT=1    — профілі, збережені сценарії та помада через наявний інтерфейс (крок 9 оцінки показу);
      OTSINKA_PRAVKA=1 — редактор, кружечок, дотик по фото й виправлення словами перед «Так» у сцені 6;
      FOTO_STEND=1 — намальоване фото речі в чаті тим самим входом, що FOTO_RECHI (без файлу ззовні);
@@ -1653,8 +1656,17 @@ function відповісти(текст) {
     for (const [, к, о] of текст.matchAll(/^- ([a-z_]+) — ([^\n]+?)\.$/gm)) визнЗаяв[к] = о;
     const вердикти = (р.item_verdicts || []).map(в => {
       const кодиЗн = кодиЗПромпта(текст);
-      const тіло = ((в.verdict || {}).statements || []).map(з => заявоюСловами(з, визнЗаяв, кодиЗн)).join('; ');
-      return (в.item ? '«' + в.item.free_text + '» — ' : '') + тіло + '.';
+      /* Намальована червона сукня: заглушка перекладає заяви цього кадру українською,
+         інакше сторож закономірно знімає англійські визначення разом із вердиктом. */
+      const перекладФото = process.env.FOTO_STEND === '1' ? {
+        item_suits_with_condition: 'з умовою',
+        colour_outside_palette_near_face: 'колір біля обличчя поза палітрою',
+        item_contrast_higher_near_face: 'контраст біля обличчя вищий за твій'} : {};
+      const тіло = ((в.verdict || {}).statements || []).map(з => перекладФото[з.code]
+        || заявоюСловами(з, визнЗаяв, кодиЗн)).join('; ');
+      const назва = process.env.FOTO_STEND === '1' ? ((ТАБЛИЦЯ_ВМ.slot || {})[в.slot] || 'Річ')
+        : (в.item || {}).free_text;
+      return (назва ? '«' + назва + '» — ' : '') + тіло + '.';
     });
     const рядки = ['Записала.'].concat(додано, вердикти, р.answer ? [українськоюВідповіді(р.answer.free_text) || р.answer.free_text] : [],
       /* Ч-5: подію вона вже назвала (`event_place`) — сумлінна перекладачка її не перепитує */
@@ -3630,7 +3642,7 @@ function підсумокМоделі(){
      означає (моя перша редакція цієї звірки на цьому й помилилась, давши
      «мінус 92 px» там, де накриття нема). Тому зазор звіряється лише коли панель
      справді `fixed` і на всю ширину. */
-  const запас = await стор.evaluate(async () => {
+  const запас = await стор.evaluate(async ФОТО_СЦЕНА => {
     const кадр = () => new Promise(р => requestAnimationFrame(() => requestAnimationFrame(р)));
     window.scrollTo(0, document.documentElement.scrollHeight);
     await кадр();
@@ -3647,6 +3659,8 @@ function підсумокМоделі(){
     await кадр();
     const к = document.getElementById('зб-зібрати'), п = document.getElementById('ніг');
     if (!к || !п) return null;
+    /* З фото стрічка вища за вікно: перевіряємо палець на видимій кнопці, як під час click(). */
+    if (ФОТО_СЦЕНА){ к.scrollIntoView({block: 'center'}); await кадр(); }
     const рк = к.getBoundingClientRect(), рп = п.getBoundingClientRect();
     const поз = getComputedStyle(п).position;
     const наКнопці = е => !!(е && (е === к || к.contains(е)));
@@ -3657,7 +3671,7 @@ function підсумокМоделі(){
             запас_px: Math.round(рп.top - рк.bottom), панель_висота: Math.round(рп.height),
             відступ_body: document.body.style.paddingBottom || '(нема)',
             вікно: window.innerHeight, прокрутка: Math.round(window.scrollY)};
-  });
+  }, process.env.FOTO_STEND === '1');
   console.log('\n1е. чи можна натиснути «Зібрати образи» (рядок 183):', JSON.stringify(запас));
   ф('«Зібрати образи» відкрита для дотику: у точці пальця — сама кнопка, а не панель (рядок 183)',
     !!запас && запас.під_пальцем_кнопка && запас.під_нижнім_краєм, запас);
@@ -3667,6 +3681,11 @@ function підсумокМоделі(){
   /* Знімок ВІКНА саме в цю мить: сторінку прокручено до низу, і на ньому видно
      те, про що рядок 183, — чи кнопка стоїть над панеллю, чи під нею. */
   await знімок('scenarii_knopka_nad_panelliu', null, true);
+  if (process.env.DO === 'produkt'){
+    await сцена6();
+    console.log('\n' + (провалів ? 'ВПАЛО ' + провалів : 'СЦЕНИ ПРОДУКТУ: зелені'));
+    await браузер.close(); process.exit(провалів ? 1 : 0);
+  }
   await ЧАСИ.обгорнути(стор);
   /* ── ЕКРАН ЗБИРАННЯ СЛОВАМИ, НА КОЖНІЙ ЗМІНІ (наряд Ч-11, рядок 222) ───────
      Стадія над карткою живе кілька секунд між викликами моделі, і 30-секундний
