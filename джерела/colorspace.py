@@ -149,14 +149,14 @@ from колір_простір_перетворення import (SPACES, _f, _fi,
     _BRADFORD_ОБЕРНЕНА, адаптувати_освітлювач, lch, hx, de00, soft)
 from колір_простір_стеля import (_ГЛАДКІ, тканинна_пара, de00_тканина, _КЕШ_C_MAX, c_max,
     _POINTER_ВУЗЛИ_C, _вузли_pointer_d65, _POINTER_ВУЗЛИ, _ФАНТОМНА_ЗОНА, c_max_поверхня,
-    у_фантомній_зоні, same_colour, _ШКІРА_L_СВІТЛА, _ШКІРА_L_ТЕМНА, _ШКІРА_МНОЖНИК_ТЕМНОЇ,
+    у_фантомній_зоні, _ШКІРА_L_СВІТЛА, _ШКІРА_L_ТЕМНА, _ШКІРА_МНОЖНИК_ТЕМНОЇ,
     допуск_шкіри)
 from колір_простір_шкіра import (hair_photo_uncertainty, skin_photo_uncertainty, ita, ita_band,
     ITA_BANDS, ITA_DOMAIN, _норм_cdf, _σ_lab_з_σ_ita, ita_band_mass, skin_pos, L_from_ht, ht_from_L,
     ACHROMATIC_C, ЦЕНТР_ПІДТОНУ, РОЗКИД_ПІДТОНУ, КАСТ_ББ, ПОПУЛЯЦІЯ_ПІДТОНУ, МЕЖА_КЛАСУ_ПІДТОНУ,
     вісь_підтону_двостороння, HAIR_NEUTRAL_AB, achromatic, hair_cast, describe)
 from колір_простір_індукція import (_ПІК_ІНДУКЦІЇ, огинаюча_індукції, _КІРШМАН_ШИРИНА, тон,
-    атенюація_L, тиск_тону, _ДИФУЗНІ, _ДЗЕРКАЛЬНІ, взаємовідбиття)
+    атенюація_L, тиск_тону)
 from колір_простір_надійність import (AXIS_RELIABILITY, MIN_TO_EMIT, reliability, _КОНТРАСТ_ШУМ_L,
     _КОНТРАСТ_ШУМ_ЧАСТКА, похибка_контрасту, надійність_контрасту, gate_conclusions,
     extraction_sanity)
