@@ -1,0 +1,59 @@
+── ПРОМПТ (8352 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лонгслів чорний · kind code: longsleeve · colour code: black · about it: text н=1
+2 — Сукня балон трикотажна · kind code: dress_generic · colour code: black · about it: text н=2
+3 — LeBERDES Чоботи осінні бежеві · kind code: boots · colour code: beige · about it: text н=3
+4 — Пасок Базовий червоний · kind code: belt · colour code: red · about it: text н=4
+5 — Сумка жіноча, ATTICO, екошкіра, колір рудий · kind code: bag_generic · colour code: ginger · about it: text н=5
+6 — Довге зимове пальто з коричневої екошкіри · kind code: coat · colour code: brown · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; ginger — рудий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a slim, ribbed black long-sleeve top with a classic round neck. Its close fit and vertical drape elongate your frame while keeping you warm without bulk—perfect for layering under the coat or wearing on its own in warmer office spaces.",
+"2": "A structured black mini dress with a square neckline and balloon silhouette. The gathered waist and flowing skirt add gentle movement without overwhelming your form—ideal for layering over leggings or shorts when temperatures drop, or as a polished piece under the coat for meetings.",
+"3": "Beige knee-high boots with a chunky lug sole and smooth leather finish. Their height extends your leg line elegantly while their sturdy tread handles snow and road salt effortlessly—a quiet power move for any autumn outing.",
+"4": "A wide, structured red belt with a polished buckle that cinches exactly at your natural waist. The vibrant hue adds instant polish and defines your shape against neutral tones—wear it over the black top or dress to anchor the outfit’s silhouette.",
+"5": "A soft-structured ginger bag in eco-leather with clean lines and minimal hardware. Its rich, earthy tone bridges your neutrals while offering enough depth to carry essentials for a full day without weighing you down.",
+"6": "A belted, knee-length brown coat in matte eco-leather with an oversized collar and relaxed drape. The belt creates a clear waistline even on its own, while the length and volume balance your proportions beautifully—just raise the collar for extra warmth when stepping out into the snow.",
+"7": "We chose a sleek black long-sleeve top as your foundation, layered under a structured brown coat for warmth. The black balloon mini dress is surprisingly versatile—it can stand alone or act as a statement layer, depending on how you want to feel today. I paired your look with beige over-the-knee boots and a bold red belt to cinch the silhouette without adding bulk, creating an instant waistline that complements your figure perfectly.",
+"8": "When the snow settles, tuck the black top into your high-waisted bottoms or let it rest just above the waistband for a relaxed office vibe—either way, the red belt keeps your silhouette defined.",
+"9": "At your meeting, button the brown coat fully and raise the collar to create a clean vertical line that draws attention upward to your face.",
+"10": "Carry your ginger bag across the body or hold it by the handle depending on how much freedom you need for signing documents.",
+"11": "Лонгслів чорний — The fitted long sleeve is chosen over a looser knit to emphasize the waist line defined by the belt of the coat or a separate belt, helping to maintain the X shape silhouette despite the volume of the outer layers.",
+"12": "Лонгслів чорний — The fitted long sleeve is selected to maintain the sleek line of the monochrome outfit, avoiding any breaks in color that would disrupt the visual continuity essential for flattering her figure type."
+}
+
+── ВІДПОВІДЬ (2950 симв., 54.6 с, HTTP 200) ──
+```json
+{
+"1": "Це облягаючий ребристий лонгслів чорного кольору з класичним круглим вирізом. Його щільна посадка та вертикальний крій видовжують твою фігуру, зберігаючи тепло без зайвого об’єму — ідеально для носіння під пальта або самостійно в тепліших офісних приміщеннях.",
+"2": "Структурована чорна мінісукня з квадратним вирізом та силуетом балон. Зібрана талія та розвіваючий спід додають ніжного руху, не перевантажуючи твою фігуру — ідеально для носіння поверх лосин або шортів у холодну погоду, або як елегантний предмет під пальто на зустрічі.",
+"3": "Бежеві ботфорти з масивною тракторною підошвою та гладкою шкіряною обробкою. Їх висота витончено подовжує лінію ніг, а міцна підошва без зусиль справляється зі снігом і сіллю — тихий прояв сили для будь-якої осінньої прогулянки.",
+"4": "Широкий структурований червоний пасок з полірованою пряжкою, який точно підкреслює твою талію. Яскравий відтінок миттєво додає елегантності та окреслює твою фігуру на нейтральних тонах — носи його поверх чорного верху або сукні, щоб закріпити силует образу.",
+"5": "М’яка сумка рудого кольору з екошкіри з чистими лініями та мінімальною фурнітурою. Її насичений землистий тон поєднує твої нейтральні відтінки, пропонуючи достатньо глибини для перенесення необхідних речей на цілий день без зайвого обтяження.",
+"6": "Подовжене коричневе пальто з екошкіри матового кольору з великим коміром та вільним кроєм. Пасок створює чітку лінію талії навіть самостійно, а довжина та об’єм гармонійно балансують твої пропорції — просто підніми комір для додаткового тепла на вулиці.",
+"7": "Ми обрали елегантний чорний лонгслів як основу, який одягли під структуроване коричневе пальто для тепла. Чорна мінісукня-балон дивовижно універсальна — вона може носитися самостійно або слугувати виразним шаром залежно від того, як ти хочеш почуватися сьогодні. Я доповнила твій образ бежевими ботфортами та сміливим червоним паском, щоб підкреслити силует без зайвого об’єму, створюючи миттєву лінію талії, яка ідеально доповнює твою фігуру.",
+"8": "Коли випаде сніг, заправ чорний лонгслів у високі штани або залиши його трохи вище лінії талії для невимушеної атмосфери в офісі — у будь-якому випадку червоний пасок підкреслить твій силует.",
+"9": "На зустрічі повністю застебни коричневе пальто і підніми комір, щоб створити чисту вертикальну лінію, яка привертає увагу до обличчя.",
+"10": "Носи руду сумку через тіло або тримай її за ручку залежно від того, скільки свободи тобі потрібно для підписання документів.",
+"11": "Лонгслів чорний — Приталений рукав обрано замість вільнішого трикотажу, щоб підкреслити лінію талії, визначену паском пальто або окремим поясом, допомагаючи зберегти силует у формі X попри об’єм верхніх шарів.",
+"12": "Лонгслів чорний — Приталений рукав обрано для підтримки елегантної лінії монохромного образу, уникаючи будь-яких розривів кольору, які могли б порушити візуальну цілісність, необхідну для підкреслення її типу фігури."
+}
+```
