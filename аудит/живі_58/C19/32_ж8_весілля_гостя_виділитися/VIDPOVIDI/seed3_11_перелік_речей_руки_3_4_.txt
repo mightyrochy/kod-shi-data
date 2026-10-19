@@ -1,0 +1,37 @@
+── ПРОМПТ (2494 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Linen blend blazer with wide lapels in a deep emerald green (#053e32) featuring a structured shoulder and a cropped hem that hits at the hip.\nTailored silk-blend trousers in a matching dark teal (#004d4a) with a slim, high-waisted cut that flares gently to the ankle.\nStrappy satin sandals in black (#000000) with a low heel and thin metallic chain detailing across the instep.\nPearl drop earrings set in gold vermeil (#ffd700) with a length of two centimeters.\n\nThis outfit perfectly balances the smart-to-formal range you requested while ensuring you are remembered on your sister's wedding day. The rich emerald and teal tones provide a striking, memorable contrast against typical white or cream wedding attire, fulfilling your wish to stand out without being overpowering. The natural breathability of the linen and silk fabrics keeps you comfortable during the outdoor ceremony in August before transitioning seamlessly to the elegant restaurant setting. The cropped blazer adds a modern, youthful touch that prevents the look from feeling too heavy for summer evening wear while maintaining the necessary refinement for the occasion."}
+
+── ВІДПОВІДЬ (876 симв., 190.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "linen blend with wide lapels, structured shoulder, and cropped hem hitting at the hip",
+      "slot": "outerwear",
+      "color_hex": "#053e32",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "tailored silk-blend with slim, high-waisted cut flaring gently to the ankle",
+      "slot": "bottom",
+      "color_hex": "#004d4a",
+      "worn": true
+    },
+    {
+      "name": "sandals",
+      "details": "strappy satin with low heel and thin metallic chain detailing across the instep",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "pearl drop set in gold vermeil with a length of two centimeters",
+      "slot": "earrings",
+      "color_hex": "#ffd700",
+      "worn": true
+    }
+  ]
+}
