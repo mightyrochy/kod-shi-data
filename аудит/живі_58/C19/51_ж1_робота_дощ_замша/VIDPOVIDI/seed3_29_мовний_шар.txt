@@ -1,0 +1,57 @@
+── ПРОМПТ (7965 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Прикраса · kind code: jewelry_generic · about it: text н=1
+2 — Шарф мелка клітинка кашемір · kind code: scarf_generic · colour code: beige · about it: text н=2
+3 — Джинси синього кольору з асиметричним поясом · kind code: jeans · colour code: blue · about it: text н=3
+4 — Жилетка класична сіра · kind code: vest · colour code: grey · about it: text н=4
+5 — Пасок з пірʼям смарагд · kind code: belt · colour code: emerald · about it: text н=5
+6 — Шапка ангора на флісі · kind code: headwear · colour code: beige · about it: text н=6
+7 — Босоніжки жіночі, ATTICO, шкіра, колір білий · kind code: heeled_sandals · colour code: white · about it: text н=7
+8 — Жіноча сумка тоут замшева бежева · kind code: tote · colour code: beige · about it: text н=8
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; blue — синій; emerald — смарагд; grey — сірий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This statement necklace features three strands of lustrous pearls that encircle your neck, connected by a striking gold chain adorned with sparkling stones that trail down the center. The delicate pearl drop at the bottom completes the elegant drape, adding a touch of timeless glamour to your neckline.",
+"2": "A soft beige plaid scarf crafted from cozy cashmere, featuring a classic checkered pattern in shades of sand, grey, and black with delicate fringed edges that add texture.",
+"3": "High-waisted blue jeans designed with an asymmetrical front opening and a concealed belt loop detail, finished with rolled cuffs at the hem for a relaxed yet polished silhouette.",
+"4": "A tailored grey sleeveless vest featuring a deep V-neckline, a row of subtle buttons down the front, and structured lapels that create a sharp, professional look.",
+"5": "An elegant emerald green belt adorned with lush, cascading feathers along its lower edge, adding movement and a touch of nature-inspired luxury to your waistline.",
+"6": "A soft beige ribbed knit beanie crafted from angora and fleecy material, offering warmth with a comfortable, relaxed fit that sits softly on your head.",
+"7": "Classic white heeled sandals made from smooth leather, featuring an open toe and heel design that elongates the leg while providing all-day comfort for walking.",
+"8": "A structured beige tote bag crafted from soft suede with a minimalist silhouette, featuring a long top handle and subtle gold-tone hardware details.",
+"9": "This outfit brings a sophisticated, work-ready look that blends your X shape's defined waist with autumnal elegance. The grey vest layers perfectly over the white top to accentuate your narrow upper body while keeping the focus on your hips and legs. The emerald feathered belt cinches your waist beautifully, highlighting your natural curves without adding bulk, while the beige plaid scarf adds a touch of warmth and texture that suits the rainy morning. Your cream knit hat provides a soft contrast that frames your face gently, and the white heeled sandals offer a clean, elongated line to your legs even on a day when you'll be walking to the office. The neutral beige tones of the jeans and tote bag ground the look, allowing the emerald belt to serve as the vibrant focal point.",
+"10": "Keep the vest unbuttoned at the top to draw the eye vertically and elongate your neckline."
+}
+
+── ВІДПОВІДЬ (2347 симв., 108.7 с, HTTP 200) ──
+```json
+{
+  "1": "Цей вишуканий кулон має три нитки перлів, які облягають твою шию та з’єднані блискучим золотим ланцюжком, прикрашеним сяючими камінцями, що спадають по центру. Ніжна підвіска-перлина внизу завершує елегантний силует, додаючи нотку позачасового шарму до твоєї лінії шиї.",
+  "2": "М’який бежевий шалик у клітинку з кашеміру, виготовлений за класичним візерунком із відтінків піску, сірого та чорного кольорів, має ніжні бахромчасті краї, що додають текстури.",
+  "3": "Високопоясні сині джинси з асиметричним переднім розрізом і прихованою петлею для ременя, завершені підвернутими краями штанин для невимушеного та вишуканого силуету.",
+  "4": "Приталений сірий жилет без рукавів із глибоким V-подібним вирізом, рядом непомітних ґудзиків спереду та структурованими лацканами, що створюють чіткий і професійний вигляд.",
+  "5": "Елегантний смарагдово-зелений пасок з пишним каскадом пір’я по нижньому краю, який додає руху та нотку розкоші натхненної природою до твоєї лінії талії.",
+  "6": "М’яка бежева в’язана шапка з ангори та флісу, що забезпечує тепло затишним і комфортним силуетом, який м’яко сидить на твоїй голові.",
+  "7": "Класичні білі босоніжки на підборах зі шкіри, мають відкритий носок і п’ятку, що видовжують ноги та забезпечують цілоденний комфорт для ходьби.",
+  "8": "Структурована бежева сумка-тоут з м’якої замші з мінімалістичним силуетом, має довгу верхню ручку та стримані золотисті деталі фурнітури.",
+  "9": "Цей образ створює вишуканий і готовий до роботи вигляд, який поєднує визначену лінію талії твоєї фігури X з осінньою елегантністю. Сірий жилет чудово надітий поверх білої блузи, щоб підкреслити твою вузьку верхню частину тіла, водночас зберігаючи акцент на стегнах і ногах. Смарагдовий пасок з пір’ям гарно підкреслює твою талію, виділяючи природні вигини без додавання об’єму, а бежевий шалик у клітинку додає тепла й текстури, що відповідають дощовому ранку. Твій кремовий в’язаний берет створює м’який контраст, який ніжно обрамлює твоє обличчя, а білі босоніжки на підборах пропонують чисту та видовжену лінію твоїх ніг навіть у день, коли ти йтимеш до офісу. Нейтральні бежеві тони джинсів і сумки-тоут завершують образ, дозволяючи смарагдовому паску стати яскравим акцентом.",
+  "10": "Залиш жилет розстебнутим зверху, щоб привернути увагу вертикально та видовжити твою лінію шиї."
+}
+```
