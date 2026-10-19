@@ -1,0 +1,54 @@
+── ПРОМПТ (7881 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Жіноче поло з довгими рукавами у кольорі какао · kind code: t_shirt · colour code: brown · about it: text н=1
+2 — Джинси Golden Goose блакитні · kind code: jeans · colour code: light_blue · about it: text н=2
+3 — Сумка жіноча, ATTICO, замша, колір рудий · kind code: bag_generic · colour code: ginger · about it: text н=3
+4 — Черевики жіночі, ATTICO, шкіра/замша, колір чорний · kind code: ankle_boots · colour code: black · about it: text н=4
+5 — Пасок з еко шкіри · kind code: belt · colour code: milky · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; ginger — рудий; light_blue — блакитний; milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "This ribbed polo in soft brown features a classic collar and button placket, offering a structured yet relaxed silhouette that complements your defined waist. The fabric is finely textured for comfort, with long sleeves that end just above the wrist.",
+"2": "These wide-leg light blue jeans showcase a high-rise fit and generous leg opening, creating a fluid drape that elongates your legs. The subtle distressing adds casual flair without compromising sophistication, while the frayed hems add a touch of effortless charm.",
+"3": "Crafted from soft suede, this ginger-colored bag carries a warm, earthy tone that pairs beautifully with your outfit’s neutral palette. Its compact shape makes it easy to carry on your shoulder or in your hand.",
+"4": "These black ankle boots are made of smooth leather with a sleek, low heel, providing both style and stability for long hours in the office. Their streamlined design ensures they stay true to your polished aesthetic.",
+"5": "This milky-colored belt from eco-leather adds a subtle accent to your waist, offering a gentle contrast without overpowering the outfit. Its adjustable length ensures a perfect fit, enhancing your natural waistline effortlessly.",
+"6": "This look brings your workday into sharp focus with a touch of relaxed elegance. The ribbed polo in soft brown offers a comfortable fit that drapes smoothly over your frame, while the wide-leg light blue jeans create a clean, elongated line from hip to toe. To anchor the outfit, I chose the sleek black ankle boots, which provide the necessary contrast and polish for an office setting without sacrificing comfort. The ginger suede bag adds a warm, textured accent that complements the earth tones, and the milky belt cinches the waist subtly, drawing attention to your defined silhouette while maintaining a professional yet approachable vibe. For makeup, keep it light with a soft flush of color to match the outfit's gentle palette.",
+"7": "Tuck in a thin layer underneath the polo if you need extra warmth during those cooler autumn mornings.",
+"8": "Let the wide-leg jeans fall naturally over your boots for a seamless, elongated look.",
+"9": "Черевики жіночі, ATTICO, шкіра/замша, колір чорний — The high cut of the ankle boots creates a deliberate contrasting edge that elongates your silhouette, making the look more sophisticated for the workplace.",
+"10": "Джинси Golden Goose блакитні — Using blue jeans to contrast with the warm peach top, ensuring volume balance on your narrower shoulders."
+}
+
+── ВІДПОВІДЬ (2623 симв., 49.7 с, HTTP 200) ──
+```json
+{
+  "1": "Цей ребристий поло у м'якому коричневому кольорі має класичний комір і планку на ґудзиках, пропонуючи структурований, але розслаблений силует, який доповнює твою виражену талію. Тканина тонко текстурована для комфорту, з довгими рукавами, що закінчуються трохи вище зап'ястя.",
+  "2": "Ці джинси із широкими штанинами світло-блакитного кольору мають високу посадку та просторі розширення внизу ніг, створюючи плавний спад, який видовжує твої ноги. Легка потертість додає невимушеного шарму без шкоди для вишуканості, а підігнуті краї — нотку легкої чарівності.",
+  "3": "Ця сумка з м'якої замші кольору рудого має теплий, землистий відтінок, який чудово поєднується з нейтральною палітрою твого вбрання. Її компактна форма робить її легкою для носіння на плечі або в руці.",
+  "4": "Ці чорні черевики до щиколотки виготовлені зі шкіри, мають елегантний низький каблук, що забезпечує стиль і стійкість протягом довгих годин у офісі. Їхній стрункий дизайн гарантує, що вони залишаються вірними твоєму відшліфованому естетичному смаку.",
+  "5": "Цей пояс кольору молочного додає до твого поясу ледь помітний акцент, пропонуючи ніжний контраст без перевантаження вбрання. Його регульована довжина забезпечує ідеальну посадку, підкреслюючи природну лінію твоєї талії з легкістю.",
+  "6": "Цей образ привертає увагу до твого робочого дня з ноткою розслабленої елегантності. Ребристе поло у м'якому коричневому кольорі пропонує зручну посадку, яка плавно облягає твою фігуру, а джинси із широкими штанинами світло-блакитного кольору створюють чисту, видовжену лінію від стегна до кінчиків пальців. Щоб завершити образ, я обрала елегантні чорні черевики до щиколотки, які забезпечують необхідний контраст і блиск для офісного середовища без шкоди для комфорту. Сумка з рудої замші додає теплий, текстурований акцент, який доповнює земляні тони, а пояс кольору молочного ледь помітно підкреслює талію, привертаючи увагу до твоєї вираженої фігури, зберігаючи професійну, але доступну атмосферу. Для макіяжу збережи його легким з м’яким рум’янцем у тон палітри вбрання.",
+  "7": "Одягни під поло тонку кофтинку, якщо тобі буде прохолодно восени вранці.",
+  "8": "Дай джинсам із широкими штанинами вільно спадати на черевики для бездоганного та видовженого вигляду.",
+  "9": "Черевики жіночі, ATTICO, шкіра/замша, колір чорний — Високий верх чобітків створює навмисний контрастний край, який видовжує твій силует, роблячи образ більш вишуканим для роботи.",
+  "10": "Джинси Golden Goose блакитні — Поєдную джинси синього кольору з теплим персиковим верхом, щоб забезпечити баланс об’єму на твоїх вужчих плечах."
+}
+```

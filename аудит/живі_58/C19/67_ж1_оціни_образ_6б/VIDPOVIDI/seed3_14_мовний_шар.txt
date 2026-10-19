@@ -1,0 +1,41 @@
+── ПРОМПТ (6181 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+ТЕКСТИ:
+{
+"1": "Structured wool-blend blazer in deep forest green, tailored with soft shoulders and a relaxed fit that flows from the bust down to the hip without restriction.\nHigh-waisted wide-leg trousers in liquid silk blend featuring a subtle tonal jacquard pattern, colored in warm terracotta that complements her skin tones, falling just above the ankle with a slight drape.\nLeather loafers in polished cognac brown, slip-on style with minimal hardware and a low heel for all-day comfort during long hours at an open office desk.\nA lightweight merino cashmere scarf in cream tied loosely around the neck, adding texture without bulk while keeping warmth for cool autumn mornings.\n\nThis outfit works because it balances professional polish with creative fluidity, perfectly suited for an office environment that values both structure and artistic expression. The earth-toned palette harmonizes beautifully with her natural coloring, ensuring she feels confident and visually cohesive from head to toe. As a layered ensemble, the blazer provides necessary warmth against autumn chill while the loose trouser cut allows for ease of movement throughout the day. Every piece adheres to the \"neat\" dress code without feeling rigid, making it ideal for a long workday in a creative setting where comfort is key.",
+"2": "blazer",
+"3": "trousers",
+"4": "loafers",
+"5": "scarf"
+}
+
+── ВІДПОВІДЬ (1501 симв., 61.3 с, HTTP 200) ──
+```json
+{
+  "1": "Вовняний блейзер з глибоким лісовим зеленим відтінком, пошитий за класичним кроєм із м’якими плечима та вільним силуетом, який розкльошується від грудей до стегон без жодних обмежень.\nШтани з високою посадкою вільного крою у вигляді широких штанин зі струмуючої шовкової суміші, прикрашені ледь помітним тональним жакардовим малюнком кольору теплої теракоти, що гармонійно поєднується з твоїм тоном шкіри та закінчуються трохи вище щиколотки.\nШкіряні лофери у полірованому коньячному коричневому відтінку, модель надівається без застібок із мінімальним декором і низьким підбором для комфорту протягом цілого дня в офісі.\nЛегкий шарф з мериносової кашемірової суміші кремового кольору вільно зав’язаний навколо шиї, додаючи текстуру без зайвого об’єму та зберігаючи тепло прохолодними осінніми ранками.\n\nЦей образ поєднує професійну елегантність із творчою свободою, ідеально підходить для офісу, який цінує як структуру, так і художнє самовираження. Земляна палітра чудово гармонує з твоїм природним кольором шкіри, забезпечуючи впевненість у собі та візуальну узгодженість від голови до п’ят. Як багатошаровий ансамбль, блейзер дарує необхідне тепло прохолодними осінніми днями, а вільний крій штанів дозволяє легко рухатися протягом дня. Кожна річ відповідає вимогам «охайного» дрес-коду без відчуття скутості, що робить її ідеальною для довгого робочого дня у творчому середовищі, де комфорт є ключем.",
+  "2": "блейзер",
+  "3": "штани",
+  "4": "лофери",
+  "5": "шарф"
+}
+```

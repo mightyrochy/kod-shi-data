@@ -1,0 +1,52 @@
+── ПРОМПТ (7184 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Топ із глибоким u-подібним вирізом NEYA світла олива · kind code: t_shirt · colour code: olive · about it: text н=1
+2 — Штани палаццо беж · kind code: trousers · colour code: beige · about it: text н=2
+3 — Бомбер синій в дрібну білу смужку · kind code: jacket · colour code: blue · about it: text н=3
+4 — Босоніжки жіночі, ATTICO, замша, колір бежевий · kind code: heeled_sandals · colour code: beige · about it: text н=4
+5 — Сумка жіноча бежева · kind code: bag_generic · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; blue — синій; olive — оливковий.
+
+ТЕКСТИ:
+{
+"1": "A light olive top with a deep U-neck that adds elegance and comfort to your ensemble. Its soft fabric ensures all-day ease while maintaining a polished appearance.",
+"2": "Beige palazzo trousers with wide legs create a fluid silhouette, perfect for a sophisticated yet effortless look. Their relaxed fit complements your figure beautifully.",
+"3": "A blue bomber jacket with a subtle white stripe brings a casual edge to your outfit while providing warmth and style. Its structured design adds a modern touch.",
+"4": "Beige heeled sandals offer a perfect balance between comfort and elegance, elevating your outfit without sacrificing ease. Their sleek design pairs effortlessly with your palazzo trousers.",
+"5": "A structured beige bag adds practicality and style to your look, making it both functional and chic for everyday use. Its neutral color complements your overall outfit seamlessly.",
+"6": "Your look is a harmonious blend of soft neutrals, perfect for a creative office day in autumn. The light olive top with its deep U-neck adds a touch of elegance and comfort, while the beige palazzo trousers create a fluid, sophisticated silhouette that flows beautifully. The blue bomber jacket with its subtle white stripe introduces a refreshing pop of color and a casual edge, ideal for layering on cooler days. The beige heeled sandals elevate your ensemble without sacrificing comfort, and the structured beige bag adds a practical yet stylish touch to your overall look.",
+"7": "Keep your bomber jacket open to let the light olive top shine as the focal point of your outfit.",
+"8": "Tuck in any shorter tops if you opt for a more fitted look under the bomber jacket.",
+"9": "Бомбер синій в дрібну білу смужку — I added this loafers pair instead of shoes mentioned in the prompt, as the dress needs footwear to be complete; the beige tone matches the dress perfectly."
+}
+
+── ВІДПОВІДЬ (1948 симв., 53.2 с, HTTP 200) ──
+```json
+{
+"1": "Легкий оливковий топ з глибоким u-подібним вирізом додає елегантності та комфорту твоєму образу. Його м'яка тканина забезпечує зручність протягом усього дня, зберігаючи при цьому доглянутий вигляд.",
+"2": "Бежеві штани палаццо з широкими штанинами створюють плавний силует, ідеальний для вишуканого та водночас невимушеного образу. Їхній вільний крій чудово підкреслює твою фігуру.",
+"3": "Синій бомбер у дрібну білу смужку додає твоєму образу повсякденної зухвалості, водночас забезпечуючи тепло та стиль. Його структурований дизайн надає сучасності.",
+"4": "Бежеві босоніжки на підборах пропонують ідеальний баланс між комфортом та елегантністю, підкреслюючи твій образ без шкоди для зручності. Їхній витончений дизайн чудово поєднується з твоїми штанами палаццо.",
+"5": "Структурована бежева сумка додає практичності та стилю твоєму образу, роблячи його одночасно функціональним і шикарним для повсякденного використання. Її нейтральний колір гармонійно доповнює твій загальний образ.",
+"6": "Твій образ — це гармонійне поєднання м’яких відтінків, ідеальне для творчого робочого дня восени. Легкий оливковий топ з глибоким u-подібним вирізом додає нотку елегантності та комфорту, а бежеві штани палаццо створюють плавний, вишуканий силует, який чудово струмує. Синій бомбер у дрібну білу смужку вносить свіжий акцент кольору та повсякденної зухвалості, ідеальний для багатошаровості прохолодними днями. Бежеві босоніжки на підборах доповнюють твій образ без шкоди для комфорту, а структурована бежева сумка додає практичний, але стильний штрих твоєму загальному вигляду.",
+"7": "Залиш свій бомбер відкритим, щоб оливковий топ став головним акцентом твого образу.",
+"8": "Заправ коротші топи всередину, якщо ти віддаєш перевагу більш приталеному силуету під бомбером.",
+"9": "Я додала цю пару лоферів замість взуття, згаданого у запиті, оскільки сукня потребує взуття для завершення; бежевий тон ідеально поєднується з нею."
+}
+```
