@@ -1,0 +1,49 @@
+── ПРОМПТ (7521 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лляна сукня-сорочка максі · kind code: dress_generic · colour code: graphite · about it: text н=1
+2 — Сорочка з відкритою спиною та ґудзиками з натурального льону · kind code: shirt · colour code: chocolate · about it: text н=2
+3 — Лофери жіночі, ATTICO, замша, колір темно-коричневий · kind code: loafers · colour code: brown · about it: text н=3
+4 — Сумка жіноча Soli basket · kind code: bag_generic · colour code: beige · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; chocolate — шоколадний; graphite — графіт.
+
+ТЕКСТИ:
+{
+"1": "This long shirt dress in graphite with fine pinstripes features a full-length button front, a classic collar, and a tie waist that cinches softly at your smallest point. The fabric drapes fluidly from shoulder to hem, and the slight slit along the side adds just enough movement without breaking the clean line.",
+"2": "Crafted from natural linen in a rich chocolate shade, this relaxed-fit shirt has a traditional collar, a full-length button placket, and wide sleeves that add gentle volume to your upper frame. Its straight silhouette contrasts beautifully with the fitted waist of the dress beneath.",
+"3": "These dark brown suede loafers feature a soft nubuck finish, a low-profile gum-colored rubber sole for all-day comfort, and a decorative tassel with a small metallic loop on the vamp. Their rounded toe and slip-on design offer effortless elegance suited to an evening occasion.",
+"4": "A structured tote made of tightly woven straw, this bag showcases clean black leather accents around the rim and on its dual top handles. A rectangular front panel in black leather bears a gold-tone logo plaque, adding a touch of refined contrast.",
+"5": "Your graphite pinstripe shirt dress anchors you in a deep, quiet brown that feels perfect for the evening. Over it, the chocolate linen shirt adds structure and warmth without adding bulk to your silhouette. The rich dark leather loafers ground your look with polish and comfort, while the woven straw bag brings an unexpected but intentional lightness that keeps your outfit from feeling too heavy. Together, they create a celebration-ready ensemble that balances sophistication with effortless style.",
+"6": "Wear the linen shirt loosely over the dress to draw attention to your defined waist and elongate your legs.",
+"7": "Сорочка з відкритою спиною та ґудзиками з натурального льону — Choosing this relaxed linen shirt over a structured one ensures comfort for dancing; its loose cut skims your shoulders and hips, avoiding clinginess while adding volume where needed.",
+"8": "Сорочка з відкритою спиною та ґудзиками з натурального льону — The natural linen texture provides an interesting surface to work with during the evening, ensuring you don't feel flat despite the simple color palette."
+}
+
+── ВІДПОВІДЬ (2293 симв., 88.0 с, HTTP 200) ──
+```json
+{
+"1": "Ця лляна сукня-сорочка максі графітового кольору з тонкими смужками має по всій довжині ґудзики, класичний комір і пояс на талії, який м’яко підкреслює твою найтоншу частину. Тканина струмує від плеча до подолу, а невеликий розріз збоку додає руху без порушення чистої лінії.",
+"2": "Ця сорочка вільного крою виготовлена ​​з натурального льону шоколадного кольору і має традиційний комір, по всій довжині ґудзики та широкі рукави, які м’яко збільшують твій верхній силует. Її прямий крій чудово контрастує з приталеною талією сукні під нею.",
+"3": "Ці темно-коричневі замшеві лофери мають ніжну нубукову обробку, низький профіль гумової підошви кольору жувальної гумки для комфорту протягом усього дня та декоративний бантик з маленьким металевим кільцем на носку. Завдяки округлій формі миска і конструкції без застібок вони пропонують легку елегантність, яка підходить для вечірнього заходу.",
+"4": "Ця структурована сумка-тоут виготовлена ​​з щільно сплетеної соломи та має чисті чорні шкіряні акценти по краю і на двох верхніх ручках. Прямокутний передній клапан з чорної шкіри прикрашений золотистою табличкою з логотипом, що додає вишуканого контрасту.",
+"5": "Твоя сукня-сорочка в графітову смужку створює глибокий і спокійний коричневий образ, який чудово підходить для вечора. Зверху шоколадна лляна сорочка додає структури та тепла без зайвого об’єму твоєму силуету. Темно-коричневі шкіряні лофери завершують твій вигляд елегантністю і комфортом, а плетені сумки з соломи привносять несподівану, але цілеспрямовану легкість, яка робить твій образ менш важким. Разом вони створюють ансамбль для святкування, який поєднує вишуканість і безтурботний стиль.",
+"6": "Одягни лляну сорочку вільно поверх сукні, щоб привернути увагу до твоєї визначеної талії та видовжити ноги.",
+"7": "Сорочка з відкритою спиною та ґудзиками з натурального льону — Обираючи цю вільну лляну сорочку замість структурованої, ти забезпечуєш собі комфорт для танців; її вільний крій м’яко обтікає твої плечі і стегна, уникаючи прилипання та додаючи об’єм там, де це потрібно.",
+"8": "Сорочка з відкритою спиною та ґудзиками з натурального льону — Натуральна лляна текстура створює цікаву поверхню для роботи протягом вечора, забезпечуючи тобі відчуття глибини попри просту колірну палітру."
+}
+```

@@ -1,0 +1,92 @@
+── ПРОМПТ (12867 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа й слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_unchecked — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- bag — сумка.
+- bottom — низ.
+- bust — груди.
+- hair — волосся.
+- hips — стегна.
+- outerwear — верхній шар.
+- shoes — взуття.
+- shoulders — плечі.
+- top — верх.
+- uk — українська.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+Коли в номері кілька заяв, кожна стоїть у тексті своїм змістом: жодна не випадає і не зливається з іншою, а дія однієї заяви не переходить на речі іншої — чому сказано окремо, що зроблено окремо.
+
+ЗАЯВИ:
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_look_contrast_matches_hers — so the code cannot tell whether the outfit's contrast matches her own.
+- cannot_tell_look_follows_her_combinations — so the code cannot tell whether the outfit's colours follow the logic of her combinations.
+- cannot_tell_complementary_pair_leads — so the code cannot tell whether a pair of opposite colours leads the outfit.
+- cannot_tell_item_off_palette — so the code cannot tell whether the item's colour lies outside her palette.
+- cannot_tell_colour_from_eyes — so the code cannot tell whether the colour comes from the family of her eyes.
+- cannot_tell_item_carries_interest — so the code cannot tell whether the item's colour is strong enough to carry interest.
+- cannot_tell_two_neutrals_distinct — so the code cannot tell whether two neutrals of one lightness differ visibly (values, when given: items — the neutrals' items: item_id, name — the item's name on the card, slot — slot code).
+- cannot_tell_item_is_neutral — so the code cannot tell whether the named item is a neutral at all, and the rules about neutrals did not judge it.
+- cannot_tell_accent_role_chroma — so the code cannot tell whether the item is colourful enough for the accent role the palette scheme gave its slot.
+- cannot_tell_items_intensity_match — so the code cannot tell whether the outfit's items match in colour saturation.
+- cannot_tell_face_contrast_matches_hers — so the code cannot tell whether the jump of lightness near her face matches her own contrast.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- item_length_unknown_edge_default — the cards do not carry the length of the named items: the usual edge for such an item was taken, so the code does not know where exactly it lands on the body (values: slots — slot codes).
+- length_word_edge_may_land_on_widest — the code knows the item's length only from a word, and its edge may land right on the widest place of the body (values: slot — slot code; length — the length word; level — code of the body level where the edge may land).
+- cut_unknown_form_default — some cards have no known cut; unknown_cuts preserve literal card witnesses by item_id. The code counts the outfit's shape on the usual cut (values: slots — slot codes).
+- cut_not_declared_assumed_regular — the item cards here do not name the cut, so it was counted as an ordinary straight cut; what follows holds only if the cut really is such (values: items — the only items without a declared cut: item_id, name — the item's name on the card; the other items keep their declared cut).
+- claim_zone_clinged — the item clings tightly to this part of the body where it would be better for it to skim (values: level — body level code).
+- fabric_unknown_ease_below_min_if_woven — the card does not name the item's fabric: if it is not knit, the ease in width at this level is too small to wear it freely (values: level — body level code).
+- claim_look_shape_vs_body_shape — the outfit's shape is not the one worth leading to for her figure (values: body — the figure's shape, look — the outfit's shape, target — the shapes to lead to; shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the edge of being marked; never write the letters themselves, only the description).
+- feature_and_item_indistinguishable — a feature of her face and the item near it are the same colour in the photo, so the code does not know whether the face contrast was read correctly (values: feature — hair, eyes or glasses; item — item name).
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- outer_ease_not_in_feed — the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — items: item_id, name — the item's name on the card).
+- front_v_depth_no_body_input — the code computed the depth of the outer layer's neckline, but has nothing to apply it to: it does not know her under-bust girth or neck length (values: item — item name; item_id).
+- outer_shoulder_not_measured — the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name; item_id).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "item_length_unknown_edge_default", "values": {"slots": ["shoes"]}}, {"code": "length_word_edge_may_land_on_widest", "values": {"slot": "top", "length": {"free_text": "стегно", "lang": "uk"}, "level": "hips"}}]},
+{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "cut_not_declared_assumed_regular", "values": {"items": [{"item_id": "ж-17376@wearme.ua", "name": {"free_text": "Пальто мідаксі двобортне зі спущеним плечем", "lang": "uk"}}]}}, {"code": "fabric_unknown_ease_below_min_if_woven", "values": {"level": "hips"}}, {"code": "claim_zone_clinged", "values": {"level": "shoulders"}}, {"code": "claim_zone_clinged", "values": {"level": "bust"}}, {"code": "claim_look_shape_vs_body_shape", "values": {"body": ["A"], "look": ["H"], "target": ["X", "V"]}}]},
+{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "cut_unknown_form_default", "values": {"slots": ["bottom", "outerwear", "top"]}}]},
+{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "outer_shoulder_not_measured", "values": {"item": {"free_text": "Пальто мідаксі двобортне зі спущеним плечем", "lang": "uk"}, "item_id": "ж-17376@wearme.ua"}}]},
+{"н": 5, "вид": "card_unchecked", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Чорні ботфорти на підборах зі шкіри", "lang": "uk"}, "item_id": "ж-11459@theoriginals.com.ua"}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 6, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-16821@wearme.ua", "slot": "top", "colour": "коричневий", "name": {"free_text": "Жакет подовжений з кишенями Палермо", "lang": "uk"}}]}}, {"code": "cannot_tell_face_contrast_matches_hers"}, {"code": "cannot_tell_item_is_neutral"}, {"code": "cannot_tell_items_intensity_match"}, {"code": "cannot_tell_item_carries_interest"}, {"code": "cannot_tell_item_holds_scheme_hue"}, {"code": "cannot_tell_item_off_palette"}, {"code": "cannot_tell_look_contrast_matches_hers"}, {"code": "cannot_tell_look_follows_her_combinations"}, {"code": "cannot_tell_complementary_pair_leads"}]},
+{"н": 7, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-11535@theoriginals.com.ua", "slot": "bag", "colour": "зелений", "name": {"free_text": "Шкіряний зелений клатч Rockstud", "lang": "uk"}}]}}, {"code": "cannot_tell_item_is_neutral"}, {"code": "cannot_tell_items_intensity_match"}, {"code": "cannot_tell_item_carries_interest"}, {"code": "cannot_tell_accent_role_chroma"}, {"code": "cannot_tell_item_holds_scheme_hue"}, {"code": "cannot_tell_look_contrast_matches_hers"}, {"code": "cannot_tell_colour_from_eyes"}, {"code": "cannot_tell_look_follows_her_combinations"}, {"code": "cannot_tell_complementary_pair_leads"}]},
+{"н": 8, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "top", "range": "XS–L"}, {"slot": "bottom", "range": "XS–L"}, {"slot": "top", "range": "S–XXL"}]}}, {"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "outerwear", "range": "S–M"}, {"slot": "bottom", "range": "XS–L"}]}}]},
+{"н": 9, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-17376@wearme.ua", "slot": "outerwear", "colour": "чорний", "name": {"free_text": "Пальто мідаксі двобортне зі спущеним плечем", "lang": "uk"}}]}}, {"code": "cannot_tell_face_contrast_matches_hers"}, {"code": "cannot_tell_two_neutrals_distinct"}, {"code": "cannot_tell_look_contrast_matches_hers"}]},
+{"н": 10, "вид": "card_unchecked", "заяви": [{"code": "feature_and_item_indistinguishable", "values": {"feature": "hair", "item": "outerwear"}}]},
+{"н": 11, "вид": "card_unchecked", "заяви": [{"code": "outer_ease_not_in_feed", "values": {"items": [{"item_id": "ж-02278@gepur.com", "name": {"free_text": "Чорний шовковий боді-сорочка", "lang": "uk"}}, {"item_id": "ж-16821@wearme.ua", "name": {"free_text": "Жакет подовжений з кишенями Палермо", "lang": "uk"}}, {"item_id": "ж-17376@wearme.ua", "name": {"free_text": "Пальто мідаксі двобортне зі спущеним плечем", "lang": "uk"}}]}}]},
+{"н": 12, "вид": "card_unchecked", "заяви": [{"code": "front_v_depth_no_body_input", "values": {"item": {"free_text": "Пальто мідаксі двобортне зі спущеним плечем", "lang": "uk"}, "item_id": "ж-17376@wearme.ua"}}]},
+{"н": 13, "вид": "card_unchecked", "заяви": [{"code": "items_register_unknown", "values": {"count": 4}}]}
+]
+
+── ВІДПОВІДЬ (1726 симв., 89.9 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю, де саме на ногах закінчаться твої ботфорти.",
+  "2": "Твоє пальто може сидіти занадто тісно в плечах і грудях. Його форма також не дуже підходить до твоєї фігури — краще б воно було Х- чи V-подібним, а не прямим.",
+  "3": "Я не знаю форму деяких твоїх речей: сукні, пальто та жакету.",
+  "4": "Я не можу сказати, як добре на тобі сидить твоє пальто через те, що я не знаю ширину його плеча.",
+  "5": "Я не перевірила розмір твоїх ботфортів. Я також не знаю довжину твоєї стопи та внутрішню устілку взуття.",
+  "6": "Твій коричневий жакет — це просто слово магазину, я не можу сказати, чи підходить його колір до кольору твоїх очей або чи він достатньо яскравий для акценту. Я також не знаю, чи поєднуються ці кольори з твоєю палітрою та образами.",
+  "7": "Твій зелений клатч — це просто слово магазину, я не можу сказати, чи підходить його колір до кольору твоїх очей або чи він достатньо яскравий для акценту. Я також не знаю, чи поєднуються ці кольори з твоєю палітрою та образами.",
+  "8": "Я не можу сказати, як добре на тобі сидять речі через те, що я не знаю твої точні розміри: жакету, сукні, пальто та штанів.",
+  "9": "Твоє чорне пальто — це просто слово магазину. Я також не знаю, чи контраст між ним і волоссям на твоєму обличчі виглядає добре для тебе.",
+  "10": "Я не можу сказати, чи твій колір волосся та верхній шар одягу зливаються в один через те, що вони мають однаковий відтінок у фотографії.",
+  "11": "Я не знаю, як вільно на тобі сидять деякі речі: боді-сорочка, жакет і пальто.",
+  "12": "Я не можу сказати, чи глибина вирізу твого пальта підходить до твоєї фігури через те, що я не знаю обхват грудей та довжину шиї.",
+  "13": "Я не визначила стиль чотирьох речей."
+}
+```

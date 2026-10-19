@@ -1,0 +1,37 @@
+── ПРОМПТ (2484 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer with a slightly nipped waist, notched lapels, and matte charcoal gray (#3a2e2e) fabric tailored in a cropped length that hits just above the hips.\nPaired underneath with a liquid silk slip dress featuring a subtle sheen, an empire waistline for comfort and elongation, and a deep emerald green (#065f46) hue that contrasts elegantly with the blazer.\nCompleted with pointed-toe pumps in polished black leather (#000000) with a moderate 7cm heel to ensure stability on uneven autumn pavement, topped by delicate drop earrings in oxidized silver (#808080) to catch the artificial evening light.\nThis ensemble bridges the requested neat and formal dress codes seamlessly while respecting her desire for comfort during a birthday celebration. The structured shoulders of the blazer provide a modern edge suitable for autumn evenings, whereas the fluid silk dress ensures ease of movement and breathability under artificial lighting. The rich color pairing creates a sophisticated focal point without overwhelming the wearer, perfectly balancing style with the practical needs of an outdoor-to-indoor venue."}
+
+── ВІДПОВІДЬ (814 симв., 118.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "wool-blend fabric, slightly nipped waist, notched lapels, cropped length hitting just above the hips",
+      "slot": "outerwear",
+      "color_hex": "#3a2e2e",
+      "worn": true
+    },
+    {
+      "name": "slip dress",
+      "details": "liquid silk fabric, subtle sheen, empire waistline",
+      "slot": "dress",
+      "color_hex": "#065f46",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "pointed toe, polished leather, moderate 7cm heel",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "delicate drop style, oxidized silver finish",
+      "slot": "earrings",
+      "color_hex": "#808080",
+      "worn": true
+    }
+  ]
+}
