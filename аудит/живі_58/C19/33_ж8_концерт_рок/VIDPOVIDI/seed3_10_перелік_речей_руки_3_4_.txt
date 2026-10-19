@@ -1,0 +1,37 @@
+── ПРОМПТ (2301 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Oversized structured blazer with a wide lapel, sharp shoulder cut, mid-thigh length, charcoal gray (#36454F), wool blend.\nSlim-fit tailored trousers with a slight kick-flare at the hem, full length, deep navy blue (#000080), heavy twill.\nPointed-toe leather loafers, medium height heel, classic black (#000000), smooth calfskin.\nMatte black clutch bag, rectangular shape with a silver clasp, small dimensions, vegan leather.\n\nThis ensemble balances the energetic vibe of a rock concert with the requested \"neat\" and \"smart\" formality levels, offering both style and practicality for someone planning to walk extensively throughout the evening. The dark charcoal and navy palette creates a sleek silhouette that stands out under artificial club lighting while remaining appropriate for an autumn setting. Structured fabrics like wool and heavy twill ensure comfort during long hours of movement without sacrificing the refined look she desires."}
+
+── ВІДПОВІДЬ (866 симв., 155.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "oversized structured with a wide lapel and sharp shoulder cut, mid-thigh length",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "slim-fit tailored with a slight kick-flare at the hem and full length",
+      "slot": "bottom",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "pointed-toe leather with a medium height heel, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "clutch bag",
+      "details": "matte black rectangular shape with a silver clasp and small dimensions, vegan leather",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

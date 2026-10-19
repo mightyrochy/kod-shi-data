@@ -1,0 +1,58 @@
+── ПРОМПТ (8129 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Атласна блуза шоколад · kind code: blouse · colour code: chocolate · about it: text н=1
+2 — Штани прямого крою у клітинку · kind code: trousers · colour code: grey · about it: text н=2
+3 — Туфлі із замші на підборах з гострим носком · kind code: dress_shoes · colour code: cherry · about it: text н=3
+4 — Сумка жіноча, ATTICO, екошкіра, колір рудий · kind code: bag_generic · colour code: ginger · about it: text н=4
+5 — Пасок шкіряний (Hermes) · kind code: belt · colour code: red · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: cherry — вишневий; chocolate — шоколадний; ginger — рудий; grey — сірий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This chocolate-colored blouse features a relaxed, draped design that flows beautifully over the body. Its V-neckline offers a touch of femininity while the soft fabric ensures comfort throughout the night.",
+"2": "These grey plaid trousers provide a structured yet comfortable fit, perfect for moving around freely at a concert. The wide-leg cut adds elegance and balances out the relaxed top nicely.",
+"3": "The cherry suede dress shoes with a pointed toe offer both style and sophistication. Their slender heel is just right for walking long distances without sacrificing comfort.",
+"4": "This ginger leather bag has a classic shape that complements your outfit effortlessly. Its sturdy design makes it practical yet fashionable, holding all your essentials with ease.",
+"5": "The red belt adds a vibrant splash of color and definition to your waist. Its sleek design ties the entire ensemble together, enhancing your overall look without overpowering it.",
+"6": "You have a chocolate blouse that feels like the perfect mix of elegance and comfort, paired with grey plaid trousers that add a playful touch to your look. Your cherry suede dress shoes with a pointed toe give you the edge you need for a night out, while the ginger leather bag keeps everything organized but stylish. The red belt acts as the ultimate accessory, tying it all together with a pop of color that matches the warmth of the evening.",
+"7": "You can wear the blouse tucked into your plaid trousers if you want to accentuate your waist and create a more defined silhouette.",
+"8": "Штани прямого крою у клітинку — I replaced the missing bottom item with these trousers because they already exist in your wardrobe and perfectly match the chocolate blouse's neutral_warm family, creating a cohesive look that answers the no_bottom blocker.",
+"9": "Пасок шкіряний (Hermes) — This gate highlights the belt as a loud accessory, but I accept it here because it is a deliberate 'hero' piece that anchors the warm chocolate family against the neutral trousers, preventing the look from becoming too soft or monochromatic for a rock-concert setting.",
+"10": "Штани прямого крою у клітинку — I kept the check trousers to maintain your favorite preppy register and texture contrast against the classic blazer, rather than switching to solid neutral trousers.",
+"11": "Штани прямого крою у клітинку — I kept these trousers instead of adding a separate top because they serve as both the bottom layer and a neutral base for your pink headband accent, solving the incomplete outfit issue.",
+"12": "Штани прямого крою у клітинку — I kept these trousers because they already exist in your wardrobe and their relaxed cut balances the fitted blazer, creating a harmonious shape that avoids volume issues without needing major changes."
+}
+
+── ВІДПОВІДЬ (2664 симв., 99.5 с, HTTP 200) ──
+```json
+{
+"1": "Ця шоколадна блуза має вільний, драпірований дизайн, який красиво струмує по тілу. Її V-подібний виріз додає жіночності, а м’яка тканина забезпечує комфорт протягом усієї ночі.",
+"2": "Ці сірі штани у клітинку мають структурований, але зручний крій, ідеальні для вільного пересування на концерті. Широкі штанини додають елегантності та гармонійно доповнюють вільну блузу.",
+"3": "Вишневі замшеві туфлі-човники з гострим носком пропонують стиль і вишуканість. Їхня тонка підборка — саме те, щоб довго ходити без втрати комфорту.",
+"4": "Ця руда шкіряна сумка має класичну форму, яка доповнює твій образ без зусиль. Її міцна конструкція робить її практичною та модною водночас, вміщуючи всі необхідні речі з легкістю.",
+"5": "Червоний пасок додає яскравого кольору та підкреслює лінію твого стану. Його елегантний дизайн завершує весь ансамбль, покращуючи загальний вигляд без надмірності.",
+"6": "У тебе шоколадна блуза, яка поєднує в собі елегантність і комфорт, у парі з сірими штанами у клітинку, що додають твоєму образу грайливого акценту. Вишневі замшеві туфлі-човники на гострому носку дарують тобі необхідну родзинку для вечора, а руда шкіряна сумка тримає все в порядку та стильно. Червоний пасок стає останнім штрихом, який пов’язує його разом яскравим кольором, що відповідає теплій атмосфері вечора.",
+"7": "Ти можеш заправити блузу у штани, якщо хочеш підкреслити лінію талії та створити більш виразний силует.",
+"8": "Штани прямого крою у клітинку — Я замінила відсутній низ цими брюками, оскільки вони вже є в твоєму гардеробі і чудово поєднуються з нейтрально-теплою родиною шоколадної блузи, створюючи цілісний образ, який відповідає вимозі no_bottom.",
+"9": "Пасок шкіряний (Hermes) — Цей акцент виділяє пасок як помітну деталь, але я приймаю його тут, оскільки це навмисно підібрана «героїчна» річ, яка закріплює теплу шоколадну гаму проти нейтральних штанів, запобігаючи тому, щоб образ став надто м’яким або монохромним для рок-концерту.",
+"10": "Штани прямого крою у клітинку — Я залишила брюки в клітинку, щоб зберегти твій улюблений преппі стиль і текстурну контрастність проти класичного блейзера, а не переходила до однотонних нейтральних штанів.",
+"11": "Штани прямого крою у клітинку — Я залишила ці брюки замість додавання окремої кофти, оскільки вони слугують як нижнім шаром, так і нейтральною основою для рожевого обідка на голові, вирішуючи проблему неповного образу.",
+"12": "Штани прямого крою у клітинку — Я залишила ці брюки, тому що вони вже є в твоєму гардеробі, а їхній вільний крій збалансовує приталений блейзер, створюючи гармонійну форму, яка уникає проблем з об’ємом без необхідності значних змін."
+}
+```
