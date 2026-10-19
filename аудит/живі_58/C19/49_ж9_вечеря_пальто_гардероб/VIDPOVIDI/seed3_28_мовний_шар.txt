@@ -1,0 +1,60 @@
+── ПРОМПТ (8685 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Жакет з додаванням льону Софі · kind code: blazer · colour code: beige · about it: text н=1
+2 — Сорочка подовжена з додаванням льону Мія · kind code: shirt · colour code: green · about it: text н=2
+3 — LeBERDES Лофери бежеві · kind code: loafers · colour code: beige · about it: text н=3
+4 — Тренч жіночий прямого крою з відкладним коміром демісезонний · kind code: trench_coat · colour code: beige · about it: text н=4
+5 — Шапка біні із широким відворотом · kind code: headwear · colour code: green · about it: text н=5
+6 — Картата молочно-чорна спідниця сонце-кльош з бавовни та льону Хезер · kind code: skirt · colour code: milky · about it: text н=6
+7 — Сумка Пісочна · kind code: bag_generic · colour code: sand · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; green — зелений; milky — молочний; sand — пісочний.
+
+ТЕКСТИ:
+{
+"1": "The blazer is a relaxed, structured beige jacket made with linen additions. It features wide lapels and large front pockets, giving it an effortless yet polished shape that drapes beautifully over the body.",
+"2": "This is an oversized green shirt with a classic collar and short sleeves. The fabric feels soft and breathable, ideal for layering under the blazer to add a splash of color and a comfortable fit.",
+"3": "These are warm brown suede loafers with a distinctive geometric detail on the strap. They rest on a thick, black rubber sole that adds height and durability, making them perfect for walking around town all day.",
+"4": "The trench coat is a long beige garment with a classic collar and a matching belt to cinch the waist. It features side pockets and a straight, flowing silhouette that offers both warmth and elegance as an outer layer.",
+"5": "The beanie is a soft, ribbed knit in a pale green shade. It fits snugly around the head with a relaxed slouch at the back, providing warmth and texture to complete your autumn ensemble.",
+"6": "This skirt is crafted from a milk-and-black plaid check pattern in a flared 'sun-clover' style. The fabric appears lightweight and flowy, creating volume around the legs for a feminine silhouette.",
+"7": "The bag is a structured crossbody with a vibrant, colorful geometric print on the main body. It features a solid taupe-colored bottom panel and a long strap, blending artistic flair with practical everyday use.",
+"8": "I have gathered your outfit for a stylish autumn visit to the restaurant: a relaxed beige blazer over a longer green shirt, finished with wide-leg beige trousers. Your shoes are brown suede loafers on a solid black sole, and you'll wear a light green ribbed beanie to keep cozy. To carry your essentials, I chose a patterned bag with a warm taupe base that echoes the neutrals of your coat and pants. This look works because the soft beige palette creates a gentle, flattering line for your figure, while the green shirt adds a fresh pop of color right near your face. The outfit is versatile enough to move from a neat daytime look into something smarter as the evening settles in.",
+"9": "Layer the beige blazer over the long green shirt to keep your midriff hidden and define a clean, vertical line that flatters your waist.",
+"10": "Сорочка подовжена з додаванням льону Мія — Kept because it provides the necessary bottom layer to complete the outfit, answering her need for variety.",
+"11": "Тренч жіночий прямого крою з відкладним коміром демісезонний — Added as an outer layer option to break the monotony of the blazer and add depth.",
+"12": "Жакет з додаванням льону Софі, Сорочка подовжена з додаванням льону Мія, LeBERDES Лофери бежеві, Тренч жіночий прямого крою з відкладним коміром демісезонний, Шапка біні із широким відворотом, Картата молочно-чорна спідниця сонце-кльош з бавовни та льону Хезер, Сумка Пісочна — I accept the register mix here because the classic blazer and preppy shirt create a deliberate tension that fits your 'smart casual' intent better than a single dominant style, giving the outfit enough depth for the event."
+}
+
+── ВІДПОВІДЬ (3145 симв., 132.1 с, HTTP 200) ──
+```json
+{
+"1": "Цей блейзер — вільний, структурований бежевий піджак з додаванням льону. Він має широкі лацкани та великі передні кишені, що надає йому невимушеної, але вишуканої форми, яка чудово драпірується по фігурі.",
+"2": "Це оверсайз зелена сорочка з класичним коміром і короткими рукавами. Тканина відчувається м’якою та повітропроникною, ідеальною для носіння під блейзер, щоб додати кольору та комфортної посадки.",
+"3": "Це теплі коричневі замшеві лофери з виразним геометричним елементом на ремінці. Вони стоять на товстій чорній гумовій підошві, яка додає висоти та довговічності, роблячи їх ідеальними для прогулянок містом цілий день.",
+"4": "Тренч — довгий бежевий одяг з класичним коміром і ремінцем в колір, щоб підкреслити талію. Він має бічні кишені та прямий силует, що пропонує як тепло, так і елегантність у якості верхнього шару.",
+"5": "Ця бейсболка — м’який трикотажний виріб з палевим зеленим відтінком. Вона щільно облягає голову та має розслаблений задній край, забезпечуючи тепло та текстуру для завершення твого осіннього образу.",
+"6": "Ця спідниця виготовлена ​​з молочно-чорної картатої тканини в стилі «сонце-кльош». Тканина здається легкою та струмливою, створюючи об’єм навколо ніг для жіночного силуету.",
+"7": "Ця сумка — структурована кросбоді з яскравим кольоровим геометричним принтом на основному корпусі. Вона має суцільну пісочну нижню панель і довгий ремінь, поєднуючи художній стиль із практичністю повсякденного використання.",
+"8": "Я підібрала твій образ для стильного осіннього візиту до ресторану: розслаблений бежевий блейзер поверх довгої зеленої сорочки, завершений широкими бежевими штанами. Твої черевики — коричневі замшеві лофери на чорній підошві, а ти носитимеш палеву зелену в’язану шапку-біні, щоб було затишно. Щоб понести з собою необхідне, я обрала сумку з візерунком і теплим пісочним низом, що перегукується з нейтральними кольорами твого пальта та штанів. Цей образ працює тому, що м’яка бежева гама створює ніжну лінію, яка підкреслює твою фігуру, а зелена сорочка додає свіжий колір біля обличчя. Образ досить універсальний, щоб перетворитися з ошатного денного на більш вишуканий вечірній.",
+"9": "Одягни бежевий блейзер поверх довгої зеленої сорочки, щоб приховати твою талію і створити чисту вертикальну лінію, яка тебе підкреслює.",
+"10": "Сорочка подовжена з додаванням льону Мія — Залишено тому, що вона забезпечує необхідний нижній шар для завершення образу, відповідаючи твоїй потребі в різноманітності.",
+"11": "Тренч жіночий прямого крою з відкладним коміром демісезонний — Додано як варіант верхнього шару, щоб розбавити монотонність блейзера та додати глибини.",
+"12": "Жакет з додаванням льону Софі, Сорочка подовжена з додаванням льону Мія, LeBERDES Лофери бежеві, Тренч жіночий прямого крою з відкладним коміром демісезонний, Шапка біні із широким відворотом, Картата молочно-чорна спідниця сонце-кльош з бавовни та льону Хезер, Сумка Пісочна — Я приймаю тут змішування стилів, тому що класичний блейзер і преппі-сорочка створюють навмисну напругу, яка краще відповідає твоєму «розумно-повсякденному» задуму, надаючи образу достатньо глибини для події."
+}
+```

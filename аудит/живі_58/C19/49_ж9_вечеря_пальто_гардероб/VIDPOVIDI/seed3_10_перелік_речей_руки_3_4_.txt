@@ -1,0 +1,44 @@
+── ПРОМПТ (2052 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured tweed blazer in charcoal gray (#3d405b) with a relaxed fit and notched lapels, paired with high-waisted wide-leg trousers in camel wool blend (#c19a6b). The ensemble is grounded by pointed-toe leather loafers in deep espresso brown (#2b1d16) and finished with a delicate gold necklace and small structured handbag. This outfit balances the restaurant's casual setting with the requested neat to smart formality, using autumn-appropriate textures and earth tones that harmonize with her warm skin undertones. The silhouette elongates her figure while offering comfort for standing throughout the evening, fulfilling her desire for polished yet effortless style without feeling overly formal."}
+
+── ВІДПОВІДЬ (834 симв., 161.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured tweed with relaxed fit and notched lapels",
+      "slot": "outerwear",
+      "color_hex": "#3d405b",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg in camel wool blend",
+      "slot": "bottom",
+      "color_hex": "#c19a6b",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "pointed-toe leather",
+      "slot": "shoes",
+      "color_hex": "#2b1d16",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate gold",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "handbag",
+      "details": "small structured",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
