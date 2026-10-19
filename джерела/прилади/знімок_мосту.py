@@ -126,7 +126,7 @@ def в_pyodide(арг):
     п = subprocess.run(команда, text=True, capture_output=True)
     if п.returncode:
         sys.exit('Pyodide: rc %d\n%s%s' % (п.returncode, п.stdout[-1500:], п.stderr[-1500:]))
-    return open(os.path.join(вихід, 'знімок.jsonl'), encoding='utf-8').read(), json.load(open(os.path.join(вихід, 'час.json')))
+    return open(os.path.join(вихід, 'знімок.jsonl'), encoding='utf-8').read(), json.load(open(os.path.join(вихід, 'час.json'), encoding='utf-8'))
 
 
 def обрізати(з, н=90):
@@ -198,7 +198,8 @@ def підміна(значення):
 
 
 def main():
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)    # `| head` не друкує трасу
+    if hasattr(signal, 'SIGPIPE'):
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)    # `| head` не друкує трасу
     if sys.argv[1:2] == ['зміст']:    # рішення доменною мовою: `знімок_змісту.py` (крок 0.2-Б)
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         import знімок_змісту
