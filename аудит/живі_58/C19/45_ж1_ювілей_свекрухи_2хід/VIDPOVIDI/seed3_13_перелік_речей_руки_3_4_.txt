@@ -1,0 +1,44 @@
+── ПРОМПТ (2632 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Mink-lined wool blend coat, tailored silhouette with structured shoulders and a straight hemline hitting mid-thigh, forest green, heavy wool with shearling lining.\nCashmere knit midi dress, sheath cut with a subtle V-neck and long sleeves ending at the wrist, charcoal grey with fine heather texture, soft cashmere.\nPointed-toe leather pumps, classic stiletto shape with a moderate heel height, polished black, smooth calfskin.\nGold-plated drop earrings, medium dangle length with small hoop details, bright gold, lightweight metal alloy.\nSatin clutch purse, rigid rectangular box shape with a short top handle, champagne color, coated silk.\n\nThis ensemble balances the formal expectations of an upscale evening celebration at your mother-in-law's milestone while adhering to your wish for a neat yet refined look suitable for autumn weather. The deep forest green of the outer layer provides warmth and sophistication against the cool season, contrasting elegantly with the neutral charcoal dress that ensures you remain comfortable under artificial lighting without appearing too heavy. The gold accents in the jewelry and clutch offer a touch of celebratory sparkle that fits a jubilee occasion perfectly, while the pointed pumps complete the silhouette with timeless grace."}
+
+── ВІДПОВІДЬ (1110 симв., 209.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Coat",
+      "details": "Tailored silhouette with structured shoulders and a straight hemline hitting mid-thigh, heavy wool with shearling lining",
+      "slot": "outerwear",
+      "color_hex": "#225544",
+      "worn": true
+    },
+    {
+      "name": "Dress",
+      "details": "Sheath cut with a subtle V-neck and long sleeves ending at the wrist, fine heather texture",
+      "slot": "dress",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Shoes",
+      "details": "Classic stiletto shape with a moderate heel height, polished smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Earrings",
+      "details": "Medium dangle length with small hoop details, lightweight metal alloy",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "Bag",
+      "details": "Rigid rectangular box shape with a short top handle, coated silk",
+      "slot": "bag",
+      "color_hex": "#F7E7CE",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+── ПРОМПТ (2462 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer in deep emerald green (#0a3f31), cut with a tailored shoulder and single-button closure, featuring notched lapels and internal welt pockets.\nHigh-waisted wide-leg trousers in a matching emerald hue (#0a3f31), crafted from heavy crepe fabric for structure and flow, falling to the ankle with a slight drape.\nHeeled mules in polished black leather (#000000), with a 7 cm block heel and an open vamp design for evening comfort.\nDelicate gold-plated necklace with a single pendant in champagne quartz (#f7e7ce) to catch the restaurant's artificial light.\nA sleek clutch bag in structured black velvet (#1a0f0f) with gold hardware accents.\nThis outfit strikes a perfect balance between the requested neat and formal dress codes, using rich color and silhouette to celebrate the grand occasion while respecting the strict guest list. The matching emerald tones create a cohesive, elegant look that feels celebratory yet refined for an upscale autumn evening gathering. The wide-leg trousers and block heels offer a modern touch of comfort suitable for long hours at the dinner table."}
+
+── ВІДПОВІДЬ (974 симв., 205.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored shoulder, single-button closure, notched lapels, internal welt pockets",
+      "slot": "top",
+      "color_hex": "#0a3f31",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted, wide-leg, heavy crepe fabric, ankle length with slight drape",
+      "slot": "bottom",
+      "color_hex": "#0a3f31",
+      "worn": true
+    },
+    {
+      "name": "mules",
+      "details": "7 cm block heel, open vamp design",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate gold-plated chain with single pendant",
+      "slot": "necklace",
+      "color_hex": "#f7e7ce",
+      "worn": true
+    },
+    {
+      "name": "clutch bag",
+      "details": "structured design with gold hardware accents",
+      "slot": "bag",
+      "color_hex": "#1a0f0f",
+      "worn": true
+    }
+  ]
+}
