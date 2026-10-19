@@ -1,0 +1,44 @@
+── ПРОМПТ (2709 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool blend blazer, tailored cut, knee-length coat style, charcoal gray (#3E4C52), structured weave.\nSilk and cotton crepe dress, sheath silhouette, midi length just below the calf, deep olive green (#4A5D45), smooth matte texture.\nRoundneck modest neckline with subtle cowl detail, button-through closure hidden at the back, clean lines without excessive embellishment.\n\nLeather ankle booties, pointed toe, 3 cm heel, oxblood red (#8A262C), soft nappa leather with a slight sheen.\nPearl drop earrings, medium drop length, classic spherical beads, white cream (#F5F5DC), cultured freshwater pearl.\nGold plated pendant necklace, small cross design, adjustable chain length, yellow gold tone (#D4AF37), lightweight metal alloy.\n\nThis outfit works because it respectfully balances the solemnity of church attendance with autumnal warmth through the structured wool blazer, which serves as an appropriate outer layer for the season while adhering to the modest dress code. The sheath silhouette and midi length provide a refined, timeless look suitable for both \"smart\" and \"formal\" formality levels without crossing into overly ceremonial territory. The deep olive color offers a grounded, earthy tone perfect for autumn daylight, while the touch of gold jewelry adds a subtle layer of elegance that honors the occasion without drawing undue attention."}
+
+── ВІДПОВІДЬ (1023 симв., 71.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored cut, knee-length coat style, structured weave",
+      "slot": "outerwear",
+      "color_hex": "#3E4C52",
+      "worn": true
+    },
+    {
+      "name": "dress",
+      "details": "sheath silhouette, midi length just below the calf, smooth matte texture",
+      "slot": "dress",
+      "color_hex": "#4A5D45",
+      "worn": true
+    },
+    {
+      "name": "ankle booties",
+      "details": "pointed toe, 3 cm heel, soft nappa leather with a slight sheen",
+      "slot": "shoes",
+      "color_hex": "#8A262C",
+      "worn": true
+    },
+    {
+      "name": "drop earrings",
+      "details": "medium drop length, classic spherical beads",
+      "slot": "earrings",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "pendant necklace",
+      "details": "small cross design, adjustable chain length, lightweight metal alloy",
+      "slot": "necklace",
+      "color_hex": "#D4AF37",
+      "worn": true
+    }
+  ]
+}

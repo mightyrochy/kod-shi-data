@@ -1,0 +1,60 @@
+── ПРОМПТ (8169 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Пальто жіноче вільне еко-шкіра · kind code: coat · colour code: black · about it: text н=1
+2 — Спідниця плісе срібло · kind code: skirt · colour code: grey · about it: text н=2
+3 — Туфлі-човники, ATTICO, замша, колір чорний · kind code: pumps · colour code: black · about it: text н=3
+4 — Чорний двобортний жилет з віскозою · kind code: vest · colour code: black · about it: text н=4
+5 — Сумка жіноча Dakota Satchel · kind code: bag_generic · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This is a long black coat made of eco-leather with a soft hood and wide sleeves. Its relaxed fit drapes comfortably over your frame, offering warmth without adding bulk.",
+"2": "You wear a full-length silver pleated skirt with a subtle shimmer that catches the light as you move. Its flowing texture adds grace and visual interest to the lower half of your outfit.",
+"3": "Your shoes are black suede pumps with a classic pointed toe and a modest heel, giving you height without sacrificing comfort during extended wear.",
+"4": "This is a tailored black sleeveless vest with notched lapels and button closures at the front. It adds structure to your torso while allowing freedom of movement beneath the coat.",
+"5": "You carry a large black leather satchel bag with top handles and a decorative belt across the front, featuring a polished silver buckle that echoes the tone of your skirt.",
+"6": "You are wearing a long black puffer coat made of eco-leather with a hood, paired with a silver pleated midi skirt that catches the light. Over your top, I’ve added a structured black vest to soften the lines of the coat while keeping your silhouette sharp. You finish the look with black suede pumps and carry a sleek black satchel bag with a metallic buckle. This outfit balances comfort and elegance, perfect for walking during daylight hours while maintaining the formality you requested for church. The monochrome base creates a quiet, reverent backdrop that lets the silver skirt stand out gently without being loud.",
+"7": "Layer the coat open to let the shimmer of the skirt show through, keeping the vest visible at the collar and hem for structure.",
+"8": "Tuck the front of your white hoodie slightly under the coat if you wear one inside, to define your waistline before adding the outer layers.",
+"9": "Wear your shoes with confidence—this height extends your leg line without interrupting it visually, so stride openly through the church grounds.",
+"10": "Туфлі-човники, ATTICO, замша, колір чорний — I chose black suede pumps over the shoes from the verdict to continue the leg line under the maxi skirt and match the dark tones of the coat, fixing the unjudged hem.",
+"11": "Чорний двобортний жилет з віскозою — I added a black double-breasted vest as a third piece to style the base and fix the 'dressed not styled' issue, ensuring the register leads clearly.",
+"12": "Туфлі-човники, ATTICO, замша, колір чорний — I accept this remark because the black suede pumps fix the unjudged hem of the skirt and maintain the clean leg line essential for church formality.",
+"13": "Пальто жіноче вільне еко-шкіра, Спідниця плісе срібло, Туфлі-човники, ATTICO, замша, колір чорний, Чорний двобортний жилет з віскозою, Сумка жіноча Dakota Satchel — I accept this remark because the mix of rock (coat) and preppy (skirt) registers creates a modern tension that serves your intent to be distinct, not just formal."
+}
+
+── ВІДПОВІДЬ (3023 симв., 50.2 с, HTTP 200) ──
+```json
+{
+"1": "Це довге чорне пальто з еко-шкіри з м’яким капюшоном і широкими рукавами. Його вільний крій зручно драпірується по твоїй фігурі, даруючи тепло без зайвого об’єму.",
+"2": "Ти носиш срібну плісовану спідницю максі з ледь помітним блиском, який ловить світло під час руху. Її струмлива текстура додає витонченості та візуального інтересу нижній частині твого образу.",
+"3": "Твої туфлі-човники чорного кольору з замші мають класичний загострений носок і помірний підбор, даруючи тобі висоту без шкоди для комфорту протягом тривалого часу.",
+"4": "Це приталений жилет чорного кольору без рукавів з лацканами та ґудзиками спереду. Він додає структури твоїй верхній частині тіла, дозволяючи свободу рухів під пальтам.",
+"5": "Ти носиш велику шкіряну сумку-саквояж чорного кольору з двома ручками зверху та декоративним ремінцем спереду, прикрашену полірованою срібною пряжкою, яка перегукується з тоном твоєї спідниці.",
+"6": "Ти одягнена в довге чорне пухове пальто з еко-шкіри з капюшоном у поєднанні зі сріблястою плісованою міді-спідницею, яка ловить світло. Зверху на твою блузку я додав структурований чорний жилет, щоб пом’якшити лінії пальта, зберігаючи при цьому чіткість силуету. Ти завершуєш образ чорними туфлями-човниками з замші та носиш елегантну сумку-саквояж чорного кольору зі срібною пряжкою. Цей образ поєднує комфорт і витонченість, ідеальний для прогулянок у світлий час доби, зберігаючи при цьому урочистість, яку ти попросила на церковній службі. Монохромна основа створює спокійний, шанобливий фон, який дозволяє сріблястій спідниці виділитися м’яко без зайвої гучності.",
+"7": "Одягни пальто розстебнутим, щоб показати блиск спідниці та зробити жилет помітним на комірі й подолі.",
+"8": "Злегка заправ передню частину білого худі під пальтам, якщо ти носиш його всередині, щоб окреслити твою лінію талії до додавання верхніх шарів.",
+"9": "Носи свої туфлі з впевненістю — ця висота продовжує лінію ніг без візуального порушення, тому сміливо крокуй по церковній території.",
+"10": "Туфлі-човники, ATTICO, замша, колір чорний — Я обрала чорні туфлі-човники з замші замість взуття з вердикту, щоб продовжити лінію ніг під максі-спідницею та поєднати їх із темними тонами пальта, виправивши необроблений поділ.",
+"11": "Чорний двобортний жилет з віскозою — Я додала чорний двобортний жилет як третій елемент для стилізації основи та вирішення проблеми «одягнена, але не стильна», забезпечуючи чітке ведення образу.",
+"12": "Туфлі-човники, ATTICO, замша, колір чорний — Я приймаю цей зауваження, тому що чорні туфлі-човники з замші виправляють необроблений поділ спідниці та підтримують чисту лінію ніг, необхідну для церковної урочистості.",
+"13": "Пальто жіноче вільне еко-шкіра, Спідниця плісе срібло, Туфлі-човники, ATTICO, замша, колір чорний, Чорний двобортний жилет з віскозою, Сумка жіноча Dakota Satchel — Я приймаю цей зауваження, тому що поєднання рок (пальта) та преппі (спідниці) створює сучасну напругу, яка служить твоєму бажанню бути особливою, а не просто формальною."
+}
+```
