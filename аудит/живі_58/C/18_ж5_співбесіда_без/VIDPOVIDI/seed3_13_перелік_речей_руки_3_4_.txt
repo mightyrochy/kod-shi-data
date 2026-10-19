@@ -1,0 +1,51 @@
+── ПРОМПТ (2516 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Navy wool-blend blazer, structured shoulder cut, hip length, hex #1a237e, fine weave fabric.\nCharcoal high-waisted wide-leg trousers, tailored flat front, ankle length, hex #36454f, heavy twill fabric.\nCream silk camisole, relaxed V-neck cut, mini length, hex #faf0e6, smooth satin fabric.\nBlack leather loafers, square toe cut, mid-calf height, hex #1c1b1b, full-grain leather.\nSilver geometric hoop earrings, medium gauge cut, earlobe length, hex #c0c0c0, polished metal.\nSheer black silk scarf, rectangular cut, oversized length, hex #000000, fluid chiffon fabric.\nThis outfit bridges the gap between neat and formal by pairing a sharp navy blazer with sophisticated wide-leg trousers in charcoal, creating an authoritative yet modern silhouette suitable for an analytics role interview. The cream silk camisole adds a touch of softness to balance the structured outer layers while keeping the overall palette professional and seasonally appropriate for autumn daylight. Minimal silver accessories complete the look without overpowering the outfit, ensuring the focus remains on her confidence and competence as she presents herself for the banking position."}
+
+── ВІДПОВІДЬ (1173 симв., 68.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured shoulder cut, hip length, fine weave fabric",
+      "slot": "outerwear",
+      "color_hex": "#1a237e",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg tailored flat front ankle length heavy twill fabric",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "camisole",
+      "details": "relaxed V-neck cut mini length smooth satin fabric",
+      "slot": "top",
+      "color_hex": "#faf0e6",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "square toe cut mid-calf height full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#1c1b1b",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "geometric hoop medium gauge cut earlobe length polished metal",
+      "slot": "earrings",
+      "color_hex": "#c0c0c0",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "rectangular cut oversized length fluid chiffon fabric",
+      "slot": "scarf",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

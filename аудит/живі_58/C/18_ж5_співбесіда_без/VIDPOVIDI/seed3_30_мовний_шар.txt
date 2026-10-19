@@ -1,0 +1,48 @@
+── ПРОМПТ (6831 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Коричневий шарф у фірмову монограму · kind code: scarf_generic · colour code: brown · about it: text н=1
+2 — Светр Хмаринка кобальт · kind code: sweater · colour code: graphite · about it: text н=2
+3 — Широкі штани карго коричневого кольору · kind code: trousers · colour code: brown · about it: text н=3
+4 — Лофери жіночі Tamaris · kind code: loafers · colour code: brown · about it: text н=4
+5 — Сумка Марсала абстракція · kind code: bag_generic · colour code: burgundy · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; burgundy — бордовий; graphite — графіт.
+
+ТЕКСТИ:
+{
+"1": "The scarf features a repeating monogram pattern in shades of brown on a soft beige background, designed to add texture and subtle branding to your ensemble.",
+"2": "This fitted graphite sweater showcases intricate mesh detailing through the sleeves and upper bodice, finished with a distinctive row of white feathers along the hip line for an elegant touch.",
+"3": "These wide-legged cargo trousers in chocolate brown offer a relaxed silhouette while maintaining a polished structure suitable for professional settings.",
+"4": "Classic brown suede loafers with a sleek low heel provide understated comfort and sophistication that pairs perfectly with your outfit's color palette.",
+"5": "This burgundy crossbody bag displays vibrant abstract patterns in warm earth tones, offering an artistic contrast to the more subdued elements of your attire.",
+"6": "You have a sophisticated look ready for your analysis interview: the fitted graphite top with its delicate mesh sleeves and feathered waistband sets an elegant tone, while the wide-legged cargo trousers in rich brown ground you firmly. Your choice of classic brown suede loafers balances the formality with everyday ease, and the burgundy abstract-pattern bag adds a touch of artistic flair without being distracting. This combination works beautifully for an autumn morning, offering a neat yet professional appearance that respects the conventional nature of a bank interview.",
+"7": "Wear the feathered waistband of the top slightly lower to emphasize your defined waistline."
+}
+
+── ВІДПОВІДЬ (1598 симв., 38.3 с, HTTP 200) ──
+```json
+{
+  "1": "Цей шарф має повторюваний монограмний візерунок у відтінках коричневого на м’якому бежевому тлі, розроблений для того, щоб додати текстуру та ледь помітне брендування твоєму образу.",
+  "2": "Цей приталений графітовий светр демонструє складні сітчасті деталі по рукавах і верхній частині тулуба, завершені виразним рядом білих пір’їн вздовж лінії стегон для елегантного акценту.",
+  "3": "Ці широкі штани карго шоколадного кольору пропонують розслаблений силует, зберігаючи при цьому відшліфовану структуру, яка підходить для професійних ситуацій.",
+  "4": "Класичні коричневі замшеві лофери з елегантно низьким каблуком забезпечують ненав’язливий комфорт і вишуканість, які чудово поєднуються з колірною гамою твого образу.",
+  "5": "Ця бордова сумка-кросбоді демонструє яскраві абстрактні візерунки в теплих земляних тонах, пропонуючи художній контраст більш стриманим елементам твого одягу.",
+  "6": "У тебе є вишуканий образ для співбесіди з аналітиком: приталений графітовий топ із ніжними сітчастими рукавами та пір’яною лінією стегон задає елегантний тон, а широкі штани карго насиченого коричневого кольору надійно тебе підтримують. Твій вибір класичних коричневих замшевих лоферів збалансовує офіційність із повсякденним комфортом, а бордова сумка з абстрактним візерунком додає художнього шарму без зайвої відволікання. Ця комбінація чудово підходить для осіннього ранку, пропонуючи охайний і професійний вигляд, який поважає традиційний характер банківської співбесіди.",
+  "7": "Опусти пір’яну лінію стегон светра трохи нижче, щоб підкреслити твою точену талію."
+}
+```

@@ -1,0 +1,44 @@
+── ПРОМПТ (2382 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored wool blend blazer with a structured shoulder cut and lapel collar in navy blue (#000080), medium weight fabric suitable for autumn mornings.\nSlim-fit wool trousers in matching navy blue (#000080) with a flat front and straight leg length.\nRefined fine-knit merino sweater shell in charcoal grey (#36454F) peeking subtly at the neckline, adding texture beneath the jacket.\nMinimalist stainless steel watch with a dark leather strap for wrist detail.\nLow-cut toe oxford shoes in polished black leather to ground the ensemble formally.\nThis outfit strikes the perfect balance between the \"neat\" and \"formal\" requirements by combining a classic structured blazer and trousers with a refined knit layer that adds warmth without bulk. The charcoal sweater introduces a subtle textural contrast against the solid navy suit, preventing the look from appearing too rigid for an analytical role. Polished black oxfords maintain professional standards while allowing for comfort during a long interview day in autumn daylight."}
+
+── ВІДПОВІДЬ (1013 симв., 70.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "Tailored wool blend with a structured shoulder cut and lapel collar, medium weight fabric suitable for autumn mornings",
+      "slot": "outerwear",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "Slim-fit wool with a flat front and straight leg length",
+      "slot": "bottom",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "sweater",
+      "details": "Refined fine-knit merino shell peeking at the neckline",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "watch",
+      "details": "Minimalist stainless steel with a dark leather strap",
+      "slot": "watch",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "shoes",
+      "details": "Low-cut toe oxford in polished black leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

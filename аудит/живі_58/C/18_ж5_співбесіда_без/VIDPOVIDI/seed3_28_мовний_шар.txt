@@ -1,0 +1,48 @@
+── ПРОМПТ (7354 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Шовкові штани аладіни · kind code: trousers · colour code: graphite · about it: text н=1
+2 — Сорочка з відкритою спиною та ґудзиками з натурального льону · kind code: shirt · colour code: chocolate · about it: text н=2
+3 — Пасок шкіряний (Hermes Kelly) · kind code: belt · colour code: burgundy · about it: text н=3
+4 — Слінгбеки замшеві коралові NELA · kind code: pumps · colour code: coral · about it: text н=4
+5 — Жіноча сумка тоут шкіряна коричнева · kind code: tote · colour code: brown · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; burgundy — бордовий; chocolate — шоколадний; coral — кораловий; graphite — графіт.
+
+ТЕКСТИ:
+{
+"1": "These graphite trousers are a clean-lined, wide-cut style that flows from the hip to the ankle without clinging. The fabric has a smooth, slightly luminous finish that catches the light subtly as you move, creating a sense of quiet authority perfect for an office setting.",
+"2": "This chocolate linen shirt features a classic collar and button front with a relaxed yet tailored fit. The natural texture adds depth to your upper body while the structured shoulders help balance your wider hips, drawing attention upward toward your face.",
+"3": "The burgundy leather belt features a polished gold-toned buckle that adds a refined metallic accent. Its precise placement at the waist defines your silhouette and introduces a warm tone that bridges the chocolate and graphite pieces.",
+"4": "These coral suede slingbacks offer a sleek, low-profile silhouette with a soft square toe and flexible sole. Their muted warmth complements the earth tones above while maintaining an understated elegance suitable for formal settings.",
+"5": "The brown leather tote presents a structured rectangular shape with clean lines and a minimalist profile. Its neutral hue ties together the entire ensemble without competing for attention, making it practical yet polished enough for an interview.",
+"6": "Your outfit for the bank interview is built around a powerful chocolate and graphite palette that feels serious, composed, and effortlessly professional. The chocolate linen shirt offers a clean, structured silhouette that balances your wider bottom half with a fitted cut, while the graphite trousers in an A-line shape provide a wide, stable base that draws the eye down to your legs without overwhelming your frame. The burgundy belt anchors your waistline, defining your natural curves and adding a touch of refined warmth to the neutral tones.",
+"7": "The linen texture of the top and trousers will feel crisp and polished throughout the day, so you can confidently lean into their sophisticated drape."
+}
+
+── ВІДПОВІДЬ (1987 симв., 34.3 с, HTTP 200) ──
+```json
+{
+  "1": "Ці графітові штани — це широка модель з чистими лініями, яка вільно спадає від стегна до щиколотки без облягання. Тканина має гладку, ледь сяючу поверхню, що тонко ловить світло під час руху, створюючи відчуття тихої впевненості, ідеальне для офісного середовища.",
+  "2": "Ця шоколадна лляна сорочка вирізняється класичним коміром та ґудзиками спереду з розслабленим, але приталеним силуетом. Природна текстура додає глибини твоїй верхній частині тіла, а структуровані плечі допомагають врівноважити ширші стегна, привертаючи увагу до обличчя.",
+  "3": "Бордовий шкіряний пасок має відполіровану золотисту пряжку, яка додає вишуканого металевого акценту. Його точне розміщення на талії окреслює твою фігуру і вносить теплий відтінок, що поєднує шоколадні й графітові речі.",
+  "4": "Ці коралові замшеві слінгбеки пропонують елегантний силует з м’яким квадратним носком та гнучкою підошвою. Їх приглушений теплий колір доповнює земні тони зверху, зберігаючи стриману вишуканість, яка підходить для формальних заходів.",
+  "5": "Коричнева шкіряна сумка-тоут має структуровану прямокутну форму з чистими лініями та мінімалістським профілем. Її нейтральний відтінок поєднує весь образ без зайвої уваги, роблячи її практичною і водночас достатньо вишуканою для співбесіди.",
+  "6": "Твій образ на банківську співбесіду побудований навколо потужного шоколадного й графітового палітри, що відчувається серйозно, зібрано та без зусиль професійно. Шоколадна лляна сорочка пропонує чистий, структурований силует, який врівноважує твою ширшу нижню частину з приталеним кроєм, а графітові штани А-подібного крою забезпечують широку й стійку основу, що привертає погляд до ніг без перевантаження твоєї фігури. Бордовий пасок підкреслює твою талію, окреслюючи природні вигини і додаючи теплий відтінок до нейтральних тонів.",
+  "7": "Лляна текстура сорочки й штанів буде відчуватися свіжою й охайною протягом усього дня, тому ти можеш впевнено підкреслити їх елегантний крій."
+}
+```
