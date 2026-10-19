@@ -1,0 +1,25 @@
+── ПРОМПТ (2225 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "own": "<id from her_items or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description", "\"her_items\" — her own items; an item of the description that is one of them gets its id in \"own\""]}, "description": "Black silk slip dress, midi length, #000000, satin  \nWhite leather sandal with black sole, block heel, open toe and slingback, #ffffff upper / #171615 sole, leather  \n\nThis outfit works because the white sandal she owns is elevated by a sleek black silk slip dress — a classic, refined pairing that fits both neat and formal requests. The midi length and satin fabric add evening-appropriate drama for an autumn celebration under artificial light, while the open-toe design keeps it breathable yet polished. It honors her wish to wear her own shoes without overshadowing them, letting texture and silhouette do the work in a minimalist, confident way.", "her_items": [{"id": "її-ф1", "name": "White leather sandal with black sole"}]}
+
+── ВІДПОВІДЬ (439 симв., 48.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Black silk slip dress",
+      "details": "satin, midi length",
+      "slot": "dress",
+      "color_hex": "#000000",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "White leather sandal with black sole",
+      "details": "block heel, open toe and slingback",
+      "slot": "shoes",
+      "color_hex": "#ffffff",
+      "own": "її-ф1",
+      "worn": true
+    }
+  ]
+}
