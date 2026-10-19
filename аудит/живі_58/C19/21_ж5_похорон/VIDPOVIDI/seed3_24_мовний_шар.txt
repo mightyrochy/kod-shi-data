@@ -1,0 +1,54 @@
+── ПРОМПТ (7704 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Чорний піджак прямого крою на гудзиках · kind code: blazer · colour code: black · about it: text н=1
+2 — Блуза з жаккарда чорного кольору з акцентним вирізом · kind code: blouse · colour code: black · about it: text н=2
+3 — Чорні палаццо із сумішевого льону · kind code: trousers · colour code: black · about it: text н=3
+4 — Мюлі чорні CHERRY KISS · kind code: mules · colour code: black · about it: text н=4
+5 — Сумка жіноча, ATTICO, шкіра, колір чорний · kind code: bag_generic · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний.
+
+ТЕКСТИ:
+{
+"1": "This black blazer is cut straight with a tailored fit, offering clean lines that respect your shoulders and define your waist subtly. Its smooth fabric and classic button closure give you a poised presence without drawing attention to itself.",
+"2": "The blouse features a refined jacquard weave in black, with a modest keyhole at the chest for quiet elegance. Its short sleeves and high collar sit gently on your frame, adding softness while maintaining dignity.",
+"3": "These wide-leg trousers are crafted from a soft blend of linen, falling in a relaxed drape from hip to ankle. Their loose but structured silhouette balances the fitted top and blazer without adding volume where you do not need it.",
+"4": "The black mules carry a delicate cherry motif on sheer panels, bringing subtle warmth to your feet. Their pointed toes and modest heel lengthen your legs while keeping your movement graceful and unhurried.",
+"5": "This black leather bag holds its shape with quiet strength, featuring sturdy handles and a compact form that stays close to your hip. Its smooth surface and minimal hardware keep your ensemble cohesive and composed.",
+"6": "Your outfit is anchored in deep, respectful black across the top and bottom, creating a unified silhouette that carries well through an early morning service. The blazer provides structure with a classic fit, while the blouse adds quiet texture without drawing attention to itself; the trousers flow gently from hip to ankle, balancing the formality of your ensemble. A single touch of the cherry-print mules brings understated warmth to your step, and the black leather bag keeps everything clean and composed.",
+"7": "Keep your blazer buttoned when standing still, and open it only as you sit for rest or comfort during the service.",
+"8": "Let the blouse remain tucked in for a neat line; if you prefer to loosen it slightly later, let just the top fall free at the waist.",
+"9": "Carry the bag close to your side with one hand, leaving both hands free for gestures and moments of prayer.",
+"10": "Чорний піджак прямого крою на гудзиках, Блуза з жаккарда чорного кольору з акцентним вирізом, Чорні палаццо із сумішевого льону, Мюлі чорні CHERRY KISS, Сумка жіноча, ATTICO, шкіра, колір чорний — I accept this note on variety because five distinct pieces create enough visual sources of interest so you can feel fully dressed and not flat against the grey autumn light."
+}
+
+── ВІДПОВІДЬ (2462 симв., 93.4 с, HTTP 200) ──
+```json
+{
+"1": "Цей чорний піджак прямого крою має приталений силует, пропонуючи чіткі лінії, які поважають твої плечі та ледь помітно окреслюють твою талію. Його гладка тканина і класична застібка на ґудзиках дарують тобі впевнену присутність без зайвої уваги.",
+"2": "Блуза має вишуканий жакардовий візерунок чорного кольору, з непомітним вирізом-ключиком у зоні грудей для тихої елегантності. Її короткі рукави та високий комір ніжно сидять на твоїй фігурі, додаючи м’якості, зберігаючи при цьому гідність.",
+"3": "Ці широкі штани пошиті з м’якої суміші льону і вільно спадають від стегна до щиколотки. Їхній вільний, але структурований силует гармонійно балансує приталений верх та піджак без зайвого об’єму там, де він не потрібен.",
+"4": "Чорні мюлі мають ніжний вишневий мотив на прозорих вставках, додаючи стриманого тепла твоїм ногам. Їхній загострений мисок і невисокий каблук видовжують ноги, зберігаючи при цьому граційність та неквапливість рухів.",
+"5": "Ця чорна шкіряна сумка тримає форму з тихою силою, має міцні ручки та компактну конструкцію, яка зручно лежить біля твого стегна. Її гладка поверхня і мінімальна фурнітура підтримують цілісність всього ансамблю.",
+"6": "Твій образ заснований на глибокому, шанобливому чорному кольорі у верхній та нижній частинах, створюючи єдиний силует, який добре виглядає протягом ранкової служби. Піджак надає структуру з класичним кроєм, а блуза додає тиху текстуру без зайвої уваги; штани вільно спадають від стегна до щиколотки, балансуючи формальність твого ансамблю. Єдиний акцент вишневих мюлів приносить стримане тепло твоєму кроку, а чорна шкіряна сумка зберігає все чистим та зібраним.",
+"7": "Тримай піджак застебнутим, коли стоїш нерухомо, і розстібай його лише тоді, як сядеш для відпочинку або комфорту під час служби.",
+"8": "Залиш блузу заправленою всередину для охайного вигляду; якщо ти захочеш трохи її послабити пізніше, дай верхній частині вільно звисати на талії.",
+"9": "Тримай сумку близько до боку однією рукою, залишаючи обидві руки вільними для жестів і моментів молитви.",
+"10": "Чорний піджак прямого крою на гудзиках, Блуза з жаккарда чорного кольору з акцентним вирізом, Чорні палаццо із сумішевого льону, Мюлі чорні CHERRY KISS, Сумка жіноча, ATTICO, шкіра, колір чорний — Я приймаю цю пораду щодо різноманітності, адже п’ять різних речей створюють достатньо візуальних акцентів, щоб ти могла почуватися повністю одягненою і не пласкою на тлі сірого осіннього світла."
+}
+```

@@ -1,0 +1,51 @@
+── ПРОМПТ (2559 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Charcoal wool overcoat, classic cut with notched lapel, length mid-thigh, deep graphite gray #36454F, heavy virgin wool.\nTailored charcoal trousers, straight leg, knee-length hem for ease of walking in autumn grounds, matte wool twill.\nCrisp white oxford button-down shirt, regular fit with a modest spread collar, long sleeves rolled to the forearm, crisp cotton poplin.\nMatte black leather pumps, low heel for comfort on uneven terrain, closed toe, polished calfskin.\nSlate gray silk pocket square, folded three-fold, subtle sheen, 100% mulberry silk.\nSimple black mourning ring or dark onyx stud earrings, smooth finish, solid stone set in blackened sterling silver.\n\nThis ensemble respects the profound solemnity of a grandfather's funeral while adhering to your request for smart to formal attire suitable for early morning daylight. The charcoal and slate palette provides a deep, respectful contrast against the crisp white shirt, signaling both grief and dignity without appearing overly heavy for the autumn season. Structured yet comfortable fabrics like wool twill and smooth leather ensure you can move with grace through the procession and cemetery grounds, honoring your legacy with poise."}
+
+── ВІДПОВІДЬ (1211 симв., 169.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "overcoat",
+      "details": "classic cut with notched lapel, length mid-thigh, heavy virgin wool",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "tailored straight leg, knee-length hem, matte wool twill",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "shirt",
+      "details": "regular fit with modest spread collar, long sleeves rolled to forearm, crisp cotton poplin",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "low heel closed toe polished calfskin",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "pocket square",
+      "details": "three-fold folded subtle sheen 100% mulberry silk",
+      "slot": "accessory",
+      "color_hex": "#6B7E89",
+      "worn": true
+    },
+    {
+      "name": "ring",
+      "details": "simple mourning smooth finish solid stone set in blackened sterling silver",
+      "slot": "jewelry",
+      "color_hex": "#000000",
+      "worn": false
+    }
+  ]
+}
