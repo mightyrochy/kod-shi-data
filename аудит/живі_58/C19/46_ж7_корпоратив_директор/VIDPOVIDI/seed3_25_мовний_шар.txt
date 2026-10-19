@@ -1,0 +1,54 @@
+── ПРОМПТ (7772 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Джемпер жіночий в анімалістичний принт зимовий · kind code: sweater · colour code: silvery · about it: text н=1
+2 — Спідниця-плісе максі жіноча демісезонна · kind code: skirt · colour code: navy · about it: text н=2
+3 — Туфлі Sergio Rossi блакитні · kind code: dress_shoes · colour code: light_blue · about it: text н=3
+4 — Сіра шкіряна сумка Loulou · kind code: bag_generic · colour code: grey · about it: text н=4
+5 — Піджак приталений без лацканів · kind code: blazer · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; grey — сірий; light_blue — блакитний; navy — темно-синій; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This silvery leopard-print sweater brings a touch of wild elegance to your look with its soft knit texture and relaxed fit. The neutral beige background lets the bold print stand out without overwhelming, making it perfect for both casual and formal occasions.",
+"2": "The navy pleated maxi skirt flows gracefully from your waist down to your feet, adding movement and sophistication to your ensemble. Its deep color provides a grounding contrast to the playful pattern of your sweater, while the high-waisted design elongates your legs.",
+"3": "These light blue patent dress shoes bring a subtle pop of color that complements the silvery tones of your sweater. Their block heel offers comfort for long hours at work, while the sleek pointed toe adds a touch of femininity.",
+"4": "This grey quilted leather bag adds structure and luxury to your outfit with its classic flap design and chain strap. Its neutral tone pairs effortlessly with both your navy skirt and silvery sweater, making it versatile for any occasion.",
+"5": "The beige blazer offers a polished layer that can be worn over your sweater for extra warmth or removed when you want to show off the leopard print. Its clean lines and structured shoulders add a professional edge to your look.",
+"6": "You are dressed for a sophisticated work event where you want to feel confident and unassuming. Your outfit features a silvery leopard-print sweater paired with a navy pleated maxi skirt, creating a bold yet balanced silhouette. Completing your look are light blue patent dress shoes, a grey quilted leather bag, and an optional beige blazer if you need extra warmth or structure. The metallic gold-and-silver jewelry adds just enough shine to elevate the ensemble without overpowering it.",
+"7": "Wear the blazer over your shoulders or open in front to add polish when needed, or let the sweater stand alone for a relaxed yet refined vibe.",
+"8": "Pair the navy skirt with your light blue shoes to create a cool-toned base that contrasts beautifully with the silvery tones of your top.",
+"9": "Carry the grey bag on your shoulder or across your body for easy access while maintaining an effortless, professional aesthetic.",
+"10": "Туфлі Sergio Rossi блакитні — The shiny pumps add necessary formality for the event and do not contradict your intent to conceal; their sheen is contained and acts as a subtle focal point rather than revealing body details."
+}
+
+── ВІДПОВІДЬ (2596 симв., 111.5 с, HTTP 200) ──
+```json
+{
+"1": "Цей сріблястий джемпер з леопардовим принтом додає твоєму образу дикої елегантності завдяки м’якій в’язаній текстурі та вільному крою. Нейтральний бежевий фон дозволяє яскравому принті виділятися, не перевантажуючи образ, що робить його ідеальним як для повсякденних, так і для урочистих випадків.",
+"2": "Темно-синя спідниця-плісе максі елегантно спадає від талії до щиколоток, додаючи руху й вишуканості твоєму ансамблю. Її глибокий колір створює стриманий контраст з грайливим принтом твого джемпера, а висока талія візуально подовжує ноги.",
+"3": "Ці блакитні лаковані туфлі-човники додають твоєму образу ледь помітну нотку кольору, яка гармонійно доповнює сріблясті тони твого джемпера. Їхній стійкий каблук забезпечує комфорт протягом тривалого часу на роботі, а витончений загострений мисок додає жіночності.",
+"4": "Ця сіра сумка з тисненої шкіри Loulou надає твоєму вбранню структуру та розкіш завдяки класичному клапану й ланцюжку. Її нейтральний відтінок бездоганно поєднується як із темно-синьою спідницею, так і зі сріблястим джемпером, роблячи її універсальною для будь-якої події.",
+"5": "Бежевий піджак пропонує елегантний шар, який ти можеш одягнути поверх джемпера для додаткового тепла або зняти, коли захочеш продемонструвати леопардовий принт. Його чіткі лінії та структуровані плечі додають професійного вигляду твоєму образу.",
+"6": "Ти одягнена на вишуканий робочий захід, де хочеш почуватися впевнено й стримано. Твій образ складається з сріблястого джемпера з леопардовим принтом у парі з темно-синьою спідницею-плісе максі, створюючи сміливий, але водночас гармонійний силует. Довершують твій образ блакитні лаковані туфлі-човники, сіра сумка з тисненої шкіри Loulou та необов’язковий бежевий піджак, якщо тобі потрібне додаткове тепло або структура. Металеві золотисто-сріблясті прикраси додають образу достатньо блиску, щоб його вишукано доповнити, не перевантажуючи.",
+"7": "Одягни піджак на плечі або носи розстебнутим спереду, щоб додати елегантності за потреби, або дай джемперу бути самостійним для невимушеного й водночас витонченого настрою.",
+"8": "Поєднай темно-синю спідницю з блакитними туфлями, щоб створити холодну колірну гаму, яка чудово контрастує зі сріблястими тонами твого верху.",
+"9": "Носи сіру сумку на плечі або через тіло для зручного доступу й водночас підтримуй безтурботний професійний вигляд.",
+"10": "Туфлі Sergio Rossi блакитні — Блискучі туфлі-човники додають необхідної урочистості заходу та не суперечать твоєму наміру приховати; їхній блиск стриманий і діє як ледь помітний акцент, а не розкриває деталі тіла."
+}
+```
