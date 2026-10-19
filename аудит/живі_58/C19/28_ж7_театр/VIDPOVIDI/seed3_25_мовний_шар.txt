@@ -1,0 +1,59 @@
+── ПРОМПТ (8399 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Жакет-пальто · kind code: blazer · colour code: white · about it: text н=1
+2 — Штани класичні прямі сірі · kind code: trousers · colour code: grey · about it: text н=2
+3 — LeBERDES Чоботи зимові коричневі · kind code: boots · colour code: brown · about it: text н=3
+4 — Сумка-Плетінка бузкова · kind code: bag_generic · colour code: lilac · about it: text н=4
+5 — Жилет вовняний Емеральд в клітинку · kind code: vest · colour code: silvery · about it: text н=5
+6 — Кімоно з кишенями та поясом · kind code: belt · colour code: purple · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; grey — сірий; lilac — бузковий; purple — фіолетовий; silvery — срібний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This is a relaxed jacket-blazer in a soft white wool, cut loose enough to sit over your shirt without clinging. It gives you warmth and a casual elegance that suits the theater atmosphere.",
+"2": "These are straight grey trousers with a clean, fluid drape and no extra volume at the hips. They keep your silhouette neat and allow you to move freely throughout the evening.",
+"3": "You have these knee-high leather boots in deep brown, with a low block heel and a full-length side zipper for easy wear. Their height adds presence to your look while remaining comfortable enough for an evening out.",
+"4": "This is a macrame bag in lilac, woven from rope into an open net that holds a light canvas liner inside. The soft hue and textured weave bring a gentle accent to your outfit without overpowering it.",
+"5": "You wear a wool vest with a subtle check pattern in silvery grey, cut relaxed but tailored enough to keep its shape over your shirt. Its open front and button details add structure without feeling formal or stiff.",
+"6": "This robe is made of plush pink velvet with a deep V-neck, long sleeves, and two side pockets tied with a matching belt. It provides comfort and warmth while its soft texture contrasts beautifully with your structured layers.",
+"7": "You are dressed for an evening in the theater with a soft, autumnal palette. You wear a relaxed wool vest with a fine check pattern over a plain white shirt, tucked into straight grey trousers that keep your lines clean without marking your waist. The long brown leather boots give you height and stability for a night out. A lilac macrame bag adds a playful touch, while a pink velvet robe serves as your comfortable outer layer. I chose the boots to carry you through the evening in comfort, the trousers to set a quiet line, and the vest to bring warmth without heaviness; together they make a neat look that works just fine for a formal evening.",
+"8": "Wear the robe as your outermost layer to arrive comfortably and shed it once you enter the theater.",
+"9": "LeBERDES Чоботи зимові коричневі — Knee-high brown boots are chosen to bridge the gap between hem and floor, offering warmth for autumn evenings while maintaining a vertical line that elongates the legs.",
+"10": "Штани класичні прямі сірі — Grey trousers are selected for their smart formal register, providing a cool contrast to the white blazer that balances the tonal scheme without overwhelming the face.",
+"11": "Штани класичні прямі сірі, LeBERDES Чоботи зимові коричневі, Жилет вовняний Емеральд в клітинку, Жакет-пальто — Despite noting a below-level risk, this outfit's smart formal register and warm boots perfectly bridge the gap between autumn chill and the evening event, making it the strongest choice for her intent.",
+"12": "LeBERDES Чоботи зимові коричневі — The brown boots serve as a deliberate anchor that grounds the cool white and grey palette, adding necessary warmth to the autumn evening while maintaining the vertical line requested."
+}
+
+── ВІДПОВІДЬ (3218 симв., 106.6 с, HTTP 200) ──
+```json
+{
+"1": "Це вільний жакет-пальто з м’якої білої вовни, пошитий достатньо вільно, щоб він лежав поверх твоєї сорочки без облягання. Він дарує тобі тепло та невимушену елегантність, яка підходить до атмосфери театру.",
+"2": "Це прямі сірі штани з чистою, плавною драпіровкою і без зайвого об’єму на стегнах. Вони зберігають твою фігуру охайною та дозволяють тобі вільно рухатися протягом вечора.",
+"3": "У тебе є ці колінні чоботи з коричневої шкіри, з низьким широким каблуком і повнорозмірною бічною блискавкою для зручного взування. Їхня висота додає твоєму образу виразності, залишаючись при цьому достатньо комфортною для вечора.",
+"4": "Це сумка-плетінка бузкового кольору, сплетена з мотузки у відкритий сітчастий візерунок і має всередині світлу полотняну підкладку. М’який відтінок та текстурована тканина додають твоєму вбранню ніжний акцент без перевантаження його.",
+"5": "Ти носиш вовняний жилет з ледь помітним картатим візерунком сріблясто-сірого кольору, пошитий вільно, але достатньо приталений, щоб зберігати свою форму поверх твоєї сорочки. Його відкритий перед і деталі з ґудзиками додають структури без відчуття формальності чи жорсткості.",
+"6": "Цей халат виготовлений з плюшевого рожевого оксамиту, має глибокий V-подібний виріз, довгі рукави та дві кишені на боках, зав’язані відповідним поясом. Він забезпечує комфорт і тепло, а його м’яка текстура чудово контрастує з твоїми структурованими шарами.",
+"7": "Ти одягнена для вечора в театрі у м’якій осінній палітрі. Ти носиш розслаблений вовняний жилет з тонким картатим візерунком поверх простої білої сорочки, заправленої у прямі сірі штани, які зберігають твої лінії чистими без позначення талії. Довгі коричневі шкіряні чоботи додають тобі зросту і стійкості на вечірній вихід. Бузкова сумка-плетінка додає грайливий штрих, а рожевий оксамитовий халат слугує твоїм комфортним верхнім шаром. Я обрала чоботи, щоб вони несли тебе протягом усього вечора з комфортом, штани — щоб створити тиху лінію, і жилет — щоб додати тепла без тяжкості; разом вони створюють охайний вигляд, який чудово підходить для формального вечора.",
+"8": "Одягни халат як свій верхній шар, щоб прийти комфортно та зняти його після того, як увійдеш до театру.",
+"9": "LeBERDES Чоботи зимові коричневі — Колінні чоботи коричневого кольору обрані для заповнення проміжку між подолом і підлогою, забезпечуючи тепло в осінні вечори та зберігаючи вертикальну лінію, яка видовжує ноги.",
+"10": "Штани класичні прямі сірі — Сірі штани відібрано для їхнього розумного формального стилю, надаючи прохолодний контраст білому жакету, який збалансовує тональну схему без перевантаження обличчя.",
+"11": "Штани класичні прямі сірі, LeBERDES Чоботи зимові коричневі, Жилет вовняний Емеральд в клітинку, Жакет-пальто — Незважаючи на зазначений нижче середнього рівень ризику, розумний формальний стиль цього образу та теплі чоботи чудово заповнюють проміжок між осінньою холоднечею і вечірнім заходом, роблячи його найкращим вибором для твого наміру.",
+"12": "LeBERDES Чоботи зимові коричневі — Коричневі чоботи слугують навмисним акцентом, який заземлює прохолодну білу та сіру палітру, додаючи необхідне тепло осінньому вечору, зберігаючи при цьому вертикальну лінію."
+}
+```

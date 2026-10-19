@@ -1,0 +1,90 @@
+── ПРОМПТ (14687 симв.) ──
+Photo 1 — the shop's photo of #194·29 (outerwear, blazer); the other clothes in it are not in her outfit:
+Photo 2 — the shop's photo of #75·11 (bottom, trousers); the other clothes in it are not in her outfit:
+Photo 3 — the shop's photo of #168·10 (shoes, boots); the other clothes in it are not in her outfit:
+Photo 4 — the shop's photo of #156·30 (bag, bag_generic); the other clothes in it are not in her outfit:
+Photo 5 — the shop's photo of #398·35 (top, vest); the other clothes in it are not in her outfit:
+Photo 6 — the shop's photo of #335·39 (belt); the other clothes in it are not in her outfit:
+
+
+
+
+
+
+
+{"version": "1", "task": {"role": "You are the stylist. You describe to her the outfit you chose for her.", "rules": ["Describe only the items of «outfit»: no suggestions to buy or add more, no items it does not contain — no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or she may own it.", "Do not change the outfit yourself. Describe each item as its photo shows it: a clearly different item or colour goes only into «wrong_photos» or «swap».", "Say each thing about an item once, and do not state a quality and then doubt it.", "Talk to her about the items, never about what you were given: no word about photos, frames, what else a frame shows, a photo you could not see, or the name and shop data you went by, and no comparison of a photo with them — the card already shows her the photos and says under an item when it has none.", "Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).", "Every item of «outfit» is your choice: stand behind it. Do not end a doubt with «the choice is yours», «it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a decision to her only about what she asked for herself: her words in «case», an item marked «hers».", "Only when a photo shows that an item is not what this outfit needs — a clearly different colour, another kind of item, or unfit for her occasion — and that matters for this outfit, name that one item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in doubt, leave «swap» out.", "Write the answer object itself: it begins with {\"version\" and ends with the brace that closes it. Do not wrap it in another object; after that brace the answer is over — write nothing more."], "limits": ["Rely only on the input: do not invent what it does not contain.", "Text for her. Address her informally, with the familiar singular \"you\", never the polite plural, and a command to her in the singular too; you, the stylist, are a woman: speaking of yourself, use the feminine grammatical gender. Plain human words, without item numbers, ids, hex codes or markdown.", "Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.", "Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \"on the scale\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "DESCRIPTION_V1", "answer_schema": {"version": "1", "text": "<prose for her after the items: (1) optional, only when it adds something — how the shoes, the outer layer and the accessories go with the rest, in one or two sentences; (2) why it works — 3–4 sentences, taking from «day», «palette», «makeup» and «missing» only what matters most for this outfit and her occasion>", "how_to_wear": ["<one piece of advice per line, at most three, each changing how the outfit looks or lives through her day; advice that puts an item into, under or over another names that other item too, and both are items of «outfit»>"], "wrong_photos": ["<«n» of an item whose photo shows another item, a clearly different color, a placeholder or a logo; the same item on a person, from another angle, close up or with other clothes in the frame is no reason; when in doubt, leave it out>"], "swap": {"item": "<«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty reason — the usual case>", "why": "colour|kind|occasion — colour — the photo shows a clearly different colour than the code knows; kind — the photo shows another kind of item; occasion — the item on the photo does not suit her occasion", "to": "<only with «swap_spares» in the input: «n» of the spare you choose; leave it out to keep the item>"}, "named": [{"n": "<«n» of the item of «outfit» that «text» or «how_to_wear» names; a thing that is not an item of «outfit» has no «n» — and should not be named at all>", "what": "<every garment, shoe, bag, jewelry or accessory that «text» or «how_to_wear» names — each once, in a few words>"}], "about_items": [{"n": "<«n» of the item of «outfit»: one entry for every item of «outfit», in its order>", "text": "<prose for her about this one item alone: what it is, cut, length, color in words, fabric, in one or two sentences, as its photo and data show; it is in her outfit — never say it is not included; no other garment, shoe, bag or accessory — neither one its photo shows it with nor another item of «outfit»: how the items go together belongs to «text»; her figure, if at all, only in words of the line and the cut — never the shape code or an «…-shape»>"}]}, "input": ["\"outfit\" — the chosen outfit: its items with number «n», name and shop, and the shop's data on their color («color» as a code, «shop_color» — the shop's own word when it says more, «hex») — a hint for reading the photo and the colour of an item that has no photo", "\"photos\" — the numbers of this item's photos: every photo stands under its own label «Photo N — …:» among the blocks placed before this object, and the label names the item by its «n»; under a label with «not delivered» or «not available» there is no image; describe what you see on the photos, not the name; from each photo take only the item of its «kind» — a belt, a bag or jewelry is often shown worn with a blouse or a dress: describe the belt, not the blouse; never take for an item a photo under another number, and when all of its photos are not delivered, describe it by its name and «color»", "\"kind\" — what the item is, as a code (belt, top, dress, shoes, bag…); «type» — its narrower type when the code knows it; «set» — a set sold as one item, its top and its bottom both in the outfit; «about_items» describes the item of this «kind» and nothing else from its photo", "\"case\" — her occasion: its fields as codes, her own words as quotes; «formality» is an internal 1–10 band, for you only", "\"day\" — her day as facts; «formality» is the same internal band; in the last part of «text» say how this outfit lives through her day; when something you chose argues with the day (weather, hours on her feet, the place), say in one plain sentence why you still chose it, or what she does about it in the day itself (take the layer off, swap the pair); never hand that decision back to her", "\"palette\" — her palette; in the third part, in your own words and only where it concerns the items of this outfit: the metal, when the outfit has jewelry or metal details; a colour «farthest» from her only when an item of this outfit carries it (call no other colour farthest from her); a combination she can put together — optional, and only from the items of this outfit, never by adding an item; not as a list", "\"body\" — her figure as the code measured it: height, shape code, zones, and statements — the cuts that sit best on her, where a voluminous outfit takes its anchor, where most conditions meet on her body; in the last part of «text» say in one or two sentences what this outfit does for her figure — which line it draws, where it sets the eye (shoulders, waist, hips, legs, height), with the items that do it; speak of what the outfit does, never of what her body lacks or what should be hidden; when an item of the outfit works against these statements, say so gently and say why you chose it anyway or what to do with it — only with the items of «outfit»; «cuts» are cuts of an item, not items to add («belted» — a top with its own belt, never a belt she puts on); her figure only in words of the line and the cut — her waist, hips, shoulders, legs — never as the shape code, a letter, an «…-shape», a body type or a number", "\"shape\" — a routing code of her figure, not a verdict: A — hips wider than shoulders; V — shoulders wider than hips; X — a marked waist; H — a straight contour without a marked waist; HX — a waist on the edge of being marked; O — the waist nearly as wide as the hips: lead the eye along a vertical, up to the face and down to the legs, the middle quiet", "\"your_declared\" — items you kept deliberately although the code found something against them: «item» — its «n», «statements» — what the code found, as statement codes; this was your choice, not a flaw of the item: never call it a mismatch and never name it in «swap»; in «how_to_wear» say what she does about what the code found", "\"makeup\" — a soft note on the level of her make-up today, as statement codes «code»; say it in your own words in one gentle sentence in the last part of «text»: advice only, nothing in the outfit depends on it; a light «if you like» is enough", "\"statements\" — what the code found: each entry is a code, or {code: values}; codes are defined in \"statement_codes\""], "statement_codes": {"pair_even": "her top and bottom are even: there is no difference to make up for; the waist sets the form, not the pair", "volume_anchor_no_waist": "her waist is nearly as wide as her hips, so a voluminous outfit takes its anchor where she is narrow — the ankle, the wrist, the neckline — or keeps one vertical line (a long open layer, one colour top to bottom); not at the waist: no belt at the natural waist, nothing clinging to or decorating the middle of the torso", "cuts_best_on_her": "the cuts of this kind that score highest on her body, equal among themselves (values: kind; cuts; score — 0 to 1; weaker — how many other cuts score lower: weaker, not banned)", "body_knot": "most conditions meet at these zones of her body; conditions shared by both zones need ONE item for both, since a fix on one zone moves the other; the rest on the first zone is fixed separately (values: zones — per zone: conditions, tension 0 to 1; shared, own — condition codes, defined here too)", "pair_balance": "condition: the balance of her top and bottom halves — volume or structure on the narrower half, a clean line on the wider one", "one_line": "the contour leaves the body in ONE place below the shoulders: a voluminous top together with a voluminous bottom gives two lines, and neither reads", "top_cut": "condition: the cut of the top item — the cuts that score highest on her body", "outfit_level_off_occasion": "the outfit's level of formality is lower or higher than what the scenario asks for (values: direction — below or above, level — the outfit's median level, target — the occasion's target from and to, risk_posture — the risk posture: neutral, half_step_over, half_step_under_plus_detail)", "price_top_quarter_of_slot": "in the top quarter of its slot by price per outfit it can stand in — a lower estimate, not a forecast of wear (values: cheaper, of — slot items cheaper per outfit, out of; reach — outfits it fits; resoleable — stitched sole)"}}, "outfit": {"id": "o3", "items": [{"n": "#194·29", "name": "Жакет-пальто", "kind": "outerwear", "type": "blazer", "shop": "sezone.ua", "color": "white", "hex": "#dedad0", "photos": [1]}, {"n": "#75·11", "name": "Штани класичні прямі сірі", "kind": "bottom", "type": "trousers", "shop": "feelyou.com.ua", "color": "grey", "hex": "#aeacb7", "photos": [2]}, {"n": "#168·10", "name": "LeBERDES Чоботи зимові коричневі", "kind": "shoes", "type": "boots", "shop": "favoriteshoes.com.ua", "color": "brown", "hex": "#574745", "photos": [3]}, {"n": "#156·30", "name": "Сумка-Плетінка бузкова", "kind": "bag", "type": "bag_generic", "shop": "skripka.com.ua", "color": "lilac", "hex": "#c9b3df", "photos": [4]}, {"n": "#398·35", "name": "Жилет вовняний Емеральд в клітинку", "kind": "top", "type": "vest", "shop": "vilni.store", "color": "silvery", "hex": "#aca7ac", "photos": [5]}, {"n": "#335·39", "name": "Кімоно з кишенями та поясом", "kind": "belt", "shop": "wearme.ua", "color": "purple", "photos": [6]}]}, "case": {"event": "вечір у театрі, вистава о 19:00", "intent": "conventional", "occasion": "theatre", "intent_source": "default"}, "day": {"season": "autumn", "part_of_day": "evening", "light": "artificial", "formality": {"from": "neat", "to": "formal"}}, "palette": {"metal": "gold_and_silver", "farthest": ["deep", "muted"], "combinations": [{"technique": "neutral_plus_accent", "colors": ["graphite #545454", "milky #e7e0d1", "light_blue #00a1e7"]}, {"technique": "tone_on_tone", "colors": ["camel #c6875f", "orange #ffa05d", "cream #ffd4b9"]}, {"technique": "tone_on_tone", "colors": ["olive #859d5c", "mint #a9c17e", "mint #d0e6a9"]}]}, "body": {"height_cm": 160, "shape": "O", "zones": {"top_vs_bottom": 0, "waist_defined": false}, "statements": ["pair_even", "volume_anchor_no_waist", {"cuts_best_on_her": {"kind": "top", "cuts": ["relaxed", "oversized"], "score": 0.96, "weaker": 7}}, {"cuts_best_on_her": {"kind": "bottom", "cuts": ["wide", "culottes", "straight", "tapered"], "score": 0.96, "weaker": 4}}, {"body_knot": {"zones": [{"zone": "shoulders", "conditions": 3, "tension": 0.58}, {"zone": "hips", "conditions": 3, "tension": 0.58}], "shared": ["pair_balance", "one_line"], "own": ["top_cut"]}}]}, "your_declared": [{"item": "#75·11", "statements": [{"outfit_level_off_occasion": {"direction": "below", "level": "neat", "target": ["neat", "formal"], "risk_posture": "neutral"}}]}, {"item": "#168·10", "statements": [{"outfit_level_off_occasion": {"direction": "below", "level": "neat", "target": ["neat", "formal"], "risk_posture": "neutral"}}, {"price_top_quarter_of_slot": {"slot": "shoes", "cheaper": 42, "of": 51, "reach": 53}}]}, {"item": "#398·35", "statements": [{"outfit_level_off_occasion": {"direction": "below", "level": "neat", "target": ["neat", "formal"], "risk_posture": "neutral"}}]}, {"item": "#194·29", "statements": [{"outfit_level_off_occasion": {"direction": "below", "level": "neat", "target": ["neat", "formal"], "risk_posture": "neutral"}}]}], "makeup": [{"code": "visible_makeup_helps_low_contrast"}]}
+
+── ВІДПОВІДЬ (2746 симв., 35.7 с, HTTP 200) ──
+{
+"version": "1",
+"text": "You are dressed for an evening in the theater with a soft, autumnal palette. You wear a relaxed wool vest with a fine check pattern over a plain white shirt, tucked into straight grey trousers that keep your lines clean without marking your waist. The long brown leather boots give you height and stability for a night out. A lilac macrame bag adds a playful touch, while a pink velvet robe serves as your comfortable outer layer. I chose the boots to carry you through the evening in comfort, the trousers to set a quiet line, and the vest to bring warmth without heaviness; together they make a neat look that works just fine for a formal evening.",
+"how_to_wear": [
+"Wear the robe as your outermost layer to arrive comfortably and shed it once you enter the theater."
+],
+"wrong_photos": [],
+"swap": {
+},
+"named": [
+{
+"n": "#194·29",
+"what": "a jacket-blazer in white wool with a relaxed fit"
+},
+{
+"n": "#75·11",
+"what": "grey straight trousers"
+},
+{
+"n": "#168·10",
+"what": "brown knee-high leather boots"
+},
+{
+"n": "#156·30",
+"what": "a lilac macrame bag"
+},
+{
+"n": "#398·35",
+"what": "a check wool vest"
+},
+{
+"n": "#335·39",
+"what": "a pink velvet robe with pockets and a tie belt"
+}
+],
+"about_items": [
+{
+"n": "#194·29",
+"text": "This is a relaxed jacket-blazer in a soft white wool, cut loose enough to sit over your shirt without clinging. It gives you warmth and a casual elegance that suits the theater atmosphere."
+},
+{
+"n": "#75·11",
+"text": "These are straight grey trousers with a clean, fluid drape and no extra volume at the hips. They keep your silhouette neat and allow you to move freely throughout the evening."
+},
+{
+"n": "#168·10",
+"text": "You have these knee-high leather boots in deep brown, with a low block heel and a full-length side zipper for easy wear. Their height adds presence to your look while remaining comfortable enough for an evening out."
+},
+{
+"n": "#156·30",
+"text": "This is a macrame bag in lilac, woven from rope into an open net that holds a light canvas liner inside. The soft hue and textured weave bring a gentle accent to your outfit without overpowering it."
+},
+{
+"n": "#398·35",
+"text": "You wear a wool vest with a subtle check pattern in silvery grey, cut relaxed but tailored enough to keep its shape over your shirt. Its open front and button details add structure without feeling formal or stiff."
+},
+{
+"n": "#335·39",
+"text": "This robe is made of plush pink velvet with a deep V-neck, long sleeves, and two side pockets tied with a matching belt. It provides comfort and warmth while its soft texture contrasts beautifully with your structured layers."
+}
+],
+"case": {
+},
+"day": {
+},
+"palette": {
+},
+"body": {
+},
+"shape": "O",
+"your_declared": [],
+"makeup": ""
+}

@@ -1,0 +1,59 @@
+── ПРОМПТ (7972 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Ошатна коротка коктейльна сукня-бюстьє · kind code: cocktail_dress · colour code: purple · about it: text н=1
+2 — Вінтажна позолочена брошка з ланцюжками · kind code: jewelry_generic · colour code: mustard · about it: text н=2
+3 — Босоніжки жіночі, ATTICO, замша, колір бежевий · kind code: heeled_sandals · colour code: beige · about it: text н=3
+4 — Темно-коричневий шарф зі штучного хутра · kind code: scarf_generic · colour code: brown · about it: text н=4
+5 — Обруч Міріам зі стразами блакитний · kind code: headband · colour code: light_blue · about it: text н=5
+6 — Фіолетова шкіряна сумка · kind code: bag_generic · colour code: purple · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; light_blue — блакитний; mustard — гірчичний; purple — фіолетовий.
+
+ТЕКСТИ:
+{
+"1": "A strapless cocktail dress in soft purple with a fitted bodice featuring intricate black lace overlay and a flared satin skirt that ends above the knee. The waist is accentuated by an embroidered band, adding definition to your silhouette without clinging or creating visual clutter.",
+"2": "A vintage gold Chanel brooch with textured finish and dangling chain tassel, exuding timeless elegance that complements the dress's sophistication.",
+"3": "Beige suede heeled sandals featuring a block heel, platform sole, and adjustable straps for secure wear, offering both comfort and style for your evening outing.",
+"4": "A dark brown faux fur shawl with plush texture draped elegantly over the shoulders, providing warmth while enhancing your outfit's luxurious feel.",
+"5": "A light blue velvet headband adorned with intricate jewel embellishments in shades of turquoise and gold, adding a touch of glamour to complete your look.",
+"6": "A purple leather handbag with a slender handle and gold clasp detail, coordinating perfectly with your dress for a cohesive and polished ensemble.",
+"7": "This ensemble is ready for your evening at the theatre: a strapless cocktail dress in soft purple with intricate black lace and a satin skirt, accented by a gold Chanel brooch, beige heeled sandals, a dark brown faux fur shawl, a light blue velvet headband with jewels, and a matching purple handbag. The dress defines your waist beautifully despite your figure's shape, while the shawl adds warmth and drama for the evening event. The metallic tones in the jewelry complement the soft lighting of the theatre.",
+"8": "Let the dark brown shawl drape casually over one shoulder to create an elegant asymmetrical silhouette that balances your figure's proportions.",
+"9": "Вінтажна позолочена брошка з ланцюжками — This brooch repeats the dress's accent hue, creating an echo rather than standing alone as a random gold piece.",
+"10": "Босоніжки жіночі, ATTICO, замша, колір бежевий — Heeled sandals are necessary for this mini length; they match the skin tone to create a single column of color from foot to hem.",
+"11": "Темно-коричневий шарф зі штучного хутра — A dark brown scarf adds warmth and texture without competing with the bright dress, keeping the look balanced.",
+"12": "Ошатна коротка коктейльна сукня-бюстьє — The claimed waist detail via belt serves her goal of looking polished for a formal occasion, defining the silhouette on this fitted bodycon cut."
+}
+
+── ВІДПОВІДЬ (2577 симв., 131.4 с, HTTP 200) ──
+```json
+{
+"1": "Коротка ошатна коктейльна сукня-бюстьє м'якого фіолетового кольору з приталеним верхом і вишуканою чорною мереживною накладкою, а також розкльошеною сатиновою спідницею, що закінчується трохи вище коліна. Талія підкреслена вишитою стрічкою, яка додає визначення твоїй фігурі без зайвого облягання чи візуального захаращення.",
+"2": "Вінтажна позолочена брошка Chanel з текстурованою поверхнею та ланцюжком-китицею, що випромінює позачасову елегантність і доповнює вишуканість сукні.",
+"3": "Бежеві замшеві босоніжки на підборах із масивним каблуком, платформою та регульованими ремінцями для зручної посадки, пропонуючи комфорт і стиль для твого вечірнього виходу.",
+"4": "Темно-коричневий шарф зі штучного хутра з пухнастою текстурою елегантно накинутий на плечі, забезпечуючи тепло та підкреслюючи розкішний вигляд твого вбрання.",
+"5": "Блакитний оксамитовий обруч, прикрашений складними ювелірними деталями відтінків бірюзи й золота, додає нотку гламуру для завершення образу.",
+"6": "Фіолетова шкіряна сумка з тонкою ручкою та позолоченою застібкою-клямрою, що ідеально гармонує з твоєю сукнею для цілісного й вишуканого ансамблю.",
+"7": "Цей образ готовий до твого вечора в театрі: коротка ошатна коктейльна сукня-бюстьє м'якого фіолетового кольору з чорною мереживною накладкою та сатиновою спідницею, прикрашена позолоченою брошкою Chanel, бежевими босоніжками на підборах, темно-коричневим шарфом зі штучного хутра, блакитним оксамитовим обручем з коштовностями та фіолетовою сумкою в тон. Сукня чудово окреслює твою талію незалежно від форми твоєї фігури, а шарф додає тепла й драматизму для вечірньої події. Металеві тони у прикрасах доповнюють м'яке освітлення театру.",
+"8": "Дай темно-коричневому шарфу звисати недбало з одного плеча, щоб створити елегантний асиметричний силует, який врівноважує пропорції твоєї фігури.",
+"9": "Вінтажна позолочена брошка з ланцюжками — Ця брошка повторює акцентний колір сукні, створюючи відлуння замість того, щоб виглядати як випадковий золотий аксесуар.",
+"10": "Босоніжки жіночі, ATTICO, замша, бежевого кольору — Босоніжки на підборах необхідні для цієї міні-довжини; вони поєднуються з тоном шкіри, щоб створити єдину вертикальну лінію від ноги до подолу.",
+"11": "Темно-коричневий шарф зі штучного хутра — Темно-коричневий шарф додає тепла й текстури без конкуренції з яскравою сукнею, зберігаючи баланс образу.",
+"12": "Ошатна коротка коктейльна сукня-бюстьє — Заявлена талія за допомогою пояса служить твоїй меті виглядати охайно на формальному заході, окреслюючи силует цього приталеного фасону."
+}
+```
