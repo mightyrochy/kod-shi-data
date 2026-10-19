@@ -1,0 +1,30 @@
+── ПРОМПТ (2181 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Relaxed linen blouse with a loose cut and short length in Sandstone beige #d2b487, crafted from breathable organic cotton.\nDark washed denim jeans with a straight leg cut and ankle length in Deep Indigo #191970, made of durable stretch denim.\nMinimalist leather sandals with an open toe design and flat sole in Cognac brown #a67b5b, constructed from soft full-grain leather.\nThis ensemble perfectly balances the comfort needed for a day at the beach with the polished look required for an evening dinner by the sea. The breathable fabrics keep you cool during the warmer autumn hours while transitioning seamlessly to a slightly dressier vibe after sunset. Both pieces adhere strictly to your everyday formality request, avoiding anything too stiff or formal, while honoring your refusal of overly trendy or restrictive clothing."}
+
+── ВІДПОВІДЬ (649 симв., 139.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "linen blouse",
+      "details": "loose cut and short length crafted from breathable organic cotton",
+      "slot": "top",
+      "color_hex": "#d2b487",
+      "worn": true
+    },
+    {
+      "name": "denim jeans",
+      "details": "straight leg cut and ankle length made of durable stretch denim",
+      "slot": "bottom",
+      "color_hex": "#191970",
+      "worn": true
+    },
+    {
+      "name": "leather sandals",
+      "details": "open toe design with flat sole constructed from soft full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#a67b5b",
+      "worn": true
+    }
+  ]
+}

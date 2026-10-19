@@ -1,0 +1,53 @@
+── ПРОМПТ (7729 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Спідниця синя з розрізом · kind code: skirt · colour code: blue · about it: text н=1
+2 — Куртка жіноча сіра · kind code: jacket · colour code: grey · about it: text н=2
+3 — Золотисте намисто з підвісами · kind code: jewelry_generic · colour code: golden · about it: text н=3
+4 — Сумка зі спанбонду велика, шопер Жовтий · kind code: tote · about it: text н=4
+5 — Кардиган Хмаринка чорний · kind code: cardigan · colour code: black · about it: text н=5
+6 — Лофери шкіряні темно-бежеві · kind code: loafers · colour code: beige · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; blue — синій; golden — золотий; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This blue pencil skirt flatters your figure by hugging your hips and waist while maintaining a sleek, professional look thanks to its subtle front slit that adds movement and grace.",
+"2": "This grey corduroy jacket brings casual charm with its soft texture, structured collar, and functional silver-toned buttons. Its relaxed fit offers just the right balance of comfort and style for seaside strolls or evening outings.",
+"3": "The golden necklace with moon and star charms brings whimsical elegance to your ensemble, catching light softly against your skin and adding just the right amount of sparkle without overwhelming your look.",
+"4": "This bold yellow tote bag with its playful 'WEAR ME' print adds a fun pop of color that contrasts nicely with your neutral-toned outfit, making it perfect for beach days or casual shopping trips.",
+"5": "The black cloud-like cardigan drapes effortlessly over your frame with its loose silhouette, adding a cozy yet chic touch to any outfit. Its delicate knit texture contrasts beautifully with the smoother pencil skirt below.",
+"6": "These brown loafers bring grounded sophistication to your look with their rich color and low chunky heel, providing both comfort and style for walking along the shore or dining by the sea.",
+"7": "You are wrapped in the soft warmth of a black cloud-like cardigan, its relaxed fit draping over your frame with effortless elegance. Beneath it, you wear a sleek blue pencil skirt that hugs your hips and defines your waistline perfectly, while on top, the grey corduroy jacket adds a casual yet sophisticated touch for cooler evenings by the sea. Your ensemble is accented with delicate gold-toned moon-and-star charms around your neck and completed by earthy brown loafers that ground your look in comfort and style.",
+"8": "Layer the grey jacket over the black cardigan for added warmth during breezy seaside days, or drape it loosely off one shoulder when transitioning indoors to outdoors. Pair the pencil skirt with a simple white tee underneath if you decide to skip the cardigan, letting the skirt’s clean line speak for itself.",
+"9": "Куртка жіноча сіра, Лофери шкіряні темно-бежеві — The jacket being from the top quarter of its price slot for outerwear is a deliberate budget-friendly choice that still delivers the relaxed, structured look needed for your evening stroll."
+}
+
+── ВІДПОВІДЬ (2467 симв., 132.2 с, HTTP 200) ──
+```json
+{
+"1": "Ця синя спідниця-олівець підкреслює твою фігуру, облягаючи стегна та талію, водночас зберігаючи елегантний і професійний вигляд завдяки непомітному розрізу спереду, який додає руху й грації.",
+"2": "Ця сіра куртка з вельвету привносить невимушену чарівність своєю м’якою текстурою, структурованим коміром і функціональними сріблястими ґудзиками. Її вільний крій пропонує саме той баланс комфорту та стилю для прогулянок біля моря або вечірніх виходів.",
+"3": "Золоте намисто з підвісками у вигляді місяця й зірок додає вашому образу грайливої елегантності, м’яко відбиваючи світло на твоїй шкірі та додаючи саме ту кількість блиску без перевантаження зовнішнього вигляду.",
+"4": "Ця яскраво-жовта сумка шопер з веселим написом 'WEAR ME' додає веселої кольорової нотки, яка гарно контрастує з твоїм нейтральним образом, роблячи її ідеальною для пляжних днів або неквапливих походів за покупками.",
+"5": "Чорний кардиган у вигляді хмаринки легко драпірується на твоєму силуеті завдяки вільному крою, додаючи затишного та елегантного штриха до будь-якого образу. Його делікатна в’язана текстура чудово контрастує з гладкою спідницею-олівцем нижче.",
+"6": "Ці коричневі лофери привносять ґрунтовну вишуканість у твій образ завдяки насиченому кольору та низькому масивному підборчику, забезпечуючи комфорт і стиль для прогулянок по березі або вечері біля моря.",
+"7": "Ти закутана в м’яке тепло чорного кардигану у вигляді хмаринки, його вільний крій легко драпірується на твоєму силуеті. Під ним ти носиш елегантну синю спідницю-олівець, яка ідеально облягає твої стегна та підкреслює лінію талії, а зверху сіра куртка з вельвету додає невимушеного, але вишуканого штриха для прохолодних вечорів біля моря. Твій образ доповнюють ніжні золотисті підвіски у вигляді місяця й зірок на шиї та ґрунтовні коричневі лофери, які завершують твій стиль комфортом і витонченістю.",
+"8": "Одягни сіру куртку поверх чорного кардигану для додаткового тепла в вітряні дні біля моря або накинь її недбало на одне плече під час переходу з вулиці до приміщення. Поєднай спідницю-олівець із простою білою футболкою, якщо вирішиш пропустити кардиган, дозволивши чистій лінії спідниці говорити сама за себе.",
+"9": "Куртка жіноча сіра, Лофери шкіряні темно-бежеві — Вибір куртки з верхньої чверті цінового діапазону для верхнього одягу є свідомим бюджетним рішенням, яке все ще забезпечує розслаблений і структурований вигляд, необхідний для твоєї вечірньої прогулянки."
+}
+```

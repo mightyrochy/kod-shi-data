@@ -1,0 +1,61 @@
+── ПРОМПТ (8176 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лляна оверсайз сорочка з пишним рукавом чорного кольору Поппі · kind code: shirt · colour code: black · about it: text н=1
+2 — Джинси жіночі сірі · kind code: jeans · colour code: grey · about it: text н=2
+3 — Чоботи осінні зелені з натурального спилку-замші · kind code: boots · colour code: green · about it: text н=3
+4 — Шарф двухсторонній молочний · kind code: scarf_generic · colour code: milky · about it: text н=4
+5 — Сумка зі спанбонду велика, шопер Жовтий · kind code: tote · about it: text н=5
+6 — Пасок з пірʼям смарагд · kind code: belt · colour code: emerald · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; emerald — смарагд; green — зелений; grey — сірий; milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "This black shirt features a V-neckline and sleeves gathered at the shoulders, ending in elastic cuffs with drawstrings for an adjustable fit. It is made of a smooth fabric that drapes softly against your frame.",
+"2": "These grey jeans have a relaxed straight-leg cut and a high waistband secured with an elastic drawstring closure, providing comfort and a fluid line to your legs.",
+"3": "The knee-high boots are crafted from soft green suede with a classic block heel, designed to offer stability and warmth for long days of walking along the shore.",
+"4": "This generous scarf combines two delicate shades: one side is a warm creamy beige that flows smoothly, while the reverse is a dusty pink tone finished with fine fringed edges.",
+"5": "The tote is made of bright yellow spandex fabric printed with large black letters and a white hanger outline, offering an effortless way to carry your essentials while adding a pop of color.",
+"6": "This belt features a wide, smooth emerald green band topped with a dense layer of long feathers that add texture and movement to the waistline.",
+"7": "Your outfit is built around a simple and confident black top with gathered sleeves that gather at the cuffs, paired with loose grey jeans featuring an elastic waistband. A deep emerald belt with feathers sits at your waist to define the shape of your silhouette, while green suede boots with a block heel ground the look for walking by the sea. To wrap you up against the evening breeze, there is a soft two-toned scarf in creamy and dusty pink, draped around your neck or shoulders. Finally, you carry a large yellow tote bag with bold lettering, which will keep your essentials handy during your beach vacation.",
+"8": "Wear the emerald belt over the black top to cinch the waist, creating a defined silhouette that contrasts beautifully with the loose grey jeans.",
+"9": "Шарф двухсторонній молочний — An olive floral scarf introduces the missing third piece and brings natural botanical interest that fits the seaside occasion.",
+"10": "Чоботи осінні зелені з натурального спилку-замші — Green loafers replace neutral shoes to satisfy the scheme's accent requirement while maintaining an everyday formality level.",
+"11": "Чоботи осінні зелені з натурального спилку-замші — Green boots provide the accent hue missing in this neutral-heavy scheme while offering a relaxed, seaside formality level.",
+"12": "Джинси жіночі сірі — Grey jeans replace black pants to introduce a tonal variation in the palette that works better than matching neutrals for beach wear.",
+"13": "Чоботи осінні зелені з натурального спилку-замші — Green loafers serve as the deliberate color break near the face, fulfilling the scheme requirement without raising formality too high."
+}
+
+── ВІДПОВІДЬ (2843 симв., 106.3 с, HTTP 200) ──
+```json
+{
+"1": "Ця чорна сорочка має V-подібний виріз і рукави, зібрані на плечах, що закінчуються еластичними манжетами з шнурками для регулювання посадки. Вона виготовлена з гладкої тканини, яка м’яко драпірується по твоїй фігурі.",
+"2": "Ці сірі джинси мають вільний прямий крій і високу талію на еластичному шнурку, що забезпечує комфорт і плавні лінії для твоїх ніг.",
+"3": "Чоботи до колін виготовлені з м’якої зеленої замші зі стійким каблуком-блоком, розроблені щоб дарувати стабільність і тепло протягом довгих днів прогулянок по березі.",
+"4": "Цей просторий шарф поєднує два ніжні відтінки: одна сторона — теплий кремовий беж, що плавно струмує, а зворотний бік має приглушений рожевий тон з тонкими бахромчастими краями.",
+"5": "Ця сумка виготовлена з яскраво-жовтої тканини спандекс і надрукована великими чорними літерами та контуром вішалки, пропонуючи легкий спосіб носити твої речі, додаючи при цьому кольору.",
+"6": "Цей пасок має широкий гладкий зелений пояс смарагдового кольору з густим шаром довгих пір’їн, які додають текстури та руху лінії талії.",
+"7": "Твій образ побудований навколо простого і впевненого чорного топу зібраними рукавами, що закінчуються на манжетах, у поєднанні з вільними сірими джинсами з еластичною талією. Глибокий зелений пасок смарагдового кольору з пір’ям сидить на твоїй лінії талії, щоб окреслити форму твоєї фігури, а зелені чоботи зі стійким каблуком підкреслюють образ для прогулянок біля моря. Щоб тебе захистити від вечірнього вітру, є м’який двосторонній шарф кремового та приглушеного рожевого кольору, накинутий тобі на шию або плечі. Нарешті, ти носиш велику жовту сумку-шопер з великими літерами, яка буде тримати твої речі під рукою під час твоєї пляжної відпустки.",
+"8": "Одягни зелений пасок смарагдового кольору поверх чорного топу, щоб затягнути талію і створити окреслену фігуру, що чудово контрастує з вільними сірими джинсами.",
+"9": "Шарф двухсторонній молочний — Оливковий квітковий шарф додає відсутню третю деталь і приносить природний ботанічний інтерес, який підходить для морського випадку.",
+"10": "Чоботи осінні зелені з натурального спилку-замші — Зелені лофери замінюють нейтральне взуття, щоб задовольнити вимогу схеми до акценту, зберігаючи при цьому повсякденний рівень формальності.",
+"11": "Чоботи осінні зелені з натурального спилку-замші — Зелені чоботи дарують відсутній у цій нейтральній схемі колір-акцент, пропонуючи при цьому розслаблений морський рівень формальності.",
+"12": "Джинси жіночі сірі — Сірі джинси замінюють чорні штани, щоб ввести тональну варіацію в палітру, яка краще підходить для пляжного одягу, ніж відповідні нейтральні кольори.",
+"13": "Чоботи осінні зелені з натурального спилку-замші — Зелені лофери служать навмисним колірним акцентом біля обличчя, виконуючи вимоги схеми без надмірного підвищення рівня формальності."
+}
+```
