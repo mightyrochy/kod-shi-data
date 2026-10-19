@@ -1,0 +1,60 @@
+── ПРОМПТ (8348 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Джемпер жіночий об’ємний з додаванням вовни мериноса демісезонний · kind code: sweater · colour code: white · about it: text н=1
+2 — Штани жіночі Лісова казка · kind code: trousers · colour code: beige · about it: text н=2
+3 — назва в тексті н=13 · about it: text н=3
+4 — Чорний шкіряний тоут з текстовим принтом · kind code: tote · colour code: black · about it: text н=4
+5 — М'який шарф з бахромою блакитний · kind code: scarf_generic · colour code: light_blue · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; light_blue — блакитний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This cream-colored oversized sweater is made of a soft wool blend, perfect for the cooler autumn days. Its relaxed, boxy cut drapes comfortably over your frame, creating an effortless and cozy silhouette without clinging to your shape.",
+"2": "The beige wide-leg trousers offer a comfortable fit that allows you to move freely with the children. Their soft fabric and generous leg opening provide a relaxed, modern look that pairs seamlessly with the oversized sweater.",
+"3": "Your white sneakers complete the outfit with their clean, minimalist design. They add a sporty yet stylish touch, balancing the softness of the knitwear and ensuring you can walk comfortably through the park and supermarket.",
+"4": "This black leather tote bag features bold white text detailing its heritage, adding an edgy contrast to your softer ensemble. Its structured shape provides ample space for carrying essentials while maintaining a sleek, sophisticated profile.",
+"5": "The light blue knitted scarf adds a refreshing pop of color to your neutral palette. Its soft texture and gentle knot around the neck introduce a touch of casual elegance, making it an ideal accessory for your everyday adventures.",
+"6": "This soft, beige knit set looks perfect for a casual walk through the park with the kids. The oversized sweater creates a comfortable, relaxed silhouette that matches your best styles, while the wide trousers offer plenty of room to move and play. I chose your white sneakers to ground the look with an effortless, everyday vibe; their clean lines balance the softness of the knit without adding extra bulk. The black tote bag adds a touch of practical structure for carrying essentials from the supermarket, and the light blue scarf introduces a gentle pop of color that complements your autumn palette.",
+"7": "Wear the oversized sweater untucked to maintain a clean vertical line from the collar down to the hem of the trousers, emphasizing your height.",
+"8": "Keep the light blue scarf loosely draped around your neck; its relaxed knot adds a touch of casual elegance without adding extra volume to your shoulders.",
+"9": "Leave the black tote bag slung casually over one shoulder or carry it by the handle in hand for a more polished look when meeting friends at the park.",
+"10": "Джемпер жіночий об’ємний з додаванням вовни мериноса демісезонний — Choosing a low-chroma white sweater avoids the near-white bridal look at a friend's wedding.",
+"11": "Джемпер жіночий об’ємний з додаванням вовни мериноса демісезонний — The near-white gate is acceptable here because you specifically wished for white items to feel fresh in the autumn air, and the low-chroma choice avoids looking bridal at your friend's wedding.",
+"12": "Джемпер жіночий об’ємний з додаванням вовни мериноса демісезонний, Штани жіночі Лісова казка — Accepting the tonal remark is a deliberate move: it creates a unified, calming aesthetic for your walk with children that doesn't compete with the dynamic energy of a park visit.",
+"13": "у мене є білі кеди, хочу піти в них"
+}
+
+── ВІДПОВІДЬ (2995 симв., 79.4 с, HTTP 200) ──
+```json
+{
+"1": "Цей кремовий об’ємний светр виготовлений з м’якої суміші вовни, ідеальний для прохолодних осінніх днів. Його розслаблений, коробчастий крій елегантно драпірується по твоїй фігурі, створюючи невимушений та затишний силует без облягання.",
+"2": "Бежеві широкі штани пропонують комфортну посадку, яка дозволяє тобі вільно рухатися з дітьми. Їхня м’яка тканина і просторий крій створюють розслаблений, сучасний вигляд, який бездоганно поєднується зі светром оверсайз.",
+"3": "Твої білі кеди завершують образ своїм чистим, мінімалістичним дизайном. Вони додають спортивний, але стильний акцент, збалансовуючи м’якість трикотажу і забезпечуючи комфортну ходьбу парком та супермаркетом.",
+"4": "Ця чорна шкіряна тоут-сумка має сміливий білий текстовий принт, що додає зухвалого контрасту до твого м’якшого ансамблю. Її структурована форма забезпечує достатньо місця для перенесення необхідних речей, зберігаючи витончений та елегантний профіль.",
+"5": "Блакитний в’язаний шарф додає свіжий колір до твоєї нейтральної палітри. Його м’яка текстура і ніжний вузол на шиї вводять нотку невимушеної вишуканості, роблячи його ідеальним аксесуаром для твоїх повсякденних пригод.",
+"6": "Цей м’який бежевий в’язаний комплект чудово підходить для неквапливої прогулянки парком з дітьми. Об’ємний светр створює комфортний, розслаблений силует, який відповідає твоїм найкращим стилям, а широкі штани пропонують достатньо місця для руху та ігор. Я обрала твої білі кеди, щоб заземлити образ невимушеною повсякденністю; їхні чисті лінії збалансовують м’якість трикотажу без зайвого об’єму. Чорна тоут-сумка додає практичну структуру для перенесення необхідних речей із супермаркету, а блакитний шарф вводить ніжний колірний акцент, який доповнює твою осінню палітру.",
+"7": "Носи об’ємний светр не заправленим всередину штанів, щоб зберегти чисту вертикальну лінію від коміра до подолу брюк, підкреслюючи свій зріст.",
+"8": "Залиш блакитний шарф вільно накинутим навколо шиї; його розслаблений вузол додає нотку невимушеної вишуканості без зайвого об’єму в плечах.",
+"9": "Носи чорну тоут-сумку недбало через одне плече або тримай її за ручку, щоб створити більш елегантний образ під час зустрічі з друзями у парку.",
+"10": "Джемпер жіночий об’ємний з додаванням вовни мериноса демісезонний — Вибір светра білого низької насиченості уникає майже весільного вигляду на весіллі подруги.",
+"11": "Джемпер жіночий об’ємний з додаванням вовни мериноса демісезонний — Майже білий колір прийнятний тут, тому що ти конкретно хотіла мати білі речі, щоб відчувати свіжість у осінньому повітрі, а вибір низької насиченості уникає весільного вигляду на весіллі подруги.",
+"12": "Джемпер жіночий об’ємний з додаванням вовни мериноса демісезонний, Штани жіночі Лісова казка — Прийняття зауваження про тональність є свідомим кроком: це створює єдину, заспокійливу естетику для твоєї прогулянки з дітьми, яка не конкурує з динамічною енергією відвідування парку.",
+"13": "У мене є білі кеди, хочу піти в них."
+}
+```

@@ -1,0 +1,41 @@
+── ПРОМПТ (2721 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "own": "<id from her_items or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description", "\"her_items\" — her own items; an item of the description that is one of them gets its id in \"own\""]}, "description": "White canvas sneakers, relaxed low-top cut, ankle length, bright white (#FFFFFF), durable cotton blend.\nRelaxed-fit knit top, crew neck, standard body length, soft heather grey (#808080), lightweight merino wool and cotton jersey.\nStraight-leg trousers with a slight stretch, full ankle length, deep forest green (#2E4F3C), structured twill fabric.\nLight trench coat, classic belted waist, midi length reaching mid-calf, classic navy blue (#1B3B6D), water-resistant cotton gabardine.\n\nThis ensemble balances comfort and polish for a day of walking through the autumn park and quick trips to the supermarket, perfectly honoring her request for white sneakers as the foundation. The relaxed knit top and stretchy trousers offer the ease needed for active play with children while maintaining a neat, everyday silhouette suitable for family outings. The navy trench coat adds a touch of warmth and sophistication against the fall weather without feeling overly formal or restricting movement. Finally, the choice of sturdy canvas shoes ensures stability on park paths and convenience inside grocery stores, adhering strictly to her refusal of heels.", "her_items": [{"id": "її-с1", "name": "у мене є білі кеди, хочу піти в них"}]}
+
+── ВІДПОВІДЬ (1024 симв., 167.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "White canvas sneakers",
+      "details": "relaxed low-top cut, ankle length, durable cotton blend",
+      "slot": "shoes",
+      "color_hex": "#FFFFFF",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "Relaxed-fit knit top",
+      "details": "crew neck, standard body length, soft heather grey, lightweight merino wool and cotton jersey",
+      "slot": "top",
+      "color_hex": "#808080",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "Straight-leg trousers",
+      "details": "slight stretch, full ankle length, deep forest green, structured twill fabric",
+      "slot": "bottom",
+      "color_hex": "#2E4F3C",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "Light trench coat",
+      "details": "classic belted waist, midi length reaching mid-calf, classic navy blue, water-resistant cotton gabardine",
+      "slot": "outerwear",
+      "color_hex": "#1B3B6D",
+      "own": null,
+      "worn": true
+    }
+  ]
+}
