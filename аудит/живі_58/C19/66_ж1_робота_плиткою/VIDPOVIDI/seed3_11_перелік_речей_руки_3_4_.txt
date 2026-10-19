@@ -1,0 +1,51 @@
+── ПРОМПТ (2213 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer in charcoal grey #3a4045, tailored fit with notched lapels and single-button closure. A silk crepe blouse in cream white #fdfbf7, relaxed collar cut and dropped shoulders at mid-thigh length. A midi skirt in stone grey #a8a8a8, straight A-line cut reaching just below the knee. Leather loafers in tan brown #c19d6e, rounded toe with minimal hardware. Gold hoop earrings in polished brass #d4af37 and a slim leather belt matching the shoes. This outfit works because the charcoal blazer provides professional polish while allowing for seasonal warmth during autumn days. The neutral palette of cream, stone, and tan harmonizes effortlessly with her skin tone and hair, creating a cohesive look. The structured silhouette balances the softness of the silk blouse, offering both comfort and authority suitable for an office environment."}
+
+── ВІДПОВІДЬ (1103 симв., 36.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "wool-blend tailored fit with notched lapels and single-button closure",
+      "slot": "outerwear",
+      "color_hex": "#3a4045",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "silk crepe relaxed collar cut and dropped shoulders at mid-thigh length",
+      "slot": "top",
+      "color_hex": "#fdfbf7",
+      "worn": true
+    },
+    {
+      "name": "skirt",
+      "details": "straight A-line cut reaching just below the knee midi length",
+      "slot": "bottom",
+      "color_hex": "#a8a8a8",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "rounded toe with minimal hardware",
+      "slot": "shoes",
+      "color_hex": "#c19d6e",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "polished brass",
+      "slot": "jewelry",
+      "color_hex": "#d4af37",
+      "worn": true
+    },
+    {
+      "name": "belt",
+      "details": "slim leather matching the shoes",
+      "slot": "belt",
+      "color_hex": "#c19d6e",
+      "worn": true
+    }
+  ]
+}

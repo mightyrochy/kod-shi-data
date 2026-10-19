@@ -1,0 +1,60 @@
+── ПРОМПТ (8218 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Берет класичний з кашеміром м'ятний · kind code: headwear · colour code: mint · about it: text н=1
+2 — Штани-палаццо кольору беж · kind code: trousers · colour code: grey · about it: text н=2
+3 — Намисто-трансформер Робін з перлин айворі · kind code: jewelry_generic · colour code: milky · about it: text н=3
+4 — Шльопанці жіночі, ATTICO, замша, колір кремовий · kind code: sandals · colour code: creamy · about it: text н=4
+5 — Чокер Ненсі зі стразами бірюзовий · kind code: jewelry_generic · about it: text н=5
+6 — Сорочка креш тенсел рожевий · kind code: shirt · colour code: pink · about it: text н=6
+7 — Шкіряна прямокутна сумка крос-боді · kind code: crossbody_bag · colour code: green · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: creamy — кремовий; green — зелений; grey — сірий; milky — молочний; mint — м'ятний; pink — рожевий.
+
+ТЕКСТИ:
+{
+"1": "The mint beret is crafted from soft cashmere with a classic shape and small handle detail, offering warmth and personality that complements your intellectual style.",
+"2": "These beige palazzo trousers feature a relaxed wide leg and high waist with gentle pleats, providing comfort and elegance that flatters your wider bottom zone while maintaining professional polish.",
+"3": "This ivory pearl necklace transforms into a layered statement piece with sparkling bow motifs that add delicate sparkle to your ensemble without overwhelming the office setting.",
+"4": "The creamy suede sandals bring soft texture and understated sophistication to your feet, perfect for walking through your autumn office environment while maintaining a polished look.",
+"5": "This turquoise choker necklace features sparkling crystals that add a modern edge to your neckline, creating an interesting contrast against the softer tones of your outfit.",
+"6": "The pink tencel shirt is made from lightweight fabric with subtle floral embroidery and balloon sleeves that provide gentle volume to balance your wider bottom zone while maintaining a feminine office-appropriate silhouette.",
+"7": "This structured green crossbody bag features clean lines and smooth leather construction that adds architectural interest and professional polish to your ensemble while providing practical functionality.",
+"8": "This ensemble brings your polished office look to life with a refreshing mint beret that adds a soft, intellectual flair without sacrificing professionalism. The beige palazzo trousers provide the perfect clean line for your wider bottom zone while the pink tencel shirt offers gentle volume to balance the upper half. Transform your pearl necklace by layering it over the collar necklace or swapping them for a statement look—the choice creates depth and texture that elevates your entire silhouette. The creamy sandals ground your look with understated elegance, perfectly suited for autumn days, while the structured green crossbody bag adds a modern pop of color to complete this sophisticated outfit.",
+"9": "Tuck the shirt in slightly at the front if you need definition around your waist throughout your day.",
+"10": "Layer the pearl necklace over the choker or swap them depending on how formal your office environment feels.",
+"11": "Carry the green bag across your body to keep your hands free during meetings while maintaining a professional appearance.",
+"12": "Шльопанці жіночі, ATTICO, замша, колір кремовий — Replaced sandals with suede ankle boots to match the autumn temperature band and provide a heel lift that continues the leg line under the midi trousers."
+}
+
+── ВІДПОВІДЬ (2654 симв., 48.4 с, HTTP 200) ──
+```json
+{
+"1": "М'ятний берет виготовлений з м'якого кашеміру класичної форми та має невелику деталь ручки, пропонуючи тепло і характер, які доповнюють твій інтелектуальний стиль.",
+"2": "Ці бежеві штани-палаццо мають вільний широкий крій і високу талію з м'якими складками, забезпечуючи комфорт і елегантність, яка підкреслює твою більш широку нижню зону, зберігаючи при цьому професійну витонченість.",
+"3": "Цей перловий намисто айворі трансформується в багатошаровий акцентний виріб з блискучими бантиками, які додають ніжне сяйво твоєму ансамблю без перевантаження офісної обстановки.",
+"4": "Кремові замшеві шльопанці приносять м'яку текстуру та стриману вишуканість твоїм ногам, ідеальні для прогулянок восени в офісі, зберігаючи при цьому доглянутий вигляд.",
+"5": "Цей бірюзовий чокер має блискучі кристали, які додають сучасний акцент твоєму вирізу, створюючи цікавий контраст з м'якшими тонами твого вбрання.",
+"6": "Рожева сорочка тенсел виготовлена ​​з легкої тканини з ніжним квітковим вишиванням і рукавами-ліхтариками, які забезпечують легкий об’єм для балансування твоєї більш широкої нижньої зони, зберігаючи при цьому жіночний силует, відповідний офісу.",
+"7": "Ця структурована зелена сумка крос-боді має чіткі лінії та гладку шкіряну конструкцію, яка додає архітектурного інтересу і професійної витонченості твоєму ансамблю, забезпечуючи при цьому практичну функціональність.",
+"8": "Цей образ оживляє твій доглянутий офісний стиль з освіжаючим м'ятним беретом, який додає ніжний інтелектуальний акцент без шкоди для професіоналізму. Бежеві штани-палаццо забезпечують ідеальну чітку лінію для твоєї більш широкої нижньої зони, а рожева сорочка тенсел пропонує легкий об’єм для балансування верхньої половини. Перетвори своє перлове намисто, надівши його поверх чокера або помінявши їх місцями для акцентного вигляду — вибір створює глибину і текстуру, які підкреслюють твій силует. Кремові шльопанці заземляють твій образ стриманою елегантністю, чудово підходячи для осінніх днів, а структурована зелена сумка крос-боді додає сучасний колірний акцент, щоб завершити цей вишуканий наряд.",
+"9": "Злегка заправ сорочку спереду, якщо тобі потрібна чіткість талії протягом дня.",
+"10": "Надягни перлове намисто поверх чокера або поміняй їх місцями залежно від того, як формальний твій офісний простір.",
+"11": "Носи зелену сумку через тіло, щоб тримати руки вільними під час зустрічей і зберігати професійний вигляд.",
+"12": "Шльопанці жіночі, ATTICO, замша, колір кремовий — Замінила шльопанці на замшеві черевики, щоб відповідати осінній температурі та забезпечити підйом на підборах, який продовжує лінію ноги під міді-штанами."
+}
+```
