@@ -1,0 +1,59 @@
+── ПРОМПТ (8380 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сапфірова сорочка з лампасами в кежуал стилі Елейн · kind code: shirt · colour code: navy · about it: text н=1
+2 — Штани-палаццо з кропиви та льону · kind code: trousers · colour code: beige · about it: text н=2
+3 — Ремінь із натуральної шкіри, чорний · kind code: belt · colour code: black · about it: text н=3
+4 — Коричневі шкіряні туфлі із золотистим декором на заднику · kind code: dress_shoes · colour code: brown · about it: text н=4
+5 — Сумка-багет жіноча Amalfi · kind code: baguette_bag · colour code: beige · about it: text н=5
+6 — Ажурний кардиган максі з поясом у кольорі айворі ONDA · kind code: cardigan · colour code: beige · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; navy — темно-синій.
+
+ТЕКСТИ:
+{
+"1": "A navy blue shirt with a crisp collar and a bold red hem that adds a playful twist to an otherwise classic cut. The relaxed fit flows comfortably over your frame while the clean lines elongate your silhouette, perfect for blending professionalism with modern flair.",
+"2": "Wide-leg trousers in natural beige made from a blend of linen and hemp offer lightweight comfort and effortless movement. Their high waist and pleated front add structure without bulk, while the full leg creates a smooth line from hip to hem that complements your V-shaped figure.",
+"3": "A sleek black belt crafted from smooth leather with a simple round buckle. It cinches at the narrowest part of your waist to define your silhouette without adding volume, balancing your broader shoulders and narrower hips with precision.",
+"4": "Tan peep-toe pumps with a slender heel and a delicate gold detail at the ankle. The refined shape elongates your leg line while offering enough height to elevate your posture without sacrificing all-day comfort.",
+"5": "A structured beige baguette tote woven from natural fibers, accented with black and white striped details. Its spacious design carries essentials effortlessly while the neutral tone harmonizes with your outfit’s earthy palette.",
+"6": "An airy beige macrame cardigan featuring an open-knit pattern and wide bell sleeves that drape softly over your shoulders. The V-neckline keeps the look uncluttered, while its relaxed length adds a layer of fluidity to your silhouette.",
+"7": "Your look balances a creative office with effortless polish. A navy shirt with a red hem sets a modern note against beige wide trousers, while a beige macrame cardigan adds softness and texture over the top. Black leather belt grounds the waist, and tan peep-toe pumps in a slim heel carry you through long days with confidence. The woven baguette tote brings natural warmth to complete this autumnal palette.",
+"8": "Start your morning by buttoning the shirt and letting the red hem peek out for subtle contrast; when meetings ease up, slip on the macrame cardigan to add a relaxed, airy layer that softens your silhouette.",
+"9": "Tuck the shirt into the wide trousers to define your waistline; secure the black belt at the narrowest part of your torso to emphasize balance between your broader shoulders and narrower hips.",
+"10": "Pair the tan pumps with heels low enough for comfort but high enough to elongate your legs; when you reach home, swap them for flats or slip on a pair of socks if you're walking more.",
+"11": "Ремінь із натуральної шкіри, чорний — The black belt adds a sharp structural line against the monochromatic beige palette, grounding the softness of the knitwear.",
+"12": "Сапфірова сорочка з лампасами в кежуал стилі Елейн — The navy striped shirt provides a cool-toned contrast to the warm neutrals, adding visual interest and breaking the monotony of beige tones."
+}
+
+── ВІДПОВІДЬ (2894 симв., 96.9 с, HTTP 200) ──
+```json
+{
+"1": "Синя сорочка з білосніжним коміром і сміливим червоним краєм, який додає грайливості класичному крою. Вільний крій зручно облягає твою фігуру, а чисті лінії видовжують силует — ідеально для поєднання професіоналізму з сучасним шиком.",
+"2": "Штани-палаццо природного бежевого кольору зі змішаної тканини льону та кропиви пропонують легкий комфорт і без зусиль рух. Висока талія та складки спереду додають структури, не обтяжуючи фігуру, а повна штанина створює плавний силует від стегна до подолу, який підкреслює твою V-подібну форму.",
+"3": "Стильний чорний ремінь зі шкіри з простим круглим пряжкою. Він затягується на найвужчій частині твоєї талії, щоб окреслити силует без зайвого об’єму, точно балансуючи твої широкі плечі й вузькі стегна.",
+"4": "Бежеві туфлі-човники з тонким підбором і ніжним золотим оздобленням на щиколотці. Витончена форма видовжує лінію ніг, пропонуючи достатню висоту для випрямлення постави без шкоди для комфорту протягом усього дня.",
+"5": "Структурована бежева сумка-багет з натуральних волокон, прикрашена чорно-білими смугастими деталями. Містка конструкція легко вміщує необхідні речі, а нейтральний тон гармонує із земною палітрою твого вбрання.",
+"6": "Повітряний бежевий кардиган з макраме з відкритим візерунком і широкими дзвінками рукавами, які м’яко спадають на плечі. V-подібний виріз зберігає образ не обтяженим, а розслаблена довжина додає плавності твоїй фігурі.",
+"7": "Твій образ поєднує креативний офіс з без зусиль елегантністю. Синя сорочка з червоною окантовкою задає сучасний тон на фоні бежевих широких штанів, а бежевий кардиган з макраме додає м’якості та текстури зверху. Чорний шкіряний ремінь підкреслює лінію талії, а бежеві туфлі-човники на тонкому підборі дарують впевненість протягом довгих днів. Плетена сумка-багет приносить природне тепло для завершення цієї осінньої палітри.",
+"8": "Почни свій ранок, застебнувши сорочку та дозволивши червоній окантовці злегка виглядати для тонкого контрасту; коли наради закінчаться, одягни кардиган з макраме, щоб додати розслаблений і повітряний шар, який пом’якшить твій силует.",
+"9": "Заправ сорочку в широкі штани, щоб підкреслити лінію талії; затягни чорний ремінь на найвужчій частині тулуба, щоб збалансувати пропорції між широкими плечима й вузькими стегнами.",
+"10": "Поєднай бежеві туфлі-човники з підборами достатньо низькими для комфорту, але досить високими, щоб видовжити ноги; коли повернешся додому, заміни їх на балетки або одягни шкарпетки, якщо багато ходитимеш.",
+"11": "Ремінь із натуральної шкіри, чорний — Чорний ремінь додає чітку структурну лінію проти монохромної бежевої палітри, підкреслюючи м’якість в’язаного виробу.",
+"12": "Сапфірова сорочка з лампасами в кежуал стилі Елейн — Синя смугаста сорочка створює прохолодний контраст до теплих нейтральних відтінків, додаючи візуального інтересу та розбиваючи монотонність бежевих тонів."
+}
+```
