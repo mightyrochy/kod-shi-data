@@ -1,0 +1,44 @@
+── ПРОМПТ (2532 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wool-blend blazer with a relaxed fit and notched lapel in Forest Green (#35654d), tailored at the waist with long sleeves.\nFine-gauge merino wool skirt in an A-line silhouette falling to just above the knee, colored in Charcoal Grey (#36454f).\nSoft-cotton loafers with a slight heel in Deep Brown (#5c4033), featuring minimal stitching details.\nSimple gold stud earrings and a structured leather clutch in matching brown to complete the look.\n\nThis outfit strikes the perfect balance between professional polish and autumnal warmth, adhering strictly to her preference for \"everyday\" and \"neat\" formality without appearing overly rigid. The textured wool blazer provides a sophisticated outer layer suitable for cooler fall weather while maintaining comfort around the shoulders and bust. By pairing the darker skirt with rich brown accessories, the ensemble complements her deep skin tone and hair color, creating a cohesive look that respects her specific refusals against athleisure or loungewear elements. The clean lines of the A-line skirt paired with classic loafers ensure the silhouette remains refined yet approachable for a standard office environment."}
+
+── ВІДПОВІДЬ (949 симв., 96.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Structured wool-blend blazer",
+      "details": "relaxed fit with notched lapel, tailored at the waist, long sleeves",
+      "slot": "outerwear",
+      "color_hex": "#35654d",
+      "worn": true
+    },
+    {
+      "name": "Fine-gauge merino wool skirt",
+      "details": "A-line silhouette falling to just above the knee",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Soft-cotton loafers",
+      "details": "slight heel with minimal stitching details",
+      "slot": "shoes",
+      "color_hex": "#5c4033",
+      "worn": true
+    },
+    {
+      "name": "Gold stud earrings",
+      "details": "simple studs",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Structured leather clutch",
+      "details": "",
+      "slot": "bag",
+      "color_hex": "#5c4033",
+      "worn": true
+    }
+  ]
+}
