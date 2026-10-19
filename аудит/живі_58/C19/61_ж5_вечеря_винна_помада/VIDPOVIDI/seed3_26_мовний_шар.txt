@@ -1,0 +1,59 @@
+── ПРОМПТ (8464 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Светр Хмаринка кобальт · kind code: sweater · colour code: graphite · about it: text н=1
+2 — Ошатне вечірнє плаття · kind code: evening_dress · colour code: blue · about it: text н=2
+3 — Шарф кашемір однотонний рожевий · kind code: scarf_generic · colour code: pink · about it: text н=3
+4 — Балетки жіночі коричневі · kind code: ballet_flats · colour code: brown · about it: text н=4
+5 — Сережки «Ray» · kind code: jewelry_generic · colour code: camel · about it: text н=5
+6 — Сумка Марсала абстракція · kind code: bag_generic · colour code: burgundy · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: blue — синій; brown — коричневий; burgundy — бордовий; camel — кемел; graphite — графіт; pink — рожевий.
+
+ТЕКСТИ:
+{
+"1": "This charcoal sweater features a fitted body under sheer mesh sleeves that drape elegantly from the shoulders to your wrists. Its subtle texture and deep tone provide warmth while maintaining a sleek appearance, perfect for layering in cooler autumn evenings.",
+"2": "The navy evening dress flows gracefully from an embellished bodice down to the floor with a high slit that adds movement and allure. The rich color and shimmering details make it ideal for celebrating with friends under soft lighting.",
+"3": "A luxurious pink cashmere scarf wraps comfortably around your neck, its gentle hue complementing the darker tones of your outfit. The long fringe adds a delicate touch without overwhelming your overall silhouette.",
+"4": "These brown ballet flats offer comfort for dancing and walking through crowds while their polished leather finish elevates the casual feel of an everyday outing into something refined and ready for night.",
+"5": "Gold earrings with sparkling baguette-cut crystals catch the light whenever you turn your head, adding a subtle glamour to your ensemble without overpowering it. Their circular shape frames your face beautifully.",
+"6": "This burgundy crossbody bag features a playful abstract tapestry print paired with smooth leather accents, making it both eye-catching and practical. Its compact size keeps essentials secure while letting you move freely throughout the evening.",
+"7": "Tonight you will shine in a sophisticated ensemble that balances the comfort of an autumn evening with the elegance of a celebration. You are wearing a fitted charcoal sweater layered under sheer mesh sleeves, accented by a delicate white feather belt at your waist. This is paired with a floor-length navy evening dress featuring intricate sequin detailing on the bodice and a dramatic high slit. A soft pink cashmere scarf wraps around your neck, adding warmth and a touch of pastel softness to the deep tones of your outfit. Your look is completed with brown leather ballet flats with a silver buckle, delicate gold earrings set with baguette-cut crystals, and a burgundy crossbody bag adorned with vibrant abstract tapestry prints.",
+"8": "Keep the sweater slightly untucked at the front to maintain an effortless flow that hides any slight shifts in your stance while moving through the room.",
+"9": "Drape the pink scarf loosely over your shoulders and let it fall naturally; if you want to emphasize your neck line, tie one end neatly just below the collarbone.",
+"10": "The burgundy bag sits perfectly at your hip, drawing attention to your waistline without restricting movement as you dance or socialize.",
+"11": "Балетки жіночі коричневі — Black ballet flats ground the tonal palette and continue the leg line under the midi hem, replacing the red pumps that were too loud.",
+"12": "Сумка Марсала абстракція, Сережки «Ray» — The neutral camel and graphite items serve as a quiet foundation that lets your own color palette shine, making the pink scarf an intentional focal point rather than an accidental clash."
+}
+
+── ВІДПОВІДЬ (2966 симв., 53.2 с, HTTP 200) ──
+```json
+{
+"1": "Цей графітовий светр має приталений силует під прозорими сітчастими рукавами, які елегантно спадають від плечей до зап'ясть. Його ледь помітна текстура та глибокий тон дарують тепло, зберігаючи витончений вигляд, ідеальний для багатошаровості в холодні осінні вечори.",
+"2": "Синя вечірня сукня граційно спадає від прикрашеного ліфа до підлоги з високим розрізом, який додає руху та спокусливості. Багатий колір і блискучі деталі роблять її чудовою для святкування з друзями у м’якому освітленні.",
+"3": "Розкішний рожевий кашеміровий шарф зручно огортає твою шию, його ніжний відтінок гармонійно доповнює темні тони твого вбрання. Довгі бахрома додають делікатну нотку без перевантаження загального силуету.",
+"4": "Ці коричневі балетки забезпечують комфорт для танців і прогулянок у натовпі, а їх полірована шкіряна обробка підносить повсякденний вигляд звичайної прогулянки до чогось вишуканого та готового до вечора.",
+"5": "Золоті сережки зі спалахуючими кристалами багетної огранки ловлять світло кожного разу, коли ти повертаєш голову, додаючи непомітний гламур твоєму ансамблю без його перевантаження. Їх кругла форма чудово обрамлює твоє обличчя.",
+"6": "Ця бордова сумка-кросбоді має грайливий абстрактний гобеленовий принт у поєднанні з гладкою шкіряною обробкою, що робить її одночасно помітною та практичною. Її компактний розмір надійно зберігає необхідні речі, дозволяючи тобі вільно рухатися протягом вечора.",
+"7": "Сьогодні ввечері ти сяятимеш у вишуканому ансамблі, який поєднує комфорт осіннього вечора з елегантністю святкування. Ти одягнена у приталений графітовий светр під прозорими сітчастими рукавами, доповнений делікатною білою пір’яною стрічкою на талії. Це поєднано з довгою синьою вечірньою сукнею з витонченим блискітковим оздобленням ліфа та драматичним високим розрізом. М’який рожевий кашеміровий шарф огортає твою шию, додаючи тепло та нотку пастельної м’якості до глибоких тонів твого вбрання. Твій образ завершують коричневі шкіряні балетки з срібною пряжкою, ніжні золоті сережки зі спалахуючими кристалами багетної огранки та бордова сумка-кросбоді, прикрашена яскравими абстрактними гобеленовими принтами.",
+"8": "Залиш светр трохи випущеним спереду, щоб зберегти легкий силует, який приховує будь-які незначні зміни у твоїй поставі під час руху по кімнаті.",
+"9": "Недбало накинь рожевий шарф на плечі та дай йому вільно спадати; якщо ти хочеш підкреслити лінію шиї, зав’яжи один кінець охайно трохи нижче ключиці.",
+"10": "Бордова сумка ідеально сидить у тебе на стегні, привертаючи увагу до лінії талії без обмеження рухів під час танців чи спілкування.",
+"11": "Коричневі балетки заземлюють тональну палітру та продовжують лінію ніг під міді-под’яззю, замінюючи червоні туфлі на підборах, які були надто гучними.",
+"12": "Нейтральні кемел і графітові речі слугують тихим фоном, який дозволяє сяяти твоїй власній колірній палітрі, роблячи рожевий шарф навмисним акцентом, а не випадковим контрастом."
+}
+```
