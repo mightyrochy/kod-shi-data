@@ -1,0 +1,54 @@
+── ПРОМПТ (7180 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Бежева спідниця-олівець · kind code: skirt · colour code: grey · about it: text н=1
+2 — Пальто вовняне вкорочене з паском · kind code: coat · colour code: grey · about it: text н=2
+3 — Фіолетова шкіряна сумка · kind code: bag_generic · colour code: purple · about it: text н=3
+4 — Блуза з тенселу · kind code: blouse · colour code: beige · about it: text н=4
+5 — Двоколірні туфлі зі шкіри на шнурівці · kind code: dress_shoes · colour code: white · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; grey — сірий; purple — фіолетовий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This light beige pencil skirt falls just below your knee and hugs your figure with a clean, straight cut that flows gently over your hips and thighs.",
+"2": "The gray wool coat features a wide lapel collar, structured shoulders, and an adjustable belt at the waist that creates a defined silhouette without adding bulk.",
+"3": "A soft purple leather shoulder bag with a long thin strap and a gold-tone logo detail adds a pop of color to your neutral base.",
+"4": "The beige blouse has a relaxed fit, long sleeves, and a keyhole neckline that sits softly at the chest with subtle vertical texture in its fabric.",
+"5": "These white leather dress shoes have a classic lace-up front, a smooth cap toe finished in warm brown, and a low heel that feels comfortable yet polished.",
+"6": "You are wearing a sleek, light beige pencil skirt paired with a soft beige blouse featuring a relaxed neckline. Over it all sits a structured gray wool coat with a wide collar and a built-in belt that cinches your waist, adding definition to your silhouette. Your look is finished with polished white dress shoes that have a brown cap toe detail, complemented by a purple leather shoulder bag for a touch of color.",
+"7": "Take the gray coat off when you're seated at the table so the skirt and blouse shine as your main focus during dinner.",
+"8": "Let the white shoes breathe with your legs and draw the eye downward to elongate your figure.",
+"9": "Tuck the blouse in slightly if you want to highlight your waistline without relying on a belt.",
+"10": "Бежева спідниця-олівець, Фіолетова шкіряна сумка, Блуза з тенселу, Двоколірні туфлі зі шкіри на шнурівці, Пальто вовняне вкорочене з паском — This outfit meets your 'cocktail' requirement through the structured coat and polished shoes, elevating the relaxed skirt into a celebration-ready ensemble that honors the event's formality while keeping you comfortable."
+}
+
+── ВІДПОВІДЬ (1877 симв., 77.0 с, HTTP 200) ──
+```json
+{
+"1": "Ця світла бежева спідниця-олівець закінчується трохи нижче колін і облягає твою фігуру з чистим, прямим кроєм, який м’яко спадає на стегна та сідниці.",
+"2": "Сіре вовняне пальто має широкий комір-лацкан, структуровані плечі та регульований пояс на талії, що створює окреслений силует без зайвого об’єму.",
+"3": "М'яка фіолетова шкіряна сумка через плече з довгою тонкою лямкою та золотистою деталлю логотипу додає яскравий колір до твого нейтрального образу.",
+"4": "Бежева блуза має вільний крій, довгі рукави та виріз-ключик на грудях з ледь помітною вертикальною текстурою тканини.",
+"5": "Ці білі шкіряні туфлі для сукні мають класичну шнурівку спереду, гладку миску в теплому коричневому кольорі та невисокий каблук, який зручний і водночас елегантний.",
+"6": "Ти одягнена у витончену світлу бежеву спідницю-олівець у парі з м'якою бежевою блузою з розслабленим вирізом. Зверху на тобі структуроване сіре вовняне пальто з широким коміром і вбудованим поясом, який підкреслює твою талію, додаючи визначення силуету. Твій образ завершують витончені білі туфлі для сукні з коричневою деталлю на миску, доповнені фіолетовою шкіряною сумкою через плече для яскравого акценту.",
+"7": "Зніми сіре пальто, коли сядеш за стіл, щоб спідниця та блуза стали головним фокусом під час вечері.",
+"8": "Дай білим туфлям дихати з твоїми ногами і приверни увагу вниз, подовжуючи фігуру.",
+"9": "Злегка заправ блузу всередину, якщо хочеш підкреслити лінію талії без використання пояса.",
+"10": "Бежева спідниця-олівець, Фіолетова шкіряна сумка, Блуза з тенселу, Двоколірні туфлі зі шкіри на шнурівці, Пальто вовняне вкорочене з паском — Цей образ відповідає твоїй вимозі «коктейльна вечірка» завдяки структурованому пальту та витонченим туфлям, перетворюючи розслаблену спідницю на святковий ансамбль, який поважає урочистість події, залишаючись при цьому комфортним."
+}
+```
