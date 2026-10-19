@@ -1,0 +1,37 @@
+── ПРОМПТ (2354 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wool-blend tweed jacket in a muted charcoal with hex code #36454F, featuring a tailored boxy cut and hip-length hem.\nSlim-fit merino wool trousers in a soft oat tone with hex code #E0D8C6, offering a straight-leg cut that falls just above the ankle.\nChunky leather loafers in an earthy brown with hex code #8B6914, designed with a slight platform heel for wet autumn streets.\nA matte-finish silk scarf in deep rust with hex code #B7410E, adding warmth and texture against the cool gray weather.\n\nThis ensemble perfectly balances the requirement for a neat work-appropriate look while respecting the relentless autumn rain with functional yet stylish fabrics. The wool tweed jacket provides essential protection against the chill without looking heavy or overly formal for a casual café meeting. Neutral tones like charcoal and oat ground the outfit, allowing the rust accent to add personality to the damp season, ensuring you remain comfortable and professional throughout the entire day."}
+
+── ВІДПОВІДЬ (785 симв., 194.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Structured wool-blend tweed jacket",
+      "details": "tailored boxy cut with hip-length hem",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Slim-fit merino wool trousers",
+      "details": "straight-leg cut that falls just above the ankle",
+      "slot": "bottom",
+      "color_hex": "#E0D8C6",
+      "worn": true
+    },
+    {
+      "name": "Chunky leather loafers",
+      "details": "slight platform heel design",
+      "slot": "shoes",
+      "color_hex": "#8B6914",
+      "worn": true
+    },
+    {
+      "name": "Matte-finish silk scarf",
+      "details": "adds warmth and texture",
+      "slot": "scarf",
+      "color_hex": "#B7410E",
+      "worn": true
+    }
+  ]
+}

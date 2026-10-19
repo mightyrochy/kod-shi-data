@@ -1,0 +1,58 @@
+── ПРОМПТ (7714 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Жилет жіночий вільного фасону на кнопках демісезонний · kind code: vest · colour code: chocolate · about it: text н=1
+2 — Штани-палаццо кольору нюд · kind code: trousers · colour code: beige · about it: text н=2
+3 — Лофери жіночі Tamaris · kind code: loafers · colour code: beige · about it: text н=3
+4 — Сумка жіноча Soli basket · kind code: bag_generic · colour code: beige · about it: text н=4
+5 — Пасок Базовий світла олива · kind code: belt · colour code: olive · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; chocolate — шоколадний; olive — оливковий.
+
+ТЕКСТИ:
+{
+"1": "A structured chocolate brown wool vest with a high collar, front button closure, and two large flap pockets. Its tailored fit sits just at the hip, offering warmth without bulk—and perfect for layering over your shirt.",
+"2": "Nude-colored wide-leg trousers with a flowing drape and clean lines that elongate your legs. Their generous cut offers comfort all day while maintaining polish—ideal for walking through city streets or sitting across from clients.",
+"3": "Taupe suede loafers with classic moccasin stitching and a low heel. Soft, slip-on, and subtly elegant—they pair effortlessly with your wide-leg pants and add a touch of understated luxury to your step.",
+"4": "A woven straw tote accented with sleek black leather handles and trim. Its airy texture brings lightness to the outfit while its shape holds essentials securely—perfect for carrying documents, a laptop case, or your daily essentials.",
+"5": "A delicate light olive satin belt that cinches your waist gently. Its smooth finish catches the light softly, adding definition to your silhouette without feeling restrictive—or overpowering.",
+"6": "Your outfit is a warm, earth-toned ensemble: a chocolate brown wool vest layered over a beige plaid shirt, paired with nude wide-leg trousers. The look is grounded by taupe suede loafers and tied together with a light olive belt that adds a soft pop of color. A straw basket bag with black leather handles completes the set with effortless chic.",
+"7": "Tuck your shirt hem slightly into the waistband or leave it flowing loose for comfort—both work well with this silhouette.",
+"8": "Let the vest sit open over your shirt to highlight the plaid pattern while keeping your arms free for autumnal movement.",
+"9": "If rain begins, carry a compact umbrella; there’s no rain layer here, but you can always slip into a coat or wrap if needed.",
+"10": "Жилет жіночий вільного фасону на кнопках демісезонний — This vest acts as a top layer over the trousers, creating a complete outfit while remaining cozy.",
+"11": "Штани-палаццо кольору нюд — Nude polyester trousers add length and comfort without soaking up rain.",
+"12": "Жилет жіночий вільного фасону на кнопках демісезонний — Despite being sleeveless, this outfit serves your goal because the warm wool trousers provide essential coverage for the cold, rainy autumn day, ensuring you remain comfortable without compromising your professional silhouette."
+}
+
+── ВІДПОВІДЬ (2568 симв., 150.6 с, HTTP 200) ──
+```json
+{
+"1": "Структурований шоколадно-коричневий вовняний жилет з високим коміром, застібкою на ґудзики спереду та двома великими клапанами кишенями. Його приталений крій сидить трохи нижче стегон, пропонуючи тепло без об’єму — ідеально для носіння поверх сорочки.",
+"2": "Нюдові штани-палаццо з широкими штанинами та плавним драпіруванням і чистими лініями, які видовжують твої ноги. Їхній вільний крій забезпечує комфорт протягом усього дня, зберігаючи при цьому елегантність — ідеально для прогулянок міськими вулицями або зустрічей з клієнтами.",
+"3": "Таупові замшеві лофери з класичним швом мокасина та низьким підбором. М’які, зручні на ногу й ледь помітно елегантні — вони без зусиль поєднуються з твоїми широкими штанами та додають до твоєї ходи відтінок вишуканої розкоші.",
+"4": "Плетена солом’яна сумка, прикрашена стильними чорними шкіряними ручками й облямівкою. Її повітряна текстура надає образу легкості, а форма надійно утримує необхідні речі — ідеально для носіння документів, чохла для ноутбука або щоденних дрібниць.",
+"5": "Делікатний світло-оливковий атласний пасок, який ніжно підкреслює твою талію. Його гладка поверхня м’яко відбиває світло, додаючи визначення силуету без відчуття обмеження — або надмірності.",
+"6": "Твій образ — тепла, землиста кольорова гама: шоколадно-коричневий вовняний жилет, надітий поверх бежевої картатої сорочки, у поєднанні з нюдовими широкими штанами. Образ підкреслюють таупові замшеві лофери, а світло-оливковий пасок додає м’який колірний акцент. Солом’яна сумка з чорними шкіряними ручками завершує образ невимушеною елегантністю.",
+"7": "Злегка заправ сорочку в пояс штанів або носи її вільно для комфорту — обидва варіанти добре поєднуються з цим силуетом.",
+"8": "Залиш жилет розстебнутим поверх сорочки, щоб підкреслити картатий малюнок і залишити руки вільними для осінніх рухів.",
+"9": "Якщо почне дощити, візьми з собою компактний парасольку; тут немає захисту від дощу, але ти завжди можеш накинути пальто або шаль, якщо знадобиться.",
+"10": "Жилет жіночий вільного фасону на кнопках демісезонний — Цей жилет слугує верхнім шаром поверх штанів, створюючи повний образ і залишаючись затишним.",
+"11": "Штани-палаццо кольору нюд — Нюдові поліестерові штани додають довжини та комфорту без вбирання дощу.",
+"12": "Жилет жіночий вільного фасону на кнопках демісезонний — Незважаючи на те, що він без рукавів, цей образ відповідає твоїй меті, адже теплі вовняні штани забезпечують необхідне покриття для холодного дощового осіннього дня, гарантуючи тобі комфорт і зберігаючи професійний силует."
+}
+```

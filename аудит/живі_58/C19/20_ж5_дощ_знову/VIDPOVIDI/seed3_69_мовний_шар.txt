@@ -1,0 +1,73 @@
+── ПРОМПТ (9702 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Тренч вкорочений класичний табак · kind code: trench_coat · colour code: chocolate · about it: text н=1
+2 — Плісована максісукня синього кольору · kind code: dress_generic · colour code: blue · about it: text н=2
+3 — Пасок Базовий смарагд · kind code: belt · colour code: emerald · about it: text н=3
+4 — Сумка Золота лілія · kind code: bag_generic · colour code: golden · about it: text н=4
+5 — Туфлі жіночі Tamaris · kind code: dress_shoes · colour code: brown · about it: text н=5
+6 — Прикраса золото · kind code: jewelry_generic · colour code: golden · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: blue — синій; brown — коричневий; chocolate — шоколадний; emerald — смарагд; golden — золотий.
+
+ТЕКСТИ:
+{
+"1": "A tailored chocolate-brown trench coat with a structured collar, shoulder epaulettes, and a matching belt that cinches at the waist. The fabric has a subtle sheen that catches the light in the café, while the cut provides warmth without bulk.",
+"2": "A navy blue pleated maxi dress featuring a sheer overlay with long sleeves and a bow at the neckline. The layers create depth and movement, allowing the skirt to flow gracefully as you walk into your appointment.",
+"3": "An emerald green belt with a wide strap and a rectangular buckle that adds a pop of rich color while defining your waistline. Its width complements the fitted silhouette of the trench coat without overwhelming the look.",
+"4": "A small crossbody bag with a vibrant floral tapestry print on the front panel and a solid navy blue bottom section. The compact size fits essentials easily while adding a whimsical touch to the sophisticated outfit.",
+"5": "Brown suede dress shoes with a chunky lug sole and thin laces that add an element of modern utility. They provide stable traction on wet pavement and enough height to elongate your stride inside the café.",
+"6": "A sleek gold-toned bracelet with interlocking links and diamond-like accents that catch the light subtly. The piece adds a refined metallic detail that ties together the neutral palette without competing with the textures of your clothes.",
+"7": "This ensemble blends structured elegance with practical warmth, perfect for an autumn day out. The chocolate-brown belted trench coat acts as a protective outer shell that you can remove if the café warms up or when you transition from the street to your meeting. Underneath, the navy pleated dress provides a touch of formal grace and fluid movement, creating a beautiful tonal contrast with the warm earthy tones above. The emerald belt cinches the waist to define your silhouette, while the brown leather-look shoes ground the look with understated comfort.",
+"8": "Start with the trench fully fastened on the rainy street, then unbutton it and let it drape open once you step into the dry café.",
+"9": "Tuck the dress slightly if you feel like highlighting the waist further before your client meeting.",
+"10": "Carry the small floral crossbody bag on the shoulder rather than across the body for a more polished silhouette.",
+"11": "Тренч вкорочений класичний табак — The trench coat acts as a deliberate break from her usual cool palette, introducing warm tobacco tones necessary for autumn rain protection.",
+"12": "Плісована максісукня синього кольору — I added this navy pencil skirt here because the original outfit lacked a defined bottom; it is not a dress but a separate piece that fits the 'neat' occasion and solves the missing foundation issue.",
+"13": "Сумка Золота лілія — The golden tote is replaced by this structured bag to match the formal occasion's requirements for carrying work documents without looking casual.",
+"14": "Пасок Базовий смарагд — I kept the emerald leather belt here as a necessary third piece to break the mono-object silhouette of the trench/vest combo and define the waist.",
+"15": "Тренч вкорочений класичний табак, Плісована максісукня синього кольору, Пасок Базовий смарагд, Сумка Золота лілія, Туфлі жіночі Tamaris, Прикраса золото — The 'rock' register comes from the trench's fabric weight and structure rather than casual rockwear; this heavier coat provides the necessary warmth against the rain while its classic cut respects the formal occasion.",
+"16": "Тренч вкорочений класичний табак — A tobacco-colored trench coat is an edge item breaking the cool palette to add autumnal warmth, justified by the season and need for outer protection.",
+"17": "Плісована максісукня синього кольору — A blue pleated maxi dress is an edge item outside the primary neutrals but chosen for its fabric elegance and ability to stand alone as the dominant piece.",
+"18": "Плісована максісукня синього кольору — I kept this blue dress because its fabric elegance makes it a dominant piece that can stand alone, justified by the post-meeting occasion rather than being an error in formality.",
+"19": "Туфлі жіночі Tamaris — Replacing the missing shoes with these brown leather pumps continues the leg line from the dress hem and matches the skin tone at the foot edge."
+}
+
+── ВІДПОВІДЬ (4311 симв., 113.5 с, HTTP 200) ──
+```json
+{
+"1": "Вкорочений класичний тренч кольору табак з відкладним коміром, наплічними погонами та ремінцем у тон, який підкреслює лінію талії. Тканина має ледь помітний блиск, що ловить світло в кав’ярні, а крій забезпечує тепло без зайвого об’єму.",
+"2": "Синя максісукня з плісе, оздоблена прозорим верхом із довгими рукавами та бантом на шиї. Шари створюють глибину й рух, дозволяючи спідниці елегантно розвіватися під час ходьби до зустрічі.",
+"3": "Смарагдово-зелений пасок з широкою стрічкою та прямокутною пряжкою, який додає яскравий колір і окреслює лінію талії. Його ширина гармонує з приталеним силуетом тренча без надмірності.",
+"4": "Невелика сумка-кросбоді з барвистим квітковим гобеленовим принтом на передній панелі й темно-синьою основою. Компактний розмір легко вміщує необхідні речі, додаючи витончений акцент до елегантного образу.",
+"5": "Коричневі замшеві туфлі з масивним протектором і тонкими шнурками, які надають сучасний практичний вигляд. Вони забезпечують стійке зчеплення на мокрій бруківці та достатню висоту для подовження ходи в кав’ярні.",
+"6": "Стильний браслет із золотистих ланок, що переплітаються, й акцентними деталями, схожими на діаманти, які ледь помітно відбивають світло. Ця прикраса додає вишуканий металевий штрих, який гармонійно поєднується з нейтральною палітрою без конкуренції з текстурами твого одягу.",
+"7": "Цей ансамбль поєднує структуровану елегантність із практичним теплом, ідеально підходячи для осіннього дня. Шоколадно-коричневий тренч служить захисним верхнім шаром, який ти можеш зняти, якщо в кав’ярні стане занадто тепло або коли перейдеш від вулиці до зустрічі. Під ним синя плісована сукня надає нотку формальної витонченості та вільного руху, створюючи гарний тональний контраст із теплими земляними кольорами зверху. Смарагдовий пасок підкреслює лінію талії, щоб окреслити твій силует, а коричневі шкіряні туфлі завершують образ невимушеним комфортом.",
+"8": "Спочатку застебни тренч на ґудзики на дощовій вулиці, потім розстібай його й дай вільно звисати, коли зайдеш у суху кав’ярню.",
+"9": "Злегка підверни сукню, якщо хочеш ще більше виділити лінію талії перед зустріччю з клієнтом.",
+"10": "Носи маленьку сумку-кросбоді на плечі замість того, щоб перекидати її через тіло — так образ буде більш охайним.",
+"11": "Вкорочений класичний тренч кольору табак — Тренч є акцентною річчю, що виходить за межі твоєї звичної холодної палітри, додаючи необхідні осінні теплі тони для захисту від дощу.",
+"12": "Плісована максісукня синього кольору — Я додала тут цю темно-синю олівцеву спідницю, бо в оригінальному образі не було чіткого низу; це окремий елемент, який підходить для ділової нагоди та вирішує проблему відсутньої основи.",
+"13": "Сумка Золота лілія — Велику золотисту сумку замінено цією структурованою моделлю, щоб відповідала формальній нагоді й дозволяла носити робочі документи без вигляду недбалості.",
+"14": "Пасок Базовий смарагд — Я залишила цей смарагдовий шкіряний пасок як необхідну третю річ, щоб розбити моно-об’єктний силует комбінації тренча/жилета та окреслити лінію талії.",
+"15": "Вкорочений класичний тренч кольору табак, Плісована максісукня синього кольору, Пасок Базовий смарагд, Сумка Золота лілія, Туфлі жіночі Tamaris, Прикраса золото — «Роковий» стиль походить від щільності тканини й структури тренча, а не від звичайного рок-одягу; цей важчий верхній одяг забезпечує необхідне тепло проти дощу, зберігаючи при цьому класичний крій для формальної нагоди.",
+"16": "Вкорочений класичний тренч кольору табак — Тренч кольору табак є акцентною річчю, що виходить за межі твоєї звичної холодної палітри, додаючи осіннього тепла, що обґрунтовано сезоном і необхідністю зовнішнього захисту.",
+"17": "Плісована максісукня синього кольору — Синя плісована максісукня є акцентною річчю за межами основних нейтральних відтінків, але обрана через елегантність тканини та здатність самостійно домінувати в образі.",
+"18": "Плісована максісукня синього кольору — Я залишила цю синю сукню, бо її тканина робить її домінуючою річчю, яка може стояти сама по собі, що обґрунтовано нагодою після зустрічі, а не помилкою в формальності.",
+"19": "Туфлі жіночі Tamaris — Заміна відсутніх туфель цими коричневими шкіряними туфлями продовжує лінію ніг від подолу сукні та поєднується з тоном твоєї шкіри на краю стопи."
+}
+```

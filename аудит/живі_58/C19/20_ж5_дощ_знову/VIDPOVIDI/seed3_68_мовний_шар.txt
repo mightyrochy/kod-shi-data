@@ -1,0 +1,77 @@
+── ПРОМПТ (10163 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані: до неї — на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); стилістка говорить сама від першої особи, у жіночому роді («я обрала», не «стилістка обрала» і не «вона підібрала»). Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — JSON-масив об'єктів із ключами н (номер), вид (вид рядка) і заяви — список об'єктів із ключами code (що сказано) і values (числа й назви до цієї заяви).
+На кожен номер — ОДИН текст: одне-два речення, які передають усі його заяви разом, у порядку заяв. Не перелік і не список. Кодів у тексті не пиши — пиши їхній зміст. Числа й слова крамниці з values пиши як вони є; значення, що стоїть у «КОДИ У ЗНАЧЕННЯХ», — це теж код: пиши його слова звідти, а не сам код.
+
+ВИДИ РЯДКІВ:
+- card_unchecked — рядок у згорнутому переліку на картці образу: що в ЦЬОМУ образі лишилось не перевіреним — про речі, про неї чи про її день — і чого для цього бракує. «the code» у визначеннях його заяв — це перевірка образу, яку робить стилістка: пиши від її першої особи («я не звірила…», «не знаю…») або про саму річ; слів «код», «система», «програма» тут нема. Це не вада образу й не порада, а чесне «не знаю».
+
+КОДИ У ЗНАЧЕННЯХ:
+- bag — сумка.
+- belt — пасок / пояс.
+- crossbody — кросбоді.
+- dress — сукня.
+- golden — золотий.
+- hand — рука.
+- jewelry — прикраси.
+- navy — темно-синій.
+- outerwear — верхній шар.
+- shoulder — плече.
+- uk — українська.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти обрала», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+Коли в номері кілька заяв, кожна стоїть у тексті своїм змістом: жодна не випадає і не зливається з іншою, а дія однієї заяви не переходить на речі іншої — чому сказано окремо, що зроблено окремо.
+
+ЗАЯВИ:
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word).
+- colour_word_shop_photo_other — the shop names one colour of the named items and their card photo shows another, so the code knows neither for sure (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — the shop's colour word, photo — the colour on the photo).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_look_follows_her_combinations — so the code cannot tell whether the outfit's colours follow the logic of her combinations.
+- cannot_tell_complementary_pair_leads — so the code cannot tell whether a pair of opposite colours leads the outfit.
+- cannot_tell_accent_echoed — so the code cannot tell whether the accent colour repeats elsewhere in the outfit.
+- cannot_tell_two_accent_surfaces_match — so the code cannot tell whether two accent items match exactly in colour.
+- cannot_tell_item_off_palette — so the code cannot tell whether the item's colour lies outside her palette.
+- cannot_tell_colour_from_eyes — so the code cannot tell whether the colour comes from the family of her eyes.
+- cannot_tell_item_carries_interest — so the code cannot tell whether the item's colour is strong enough to carry interest.
+- cannot_tell_item_is_neutral — so the code cannot tell whether the named item is a neutral at all, and the rules about neutrals did not judge it.
+- cannot_tell_accent_role_chroma — so the code cannot tell whether the item is colourful enough for the accent role the palette scheme gave its slot.
+- cannot_tell_items_intensity_match — so the code cannot tell whether the outfit's items match in colour saturation.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- outer_ease_not_in_feed — the cards do not carry the width ease of the layers, so the code does not check whether one layer lies comfortably over another (values: items — items: item_id, name — the item's name on the card).
+- outer_shoulder_not_measured — the card does not carry the outer layer's shoulder width, so the code does not judge whether the shoulder fits (values: item — item name; item_id).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- photo_shows_other_colour — in the card's photo the code sees a different colour than the one the item is described and judged by: the shop may have shown another colour of the model or named it differently (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — the item's colour, photo — the colour in the photo).
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного повідомлення зі входу, значення — його текст.
+
+ПОВІДОМЛЕННЯ:
+[
+{"н": 1, "вид": "card_unchecked", "заяви": [{"code": "outer_shoulder_not_measured", "values": {"item": {"free_text": "Тренч вкорочений класичний табак", "lang": "uk"}, "item_id": "ж-05339@feelyou.com.ua"}}]},
+{"н": 2, "вид": "card_unchecked", "заяви": [{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Туфлі жіночі Tamaris", "lang": "uk"}, "item_id": "ж-12405@welfare.ua"}}, {"code": "her_foot_length_unknown"}, {"code": "item_insole_length_unknown"}]},
+{"н": 3, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-08663@likeangel.com.ua", "slot": "belt", "colour": "смарагд", "name": {"free_text": "Пасок Базовий смарагд", "lang": "uk"}}]}}, {"code": "cannot_tell_accent_echoed"}, {"code": "cannot_tell_item_is_neutral"}, {"code": "cannot_tell_items_intensity_match"}, {"code": "cannot_tell_item_carries_interest"}, {"code": "cannot_tell_item_holds_scheme_hue"}, {"code": "cannot_tell_item_off_palette"}, {"code": "cannot_tell_colour_from_eyes"}, {"code": "cannot_tell_look_follows_her_combinations"}, {"code": "cannot_tell_complementary_pair_leads"}, {"code": "cannot_tell_two_accent_surfaces_match"}]},
+{"н": 4, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop_photo_other", "values": {"items": [{"item_id": "ж-07921@yakfaino.com", "slot": "bag", "colour": "золотий", "photo": "темно-синій", "name": {"free_text": "Сумка Золота лілія", "lang": "uk"}}]}}, {"code": "cannot_tell_accent_echoed"}, {"code": "cannot_tell_item_is_neutral"}, {"code": "cannot_tell_items_intensity_match"}, {"code": "cannot_tell_item_carries_interest"}, {"code": "cannot_tell_accent_role_chroma"}, {"code": "cannot_tell_item_holds_scheme_hue"}, {"code": "cannot_tell_colour_from_eyes"}, {"code": "cannot_tell_look_follows_her_combinations"}, {"code": "cannot_tell_complementary_pair_leads"}, {"code": "cannot_tell_two_accent_surfaces_match"}]},
+{"н": 5, "вид": "card_unchecked", "заяви": [{"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-07593@brenda.ua", "slot": "jewelry", "colour": "золотий", "name": {"free_text": "Прикраса золото", "lang": "uk"}}]}}, {"code": "cannot_tell_accent_echoed"}, {"code": "cannot_tell_accent_role_chroma"}, {"code": "cannot_tell_two_accent_surfaces_match"}]},
+{"н": 6, "вид": "card_unchecked", "заяви": [{"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "dress", "range": "32–59"}]}}, {"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "outerwear", "range": "42–46"}]}}]},
+{"н": 7, "вид": "card_unchecked", "заяви": [{"code": "photo_shows_other_colour", "values": {"items": [{"item_id": "ж-07921@yakfaino.com", "slot": "bag", "colour": "golden", "photo": "navy", "name": {"free_text": "Сумка Золота лілія", "lang": "uk"}}]}}]},
+{"н": 8, "вид": "card_unchecked", "заяви": [{"code": "outer_ease_not_in_feed", "values": {"items": [{"item_id": "ж-11891@theoriginals.com.ua", "name": {"free_text": "Плісована максісукня синього кольору", "lang": "uk"}}, {"item_id": "ж-05339@feelyou.com.ua", "name": {"free_text": "Тренч вкорочений класичний табак", "lang": "uk"}}]}}]},
+{"н": 9, "вид": "card_unchecked", "заяви": [{"code": "wear_way_not_chosen", "values": {"item": {"free_text": "сумка Золота лілія", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"]}}]}
+]
+
+── ВІДПОВІДЬ (1780 симв., 43.3 с, HTTP 200) ──
+```json
+{
+  "1": "Я не знаю, чи підійде тобі твій тренч вкорочений класичний табак по плечах.",
+  "2": "Не можу перевірити розмір твоїх туфель Tamaris, бо я не знаю довжину твоєї стопи і внутрішню устілку черевика.",
+  "3": "Я бачу на картці пасок Базовий смарагд кольору смарагд, але мені важко сказати, чи він підкреслює акцент в образі, чи є нейтральним, як поєднується з іншими речами за насиченістю та цікавістю, і чи відповідає твоїй палітрі. Також я не знаю, чи повторюється цей колір десь ще у твоєму образі.",
+  "4": "На картці сумки Золота лілія вказано золотий колір, але на фото вона виглядає темно-синьою. Я не можу сказати точно, який колір має сумка і чи він підкреслює акцент у твоєму образі, чи є нейтральним, як поєднується з іншими речами за насиченістю та цікавістю, і чи відповідає твоїй палітрі. Також я не знаю, чи повторюється цей колір десь ще у твоєму образі.",
+  "5": "Я бачу на картці прикрасу золотого кольору, але мені важко сказати, чи вона є достатньо яскравою для акцентної ролі і чи поєднується з іншими речами за насиченістю. Також я не знаю, чи повторюються ці поверхні в точності за кольором.",
+  "6": "Я не можу перевірити розмір твоєї сукні та тренчу, бо на картках лише вказано діапазон розмірів, а мені потрібні конкретні виміри для підбору по фігурі.",
+  "7": "На фото сумки Золота лілія видно темно-синій колір замість золотого. Я не знаю, який саме колір має сумка і чи він відповідає твоїй палітрі або кольору очей.",
+  "8": "Я не можу перевірити, як вільно лежать один на одному тренч вкорочений класичний табак і плісована максісукня синього кольору, бо я не знаю їх ширину по низу.",
+  "9": "Ти ще не обрала спосіб носіння сумки Золота лілія. Я можу перевірити її за будь-який з цих способів: в руці, на плечі або через тіло."
+}
+```

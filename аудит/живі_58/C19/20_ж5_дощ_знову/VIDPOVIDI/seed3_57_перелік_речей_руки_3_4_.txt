@@ -1,0 +1,30 @@
+── ПРОМПТ (2075 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer in deep charcoal gray (#3F4E56) with a relaxed fit and notched lapel.\nMatching wide-leg trousers in a heavy-weight stretch fabric that falls just above the ankle.\nChunky leather loafers in black (#000000) featuring a non-slip sole suitable for wet pavements.\nThis ensemble delivers the refined \"neat\" aesthetic required for a client meeting while remaining practical against a full day of autumn rain. The dark, muted tones create a professional silhouette that absorbs the gloomy weather outside without appearing dull in the café setting. By choosing breathable wool and grippy footwear, the outfit honors her need for polish without compromising comfort during an unpredictable forecast."}
+
+── ВІДПОВІДЬ (613 симв., 249.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "relaxed fit with notched lapel in wool-blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#3F4E56",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "wide-leg in heavy-weight stretch fabric falling just above the ankle",
+      "slot": "bottom",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "chunky leather with non-slip sole suitable for wet pavements",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}
