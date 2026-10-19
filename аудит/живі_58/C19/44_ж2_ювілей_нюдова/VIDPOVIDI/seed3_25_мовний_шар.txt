@@ -1,0 +1,52 @@
+── ПРОМПТ (7383 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Жакет двобортний в кольорі кемел · kind code: blazer · colour code: camel · about it: text н=1
+2 — Бавовняна хакі спідниця максі довжини Грейден · kind code: skirt · colour code: khaki · about it: text н=2
+3 — LeBERDES Туфлі червоні · kind code: dress_shoes · colour code: red · about it: text н=3
+4 — Сумка Марсала абстракція · kind code: bag_generic · colour code: burgundy · about it: text н=4
+5 — Пасок з пірʼям бордо · kind code: belt · colour code: burgundy · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: burgundy — бордовий; camel — кемел; khaki — хакі; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This structured camel blazer features a double-breasted front with dark buttons and wide lapels. It has a tailored fit that defines the waist, making it an ideal choice for your X-shaped figure.",
+"2": "The olive green maxi skirt flows gracefully from the waist down, creating a beautiful A-line silhouette that complements your proportions. Its length adds elegance to your overall look.",
+"3": "These vibrant red dress shoes offer a sleek pointed toe design and a slender heel that elongates your legs effortlessly. Their glossy finish brings a touch of glamour to any outfit.",
+"4": "The burgundy abstract-patterned bag features intricate colorful designs and a rich leather strap. Its unique pattern adds an artistic flair while providing practicality for carrying essentials.",
+"5": "This feather-trimmed burgundy belt cinches your waist elegantly, adding texture and color to your ensemble. The satin ribbon detail enhances the festive vibe suitable for a celebration.",
+"6": "Your camel blazer sits perfectly over your hips, drawing a clean vertical line that elongates your figure. The olive green skirt adds a soft, elegant contrast to the structured jacket, while the bold red pumps and burgundy accessories inject a festive spark for the celebration. This look is designed to stand out at Teta's milestone event.",
+"7": "Start your evening in the blazer for warmth as you arrive, then slip it off later if you feel like moving more freely on the dance floor or during dinner.",
+"8": "Бавовняна хакі спідниця максі довжини Грейден, LeBERDES Туфлі червоні, Сумка Марсала абстракція, Пасок з пірʼям бордо — Accepting this red family repetition: while it slightly exceeds the loud-colour ceiling by one, here the accent is necessary to anchor the warm neutrals in her specific palette windows and serve the festive occasion.",
+"9": "Жакет двобортний в кольорі кемел — The camel color is warm and autumnal, perfect for the season, though it sits outside the strict neutral scheme; I kept it to honor the 'neutrals_plus_accent' palette technique which allows one warm accent family."
+}
+
+── ВІДПОВІДЬ (2187 симв., 72.2 с, HTTP 200) ──
+```json
+{
+"1": "Цей структурований кемел-жакет має двобортну передню частину з темними ґудзиками та широкими лацканами. Він має приталений крій, який підкреслює твою талію, що робить його ідеальним вибором для твоєї X-подібної фігури.",
+"2": "Оливково-зелена спідниця максі довжини Грейден елегантно спадає від талії вниз, створюючи чудовий силует трапеції, який підкреслює твої пропорції. Її довжина додає загальному образу вишуканості.",
+"3": "Ці яскраві червоні туфлі-човники мають елегантний загострений носок і тонкий каблук, які без зусиль видовжують ноги. Їхній глянцевий фініш додає будь-якому вбранню шарму.",
+"4": "Бордова сумка з абстрактним візерунком має складні кольорові дизайни та багату шкіряну ручку. Її унікальний візерунок надає художнього акценту, водночас забезпечуючи практичність для носіння необхідних речей.",
+"5": "Цей пояс з пірʼям бордового кольору елегантно підкреслює твою талію, додаючи текстуру й колір до твого ансамблю. Деталь атласної стрічки посилює святковий настрій, який пасує для урочистої події.",
+"6": "Твій кемел-жакет ідеально сидить на стегнах, утворюючи чітку вертикальну лінію, яка видовжує твою фігуру. Оливково-зелена спідниця додає мʼякий елегантний контраст до структурованого жакета, а сміливі червоні туфлі та бордові аксесуари вносять святковий акцент для урочистої події. Цей образ створено, щоб привернути увагу на ювілеї Тетяни.",
+"7": "Почни свій вечір у жакеті, щоб зігрітися під час прибуття, а потім зніми його пізніше, якщо захочеш вільно рухатися на танцмайданчику або за вечерею.",
+"8": "Бавовняна хакі спідниця максі довжини Грейден, LeBERDES Туфлі червоні, Сумка Марсала абстракція, Пасок з пірʼям бордо — Приймаючи це повторення червоної родини: хоча воно трохи перевищує ліміт яскравих кольорів на один, тут акцент необхідний для закріплення теплих нейтральних відтінків у твоїй конкретній палітрі та відповідати святковій події.",
+"9": "Жакет двобортний в кольорі кемел — Колір кемел є теплим і осіннім, що чудово підходить для сезону, хоча він виходить за межі суворого нейтрального спектру; я залишила його, щоб віддати шану техніці палітри «нейтральні_плюс_акцент», яка дозволяє один теплий акцентний колір."
+}
+```

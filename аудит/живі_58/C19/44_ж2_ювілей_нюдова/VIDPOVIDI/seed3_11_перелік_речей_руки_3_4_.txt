@@ -1,0 +1,37 @@
+── ПРОМПТ (2334 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green sheath dress with a subtle velvet texture, knee-length cut, deep forest green color (#0a5f42), heavy woven fabric. Charcoal grey tailored blazer, structured shoulders and fitted waist, classic black charcoal hex (#36454F), fine wool blend. Black pointed-tooe pumps, sleek silhouette, jet black color (#000000), genuine leather. Gold drop earrings, medium size with a geometric design, antique gold hex (#b89c2d), polished metal.\n\nThis outfit balances the requested \"neat\" and \"formal\" levels of dress code by layering a sophisticated velvet sheath dress under a structured wool blazer, creating an elegant ensemble suitable for a restaurant celebration. The rich emerald green and deep charcoal tones complement her warm skin undertones and hair color while maintaining a polished autumn aesthetic. Without an outer coat, the layers provide enough warmth for indoor settings without overheating at +20 °C or warmer conditions, ensuring comfort throughout the event."}
+
+── ВІДПОВІДЬ (850 симв., 249.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "Emerald green knee-length cut with subtle velvet texture and deep forest green color",
+      "slot": "dress",
+      "color_hex": "#0a5f42",
+      "worn": true
+    },
+    {
+      "name": "tailored blazer",
+      "details": "Charcoal grey structured shoulders fitted waist with fine wool blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "pointed-toe pumps",
+      "details": "Black sleek silhouette genuine leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "drop earrings",
+      "details": "Gold medium size with geometric design polished metal",
+      "slot": "jewelry",
+      "color_hex": "#b89c2d",
+      "worn": true
+    }
+  ]
+}

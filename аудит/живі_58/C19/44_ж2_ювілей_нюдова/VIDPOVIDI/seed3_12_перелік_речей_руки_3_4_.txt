@@ -1,0 +1,37 @@
+── ПРОМПТ (2477 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend blazer, structured lapel cut, knee-length hem, charcoal gray #36454F, heavy tweed fabric.\nSilk-blend sheath dress, empire waistline cut, midi length ending below the knee, deep burgundy #800020, satin finish.\nMinimalist gold pendant necklace, 18mm chain length, brushed metal, recycled brass alloy.\nLeather ankle boots, pointed toe cut, mid-calf shaft, oxblood red #7C0A02, smooth calfskin fabric.\n\nThis ensemble strikes the perfect balance between the requested \"neat\" and \"formal\" levels by pairing a sophisticated wool-blazer with a refined sheath dress that features a luxurious satin finish. The charcoal and deep burgundy color palette offers an elegant autumn contrast suitable for a restaurant celebration, while the structured lapel adds just enough formality without appearing stiff or overly ceremonial. The choice of smooth leather ankle boots grounds the outfit in practical comfort, allowing for easy movement through the venue after enjoying the festivities. Ultimately, this look honors her wish to feel polished yet relaxed enough to enjoy the birthday celebration with grace and confidence."}
+
+── ВІДПОВІДЬ (861 симв., 251.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool-blend blazer",
+      "details": "structured lapel cut, knee-length hem, heavy tweed fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Silk-blend sheath dress",
+      "details": "empire waistline cut, midi length ending below the knee, satin finish",
+      "slot": "dress",
+      "color_hex": "#800020",
+      "worn": true
+    },
+    {
+      "name": "Gold pendant necklace",
+      "details": "18mm chain length, brushed metal, recycled brass alloy",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "pointed toe cut, mid-calf shaft, smooth calfskin fabric",
+      "slot": "shoes",
+      "color_hex": "#7C0A02",
+      "worn": true
+    }
+  ]
+}
