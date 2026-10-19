@@ -1,0 +1,51 @@
+── ПРОМПТ (2563 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored silk-blend blouse in a deep emerald green (#0a5f48) with a relaxed button-down cut and a length that falls just above the waist.\nOver it, a structured wool-twill blazer in charcoal grey (#36454f) featuring sharp shoulders and a hip-length silhouette for warmth against the autumn evening air.\nA high-waisted midi skirt in velvet made of black fabric (#000000) with an A-line cut that skims over the hips and extends to mid-calf for elegance under restaurant lighting.\nHeeled ankle boots in polished oxblood leather (#721c24) with a 8cm heel, offering stability while elevating the overall look.\nGold-plated hoop earrings and a matching gold watch serve as the sole accessories to complement the skin tones and add a touch of sparkle without overwhelming the outfit.\nThis ensemble works perfectly for an upscale evening date in autumn by balancing warmth from the blazer and skirt texture with sophistication from the rich jewel tones, all while respecting the refusal against revealing attire by maintaining modest coverage. The dark palette harmonizes beautifully with her specific hair shades and eye color, creating a cohesive look that feels polished yet comfortable for a 19:30 dinner setting."}
+
+── ВІДПОВІДЬ (1151 симв., 174.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blouse",
+      "details": "tailored silk-blend with a relaxed button-down cut and a length that falls just above the waist",
+      "slot": "top",
+      "color_hex": "#0a5f48",
+      "worn": true
+    },
+    {
+      "name": "Blazer",
+      "details": "structured wool-twill with sharp shoulders and a hip-length silhouette for warmth",
+      "slot": "outerwear",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Skirt",
+      "details": "high-waisted velvet A-line cut that skims over the hips and extends to mid-calf",
+      "slot": "bottom",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Boots",
+      "details": "polished oxblood leather heeled ankle boots with an 8cm heel",
+      "slot": "shoes",
+      "color_hex": "#721c24",
+      "worn": true
+    },
+    {
+      "name": "Earrings",
+      "details": "Gold-plated hoop",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Watch",
+      "details": "gold",
+      "slot": "watch",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

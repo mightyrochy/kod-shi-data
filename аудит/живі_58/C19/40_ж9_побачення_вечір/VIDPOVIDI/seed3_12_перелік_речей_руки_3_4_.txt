@@ -1,0 +1,44 @@
+── ПРОМПТ (2571 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk slip dress, fluid bias-cut silhouette hitting just below the knee, color Burnt Sienna #E2725B, lightweight woven fabric.\nWool-blend tailored blazer, structured shoulder with a slightly relaxed fit falling to the hip, color Charcoal #36454F, heavy mid-weight knit material.\nBlock-heel ankle boot, square toe design rising just above the ankle bone, color Deep Olive #556B2F, smooth leather construction.\nGold drop earrings and a delicate velvet clutch, small geometric hoops with a matte finish, gold metal, deep burgundy microfiber fabric.\n\nThis ensemble balances the romanticism of your evening date with the sophistication required for an upscale restaurant setting. The fluid slip dress provides comfort and elegance, while the tailored blazer adds a structured edge that complements the autumn atmosphere without feeling too heavy at 19:30 indoors. The deep olive boots ground the outfit in a neutral yet warm tone that harmonizes perfectly with your chosen colors, ensuring you feel confident under artificial lighting. Finally, the subtle gold accessories catch the light just right to elevate the look without overpowering it, creating a cohesive and polished appearance perfect for a memorable night out."}
+
+── ВІДПОВІДЬ (1123 симв., 178.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk slip dress",
+      "details": "fluid bias-cut silhouette hitting just below the knee, lightweight woven fabric",
+      "slot": "dress",
+      "color_hex": "#E2725B",
+      "worn": true
+    },
+    {
+      "name": "Wool-blend tailored blazer",
+      "details": "structured shoulder with a slightly relaxed fit falling to the hip, heavy mid-weight knit material",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Block-heel ankle boot",
+      "details": "square toe design rising just above the ankle bone, smooth leather construction",
+      "slot": "shoes",
+      "color_hex": "#556B2F",
+      "worn": true
+    },
+    {
+      "name": "Gold drop earrings",
+      "details": "small geometric hoops with a matte finish, gold metal",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Delicate velvet clutch",
+      "details": "gold metal accents, deep burgundy microfiber fabric",
+      "slot": "bag",
+      "color_hex": "#800020",
+      "worn": true
+    }
+  ]
+}
