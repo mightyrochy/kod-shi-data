@@ -1,0 +1,44 @@
+── ПРОМПТ (2369 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet blazer with wide lapels in deep emerald green (#043927), tailored to a structured fit, heavy woven wool blend.\nHigh-waisted trousers in matching emerald velvet, straight-leg cut falling to the ankle, smooth matte finish.\nClassic pointed-toe pumps in polished black leather (#000000), medium heel height for comfort.\nDelicate gold chain necklace and drop earrings in brushed brass tone.\n\nThis ensemble elevates her celebration from a cozy autumn evening into an occasion worthy of honoring a friend's birthday with refined elegance. The rich emerald velvet captures the warmth of artificial indoor lighting while the tailored silhouette respects her request for both neat sophistication and formal grace without feeling overly stiff. By choosing matching textures in deep jewel tones, the outfit creates a cohesive look that stands out against the likely neutral autumn backgrounds of a party setting. It balances comfort with high style, ensuring she feels celebrated yet grounded throughout the festivities."}
+
+── ВІДПОВІДЬ (942 симв., 171.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Velvet blazer",
+      "details": "wide lapels, structured fit, heavy woven wool blend",
+      "slot": "outerwear",
+      "color_hex": "#043927",
+      "worn": true
+    },
+    {
+      "name": "High-waisted trousers",
+      "details": "straight-leg cut falling to the ankle, smooth matte finish",
+      "slot": "bottom",
+      "color_hex": "#043927",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe pumps",
+      "details": "polished black leather, medium heel height for comfort",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Delicate gold chain necklace",
+      "details": "",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Drop earrings",
+      "details": "brushed brass tone",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
