@@ -1,0 +1,33 @@
+── ПРОМПТ (2283 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "own": "<id from her_items or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description", "\"her_items\" — her own items; an item of the description that is one of them gets its id in \"own\""]}, "description": "Beige blouse, relaxed cut, knee-length hem, soft stone beige (#E3D5C6), lightweight cotton twill.\nTan leather loafers, pointed toe, mid-ankle length, smooth calfskin, tan (#C19A6B).\nGold vermeil bar necklace, slim chain, 18mm pendant, polished gold-filled metal, brass alloy.\nThis ensemble strikes the perfect balance for an autumn office day while honoring her neat dress code and personal wish to wear only one of her own items. The relaxed cut of the beige blouse pairs elegantly with the structured loafers to create a look that is both refined and comfortable for a full workday. A subtle gold bar necklace adds a touch of sophistication without overpowering the outfit, keeping the focus on the clean lines of her chosen top.", "her_items": [{"id": "її-с1", "name": "бежевої блузки"}]}
+
+── ВІДПОВІДЬ (686 симв., 90.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Beige blouse",
+      "details": "relaxed cut, knee-length hem, lightweight cotton twill",
+      "slot": "top",
+      "color_hex": "#E3D5C6",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "Tan leather loafers",
+      "details": "pointed toe, mid-ankle length, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#C19A6B",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "Gold vermeil bar necklace",
+      "details": "slim chain, 18mm pendant, polished gold-filled metal, brass alloy",
+      "slot": "jewelry",
+      "color_hex": null,
+      "own": null,
+      "worn": true
+    }
+  ]
+}
