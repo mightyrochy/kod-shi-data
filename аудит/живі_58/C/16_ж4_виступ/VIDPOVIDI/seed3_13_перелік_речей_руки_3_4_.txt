@@ -1,0 +1,44 @@
+── ПРОМПТ (2420 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Charcoal wool-blend single-breasted blazer, structured tailored cut, elbow length, hex code #36454F, fine flannel weave.\nCream silk-trimmed merino wool sheath dress, A-line silhouette, midi length hitting just below the knee, hex code #F5F5DC, lightweight double-faced wool with a satin lapel.\nObsidian leather pointed-toe pumps, sleek almond shape, mid-calf height, hex code #0F0F12, smooth calfskin with a 3cm heel.\nRose gold minimalist cufflinks and a slim black velvet clutch to complete the ensemble.\n\nThis outfit bridges the gap between your requested smart and formal levels by pairing a structured wool blazer with an elegant sheath dress that offers refined silhouette without being overly stiff. The charcoal and cream palette creates a sophisticated contrast suitable for an autumn evening at the theatre, while the midi length ensures comfort and grace as you move through the venue. Leather pumps in a deep obsidian tone ground the look with timeless elegance, allowing the textures of the wool and silk to take center stage under the auditorium lights."}
+
+── ВІДПОВІДЬ (1065 симв., 160.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Charcoal wool-blend blazer",
+      "details": "Single-breasted, structured tailored cut, elbow length, fine flannel weave",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Cream merino wool sheath dress",
+      "details": "Silk-trimmed, A-line silhouette, midi length hitting just below the knee, lightweight double-faced wool with a satin lapel",
+      "slot": "dress",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "Obsidian leather pumps",
+      "details": "Pointed-toe, sleek almond shape, mid-calf height, smooth calfskin with a 3cm heel",
+      "slot": "shoes",
+      "color_hex": "#0F0F12",
+      "worn": true
+    },
+    {
+      "name": "Rose gold minimalist cufflinks",
+      "details": "",
+      "slot": "accessory",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Slim black velvet clutch",
+      "details": "",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

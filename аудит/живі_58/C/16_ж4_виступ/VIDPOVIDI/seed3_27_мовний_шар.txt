@@ -1,0 +1,56 @@
+── ПРОМПТ (8200 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Піджак Magda Butrym зелений · kind code: blazer · colour code: green · about it: text н=1
+2 — Класичні штани-палаццо світло-сіре · kind code: trousers · colour code: grey · about it: text н=2
+3 — Туфлі-слінгбеки жіночі чорні · kind code: pumps · colour code: black · about it: text н=3
+4 — Сумка жіноча, ATTICO, шкіра, колір помаранчевий · kind code: bag_generic · colour code: terracotta · about it: text н=4
+5 — Шарф кашеміровий із дредами · kind code: scarf_generic · colour code: powder · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; green — зелений; grey — сірий; powder — пудра; terracotta — теракотовий.
+
+ТЕКСТИ:
+{
+"1": "This dark green blazer features a relaxed, slightly oversized cut that flows comfortably over your frame. It has a classic collar and a full front zipper closure, with practical flap pockets positioned at the waist level. The fabric appears to be a sturdy cotton or twill blend, giving it a structured yet soft feel.",
+"2": "These light grey trousers are designed with a high-waisted fit and a wide, palazzo-style leg that creates an elegant drape. They are crafted from a smooth fabric that maintains its shape, offering a comfortable but polished look suitable for evening wear.",
+"3": "You have selected these sleek black pumps with a square toe and an open slingback design. They sit on a sturdy block heel covered in a textured gold material, adding a touch of metallic shine that complements your overall palette without overwhelming it.",
+"4": "This orange bag is crafted from pebbled leather with a soft, slouchy silhouette and a short top handle. It features silver hardware accents and a small zipper closure, providing a compact but functional size perfect for carrying your essentials.",
+"5": "This powder-colored scarf is made from a soft, fuzzy material, likely cashmere, featuring long, thick fringed ends known as dreads. Its relaxed and slouchy texture adds warmth and a cozy element to your outfit.",
+"6": "Your ensemble is anchored by the dark green blazer and light grey trousers, which create a sophisticated vertical line perfect for your hourglass shape. The black pumps ground the look, while the vibrant orange bag adds a striking pop of color against the muted tones. To complete the autumn evening, you have chosen the soft powder-colored scarf to wrap around your neck, bringing warmth and texture to the outfit.",
+"7": "Tuck the front hem of the blazer slightly into your trousers at the waist to highlight your figure while keeping the overall silhouette relaxed.",
+"8": "Сумка жіноча, ATTICO, шкіра, колір помаранчевий — I added this terracotta leather bag to introduce a splash of warm color against the cool navy and grey, satisfying your need for a third piece that isn't just another layer.",
+"9": "Шарф кашеміровий із дредами — I included this cashmere scarf to add soft texture near your face and ensure the outfit feels complete for the autumn evening, avoiding a flat monochromatic look.",
+"10": "Піджак Magda Butrym зелений, Класичні штани-палаццо світло-сіре, Туфлі-слінгбеки жіночі чорні — I accept this register gate because the velvet blazer’s classic formality naturally anchors the look within the smart-to-formal band, and the deliberate accents serve only to enrich the evening without breaking its core elegance.",
+"11": "Туфлі-слінгбеки жіночі чорні — I added these black pumps to create a vertical line with your legs, essential for judging hemline proportions on stage and meeting the smart dress code."
+}
+
+── ВІДПОВІДЬ (2950 симв., 90.6 с, HTTP 200) ──
+```json
+{
+"1": "Цей темно-зелений піджак має вільний, трохи оверсайз крій, який вільно спадає по твоїй фігурі. Він має класичний комір і повну застібку на блискавку спереду, з практичними клапанами кишень на рівні талії. Тканина здається міцною сумішшю бавовни або сатину, що надає їй структурованого, але м’якого відчуття.",
+"2": "Ці світло-сірі штани мають високу посадку і широкі палацові штанини, які створюють елегантний спад. Вони виготовлені з гладкої тканини, яка зберігає свою форму, пропонуючи комфортний, але охайний вигляд, підходящий для вечірнього вбрання.",
+"3": "Ти обрала ці стильні чорні туфлі-слінгбеки із квадратним носком і відкритим задником. Вони сидять на міцному блочному каблуці, покритому текстурованою золотою тканиною, що додає металевого блиску, який доповнює твою загальну палітру без перевантаження її.",
+"4": "Ця помаранчева сумка виготовлена з тисненої шкіри з м’яким силуетом і короткою ручкою зверху. Вона має срібні металеві акценти та невелику застібку-блискавку, що забезпечує компактний, але функціональний розмір для носіння твоїх необхідних речей.",
+"5": "Цей шарф кольору пудри виготовлений з м’якого, пухнастого матеріалу, ймовірно, кашеміру, з довгими товстими бахромчастими кінцями, відомими як дредами. Його розслаблений і об’ємний текстура додає тепла та затишного елементу до твого вбрання.",
+"6": "Твій ансамбль базується на темно-зеленому піджаку та світло-сірих штанах, які створюють вишукану вертикальну лінію, ідеально відповідну для твоєї фігури у формі пісочного годинника. Чорні туфлі заземлюють образ, а яскрава помаранчева сумка додає вражаючого кольорового акценту на тлі приглушених тонів. Щоб завершити осінній вечір, ти обрала м’який шарф кольору пудри, щоб обернути його навколо шиї, надаючи тепла та текстури вбранню.",
+"7": "Злегка заправ передній край піджака у штани на рівні талії, щоб підкреслити твою фігуру, зберігаючи при цьому загальний силует розслабленим.",
+"8": "Сумка жіноча, ATTICO, шкіра, колір помаранчевий — Я додала цю теракотову шкіряну сумку, щоб додати теплий колір на тлі холодного синього та сірого, задовольнивши твою потребу у третьому елементі, який не є просто ще одним шаром.",
+"9": "Шарф кашеміровий із дредами — Я включила цей шарф з кашеміру, щоб додати м’яку текстуру біля обличчя та переконатися, що вбрання виглядає завершеним для осіннього вечора, уникаючи плоскої монохромної композиції.",
+"10": "Піджак Magda Butrym зелений, Класичні штани-палаццо світло-сіре, Туфлі-слінгбеки жіночі чорні — Я приймаю цей рівень формальності, тому що класична елегантність оксамитового піджака природно заземлює образ у межах розумного до формального діапазону, а навмисні акценти служать лише для збагачення вечора без порушення його основної вишуканості.",
+"11": "Туфлі-слінгбеки жіночі чорні — Я додала ці чорні туфлі, щоб створити вертикальну лінію з твоїми ногами, що є необхідним для оцінки пропорцій подолу на сцені та відповідає розумному дрес-коду."
+}
+```
