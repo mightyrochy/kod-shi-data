@@ -1,0 +1,55 @@
+── ПРОМПТ (7950 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Светр «Cozy» шоколадний · kind code: sweater · colour code: chocolate · about it: text н=1
+2 — Сукня максі пряма з рубчика із розрізами · kind code: dress_generic · colour code: chocolate · about it: text н=2
+3 — Чоботи коричневі THEA на шкірі · kind code: boots · colour code: brown · about it: text н=3
+4 — Ремінь жіночий Welfare коричневий · kind code: belt · colour code: brown · about it: text н=4
+5 — Хустка “Satina” шоколадна · kind code: kerchief · colour code: chocolate · about it: text н=5
+6 — Клатч-орігамі GIA шкіряний · kind code: clutch · colour code: red · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; chocolate — шоколадний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This oversized chocolate sweater features a high ribbed turtleneck and dropped shoulders that create a relaxed, cocoon-like shape. Its rich hue and soft knit texture offer warmth and comfort while maintaining a sleek silhouette suitable for an office setting.",
+"2": "The straight-line maxi dress in chocolate has a fluid drape and short cap sleeves that add a modern touch. Its subtle vertical seams elongate the torso, and its length balances nicely with the chunkier boots above it.",
+"3": "These brown leather knee-high boots feature a robust block heel and rounded toe, designed for all-day comfort without compromising on style. The sturdy construction makes them ideal for navigating office floors or commuting in autumn weather.",
+"4": "This classic brown leather belt showcases a polished silver buckle that adds a touch of refinement to the ensemble. Its smooth texture and refined stitching make it easy to wear with both fitted and loose garments.",
+"5": "The chocolate polka-dot silk scarf is lightweight and versatile, capable of being worn as a statement shoulder piece, a neck wrap, or even as an accent on your wrist. Its dot pattern adds visual interest without overwhelming the outfit.",
+"6": "This red leather origami clutch features a soft fold-over flap that creates elegant creases, giving it an artistic flair. The minimalist branding and rich hue make it stand out as a statement accessory against your monochrome base.",
+"7": "This outfit is perfect for your office day in autumn. The chocolate tones of the sweater, dress, scarf, and belt create a cozy yet polished look that fits the season while remaining neat enough for work. The dark boots ground the ensemble, adding an element of edge to your professional attire. It balances comfort with sophistication, allowing you to feel prepared without sacrificing style.",
+"8": "Wear the oversized chocolate sweater as your outer layer over the straight maxi dress to keep the silhouette clean and elongated.",
+"9": "Хустка “Satina” шоколадна — Added: The scarf provides a necessary textural break and color echo near the face to prevent the monochromatic look from becoming too heavy or flat.",
+"10": "Светр «Cozy» шоколадний, Сукня максі пряма з рубчика із розрізами, Чоботи коричневі THEA на шкірі, Ремінь жіночий Welfare коричневий, Хустка “Satina” шоколадна, Клатч-орігамі GIA шкіряний — This gate regarding register simply reflects that classic rock is a valid extension of your neat style for autumn; it serves you by allowing soft textures and stability in cool weather."
+}
+
+── ВІДПОВІДЬ (2637 симв., 54.9 с, HTTP 200) ──
+```json
+{
+"1": "Цей шоколадний светр оверсайз має високий ребристий комір-стійку та спущені плечі, які створюють розслаблений силует у вигляді кокона. Його насичений відтінок і м’яка в’язана текстура дарують тепло й комфорт, зберігаючи при цьому елегантну форму, яка підходить для офісного середовища.",
+"2": "Пряма максі-сукня шоколадного кольору має плавний драпірування та короткі рукави-реглан, які додають сучасний штрих. Її ледь помітні вертикальні шви видовжують торс, а довжина гармонійно поєднується з масивними чобітьми зверху.",
+"3": "Ці коричневі шкіряні ботфорти мають стійкий широкий каблук і округлий носок, розроблені для комфорту протягом усього дня без шкоди для стилю. Міцна конструкція робить їх ідеальними для пересування офісним підлогою або поїздок на роботу восени.",
+"4": "Цей класичний коричневий шкіряний ремінь має відполіровану срібну пряжку, яка додає вишуканості всьому образу. Його гладка текстура та охайна строчка роблять його зручним для носіння як з облягаючим, так і з вільним одягом.",
+"5": "Легка й універсальна шовкова хустка «Satina» шоколадного кольору може бути використана як помітний аксесуар на плечі, шарф навколо шиї або навіть акцент на зап’ясті. Її крапчастий візерунок додає візуального інтересу без перевантаження образу.",
+"6": "Цей червоний шкіряний клатч-орігамі має м’який відкидний клапан, який створює елегантні складки та надає йому художнього шарму. Мінімалістичне брендування та насичений колір роблять його помітною деталлю на тлі монохромного образу.",
+"7": "Цей образ ідеальний для офісного дня восени. Шоколадні відтінки светра, сукні, шарфа й ременя створюють затишний, але вишуканий вигляд, який відповідає сезону та залишається достатньо охайним для роботи. Темні чоботи завершують образ, додаючи елемент зухвалості до твого професійного вбрання. Він поєднує комфорт із витонченістю, дозволяючи тобі відчувати себе готовою без шкоди для стилю.",
+"8": "Одягни светр оверсайз шоколадного кольору поверх максі-сукні прямого крою, щоб зберегти силует чистим і видовженим.",
+"9": "Хустка «Satina» шоколадна — Додано: Шарф забезпечує необхідний текстурний контраст і колірне відлуння біля обличчя, запобігаючи тому, щоб монохромний вигляд став надто важким або плоским.",
+"10": "Светр «Cozy» шоколадний, Сукня максі пряма з рубчика із розрізами, Чоботи коричневі THEA на шкірі, Ремінь жіночий Welfare коричневий, Хустка “Satina” шоколадна, Клатч-орігамі GIA шкіряний — Ця брама щодо реєстрації просто відображає те, що класичний рок є дійсним продовженням твого охайного стилю на осінь; вона служить тобі, дозволяючи м’які текстури та стабільність у прохолодну погоду."
+}
+```
