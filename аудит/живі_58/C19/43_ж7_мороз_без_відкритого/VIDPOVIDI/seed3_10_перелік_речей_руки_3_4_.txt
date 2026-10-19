@@ -1,0 +1,51 @@
+── ПРОМПТ (2333 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool blend coat, structured shoulder cut, knee length, #2a2d35 charcoal, heavy water-resistant wool.\nMerino wool sweater, slim fit through torso, hip length hem, #f2dcd6 soft pink, fine gauge knit.\nHigh-waisted trousers, straight leg cut, ankle length with slight break, #c3c6cc light grey, dense flannel weave.\nLeather loafers, rounded toe, low block heel, #1e1e1e black, smooth calf leather sole.\nSilver geometric pendant necklace and wool scarf, both #aeb2ba mid-grey, brushed metal and soft looped knit respectively.\n\nThis outfit prioritizes warmth against the -15°C freezing conditions while maintaining a professional appearance for walking to work in snow. The layered approach with the insulated coat and merino sweater ensures comfort without bulk, adhering to her preference for neat attire that looks refined even in harsh weather. The color palette harmonizes her skin tones with neutral winter shades, creating a polished look suitable for the snowy autumn commute."}
+
+── ВІДПОВІДЬ (1027 симв., 175.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "coat",
+      "details": "structured shoulder cut, knee length",
+      "slot": "outerwear",
+      "color_hex": "#2a2d35",
+      "worn": true
+    },
+    {
+      "name": "sweater",
+      "details": "slim fit through torso, hip length hem",
+      "slot": "top",
+      "color_hex": "#f2dcd6",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted, straight leg cut, ankle length with slight break",
+      "slot": "bottom",
+      "color_hex": "#c3c6cc",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "rounded toe, low block heel",
+      "slot": "shoes",
+      "color_hex": "#1e1e1e",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "silver geometric pendant",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "soft looped knit",
+      "slot": "scarf",
+      "color_hex": "#aeb2ba",
+      "worn": true
+    }
+  ]
+}

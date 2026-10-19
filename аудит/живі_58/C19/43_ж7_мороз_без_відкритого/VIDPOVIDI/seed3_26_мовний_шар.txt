@@ -1,0 +1,62 @@
+── ПРОМПТ (8488 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Вітрівка з каптуром та кишенями, крій oversize (Balmain) · kind code: jacket · colour code: silvery · about it: text н=1
+2 — В’язана троянда-брошка Ната білий · kind code: brooch · colour code: white · about it: text н=2
+3 — Обруч Аннет лавандовий · kind code: headband · colour code: lilac · about it: text н=3
+4 — Фіолетові шкіряні чоботи · kind code: boots · colour code: purple · about it: text н=4
+5 — Сумка Золота лілія · kind code: bag_generic · colour code: golden · about it: text н=5
+6 — Боді-сорочка з високими вирізами · kind code: bodysuit · colour code: cream · about it: text н=6
+7 — Спідниця-плісе максі жіноча демісезонна · kind code: skirt · colour code: grey · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: cream — вершковий; golden — золотий; grey — сірий; lilac — бузковий; purple — фіолетовий; silvery — срібний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This silvery oversized jacket with its hood is your perfect shield against the autumn chill, designed to let you stay warm as you walk to work. The relaxed fit gives you a sense of ease and freedom while keeping you comfortably bundled up.",
+"2": "This delicate white brooch featuring a mesh flower design brings a touch of soft elegance to your outfit, adding a subtle feminine detail to your ensemble.",
+"3": "The lilac headband with its row of sparkling purple stones adds a playful yet sophisticated accent, tying together the softer tones in your look with a hint of glamour.",
+"4": "These sleek dark violet leather boots provide both warmth and style, their smooth finish adding a touch of richness to your outfit while keeping you comfortable during your daily commute.",
+"5": "The navy crossbody bag with its vibrant floral pattern adds an artistic flair to your ensemble, offering practicality alongside its bold aesthetic appeal.",
+"6": "This cream-colored bodysuit with a high neckline serves as the perfect foundation for your outfit, its sleek silhouette smoothing out the lines of your look while providing comfort all day long.",
+"7": "The grey pleated maxi skirt brings fluid movement and structure to your ensemble, its vertical folds creating a flattering line that elongates your figure while offering practicality for your active workday.",
+"8": "You are stepping out into the autumn air, and your new ensemble is built to keep you warm while looking sharp for work. The silvery oversized jacket with its hood acts as your essential outer layer against the cold and snow, giving you a relaxed silhouette that balances the structured lines of your pleated skirt underneath. Tucked inside, the cream bodysuit offers a clean foundation, its high necklines complementing the gold and silver metal details in your jewelry. The lilac headband adds a soft pop of color to complete your look.",
+"9": "Pull the hood up if it starts getting colder, or let it rest casually at the back for a more polished office look.",
+"10": "Вітрівка з каптуром та кишенями, крій oversize (Balmain) — I kept this oversized polyester jacket as your primary outer layer because it acts as a warm shell against -15°C snow and salted roads, replacing the need for multiple thin layers that might lose warmth or get damaged by slush.",
+"11": "Вітрівка з каптуром та кишенями, крій oversize (Balmain) — I chose this item to anchor your silhouette vertically, creating a long line from shoulders to hem that visually elongates your figure in cold weather.",
+"12": "Вітрівка з каптуром та кишенями, крій oversize (Balmain) — I keep this because it defines your waist with a belt over the jacket, which I will wear unbuttoned to maintain flow whi",
+"13": "Вітрівка з каптуром та кишенями, крій oversize (Balmain) — The windbreak nature of this outer layer is essential for -15°C; its lack of traditional warmth comes from its function"
+}
+
+── ВІДПОВІДЬ (3082 симв., 125.8 с, HTTP 200) ──
+```json
+{
+"1": "Ця срібляста вітрівка з каптуром та кишенями, крій oversize (Balmain) — твій ідеальний захист від осіннього холоду, створена для того, щоб ти залишалася в теплі під час прогулянки на роботу. Вільний фасон дарує тобі відчуття легкості й свободи, водночас тримаючи тебе затишно закутаною.",
+"2": "Ця делікатна біла брошка з квітковим дизайном із сітки додає твоєму образу нотку м’якої елегантності, підкреслюючи твій ансамбль витонченим жіночним акцентом.",
+"3": "Лавандовий обруч Аннет зі смужкою блискучих фіолетових камінців додає твоєму образу грайливого й водночас вишуканого акценту, поєднуючи м’які тони в твоїй зовнішності з ноткою гламуру.",
+"4": "Ці елегантні темно-фіолетові шкіряні чоботи забезпечують тепло та стиль, їхня гладка поверхня додає твоєму образу вишуканості й водночас тримає тебе в комфорті під час щоденної поїздки на роботу.",
+"5": "Синя сумка-кросбоді з яскравим квітковим візерунком додає твоєму ансамблю художнього шарму, пропонуючи практичність разом із сміливим естетичним виглядом.",
+"6": "Цей вершковий боді з високим вирізом слугує ідеальною основою для твого образу, його елегантний силует вирівнює лінії твоєї зовнішності й водночас дарує комфорт протягом усього дня.",
+"7": "Сіра спідниця-плісе максі додає твоєму ансамблю плинності та структури, її вертикальні складки створюють вигідну лінію, яка подовжує твою фігуру й водночас пропонує практичність для активного робочого дня.",
+"8": "Ти вирушаєш на осіннє повітря, і твій новий ансамбль створений, щоб тримати тебе в теплі та виглядати стильно на роботі. Срібляста вітрівка з каптуром та кишенями, крій oversize (Balmain) слугує тобі як основна верхня частина одягу проти холоду й снігу, даруючи тобі розслаблений силует, який поєднується зі структурованими лініями твоєї плісованої спідниці знизу. Заправлений всередину вершковий боді пропонує чисту основу, його високий виріз доповнює золоті й срібні металеві деталі в твоїх прикрасах. Лавандовий обруч завершує твій образ м’яким акцентом кольору.",
+"9": "Підніми каптур, якщо стане холодніше, або залиш його недбало ззаду для більш витонченого офісного вигляду.",
+"10": "Вітрівка з каптуром та кишенями, крій oversize (Balmain) — Я залишила цю вітрову поліестерову куртку як твій основний верхній шар, тому що вона слугує теплим панцирем проти -15°C снігу й посипаних соляними дорогами, замінюючи потребу в кількох тонких шарах, які можуть втратити тепло або бути пошкоджені брудом.",
+"11": "Вітрівка з каптуром та кишенями, крій oversize (Balmain) — Я обрала цей предмет, щоб зафіксувати твій силует вертикально, створюючи довгу лінію від плечей до подолу, яка візуально подовжує твою фігуру в холодну погоду.",
+"12": "Вітрівка з каптуром та кишенями, крій oversize (Balmain) — Я залишаю цю річ, тому що вона підкреслює твою талію ремінцем поверх куртки, який я одягну не застебнутим, щоб зберегти плавність ліній.",
+"13": "Вітрівка з каптуром та кишенями, крій oversize (Balmain) — Вітрозахисні властивості цього верхнього шару є важливими для -15°C; його відсутність традиційного тепла походить із його функції."
+}
+```

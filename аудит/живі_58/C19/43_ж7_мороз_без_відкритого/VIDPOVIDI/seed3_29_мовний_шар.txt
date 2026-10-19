@@ -1,0 +1,54 @@
+── ПРОМПТ (7052 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Куртка-пальто подовжена бежева · kind code: jacket · colour code: beige · about it: text н=1
+2 — Штани лляні Сейлем · kind code: trousers · colour code: beige · about it: text н=2
+3 — Гольф “S” сірий · kind code: sweater · colour code: grey · about it: text н=3
+4 — Чоботи SAFARI замшеві з відкритим мисом · kind code: boots · colour code: beige · about it: text н=4
+5 — Крос-боді з фіолетової шкіри · kind code: crossbody_bag · colour code: purple · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; grey — сірий; purple — фіолетовий.
+
+ТЕКСТИ:
+{
+"1": "The long beige puffer coat has a high collar, a matching belt at the waist, and quilted detailing for insulation.",
+"2": "Your trousers are made of soft linen with an elastic waistband and a drawstring, featuring a wide-leg silhouette that flows down to your ankles.",
+"3": "The grey ribbed turtleneck sweater is a fitted style with a high neck and long sleeves, providing warmth without bulk.",
+"4": "These dark brown suede boots have an open toe design that adds a touch of elegance while being practical for snowy weather.",
+"5": "The deep purple crossbody bag features a structured shape with a braided handle and gold-tone hardware, making it stylish yet functional.",
+"6": "You are all set with a long beige puffer coat that will keep you warm against the cold and snow, paired with flowing linen trousers in the same soft shade. Underneath, you wear a grey ribbed turtleneck sweater, your dark brown boots peeking out from under the hem of your coat to ground the look, and a deep purple crossbody bag to carry your essentials.",
+"7": "When you feel too warm inside the coat during your commute, unbutton it at the top and tuck the ends of the turtleneck sweater into the waistband of your trousers for a neat, layered effect.",
+"8": "If you are in a hurry or just need a quick errand done, slip the coat over one shoulder while holding the handle of your crossbody bag in your other hand for ease of movement.",
+"9": "Куртка-пальто подовжена бежева — Kept despite code warnings; its length and state are chosen strictly for warmth (-15°C), not proportion, so the coat's voice overrides heat-based proportion rules.",
+"10": "Штани лляні Сейлем — Wide-leg linen trousers provide the necessary volume anchor at the legs to balance your O shape without needing a belt at the waist."
+}
+
+── ВІДПОВІДЬ (1482 симв., 113.7 с, HTTP 200) ──
+```json
+{
+"1": "Довгий бежевий пуховик має високий комір, пояс у талії в тон і стьобаний декор для утеплення.",
+"2": "Твої штани виготовлені з м’якого льону з еластичним поясом на шнурку, мають широкий крій від стегна до щиколотки.",
+"3": "Сірий ребристий гольф — це приталений стиль із високим коміром і довгими рукавами, який зігріває без об’єму.",
+"4": "Ці темно-коричневі замшеві чоботи мають відкритий носок, що додає елегантності та практичності для сніжної погоди.",
+"5": "Фіолетова сумка через плече має чітку форму з плетенною ручкою і золотистими деталями, поєднуючи стиль із функціональністю.",
+"6": "Ти готова: довгий бежевий пуховик зігріє тебе в холодну снігову погоду, а лляні штани такого ж м’якого відтінку додають легкості. Під ним — сірий ребристий гольф, і твої темно-коричневі чоботи виглядають з-під подолу пальта, завершуючи образ. А фіолетова сумка через плече вмістить усі необхідні речі.",
+"7": "Коли тобі стане занадто жарко всередині пуховика під час поїздки на роботу, розстебни його зверху і заправ кінці гольфа в пояс штанів для охайного багатошарового ефекту.",
+"8": "Якщо ти поспішаєш або тобі потрібно зробити швидкий похід у магазин, скинь пальта з одного плеча, тримаючи ручку сумки через плече іншою рукою — так буде зручно рухатися.",
+"9": "Куртка-пальто подовжена бежева",
+"10": "Штани лляні Сейлем — Штани вільного крою з льону забезпечують необхідний об’єм у ногах, щоб врівноважити твою фігуру без потреби підкреслювати талію поясом."
+}
+```
