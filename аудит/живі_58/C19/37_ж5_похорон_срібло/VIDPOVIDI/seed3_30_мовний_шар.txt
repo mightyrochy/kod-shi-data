@@ -1,0 +1,76 @@
+── ПРОМПТ (8851 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня чорна з високим горлом · kind code: dress_generic · colour code: black · about it: text н=1
+2 — Картатий жакет – кімоно · kind code: blazer · colour code: graphite · about it: text н=2
+3 — Пряма дублянка зі шкіри ягняти · kind code: outerwear · colour code: black · about it: text н=3
+4 — Шапка з відворотом з м'якої вовни ягнят чорна · kind code: headwear · colour code: black · about it: text н=4
+5 — Срібляста шкіряна сумка Chain Me · kind code: bag_generic · colour code: silvery · about it: text н=5
+6 — Кулон Berehynia (mini) Silver · kind code: jewelry_generic · colour code: silvery · about it: text н=6
+7 — Туфлі Naja чорні · kind code: dress_shoes · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; graphite — графіт; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This is a long, flowy black dress with a high neck and long sleeves. It has a soft drape that falls straight to the floor, offering comfort and modesty suitable for a mourning event.",
+"2": "This is a graphite-colored blazer in a kimono style, featuring a wide lapel collar and an open front. It has voluminous sleeves that end just past the wrist and is tied with a matching fabric belt at the waist.",
+"3": "This is a straight-cut black shearling coat made from lamb leather, finished with a plush fur collar lining around the neck and a soft shearling trim along the hem. It has two chest pockets and two lower flap pockets.",
+"4": "This is a black beanie knitted from soft fine wool, featuring a ribbed texture and a turned-up cuff at the brim.",
+"5": "This is a silvery metallic handbag crafted from leather with a distinctive diamond-quilted pattern. It features a classic flap closure secured by a metal chain clasp and includes a dual strap made of matching metal chains for shoulder or cross-body wear.",
+"6": "This is a silver-toned necklace featuring a small, detailed pendant in the shape of an angel. It hangs on a delicate chain that reaches the middle of the torso.",
+"7": "These are black pointed-toe dress shoes made from smooth leather, designed with a classic heel and a sleek silhouette appropriate for formal occasions.",
+"8": "Your outfit for your grandfather's funeral is composed of a black, high-necked dress made from soft fabric, worn under a graphite plaid blazer-style kimono jacket that wraps around you. Over this ensemble, I selected a sleek black leather coat with a fur-trimmed collar to ensure warmth and dignity. To complete the look, I chose a silver metallic handbag featuring a quilted pattern and chain strap, paired with a delicate necklace bearing a small angel pendant, a black knit beanie, and refined black pointed-toe heels.",
+"9": "Wear the plaid jacket open over the dress to add texture and warmth without breaking the solemn mood of the occasion.",
+"10": "Сукня чорна з високим горлом — The high neck ensures full modesty required for mourning.",
+"11": "Картатий жакет – кімоно — A structured blazer adds necessary formality to the dress.",
+"12": "Пряма дублянка зі шкіри ягняти — A fitted sheepskin coat provides warmth without adding excessive volume.",
+"13": "Шапка з відворотом з м'якої вовни ягнят чорна — A classic beret offers a neat, traditional head covering for the occasion.",
+"14": "Срібляста шкіряна сумка Chain Me — A silvery bag complements the requested jewelry metal and adds subtle shine.",
+"15": "Кулон Berehynia (mini) Silver — The silver pendant fulfills her specific request for silver jewelry.",
+"16": "Пряма дублянка зі шкіри ягняти, Сукня чорна з високим горлом, Картатий жакет – кімоно — The claim about merged zones is a deliberate stylistic move to layer distinct items (coat, dress, blazer) to manage the cold weather respectfully during the morning event.",
+"17": "Кулон Berehynia (mini) Silver — Silver jewelry honors her request for a specific metal while keeping the look refined.",
+"18": "Кулон Berehynia (mini) Silver — Silver jewelry honors her request and adds a touch of elegance.",
+"19": "Пряма дублянка зі шкіри ягняти — A fitted coat ensures warmth and a clean silhouette.",
+"20": "Кулон Berehynia (mini) Silver — Silver jewelry honors her specific request for a metal accent."
+}
+
+── ВІДПОВІДЬ (3371 симв., 119.5 с, HTTP 200) ──
+```json
+{
+"1": "Це довга, струмуюча чорна сукня з високим коміром і довгими рукавами. Вона має м’який драпірування, яке спадає прямо до підлоги, пропонуючи комфорт і скромність, що підходять для жалобної події.",
+"2": "Це блейзер графітового кольору в стилі кімоно з широким коміром-лацканом і відкритою передньою частиною. Він має об’ємні рукави, які закінчуються трохи нижче зап’ястя, і зав’язаний на талії поясом із тканини такого ж кольору.",
+"3": "Це пряме чорне пальто з овчини зі шкіри ягняти, оздоблене пухнастим хутряним коміром навколо шиї та м’якою облямівкою по подолу. Воно має дві нагрудні кишені та дві нижні накладні.",
+"4": "Це чорна в’язана шапка з м’якої тонкої вовни, що вирізняється ребристою текстурою та відворотом на краю.",
+"5": "Це срібляста металева сумка зі шкіри з характерним діамантовим стьобанням. Вона має класичну застібку-клапан із металевою ланцюговою пряжкою і подвійний ремінь, виготовлений із відповідних металевих ланцюгів для носіння на плечі або через тіло.",
+"6": "Це сріблясте намисто з невеликим деталізованим кулоном у формі ангела. Воно підвішене на тонкому ланцюжку, який сягає середини тулуба.",
+"7": "Це чорні шкіряні туфлі-човники із загостреним носком, виготовлені з гладкої шкіри, розроблені з класичним каблуком і елегантним силуетом, що підходить для урочистих випадків.",
+"8": "Твій образ на похорон дідуся складається з чорної сукні з високим коміром із м’якої тканини, яку ти носиш під графітовий блейзер-кімоно в клітинку. Зверху я обрала елегантне чорне шкіряне пальто з хутряним оздобленням на комірі, щоб забезпечити тепло та гідність. Щоб завершити образ, я вибрала сріблясту металеву сумку зі стьобаним візерунком і ланцюговим ремінцем у поєднанні з ніжним кулоном із маленьким ангелом, чорною в’язаною шапкою та вишуканими чорними туфлями-човниками на підборах.",
+"9": "Одягни блейзер відкритим поверх сукні, щоб додати текстури й тепла без порушення урочистої атмосфери події.",
+"10": "Сукня чорна з високим горлом — Високий комір забезпечує повну скромність, необхідну для жалоби.",
+"11": "Картатий жакет – кімоно — Структурований блейзер додає потрібної урочистості сукні.",
+"12": "Пряма дублянка зі шкіри ягняти — Пальто з овчини, що облягає фігуру, забезпечує тепло без зайвого об’єму.",
+"13": "Шапка з відворотом з м’якої вовни ягнят чорна — Класична беретка пропонує акуратне й традиційне покриття для голови на цю подію.",
+"14": "Срібляста шкіряна сумка Chain Me — Срібляста сумка доповнює її конкретну вимогу щодо срібних прикрас і додає ледь помітного блиску.",
+"15": "Кулон Berehynia (mini) Silver — Срібний кулон задовольняє її конкретне прохання щодо срібної біжутерії.",
+"16": "Пряма дублянка зі шкіри ягняти, Сукня чорна з високим горлом, Картатий жакет – кімоно — Заява про об’єднані зони є навмисним стилістичним ходом для нашарування різних предметів (пальто, сукня, блейзер), щоб впоратися з холодною погодою шанобливо під час ранкової події.",
+"17": "Кулон Berehynia (mini) Silver — Срібний кулон задовольняє її прохання та додає нотку елегантності.",
+"18": "Кулон Berehynia (mini) Silver — Срібний кулон задовольняє її конкретне прохання щодо акценту з металу.",
+"19": "Пряма дублянка зі шкіри ягняти — Пальто, що облягає фігуру, забезпечує тепло та чистий силует.",
+"20": "Кулон Berehynia (mini) Silver — Срібний кулон задовольняє її конкретне прохання щодо металевого акценту."
+}
+```

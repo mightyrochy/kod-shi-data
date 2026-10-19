@@ -1,0 +1,37 @@
+── ПРОМПТ (2326 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Matte black wool blazer, structured tailored cut, knee length, deep charcoal gray (#2F4F4F), heavy woven wool.\nCharcoal fine-gauge merino knit trousers, straight leg cut, ankle length, soft slate (#36454F), lightweight brushed cotton blend.\nSilver pointed-toe pump, sleek silhouette, mid-calf height, metallic silver (#C0C0C0), smooth polished leather.\nSimple sterling silver signet ring, classic band design, open circle, bright polished silver (#E0E0E0), solid metal alloy.\nThis outfit honors the gravity of a morning funeral service by blending the refined lines of a smart suit with the solemn respect demanded by formal mourning customs. The choice of dark charcoal and slate tones reflects the somber atmosphere of autumn daylight while maintaining a clean, uncluttered silhouette appropriate for an early church service. Silver jewelry adds a subtle touch of personal elegance without distracting from the primary focus on remembrance and reverence for the deceased."}
+
+── ВІДПОВІДЬ (888 симв., 244.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "matte black wool blazer",
+      "details": "structured tailored cut, knee length, heavy woven wool",
+      "slot": "outerwear",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "charcoal fine-gauge merino knit trousers",
+      "details": "straight leg cut, ankle length, lightweight brushed cotton blend",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "silver pointed-toe pump",
+      "details": "sleek silhouette, mid-calf height, smooth polished leather",
+      "slot": "shoes",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "simple sterling silver signet ring",
+      "details": "classic band design, open circle, solid metal alloy",
+      "slot": "ring",
+      "color_hex": "#E0E0E0",
+      "worn": true
+    }
+  ]
+}
