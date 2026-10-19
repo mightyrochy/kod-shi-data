@@ -1,0 +1,30 @@
+── ПРОМПТ (1929 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Evening Silk Slip Dress in #f1d7c4 champagne silk with a bias-cut silhouette and knee-length hem, paired with strappy gold sandals in a metallic finish and delicate pearl drop earrings. This ensemble works perfectly for an upscale evening date at 19:30 because the soft champagne hue complements her warm skin tones while the fluid fabric moves elegantly under artificial restaurant lighting. The minimal jewelry keeps the focus on her natural beauty without overwhelming the romantic atmosphere, and the open back of the dress adds a touch of allure suitable for autumn evenings."}
+
+── ВІДПОВІДЬ (555 симв., 211.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk Slip Dress",
+      "details": "bias-cut silhouette with knee-length hem and open back in champagne silk",
+      "slot": "dress",
+      "color_hex": "#f1d7c4",
+      "worn": true
+    },
+    {
+      "name": "Strappy Sandals",
+      "details": "gold metallic finish",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Pearl Drop Earrings",
+      "details": "delicate",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
