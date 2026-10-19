@@ -1,0 +1,1179 @@
+<!doctype html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Люстерко · Дослідження і три концепції айдентики (Gemini)</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   Люстерко · Три концепції інтерфейсу та української айдентики (погляд Gemini)
+   Рядок 5213: К1 «Гута і світлотінь», К2 «Сволок і плахта», К3 «Берег і перевтілення»
+   Масштаб екранів: чесні 390×844 px з автоматичним вписуванням у колонку.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@font-face{font-family:"KyivType Titling";font-weight:1 1000;font-display:swap;
+  src:url("../../шрифти/KyivTypeTitling-VarGX.ttf") format("truetype"),url("шрифти/KyivTypeTitling-VarGX.ttf") format("truetype")}
+@font-face{font-family:"KyivType Serif";font-weight:1 1000;font-display:swap;
+  src:url("../../шрифти/KyivTypeSerif-VarGX.ttf") format("truetype"),url("шрифти/KyivTypeSerif-VarGX.ttf") format("truetype")}
+@font-face{font-family:"Fixel Text";font-weight:400;font-display:swap;
+  src:local("Fixel Text"),local("FixelText-Regular"),
+  url("../тести/інструкція_тестувальниць/шрифти/FixelText-Regular.woff2") format("woff2"),
+  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelText-Regular.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-weight:500;font-display:swap;
+  src:local("Fixel Text Medium"),local("FixelText-Medium"),
+  url("../тести/інструкція_тестувальниць/шрифти/FixelText-Medium.woff2") format("woff2"),
+  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelText-Medium.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-weight:600;font-display:swap;
+  src:local("Fixel Text SemiBold"),local("FixelText-SemiBold"),
+  url("../тести/інструкція_тестувальниць/шрифти/FixelText-SemiBold.woff2") format("woff2"),
+  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelText-SemiBold.woff2") format("woff2")}
+
+:root{
+  --тло-ст:#E6E7E3; --аркуш-ст:#F5F5F2; --текст-ст:#191B1A; --сірий-ст:#555A58; --лінія-ст:#CCCFC9;
+  --к1-маркер:#1F4E46; --к2-маркер:#9E472A; --к3-маркер:#1D3B5E; --на-маркері:#FFFFFF;
+  --заголовок-шр:"KyivType Titling","Arsenal",Georgia,serif;
+  --голос-шр:"KyivType Serif","Arsenal",Georgia,serif;
+  --текст-шр:"Fixel Text",system-ui,-apple-system,sans-serif;
+}
+:root[data-theme="dark"]{
+  --тло-ст:#121415; --аркуш-ст:#1C1F21; --текст-ст:#ECEEEB; --сірий-ст:#9DA4A0; --лінія-ст:#313638;
+  --к1-маркер:#6CC4B3; --к2-маркер:#E27D5C; --к3-маркер:#7BA7E0; --на-маркері:#111314;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--тло-ст);color:var(--текст-ст);font:15px/1.55 var(--текст-шр);
+  padding:24px max(16px,env(safe-area-inset-right,16px)) 64px max(16px,env(safe-area-inset-left,16px))}
+a{color:inherit;text-underline-offset:3px}
+button{font:inherit;cursor:pointer}
+
+.сторінка{max-width:1340px;margin:0 auto;display:grid;gap:44px}
+.сторінка > *{min-width:0}
+
+/* Верхня панель керування документа */
+.панель-док{position:sticky;top:10px;z-index:50;background:color-mix(in srgb,var(--аркуш-ст) 92%,transparent);
+  backdrop-filter:blur(10px);border:1px solid var(--лінія-ст);padding:10px 16px;display:flex;flex-wrap:wrap;
+  align-items:center;justify-content:space-between;gap:12px;border-radius:12px;box-shadow:0 4px 16px rgb(0 0 0 / .06)}
+.навігація-док{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;font-weight:500}
+.навігація-док a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.навігація-док a:hover{border-bottom-color:var(--текст-ст)}
+.перемикач-теми{background:var(--текст-ст);color:var(--аркуш-ст);border:0;padding:6px 14px;font-size:12.5px;
+  font-weight:600;letter-spacing:.03em;border-radius:6px}
+
+.шапка-ст{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:36px;align-items:start}
+@media(max-width:920px){.шапка-ст{grid-template-columns:1fr}}
+.надпис{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--сірий-ст);font-weight:600}
+h1{font:500 clamp(32px,4.6vw,50px)/1.03 var(--заголовок-шр);font-variation-settings:"CONT" 620;margin:8px 0 14px;text-wrap:balance}
+h2{font:500 28px/1.1 var(--заголовок-шр);font-variation-settings:"CONT" 560;margin:0 0 10px}
+.шапка-ст p{margin:0 0 10px;max-width:68ch}
+.порада-бокс{background:var(--аркуш-ст);padding:20px 22px;border-left:4px solid var(--к1-маркер);border-radius:0 12px 12px 0;display:grid;gap:8px}
+.порада-бокс b{font:500 20px/1.2 var(--заголовок-шр);font-variation-settings:"CONT" 540}
+.порада-бокс p{margin:0;font-size:13.8px}
+
+/* Блок критичного розбору попередників */
+.розбір-сітка{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media(max-width:920px){.розбір-сітка{grid-template-columns:1fr}}
+.картка-розбору{background:var(--аркуш-ст);border:1px solid var(--лінія-ст);padding:16px 18px;border-radius:10px;display:grid;gap:6px;align-content:start}
+.картка-розбору h3{margin:0;font:600 14.5px/1.25 var(--текст-шр)}
+.картка-розбору p{margin:0;font-size:13.2px;color:var(--сірий-ст)}
+.картка-розбору p b{color:var(--текст-ст)}
+
+/* Секція окремої концепції */
+.концепція{display:grid;gap:26px;padding-top:32px;border-top:2px solid var(--лінія-ст)}
+.голова-к{display:grid;gap:8px;max-width:82ch}
+.голова-к .рядок{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.мітка-к{display:inline-grid;place-items:center;padding:4px 10px;font:600 12px/1 var(--текст-шр);
+  letter-spacing:.08em;text-transform:uppercase;color:var(--на-маркері);border-radius:4px}
+.мітка-к.м1{background:var(--к1-маркер)}
+.мітка-к.м2{background:var(--к2-маркер)}
+.мітка-к.м3{background:var(--к3-маркер)}
+.голова-к b{font:500 clamp(26px,3.2vw,36px)/1.05 var(--заголовок-шр);font-variation-settings:"CONT" 600}
+.голова-к .корінь{font-size:13px;color:var(--сірий-ст);font-weight:500}
+.голова-к p{margin:0;font-size:15.5px}
+
+/* Ряд мобільних екранів 390×844 */
+.екрани{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,370px),1fr));gap:28px;align-items:start}
+.телефон{margin:0;display:grid;gap:10px;justify-items:center}
+.fit{width:100%;max-width:390px;overflow:hidden;border-radius:24px;box-shadow:0 2px 6px rgb(0 0 0 / .08),0 14px 32px rgb(0 0 0 / .12)}
+.екран{width:390px;height:844px;position:relative;overflow:hidden;isolation:isolate;user-select:none}
+.телефон figcaption{max-width:390px;font-size:12.5px;color:var(--сірий-ст);line-height:1.45}
+.телефон figcaption b{color:var(--текст-ст)}
+
+/* Опис специфікації під екранами */
+.опис-к{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 28px}
+@media(max-width:960px){.опис-к{grid-template-columns:1fr}}
+.блок-оп{background:var(--аркуш-ст);border-top:2px solid var(--лінія-ст);padding:14px 16px;font-size:13.2px;display:grid;gap:6px;align-content:start;border-radius:0 0 8px 8px}
+.блок-оп h3{margin:0 0 4px;font:600 13px/1.2 var(--текст-шр);text-transform:uppercase;letter-spacing:.05em}
+.блок-оп ul,.блок-оп ol{margin:0;padding-left:18px;display:grid;gap:4px}
+.зразки{list-style:none;padding:0!important;margin:0;display:grid;gap:5px}
+.зразки li{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:8px;align-items:center}
+.зразки i{width:18px;height:18px;border:1px solid rgb(128 128 128 / .35);display:block;border-radius:3px}
+.зразки code{font-size:11.5px;color:var(--сірий-ст);font-variant-numeric:tabular-nums}
+
+/* Таблиця порівняння */
+.таблиця-обг{overflow-x:auto;background:var(--аркуш-ст);border:1px solid var(--лінія-ст);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:820px;font-size:13.2px}
+th,td{text-align:left;vertical-align:top;padding:10px 14px;border-bottom:1px solid var(--лінія-ст)}
+thead th{font-weight:600;background:color-mix(in srgb,var(--лінія-ст) 35%,transparent)}
+tbody th{font-weight:600;width:19%;color:var(--сірий-ст)}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   СТИЛІ КОНЦЕПЦІЇ 1: «ГУТА І СВІТЛОТІНЬ» (.к1)
+   Вапняний рефлектор #F8F7F3, оптичний фацет 1px, димчастий смарагд #1F4E46,
+   горизонтальні смуги-регістри Archipentura.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.к1{
+  --світлиця:#F8F7F3; --лінза:#FFFFFF; --скло-пів:rgb(255 255 255 / .88);
+  --чорнило:#161817; --вторинний:#565D5A; --фацет-в:#FFFFFF; --фацет-н:#CFD6D2;
+  --гута:#1F4E46; --гута-м:#E5F0ED; --промінь:#9A6F22; --відмова:#A63D2B; --біле-фото:#FFFFFF;
+}
+:root[data-theme="dark"] .к1{
+  --світлиця:#121514; --лінза:#1B201F; --скло-пів:rgb(27 32 31 / .92);
+  --чорнило:#F2F4F3; --вторинний:#9CA6A2; --фацет-в:#2F3836; --фацет-н:#0B0D0C;
+  --гута:#6CC4B3; --гута-м:#193530; --промінь:#E0B45C; --відмова:#E88574; --біле-фото:#F5F5F2;
+}
+.к1 .екран{background:var(--світлиця);color:var(--чорнило);font:14.5px/1.45 var(--текст-шр);display:flex;flex-direction:column}
+.к1 .фацет{background:var(--лінза);border-top:1px solid var(--фацет-в);border-left:1px solid var(--фацет-в);
+  border-right:1px solid var(--фацет-н);border-bottom:1px solid var(--фацет-н);
+  box-shadow:0 2px 8px rgb(22 24 23 / .04);border-radius:8px}
+.к1 .шапка{height:48px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--фацет-н)}
+.к1 .знак{font:500 24px/1 var(--заголовок-шр);font-variation-settings:"CONT" 680;letter-spacing:.02em;display:flex;align-items:center;gap:7px}
+.к1 .знак::before{content:"";width:9px;height:9px;transform:rotate(45deg);border:1.5px solid var(--гута);display:inline-block}
+.к1 .шапка-дії{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--вторинний)}
+.к1 .вміст{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.к1 .мітка{font:600 10.5px/1.2 var(--текст-шр);letter-spacing:.12em;text-transform:uppercase;color:var(--гута)}
+.к1 .заг{font:500 28px/1.08 var(--заголовок-шр);font-variation-settings:"CONT" 620;margin:0}
+.к1 .голос{font:400 15.5px/1.42 var(--голос-шр);color:var(--чорнило);margin:0}
+.к1 .кнопка-осн{height:46px;background:var(--гута);color:var(--на-маркері);border:0;padding:0 18px;
+  font:600 14px/1 var(--текст-шр);display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border-radius:6px}
+.к1 .кнопка-тиха{height:46px;background:var(--лінза);color:var(--чорнило);border:1px solid var(--фацет-н);padding:0 14px;
+  font:500 13.5px/1 var(--текст-шр);display:flex;align-items:center;justify-content:center;border-radius:6px}
+.к1 .нав{height:58px;background:var(--лінза);border-top:1px solid var(--фацет-н);display:grid;grid-template-columns:repeat(4,1fr);
+  font-size:11.5px;color:var(--вторинний)}
+.к1 .нав span{display:grid;place-items:center;position:relative;font-weight:500}
+.к1 .нав span.акт{color:var(--чорнило);font-weight:600}
+.к1 .нав span.акт::before{content:"";position:absolute;top:0;left:24%;right:24%;height:2.5px;background:var(--гута)}
+/* Регістри Archipentura на картці К1 */
+.к1 .регістри{display:grid;gap:6px;flex:1;align-content:start}
+.к1 .регістр{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:7px 10px;align-items:center;position:relative}
+.к1 .вікно-речі{width:96px;height:74px;background:var(--біле-фото);border:1px solid var(--фацет-н);display:grid;place-items:center;position:relative;border-radius:6px}
+.к1 .вікно-речі svg{width:64px;height:64px;color:#232827}
+.к1 .шар-мітка{font:600 9.5px/1 var(--текст-шр);letter-spacing:.1em;text-transform:uppercase;color:var(--вторинний)}
+.к1 .річ-назва{font:600 12.5px/1.25 var(--текст-шр);margin:2px 0}
+.к1 .річ-мета{font-size:11.5px;color:var(--вторинний);display:flex;justify-content:space-between;align-items:center}
+.к1 .річ-ціна{font-weight:600;color:var(--чорнило);font-variant-numeric:tabular-nums}
+.к1 .зсув-кн{margin-top:4px;background:var(--гута-м);color:var(--гута);border:1px solid var(--фацет-н);
+  padding:4px 9px;font:600 11px/1.2 var(--текст-шр);display:inline-flex;align-items:center;gap:5px;border-radius:4px}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   СТИЛІ КОНЦЕПЦІЇ 2: «СВОЛОК І ПЛАХТА» (.к2)
+   УАМ Кричевського (несучий сволок), відкритий шов плахти, теракотовий замок #9E472A,
+   асиметрична картка-плахта 60/40.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.к2{
+  --льон:#F3EFE6; --клітина:#FFFFFF; --сволок:#1C1917; --на-сволоку:#F4EFE6;
+  --текст:#1C1917; --вторинний:#5C554C; --шов:#CFC7B8;
+  --теракота:#9E472A; --на-теракоті:#FFFFFF; --полива:#2D5A4C; --біле-фото:#FFFFFF;
+}
+:root[data-theme="dark"] .к2{
+  --льон:#151311; --клітина:#1F1C19; --сволок:#28231E; --на-сволоку:#F4EFE6;
+  --текст:#F4EFE6; --вторинний:#A89F93; --шов:#3A342E;
+  --теракота:#E27D5C; --на-теракоті:#151311; --полива:#74B8A3; --біле-фото:#F5F2EB;
+}
+.к2 .екран{background:var(--льон);color:var(--текст);font:14px/1.42 var(--текст-шр);display:flex;flex-direction:column}
+/* Несучий сволок Кричевського */
+.к2 .сволок{background:var(--сволок);color:var(--на-сволоку);padding:10px 14px;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px));
+  margin:8px 10px 0;display:grid;gap:6px}
+.к2 .сволок-верх{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgb(244 239 230 / .16);padding-bottom:6px}
+.к2 .знак{font:600 22px/1 var(--заголовок-шр);font-variation-settings:"CONT" 180;letter-spacing:.04em;text-transform:uppercase}
+.к2 .сволок-дії{font-size:11.5px;color:#C7BFB2;display:flex;gap:10px;align-items:center}
+.к2 .сволок-формула{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;font-size:11.5px}
+.к2 .замок-кн{background:var(--теракота);color:var(--на-теракоті);border:0;padding:7px 12px;
+  font:600 12px/1 var(--текст-шр);clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%,0 6px)}
+.к2 .сітка-вміст{flex:1;margin:8px 10px;border:1px solid var(--шов);background:var(--шов);display:grid;gap:1px;overflow:hidden}
+.к2 .комірка{background:var(--клітина);padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between}
+.к2 .комірка.льон{background:var(--льон)}
+.к2 .рубрика{font:600 10px/1.1 var(--текст-шр);letter-spacing:.11em;text-transform:uppercase;color:var(--теракота)}
+.к2 .заг{font:600 24px/1.08 var(--заголовок-шр);font-variation-settings:"CONT" 200;margin:2px 0 0}
+.к2 .нав{height:54px;margin:0 10px 8px;border:1px solid var(--шов);background:var(--шов);display:grid;grid-template-columns:repeat(4,1fr);gap:1px;font-size:11.5px}
+.к2 .нав span{background:var(--льон);display:grid;place-items:center;font-weight:500;color:var(--вторинний)}
+.к2 .нав span.акт{background:var(--сволок);color:var(--на-сволоку);font-weight:600}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   СТИЛІ КОНЦЕПЦІЇ 3: «БЕРЕГ І ПЕРЕВТІЛЕННЯ» (.к3)
+   Театральний авангард (Курбас, Меллер, Екстер), різець Якутовича,
+   лівий берег маргіналій 118px + праве полотно образу, кубовий індиго #1D3B5E.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.к3{
+  --папір:#FAF8F4; --берег:#F0ECE1; --різець:#161719; --олівець:#585A60;
+  --виноска:#C5BEB0; --індиго:#1D3B5E; --індиго-м:#E3EAF3; --рампа:#8F6220; --біле-фото:#FFFFFF;
+}
+:root[data-theme="dark"] .к3{
+  --папір:#131519; --берег:#1B1E24; --різець:#F3F1EC; --олівець:#9EA3AE;
+  --виноска:#343944; --індиго:#7BA7E0; --індиго-м:#1E2B3D; --рампа:#E3B56B; --біле-фото:#F4F2ED;
+}
+.к3 .екран{background:var(--папір);color:var(--різець);font:13.8px/1.42 var(--текст-шр);display:flex;flex-direction:column}
+.к3 .шапка{height:44px;padding:0 14px;border-bottom:1.5px solid var(--різець);display:flex;align-items:center;justify-content:space-between}
+.к3 .знак{font:500 23px/1 var(--заголовок-шр);font-variation-settings:"CONT" 840;letter-spacing:.01em}
+.к3 .знак em{font-style:normal;color:var(--індиго)}
+.к3 .аркуш-двох{flex:1;display:grid;grid-template-columns:118px 1fr;overflow:hidden;position:relative}
+.к3 .берег{background:var(--берег);border-right:1px solid var(--виноска);padding:10px 9px;display:flex;flex-direction:column;gap:9px;position:relative}
+.к3 .полотно{padding:10px 12px;display:flex;flex-direction:column;gap:8px;position:relative}
+.к3 .маргіналія{font:400 12.5px/1.32 var(--голос-шр);font-style:italic;color:var(--індиго);border-left:2px solid var(--індиго);padding-left:6px}
+.к3 .вузол-б{display:grid;gap:1px;padding-bottom:6px;border-bottom:1px dashed var(--виноска);font-size:11.5px}
+.к3 .вузол-б small{font:600 9px/1.1 var(--текст-шр);text-transform:uppercase;letter-spacing:.1em;color:var(--олівець)}
+.к3 .вузол-б b{font-weight:600;color:var(--різець)}
+.к3 .виноска-лінія{position:relative;padding-left:8px;border-left:1.5px solid var(--індиго);font-size:11px;line-height:1.25}
+.к3 .виноска-лінія::before{content:"";position:absolute;right:-14px;top:8px;width:14px;height:1px;background:var(--індиго)}
+.к3 .кн-індиго{background:var(--індиго);color:var(--на-маркері);border:0;height:42px;padding:0 14px;
+  font:600 13px/1 var(--текст-шр);display:flex;align-items:center;justify-content:center;gap:6px;width:100%;border-radius:4px}
+.к3 .нав{height:52px;border-top:1.5px solid var(--різець);background:var(--папір);display:grid;grid-template-columns:repeat(4,1fr);font-size:11.5px}
+.к3 .нав span{display:grid;place-items:center;color:var(--олівець);font-weight:500}
+.к3 .нав span.акт{color:var(--індиго);font-weight:600;text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:2px}
+</style>
+</head>
+<body>
+<!-- Спільні векторні силуети речей та іконки (на чистому білому тлі) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="і-камера" viewBox="0 0 24 24"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="13.2" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="і-мікрофон" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="і-стрілка" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="і-зміна" viewBox="0 0 24 24"><path d="M4 9h15l-3.5-3.5M20 15H5l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <!-- Речі в кольорах образу (завжди на білому тлі) -->
+    <symbol id="р-тренч" viewBox="0 0 100 120"><path d="M35 8 50 22 65 8 84 17 93 74 82 76 76 42 78 114H22L24 42 18 76 7 74 16 17Z" fill="#233947"/><path d="M50 22V114M35 8l8 28M65 8l-8 28" fill="none" stroke="#FFFFFF" stroke-width="1.4" opacity=".35"/><rect x="23" y="58" width="54" height="5" fill="#172731"/></symbol>
+    <symbol id="р-сукня" viewBox="0 0 100 120"><path d="M34 12 50 26 66 12 76 24 68 54 82 112H18L32 54 24 24Z" fill="#1D4B56"/><path d="M32 54H68" stroke="#D8CEBE" stroke-width="1.5"/></symbol>
+    <symbol id="р-блуза" viewBox="0 0 100 110"><path d="M34 12 50 28 66 12 86 24 92 78 78 80 73 44 73 98H27V44L22 80 8 78 14 24Z" fill="#EAE3D5" stroke="#8C8270" stroke-width="1.5"/></symbol>
+    <symbol id="р-штани" viewBox="0 0 100 120"><path d="M28 8H72L80 114H57L50 42 43 114H20Z" fill="#2B3036"/><path d="M28 16H72" stroke="#FFFFFF" stroke-width="1.2" opacity=".25"/></symbol>
+    <symbol id="р-лофери" viewBox="0 0 120 64"><path d="M10 42C12 26 28 20 42 20L60 18C70 29 84 31 102 32L112 36C116 40 116 47 112 50H10Z" fill="#5A2E22"/><rect x="10" y="48" width="104" height="6" fill="#1E1916"/></symbol>
+    <symbol id="р-ботильйони" viewBox="0 0 120 64"><path d="M18 12H52L58 30C72 33 92 34 106 38C112 41 112 48 106 50H42V42H26V50H14L14 28Z" fill="#1F2426"/></symbol>
+    <symbol id="р-кросівки" viewBox="0 0 120 64"><path d="M10 40C12 25 26 18 38 18L56 16C66 28 82 30 98 31L110 35C116 39 115 46 110 49H10Z" fill="#EDEAE2" stroke="#5A5D5C" stroke-width="1.6"/><rect x="10" y="46" width="102" height="7" fill="#9E472A"/></symbol>
+    <symbol id="р-сумка" viewBox="0 0 100 70"><path d="M34 22C34 10 66 10 66 22" fill="none" stroke="#7A5230" stroke-width="3"/><rect x="14" y="22" width="72" height="40" rx="4" fill="#8C5832"/><circle cx="50" cy="40" r="4" fill="#D9B36C"/></symbol>
+  </defs>
+</svg>
+
+<div class="сторінка">
+
+  <nav class="панель-док" aria-label="Навігація по концепціях">
+    <div class="навігація-док">
+      <a href="#розбір">1. Оцінка ChatGPT і Claude</a>
+      <a href="#к1">2. К1 «Гута і світлотінь»</a>
+      <a href="#к2">3. К2 «Сволок і плахта»</a>
+      <a href="#к3">4. К3 «Берег і перевтілення»</a>
+      <a href="#порівняння">5. Порівняння і порада</a>
+    </div>
+    <button type="button" class="перемикач-теми" id="кн-тема">Перемкнути: День / Ніч</button>
+  </nav>
+
+  <header class="шапка-ст">
+    <div>
+      <span class="надпис">Рядок 5213 · Дослідження української айдентики та три концепції інтерфейсу · Погляд Gemini</span>
+      <h1>Оптика світла, тектоніка сволока і живий берег перевтілення.</h1>
+      <p>Цей файл представляє незалежне дослідження української візуальної культури та три повноцінні концепції інтерфейсу «Люстерка» (<code>390×844 px</code>) у відповідь на роботи ChatGPT та Claude. Повний текст дослідження з першоджерелами, контрастом за WCAG 2.2 AA та нарядами на впровадження — у файлі <code>аудит/айдентика/дослідження_gemini_2026-10-19.md</code>.</p>
+      <p style="font-size:13.5px;color:var(--сірий-ст)">Усі три концепції дотримують правил <code>аудит/ПРОДУКТ.md</code> (п.7, п.9, п.14, п.18, п.21) та ліцензії шрифтів <code>шрифти/ПРО_ШРИФТИ.md</code>. На картках образу (екран 5 кожної концепції) кнопки заміни речі працюють інтерактивно прямо в браузері.</p>
+    </div>
+    <aside class="порада-бокс">
+      <span class="надпис">Коротка порада Gemini</span>
+      <b>Для швидкого наведення ладу — К1 «Гута і світлотінь» (зі сволоком із К2). Для прориву в способі роботи — К3 «Берег і перевтілення».</b>
+      <p><b>К1</b> дає ідеальне нейтральне світло для оцінки 90 кольорів одягу (п.18), замінює 8 мотивів одним оптичним фацетом і вирішує локальну заміну речі (рядок 4945) зсувом горизонтальної смуги за принципом <i>Archipentura</i> Олександра Архипенка.<br><b>К3</b> знімає стіну між «чатом сценарію» і «карткою образу»: сценарій і живий стрій працюють одночасно на аркуші з берегами-маргіналіями.</p>
+    </aside>
+  </header>
+
+  <section id="розбір" aria-labelledby="заг-розбір">
+    <span class="надпис">Відправна точка дослідження</span>
+    <h2 id="заг-розбір">Чому недостатньо рішень ChatGPT і де криються пастки в концепціях Claude</h2>
+    <div class="розбір-сітка">
+      <div class="картка-розбору">
+        <h3>Чинний показ («Полотно й нитка»)</h3>
+        <p><b>Діагноз:</b> 8 одночасних ремісничих мотивів (скоси на кожній кнопці, мережка, зірки «біле по білому», витинанка, намистини, «ї», золото, верстат) змагаються з фото одягу, а довгий лист сценарію виштовхує кнопку «Зібрати образи» під чат.</p>
+      </div>
+      <div class="картка-розбору">
+        <h3>Дослідження і макети ChatGPT</h3>
+        <p><b>Сильне:</b> ієрархія «людина → одяг → керування → бренд» і вимога локальної заміни речі.<br><b>Слабке:</b> напрями «Живе ательє / Міська редакція / Світло і колір» — це універсальні західні шаблони без жодного українського структурного кореня.</p>
+      </div>
+      <div class="картка-розбору">
+        <h3>Дослідження і 3 концепції Claude</h3>
+        <p><b>Сильне:</b> закон «один прийом із першоджерелом, доведений до системи».<br><b>Слабке:</b> «Кіновар» перетворює живу примірочну на стародрук XVI ст. із <code>¶</code>; кольорові площини «Вербівки» спотворюють відтінок фото одягу (проти п.18); а мальований овал «Люстерка в рушнику» забирає пів екрана нерухомою декорацією.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════════
+       КОНЦЕПЦІЯ 1: «ГУТА І СВІТЛОТІНЬ»
+       ═════════════════════════════════════════════════════════════════════════ -->
+  <section id="к1" class="концепція к1" aria-labelledby="заг-к1">
+    <div class="голова-к">
+      <div class="рядок"><span class="мітка-к м1">К1</span><b>Гута і світлотінь</b></div>
+      <span class="корінь">Гутне скло й барокове люстро XVII–XVIII ст. · Олександр Архипенко (Archipentura, 1924–1928) · Вапняне світло мазанки (Демуцький — Іллєнко)</span>
+      <p>«Люстерко» як оптичний інструмент чистого світла. Сценарій згортається у компактну напівпрозору лінзу під шапкою, а картка образу поділена на 4 незалежні горизонтальні смуги-регістри <i>Archipentura</i> — проведи пальцем по взуттю, щоб змінити лише пару туфель прямо під тим самим пальтом і сукнею (рядок 4945).</p>
+    </div>
+
+    <div class="екрани">
+
+      <!-- К1 · Екран 1: Знайомство -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <header class="шапка"><div class="знак">люстерко</div><div class="шапка-дії"><span>Крок 1 / 3</span></div></header>
+        <div class="вміст">
+          <span class="мітка">Про тебе · До лиця · Фігура</span>
+          <h2 class="заг">Світло, що пасує <em>саме тобі.</em></h2>
+          <p class="голос">Три кроки — і далі ми лише дивимось, куди ти йдеш сьогодні.</p>
+          <div class="фацет" style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center">
+            <div style="height:150px;background:var(--світлиця);border:1px dashed var(--фацет-н);display:grid;place-items:center;text-align:center;font-size:12px;padding:8px">
+              <div><svg width="26" height="26"><use href="#і-камера"/></svg><br><b>Портрет</b><br><span style="font-size:10.5px;color:var(--вторинний)">для відтінків лиця</span></div>
+            </div>
+            <div style="height:150px;background:var(--світлиця);border:1px dashed var(--фацет-н);display:grid;place-items:center;text-align:center;font-size:12px;padding:8px">
+              <div><svg width="26" height="26"><use href="#і-камера"/></svg><br><b>Повний зріст</b><br><span style="font-size:10.5px;color:var(--вторинний)">для пропорцій крою</span></div>
+            </div>
+          </div>
+          <div class="фацет" style="padding:10px 12px;font-size:12px;color:var(--вторинний)">
+            <b style="color:var(--чорнило)">Спектр твоєї зовнішності:</b>
+            <div style="display:flex;gap:6px;margin-top:6px">
+              <span style="width:24px;height:24px;background:#E7CCA8;border:1px solid rgba(0,0,0,.15);border-radius:4px" title="Шкіра: світлий персик"></span>
+              <span style="width:24px;height:24px;background:#5C3826;border:1px solid rgba(0,0,0,.15);border-radius:4px" title="Волосся: теплий каштан"></span>
+              <span style="width:24px;height:24px;background:#355648;border:1px solid rgba(0,0,0,.15);border-radius:4px" title="Очі: бурштиново-зелені"></span>
+              <span style="font-size:11px;align-self:center;margin-left:4px;color:var(--гута);font-weight:600">Тепла осінь</span>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:grid;gap:8px">
+            <button type="button" class="кнопка-осн">Далі до сценарію <svg width="18" height="18"><use href="#і-стрілка"/></svg></button>
+          </div>
+        </div>
+        <nav class="нав"><span class="акт">Профіль</span><span>Сценарій</span><span>Образи</span><span>Шафа</span></nav>
+      </div></div><figcaption><b>1 · Знайомство.</b> Фацетоване вікно портрета і зросту; навколо проступає природний спектр барв жінки без важких орнаментів.</figcaption></figure>
+
+      <!-- К1 · Екран 2: Вхід у сценарій -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <header class="шапка"><div class="знак">люстерко</div><div class="шапка-дії"><span>Оля · Тепла осінь</span></div></header>
+        <div class="вміст">
+          <span class="мітка">Чисте люстро наміру</span>
+          <h2 class="заг">Куди ти збираєшся <em>сьогодні?</em></h2>
+          <div class="фацет" style="padding:14px;display:grid;gap:10px">
+            <p style="margin:0;font-size:13.8px;color:var(--вторинний)">Скажи як подрузі: куди, коли, яка погода і який настрій…</p>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button type="button" class="кнопка-тиха" style="flex:1;justify-content:flex-start;color:var(--вторинний)"><svg width="18" height="18" style="margin-right:6px"><use href="#і-мікрофон"/></svg> Сказати голосом…</button>
+              <button type="button" class="кнопка-тиха" style="width:46px;padding:0"><svg width="18" height="18"><use href="#і-камера"/></svg></button>
+            </div>
+          </div>
+          <span class="мітка" style="margin-top:6px">Або обери нагоду за дотик</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="фацет" style="padding:10px 12px;font-size:12.8px"><b>Побачення</b><br><span style="font-size:11px;color:var(--вторинний)">вечеря, заклад</span></div>
+            <div class="фацет" style="padding:10px 12px;font-size:12.8px"><b>Робота</b><br><span style="font-size:11px;color:var(--вторинний)">офіс, зустріч</span></div>
+            <div class="фацет" style="padding:10px 12px;font-size:12.8px"><b>Театр, подія</b><br><span style="font-size:11px;color:var(--вторинний)">концерт, прем'єра</span></div>
+            <div class="фацет" style="padding:10px 12px;font-size:12.8px"><b>Звичайний день</b><br><span style="font-size:11px;color:var(--вторинний)">справи, кава</span></div>
+            <div class="фацет" style="padding:10px 12px;font-size:12.8px"><b>Свято</b><br><span style="font-size:11px;color:var(--вторинний)">вечірка, гості</span></div>
+            <div class="фацет" style="padding:10px 12px;font-size:12.8px"><b>Подорож</b><br><span style="font-size:11px;color:var(--вторинний)">дорога, літак</span></div>
+            <div class="фацет" style="padding:10px 12px;font-size:12.8px"><b>Спорт</b><br><span style="font-size:11px;color:var(--вторинний)">прогулянка, рух</span></div>
+            <div class="фацет" style="padding:10px 12px;font-size:12.8px;border-style:dashed"><b>Інше</b><br><span style="font-size:11px;color:var(--вторинний)">словами</span></div>
+          </div>
+        </div>
+        <nav class="нав"><span>Профіль</span><span class="акт">Сценарій</span><span>Образи</span><span>Шафа</span></nav>
+      </div></div><figcaption><b>2 · Вхід у сценарій.</b> Розвантажений перший екран. Компактна сітка 7 нагод + «Інше» без зайвих відступів уміщується на 390×844 без скролу.</figcaption></figure>
+
+      <!-- К1 · Екран 3: Розмова і Лінза наміру -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <header class="шапка"><div class="знак">люстерко</div><div class="шапка-дії"><span style="color:var(--гута);font-weight:600">● Працює лінза</span></div></header>
+        <!-- Фіксована верхня Лінза наміру -->
+        <div class="фацет" style="margin:10px 14px 0;padding:10px 14px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--лінза)">
+          <div>
+            <div style="font-size:11px;color:var(--вторинний);text-transform:uppercase;letter-spacing:.08em;font-weight:600">Лінза наміру</div>
+            <div style="font-size:13.5px;font-weight:600;margin-top:2px">Побачення · Ресторан · Вечір, дощ</div>
+            <div style="font-size:11.5px;color:var(--гута)">Палітра: 60/30/10 (стилістка) · Стримано</div>
+          </div>
+          <button type="button" class="кнопка-осн" style="height:38px;padding:0 14px;font-size:12.5px">Зібрати →</button>
+        </div>
+        <div class="вміст" style="padding-top:10px">
+          <div style="align-self:flex-end;background:var(--гута-м);border:1px solid var(--фацет-н);padding:8px 12px;border-radius:12px 12px 2px 12px;font-size:13.5px;max-width:85%">
+            Іду на побачення в ресторан увечері. Обіцяють дощ.
+          </div>
+          <div style="align-self:flex-start;background:var(--лінза);border:1px solid var(--фацет-н);padding:10px 14px;border-radius:12px 12px 12px 2px;font-size:14px;max-width:92%;box-shadow:0 2px 6px rgba(0,0,0,.03)">
+            <p class="голос">«Я вже тримаю в лінзі ресторан і вечірній дощ. Скласти образ із видовженим водостійким тренчем, чи віддати перевагу теплому сукняному пальту?»</p>
+            <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+              <span class="фацет" style="padding:4px 10px;font-size:12px;font-weight:600">З тренчем</span>
+              <span class="фацет" style="padding:4px 10px;font-size:12px;font-weight:600">З вовняним пальтом</span>
+              <span class="фацет" style="padding:4px 10px;font-size:12px;color:var(--вторинний)">На твій смак</span>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:flex;gap:8px;align-items:center">
+            <div class="фацет" style="flex:1;height:44px;padding:0 12px;display:flex;align-items:center;font-size:13.5px;color:var(--вторинний)">Відповісти стилістці…</div>
+            <button type="button" class="кнопка-осн" style="width:44px;height:44px;padding:0"><svg width="18" height="18"><use href="#і-стрілка"/></svg></button>
+          </div>
+        </div>
+        <nav class="нав"><span>Профіль</span><span class="акт">Сценарій</span><span>Образи</span><span>Шафа</span></nav>
+      </div></div><figcaption><b>3 · Розмова і Лінза наміру.</b> Паспорт сценарію згорнуто у верхню призму з кнопкою «Зібрати →». Вона завжди на очах і не ховається під чат.</figcaption></figure>
+
+      <!-- К1 · Екран 4: Палітра 6:3:1 -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <header class="шапка"><div class="знак">люстерко</div><div class="шапка-дії"><span>← До образу</span></div></header>
+        <div class="вміст">
+          <span class="мітка">Оптика гармонії</span>
+          <h2 class="заг">Заломлення спектра: <em>60 · 30 · 10</em></h2>
+          <p style="margin:0;font-size:13.5px;color:var(--вторинний)">Площа кольору відповідає реальній масі речей в ансамблі.</p>
+          <div class="фацет" style="padding:14px;display:grid;gap:12px">
+            <div style="display:flex;height:48px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,0,0,.15)">
+              <div style="width:60%;background:#233947;display:grid;place-items:center;color:#FFF;font-size:11px;font-weight:600">Основа 60%</div>
+              <div style="width:30%;background:#EAE3D5;display:grid;place-items:center;color:#333;font-size:11px;font-weight:600">Тіло 30%</div>
+              <div style="width:10%;background:#9E472A;display:grid;place-items:center;color:#FFF;font-size:10px;font-weight:600">10%</div>
+            </div>
+            <div style="display:grid;gap:6px;font-size:12.5px">
+              <div style="display:flex;justify-content:space-between"><span><b>Темний циан</b> (пальто, штани)</span><span style="color:var(--вторинний)">#233947</span></div>
+              <div style="display:flex;justify-content:space-between"><span><b>Теплий крейдяний</b> (блуза шовк)</span><span style="color:var(--вторинний)">#EAE3D5</span></div>
+              <div style="display:flex;justify-content:space-between"><span><b>Опішнянська теракота</b> (взуття, ремінь)</span><span style="color:var(--вторинний)">#9E472A</span></div>
+            </div>
+          </div>
+          <span class="мітка">Альтернативні схеми гармонії</span>
+          <div style="display:grid;gap:6px">
+            <div class="фацет" style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-size:13px">
+              <span><b>Монохромна глибина</b> (відтінки синього)</span><span style="font-size:11.5px;color:var(--гута);font-weight:600">Обрати</span>
+            </div>
+            <div class="фацет" style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-size:13px">
+              <span><b>Аналоговий вечір</b> (циан + смарагд)</span><span style="font-size:11.5px;color:var(--гута);font-weight:600">Обрати</span>
+            </div>
+          </div>
+          <button type="button" class="кнопка-осн" style="margin-top:auto">Застосувати до образів</button>
+        </div>
+        <nav class="нав"><span>Профіль</span><span>Сценарій</span><span class="акт">Образи</span><span>Шафа</span></nav>
+      </div></div><figcaption><b>4 · Палітра заломлення.</b> Пропорція площі 6:3:1 наочно показує баланс великих речей і акцентів без колірного конфлікту (п.18).</figcaption></figure>
+
+      <!-- К1 · Екран 5: Картка образу Archipentura -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <header class="шапка">
+          <div class="знак">люстерко</div>
+          <div class="шапка-дії">
+            <span style="font-weight:600;color:var(--чорнило)">Образ 1 з 4</span>
+            <span style="font-size:11px;color:var(--гута);background:var(--гута-м);padding:2px 6px;border-radius:4px">Вдягну так</span>
+          </div>
+        </header>
+        <div class="вміст" style="gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <h3 style="margin:0;font:500 20px/1.1 var(--заголовок-шр);font-variation-settings:'CONT' 520">Вечірній ресторан під дощем</h3>
+            <span style="font-size:13.5px;font-weight:700">8 450 ₴</span>
+          </div>
+          <!-- 4 регістри Archipentura -->
+          <div class="регістри">
+            <!-- Регістр 1 -->
+            <div class="фацет регістр">
+              <div class="вікно-речі"><svg><use href="#р-тренч"/></svg></div>
+              <div>
+                <div class="шар-мітка">Шар I · Захист від дощу</div>
+                <div class="річ-назва">Тренч оверсайз глибокого циану</div>
+                <div class="річ-мета"><span>Kachorovska</span><span class="річ-ціна">4 200 ₴</span></div>
+                <button type="button" class="зсув-кн"><svg width="14" height="14"><use href="#і-зміна"/></svg> ⇄ Інший тренч</button>
+              </div>
+            </div>
+            <!-- Регістр 2 -->
+            <div class="фацет регістр">
+              <div class="вікно-речі"><svg><use href="#р-блуза"/></svg></div>
+              <div>
+                <div class="шар-мітка">Шар II · Основа</div>
+                <div class="річ-назва">Шовкова блуза кольору вапна</div>
+                <div class="річ-мета"><span>Couture de Salme</span><span class="річ-ціна">1 850 ₴</span></div>
+                <button type="button" class="зсув-кн"><svg width="14" height="14"><use href="#і-зміна"/></svg> ⇄ Інший верх</button>
+              </div>
+            </div>
+            <!-- Регістр 3 -->
+            <div class="фацет регістр">
+              <div class="вікно-речі"><svg><use href="#р-штани"/></svg></div>
+              <div>
+                <div class="шар-мітка">Шар III · Низ</div>
+                <div class="річ-назва">Прямі вовняні штани зі стрілкою</div>
+                <div class="річ-мета"><span>BEVZA</span><span class="річ-ціна">2 400 ₴</span></div>
+                <button type="button" class="зсув-кн"><svg width="14" height="14"><use href="#і-зміна"/></svg> ⇄ Інший низ</button>
+              </div>
+            </div>
+            <!-- Регістр 4 (активна локальна заміна) -->
+            <div class="фацет регістр" id="к1-регістр-взуття" style="border-left:3px solid var(--гута)">
+              <div class="вікно-речі" id="к1-іконка-взуття"><svg><use href="#р-лофери"/></svg></div>
+              <div>
+                <div class="шар-мітка" style="color:var(--гута)">Шар IV · Взуття й опора (натисни ⇄)</div>
+                <div class="річ-назва" id="к1-назва-взуття">Лофери з теракотової шкіри</div>
+                <div class="річ-мета"><span id="к1-бренд-взуття">Hvóya</span><span class="річ-ціна" id="к1-ціна-взуття">2 400 ₴</span></div>
+                <button type="button" class="зсув-кн" id="к1-кн-заміна-взуття" style="background:var(--гута);color:#FFF">
+                  <svg width="14" height="14"><use href="#і-зміна"/></svg> ⇄ Інше взуття (живий клік!)
+                </button>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:auto">
+            <button type="button" class="кнопка-осн" style="flex:1">Вдягну так</button>
+            <button type="button" class="кнопка-тиха" style="color:var(--відмова)">Не моє</button>
+          </div>
+        </div>
+        <nav class="нав"><span>Профіль</span><span>Сценарій</span><span class="акт">Образи</span><span>Шафа</span></nav>
+      </div></div><figcaption><b>5 · Картка Archipentura (жива заміна).</b> Натисніть кнопку <b>«⇄ Інше взуття»</b>: зсувається лише нижня смуга взуття під тим самим пальтом і блузою (рядок 4945)!</figcaption></figure>
+
+    </div>
+
+    <!-- Специфікація К1 -->
+    <div class="опис-к">
+      <div class="блок-оп">
+        <h3>Джерела і система</h3>
+        <p><b>Гутне скло і барокове люстро XVII–XVIII ст.:</b> фацетний зріз світла 1px; <b>Олександр Архипенко:</b> <i>Archipentura</i> (1924, US Patent 1,626,496) — розділення образу на незалежні горизонтальні смуги; <b>Вапняне світло:</b> основа операторської кіношколи Демуцького та Іллєнка.</p>
+        <p><b>Один системний прийом:</b> світловий фацет 1px + 4 горизонтальні регістри. Жодного іншого орнаменту.</p>
+      </div>
+      <div class="блок-оп">
+        <h3>Палітра токенів (WCAG)</h3>
+        <ul class="зразки">
+          <li><i style="background:#F8F7F3"></i><span>Вапняне тло <code>--світлиця</code></span><code>#F8F7F3</code></li>
+          <li><i style="background:#FFFFFF"></i><span>Лінза/фото <code>--лінза</code></span><code>#FFFFFF</code></li>
+          <li><i style="background:#161817"></i><span>Чорнило тексту (AAA)</span><code>#161817 (16.9:1)</code></li>
+          <li><i style="background:#1F4E46"></i><span>Димчастий смарагд гути</span><code>#1F4E46 (9.1:1)</code></li>
+          <li><i style="background:#9A6F22"></i><span>Теплий промінь акценту</span><code>#9A6F22 (4.6:1)</code></li>
+        </ul>
+      </div>
+      <div class="блок-оп">
+        <h3>Рішення власника і наряди</h3>
+        <ul>
+          <li><b>Рішення 1:</b> заміна 8 мотивів показу на фацет 1px і смарагд гути #1F4E46.</li>
+          <li><b>Рішення 2:</b> закріпити верхню Лінзу наміру в розмові замість довгої картки під чатом.</li>
+          <li><b>Рішення 3:</b> затвердити 4 регістри Archipentura для локальної заміни речі (рядок 4945).</li>
+          <li><b>Впровадження:</b> 9 компактних нарядів. Ризик: низький–середній.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════════
+       КОНЦЕПЦІЯ 2: «СВОЛОК І ПЛАХТА»
+       ═════════════════════════════════════════════════════════════════════════ -->
+  <section id="к2" class="концепція к2" aria-labelledby="заг-к2">
+    <div class="голова-к">
+      <div class="рядок"><span class="мітка-к м2">К2</span><b>Сволок і плахта</b></div>
+      <span class="корінь">Український архітектурний модерн Василя Кричевського (1903) · Наддніпрянська перебірна плахта · Конструктивізм Василя Єрмилова</span>
+      <p>Залізна тектонічна дисципліна. Верхній сволок тримає параметри сценарію і кнопку «Зібрати →» у фіксованій зоні, а картка образу верстається як модульне полотнище плахти 60 / 40 з відкритим швом: кожна клітина має розмір пропорційно ролі речі й містить кнопку «↻ Замінити» прямо біля ціни.</p>
+    </div>
+
+    <div class="екрани">
+
+      <!-- К2 · Екран 1: Знайомство -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <div class="сволок">
+          <div class="сволок-верх"><div class="знак">люстерко</div><div class="сволок-дії">Крок 1 / 3 · Про тебе</div></div>
+          <div style="font-size:12px;color:#D8D0C3">Мірки та природна масть майбутніх образів</div>
+        </div>
+        <div class="сітка-вміст" style="grid-template-rows:auto 1fr auto">
+          <div class="комірка льон"><h2 class="заг">Твоя постава і <em>відтінки обличчя.</em></h2></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--шов)">
+            <div class="комірка" style="align-items:center;justify-content:center;text-align:center">
+              <svg width="28" height="28" style="color:var(--теракота)"><use href="#і-камера"/></svg>
+              <div style="font-weight:600;margin-top:6px;font-size:13px">Портрет</div>
+              <div style="font-size:11px;color:var(--вторинний)">колір очей і волосся</div>
+            </div>
+            <div class="комірка" style="align-items:center;justify-content:center;text-align:center">
+              <svg width="28" height="28" style="color:var(--теракота)"><use href="#і-камера"/></svg>
+              <div style="font-weight:600;margin-top:6px;font-size:13px">Повний зріст</div>
+              <div style="font-size:11px;color:var(--вторинний)">лінія плечей і талії</div>
+            </div>
+          </div>
+          <div class="комірка">
+            <span class="рубрика">Ім'я або псевдонім</span>
+            <div style="font-size:15px;font-weight:600;margin:4px 0 8px">Ольга Ковальчук</div>
+            <button type="button" class="замок-кн" style="width:100%;height:44px;font-size:13px">Підтвердити і далі →</button>
+          </div>
+        </div>
+        <nav class="нав"><span class="акт">Профіль</span><span>Сценарій</span><span>Образи</span><span>Шафа</span></nav>
+      </div></div><figcaption><b>1 · Знайомство.</b> Несучий сволок угорі і чесна двоколонкова сітка з відкритим швом 1px без декоративного сміття.</figcaption></figure>
+
+      <!-- К2 · Екран 2: Вхід у сценарій -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <div class="сволок">
+          <div class="сволок-верх"><div class="знак">люстерко</div><div class="сволок-дії">Новий вибір</div></div>
+          <div style="font-size:12px;color:#D8D0C3">Куди збираєшся сьогодні?</div>
+        </div>
+        <div class="сітка-вміст" style="grid-template-rows:auto 1fr">
+          <div class="комірка" style="padding:12px">
+            <span class="рубрика">Живе слово</span>
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <div style="flex:1;background:var(--льон);padding:9px 12px;font-size:13px;color:var(--вторинний);border:1px solid var(--шов)">Скажи або напиши намір…</div>
+              <button type="button" class="замок-кн" style="padding:0 12px"><svg width="18" height="18"><use href="#і-мікрофон"/></svg></button>
+            </div>
+          </div>
+          <!-- Безшовна сітка плахти 2×4 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr);gap:1px;background:var(--шов)">
+            <div class="комірка"><b>Побачення</b><span style="font-size:11px;color:var(--вторинний)">вечеря, кафе</span></div>
+            <div class="комірка"><b>Робота</b><span style="font-size:11px;color:var(--вторинний)">офіс, зустріч</span></div>
+            <div class="комірка"><b>Театр</b><span style="font-size:11px;color:var(--вторинний)">концерт, сцена</span></div>
+            <div class="комірка"><b>Звичайний день</b><span style="font-size:11px;color:var(--вторинний)">місто, справи</span></div>
+            <div class="комірка"><b>Свято</b><span style="font-size:11px;color:var(--вторинний)">вечірка, подія</span></div>
+            <div class="комірка"><b>Подорож</b><span style="font-size:11px;color:var(--вторинний)">поїзд, літак</span></div>
+            <div class="комірка"><b>Спорт</b><span style="font-size:11px;color:var(--вторинний)">рух, активність</span></div>
+            <div class="комірка льон" style="border:1px dashed var(--шов)"><b>Інше</b><span style="font-size:11px;color:var(--вторинний)">скажу словами</span></div>
+          </div>
+        </div>
+        <nav class="нав"><span>Профіль</span><span class="акт">Сценарій</span><span>Образи</span><span>Шафа</span></nav>
+      </div></div><figcaption><b>2 · Вхід у сценарій.</b> Безшовна сітка 8 клітин плахти стикується через відкритий шов 1px, зберігаючи 90 px висоти.</figcaption></figure>
+
+      <!-- К2 · Екран 3: Розмова і Сволок-таблиця -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <!-- Несучий сволок тримає сценарій і кнопку збирання -->
+        <div class="сволок">
+          <div class="сволок-верх"><div class="знак">люстерко</div><div class="сволок-дії">Сценарій закріплено</div></div>
+          <div class="сволок-формула">
+            <div>
+              <b style="color:#FFF">Побачення · Заклад</b> · Вечір, дощ<br>
+              <span style="color:#C7BFB2">Палітра: опішнянська гармонія · Ошатність: авто</span>
+            </div>
+            <button type="button" class="замок-кн">Зібрати →</button>
+          </div>
+        </div>
+        <div class="сітка-вміст" style="grid-template-rows:1fr auto">
+          <div class="комірка" style="gap:10px;justify-content:flex-start">
+            <span class="рубрика">Розмова зі стилісткою</span>
+            <div style="background:var(--льон);border:1px solid var(--шов);padding:8px 12px;font-size:13px;align-self:flex-end">
+              Іду на побачення в ресторан увечері, обіцяють дощ.
+            </div>
+            <div style="border-left:3px solid var(--теракота);padding-left:10px;font-size:13.8px">
+              «Записала у сволок: ресторан, вечір, дощ. Додати акцент на прикраси, чи тримати силует монохромним і стриманим?»
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="background:var(--клітина);border:1px solid var(--шов);padding:5px 10px;font-size:11.5px;font-weight:600">З прикрасами</span>
+              <span style="background:var(--клітина);border:1px solid var(--шов);padding:5px 10px;font-size:11.5px;font-weight:600">Стриманий монохром</span>
+            </div>
+          </div>
+          <div class="комірка льон" style="padding:8px 10px;display:flex;flex-direction:row;gap:8px">
+            <input type="text" placeholder="Відповісти стилістці…" style="flex:1;height:40px;border:1px solid var(--шов);padding:0 10px;font:inherit;background:#FFF">
+            <button type="button" class="замок-кн" style="padding:0 14px"><svg width="16" height="16"><use href="#і-стрілка"/></svg></button>
+          </div>
+        </div>
+        <nav class="нав"><span>Профіль</span><span class="акт">Сценарій</span><span>Образи</span><span>Шафа</span></nav>
+      </div></div><figcaption><b>3 · Розмова зі сволоком.</b> Сволок сценарію не скролиться, а дія «Зібрати →» завжди залізно закріплена вгорі екрана.</figcaption></figure>
+
+      <!-- К2 · Екран 4: Палітра плахти -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <div class="сволок">
+          <div class="сволок-верх"><div class="знак">люстерко</div><div class="сволок-дії">← До сценарію</div></div>
+          <div style="font-size:12px;color:#D8D0C3">Перебірне ткацтво кольору образу</div>
+        </div>
+        <div class="сітка-вміст" style="grid-template-rows:auto 1fr">
+          <div class="комірка">
+            <span class="рубрика">Тектоніка перебору (60 · 30 · 10)</span>
+            <div style="display:grid;grid-template-columns:6fr 3fr 1fr;height:36px;margin:8px 0;border:1px solid var(--шов)">
+              <div style="background:#1C1917;color:#FFF;display:grid;place-items:center;font-size:10.5px">Основа 60%</div>
+              <div style="background:#EAE3D5;color:#000;display:grid;place-items:center;font-size:10.5px">Піткання 30%</div>
+              <div style="background:#9E472A;color:#FFF;display:grid;place-items:center;font-size:9.5px">10%</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:1px;background:var(--шов)">
+            <div class="комірка"><span class="рубрика">Опора</span><b>Морений дуб</b><span style="font-size:11px;color:var(--вторинний)">пальто, штани</span></div>
+            <div class="комірка"><span class="рубрика">Світло</span><b>Вапняний шовк</b><span style="font-size:11px;color:var(--вторинний)">блуза, шарф</span></div>
+            <div class="комірка"><span class="рубрика">Замок</span><b>Опішнянська теракота</b><span style="font-size:11px;color:var(--вторинний)">взуття, сумка</span></div>
+            <div class="комірка льон"><span class="рубрика">Метал</span><b>Тепла бронза</b><span style="font-size:11px;color:var(--вторинний)">пряжки, сережки</span></div>
+          </div>
+        </div>
+        <nav class="нав"><span>Профіль</span><span>Сценарій</span><span class="акт">Образи</span><span>Шафа</span></nav>
+      </div></div><figcaption><b>4 · Палітра плахти.</b> Чіткий конструктивний поділ за 4 ролями кольору в гардеробі (Опора, Світло, Замок, Метал).</figcaption></figure>
+
+      <!-- К2 · Екран 5: Картка плахти 60/40 -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <div class="сволок">
+          <div class="сволок-верх">
+            <div class="знак">люстерко</div>
+            <div class="сволок-дії"><span style="color:var(--теракота);font-weight:700">01</span> · 02 · 03 · 04</div>
+          </div>
+          <div class="сволок-формула">
+            <div><b style="color:#FFF">Теракотовий замок</b> · 8 450 ₴</div>
+            <span style="color:var(--полива);font-weight:600">● Пасує на 9.4</span>
+          </div>
+        </div>
+        <!-- Асиметрична сітка плахти 60/40 -->
+        <div class="сітка-вміст" style="grid-template-columns:1.35fr 1fr;grid-template-rows:1fr 1fr;padding:0">
+          <!-- Ліва колонка (високі головні речі) -->
+          <div class="комірка" style="border-right:1px solid var(--шов);border-bottom:1px solid var(--шов);align-items:center;text-align:center">
+            <svg width="74" height="74"><use href="#р-тренч"/></svg>
+            <div style="width:100%;text-align:left;margin-top:auto">
+              <span class="рубрика">Головний шар</span>
+              <div style="font-weight:600;font-size:12px">Тренч оверсайз</div>
+              <div style="font-size:11px;color:var(--вторинний)">4 200 ₴</div>
+            </div>
+          </div>
+          <!-- Права верхня комірка (блуза) -->
+          <div class="комірка" style="border-bottom:1px solid var(--шов);align-items:center;text-align:center">
+            <svg width="60" height="60"><use href="#р-блуза"/></svg>
+            <div style="width:100%;text-align:left;margin-top:auto">
+              <span class="рубрика">Основа</span>
+              <div style="font-weight:600;font-size:12px">Блуза вапно</div>
+              <div style="font-size:11px;color:var(--вторинний)">1 850 ₴</div>
+            </div>
+          </div>
+          <!-- Ліва нижня комірка (штани) -->
+          <div class="комірка" style="border-right:1px solid var(--шов);align-items:center;text-align:center">
+            <svg width="68" height="68"><use href="#р-штани"/></svg>
+            <div style="width:100%;text-align:left;margin-top:auto">
+              <span class="рубрика">Низ</span>
+              <div style="font-weight:600;font-size:12px">Штани вовна</div>
+              <div style="font-size:11px;color:var(--вторинний)">2 400 ₴</div>
+            </div>
+          </div>
+          <!-- Права нижня комірка (жива заміна взуття в клітині!) -->
+          <div class="комірка" id="к2-клітина-взуття" style="align-items:center;text-align:center;background:#FAF6EE">
+            <div id="к2-іконка-взуття"><svg width="64" height="42"><use href="#р-лофери"/></svg></div>
+            <div style="width:100%;text-align:left;margin-top:auto">
+              <span class="рубрика">Замок взуття</span>
+              <div style="font-weight:600;font-size:11.5px" id="к2-назва-взуття">Лофери теракота</div>
+              <button type="button" class="замок-кн" id="к2-кн-заміна" style="width:100%;margin-top:4px;padding:4px 0;font-size:10.5px">
+                ↻ Замінити (клік!)
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Керування внизу -->
+        <div style="padding:6px 10px;display:flex;gap:6px">
+          <button type="button" class="замок-кн" style="flex:1;height:42px;font-size:13px">Вдягну цей образ</button>
+          <button type="button" class="замок-кн" style="background:var(--сволок);color:#FFF;height:42px;padding:0 14px">Не моє</button>
+        </div>
+        <nav class="нав"><span>Профіль</span><span>Сценарій</span><span class="акт">Образи</span><span>Шафа</span></nav>
+      </div></div><figcaption><b>5 · Картка плахти 60/40 (жива заміна).</b> Колаж і речі об'єднано в модульне полотнище. Натисніть <b>«↻ Замінити»</b> прямо в клітині взуття!</figcaption></figure>
+
+    </div>
+
+    <!-- Специфікація К2 -->
+    <div class="опис-к">
+      <div class="блок-оп">
+        <h3>Джерела і система</h3>
+        <p><b>УАМ Василя Кричевського (1903):</b> конструктивний сволок і трапецієподібний замок лише на головних органах дії; <b>Плахта:</b> допіксельна модульна сітка з відкритим швом 1px; <b>Єрмилов:</b> чесна оголена конструкція.</p>
+        <p><b>Один системний прийом:</b> несучий сволок угорі + асиметрична сітка плахти 60/40.</p>
+      </div>
+      <div class="блок-оп">
+        <h3>Палітра токенів (WCAG)</h3>
+        <ul class="зразки">
+          <li><i style="background:#F3EFE6"></i><span>Небілений льон <code>--льон</code></span><code>#F3EFE6</code></li>
+          <li><i style="background:#1C1917"></i><span>Морений дуб сволока</span><code>#1C1917 (15.8:1)</code></li>
+          <li><i style="background:#CFC7B8"></i><span>Конструктивний шов 1px</span><code>#CFC7B8</code></li>
+          <li><i style="background:#9E472A"></i><span>Опішнянська теракота</span><code>#9E472A (5.5:1)</code></li>
+          <li><i style="background:#2D5A4C"></i><span>Полива опішнянська</span><code>#2D5A4C (7.4:1)</code></li>
+        </ul>
+      </div>
+      <div class="блок-оп">
+        <h3>Рішення власника і наряди</h3>
+        <ul>
+          <li><b>Рішення 1:</b> закріпити верхній сволок із формулою і дією «Зібрати» у фіксованій геометрії.</li>
+          <li><b>Рішення 2:</b> злити колаж і перелік речей у модульну плахту 60/40 із заміною в клітині.</li>
+          <li><b>Впровадження:</b> 8 швидких нарядів. Найменший технічний ризик.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════════
+       КОНЦЕПЦІЯ 3: «БЕРЕГ І ПЕРЕВТІЛЕННЯ»
+       ═════════════════════════════════════════════════════════════════════════ -->
+  <section id="к3" class="концепція к3" aria-labelledby="заг-к3">
+    <div class="голова-к">
+      <div class="рядок"><span class="мітка-к м3">К3</span><b>Берег і перевтілення</b></div>
+      <span class="корінь">Театральний авангард Курбаса, Меллера й Екстер («Березіль») · Графічний різець Георгія Якутовича (1966) · Маргіналії та кубовий індиго синильниці</span>
+      <p>Глобально новий підхід до роботи у «Люстерку» (відповідь на рядок 5213). Ми скасовуємо стіну між «екраном анкети сценарію» та «екраном готових карток». Сценарій і живий образ існують одночасно на одному аркуші: на лівому березі (118 px) стилістка веде розмову курсивом кубового індиго, а праворуч на полотні стоїть вертикальний стрій речей із тонкими графічними виносками до кожної деталі.</p>
+    </div>
+
+    <div class="екрани">
+
+      <!-- К3 · Екран 1: Знайомство -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <header class="шапка"><div class="знак">люстерко <em>//</em> дія</div><div style="font-size:12px;color:var(--олівець)">Акт I · Пролог</div></header>
+        <div class="аркуш-двох">
+          <!-- Берег -->
+          <aside class="берег">
+            <span style="font:600 9.5px/1 var(--текст-шр);text-transform:uppercase;letter-spacing:.1em;color:var(--індиго)">Берег стилістки</span>
+            <div class="маргіналія">«Портрет покаже мені твої барви, а зріст — пропорції плечей і силуету.»</div>
+            <div class="вузол-б"><small>Ім'я</small><b>Оля К.</b></div>
+            <div class="вузол-б"><small>Згода</small><b>Відтінки + вердикти</b></div>
+          </aside>
+          <!-- Полотно -->
+          <main class="полотно">
+            <h2 style="font:500 24px/1.1 var(--заголовок-шр);font-variation-settings:'CONT' 800;margin:0">Світло <em>рампи.</em></h2>
+            <div style="height:140px;background:var(--берег);border:1px dashed var(--виноска);display:grid;place-items:center;text-align:center;font-size:12px;padding:10px">
+              <div><svg width="26" height="26" style="color:var(--індиго)"><use href="#і-камера"/></svg><br><b>Додати портрет</b></div>
+            </div>
+            <div style="height:120px;background:var(--берег);border:1px dashed var(--виноска);display:grid;place-items:center;text-align:center;font-size:12px;padding:10px">
+              <div><svg width="26" height="26" style="color:var(--індиго)"><use href="#і-камера"/></svg><br><b>На повний зріст</b></div>
+            </div>
+            <button type="button" class="кн-індиго" style="margin-top:auto">Увійти в дію →</button>
+          </main>
+        </div>
+        <nav class="нав"><span class="акт">Пролог</span><span>Сцена</span><span>Образи</span><span>Зшиток</span></nav>
+      </div></div><figcaption><b>1 · Знайомство на берегах.</b> Лівий берег несе голос стилістки й параметри, а праве полотно розгортає вікна мірок і світла.</figcaption></figure>
+
+      <!-- К3 · Екран 2: Вибір сцени -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <header class="шапка"><div class="знак">люстерко <em>//</em> дія</div><div style="font-size:12px;color:var(--індиго);font-weight:600">Сцена життя</div></header>
+        <div class="аркуш-двох">
+          <aside class="берег">
+            <span style="font:600 9.5px/1 var(--текст-шр);text-transform:uppercase;letter-spacing:.1em;color:var(--індиго)">Ремарка</span>
+            <div class="маргіналія">«Обери мізансцену або скажи своїми словами.»</div>
+          </aside>
+          <main class="полотно">
+            <h2 style="font:500 24px/1.1 var(--заголовок-шр);font-variation-settings:'CONT' 800;margin:0">Куди <em>йдеш?</em></h2>
+            <div style="display:flex;gap:6px;border-bottom:1.5px solid var(--різець);padding-bottom:6px">
+              <input type="text" placeholder="Опиши сцену одним словом…" style="flex:1;border:0;background:transparent;font:inherit">
+              <svg width="18" height="18"><use href="#і-мікрофон"/></svg>
+            </div>
+            <div style="display:grid;gap:6px;margin-top:4px">
+              <div style="padding:7px 8px;border:1px solid var(--виноска);background:#FFF;font-size:12.5px"><b>Побачення увечері</b><br><span style="font-size:10.5px;color:var(--олівець)">ресторан, затишок, вино</span></div>
+              <div style="padding:7px 8px;border:1px solid var(--виноска);background:#FFF;font-size:12.5px"><b>Ділова зустріч</b><br><span style="font-size:10.5px;color:var(--олівець)">презентація, переговори</span></div>
+              <div style="padding:7px 8px;border:1px solid var(--виноска);background:#FFF;font-size:12.5px"><b>Театральна прем'єра</b><br><span style="font-size:10.5px;color:var(--олівець)">драма, лиск, вечір</span></div>
+              <div style="padding:7px 8px;border:1px solid var(--виноска);background:#FFF;font-size:12.5px"><b>Міський день</b><br><span style="font-size:10.5px;color:var(--олівець)">кава, справи, комфорт</span></div>
+            </div>
+          </main>
+        </div>
+        <nav class="нав"><span>Пролог</span><span class="акт">Сцена</span><span>Образи</span><span>Зшиток</span></nav>
+      </div></div><figcaption><b>2 · Афіша сцен.</b> Сценарій відкривається як театральна мізансцена життя без сухої бюрократичної анкети.</figcaption></figure>
+
+      <!-- К3 · Екран 3: Живий ескіз перевтілення -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <header class="шапка"><div class="знак">люстерко <em>//</em> дія</div><div style="font-size:12px;color:var(--індиго);font-weight:600">● Живий стрій</div></header>
+        <div class="аркуш-двох">
+          <!-- Берег з вузлами сценарію -->
+          <aside class="берег">
+            <span style="font:600 9.5px/1 var(--текст-шр);text-transform:uppercase;letter-spacing:.1em;color:var(--індиго)">Сценарій на березі</span>
+            <div class="вузол-б"><small>Сцена</small><b>Побачення</b></div>
+            <div class="вузол-б"><small>Місце</small><b>Ресторан</b></div>
+            <div class="вузол-б"><small>Погода</small><b>Вечір, дощ</b></div>
+            <div class="вузол-б"><small>Ошатність</small><b>Стримана</b></div>
+            <div class="вузол-б"><small>Барви</small><b>60:30:10 індиго</b></div>
+            <div class="маргіналія" style="margin-top:auto">«Тренч тримає дощ. Скласти підбори чи низький хід?»</div>
+          </aside>
+          <!-- Полотно з живим строєм речей -->
+          <main class="полотно" style="gap:6px">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--виноска);padding-bottom:4px">
+              <span style="font-size:11.5px;font-weight:700">Перший ескіз перевтілення</span>
+              <button type="button" class="кн-індиго" style="height:26px;padding:0 8px;font-size:11px">Фінальні 4 →</button>
+            </div>
+            <!-- Вертикальний стрій з виносками різця -->
+            <div style="display:grid;gap:6px;flex:1">
+              <div style="display:grid;grid-template-columns:54px 1fr;gap:8px;align-items:center;border-bottom:1px dashed var(--виноска);padding-bottom:4px">
+                <div style="background:#FFF;border:1px solid var(--виноска);height:50px;display:grid;place-items:center"><svg width="44" height="44"><use href="#р-тренч"/></svg></div>
+                <div class="виноска-лінія"><b>Тренч Kachorovska</b><br><span style="color:var(--олівець)">Дощ → захист і вертикаль</span></div>
+              </div>
+              <div style="display:grid;grid-template-columns:54px 1fr;gap:8px;align-items:center;border-bottom:1px dashed var(--виноска);padding-bottom:4px">
+                <div style="background:#FFF;border:1px solid var(--виноска);height:50px;display:grid;place-items:center"><svg width="40" height="40"><use href="#р-сукня"/></svg></div>
+                <div class="виноска-лінія"><b>Сукня шовкова</b><br><span style="color:var(--олівець)">Глибокий вечірній циан</span></div>
+              </div>
+              <div style="display:grid;grid-template-columns:54px 1fr;gap:8px;align-items:center;border-bottom:1px dashed var(--виноска);padding-bottom:4px">
+                <div style="background:#FFF;border:1px solid var(--виноска);height:50px;display:grid;place-items:center"><svg width="46" height="30"><use href="#р-лофери"/></svg></div>
+                <div class="виноска-лінія"><b>Лофери теракотові</b><br><span style="color:var(--олівець)">Стійка опора під дощем</span></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;border-top:1px solid var(--різець);padding-top:6px">
+              <input type="text" placeholder="Поправ стилістку тут…" style="flex:1;border:0;background:transparent;font-size:12px">
+              <button type="button" class="кн-індиго" style="width:30px;height:30px;padding:0"><svg width="14" height="14"><use href="#і-стрілка"/></svg></button>
+            </div>
+          </main>
+        </div>
+        <nav class="нав"><span>Пролог</span><span>Сцена</span><span>Образи</span><span>Зшиток</span></nav>
+      </div></div><figcaption><b>3 · Живий ескіз (новий підхід).</b> Стіну між чатом і картками знято: сценарій на березі одразу керує живим строєм речей праворуч.</figcaption></figure>
+
+      <!-- К3 · Екран 4: Палітра вибійки на березі -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <header class="шапка"><div class="знак">люстерко <em>//</em> дія</div><div style="font-size:12px;color:var(--олівець)">Вибійка барв</div></header>
+        <div class="аркуш-двох">
+          <aside class="берег">
+            <span style="font:600 9.5px/1 var(--текст-шр);text-transform:uppercase;letter-spacing:.1em;color:var(--індиго)">Барви вибійки</span>
+            <div class="маргіналія">«Глибокий індиго синильниці як основа вечора.»</div>
+            <div style="display:grid;gap:4px;margin-top:6px">
+              <span style="padding:4px 6px;background:var(--індиго);color:#FFF;font-size:11px;font-weight:600">Індиго 60%</span>
+              <span style="padding:4px 6px;background:#EAE3D5;color:#000;font-size:11px;font-weight:600">Вапно 30%</span>
+              <span style="padding:4px 6px;background:#9E472A;color:#FFF;font-size:11px;font-weight:600">Охра 10%</span>
+            </div>
+          </aside>
+          <main class="полотно">
+            <span style="font:600 11px/1.2 var(--текст-шр);text-transform:uppercase;color:var(--олівець)">Коло художника (п.18)</span>
+            <h3 style="margin:2px 0 8px;font:500 20px/1.1 var(--заголовок-шр);font-variation-settings:'CONT' 780">Перебір <em>гармоній.</em></h3>
+            <div style="display:grid;gap:6px">
+              <div style="border:1.5px solid var(--індиго);padding:8px 10px;background:#FFF;font-size:12.5px">
+                <b>Кубовий індиго + охра</b><br><span style="font-size:11px;color:var(--індиго)">● Застосовано до строю</span>
+              </div>
+              <div style="border:1px solid var(--виноска);padding:8px 10px;background:#FFF;font-size:12.5px">
+                <b>Монохромна сажа</b><br><span style="font-size:11px;color:var(--олівець)">Графічний вечір</span>
+              </div>
+              <div style="border:1px solid var(--виноска);padding:8px 10px;background:#FFF;font-size:12.5px">
+                <b>Бурштин і теплий пісок</b><br><span style="font-size:11px;color:var(--олівець)">М'яке світло кав'ярні</span>
+              </div>
+            </div>
+            <button type="button" class="кн-індиго" style="margin-top:auto">Підтвердити барви →</button>
+          </main>
+        </div>
+        <nav class="нав"><span>Пролог</span><span>Сцена</span><span class="акт">Образи</span><span>Зшиток</span></nav>
+      </div></div><figcaption><b>4 · Вибійка барв.</b> Перемикання палітри на березі одразу показує зміну колориту в живому строї праворуч.</figcaption></figure>
+
+      <!-- К3 · Екран 5: Чотири дії та заміна на березі -->
+      <figure class="телефон"><div class="fit"><div class="екран">
+        <header class="шапка">
+          <div class="знак">люстерко <em>//</em> дія</div>
+          <div style="font-size:11.5px;color:var(--індиго);font-weight:700">Сцена: I · II · III · IV</div>
+        </header>
+        <div class="аркуш-двох">
+          <!-- Лівий берег з ремарками й 3 замінами -->
+          <aside class="берег" id="к3-берег-замін">
+            <span style="font:600 9px/1 var(--текст-шр);text-transform:uppercase;letter-spacing:.08em;color:var(--індиго)">Берег замін (п.7)</span>
+            <div class="маргіналія" id="к3-текст-виноски">«Взуття: лофери дають зручність під дощем. Натисни праворуч для заміни.»</div>
+            <div id="к3-бокс-альтернатив" style="display:none;background:#FFF;border:1px solid var(--індиго);padding:6px;gap:5px;font-size:11px;margin-top:4px">
+              <b>3 заміни взуття:</b>
+              <div style="padding:3px;border-bottom:1px dashed #CCC;cursor:pointer" id="к3-опція-1">● Ботильйони BEVZA</div>
+              <div style="padding:3px;border-bottom:1px dashed #CCC;cursor:pointer" id="к3-опція-2">● Кросівки шкіра</div>
+              <div style="padding:3px;cursor:pointer" id="к3-опція-3">● Лофери Hvóya</div>
+            </div>
+            <div class="вузол-б" style="margin-top:auto"><small>Разом</small><b style="font-size:13px" id="к3-ціна-разом">8 450 ₴</b></div>
+          </aside>
+          <!-- Праве полотно образу -->
+          <main class="полотно" style="gap:6px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <span style="font:500 16px/1.1 var(--заголовок-шр);font-variation-settings:'CONT' 800">Дія I · Стриманий лиск</span>
+              <span style="font-size:11px;color:var(--індиго);font-weight:700">9.6 / 10</span>
+            </div>
+            <!-- Слоти речей з виносками -->
+            <div style="display:grid;gap:6px;flex:1">
+              <div style="display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:center;border-bottom:1px dashed var(--виноска);padding-bottom:3px">
+                <div style="background:#FFF;border:1px solid var(--виноска);height:50px;display:grid;place-items:center"><svg width="44" height="44"><use href="#р-тренч"/></svg></div>
+                <div style="font-size:11.5px"><b>Тренч Kachorovska</b><br><span style="color:var(--олівець)">4 200 ₴</span></div>
+              </div>
+              <div style="display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:center;border-bottom:1px dashed var(--виноска);padding-bottom:3px">
+                <div style="background:#FFF;border:1px solid var(--виноска);height:50px;display:grid;place-items:center"><svg width="40" height="40"><use href="#р-сукня"/></svg></div>
+                <div style="font-size:11.5px"><b>Шовкова сукня</b><br><span style="color:var(--олівець)">1 850 ₴</span></div>
+              </div>
+              <!-- Слот взуття з інтерактивною виноскою -->
+              <div style="display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:center;background:#FFF;border:1px solid var(--індиго);padding:4px">
+                <div id="к3-слот-іконка" style="height:46px;display:grid;place-items:center"><svg width="48" height="30"><use href="#р-лофери"/></svg></div>
+                <div>
+                  <div style="font-weight:600;font-size:11.5px" id="к3-слот-назва">Лофери Hvóya</div>
+                  <button type="button" id="к3-кн-показати-заміни" style="background:var(--індиго);color:#FFF;border:0;padding:2px 6px;font:600 10px/1.2 var(--текст-шр);margin-top:2px">
+                    ↻ 3 заміни на березі (клік!)
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button type="button" class="кн-індиго" style="flex:1;height:38px;font-size:12.5px">Вдягнути цю сцену</button>
+              <button type="button" style="border:1px solid var(--різець);background:transparent;padding:0 10px;font-size:12px">Не моє</button>
+            </div>
+          </main>
+        </div>
+        <nav class="нав"><span>Пролог</span><span>Сцена</span><span class="акт">Образи</span><span>Зшиток</span></nav>
+      </div></div><figcaption><b>5 · Дії та виноски на березі (жива заміна).</b> Натисніть кнопку <b>«↻ 3 заміни на березі»</b>: на лівому березі маргіналій відкриваються 3 альтернативи саме для взуття!</figcaption></figure>
+
+    </div>
+
+    <!-- Специфікація К3 -->
+    <div class="опис-к">
+      <div class="блок-оп">
+        <h3>Джерела і система</h3>
+        <p><b>Театральний авангард Курбаса, Меллера й Екстер («Березіль»):</b> одяг як жива мізансцена перевтілення; <b>Графіка Якутовича:</b> гострі виноски різця від деталі до примітки; <b>Кубовий індиго:</b> глибокий тон синильниць XVII–XIX ст.</p>
+        <p><b>Один системний прийом:</b> лівий берег маргіналій 118 px + графічні виноски індиго до строю.</p>
+      </div>
+      <div class="блок-оп">
+        <h3>Палітра токенів (WCAG)</h3>
+        <ul class="зразки">
+          <li><i style="background:#FAF8F4"></i><span>Крейдяний папір <code>--папір</code></span><code>#FAF8F4</code></li>
+          <li><i style="background:#F0ECE1"></i><span>Берег маргіналій</span><code>#F0ECE1</code></li>
+          <li><i style="background:#161719"></i><span>Різець чорний (AAA)</span><code>#161719 (17.1:1)</code></li>
+          <li><i style="background:#1D3B5E"></i><span>Кубовий індиго синильниці</span><code>#1D3B5E (10.6:1)</code></li>
+          <li><i style="background:#8F6220"></i><span>Вохра рампи театру</span><code>#8F6220 (5.2:1)</code></li>
+        </ul>
+      </div>
+      <div class="блок-оп">
+        <h3>Рішення власника і наряди</h3>
+        <ul>
+          <li><b>Рішення 1:</b> зняти бар'єр між чатом і картками — живий двоколонковий аркуш перевтілення.</li>
+          <li><b>Рішення 2:</b> швидка перша видача (< 1 с) на полотні до повного суду мовної моделі.</li>
+          <li><b>Рішення 3:</b> заміна речі через 3 альтернативи на лівому березі (рядок 4945).</li>
+          <li><b>Впровадження:</b> 11 нарядів. Найбільший продуктовий прорив.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════════
+       ПІДСУМКОВЕ ПОРІВНЯННЯ ТА ПОРАДА
+       ═════════════════════════════════════════════════════════════════════════ -->
+  <section id="порівняння" class="концепція" aria-labelledby="заг-порівняння">
+    <div class="голова-к">
+      <span class="надпис">Підсумок і порівняння</span>
+      <h2 id="заг-порівняння">Порівняльна таблиця концепцій Gemini, ChatGPT та Claude</h2>
+      <p>Зіставлення за ключовими критеріями зручності, українського першоджерела, перевірки кольору (п.18) та впровадження.</p>
+    </div>
+
+    <div class="таблиця-обг">
+      <table>
+        <thead>
+          <tr>
+            <th>Критерій</th>
+            <th>К1 «Гута і світлотінь»</th>
+            <th>К2 «Сволок і плахта»</th>
+            <th>К3 «Берег і перевтілення»</th>
+            <th>Підхід ChatGPT / Claude</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Українське першоджерело</th>
+            <td>Гутне скло, Олександр Архипенко (Archipentura, 1924), вапняне світло кіношколи Демуцького — Іллєнка</td>
+            <td>УАМ Василя Кричевського (Полтавське земство, 1903), плахта, Єрмилов</td>
+            <td>Театральний авангард («Березіль» Курбаса, Меллер, Екстер), різець Якутовича (1966), кубова вибійка</td>
+            <td>ChatGPT: загальні фешн-стилі; Claude: Острозька Біблія, Вербівка, дзеркало з рушником</td>
+          </tr>
+          <tr>
+            <th>Один системний прийом</th>
+            <td>Світловий фацет 1px + змінні горизонтальні смуги-регістри</td>
+            <td>Несучий сволок угорі + асиметрична сітка плахти 60/40 з відкритим швом</td>
+            <td>Лівий берег маргіналій 118 px + графічні виноски індиго до строю</td>
+            <td>У нинішньому показі 8 мотивів одночасно; у Claude буквиці ¶ або супрематичні плями</td>
+          </tr>
+          <tr>
+            <th>Перший екран 390×844</th>
+            <td>Сценарій згорнуто у верхню прозору призму-лінзу (54 px); CTA завжди на очах</td>
+            <td>Сволок фіксовано несе сценарій і замок «Зібрати →»; плитки стикуються без швів</td>
+            <td>Сценарій живе на лівому березі одночасно з живим ескізом образу</td>
+            <td>У показі довга картка виштовхує CTA під чат; у К3 Claude овал дзеркала з'їдає пів екрана</td>
+          </tr>
+          <tr>
+            <th>Локальна заміна (рядок 4945)</th>
+            <td><b>Свайп/клік смуги Archipentura:</b> зсувається лише один шар взуття під тим самим пальтом і сукнею</td>
+            <td><b>Заміна в клітині плахти:</b> кнопка ↻ міняє річ прямо у своїй комірці сітки</td>
+            <td><b>3 заміни на березі:</b> дотик до виноски речі відкриває 3 варіанти на лівому березі</td>
+            <td>У ChatGPT/Claude — лише текстова дія без візуального утримання цілого ансамблю</td>
+          </tr>
+          <tr>
+            <th>Точність кольору (п.18)</th>
+            <td><b>Еталонна:</b> вапняне тло #F8F7F3 і чисте біле поле #FFFFFF без паразитного рефлексу</td>
+            <td><b>Висока:</b> ізоляція кожної речі у білій комірці плахти з тонким швом</td>
+            <td><b>Висока:</b> полотно #FAF8F4, а індиго локалізовано в лініях берега</td>
+            <td>У «Вербівці» Claude супрематичні площини дають оптичний конфлікт із фото одягу</td>
+          </tr>
+          <tr>
+            <th>Нарядів / Ризик</th>
+            <td>9 нарядів · Низький–середній</td>
+            <td>8 нарядів · <b>Мінімальний</b></td>
+            <td>11 нарядів · Середній (прорив у UX)</td>
+            <td>Claude: від 8 до 15 нарядів</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:12px">
+      <div style="background:var(--аркуш-ст);padding:18px 20px;border-left:4px solid var(--к1-маркер);border-radius:0 10px 10px 0">
+        <h3 style="margin:0 0 6px;font:600 15px/1.2 var(--текст-шр)">Порада 1: Для швидкого порядку — К1 «Гута і світлотінь»</h3>
+        <p style="margin:0;font-size:13.5px;color:var(--сірий-ст)">Якщо потрібно навести залізний лад у показі без ломки логіки даних: прибираємо 8 мотивів, ставимо оптичний фацет 1px, чистий вапняний рефлектор для 90 кольорів каталогу та механіку <b>Archipentura</b> для заміни взуття чи пальта одним зсувом смуги (рядок 4945).</p>
+      </div>
+      <div style="background:var(--аркуш-ст);padding:18px 20px;border-left:4px solid var(--к3-маркер);border-radius:0 10px 10px 0">
+        <h3 style="margin:0 0 6px;font:600 15px/1.2 var(--текст-шр)">Порада 2: Для продуктового прориву — К3 «Берег і перевтілення»</h3>
+        <p style="margin:0;font-size:13.5px;color:var(--сірий-ст)">Якщо власник прагне реалізувати «глобально новий підхід до роботи» (рядок 5213): скасовуємо стіну між анкетою й картками — створюємо живий двоколонковий аркуш із берегами-маргіналіями, де розмова й стрій речей існують разом на очах у жінки.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer style="border-top:1px solid var(--лінія-ст);padding-top:16px;font-size:12.5px;color:var(--сірий-ст);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <div>Повний текст дослідження — <code>аудит/айдентика/дослідження_gemini_2026-10-19.md</code> · Робота виконана за завданням рядка 5213.</div>
+    <div>Люстерко v5 · Українська айдентика та UI (Gemini)</div>
+  </footer>
+
+</div>
+
+<script>
+/* 1. Автоматичне масштабування телефонів .fit до ширини колонки */
+(function(){
+  var Z = window.CSS && CSS.supports && CSS.supports('zoom','0.5');
+  function fitScreens(){
+    document.querySelectorAll('.fit').forEach(function(box){
+      var f = box.firstElementChild;
+      if (!f) return;
+      var w = box.clientWidth;
+      var z = Math.min(1, w / 390);
+      if (Z) {
+        f.style.zoom = z;
+      } else {
+        f.style.transform = 'scale(' + z + ')';
+        f.style.transformOrigin = '0 0';
+        box.style.height = (844 * z) + 'px';
+      }
+    });
+  }
+  fitScreens();
+  window.addEventListener('resize', fitScreens);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitScreens);
+
+  /* 2. Перемикання теми День / Ніч */
+  var btn = document.getElementById('кн-тема');
+  if (btn) {
+    btn.addEventListener('click', function(){
+      var cur = document.documentElement.getAttribute('data-theme') || 'light';
+      var next = (cur === 'light') ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+    });
+  }
+
+  /* 3. Інтерактивна демонстрація локальної заміни речі в К1 (Archipentura) */
+  var shoes1 = [
+    { name: "Лофери з теракотової шкіри", brand: "Hvóya", price: "2 400 ₴", icon: "#р-лофери" },
+    { name: "Шкіряні ботильйони на низькому ходу", brand: "BEVZA", price: "4 100 ₴", icon: "#р-ботильйони" },
+    { name: "Міські кросівки з теракотовим акцентом", brand: "Etnodim", price: "2 950 ₴", icon: "#р-кросівки" }
+  ];
+  var idx1 = 0;
+  var btnK1 = document.getElementById('к1-кн-заміна-взуття');
+  if (btnK1) {
+    btnK1.addEventListener('click', function(e){
+      e.preventDefault();
+      idx1 = (idx1 + 1) % shoes1.length;
+      var item = shoes1[idx1];
+      document.getElementById('к1-назва-взуття').textContent = item.name;
+      document.getElementById('к1-бренд-взуття').textContent = item.brand;
+      document.getElementById('к1-ціна-взуття').textContent = item.price;
+      document.getElementById('к1-іконка-взуття').innerHTML = '<svg><use href="' + item.icon + '"/></svg>';
+    });
+  }
+
+  /* 4. Інтерактивна демонстрація локальної заміни речі в К2 (Плахта) */
+  var shoes2 = [
+    { name: "Лофери теракота", icon: "#р-лофери" },
+    { name: "Ботильйони дуб", icon: "#р-ботильйони" },
+    { name: "Кросівки льон", icon: "#р-кросівки" }
+  ];
+  var idx2 = 0;
+  var btnK2 = document.getElementById('к2-кн-заміна');
+  if (btnK2) {
+    btnK2.addEventListener('click', function(e){
+      e.preventDefault();
+      idx2 = (idx2 + 1) % shoes2.length;
+      var item = shoes2[idx2];
+      document.getElementById('к2-назва-взуття').textContent = item.name;
+      document.getElementById('к2-іконка-взуття').innerHTML = '<svg width="64" height="42"><use href="' + item.icon + '"/></svg>';
+    });
+  }
+
+  /* 5. Інтерактивна демонстрація заміни речі на березі в К3 (Маргіналії) */
+  var btnK3 = document.getElementById('к3-кн-показати-заміни');
+  var boxK3 = document.getElementById('к3-бокс-альтернатив');
+  if (btnK3 && boxK3) {
+    btnK3.addEventListener('click', function(e){
+      e.preventDefault();
+      boxK3.style.display = (boxK3.style.display === 'none' || !boxK3.style.display) ? 'grid' : 'none';
+    });
+    var opt1 = document.getElementById('к3-опція-1');
+    var opt2 = document.getElementById('к3-опція-2');
+    var opt3 = document.getElementById('к3-опція-3');
+    if (opt1) {
+      opt1.addEventListener('click', function(){
+        document.getElementById('к3-слот-назва').textContent = "Ботильйони BEVZA";
+        document.getElementById('к3-слот-іконка').innerHTML = '<svg width="48" height="30"><use href="#р-ботильйони"/></svg>';
+        document.getElementById('к3-ціна-разом').textContent = "10 150 ₴";
+        boxK3.style.display = 'none';
+      });
+    }
+    if (opt2) {
+      opt2.addEventListener('click', function(){
+        document.getElementById('к3-слот-назва').textContent = "Кросівки Etnodim";
+        document.getElementById('к3-слот-іконка').innerHTML = '<svg width="48" height="30"><use href="#р-кросівки"/></svg>';
+        document.getElementById('к3-ціна-разом').textContent = "9 000 ₴";
+        boxK3.style.display = 'none';
+      });
+    }
+    if (opt3) {
+      opt3.addEventListener('click', function(){
+        document.getElementById('к3-слот-назва').textContent = "Лофери Hvóya";
+        document.getElementById('к3-слот-іконка').innerHTML = '<svg width="48" height="30"><use href="#р-лофери"/></svg>';
+        document.getElementById('к3-ціна-разом').textContent = "8 450 ₴";
+        boxK3.style.display = 'none';
+      });
+    }
+  }
+})();
+</script>
+</body>
+</html>
