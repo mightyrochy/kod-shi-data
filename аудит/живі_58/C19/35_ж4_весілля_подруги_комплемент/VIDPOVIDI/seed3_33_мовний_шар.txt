@@ -1,0 +1,59 @@
+── ПРОМПТ (8041 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Пальто-піджак бургунді · kind code: coat · colour code: burgundy · about it: text н=1
+2 — Джемпер в’язаний жіночий вовняний оверсайз-фасону демісезонний · kind code: sweater · colour code: camel · about it: text н=2
+3 — Хустка "Дочка тіней і світла" · kind code: kerchief · colour code: beige · about it: text н=3
+4 — Спідниця з ефектом плісе зі 100% вовни мериноса зелена · kind code: skirt · colour code: green · about it: text н=4
+5 — LeBERDES Туфлі коричневі · kind code: dress_shoes · colour code: orange · about it: text н=5
+6 — Клатч-орігамі GIA шкіряний · kind code: clutch · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; burgundy — бордовий; camel — кемел; green — зелений; orange — помаранчевий.
+
+ТЕКСТИ:
+{
+"1": "The coat is a structured double-breasted outerwear piece in deep burgundy, falling to mid-thigh with wide lapels and two front pockets. Its tailored cut frames your shoulders cleanly while allowing room for the sweater beneath.",
+"2": "This is an oversized knit sweater in soft camel, with a relaxed fit that drapes comfortably over your frame. The ribbed cuffs and hem offer subtle definition without clinging to your waist.",
+"3": "A lightweight silk kerchief in beige with an artistic print of birds, leaves, and stars, edged with navy blue bands. It’s designed to be worn draped or tied, adding visual interest without bulk.",
+"4": "A midi-length pleated skirt in rich emerald green, made from 100% merino wool. Its deep pleats create gentle movement and volume that flares softly from the waist down.",
+"5": "Brown suede loafers with a single gold-tone buckle strap across the instep, featuring a rounded toe and a low block heel for comfort during walking.",
+"6": "A minimalist black leather clutch with an asymmetrical fold-over flap and subtle embossed branding. Its smooth texture contrasts elegantly with the suede and knit of your outfit.",
+"7": "You are wearing a burgundy double-breasted coat, a camel knit sweater, a green pleated skirt, and brown loafers. A beige patterned scarf is draped over your shoulders, and a sleek black clutch rests in hand. This ensemble works for you because the deep burgundy and earthy camel tones create a warm, rich autumn palette that feels both cozy and intentional. The sharp line of the coat balances the soft drape of the skirt and sweater, while the loafers ground the look with effortless polish. At your wedding guest event, this outfit allows you to stand out with expressive color while remaining sophisticated enough for the occasion.",
+"8": "Drape the scarf loosely over one shoulder to let its pattern peek through the coat collar—this brings movement and a touch of whimsy to your silhouette.",
+"9": "Keep the sweater untucked to maintain the skirt’s vertical line, which elongates your frame and draws attention upward toward your face.",
+"10": "Wear the clutch under the arm or at your hip for a relaxed posture; it complements the loafers without competing with them.",
+"11": "Пальто-піджак бургунді — This outerwear brings the missing turquoise family (via the visual break of the rich red/burgundy spectrum) and anchors the look for the formal occasion.",
+"12": "Хустка \"Дочка тіней і світла\" — The black knit provides a quiet base that lets the coat's texture and color shine without competing."
+}
+
+── ВІДПОВІДЬ (2524 симв., 76.8 с, HTTP 200) ──
+```json
+{
+  "1": "Пальто-піджак бургунді — Цей піджак має чіткий крій з подвійною лінією ґудзиків, глибокими лацканами та двома передніми кишенями. Він сягає середини стегна і добре окреслює твої плечі.",
+  "2": "Це оверсайз-джемпер кемел з м’якого трикотажу вільного крою, який зручно драпірується по фігурі. Ребристі манжети та низ додають ледь помітну чіткість без облягання в області талії.",
+  "3": "Легка шовкова хустка бежевого кольору з художнім принтом птахів, листя і зірок, обрамлена темно-синіми смужками. Її можна носити накинутою або зав’язаною, додаючи візуальний інтерес без об’єму.",
+  "4": "Міді-спідниця з глибокими складками смарагдово-зеленого кольору, виготовлена зі 100% вовни мериноса. Складки створюють ніжний рух і м’яко розширюються від талії вниз.",
+  "5": "Коричневі замшеві лофери з однією золотистою пряжкою на підйомі, закругленим носком і низьким широким каблуком для комфорту при ходьбі.",
+  "6": "Мінімалістичний чорний шкіряний клатч з асиметричною складкою-клапаном та ледь помітною тисненою емблемою. Його гладка текстура елегантно контрастує зі замшею і трикотажем твого образу.",
+  "7": "Ти одягнена в пальто-піджак бургунді, кемел-джемпер оверсайз, зелену спідницю з плісе та коричневі лофери. Бежева хустка з принтом накинута тобі на плечі, а чорний клатч лежить у руці. Цей образ підходить саме тобі тому, що глибокі бургундські та землисті кемел тони створюють теплу і багату осінню палітру, яка відчувається затишно й продумано. Чітка лінія пальто збалансовує м’який драпірування спідниці та джемпера, а лофери завершують образ невимушеною елегантністю. На весільному заході цей наряд дозволить тобі виділитися завдяки яскравим кольорам і при цьому залишитися достатньо вишуканою для цієї події.",
+  "8": "Накинь хустку вільно через одне плече, щоб її малюнок проглядав з-під коміра пальто — це додасть рухливості та нотку грайливості твоєму силуету.",
+  "9": "Залиш джемпер не заправленим у спідницю, щоб зберегти вертикальну лінію, яка подовжує твою фігуру і привертає увагу до обличчя.",
+  "10": "Тримай клатч під пахвою або на стегні для невимушеної постави; він гармонійно доповнює лофери без зайвої конкуренції з ними.",
+  "11": "Пальто-піджак бургунді — Цей верхній одяг додає відсутню бірюзову сім’ю (завдяки візуальному контрасту насиченого червоно-бургундського спектру) і підкреслює образ для формальної події.",
+  "12": "Хустка \"Дочка тіней і світла\" — Чорний трикотаж створює тихий фон, який дозволяє текстурі та кольору пальто сяяти без зайвої конкуренції."
+}
+```

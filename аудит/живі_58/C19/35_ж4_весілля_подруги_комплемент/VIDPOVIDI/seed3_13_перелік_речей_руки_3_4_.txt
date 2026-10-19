@@ -1,0 +1,44 @@
+── ПРОМПТ (2731 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green velvet structured blazer, tailored fit with notched lapels, deep emerald shade (#046307), heavy woven fabric.\nHigh-waisted satin midi skirt, straight cut with a subtle A-line flare to knee-length, rich forest green tone (#134E04), smooth silk blend.\nCashmere fitted turtleneck knit top in charcoal heather, classic crew neck silhouette, soft charcoal grey (#36454F), fine gauge wool mix.\nPointed-toe leather pumps, moderate block heel for walking comfort on grass or pavement, burnished bronze metallic finish (#CD7F32), polished calfskin.\nMinimalist gold drop earrings and a matching slim clutch, brushed metal hardware, antique gold tone (#C5A059), lightweight structured leather.\n\nThis ensemble balances the \"neat\" requirement with an elevated \"formal\" touch through the use of luxurious velvet and satin textures in a monochromatic green palette that stands out as a memorable wedding guest choice. The structured blazer provides a polished silhouette suitable for autumn temperatures while the pointed pumps ensure comfort during outdoor walks without sacrificing elegance. By avoiding traditional black or white, this outfit captures attention immediately, fulfilling her goal of being remembered at her friend's special day. The charcoal knit top adds a refined layer of warmth and texture that complements the richness of the outer fabrics perfectly."}
+
+── ВІДПОВІДЬ (994 симв., 198.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured, tailored fit with notched lapels",
+      "slot": "outerwear",
+      "color_hex": "#046307",
+      "worn": true
+    },
+    {
+      "name": "skirt",
+      "details": "high-waisted satin midi, straight cut with subtle A-line flare to knee-length",
+      "slot": "bottom",
+      "color_hex": "#134E04",
+      "worn": true
+    },
+    {
+      "name": "top",
+      "details": "cashmere fitted turtleneck knit, classic crew neck silhouette",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "shoes",
+      "details": "pointed-toe leather pumps, moderate block heel, polished calfskin",
+      "slot": "shoes",
+      "color_hex": "#CD7F32",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "minimalist gold drop earrings, brushed metal hardware",
+      "slot": "earrings",
+      "color_hex": "#C5A059",
+      "worn": true
+    }
+  ]
+}
