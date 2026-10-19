@@ -1,0 +1,53 @@
+── ПРОМПТ (7861 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Кардиган жіночий напівприталеного силуету з вовною мериноса демісезонний · kind code: cardigan · colour code: chocolate · about it: text н=1
+2 — Джемпер-поло жіночий з довгим руквом із вовною мериноса та кашеміром демісезонний · kind code: sweater · colour code: chocolate · about it: text н=2
+3 — Пасок металевий Кільця золото · kind code: jewelry_generic · colour code: golden · about it: text н=3
+4 — Слінгбеки шкіряні чорні · kind code: pumps · colour code: black · about it: text н=4
+5 — Штани шоколадні · kind code: trousers · colour code: chocolate · about it: text н=5
+6 — Клатч-орігамі GIA шкіряний · kind code: clutch · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; chocolate — шоколадний; golden — золотий.
+
+ТЕКСТИ:
+{
+"1": "This chocolate cardigan features a classic V-neckline and a semi-fitted silhouette. Crafted from soft merino wool, it offers a structured yet comfortable look that drapes smoothly over the body.",
+"2": "The chocolate sweater-polo has a relaxed fit with vertical ribbing across the chest and sleeves, adding subtle texture to your outfit. It features a classic collar and is made from a blend of merino wool and cashmere for warmth and softness.",
+"3": "This gold metal belt is designed with an open ring motif that hangs gracefully down the front. Its shiny, circular links catch the light, creating a beautiful visual break against the dark fabric of your skirt or trousers.",
+"4": "These black patent leather slingbacks feature a pointed toe and a sturdy block heel. The glossy finish adds a sleek, modern touch, while the strap behind the ankle ensures they stay securely on your feet throughout your evening.",
+"5": "Your chocolate trousers are cut in a straight leg style that flows smoothly from the hip to the hem. Made from a high-quality fabric, they provide a comfortable and sophisticated base for your ensemble.",
+"6": "This black leather clutch has a modern, slightly asymmetrical shape that makes it feel contemporary rather than stiff. Its smooth, matte finish provides an understated elegance that pairs perfectly with your formal shoes and accessories.",
+"7": "Your look is built around a sophisticated, monochromatic theme where deep chocolate tones are elegantly anchored by sharp black accents. The chocolate cardigan and trousers create a seamless vertical line that visually lengthens your figure, while the sleek black slingback pumps and clutch add a polished, formal finish perfect for an evening out at the club. I chose the gold ring belt to draw attention directly to your waist without adding bulk; its metallic shine and circular pattern act as the sole decorative element you need in this outfit, serving as a striking focal point that balances the simplicity of the solid colors.",
+"8": "Wear the chocolate cardigan open over your top to maintain a clean, elongated silhouette.",
+"9": "Пасок металевий Кільця золото — I accept this finding because the shine of the jewelry adds a necessary loud accent to balance the quiet neutral tones, ensuring you have enough sources of interest for your formal evening goal without breaking your chosen palette scheme."
+}
+
+── ВІДПОВІДЬ (2377 симв., 49.4 с, HTTP 200) ──
+```json
+{
+"1": "Цей шоколадний кардиган має класичний V-подібний виріз і напівприталений силует. Виготовлений з м’якої вовни мериноса, він пропонує структурований, але комфортний вигляд, який плавно драпірується по тілу.",
+"2": "Шоколадний джемпер-поло має вільний крій із вертикальною ребристістю на грудях і рукавах, що додає вашому образу ледь помітної текстури. Він має класичний комірець і виготовлений з суміші вовни мериноса та кашеміру для тепла й м’якості.",
+"3": "Цей золотий металевий пасок розроблений із мотивом відкритих кілець, що елегантно звисають спереду. Його блискучі круглі ланки відбивають світло, створюючи гарне візуальне рішення на тлі темної тканини твоєї спідниці чи штанів.",
+"4": "Ці чорні лаковані шкіряні слінгбеки мають загострений носок і міцний широкий каблук. Блискуча обробка додає витончений, сучасний штрих, а ремінець на щиколотці забезпечує їхню безпечну фіксацію протягом усього вечора.",
+"5": "Твої шоколадні штани мають прямий крій від стегна до подолу. Виготовлені з високоякісної тканини, вони створюють комфортну та вишукану основу для твого образу.",
+"6": "Ця чорна шкіряна клатч має сучасну, трохи асиметричну форму, що робить її більш актуальною, ніж суворою. Її гладка матова обробка надає стриманої елегантності, яка ідеально поєднується з твоїм взуттям та аксесуарами.",
+"7": "Твій образ побудований на основі вишуканого монохромного рішення, де глибокі шоколадні тони елегантно підкреслені гострими чорними акцентами. Шоколадний кардиган і штани створюють безперервну вертикальну лінію, яка візуально подовжує твою фігуру, а витончені чорні слінгбеки та клатч додають завершеного формального вигляду для вечора в клубі. Я обрала золотий пасок-кільця, щоб привернути увагу безпосередньо до твоєї талії, не додаючи зайвого об’єму; його металевий блиск і кругла візерункова структура є єдиним декоративним елементом, який тобі потрібен у цьому образі, слугуючи вражаючим акцентом, що збалансовує простоту однотонних кольорів.",
+"8": "Одягни шоколадний кардиган розстебнутим поверх твоєї блузи, щоб зберегти чистий і видовжений силует.",
+"9": "Пасок металевий Кільця золото — Я приймаю це рішення, тому що блиск прикраси додає необхідного помітного акценту для збалансування спокійних нейтральних тонів, забезпечуючи достатньо цікавих елементів для твого формального вечірнього образу без порушення обраної колірної гами."
+}
+```
