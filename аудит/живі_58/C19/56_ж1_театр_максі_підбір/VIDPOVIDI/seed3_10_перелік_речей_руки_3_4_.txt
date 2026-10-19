@@ -1,0 +1,58 @@
+── ПРОМПТ (3044 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green tailored blazer with notch lapels, classic fit cut, knee-length jacket body, hex #0a5e46, fine worsted wool.\nChampagne silk-blend sheath midi dress, bias cut silhouette, hemline just above the knee, hex #f7eecd, smooth satin weave.\nCharcoal grey tapered trousers with side stripes, slim straight leg cut, ankle-length hem, hex #3b4a50, heavy cotton twill.\nCream structured blazer overlaying the dress for a polished look, boxy fit cut, hip-length jacket body, hex #fdfbf7, textured bouclé fabric.\nBlack pointed-toe pumps with a 8cm heel, almond toe shape, ankle-high shaft, hex #1a1a1a, polished calfskin leather.\nPearl drop earrings and a delicate gold chain necklace to complement the green and champagne tones, classic stud earring style, round pendant cut, hex #e0dcc8 for pearls and hex #f5e6c6 for gold accents, cultured freshwater pearl and 18k gold plated metal.\n\nThis outfit balances her request for both neat and formal styles by layering a textured bouclé blazer over a refined silk sheath dress, allowing her to adapt to the theatre's atmosphere while maintaining elegance. The emerald green of the outer jacket provides a striking autumnal contrast against her warm skin tones, while the charcoal trousers offer a sophisticated alternative if the weather cools or for specific seating arrangements. Soft champagne and cream tones in the inner layers harmonize with her hair color, creating a cohesive look that respects her desire for refinement without feeling overly restrictive. The choice of heels and pearl jewelry elevates the ensemble to an appropriate ceremonial level for a theatre evening, ensuring she feels poised and confident throughout the night."}
+
+── ВІДПОВІДЬ (1539 симв., 89.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Tailored blazer",
+      "details": "notch lapels, classic fit cut, knee-length jacket body, fine worsted wool",
+      "slot": "outerwear",
+      "color_hex": "#0a5e46",
+      "worn": true
+    },
+    {
+      "name": "Silk-blend sheath dress",
+      "details": "bias cut silhouette, hemline just above the knee, smooth satin weave",
+      "slot": "dress",
+      "color_hex": "#f7eecd",
+      "worn": true
+    },
+    {
+      "name": "Tapered trousers",
+      "details": "side stripes, slim straight leg cut, ankle-length hem, heavy cotton twill",
+      "slot": "bottom",
+      "color_hex": "#3b4a50",
+      "worn": true
+    },
+    {
+      "name": "Structured blazer overlay",
+      "details": "boxy fit cut, hip-length jacket body, textured bouclé fabric",
+      "slot": "outerwear",
+      "color_hex": "#fdfbf7",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe pumps",
+      "details": "8cm heel, almond toe shape, ankle-high shaft, polished calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    },
+    {
+      "name": "Pearl drop earrings",
+      "details": "classic stud earring style, round pendant cut, cultured freshwater pearl and 18k gold plated metal",
+      "slot": "earrings",
+      "color_hex": "#e0dcc8",
+      "worn": true
+    },
+    {
+      "name": "Gold chain necklace",
+      "details": "delicate, hex #f5e6c6 for gold accents",
+      "slot": "necklace",
+      "color_hex": "#f5e6c6",
+      "worn": true
+    }
+  ]
+}
