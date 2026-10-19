@@ -1,0 +1,51 @@
+── ПРОМПТ (2458 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Oversized corduroy blazer in a deep rust hue (#C04000), structured wide lapel, mid-thigh length, cotton twill.\nRelaxed-fit chambray shirt with subtle pearl snap buttons, classic collar, knee-length hem, raw silk blend.\nHigh-waisted wide-leg trousers in washed black denim, tapered ankle opening, medium-weight rigid cotton.\nMinimalist leather loafers in chocolate brown, almond toe, rubber sole, smooth calfskin.\nDelicate gold chain necklace with a small leaf pendant, 14k gold-fill.\nThin leather wristwatch with a matte black strap and analog face.\n\nThis outfit strikes the perfect balance for an autumn date by blending neat sophistication with everyday comfort. The rust-colored blazer adds warmth against the falling leaves while the relaxed chambray shirt keeps the look approachable and breathable in daylight. Wide-leg trousers offer a modern, flowing silhouette that moves gracefully through the park without feeling restrictive. Together, these pieces respect her request for either everyday or neat formality, creating an elegant yet effortless ensemble suitable for a first meeting outdoors."}
+
+── ВІДПОВІДЬ (1252 симв., 252.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Oversized corduroy blazer",
+      "details": "deep rust hue, structured wide lapel, mid-thigh length, cotton twill",
+      "slot": "outerwear",
+      "color_hex": "#C04000",
+      "worn": true
+    },
+    {
+      "name": "Relaxed-fit chambray shirt",
+      "details": "subtle pearl snap buttons, classic collar, knee-length hem, raw silk blend",
+      "slot": "top",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "High-waisted wide-leg trousers",
+      "details": "washed black denim, tapered ankle opening, medium-weight rigid cotton",
+      "slot": "bottom",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Minimalist leather loafers",
+      "details": "almond toe, rubber sole, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#5C4033",
+      "worn": true
+    },
+    {
+      "name": "Delicate gold chain necklace with a small leaf pendant",
+      "details": "14k gold-fill",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Thin leather wristwatch",
+      "details": "matte black strap and analog face",
+      "slot": "watch",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
