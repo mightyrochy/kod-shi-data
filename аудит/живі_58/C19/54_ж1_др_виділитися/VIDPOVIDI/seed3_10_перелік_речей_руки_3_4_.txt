@@ -1,0 +1,37 @@
+── ПРОМПТ (2371 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Rich velvet midi dress, A-line cut, knee-length to mid-calf, burnt orange (#CC5500), heavy velvet.\nPointed-toe block heel pump, sleek silhouette, ankle height, metallic copper (#B87333), patent leather.\nClutch purse, rigid boxy shape, small compact size, deep emerald green (#046307), structured vegan leather.\nGold drop earrings, medium dangle length, earlobe to jawline, radiant sunshine yellow (#FDD835), polished gold-plated metal.\n\nThis outfit works perfectly for a friend's birthday celebration as you wish to stand out and appear bright; the vibrant burnt orange velvet provides warmth and texture ideal for autumn weather while the metallic copper heels add a sophisticated spark. The deep emerald clutch creates a striking complementary contrast that enhances your presence without overpowering the look, ensuring you remain the focal point of the evening. Finally, the gold earrings catch the light with every movement, reinforcing your desire to be seen as colorful and expressive in a celebratory setting."}
+
+── ВІДПОВІДЬ (824 симв., 89.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "velvet midi dress",
+      "details": "A-line cut, knee-length to mid-calf, heavy velvet fabric",
+      "slot": "dress",
+      "color_hex": "#CC5500",
+      "worn": true
+    },
+    {
+      "name": "block heel pump",
+      "details": "pointed-toe, sleek silhouette, ankle height",
+      "slot": "shoes",
+      "color_hex": "#B87333",
+      "worn": true
+    },
+    {
+      "name": "clutch purse",
+      "details": "rigid boxy shape, small compact size, structured vegan leather",
+      "slot": "bag",
+      "color_hex": "#046307",
+      "worn": true
+    },
+    {
+      "name": "drop earrings",
+      "details": "medium dangle length, earlobe to jawline, polished gold-plated metal",
+      "slot": "earrings",
+      "color_hex": "#FDD835",
+      "worn": true
+    }
+  ]
+}

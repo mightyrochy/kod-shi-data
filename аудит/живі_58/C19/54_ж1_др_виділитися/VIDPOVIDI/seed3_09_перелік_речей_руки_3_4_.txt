@@ -1,0 +1,37 @@
+── ПРОМПТ (2443 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green silk-crepe blouse, relaxed fit with a high neck, length ending at the waistline, color #0f5e4d, fabric is fluid silk crepe for a soft drape.\nTailored navy wool-blend trousers, straight-leg cut with a clean hem just below the ankle bone, color #1a2b42, fabric is structured wool blend to hold shape.\nGold-tone geometric pendant necklace in polished brass, color #f5c036, metal finish creates a warm metallic contrast.\nPointed-toe pumps with a moderate heel height, leather upper in burgundy red, color #800020, leather provides durability and a rich autumnal tone.\n\nThis outfit works because the deep emerald blouse immediately satisfies your wish to stand out as bright and expressive against the autumn backdrop, while the navy trousers provide an anchor of polish fitting the neat to formal dress code. The burgundy shoes introduce another jewel tone that complements your skin without overpowering it, creating a cohesive yet vibrant palette. Overall, the combination of fluid silk and structured wool ensures you look refined and intentional for the birthday celebration."}
+
+── ВІДПОВІДЬ (913 симв., 87.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "relaxed fit with a high neck, length ending at the waistline, fluid silk crepe for a soft drape",
+      "slot": "top",
+      "color_hex": "#0f5e4d",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "tailored straight-leg cut with a clean hem just below the ankle bone, structured wool blend to hold shape",
+      "slot": "bottom",
+      "color_hex": "#1a2b42",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "geometric pendant in polished brass metal finish",
+      "slot": "jewelry",
+      "color_hex": "#f5c036",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "pointed-toe with a moderate heel height, leather upper providing durability and a rich autumnal tone",
+      "slot": "shoes",
+      "color_hex": "#800020",
+      "worn": true
+    }
+  ]
+}
