@@ -35,12 +35,6 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: тимчасова проба М.4 — git push має бути відхилено
-        if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python3 джерела/проби/м4_ci_запис.py
-
       - name: чи змінилась лише дошка
         id: zmina
         env:
