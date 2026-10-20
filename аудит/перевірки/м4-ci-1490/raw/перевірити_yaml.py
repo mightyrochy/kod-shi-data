@@ -1,7 +1,10 @@
 import yaml,copy,re,subprocess
 from types import SimpleNamespace as NS
-base='/workspace/work/qa-m4-2010/'
-a=yaml.load(open(base+'before.yml'),Loader=yaml.BaseLoader);b=yaml.load(open(base+'after.yml'),Loader=yaml.BaseLoader)
+repo=subprocess.check_output(['git','rev-parse','--show-toplevel']).decode().strip()
+oldsha='b2272977da85a2e581b5d6d8a657012a61ba6dd0';newsha='cf3d51e1872c38fc231993b6005675abc0fc71fa'
+def source(sha): return subprocess.check_output(['git','-C',repo,'show',sha+':.github/workflows/zbirka.yml']).decode()
+before=source(oldsha);after=source(newsha)
+a=yaml.load(before,Loader=yaml.BaseLoader);b=yaml.load(after,Loader=yaml.BaseLoader)
 def clean(x):
  x=copy.deepcopy(x)
  if isinstance(x,dict):
@@ -30,8 +33,8 @@ assert len(pub['steps'])==6
 print('publish: 3 publication steps перенесено без зміни команд; охоплено job-level push-main guard')
 assert b['jobs']['zbirka']['steps'][-1]['with']['path'].splitlines()==['index.html','джерела/аудит/ДОСЯЖНІСТЬ.md']
 assert pub['steps'][2]['with']['name']==b['jobs']['zbirka']['steps'][-1]['with']['name']
-assert len(re.findall(r'python3 build_артефакт.py',open(base+'after.yml').read()))==1
-assert not re.search('м4_ci_запис|GH_TOKEN|m4-probe',open(base+'after.yml').read())
+assert len(re.findall(r'python3 build_артефакт.py',after))==1
+assert not re.search('м4_ci_запис|GH_TOKEN|m4-probe',after)
 print('збірка: один виклик; transport: index.html+reach, same-run+same-SHA; тимчасову пробу прибрано')
 for name,j in b['jobs'].items():
  checks=[s for s in j['steps'] if 'actions/checkout@' in s.get('uses','')];assert len(checks)==1
@@ -46,7 +49,6 @@ for event,ref,board,p,r,built,expected in [('pull_request','refs/pull/1490/merge
  print('publish condition:',event,ref,'board='+board,'perevirka='+p,'zbirka='+built,'→',result)
 assert not evaluate(pub['if'],'push','refs/heads/main',cancelled=True)
 print('cancelled push → publish false')
-repo='/workspace/kod-shi-data';oldsha='b2272977da85a2e581b5d6d8a657012a61ba6dd0';newsha='cf3d51e1872c38fc231993b6005675abc0fc71fa'
 for path in ('.github/workflows/rozvidka.yml','.github/workflows/zhnyvarka.yml'):
  assert subprocess.check_output(['git','-C',repo,'rev-parse',oldsha+':'+path])==subprocess.check_output(['git','-C',repo,'rev-parse',newsha+':'+path])
 print('rozvidka/zhnyvarka: точні blobs незмінні; лише workflow_dispatch поза scope')
