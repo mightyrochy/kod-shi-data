@@ -248,7 +248,6 @@ _НЕ_ФОТО = re.compile(r"\.svg(?:$|\?)|/loader|lazy\.|placeholder|no[-_]?im
                       re.I)
 
 
-_НЕ_ФОТО_ДАНІ = re.compile(r"^\s*data:|-\d{2,3}x\d{2,3}\.(?:webp|jpe?g|png)(?:$|\?)|\.gif(?:$|\?)", re.I)
 _МІНІАТЮРА = re.compile(r"-(\d{2,3})x(\d{2,3})\.(?:webp|jpe?g|png)(?:$|\?)", re.I)
 
 

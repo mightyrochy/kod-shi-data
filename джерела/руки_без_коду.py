@@ -144,7 +144,9 @@ def її_речі(речі_паспорта):
                            "in hex (one per measurement), sizes in cm"),
         _ЗП.Поле("person.intent", "what matters most to her: comfort_first (comfort and freedom of "
                                   "movement), context_optimal (fitting the place and the event), statement "
-                                  "(standing out), fashion_forward (a bold look)"),
+                                  "(standing out), fashion_forward (a bold fashion look, at least two sources of "
+                                  "interest), editorial (an editorial construction, at least one source of "
+                                  "interest); count limits do not apply to fashion_forward or editorial"),
         _ЗП.Поле("main_color", "the main color and who chose it: her (she did), code_she_kept_it (suggested "
                                "to her, she kept it), her_item_photo (the color of her item on a photo)",
                  як="build the outfit around it"),
