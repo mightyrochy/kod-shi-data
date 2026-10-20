@@ -369,6 +369,12 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: тимчасова проба М.4 — git push має бути відхилено
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 джерела/проби/м4_ci_запис.py
+
       - name: перевірений показ із перевірки
         if: needs.zminy.outputs.lyshe_doshka != 'true'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
