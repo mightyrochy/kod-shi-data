@@ -1,0 +1,33 @@
+# Gemini Code Assist на GitHub — другий рецензент PR поряд з Codex. Правила рецензії — styleguide.md.
+have_fun: false
+# Пам'ять між PR вимкнена: репозиторій відкритий, чужі коментарі не мають її навчати.
+memory_config:
+  disabled: true
+code_review:
+  disable: false
+  # Лише серйозне: HIGH і CRITICAL, до 10 зауважень на PR.
+  comment_severity_threshold: HIGH
+  max_review_comments: 10
+  pull_request_opened:
+    help: false
+    summary: false
+    code_review: true
+    # PR виконавців — чернетки, їх не рецензує: огляд один — на PR пачки.
+    include_drafts: false
+# Зібране, дані, знімки й тексти — не код.
+ignore_patterns:
+  - index.html
+  - "**/*.md"
+  - "**/*.txt"
+  - "**/*.json"
+  - "**/*.jsonl"
+  - "**/*.tsv"
+  - "**/*.csv"
+  - "**/*.gz"
+  - "**/*.xml"
+  - "**/*.pdf"
+  - "**/*.png"
+  - "**/*.jpg"
+  - "**/*.webp"
+  - "шрифти/**"
+  - "open-source-stylist/experiments/**"
