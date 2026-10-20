@@ -1,0 +1,17 @@
+zminy : усі 2 наявні steps, умови й команди збережено; лише read/no-persist і вилучення comments
+perevirka : усі 21 наявні steps, умови й команди збережено; лише read/no-persist і вилучення comments
+rozdily : усі 7 наявні steps, умови й команди збережено; лише read/no-persist і вилучення comments
+pravyla : усі 5 наявні steps, умови й команди збережено; лише read/no-persist і вилучення comments
+zbirka: 5 попередніх PR steps збережено; 1 transport upload додано; залежності й умова незмінні
+publish: 3 publication steps перенесено без зміни команд; охоплено job-level push-main guard
+збірка: один виклик; transport: index.html+reach, same-run+same-SHA; тимчасову пробу прибрано
+5 read jobs без persist; 1 write job лише publish
+publish condition: pull_request refs/pull/1490/merge board=false perevirka=success zbirka=success → False
+publish condition: push refs/heads/main board=false perevirka=success zbirka=success → True
+publish condition: push refs/heads/main board=true perevirka=skipped zbirka=success → True
+publish condition: workflow_dispatch refs/heads/main board=false perevirka=success zbirka=success → False
+publish condition: push refs/heads/other board=false perevirka=success zbirka=success → False
+publish condition: push refs/heads/main board=false perevirka=failure zbirka=skipped → False
+cancelled push → publish false
+rozvidka/zhnyvarka: точні blobs незмінні; лише workflow_dispatch поза scope
+PASS; source freeze: cf3d51e1872c38fc231993b6005675abc0fc71fa
