@@ -58,6 +58,10 @@ async function почекати(модель, вхідСимв, вихідСим
 async function обгорнути(стор){
   if (!УВІМКНЕНО) return;
   _почато = true;
+  /* CHASY_MYNULYI=<с> (наряд 4.6): час попереднього збору на «цьому телефоні» — число з виміру попереднього
+     прогону, щоб екран очікування першого ж збору стенда показав рядок «Минулого разу…» */
+  if (process.env.CHASY_MYNULYI) await стор.evaluate(с => { try { localStorage.setItem('люстерко-час-збору',
+    JSON.stringify({с, коли: Date.now()})); } catch (_) {} }, Number(process.env.CHASY_MYNULYI));
   await стор.evaluate(() => {
     const Ч = window.__ЧАСИ = {т0: Date.now(), події: [], поз: null};
     const П = Ч.події, тепер = () => Date.now();
