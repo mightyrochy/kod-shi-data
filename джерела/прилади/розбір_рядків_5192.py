@@ -82,7 +82,9 @@ import збирач_промптів as ЗП                 # noqa: E402
 # Група — поля, про які пише ОДИН вид рядка картки (склад, мірки взуття, колір…). Модель обирає
 # групи ключа, а не 46 полів поодинці: так рішення коротке, а виклик рядка все одно вужчий за річ.
 ГРУПИ = {
-    "kind": ("slot", "item_type", "set_kind", "set_parts[].slot", "set_parts[].item_type"),
+    # `listing_kind` і `audience` (#1339) — до виду: що продають і для кого, пишуть ті самі рядки, що й вид речі; рядок
+    # лише про стать чи вік обере `kind` і дасть «невідомо» решті (рішення менеджера 22.10, рядок 8860)
+    "kind": ("slot", "item_type", "set_kind", "set_parts[].slot", "set_parts[].item_type", "listing_kind", "audience"),
     "fibre": ("fabric", "material", "fabric_kind", "texture", "elastane_pct", "wool_pct"),
     "fit": ("cut", "size_fit", "elastic_waist", "belt", "veto.oversize", "veto.tight"),
     "length": ("length", "length_cm", "shaft"),
@@ -94,6 +96,8 @@ import збирач_промптів as ЗП                 # noqa: E402
     "metal": ("metal", "metal_where", "chain_cm"),
     "colour": ("color_main", "color_extra[]", "color_why"),
     "surface": ("pattern", "decor[]", "veto.stripes", "veto.big_print", "veto.print", "veto.shine"),
+    # про мову назви пише лише сам рядок назви; код мови не визначає (п.12; рішення менеджера 22.10, рядок 8860)
+    "name": ("name_language",),
 }
 _ПИШЕ_МОДЕЛЬ = [ш for ш, _, _ in КР.ПОЛЯ if ш not in КР.ВИВЕДЕНІ]
 assert sorted(ш for г in ГРУПИ.values() for ш in г) == sorted(_ПИШЕ_МОДЕЛЬ), "кожне поле — в одній групі"
@@ -445,7 +449,7 @@ def прогін(куди, ід_моделі, вибрані, рядки, пар
     finally:
         журнал.закрити()
     # Годинник прогону А (наряд 4.4): Б і А на виборі навантаження (6429, 6546) — однією лічбою стінного часу.
-    П._годинник_у_теку(куди, мірка["годинник"], {"key": (мірка.get("key", 0), len({к for к, _ in рядки})),
+    П._годинник_у_теку(куди, мірка["годинник"], {"key": (мірка.get("key", 0), len({к for к, _ in рядки.values()})),
                                                     "row": (мірка.get("row", 0), len(рядки))})
     print("тека %s · ключів %d (без груп %d) · рядків %d, у модель %d · нових викликів %d · впало %d"
           % (куди, len(ключі), sum(1 for к in ключі if not мапа.get(к)), len(вибрані), len(роботи),
