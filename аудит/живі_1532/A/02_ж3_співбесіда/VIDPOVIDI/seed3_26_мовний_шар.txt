@@ -1,0 +1,59 @@
+── ПРОМПТ (8308 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Піджак Architect темно-синій · kind code: blazer · colour code: navy · about it: text н=1
+2 — Штани з вовни ягнят темно-блакитні · kind code: trousers · colour code: light_blue · about it: text н=2
+3 — Пасок з пірʼям слива · kind code: belt · colour code: plum · about it: text н=3
+4 — Фіолетова шкіряна сумка Beat · kind code: bag_generic · colour code: purple · about it: text н=4
+5 — Туфлі-човники, ATTICO, замша, колір чорний · kind code: pumps · colour code: black · about it: text н=5
+6 — Шарф-хустка Air з мохеру · kind code: kerchief · colour code: white · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; light_blue — блакитний; navy — темно-синій; plum — сливовий; purple — фіолетовий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "The navy blazer features a classic single-button closure and structured shoulders with clean lapels, offering a timeless professional shape that complements your X figure by providing a tailored yet modern frame.",
+"2": "These light blue trousers have a wide-leg cut made from soft knit fabric, draping elegantly to elongate your silhouette and add comfort without sacrificing the polished look required for your job interview.",
+"3": "The plum-colored belt is adorned with delicate feathers along its front edge, adding a unique textural detail that introduces subtle femininity to the structured ensemble while maintaining a refined aesthetic.",
+"4": "This violet leather bag has a compact rectangular shape with gold-tone hardware and a flap closure, providing practical storage for your essentials while adding a rich color accent to the overall palette.",
+"5": "The black suede pumps feature a classic pointed-toe design with a moderate heel height, offering both elegance and comfort for walking confidently during your interview day.",
+"6": "This cream-colored knitted kerchief is crafted from soft mohair with intricate lace detailing along the edges, providing a delicate feminine touch that can be styled effortlessly around the neck or shoulders.",
+"7": "This outfit brings together the confidence of a navy blazer and the softness of light blue trousers to meet your formality requirements for the bank interview, while the plum-feather belt adds a touch of distinctive flair suitable for an autumn morning in daylight. You will feel anchored by the wide-leg silhouette that draws the eye vertically along your figure, balancing the structured top with the relaxed bottom, and the accessories complete the look with understated elegance without overpowering you.",
+"8": "Tuck the blazer front neatly to define your waistline before buttoning it, which accentuates your natural silhouette and keeps the look sharp for the interview setting.",
+"9": "Wrap the delicate cream knitted kerchief loosely around your neck or tie it softly at the shoulder to add a gentle texture that contrasts beautifully with the smooth fabrics of the suit.",
+"10": "Пасок з пірʼям слива — The plum belt is kept as the defined accent for the 'neutrals_plus_accent' scheme; it is darker than the light blue trousers and provides the necessary contrast to define the waist.",
+"11": "Фіолетова шкіряна сумка Beat — The leather bag adds texture and a deep tone that anchors the look, ensuring it feels grounded and serious enough for an executive role.",
+"12": "Піджак Architect темно-синій, Штани з вовни ягнят темно-блакитні — The remark on fit is accepted because the wide-leg cut serves your posture perfectly by allowing flow rather than restriction, which is essential for confidence during a presentation; I accept this specific structural trait despite the general caution."
+}
+
+── ВІДПОВІДЬ (2825 симв., 48.0 с, HTTP 200) ──
+```json
+{
+"1": "Темно-синій піджак Architect має класичну застібку на один ґудзик і структуровані плечі з чистими лацканами, пропонуючи позачасову професійну форму, яка доповнює твою фігуру X, надаючи індивідуальний, але сучасний каркас.",
+"2": "Ці блакитні штани мають широкий крій і виготовлені з м’якої трикотажної тканини, елегантно спадають, щоб подовжити силует і додати комфорту без шкоди для відшліфованого вигляду, необхідного на твоєму співбесіді.",
+"3": "Сливовий пасок прикрашений ніжним пір’ям вздовж переднього краю, додаючи унікальну текстурну деталь, яка вводить ледь помітну жіночність до структурованого ансамблю, зберігаючи вишуканий естетичний смак.",
+"4": "Ця фіолетова шкіряна сумка має компактну прямокутну форму з золотистими деталями та клапаном для закриття, забезпечуючи практичне місце для твоїх необхідних речей і додаючи насичений колір до загальної палітри.",
+"5": "Чорні замшеві туфлі-човники мають класичний загострений носок з помірною висотою підборів, пропонуючи елегантність і комфорт для впевненої ходьби у день співбесіди.",
+"6": "Цей кремовий в’язаний шарф-хустка виготовлений з м’якого мохеру зі складним мереживним оздобленням по краях, додаючи ніжну жіночну деталь, яку можна легко стилізувати навколо шиї або плечей.",
+"7": "Цей образ об’єднує впевненість темно-синього піджака та м’якість блакитних штанів, щоб відповідати твоїм вимогам до формальності на банківському співбесіді, а сливовий пасок з пір’ям додає унікальний вишуканий штрих, який підходить для осіннього ранку вдень. Ти відчуєш себе стійкою завдяки широкому крою штанів, що привертає увагу вертикально по твоїй фігурі, балансуючи структуровану верхню частину з розслабленим низом, а аксесуари завершують образ зі стриманою елегантністю без перевантаження.",
+"8": "Акуратно заправ піджак спереду, щоб визначити лінію талії перед тим, як його застебнути, що підкреслює твою природну фігуру і зберігає вигляд гострим для обстановки співбесіди.",
+"9": "Обережно обгорни кремовий в’язаний шарф-хустку навколо шиї або м’яко зав’яжи його на плечі, щоб додати ніжну текстуру, яка чудово контрастує з гладкими тканинами костюма.",
+"10": "Сливовий пасок з пірʼям — Пасок залишається визначеним акцентом для схеми 'нейтральні кольори плюс акцент'; він темніший за блакитні штани і забезпечує необхідний контраст, щоб окреслити талію.",
+"11": "Фіолетова шкіряна сумка Beat — Шкіряна сумка додає текстуру та глибокий тон, який закріплює образ, гарантуючи, що він здається достатньо серйозним для керівної посади.",
+"12": "Темно-синій піджак Architect і блакитні штани з вовни ягнят — Зауваження щодо посадки прийнято, оскільки широкий крій чудово служить твоїй поставі, дозволяючи рух замість обмежень, що є важливим для впевненості під час презентації; я приймаю цю конкретну структурну рису попри загальну обережність."
+}
+```

@@ -1,0 +1,30 @@
+── ПРОМПТ (2395 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Flared wool-blend trousers, tailored mid-thigh cut in a relaxed silhouette, charcoal heather (hex #3F4B5C), soft textured wool.\nOversized structured blazer with wide lapels and notched collar, boxy fit, deep forest green (hex #1E3D29), heavy twill fabric.\nSleek pointed-toe ankle boots on a block heel, straight shaft, black (hex #000000), smooth calf leather.\n\nThis ensemble strikes the perfect balance between professional authority and creative approachability for an analytics interview in the morning. The charcoal trousers provide a modern, comfortable base that avoids being overly stiff, while the structured forest green blazer introduces a layer of sophistication suitable for the \"smart\" or early \"formal\" dress codes requested. Finished with classic black leather boots, the outfit ensures she looks polished and ready to engage with data without appearing too rigid for a banking environment. The warm autumn tones and textured fabrics add depth appropriate for the season while maintaining a clean, daylight-ready aesthetic."}
+
+── ВІДПОВІДЬ (678 симв., 68.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Trousers",
+      "details": "Flared wool-blend in tailored mid-thigh cut with relaxed silhouette",
+      "slot": "bottom",
+      "color_hex": "#3F4B5C",
+      "worn": true
+    },
+    {
+      "name": "Blazer",
+      "details": "Oversized structured fit with wide lapels, notched collar, and boxy shape made of heavy twill",
+      "slot": "top",
+      "color_hex": "#1E3D29",
+      "worn": true
+    },
+    {
+      "name": "Ankle boots",
+      "details": "Sleek pointed-toe on a block heel with straight shaft made of smooth calf leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

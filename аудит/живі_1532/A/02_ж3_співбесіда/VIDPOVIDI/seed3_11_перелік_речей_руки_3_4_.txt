@@ -1,0 +1,51 @@
+── ПРОМПТ (2682 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored charcoal grey blazer, single-breasted with notch lapels and a slightly dropped shoulder for a modern silhouette, structured cotton-poplin blend with a hint of wool, color #3a3d42. Matching high-waisted wide-leg trousers, clean front creases and a relaxed but polished fit, same cotton-poplin blend, color #3a3d42. Cream silk-blend shell blouse, relaxed button-down cut with a soft drape at the collar, lightweight woven fabric, color #f5f0e6. Closed-toe leather pumps, medium heel height for walking and standing during long interviews, smooth matte finish, color #8b7363. Minimalist gold stud earrings, small studs to keep focus on facial expression, polished 14k gold-filled metal, color #d4af37. Slim black leather belt, matching the pump tone to define the waist subtly, smooth grain leather, color #2e2e2e.\n\nThis outfit works because the dark grey and cream palette strikes a professional balance suitable for an analytics role where precision and clarity are valued. The tailored blazer and trousers provide the necessary formal structure for the bank interview while the relaxed blouse adds a touch of approachability and modern comfort for an autumn morning. Every piece is designed to ensure you can sit through long discussions without adjusting, projecting confidence and competence from the moment you walk in."}
+
+── ВІДПОВІДЬ (1373 симв., 67.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "single-breasted with notch lapels and a slightly dropped shoulder, structured cotton-poplin blend with a hint of wool",
+      "slot": "outerwear",
+      "color_hex": "#3a3d42",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg with clean front creases and a relaxed but polished fit, cotton-poplin blend",
+      "slot": "bottom",
+      "color_hex": "#3a3d42",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "shell blouse, relaxed button-down cut with a soft drape at the collar, lightweight woven fabric",
+      "slot": "top",
+      "color_hex": "#f5f0e6",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "closed-toe with medium heel height for walking and standing, smooth matte finish",
+      "slot": "shoes",
+      "color_hex": "#8b7363",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "minimalist small studs to keep focus on facial expression, polished 14k gold-filled metal",
+      "slot": "earrings",
+      "color_hex": "#d4af37",
+      "worn": true
+    },
+    {
+      "name": "belt",
+      "details": "slim black leather to define the waist subtly, smooth grain leather",
+      "slot": "belt",
+      "color_hex": "#2e2e2e",
+      "worn": true
+    }
+  ]
+}

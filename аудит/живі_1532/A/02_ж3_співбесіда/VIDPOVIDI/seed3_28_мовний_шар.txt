@@ -1,0 +1,54 @@
+── ПРОМПТ (7785 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Чорний піджак by Mugler x H&M · kind code: blazer · colour code: black · about it: text н=1
+2 — Лонгслів з куліру · kind code: longsleeve · colour code: black · about it: text н=2
+3 — Штани з тенселу · kind code: trousers · colour code: khaki · about it: text н=3
+4 — LeBERDES Туфлі коричневі · kind code: dress_shoes · colour code: brown · about it: text н=4
+5 — Сумка зі шкіри Sylvie · kind code: bag_generic · colour code: camel · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; camel — кемел; khaki — хакі.
+
+ТЕКСТИ:
+{
+"1": "This black blazer features sharp shoulders, a classic lapel, and front welt pockets in smooth matte fabric. Its tailored fit exudes authority without feeling stiff—perfect for commandingly your space during interviews.",
+"2": "A relaxed-fit black long-sleeve crewneck top crafted from soft, lightweight knit that drapes gently over the hips. It adds comfort under the blazer while keeping your silhouette streamlined.",
+"3": "Flowing khaki trousers made from breathable tencel fabric with a high-rise waist and wide legs that skim rather than cling to your hips. The subtle side stripe adds modern detail without distracting from your professional edge.",
+"4": "Sophisticated brown suede pointed-toe wedges with a low wedge heel for all-day comfort. Their rich color grounds the monochrome base while adding warmth and polish appropriate for an office environment.",
+"5": "A structured cream leather crossbody bag featuring a prominent gold-tone lock clasp, a navy stripe detail, and a detachable chain strap. Its compact size keeps essentials accessible while its neutral tone elevates any outfit.",
+"6": "Your outfit for tomorrow’s bank interview combines the sharp, polished look of the Mugler x H&M blazer with the relaxed comfort of a black long-sleeve top and the elegant drape of khaki trousers. The brown suede dress shoes add a touch of warmth and sophistication that balances the structured black pieces without being too heavy for an office setting. Finally, the cream Sylvie bag introduces a soft, neutral accent that elevates your overall look while maintaining professionalism. Together, these items create a smart, understated ensemble perfect for making a confident first impression in the corporate environment.",
+"7": "Tuck the long-sleeve top neatly into the waistband of the trousers to define your silhouette and maintain a clean line throughout your day.",
+"8": "Wear the blazer over the tuck—it adds structure while allowing you to remove it if needed for comfort during longer meetings or presentations.",
+"9": "Чорний піджак by Mugler x H&M, Лонгслів з куліру, Штани з тенселу, LeBERDES Туфлі коричневі — The 'outfit_level_off_occasion' finding shows the blazer and trousers elevate the jersey hoodie to meet the 'smart' register required by the job interview, making this deliberate pairing your best choice over quieter options.",
+"10": "Лонгслів з куліру — The jersey top is below band 'item_below_band' but chosen deliberately to provide comfort and texture contrast against the formal blazer."
+}
+
+── ВІДПОВІДЬ (2640 симв., 54.6 с, HTTP 200) ──
+```json
+{
+"1": "Цей чорний піджак вирізняється гострими плечима, класичним лацканом і передніми накладними кишенями з гладкої матової тканини. Його приталений крій випромінює впевненість без відчуття скутості — ідеально для того, щоб ти почувалася авторитетно під час співбесід.",
+"2": "Чорний лонгслів вільного крою з довгими рукавами та круглим вирізом, виготовлений із м’якої легкої трикотажної тканини, яка ніжно спадає на стегна. Він додасть комфорту під піджак і водночас збереже твій силует струнким.",
+"3": "Широкі штани хакі вільного крою з дихаючої тенсельної тканини із завищеною талією, які елегантно облягають стегна. Легкий бічний шов додає сучасний акцент без відволікання від твого професійного вигляду.",
+"4": "Вишукані коричневі замшеві туфлі-човники на низькому стійкому каблуці для комфорту протягом усього дня. Їхній насичений колір підкреслює монохромний образ, додаючи тепла та витонченості, які доречні в офісному середовищі.",
+"5": "Структурована кремова шкіряна сумка-кросбоді з великим золотистим затискачем і темно-синьою смужкою. Вона має регульований ланцюжок для носіння на плечі або через тіло. Її компактний розмір дозволяє тримати необхідні речі під рукою, а нейтральний колір доповнює будь-який образ.",
+"6": "Твій образ на завтрашнє банківське співбесіду поєднує в собі елегантність чорного піджака by Mugler x H&M з комфортом лонгсліву та витонченість штанів хакі. Коричневі замшеві туфлі додають образу тепла й вишуканості, які гармонійно доповнюють структурований чорний комплект без надмірної тяжкості для офісного середовища. Насамкінець, кремова сумка Sylvie вносить м’який нейтральний акцент, який підкреслює твій загальний образ і зберігає професійність. Разом ці речі створюють розумний та стриманий ансамбль, що дозволить тобі справити сміливе перше враження у корпоративному середовищі.",
+"7": "Акуратно заправ лонгслів у штани по лінії талії, щоб підкреслити твою фігуру й зберегти чистий вигляд протягом дня.",
+"8": "Одягни піджак поверх заправленої сорочки — він додасть структури, дозволяючи тобі зняти його, якщо будеш відчувати дискомфорт під час тривалих зустрічей або презентацій.",
+"9": "Чорний піджак by Mugler x H&M, Лонгслів з куліру, Штани з тенселу, LeBERDES Туфлі коричневі — Пошук 'outfit_level_off_occasion' показує, що піджак і штани піднімають рівень худі до необхідного для співбесіди «розумного» рівня. Тому саме ця пара буде найкращим вибором серед більш стриманих варіантів.",
+"10": "Лонгслів з куліру — Трикотажна сорочка знаходиться нижче лінії 'item_below_band', але обрана навмисно, щоб забезпечити комфорт і додати текстурний контраст до формального піджака."
+}
+```
