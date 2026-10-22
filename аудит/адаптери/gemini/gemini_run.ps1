@@ -1,0 +1,592 @@
+﻿#Requires -Version 5.1
+<#
+.SYNOPSIS
+Обгортка Gemini (наряд М.2), сторона `gemini`: наряд із публічної черги -> прогін `agy` -> бандл гілки `gemini/<наряд>`.
+
+.DESCRIPTION
+Задача планувальника під користувачем Windows `gemini` (ізоляція ОС; входу в GitHub і Claude нема, ключів нема).
+Один запуск — щонайбільше один наряд:
+  1. перевірка ізоляції за `GEMINI.md` (whoami, `net session`, чужі профілі й диски, змінні з ключами);
+  2. `git fetch` без входу: `main`, `gemini/*` і позначки черги `gemini-queue/<наряд>/<модель>/<спроба>`, які ставить
+     лише диспетчер; позначка має вказувати на коміт із `main`, текст наряду — лише `аудит/наряди/<наряд>.md` з нього;
+  3. гілка `gemini/<наряд>` від свіжого `main` (чи від уже опублікованої `gemini/<наряд>` — доробка);
+  4. один прогін `agy` з межею часу; хід без звіту чи звіт, що не збігся з гілкою, — догонка тієї самої розмови;
+  5. бандл гілки й стан (лише коди й числа) у теці обміну; публікує їх окрема задача власника `gemini_publish.ps1`.
+Нічого не пушить; ізоляцію не створює й не змінює. Налаштування — `НАЛАШТУВАННЯ.md` поруч.
+#>
+[CmdletBinding()]
+param(
+    [string]$RepoDir = (Join-Path $env:USERPROFILE 'kod-shi-data'),
+    [string]$RunsDir = (Join-Path $env:USERPROFILE 'gemini-runs'),
+    [string]$OutDir = 'C:\Users\Public\gemini\out',
+    [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data',
+    [string]$ExpectedUser = 'gemini',
+    [string]$GitExe = 'git',
+    [string]$AgyExe = 'agy',
+    [ValidateSet('stream', 'print')]
+    [string]$Mode = 'stream',
+    [double]$TurnMinutes = 120,
+    [double]$TotalMinutes = 180,
+    [int]$MaxNudges = 4,
+    [int]$MarkerMaxAgeDays = 7,
+    [switch]$NoPrintTimeoutFlag
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+$script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
+$script:TaskDir = 'аудит/наряди/'
+$script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$'
+$script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
+$script:Utf8 = New-Object System.Text.UTF8Encoding($false)
+$script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
+
+# --- дрібні помічники ---------------------------------------------------------------------------------------------
+
+function Write-WrapperLog([string]$Text) {
+    $line = '{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $Text
+    [System.IO.File]::AppendAllText((Join-Path $RunsDir 'wrapper.log'), $line + "`n", $script:Utf8)
+}
+
+function Get-Sha256Hex([string]$Text) {
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try { $bytes = $sha.ComputeHash($script:Utf8.GetBytes($Text)) } finally { $sha.Dispose() }
+    -join ($bytes | ForEach-Object { $_.ToString('x2') })
+}
+
+function Write-FileAtomic([string]$Path, [string]$Text) {
+    $tmp = $Path + '.part'
+    [System.IO.File]::WriteAllText($tmp, $Text, $script:Utf8)
+    if (Test-Path -LiteralPath $Path) { Remove-Item -LiteralPath $Path -Force }
+    Move-Item -LiteralPath $tmp -Destination $Path
+}
+
+# Рядок аргументів за правилами CommandLineToArgvW: .NET Framework не має ArgumentList, а вбудований виклик
+# PowerShell 5.1 губить лапки всередині аргументів.
+function ConvertTo-ArgString([string[]]$Items) {
+    $parts = foreach ($a in $Items) {
+        if ($a -eq '') { '""'; continue }
+        if ($a -notmatch '[\s"]') { $a; continue }
+        $sb = New-Object System.Text.StringBuilder
+        [void]$sb.Append('"')
+        $bs = 0
+        foreach ($ch in $a.ToCharArray()) {
+            if ($ch -eq '\') { $bs++; continue }
+            if ($ch -eq '"') { [void]$sb.Append('\' * ($bs * 2 + 1)); [void]$sb.Append('"'); $bs = 0; continue }
+            if ($bs -gt 0) { [void]$sb.Append('\' * $bs); $bs = 0 }
+            [void]$sb.Append($ch)
+        }
+        [void]$sb.Append('\' * ($bs * 2))
+        [void]$sb.Append('"')
+        $sb.ToString()
+    }
+    $parts -join ' '
+}
+
+# JSON-рядок лише з ASCII: stdin процесу в .NET Framework кодується кодовою сторінкою консолі.
+function ConvertTo-JsonString([string]$Text) {
+    $sb = New-Object System.Text.StringBuilder
+    [void]$sb.Append('"')
+    foreach ($c in $Text.ToCharArray()) {
+        $i = [int]$c
+        if ($c -eq '"') { [void]$sb.Append('\"') }
+        elseif ($c -eq '\') { [void]$sb.Append('\\') }
+        elseif ($i -lt 0x20 -or $i -gt 0x7e) { [void]$sb.Append(('\u{0:x4}' -f $i)) }
+        else { [void]$sb.Append($c) }
+    }
+    [void]$sb.Append('"')
+    $sb.ToString()
+}
+
+function New-StartInfo([string]$Exe, [string[]]$Arguments, [string]$WorkDir) {
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $Exe
+    $psi.Arguments = ConvertTo-ArgString $Arguments
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.StandardOutputEncoding = $script:Utf8
+    $psi.StandardErrorEncoding = $script:Utf8
+    if ($WorkDir) { $psi.WorkingDirectory = $WorkDir }
+    $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'
+    $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
+    $psi
+}
+
+function Stop-Tree($Proc) {
+    if ($null -eq $Proc) { return }
+    try {
+        if (-not $Proc.HasExited) {
+            if ($script:OnWindows) { & taskkill.exe /PID $Proc.Id /T /F *> $null }
+            else { $Proc.Kill($true) }
+        }
+        [void]$Proc.WaitForExit(15000)
+    } catch { Write-WrapperLog "зупинка процесу: $($_.Exception.Message)" }
+}
+
+# Запуск із межею часу; по межі — зупинка всього дерева процесів.
+function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDir = '', [double]$TimeoutMinutes = 10) {
+    $psi = New-StartInfo $Exe $Arguments $WorkDir
+    $p = [System.Diagnostics.Process]::Start($psi)
+    $out = $p.StandardOutput.ReadToEndAsync()
+    $err = $p.StandardError.ReadToEndAsync()
+    $timedOut = -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $TimeoutMinutes * 60000))
+    if ($timedOut) { Stop-Tree $p } else { $p.WaitForExit() }
+    [pscustomobject]@{ Code = $(if ($timedOut) { -1 } else { $p.ExitCode }); TimedOut = $timedOut; Out = $out.Result; Err = $err.Result }
+}
+
+function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail) {
+    $all = @('-C', $RepoDir, '-c', "core.hooksPath=$script:NoHooks", '-c', 'credential.helper=', '-c', 'core.quotepath=false') + $GitArgs
+    $r = Invoke-Native $GitExe $all
+    if ($r.Code -ne 0 -and -not $AllowFail) { throw "git $($GitArgs -join ' ') -> $($r.Code): $($r.Err.Trim())" }
+    $r
+}
+
+function Get-RefSha([string]$Ref) {
+    $r = Invoke-Git @('rev-parse', '-q', '--verify', "$Ref^{commit}") -AllowFail
+    if ($r.Code -ne 0) { return '' }
+    $r.Out.Trim()
+}
+
+# --- ізоляція (GEMINI.md) -----------------------------------------------------------------------------------------
+
+# Порожній рядок — ізоляція на місці; інакше код перевірки, що не пройшла.
+function Test-Isolation {
+    $name = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+    if (($name -split '\\')[-1] -ne $ExpectedUser) { return 'WHOAMI' }
+    $net = Invoke-Native 'net.exe' @('session') '' 1
+    if ($net.Code -eq 0) { return 'NET_SESSION' }
+    $own = [System.IO.Path]::GetFullPath($env:USERPROFILE).TrimEnd('\')
+    $profiles = Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList' |
+        Where-Object { $_.PSChildName -like 'S-1-5-21-*' } |
+        ForEach-Object { [string](Get-ItemProperty -LiteralPath $_.PSPath).ProfileImagePath }
+    foreach ($dir in $profiles) {
+        if (-not $dir -or ($dir.TrimEnd('\') -eq $own)) { continue }
+        try { [void][System.IO.Directory]::GetFileSystemEntries($dir); return 'PROFILES' } catch { $null = $_ <# недоступний — так і треба #> }
+    }
+    $sysDrive = [System.IO.Path]::GetPathRoot($env:SystemRoot)
+    foreach ($d in [System.IO.DriveInfo]::GetDrives()) {
+        if ($d.Name -eq $sysDrive) { continue }
+        if ($d.DriveType -ne 'Fixed' -and $d.DriveType -ne 'Network') { continue }
+        try { [void][System.IO.Directory]::GetFileSystemEntries($d.RootDirectory.FullName); return 'DRIVES' } catch { $null = $_ <# недоступний — так і треба #> }
+    }
+    $secret = Get-ChildItem env: | Where-Object { $_.Name -match 'KEY|TOKEN|SECRET|PASSWORD' }
+    if ($secret) { return 'ENV' }
+    ''
+}
+
+# --- черга --------------------------------------------------------------------------------------------------------
+
+function Get-StatePath([string]$Key) { Join-Path (Join-Path $RunsDir 'state') ((Get-Sha256Hex $Key) + '.txt') }
+
+function Get-Markers {
+    $fmt = '%(refname)%09%(objectname)%09%(committerdate:unix)'
+    $r = Invoke-Git @('for-each-ref', "--format=$fmt", $script:QueuePrefix)
+    $list = foreach ($line in ($r.Out -split "`n")) {
+        if (-not $line.Trim()) { continue }
+        $f = $line.Trim() -split "`t"
+        $rest = $f[0].Substring($script:QueuePrefix.Length)
+        $parts = $rest -split '/'
+        $m = [pscustomobject]@{ Ref = $f[0]; Name = 'gemini-queue/' + $rest; Sha = $f[1]; Time = [long]$f[2]
+            Slug = ''; Model = ''; N = ''; Valid = $false }
+        if ($parts.Count -eq 3 -and $parts[0] -match $script:SlugPattern -and -not $parts[0].Contains('..') -and
+            -not $parts[0].EndsWith('.lock') -and $parts[1] -match $script:ModelPattern -and $parts[2] -match '^[1-9][0-9]{0,2}$') {
+            $m.Slug = $parts[0]; $m.Model = $parts[1]; $m.N = $parts[2]; $m.Valid = $true
+        }
+        $m
+    }
+    @($list | Sort-Object Time, Name)
+}
+
+function Get-NextMarker {
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    foreach ($m in Get-Markers) {
+        $state = Get-StatePath "$($m.Ref) $($m.Sha)"
+        if (Test-Path -LiteralPath $state) { continue }
+        if (-not $m.Valid) {
+            Write-WrapperLog "позначка $($m.Name): назва не за форматом gemini-queue/<наряд>/<модель>/<спроба> — пропущено"
+            Write-FileAtomic $state 'INVALID_NAME'
+            continue
+        }
+        if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
+            Write-WrapperLog "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
+            Write-FileAtomic $state 'STALE'
+            continue
+        }
+        return $m
+    }
+    $null
+}
+
+# --- прогін agy ---------------------------------------------------------------------------------------------------
+
+function Get-Prompt($M, [string]$TaskText) {
+    $branch = "gemini/$($M.Slug)"
+@"
+Ти — виконавець за ``AGENTS.md`` і ``аудит/ВИКОНАВЕЦЬ.md``; адаптер середовища — ``GEMINI.md``. Ізоляцію ОС уже
+перевірила обгортка. Тебе запустила обгортка М.2 без людини: питань не став, відповіді не буде.
+
+- Наряд — ``$($script:TaskDir)$($M.Slug).md`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
+- Гілку ``$branch`` уже вибрано: працюй і коміть лише в ній. Не пуш і не створюй бандла — це робить обгортка.
+  Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.
+- Кожну команду виконуй на передньому плані й чекай її завершення: фонове завдання зупиняється разом із ходом, а
+  звіт без результату — кинутий прогін.
+- Коміть після кожного завершеного кроку; звіт ролі (що зроблено, ДО -> ПІСЛЯ, вади поза мірилом) — тілом
+  останнього коміту: диспетчер відкриє PR саме з нього.
+- Останній рядок відповіді — рівно один із двох:
+  НОУТБУК ГОТОВО $branch <повний SHA голови гілки>
+  ЗАБЛОКОВАНО: <що саме й чого чекаєш> — і зроблене до того закомічене.
+
+----- НАРЯД -----
+$TaskText
+----- КІНЕЦЬ НАРЯДУ -----
+"@
+}
+
+function Get-Facts($M, [string]$Start) {
+    $branchRef = "refs/heads/gemini/$($M.Slug)"
+    $head = Get-RefSha $branchRef
+    $cur = (Invoke-Git @('symbolic-ref', '-q', 'HEAD') -AllowFail).Out.Trim()
+    $st = (Invoke-Git @('status', '--porcelain', '-z', '--untracked-files=normal')).Out
+    $dirty = @($st -split "`0" | Where-Object { $_ }).Count
+    $ahead = 0
+    if ($head) { $ahead = [int](Invoke-Git @('rev-list', '--count', "$Start..$head")).Out.Trim() }
+    [pscustomobject]@{ Head = $head; OnBranch = ($cur -eq $branchRef); Dirty = $dirty; Ahead = $ahead }
+}
+
+# Звіт агента -> DONE, BLOCKED або NONE; приймається лише те, що збіглося з гілкою.
+function Test-Report($M, [string]$Start, [string]$Response) {
+    $lines = @($Response -split "`r?`n" | Where-Object { $_.Trim() })
+    $last = ''
+    if ($lines.Count -gt 0) { $last = $lines[-1].Trim().Trim('`', '*', ' ') }
+    $f = Get-Facts $M $Start
+    $kind = 'NONE'
+    $claimed = ''
+    $done = '^НОУТБУК ГОТОВО gemini/' + [regex]::Escape($M.Slug) + ' ([0-9a-f]{40})$'
+    if ($last -match $done) { $kind = 'DONE'; $claimed = $Matches[1] }
+    elseif ($last -match '^ЗАБЛОКОВАНО:') { $kind = 'BLOCKED' }
+    # ЗАБЛОКОВАНО без комітів приймається: зробленого може не бути; ГОТОВО — лише з комітом і точним SHA.
+    $ok = $f.OnBranch -and $f.Dirty -eq 0
+    if ($kind -eq 'DONE') { $ok = $ok -and $f.Ahead -gt 0 -and ($claimed -eq $f.Head) }
+    [pscustomobject]@{ Kind = $kind; Accepted = ($kind -ne 'NONE' -and $ok); Facts = $f; Claimed = $claimed }
+}
+
+function Get-Nudge($M, $Check, [string]$Why) {
+    $branch = "gemini/$($M.Slug)"
+    $f = $Check.Facts
+    $facts = "Факти обгортки: поточна гілка — $(if ($f.OnBranch) { $branch } else { 'інша' }); голова $branch — " +
+        "$(if ($f.Head) { $f.Head } else { 'нема' }); нових комітів — $($f.Ahead); незакомічених файлів — $($f.Dirty)."
+    $head = switch ($Why) {
+        'mismatch' { 'Звіт не збігся з гілкою.' }
+        'timeout' { 'Хід перевищив межу часу й зупинений обгорткою.' }
+        'eof' { 'Процес agy перервався; це та сама розмова.' }
+        default { 'Хід закінчився без звіту.' }
+    }
+@"
+$head $facts
+Якщо запускав фонове завдання — воно могло зупинитись: перевір, що зроблено, доведи роботу на передньому плані,
+закоміть у $branch. Останній рядок — як у наряді: ``НОУТБУК ГОТОВО $branch <повний SHA>`` або ``ЗАБЛОКОВАНО: …``.
+"@
+}
+
+function Get-ErrorCode([string]$Text) {
+    if ($Text -match 'invalid model selection|not recognized as a known model') { return 'MODEL_INVALID' }
+    if ($Text -match '429|RESOURCE_EXHAUSTED|[Qq]uota') { return 'QUOTA' }
+    if ($Text -match 'authentication required') { return 'AUTH' }
+    'AGY_ERROR'
+}
+
+function Get-AgyArgs($M, [string]$Conversation, [string[]]$Head) {
+    $a = $Head + @('--output-format', $(if ($Mode -eq 'stream') { 'stream-json' } else { 'json' }),
+        '--model', $M.Model, '--dangerously-skip-permissions')
+    if ($Mode -eq 'stream') { $a = @('--input-format', 'stream-json') + $a }
+    if (-not $NoPrintTimeoutFlag) { $a += @('--print-timeout', ('{0}m' -f [int][Math]::Ceiling($TurnMinutes))) }
+    if ($Conversation) { $a += @('--conversation', $Conversation) }
+    $a
+}
+
+# Один хід у режимі stream: подія result, eof (процес закінчився) або timeout.
+function Wait-StreamResult($Run, [datetime]$Deadline) {
+    while ($true) {
+        if ($null -eq $Run.Pending) { $Run.Pending = $Run.Proc.StandardOutput.ReadLineAsync() }
+        $left = ($Deadline - (Get-Date)).TotalMilliseconds
+        if ($left -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
+        if (-not $Run.Pending.Wait([int][Math]::Min($left, 60000))) { continue }
+        $line = $Run.Pending.Result
+        $Run.Pending = $null
+        if ($null -eq $line) { return [pscustomobject]@{ Kind = 'eof'; Result = $null } }
+        [System.IO.File]::AppendAllText($Run.Log, $line + "`n", $script:Utf8)
+        try { $ev = $line | ConvertFrom-Json } catch { continue }
+        if (-not $ev.PSObject.Properties['event']) { continue }
+        if ($ev.event -eq 'init' -and $ev.PSObject.Properties['conversation_id']) { $Run.Conversation = [string]$ev.conversation_id }
+        if ($ev.event -eq 'result') {
+            if ($ev.result.PSObject.Properties['conversation_id'] -and $ev.result.conversation_id) {
+                $Run.Conversation = [string]$ev.result.conversation_id
+            }
+            return [pscustomobject]@{ Kind = 'result'; Result = $ev.result }
+        }
+    }
+}
+
+function Start-StreamRun($M, $Run) {
+    $psi = New-StartInfo $script:Agy (Get-AgyArgs $M $Run.Conversation @()) $RepoDir
+    $psi.RedirectStandardInput = $true
+    $Run.Proc = [System.Diagnostics.Process]::Start($psi)
+    $Run.Stdin = New-Object System.IO.StreamWriter($Run.Proc.StandardInput.BaseStream, $script:Utf8)
+    $Run.Stderr = $Run.Proc.StandardError.ReadToEndAsync()
+    $Run.Pending = $null
+}
+
+function Close-StreamRun($Run) {
+    if ($null -eq $Run.Proc) { return }
+    # Дерево — разом із фоновими завданнями агента: інакше вони тримають файли клону до наступного прогону.
+    Stop-Tree $Run.Proc
+    try { [System.IO.File]::AppendAllText($Run.ErrLog, $Run.Stderr.Result, $script:Utf8) } catch { Write-WrapperLog "stderr agy: $($_.Exception.Message)" }
+    $Run.Proc = $null
+}
+
+function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
+    if ($Mode -eq 'stream') {
+        if ($null -eq $Run.Proc) { Start-StreamRun $M $Run }
+        try {
+            $Run.Stdin.Write('{"event":"user","message":{"content":' + (ConvertTo-JsonString $Text) + '}}' + "`n")
+            $Run.Stdin.Flush()
+        } catch { return [pscustomobject]@{ Kind = 'eof'; Result = $null } }
+        $r = Wait-StreamResult $Run $Deadline
+        if ($r.Kind -ne 'result') { Close-StreamRun $Run }
+        return $r
+    }
+    # Режим print: кожен хід — окремий процес; текст ходу — у файлі, аргумент без лапок і метасимволів cmd.
+    $Run.Turn++
+    $file = Join-Path $Run.Dir ('turn{0}.md' -f $Run.Turn)
+    [System.IO.File]::WriteAllText($file, $Text, $script:Utf8)
+    $short = "Прочитай файл $file і виконай його повністю"
+    $minutes = ($Deadline - (Get-Date)).TotalMinutes
+    if ($minutes -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
+    # Запас 2 хв: agy має встигнути сам віддати конверт із conversation_id по своїй --print-timeout.
+    $r = Invoke-Native $script:Agy (Get-AgyArgs $M $Run.Conversation @('-p', $short)) $RepoDir ($minutes + 2)
+    [System.IO.File]::AppendAllText($Run.Log, $r.Out + "`n", $script:Utf8)
+    [System.IO.File]::AppendAllText($Run.ErrLog, $r.Err, $script:Utf8)
+    if ($r.TimedOut) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
+    $json = @($r.Out -split "`n" | Where-Object { $_.Trim().StartsWith('{') })
+    if ($json.Count -eq 0) { return [pscustomobject]@{ Kind = 'eof'; Result = $null } }
+    try { $res = $json[-1] | ConvertFrom-Json } catch { return [pscustomobject]@{ Kind = 'eof'; Result = $null } }
+    if ($res.PSObject.Properties['conversation_id'] -and $res.conversation_id) { $Run.Conversation = [string]$res.conversation_id }
+    [pscustomobject]@{ Kind = 'result'; Result = $res }
+}
+
+# Прогін до прийнятого звіту, межі часу чи межі догонок. Повертає код, вид звіту й число ходів.
+function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir) {
+    $run = [pscustomobject]@{ Proc = $null; Stdin = $null; Stderr = $null; Pending = $null; Conversation = ''
+        Dir = $Dir; Log = (Join-Path $Dir 'agy.jsonl'); ErrLog = (Join-Path $Dir 'agy.stderr.txt'); Turn = 0
+        Responses = New-Object System.Collections.Generic.List[string] }
+    $deadline = (Get-Date).AddMinutes($TotalMinutes)
+    $text = $Prompt
+    $turns = 0
+    $nudges = 0
+    $code = ''
+    $report = 'NONE'
+    try {
+        while ($true) {
+            $turnDeadline = (Get-Date).AddMinutes($TurnMinutes)
+            if ($turnDeadline -gt $deadline) { $turnDeadline = $deadline }
+            $turns++
+            $r = Invoke-Turn $M $run $text $turnDeadline
+            $why = $r.Kind
+            if ($r.Kind -eq 'result') {
+                $status = [string]$r.Result.status
+                $resp = ''
+                if ($r.Result.PSObject.Properties['response']) { $resp = [string]$r.Result.response }
+                $run.Responses.Add($resp)
+                if ($status -in @('ERROR', 'INVALID', 'CANCELED')) {
+                    $err = ''
+                    if ($r.Result.PSObject.Properties['error']) { $err = [string]$r.Result.error }
+                    $code = Get-ErrorCode $err
+                    Write-WrapperLog "agy: статус $status ($code)"
+                    break
+                }
+                $check = Test-Report $M $Start $resp
+                if ($check.Accepted) { $code = $check.Kind; $report = $check.Kind; break }
+                $why = $(if ($check.Kind -ne 'NONE') { 'mismatch' } else { 'none' })
+            }
+            # Без id розмови догонка пішла б у нову розмову без наряду.
+            if ($r.Kind -ne 'result' -and -not $run.Conversation) {
+                $code = $(if ($r.Kind -eq 'timeout') { 'TIMEOUT' } else { 'AGY_ERROR' })
+                Write-WrapperLog "agy: $($r.Kind) без id розмови — догонки нема"
+                break
+            }
+            if ((Get-Date) -ge $deadline) { $code = 'TIMEOUT'; break }
+            if ($nudges -ge $MaxNudges) { $code = 'NO_REPORT'; break }
+            $nudges++
+            $text = Get-Nudge $M (Test-Report $M $Start '') $why
+            Write-WrapperLog "догонка $nudges ($why)"
+        }
+    } finally {
+        Close-StreamRun $run
+    }
+    $tail = (($run.Responses -join "`n") -split "`r?`n" | Select-Object -Last 60) -join "`n"
+    [pscustomobject]@{ Code = $code; Report = $report; Turns = $turns; Tail = $tail }
+}
+
+# Назви моделей з `agy models` (лише назви за шаблоном): диспетчер обере робочу без руки власника.
+function Get-AgyModels {
+    $r = Invoke-Native $script:Agy @('models') $RepoDir 2
+    $names = foreach ($line in ($r.Out -split "`n")) {
+        $w = ($line.Trim() -split '\s+')[0]
+        if ($w -cmatch $script:ModelPattern) { $w }
+    }
+    @($names | Select-Object -Unique -First 20)
+}
+
+# --- один наряд ---------------------------------------------------------------------------------------------------
+
+function Reset-Clone {
+    foreach ($op in @('merge', 'rebase', 'cherry-pick', 'revert')) { [void](Invoke-Git @($op, '--abort') -AllowFail) }
+    $lock = Join-Path $RepoDir '.git\index.lock'
+    if (Test-Path -LiteralPath $lock) { Remove-Item -LiteralPath $lock -Force }
+    [void](Invoke-Git @('reset', '-q', '--hard'))
+    [void](Invoke-Git @('clean', '-q', '-ffd'))
+}
+
+# Кінець прогону: факти гілки, бандл (коли є нові коміти), стан у теці обміну. Спільне для звичайного кінця й
+# для прогону, перерваного вимкненням чи сном ноутбука (тоді стан — `STARTED` із JSON).
+function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$T0) {
+    try {
+        if ($Status.start) {
+            $slugObj = [pscustomobject]@{ Slug = $Status.slug }
+            $f = Get-Facts $slugObj $Status.start
+            $Status.head = $f.Head
+            $Status.ahead = $f.Ahead
+            if ($f.Ahead -gt 0) {
+                $bundle = Join-Path $OutDir ($Status.id + '.bundle')
+                $exclude = @('^refs/remotes/origin/main', "^$($Status.start)")
+                [void](Invoke-Git (@('bundle', 'create', '-q', ($bundle + '.part'), "refs/heads/gemini/$($Status.slug)") + $exclude))
+                Move-Item -LiteralPath ($bundle + '.part') -Destination $bundle -Force
+                $Status.bundle = $Status.id + '.bundle'
+            }
+        }
+    } catch {
+        Write-WrapperLog "бандл: $($_.Exception.Message)"
+        if ($Status.code -in @('DONE', 'BLOCKED', '')) { $Status.code = 'CRASH' }
+    }
+    if ($T0 -ne [datetime]::MinValue) { $Status.minutes = [int][Math]::Round(((Get-Date) - $T0).TotalMinutes) }
+    if ($Tail) { [System.IO.File]::WriteAllText((Join-Path $OutDir ($Status.id + '.tail.txt')), $Tail, $script:Utf8) }
+    Write-FileAtomic (Join-Path $OutDir ($Status.id + '.json')) ($Status | ConvertTo-Json -Compress)
+    Write-FileAtomic $StatePath "DONE $($Status.id) $($Status.code)"
+    Write-WrapperLog "наряд $($Status.slug) [$($Status.id)]: $($Status.code), ходів $($Status.turns), комітів $($Status.ahead)"
+}
+
+function Resume-Interrupted {
+    foreach ($sf in @(Get-ChildItem -LiteralPath (Join-Path $RunsDir 'state') -Filter '*.txt' -File)) {
+        $text = [System.IO.File]::ReadAllText($sf.FullName, $script:Utf8)
+        if (-not $text.StartsWith('STARTED {')) { continue }
+        $j = $text.Substring(8) | ConvertFrom-Json
+        $status = [ordered]@{}
+        foreach ($p in $j.PSObject.Properties) { $status[$p.Name] = $p.Value }
+        $status.code = 'INTERRUPTED'
+        Write-WrapperLog "прогін $($status.id) перервано — закриваю"
+        Complete-Status $status $sf.FullName '' ([datetime]::MinValue)
+    }
+}
+
+function Invoke-Task($M) {
+    $key = "$($M.Ref) $($M.Sha)"
+    $id = '{0:yyyyMMdd-HHmmss}-{1}' -f (Get-Date), (Get-Sha256Hex $key).Substring(0, 12)
+    $statePath = Get-StatePath $key
+    $status = [ordered]@{ v = 1; id = $id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha
+        start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = '' }
+    Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
+    $dir = Join-Path $RunsDir $id
+    [void](New-Item -ItemType Directory -Force -Path $dir)
+    $t0 = Get-Date
+    $tail = ''
+    Write-WrapperLog "наряд $($M.Name) $($M.Sha) -> $id"
+    try {
+        $main = Get-RefSha 'refs/remotes/origin/main'
+        $anc = Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail
+        $taskPath = $script:TaskDir + $M.Slug + '.md'
+        if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
+        if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
+        $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
+        if ($taskText.Length -gt 30000) { $status.code = 'TASK_TOO_LONG'; return }
+        $start = Get-RefSha "refs/remotes/origin/gemini/$($M.Slug)"
+        if (-not $start) { $start = $main }
+        Reset-Clone
+        [void](Invoke-Git @('checkout', '-q', '-f', '-B', "gemini/$($M.Slug)", $start))
+        $status.start = $start
+        # Стан із початком гілки: перерваний прогін наступний запуск закриє й забандлить (Resume-Interrupted).
+        Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
+        $prompt = Get-Prompt $M $taskText
+        [System.IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
+        $res = Invoke-Agent $M $start $prompt $dir
+        $tail = $res.Tail
+        $status.code = $res.Code
+        $status.report = $res.Report
+        $status.turns = $res.Turns
+        if ($res.Code -eq 'MODEL_INVALID') { $status.models = @(Get-AgyModels) }
+    } catch {
+        $status.code = 'CRASH'
+        Write-WrapperLog "збій: $($_.Exception.Message)"
+    } finally {
+        Complete-Status $status $statePath $tail $t0
+    }
+}
+
+function Write-IsolationStatus([string]$Check) {
+    $key = 'isolation ' + $Check + ' ' + (Get-Date -Format 'yyyyMMdd')
+    $state = Get-StatePath $key
+    if (Test-Path -LiteralPath $state) { return }
+    $id = '{0:yyyyMMdd-HHmmss}-{1}' -f (Get-Date), (Get-Sha256Hex $key).Substring(0, 12)
+    $status = [ordered]@{ v = 1; id = $id; code = 'ISOLATION'; check = $Check }
+    Write-FileAtomic (Join-Path $OutDir ($id + '.json')) ($status | ConvertTo-Json -Compress)
+    Write-FileAtomic $state "DONE $id ISOLATION"
+}
+
+# Шлях до виконуваного: .NET із UseShellExecute=false дописує лише .exe, а CLI з npm — це .cmd.
+function Resolve-Exe([string]$Name) {
+    if (Test-Path -LiteralPath $Name -PathType Leaf) { return $Name }
+    $cmds = @(Get-Command $Name -All -CommandType Application -ErrorAction SilentlyContinue)
+    foreach ($ext in @('\.exe$', '\.cmd$', '')) {
+        $hit = @($cmds | Where-Object { $_.Source -match $ext })
+        if ($hit.Count -gt 0) { return $hit[0].Source }
+    }
+    throw "$Name не знайдено в PATH"
+}
+
+function Main {
+    foreach ($d in @($RunsDir, (Join-Path $RunsDir 'state'), $OutDir)) { [void](New-Item -ItemType Directory -Force -Path $d) }
+    $script:NoHooks = Join-Path ([System.IO.Path]::GetTempPath()) ('no-hooks-' + [guid]::NewGuid().ToString('N'))
+    $lockFile = $null
+    try { $lockFile = [System.IO.File]::Open((Join-Path $RunsDir 'lock'), 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch { return 0 }
+    try {
+        $iso = Test-Isolation
+        $hb = [ordered]@{ time = (Get-Date).ToString('s'); isolation = $(if ($iso) { $iso } else { 'OK' }) }
+        Write-FileAtomic (Join-Path $OutDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress)
+        if ($iso) { Write-WrapperLog "ізоляція: $iso — прогонів нема"; Write-IsolationStatus $iso; return 0 }
+        $origin = (Invoke-Git @('remote', 'get-url', 'origin')).Out.Trim()
+        if (($origin.TrimEnd('/') -replace '\.git$', '') -ne ($RepoUrl.TrimEnd('/') -replace '\.git$', '')) {
+            Write-WrapperLog "origin клону ($origin) не $RepoUrl — прогонів нема"
+            return 1
+        }
+        [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
+                '+refs/heads/main:refs/remotes/origin/main',
+                '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
+                '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+        $m = Get-NextMarker
+        Resume-Interrupted
+        if ($null -eq $m) { return 0 }
+        $script:Agy = Resolve-Exe $AgyExe
+        Invoke-Task $m
+        0
+    } catch {
+        Write-WrapperLog "збій обгортки: $($_.Exception.Message)"
+        1
+    } finally {
+        $lockFile.Dispose()
+    }
+}
+
+if ($MyInvocation.InvocationName -ne '.') { exit (Main) }
