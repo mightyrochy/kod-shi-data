@@ -1,0 +1,55 @@
+── ПРОМПТ (8128 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Боді Leo, Grey · kind code: bodysuit · colour code: grey · about it: text н=1
+2 — Голубі джинси straight fit на високій посадці · kind code: jeans · colour code: silvery · about it: text н=2
+3 — Жіночі шльопанці шкіряні коричневі · kind code: sandals · colour code: brown · about it: text н=3
+4 — Пояс до піджака світло-сірий · kind code: blazer · colour code: grey · about it: text н=4
+5 — Круглі сережки-цвяшки із золота · kind code: jewelry_generic · colour code: golden · about it: text н=5
+6 — Сумка жіноча Medium Tote · kind code: tote · colour code: beige · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; golden — золотий; grey — сірий; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This is a long-sleeved grey bodysuit with an all-over animal print, featuring a soft, semi-transparent fabric that drapes comfortably over your frame. The neckline sits gently at the base of your throat, creating a modest yet stylish silhouette perfect for layering or wearing on its own.",
+"2": "These high-waisted jeans come in a silvery wash with a straight-leg cut that flows smoothly from hip to ankle, offering both structure and comfort. Their clean lines complement your figure while maintaining a modern, office-ready aesthetic.",
+"3": "Your brown leather sandals feature a sleek T-strap design with a metallic buckle detail at the toe, adding a touch of sophistication to your ensemble. The flat sole ensures comfort throughout your day, making them ideal for walking across an office floor or stepping out for a meeting.",
+"4": "This light-grey belt wraps elegantly around your waist, cinching your outfit with subtle definition. Its understated tone blends seamlessly with the rest of your ensemble, enhancing the overall structure without overpowering other elements.",
+"5": "These round golden sphere earrings bring a delicate shimmer to your look, catching the light softly as you move. Their minimalist design complements your outfit perfectly, adding a touch of elegance without overwhelming the simplicity of your attire.",
+"6": "Your beige tote bag with orange handles offers practicality and style, its structured shape providing ample space for essentials while maintaining a chic profile. The contrasting orange straps add a pop of color that ties subtly into the warmth of your brown sandals.",
+"7": "You are wearing a long-sleeved grey bodysuit with an animal print, paired with high-waisted silvery jeans that fit straight from the hip to the ankle. A light-grey belt cinches your waist over the top of your blazer-style suit jacket, while golden sphere earrings rest at your ears and a beige tote with orange handles sits beside you on the floor. Your feet are in brown leather sandals with a metal buckle detail. This outfit keeps your office look polished yet grounded, letting the muted palette speak for itself as you move through the morning commute; even if it feels different from what you usually wear to work, it stands up well to a rainy day and gives your figure a clean vertical line that draws the eye smoothly from head to toe.",
+"8": "Tuck the bodysuit in or let it sit naturally under your blazer to maintain a sleek silhouette.",
+"9": "Keep your hair pulled back or styled away from your face to highlight the neckline of the bodysuit and the belt detail.",
+"10": "Carry the tote by one handle or wear it across your shoulder for an effortless office-appropriate look."
+}
+
+── ВІДПОВІДЬ (2592 симв., 40.1 с, HTTP 200) ──
+```json
+{
+  "1": "Це боді з довгими рукавами сірого кольору, вкрите принтом у вигляді тварин. Воно виготовлене з м’якої напівпрозорої тканини, яка зручно облягає фігуру. Горловина розташована біля основи шиї, створюючи скромний і стильний силует, який чудово підходить для носіння як самостійно, так і в поєднанні з іншими речами.",
+  "2": "Ці джинси на високій талії мають сріблястий колір і прямий крій від стегна до щиколотки. Вони забезпечують комфорт і підкреслюють твою фігуру, зберігаючи сучасний офісний вигляд.",
+  "3": "Твої коричневі шкіряні сандалії мають елегантну конструкцію з перемичкою на носку та металевим пряжкою. Вони додають до образу трохи вишуканості. Плоска підошва забезпечує комфорт протягом усього дня, що робить їх ідеальними для прогулянок по офісу або зустрічей.",
+  "4": "Цей світло-сірий пояс елегантно обгортається навколо твоєї талії, підкреслюючи твій образ. Його стриманий тон гармонійно доповнює весь ансамбль, покращуючи загальну структуру без перевантаження інших деталей.",
+  "5": "Ці круглі золоті сережки-цвяшки додають твоєму образу ніжне сяйво, м’яко відбиваючи світло під час руху. Їхній мінімалістичний дизайн ідеально доповнює твій наряд, надаючи йому елегантності без надмірності.",
+  "6": "Твоя бежева сумка-тоут з помаранчевими ручками пропонує практичність та стиль. Її структурована форма забезпечує достатньо місця для необхідних речей, зберігаючи при цьому вишуканий профіль. Контрастні помаранчеві ручки додають яскравий акцент, який гармонійно перегукується з теплом твоїх коричневих сандалій.",
+  "7": "Ти одягнена в сіре боді з довгими рукавами та принтом у вигляді тварин. На тобі високі сріблясті джинси прямого крою, а світло-сірий пояс підкреслює твою талію поверх жакета-піджака. Золоті сережки-цвяшки прикрашають твої вуха, а бежева сумка з помаранчевими ручками лежить поруч на підлозі. Твої ноги взуті в коричневі шкіряні сандалії з металевою пряжкою. Цей образ зберігає офіційний вигляд у стриманих тонах, дозволяючи приглушеній палітрі говорити сама за себе, поки ти рухаєшся під час ранкової поїздки на роботу; навіть якщо він відрізняється від того, що ти зазвичай носиш до роботи, він добре тримає форму у дощовий день і створює чисту вертикальну лінію, яка привертає увагу від голови до ніг.",
+  "8": "Заправ боді всередину або дай йому вільно лежати під жакетом, щоб зберегти елегантний силует." ,
+  "9": "Збери волосся назад або зачеши його так, щоб воно не падало на обличчя. Це допоможе виділити виріз боді та деталь пояса.",
+  "10": "Носи сумку в одній руці або через плече для невимушеного офісного образу."
+}
+```

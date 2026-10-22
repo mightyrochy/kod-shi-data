@@ -1,0 +1,56 @@
+── ПРОМПТ (8233 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Екошуба жіноча casual з поясом, англійський комір, бежевий, чорний Bella Bicchi (бежевий, 52) · kind code: outerwear · colour code: beige · about it: text н=1
+2 — Сукня міді зі спідницею напівкльош з коротким рукавом · kind code: dress_generic · colour code: grey · about it: text н=2
+3 — Сумка жіноча, ATTICO, екошкіра, колір білий · kind code: bag_generic · colour code: white · about it: text н=3
+4 — Шарф з м'якої вовни ягня молочний · kind code: scarf_generic · colour code: white · about it: text н=4
+5 — Броги шкіряні з металевою фурнітурою (Other Brand) · kind code: shoes · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; grey — сірий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "The long beige fur coat features a classic wrap silhouette with a matching belt to define your waist. Its soft, plush texture and neutral color provide instant warmth and a sense of effortless elegance perfect for an office setting.",
+"2": "This floral midi dress showcases a white fabric printed with delicate black botanical patterns. The short sleeves and fitted waist create a flattering silhouette that balances the volume of the coat underneath, keeping you looking sharp yet stylish during your workday.",
+"3": "A structured white bag from ATTICO made of smooth faux leather adds a clean, contemporary touch to the ensemble. Its simple shape and bright color make it an ideal accessory for carrying essentials while maintaining a polished look in the office.",
+"4": "This soft cream wool scarf is lightweight and warm, draping elegantly around your shoulders or neck. Its neutral tone complements the beige coat seamlessly, offering an extra layer of coziness without disrupting the outfit’s streamlined aesthetic.",
+"5": "These black platform loafers feature a chunky sole and a shiny metallic 'H' buckle detail that adds subtle sophistication. The bold contrast between the dark shoes and your light-colored garments grounds the outfit and keeps it feeling modern and confident.",
+"6": "The long beige fur coat offers warmth and a luxurious feel that suits an autumn morning in the city; its clean lines elongate your frame and draw the eye upward to your face. The floral midi dress brings a light, feminine pattern that breaks up the heavy texture of the coat while keeping the outfit fresh and appropriate for work. The white bag acts as a crisp contrast to the darker tones of your shoes and adds a sleek, modern edge to the softer textures around it. Finally, the cream wool scarf adds another layer of comfort without adding bulk, perfect for those chilly office days.",
+"7": "Tuck the floral dress slightly into itself or wear it untucked to maintain a relaxed yet intentional look that suits the office environment.",
+"8": "Wear the fur coat open over the dress to highlight the belt at your waist, emphasizing your defined figure while keeping the silhouette balanced and elongated.",
+"9": "Wrap the wool scarf loosely around your neck or drape it casually over your shoulders for added warmth that can be easily adjusted as the day progresses.",
+"10": "Шарф з м'якої вовни ягня молочний — The contrast between your pale skin and the white scarf is an asset here; it frames your face in daylight and breaks the heaviness of the wet coat.",
+"11": "Сумка жіноча, ATTICO, екошкіра, колір білий — I removed the brown suede bag from this outfit because it is a single-use item that creates 'kind_twice' conflicts in other sets; the white faux-leather bag fits the rock register better here."
+}
+
+── ВІДПОВІДЬ (2672 симв., 33.9 с, HTTP 200) ──
+```json
+{
+"1": "Довга бежева шуба має класичний оверсайз силует з поясом, який підкреслює твою талію. Її м'яка, пухнаста текстура і нейтральний колір миттєво зігрівають тебе і дарують відчуття невимушеної елегантності — ідеально для офісу.",
+"2": "Ця сукня-міді з квітковим принтом має біле полотно, на якому зображені ніжні чорні рослинні візерунки. Короткі рукави та приталений силует підкреслюють твою фігуру і гармонійно поєднуються з об'ємною шубою зверху, зберігаючи твій образ стильним і доречним на роботі.",
+"3": "Структурована біла сумка від ATTICO зі штучної шкіри додає сучасності цьому ансамблю. Її проста форма та яскравий колір роблять її чудовим аксесуаром для носіння необхідних речей, зберігаючи при цьому вишуканий офісний стиль.",
+"4": "Цей м'який молочний вовняний шарф легкий і теплий. Він елегантно спадає з твоїх плечей або обвивається навколо шиї. Його нейтральний відтінок гармонійно доповнює бежеву шубу, пропонуючи додатковий шар затишку без порушення лаконічного вигляду вбрання.",
+"5": "Ці чорні лофери на платформі мають масивну підошву та блискучу металеву пряжку у формі літери 'H', що додає витонченості. Сміливий контраст між темним взуттям і світлим одягом підкреслює твій образ, роблячи його сучасним і впевненим.",
+"6": "Довга бежева шуба дарує тепло та розкішний вигляд, який пасує до осіннього ранку у місті. Її чіткі лінії подовжують твою фігуру і привертають увагу до обличчя. Квіткова сукня-міді додає легкий жіночний візерунок, який розбавляє важку текстуру шуби та підтримує свіжість образу на роботі. Біла сумка створює контраст з темнішими тонами взуття і надає м'яким фактурам навколо неї сучасний вигляд. Нарешті, молочний вовняний шарф додає ще один шар комфорту без зайвого об’єму — ідеально для прохолодних офісних днів.",
+"7": "Злегка заправ сукню-міді в штани або носи її навипуск, щоб зберегти невимушений, але водночас цілеспрямований вигляд, який підходить до офісного середовища.",
+"8": "Носи шубу відкритою поверх сукні, щоб підкреслити пояс у твоїй талії. Це підкреслює твою фігуру і зберігає збалансований силует.",
+"9": "Недбало обмотай вовняний шарф навколо шиї або розслаблено накинь його на плечі для додаткового тепла, яке можна легко відрегулювати протягом дня.",
+"10": "Шарф з м'якої вовни ягня молочний — Контраст між твоєю світлою шкірою та білим шарфом тут є перевагою; він обрамлює твоє обличчя вдень і розбавляє важкість мокрої шуби.",
+"11": "Сумка жіноча, ATTICO, екошкіра, колір білий — Я прибрала коричневу замшеву сумку з цього образу, оскільки вона є одноразовим предметом і створює конфлікти 'kind_twice' в інших наборах; біла сумка зі штучної шкіри краще підходить до рок-регістру тут."
+}
+```
