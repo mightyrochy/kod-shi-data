@@ -1,0 +1,44 @@
+── ПРОМПТ (2512 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wool blend coat, tailored A-line silhouette, knee-length cut, charcoal grey with hex code #36454F, heavy weight fabric.\nRibbed knit turtleneck sweater, mock-neck style, hip-length body, cream white with hex code #FFFDD0, fine gauge merino wool.\nWide-leg tailored trousers, straight leg cut, full-length hem, midnight blue with hex code #191970, stretch cotton twill.\nMinimalist leather ankle boots, square toe design, mid-calf height, black with hex code #000000, smooth calfskin.\nMatte gold stud earrings and a sleek watch with a dark strap, small geometric shapes, polished brass and stainless steel.\n\nThis outfit prioritizes warmth and practicality for walking in -10°C snowy conditions while adhering strictly to the \"neat\" work dress code. The charcoal coat and dark trousers create a professional, sophisticated silhouette that remains composed against the white backdrop of winter snowfall. Textured fabrics like wool and thick cotton ensure comfort during the commute without appearing bulky or sloppy. It successfully balances the need for heavy insulation with the refined aesthetic expected in an office environment on an autumn day."}
+
+── ВІДПОВІДЬ (1081 симв., 68.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Structured wool blend coat",
+      "details": "tailored A-line silhouette, knee-length cut, heavy weight fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Ribbed knit turtleneck sweater",
+      "details": "mock-neck style, hip-length body, fine gauge merino wool",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg tailored trousers",
+      "details": "straight leg cut, full-length hem, stretch cotton twill",
+      "slot": "bottom",
+      "color_hex": "#191970",
+      "worn": true
+    },
+    {
+      "name": "Minimalist leather ankle boots",
+      "details": "square toe design, mid-calf height, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Matte gold stud earrings",
+      "details": "small geometric shapes, polished brass and stainless steel",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
