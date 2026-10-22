@@ -30,7 +30,8 @@ remain unresolved. The project does not claim an automated end-to-end pipeline.
 
 ## Where to start
 
-- `CLAUDE.md` — project instructions and SOP
+- `AGENTS.md` — правила ролі для всіх моделей; `CLAUDE.md` — вхід Claude
+- `КОНТЕКСТ.md` — предметна довідка, перенесена з колишнього SOP
 - `design/SYSTEM_DESIGN.md` — canonical architecture (V1/V2/V3)
 - `METHODOLOGY.md` — how knowledge is produced and changes accepted
 - `BUILD_PLAN.md` — assembly plan: stages 0–7, contracts, acceptance criteria
