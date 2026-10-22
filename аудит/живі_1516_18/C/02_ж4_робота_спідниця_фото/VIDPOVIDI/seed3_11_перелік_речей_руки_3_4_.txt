@@ -1,0 +1,49 @@
+── ПРОМПТ (2411 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "own": "<id from her_items or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description", "\"her_items\" — her own items; an item of the description that is one of them gets its id in \"own\""]}, "description": "A tailored wool-blend skirt in charcoal grey (#2F3136) with a knee-length cut and an A-line silhouette.\nA structured cotton-linen blend blazer in forest green (#0f4d39) featuring notch lapels and single-button closure.\nA fine-knit turtleneck top in cream (#f5f1e8) for a refined base layer.\nAnkle boots in dark brown leather (#3e2723) with a modest heel for autumn weather comfort.\nGold hoop earrings in 14k gold plating to add subtle polish without overwhelming the look.\nThis outfit works because it strikes the perfect balance between professional polish and personal style suitable for an office setting in autumn. The dark skirt and blazer create a sleek, authoritative silhouette while the cream turtleneck softens the overall tone. Her own skirt remains the focal point as requested, elevated by the complementary colors of her accessories and layers.", "her_items": [{"id": "її-с1", "name": "моєї спідниці"}]}
+
+── ВІДПОВІДЬ (1019 симв., 76.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "skirt",
+      "details": "tailored wool-blend with a knee-length cut and an A-line silhouette",
+      "slot": "bottom",
+      "color_hex": "#2F3136",
+      "own": "її-с1",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "structured cotton-linen blend with notch lapels and single-button closure",
+      "slot": "outerwear",
+      "color_hex": "#0f4d39",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "turtleneck top",
+      "details": "fine-knit",
+      "slot": "top",
+      "color_hex": "#f5f1e8",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "dark brown leather with a modest heel",
+      "slot": "shoes",
+      "color_hex": "#3e2723",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "gold hoop in 14k gold plating",
+      "slot": "earrings",
+      "color_hex": null,
+      "own": null,
+      "worn": true
+    }
+  ]
+}

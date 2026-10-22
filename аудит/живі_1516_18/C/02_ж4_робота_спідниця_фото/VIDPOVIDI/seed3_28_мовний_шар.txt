@@ -1,0 +1,60 @@
+── ПРОМПТ (7717 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — назва в тексті н=13 · about it: text н=1
+2 — Укорочений жакет з оксамиту · kind code: blazer · colour code: black · about it: text н=2
+3 — Светр «Step 2.0» шоколадний · kind code: sweater · colour code: chocolate · about it: text н=3
+4 — Слінгбеки Givenchy чорні · kind code: pumps · colour code: black · about it: text н=4
+5 — Плетений кошик із текстильним ремінцем · kind code: bag_generic · colour code: orange · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; chocolate — шоколадний; orange — помаранчевий.
+
+ТЕКСТИ:
+{
+"1": "Your own bottom, a skirt that grounds this outfit with its familiar presence.",
+"2": "A cropped black velvet blazer featuring dramatic shoulder padding and a high neck collar, offering an edgy yet polished silhouette.",
+"3": "An oversized chocolate ribbed sweater with a relaxed fit and wide sleeves, adding softness and comfort to your ensemble.",
+"4": "Black patent leather slingback pumps with a pointed toe and sheer mesh detailing across the vamp, combining sophistication with subtle transparency.",
+"5": "A woven basket bag with a green striped strap and tassel accents, introducing organic texture and a pop of natural warmth to your look.",
+"6": "This outfit blends your chocolate sweater with the black velvet blazer, creating a rich contrast that elevates your office look for autumn. The sheer Givenchy pumps add a touch of modern elegance, while the woven basket brings a natural texture to balance the sleek fabrics. Together, they create a sophisticated yet comfortable ensemble perfect for navigating the city.",
+"7": "Wear the blazer over the sweater to layer textures, letting the velvet and knit play against each other throughout the day.",
+"8": "Слінгбеки Givenchy чорні — Choosing black pumps ensures the outfit remains grounded in formality despite the velvet blazer's texture, maintaining a cohesive silhouette without unnecessary contrast.",
+"9": "моєї спідниці, Укорочений жакет з оксамиту, Светр «Step 2.0» шоколадний, Слінгбеки Givenchy чорні — The blazer provides a strong structure, and the trousers complete the base; removing the sweater creates a cleaner line",
+"10": "Светр «Step 2.0» шоколадний, Укорочений жакет з оксамиту — I accept this fit gate because removing the sweater (the weaker layer) is already declared in my deliberate moves, leaving only the blazer and trousers which naturally do not create a fit issue.",
+"11": "моєї спідниці, Укорочений жакет з оксамиту, Светр «Step 2.0» шоколадний, Слінгбеки Givenchy чорні, Плетений кошик із текстильним ремінцем — The outfit has exactly three main pieces (skirt/blazer combo, top, shoes), so it meets the rule for 'styled' looks rather than just dressed ones; removing the sweater brings it closer to a cleaner silhouette while keeping the necessary layers.",
+"12": "Светр «Step 2.0» шоколадний — Removing the bulky sweater allows the relaxed top and skirt to define the silhouette properly, fixing the layering issue while keeping the warm, professional vibe.",
+"13": "моєї спідниці"
+}
+
+── ВІДПОВІДЬ (2475 симв., 49.8 с, HTTP 200) ──
+```json
+{
+"1": "Твоя власна спідниця, яка заземлює цей образ своїм звичним виглядом.",
+"2": "Укорочений чорний оксамитовий жакет із драматичними підплечиками та високим коміром-стійкою, що пропонує зухвалий, але вишуканий силует.",
+"3": "Оверсайз шоколадний ребристий светр з вільним кроєм і широкими рукавами, який додає м’якості й комфорту твоєму ансамблю.",
+"4": "Чорні лаковані шкіряні слінгбеки на підборах із загостреним носком і прозорою сіткою на шкарпетці, що поєднують вишуканість з ледь помітною прозорістю.",
+"5": "Плетений кошик із зелено-смугастим ремінцем і китицями, який вносить органічну текстуру та нотку природного тепла у твій образ.",
+"6": "Цей образ поєднує твій шоколадний светр з чорним оксамитовим жакетом, створюючи насичений контраст, що підкреслює твій осінній офісний вигляд. Прозорі слінгбеки Givenchy додають нотку сучасної елегантності, а плетений кошик привносить природну текстуру для балансу гладких тканин. Разом вони створюють вишуканий і комфортний ансамбль, який чудово підходить для міського життя.",
+"7": "Одягни жакет поверх светра, щоб створити багатошаровість, дозволяючи оксамиту та в’язці гармонійно поєднуватися протягом дня.",
+"8": "Слінгбеки Givenchy чорні — Вибір чорних туфель гарантує, що образ залишається стриманим у формальності, незважаючи на текстуру оксамитового жакета, підтримуючи цілісний силует без зайвого контрасту.",
+"9": "моєї спідниці, Укорочений жакет з оксамиту, Светр «Step 2.0» шоколадний, Слінгбеки Givenchy чорні — Жакет надає міцну структуру, а штани завершують основу; прибравши светр, створюється більш чітка лінія",
+"10": "Светр «Step 2.0» шоколадний, Укорочений жакет з оксамиту — Я приймаю це обмеження фігури, тому що вже було заявлено про прибирання светра (слабшого шару), залишаючи лише жакет і штани, які природно не створюють проблем із силуетом.",
+"11": "моєї спідниці, Укорочений жакет з оксамиту, Светр «Step 2.0» шоколадний, Слінгбеки Givenchy чорні, Плетений кошик із текстильним ремінцем — Образ має рівно три основних елементи (комбінація спідниці/жакета, верх і взуття), тому він відповідає правилу «стильного» вигляду, а не просто одягненого; прибравши светр, ми наближуємо його до більш чистого силуету, зберігаючи необхідні шари.",
+"12": "Светр «Step 2.0» шоколадний — Прибирання об’ємного светра дозволяє вільному верху та спідниці правильно визначити силует, вирішуючи проблему з багатошаровістю, при цьому зберігаючи теплий і професійний вигляд.",
+"13": "моєї спідниці"
+}
+```

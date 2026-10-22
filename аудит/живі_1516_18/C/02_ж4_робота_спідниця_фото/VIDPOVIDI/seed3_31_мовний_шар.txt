@@ -1,0 +1,56 @@
+── ПРОМПТ (7834 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — назва в тексті н=11 · about it: text н=1
+2 — Лонгслів «Rusty Rose» іржавий · kind code: longsleeve · colour code: black · about it: text н=2
+3 — Куртка-пуховик оверсайз з накладними кишенями · kind code: jacket · colour code: black · about it: text н=3
+4 — LeBERDES Туфлі коричневі · kind code: dress_shoes · colour code: brown · about it: text н=4
+5 — Сумка багет Теракотова · kind code: baguette_bag · colour code: terracotta · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; terracotta — теракотовий.
+
+ТЕКСТИ:
+{
+"1": "Your own dark pinstriped skirt serves as the anchor of this outfit, offering structure and polish while letting the other pieces do most of the talking. Its subtle vertical lines help elongate your figure and keep everything aligned without adding unnecessary detail.",
+"2": "The black long-sleeve top features soft, slightly gathered shoulders and a gently curved neckline edged with fine stitching. Its relaxed fit drapes cleanly over the torso while maintaining a sleek line from shoulder to wrist.",
+"3": "The oversized black puffer jacket has wide lapels secured with silver-toned buttons and an elasticized waist that gently defines without restricting. Its voluminous silhouette rests comfortably over the top, keeping your midsection relaxed while adding warmth.",
+"4": "The brown woven leather pumps feature a pointed toe and slender stiletto heel with a matching block detail at the heel cap. The basketweave texture adds subtle visual interest without overwhelming the outfit’s clean lines.",
+"5": "The terracotta baguette-style crossbody bag showcases an intricate, multicoloured patchwork design with geometric motifs in greens, pinks, yellows, and reds. Its slender tan leather strap and gold hardware provide a warm contrast to the darker tones of your top and skirt.",
+"6": "For your autumn office day, I’ve put together a look that balances comfort and polish. You’ll wear your own dark skirt as the base, layered under a black long-sleeve top with slightly relaxed sleeves that drape softly. Over that, a roomy black puffer jacket adds warmth without adding bulk to your silhouette, while brown woven pump heels ground the outfit in refined detail. A vibrant, multicoloured baguette-style crossbody brings a burst of colour and pattern that keeps the overall tone from feeling too uniform. The whole ensemble stays clean and put-together for work, with textures mixing quietly—velvet or soft jersey under smooth leather, matte nylon on the outside—and all pieces falling at lengths that keep your proportions balanced.",
+"7": "Leave the puffer jacket unbuttoned to let your top show through cleanly, then slip it off if you warm up indoors.",
+"8": "Let the skirt hang straight without cinching—your figure will define itself through the loose sleeves and wide hemlines.",
+"9": "Carry the bag over your shoulder or across your body, whichever feels more relaxed for your commute and office hours.",
+"10": "Куртка-пуховик оверсайз з накладними кишенями — The jacket's belt defines the waist cleanly without disrupting your neat silhouette.",
+"11": "моєї спідниці"
+}
+
+── ВІДПОВІДЬ (2633 симв., 59.6 с, HTTP 200) ──
+```json
+{
+  "1": "Твоя власна темно-смугаста спідниця слугує основою цього образу, надаючи йому структуру та вишуканість, водночас дозволяючи іншим речам говорити найбільше. Її ледь помітні вертикальні лінії допомагають видовжити твій силует і тримати все в рівновазі без зайвих деталей.",
+  "2": "Чорний лонгслів має м’які, злегка зібрані плечі та делікатно вигнутий виріз горловини, облямований тонким швом. Його вільний крій елегантно драпірується по торсу, зберігаючи при цьому стрункий силует від плеча до зап’ястя.",
+  "3": "Оверсайзова чорна куртка-пуховик має широкі лацкани, застібаються на сріблясті ґудзики та еластичний пояс, який м’яко окреслює фігуру без обмежень. Її об’ємний силует зручно лягає зверху, залишаючи твій торс розслабленим і додаючи тепла.",
+  "4": "Коричневі плетені шкіряні туфлі мають загострений носок та тонкий шпильковий каблук з відповідною блоковою деталлю на заднику. Текстура кошикового плетіння додає ледь помітну візуальну цікавість, не перевантажуючи чистий силует образу.",
+  "5": "Теракотова сумка-багет демонструє складний багатобарвний клаптиковий дизайн з геометричними мотивами в зелених, рожевих, жовтих і червоних кольорах. Її вузький ремінь із тану шкіри та золотиста фурнітура створюють теплий контраст до темніших тонів твоєї блузи та спідниці.",
+  "6": "Для твого осіннього робочого дня я підібрала образ, який поєднує комфорт і вишуканість. Ти носитимеш свою власну темно-смугасту спідницю як основу, поверх якої буде надітий чорний лонгслів з трохи розслабленими рукавами, що м’яко спадають. Зверху об’ємна чорна куртка-пуховик додасть тепла без зайвого об’єму до твого силуету, а коричневі плетені туфлі на підборах завершать образ вишуканою деталлю. Яскрава багатобарвна сумка-багет принесе сплеск кольору та візерунку, щоб загальний тон не здавався надто одноманітним. Весь ансамбль залишається охайним і зібраним для роботи, з текстурами, що тихо поєднуються — вельвет або м’який трикотаж під гладкою шкірою, матова нейлон зовні — а всі речі лягають на довжини, які зберігають твої пропорції врівноваженими.",
+  "7": "Залиш куртку-пуховик розстебнутою, щоб твоя блуза була видно чисто, потім зніми її, якщо тобі стане жарко всередині приміщення.",
+  "8": "Дозволь спідниці вільно висіти без затягування — твій силует сам себе окреслить через вільні рукави та широкі подоли.",
+  "9": "Носи сумку на плечі або перекинь її через тіло, як тобі буде зручніше під час поїздки на роботу та протягом робочих годин.",
+  "10": "Куртка-пуховик оверсайз з накладними кишенями — Пояс куртки чисто окреслює твою талію без порушення твоєї акуратної фігури.",
+  "11": "моєї спідниці"
+}
+```
