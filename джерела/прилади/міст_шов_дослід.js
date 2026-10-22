@@ -9,7 +9,11 @@
    Рядок відповіді береться там, де його отримує JS: з `транспортМостуП` (після Б-1) або з результату `runPythonAsync`
    (до Б-1, коли шва ще нема). `байтів_коду` — довжина коду Python, зібраного ПІСЛЯ підйому: до Б-1 це 1,98 МБ за
    прогін, після — 0. `розбіжностей_асинх` — виклики, де продукт обрав інший режим (`виклик` / `виклик_а`), ніж
-   записаний. */
+   записаний.
+
+   Після 4.1-Б-3 Python живе у воркері: `pyodide_показу` у сторінці нема, рядок береться з `транспортМостуП`, а
+   `python_с` — з `ЖУРНАЛ_МОСТА_П` (`мс_python` воркера). Головний потік міряється в обох режимах: long tasks
+   (`PerformanceObserver`) і пульс — таймер 10 мс, проміжки понад 50 мс (рядок 8411: long tasks недолічують). */
 const fs = require('fs'), path = require('path'), zlib = require('zlib'), http = require('http');
 const { chromium } = require('playwright');
 const [СТОРІНКА, ТЕКА_PYODIDE, ВХОДИ, ВИХІД, НАЗВА, ЛИШЕ] = process.argv.slice(2);
@@ -24,15 +28,20 @@ const сервер = http.createServer((з, в) => {
   в.writeHead(404); в.end();
 });
 
-/* Виконується у сторінці (джерелом): воно бачить глобалі показу (`містП`, `транспортМостуП`, `pyodide_показу`) */
+/* Виконується у сторінці (джерелом): воно бачить глобалі показу (`містП`, `транспортМостуП`, до Б-3 `pyodide_показу`) */
 async function прогін(входи){
-  const р = {вих: [], байтів_коду: 0, викликів_коду: 0, розбіжностей_асинх: 0, мс: []};
+  const р = {вих: [], байтів_коду: 0, викликів_коду: 0, розбіжностей_асинх: 0, мс: [], лт: [], пульс: []};
+  new PerformanceObserver(л => { for (const е of л.getEntries()) р.лт.push(е.duration); }).observe({type: 'longtask'});
+  let мить = performance.now();
+  const пульс = setInterval(() => { const т = performance.now(); if (т - мить > 50) р.пульс.push(т - мить); мить = т; }, 10);
   const т0 = performance.now();
   await підняти_міст_показу();
   р.підйом_мс = performance.now() - т0;
+  р.лт_підйому = р.лт.length; р.пульс_підйому = р.пульс.length;
   let останній = null, асинхОстанній = null;
-  const rpa = pyodide_показу.runPythonAsync.bind(pyodide_показу);
-  pyodide_показу.runPythonAsync = async function(код, ...а){
+  const пд = typeof pyodide_показу !== 'undefined' ? pyodide_показу : null;
+  const rpa = пд && пд.runPythonAsync.bind(пд);
+  if (пд) пд.runPythonAsync = async function(код, ...а){
     р.байтів_коду += код.length; р.викликів_коду++;
     let в = await rpa(код, ...а);
     if (typeof в !== 'string' && в != null && в.toJs) в = JSON.stringify(в.toJs({dict_converter: Object.fromEntries}));
@@ -53,6 +62,9 @@ async function прогін(входи){
     if (асинхОстанній !== null && асинхОстанній !== асинх) р.розбіжностей_асинх++;
     р.вих.push(помилка != null ? {н, ім, помилка} : {н, ім, вих: останній});
   }
+  clearInterval(пульс);
+  await new Promise(ок => setTimeout(ок, 100));
+  р.python_воркера_мс = typeof ЖУРНАЛ_МОСТА_П !== 'undefined' ? ЖУРНАЛ_МОСТА_П.reduce((с, з) => с + (з.мс_python || 0), 0) : null;
   return р;
 }
 
@@ -79,7 +91,17 @@ async function прогін(входи){
     назва: НАЗВА, викликів: входи.length, стіна_с: (Date.now() - т) / 1000, підйом_мс: Math.round(р.підйом_мс),
     байтів_коду: р.байтів_коду, викликів_коду: р.викликів_коду, розбіжностей_асинх: р.розбіжностей_асинх,
     python_с: +(р.мс.reduce((с, x) => с + x, 0) / 1000).toFixed(1), помилок: р.вих.filter(в => в.помилка != null).length,
-    не_рядків: р.вих.filter(в => в.помилка == null && typeof в.вих !== 'string').length}));
+    не_рядків: р.вих.filter(в => в.помилка == null && typeof в.вих !== 'string').length,
+    python_воркера_с: р.python_воркера_мс == null ? null : +(р.python_воркера_мс / 1000).toFixed(1),
+    /* головний потік: підйом і виклики окремо (перші `лт_підйому` / `пульс_підйому` записів — підйом) */
+    long_tasks_підйому: р.лт_підйому, long_tasks_підйому_с: +(р.лт.slice(0, р.лт_підйому).reduce((с, x) => с + x, 0) / 1000).toFixed(1),
+    long_tasks_викликів: р.лт.length - р.лт_підйому,
+    long_tasks_викликів_с: +(р.лт.slice(р.лт_підйому).reduce((с, x) => с + x, 0) / 1000).toFixed(1),
+    long_task_найдовша_с: +((Math.max(0, ...р.лт.slice(р.лт_підйому))) / 1000).toFixed(2),
+    пульс_підйому_с: +(р.пульс.slice(0, р.пульс_підйому).reduce((с, x) => с + x, 0) / 1000).toFixed(1),
+    пульс_викликів: р.пульс.length - р.пульс_підйому,
+    пульс_викликів_с: +(р.пульс.slice(р.пульс_підйому).reduce((с, x) => с + x, 0) / 1000).toFixed(1),
+    пульс_найдовший_с: +((Math.max(0, ...р.пульс.slice(р.пульс_підйому))) / 1000).toFixed(2)}));
   console.log(НАЗВА + ': ' + fs.readFileSync(path.join(тека, 'час.json'), 'utf8'));
   await браузер.close();
   сервер.close();

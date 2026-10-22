@@ -1,7 +1,9 @@
 /* Крок 4.2 / 7231: 3 окремі профілі × cold/warm, справжній HTTP-кеш, жодного route().
    node аудит/проби/байткод_42_http.js <index.html> <тека Pyodide 0.26.4> <звіт.json>
    Зібрана сторінка й незмінні ресурси з диска віддаються HTTP-сервером; CDN origin у сторінці
-   замінено лише на адресу цього сервера. Це контроль cache semantics, не вимір швидкості CDN. */
+   замінено лише на адресу цього сервера. Це контроль cache semantics, не вимір швидкості CDN.
+   ІСТОРИЧНА (4.1-Б-3): прилад гачить `window.loadPyodide` і `pyodide_показу` головного потоку; з Python у воркері
+   їх у сторінці нема — міряє лише збірки до 4.1-Б-3. Підйом воркера — `міст_шов_дослід.js` (`підйом_мс`). */
 const fs = require('fs'), path = require('path'), os = require('os'), http = require('http'), crypto = require('crypto');
 const { chromium } = require('playwright');
 const [СТОРІНКА, PYODIDE, ВИХІД] = process.argv.slice(2);

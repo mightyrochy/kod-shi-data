@@ -1,5 +1,5 @@
 // Рядок 4371: код кольору hex без її слова (`мовний_шар._код_кольору` → `palettes._назва`) у справжньому Chromium на
-// зібраній сторінці — hex знахідки й речі каталогу (JSON [{id, крамниця, lab, назва}]), Python — pyodide самої сторінки.
+// зібраній сторінці — hex знахідки й речі каталогу (JSON [{id, крамниця, lab, назва}]), Python — воркер моста самої сторінки.
 // Збірка: cd джерела && LYUSTERKO_CATALOG=повний python3 build_артефакт.py . <тека>/index.html показ-повний
 // Запуск: NODE_PATH=джерела/node_modules node аудит/проби/лимонний_4371_chromium.js <тека> <тека pyodide> <речі.json>
 const {chromium} = require("playwright"), fs = require("fs"), path = require("path");
@@ -22,8 +22,8 @@ const HEX = ["FFF44F", "FAFA33", "ECDA6E", "DFDC8E", "F4E87C", "FFD700"];
   await p.goto(БАЗА + "/index.html");
   await p.waitForFunction(() => typeof підняти_міст_показу === "function", null, {timeout: 60000});
   const вих = await p.evaluate(async ([hex, речі]) => {
-    const пі = await підняти_міст_показу();
-    return JSON.parse(await пі.runPythonAsync("import json, palettes as PS, colorspace as cs, мовний_шар as МШ\n" +
+    /* Python живе у воркері (4.1-Б-3): код іде повідомленням-приладом */
+    return JSON.parse(await приладМостуП({}, "import json, palettes as PS, colorspace as cs, мовний_шар as МШ\n" +
       "json.dumps(dict(hex={h: [МШ._код_кольору(h), PS._назва(cs.hx('#' + h))[0]] for h in " + JSON.stringify(hex) + "},\n" +
       "  речі=[[р['id'], р['крамниця'], PS._hex(tuple(р['lab'])), PS._назва(tuple(р['lab']))[0]] for р in json.loads(" +
       JSON.stringify(JSON.stringify(речі)) + ")]), ensure_ascii=False)"));
