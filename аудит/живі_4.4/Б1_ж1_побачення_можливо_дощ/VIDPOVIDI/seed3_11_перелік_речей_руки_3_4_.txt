@@ -1,0 +1,51 @@
+── ПРОМПТ (2567 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured tweed blazer, relaxed fit, hip length, charcoal gray #3d4c52, wool blend with fine herringbone pattern.\nSlim-leg dark denim trousers, tapered cut, ankle length, deep indigo #2a3b4c, heavy cotton twill with subtle stretch.\nA refined cashmere mock-neck knit, crew neck, hip length, soft cream #f5f0e6, luxurious wool blend.\nLeather loafers, classic penny style, medium shaft, polished tan #c99f5d, smooth full-grain leather.\nGold vermeil statement ring and a delicate chain link necklace in 14k gold finish, brushed metal texture, warm yellow tone #ffd700, solid brass with gold plating.\n\nThis ensemble balances the autumn evening chill with an outer layer that feels textured rather than heavy, perfect for a casual restaurant setting. The dark denim grounds the look while the cream knit and charcoal blayer add layers of sophistication appropriate for a date night without feeling overly formal. Artificial lighting will make the warm tones of the leather shoes and gold jewelry pop against the cool gray and indigo fabrics. This outfit respects her wish for a \"neat\" dress code by incorporating refined textures like tweed and cashmere, creating a polished yet comfortable look for the occasion."}
+
+── ВІДПОВІДЬ (1236 симв., 6.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "tweed blazer",
+      "details": "relaxed fit, hip length, wool blend with fine herringbone pattern",
+      "slot": "outerwear",
+      "color_hex": "#3d4c52",
+      "worn": true
+    },
+    {
+      "name": "denim trousers",
+      "details": "slim-leg, tapered cut, ankle length, heavy cotton twill with subtle stretch",
+      "slot": "bottom",
+      "color_hex": "#2a3b4c",
+      "worn": true
+    },
+    {
+      "name": "cashmere mock-neck knit",
+      "details": "crew neck, hip length, luxurious wool blend",
+      "slot": "top",
+      "color_hex": "#f5f0e6",
+      "worn": true
+    },
+    {
+      "name": "leather loafers",
+      "details": "classic penny style, medium shaft, smooth full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#c99f5d",
+      "worn": true
+    },
+    {
+      "name": "gold vermeil statement ring",
+      "details": "solid brass with gold plating, brushed metal texture",
+      "slot": "jewelry",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "chain link necklace",
+      "details": "14k gold finish, brushed metal texture",
+      "slot": "necklace",
+      "color_hex": "#ffd700",
+      "worn": true
+    }
+  ]
+}

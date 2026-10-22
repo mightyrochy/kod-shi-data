@@ -1,0 +1,51 @@
+── ПРОМПТ (2745 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured tweed blazer in forest green (#2d4f3e) cut with a slightly dropped shoulder and single-button closure, falling to high hip length, woven from wool-blend fabric.\nTailored trousers in matching forest green (#2d4f3e) with a straight leg cut that tapers gently at the ankle, reaching full floor length, crafted from heavy cotton-twill.\nA fitted silk blouse in cream (#f5f0e6) featuring a cowl neck and long sleeves that extend to the wrist, made of smooth woven silk.\nLeather ankle boots in chestnut brown (#8c624d) with a low block heel and a rounded toe, constructed from full-grain leather.\nGold-toned hoop earrings with a matte finish measuring two centimeters in diameter.\nA structured tote bag in cognac tan (#c49a6c) made of pebbled leather with gold hardware accents.\n\nThis outfit works because the forest green tweed blazer provides the polished, textured look required for a \"neat\" evening date while offering enough warmth for unpredictable autumn rain if carried or worn over light layers. The matching trousers maintain a sophisticated silhouette that balances the structured jacket, ensuring she looks put-together without appearing overly stiff for a casual restaurant setting. Neutral cream tones in the blouse and cognac leather accessories complement her warm skin undertones, creating a harmonious palette that feels elegant yet approachable for a first date."}
+
+── ВІДПОВІДЬ (1240 симв., 6.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "tweed blazer",
+      "details": "slightly dropped shoulder single-button closure high hip length wool-blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#2d4f3e",
+      "worn": true
+    },
+    {
+      "name": "tailored trousers",
+      "details": "straight leg cut tapers gently at ankle full floor length heavy cotton-twill fabric",
+      "slot": "bottom",
+      "color_hex": "#2d4f3e",
+      "worn": true
+    },
+    {
+      "name": "silk blouse",
+      "details": "cowl neck long sleeves extend to wrist smooth woven silk fabric",
+      "slot": "top",
+      "color_hex": "#f5f0e6",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "low block heel rounded toe full-grain leather construction",
+      "slot": "shoes",
+      "color_hex": "#8c624d",
+      "worn": true
+    },
+    {
+      "name": "hoop earrings",
+      "details": "two centimeters in diameter matte finish",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "tote bag",
+      "details": "pebbled leather with gold hardware accents cognac tan color",
+      "slot": "bag",
+      "color_hex": "#c49a6c",
+      "worn": true
+    }
+  ]
+}
