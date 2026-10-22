@@ -195,29 +195,81 @@ def інтервал_формальності(e):
 # саму нагоду (не вище `formal`); на щабель вище чи нижче — лише її словами. Година, частина доби й назва
 # події — не чинники: вони не кажуть, чия норма діє. Верх драбини — лише письмова вимога, без назви
 # рідкої події. Чинники й «чому» кожного — у тілі PR наряду 3.7.
+# ПОВНИЙ ЗМІСТ ЩАБЛЯ (наряд 3.7-Б, рядки 8950–8952, 8911, 8970). ЩО БУЛО. Щабель мав одну гілку одягу: `smart` —
+# «suit without tie, cocktail dress», а «blazer with trousers, sheath dress» стояв у `neat`, тож співбесіда (правило
+# «на щабель вище, коли її оцінюють») діставала від стилістки коктейльну сукню, а суд K-KOH-05 звав блузу з брюками,
+# блейзером і лоферами «нижче нагоди» (soft · нп 0,5 — так само, як футболку з джинсами); письмова вимога без числа
+# мовної моделі щабля не давала (black tie → широкий дефолт 3–6), а «що вибиває зі щабля» жило п'ятьма рядками
+# `brief.МАРКЕРИ` за межами 4, 6, 7, 8, 10. ЩО ТЕПЕР. Рядок драбини — увесь зміст щабля: `гілки` — ділова (`business`:
+# офіс, співбесіда, переговори) і світська (`social`: прийом, свято, вечір) там, де вони різні, кожна зі своїм
+# одягом, нормою, що ставить на неї вихід, прикладами, письмовими вимогами (`коди` — дрес-коди, що просять цього
+# одягу) і формою (`форма` — групи типів речей пулу: образ має форму, коли в кожній групі є його річ); `вибиває` —
+# що вибиває образ зі щабля (заява `level_breakers`). Гілку дає та сама норма, що ставить щабель, а не назва події:
+# її називає мовна модель (`formality_branch`) чи письмова вимога. Форма — для того, що числа типів не бачать:
+# ділові речі щабля `smart` мають числа 4–7, і медіана образу співбесіди (5–5,5) лягала нижче точки 7.
 ДРАБИНА = (
-    dict(код="home", смуга=(1, 2), одяг="loungewear, athleisure, sportswear",
-         норма="only her own: nobody outside her household sees her, or the activity sets its own",
-         приклади="at home, a workout"),
-    dict(код="everyday", смуга=(3, 4), одяг="jeans, T-shirt and sneakers; neat casual, dark denim",
-         норма="the street's: out among strangers, nobody she is with sets a standard",
-         приклади="errands, shopping, a walk, a walk with her child, coffee with a friend, a day of travel"),
-    dict(код="neat", смуга=(5, 6), одяг="textured jacket, refined knit, loafers; blazer with trousers, sheath dress",
-         норма="the usual one of the place or the people she joins as one of them",
-         приклади="a work day at the office, a date at a restaurant, a theatre or a concert, a friend's "
-                  "birthday party, a school parents' meeting"),
-    dict(код="smart", смуга=(7, 7), одяг="suit without tie, cocktail dress",
-         норма="the hosts' when they mark an occasion with a reception and she is a guest",
-         приклади="a jubilee banquet, a holiday party in a restaurant hall"),
-    dict(код="formal", смуга=(8, 8), одяг="business suit, formal dress",
-         норма="a strict one that the hosts or the place keep",
-         приклади="a workplace with a strict dress code, a reception with protocol"),
-    dict(код="very_smart", смуга=(9, 9), одяг="evening gown",
-         норма="only a written requirement for evening dress", приклади=""),
-    dict(код="ceremonial", смуга=(10, 10), одяг="full-length evening gown with long gloves",
-         норма="only the strictest written requirement", приклади=""),
+    dict(код="home", смуга=(1, 2), вибиває="",
+         гілки=(dict(гілка=None, одяг="loungewear, athleisure, sportswear",
+                     норма="only her own: nobody outside her household sees her, or the activity sets its own",
+                     приклади="at home, a workout, yoga, sport", коди=(), форма=()),)),
+    dict(код="everyday", смуга=(3, 4), вибиває="",
+         гілки=(dict(гілка=None, одяг="jeans, a T-shirt and sneakers; neat casual, dark denim",
+                     норма="the street's: out among strangers, nobody she is with sets a standard",
+                     приклади="everyday errands, shopping, a walk, a walk in the park, a walk with her child, the "
+                              "playground, coffee with a friend at a cafe, a day of travel, a flight, a long transit",
+                     коди=("casual",), форма=()),)),
+    dict(код="neat", смуга=(5, 6), вибиває="sports shoes, sports knit, acid-washed denim",
+         гілки=(dict(гілка="business",
+                     одяг="a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a "
+                          "cardigan, loafers, ballet flats or ankle boots",
+                     норма="the usual one of her workplace or of the colleagues she joins as one of them",
+                     приклади="a work day at the office, a conference, a school parents' meeting",
+                     коди=("business_casual",), форма=()),
+                dict(гілка="social",
+                     одяг="a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or "
+                          "ankle boots",
+                     норма="the usual one of the place or the people she joins for her own leisure as one of them",
+                     приклади="a date at a restaurant, a theatre or a concert, a museum, a friend's birthday party, "
+                              "a house party",
+                     коди=("smart_casual", "dressy_casual"), форма=()))),
+    dict(код="smart", смуга=(7, 7),
+         вибиває="sneakers, a T-shirt, a kimono cardigan as the outer layer, mules and flip-flops, matt suede shoes",
+         гілки=(dict(гілка="business",
+                     одяг="a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress "
+                          "with a jacket",
+                     норма="her workplace's, one step up because her look is judged there or she represents others",
+                     приклади="a job interview, a presentation, leading talks", коди=(),
+                     форма=(("блейзер", "костюм"), ("штани", "спідниця", "костюм", "футляр"),
+                            ("блуза", "сорочка", "боді", "футляр"), ("лофери", "човники", "туфлі"))),
+                dict(гілка="social", одяг="a cocktail dress, heeled shoes",
+                     норма="the hosts' when they mark an occasion with a reception and she is a guest",
+                     приклади="a jubilee banquet, a holiday party in a restaurant hall",
+                     коди=("cocktail", "semi_formal", "festive"),
+                     форма=(("коктейльна_сукня",), ("туфлі", "човники", "босоніжки"))))),
+    dict(код="formal", смуга=(8, 8),
+         вибиває="a knit cardigan, a kimono, mules, an everyday block sandal, matt cotton and suede, an everyday bag",
+         гілки=(dict(гілка="business",
+                     одяг="a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps",
+                     норма="a strict dress code her workplace keeps",
+                     приклади="a workplace with a strict dress code", коди=("business_formal",),
+                     форма=(("костюм",), ("блуза", "сорочка", "боді"), ("човники", "туфлі"))),
+                dict(гілка="social", одяг="a formal dress of a noble fabric, heeled shoes",
+                     норма="protocol that the hosts or the place keep", приклади="a reception with protocol",
+                     коди=("black_tie_optional",), форма=()))),
+    dict(код="very_smart", смуга=(9, 9),
+         вибиває="everything daytime: cotton, knit, suede, open everyday shoes, cardigans",
+         гілки=(dict(гілка="social", одяг="an evening gown",
+                     норма="only a written requirement for evening dress", приклади="",
+                     коди=("black_tie", "creative_black_tie"),
+                     форма=(("вечірня_сукня",), ("туфлі", "човники", "босоніжки"))),)),
+    dict(код="ceremonial", смуга=(10, 10),
+         вибиває="everything daytime: cotton, knit, suede, open everyday shoes, cardigans",
+         гілки=(dict(гілка="social", одяг="a full-length evening gown with long gloves",
+                     норма="only the strictest written requirement", приклади="", коди=("white_tie",),
+                     форма=(("вечірня_сукня",), ("туфлі", "човники", "босоніжки"))),)),
 )
 ЩАБЕЛЬ = {щ["код"]: щ for щ in ДРАБИНА}
+ГІЛКИ = ("business", "social")
 
 
 def щабель_смуги(x):
@@ -225,6 +277,49 @@ def щабель_смуги(x):
     if isinstance(x, bool) or not isinstance(x, (int, float)):
         return None
     return next((щ["код"] for щ in ДРАБИНА if float(x) <= щ["смуга"][1]), ДРАБИНА[-1]["код"])
+
+
+# ОДИН ЩАБЕЛЬ, А НЕ СМУГА (рядок 8970). «Смуга — числа одного щабля» тримав лише промпт: живий ПІСЛЯ 3.7 — 5 з 10
+# сцен через два щаблі (співбесіда, побачення й виступ [7, 8], кафе [4, 6]), Ф1 — 66 зі 160 викликів, і пара йшла в
+# паспорт, плитку («Ошатне – Строге») і суд. Тепер мовна модель дає код щабля (`мовний_шар`), а будь-яку пару чисел —
+# її відповідь числами, паспорт, плитку, збережений випадок — код зводить до одного щабля: щабля нижнього числа.
+# Верхнє число пари через два щаблі — підйом, якого правило драбини не дало: на щабель угору ставить лише причина
+# правила (3) чи (4), а вона вже в щаблі, який модель назвала б одним кодом.
+def один_щабель(a, b=None):
+    """Число чи пара чисел шкали → код одного щабля драбини (щабель меншого числа); не числа — None."""
+    числа = [x for x in (a, a if b is None else b)]
+    if not all(isinstance(x, (int, float)) and not isinstance(x, bool) for x in числа):
+        return None
+    return щабель_смуги(min(числа))
+
+
+def смуга_щабля(код):
+    """Код щабля драбини → (lo, hi) його смуги шкали коду; інше — None."""
+    щ = ЩАБЕЛЬ.get(код) if isinstance(код, str) else None
+    return tuple(float(x) for x in щ["смуга"]) if щ else None
+
+
+def гілка_щабля(код, гілка=None):
+    """Рядок гілки щабля: названа гілка, коли щабель її має; інакше єдина гілка щабля; дві й не названо — None."""
+    гілки = (ЩАБЕЛЬ.get(код) or {}).get("гілки") or ()
+    return next((г for г in гілки if г["гілка"] == гілка), гілки[0] if len(гілки) == 1 else None)
+
+
+def щабель_дрес_коду(код):
+    """Письмова вимога (код `dress_code`) → (щабель, гілка), чийого одягу вона просить (правило (1) драбини); інакше None."""
+    return next(((щ["код"], г["гілка"]) for щ in ДРАБИНА for г in щ["гілки"] if код and код in г["коди"]), None)
+
+
+def типи_форми(код):
+    """Типи речей пулу, з яких складається форма щабля в будь-якій його гілці (`форма` драбини)."""
+    return {т for г in (ЩАБЕЛЬ.get(код) or {}).get("гілки", ()) for група in г["форма"] for т in група}
+
+
+def гілка_форми(E, код):
+    """Гілка щабля, чию форму має образ — у кожній групі `форма` є річ її типу; нема — None."""
+    типи = {e.get("тип") for e in E or () if isinstance(e, dict)}
+    return next((г["гілка"] or код for г in (ЩАБЕЛЬ.get(код) or {}).get("гілки", ())
+                 if г["форма"] and all(типи & set(група) for група in г["форма"])), None)
 
 
 # ЩО ЦЕЙ КЛЮЧ НАСПРАВДІ Є. Порожньо — код джерела; текст — оголошений статус,
@@ -295,10 +390,10 @@ def _кроки(n):
 
 def сценарій(місце=None, код=None, година=None, господар=False, креативне=False,
              роль=None, супутник_рівень=None, активність=None, сезон=None, нагода=None,
-             темп_c=None, відкриті_зони=None, зарезервований_колір=None, смуга=None):
+             темп_c=None, відкриті_зони=None, зарезервований_колір=None, смуга=None, гілка=None):
     """K-KOH-09: цільовий діапазон формальності + вето ВИВОДЯТЬСЯ, а не беруться з переліку.
     Кроки корпусу: (1) господар/ставки → K-KOH-07; (2) щабель драбини (`ДРАБИНА`) — число мовної
-    моделі (`смуга`), без нього широкий дефолт; (3) модифікатори K-KOH-06 + роль; (4) практичні
+    моделі (`смуга`), без нього — щабель письмової вимоги (`код`), без обох широкий дефолт; (3) модифікатори K-KOH-06 + роль; (4) практичні
     обмеження; (5) погодний шар. Вихід: formality_range, vetoes, risk_posture, практика.
 
     Що дало дослідження понад корпус:
@@ -310,7 +405,8 @@ def сценарій(місце=None, код=None, година=None, госпо
         нерівний ґрунт → без шпильок) — це вето на РІЧ, не на палітру.
     Числа T3; шкала й діапазони кодів — з корпусу.
 
-    `смуга` — (від, до[, звідки]) смуги ошатності прогону (`смуга_ошатності`: число мовної моделі).
+    `смуга` — (від, до[, звідки]) смуги ошатності прогону (`смуга_ошатності`: число мовної моделі), зведена до
+    одного щабля (`один_щабель`); `гілка` — ділова чи світська гілка щабля від мовної моделі (`formality_branch`).
     Коли вона є, `діапазон` — саме вона: літо й зсуви K-KOH-07 її не рухають (мовна модель уже
     поставила їх у щабель — оцінка, господиня), а нота каже, що дали б вони. Вето, ризик і погода
     рахуються, як доти; `вечір` — факт вечірнього світла, не підйом."""
@@ -329,6 +425,14 @@ def сценарій(місце=None, код=None, година=None, госпо
     _м = (місце or "").strip().lower().replace(" ", "_")
     діап = (ЩАБЕЛЬ["everyday"]["смуга"][0], ЩАБЕЛЬ["neat"]["смуга"][1])
     джерело = "щабля не названо — широкий дефолт"
+    # ── ПИСЬМОВА ВИМОГА — ЩАБЕЛЬ СВОГО ОДЯГУ (рядок 8952) ───────────────────────────────────────────────
+    # Правило (1) драбини механічне, і код поле `дрес_код` знає: доти без числа мовної моделі black tie діставав
+    # широкий дефолт 3–6, і бриф казав «neat, up to 6» поруч із вечірньою сукнею `КОДИ_ТИП_МУСИТЬ`. Тепер щабель
+    # і гілку письмової вимоги дає її рядок драбини (`коди`); число мовної моделі нижче переважає, як доти.
+    _щ_коду = щабель_дрес_коду(код)
+    if _щ_коду:
+        діап, гілка = ЩАБЕЛЬ[_щ_коду[0]]["смуга"], гілка or _щ_коду[1]
+        джерело = "письмова вимога «%s» → щабель %s" % (код, _щ_коду[0])
     lo, hi = float(діап[0]), float(діап[1])
     ноти = ["база: %s → %.0f–%.0f" % (джерело, lo, hi)]
     if код and КОДИ_СТАТУС.get(код):
@@ -400,9 +504,10 @@ def сценарій(місце=None, код=None, година=None, госпо
     # у всіх 6 прогонах «побачення» ЗАМІР-Д 11–22 записи K-KOH-05 «above», ціль 4.5–5.5, жодного
     # «below». Тепер одна смуга: з
     # числом мовної моделі діапазон — саме воно; таблиця — лише нота.
-    if смуга and len(смуга) >= 2 and смуга[0] is not None and смуга[1] is not None:
+    _щ_смуги = один_щабель(смуга[0], смуга[1]) if смуга and len(смуга) >= 2 else None
+    if _щ_смуги:
         _т_lo, _т_hi = lo, hi
-        lo, hi = float(min(смуга[0], смуга[1])), float(max(смуга[0], смуга[1]))
+        lo, hi = смуга_щабля(_щ_смуги)
         ноти.append("смуга прогону %.1f–%.1f (число мовної моделі) — одна на пул, суд і бриф; "
                     "таблиця й модифікатори вище дали б %.1f–%.1f і не діють" % (lo, hi, _т_lo, _т_hi))
     # (5) погодний шар: у цьому модулі погода живе як СТАНИ образу (K-WEA-02, «у приміщенні»
@@ -449,7 +554,10 @@ def сценарій(місце=None, код=None, година=None, госпо
     #       категорійні заборони корпусу діють саме «where a code is stated».
     # Тепер код у виході, і обидві гілки читають той самий факт.
     # Нагода й місце їдуть у виході для журналу; різночитання коду за подією розв'язує мовна модель (наряд 3.7).
+    # Гілка — лише гілка щабля діапазону: щабель без такої гілки (home, very_smart…) її не має.
+    _г = гілка_щабля(щабель_смуги(lo), гілка)
     return dict(діапазон=(round(lo, 1), round(hi, 1)), risk_posture=risk, код=код,
+                гілка=_г["гілка"] if _г else None,
                 вечір=_вечір, нагода=нагода, місце=місце,
                 відкриті_зони=відкриті_зони, зарезервований_колір=зарезервований_колір,
                 вето=вето, вето_коди=вето_коди, практика=практика, weather_layer=weather_layer, чому=ноти,
@@ -480,7 +588,9 @@ def смуга_ошатності(сцен):
 
     `сцен` — нагода в полях `сценарій.ПОЛЯ` (плюс службові `_ошатність`, `темп_c`).
     Джерело одне — число мовної моделі (`ошатність` / `_ошатність` = [від, до]) або штамп
-    прогону з нього. Числа нема → None: «нічого не чіпаємо» лишається названим.
+    прогону з нього, зведене до смуги одного щабля (`один_щабель`, рядок 8970): пара через два щаблі —
+    звідки б не прийшла (паспорт, плитка, збережений випадок) — пул, суд і бриф щаблем не стає.
+    Числа нема → None: «нічого не чіпаємо» лишається названим.
     """
     с = dict(сцен or {})
     for ключ in (ШТАМП_СМУГИ, "ошатність", "_ошатність"):
@@ -490,7 +600,8 @@ def смуга_ошатності(сцен):
                 a, b = float(о[0]), float(о[1])
             except (TypeError, ValueError):
                 continue
-            return min(a, b), max(a, b), "ошатність зі слів"
+            lo, hi = смуга_щабля(один_щабель(a, b))
+            return lo, hi, "ошатність зі слів"
     # НП-в крок 2 (принцип власника 01.10: «код має знати те, що може точно порахувати»):
     # смуга — ЛИШЕ число мовної моделі. Доти без нього смугу давала таблиця (пресет нагоди,
     # місце, дрес-код, а без них — «широкий дефолт 3–6»), і пул чистився за смугою, якої
@@ -702,7 +813,7 @@ def ліміт_відкритих_зон(відкриті_зони):
     return (типовий, False) if з is None else (з, з < типовий)
 
 
-def формальність_образу(E, сцен=None, тіло=None, ід_образу=None):
+def формальність_образу(E, сцен=None, тіло=None, ід_образу=None, образ=None):
     """K-KOH-02 / K-KOH-05+09 / K-KOH-10 — рівень образу проти сценарію.
     Формальність береться з поля речі (або з лексикона типу як фолбек); речі без неї
     просто не беруть участі — правило НЕ вигадує рівень.
@@ -714,7 +825,9 @@ def формальність_образу(E, сцен=None, тіло=None, ід_
     K-KOH-05+09: образ має влучати в діапазон сценарію; напрям промаху читається через
       risk_posture (з господарем краще трохи вище, у креативному — трохи нижче).
     K-KOH-10: відкритих зон не більше, ніж дає норма події (поле мовної моделі), без неї — дві;
-      година ліміту не міняє (наряд 3.7)."""
+      година ліміту не міняє (наряд 3.7).
+    `образ` — усі речі образу: форму щабля (`гілка_форми`) має образ, а не стан (жакет, знятий у приміщенні,
+      лишається частиною образу співбесіди); без нього — речі стану."""
     # ІНТЕРВАЛИ, НЕ ТОЧКИ (K-KOH-05, застосований до типів так само, як до кодів).
     # Розкид міряється між КРАЯМИ, що дивляться один на одного: якщо інтервали
     # перекриваються, спільний рівень існує і розкид нульовий. Саме це знімає high-low
@@ -866,6 +979,13 @@ def формальність_образу(E, сцен=None, тіло=None, ід_
         if сцен and сцен.get("діапазон"):
             lo, hi = сцен["діапазон"]
             рів = statistics.median(значення)
+            # ФОРМА ЩАБЛЯ (рядок 8950): образ, що має форму щабля цілі (групи типів `форма` драбини в одній гілці),
+            # належить цьому щаблю, хоч медіана чисел його речей нижча: жакет, брюки, блуза й лофери співбесіди мають
+            # числа 4–7, медіана 5–5,5 — і K-KOH-05 звав його «нижче нагоди» так само, як футболку з джинсами (soft ·
+            # нп 0,5). Форма лише знімає хибне «нижче»; вище щабля цілі вона рівня не підіймає.
+            _гф = гілка_форми(образ or одна_на_річ(E), щабель_смуги(lo)) if рів < lo else None
+            if _гф:
+                рів = float(lo)
             поза = max(0.0, lo - рів, рів - hi)
             if поза > 0:
                 бік = "нижче" if рів < lo else "вище"

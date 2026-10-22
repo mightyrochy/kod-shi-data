@@ -585,9 +585,10 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("person.palette.colour_kinds", "the kinds of item that carry the scheme's colour",
                  як="an outfit in which none of them carries colour does not keep the scheme: it reads as "
                     "bland, not calm"),
+        # Рядок 8918: пулу — лише порядок щаблів; одяг щабля нагоди в її гілці — у рядку рівня (`occasion_level`)
         _ЗП.Поле("pool", "the catalog items the code let through: in stock, right for this temperature and "
                          "the stated dress code, within her palette's lightness and her refusals; «formality» — "
-                         "the item's step or steps from…to, the same steps as the occasion: " + _БР_Щ.ЩАБЛІ_EN + "; «L» — lightness 0 to "
+                         "the item's step or steps from…to, the same steps as the occasion: " + _БР_Щ.ЩАБЛІ_ПОРЯДОК_EN + "; «L» — lightness 0 to "
                          "100; «hem_cm» — where the hem falls, cm above the floor; «fabric_c» — the °C the "
                          "fabric suits; «register» — the item's style language",
                  як="take items only from here and name each by its «n» alone; fitness for the "
@@ -1980,10 +1981,9 @@ def _жорстке_відсічення(r, темп_c=None, вето=None, ош
     сл = r.get("слот") or ""
     # П.17: лише явно буденне з розривом ≥3; смуга та сама, що в пулі й суді.
     if ошатність:
-        try:
-            _lo = min(float(ошатність[0]), float(ошатність[1]))
-        except (TypeError, ValueError, IndexError):
-            _lo = None
+        # нижня межа ОДНОГО щабля (рядок 8970): пара через два щаблі не стає смугою й тут
+        _смуга_о = _ФОРМ.смуга_ошатності({"ошатність": ошатність})
+        _lo = _смуга_о[0] if _смуга_о else None
         _, _стеля = _ФОРМ.інтервал_формальності(r)
         if _lo is not None and _стеля is not None and _стеля <= _lo - 3:
             if сл == "взуття" and re.search(r"шльопан|сланц|в.єтнамк|слайд", назва, re.I):
