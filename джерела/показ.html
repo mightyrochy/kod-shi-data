@@ -9789,8 +9789,13 @@ function стадіяВикликуП(повідомлення, модель){
      перший ключ змісту останньої «answer_schema» (так само впізнає їх стенд, `аудит/проби/види_речей.js`) */
   const сх = задача ? -1 : т.lastIndexOf('"answer_schema"');
   if (сх >= 0){
-    const к = /"(outfits|chosen|verdict)"\s*:/.exec(т.slice(сх, сх + 6000));
-    задача = к ? {outfits: 'OUTFITS_V1', chosen: 'CHOICE_V1', verdict: 'OUTFIT_REVIEW_V1'}[к[1]] : 'answer_schema';
+    /* від ключа до кінця — члени останнього обʼєкта повідомлення («answer_schema», за нею хіба «now»); ключі схеми —
+       за пріоритетом стенда: ремонт має й «chosen», і «outfits», а він — складання/ремонт */
+    let с = null;
+    try{ с = (JSON.parse('{' + т.slice(сх)) || {}).answer_schema; }catch(_){}
+    const є = к => !!(с && typeof с === 'object' && к in с);
+    задача = є('outfits') ? 'OUTFITS_V1' : є('chosen') ? 'CHOICE_V1' : є('verdict') ? 'OUTFIT_REVIEW_V1'
+           : 'answer_schema' + (с && typeof с === 'object' ? ' · ' + Object.keys(с).slice(0, 2).join(',') : '');
   }
   if ((модель && модель === МОДЕЛЬ_МОВИ_П) || /^Ти — перекладачка/.test(т)) return 'мова' + (задача ? ' · ' + задача : '');
   return задача ? задача + (/"(?:pool|пул)"\s*:/.test(т) ? ' · пул' : '') : 'інше';
@@ -9819,7 +9824,7 @@ async function плануватиВикликП(повідомлення, мод
     }
     з.причина = повтор.причина;
     console.warn('model · retry ' + повтор.причина + ' · stage=' + стадія + ' · attempt=' + (спроба + 1)
-      + (відп ? ' · ' + _межіП(відп) + ' · body=' + (await відп.clone().text().catch(()=>'')).replace(/\s+/g,' ').slice(0, 1200)
+      + (відп ? ' · ' + _межіП(відп) + ' · body=' + (відп.clone ? await відп.clone().text().catch(()=>'') : '').replace(/\s+/g,' ').slice(0, 1200)
               : ' · ' + з.помилка));
     await new Promise(р=>setTimeout(р, повтор.мс));
   }
