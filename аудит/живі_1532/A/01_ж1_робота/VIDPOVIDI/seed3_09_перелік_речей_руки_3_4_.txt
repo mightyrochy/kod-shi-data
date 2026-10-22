@@ -1,0 +1,37 @@
+── ПРОМПТ (2108 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Olive green textured blazer, relaxed fit cut, hip length, #556B2F, wool blend.\nCrisp white sheath dress, straight cut, knee length, #FFFFFF, silk poplin.\nBurnt orange loafers, almond toe shape, mid-calf length, #CC5500, polished leather.\nGold geometric stud earrings, medium size, #FFD700, 18k gold plating.\n\nThis outfit works because the relaxed-fit olive blazer adds a creative edge suitable for an office environment without being overly structured. The crisp white dress underneath keeps the silhouette clean and professional while allowing ease of movement throughout the day. Burnt orange loafers introduce a seasonal autumn warmth that complements her skin tones, while the gold earrings provide a subtle pop of luxury appropriate for the setting."}
+
+── ВІДПОВІДЬ (682 симв., 94.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "relaxed fit cut, hip length",
+      "slot": "outerwear",
+      "color_hex": "#556B2F",
+      "worn": true
+    },
+    {
+      "name": "dress",
+      "details": "straight cut, knee length",
+      "slot": "dress",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "almond toe shape, mid-calf length",
+      "slot": "shoes",
+      "color_hex": "#CC5500",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "geometric stud, medium size",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}

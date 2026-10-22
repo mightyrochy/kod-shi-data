@@ -1,0 +1,37 @@
+── ПРОМПТ (2813 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Charcoal gray wool-blend blazer, tailored fit, elbow-length with structured shoulders and notch lapels, slate blue (#2F4F4F) color, heavy-weight felted wool.\nSlim-fit raw denim trousers, straight-leg cut through the thigh to a clean ankle break, medium indigo wash (#4169E1), durable cotton twill.\nRound-toe leather loafers, low heel with subtle stitching details, deep olive green (#556B2F) color, smooth calfskin leather.\nMinimalist gold-tone pendant necklace in 18k yellow gold plating, delicate chain length hitting the sternum, polished metal finish.\nThis ensemble strikes the perfect balance between professional competence and creative flair suitable for an office environment, adhering to the requested neat dress code while offering warmth during autumn weather. The structured blazer provides a polished silhouette that commands respect in a creative setting, yet the raw denim softens the overall look enough to feel approachable and authentic rather than stiff or corporate. Choosing a dark slate blue jacket paired with medium indigo trousers creates a sophisticated monochromatic foundation that allows the rich olive accessories to pop without overwhelming the eye, perfectly complementing the season's palette. The selection of leather loafers ensures all-day comfort for walking between meetings while maintaining the refined aesthetic required for a daytime work setting where formal suits would be too rigid and casual t-shirts too informal."}
+
+── ВІДПОВІДЬ (891 симв., 95.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored fit, elbow-length with structured shoulders and notch lapels, heavy-weight felted wool fabric",
+      "slot": "outerwear",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight-leg cut through the thigh to a clean ankle break, durable cotton twill fabric",
+      "slot": "bottom",
+      "color_hex": "#4169E1",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "low heel with subtle stitching details, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#556B2F",
+      "worn": true
+    },
+    {
+      "name": "pendant necklace",
+      "details": "delicate chain length hitting the sternum, polished metal finish",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
