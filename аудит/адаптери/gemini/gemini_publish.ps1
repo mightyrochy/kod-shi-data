@@ -201,12 +201,21 @@ $script:PublishCodes = @{
 }
 
 # Перший раз — $false і позначка; далі — $true. Тека gemini не може засипати диспетчера рядками: на позначку
-# черги — один рядок і одна публікація, на ізоляцію чи кривий стан — один рядок на добу.
+# черги — по рядку на код і одна публікація, на ізоляцію чи кривий стан — один рядок на добу.
+function Get-SeenPath([string]$Key) { Join-Path (Join-Path $WorkDir 'seen') ((Get-Sha256Hex $Key) + '.txt') }
+
 function Test-Seen([string]$Key) {
-    $path = Join-Path (Join-Path $WorkDir 'seen') ((Get-Sha256Hex $Key) + '.txt')
+    $path = Get-SeenPath $Key
     if (Test-Path -LiteralPath $path) { return $true }
     Write-FileAtomic $path $Key
     $false
+}
+
+# Число зі стану: інше значення — 0, а не виняток, що зупинив би обробку всієї теки.
+function Get-Int($Obj, [string]$Name) {
+    $v = [string](Get-Prop $Obj $Name)
+    if ($v -match '^[0-9]{1,6}$') { return [int]$v }
+    0
 }
 
 function Get-Sha256Hex([string]$Text) {
@@ -247,15 +256,16 @@ function Get-Line([string]$Id) {
     if ((Get-RefSha "refs/remotes/origin/$queue") -ne $marker) {
         return Get-BadLine $Id 'не відповідає жодній позначці черги на GitHub'
     }
-    if (Test-Seen ("$queue $marker")) { return $null }
-    $turns = [int](Get-Prop $s 'turns'); $minutes = [int](Get-Prop $s 'minutes'); $ahead = [int](Get-Prop $s 'ahead')
+    # Стан пише gemini, тож будь-який стан може бути підробленим: опублікована позначка закрита для всіх наступних,
+    # а неопублікований результат займає лише свій код — підроблений ранній стан не забирає місця справжньої публікації.
+    if (Test-Path -LiteralPath (Get-SeenPath "published $queue $marker")) { return $null }
+    $turns = Get-Int $s 'turns'; $minutes = Get-Int $s 'minutes'; $ahead = Get-Int $s 'ahead'
+    # Лише слова цього файлу: поля стану поза переліками (зокрема `models`) у рядок не потрапляють.
     $reason = $script:RunCodes[$code]
-    if ($code -eq 'MODEL_INVALID') {
-        $models = @(@(Get-Prop $s 'models') | ForEach-Object { [string]$_ } | Where-Object { $_ -cmatch $script:ModelPattern } | Select-Object -First 20)
-        if ($models.Count -gt 0) { $reason += ' (agy models: ' + ($models -join ', ') + ')' }
-    }
+    if ($code -eq 'MODEL_INVALID') { $reason += " (перелік agy models — поле models у $OutDir\$Id.json, дані сторони gemini)" }
     $run = "$reason; ходів $turns, хв $minutes; черга $queue"
     if (-not (Get-Prop $s 'bundle')) {
+        if (Test-Seen "$queue $marker $code") { return $null }
         $tail = $(if (Test-Path -LiteralPath (Join-Path $OutDir ($Id + '.tail.txt'))) { "; кінець виводу агента — $OutDir\$Id.tail.txt" } else { '' })
         return "GEMINI ОБГОРТКА: НЕ ЗАВЕРШЕНО gemini/$slug — $run; комітів нема$tail."
     }
@@ -267,14 +277,15 @@ function Get-Line([string]$Id) {
         if (Test-Path -LiteralPath $retry) { $n = [int][System.IO.File]::ReadAllText($retry) }
         if ($n -lt $MaxPushRetries) {
             Write-FileAtomic $retry ([string]($n + 1))
-            Remove-Item -LiteralPath (Join-Path (Join-Path $WorkDir 'seen') ((Get-Sha256Hex "$queue $marker") + '.txt')) -Force
             return 'RETRY'
         }
     }
     if ($pc -eq 'OK') {
+        [void](Test-Seen "published $queue $marker")
         $what = $(if ($DryRun) { 'ПЕРЕВІРЕНО (без пушу)' } else { 'ОПУБЛІКОВАНО' })
         return "GEMINI ОБГОРТКА: $what gemini/$slug $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run."
     }
+    if (Test-Seen "$queue $marker refused $pc") { return $null }
     "GEMINI ОБГОРТКА: НЕ ОПУБЛІКОВАНО gemini/$slug $head — $($script:PublishCodes[$pc]); $run; бандл $OutDir\$Id.bundle."
 }
 
@@ -295,7 +306,7 @@ function Reset-State([string]$Id) {
     Remove-Item -LiteralPath (Join-Path (Join-Path $WorkDir 'state') ($Id + '.json')) -Force -ErrorAction SilentlyContinue
     $s = [System.IO.File]::ReadAllText((Join-Path $OutDir ($Id + '.json')), $script:Utf8) | ConvertFrom-Json
     $key = "gemini-queue/$(Get-Prop $s 'slug')/$(Get-Prop $s 'model')/$(Get-Prop $s 'n') $(Get-Prop $s 'marker')"
-    foreach ($k in @($key, "retry $key")) {
+    foreach ($k in @("retry $key", "$key refused PUSH_FAILED")) {
         Remove-Item -LiteralPath (Join-Path (Join-Path $WorkDir 'seen') ((Get-Sha256Hex $k) + '.txt')) -Force -ErrorAction SilentlyContinue
     }
     Write-WrapperLog "стан $Id забуто рукою власника — повтор"
@@ -347,7 +358,8 @@ function Main {
             if ($id -notmatch $script:IdPattern) { continue }
             $statePath = Join-Path (Join-Path $WorkDir 'state') ($id + '.json')
             if (Test-Path -LiteralPath $statePath) { continue }
-            $line = Get-Line $id
+            try { $line = Get-Line $id }
+            catch { Write-WrapperLog "стан ${id}: $($_.Exception.Message)"; $line = Get-BadLine $id 'не обробився' }
             if ($line -eq 'RETRY') { continue }
             if ($null -eq $line) {
                 Write-WrapperLog "стан $id — повтор, рядка нема"
