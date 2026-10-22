@@ -1438,7 +1438,7 @@ def мета_теги(html_текст):
 # Чужі вузли сторінки картки (Р04 Д.1): блоки «схожі/рекомендовані/переглянуті», відгуки, «швидкий перегляд» тайлів.
 # Вирізаються з розбору ДО читання полів — поле картки береться лише з вузла свого товару, а не чиститься після.
 _ЧУЖИЙ_КЛАС = re.compile(r"(?<![a-z])(?:related|similar|recommend|upsell|cross-?sell|viewed|recent|also|review|comment|feedback|"
-                         r"fast-?view|quick-?view|testimonial|rating-?list|(?:mobile|site|page|main|top|global)-?(?:header|footer))"
+                         r"fast-?view|quick-?view|testimonial|rating-?list|(?:mobile|site|main|top|global)-?(?:header|footer))"
                          r"(?![a-z])", re.I)
 _ЧУЖИЙ_ЗАГОЛОВОК = re.compile(r"схож|рекомендован|з цим (?:товаром )?купують|вам (?:також )?(?:може )?сподоб|ви (?:також )?(?:переглядали|дивил)|"
                               r"дивіться також|переглянут|відгук|інші товари|похожие|рекомендуем|смотрите также|с этим товаром|"
@@ -1452,18 +1452,23 @@ def _не_розмір_числом(текст):
     return bool(м) and not 30 <= int(м.group(1)) <= 60
 
 
+def _секція_чужого(секція, відгуки):
+    """Секція під заголовком «схожі/відгуки» чужа за будовою, а не за словом: ≥ 2 плитки «посилання + ціна» (схожі), а для
+    відгуків — немає ні плиток, ні розмірів, ні ціни, ні кнопок вибору (інакше це свій блок товару з випадковим словом)."""
+    плиток = sum(1 for a in секція.find_all("a", href=True)
+                 if any(_ЦІНА.search(_текст(п, 300)) for п in list(a.parents)[:3] if п is not секція.parent))
+    if плиток >= 2:
+        return True
+    своє = секція.select('[class*="size"], [class*="price"], [class*="sku"], select, input, button, option')
+    return відгуки and плиток == 0 and not своє
+
+
 def прибрати_чуже(суп, h1):
     """Вирізає з розбору вузли, що не належать товару: шапка, підвал, навігація, блоки за класом («related», «review»,
     «fast-view»…) і секції під заголовком «Схожі/З цим купують/Відгуки». Вузол, що містить h1, не чіпає. Повертає число
     вирізаних блоків (діагностика: скільки чужого відсічено, а не тихо загублено)."""
     предки = {id(p) for p in h1.parents} if h1 is not None else set()
     вирізано = 0
-    for вузол in list(суп.find_all(True)):
-        if вузол.decomposed or id(вузол) in предки:
-            continue
-        клас = " ".join(вузол.get("class") or []) + " " + str(вузол.get("id") or "")
-        if вузол.name in ("header", "footer", "nav", "aside") or _ЧУЖИЙ_КЛАС.search(клас):
-            вузол.decompose(); вирізано += 1
     for голова in list(суп.find_all(_ЗАГОЛОВКИ)):
         if голова.decomposed or голова is h1 or id(голова) in предки or not _ЧУЖИЙ_ЗАГОЛОВОК.search(_текст(голова, 90)):
             continue
@@ -1474,13 +1479,23 @@ def прибрати_чуже(суп, h1):
                 вузол = вузол.parent
             else:
                 break
+        відгуки = bool(re.search(r"відгук|отзыв", _текст(голова, 90), re.I))
+        секція = []
         for сус in list(вузол.find_next_siblings(True)):
-            if id(сус) in предки:
+            if id(сус) in предки or сус.name in _ЗАГОЛОВКИ[:рівень + 1] or сус.find(_ЗАГОЛОВКИ[:рівень + 1]) is not None:
                 break
-            if сус.name in _ЗАГОЛОВКИ[:рівень + 1] or сус.find(_ЗАГОЛОВКИ[:рівень + 1]) is not None:
-                break
+            секція.append(сус)
+        if not секція or not all(_секція_чужого(с, відгуки) for с in секція):
+            continue                                         # слово в заголовку без будови чужої секції — свій блок
+        for сус in секція:
             сус.decompose()
         вузол.decompose(); вирізано += 1
+    for вузол in list(суп.find_all(True)):
+        if вузол.decomposed or id(вузол) in предки:
+            continue
+        клас = " ".join(вузол.get("class") or []) + " " + str(вузол.get("id") or "")
+        if вузол.name in ("header", "footer", "nav") or _ЧУЖИЙ_КЛАС.search(клас):
+            вузол.decompose(); вирізано += 1
     return вирізано
 
 
