@@ -243,7 +243,7 @@ _БЕЗ_ГЕЙТІВ = {
         # не міняє і за зауваженнями не сортує — порядок вердикта лише названо таким, що нічого не каже.
         "First choose: in «chosen» name the «outfits_wanted» outfits of «verdict» you keep, and in «why» of "
         "each say what in «case» it answers — her occasion, «intent», «goal», her own words — so that their "
-        "ideas («pole») differ. Read every outfit of «verdict» before you choose: «verdict» comes in an order "
+        "ideas differ. Read every outfit of «verdict» before you choose: «verdict» comes in an order "
         "drawn by lot, and an outfit's place in it says nothing about her. Do not choose by how many remarks "
         "an outfit has or how mild they are: an outfit that answers her better stays with its remarks.",
         "«outfits» of the answer are exactly the outfits named in «chosen», in that order, each improved; an "
@@ -295,7 +295,8 @@ _БЕЗ_ГЕЙТІВ = {
         _РЯДОК_КІНЕЦЬ,
     ),
     вихід="ОБРАЗИ_V1",
-    поля_виходу=dict(_ПОЛЯ_ОБРАЗІВ, **{
+    # рядок 8751: «pole» — поле складання; без підпису його нема й у скелеті ремонту (`протокол.ПОЛЯ_НА_ПРОХАННЯ`)
+    поля_виходу=dict({к: v for к, v in _ПОЛЯ_ОБРАЗІВ.items() if к != "образи[].полюс"}, **{
         # рядок 5239: у скелеті «chosen» — один запис, і з «keep_at_least: 2» ремонт лишав два образи з п'яти
         "обрано[].ід": "«id» of an outfit of «verdict» you keep: «chosen» has one entry for each of the "
                         "«outfits_wanted» outfits",
