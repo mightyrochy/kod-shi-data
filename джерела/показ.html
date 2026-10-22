@@ -11982,7 +11982,14 @@ function підняти_міст_показу(){
   if (!ПІДЙОМ_МОСТА_П) ПІДЙОМ_МОСТА_П = (async ()=>{
     const пд = await підняти_pyodide_показу();
     $('пал-стан').textContent = 'Ще мить…';
-    const бін = Uint8Array.from(atob(МОДУЛІ_ПОКАЗУ), c=>c.charCodeAt(0));
+    let бін;
+    if (typeof Uint8Array.fromBase64 === 'function') бін = Uint8Array.fromBase64(МОДУЛІ_ПОКАЗУ);
+    else {
+      /* Старіші браузери: цикл без колбека на кожен байт вантажу. */
+      const рядок = atob(МОДУЛІ_ПОКАЗУ);
+      бін = new Uint8Array(рядок.length);
+      for (let і = 0; і < рядок.length; і++) бін[і] = рядок.charCodeAt(і);
+    }
     пд.unpackArchive(бін.buffer, 'zip', {extractDir: '/показ'});
     if (ПЕРЕВІРКА_БАЙТКОДУ_П) await пд.runPythonAsync(ПЕРЕВІРКА_БАЙТКОДУ_П);
     await пд.runPythonAsync(
