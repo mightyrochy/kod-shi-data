@@ -382,6 +382,9 @@ def невідомо(v, коди=()):
     # Колір, що належить іншій особі цієї події (майже-біле на весіллі гості): окремо від її
     # власного `вето`, бо це звичай події, а не її межа. Її явне слово сильніше (п.9).
     "reserved_colour": {к: к for к in ("near_white",)},
+    # ГІЛКА ЩАБЛЯ (рядок 8950): ділова чи світська форма того самого щабля драбини (`формальність.ДРАБИНА`) — її
+    # ставить та сама норма, що щабель (мовна модель чи письмова вимога), а не назва події
+    "formality_branch": {к: к for к in ("business", "social")},
     # СКІЛЬКИ ВІДКРИТОГО ТІЛА ДОРЕЧНО НА ПОДІЇ (НП-в, рядок 522): зон — декольте чи спина, ноги,
     # плечі. Ставить мовна модель своїм розумінням події (храм, похорон, співбесіда — none);
     # число рахує код: ліміт K-KOH-10 (`формальність.ЗОНИ_ПОДІЇ`). Нема — типовий ліміт корпусу.
@@ -586,7 +589,9 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
         "type": "object", "additionalProperties": False, "required": ["from", "to"],
         "properties": {"from": {"type": "integer", "minimum": 1, "maximum": 10},
                        "to": {"type": "integer", "minimum": 1, "maximum": 10}}}),
-        description="наскільки ошатний цей вихід, шкала 1–10: завжди — з її слів і події"),
+        description="наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код "
+                    "щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"),
+    "formality_branch": _перелік("formality_branch", "гілка щабля: ділова чи світська форма того самого щабля"),
     "intent": _перелік("intent", "намір: comfort_first — зручність і свобода руху понад усе; "
                                  "context_optimal — доречність і рівень події понад усе; "
                                  "statement — хоче вразити, заявити про себе; conventional — "
@@ -3072,7 +3077,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # Рядки нагоди брифа (рядок 532): рівень, напрям промаху, що вибиває зі щабля, нижня межа
     # високої події — доти українськими реченнями в `occasion_rules` промпта складання.
     "occasion_level": "the occasion's level of formality (values: level — its top step: home, everyday, neat, "
-                      "smart, formal, very_smart or ceremonial; rules_out — "
+                      "smart, formal, very_smart or ceremonial; form — business or social: the branch of that "
+                      "step this occasion takes; wear — the clothes of that step in this branch; rules_out — "
                       "what this occasion rules out: near_white — white and colours that read as white on photos "
                       "(cream, pale yellow, pale blue), bright_and_light — bright and light colours; loudness_max — "
                       "no colour louder than this, loudness = chroma C* × L*/50: deep wine or terracotta ≈ 23–32, "
@@ -3080,19 +3086,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "risk_direction": "when the occasion's level cannot be hit exactly, miss it in this direction (values: "
                       "posture — half_step_over: half a step overdressed, a sign of respect; "
                       "half_step_under_plus_detail: half a step underdressed plus one quality detail)",
-    "level_breakers_up_to_4": "the level is held by fabric, finish and shoes, not by the item's name; at this "
-                              "level nothing is ruled out",
-    "level_breakers_up_to_6": "the level is held by fabric, finish and shoes, not by the item's name; out of "
-                              "this level: sports shoes, sports knit, acid-washed denim",
-    "level_breakers_up_to_7": "the level is held by fabric, finish and shoes, not by the item's name; out of "
-                              "this level: sneakers, T-shirt, a kimono cardigan as the outer layer, mules and "
-                              "flip-flops, matt suede in shoes",
-    "level_breakers_up_to_8": "the level is held by fabric, finish and shoes, not by the item's name; out of "
-                              "this level: knit cardigan, kimono, mules, a block sandal of everyday look, matt "
-                              "cotton and suede, an everyday bag",
-    "level_breakers_up_to_10": "the level is held by fabric, finish and shoes, not by the item's name; out of "
-                               "this level: everything daytime — cotton, knit, suede, open everyday shoes, "
-                               "cardigans",
+    # Рядок 8911: одна заява зі щаблем замість п'яти порогів 4, 6, 7, 8, 10 — слова «що вибиває» несе колонка
+    # `вибиває` драбини (`формальність.ДРАБИНА`), щабель — свій у кожного з семи
+    "level_breakers": "the level is held by fabric, finish and shoes, not by the item's name (values: level — the "
+                      "step; out — what takes an outfit off this step; without out nothing is ruled out)",
     "high_occasion_floor": "the event's level starts from this step: no item sits "
                            "more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); "
                            "shoes at the outfit's level or above (values: from)",

@@ -1895,7 +1895,7 @@ def _її_речі(речі):
 # вечір у назві події модель розуміє тим самим ходом; години (`hour`) це не стосується — число
 # лише з її слів.
 _БЕЗ_ЦИТАТИ = ("event", "place_words", "mood", "question", "question_about", "rest", "quotes", "formality",
-               "reserved_colour", "open_zones", "part_of_day", "stylist_note", "minute")
+               "formality_branch", "reserved_colour", "open_zones", "part_of_day", "stylist_note", "minute")
 _РЕЧІ_З_ЦИТАТОЮ = ("wants", "vetoes", "retract", "own_items", "beliefs")
 
 
@@ -2895,12 +2895,16 @@ import збирач_промптів as _ЗП_Р
 # похорон, служба, прем'єра, весілля вдень 6–8 і ввечері 7–9) і 12 смуг дрес-кодів (`_смуги_дрес_кодів_en`), —
 # і вчилась, що ошатність дає назва події й година. ЩО ТЕПЕР. Кожен щабель — числа смуги, одяг, чия норма
 # ставить на нього вихід і звичайні приклади; правило одне для всіх нагод (`_ПРАВИЛО_ОШАТНОСТІ`).
+# КОД ЩАБЛЯ, НЕ ЧИСЛА (рядки 8970, 8971). Доти кожен щабель ішов моделі з числами смуги, і вона відповідала парою
+# чисел: живий ПІСЛЯ 3.7 — через два щаблі в 5 з 10 сцен, Ф1 — 66 зі 160 викликів. Тепер щабель — код, а гілки
+# (ділова, світська) — кожна з одягом, нормою й прикладами: модель обирає один із семи кодів і гілку, а числа шкали
+# лишаються мірою коду (НП-в).
 def _драбина_en():
-    """Щаблі драбини рядком для моделі: «neat 5–6: одяг; whose standard is норма; e.g. приклади» · …"""
+    """Щаблі драбини рядком для моделі: «neat — business: одяг; whose standard is норма; e.g. приклади | social: …» · …"""
     import формальність as _ФОРМ_
-    return " · ".join("%s %s: %s; whose standard is %s%s" % (
-        щ["код"], ("%d–%d" % щ["смуга"]) if щ["смуга"][0] != щ["смуга"][1] else "%d" % щ["смуга"][0],
-        щ["одяг"], щ["норма"], ("; e.g. " + щ["приклади"]) if щ["приклади"] else "") for щ in _ФОРМ_.ДРАБИНА)
+    гілка = lambda г: "%s%s; whose standard is %s%s" % (("%s: " % г["гілка"]) if г["гілка"] else "", г["одяг"],
+                                                         г["норма"], ("; e.g. " + г["приклади"]) if г["приклади"] else "")
+    return " · ".join("%s — %s" % (щ["код"], " | ".join(гілка(г) for г in щ["гілки"])) for щ in _ФОРМ_.ДРАБИНА)
 
 
 _ПОЛЯ_EN = {
@@ -3030,7 +3034,12 @@ _ПОЛЯ_EN = {
                      "snow, wet snow), also in the phrase that names the degrees, with that word as quote; none "
                      "when she says it stays dry; possible_rain when she says rain is only possible — not rain",
     # МОВА-ХІД-ТОНШЕ (рядок 3491): «завжди, без цитати, за якорями» каже правило ходу — тут лише щаблі
-    "formality": "how dressy this outing is: {from, to} — the numbers of one step of the ladder, never across two",
+    "formality": "how dressy this outing is: the code of one step of the ladder (home, everyday, neat, smart, "
+                 "formal, very_smart, ceremonial)",
+    # Рядок 8950: гілку ставить та сама норма, що щабель, — модель, а не назва події в коді
+    "formality_branch": "the branch of that step, given by the same standard that puts the outing on it: business — "
+                        "her workplace, a job interview, a business meeting; social — a reception, a celebration, "
+                        "her leisure; only for a step of the ladder that has both",
     # РОЗБІР-0210 А1 В-3 (рядок 1435): «я не хочу щоб вона знов щось сказала» (свекруха, ювілей) мовна модель
     # клала лише в `stylist_note`, `intent` лишався типовим conventional, і пул діставав дозу «на межі»
     # (40 речей `branch: edge`, ж1 і ж7). Прикладу неявного наміру — через чужий суд, який вона хоче
@@ -3235,8 +3244,10 @@ def _коди_норми():
     """Рядки кодів полів без цитати — від `formality` (якорі, смуги дрес-кодів) до `minute`: спільні для ходу
     розмови (`_коди_розмови`) і ходу плиток (`ХІД_ПЛИТОК`, рядок 6185), щоб словник норми події був один."""
     р = ["- formality — %s; without quote" % _ПОЛЯ_EN["formality"],
-         "  · the ladder (step and its numbers: clothes; whose standard puts an outing on the step; ordinary "
-         "examples, not codes): %s" % _драбина_en()]
+         "  · the ladder (step — its branches: clothes; whose standard puts an outing on the step; ordinary "
+         "examples, not codes): %s" % _драбина_en(),
+         "- formality_branch — %s; %s; without quote" % (_ПОЛЯ_EN["formality_branch"],
+                                                         _тип_en(_ВМ.СЦЕНАРІЙ["formality_branch"]))]
     # МОВА-1 (02.10): `part_of_day` — службове, як ці два, але доти його рядка тут не було: модель не
     # бачила ні опису, ні кодів, і «вдень», «по обіді», «на обід» без години губились (проба
     # `мова1_нечіткі.py`: 0 з 5 таких випадків).
@@ -3356,8 +3367,9 @@ _ПРАВИЛО_ПРОФІЛЮ = (
 # не чинники: вони не кажуть, чия норма діє. Розкид — вибір щабля, а не смуги: смуга — рівно числа щабля.
 _ПРАВИЛО_ОШАТНОСТІ = (
     "\"formality\" is in \"update\" on every turn once her words, the passport or \"chosen\" say what kind of "
-    "outing it is, also when it does not change; before that it is absent. It is without quote: the numbers of "
-    "one step of the ladder in \"codes\", found by one rule for every outing, in this order. (1) A written "
+    "outing it is, also when it does not change; before that it is absent. It is without quote: the code of "
+    "one step of the ladder in \"codes\", and \"formality_branch\" with it when the step has a business and a "
+    "social branch, found by one rule for every outing, in this order. (1) A written "
     "requirement — a dress code on the invitation, a written rule of the place — gives the step whose clothes "
     "it asks for, and nothing below moves it. (2) Otherwise, the step whose standard holds at this outing: "
     "only her own, the street's, the usual one of the place or the people she joins, the hosts' who mark an "
@@ -3604,7 +3616,9 @@ _ПРАВИЛО_НОРМИ = (
 # Рядок 6192: «to her as «ти»» у `says`, `invite`, правилах `invite` і `header` знято — шість разів на промпт; форму
 # звертання кажуть `_ПРАВИЛО_ФОРМИ` і межа `для_неї`.
 СКЕЛЕТ_РОЗМОВИ = {
-    "update": {"formality": "{from, to} — on every turn once the kind of outing is known (the \"formality\" rule)",
+    "update": {"formality": "the code of one step of the ladder — on every turn once the kind of outing is known "
+                            "(the \"formality\" rule)",
+               "formality_branch": "business or social, with formality on a step that has both branches",
                # Рядок 6753 (ЖИВІ-1016-3, Ж:02): «йога зранку, потім кава з подругою» — `occasion: sport` уривком усього
                # дня, без `occasion_part`, `place` і `event`: кава зникла, плитка «Спорт, активність». Вибір частини
                # (`occasion_part`) і суд пари `occasion_part other` + `occasion sport` (`паспорт_з_шару`) стоять, але
@@ -3684,7 +3698,7 @@ _ПРАВИЛО_НОРМИ = (
 # ЩО СТАЛО. Окреме оголошення: вхід — плитки, паспорт, профіль, вада формату; правила — що це за хід (R3 розмови,
 # переписане під нього), «лише коди» (R5) і ті самі сталі ошатності й норми (R8, R9); коди — ті самі рядки норми, що
 # в ході розмови (`_коди_норми`); скелет — лише `update` із цих чотирьох полів. Хід з її листом — як був.
-ПОЛЯ_ХОДУ_ПЛИТОК = ("formality", "part_of_day", "reserved_colour", "open_zones")
+ПОЛЯ_ХОДУ_ПЛИТОК = ("formality", "formality_branch", "part_of_day", "reserved_colour", "open_zones")
 
 ХІД_ПЛИТОК = _ЗП_Р.Оголошення(
     задача="хід_плиток",
@@ -3700,15 +3714,18 @@ _ПРАВИЛО_НОРМИ = (
                    як="answer again: one JSON object, every string a valid JSON string"),
     ),
     # Рядок 6185: R3 ходу розмови — тепер усе завдання; `need` і `text` цьому ходові нема куди писати.
-    правила=("She wrote nothing and only changed the tiles: \"update\" gives formality, part_of_day, "
-             "reserved_colour and open_zones for what \"chosen\" and the passport say now, and no other field.",
+    правила=("She wrote nothing and only changed the tiles: \"update\" gives formality (with formality_branch), "
+             "part_of_day, reserved_colour and open_zones for what \"chosen\" and the passport say now, and no "
+             "other field.",
              "Values are only the codes and forms from \"codes\".",
              _ПРАВИЛО_ОШАТНОСТІ,
              _ПРАВИЛО_НОРМИ),
     коди=tuple(_коди_норми()),
     вихід="ХІД_ПЛИТОК",
     скелет={"update": {
-        "formality": "{from, to} — once the kind of outing is known (the \"formality\" rule)",
+        "formality": "the code of one step of the ladder — once the kind of outing is known (the \"formality\" "
+                     "rule)",
+        "formality_branch": "business or social, with formality on a step that has both branches",
         "part_of_day": "its code from \"codes\", when the tiles or the passport give the time of the outing",
         "reserved_colour": "its codes from \"codes\", when the event has such a norm",
         "open_zones": "its codes from \"codes\", when the event has such a norm"}},
@@ -3779,7 +3796,10 @@ def паспорт_кодами(п):
             вих[поле] = _ВМ.код(перелік, п[ключ])
     ош = п.get("ошатність")
     if isinstance(ош, (list, tuple)) and len(ош) == 2:
-        вих["formality"] = {"from": ош[0], "to": ош[1]}
+        import формальність as _ФОРМ_П
+        щ = _ФОРМ_П.один_щабель(ош[0], ош[1])      # рядок 8970: моделі — код щабля, не числа шкали
+        if щ:
+            вих["formality"] = щ
     мк = п.get("макіяж") if isinstance(п.get("макіяж"), dict) else {}
     мк_к = {к: v for к, v in (("level", _ВМ.код("makeup_level", мк.get("рівень"))),
                              ("lips_hex", мк.get("губи") if _є(мк.get("губи")) else None)) if v}
@@ -4281,19 +4301,46 @@ def _перше_зі_списку(оновлення, поля):
 _СМУГА_РЯДКОМ = re.compile(r"\s*[\[{(]?\s*(\d{1,2})\s*(?:[,–—-]\s*(\d{1,2})\s*)?[\]})]?\s*")
 
 
+# КОД ЩАБЛЯ — СМУГОЮ ОДНОГО ЩАБЛЯ (рядки 8970, 8971). Модель дає `formality` кодом щабля драбини (`neat`), інколи
+# разом із гілкою (`smart_business`, «smart business»); код кладе в сценарій смугу цього щабля {from, to} (числа
+# шкали — міра коду, НП-в) і гілку полем `formality_branch`. Числа, що лишились у її відповіді (одне, пара, рядок із
+# ними — рядки 6290, 8647), — так само смуга ОДНОГО щабля: щабля меншого числа (`формальність.один_щабель`). Доти
+# пара через два щаблі ([7, 8], [4, 6]) ішла в паспорт, плитку й суд як є: «один щабель» тримав лише промпт.
+# У `перенесено` — `formality.step_code` чи `formality.number_band` (і `formality.one_step`, коли пару звужено).
 def _смуга_числом(оновлення):
-    """(оновлення, де formality одним числом 1–10 чи двома числами (і рядком із ними) стала смугою {from, to},
-    перенесене кодами)."""
+    """(оновлення, де formality — код щабля, число чи пара чисел — стала смугою одного щабля {from, to} (гілка з коду —
+    полем formality_branch), перенесене кодами)."""
     if "formality" not in оновлення:
         return оновлення, []
+    import формальність as _ФОРМ_С
     сире = оновлення["formality"]
+    if isinstance(сире, dict) and "value" in сире and "from" not in сире:
+        сире = сире["value"]
+    if isinstance(сире, str) and not _СМУГА_РЯДКОМ.fullmatch(сире):
+        слова = re.split(r"[\s_.,/-]+", сире.strip().lower())
+        щ = next((к for к in _ФОРМ_С.ЩАБЕЛЬ if к == "_".join(слова[:len(к.split("_"))])), None)
+        if not щ:
+            return оновлення, []
+        гілка = next((г for г in _ФОРМ_С.ГІЛКИ if г in слова[len(щ.split("_")):]), None)
+        lo, hi = _ФОРМ_С.смуга_щабля(щ)
+        нове = dict(оновлення, formality={"from": int(lo), "to": int(hi)})
+        if гілка and not оновлення.get("formality_branch"):
+            нове["formality_branch"] = гілка
+        return нове, ["formality.step_code"]
     м = _СМУГА_РЯДКОМ.fullmatch(сире) if isinstance(сире, str) else None
     з, _ = ([int(x) for x in м.groups() if x], None) if м else _пара("formality", {}, сире)
+    if isinstance(з, dict) and "from" in з and "to" in з:
+        з = [з["from"], з["to"]]
     числа = з if isinstance(з, list) and 1 <= len(з) <= 2 else [з]
     if not all(isinstance(x, (int, float)) and not isinstance(x, bool) and x == int(x) and 1 <= x <= 10
                for x in числа):
         return оновлення, []
-    return dict(оновлення, formality={"from": int(min(числа)), "to": int(max(числа))}), ["formality.number_band"]
+    lo, hi = _ФОРМ_С.смуга_щабля(_ФОРМ_С.один_щабель(min(числа), max(числа)))
+    нове = dict(оновлення, formality={"from": int(lo), "to": int(hi)})
+    if нове["formality"] == оновлення["formality"]:
+        return оновлення, []
+    return нове, ["formality.number_band"] + (["formality.one_step"] if (min(числа), max(числа)) != (lo, hi)
+                                              and len(set(_ФОРМ_С.щабель_смуги(x) for x in числа)) > 1 else [])
 
 
 def _на_своє_поле(оновлення):
