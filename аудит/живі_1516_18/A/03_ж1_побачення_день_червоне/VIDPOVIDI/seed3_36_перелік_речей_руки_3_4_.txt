@@ -1,0 +1,51 @@
+── ПРОМПТ (2588 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green wool-blend blazer, tailored fit with notch lapels, length ending just above the hip bone, #0f5e4a fabric.\nCrisp white silk button-up shirt, relaxed collar cut, mid-thigh length hem, #ffffff fabric.\nNavy blue wide-leg trousers, straight leg opening, full-length reaching the ankle, #1b2946 fabric.\nLeather loafers with a low heel, rounded toe, polished finish, #2a2f3d fabric.\nMinimalist gold stud earrings, small circular design, #ffd700 metal.\nA soft camel cashmere scarf, rectangular cut with fringed edges, #d2b48c fabric.\n\nThis outfit works perfectly for a first date in an autumn park because the tailored blazer and refined knit textures align with the requested \"neat\" dress code while remaining comfortable enough for walking outdoors. The emerald green of the jacket and navy trousers provide a rich, seasonal contrast to the warm daylight, echoing her desire for red tones through deep jewel shades that flatter her skin. Adding the camel scarf introduces an earthy autumnal note that complements the natural park setting without overpowering her features. Finally, the loafers offer practical elegance suitable for daytime strolls, ensuring she feels stylish yet approachable for a new romantic encounter."}
+
+── ВІДПОВІДЬ (1191 симв., 33.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend blazer",
+      "details": "Emerald green tailored fit with notch lapels, length ending just above the hip bone",
+      "slot": "outerwear",
+      "color_hex": "#0f5e4a",
+      "worn": true
+    },
+    {
+      "name": "silk button-up shirt",
+      "details": "Crisp white relaxed collar cut, mid-thigh length hem",
+      "slot": "top",
+      "color_hex": "#ffffff",
+      "worn": true
+    },
+    {
+      "name": "wide-leg trousers",
+      "details": "Navy blue straight leg opening, full-length reaching the ankle",
+      "slot": "bottom",
+      "color_hex": "#1b2946",
+      "worn": true
+    },
+    {
+      "name": "leather loafers",
+      "details": "Low heel rounded toe polished finish",
+      "slot": "shoes",
+      "color_hex": "#2a2f3d",
+      "worn": true
+    },
+    {
+      "name": "gold stud earrings",
+      "details": "Small circular design",
+      "slot": "earrings",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "cashmere scarf",
+      "details": "Soft camel rectangular cut with fringed edges",
+      "slot": "scarf",
+      "color_hex": "#d2b48c",
+      "worn": true
+    }
+  ]
+}
