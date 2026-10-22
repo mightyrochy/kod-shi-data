@@ -1,0 +1,44 @@
+── ПРОМПТ (2466 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cream tweed blazer with a tailored fit in a relaxed shoulder line, long length to the hips, color #e2ba9f, wool blend.\nCharcoal wide-leg trousers with a high waist and soft drape, full length to the ankle, color #36454f, heavy crepe.\nStrappy sandal heel pump with a moderate block heel, ankle length coverage, color #deb295, suede.\nGold vermeil chain link necklace with a small pendant, medium length, color #ffd700, polished gold metal.\nStructured leather clutch with a top handle and detachable strap, compact size, color #8c7b65, smooth calfskin.\n\nThis outfit strikes the perfect balance for a casual autumn evening date at a restaurant without exceeding the \"neat\" dress code requirement. The textured tweed blazer adds sophistication suitable for the artificial lighting and potential rain, while the dark crepe trousers provide an elegant foundation that keeps the silhouette sleek yet comfortable. Warm sandal heels ground the look with a touch of romance appropriate for a date night, and the gold accessories catch the light beautifully against her skin tone without appearing overly formal or stiff."}
+
+── ВІДПОВІДЬ (1026 симв., 89.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Cream tweed blazer",
+      "details": "tailored fit with a relaxed shoulder line, long length to the hips",
+      "slot": "outerwear",
+      "color_hex": "#e2ba9f",
+      "worn": true
+    },
+    {
+      "name": "Charcoal wide-leg trousers",
+      "details": "high waist with soft drape, full length to the ankle",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Strappy sandal heel pump",
+      "details": "moderate block heel, ankle length coverage",
+      "slot": "shoes",
+      "color_hex": "#deb295",
+      "worn": true
+    },
+    {
+      "name": "Gold vermeil chain link necklace",
+      "details": "small pendant, medium length",
+      "slot": "necklace",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "Structured leather clutch",
+      "details": "top handle with detachable strap, compact size",
+      "slot": "bag",
+      "color_hex": "#8c7b65",
+      "worn": true
+    }
+  ]
+}

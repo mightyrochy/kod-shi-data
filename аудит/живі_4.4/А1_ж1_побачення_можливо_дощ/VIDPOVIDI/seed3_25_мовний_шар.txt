@@ -1,0 +1,52 @@
+── ПРОМПТ (7535 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Гольф кашемір гладкий підворіт · kind code: sweater · colour code: milky · about it: text н=1
+2 — Сукня «Elise» пудрова · kind code: dress_generic · colour code: powder_pink · about it: text н=2
+3 — Босоніжки жіночі, REMONTE, шкіра, колір коричневий · kind code: heeled_sandals · colour code: brown · about it: text н=3
+4 — Жіноча сумка Welfare бордова · kind code: bag_generic · colour code: burgundy · about it: text н=4
+5 — Жіноче вовняне пальто casual з англійським коміром і поясом Bella Bicchi (персиковий, 48) · kind code: coat · colour code: peach · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; burgundy — бордовий; milky — молочний; peach — персиковий; powder_pink — пудровий.
+
+ТЕКСТИ:
+{
+"1": "Your top is a soft beige cashmere sweater with a high neck and long sleeves, finished with a ribbed trim at the cuffs and hem that hugs your waist gently.",
+"2": "These are textured brown trousers with a subtle woven pattern and clean vertical seams that add structure to your lower half while maintaining comfort.",
+"3": "Your shoes are brown heeled sandals made of leather, featuring an open toe and a heel that adds just the right amount of elegance for dinner without sacrificing ease.",
+"4": "This is a rich burgundy leather handbag with long handles and metal buckles at the front, offering both style and practicality for carrying your essentials.",
+"5": "Your outer layer is a peach-colored wool coat with a classic collar and a matching belt tied around the waist to define your figure while keeping you warm.",
+"6": "For your evening date, you are wearing a soft beige cashmere sweater with a ribbed trim that feels luxurious against your skin, paired with textured brown trousers for a grounded look. Over this comfortable base, you have a peach wool coat that adds warmth and structure to your silhouette. On your feet are brown heeled sandals that balance the height of your outfit while keeping it chic. A burgundy leather bag completes the set, bringing a rich pop of color that contrasts beautifully with your neutral tones. The entire ensemble flows perfectly together, creating an outfit that is both elegant and easy to wear.",
+"7": "Let your coat stay open as you arrive at the restaurant to keep it light and breezy for conversation",
+"8": "Once inside, slip the coat over one shoulder or hold it in your hand with the bag so you can move freely",
+"9": "Гольф кашемір гладкий підворіт, Сукня «Elise» пудрова, Босоніжки жіночі, REMONTE, шкіра, колір коричневий, Жіноча сумка Welfare бордова, Жіноче вовняне пальто casual з англійським коміром і поясом Bella Bicchi (персиковий, 48) — I accept that this outfit uses a tonal scheme because it creates a romantic monochrome silhouette which is exactly what you need for an evening date to feel cohesive and elegant under the restaurant lights."
+}
+
+── ВІДПОВІДЬ (2268 симв., 63.3 с, HTTP 200) ──
+```json
+{
+"1": "Твій гольф з кашеміру бежевого кольору має високий комір і довгі рукави, а також обробку резинкою на манжетах і подолі, яка ніжно підкреслює твою талію.",
+"2": "Це текстуровані штани коричневого кольору з ледь помітним тканим візерунком і чистими вертикальними швами, які додають структури нижній частині тіла, зберігаючи при цьому комфорт.",
+"3": "Твої туфлі — це босоніжки на підборах коричневого кольору зі шкіри з відкритим носком і каблуком, який додає саме стільки елегантності для вечері, не жертвуючи зручністю.",
+"4": "Це вишукана сумка бордового кольору зі шкіри з довгими ручками та металевими пряжками спереду, що пропонує як стиль, так і практичність для носіння твоїх необхідних речей.",
+"5": "Твій верхній шар — це вовняне пальто персикового кольору з класичним коміром і поясом у колір, зав’язаним на талії, щоб підкреслити фігуру й зігріти тебе.",
+"6": "На твоєму вечірньому побаченні ти одягла м'який бежевий кашеміровий гольф з обробкою резинкою, який приємний на дотик і чудово виглядає в парі з текстурованими коричневими штанами для стриманого образу. Зверху цього комфортного комплекту ти одягла персикове вовняне пальто, яке додає тепла та структури твоїй фігурі. На ногах у тебе босоніжки на підборах коричневого кольору, які збалансовують висоту вбрання, зберігаючи його елегантність. Сумка зі шкіри бордового кольору завершує образ, додаючи насичений колірний акцент, який чудово контрастує з твоїми нейтральними тонами. Весь ансамбль ідеально поєднується між собою, створюючи вбрання, яке є одночасно елегантним і зручним.",
+"7": "Залиш своє пальто розстебнутим під час прибуття до ресторану, щоб воно було легким і повітряним для спілкування.",
+"8": "Увійшовши всередину, накинь пальто на одне плече або тримай його в руці разом із сумкою, щоб вільно рухатися.",
+"9": "Гольф кашемір гладкий підворіт, Сукня «Elise» пудрова, Босоніжки жіночі, REMONTE, шкіра, колір коричневий, Жіноча сумка Welfare бордова, Жіноче вовняне пальто casual з англійським коміром і поясом Bella Bicchi (персиковий, 48) — Я погоджуюся, що цей образ використовує тональну схему, адже вона створює романтичний монохромний силует, який тобі потрібен для вечірнього побачення, щоб відчувати себе гармонійно та елегантно під ресторанним світлом."
+}
+```

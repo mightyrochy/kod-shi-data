@@ -1,0 +1,44 @@
+── ПРОМПТ (2600 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wool-blend jacket, tailored fit, knee-length hem, charcoal heather color with hex code #36454F, heavy knit fabric.\nHigh-waisted ponte roma trousers, straight-leg cut, full ankle length, deep forest green color with hex code #1C2B1E, stretch cotton blend fabric.\nSilk-blend sheath dress alternative (optional underlayer), empire waist, midi length, midnight blue color with hex code #0F1317, fluid satin fabric.\nLeather Chelsea boots, ankle height, block heel, black color with hex code #0D0C0D, smooth calfskin leather fabric.\nGold-plated minimalist pendant necklace, small drop design, polished metal finish, brass alloy material.\n\nThis outfit strikes the perfect balance between casual elegance and autumn warmth for an evening date at a relaxed restaurant. The structured charcoal jacket provides necessary protection against possible rain while maintaining a refined silhouette suitable for a neat dress code. Deep forest green trousers offer a sophisticated contrast to the cool outer layer, ensuring she looks polished yet comfortable throughout the meal. Completing the look with sleek black Chelsea boots and a delicate gold necklace adds a touch of personal charm without overwhelming the understated atmosphere of the venue."}
+
+── ВІДПОВІДЬ (1101 симв., 90.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "structured wool-blend jacket",
+      "details": "tailored fit, knee-length hem, heavy knit fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "high-waisted ponte roma trousers",
+      "details": "straight-leg cut, full ankle length, stretch cotton blend fabric",
+      "slot": "bottom",
+      "color_hex": "#1C2B1E",
+      "worn": true
+    },
+    {
+      "name": "silk-blend sheath dress alternative",
+      "details": "empire waist, midi length, fluid satin fabric",
+      "slot": "dress",
+      "color_hex": "#0F1317",
+      "worn": true
+    },
+    {
+      "name": "Leather Chelsea boots",
+      "details": "ankle height, block heel, smooth calfskin leather fabric",
+      "slot": "shoes",
+      "color_hex": "#0D0C0D",
+      "worn": true
+    },
+    {
+      "name": "Gold-plated minimalist pendant necklace",
+      "details": "small drop design, polished metal finish, brass alloy material",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
