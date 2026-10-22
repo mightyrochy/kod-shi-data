@@ -3,7 +3,7 @@
 Запуск: cd джерела && python3 проби/рука2_пул_зон.py [теку_джерел_ДО]"""
 import pathlib, sys, os, json
 sys.path.insert(0, sys.argv[1] if len(sys.argv) > 1 else str(pathlib.Path(__file__).resolve().parent.parent)); os.chdir(sys.path[0])
-import bridge as Б, правило_руки2 as П, fit as ПС
+import bridge as Б, поломки as П, fit as ПС
 вх0 = dict(json.load(open('стенд_вх.json')), каталог='каталог_повний.xml', сід=3, сценарій=dict(нагода='побачення', місце='ресторан', година=20, темп_c=5, ошатність=[4, 5]))
 ТІЛА = dict(O=dict(плечі=112, груди=114, талія=104, стегна=114, високе_стегно=106), A=dict(плечі=92, груди=90, талія=72, стегна=108, високе_стегно=96),
             H=dict(плечі=98, груди=94, талія=80, стегна=99, високе_стегно=90))
