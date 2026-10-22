@@ -160,6 +160,16 @@ async function обгорнути(стор){
     }
     /* ЧИСТИЙ ЧАС PYTHON: інтервал `містП` включає чекання чужого Python (потік один), тож чистий час
        міряє сам воркер моста (4.1-Б-3) — `мс_python` у `ЖУРНАЛ_МОСТА_П` сторінки, без підміни `bridge.виклик` */
+    /* КАРТКИ НА ЕКРАНІ (наряд 4.6): мить, коли на сторінці стало N карток (`.картка`), — те, що
+       бачить жінка, а не кінець руки в стані */
+    const кк = document.getElementById('картки');
+    if (кк){
+      let було = 0;
+      new MutationObserver(() => {
+        const н = кк.querySelectorAll('.картка').length;
+        if (н !== було){ було = н; П.push({к: 'картки', т: тепер(), н}); }
+      }).observe(кк, {childList: true, subtree: true});
+    }
     const оФото = window.фотоДляЗапитуП;
     window.фотоДляЗапитуП = async function(){
       const з = {к: 'фото', т0: тепер(), поз: Ч.поз};
@@ -167,6 +177,23 @@ async function обгорнути(стор){
       try { return await оФото.apply(this, arguments); } finally { з.т1 = тепер(); }
     };
   });
+}
+
+/* CHASY_ZNIMOK=<файл.png> (наряд 4.6): знімок 390×844 на мить, коли готова ПЕРША рука (`ЗБ.етап[поз] === 4`), —
+   стан «перша картка готова, решта ткуться». Вікно повертається, яким було. Без змінної — нічого. */
+async function знімокПершої(стор){
+  if (!process.env.CHASY_ZNIMOK) return;
+  try {
+    await стор.waitForFunction(() => typeof ЗБ !== 'undefined' && ЗБ && (ЗБ.етап || []).some(е => е === 4), null,
+      {timeout: 900000, polling: 200});
+    await new Promise(р => setTimeout(р, 800));
+    const було = стор.viewportSize();
+    await стор.setViewportSize({width: 390, height: 844});
+    await new Promise(р => setTimeout(р, 400));
+    await стор.screenshot({path: process.env.CHASY_ZNIMOK});
+    if (було) await стор.setViewportSize(було);
+    console.log('   ЧАСИ: знімок першої руки → ' + process.env.CHASY_ZNIMOK);
+  } catch (е) { console.log('   ЧАСИ: знімок першої руки не вдався: ' + String(е).slice(0, 160)); }
 }
 
 let _pythonВід = 0;   // номер (`н`) останнього виклику Python, уже названого попереднім звітом
@@ -225,6 +252,9 @@ async function звіт(стор){
   const моделі = д.події.filter(з => з.к === 'модель');
   const чекали = моделі.reduce((а, з) => а + (з.старт ? з.старт - з.т0 : 0), 0);
   const обслуг = моделі.reduce((а, з) => а + ((з.т1 || д.кінець) - (з.старт || з.т0)), 0);
+  const картки = д.події.filter(з => з.к === 'картки' && з.н > 0);
+  if (картки.length) console.log('  КАРТКИ НА ЕКРАНІ (с): перша ' + с(картки[0].т) + ' · усі ' + с(картки[картки.length - 1].т)
+    + ' · ' + картки.map(з => з.н + '@' + с(з.т)).join(' '));
   const поРуках = {};
   д.події.filter(з => з.к === 'стадія' && з.текст === '').forEach(з => { поРуках[рука(з.поз)] = с(з.т); });
   console.log('  ПІДСУМОК: збір ' + с(д.кінець) + ' с · коду (Pyodide) ' + (коду / 1000).toFixed(1) + ' с у '
@@ -237,4 +267,4 @@ async function звіт(стор){
   return вих;
 }
 
-module.exports = {УВІМКНЕНО, затримкаМс, почекати, обгорнути, звіт, повтор};
+module.exports = {УВІМКНЕНО, затримкаМс, почекати, обгорнути, звіт, повтор, знімокПершої};
