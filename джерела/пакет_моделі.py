@@ -472,10 +472,15 @@ import внутрішня_мова as _ВМ_П
                      "asked for herself argues with the day, say so gently — that part is hers to decide; where "
                      "an item you chose argues with the day, say why you still chose it",
     "образи[].свідомо[].річ": "«n» of the item alone",
-    "потрібно[].слот": "the kind of item that is missing, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["slot"]),
-    "потрібно[].тип": "its type, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["item_type"]),
-    "потрібно[].колір": "its color, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["color_name"]),
-    "потрібно[].тканина": "its fabric, one of: %s" % ", ".join(_ВМ_П.ТАБЛИЦЯ["fabric"]),
+    # рядок 8663: полюс — один код. Склеєних («tonal_column|ease_the_knot») і власних назв («tone_on_tone», «free_1»)
+    # у replay ЖИВІ-58 — 137 у 36 відповідях із 282; своя ідея моделі — полюс «free», а назва ідеї — підпис
+    "образи[].полюс": "the one idea this outfit follows, a single code; an idea of your own is «free», and its "
+                      "«caption» names it",
+    # переліки кодів «one of: …» — тією самою нотацією, що листок-перелік скелета (`протокол.перелік_скелета`)
+    "потрібно[].слот": "the kind of item that is missing, " + _ПР.перелік_скелета(_ВМ_П.ТАБЛИЦЯ["slot"], en=True),
+    "потрібно[].тип": "its type, " + _ПР.перелік_скелета(_ВМ_П.ТАБЛИЦЯ["item_type"], en=True),
+    "потрібно[].колір": "its color, " + _ПР.перелік_скелета(_ВМ_П.ТАБЛИЦЯ["color_name"], en=True),
+    "потрібно[].тканина": "its fabric, " + _ПР.перелік_скелета(_ВМ_П.ТАБЛИЦЯ["fabric"], en=True),
     "потрібно[].опис": "what is missing, in a few words",
 }
 
@@ -821,6 +826,8 @@ def скелет_схеми(вузол):
     РОЗБІР ЗА СТРУКТУРОЮ ВУЗЛА, А НЕ ЗА СЛОВОМ ТИПУ: ключі `поля`/`по_ключу`/
     `елемент` однозначні, а назви типів (`обʼєкт` з U+02BC) — рівно те місце, де
     копія в другому модулі розходиться на один невидимий символ.
+    ПЕРЕЛІК — «<одне з: a, b>» (рядок 8663, `протокол.перелік_скелета`): «a|b» модель брала за значення й
+    склеювала; одне значення (`версія`) — саме значення.
     """
     в = вузол or {}
     if "поля" in в:
@@ -830,7 +837,8 @@ def скелет_схеми(вузол):
     if "елемент" in в:
         return [скелет_схеми(в.get("елемент"))]
     if в.get("значення"):
-        return "|".join(str(x) for x in в["значення"])
+        з = в["значення"]
+        return str(з[0]) if len(з) == 1 else "<%s>" % _ПР.перелік_скелета(з)
     return "<%s>" % (в.get("тип") or "будь_що")
 
 
