@@ -99,7 +99,7 @@ def читати_кадри(тека=None):
     Кешується за (шлях, mtime), як `читати_збагачення`: рішення кличуть і каталог, і
     картка, а файл лежить незмінним увесь сеанс."""
     тека = тека or os.path.dirname(os.path.abspath(__file__)) or "."
-    for ш in (os.path.join(тека, КАДРИ_ІМ), os.path.join(тека, КАДРИ_ІМ + ".gz")):
+    for ш in (os.path.join(тека, КАДРИ_ІМ + ".gz"), os.path.join(тека, КАДРИ_ІМ)):  # .gz першим: `фід_збагачення.читати_збагачення`
         if not os.path.exists(ш):
             continue
         ключ = (ш, os.path.getmtime(ш))
