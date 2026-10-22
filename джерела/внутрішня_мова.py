@@ -1739,8 +1739,6 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "which_white_answer_no_side": "her answer about white does not say whether it is warm or cool, and the "
                                   "photo does not decide it either",
     # ── ошатність, стиль і нагода (`формальність`, `реєстри`, `суд_намір`) ────────
-    "dress_code_level_depends_on_event": "the dressiness of this dress code depends on the type of event, and "
-                                         "the type is not named (values: dress_code — dress code code)",
     "item_type_unknown_dress_code_unchecked": "the cards do not name the type of some items, so the code did "
                                               "not check the dress code for them (values: count — how many "
                                               "such items; dress_code — dress code code)",
