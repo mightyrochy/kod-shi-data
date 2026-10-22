@@ -9,7 +9,7 @@
 import sys, pathlib, json
 _К = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_К))
-import feed as Ф, bridge as B, правило_руки2 as ПР2, силует_пропорції as SP
+import feed as Ф, bridge as B, поломки as ПР2, силует_пропорції as SP
 
 вх = json.load(open(_К / "стенд_вх.json", encoding="utf-8"))
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml"); вх["гілка"] = 0

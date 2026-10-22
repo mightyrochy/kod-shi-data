@@ -7,7 +7,7 @@
 Прогін: python3 проби/рука2_пари.py [файли чи теки вердиктів] (типово — аудит/тести/)."""
 import gzip, json, os, re, sys; from math import comb
 КОРІНЬ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, os.path.join(КОРІНЬ, "джерела")); import правило_руки2 as ПР2
+sys.path.insert(0, os.path.join(КОРІНЬ, "джерела")); import поломки as ПР2
 РАНГ = {"вдягну як є": 2, "вдягну, якщо змінити одну річ": 1, "не вдягну": 0}
 ключ = lambda в: (РАНГ[в["вердикт_людини"]], -len([x for x in str(в.get("замінити") or "").split("+") if x]))
 образ = lambda в: (sorted(str(в.get("склад") or "").split("+")), str(в.get("дібрав_код") or ""))
