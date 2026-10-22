@@ -458,12 +458,39 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "${MSG}"
 
+          # Рядок 8651: push поза `paths` збірки не запускає, тож публікацію, якої новіші коміти не стосуються,
+          # переносимо на нову голову; штамп лишається SHA джерел. Зміни в `paths` публікує їхня власна збірка.
+          OSNOVA="${SOURCE_SHA}"
           for sproba in 1 2 3 4 5; do
             git fetch --no-tags origin refs/heads/main
             MAIN_SHA=$(git rev-parse FETCH_HEAD)
-            if [ "${MAIN_SHA}" != "${SOURCE_SHA}" ]; then
-              echo "main ${MAIN_SHA} вже новіший за джерела ${SOURCE_SHA} — застарілу публікацію пропущено" | tee -a "$GITHUB_STEP_SUMMARY"
-              exit 0
+            if [ "${MAIN_SHA}" != "${OSNOVA}" ]; then
+              SHLYAKHY=()
+              while IFS= read -r shl; do
+                case "${shl}" in
+                  '!'*) SHLYAKHY+=(":(exclude,glob)${shl#!}") ;;
+                  *) SHLYAKHY+=(":(glob)${shl}") ;;
+                esac
+              done < <(awk '/^    paths:$/ {p=1; next} p && /^ *#/ {next} p && /^      - / {print; next} p {exit}' .github/workflows/zbirka.yml \
+                       | sed "s/^      - '//; s/'$//")
+              if [ "${#SHLYAKHY[@]}" -eq 0 ]; then
+                echo "paths збірки не прочитано з zbirka.yml — публікацію джерел ${SOURCE_SHA} не перенесено" | tee -a "$GITHUB_STEP_SUMMARY"
+                exit 1
+              fi
+              ZMINY=$(git -c core.quotepath=off diff --name-only "${SOURCE_SHA}" "${MAIN_SHA}" -- "${SHLYAKHY[@]}")
+              if [ -n "${ZMINY}" ]; then
+                echo "main ${MAIN_SHA} вже новіший за джерела ${SOURCE_SHA} і змінив paths збірки — застарілу публікацію пропущено, публікує його збірка" | tee -a "$GITHUB_STEP_SUMMARY"
+                exit 0
+              fi
+              PUBLIKATSIIA=$(git rev-parse HEAD)
+              git checkout -q --detach "${MAIN_SHA}"
+              if ! git cherry-pick "${PUBLIKATSIIA}"; then
+                git cherry-pick --abort || true
+                echo "main ${MAIN_SHA}: публікація джерел ${SOURCE_SHA} не лягає на новіші коміти (конфлікт) — пропущено без силового push" | tee -a "$GITHUB_STEP_SUMMARY"
+                exit 0
+              fi
+              OSNOVA="${MAIN_SHA}"
+              echo "main ${MAIN_SHA} не змінив paths збірки — публікацію джерел ${SOURCE_SHA} перенесено на нову голову" | tee -a "$GITHUB_STEP_SUMMARY"
             fi
             if git push origin HEAD:refs/heads/main; then
               echo "артефакт джерел ${SOURCE_SHA} запушено зі спроби ${sproba}"
