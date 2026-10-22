@@ -8,6 +8,8 @@
 const fs = require("fs"), path = require("path"), { execSync } = require("child_process");
 const { JSDOM } = require("jsdom"), { IDBFactory, IDBKeyRange } = require("fake-indexeddb");
 const ДЖ = path.join(__dirname, "..");
+/* готовність пакета, а не 700 мс (наряд 0.4, той самий корінь, що рядки 7410 і 7420) */
+const { чекатиНа } = require(path.join(ДЖ, "прилади", "доказ_прогону.js"));
 const ФАЙЛ = process.argv[2] ? path.resolve(process.argv[2]) : path.join(ДЖ, "показ.html");
 
 /* живий вихід мосту: саме він наповнює `поломка`, `різних_правил`, `пул_спільних` */
@@ -46,7 +48,8 @@ const КАРТКА = (рука, n) => ({рука, ітерацій: рука ===
       w.CompressionStream = CompressionStream; w.DecompressionStream = DecompressionStream;
     }});
   const w = дом.window;
-  await new Promise(р => setTimeout(р, 700));
+  await чекатиНа(() => w.eval("typeof П !== 'undefined' && !!П && Array.isArray(П.картки) && П.картки.length === 4"),
+                 "пакет із хеша розпаковано");
   /* стан збирання: те, що на прогоні лишає по собі виклик 0 і `запити` */
   w._міст = міст;
   w.eval("ЗБ = {картки:[], стадії:[], етап:[], діагноз:[], ключ:null, готово:true,"
