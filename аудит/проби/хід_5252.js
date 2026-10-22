@@ -56,11 +56,12 @@ const пауза = мс => new Promise(р => setTimeout(р, мс));
     await с.waitForSelector('#сц-приклади button.приклад', { state: 'visible', timeout: 180000 });
     console.log('перевідкрито, підказка видна за', Date.now() - t0, 'мс · режим', await с.evaluate(() => РЕЖИМ));
   }
-  await с.evaluate(() => { window.__підйоми = 0; window.__міст = []; const пп = підняти_pyodide_показу;
-    window.підняти_pyodide_показу = (...а) => { window.__підйоми++; return пп(...а); };
+  /* 4.1-Б-3: Python у воркері — підйом лічиться на `піднятиВоркерМостуП`, готовність — `МІСТ_ГОТОВИЙ_П` */
+  await с.evaluate(() => { window.__підйоми = 0; window.__міст = []; const пп = піднятиВоркерМостуП;
+    window.піднятиВоркерМостуП = (...а) => { window.__підйоми++; return пп(...а); };
     const м = містП; window.містП = async (ім, д, ...а) => { const з = {ім, t0: Math.round(performance.now())}; window.__міст.push(з);
       try { const р = await м(ім, д, ...а); з.мс = Math.round(performance.now()) - з.t0; return р; } catch (е) { з.збій = String(е).slice(0, 120); throw е; } }; });
-  const готовийМіст = () => с.evaluate(() => typeof pyodide_показу !== 'undefined' && !!pyodide_показу);
+  const готовийМіст = () => с.evaluate(() => typeof МІСТ_ГОТОВИЙ_П !== 'undefined' && МІСТ_ГОТОВИЙ_П);
   console.log('сценарій за', Date.now() - t0, 'мс · міст готовий:', await готовийМіст());
   if (КОЛИ === 'pyodide') await с.evaluate(() => підняти_міст_показу().then(() => 1));
   await с.evaluate(() => { window.__мова = []; const о = містП; window.містП = async (ім, д, ...а) => { const р = await о(ім, д, ...а);
