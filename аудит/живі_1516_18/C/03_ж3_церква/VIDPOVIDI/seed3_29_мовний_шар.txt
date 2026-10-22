@@ -1,0 +1,54 @@
+── ПРОМПТ (7504 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Довге пальто кімоно вовняне темно-сіре · kind code: coat · colour code: grey · about it: text н=1
+2 — Спідниця плісе срібло · kind code: skirt · colour code: grey · about it: text н=2
+3 — Чорні мереживні туфлі-човники · kind code: pumps · colour code: black · about it: text н=3
+4 — Хустка Harmony White – ручна робота · kind code: kerchief · colour code: white · about it: text н=4
+5 — Сумка чорного кольору Saddle · kind code: saddle_bag · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; grey — сірий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "A floor-length dark grey wool coat with a soft drape, featuring a wrap front closure secured by a matching fabric belt tied at the waist.",
+"2": "A shimmering silver pleated midi skirt that flows gently from the hips to just below the knee, offering subtle movement and elegance.",
+"3": "Sleek black lace pumps with a sharp pointed toe and a slender stiletto heel that elevate your step without compromising comfort during an afternoon gathering.",
+"4": "A delicate white hand-crocheted headscarf with intricate floral cutwork, worn as a stylish head covering to frame your face and add texture to your ensemble.",
+"5": "A structured black saddle bag made of smooth leather with tonal monogram detailing across the front flap and a wide adjustable strap for versatile wear.",
+"6": "You are wearing a dark grey wool coat with a wrap front and a self-tie belt that cinches your waist, paired with a silver pleated midi skirt and black lace pumps. A white crochet headscarf adds a soft, textural touch to your hair, while the black saddle bag carries all your essentials. This ensemble works beautifully for a morning church service followed by a family lunch, blending the reverence of the occasion with a polished yet comfortable look perfect for autumn daylight.",
+"7": "Tuck the coat’s belt securely to highlight your waist and add structure under the wrap style.",
+"8": "Довге пальто кімоно вовняне темно-сіре — I kept this oversized navy wool coat as your hero piece; its dark tone and relaxed cut provide a modern contrast to the traditional church setting.",
+"9": "Чорні мереживні туфлі-човники — I replaced the grey sneakers with these black lace pumps. They match your skin tone at the edge, continuing the leg line under the midi skirt and elevating the outfit's formality from 'everyday' to 'ceremonial'.",
+"10": "Спідниця плісе срібло, Чорні мереживні туфлі-човники, Сумка чорного кольору Saddle, Довге пальто кімоно вовняне темно-сіре — The remark about the skirt's formality level being 'neat' rather than 'ceremonial' is accepted because the dramatic navy coat and classic lace pumps elevate the entire ensemble to the necessary ceremonial register, overriding the single bottom item's rating while respecting your day."
+}
+
+── ВІДПОВІДЬ (2240 симв., 47.0 с, HTTP 200) ──
+```json
+{
+"1": "Довге темно-сіре вовняне пальто кімоно з м’яким драпіруванням, має застібку на запах спереду та пояс у тон, зав’язаний на талії.",
+"2": "Блискуча срібна плісована спідниця міді, що легко струмує від стегон до колін, додаючи образу витонченості та елегантності.",
+"3": "Стильні чорні мереживні туфлі-човники з гострим носком і тонким шпильковим підбором, які роблять твій крок легшим без шкоди для комфорту на полуденній зустрічі.",
+"4": "Ніжна біла в’язана гачком хустка з вишуканим квітковим мереживом, яку можна носити як стильний головний убір, щоб обрамити обличчя та додати текстури твоєму ансамблю.",
+"5": "Структурована чорна сумка-сідло зі шкіри гладкої фактури з тоновим монограмою на передній клапані та широким регульованим ремінцем для зручного носіння.",
+"6": "Ти одягнена в темно-сіре вовняне пальто кімоно із запахом і поясом, який підкреслює твою талію, у поєднанні зі срібною плісованою спідницею міді та чорними мереживними туфлями-човниками. Біла в’язана гачком хустка додає ніжного текстурного акценту твоєму волоссю, а сумка-сідло вміщує всі необхідні речі. Цей образ чудово підходить для ранкової служби у церкві та сімейного обіду, поєднуючи урочистість події з вишуканим і комфортним виглядом, який ідеальний для освітлених сонячним світлом днів.",
+"7": "Надійно зав’яжи пояс пальта, щоб підкреслити талію та додати структури під стиль із запахом.",
+"8": "Я залишила цей об’ємний темно-синій вовняний тренч як твій головний елемент; його темний тон і вільний крій створюють сучасний контраст з традиційним церковним середовищем.",
+"9": "Я замінила сірі кросівки на ці чорні мереживні туфлі-човники. Вони гармонують із тоном твоєї шкіри біля краю, продовжуючи лінію ноги під спідницею міді та підвищують урочистість образу з «повсякденного» до «церемоніального».",
+"10": "Срібна плісована спідниця міді, чорні мереживні туфлі-човники, сумка-сідло чорного кольору та темно-сіре вовняне пальто кімоно — зауваження про те, що рівень урочистості спідниці «охайний», а не «церемоніальний», прийняте, оскільки драматичний темно-синій тренч і класичні мереживні туфлі піднімають весь ансамбль до необхідного церемоніального рівня, перекриваючи оцінку окремого нижнього елемента та поважаючи твій день."
+}
+```
