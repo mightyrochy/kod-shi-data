@@ -1,5 +1,20 @@
-/* НАСКРІЗНИЙ ПРОГІН: реальний JS показу (jsdom) + реальний Python-міст (HTTP) + сценарна модель. */
+/* НАСКРІЗНИЙ ПРОГІН: реальний JS показу (jsdom) + реальний Python-міст (HTTP) + сценарна модель.
+   Запуск із теки `джерела`: `python3 міст_http.py &` і `NODE_PATH=node_modules node наскрізь.js`.
+   ДОКАЗ (наряд 0.4, рядок 8430): доти фідом стояв `каталог_жіночий.xml`, якого в репозиторії нема, — міст відповідав
+   `FileNotFoundError`, картки були `null`, а прилад падав на `П.картки` чи виходив з rc 0, що читалось як прогін.
+   Тепер фід — `NASKRIZ_FEED` або `каталог_повний.xml`, і його нема — відмова з адресою розпакування до старту; пауз нема
+   (готовність `чекатиНа`), а наприкінці — рядок `ДОКАЗ` (`прилади/доказ_прогону.js`): збір завершено, карток 4,
+   вердикт записано; інакше «НЕ ДОВЕДЕНО» і rc 1. Заглушка моделі тут відстала від протоколу (промпти — JSON ПАКЕТ_V1,
+   а вона впізнає давні українські): привести її до контракту чи видалити прилад — рішення менеджера (рядок 8430);
+   сценарна модель за протоколом — у `аудит/проби/рв6_стенд.js`. */
 const fs = require("fs"), path = require("path"), http = require("http");
+const { Доказ, чекатиНа, головаДерева } = require("./прилади/доказ_прогону.js");
+const ФІД = process.env.NASKRIZ_FEED || "каталог_повний.xml";
+if (!fs.existsSync(path.join(__dirname, ФІД))) {
+  console.log("НЕ ДОВЕДЕНО: нема файла каталогу " + ФІД + " поруч із мостом — розпакуй: "
+              + "python3 -c \"import feed; print(feed.каталог_на_диску('" + ФІД + "'))\"");
+  process.exit(2);
+}
 const { JSDOM } = require("jsdom"); const { IDBFactory, IDBKeyRange } = require("fake-indexeddb");
 /* Плейсхолдери й довідник — спільні з тест_показу.js, див. показ_шаблон.js
    (рядок 69 дошки: окремий список тут відстав від сторінки й не підставляв
@@ -8,11 +23,11 @@ const { прочитатиДовідникJSON, підставитиШаблон
 const шаблон = fs.readFileSync(process.env.POKAZ || path.join(__dirname, "показ.html"), "utf8");
 const html = підставитиШаблон(шаблон, {
   __МОДУЛІ_ПОКАЗУ__: "", __ЗБІРКА_ПОКАЗУ__: "тест", __ВІДБИТОК__: "0",
-  __ФІД_ПОКАЗУ__: "каталог_жіночий.xml", __КАТАЛОГ_ПОКАЗУ__: "каталог_жіночий.xml · 8666 оферів",
+  __ФІД_ПОКАЗУ__: ФІД, __КАТАЛОГ_ПОКАЗУ__: ФІД,
   __ДОВІДНИК_ПОКАЗУ__: прочитатиДовідникJSON(__dirname),
 });
 const дом = new JSDOM(html, {runScripts: "dangerously", pretendToBeVisual: true, url: "https://x.test/", beforeParse(w){ w.indexedDB = new IDBFactory(); w.IDBKeyRange = IDBKeyRange; w.fetch = async () => ({ok:false, status:0, text: async()=>""}); w.scrollTo = () => {}; }});
-const w = дом.window; const пауза = мс => new Promise(р=>setTimeout(р, мс));
+const w = дом.window;
 const винятки = []; w.addEventListener("error", e => винятки.push(String(e.error || e.message)));
 w.console.warn = () => {}; w.console.error = (...a) => винятки.push(a.map(String).join(" ").slice(0,200));
 function міст(ім, дані){ return new Promise((ok, no) => { const б = Buffer.from(JSON.stringify({ім, дані})); const q = http.request({host:"127.0.0.1", port:8765, method:"POST", headers:{"Content-Length": б.length}}, r => { let s=""; r.on("data", d => s+=d); r.on("end", () => { try{ ok(JSON.parse(s)); }catch(e){ no(e); } }); }); q.on("error", no); q.end(б); }); }
@@ -45,8 +60,13 @@ w.модельП = async (промпт, фото) => { n++; виклики.push(
       .map(л => ({name: л.split(/[,(]/)[0].replace(/^[^:]*:\s*/, "").trim(), slot: код(л),
                  color_hex: (л.match(/#[0-9a-fA-F]{6}/) || [null])[0], own: null}))}); }
   з.тип = "інше"; return "…"; };
+const доказ = new Доказ({прилад: "наскрізь", код: {дерево: головаДерева(__dirname)}, режим: {фід: ФІД, міст: "HTTP :8765"},
+  модель: "сценарна заглушка наскрізь.js", входи: {показ: process.env.POKAZ || path.join(__dirname, "показ.html"), фід: path.join(__dirname, ФІД)},
+  очікувано: {карток: 4, вердикт_записано: "так"}});
+const кінець = код => { console.log(доказ.рядок()); if (process.env.DOKAZ) доказ.записати(process.env.DOKAZ);
+  process.exit(код === undefined ? (доказ.вердикт().доведено ? 0 : 1) : код); };
 (async () => {
-  await пауза(300);
+  await чекатиНа(() => w.eval("typeof МІСТ_П !== 'undefined' && typeof зібратиОбразиП === 'function'"), "сторінка показу піднялась");
   w.eval("МІСТ_П.адреса='https://x.test/міст'; МІСТ_П.токен='tok-test';");
   w.eval("КОЛІР = {шкіра:'#e9c6aa', волосся:'#7d5330', очі:'#7a8a99', кільце:null, точки:null}");
   for (const [ід, v] of [["мр-плечі",40],["мр-груди",92],["мр-талія",74],["мр-стегна",98],["мр-зріст",168],["сц-нагода","щоденне"],["сц-місце","театр"],["сц-година","13"],["сц-темп","26"]]) { const е = w.document.getElementById(ід); if (е) е.value = v; else винятки.push("нема поля "+ід); }
@@ -55,15 +75,23 @@ w.модельП = async (промпт, фото) => { n++; виклики.push(
   w.eval("ЧАТ_П.push({хто:'людина', текст:" + JSON.stringify("літературний фестиваль просто неба, потім денний театр; хочу лляну сорочку, не хочу чорного") + ", тема:'сценарій'})");
   const вх = w.eval("JSON.stringify(зібратиВхід())"); console.log("зібратиВхід:", вх.slice(0,300));
   const t = Date.now(); w.eval("зібратиОбразиП().catch(e=>console.error('зібратиОбразиП: '+e.message))");
-  await пауза(500);
-  while (!w.eval("(ЗБ && ЗБ.готово) ? 1 : 0") && Date.now()-t < 250000) await пауза(2000);
-  if (!w.eval("ЗБ ? 1 : 0")) { console.log("ЗБ не створено — збирання не стартувало; статус:", w.eval("($('зб-статус')||{}).textContent")); console.log("винятки:", винятки); process.exit(0); }
+  const готово = await чекатиНа(() => w.eval("(typeof ЗБ !== 'undefined' && ЗБ && ЗБ.готово) ? 1 : 0"), "ЗБ.готово", 250000, 200)
+    .then(() => true, e => { console.log(String(e.message)); return false; });
+  if (!w.eval("(typeof ЗБ !== 'undefined' && ЗБ) ? 1 : 0")) { console.log("ЗБ не створено — збирання не стартувало; статус:", w.eval("($('зб-статус')||{}).textContent")); console.log("винятки:", винятки); доказ.обірвано("збирання не стартувало"); кінець(1); }
+  if (готово) доказ.завершено("ЗБ.готово");
   console.log("готово:", w.eval("ЗБ.готово"), "за", Math.round((Date.now()-t)/1000), "с; викликів моделі:", n, JSON.stringify(виклики.map(x=>x.тип)));
   console.log("паспорт у П:", w.eval("JSON.stringify(ПАСПОРТ_П||null)").slice(0,140)); console.log("шапка:", w.eval("випадокРядком()[0]"));
   console.log("діагноз:", w.eval("JSON.stringify(ЗБ.діагноз)").slice(0,900));
   const картки = JSON.parse(w.eval("JSON.stringify((ЗБ.картки||[]).map(к=>к&&({рука:к.рука, речей:(к.речі||[]).length, назви:(к.речі||[]).filter(x=>x.назва).length, підпис:к.підпис, текст:(к.текст||'').slice(0,60), частини:(к.речі||[]).filter(x=>x.частина_комплекту).length, поломки:(к.палітра||{}).поломки})))"));
   console.log("картки:", JSON.stringify(картки));
   console.log("винятки:", винятки.length ? винятки : "нема");
-  try { w.eval("В[0]=Object.assign(відповідь(0),{верд:'вдягну як є', для_мене:'саме моє', коментар:'проба'}); записати(0)"); await пауза(800); console.log("вердикт записано:", w.eval("JSON.stringify((В[0]||{}).записано)")); } catch(e){ console.log("записати:", e.message); }
-  process.exit(0);
-})();
+  доказ.факт("карток", картки.filter(Boolean).length);
+  /* вердикт — лише на живу картку: без пакета (`П` null) запису нема чого брати, і це «не доведено», а не кидок */
+  if (w.eval("(typeof П !== 'undefined' && П && (П.картки || []).length) ? 1 : 0")) {
+    try { await w.eval("В[0]=Object.assign(відповідь(0),{верд:'вдягну як є', для_мене:'саме моє', коментар:'проба'}); записати(0)");
+          console.log("вердикт записано:", w.eval("JSON.stringify((В[0]||{}).записано)"));
+          доказ.факт("вердикт_записано", w.eval("(В[0]||{}).записано") ? "так" : "ні"); }
+    catch(e){ console.log("записати:", e.message); доказ.факт("вердикт_записано", "ні"); }
+  } else доказ.факт("вердикт_записано", "ні");
+  кінець();
+})().catch(e => { console.log("наскрізь обірвався:", e && e.message || e); доказ.обірвано("кидок"); кінець(2); });
