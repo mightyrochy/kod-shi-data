@@ -7,7 +7,12 @@
 import os, re, sys, collections as C
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import feed
-оф = feed.читати_yml(sys.argv[1] if len(sys.argv) > 1 else feed.каталог_на_диску())[0]
+КАТ = sys.argv[1] if len(sys.argv) > 1 else feed.каталог_на_диску()
+оф = feed.читати_yml(КАТ)[0]
+# вхід виміру — першим рядком (наряд 0.4, рядок 8101): числа двох прогонів порівнюються лише на тому самому архіві
+_п = feed.походження_каталогу(КАТ)
+print("вхід: %s ← %s · sha256 %s" % (os.path.basename(КАТ), _п["архів"] and os.path.basename(_п["архів"]) or "(без архіву)",
+                                      (_п["sha256_архіву"] or "—")[:16]))
 одяг = [o for o in оф if feed.слот(o) in ("верх", "низ", "сукня", "верхній_шар")]
 П = lambda o: o.get("параметри") or {}
 склад = [(o, П(o).get("склад") or "") for o in одяг]

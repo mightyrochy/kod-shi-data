@@ -1068,7 +1068,7 @@ def читати_назви_карток(тека=None):
     """{url: назва з картки крамниці} — або порожньо, коли файла нема (тоді джерело просто мовчить)."""
     import os as _os
     тека = тека or _os.path.dirname(_os.path.abspath(__file__)) or "."
-    for ш in (_os.path.join(тека, НАЗВИ_КАРТОК_ІМ), _os.path.join(тека, НАЗВИ_КАРТОК_ІМ + ".gz")):
+    for ш in (_os.path.join(тека, НАЗВИ_КАРТОК_ІМ + ".gz"), _os.path.join(тека, НАЗВИ_КАРТОК_ІМ)):  # .gz першим: `фід_збагачення.читати_збагачення`
         if not _os.path.exists(ш):
             continue
         ключ = (ш, _os.path.getmtime(ш))

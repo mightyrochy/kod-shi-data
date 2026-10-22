@@ -119,7 +119,7 @@ def шлях(тека=None):
     if з_оточення and не_порожній(з_оточення) and _os.path.exists(з_оточення):
         return з_оточення
     тека = тека or _os.path.dirname(_os.path.abspath(__file__)) or "."
-    for ім in (РОЗБІР_ІМ, РОЗБІР_ІМ + ".gz"):
+    for ім in (РОЗБІР_ІМ + ".gz", РОЗБІР_ІМ):  # .gz першим: `фід_збагачення.читати_збагачення`
         ш = _os.path.join(тека, ім)
         if _os.path.exists(ш):
             return ш
