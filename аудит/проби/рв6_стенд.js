@@ -1554,21 +1554,27 @@ function українськоюОпису(текст){
    питання DOVIDKA_PYTANNIA, none — решта; `text` — «Записала.»; `ask` — лише коли після її оновлення
    сценарію й досі нема (та сама умова, що в шві); `invite` — теми з `advice_topics`, доречні на
    будь-якому стані (прикраси, реєстр), до трьох. Суддя всього цього — код (`суд_частин`), не заглушка. */
-/* Ошатність, яку заглушка ставить за мовну модель (НП-в крок 2): ті самі числа, що доти давав пресет
-   виду (`паспорт_нагоди.ВИДИ_НАГОДИ`) і таблиця місць (`формальність.МІСЦЯ_ДІАПАЗОНИ`), — щоб замір
-   «до/після» на стенді міряв зміну джерела, а не числа. Жива модель (ZHYVA) ставить своє. */
-const СТЕНД_ОШАТНІСТЬ_НАГОДИ = {everyday: [3, 4], home: [1, 2], walk: [2, 4], work: [6, 8], job_interview: [6, 8],
-  school: [4, 5], formal_day: [5, 7], formal_evening: [6, 8], wedding_day: [6, 8], wedding_guest: [7, 9],
-  celebration: [5, 7], mourning: [5, 7], date: [4, 5], theatre: [4, 6], museum: [3, 5], church: [4, 6],
-  sport: [1, 2], travel: [2, 4]};
-const СТЕНД_ОШАТНІСТЬ_МІСЦЯ = {fine_dining: [7, 8], restaurant_upscale: [6, 8], restaurant_casual: [4, 5], bar: [3, 5],
-  cafe: [3, 4], theatre: [4, 6], opera_premiere: [6, 8], office: [5, 7], office_corporate: [6, 8], office_creative: [3, 5],
-  job_interview: [6, 8], conference: [5, 7], presentation: [6, 8], walk: [2, 4], park: [2, 3], playground: [2, 3],
-  school_parents_meeting: [4, 5], hospital_visit: [3, 5], long_transit: [2, 4], flight: [2, 4], museum: [3, 5],
-  vernissage: [5, 7], house_party: [3, 5], festive_dinner: [5, 7], club: [4, 6], sport: [1, 2], home: [1, 2],
-  church_service: [4, 6], wedding_day: [6, 8], wedding_evening: [7, 9], funeral: [5, 7]};
+/* Ошатність, яку заглушка ставить за мовну модель (рядок 8951): щабель і гілку — з тієї самої драбини, що бачить жива
+   модель (рядок «the ladder» у `task.codes`, `мовний_шар._драбина_en`), а не з копії знятих таблиць. Доти тут жили
+   `СТЕНД_ОШАТНІСТЬ_НАГОДИ` (18 нагод) і `СТЕНД_ОШАТНІСТЬ_МІСЦЯ` (31 місце) — смуги знятих `МІСЦЯ_ДІАПАЗОНИ` через два
+   щаблі (офіс [5, 7], робота [6, 8]), і картка офісу казала «Охайне – Ошатне». Тепер сумлінна модель шукає слово коду
+   місця, інакше нагоди, серед прикладів щаблів (`e.g. …`) і відповідає кодом щабля, як велить правило; не знайшла —
+   поля нема, як у моделі, що не знає (щабель письмової вимоги тоді дає код, `формальність.смуга_ошатності`). */
+function щабельЗаглушки(д, коди){
+  const ряд = (((д.task || {}).codes) || []).find(р => р.startsWith('  · the ladder')) || '';
+  const драбина = ряд.slice(ряд.indexOf('): ') + 3).split(' · ').map(щ => ({код: щ.slice(0, щ.indexOf(' — ')),
+    гілки: щ.slice(щ.indexOf(' — ') + 3).split(' | ').map(г => ({гілка: (/^(business|social): /.exec(г) || [])[1] || null,
+                                                                приклади: (/; e\.g\. (.*)$/.exec(г) || [])[1] || ''}))}));
+  for (const к of коди.filter(x => typeof x === 'string')){
+    const слова = к.split('_').filter(с => с.length >= 4);
+    for (const щ of драбина) for (const г of щ.гілки)
+      if (слова.some(с => new RegExp('\\b' + с + '\\b', 'i').test(г.приклади)))
+        return Object.assign({formality: щ.код}, щ.гілки.length > 1 && г.гілка ? {formality_branch: г.гілка} : {});
+  }
+  return null;
+}
 /* НГ-5 (рядок 754): частина дня, яку подія зазвичай має без слова «вечір» у назві — заглушка грає правило
-   промпту ходу плиток (театр, концерт, опера — вечір) своєю таблицею, як ошатність — `СТЕНД_ОШАТНІСТЬ_МІСЦЯ`. */
+   промпту ходу плиток (театр, концерт, опера — вечір) своєю таблицею. */
 const СТЕНД_ЧАСТИНА_ДНЯ = {theatre: 'evening', opera_premiere: 'evening', club: 'night', wedding_evening: 'evening'};
 function ходомРозмови(текст){
   const д = JSON.parse(текст), слова = String(д.her_new_message || '');
@@ -1591,12 +1597,11 @@ function ходомРозмови(текст){
   const need = (ДОВІДКА_ПИТАННЯ && слова.trim() === ДОВІДКА_ПИТАННЯ.trim()) ? 'app'
     : ((д.photos || []).length || (питання && /оціни|підійд|личит|поєдну|як тобі/i.test(слова))) ? 'look' : 'none';
   const має = к => в[к] != null || (д.passport || {})[к] != null || (д.chosen || {})[к] != null;
-  /* НП-в крок 2: ошатність ставить мовна модель ЗАВЖДИ — заглушка грає її числом за місцем, інакше
-     за нагодою (з її слів, паспорта чи обраних плиток `chosen`); числа — ті, що доти давав пресет коду */
+  /* НП-в крок 2: ошатність ставить мовна модель ЗАВЖДИ — заглушка грає її щаблем драбини за місцем, інакше
+     за нагодою (з її слів, паспорта чи обраних плиток `chosen`), рядок 8951 */
   if (!в.formality){
     const з = к => [в[к], (д.chosen || {})[к], (д.passport || {})[к]].map(x => (x && x.value) || x).find(x => typeof x === 'string');
-    const смуга = СТЕНД_ОШАТНІСТЬ_МІСЦЯ[з('place')] || СТЕНД_ОШАТНІСТЬ_НАГОДИ[з('occasion')] || null;
-    if (смуга) в.formality = {from: смуга[0], to: смуга[1]};
+    Object.assign(в, щабельЗаглушки(д, [з('place'), з('occasion')]) || {});
   }
   /* НП-в: скільки відкритих зон і чий колір на події — теж розуміння мовної моделі, не пресет коду.
      Заглушка грає їх за нагодою/місцем: стримані нагоди — `none`, весілля — `one` і біле нареченої
@@ -1652,7 +1657,7 @@ function ходомПлиток(текст){
   const з = к => [(д.chosen || {})[к], (д.passport || {})[к]].find(x => typeof x === 'string');
   const година = [(д.chosen || {}).hour, (д.passport || {}).hour].find(x => typeof x === 'number');
   if (!в.part_of_day && година === undefined && СТЕНД_ВЕЧІР_ПЛИТКИ.includes(з('occasion'))) в.part_of_day = 'evening';
-  return JSON.stringify({update: Object.fromEntries(['formality', 'part_of_day', 'reserved_colour', 'open_zones']
+  return JSON.stringify({update: Object.fromEntries(['formality', 'formality_branch', 'part_of_day', 'reserved_colour', 'open_zones']
     .filter(к => в[к] !== undefined).map(к => [к, в[к]]))});
 }
 /* РЕМОНТ ПОРАДИ (рядок 3930, `мовний_шар.ПОРАДА`): сумлінна модель пише пораду ще раз у межах правил — до трьох
