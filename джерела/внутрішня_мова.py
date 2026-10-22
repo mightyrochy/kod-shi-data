@@ -2247,8 +2247,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                           "down)",
     "open_zones_over_limit": "more zones of the body are open than the context asks for (values: zones — zone "
                              "codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté "
-                             "or back; limit — the limit; evening — an evening context, where the limit is "
-                             "two; conservative — a reserved audience or a place of worship, where the "
+                             "or back; limit — the limit, two when the event names no stricter norm; "
+                             "conservative — a reserved audience or a place of worship, where the "
                              "limit is one lower)",
     "cover_open_zones": "cover the open zones: for this audience or place none is expected open — a "
                         "jacket, a wrap or a longer hem",
@@ -3048,10 +3048,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                       "on the other side (values: side — warm or cool)",
     "jewellery_metal": "the metal of jewellery and hardware — the one answer for this outfit (values: metal — "
                        "gold, silver or gold_and_silver; from — her_choice or palette)",
-    "evening_outing": "an evening outing: fabrics with shine or a pronounced texture, colours deeper and richer "
-                      "than by day, more open skin allowed; a matt, light, fully closed outfit reads as daytime",
-    "day_outing": "a daytime outing: matt fabrics, lighter, less open skin, more practical; shine and deep "
-                  "evening colours read as overdressing",
+    # Наряд 3.7: вечір — світло, не ошатність; «більше відкритого ввечері» і «переодягання вдень» знято — щабель той самий
+    "evening_outing": "an outing in evening light: shine and a pronounced texture read well, colours can be deeper "
+                      "and richer than by day; the occasion's step stays the same",
+    "day_outing": "an outing in daylight: matt fabrics and lighter colours read best, shine looks harsher and deep "
+                  "evening colours heavier; the occasion's step stays the same",
     "mourning_event": "a mourning event: large items and details dark and quiet — black, graphite, navy, "
                       "chocolate, deep burgundy; matt fabrics, no shine near the face, no festive trims "
                       "(sequins, tulle, feathers, rhinestones); \"lighter by day\" and \"shine in the evening\" "
