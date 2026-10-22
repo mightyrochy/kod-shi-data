@@ -48,7 +48,7 @@ def невідомо(v, коди=()):
 
 # ── ОДНА ТАБЛИЦЯ ВІДПОВІДНОСТІ: код внутрішньої мови → чинний ключ ядра ──────
 # Ключі ядра — рівно ті, що читає код: нагоди `паспорт_нагоди.ПСЕВДОНІМИ_НАГОДИ`, місця
-# `МІСЦЯ_ДІАПАЗОНИ`, дрес-коди `КОДИ_ДІАПАЗОНИ`, реєстри `реєстри.РЕЄСТРИ`, зони
+# `ТАБЛИЦЯ["place"]`, дрес-коди `ТАБЛИЦЯ["dress_code"]`, реєстри `реєстри.РЕЄСТРИ`, зони
 # `паспорт_нагоди.ЗОНИ_ВЕТО`, слоти `graph.СЛОТИ`, типи `feed.ТИП_КЛЮЧІ`, тканини
 # `verify.ВОЛОКНА`, візерунки `verify.КЛАСИ_МОТИВУ`, класи кольору `колір_річ`, назви
 # кольору `verify.ЛЕКСИКОН`, опади `сценарій.ОПАДИ_КАНОН`, мета `profile.МЕТИ`.
@@ -1739,8 +1739,6 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "which_white_answer_no_side": "her answer about white does not say whether it is warm or cool, and the "
                                   "photo does not decide it either",
     # ── ошатність, стиль і нагода (`формальність`, `реєстри`, `суд_намір`) ────────
-    "dress_code_level_depends_on_event": "the dressiness of this dress code depends on the type of event, and "
-                                         "the type is not named (values: dress_code — dress code code)",
     "item_type_unknown_dress_code_unchecked": "the cards do not name the type of some items, so the code did "
                                               "not check the dress code for them (values: count — how many "
                                               "such items; dress_code — dress code code)",
@@ -2247,8 +2245,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                           "down)",
     "open_zones_over_limit": "more zones of the body are open than the context asks for (values: zones — zone "
                              "codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté "
-                             "or back; limit — the limit; evening — an evening context, where the limit is "
-                             "two; conservative — a reserved audience or a place of worship, where the "
+                             "or back; limit — the limit, two when the event names no stricter norm; "
+                             "conservative — a reserved audience or a place of worship, where the "
                              "limit is one lower)",
     "cover_open_zones": "cover the open zones: for this audience or place none is expected open — a "
                         "jacket, a wrap or a longer hem",
@@ -3048,10 +3046,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                       "on the other side (values: side — warm or cool)",
     "jewellery_metal": "the metal of jewellery and hardware — the one answer for this outfit (values: metal — "
                        "gold, silver or gold_and_silver; from — her_choice or palette)",
-    "evening_outing": "an evening outing: fabrics with shine or a pronounced texture, colours deeper and richer "
-                      "than by day, more open skin allowed; a matt, light, fully closed outfit reads as daytime",
-    "day_outing": "a daytime outing: matt fabrics, lighter, less open skin, more practical; shine and deep "
-                  "evening colours read as overdressing",
+    # Наряд 3.7: вечір — світло, не ошатність; «більше відкритого ввечері» і «переодягання вдень» знято — щабель той самий
+    "evening_outing": "an outing in evening light: shine and a pronounced texture read well, colours can be deeper "
+                      "and richer than by day; the occasion's step stays the same",
+    "day_outing": "an outing in daylight: matt fabrics and lighter colours read best, shine looks harsher and deep "
+                  "evening colours heavier; the occasion's step stays the same",
     "mourning_event": "a mourning event: large items and details dark and quiet — black, graphite, navy, "
                       "chocolate, deep burgundy; matt fabrics, no shine near the face, no festive trims "
                       "(sequins, tulle, feathers, rhinestones); \"lighter by day\" and \"shine in the evening\" "
