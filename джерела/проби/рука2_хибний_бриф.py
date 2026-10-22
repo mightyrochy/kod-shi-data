@@ -1,7 +1,7 @@
 """6635, 6792: рядки брифа зламаного правила в руки 2 — є й хибні, не зняті; пакет руки 1 незмінний. Аргумент: джерела ДО."""
 import pathlib, sys, os, json, hashlib, re
 sys.path.insert(0, sys.argv[1] if len(sys.argv) > 1 else str(pathlib.Path(__file__).resolve().parent.parent)); os.chdir(sys.path[0])
-import bridge as Б, правило_руки2 as П, fit as ПС, hypergraph as Г
+import bridge as Б, поломки as П, fit as ПС, hypergraph as Г
 вх0 = dict(json.load(open('стенд_вх.json')), каталог='каталог_повний.xml', сід=3, сценарій=dict(нагода='побачення', місце='ресторан', година=20, темп_c=5, ошатність=[4, 5]))
 ІНШЕ = {'K-BOD-02': dict(обхвати=dict(плечі=92, груди=90, талія=72, стегна=108, високе_стегно=96)),   # вхід — як `рука2_хибні_каталог`
         'R-COL-16': dict(очі='#6b4a2e'), 'K-COL-06-M': dict(драп_сирий=dict(метал='золото'))}
@@ -28,5 +28,5 @@ for код in ('K-BOD-02', 'K-FIT-03', 'K-CRA-01', 'K-KOH-02', 'R-COL-16', 'K-CO
     if нове: assert set(C) == set(B) and рядки['хибні'], рядки
     рядки.update({'%s_2' % к: C[к][:90] for к in рядки['хибні']})
     print(json.dumps(рядки, ensure_ascii=False), flush=True)
-    assert not П.вимкнені() and not getattr(П, 'зламані', lambda: ())()
+    assert not П.зламані()
 П.жереб = стар
