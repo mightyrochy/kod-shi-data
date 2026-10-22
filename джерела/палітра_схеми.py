@@ -1,3 +1,4 @@
+import statements as _СТ
 # -*- coding: utf-8 -*-
 """СХЕМИ Й ПРИЙОМИ ПАЛІТРИ: ролі кольору в образі (РОЛІ, ДЕФОЛТ_РОЛЕЙ, ЯКІРНІ_СЛОТИ),
 двійники констант реєстру, які ЧИТАЮТЬСЯ, а не копіюються (НЕЙТРАЛЬ_C_СТЕЛЯ, ГУЧНО,
@@ -1165,8 +1166,8 @@ def повідомлення_великих(речі, спец_слоти, за_
     інший_колір = [(сл, і) for сл, і in пл["нейтральні"] if _ПЛ._несе_колір(_повна(і))]
     _св = {str(і) for і in (свідомі or ())}
     _св_великі = [і for сл, і in (пл.get("великі") or ()) if str(і) in _св]
-    заяви = [_ВМ.заява("scheme_chosen_by_stylist" if обрана == "стилістка" else     # П-7: тристан
-                       "scheme_chosen_by_her" if обрана else "scheme_taken_by_default", scheme=схема),
+    заяви = [_ВМ.заява("scheme_chosen_by_stylist" if _СТ.автор(обрана) == "stylist" else     # П-7: тристан
+                       "scheme_chosen_by_her" if _СТ.автор(обрана) in ("her", "conversation") else "scheme_taken_by_default", scheme=схема),
              _ВМ.заява("scheme_big_surfaces_equal", count=len(сім_ї),
                        families=[слово[с["роль"]] for с in сім_ї])]
     бракує = [с["роль"] for с in сім_ї if с["роль"] not in є]
@@ -1191,7 +1192,7 @@ def повідомлення_великих(речі, спец_слоти, за_
         заяви.append(_ВМ.заява("big_items_other_colour", colours=[
             x for x in dict.fromkeys(слово_речі(і, за_ід) for _сл_і, і in інший_колір) if x]))
     if _св_великі:
-        заяви.append(_ВМ.заява("stylist_declared_on_purpose", items=[_назва(і) for і in _св_великі]))
+        заяви.append(_ВМ.заява("stylist_declared_on_purpose", items=[_назва(і) for і in _св_великі], item_ids=_св_великі, source="model", choice="stylist"))
     for р in бракує:
         if на_акс.get(р):
             # аксесуар — ЙОГО словом крамниці: «пудрова» сумка не підписується «рожевим»
@@ -1207,20 +1208,20 @@ def повідомлення_великих(речі, спец_слоти, за_
     план = план_ремонту(пл, сім_ї, {р: (дані.get(р) or {}).get("у_пулі") or {} for р in бракує},
                         не_чіпати=_св | {str(і) for _сл_і, і in інший_колір})
     дії = {д: [x for x in план if x[1] == д] for д in ("заміни", "додай", "перебудуй", "деінде", "брак")}
-    if обрана is not True and (дії["заміни"] or дії["додай"] or дії["перебудуй"]):
+    if _СТ.автор(обрана) not in ("her", "conversation") and (дії["заміни"] or дії["додай"] or дії["перебудуй"]):
         заяви.append(_ВМ.заява("action_is_only_her_option"))
     if дії["заміни"]:
         заяви.append(_ВМ.заява("pool_has_big_items_mark_not_this",
                                colours=[слово[р] for р, *_ in дії["заміни"]],
                                slots=[_сл(сл) for _, _, сл, _ in дії["заміни"]],
-                               items=[_назва(і) for _, _, _, і in дії["заміни"]]))
+                               items=[_назва(і) for _, _, _, і in дії["заміни"]], item_ids=[і for _, _, _, і in дії["заміни"]], source="catalogue"))
     if дії["додай"]:
         заяви.append(_ВМ.заява("colour_can_be_added_as_layer", pairs=[
             dict(colour=слово[р], layer=_сл(сл)) for р, _, сл, _ in дії["додай"]]))
     if дії["перебудуй"]:
         заяви.append(_ВМ.заява("needs_separate_top_and_bottom",
                                colours=[слово[р] for р, *_ in дії["перебудуй"]],
-                               whole=_сл(дії["перебудуй"][0][2]), item=_назва(дії["перебудуй"][0][3])))
+                               whole=_сл(дії["перебудуй"][0][2]), item=_назва(дії["перебудуй"][0][3]), item_id=дії["перебудуй"][0][3], source="catalogue"))
     if дії["деінде"]:
         де = {сл for р, *_ in дії["деінде"] for сл in (дані[р].get("у_пулі") or {})}
         заяви.append(_ВМ.заява("big_items_of_colour_elsewhere",
@@ -1233,5 +1234,5 @@ def повідомлення_великих(речі, спец_слоти, за_
                                none_in_catalogue=all((дані.get(р) or {}).get("у_каталозі") == 0
                                                      for р in нема)))
         # ОПИС-1 (рядок 1550): «не порада проти твого вибору» — лише коли схему обрала вона сама
-        заяви.append(_ВМ.заява("assortment_gap_not_advice" if обрана is True else "assortment_gap"))
+        заяви.append(_ВМ.заява("assortment_gap_not_advice" if _СТ.автор(обрана) in ("her", "conversation") else "assortment_gap"))
     return _ВМ.повідомлення("card_scheme", *заяви)

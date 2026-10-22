@@ -2533,7 +2533,7 @@
       },
       {
        "const": "palette_scheme_note",
-       "description": "рядок про ОБРАНУ схему на екрані «Палітра»: що це за хід і коли він менш ходовий"
+       "description": "пояснення властивостей цієї схеми; автор вибору й ранг задані лише полями заяви"
       },
       {
        "const": "palette_default_scheme",
@@ -2545,7 +2545,7 @@
       },
       {
        "const": "palette_rarer_scheme",
-       "description": "рядок біля плитки однієї схеми: чому цей хід рідший і чого для нього ще нема. Починається назвою схеми"
+       "description": "пояснення біля плитки схеми; рідкість і вибір називай лише за заявами та їхніми полями"
       },
       {
        "const": "card_scheme",
@@ -2634,6 +2634,10 @@
       "properties": {
        "code": {
         "oneOf": [
+         {
+          "const": "palette_choice_part",
+          "description": "the current state of this palette part: part is scheme, base or saturation; values.value is its actual value, or null while pending; choice is its author. State only this part, do not invent a future choice after it has been made."
+         },
          {
           "const": "goal_default_no_weights",
           "description": "no goal weights were supplied: flatter is the system default, not her choice. It assumes she wants to please; this is not neutral or universal (theme-6 1.6)"
@@ -3008,11 +3012,11 @@
          },
          {
           "const": "mourning_shine_unknown_one",
-          "description": "whether one named item shines near the face is unknown (values: item — the item's name; said_in — where the shine is mentioned: name — in the item's name, shop — the shop says so; words — those words themselves; photo — how the material read from the photo, or none)"
+          "description": "the item's shine near the face is uncertain: catalogue and photo disagree (shop_shine_class and photo_shine_class: 0 matte, 1 soft lustre, 2 glossy, 3 sparkling; null means not measured). Classes are codes, not a quote from the shop. Name the item by its item_id and full name."
          },
          {
           "const": "mourning_shine_unknown_many",
-          "description": "whether the named items shine near the face is unknown: the shop and the photo name different materials (values: items — the items' names)"
+          "description": "the addressed items have conflicting catalogue and photo shine evidence"
          },
          {
           "const": "mourning_no_metal_near_face",
@@ -6412,7 +6416,7 @@
          },
          {
           "const": "scheme_large_items_carry",
-          "description": "each colour family of the scheme sits on ITS OWN large item (top, bottom or dress, a second layer, the outer layer), in roughly equal areas; bag, shoes and jewellery may repeat one of them but do not carry the scheme by themselves: an outfit with colour only on accessories does not keep this scheme; with the metal — no more than three colour families; when chosen_by is she_chose, the scheme is her own explicit choice and an outfit whose large items miss a family the pool holds is a gate, not a remark (values: scheme; families — colour codes, or the shop's word when the colour has no code; chosen_by — she_chose when she picked the scheme herself)"
+          "description": "each colour family of the scheme sits on ITS OWN large item (top, bottom or dress, a second layer, the outer layer), in roughly equal areas; bag, shoes and jewellery may repeat one of them but do not carry the scheme by themselves: an outfit with colour only on accessories does not keep this scheme; with the metal — no more than three colour families; when choice is her, the scheme is her own explicit choice and an outfit whose large items miss a family the pool holds is a gate, not a remark (values: scheme; families — colour codes, or the shop's word when the colour has no code; choice — her when she picked the scheme herself)"
          },
          {
           "const": "scheme_needs_colour",
@@ -6424,7 +6428,7 @@
          },
          {
           "const": "base_is_outfit_colour",
-          "description": "this base is the colour of the outfit; items of its family are in the pool (values: hex; chosen_by — she_chose, stylist_chose or code_default)"
+          "description": "this base is the colour of the outfit; items of its family are in the pool (values: hex; choice metadata — her, stylist or code_rank)"
          },
          {
           "const": "variety_group",
@@ -6874,10 +6878,66 @@
        },
        "values": {
         "type": "object"
+       },
+       "key": {
+        "type": "string",
+        "pattern": "^s_[0-9a-f]{24}$"
+       },
+       "item_ids": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
+       },
+       "recipient": {
+        "enum": [
+         "journal",
+         "stylist",
+         "woman"
+        ]
+       },
+       "source": {
+        "enum": [
+         "catalogue",
+         "default",
+         "model",
+         "photo",
+         "unknown"
+        ]
+       },
+       "choice": {
+        "enum": [
+         "code_rank",
+         "conversation",
+         "form_default",
+         "her",
+         "item_default",
+         "occasion_part_conflict",
+         "pending",
+         "stylist",
+         "unknown",
+         "unselected"
+        ]
+       },
+       "part": {
+        "type": "string"
+       },
+       "rank": {
+        "type": [
+         "object",
+         "null"
+        ]
        }
       },
       "required": [
-       "code"
+       "code",
+       "values",
+       "key",
+       "item_ids",
+       "recipient",
+       "source",
+       "choice",
+       "rank"
       ]
      },
      "minItems": 1

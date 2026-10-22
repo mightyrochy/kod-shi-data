@@ -571,7 +571,7 @@ import внутрішня_мова as _ВМ_П
         # СХЕМА-2 (02.10.2026, рядки 1121, 1204): ціль кольору слота — факт, не наказ (БРИФ-1); свобода
         # вибору речі — її (аудит/ПРОДУКТ.md п.17). Поля пише `дріт_моделі.факти_схеми`
         _ЗП.Поле("person.palette.base", "the base: the colour the outfits are built around, and who chose it "
-                                        "(«chosen_by»: she_chose, stylist_chose, code_default); items of its "
+                                        "(«chosen_by»: her, stylist, code_rank); items of its "
                                         "family are in «pool»"),
         _ЗП.Поле("person.palette.kind_colours", "the colour the scheme gives each kind of item, measured by the "
                                                 "code from her palette and the base — the centre of the window "
@@ -1388,11 +1388,11 @@ def людина_для_пакета(тіло, палітри, гілка=None, 
         пал["основа"] = {к: v for к, v in (
             ("слово", str(база).split("·")[0]),
             ("hex", (вибір or {}).get("база_hex")),
-            ("джерело", ("код запропонував, вона не міняла"
+            ("джерело", ("code_rank"
                          if (вибір or {}).get("база_за_замовчуванням") else
                          # П-7: основу, яку вона лишила стилістці, обрала модель (`вибір_палітри`)
-                         "стилістка обрала під цей вихід" if (вибір or {}).get("база_стилістки")
-                         else "вона обрала сама")),
+                         "stylist" if (вибір or {}).get("база_стилістки")
+                         else "her")),
         ) if v}
     л["палітра"] = пал
     тл = {}

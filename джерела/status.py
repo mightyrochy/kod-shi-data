@@ -193,7 +193,7 @@
     "feed", "fit", "graph", "hypergraph", "language_gate",
     "outer", "outfit", "palette", "palettes", "personal_palette",
     "pipeline", "profile", "silhouette", "status",
-    "trace", "verify", "знахідка", "каблук", "реєстри",
+    "statements", "trace", "verify", "знахідка", "каблук", "реєстри",
     "семплер", "сценарій",
     # ЗЛИТТЯ С-03 × С-04 (11.09.2026), ОГОЛОШЕНО СВІДОМО. `ід_правил` — модуль
     # із Н-00-04 (один шаблон ID на весь проєкт); С-04 гілкувалась до нього, тож
