@@ -541,7 +541,7 @@ def кольори(ос, П_рис, n_L=3, вікно_L=None, вікно_C=None,
                 стеля, стеля_джерело = cs.c_max_поверхня(L, h)     # (стеля, джерело) — R-COL-12
                 C = min(Chi, стеля if стеля else Chi)
                 if C < Clo: continue                      # тканина цього не дає
-                for Cx in {round(C, 1), round(max(Clo, (Clo + C) / 2), 1)}:
+                for Cx in sorted({round(C, 1), round(max(Clo, (Clo + C) / 2), 1)}, reverse=True):   # спадання хроми: порядок задано значенням, не хешем множини (Pyodide ≠ CPython)
                     lab = _lab(L, Cx, h)
                     ім, як = _назва(lab)
                     out.append(dict(сім_я=сім, роль="колір", дуга=a, L=round(L, 1), C=Cx, h=round(h, 1),
