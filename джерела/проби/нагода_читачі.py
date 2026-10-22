@@ -7,9 +7,9 @@
 Мета НГ-2: лишаються двоє — паспорт нагоди й мовний шар. Ключі — плитки (`МІСЦЕ_ПЛИТКИ_НАГОДИ`;
 таблиці пресетів знято, 365240bc). Запуск: cd джерела && python3 проби/нагода_читачі.py"""
 import ast, glob, os, re, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.chdir(sys.path[0]); import паспорт_нагоди as ПН, формальність as Ф
+os.chdir(sys.path[0]); import паспорт_нагоди as ПН, внутрішня_мова as ВМ
 КЛЮЧІ, ТАБЛ = set(ПН.МІСЦЕ_ПЛИТКИ_НАГОДИ), {"НАГОДА_У_МІСЦЕ", "ПСЕВДОНІМИ_НАГОДИ", "ВИДИ_НАГОДИ"}
-ЛИШЕ_НАГОДИ = КЛЮЧІ - set(Ф.МІСЦЯ_ДІАПАЗОНИ) - {"траур"}   # «театр» — ще й місце, «траур» — поле паспорта
+ЛИШЕ_НАГОДИ = КЛЮЧІ - set(ВМ.ТАБЛИЦЯ["place"].values()) - {"траур"}   # «театр» — ще й місце, «траур» — поле паспорта
 НЕ = re.compile(r"^(тест_|батарея_|мутанти|стенд_|проба_|audit_|gate_|measure_|run_|build_|pair_test|verify|status)")
 наг = lambda в: ((isinstance(в, ast.Name) and в.id == "нагода")
                  or (isinstance(в, ast.Subscript) and isinstance(в.slice, ast.Constant) and в.slice.value == "нагода")
