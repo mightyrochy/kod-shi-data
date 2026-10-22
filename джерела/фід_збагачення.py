@@ -6,6 +6,7 @@
 нею. `feed.py` лишається фасадом і реекспортує кожне ім'я звідси; цей модуль
 `feed` не імпортує.
 """
+import слоти as _СЛОТИ
 import os, re, json, math
 from colorspace import to_lab, lch, de00
 import verify as V
@@ -186,7 +187,7 @@ def узгодженість_збагачення(зб, o):
 ЗГОДА_ПРОТИ_СЛОВА = 0.6
 ЧАСТКА_ГОЛОВНОГО = 0.6
 ВІДСТУП_ВІД_ВІКНА = 10.0
-_ОДЯГ = frozenset({"верх", "низ", "сукня", "комплект", "верхній_шар"})
+_ОДЯГ = frozenset(set(_СЛОТИ.група('одяг')))
 
 # ── МАЙЖЕ НЕЙТРАЛЬНИЙ ВИМІР НЕ СУДИТЬ СЛОВО, ЩО НАЗИВАЄ ТОН (09.10.2026, рядок 3123) ──
 # ЩО ТУТ БУЛО. Вікно вжитку хроматичного слова тягнеться до C* 0 («зелений» — C 0–90), а тон
@@ -349,6 +350,55 @@ def читати_збагачення(тека=None):
                 _ЗБАГАЧЕННЯ_КЕШ[ключ] = json.load(f)
         return _ЗБАГАЧЕННЯ_КЕШ[ключ]
     return {}
+
+
+def ключ_фото_типу(тека=None):
+    """Optional файли входять також у ключ живої бази, не лише таблиці збирача."""
+    import фото_тип_контракт as ФТ
+    тека = тека or os.path.dirname(os.path.abspath(__file__)) or "."
+    ключ = []
+    for імя in ФТ.ФАЙЛИ:
+        файл = next((ш for ш in (os.path.join(тека, імя), os.path.join(тека, імя + ".gz")) if os.path.exists(ш)), None)
+        if файл:
+            ст = os.stat(файл)
+            ключ.append((файл, ст.st_mtime_ns, ст.st_size))
+    return tuple(ключ)
+
+
+def читати_фото_тип(тека=None):
+    """Optional overlay + незалежні capture/receipt; без HTTP і старих SHA кешу.
+
+    Поле існує окремо від legacy форми/кольору. Порожній результат не змінює
+    старого каталогу; ledger показує неприв'язані записи замість удаваного факту.
+    """
+    import gzip
+    import фото_тип_контракт as ФТ
+    тека = тека or os.path.dirname(os.path.abspath(__file__)) or "."
+    дані = []
+    for імя in ФТ.ФАЙЛИ:
+        файл = next((ш for ш in (os.path.join(тека, імя), os.path.join(тека, імя + ".gz")) if os.path.exists(ш)), None)
+        if файл is None:
+            дані.append(None)
+            continue
+        try:
+            with (gzip.open(файл, "rt", encoding="utf-8") if файл.endswith(".gz") else open(файл, encoding="utf-8")) as f:
+                дані.append(json.load(f))
+        except (ValueError, OSError):
+            дані.append(None)
+    if all(v is None for v in дані):
+        return dict(records={}, ledger=dict(records=0, projected=0, unprojected=0, controls_excluded=0), errors=[])
+    return ФТ.проєкція_каталогу(*дані)
+
+
+def фото_тип_речі(offer, фото_типи):
+    """Тільки той exact URL, який є й у поточного SKU; тип/слот не підміняти."""
+    р = фото_типи.get(offer.get("id"))
+    if not isinstance(р, dict) or not isinstance(р.get("provenance"), dict):
+        return {}
+    if р["provenance"]["image"]["url"] not in (offer.get("фото") or []):
+        return {"visible_item_type": dict(status="unknown", item_type="unknown", slot=None,
+                target=None, bbox=None, reason=None, errors=["current_url_mismatch"], provenance=None)}
+    return {"visible_item_type": р}
 
 
 def _збагачення_придатне(зб):
@@ -654,10 +704,11 @@ def частка_металу(зб, слот_, метал_, фото_слот=No
     # метал такого допуску не дістає: там різниця тону — це інший метал.
     приймати = _ПЛ.РОДИНА_ЗОЛОТА if тон in _ПЛ.РОДИНА_ЗОЛОТА else (тон,)
     # КАДР МУСИТЬ ПОКАЗУВАТИ САМЕ ЦЮ РІЧ: спільне фото крамниці (R-FEED-06) і кадр,
-    # чий опис називає РІД речі поза металоносними слотами, площі цієї речі не несуть
+    # без підтвердженого ювелірного слота площі цієї речі не несуть.
+    # Unknown після кодового канону — відсутній доказ, а не дозвіл (7483).
     if чуже_фото or not _збагачення_придатне(зб) or (зб.get("версія") or 1) < 2:
         return None
-    if фото_слот is not None and фото_слот not in _ПЛ.СЛОТИ_МЕТАЛУ:
+    if фото_слот not in _ПЛ.СЛОТИ_МЕТАЛУ:
         return None
     слово_, lab, за_чим = колір_збагачення(зб)
     к = зб.get("колір_основний") or {}
@@ -724,7 +775,7 @@ def колір_вставки(зб, слот_, метал_, фото_слот=No
         return None
     if чуже_фото or not _збагачення_придатне(зб) or (зб.get("версія") or 1) < 2:
         return None
-    if фото_слот is not None and фото_слот not in _ПЛ.СЛОТИ_МЕТАЛУ:
+    if фото_слот not in _ПЛ.СЛОТИ_МЕТАЛУ:
         return None
     _, lab, за_чим = колір_збагачення(зб)
     к = зб.get("колір_основний") or {}
@@ -786,7 +837,7 @@ def метал_проти_кольору(слот_, метал_, lab, частк
 
 # Слоти, чий крій фото читає з самої речі. Пасок, брошка, капелюх крою не мають: опис фото тримає крій
 # сукні, у якій вони стоять на знімку (рядок 4026: «Пасок з пірʼям» — `fitted`, `bodycon`, `straight`).
-_КРІЙ_ФОТО_СЛОТИ = ("верх", "верхній_шар", "сукня", "комплект", "низ")
+_КРІЙ_ФОТО_СЛОТИ = _СЛОТИ.група('одяг', порядок='верх верхній_шар сукня комплект низ')
 
 # Класи крою з фото, що суперечать слову «оверсайз» (рядок 2190).
 _ПРИТАЛЕНІ_З_ФОТО = ("fitted", "bodycon", "slim")
