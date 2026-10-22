@@ -708,7 +708,8 @@ const ДОКАЗ = (() => {
   try { штампи = ДП.штампиСторінки(fs.readFileSync(ш, 'utf8')); } catch (_) {}
   const режим = {};
   for (const м of fs.readFileSync(__filename, 'utf8').matchAll(/process\.env\.([\p{Lu}_][\p{Lu}\d_]*)/gu))
-    if (process.env[м[1]] !== undefined && !(м[1] in режим)) режим[м[1]] = м[1] === 'PASPORT' ? '(sha у входах)' : process.env[м[1]];
+    if (process.env[м[1]] !== undefined && !(м[1] in режим) && !/PROXY|TOKEN|KEY|SECRET|PASS/i.test(м[1]))  // мережа й ключі — не режим
+      режим[м[1]] = м[1] === 'PASPORT' ? '(sha у входах)' : process.env[м[1]];
   режим.сід = СІД;
   if (СЦЕНА_РЕЄСТРУ) режим.сцена = СЦЕНА_РЕЄСТРУ;
   return new ДП.Доказ({прилад: 'рв6_стенд', код: Object.assign({дерево: ДП.головаДерева(__dirname)}, штампи), режим,
