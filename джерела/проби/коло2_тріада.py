@@ -9,7 +9,7 @@ import sys, pathlib, math
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import feed as F; F.каталог_на_диску('каталог_повний.xml')
 import фід_каталог as ФК, colorspace as cs, палітра_схеми as PS
-кат = ФК._прочитати_каталог('каталог_повний.xml', 0)['каталог']
+кат = ФК.прочитати_каталог('каталог_повний.xml', 0)['каталог']
 def мед(слово):
     hs = [cs.lch(tuple(r["lab"]))[2] for r in кат if r.get("колір_назва") == слово and r.get("lab")
           and cs.lch(tuple(r["lab"]))[1] > 8]

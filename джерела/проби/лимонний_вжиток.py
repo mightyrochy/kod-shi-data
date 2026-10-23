@@ -17,7 +17,7 @@ print("ФАКТ · крамниці «лимонний» з тоном (C* ≥ %
 for мін, макс in ((45, 54), (54, 58), (58, 66), (66, 101)):
     зона = [к for к in кр if мін <= к[3] < макс and 94 <= к[4] <= 115 and к[2] >= 75]
     print("ФАКТ · крамниці, L* ≥ 75, тон 94–115°, C* %d–%d: %s · підпис коду: %s" % (мін, макс, dict(К.Counter(к[0] for к in зона)),
-          dict(К.Counter((к[0], PS._назва(cs.hx(к[1]))[0]) for к in зона))))
+          dict(К.Counter((к[0], PS.назва(cs.hx(к[1]))[0]) for к in зона))))
 шл = [ф for ф in subprocess.run(["git", "ls-files", "-z", "--", "../аудит"], capture_output=True).stdout.decode().split("\0") if "VIDPOVIDI" in ф]
 сл, речень = К.Counter(), 0
 for ф in шл:
@@ -30,4 +30,4 @@ for ф in шл:
                 if re.search(рег, р, re.I): сл[(к, next(iter(hx)))] += 1
 print("ФАКТ · модель: файлів %d, речень відповіді з одним hex %d; слово моделі → hex: %s" % (len(шл), речень,
       {к: sorted({h for (кк, h) in сл if кк == к}) for к in ("лимонний", "жовтий", "золотий")}))
-print("ФАКТ · код hex знахідки:", {h: PS._назва(cs.hx(h))[0] for h in ("#FFF44F", "#FAFA33", "#ECDA6E", "#DFDC8E", "#F4E87C", "#FFD700")})
+print("ФАКТ · код hex знахідки:", {h: PS.назва(cs.hx(h))[0] for h in ("#FFF44F", "#FAFA33", "#ECDA6E", "#DFDC8E", "#F4E87C", "#FFD700")})

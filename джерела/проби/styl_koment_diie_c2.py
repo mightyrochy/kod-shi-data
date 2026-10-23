@@ -17,7 +17,7 @@ import bridge as B, feed as Ф, мовний_шар as МШ, міст_пакет
 пул = lambda r, сл: [x["id"] for x in ((r.get("кандидати") or {}).get(сл) or [])]
 донор = lambda r, сл: [x["id"] for x in ((r.get("кандидати_донора") or {}).get(сл) or [])]
 без = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
-каблуки = lambda: {r.get("id") for r in (МП._КЕШ_ПАКЕТА.get(МП._ОСТАННІЙ_ПАКЕТ[-1]) or {}).get("_каталог") or []
+каблуки = lambda: {r.get("id") for r in (МП.КЕШ_ПАКЕТА.get(МП.ОСТАННІЙ_ПАКЕТ[-1]) or {}).get("_каталог") or []
                    if r.get("слот") == "взуття" and r.get("каблук_є") is True}
 каблук_до = каблуки() & set(пул(без, "взуття"))
 ціль = next((x for x in пул(без, "взуття") if x in донор(без, "взуття")), пул(без, "взуття")[0])

@@ -5,7 +5,7 @@
 import collections, os, sys                                                   # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import фід_каталог as ФК, palettes as ПЛ, фід_збагачення as ФЗ                # noqa: E401,E402
-записи = ФК._прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]
+записи = ФК.прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]
 c, розп, нема = collections.Counter(), collections.Counter(), collections.Counter()
 зб = ФЗ.читати_збагачення()
 for r in записи:
@@ -18,7 +18,7 @@ for r in записи:
         c["без_входу"] += 1
         з = зб.get(r.get("id"))
         нема["чуже_фото" if r.get("чуже_фото") else
-             ("нема_збагачення_v2" if not (з and ФЗ._збагачення_придатне(з)
+             ("нема_збагачення_v2" if not (з and ФЗ.збагачення_придатне(з)
                                            and (з.get("версія") or 1) >= 2) else "інше")] += 1
         continue
     c["вхід_є"] += 1

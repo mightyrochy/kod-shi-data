@@ -10,7 +10,7 @@
 """
 import json, sys, pathlib; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import feed as Ф, bridge as B, composer as К, pipeline as ПЛ, регістр_уваги as РУ
-from композитор_річ import _у_річ
+from композитор_річ import у_річ as _у_річ
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml"); вх["гілка"] = 0
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))

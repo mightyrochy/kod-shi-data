@@ -16,7 +16,7 @@ import feed, фід_каталог as ФК, міст_опис as МО, внут�
     ("08_ж2_спорт_коментар", 44, "silk scarf at your neck", "#25·09", "блуза на моделі в шовковій хустці")]
 шл = feed.каталог_на_диску(); вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 за_назвою = {(r.get("назва_показу") or r["назва"], r["id"].split("@")[-1]): r["id"]
-             for r in ФК._прочитати_каталог(шл, ліміт_фото=0)["каталог"]}
+             for r in ФК.прочитати_каталог(шл, ліміт_фото=0)["каталог"]}
 def записаний(сцена, с):
     т = subprocess.run(["git", "show", "origin/claude/zhyvi-22:../аудит/живі_22/А/%s/VIDPOVIDI/seed3_%d_ОПИС_V1_ОПИС_ВІДПОВІДЬ_V1.txt"
                         % (сцена, с)], capture_output=True, text=True, check=True).stdout.split("── ВІДПОВІДЬ")[0]

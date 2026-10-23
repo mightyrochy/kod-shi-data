@@ -8,7 +8,7 @@
 import collections, os, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_каталог as FK, траурний_регістр as ТР
-КАТ = FK._прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
+КАТ = FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
 справжня = ТР.метал_біля_обличчя
 біля = [r for r in КАТ if справжня(r)]
 print("ФАКТ · каталог: металевих прикрас біля обличчя %d %s" % (len(біля), dict(collections.Counter(r["слот"] for r in біля))))

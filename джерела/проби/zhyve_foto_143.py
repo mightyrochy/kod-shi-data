@@ -12,13 +12,13 @@ from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import feed as Ф, фід_фото as ФФ; N = int(sys.argv[1]) if len(sys.argv) > 1 else 6
 оф = Ф.читати_yml(Ф.каталог_на_диску("каталог_повний.xml"))[0]
-зб, крам, сп, хо = Ф.читати_збагачення(), collections.defaultdict(list), ФФ._спільні_фото, ФФ._хости_крамниць
+зб, крам, сп, хо = Ф.читати_збагачення(), collections.defaultdict(list), ФФ.спільні_фото, ФФ.хости_крамниць
 for o in sorted(оф, key=lambda x: x["id"]): крам[o.get("магазин")].append(o)
 вибір = [o for с in крам.values() for o in с[:N]]
 ряд = lambda o: ФФ.кадри_речі(o, сп(оф).get(o.get("магазин")) or {}, хо(оф), (зб.get(o["id"]) or {}).get("фото"))
 ПІС, ПІДПИСИ = {o["id"]: ряд(o) for o in вибір}, (b"\xff\xd8", b"\x89PNG\r\n\x1a\n", b"GIF87a", b"GIF89a", b"<?xml", b"<svg")
-СЕГ, ХВ = ФФ._РОЗМІР_СЕГМЕНТ, ФФ._РОЗМІР_ХВІСТ   # ↓ латка «ДО»: ключ і правила до 23.09
-ФФ._файл_фото = lambda u: ХВ.sub("", "/".join(c for c in str(u or "").split("?")[0].split("/")[3:] if not СЕГ.match(c))).lower()
+СЕГ, ХВ = ФФ.РОЗМІР_СЕГМЕНТ, ФФ.РОЗМІР_ХВІСТ   # ↓ латка «ДО»: ключ і правила до 23.09
+ФФ.файл_фото = lambda u: ХВ.sub("", "/".join(c for c in str(u or "").split("?")[0].split("/")[3:] if not СЕГ.match(c))).lower()
 ФФ.ЗАГЛУШКА_ІМЕНІ, ФФ.не_покаже_браузер, ФФ._на_https, ФФ._форма_меншини = re.compile(r"(?!)"), (lambda u, х=None: None), (lambda u: u), (lambda к: set())
 ФФ.ПОЛЕ_ВІДНОВЛЕНІ = "_поля_нема_"             # шосте правило (рядки 168/169) — теж після 23.09
 ДО = {o["id"]: ряд(o)[:1] for o in вибір}      # один кадр: переходу на наступний доти не було

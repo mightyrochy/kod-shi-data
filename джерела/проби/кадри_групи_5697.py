@@ -4,7 +4,7 @@
 import collections, gzip, json, os, sys, tempfile                              # noqa: E401
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import feed as F, жнива_кадри as К, кадри_групи as Г                             # noqa: E401
-from фід_фото import _хости_крамниць
+from фід_фото import хости_крамниць as _хости_крамниць
 offers, зб = F.читати_yml(F.каталог_на_диску())[0], F.читати_збагачення()
 кадри = json.load(gzip.open(Г.ВИХІД, "rt", encoding="utf-8"))["записи"]
 цілі, сп = К.цілі(offers, зб)

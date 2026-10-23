@@ -1,7 +1,7 @@
 # Рядок 6990: фактичні частки, джерело й контролі; шлях до очищеного XML — аргумент.
 import os, sys, re
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from фід_верхнє import верхні_атрибути, _ПРО_ВОВНУ
+from фід_верхнє import верхні_атрибути, ПРО_ВОВНУ as _ПРО_ВОВНУ
 from фід_атрибути import матеріал_речі
 from feed import читати_yml
 

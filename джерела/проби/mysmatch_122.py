@@ -9,7 +9,7 @@
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
 import bridge as B, palette as P, colorspace as cs, суд_образу as СУД
-from міст_вхід import _збірка, _нормалізувати_вхід
+from міст_вхід import збірка as _збірка, нормалізувати_вхід as _нормалізувати_вхід
 ЯДРО = ("верх", "низ", "взуття", "сумка")   # аксесуарним вікно розтягнуте на всю шкалу
 ч = json.loads(B.чипи()); БАЗА = json.load(open("стенд_вх.json", encoding="utf-8"))
 ПРОФ = [("світла тепла", ч["шкіра"][5], ч["волосся"][5], ч["очі"][1]),

@@ -16,7 +16,7 @@ for намір in Р.INTENT:
     п = П.паспорт_з_json(json.dumps(dict(подія="зустріч", намір=намір)), {}, слова="зустріч")
     факти = [С.підлога_інтересу_проактивно(E, п["намір"]) for E in образи]
     правильні = [С.підлога_інтересу_проактивно(E, намір) for E in образи]
-    print(json.dumps(dict(intent=намір, passport=п["намір"], floor=Р._намір(п["намір"])["підлога"],
+    print(json.dumps(dict(intent=намір, passport=п["намір"], floor=Р.намір(п["намір"])["підлога"],
         changed_from_direct=sum(a != b for a, b in zip(факти, правильні)),
         with_findings=sum(bool(x) for x in факти),
         repair_keys=dict(collections.Counter(к for x in факти for z in x

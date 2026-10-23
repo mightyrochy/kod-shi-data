@@ -8,7 +8,7 @@ import collections, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import feed as Ф, фід_фото as ФФ
 оф = Ф.читати_yml(Ф.каталог_на_диску("каталог_повний.xml"))[0]
-зб, сп = Ф.читати_збагачення(), ФФ._спільні_фото(оф)
+зб, сп = Ф.читати_збагачення(), ФФ.спільні_фото(оф)
 с = collections.defaultdict(collections.Counter)
 for o in оф:
     з, м = зб.get(o["id"]), o.get("магазин")
@@ -18,7 +18,7 @@ for o in оф:
     c = с[м]; c["з кадром"] += 1
     if ФФ.чужий_кадр(к, сп.get(м) or {}):
         c["спільний"] += 1; c["спільний, кольору крамниці нема"] += not (o.get("колір_сирий") or o.get("колір_назва"))
-    c["не з фіду"] += ФФ._файл_фото(к) not in {ФФ._файл_фото(u) for u in o.get("фото") or []}
+    c["не з фіду"] += ФФ.файл_фото(к) not in {ФФ.файл_фото(u) for u in o.get("фото") or []}
 р = lambda к: sum(c[к] for c in с.values())
 for м, c in sorted(с.items(), key=lambda x: -(x[1]["спільний"] + x[1]["не з фіду"])):
     if c["спільний"] or c["не з фіду"]:

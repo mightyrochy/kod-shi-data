@@ -21,7 +21,7 @@ import ast, семплер
 к = 0
 for ф in ("композитор_слоти.py", "семплер.py", "пакет_моделі.py", "різноманітність_пулу.py"):
     for в in ast.walk(ast.parse(open(ф, encoding="utf-8").read())):
-        if isinstance(в, ast.Call) and getattr(в.func, "attr", getattr(в.func, "id", "")) in ("Random", "_перемішати"):
+        if isinstance(в, ast.Call) and getattr(в.func, "attr", getattr(в.func, "id", "")) in ("Random", "_перемішати", "перемішати"):
             к += sum(1 for x in ast.walk(в) if isinstance(x, ast.Constant) and isinstance(x.value, str) and re.search("[а-яіїєґ]", x.value, re.I))
 колишні = ["група", "доза", "цілком", "страти", "магазини", "межа", "розрив", "фолбек", "добір", "дуга", "словами", "бажання"]
 print("порядок_рук (3 сіди):", хеші)

@@ -8,8 +8,8 @@ import feed, фід_каталог as FK, фід_збагачення as FZ, ф�
 до_V = types.ModuleType("verify"); до_V.__file__ = V.__file__; до_V.не_колір_крамниці = lambda ч: None; до_V.назва_показу = lambda н, т="": н
 exec(subprocess.run(["git", "show", "7040096:джерела/verify.py"], capture_output=True, text=True, check=True).stdout, до_V.__dict__)
 шлях = feed.каталог_на_диску(); сир = {o["id"]: o.get("колір_сирий") for o in FR.читати_yml(шлях)[0]}
-FK.V = FZ.V = до_V; до = {r["id"]: r for r in FK._прочитати_каталог(шлях, 0)["каталог"]}
-FK.V = FZ.V = V; після = {r["id"]: r for r in FK._прочитати_каталог(шлях, 0)["каталог"]}
+FK.V = FZ.V = до_V; до = {r["id"]: r for r in FK.прочитати_каталог(шлях, 0)["каталог"]}
+FK.V = FZ.V = V; після = {r["id"]: r for r in FK.прочитати_каталог(шлях, 0)["каталог"]}
 н = lambda s: " ".join(str(s or "").lower().split())
 # «мокко» дістало вікно 25.09 і сюди не входить: у ДО-модулі воно вже складається в «шоколадний»,
 # тож вибірка тут була б з одного запису. Його вимір — у пробі `mokko_kolir.py`.

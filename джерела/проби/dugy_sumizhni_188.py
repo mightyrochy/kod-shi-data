@@ -5,7 +5,7 @@
 import collections, os, re, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_розбір as FR, фід_збагачення as FZ, verify as V, colorspace as CS
-from фід_фото import _спільні_фото, чужий_кадр, _файл_фото; from фід_розбір import _СЕП_КОЛЬОРУ
+from фід_фото import спільні_фото as _спільні_фото, чужий_кадр, файл_фото as _файл_фото; from фід_розбір import СЕП_КОЛЬОРУ as _СЕП_КОЛЬОРУ
 оф = FR.читати_yml(feed.каталог_на_диску())[0]; зб, сп = FZ.читати_збагачення(), _спільні_фото(оф)
 ТОК = re.compile(r"[a-zа-яёєіїґ']+")
 одне = lambda ч: not re.search(r"[\[(]", ч) and sum(1 for x in ТОК.findall(ч.lower().replace("-", " "))
@@ -13,9 +13,9 @@ from фід_фото import _спільні_фото, чужий_кадр, _фа
 т = collections.defaultdict(dict)
 for o in оф:
     z = зб.get(o["id"]); ч = [x.strip() for x in _СЕП_КОЛЬОРУ.split(o.get("колір_сирий") or o.get("колір_назва") or "") if x.strip()]
-    if not FZ._збагачення_придатне(z) or (z.get("версія") or 1) < 2 or len(ч) != 1 or not одне(ч[0]):
+    if not FZ.збагачення_придатне(z) or (z.get("версія") or 1) < 2 or len(ч) != 1 or not одне(ч[0]):
         continue
-    lab, ск = FZ._lab_з_hex(z["колір_основний"].get("hex")), V.слово_крамниці(ч[0])
+    lab, ск = FZ.lab_з_hex(z["колір_основний"].get("hex")), V.слово_крамниці(ч[0])
     if lab is not None and ск and not чужий_кадр(z.get("фото"), сп.get(o.get("магазин") or o["id"].split("@")[-1]) or {}):
         т[ск["ім"]].setdefault(_файл_фото(z["фото"]), (o["id"], z["колір_основний"]["hex"], CS.lch(lab)))
 def дуга(сл, суміжна):
@@ -35,6 +35,6 @@ def дуга(сл, суміжна):
 змін = [x for x in змін if (round(x[1][0]), round(x[1][1])) != (round(x[2][0]), round(x[2][1]))]
 print("ФАКТ · хроматичних слів з точками %d; суміжна смуга міняє дугу в %d: %s" % (len(хром), len(змін),
       "; ".join("%s %.0f–%.0f → %.0f–%.0f" % (с, *б, *п) for с, б, п in змін)))
-поза = [(i, h) for i, h, p in т["м'ятний"].values() if not V._у_дузі(p[2], дуга("м'ятний", True))]
+поза = [(i, h) for i, h, p in т["м'ятний"].values() if not V.у_дузі(p[2], дуга("м'ятний", True))]
 print("ФАКТ · «м'ятний»: дизайнів %d, поза чинною дугою %d — %s" % (len(т["м'ятний"]), len(поза),
       ", ".join("%s %s" % x for x in sorted(поза))))

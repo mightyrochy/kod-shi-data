@@ -6,7 +6,7 @@
 Запуск: cd джерела && python3 проби/принти_вхід.py"""
 import json, sys, random, pathlib, collections; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import bridge as B, pipeline as ПЛ
-from композитор_річ import _у_річ
+from композитор_річ import у_річ as _у_річ
 СЦ = {"office": dict(нагода="робота", місце="офіс", година=9, темп_c=18),
       "date": dict(нагода="побачення", місце="ресторан", година=20, темп_c=5),
       "wedding": dict(нагода="весілля_гість", місце="ресторан", година=16, темп_c=24)}

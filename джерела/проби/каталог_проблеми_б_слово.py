@@ -6,7 +6,7 @@
 import collections, gzip, os, re, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_каталог as FK
-К = FK._прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
+К = FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
 ч = lambda r: r.get("колір_назва_за_чим") or ""
 сл_вікно = sum(r.get("колір_назва_джерело") == "крамниця" for r in К)
 лише_сл = sum(r.get("колір_джерело") == "назва_вікно" for r in К)

@@ -11,11 +11,11 @@ import знання_дріт as ЗД
 
 def головна():
     """Довести значення measured і спільну легенду до кожного фактичного читача."""
-    точка = П._річ_пулу(dict(id="qa-lab", тип="dress_generic", lab=(20, 1, 2)), {})
+    точка = П.річ_пулу(dict(id="qa-lab", тип="dress_generic", lab=(20, 1, 2)), {})
     дріт = Д.річ(точка)
     assert дріт["lab"] == (20, 1, 2) and дріт["knowledge"]["color"]["status"] == "measured"
-    assert "lab" not in Д.річ(П._річ_пулу(dict(id="hex", hex="#123456"), {}))
-    вікно = П._річ_пулу(dict(id="qa-range", тип="dress_generic", hex="#123456",
+    assert "lab" not in Д.річ(П.річ_пулу(dict(id="hex", hex="#123456"), {}))
+    вікно = П.річ_пулу(dict(id="qa-range", тип="dress_generic", hex="#123456",
                             колір_не_вимір={"вікно": [10, 30, 0, 5, None]}), {})
     for заміна in (False, True):
         пак = {"пул": {"сукня": [точка if заміна else вікно]}}

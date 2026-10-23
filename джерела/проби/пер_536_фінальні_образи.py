@@ -7,7 +7,7 @@ import os.path as ОШ; sys.path.insert(0, ОШ.dirname(ОШ.dirname(ОШ.abspat
 import feed as F; F.каталог_на_диску("каталог_повний.xml")
 import фід_каталог as ФК, фід_слот as ФС, композитор_придатні as КП, формальність as ФО
 за = collections.defaultdict(list)
-for r in ФК._прочитати_каталог("каталог_повний.xml", 0)["каталог"]: за[(ФС.назва_для_людини(r), r.get("ціна"))].append(r)
+for r in ФК.прочитати_каталог("каталог_повний.xml", 0)["каталог"]: за[(ФС.назва_для_людини(r), r.get("ціна"))].append(r)
 for сц in sys.argv[2:]:
     d = json.load(gzip.open(f"{тека}/{сц}_В/вердикти.txt.gz", "rt", encoding="utf-8")); п = d["спільне"].get("паспорт") or {}
     смуга = ФО.смуга_ошатності({"ошатність": п.get("ошатність")}); lo = смуга[0]

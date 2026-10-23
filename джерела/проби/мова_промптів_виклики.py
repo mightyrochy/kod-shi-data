@@ -15,7 +15,7 @@ for м in sorted(status.МОДУЛІ_ПРОДУКТУ):
         мод = importlib.import_module(м)
     except Exception as e:
         print("  НЕ ІМПОРТУВАВСЯ %s (%s)" % (м, type(e).__name__)); continue
-    for л in (getattr(мод, "_фото_речей", None),):      # ліниве оголошення `річ_з_фото`
+    for л in (getattr(мод, "фото_речей", None),):      # ліниве оголошення `річ_з_фото`
         if callable(л):
             л()
     for ім, в in sorted(vars(мод).items()):
