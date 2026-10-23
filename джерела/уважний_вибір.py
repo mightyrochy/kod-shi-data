@@ -96,7 +96,7 @@ _КОНТЕКСТ = (
     # рядок 6213 (в): з БРИФ-1 це виміряні коди зі словника, а не «rules of the style corpus» — словами складання
     # (`пакет_моделі.СКЛАДАННЯ`), без речення про «pool», якого тут нема
     _ЗП.Поле("style_rules", "what the code measured about her and this case, her own answers and wishes: "
-                            "each entry is a code, or {code: values}; codes are defined in \"statement_codes\""),
+                            "each entry is {code, values, …}; codes are defined in \"statement_codes\""),
     _ЗП.Поле("she_refuses", "what she refused in her words"),
 )
 
