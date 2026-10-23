@@ -6,7 +6,7 @@
 реекспортується з розділених модулів, щоб старі викликачі мали той самий API.
 """
 import random
-import outfit as O, feed, pipeline, profile as PR, coordination as КО
+import outfit as O, feed, profile as PR, coordination as КО
 import реєстр_правил as _РЕЄСТР, суд_образу as _СУД, формальність as _ФОРМ   # Н-02-01, сесія 4
 import graph as ГР
 import семплер as _СМ          # лист: collections + random, без проєктних імпортів
