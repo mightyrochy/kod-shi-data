@@ -162,7 +162,7 @@ from колір_простір_надійність import (AXIS_RELIABILITY, MI
     extraction_sanity)
 from колір_простір_риси import (ЗОВНІШНІ_ВХОДИ, VALUE_REL, dominant_axis, density, підтон_риси,
     поля_риси, features, температура_шкіри as _температура_шкіри, МАКІЯЖ_РИСИ, ПРЕФІКС_МАКІЯЖУ, додати_макіяж,
-    перерахувати_рису, RELATIONS, у_коло_художника, з_кола_художника, зсув_на_колі, доповнення, центри_відношення, дуга_кола, arc, in_arc as _in_arc, feature_spectrum, spectra_by_feature, розсіяння,
+    перерахувати_рису, RELATIONS, у_коло_художника, з_кола_художника, зсув_на_колі, доповнення, тепло, центри_відношення, дуга_кола, arc, in_arc as _in_arc, feature_spectrum, spectra_by_feature, розсіяння,
     кут_розсіяння as _кут_розсіяння, регіони, arc_overlap as _arc_overlap, resonance)
 
 if __name__=="__main__":
