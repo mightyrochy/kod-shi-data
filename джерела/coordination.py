@@ -265,9 +265,8 @@ def розклад_пари(lab1, lab2):
     dL, dC = L2 - L1, C2 - C1
     dab = math.hypot(a2 - a1, b2 - b1)
     тон = math.sqrt(max(0.0, dab * dab - dC * dC))
-    h1 = math.degrees(math.atan2(b1, a1)) % 360
-    h2 = math.degrees(math.atan2(b2, a2)) % 360
-    dh = abs(h2 - h1)
+    # різниця тонів для тексту K-COMP-04 — на колі художника (2.14-А, п.18), не кутом OKLab
+    dh = abs(cs.у_коло_художника(cs.lch(lab2)[2]) - cs.у_коло_художника(cs.lch(lab1)[2]))
     return dict(d_ok=round(math.hypot(dL, dab), 4),
                 інтенсивність=round(math.hypot(dL, dC), 4),
                 тон=round(тон, 4),

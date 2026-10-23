@@ -273,7 +273,7 @@ def мета_з_ваг(ваги_цілей, поріг_домінанти=0.15):
     def причина(код, **значення):
         return dict(statements=[М.заява(код, **значення)])
     if not ваги_цілей:
-        return "лестити", причина("goal_default_no_weights", goal="flatter", source="theme-6:1.6")
+        return "лестити", причина("goal_default_no_weights", goal="flatter", rule="theme-6:1.6")
     в = {k: float(v) for k, v in ваги_цілей.items() if k in ЦІЛІ and not isinstance(v, dict)}
     if not в:
         return "лестити", причина("goal_default_no_known_weights", goal="flatter")
@@ -285,7 +285,7 @@ def мета_з_ваг(ваги_цілей, поріг_домінанти=0.15):
     if (w1 - w2) < поріг_домінанти:
         return "лестити", причина("goal_default_no_dominant_weight", goal="flatter", **факти)
     м = _МЕТА_ЗА_ЦІЛЛЮ.get(провідна, "лестити")
-    чому = причина("goal_from_weights", goal=М.код("goal", м), source="theme-6:1.6",
+    чому = причина("goal_from_weights", goal=М.код("goal", м), rule="theme-6:1.6",
                   mapping_source="system", strength="soft", **факти)
     без = ЦІЛІ_БЕЗ_ВАЖЕЛЯ.get(провідна)
     if без:

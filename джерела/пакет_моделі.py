@@ -571,7 +571,7 @@ import внутрішня_мова as _ВМ_П
         # СХЕМА-2 (02.10.2026, рядки 1121, 1204): ціль кольору слота — факт, не наказ (БРИФ-1); свобода
         # вибору речі — її (аудит/ПРОДУКТ.md п.17). Поля пише `дріт_моделі.факти_схеми`
         _ЗП.Поле("person.palette.base", "the base: the colour the outfits are built around, and who chose it "
-                                        "(«chosen_by»: she_chose, stylist_chose, code_default); items of its "
+                                        "(«chosen_by»: her, stylist, code_rank); items of its "
                                         "family are in «pool»"),
         _ЗП.Поле("person.palette.kind_colours", "the colour the scheme gives each kind of item, measured by the "
                                                 "code from her palette and the base — the centre of the window "
@@ -641,7 +641,7 @@ import внутрішня_мова as _ВМ_П
         # їдуть (`дріт_моделі.ЗАЯВИ_ДІЮТЬ_У_КОДІ`); лишається виміряне про неї, її відповіді й
         # бажання, факти дня — інформація для вибору, тож і наказу «keep each» нема
         _ЗП.Поле("style_rules", "what the code measured about her and this case, her own answers and wishes: "
-                                "each entry is a code, or {code: values}; codes are defined in "
+                                "each entry is {code, values, …}; codes are defined in "
                                 "\"statement_codes\"; the rules the code already applied to «pool» are not "
                                 "repeated here"),
         # НП-в переробляє рядки рівня нагоди; доти вони їдуть реченнями брифа (ВМ-1)
@@ -864,26 +864,18 @@ def _нейтральний_тон(h, C, L=None):
 
 
 def _сім_я_кута(h):
-    """Назва сім'ї за кутом тону (`palettes.СІМ_Ї`); None — кут у жодній дузі.
+    """Назва сім'ї за кутом тону (`palettes.сім_я_тону`: дуги `СІМ_Ї` на колі художника, без прогалин); None —
+    кута нема.
 
-    ВИНЕСЕНО З `_сім_я_тону` (17.09.2026): те саме питання ставить K-PAL-07
-    («скільки кольорових сімей у великих слотах»), і там колір уже розкладений на
-    осі — ганяти його назад у hex заради того самого циклу було б другим тілом
-    одного правила. `СІМ_Ї` перекриваються навмисно (див. коментар над словником),
-    і нічию тут бере перша оголошена — те саме, що робить `перекриття_сімей`
-    правилом «порядок».
+    ВИНЕСЕНО З `_сім_я_тону` (17.09.2026): те саме питання ставлять K-COL-05 (назва сироти) і дріт моделі.
+    Доти цикл по дугах CIELAB жив тут другим тілом `palettes.сім_я_тону`, і тон у прогалині дуг (h245, h12)
+    діставав None — моделі їхав колір без сім'ї (2.14-А). Нічию перекриття бере та сама функція палітри.
     """
     if h is None:
         return None
     import palettes as _ПЛ
-    for ім, версії in _ПЛ.СІМ_Ї.items():
-        for д in (версії.get("тепла"), версії.get("холодна")):
-            if not д:
-                continue
-            lo, hi = д
-            if (lo <= hi and lo <= h <= hi) or (lo > hi and (h >= lo or h <= hi)):
-                return ім
-    return None
+    с = _ПЛ.сім_я_тону(h)
+    return с[0] if с else None
 
 
 def _сім_я_тону(hex_):
@@ -1393,11 +1385,11 @@ def людина_для_пакета(тіло, палітри, гілка=None, 
         пал["основа"] = {к: v for к, v in (
             ("слово", str(база).split("·")[0]),
             ("hex", (вибір or {}).get("база_hex")),
-            ("джерело", ("код запропонував, вона не міняла"
+            ("джерело", ("code_rank"
                          if (вибір or {}).get("база_за_замовчуванням") else
                          # П-7: основу, яку вона лишила стилістці, обрала модель (`вибір_палітри`)
-                         "стилістка обрала під цей вихід" if (вибір or {}).get("база_стилістки")
-                         else "вона обрала сама")),
+                         "stylist" if (вибір or {}).get("база_стилістки")
+                         else "her")),
         ) if v}
     л["палітра"] = пал
     тл = {}
