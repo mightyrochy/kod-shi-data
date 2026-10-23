@@ -1688,7 +1688,7 @@ def прийняти_вхід(вид, відповідь, ід_речей=None, 
         н = _норм(поля[к], v, к, незнайомі)
         if н not in (None, [], {}):
             внутрішня[к] = н
-            if ц is not None and not _порожнє(ц) and к not in _БЕЗ_ЦИТАТИ:
+            if ц is not None and not _порожнє(ц):
                 цитати[к] = " ".join(map(str, ц)) if isinstance(ц, list) else str(ц).strip()
         elif len(незнайомі) == було:   # перекладач сам сказав «unknown» (чи порожньо) — у звіт
             невідомо.append(к)
@@ -1730,8 +1730,7 @@ def знято_рядком(поле, сказала):
 
 
 # ══ ШОВ: ВНУТРІШНЯ МОВА → ПАСПОРТ ЯДРА ═════════════════════════════════════════
-_ПРОСТІ = (("occasion", "нагода"), ("place", "місце"), ("dress_code", "дрес_код"), ("setting", "формат"),
-           ("movement", "рух"), ("intent", "намір"), ("goal", "мета"), ("jewelry", "прикраси"))
+_ПРОСТІ = tuple((в["поле"], к) for к, в in _ВМ.ПОЛЯ_ПАСПОРТА.items() if в.get("просте"))
 
 
 # ── СЛОТ МЕЖІ — ТАБЛИЦЕЮ КОДІВ, А НЕ СЛОВНИКОМ СЛІВ (Ч-4, 27.09.2026) ─────────────────
@@ -1775,7 +1774,7 @@ def _ключі_речі(р):
                тканина=_ВМ.ключ("fabric", р.get("fabric")), візерунок=_ВМ.ключ("pattern", р.get("pattern")),
                довжина=_ВМ.ключ("length", р.get("length")), ознака=_ВМ.ключ("feature", р.get("feature")))
     вих = {к: v for к, v in вих.items() if v}
-    return dict(вих, фраза=_фраза(р)) if вих else {}
+    return dict(вих, фраза=_фраза(р), **({"уривок": р["quote"]} if р.get("quote") else {})) if вих else {}
 
 
 def _межі(речі):
@@ -1851,9 +1850,8 @@ def _злити_слоти(було, нові_в, нові_слоти):
 # `part_of_day` (НП-в5, рядок 522 (3)) — так само: «Офіційний вечір» — плитка, а не її слова, і
 # вечір у назві події модель розуміє тим самим ходом; години (`hour`) це не стосується — число
 # лише з її слів.
-_БЕЗ_ЦИТАТИ = ("event", "place_words", "mood", "question", "question_about", "rest", "quotes", "formality",
-               "formality_branch", "reserved_colour", "open_zones", "part_of_day", "stylist_note", "minute")
-_РЕЧІ_З_ЦИТАТОЮ = ("wants", "vetoes", "retract", "own_items", "beliefs")
+_БЕЗ_ЦИТАТИ = tuple(в["поле"] for в in _ВМ.ПОЛЯ_ПАСПОРТА.values() if в.get("цитата") == "без")
+_РЕЧІ_З_ЦИТАТОЮ = tuple(в["поле"] for в in _ВМ.ПОЛЯ_ПАСПОРТА.values() if в.get("цитата") == "речі")
 
 
 def _до_звірки(текст):
@@ -1997,7 +1995,7 @@ def _тримається(в, слова, виправлено=None):
                     виправлені.append(уривок_виправлено_рядком("%s[%d]" % (к, і), ц, о[0], о[1]))
                     р = dict(р, quote=о[0])
                 if о:
-                    лишити.append(р)
+                    лишити.append(dict(р, quote=о[0]))
                 else:
                     рядки.append(вигадка_рядком("%s[%d]" % (к, і), {x: y for x, y in р.items() if x != "quote"}, ц))
             if лишити:
@@ -2014,6 +2012,8 @@ def _тримається(в, слова, виправлено=None):
             рядки.append(вигадка_рядком(к, v, цитати.get(к)))
     if нові_цитати:
         вих["quotes"] = dict(вих.get("quotes") or {}, **нові_цитати)
+    вих["quotes"] = {к: ц for к, ц in (вих.get("quotes") or {}).items()
+                     if к in вих and опора(ц, вих[к])}
     if виправлено is not None:
         виправлено.extend(виправлені)
     return вих, рядки
@@ -2039,10 +2039,10 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     поради тоді обирала модель, і код їх СУДИТЬ (`суд_частин`) на стані після ходу — замість того,
     щоб обирати сам (`порада_коду`); у `поради_дані` лягають лише теми, до яких справді запрошено."""
     виправлено = []
-    в, вигадки = _тримається(внутрішня, слова_ходу, виправлено)
-    # Рядок 4622: рід частини дня визначає модель, не місце й не слова в Python.
-    # Суперечливу нагоду не замінюємо здогадом: решта кодів лишається, репліка
-    # отримує occasion у not_recorded. Намір чинний лише для цього оновлення.
+    в, вигадки = _СВ_М.сторож_мовного_шару(внутрішня, слова_ходу, виправлено)
+    # Рід частини дня визначає модель, не місце й не слова в Python.
+    # Суперечливу нагоду не замінюємо здогадом: названий рух із власним
+    # уривком лишається окремо, а `occasion` йде в not_recorded.
     конфлікт_нагоди = в.get("occasion_part") == "other" and в.get("occasion") == "sport"
     if конфлікт_нагоди:
         в = {к: x for к, x in в.items() if к != "occasion"}
@@ -2051,6 +2051,8 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         не_взято = list(не_взято or []) + [
             "occasion_part_conflict · step=layer · field=occasion · model_said=sport · "
             "occasion_part=other · code=not_taken"]
+    elif в.get("occasion") == "sport" and not в.get("movement"):
+        в = dict(в, movement="sport", quotes=dict(в.get("quotes") or {}, movement=(в.get("quotes") or {}).get("occasion")))
     # ЇЇ РІЧ БЕЗ СТАНУ — НЕ ЗАПИСАНА (рядок 4102, живі 17 №4). «Взуття — замшеві чоботи» модель дала в `own_items` без
     # `status` (у схемі він обов'язковий): річ трималась цитатою, але не ставала ні закріпленою, ні знятою — звіт казав
     # «не закріплено: мовний шар: None», а репліка «Записала: …» про неї мовчала. Чи буде річ в образі, вирішує мовна
@@ -2143,13 +2145,18 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # Модель цього ходу числа не дала — лишається попереднє; не було й попереднього — смуги
     # нема («невідомо»), і код пулу не чистить.
     смуга = lambda ф: [ф["from"], ф["to"]] if isinstance(ф, dict) and "from" in ф else None
-    ош = смуга(в.get("formality")) or досі.get("ошатність")
+    нова_ошатність = смуга(в.get("formality"))
+    ош = нова_ошатність or досі.get("ошатність")
     визначальне = any(об.get(к) for к in ("нагода", "місце", "дрес_код")) or any(
         (сценарій or {}).get(к) not in (None, "") for к in _СЦ.ВИЗНАЧАЛЬНІ)
     # ПОДІЯ БЕЗ КОДУ Й БЕЗ СМУГИ (Ч-5): де вона буде — обовʼязкове питання (`event_place`), а
     # звіт власника каже, що саме недодав перекладач, а не мовчить
     подія_без_смуги = bool(_текст(в.get("event"))) and not ош and not визначальне
     об["ошатність"] = ош
+    # Причина описує саме цей щабель: новий щабель бере нову причину або скидає її;
+    # хід без нового щабля не може окремо переписати його причину.
+    об["причина_ошатності"] = (_ВМ.ключ("formality_reason", в.get("formality_reason"))
+                                        if нова_ошатність else досі.get("причина_ошатності"))
     мк = в.get("makeup") or {}
     об["макіяж"] = ({"рівень": _ВМ.ключ("makeup_level", мк.get("level")), "губи": мк.get("lips_hex")}
                     if мк else досі.get("макіяж"))
@@ -2168,7 +2175,9 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # прохання про каблук (`каблук.прохання_з_паспорта`) — жоден більше не розбирає фрази
     бажання_коди = []
     for к in list(досі.get("бажання_коди") or []) + [_ключі_речі(р) for р in в.get("wants") or []]:
-        if isinstance(к, dict) and к and к.get("фраза") not in знято_б and к not in бажання_коди:
+        if isinstance(к, dict) and к and к.get("фраза") not in знято_б:
+            ознаки = {ім: з for ім, з in к.items() if ім != "уривок"}
+            бажання_коди = [б for б in бажання_коди if {ім: з for ім, з in б.items() if ім != "уривок"} != ознаки]
             бажання_коди.append(к)
     об["реєстр_людини"] = list(dict.fromkeys([_ВМ.ключ("register", р) for р in в.get("registers") or []]
                                              + list(досі.get("реєстр_людини") or [])))[:2]
@@ -2183,6 +2192,8 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     п = _ПН.паспорт_з_json(_json_.dumps(об, ensure_ascii=False), сценарій or {}, "", вето_чипів,
                            паспорт_досі=досі or None, драп=драп, фото=фото,
                            словами=_її_речі(в.get("own_items")), чекати_відповідь=False, шар=True)
+    if нова_ошатність and not об.get("причина_ошатності"):
+        п.pop("причина_ошатності", None)
     # МЕЖІ — ТІ, ЩО ПОЧУВ ПЕРЕКЛАДАЧ: гейт слів (`вето_тверде`) без слів мовчить і зняв би їх
     слоти = _злити_слоти(досі.get("вето_тверде"), нові_в, нові_слоти)
     тв = {к: list((п.get("вето") or {}).get(к) or []) for к in ("типи", "тканини", "принти", "кольори", "зони")}
@@ -2223,6 +2234,20 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         п["переконання"] = list(dict.fromkeys(переконання))
     if бажання_коди:
         п["бажання_коди"] = бажання_коди
+    уривки = dict(досі.get("цитати_полів") or {})
+    рукою = set(_ПН.поля_рукою(сценарій or {}, досі))
+    for ім in рукою:
+        уривки.pop(ім, None)
+    for ім, опис in _ВМ.ПОЛЯ_ПАСПОРТА.items():
+        поле = опис.get("поле")
+        if поле not in в or ім.startswith("@"):
+            continue
+        уривки.pop(ім, None)
+        if ім in рукою:
+            continue
+        if цит.get(поле):
+            уривки[ім] = цит[поле]
+    п["цитати_полів"] = уривки
     п["перекладено_шаром"] = True
     # РЕШТА СКАЗАНОГО (М-1, В-5): те, що не лягло в жодне поле, не гине — їде моделям полем
     # випадку (`her_other_words`, `руки_без_коду.паспорт_рядком`), її мовою
@@ -2869,7 +2894,7 @@ _ПОЛЯ_EN = {
     # само частини не вирішує) — тепер лише тут; приклад «йога, потім кава» з R7 знято (рядок 6188)
     "occasion_part": "which part of her day THIS outfit is for: the part she says it is for; when she has not "
                      "said, the first part that is not sport, or the sport part when there is no other; a place "
-                     "alone never decides it. other — that part is not sport; sport — that part is doing the "
+                     "alone never decides it. A clock time or morning/evening is not a different activity: yoga in the morning is still sport. other — that part is not sport; sport — that part is doing the "
                      "sport; give it with occasion, with the quote of that selected part, not a quote of the "
                      "whole day; unknown when you cannot tell",
     # Рядок 4206 (ЖИВІ-18 №5): «Новорічна вечірка в ресторані» — `occasion` з цим уривком, а `place` — ні (Ж17 — так):
@@ -2972,6 +2997,7 @@ _ПОЛЯ_EN = {
     "formality": "how dressy this outing is: the code of one step of the ladder (home, everyday, neat, smart, "
                  "formal, very_smart, ceremonial)",
     # Рядок 8950: гілку ставить та сама норма, що щабель, — модель, а не назва події в коді
+    "formality_reason": "why the ladder puts her on this step: written — a named written dress code; norm — the usual standard of the place or people; evaluated — +1 because she is evaluated; representing — +1 because she represents others; her_words — her explicit wish. Give it with formality, without quote",
     "formality_branch": "the branch of that step, given by the same standard that puts the outing on it: business — "
                         "her workplace, a job interview, a business meeting; social — a reception, a celebration, "
                         "her leisure; only for a step of the ladder that has both",
@@ -3184,7 +3210,7 @@ def _коди_норми():
     # `мова1_нечіткі.py`: 0 з 5 таких випадків).
     # `minute` (рядки 933/1135) — службове так само: стоїть при `hour`, цитати не потребує, бо без години
     # з її слів шов його не бере (`паспорт_з_шару`).
-    for ім in ("reserved_colour", "open_zones", "part_of_day", "minute"):
+    for ім in ("formality_reason", "reserved_colour", "open_zones", "part_of_day", "minute"):
         опис = _ПОЛЯ_EN[ім]
         р.append("- %s — %s; %s; without quote" % (ім, опис, _тип_en(_ВМ.СЦЕНАРІЙ[ім])))
     return р
@@ -3221,8 +3247,7 @@ def _коди_розмови():
             # Рядок 5313 (ЖИВІ-1510-Г, Г2): «Весілля подруги в суботу» → celebration, і правила гості весілля
             # (`case.reserved_colour`) не мали звідки взятись; рід «свято» про весілля мовчав
             # Рядок 6090: «never celebration» — тепер в описі самої нагоди, куди модель дивиться
-            р.append("  · wedding_guest — someone else's wedding, she is a guest (wedding_day when her words say it "
-                     "is by day)")
+            р.append("  · wedding_guest — someone else's wedding, she is a guest, at any time of day")
             # Рядок 4622: спорт рухом і спорт нагодою — незалежні канали.
             # Модель називає рід обраної частини через occasion_part; код судить цю пару.
             # Рядок 6187: «спорт деінде в дні — movement sport» — дослівно опис `movement`; тут лише нагода
@@ -3543,31 +3568,8 @@ _ПРАВИЛО_НОРМИ = (
 # його в скелеті, а не виводить з правила, що суперечить опису поля.
 # Рядок 6192: «to her as «ти»» у `says`, `invite`, правилах `invite` і `header` знято — шість разів на промпт; форму
 # звертання кажуть `_ПРАВИЛО_ФОРМИ` і межа `для_неї`.
-СКЕЛЕТ_РОЗМОВИ = {
-    "update": {"formality": "the code of one step of the ladder — on every turn once the kind of outing is known "
-                            "(the \"formality\" rule)",
-               "formality_branch": "business or social, with formality on a step that has both branches",
-               # Рядок 6753 (ЖИВІ-1016-3, Ж:02): «йога зранку, потім кава з подругою» — `occasion: sport` уривком усього
-               # дня, без `occasion_part`, `place` і `event`: кава зникла, плитка «Спорт, активність». Вибір частини
-               # (`occasion_part`) і суд пари `occasion_part other` + `occasion sport` (`паспорт_з_шару`) стоять, але
-               # поле, якого скелет не називає, модель не писала; тепер скелет називає його поруч із нагодою
-               "occasion_part": "with occasion: which part of her day this outfit is for (see \"codes\")",
-               # Рядок 6186: `<field>` називає й другий виняток — норми події без її слів (R9); «одна фраза — кілька
-               # полів» каже R2. Рядок 6457: після #1212 сім полів з парою в перших ходах ЖИВІ-1016-1 прийшли голими
-               # (`temperature_c: -8`, `movement: "walk"` — Ж:38; Ж:22, 29, 48), і сторож знімав їх як вигадку без уривка:
-               # голе значення код зі словами не звіряє (п.12), тож форму пари скелет каже сам, поруч із винятками без уривка
-               "<field>": "every other field her new message fills or changes, each in its form from \"codes\": a "
-                          "code or a number as {\"quote\": the fragment of her words, \"value\": its value}; and "
-                          "reserved_colour and open_zones when the event has such a norm, without quote"},
-    "need": " | ".join(_ВМ.ПОТРЕБИ),
-    "text": [{"about": ["codes of the \"update\" fields this sentence tells about, or her_question"],
-              "says": "one sentence of your reply to her, never a lone word"}],
-    "invite_topics": ["advice topic codes your invitation covers, up to three"],
-    "invite": "one soft invitation sentence, or empty",
-    "ask_code": " | ".join(_ВМ.ОБОВʼЯЗКОВЕ) + ", or empty",
-    "ask": "one short direct question, or empty",
-    "header": {"hour | temperature_c | precipitation | wants | vetoes | mood": "that value in a few Ukrainian words"},
-}
+import схема_відповіді as _СВ_М
+СКЕЛЕТ_РОЗМОВИ = _СВ_М.скелет_мовного_шару()
 
 РОЗМОВА = _ЗП_Р.Оголошення(
     задача="розмова",
@@ -3677,8 +3679,7 @@ def _паспорт_прості():
     return tuple((ключ, перелік) for _, перелік, ключ in _ПН.ПОЛЕ_ВИМІРУ if ключ and ключ not in свої)
 
 
-_ПАСПОРТ_ЧИСЛА = (("година", "hour"), ("темп_c", "temperature_c"), ("тривалість_год", "duration_h"),
-                  ("ноги_вище_см", "legs_above_cm"))
+_ПАСПОРТ_ЧИСЛА = tuple((к, в["поле"]) for к, в in _ВМ.ПОЛЯ_ПАСПОРТА.items() if в.get("число"))
 _ГРУПИ_ВЕТО = (("типи", ("item_type", "slot", "feature", "length")), ("кольори", ("color_name", "color_class")),
                ("тканини", ("fabric",)), ("принти", ("pattern",)), ("зони", ("zone",)))
 
@@ -3689,7 +3690,7 @@ def _є(v):
 
 
 def паспорт_кодами(п):
-    """Паспорт ядра → внутрішня мова для моделі розмови: ті самі поля сценарію кодами, без цитат.
+    """Паспорт ядра → внутрішня мова для моделі розмови: коди й уривки тих самих полів.
 
     Типова нагода речі з фото й замовчування форми — НЕ її слова (рядок 152, В-2): модель їх не
     бачить, як і в виклику 0 (`промпт_паспорта`), інакше повернула б їх як сказане. Бажання —
@@ -3741,6 +3742,8 @@ def паспорт_кодами(п):
                 ("тканина", "fabric"), ("візерунок", "pattern"), ("довжина", "length"), ("ознака", "feature"))
                 if б.get(ключ)}
             р = {к: v for к, v in р.items() if v}
+            if б.get("уривок"):
+                р["quote"] = б["уривок"]
             if р and р not in бажання:
                 бажання.append(р)
     if бажання:
@@ -3766,6 +3769,8 @@ def паспорт_кодами(п):
             речі.append({к: v for к, v in р_к.items() if v})
     if речі:
         вих["own_items"] = речі
+    вих["quotes"] = {опис["поле"]: ц for ім, ц in (п.get("цитати_полів") or {}).items()
+                       if (опис := _ВМ.ПОЛЯ_ПАСПОРТА.get(ім, {})).get("поле") in вих}
     return вих
 
 
@@ -3960,7 +3965,7 @@ def промпт_розмови(d):
 
 
 # ── ВІДПОВІДЬ ХОДУ: ОНОВЛЕННЯ — ТІЄЮ САМОЮ МОВОЮ СЦЕНАРІЮ, ЧАСТИНИ — ОКРЕМО ─────────────
-_ЧАСТИНИ = ("need", "text", "invite_topics", "invite", "ask_code", "ask", "header")
+_ЧАСТИНИ = tuple(к for к in _СВ_М.форма_мовного_шару(визначення=False)["properties"] if к != "update")
 ШАПКА_СИМВ = 60      # стеля символів на слова одного поля: шматок шапки — плашка в один рядок на 390 px
 _КОД_У_ТЕКСТІ = re.compile(r"\b[a-z]+_[a-z_]+\b|\bunknown\b")
 
