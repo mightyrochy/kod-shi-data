@@ -172,7 +172,7 @@ class Мірка(tuple):
 ВІДСОТОК = ("percent",)
 ДОВЖИНА = ("cm", "mm", "m", "in")
 # Стеля числа — у сантиметрах (чи відсотках): «80 mm» каблука й «8 cm» — те саме число під стелею.
-У_СТЕЛЮ = {"percent": 1, "cm": 1, "mm": 0.1, "m": 100, "in": 2.54}
+У_СТЕЛЮ = {"percent": 1, "cm": 1, "mm": 0.1, "m": 100, "in": 2.54, "den": 1}
 
 # ── ПОЛЯ РОЗБОРУ: шлях → (перелік кодів, опис для моделі) ────────────────────
 # Шлях «а.б» — поле в обʼєкті, «а[]» — список кодів, «а[].б» — поле обʼєкта в списку. Один
@@ -196,6 +196,17 @@ class Мірка(tuple):
     ("cut", КРІЙ, "cut"),
     ("length", _коди("length", на=True), "length"),
     ("length_cm", Мірка(ДОВЖИНА, 400), "length of the garment as a measure"),
+    ("width_cm", Мірка(ДОВЖИНА, 400), "width of a scarf or garment as a measure"),
+    ("length_anchor", ["shoulder", "waist", "inseam", UNKNOWN], "explicit starting point of the length measurement"),
+    ("cut_details[]", ["slit", "corset", "elastic", "shirt", "peplum", "draped", "wrap", "none", UNKNOWN], "explicit construction details"),
+    ("pattern_placement", ["border", "placed", "all_over", UNKNOWN], "placement of the motif"),
+    ("pattern_zone", ["chest", "back", "arms", "shoulders", "hips", "waist", "hem", UNKNOWN], "body zone bearing the motif"),
+    ("carry", ["hand", "crossbody", "shoulder", "back", UNKNOWN], "stated way to carry the bag"),
+    ("hood_detachable", ТРИ_НА, "hood is detachable"),
+    ("insole_cm", Мірка(ДОВЖИНА, 50), "insole length as a measure"),
+    ("shaft_cm", Мірка(ДОВЖИНА, 100), "boot shaft height as a measure"),
+    ("den", Мірка(("den",), 1000), "hosiery density in denier"),
+    ("metal_variants[]", МЕТАЛ, "separately sold metal variants, only when explicitly stated"),
     ("size_fit", МІРНІСТЬ, "how the item runs against its size"),
     ("sleeve", РУКАВ, "sleeve"),
     ("sleeve_cut", РУКАВ_КРІЙ, "how the sleeve is set into the body"),
@@ -215,6 +226,9 @@ class Мірка(tuple):
     ("heel.present", КАБЛУК_Є, "is there a heel"),
     ("heel.shape", КАБЛУК_ФОРМА, "heel shape"),
     ("heel.height", КАБЛУК_ВИСОТА, "heel height"),
+    ("heel.min_cm", Мірка(ДОВЖИНА, 40), "explicit lower bound of the heel height range, not an exact height"),
+    ("heel.max_cm", Мірка(ДОВЖИНА, 40), "explicit upper bound of the heel height range, not an exact height"),
+    ("quilt_orientation", ["horizontal", "diagonal", UNKNOWN], "orientation of quilting lines"),
     ("heel.height_cm", Мірка(ДОВЖИНА, 40), "heel height as a measure"),
     ("sole", ПІДОШВА, "material or tread of the sole"),
     ("shoe_width", ПОВНОТА, "width of the shoe"),
@@ -280,6 +294,11 @@ _ЛИШЕ = lambda *слоти: frozenset(к for к in ВМ.ТАБЛИЦЯ["slot
     "elastane_pct": frozenset(_БЕЗ_ТКАНИНИ),
     "wool_pct": frozenset(_БЕЗ_ТКАНИНИ),
     "length_cm": frozenset(_БЕЗ_КРОЮ),
+    "width_cm": _ЛИШЕ("scarf", "top", "bottom", "dress", "outerwear", "set"),
+    "hood_detachable": frozenset(_БЕЗ_КРОЮ),
+    "insole_cm": frozenset(_ПОЗА_ВЗУТТЯМ),
+    "shaft_cm": frozenset(_ПОЗА_ВЗУТТЯМ + _БЕЗ_ХАЛЯВИ),
+    "den": _ЛИШЕ("tights", "socks"),
     "sleeve_cut": frozenset(_БЕЗ_РУКАВА),
     "collar": frozenset(_БЕЗ_РУКАВА),
     "closure": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
@@ -292,6 +311,8 @@ _ЛИШЕ = lambda *слоти: frozenset(к for к in ВМ.ТАБЛИЦЯ["slot
     "quilted": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
     "filling": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
     "heel.height_cm": frozenset(_ПОЗА_ВЗУТТЯМ),
+    "heel.min_cm": frozenset(_ПОЗА_ВЗУТТЯМ),
+    "heel.max_cm": frozenset(_ПОЗА_ВЗУТТЯМ),
     "sole": frozenset(_ПОЗА_ВЗУТТЯМ),
     "shoe_width": frozenset(_ПОЗА_ВЗУТТЯМ),
     "sole_attachment": frozenset(_ПОЗА_ВЗУТТЯМ),
@@ -337,7 +358,8 @@ assert all(к in ВМ.ТАБЛИЦЯ["slot"] or к in ВМ.ТАБЛИЦЯ["item_
 СТЕЛЯ_ФРАГМЕНТІВ = 12
 СТЕЛЯ_ФРАГМЕНТА = 80        # знаків англійського фрагмента
 # Стелі списків кодів у схемі відповіді: без них граматика пускає довільно довгий список.
-СТЕЛІ_СПИСКІВ = {"set_parts": 4, "color_extra": 4, "decor": 6, ОСОБЛИВОСТІ: СТЕЛЯ_ФРАГМЕНТІВ}
+СТЕЛІ_СПИСКІВ = {"set_parts": 4, "color_extra": 4, "decor": 6, "cut_details": 7,
+                 "metal_variants": 4, ОСОБЛИВОСТІ: СТЕЛЯ_ФРАГМЕНТІВ}
 
 ПЕРЕЛІКИ = {ш: к for ш, к, _ in ПОЛЯ}
 ОПИСИ = {ш: о for ш, _, о in ПОЛЯ}
@@ -502,6 +524,10 @@ def схема():
                         "через кому, або unknown. Вільний текст для функціональної моделі; код його "
                         "не читає і перевіряє лише форму (рядок, кількість слів, латиниця)"
                         % СТЕЛЯ_СЛІВ)}
+    корінь["properties"]["evidence"] = {"type": "object", "additionalProperties": {
+        "type": "object", "required": ["quote", "sources"], "additionalProperties": False,
+        "properties": {"quote": {"type": "string"}, "sources": {"type": "array", "items": {"type": "string"}},
+                       "derived_from": {"type": "string"}}}}
     return {"$schema": "https://json-schema.org/draft/2020-12/schema", "$id": ВЕРСІЯ,
             "title": "Розбір каталогу Люстерка",
             "description": ("Поля, якими мовна модель описує річ каталогу для коду: коди із "
@@ -928,7 +954,7 @@ def _число(знач, мірка, шлях, причини, частини=N
     return {ЗНАЧЕННЯ: int(ч) if ч.is_integer() else ч, ОДИНИЦЯ: одиниця}
 
 
-def _список(знач, коди, шлях, причини, частини=None):
+def _список(знач, коди, шлях, причини, частини=None, цитати=None):
     """Список кодів моделі → список кодів переліку; «unknown», `not_applicable` і порожнє —
     порожній список. Кожен елемент — через `_код` (і сторож цитат, коли дано `частини`)."""
     if знач is None or isinstance(знач, (str, int, float)):
@@ -936,7 +962,8 @@ def _список(знач, коди, шлях, причини, частини=N
     if not isinstance(знач, list):
         причини.append("%s: не список" % шлях)
         return []
-    вих = [_код(з, коди, шлях, причини, частини) for з in знач]
+    вих = [_код(з, коди, "%s[%d]" % (шлях.removesuffix("[]"), і), причини, частини, цитати)
+           for і, з in enumerate(знач)]
     return list(dict.fromkeys(к for к in вих if к not in (UNKNOWN, НЕ_СТОСУЄТЬСЯ)))
 
 
@@ -946,7 +973,7 @@ def _слот(знач, тип, шлях, причини, частини):
     причини. Інакше — як будь-яке поле: код лише з цитатою."""
     з_таблиці = ВМ.СЛОТ_ТИПУ.get(тип)
     if з_таблиці is None:
-        return _код(знач, ПЕРЕЛІКИ[шлях], шлях, причини, частини)
+        return UNKNOWN
     сказала = _код(знач, ПЕРЕЛІКИ[шлях], шлях, [], None)
     if сказала not in (UNKNOWN, з_таблиці):
         причини.append("%s: з таблиці типу %s — %s, модель сказала %s" % (шлях, тип, з_таблиці, сказала))
@@ -1097,23 +1124,25 @@ def з_відповіді(текст, дані=None):
         if частини is not None and (шлях in ВИВЕДЕНІ or шлях == "slot"):
             continue                                   # виводяться після циклу
         if len(кроки) == 1:
-            вих[ім] = (_список(об.get(ім), коди, шлях, причини, частини) if список
+            вих[ім] = (_список(об.get(ім), коди, шлях, причини, частини, цитати) if список
                        else _код(об.get(ім), коди, шлях, причини, частини, цитати))
         elif список:                                   # set_parts[].<поле>
             частини_набору = об.get(ім)
             частини_набору = частини_набору if isinstance(частини_набору, list) else []
             вих.setdefault(ім, [{} for _ in частини_набору])
-            for ч, готова in zip(частини_набору, вих[ім]):
+            for і, (ч, готова) in enumerate(zip(частини_набору, вих[ім])):
                 ч = ч if isinstance(ч, dict) else {}
                 if частини is not None and кроки[1][0] == "slot":
                     continue                           # слот частини — з її типу, нижче
-                готова[кроки[1][0]] = _код(ч.get(кроки[1][0]), коди, шлях, причини, частини)
+                готова[кроки[1][0]] = _код(ч.get(кроки[1][0]), коди, шлях.replace("[]", "[%d]" % і), причини, частини, цитати)
         else:                                          # heel.<поле>, veto.<поле>
             гілка = об.get(ім) if isinstance(об.get(ім), dict) else {}
             вих.setdefault(ім, {})[кроки[1][0]] = _код(гілка.get(кроки[1][0]), коди,
                                                        "%s" % шлях, причини, частини, цитати)
     if частини is not None:
         вих["slot"] = _слот(об.get("slot"), вих["item_type"], "slot", причини, частини)
+        if вих.get("set_kind") in ("suit", "casual_suit", "set", "jewelry_set"):
+            вих["slot"] = "jewelry" if вих["set_kind"] == "jewelry_set" else "set"
         набір = об.get("set_parts") if isinstance(об.get("set_parts"), list) else []
         for ч, готова in zip(набір, вих.get("set_parts", [])):
             ч = ч if isinstance(ч, dict) else {}
@@ -1135,6 +1164,11 @@ def з_відповіді(текст, дані=None):
     зайві = sorted(к for к in об if к not in вих and к != "id")
     if зайві:
         причини.append("зайві поля: %s" % ",".join(зайві)[:120])
+    if частини is not None:
+        вих["evidence"] = {ш: {"quote": ц, "sources": де} for ш, (ц, де) in цитати.items() if ц and де}
+        ш = "set_kind" if вих.get("set_kind") in ("suit", "casual_suit", "set", "jewelry_set") else "item_type"
+        if ш in вих["evidence"] and вих["slot"] != UNKNOWN:
+            вих["evidence"]["slot"] = dict(вих["evidence"][ш], derived_from=ш)
     return вих, причини
 
 

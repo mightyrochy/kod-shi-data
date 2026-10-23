@@ -93,6 +93,8 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
 # `паспорт_нагоди.ЗОНИ_ВЕТО`, слоти `graph.СЛОТИ`, типи `feed.ТИП_КЛЮЧІ`, тканини
 # `verify.ВОЛОКНА`, візерунки `verify.КЛАСИ_МОТИВУ`, класи кольору `колір_річ`, назви
 # кольору `verify.ЛЕКСИКОН`, опади `сценарій.ОПАДИ_КАНОН`, мета `profile.МЕТИ`.
+import slots as _СЛ
+
 ТАБЛИЦЯ = {
     # МІТКИ РОЗБОРУ КАТАЛОГУ (6935): модель тлумачить слова крамниці, код тримає лише
     # цитату й перелік. Відсів і перезбір за цими мітками — окремі кроки 6937–6939.
@@ -271,14 +273,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     # кожен, але мусить мати куди покласти річ. Рукавички й годинник суд уже знав
     # (`аксесуари_розмір`, `колір_річ`), таблиця — ні, і рукавички рук 3–4 з картки зникали.
     # `accessory` — останній, для того, чому інший код не пасує (парасолька, краватка).
-    "slot": {
-        "top": "верх", "bottom": "низ", "dress": "сукня", "set": "комплект",
-        "outerwear": "верхній_шар", "shoes": "взуття", "bag": "сумка", "scarf": "шарф",
-        "headwear": "головний_убір", "belt": "пояс", "tights": "колготи", "socks": "шкарпетки",
-        "jewelry": "прикраси", "earrings": "сережки", "collar_necklace": "кольє",
-        "necklace": "намисто", "brooch": "брошка", "bracelet": "браслет", "ring": "каблучка",
-        "glasses": "окуляри", "gloves": "рукавички", "watch": "годинник", "swimwear": "купальник",
-        "underwear": "білизна", "accessory": "аксесуар"},
+    "slot": _СЛ.КЛЮЧІ,
     "item_type": {
         "evening_dress": "вечірня_сукня", "cocktail_dress": "коктейльна_сукня", "suit": "костюм",
         "sheath_dress": "футляр", "sundress": "сарафан", "blazer": "блейзер",
@@ -307,7 +302,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
         "bodysuit": "боді", "longsleeve": "лонгслів", "half_coat": "півпальто",
         "down_jacket": "пуховик", "fur_coat": "шуба", "sheepskin_coat": "дублянка", "parka": "парка",
         "raincoat": "плащ", "rain_cape": "дощовик", "windbreaker": "вітровка", "anorak": "анорак",
-        "bomber": "бомбер", "poncho": "пончо",
+        "bomber": "бомбер", "poncho": "пончо", "kimono": "кімоно",
         # 6755 (17.10.2026): типи слотів, у яких доти був лише родовий код або жодного (шапка в еталоні 404
         # діставала `scarf_generic`, «моно-сережка» — `ring`, пасок — `belt_bag`): модель шукала найближчий
         # чужий код. Слот кожного — у `СЛОТ_ТИПУ`; сережка, браслет, намисто, кольє, брошка, годинник,
@@ -320,7 +315,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
         "wool": "вовна", "cashmere": "кашемір", "mohair": "мохер", "angora": "ангора",
         "alpaca": "альпака", "cotton": "бавовна", "viscose": "віскоза", "tencel": "тенсел",
         "lyocell": "ліоцел", "modal": "модал", "linen": "льон", "silk": "шовк",
-        "polyester": "поліестер", "polyamide": "поліамід", "nylon": "нейлон", "acrylic": "акрил",
+        "taffeta": "тафта", "polyester": "поліестер", "polyamide": "поліамід", "nylon": "нейлон", "acrylic": "акрил",
         "elastane": "еластан", "stretch": "стрейч", "denim": "денім", "satin": "сатин",
         "atlas": "атлас", "chiffon": "шифон", "muslin": "муслін", "batiste": "батист",
         "tweed": "твід", "boucle": "букле", "corduroy": "вельвет", "velvet": "оксамит",
@@ -457,35 +452,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
 # закритих переліків, та сама за змістом, що давав той словник на кожному коді `item_type`
 # (виміряно), з одним виправленням: `belt_bag` (поясна сумка) — сумка, а не пояс. Тип без
 # рядка тут — як доти: слота код не знає, і річ без слота не закріплюється.
-СЛОТ_ТИПУ = {
-    "evening_dress": "dress", "cocktail_dress": "dress", "sheath_dress": "dress",
-    "sundress": "dress", "jumpsuit": "dress", "dress_generic": "dress",
-    "suit": "set", "casual_suit": "set", "two_piece_set": "set",
-    "ugg_boots": "shoes", "over_knee_boots": "shoes", "chelsea_boots": "shoes",
-    "ballet_flats": "shoes", "mules": "shoes", "espadrilles": "shoes", "pumps": "shoes",
-    "dress_shoes": "shoes", "moccasins": "shoes", "loafers": "shoes", "sneakers": "shoes",
-    "plimsolls": "shoes", "ankle_boots": "shoes", "boots": "shoes", "heeled_sandals": "shoes",
-    "sandals": "shoes",
-    "clutch": "bag", "backpack": "bag", "tote": "bag", "baguette_bag": "bag", "hobo_bag": "bag",
-    "crossbody_bag": "bag", "bucket_bag": "bag", "belt_bag": "bag", "briefcase": "bag",
-    "saddle_bag": "bag", "bag_generic": "bag",
-    "hoodie": "top", "sportswear": "top", "loungewear": "top", "t_shirt": "top", "shirt": "top",
-    "blouse": "top", "knitwear": "top", "cardigan": "top", "sweater": "top", "bodysuit": "top",
-    "longsleeve": "top", "vest": "top", "top_garment": "top",
-    "leggings": "bottom", "jeans": "bottom", "shorts": "bottom", "skirt": "bottom", "trousers": "bottom",
-    "coat": "outerwear", "trench_coat": "outerwear", "jacket": "outerwear", "blazer": "outerwear",
-    "half_coat": "outerwear", "down_jacket": "outerwear", "fur_coat": "outerwear",
-    "sheepskin_coat": "outerwear", "parka": "outerwear", "raincoat": "outerwear",
-    "rain_cape": "outerwear", "windbreaker": "outerwear", "anorak": "outerwear",
-    "bomber": "outerwear", "poncho": "outerwear",
-    "stole": "scarf", "kerchief": "scarf", "twilly": "scarf", "snood": "scarf", "shawl": "scarf",
-    "bactus_scarf": "scarf", "scarf_generic": "scarf",
-    "headband": "headwear", "bow": "headwear", "hair_clip": "headwear", "hair_tie": "headwear",
-    "beanie": "headwear", "hat": "headwear", "beret": "headwear", "cap": "headwear", "belt": "belt",
-    "earrings": "earrings", "bracelet": "bracelet", "necklace": "necklace",
-    "collar_necklace": "collar_necklace", "brooch": "brooch", "watch": "watch", "glasses": "glasses",
-    "gloves": "gloves", "tights": "tights", "socks": "socks", "swimsuit": "swimwear",
-    "lingerie": "underwear", "ring": "ring", "jewelry_generic": "jewelry"}
+СЛОТ_ТИПУ = _СЛ.СЛОТ_ТИПУ
 
 
 # Межа відкритості: один об’єкт для паспорта й протоколу; коди — з таблиці вище.

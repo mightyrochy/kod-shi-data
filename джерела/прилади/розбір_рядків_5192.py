@@ -86,16 +86,16 @@ import збирач_промптів as ЗП                 # noqa: E402
     # лише про стать чи вік обере `kind` і дасть «невідомо» решті (рішення менеджера 22.10, рядок 8860)
     "kind": ("slot", "item_type", "set_kind", "set_parts[].slot", "set_parts[].item_type", "listing_kind", "audience"),
     "fibre": ("fabric", "material", "fabric_kind", "texture", "elastane_pct", "wool_pct"),
-    "fit": ("cut", "size_fit", "elastic_waist", "belt", "veto.oversize", "veto.tight"),
-    "length": ("length", "length_cm", "shaft"),
+    "fit": ("cut", "cut_details[]", "size_fit", "elastic_waist", "belt", "veto.oversize", "veto.tight"),
+    "length": ("length", "length_cm", "width_cm", "length_anchor", "shaft"),
     "sleeve_neck": ("sleeve", "sleeve_cut", "neckline", "collar"),
-    "outerwear": ("closure", "breasted", "hood", "fur_trim", "pile", "quilted", "filling"),
-    "shoe": ("vamp", "heel.present", "heel.shape", "heel.height", "heel.height_cm", "sole",
+    "outerwear": ("closure", "breasted", "hood", "hood_detachable", "fur_trim", "pile", "quilted", "quilt_orientation", "filling"),
+    "shoe": ("vamp", "heel.present", "heel.shape", "heel.height", "heel.height_cm", "heel.min_cm", "heel.max_cm", "insole_cm", "shaft_cm", "sole",
              "shoe_width", "sole_attachment"),
-    "bag": ("bag_size", "strap_cm"),
-    "metal": ("metal", "metal_where", "chain_cm"),
+    "bag": ("bag_size", "strap_cm", "carry"),
+    "metal": ("metal", "metal_where", "metal_variants[]", "chain_cm"),
     "colour": ("color_main", "color_extra[]", "color_why"),
-    "surface": ("pattern", "decor[]", "veto.stripes", "veto.big_print", "veto.print", "veto.shine"),
+    "surface": ("pattern", "pattern_placement", "pattern_zone", "decor[]", "den", "veto.stripes", "veto.big_print", "veto.print", "veto.shine"),
     # про мову назви пише лише сам рядок назви; код мови не визначає (п.12; рішення менеджера 22.10, рядок 8860)
     "name": ("name_language",),
 }
