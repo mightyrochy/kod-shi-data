@@ -1378,8 +1378,7 @@ _НА_ФОТО = ("Judge only the items on her photos, for her question. A thing
 # «марунного» замість бордового (ЖИВІ-24 06). Мовний шар такий текст лише правив, а не перекладав: «природне» він
 # лишає, речей і кодів кольору не звіряє. Тепер модель пише мовою «language» (як помічниця, `міст_помічниця`), а
 # українською жінці пише перекладачка — на «ти», у жіночому роді, з речами картки й кодами їхнього кольору.
-_МОВА_ТЕКСТІВ = ("Write \"answer\" and every \"text\" in the language of \"language\", whatever language her "
-                "question is in.")
+# Крок 3.6: правило мови — межа `для_неї` (договір людського виходу, `людський_вихід`), а не редакція цієї задачі.
 ОЦІНКА = _ЗП.Оголошення(
     задача="оцінка",
     роль="You are a stylist. A woman has put an outfit together herself and asks for your view. "
@@ -1456,7 +1455,6 @@ _МОВА_ТЕКСТІВ = ("Write \"answer\" and every \"text\" in the language
         "When the outfit is one item, judge that item itself: its color with her palette and near her face, "
         "its cut and fabric, and her occasion and weather when she named them.",
         _БЕЗ_ЛІЧИЛЬНИКА,
-        _МОВА_ТЕКСТІВ,
     ),
     вихід="OUTFIT_REVIEW_V1",
     скелет={
