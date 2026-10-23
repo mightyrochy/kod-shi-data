@@ -11,46 +11,21 @@ import збирач_промптів as _ЗП
 import внутрішня_мова as _ВМ
 import уважний_вибір as _УВ
 import руки_без_коду as _РБ
+# складання на один слот — у пакет_моделі (3.3, К-4): його віддає й пакет; тут ті самі об'єкти під своїми іменами
+from пакет_моделі import (_ПОЛЕ_ЗАМІНИ as _ПОЛЕ, _ПРАВИЛА_ЗАМІНИ as _ПРАВИЛА, РОЛЬ_ЗАМІНИ as РОЛЬ, _НЕ_ДЛЯ_ЗАМІНИ,
+                          _СКЕЛЕТ_ЗАМІНИ as _СКЕЛЕТ, _поле_помилки, _ПОМИЛКА_ПУЛУ, _ПОМИЛКА_ПУЛУ_ІНШИЙ,
+                          контекст_заміни as контекст, промпт_заміни as промпт_складання)
 
 ЗОВНІШНІ_ВХОДИ = {
     "заміна": "показ: один слот і речі одного образу, спосіб добору та відповіді його викликів",
     "рука": "показ: рука картки, що змінюється",
 }
-_ПОЛЕ = _ЗП.Поле("replacement", "one rejected item and the unchanged items of her outfit",
-    як="replace only the rejected item in its slot; fit the choice to every unchanged item; "
-       "leave all other items unchanged; do not return the rejected item")
-_ПРАВИЛА = ("Choose exactly one different item for replacement.slot, considering the entire fixed outfit. "
-            "Return only that item, never a rebuilt outfit. If no eligible different item exists, "
-            "return an empty item list. Do not invent a catalogue item or reuse an item already worn.",)
-# Роль заміни — одна на її складання й уважний вибір (`уважний_вибір._запит`).
-РОЛЬ = "You are the stylist choosing a replacement for one item of her current outfit."
-# ЗАМІНА — НЕ СКЛАДАННЯ ДЕСЯТИ ОБРАЗІВ (рядок 6209): доти промпт брав роль і весь вхід `СКЛАДАННЯ` — «You put
-# together outfits for her…», задуми набору («each outfit follows its own idea…»), недосяжні задуми, число
-# образів, ноти всіх видів і скелет `ОБРАЗИ_V1` з підписом, задумом, «day», «deliberate» і «needed» (2 тис.
-# переліків кодів), а правило — «Return only that item». Задуми й число — питання набору, а не однієї речі;
-# відповідь — лише номер речі слота.
-_НЕ_ДЛЯ_ЗАМІНИ = ("poles", "poles_unavailable", "outfits_wanted")
-_СКЕЛЕТ = {"outfits": [{"items": ["<n>"]}]}
 ПОВТОР = "повтор_форми"
 ВІДМОВА = "replacement_model_found_none"  # модель чесно відповіла «підходящої речі нема»: не помилка форми
 
 
-def _поле_помилки(як, бачила=True):
-    """Поле повтору: код, чому відповідь на це саме повідомлення не прочитано; є лише на повторі, тож сталий початок
-    промпта (кеш) той самий, що на першому виклику (як `format_error` ходу розмови). `бачила` False — повтор іде
-    іншим промптом, ніж перша відповідь (оцінка/турнір): модель попередньої відповіді не бачила."""
-    опис = ("the code of why your previous answer to this same message could not be used" if бачила
-            else "the code of why this request is sent again")
-    return _ЗП.Поле("format_error", опис, як=як)
-
-
-_ПОМИЛКА_ПУЛУ = _поле_помилки("answer again: one JSON object following \"answer_schema\" with exactly one «n» of "
-                             "«pool»")
 _ПОМИЛКА_ПЕРЕЛІКУ = _поле_помилки("answer again: one JSON object following \"answer_schema\" with exactly one "
                                   "item, its \"worn\" true")
-
-
-_ПОМИЛКА_ПУЛУ_ІНШИЙ = _поле_помилки(_ПОМИЛКА_ПУЛУ.як, бачила=False)
 
 
 def _відповідь(з):
@@ -90,36 +65,6 @@ def _номер_відповіді(текст, відомі):
     if isinstance(список, list) and len(список) == 1 and _УВ.ключ_н(список[0]) in відомі:
         return _УВ.ключ_н(список[0]), None
     return None, причина or "replacement_not_one_item"
-
-
-def контекст(з):
-    """Контекст слота й образу англійським дротом, без читання назв речей."""
-    речі = з.get("речі") or []
-    ід = str(з.get("ід") or "")
-    старі = [р for р in речі if str(р.get("id") or "") == ід]
-    слот = з.get("слот")
-    if len(старі) != 1 or not слот or старі[0].get("слот") != слот or старі[0].get("власна"):
-        raise ValueError("replacement_unknown_item_or_slot")
-    return dict(slot=_ВМ.код("slot", слот), rejected=_Д.річ(старі[0]),
-                fixed_outfit=[_Д.річ(р) for р in речі if р is not старі[0]])
-
-
-def промпт_складання(пакет, помилка=None, бачила=True):
-    """Складання на один слот: роль заміни, вхід складання без полів набору, ноти лише виду слота, відповідь —
-    один номер речі (рядок 6209). `помилка` — код, чому попередню відповідь не прийнято (повтор, один)."""
-    з = пакет.get("заміна")
-    дані = {к: v for к, v in _Д.пакет(пакет).items() if к not in _НЕ_ДЛЯ_ЗАМІНИ}
-    дані["replacement"] = контекст(з)
-    дані["format_error"] = помилка
-    вид = дані["replacement"]["slot"]
-    if isinstance(дані.get("kind_notes"), dict):
-        дані["kind_notes"] = {к: v for к, v in дані["kind_notes"].items() if к == вид}
-    о = _dc.replace(_ПМ.СКЛАДАННЯ, роль=РОЛЬ,
-        вхід=tuple(п for п in _ПМ.СКЛАДАННЯ.вхід if п.шлях not in _НЕ_ДЛЯ_ЗАМІНИ) + (_ПОЛЕ, _ПОМИЛКА_ПУЛУ if бачила else _ПОМИЛКА_ПУЛУ_ІНШИЙ),
-        правила=_ПРАВИЛА + (_ПМ.РЯДОК_ЛИШЕ_НОМЕР,), скелет=_СКЕЛЕТ,
-        поля_виходу={"outfits[].items": "exactly one eligible «n» of «pool», or []"})
-    return _json.dumps(_ЗП.зібрати(о, дані,
-        мова_тексту=(пакет.get("завдання") or {}).get("мова_тексту")), ensure_ascii=False, separators=(",", ":"))
 
 
 def _промпт_без_каталогу(d, помилка=None):
