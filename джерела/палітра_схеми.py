@@ -1,4 +1,3 @@
-import statements as _СТ
 # -*- coding: utf-8 -*-
 """СХЕМИ Й ПРИЙОМИ ПАЛІТРИ: ролі кольору в образі (РОЛІ, ДЕФОЛТ_РОЛЕЙ, ЯКІРНІ_СЛОТИ),
 двійники констант реєстру, які ЧИТАЮТЬСЯ, а не копіюються (НЕЙТРАЛЬ_C_СТЕЛЯ, ГУЧНО,
@@ -38,6 +37,7 @@ import statements as _СТ
 `areas` для площ і `palettes`/`verify` для слів крамниці); жодного модуля `палітра_*`
 і не фасад."""
 import colorspace as cs
+import statements as _СТ
 import outfit as O
 import внутрішня_мова as _ВМ
 import реєстр_правил as _РЕЄСТР

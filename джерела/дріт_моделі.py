@@ -1212,7 +1212,11 @@ def _без_лічби(з):
     """Заяви знахідки на дроті без значень-лічби чекліста; заява, в якої лишилось порожньо, — кодом."""
     вих = []
     for x in з or []:
-        if isinstance(x, dict) and len(x) == 1:
+        if isinstance(x, dict) and isinstance(x.get("code"), str):
+            # повна заява на дроті (3.5): лічба знімається з її values, ключ і предмет лишаються
+            if isinstance(x.get("values"), dict):
+                x = dict(x, values={кк: vv for кк, vv in x["values"].items() if кк not in _ЛІЧБА_ЗАЯВ})
+        elif isinstance(x, dict) and len(x) == 1:
             к, v = next(iter(x.items()))
             if isinstance(v, dict):
                 v = {кк: vv for кк, vv in v.items() if кк not in _ЛІЧБА_ЗАЯВ}
@@ -1242,7 +1246,10 @@ def _ремарки_за_кодом(о, ремарки):
             continue
         решта = {к: v for к, v in z.items() if к != "statements"}
         for ст in z["statements"]:
-            for код, знач in (ст.items() if isinstance(ст, dict) else [(ст, None)]):
+            # повна заява (3.5) групується за своїм code, а не за іменами полів договору
+            пари = ([(ст["code"], ст.get("values"))] if isinstance(ст, dict) and isinstance(ст.get("code"), str)
+                    else ст.items() if isinstance(ст, dict) else [(ст, None)])
+            for код, знач in пари:
                 ремарки.setdefault(код, []).append(dict(outfit=ід, **решта, **({"values": знач} if знач else {})))
     if лишилось:
         о["findings"] = лишилось

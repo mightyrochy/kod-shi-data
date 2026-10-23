@@ -2723,10 +2723,11 @@ def розмітити_повідомлення(повідомлення):
         (п.get("ключ"), п) for п in (повідомлення or []) if isinstance(п, dict)]
     вих = []
     for ключ, п in пари:
-        if not isinstance(п, dict):
+        if not isinstance(п, dict) or п.get("kind") not in _ВМ.ВИДИ_ПОВІДОМЛЕНЬ:
             continue
         for з in п.get("statements") or []:
-            if not isinstance(з, dict) or not з.get("code"):
+            # Код поза словником — помилка коду: визначення для моделі нема, тож у переклад не йде (`незнайомі`).
+            if not isinstance(з, dict) or з.get("code") not in _ВМ.ЗАЯВИ:
                 continue
             мета = {к: з[к] for к in ("recipient", "source", "choice", "rank", "item_ids", "part") if к in з}
             типові = _ВМ.МЕТАДАНІ_ЗАЯВ.get(з["code"], {})
@@ -2804,6 +2805,12 @@ def прийняти_повідомлення(розмітка, відповід
     for р in розмітка or []:
         ключ = р["ключ"]
         т = об.get(ключ) if isinstance(об, dict) else None
+        if _лише_рядки(т):
+            # ТЕКСТ ПОЛЯМИ (рядок 6021): {key: {"<поле>": "…"}} — один текст, розкладений моделлю на поля;
+            # назв полів код не читає, значення йдуть абзацами по порядку.
+            т = "\n\n".join(в.strip() for в in т.values())
+            if ПОЛЯ_ЗЛИТО not in нотатки:
+                нотатки.append(ПОЛЯ_ЗЛИТО)
         прийнято = isinstance(т, str) and bool(т.strip()) and not _ВМ.невідомо(т)
         if прийнято:
             тексти[ключ] = _без_обгортки(т, "")

@@ -684,6 +684,15 @@ def стан_для_показу(вхід):
         актуальні = [з for з in нота.get("statements", []) if not свої.get(з.get("part"))]
         if актуальні:
             вих["пал-нота"] = _ВМ.повідомлення(нота["kind"], *актуальні)
+    elif not свої["scheme"] and not стил:
+        # Поки не обрала ні вона, ні стилістка (рядки 117, 147): скільки схем радить стилістка і що рідші
+        # теж обираються — без цієї ноти жінка не знає, що решта плиток доступна.
+        рідших = sum(1 for г in гілки if г.get("рідший"))
+        радить = вхід.get("радить") if вхід.get("радить") is not None else len(гілки)
+        вих["пал-нота"] = _ВМ.повідомлення(
+            "palette_default_scheme", _ВМ.заява("stylist_will_choose"),
+            _ВМ.заява("schemes_advised_count", count=радить),
+            _ВМ.заява("rarer_schemes_count", count=рідших) if рідших else _ВМ.заява("choose_another_if_wants"))
     обрана = свої["scheme"] or стилеві["scheme"]
     хто_схеми = "her" if свої["scheme"] else автори.get("scheme", "pending")
     for г in гілки:

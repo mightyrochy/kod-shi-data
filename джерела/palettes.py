@@ -1,4 +1,3 @@
-import statements as _СТ
 # -*- coding: utf-8 -*-
 """ШАР ПАЛІТР — практикова відповідь на «які кольори належать цій людині».
 
@@ -32,6 +31,7 @@ import statements as _СТ
 R-MUN-08, K-PCA-01 (ціль — не реалізована як величина).
 """
 import math
+import statements as _СТ
 import colorspace as cs
 import внутрішня_мова as _ВМ
 import реєстр_правил as _РЕЄСТР   # Н-02-01, сесія 4

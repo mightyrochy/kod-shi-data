@@ -641,7 +641,7 @@ import внутрішня_мова as _ВМ_П
         # їдуть (`дріт_моделі.ЗАЯВИ_ДІЮТЬ_У_КОДІ`); лишається виміряне про неї, її відповіді й
         # бажання, факти дня — інформація для вибору, тож і наказу «keep each» нема
         _ЗП.Поле("style_rules", "what the code measured about her and this case, her own answers and wishes: "
-                                "each entry is a code, or {code: values}; codes are defined in "
+                                "each entry is {code, values, …}; codes are defined in "
                                 "\"statement_codes\"; the rules the code already applied to «pool» are not "
                                 "repeated here"),
         # НП-в переробляє рядки рівня нагоди; доти вони їдуть реченнями брифа (ВМ-1)
