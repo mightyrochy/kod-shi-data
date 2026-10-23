@@ -80,7 +80,9 @@ def _коди(v):
         к |= {код for код, ключ in т.items() if ключ in (v, v.replace(" ", "_"), v + "_без_уточнення")}
     for ім in dir(Д):
         м = getattr(Д, ім)
-        if ім.startswith("_") and isinstance(м, dict) and isinstance(м.get(v), str):
+        # 3.3: ці закриті переліки стали публічними (їх читають інші модулі ядра)
+        if (ім.startswith("_") or ім in ("БЛОКЕР", "ДЖЕРЕЛО_ТЕМПЕРАТУРИ", "КОНТРАСТ", "МЕТАЛ", "ПОЛЯ_ВИПАДКУ",
+                                         "СІМ_Я", "СХЕМА", "ТЕМПЕРАТУРА")) and isinstance(м, dict) and isinstance(м.get(v), str):
             к.add(м[v])
     return к | {м[v] for м in П.ЗНАЧЕННЯ_ВІДПОВІДІ_EN.values() if v in м}
 

@@ -21,6 +21,7 @@
 """
 import json as _json_
 import os
+import statements as _ЗАЯВИ
 import re
 from реєстр_правил import INTENT as _НАМІРИ
 
@@ -295,7 +296,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
         "two_piece_set": "комплект", "casual_suit": "костюм_повсякденний",
         # ВМ-2 (01.10.2026): типи, що доти їхали в пул, ремонт і вибір словом ядра — `feed.ТИП_КЛЮЧІ`
         # (боді, лонгслів) і тип верхнього шару (`верхнє_погода.ТЕПЛОВІ_ФУНКЦІЇ`), яким
-        # `пакет_моделі._річ_пулу` підміняє порожній `тип`
+        # `пакет_моделі.річ_пулу` підміняє порожній `тип`
         "bodysuit": "боді", "longsleeve": "лонгслів", "half_coat": "півпальто",
         "down_jacket": "пуховик", "fur_coat": "шуба", "sheepskin_coat": "дублянка", "parka": "парка",
         "raincoat": "плащ", "rain_cape": "дощовик", "windbreaker": "вітровка", "anorak": "анорак",
@@ -376,7 +377,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     # Куди зсунути наступний образ за її словами («занадто строго» — formality: less).
     "direction": {"more": "more", "less": "less"},
     "opinion": {"like": "подобається", "dislike": "не подобається"},
-    # Ознаки речі каталогу, які ядро вже тримає закритим переліком (`пакет_моделі._річ_пулу`)
+    # Ознаки речі каталогу, які ядро вже тримає закритим переліком (`пакет_моделі.річ_пулу`)
     "material": {"leather": "шкіра", "suede": "замша", "faux_leather": "екошкіра",
                  "patent_leather": "лак", "velour": "велюр", "nubuck": "нубук"},
     "length": {"mini": "міні", "mid_thigh": "до середини стегна", "knee": "до коліна",
@@ -884,8 +885,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     # функціональна модель українською, і показ ставив її рядком як є.
     "portrait_unreadable": "рядок під портретом на першому кроці знайомства: чому стилістка не "
                            "прочитала кольори з цього фото",
-    "palette_scheme_note": "рядок про ОБРАНУ схему на екрані «Палітра»: що це за хід і коли він "
-                           "менш ходовий",
+    "palette_scheme_note": "пояснення властивостей цієї схеми; автор вибору й ранг задані лише полями заяви",
     # П-7 (27.09.2026): схему, основу й гаму, які вона лишила «хай обере стилістка», обирає
     # функціональна модель (`вибір_палітри`); слова «код» у цих рядках для неї нема (Ш-1 — теж).
     "palette_default_scheme": "рядок на екрані «Палітра» про схему й основу, які вона лишила "
@@ -893,8 +893,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                               "тоді збирається образ і скільки схем радить стилістка",
     "palette_stylist_choice": "рядок на екрані «Палітра» про те, що вона лишила стилістці: що "
                               "стилістка обрала під цей вихід і чому, і що обрати інше можна самій",
-    "palette_rarer_scheme": "рядок біля плитки однієї схеми: чому цей хід рідший і чого для "
-                            "нього ще нема. Починається назвою схеми",
+    "palette_rarer_scheme": "пояснення біля плитки схеми; рідкість і вибір називай лише за заявами та їхніми полями",
     "card_scheme": "рядок на картці образу про обіцянку схеми палітри",
     "card_occasion": "рядок на картці образу про те, що зроблено для цієї нагоди",
     "card_wear_cost": "рядок на картці образу про ціну носіння за цей вихід",
@@ -971,6 +970,9 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
 # `on_face`…), тож визначення називає лише, що це місце; перелік у кожному визначенні роздув би промпт.
 _МІСЦЯ_ОПЦІЙ = "where it is worn"
 ЗАЯВИ = {
+    "palette_choice_part": "the current state of this palette part: part is scheme, base or saturation; "
+                           "values.value is its actual value, or null while pending; choice is its author. "
+                           "State only this part, do not invent a future choice after it has been made.",
     # Причини мети (3841): означення тільки на межі моделі, факти лишаються кодами.
     "goal_default_no_weights": "no goal weights were supplied: flatter is the system default, not her choice. "
                                "It assumes she wants to please; this is not neutral or universal (theme-6 1.6)",
@@ -1153,12 +1155,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                           "trimmed",
     "mourning_only_dark_and_quiet": "only dark and quiet items went into the selection: nothing light, bright "
                                     "or festively trimmed",
-    "mourning_shine_unknown_one": "whether one named item shines near the face is unknown (values: item — the "
-                                  "item's name; said_in — where the shine is mentioned: name — in the item's "
-                                  "name, shop — the shop says so; words — those words themselves; photo — how "
-                                  "the material read from the photo, or none)",
-    "mourning_shine_unknown_many": "whether the named items shine near the face is unknown: the shop and the "
-                                   "photo name different materials (values: items — the items' names)",
+    "mourning_shine_unknown_one": "the item's shine near the face is uncertain: catalogue and photo "
+                                  "disagree (shop_shine_class and photo_shine_class: 0 matte, 1 soft lustre, "
+                                  "2 glossy, 3 sparkling; null means not measured). Classes are codes, "
+                                  "not a quote from the shop. Name the item by its item_id and full name.",
+    "mourning_shine_unknown_many": "the addressed items have conflicting catalogue and photo shine evidence",
     "mourning_no_metal_near_face": "the selection has no metal jewellery near the face (necklaces, earrings): "
                                    "in mourning there is no shine near the face, and she has not said which "
                                    "jewellery she wants; once she says \"silver\" or \"gold\", it appears",
@@ -3240,17 +3241,17 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "dress, a second layer, the outer layer), in roughly equal areas; bag, shoes and "
                                 "jewellery may repeat one of them but do not carry the scheme by themselves: an "
                                 "outfit with colour only on accessories does not keep this scheme; with the metal "
-                                "— no more than three colour families; when chosen_by is she_chose, the scheme is her own explicit "
+                                "— no more than three colour families; when choice is her, the scheme is her own explicit "
                                 "choice and an outfit whose large items miss a family the pool holds is a gate, not a "
                                 "remark (values: scheme; families — colour codes, or the shop's word when the colour "
-                                "has no code; chosen_by — she_chose when she picked the scheme herself)",
+                                "has no code; choice — her when she picked the scheme herself)",
     "scheme_needs_colour": "an outfit in which NO item carries colour does not keep this scheme — that is "
                            "blandness, not calm (values: scheme; colour_kinds — the kinds the scheme gives "
                            "colour)",
     "scheme_one_accent": "the rest stays neutral and the accent is one: two or more DIFFERENT colour families "
                          "break this scheme from the other side",
     "base_is_outfit_colour": "this base is the colour of the outfit; items of its family are in the pool "
-                             "(values: hex; chosen_by — she_chose, stylist_chose or code_default)",
+                             "(values: hex; choice metadata — her, stylist or code_rank)",
 }
 
 # ── РІЗНОМАНІТНІСТЬ НАБОРУ Й ПЕРЕВІРКА «ВИКОНАНО» (ВМ-2, 01.10.2026; рядок 483) ─────────────
@@ -3667,12 +3668,31 @@ def визначення_заяв(коди):
  'wrong_formality_level': 'the formality level is not the right one',
 }
 
-def заява(код, **значення):
-    """Одна заява повідомлення внутрішньою мовою: `{"code": …}` (+ `"values"`, коли є
-    числа чи назви). Коду поза словником не буває — це помилка коду, не «невідомо» для неї."""
+# Адресат — властивість договору, не здогад із порожніх values.
+МЕТАДАНІ_ЗАЯВ = {
+    **{к: dict(recipient="journal") for к in ЗАЯВИ if к.startswith("no_input_")},
+    **{к: dict(recipient="journal") for к in ("areas_not_measured", "which_white_suits_unknown",
+        "wear_cost_no_duration_surface", "leg_proportion_template_crotch",
+        "vertical_balance_not_judged", "calf_girth_not_measured", "her_register_unknown",
+        "print_motif_scale_unknown",
+        "chroma_clash_skipped_no_area", "unmeasured_accents_not_grouped")},
+    **{к: dict(choice="her") for к in ("scheme_chosen_by_her", "her_own_choice_kept_as_is")},
+    **{к: dict(choice="stylist", source="model") for к in ("scheme_chosen_by_stylist",
+        "stylist_chose_scheme", "stylist_chose_base", "stylist_chose_saturation", "stylist_declared_on_purpose")},
+    **{к: dict(choice="code_rank", source="default") for к in ("scheme_taken_by_default", "stylist_did_not_choose",
+        "first_scheme_of_advice", "base_from_her_features")},
+    "stylist_will_choose": dict(choice="pending"),
+}
+
+def заява(код, *, recipient=None, source=None, choice=None, rank=None,
+          item_ids=(), part=None, **значення):
+    """Одна адресна заява з предметом, автором вибору, рангом і джерелом факту."""
     if код not in ЗАЯВИ:
         raise KeyError("заява поза словником ЗАЯВИ: %r" % (код,))
-    return dict(code=код, values=значення) if значення else dict(code=код)
+    м = МЕТАДАНІ_ЗАЯВ.get(код, {})
+    return _ЗАЯВИ.створити(код, значення, recipient=recipient or м.get("recipient", "woman"),
+                           source=source or м.get("source", "unknown"), choice=choice or м.get("choice", "unknown"),
+                           rank=rank, item_ids=item_ids, part=part)
 
 
 def суть_кодом(заяви, речі=()):
@@ -3744,8 +3764,15 @@ def дописати_ноту(карта, ключ, *частини):
     "kind": _КОДИ_З_ОПИСОМ(ВИДИ_ПОВІДОМЛЕНЬ),
     "statements": _список({"type": "object", "additionalProperties": False,
                            "properties": {"code": _КОДИ_З_ОПИСОМ(ЗАЯВИ),
-                                          "values": {"type": "object"}},
-                           "required": ["code"]},
+                                          "values": {"type": "object"},
+                                          "key": {"type": "string", "pattern": "^s_[0-9a-f]{24}$"},
+                                          "item_ids": {"type": "array", "items": {"type": "string"}},
+                                          "recipient": {"enum": sorted(_ЗАЯВИ.АДРЕСАТИ)},
+                                          "source": {"enum": sorted(_ЗАЯВИ.ДЖЕРЕЛА)},
+                                          "choice": {"enum": sorted(_ЗАЯВИ.АВТОРИ)},
+                                          "part": {"type": "string"},
+                                          "rank": {"type": ["object", "null"]}},
+                           "required": ["code", "values", "key", "item_ids", "recipient", "source", "choice", "rank"]},
                           "що саме код каже, у порядку, в якому це має звучати", minItems=1),
 }
 

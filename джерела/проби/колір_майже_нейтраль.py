@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Рядок 4510, було (БАЗА — git worktree, типово origin/main) → стало: назва теплих нейтралей палітри з волосся (L*35.4 і 40.1,
-C* 8, h 90 — як `palettes.кольори`) і код hex знахідки; точки крамниць з виміром з фото (усі й C* < 10) — підпис `palettes._назва`
+C* 8, h 90 — як `palettes.кольори`) і код hex знахідки; точки крамниць з виміром з фото (усі й C* < 10) — підпис `palettes.назва`
 і збіг зі словом крамниці; hex відповідей моделі (VIDPOVIDI), що змінили код; ґратка основ; записи каталогу, що змінились. Запуск: cd джерела && python3 проби/колір_майже_нейтраль.py [база]"""
 import collections as К, json, os, re, subprocess, sys, tempfile, warnings
 warnings.filterwarnings("ignore"); sys.path.insert(0, "."); import colorspace as cs

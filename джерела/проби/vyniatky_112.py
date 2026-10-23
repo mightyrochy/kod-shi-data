@@ -6,7 +6,7 @@
 import ast, collections, json, os, subprocess, sys
 ДЖ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ДЖ); os.chdir(ДЖ)
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "d997844"
-ТАБЛИЦЯ = [("_вердикти_образів", 97, "composer._у_річ(речі пакета)", "чужий вхід·запис каталогу",
+ТАБЛИЦЯ = [("_вердикти_образів", 97, "композитор_річ.у_річ(речі пакета)", "чужий вхід·запис каталогу",
             "вузько KeyError/TypeError/ValueError → поле `риси_чому`"),
            ("_вердикти_образів", 197, "pipeline.перевірити_від_моделі(о_N)", "чужий вхід·склад від моделі",
             "вузько +IndexError/AttributeError → `чому` (дірка в номерах, `вердикт_v1`)")]
