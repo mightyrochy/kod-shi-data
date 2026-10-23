@@ -1,0 +1,46 @@
+── ПРОМПТ (6463 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня максі шовкова святкова · kind code: dress_generic · colour code: brown · about it: text н=1
+2 — Сумка жіноча Le City Basket Medium · kind code: bag_generic · colour code: beige · about it: text н=2
+3 — Черевики шкіряні коричневі · kind code: ankle_boots · colour code: brown · about it: text н=3
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий.
+
+ТЕКСТИ:
+{
+"1": "This is a brown silk maxi dress with a gathered waist and short flutter sleeves. The fabric has a soft sheen that catches the light beautifully, making it perfect for an autumn evening celebration.",
+"2": "The bag is woven from natural beige straw with black leather handles and a front pocket. Its open-knit design keeps the look light, while the sturdy leather details add structure to the ensemble.",
+"3": "These are ankle boots made of smooth brown leather with a low heel and a polished gold buckle on the back strap. The color matches the dress perfectly, creating a seamless flow from your feet up to your hem.",
+"4": "You have chosen a beautiful brown silk dress that falls to your ankles. We paired it with beige straw-woven bag and brown leather ankle boots. The neutral colors bring warmth and elegance, while the gold accents on the shoes tie into the gold metal details you can add for the evening.",
+"5": "Tuck your hands gently in front of you to highlight the defined waistline that suits your figure so well.",
+"6": "Сумка жіноча Le City Basket Medium — The clutch replaces the heavy leather bag to better match the formal dress code.",
+"7": "Сукня максі шовкова святкова, Сумка жіноча Le City Basket Medium, Черевики шкіряні коричневі — This outfit carries your chosen warm palette and formal drape, fulfilling the event's requirement while maintaining comfort."
+}
+
+── ВІДПОВІДЬ (1414 симв., 28.3 с, HTTP 200) ──
+```json
+{
+"1": "Це коричнева шовкова максі-сукня з зібраною талією і короткими рукавами-воланами. Тканина має м’який блиск, який красиво ловить світло, роблячи її чудовою для осіннього вечірнього святкування.",
+"2": "Сумка виткана з натуральної бежевої соломи з чорними шкіряними ручками і передньою кишенею. Її в’язаний дизайн зберігає образ легким, а міцні шкіряні деталі додають структури ансамблю.",
+"3": "Це черевики на підборах із гладкої коричневої шкіри з низьким каблуком і відполірованою золотою пряжкою на задній стрічці. Колір чудово поєднується зі сукнею, створюючи безперебійний перехід від ніг до подолу.",
+"4": "Ти обрала чудову коричневу шовкову максі-сукню, яка сягає твоїх щиколоток. Ми підібрали її з бежевою солом’яною сумкою і коричневими шкіряними черевиками на підборах. Нейтральні кольори додають тепла та елегантності, а золоті акценти на взутті гармоніюють із золотим металевим оздобленням, яке ти можеш додати для вечора.",
+"5": "Ніжно склади руки перед собою, щоб підкреслити чітко окреслену талію, яка так добре пасує твоїй фігурі.",
+"6": "Сумка жіноча Le City Basket Medium — Клатч замінює важку шкіряну сумку, щоб краще відповідати формальному дрес-коду.",
+"7": "Сукня максі шовкова святкова, Сумка жіноча Le City Basket Medium, Черевики шкіряні коричневі — Цей образ несе твою обрану теплу палітру і урочистий крій, задовольняючи вимоги заходу, зберігаючи при цьому комфорт."
+}
+```
