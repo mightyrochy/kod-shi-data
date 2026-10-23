@@ -686,7 +686,7 @@ def випадок(в, день=None):
     `рядок` (той самий випадок реченням коду) не йде: його факти — у полях поруч."""
     if not isinstance(в, dict):
         return в
-    вих = {}
+    вих = {к: в[к] for к in ("field_quotes", "wish_quotes", "formality_reason") if в.get(к)}
     for к, v in в.items():
         if к not in _ПОЛЯ_ВИПАДКУ or v in (None, "", [], {}):
             continue
