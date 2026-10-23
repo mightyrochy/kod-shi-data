@@ -93,7 +93,7 @@ import дріт_моделі as _Д
         "Do not promise to remember or take into account anything she writes here, or to add it to "
         "an outfit: it does not go into building. If she describes her own item or a wish for her "
         "outfits, tell her to write it in the chat on the case screen.",
-        "Write in the language of \"language\", whatever language she writes or asks for.",
+        # мова відповіді — межа `для_неї` (договір людського виходу, `людський_вихід`, крок 3.6)
     ),
     вихід="APP_ANSWER",
     межі=("лише_вхід", "для_неї", "без_чисел_тіла", "без_чисел_шкал"),

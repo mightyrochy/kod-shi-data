@@ -7,6 +7,7 @@
 реекспортує кожне ім'я звідси, тож викликачі (`bridge`, показ через Pyodide,
 проби, гейти) не змінюються. Що звідки — карта в шапці `pipeline.py`.
 """
+import json as _json
 import math
 import re as _re_ід
 import протокол as _ПР
@@ -793,6 +794,47 @@ def мова_повтор_на_дріт(об):
                          "\"%s\" EMPTY: what is wrong on the photos is already recorded from the previous "
                          "answer and is taken from there." % _ПР.КЛЮЧІ_ВІДПОВІДІ_EN.get("фото_не_те", "фото_не_те"))
     return {к: v for к, v in вих.items() if v not in (None, "", [], {})}
+
+
+# ── ВІДКИНУТИЙ ПЕРЕПИС — НАСТУПНА СПРОБА З ПРИЧИНОЮ (рядок 8245, крок 3.6) ──────────────────────────────────────
+# ЩО БУЛО. Показ приймає перепис мови лише чистішим (`показ.html`, цикл `мова_повтор`); відкинутий перепис лишав
+# `промпт_мови` першої спроби, і друга йшла від того самого тексту тим самим промптом — байт у байт, обидва
+# `"attempt":1` (ОЦІНКА-ЖИВІ-29 С04: `seed3_19` = `seed3_21`), 2 виклики × ~55 с без нової інформації, «вашу талію»
+# лишилась. ЩО ТЕПЕР. Вердикт перепису несе й промпт на випадок відмови: той самий дріт, наступний номер спроби і
+# що з відкинутим переписом було — порушення кодами зі збігами з його тексту й чому його не взято.
+_ЧОМУ_НЕ_ВЗЯТО_EN = {
+    "not_fewer_violations": "it still had as many language violations as the text, or more",
+    "not_the_same_object": "it did not return the same object by the schema",
+    "no_items": "it returned no items",
+}
+
+
+def мова_повтор_відкинуто(дріт_досі, спроба, мова=None, перевірено=True, речей=1, порушень_досі=None):
+    """Промпт наступної спроби, коли перепис спроби `спроба` (номер його тексту, 2 — перший перепис) не взято:
+    дріт `дріт_досі`, що вів цей перепис, з наступним номером і `previous_rewrite_not_taken`; None — спроби
+    вичерпано або дроту нема."""
+    try:
+        досі = _json.loads(дріт_досі) if isinstance(дріт_досі, str) else дріт_досі
+        с = int(спроба)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(досі, dict) or досі.get("error") != "language" or not 2 <= с <= МОВНИХ_СПРОБ:
+        return None
+    пор = мова_порушення(мова)[0] if isinstance(мова, dict) and мова.get("можна_видавати") is False else []
+    # «чистіше» — як у показі: сирий лік порушень вироку, а не лише тих, що мають код
+    стало = len((мова.get("порушення") or []) if isinstance(мова, dict) else [])
+    чому = [к for к, так in (("not_fewer_violations", порушень_досі is not None and стало >= int(порушень_досі)),
+                             ("not_the_same_object", перевірено is False), ("no_items", not речей)) if так]
+    залишки = мова_повтор_на_дріт(dict(порушення=пор)).get("statements") or []
+    коди = [к for к in (next(iter(з)) if isinstance(з, dict) else з for з in залишки) if к in _ВМ.ЗАЯВИ]
+    відкинуто = {"attempt": досі.get("attempt"), "why": [_ЧОМУ_НЕ_ВЗЯТО_EN[к] for к in чому]}
+    if залишки:
+        відкинуто["its_violations"] = залишки
+    вих = dict(досі, attempt=с, previous_rewrite_not_taken=відкинуто)
+    if коди:
+        вих["statement_codes"] = dict(досі.get("statement_codes") or {},
+                                      **_ВМ.визначення_заяв(коди))
+    return вих
 
 
 def мова_рішення(мова, спроб=0):

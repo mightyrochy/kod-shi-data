@@ -5,6 +5,8 @@
 8646 — ярлики `слід_правил` файлів вердиктів: з кирилицею й фраз (не одне слово-код). ДО/ПІСЛЯ — база й правка.
 Запуск: cd джерела && python3 проби/схема_58_replay.py origin/claude/zhyvi-58:аудит/живі_58"""
 import collections, io, json, os, re, subprocess, sys, tarfile
+if len(sys.argv) < 2:   # прилад над записом живих, не проба без входу: без «гілка:тека» — «не виміряно», а не IndexError
+    sys.exit(print("НЕ ВИМІРЯНО: потрібен запис живих аргументом (origin/claude/zhyvi-58:аудит/живі_58)"))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import протокол as П
 гілка, тека = sys.argv[1].split(":", 1)
