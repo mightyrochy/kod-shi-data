@@ -30,6 +30,8 @@ from силует_лінії import (відльоти, форма_не_чита�
 import внутрішня_мова as _ВМ
 import graph as ГР
 import поломки_ядро as _ПОЛ
+import trace as _СЛ
+import outfit as _O
 
 
 # ═══════════════════════ 4. ОБ'ЄМ І ЯКОРІ ═══════════════════════
@@ -154,7 +156,6 @@ def об_єм(t, об, intent="conventional"):
     # людина, а не доgейтова.
     зн = _над_дефолтним_кроєм(зн, дефолтний_крій(об), заяви=[_ВМ.заява(
         "claim_volume_without_anchor_no_shape" if без_форми else "claim_volume_without_anchor")])
-    import trace as _СЛ
     _СЛ.запис("K-SIL-03", "volume_without_anchor_times_build", "silhouette.об_єм",
               значення="відношення площ %.2f; %s" % (к, нота_ст), сила=зн.get("сила_нп"))
     return [_ПОЛ.злам("K-SIL-03", "справна", зн)]
@@ -627,7 +628,6 @@ def деталь_талії(r):
     т = r.get("талія")
     if т in ТАЛІЯ_ДЕТАЛЬ and сл in ТАЛІЯ_ДЕТАЛЬ[т]:
         return ("талія", т)
-    import outfit as _O
     к = _O.крій_речі(r)
     if к in КРІЙ_НА_ТАЛІЇ:
         return ("крій", КРІЙ_НА_ТАЛІЇ[к])

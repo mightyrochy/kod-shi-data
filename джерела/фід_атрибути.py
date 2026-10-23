@@ -12,6 +12,7 @@ from фід_слот import (слот)
 from фід_верхнє import (ДОВЖИНА_КЛЮЧІ)
 # склад речі (`матеріал_речі`) — у фід_верхнє (3.3, К-4): з нього частку вовни бере верхній шар; тут ті самі об'єкти
 from фід_верхнє import МАТЕРІАЛ_КЛЮЧІ, матеріал_речі
+import verify as _V
 
 ПРО_DEN = __import__("re").compile(r"(\d{1,3})\s*den", __import__("re").I)
 
@@ -184,7 +185,6 @@ def крій_з_силуету(offer, слот=None):
     ц = СИЛУЕТ_У_КРІЙ.get(v)
     if not ц:
         return None, None
-    import verify as _V
     свій = ("%s %s" % (offer.get("назва") or "", offer.get("опис") or "")).lower()
     if not any(not _V.слово_про_іншу_річ(свій, м.start(), м.end(), слот) for м in re.finditer(re.escape(v), свій)):
         return None, None
