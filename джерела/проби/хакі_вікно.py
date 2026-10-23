@@ -10,9 +10,9 @@ import feed, міст_основи as МО, palettes as PS, фід_катало�
 exec(subprocess.run(["git", "show", "%s:джерела/verify.py" % (sys.argv[1:] or ["origin/main"])[0]], capture_output=True, text=True, check=True).stdout, Б.__dict__)
 def на(M, f):
     """`f()` на ОДНОМУ verify: його беруть і модулі (FK/FZ/PS.V), і `import` усередині функцій, а ґратка кешується."""
-    FK.V = FZ.V = PS.V = M; був, sys.modules["verify"] = sys.modules["verify"], M; МО._ҐРАТКА_КЕШ.clear()
+    FK.V = FZ.V = PS.V = M; був, sys.modules["verify"] = sys.modules["verify"], M; МО.ҐРАТКА_КЕШ.clear()
     try: return f()
-    finally: sys.modules["verify"] = був; FK.V = FZ.V = PS.V = V; МО._ҐРАТКА_КЕШ.clear()
+    finally: sys.modules["verify"] = був; FK.V = FZ.V = PS.V = V; МО.ҐРАТКА_КЕШ.clear()
 зб, н, диз, оф, вим = feed.читати_збагачення(), lambda s: " ".join(str(s or "").lower().split()), К.defaultdict(list), [], {}
 def вибірка():
     for o in FR.читати_yml("каталог_повний.xml")[0]:
@@ -23,13 +23,13 @@ def вибірка():
         if п == "хакі": диз[z.get("фото") or o.get("group_id") or o["id"]].append(lab)
 на(Б, вибірка)
 labs = [tuple(st.median(x[i] for x in v) for i in range(3)) for v in диз.values()]; ц = tuple(st.median(x[i] for x in labs) for i in range(3))
-бере = lambda w, l: (lambda L, C, h: w[0] <= L <= w[1] and w[2] <= C <= w[3] and (C < 10 or V._у_дузі(h, w[4])))(*cs.lch(l))
-ст = {ім: на(M, lambda: (dict(МО._ґратка_основ()[0]), list(МО._ґратка_основ()[1]), {r["id"]: r for r in FK._прочитати_каталог("каталог_повний.xml", 0)["каталог"]},
+бере = lambda w, l: (lambda L, C, h: w[0] <= L <= w[1] and w[2] <= C <= w[3] and (C < 10 or V.у_дузі(h, w[4])))(*cs.lch(l))
+ст = {ім: на(M, lambda: (dict(МО.ґратка_основ()[0]), list(МО.ґратка_основ()[1]), {r["id"]: r for r in FK.прочитати_каталог("каталог_повний.xml", 0)["каталог"]},
                         К.Counter((с, M.перевірити(l, назва=п)["вердикт"] != "відкинуто") for с, п, l in оф))) for ім, M in (("до", Б), ("після", V))}
 for ім, M in (("до", Б), ("після", V)):
     w, св = M.ЛЕКСИКОН["хакі"], ст[ім][3]
     print("ФАКТ · %-5s «хакі» %s: дизайнів «хакі» %d із %d, центр вікна за %.1f ΔE00 від центру вибірки; свідок приймає оферів «хакі» %d із %d, «олива» %d із %d" % (
-          ім, w, sum(бере(w, l) for l in labs), len(labs), cs.de00(PS._центр(w), ц), *(x for с in ("хакі", "оливковий") for x in (св[(с, True)], св[(с, True)] + св[(с, False)]))))
+          ім, w, sum(бере(w, l) for l in labs), len(labs), cs.de00(PS.центр(w), ц), *(x for с in ("хакі", "оливковий") for x in (св[(с, True)], св[(с, True)] + св[(с, False)]))))
 (ґд, пд, кд, _), (ґп, пп, кп, _) = ст["до"], ст["після"]
 зм = [к for к in set(ґд) | set(ґп) if ґд.get(к) != ґп.get(к)]
 print("ФАКТ · ґратка основ: %d чипів до, %d після — %s; м'ятних клітинок змінилось %d, усього %d %s" % (len(ґд), len(ґп),

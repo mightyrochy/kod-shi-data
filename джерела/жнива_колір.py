@@ -40,12 +40,12 @@ def слово_з_lab(lab):
         тісно = (Lmax - Lmin) * (Cmax - Cmin)
         у_L = Lmin <= L <= Lmax
         у_C = Cmin <= C_ <= Cmax
-        у_h = True if (not дуга or C_ < 10) else V._у_дузі(h, дуга)
+        у_h = True if (not дуга or C_ < 10) else V.у_дузі(h, дуга)
         if у_L and у_C and у_h:
             вміщають.append((тісно, сл))
             continue
         d = (max(0, Lmin - L) + max(0, L - Lmax)) / 10.0 + (max(0, Cmin - C_) + max(0, C_ - Cmax)) / 10.0
-        if дуга and C_ >= 10 and not V._у_дузі(h, дуга):
+        if дуга and C_ >= 10 and not V.у_дузі(h, дуга):
             a, b = дуга
             d += min(min(abs(h - a), 360 - abs(h - a)), min(abs(h - b), 360 - abs(h - b))) / 30.0
         поруч.append((d, тісно, сл))

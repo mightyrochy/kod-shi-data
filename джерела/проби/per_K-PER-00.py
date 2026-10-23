@@ -19,7 +19,7 @@ E3 = O.елементи([dict(id=і, слот=с, hex=h, lab=cs.hx(h)) for і, �
                  [("a", "верх", "#9a9a9a"), ("b", "низ", "#7a7a7a"), ("c", "взуття", "#5a5a5a")]], "як є")
 пул = {}
 for намір in ("conventional", "comfort_first", "context_optimal"):
-    л = Р._намір(намір)
+    л = Р.намір(намір)
     з = json.loads(B.виклик("запити", json.dumps(dict(вх, намір=намір), ensure_ascii=False)))
     кат = {c["id"]: c for c in B.каталог_останнього_пакета()}
     взут = [кат.get(x.get("id"), x) for x in (з.get("кандидати") or {}).get("взуття") or []]

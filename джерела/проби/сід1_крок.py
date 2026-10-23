@@ -11,7 +11,7 @@ import feed as Ф, bridge as B, міст_пакет as МП, порядок_за
 def запис(сід, крок, *а, **к): бачено.append(крок); return _запис(сід, крок, *а, **к)
 ПЗ.запис = запис
 B.виклик("запити", json.dumps(dict(json.load(open("стенд_вх.json", encoding="utf-8")), сід=7, каталог=Ф.каталог_на_диску("каталог_повний.xml"))))
-пак = next(p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати"))
+пак = next(p for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати"))
 def заглушка(т):
     о = json.loads(т)
     if "items" in о: return json.dumps({"version": "1", "ratings": {x["n"]: "fits" for р in о["items"].values() for x in р}})

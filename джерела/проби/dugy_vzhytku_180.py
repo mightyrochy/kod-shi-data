@@ -5,7 +5,7 @@
 import collections, os, re, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_розбір as FR, фід_збагачення as FZ, verify as V, colorspace as CS
-from фід_фото import _спільні_фото, чужий_кадр, _файл_фото; from фід_розбір import _СЕП_КОЛЬОРУ
+from фід_фото import спільні_фото as _спільні_фото, чужий_кадр, файл_фото as _файл_фото; from фід_розбір import СЕП_КОЛЬОРУ as _СЕП_КОЛЬОРУ
 оф = FR.читати_yml(feed.каталог_на_диску())[0]; зб, сп = FZ.читати_збагачення(), _спільні_фото(оф)
 ТОК = re.compile(r"[a-zа-яёєіїґ']+")
 одне = lambda ч: not re.search(r"[\[(]", ч) and sum(1 for x in ТОК.findall(ч.lower().replace("-", " "))
@@ -13,9 +13,9 @@ from фід_фото import _спільні_фото, чужий_кадр, _фа
 т = collections.defaultdict(dict)
 for o in оф:
     z = зб.get(o["id"]); ч = [x.strip() for x in _СЕП_КОЛЬОРУ.split(o.get("колір_сирий") or o.get("колір_назва") or "") if x.strip()]
-    if not FZ._збагачення_придатне(z) or (z.get("версія") or 1) < 2 or len(ч) != 1 or not одне(ч[0]):
+    if not FZ.збагачення_придатне(z) or (z.get("версія") or 1) < 2 or len(ч) != 1 or not одне(ч[0]):
         continue
-    lab, ск = FZ._lab_з_hex(z["колір_основний"].get("hex")), V.слово_крамниці(ч[0])
+    lab, ск = FZ.lab_з_hex(z["колір_основний"].get("hex")), V.слово_крамниці(ч[0])
     if lab is not None and ск and not чужий_кадр(z.get("фото"), сп.get(o.get("магазин") or o["id"].split("@")[-1]) or {}):
         т[ск["ім"]].setdefault(_файл_фото(z["фото"]), CS.lch(lab))
 хром = [с for с, в in V.ЛЕКСИКОН.items() if в[4] is not None and с not in V.МЕТАЛИ]
@@ -34,6 +34,6 @@ for с, лекс, вжив, до, після, n in sorted(ширші, key=lambda
 print("ФАКТ · слова, чия дуга лишилась лексиконовою: %s" % ", ".join(
     "%s %d" % (r[0], r[5]) for r in рядки if r[2] == r[1]))
 print("ФАКТ · названі кадри рядка 180: %s; знахідка Л-14 (#409, графіт C* 7.7 тон 25°) проти «зелений»: %s"
-      % ("; ".join("%s проти «%s» — %s" % (h, і, V.перевірити(FZ._lab_з_hex(h), ім=і)["вердикт"])
+      % ("; ".join("%s проти «%s» — %s" % (h, і, V.перевірити(FZ.lab_з_hex(h), ім=і)["вердикт"])
                    for h, і in (("#897680", "тауп"), ("#1d303a", "зелений"), ("#2a3a3f", "зелений"))),
          V.перевірити((22.82, 6.96, 3.32), ім="зелений")["вердикт"]))

@@ -8,7 +8,7 @@ import feed, фід_каталог as ФК, фід_слот as НОВ
 _сп = importlib.util.spec_from_file_location(
     "до_фід_слот", os.environ.get("DO_FID_SLOT", "/tmp/194/до_фід_слот.py"))
 СТАР = importlib.util.module_from_spec(_сп); _сп.loader.exec_module(СТАР)
-кат = ФК._прочитати_каталог(feed.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]
+кат = ФК.прочитати_каталог(feed.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]
 оф = lambda r: {"назва": r.get("назва"), "категорія": r.get("категорія"),
                 "параметри": r.get("параметри") or {}}
 низ = lambda r: (r.get("назва") or "").lower()
@@ -26,7 +26,7 @@ for r in кат:
     н = низ(r)
     for _с, k in ключі:
         п = н.find(k)
-        if п < 0 or not НОВ._ПРИКМЕТНИК.match(н[п + len(k): п + len(k) + 3]): continue
+        if п < 0 or not НОВ.ПРИКМЕТНИК.match(н[п + len(k): п + len(k) + 3]): continue
         скинуто[k] += 1
         if НОВ._ключ_іменником(н, k) >= 0: вдруге.append((r.get("назва"), k))
 print("перше входження прикметникове (старий код кидав ключ): %d · %s"

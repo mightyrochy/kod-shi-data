@@ -10,7 +10,7 @@ sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed as Ф, bridge as B, міст_пакет as МП, каталог_коди as КК
 ВХ = dict(json.load(open("стенд_вх.json", encoding="utf-8")), каталог=Ф.каталог_на_диску())
 json.loads(B.виклик("запити", json.dumps(ВХ, ensure_ascii=False)))
-пак = [п for п in МП._КЕШ_ПАКЕТА.values() if п.get("пакет")][0]
+пак = [п for п in МП.КЕШ_ПАКЕТА.values() if п.get("пакет")][0]
 пул = [(с, р) for с, рр in пак["пакет"]["пул"].items() for р in рр]
 д = [len(json.dumps(р, ensure_ascii=False, separators=(",", ":"))) for _, р in пул]
 print("пул %d речей · запис сер. %d знаків · текст пакета %d знаків" % (len(пул), sum(д) / len(д), len(пак["текст"])))

@@ -6,11 +6,11 @@ import sys, os, random, hashlib, subprocess
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'джерела'))
 from PIL import Image, ImageDraw, ImageFont
 import feed as Ф, фід_фото as ФФ, фід_кадр_колір as ФКК
-from фід_збагачення import _збагачення_придатне
+from фід_збагачення import збагачення_придатне as _збагачення_придатне
 ТЕКА, N, ІД = os.path.abspath(sys.argv[1]), int(sys.argv[2]), sys.argv[3:]
 os.makedirs(ТЕКА, exist_ok=True); os.makedirs('/tmp/фото_огляд', exist_ok=True)
 оф = Ф.читати_yml(Ф.каталог_на_диску('каталог_повний.xml'))[0]
-зб, сп, хо = Ф.читати_збагачення(), ФФ._спільні_фото(оф), ФФ._хости_крамниць(оф); к = ФКК.контекст(оф, зб, сп)
+зб, сп, хо = Ф.читати_збагачення(), ФФ.спільні_фото(оф), ФФ.хости_крамниць(оф); к = ФКК.контекст(оф, зб, сп)
 шр = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 12)
 def кадр_картки(o):
     з = зб.get(o['id']); ок = _збагачення_придатне(з) and not ФФ.чужий_кадр(з.get('фото'), сп.get(o.get('магазин')) or {})

@@ -5,16 +5,16 @@
 import collections, math, os, re, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_розбір as FR, фід_збагачення as FZ, verify as V, colorspace as CS
-from фід_фото import _спільні_фото, чужий_кадр, _файл_фото; from фід_розбір import _СЕП_КОЛЬОРУ
+from фід_фото import спільні_фото as _спільні_фото, чужий_кадр, файл_фото as _файл_фото; from фід_розбір import СЕП_КОЛЬОРУ as _СЕП_КОЛЬОРУ
 оф = FR.читати_yml(feed.каталог_на_диску())[0]; зб, сп = FZ.читати_збагачення(), _спільні_фото(оф)
 ТОК = re.compile(r"[a-zа-яёєіїґ']+"); одне = lambda ч: not re.search(r"[\[(]", ч) and sum(
     1 for x in ТОК.findall(ч.lower().replace("-", " ")) if V.назва_кольору(x) or V.слово_крамниці(x)) <= 1
 т = collections.defaultdict(dict)
 for o in оф:
     z = зб.get(o["id"]); ч = [x.strip() for x in _СЕП_КОЛЬОРУ.split(o.get("колір_сирий") or o.get("колір_назва") or "") if x.strip()]
-    if not FZ._збагачення_придатне(z) or (z.get("версія") or 1) < 2 or len(ч) != 1 or not одне(ч[0]):
+    if not FZ.збагачення_придатне(z) or (z.get("версія") or 1) < 2 or len(ч) != 1 or not одне(ч[0]):
         continue
-    lab, ск = FZ._lab_з_hex(z["колір_основний"].get("hex")), V.слово_крамниці(ч[0])
+    lab, ск = FZ.lab_з_hex(z["колір_основний"].get("hex")), V.слово_крамниці(ч[0])
     if lab is not None and ск and not чужий_кадр(z.get("фото"), сп.get(o.get("магазин") or o["id"].split("@")[-1]) or {}):
         т[ск["ім"]].setdefault(_файл_фото(z["фото"]), CS.lch(lab))
 def вікно_до(сл, точки):
@@ -22,7 +22,7 @@ def вікно_до(сл, точки):
     в = V.ЛЕКСИКОН[сл]
     if в[4] is not None:  # хроматичне слово: у межі L*/C* ідуть лише точки в дузі вжитку
         д = V._дуга_з_вжитку([p[2] for p in точки if p[1] > V.ДРІЖ_AB], в[4])
-        точки = [p for p in точки if p[1] < V.ТОН_ВІД_C or V._у_дузі(p[2], д)]
+        точки = [p for p in точки if p[1] < V.ТОН_ВІД_C or V.у_дузі(p[2], д)]
     if len(точки) < V.ВЖИТОК_МІН:
         return в[:4]  # мало точок — межі лексикону, як і в чинному коді
     пL, пC = V._паркан([p[0] for p in точки], V.ВЖИТОК_КРАЙ), V._паркан([p[1] for p in точки], V.ВЖИТОК_КРАЙ)

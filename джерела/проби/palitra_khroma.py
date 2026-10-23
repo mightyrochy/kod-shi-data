@@ -23,7 +23,7 @@ for d in sorted(glob.glob(Т + "/ж*_*/")):
         if str(в["рука"]) == "1":
             ряд.append("найдальші=%s вікно L%s цілі C*%s" % (pal.get("farthest"), (pal.get("window") or {}).get("lightness"), sorted(кц)))
             вб = ((кл.get("choice") or {}).get("образи_кроку") or [{}])[0]
-            кол = [пул[n] for n in вб.get("речі_н") or [] if n in пул and пул[n].get("hex") and пул[n].get("color") not in МЕТ and P._хроматична(cs.hx(пул[n]["hex"]))]
+            кол = [пул[n] for n in вб.get("речі_н") or [] if n in пул and пул[n].get("hex") and пул[n].get("color") not in МЕТ and P.хроматична(cs.hx(пул[n]["hex"]))]
             Σ["р1 образів"] += 1; Σ["р1 з кольоровою річчю"] += bool(кол)
             хроми += [cs.lch(cs.hx(i["hex"]))[1] for i in кол]
             ряд.append("р1 кольорові: %s" % ["%s/C%.0f" % (i.get("color"), cs.lch(cs.hx(i["hex"]))[1]) for i in кол])

@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))));
 import colorspace as cs, bridge as B, outfit as O, face_contrast as FC, колір_образу as K, collections
 import feed; feed.каталог_на_диску('каталог_повний.xml'); import фід_каталог as ФК
 ВЕРХИ = collections.Counter()                 # вирок K-CLR-02 залежить від L*: речі гуртом за L*
-for r in ФК._прочитати_каталог('каталог_повний.xml', 0)['каталог']:
+for r in ФК.прочитати_каталог('каталог_повний.xml', 0)['каталог']:
     if r.get("слот") in ("верх", "сукня", "верхній_шар") and r.get("lab"): ВЕРХИ[round(r["lab"][0])] += 1
 def суд(L, ос):
     з = [z for z in K.біля_обличчя(O.елементи([dict(id="в", слот="верх", hex=cs.hex_з_lab((L, 0, 0)))]), ос) if z.get("правило") == "K-CLR-02"]

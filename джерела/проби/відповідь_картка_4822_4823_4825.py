@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Replay 4822/4823/4825: службовий текст не доходить до картки й «свідомих»."""
 import sys; sys.path.insert(0, '.'); from оцінка_образу import прийняти_оцінку
-from розбір_відповідей import _свідомі_з_json
+from розбір_відповідей import свідомі_з_json as _свідомі_з_json
 
 суд = dict(образ=["c1"], запасні=[], зміни=[], рівень="clean", суд=dict(findings=[]),
            без_входу=[dict(input="occasion"), dict(input="temperature"),

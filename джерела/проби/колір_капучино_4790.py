@@ -13,7 +13,7 @@ def прогін(стара):
         exec(compile(subprocess.run(["git", "show", БАЗА + ":джерела/" + ім + ".py"], capture_output=True, text=True, check=True).stdout, м.__file__, "exec"), м.__dict__)
         sys.modules[ім] = м
     import feed, фід_каталог as FK, дріт_моделі as ДМ
-    return {r["id"]: (r.get("колір_назва"), ДМ.колір_код(r.get("колір_назва"))[0], r.get("колір_hex")) for r in FK._прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]}
+    return {r["id"]: (r.get("колір_назва"), ДМ.колір_код(r.get("колір_назва"))[0], r.get("колір_hex")) for r in FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]}
 if "--дамп" in sys.argv:
     json.dump(прогін(sys.argv[-1] == "стара"), sys.stdout, ensure_ascii=False); sys.exit()
 дамп = lambda к: json.loads(subprocess.run([sys.executable, __file__, "--дамп", к], capture_output=True, text=True, check=True).stdout)

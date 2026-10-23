@@ -9,7 +9,7 @@ import json, sys, collections as K; sys.path.insert(0, ".")
 import bridge as B, стенд_знімок as СЗ, колір_річ as КР, аксесуари_структура as АС
 вх0 = json.load(open("стенд_вх.json", encoding="utf-8")); АПІ = hasattr(КР, "відношення")
 тон = (lambda a, b: КР.відношення(a, b, "same_hue")) if АПІ else КР.відлуння_тону
-гучна = lambda x: (АС._C_речі(x) or 0.0) >= 40; Л, КЛ, СВ = K.Counter(), K.Counter(), K.Counter()
+гучна = lambda x: (АС.C_речі(x) or 0.0) >= 40; Л, КЛ, СВ = K.Counter(), K.Counter(), K.Counter()
 for назва in ("офіс·18°C", "дощ·ресторан·вечір", "весілля·гість", "спека·парк"):
     к = json.loads(B.виклик("запити", json.dumps(dict(вх0, сценарій=dict(СЗ.СЦЕНАРІЇ[назва]), випадок=назва), ensure_ascii=False)))["кандидати"]
     зі = {r["id"]: r for r in B.каталог_останнього_пакета()}

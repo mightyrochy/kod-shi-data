@@ -12,7 +12,7 @@ import bridge as B, pipeline as PL, feed as Ф, суд_блиск as СБ
 def пул(d):
     r = json.loads(B.виклик("запити", json.dumps(d, ensure_ascii=False)))
     за_ід = {c.get("id"): c for c in B.каталог_останнього_пакета()}     # `метал` речі — те, що читає й композитор
-    ю = {с: v for с, v in r["кандидати"].items() if с in Ф._МЕТАЛ_СЛОТИ}
+    ю = {с: v for с, v in r["кандидати"].items() if с in Ф.МЕТАЛ_СЛОТИ}
     л = collections.Counter((за_ід.get(x["id"]) or {}).get("метал") or "без слова" for с, v in ю.items() for x in v)
     return sum(map(len, ю.values())), dict(л), sorted(ю), r.get("слоти_випали")
 for слова, від_моделі in (("побачення, з золотом", "золото"), ("побачення, без прикрас", "без прикрас"),

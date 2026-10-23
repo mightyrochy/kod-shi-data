@@ -7,7 +7,7 @@ import hashlib, json, os, sys
 import feed as Ф, bridge as B, міст_пакет as МП, уважний_вибір as УВ
 С = (sys.argv[1] if len(sys.argv) > 1 else "список,оцінка,турнір").split(",")
 B.виклик("запити", json.dumps(dict(json.load(open("стенд_вх.json", encoding="utf-8")), сід=7, каталог=Ф.каталог_на_диску("каталог_повний.xml"))))
-пак = next(p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати"))
+пак = next(p for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати"))
 def заглушка(т):
     о = json.loads(т)
     if "items" in о: return json.dumps({"version": "1", "ratings": {x["n"]: "fits" if len(str(x["n"])) % 2 else "no" for р in о["items"].values() for x in р}})

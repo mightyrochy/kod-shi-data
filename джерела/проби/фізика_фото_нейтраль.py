@@ -11,7 +11,7 @@ sys.path.insert(0, str(_К))
 import feed as Ф, bridge as B, міст_вхід as МВ, річ_з_фото as РФ, композитор_річ as КРІ, outfit as O
 import колір_нейтралі as КН, колір_річ as КР, colorspace as cs
 вх = json.load(open(_К / "стенд_вх.json", encoding="utf-8"))
-F, T = МВ._збірка(МВ._нормалізувати_вхід(dict(вх)))[:2]
+F, T = МВ.збірка(МВ.нормалізувати_вхід(dict(вх)))[:2]
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml"); вх["гілка"] = 0
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = B.каталог_останнього_пакета()
@@ -27,7 +27,7 @@ for ім, (Fо, драп) in ОСОБИ.items():
     for c in кат:
         if c.get("слот") not in ("верх", "сукня", "шарф", "верхній_шар", "комплект"):
             continue
-        E = [e for e in O.елементи([КРІ._у_річ(c, c["слот"], None)]) if e.get("нейтраль")]
+        E = [e for e in O.елементи([КРІ.у_річ(c, c["слот"], None)]) if e.get("нейтраль")]
         if not E:
             continue
         n += 1

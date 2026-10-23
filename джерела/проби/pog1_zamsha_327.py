@@ -19,7 +19,7 @@ F = cs.features(cs.hx(вх["шкіра"]), cs.hx(вх["волосся"][0]), cs.
 import стенд_знімок as _S; _зн_ = _S._знахідки_рекурсивно
 bl, wea05, правила = 0, 0, collections.Counter()
 for з in замш:
-    речі = [КМ._у_річ(dict(c), c["слот"], T) for c in осн + [dict(з, слот="взуття")]]
+    речі = [КМ.у_річ(dict(c), c["слот"], T) for c in осн + [dict(з, слот="взуття")]]
     вих = PL.перевірити_образ(F, речі, тіло=T, **{k: v for k, v in сц.items()})
     з_ = _зн_(вих); bl_ = [z for _, z in з_ if z.get("блокує")]
     bl += bool(bl_); правила.update({z.get("правило") for z in bl_}); wea05 += any(z.get("правило") == "K-WEA-05" for _, z in з_)

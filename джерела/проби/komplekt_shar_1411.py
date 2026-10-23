@@ -6,7 +6,7 @@
 import sys, pathlib, collections
 _К = pathlib.Path(__file__).resolve().parent.parent; sys.path.insert(0, str(_К))
 import feed as Ф, суд_від_моделі as СМ, повнота_образу as PL
-кат = {r["id"]: r for r in Ф._база_прогону(Ф.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]}
+кат = {r["id"]: r for r in Ф.база_прогону(Ф.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]}
 наб = [r for r in кат.values() if r.get("набір") is True]
 print("комплектів: %d · верх під шаром дозволено: %d" % (len(наб), sum(СМ.комплект_з_шаром(r) for r in наб)))
 К = lambda н: dict(id="k", слот="комплект", тип="костюм", назва=н)

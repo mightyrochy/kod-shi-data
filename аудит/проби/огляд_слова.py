@@ -11,8 +11,8 @@ import feed as F; F.каталог_на_диску('каталог_повний.
 import фід_каталог as ФК, фід_фото as ФФ, фід_збагачення as FZ, фід_розбір as FR, verify as V, colorspace as cs
 from PIL import Image, ImageDraw, ImageFont
 оф = FR.читати_yml('каталог_повний.xml')[0]
-зб, сп, хо = F.читати_збагачення(), ФФ._спільні_фото(оф), ФФ._хости_крамниць(оф)
-кат = {r['id']: r for r in ФК._прочитати_каталог('каталог_повний.xml', 0)['каталог']}
+зб, сп, хо = F.читати_збагачення(), ФФ.спільні_фото(оф), ФФ.хости_крамниць(оф)
+кат = {r['id']: r for r in ФК.прочитати_каталог('каталог_повний.xml', 0)['каталог']}
 н = lambda s: ' '.join(str(s or '').lower().split())
 ш = lambda р: ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', р) if os.path.exists(
     '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf') else ImageFont.load_default()

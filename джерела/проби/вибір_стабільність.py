@@ -9,7 +9,7 @@ import json, os, sys, time, urllib.request
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed as Ф, bridge as B, міст_пакет as МП, протокол as ПР, порядок_запиту as ПЗ, уважний_вибір as УВ
 B.виклик("запити", json.dumps(dict(json.load(open("стенд_вх.json", encoding="utf-8")), сід=7, каталог=Ф.каталог_на_диску("каталог_повний.xml")), ensure_ascii=False))
-пак, лічба, Е = next(p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")), [0], os.environ   # перший — рука 1
+пак, лічба, Е = next(p for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати")), [0], os.environ   # перший — рука 1
 def заглушка(об, з):
     if з == "ОЦІНКИ_V1": return {"ratings": {x["n"]: ("fits" if і < len(р) // 2 else "colour") for р in об["items"].values() for і, x in enumerate(р)}}
     if з == "ТУРНІР_V1": return {"winners": {г: [x["n"] for x in р[:2]] for г, р in об["groups"].items()}}
