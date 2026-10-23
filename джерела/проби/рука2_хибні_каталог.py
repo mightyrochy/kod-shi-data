@@ -34,7 +34,7 @@ for код in ('K-CRA-01', 'K-KOH-02', 'K-SHO-16', 'K-FIT-03', 'K-BOD-02', 'R-CO
     if хибне:
         assert активні and дії and all('правильна' in т and 'хибна' in т for т in дії)
         assert all(т.get('сила') and т.get('суть') and т.get('речі') and т.get('сила_нп', 0) > 0 for т in дії if т.get('дія') != 'drop_correct_advice')
-        assert код != 'K-KOH-02' or any(т.get('хибна') == [3.0, 3.0] for т in дії); assert код != 'K-BOD-02' or 'invert_cut_rank' in пул_рек
+        assert код != 'K-KOH-02' or any(т.get('хибна') == list(П.ціль_поломки_ошатності(Ф.смуга_ошатності(вх['сценарій']))) for т in дії); assert код != 'K-BOD-02' or 'invert_cut_rank' in пул_рек
     пакети.append(відбиток(п1)); print(json.dumps(dict(правило=код, нове=нове, хибне=хибне, нормальний_пакет=відбиток(п1), активних_ремонтів=len(активні), пул_різниця=з['поломка'].get('пул_різниця'), верхній_шар_1=len(п1['пул'].get('верхній_шар') or []), верхній_шар_2=len(п2['пул'].get('верхній_шар') or []), пул_рекомендації=sorted(set(пул_рек)), дії=дії, обмеження=рек), ensure_ascii=False), flush=True)
     assert not П.зламані()
 П.жереб = стар; print('дерево %s · каталог %s · пакет %s' % (дерево(), hashlib.md5(open('../каталог_повний.xml.gz', 'rb').read()).hexdigest()[:8], відбиток(пакети)[:8]))
