@@ -13,8 +13,8 @@ for картка, n in ((3, 26), (4, 27)):
     промпт = json.loads(next(l for l in сире.split("\n") if l.startswith("{")))
     речі = промпт["outfit"]["items"] if "outfit" in промпт else промпт["task"]["outfit"]["items"]
     за_ном = {int(re.match(r"#(\d+)·", r["n"]).group(1)): ("р" + r["n"], r["n"].split("·")[1]) for r in речі}
-    РВ._словник_речей = lambda *a, **k: {"р" + r["n"]: dict(id="р" + r["n"], назва=r["name"]) for r in речі}
-    РВ._за_номером = lambda *a, **k: за_ном
+    РВ.словник_речей = lambda *a, **k: {"р" + r["n"]: dict(id="р" + r["n"], назва=r["name"]) for r in речі}
+    РВ.за_номером = lambda *a, **k: за_ном
     склад = ["р" + r["n"] for r in речі]
     відп = сире.split("── ВІДПОВІДЬ", 1)[1].split("\n", 1)[1]
     до = РВ.опис_відповідь_з_json(відп, склад=склад)

@@ -6,7 +6,7 @@
 import collections, os, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_каталог as FK
-К = FK._прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
+К = FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
 МЕТАЛ = ("золот", "срібл", "срібн", "металік", "gold", "silver")
 мет = [r for r in К if any(м in (r.get("колір_назва") or "").lower() for м in МЕТАЛ)]
 print("ФАКТ · записів %d; металеве слово кольору %d: з виміром %d, код = центр вікна слова %d; слоти %s" % (

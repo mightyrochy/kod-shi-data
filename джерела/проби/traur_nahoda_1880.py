@@ -16,7 +16,7 @@ if not os.path.exists(вх["кеш_кольорів"]):
 ОБРАЗ = ["ж-12150@theoriginals.com.ua", "ж-07631@likeangel.com.ua", "ж-04700@brenda.ua",
          "ж-09484@favoriteshoes.com.ua", "ж-11741@theoriginals.com.ua"]     # жакет, брошка-троянда, кюлоти, лофери, каблучка
 р = json.loads(B.виклик("запити", json.dumps(dict(вх, пакети=1), ensure_ascii=False)))
-from міст_пакет import _КЕШ_ПАКЕТА, _ОСТАННІЙ_ПАКЕТ
+from міст_пакет import КЕШ_ПАКЕТА as _КЕШ_ПАКЕТА, ОСТАННІЙ_ПАКЕТ as _ОСТАННІЙ_ПАКЕТ
 пак = _КЕШ_ПАКЕТА[_ОСТАННІЙ_ПАКЕТ[-1]]
 у_пулі = {r.get("id") for рч in (р.get("кандидати") or {}).values() for r in рч}
 тр = пак.get("_траур") or {}

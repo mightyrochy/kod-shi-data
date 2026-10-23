@@ -16,7 +16,7 @@ import bridge as B, composer as КМ, fit as ПС, gate_площі as G
 for слот, пул in к.items():
     ч = collections.Counter()
     for c in пул:
-        р = КМ._у_річ(dict(кат.get(c.get("id")) or c), слот, Т)
+        р = КМ.у_річ(dict(кат.get(c.get("id")) or c), слот, Т)
         ч["пул"] += 1
         if р.get("край_джерело") == "виріб":
             ч["виріб"] += 1; ч["виріб, обидва краї"] += (р.get("верх_см") is not None and р.get("низ_см") is not None)

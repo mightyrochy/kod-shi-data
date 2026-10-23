@@ -8,7 +8,7 @@ import os, sys, collections
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_каталог as ФК, колір_світлота as КС, реєстр_правил as РП
 
-кат = ФК._прочитати_каталог(feed.каталог_на_диску(), ліміт_фото=0)["каталог"]
+кат = ФК.прочитати_каталог(feed.каталог_на_диску(), ліміт_фото=0)["каталог"]
 за_слотом = collections.defaultdict(list)
 for r in кат:
     if r.get("lab") and r.get("слот") in ("сукня", "взуття"):

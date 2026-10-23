@@ -17,7 +17,7 @@ def файли(мітка): return sorted(glob.glob(os.path.join(ТЕКА, "seed
 звіт = next(open(ш, encoding="utf-8").read() for ш in (os.path.join(ТЕКА, "..", "звіт.txt"), os.path.join(ТЕКА, "..", "сцена.txt")) if os.path.exists(ш))
 сцен = json.loads(re.search(r'"сценарій":\s*(\{[^{}]*\})', звіт).group(1)); lo, hi, _ = КП._ФОРМ.смуга_ошатності(сцен)
 за = collections.defaultdict(list)
-for r in ФК._прочитати_каталог("каталог_повний.xml", 0)["каталог"]: за[(ФС.назва_для_людини(r), r.get("ціна"))].append(r)
+for r in ФК.прочитати_каталог("каталог_повний.xml", 0)["каталог"]: за[(ФС.назва_для_людини(r), r.get("ціна"))].append(r)
 пакети = [читати(ш) for ш in файли("ПАКЕТ_V1")]; ру1 = max(пакети, key=lambda x: len(x[0]["style_rules"]))   # рука 2 = рука 1 без правил
 пул = {р["n"]: за.get((р["name"], р.get("price"))) or [] for р in РТ(ру1[0]["pool"])}
 def вирок(н):   # (слот, код нижче_смуги | None); різні записи під однією назвою й ціною — береться перший

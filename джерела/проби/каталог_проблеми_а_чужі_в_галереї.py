@@ -9,13 +9,13 @@ import collections, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import feed as Ф, фід_фото as ФФ, фід_кадр_колір as ФКК
 оф = Ф.читати_yml(Ф.каталог_на_диску("каталог_повний.xml"))[0]
-зб, сп, хо = Ф.читати_збагачення(), ФФ._спільні_фото(оф), ФФ._хости_крамниць(оф)
+зб, сп, хо = Ф.читати_збагачення(), ФФ.спільні_фото(оф), ФФ.хости_крамниць(оф)
 без_форми, без_якоря = collections.Counter(), collections.Counter()
 for o in оф:
     з, м = зб.get(o["id"]), o.get("магазин")
     к = з.get("фото") if isinstance(з, dict) else None
     р = ФФ.кадри_речі(o, сп.get(м) or {}, хо, к)
-    якір = next((u for u in р if к and ФФ._файл_фото(u) == ФФ._файл_фото(к)), None)
+    якір = next((u for u in р if к and ФФ.файл_фото(u) == ФФ.файл_фото(к)), None)
     if якір:
         я = ФФ._підписи_адреси(якір, True)
         if я and any(set(я) - set(ФФ._підписи_адреси(u)) for u in р if u is not якір):   # бракує хоч однієї форми якоря

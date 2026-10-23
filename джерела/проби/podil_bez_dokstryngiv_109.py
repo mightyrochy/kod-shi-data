@@ -12,7 +12,7 @@ import sys
 
 from поділ_спільне import dump_без_докстрінгів
 
-ФАЙЛ, ІМ_Я = "аксесуари_реєстр.py", "_зн"
+ФАЙЛ, ІМ_Я = "аксесуари_реєстр.py", "зн"
 текст = open(ФАЙЛ, encoding="utf-8").read()
 з_докстрінгом = next(n for n in ast.parse(текст).body
                       if isinstance(n, ast.FunctionDef) and n.name == ІМ_Я)

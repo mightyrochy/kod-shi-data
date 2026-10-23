@@ -31,7 +31,7 @@ def main():
         конфлікт = намір == "other" and нагода == "sport"
         assert п["виміри"]["occasion"] == ("unknown" if конфлікт else нагода)
         assert п["виміри"]["place"] == місце and п["виміри"]["movement"] == "sport"
-        assert ("occasion" in ш["не_записано"]) == конфлікт and С.з_показу({"нагода": "спорт"}, п)[0].get("нагода") == (None if конфлікт else п.get("нагода"))
+        assert ("occasion" in ш["не_записано"]) == конфлікт and П.з_показу({"нагода": "спорт"}, п)[0].get("нагода") == (None if конфлікт else п.get("нагода"))
         assert П.виміри_нагоди(п, {"нагода": "спорт"})[0]["occasion"] == п["виміри"]["occasion"]
         print("SYNTHETIC", намір, нагода, місце, "→", п["виміри"]["occasion"], ш["не_записано"])
     print("RECORDED old raw remains sport; LIVE AFTER pending")

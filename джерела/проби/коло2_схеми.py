@@ -10,8 +10,8 @@ import sys, pathlib, json, collections
 К = pathlib.Path(__file__).resolve().parent.parent; sys.path.insert(0, str(К))
 import feed as F; F.каталог_на_диску('каталог_повний.xml')
 import фід_каталог as ФК, colorspace as cs, palettes as P, палітра_схеми as PS, палітра_специфікація as SP, міст_вхід as МВ
-кат = [r for r in ФК._прочитати_каталог('каталог_повний.xml', 0)['каталог'] if r.get("слот") in
-       {"верх", "низ", "сукня", "верхній_шар", "комплект"} and r.get("lab") and P._хроматична(tuple(r["lab"]))]
+кат = [r for r in ФК.прочитати_каталог('каталог_повний.xml', 0)['каталог'] if r.get("слот") in
+       {"верх", "низ", "сукня", "верхній_шар", "комплект"} and r.get("lab") and P.хроматична(tuple(r["lab"]))]
 тони = [(cs.lch(tuple(r["lab"]))[2], r.get("колір_назва") or "?") for r in кат]
 кут = lambda a, b: abs((a - b + 180) % 360 - 180)
 ДО = {"аналогова": ((30, 15), (55, 18)), "тріада": ((120, 15), (240, 15))}
@@ -20,7 +20,7 @@ def слово(ід): return (collections.Counter(тони[i][1] for i in ід).
 print("великих хроматичних речей: %d" % len(тони))
 for ж in range(1, 9):
     д = json.load(open(К.parent / ("аудит/проби/жінки/ж%d.json" % ж), encoding="utf-8"))
-    Fж = МВ._features(dict(шкіра=д["skin"], волосся=д["hair"], очі=д["eyes"]))[0]
+    Fж = МВ.features(dict(шкіра=д["skin"], волосся=д["hair"], очі=д["eyes"]))[0]
     for схема, кроки in ДО.items():
         h = SP.специфікація(Fж, схема, ["верх", "низ"])["якір_тон"]
         дуги = [д for р, д in PS.СХЕМИ[схема]["тон"](h).items() if р != "домінанта"]

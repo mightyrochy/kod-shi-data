@@ -12,7 +12,7 @@ exec(compile(ast.Module([в for в in ast.parse(open(ЕТ, encoding='utf-8').rea
     '_клас|каблук,підбор|нема (heel.height_cm, рядок 6541)|-;блиск|блиск|veto.shine|shine;блиск_крамниці|блиск|veto.shine|shine;візерунок|принт|pattern|pattern;метал|метал|metal|metal;частка_металу|метал|metal_where|metal;к'
     'олір_вставки|колір|color_extra·color_why=trim|color;наповнювач|утеплювач,наповнювач|filling|-;застібка|застібк|closure|-;капюшон|капюшон|hood|-;простібка|простібк|quilted|-;формат|розмір|bag_size|-;розмірність'
     '|розмір|size_fit|-;ворс|ворс|pile|-;опушка|опушк|fur_trim|-;ремонтопридатна|-|sole_attachment|-;ланцюг_см|довжина|chain_cm|-;ремінь_см|довжина|strap_cm|-;розміри_нема|розмір|нема (рядок 6540)|-').split(';')]
-F.каталог_на_диску('каталог_повний.xml'); кат = ФК._прочитати_каталог('каталог_повний.xml', 0)['каталог']
+F.каталог_на_диску('каталог_повний.xml'); кат = ФК.прочитати_каталог('каталог_повний.xml', 0)['каталог']
 оф = {o['id']: o for o in F.читати_yml('каталог_повний.xml')[0]}; є = lambda в: в not in (None, '', 'unknown', 'невідомо', [], {}); у_схемі = lambda с: с if с.startswith('нема') or all(ш.split('=')[0].split(' ')[0] in {п.replace('[]', '') for п in КР.ПЕРЕЛІКИ} for ш in с.split('·')) else с + ' ✗ поза КР.ПОЛЯ'
 тексти = {ф: open(ф, encoding='utf-8').read() for ф in glob.glob('*.py') + glob.glob('*.js') if not re.match(r'(фід_|feed|жнива_|audit_|тест|стенд|батарея)', ф)}
 СУД = re.compile(r'(суд_|verify|силует_суд|аксесуари_суд|оцінка_образу|вердикт_моделі|траурний)'); ПОКАЗ = re.compile(r'(\.js$|міст_відповіді|назва_речі|мовний_шар)')

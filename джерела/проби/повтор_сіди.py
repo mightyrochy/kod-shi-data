@@ -22,7 +22,7 @@ PL.відсікти_пул = _відс
 for сід in СІДИ:
     json.loads(B.виклик("запити", json.dumps(dict(вх, сід=сід), ensure_ascii=False)))
     пули += [{с: [r.get("id") for r in v] for с, v in p["кандидати"].items()}
-             for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")]
+             for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати")]
 print("сцена стенда, сіди %s → %d пулів" % (list(СІДИ), len(пули)))
 print("%-14s %9s %8s %8s %9s %9s" % ("слот", "доступно", "за раз", "союз10", "з доступн", "у всіх 10"))
 for с in sorted(дост, key=lambda к: -дост[к]):

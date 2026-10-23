@@ -16,10 +16,10 @@ for назва, погода in (("мороз без числа", dict(пого�
     сц = {k: v for k, v in база["сценарій"].items() if k != "темп_c"}
     вх = dict(база, каталог=кат_файл, гілка=0, сценарій=сц, паспорт=dict(погода),
               випадок="робочий день, пішки")
-    МП._КЕШ_ПАКЕТА.clear()
+    МП.КЕШ_ПАКЕТА.clear()
     B.виклик("запити", json.dumps(вх, ensure_ascii=False))
     кат = {c["id"]: c for c in B.каталог_останнього_пакета()}
-    пак = [p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")][-1]
+    пак = [p for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати")][-1]
     п = пак["кандидати"]; усього = sum(len(v or []) for v in п.values())
     _дамп = json.dumps(пак, ensure_ascii=False, default=str)
     шари = re.search(r'"weather_layers", "values": \{[^}]*"layers": ([\d.]+)', _дамп)

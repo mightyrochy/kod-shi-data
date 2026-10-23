@@ -16,10 +16,10 @@ import feed as Ф, bridge as B, міст_пакет as МП, пакет_моде
 вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), каталог=Ф.каталог_на_диску("каталог_повний.xml"))
 перші, трійки, довжини = collections.defaultdict(list), collections.defaultdict(list), collections.defaultdict(list)
 for сід in (1, 7, 42, 4242, 31337):
-    МП._КЕШ_ПАКЕТА.clear()
+    МП.КЕШ_ПАКЕТА.clear()
     r = json.loads(B.виклик("запити", json.dumps(dict(вх, сід=сід), ensure_ascii=False)))
     за_н = {}
-    for пк in [p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")]:
+    for пк in [p for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати")]:
         ном, _ = PM.номери_речей(пк["кандидати"])
         за_н[пк["текст"]] = {"#%d·%s" % v: k for k, v in ном.items()}
     for рука in ("1", "2"):

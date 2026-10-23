@@ -10,7 +10,7 @@ import importlib.util as IU
 сп = IU.spec_from_file_location("дп", "проби/колір_опори_до_після.py"); src = open(сп.origin, encoding="utf-8").read()
 exec(src[:src.index("СЛОТИ = (")])          # спільне: в1, T, F, зб, імпорти — без прогону самої проби
 Л, П = K.Counter(), []
-гучна = lambda x: (АС._C_речі(x) or 0.0) >= 40
+гучна = lambda x: (АС.C_речі(x) or 0.0) >= 40
 for назва in ("офіс·18°C", "дощ·ресторан·вечір", "весілля·гість", "спека·парк"):
     сц = dict(СЗ.СЦЕНАРІЇ[назва])
     к = json.loads(B.виклик("запити", json.dumps(dict(вх0, сценарій=сц, випадок=назва), ensure_ascii=False)))["кандидати"]

@@ -5,7 +5,7 @@
 Запуск: cd джерела && python3 проби/рука2_чекліст.py"""
 import json, sys, random, pathlib, collections; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import bridge as B, pipeline as ПЛ, поломки as ПР2
-from композитор_річ import _у_річ
+from композитор_річ import у_річ as _у_річ
 вх = dict(json.load(open("стенд_вх.json")), каталог="каталог_повний.xml", сід=3)
 к = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False))).get("кандидати") or {}
 за_ід = {x["id"]: x for x in B.каталог_останнього_пакета()}

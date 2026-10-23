@@ -10,7 +10,7 @@ import collections, glob, gzip, os, re, sys                                   # 
 sys.path.insert(0, ТУТ)
 import фід_каталог as ФК, композитор_річ as КР, outfit as O                    # noqa: E401,E402
 import суд_інтерес as СІ                                                      # noqa: E402
-за_ід = {r["id"]: r for r in ФК._прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]}
+за_ід = {r["id"]: r for r in ФК.прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]}
 набори = {}
 for ф in sorted(glob.glob(os.path.join(ТУТ, "..", "аудит", "перевірки", "**", "вердикти*.gz"), recursive=True)):
     for м in re.finditer(r'\\?"ід\\?": ?\[([^\]]*)\]', gzip.open(ф).read().decode()):
@@ -21,7 +21,7 @@ b1, вид, хибні = collections.Counter(), collections.Counter(), 0
 for ід, траур in набори.items():
     if траур:
         continue
-    E = O.елементи([КР._у_річ(за_ід[і], за_ід[і]["слот"], None) for і in ід])
+    E = O.елементи([КР.у_річ(за_ід[і], за_ід[і]["слот"], None) for і in ід])
     провал = bool(СІ.підлога_інтересу_проактивно(E, "conventional", тихо=False))
     b1["провал" if провал else "пройдено"] += 1
     тихі = СІ.тихі_джерела(E)

@@ -11,8 +11,8 @@ import feed as Ф, bridge as B, міст_пакет as МП, мовний_шар
 кат = Ф.каталог_на_диску("каталог_повний.xml")
 def пул(п):
     вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), сід=4242, каталог=кат, паспорт=п)
-    МП._КЕШ_ПАКЕТА.clear(); B.виклик("запити", json.dumps(вх, ensure_ascii=False))
-    кан = [p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")][0]["кандидати"]
+    МП.КЕШ_ПАКЕТА.clear(); B.виклик("запити", json.dumps(вх, ensure_ascii=False))
+    кан = [p for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати")][0]["кандидати"]
     в = {с: sum(1 for r in р if (r.get("візерунок") or "solid") != "solid") for с, р in кан.items() if isinstance(р, list)}
     return "%d (взуття %d)" % (sum(в.values()), в.get("взуття", 0))
 print("без меж: речей із візерунком у пулі", пул({"перекладено_шаром": True, "вето": {}}))

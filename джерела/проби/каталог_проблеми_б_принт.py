@@ -6,7 +6,7 @@
 import collections, os, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_каталог as FK
-К = FK._прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
+К = FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
 віз = collections.Counter(r.get("візерунок") for r in К)
 ф = [r for r in К if r.get("колір_hex_фото")]
 однот = [r for r in ф if r.get("візерунок") == "solid"]
