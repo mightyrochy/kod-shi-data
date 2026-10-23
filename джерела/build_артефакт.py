@@ -1368,6 +1368,22 @@ def зібрати_показ(джерело, вихід, збірка=None, п�
     ЄДИНОЮ сторінкою, і другого вантажу в системі більше не існує."""
     шлях = os.path.join(джерело, "показ.html")
     сирий_шаблон = open(шлях, encoding="utf-8").read()
+    if '<link rel="stylesheet" href="показ.css">' in сирий_шаблон:
+        css_ш = os.path.join(джерело, "показ.css")
+        if os.path.exists(css_ш):
+            сирий_шаблон = сирий_шаблон.replace(
+                '<link rel="stylesheet" href="показ.css">',
+                '<style>\n' + open(css_ш, encoding="utf-8").read() + '\n</style>'
+            )
+    if '<script src="показ/' in сирий_шаблон:
+        мод_тека = os.path.join(джерело, "показ")
+        імена_скр = re.findall(r'<script src="показ/([^"]+)"></script>', сирий_шаблон)
+        if імена_скр:
+            всі_скр = [open(os.path.join(мод_тека, ім), encoding="utf-8").read() for ім in імена_скр]
+            обєдн = "<script>\n'use strict';\n" + "\n\n".join(всі_скр) + "\n</script>"
+            п1 = сирий_шаблон.find('<script src="показ/')
+            п2 = сирий_шаблон.rfind('</script>') + len('</script>')
+            сирий_шаблон = сирий_шаблон[:п1] + обєдн + сирий_шаблон[п2:]
     шаблон = _чистка_показу(сирий_шаблон)
     if повний:
         from build_байткод import ПЕРЕВІРКА
