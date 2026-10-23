@@ -284,7 +284,7 @@ def рядок_заяв(ключі):
     ключі = [к for к in ЗАЯВИ_ЩО_EN if к in ключі]
     if not ключі:
         return None
-    return ("%s — %s: each entry is a code, or {code: values}; codes are defined in \"%s\""
+    return ("%s — %s: each entry is {code, values, …}; codes are defined in \"%s\""
             % (" and ".join("\"%s\"" % к for к in ключі), " and ".join(ЗАЯВИ_ЩО_EN[к] for к in ключі),
                СЛОВНИК_КОДІВ_EN))
 

@@ -30,6 +30,7 @@
 `обрала="code_rank"` і причиною; суддя образу ставить пункт P8 чекліста палітри «без входу» з названим
 полем (`суд_чеклісти`), а не мовчазне «перше» під виглядом вибору.
 """
+import statements as _СТ
 import json as _json
 
 import протокол as _ПР
@@ -38,6 +39,8 @@ import внутрішня_мова as _ВМ
 import дріт_моделі as _ДМ
 
 ЗОВНІШНІ_ВХОДИ = {
+    "опис_стану": "вхід з оновитиПалітруП: її поточний вибір, рішення стилістки й гілки",
+    "назви_основ": "підписи основ зі сторінки для заяви про поточний вибір",
     "відповідь_моделі": "вхід із показу (`стилісткаОбираєП`): сира відповідь моделі на промпт кроку 1",
     "без_моделі": "вхід із показу: причина, чому моделі не питали чи вона не відповіла (крок 2 без неї)",
     "вибір_стилістки": "вхід із показу в `запити`/`від_моделі`: прийнятий вибір кроку 2 (`прийняти`)",
@@ -591,24 +594,23 @@ def повідомлення(г, о, гама, обрала, причини, л�
     # шапкою рядка: друга частина могла бути обрана, і сказати «не обрала» про весь вибір — неправда.
     # Гама без вибору — «середні», як доти; це не «стилістка не обрала», тож заяви про неї нема.
     заяви = []
-    не_обрала = _ВМ.заява("stylist_did_not_choose", why=(чому_код or "no_model"))
     if "scheme" in лишила:
         if обрала.get("scheme") == ХТО_СТИЛІСТКА:
-            заяви += [_ВМ.заява("stylist_chose_scheme", scheme=назва)] + \
-                     [_ВМ.заява(к) for к in причини.get("scheme") or []]
+            заяви += [_ВМ.заява("stylist_chose_scheme", scheme=назва, part="scheme", rank=dict(position=г["ранг"], rare=not г["радить"]))] + \
+                     [_ВМ.заява(к, part="scheme", choice="stylist", source="model", rank=dict(position=г["ранг"], rare=not г["радить"])) for к in причини.get("scheme") or []]
         else:
-            заяви += [не_обрала, _ВМ.заява("first_scheme_of_advice", scheme=назва)]
+            заяви += [_ВМ.заява("stylist_did_not_choose", part="scheme", why=(чому_код or "no_model")), _ВМ.заява("first_scheme_of_advice", scheme=назва, part="scheme", rank=dict(position=г["ранг"], rare=not г["радить"]))]
     if "base" in лишила:
         if обрала.get("base") == ХТО_СТИЛІСТКА and о is not None:
             з = dict(base=о["назва"])
             if _відтінок(о["L"]):
                 з["shade"] = _відтінок(о["L"])
-            заяви += [_ВМ.заява("stylist_chose_base", **з)] + \
-                     [_ВМ.заява(к) for к in причини.get("base") or []]
+            заяви += [_ВМ.заява("stylist_chose_base", part="base", **з)] + \
+                     [_ВМ.заява(к, part="base", choice="stylist", source="model") for к in причини.get("base") or []]
         else:
-            заяви += ([] if не_обрала in заяви else [не_обрала]) + [_ВМ.заява("base_from_her_features")]
+            заяви += [_ВМ.заява("stylist_did_not_choose", part="base", why=(чому_код or "no_model"))] + [_ВМ.заява("base_from_her_features", part="base")]
     if "saturation" in лишила and обрала.get("saturation") == ХТО_СТИЛІСТКА and (о is None or о["ахром"]):
-        заяви.append(_ВМ.заява("stylist_chose_saturation", saturation=_ГАМА_КОД.get(гама, гама)))
+        заяви.append(_ВМ.заява("stylist_chose_saturation", part="saturation", saturation=_ГАМА_КОД.get(гама, гама)))
     if not заяви:
         return None
     вид = "palette_stylist_choice" if ХТО_СТИЛІСТКА in обрала.values() else "palette_default_scheme"
@@ -654,9 +656,63 @@ def лише_її(вибір_кольору, вибір_стилістки=None)
     return вк or None
 
 
+def стан_для_показу(вхід):
+    """Один автор стану палітри: поточний її вибір і прийняте рішення стилістки."""
+    її = вхід.get("її") or {}
+    стил = вхід.get("стилістка") or {}
+    виб = стил.get("вибір") or {}
+    гілки = вхід.get("гілки") or []
+    кольори = її.get("вибір_кольору") or {}
+    автори = {к: _СТ.автор(v) for к, v in (виб.get("обрала") or {}).items()}
+    свої = dict(base=кольори.get("база"), saturation=кольори.get("насиченість"),
+                scheme=next((г["схема"] for г in гілки if г.get("і") == її.get("гілка")), None))
+    стилеві = dict(base=(виб.get("вибір_кольору") or {}).get("база"),
+                  saturation=виб.get("гама"), scheme=виб.get("схема"))
+    стан = []
+    for частина in ("base", "scheme", "saturation"):
+        хто = "her" if свої[частина] else автори.get(частина, "pending")
+        значення = свої[частина] or стилеві[частина]
+        if частина == "base" and значення:
+            значення = (вхід.get("назви_основ") or {}).get(значення, значення)
+        стан.append(_ВМ.заява("palette_choice_part", part=частина, choice=хто,
+                              source="model" if хто in ("stylist", "conversation") else
+                              "default" if хто in ("code_rank", "form_default", "item_default") else "unknown",
+                              **dict(value=значення)))
+    вих = {"пал-стан": _ВМ.повідомлення("palette_stylist_choice", *стан)}
+    if стил.get("повідомлення"):
+        нота = стил["повідомлення"]
+        актуальні = [з for з in нота.get("statements", []) if not свої.get(з.get("part"))]
+        if актуальні:
+            вих["пал-нота"] = _ВМ.повідомлення(нота["kind"], *актуальні)
+    elif not свої["scheme"] and not стил:
+        # Поки не обрала ні вона, ні стилістка (рядки 117, 147): скільки схем радить стилістка і що рідші
+        # теж обираються — без цієї ноти жінка не знає, що решта плиток доступна.
+        рідших = sum(1 for г in гілки if г.get("рідший"))
+        радить = вхід.get("радить") if вхід.get("радить") is not None else len(гілки)
+        вих["пал-нота"] = _ВМ.повідомлення(
+            "palette_default_scheme", _ВМ.заява("stylist_will_choose"),
+            _ВМ.заява("schemes_advised_count", count=радить),
+            _ВМ.заява("rarer_schemes_count", count=рідших) if рідших else _ВМ.заява("choose_another_if_wants"))
+    обрана = свої["scheme"] or стилеві["scheme"]
+    хто_схеми = "her" if свої["scheme"] else автори.get("scheme", "pending")
+    for г in гілки:
+        повідом = г.get("нота_кодами")
+        if not повідом:
+            continue
+        хто = хто_схеми if г["схема"] == обрана else "unselected"
+        ранг = dict(position=г.get("і", 0) + 1, rare=bool(г.get("рідший")),
+                    weight={"ядро": "core", "звичайна": "usual", "на_межі": "edge", "statement": "statement"}.get(г.get("вага")))
+        заяви = [_СТ.уточнити(з, choice=хто, rank=ранг, part="scheme")
+                  for з in повідом.get("statements") or []]
+        вих["рідша.%s" % г["і"]] = _ВМ.повідомлення(повідом["kind"], *заяви)
+    return вих
+
+
 def вибір_палітри(вхід):
     """Ендпойнт моста `вибір_палітри` (два кроки, див. шапку модуля)."""
     d = _json.loads(вхід) if isinstance(вхід, str) else (вхід or {})
+    if d.get("опис_стану") is not None:
+        return _json.dumps(dict(повідомлення=стан_для_показу(d["опис_стану"])), ensure_ascii=False)
     if d.get("відповідь_моделі") is not None or d.get("без_моделі") is not None:
         return _json.dumps(прийняти(d, d.get("відповідь_моделі"), d.get("без_моделі")),
                            ensure_ascii=False, default=str)
