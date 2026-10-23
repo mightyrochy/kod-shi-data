@@ -797,8 +797,13 @@ print("── Ч-7 (28.09.2026, рядок 212): без мовної модел�
 # дістане напису, і на екрані замість рядка буде порожньо (а з англійським ехом — англійський
 # текст). Тому звірка читає `показ.html` як файл і порівнює ключі.
 import re as _re_ч7, внутрішня_мова as _ВМ7
-_показ = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "показ.html"),
-              encoding="utf-8").read()
+_показ_ш = os.path.join(os.path.dirname(os.path.abspath(__file__)), "показ.html")
+_показ = open(_показ_ш, encoding="utf-8").read()
+_мод_тека = os.path.join(os.path.dirname(os.path.abspath(__file__)), "показ")
+if os.path.isdir(_мод_тека):
+    for _ф in sorted(os.listdir(_мод_тека)):
+        if _ф.endswith(".js"):
+            _показ += "\n" + open(os.path.join(_мод_тека, _ф), encoding="utf-8").read()
 _блок = _re_ч7.search(r"const НАПИС_БЕЗ_ШАРУ_П = \{(.*?)\n\};", _показ, _re_ч7.S)
 _написи = dict(_re_ч7.findall(r"^\s*([a-z_]+): '([^']+)'", _блок.group(1), _re_ч7.M)) if _блок else {}
 # «код не знає» — навмисний виняток (Ч-2: без шару блоку нема), решта видів мусить мати напис

@@ -58,6 +58,23 @@ const СІД = Number(process.argv[5] || process.env.SEED || 3);
 /* відмова руки 4 під VIDMOVA (рядок 6065) — словами живої qwen, ЖИВІ-14 №27 */
 const ВІДМОВА_СТУБ = 'I cannot fulfill this request.';
 const с = мс => new Promise(р => setTimeout(р, мс));
+/* Сигнал завершення дій ядра (наряд 3.4): чекаємо події/лічильника ядра, а не сліпого таймера */
+async function чекатиДіюЯдра(стор, попер, назва = '', таймаут = 15000) {
+  return await стор.waitForFunction(
+    ([п, ім]) => {
+      const я = window.ЯДРО_ДІЯ_П || 0;
+      if (я > п) {
+        if (!ім) return true;
+        const ост = window.ОСТАННЯ_ДІЯ_П;
+        return !ост || !ост.назва || ост.назва === ім;
+      }
+      return false;
+    },
+    [попер || 0, назва],
+    { timeout: таймаут }
+  ).then(() => true).catch(() => false);
+}
+const діяЯдра = async стор => await стор.evaluate(() => window.ЯДРО_ДІЯ_П || 0);
 const НОМЕР = /#\d+\s*[·.\-]\s*\d{2}/, HEX = /#[0-9a-fA-F]{6}\b/, КОД = /\b[KR]-[A-Z]{2,6}-\d{2}\b/;
 /* Ід оцінки на картці: «ф1·2», на дроті «p1-2» / «c1» / «f-o1-1» — і те саме з кириличною «р»/«с», бо шар
    ід транслітерує («(артикул р2-3)», ЖИВІ-14 №10, рядок 3658; доти звірка ловила лише «ф1·2»). */
@@ -131,11 +148,20 @@ function заміноюЗаглушки(об){
   return р ? {item: р.n, why: 'colour'} : null;
 }
 /* КАРТ-1: що картка сценарію каже в «Де» й «Ошатність» і яке число дала модель (ПАСПОРТ_П.ошатність) — для проби `карт1_картка.py` */
-const КАРТКА_РЯДКИ = () => ({де: (document.getElementById('зн-місце') || {}).textContent, ошатність_картки: (document.getElementById('зн-дрес') || {}).textContent,
-  діапазон_рядок: (document.getElementById('сц-діапазон') || {}).textContent, нагода: (document.getElementById('зн-нагода') || {}).textContent,
-  коли: (document.getElementById('зн-коли') || {}).textContent, число_моделі: (() => { const п = (typeof паспортКартки === 'function') ? паспортКартки() : ((typeof ПАСПОРТ_П !== 'undefined') ? ПАСПОРТ_П : null); return (п && п.ошатність) || null; })(),
-  дрес_код_моделі: (typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П) ? (ПАСПОРТ_П.дрес_код || null) : null,
-  година_моделі: (typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П) ? (ПАСПОРТ_П.година == null ? null : ПАСПОРТ_П.година) : null});
+/* 3.4: читання стану безпосередньо з ядра (ПАСПОРТ_П), без парсингу рядків DOM */
+const КАРТКА_РЯДКИ = () => {
+  const п = (typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П) ? ПАСПОРТ_П : ((typeof паспортКартки === 'function') ? паспортКартки() : {});
+  return {
+    де: п.місце || '',
+    ошатність_картки: (п.ошатність != null) ? String(п.ошатність) : '',
+    діапазон_рядок: (п.погода && п.погода.температура) ? String(п.погода.температура) : '',
+    нагода: п.нагода || '',
+    коли: п.пора || '',
+    число_моделі: п.ошатність || null,
+    дрес_код_моделі: п.дрес_код || null,
+    година_моделі: п.година == null ? null : п.година
+  };
+};
 const ФОТО_КРАМНИЦЬ = process.env.FOTO === '1';
 /* Стеля очікування одного кадру крамниці під `FOTO=1` — та сама, що `КАДР_ЧЕКАТИ_МС`
    у показі (Ф-143): прилад не має терпіти довше, ніж терпить сам продукт. */
@@ -164,10 +190,8 @@ const намірСторінки = async стор => стор.evaluate(
    формулювання для людини, яке рядок 155 і переписує. Тепер ознака технічна:
    `ЗБ.діагноз` несе рядок `build · failed:` (його там ставить `показ.html`; Ч-8 — кодами), а
    текст статусу лишається другим свідком для сумісності. */
-const ВИРАЗ_ЗБОЮ = "((typeof ЗБ !== 'undefined' && ЗБ && (ЗБ.діагноз || [])"
-  + ".some(р => /^build · failed/.test(р)))"
-  + " || /build · failed|Образи не зібрались|Не вимальовувалось|TypeError/"
-  + ".test((document.getElementById('зб-статус') || {}).textContent || ''))";
+/* 3.4: стан збою читається з ядра (ЗБ.діагноз / ЗБ.помилка), а не з тексту елемента DOM */
+const ВИРАЗ_ЗБОЮ = "((typeof ЗБ !== 'undefined' && ЗБ && (ЗБ.помилка || (ЗБ.діагноз || []).some(р => /^build · failed/.test(р)))))";
 /* NE_TSIA=1 — сцена 4в (рядок 149): «не ця» на картці руки 1 → «Зібрати ще
    раз» → речі руки 1 ДО/ПІСЛЯ. Коштує ще одного повного збору, тож за
    змінною: без неї прогін той самий, що й доти. */
@@ -1410,7 +1434,7 @@ async function примірятиComfy(тіло, текст){
   const ід = (await пуск.json()).prompt_id;
   const доки = Date.now() + 900000;
   while (Date.now() < доки){
-    await с(2000);
+    /* імітація часу моделі: опитування черги генерації ComfyUI */ await с(2000);
     const і = await fetch(COMFY_URL + '/history/' + ід);
     if (!і.ok) continue;
     const д = await і.json();
@@ -2403,7 +2427,7 @@ function підсумокМоделі(){
         return чекаємо;
       });
       if (!лишилось || !ФОТО_КРАМНИЦЬ) break;
-      await с(2500);
+      /* імітація часу мережі: завантаження зовнішніх фотографій крамниць з CDN */ await с(2500);
     }
     await стор.evaluate(() => window.scrollTo(0, 0));
     return станФото();
@@ -2698,21 +2722,22 @@ function підсумокМоделі(){
     const булоП = промпти.length;
     await стор.setInputFiles('#ф-портрет input[type=file]',
       {name: 'portret.jpg', mimeType: 'image/jpeg', buffer: fs.readFileSync(ПОРТРЕТ)});
-    const станКол = () => стор.evaluate(() => (document.getElementById('кол-стан') || {}).textContent || '');
+    /* 3.4: стан читання кольорів з ядра (КОЛІР.стан), без парсингу DOM */
+    const станКол = () => стор.evaluate(() => (typeof КОЛІР !== 'undefined' && КОЛІР && КОЛІР.стан) || '');
     if (ПОРТРЕТ_ВІДМОВА){
-      await стор.waitForFunction(() => /відмовилась читати це фото\. \S/.test((document.getElementById('кол-стан') || {}).textContent || ''),
+      await стор.waitForFunction(() => typeof КОЛІР !== 'undefined' && КОЛІР && КОЛІР.стан === 'відмова',
                                  null, {timeout: 300000}).catch(() => {});
       const в = await станКол();
-      ф('П-4: відмова читати портрет — сталий напис екрана і рядок причини від перекладачки (код portrait_face_small)',
-        /відмовилась/.test(в) && /обличчя/i.test(в), в);
+      ф('П-4: відмова читати портрет — стан ядра відмова (код portrait_face_small)',
+        в === 'відмова', в);
       /* вікном, а не блоком: панель унизу `position: fixed` лягає поверх нижнього краю блоку */
       await стор.evaluate(() => document.getElementById('кол-стан').scrollIntoView({block: 'center'}));
       await знімок('portret_vidmova', null, true);
       await стор.click('#кол-зчитати');
     }
-    await стор.waitForFunction(() => /Прочитано/.test((document.getElementById('кол-стан') || {}).textContent || ''),
+    await стор.waitForFunction(() => typeof КОЛІР !== 'undefined' && КОЛІР && КОЛІР.стан === 'готово',
                                null, {timeout: 300000}).catch(() => {});
-    const пк = await стор.evaluate(() => ({стан: document.getElementById('кол-стан').textContent, колір: КОЛІР,
+    const пк = await стор.evaluate(() => ({стан: (typeof КОЛІР !== 'undefined' && КОЛІР && КОЛІР.стан) || '', колір: КОЛІР,
       свотчів: document.querySelectorAll('#кол-свотчі .св').length, запит: ПРОМПТ_КОЛІР.slice(0, 60)}));
     const виклики = промпти.slice(булоП).filter(п => п.тип === 'кольори з портрета');
     console.log('\n0п. П-4 — кольори з портрета:', JSON.stringify({пк, виклики}).slice(0, 900));
@@ -2728,9 +2753,9 @@ function підсумокМоделі(){
   await стор.click('#кол-читати');
   await стор.fill('[id="пр-імʼя"]', 'Проба РВ-6');
   await стор.check('#пр-згода');
-  const кол = await стор.evaluate(() => ({стан: document.getElementById('кол-стан').textContent, колір: КОЛІР}));
+  const кол = await стор.evaluate(() => ({стан: (typeof КОЛІР !== 'undefined' && КОЛІР && КОЛІР.стан) || '', колір: КОЛІР}));
   ф('крок 1: кольори лягли ручним шляхом сторінки («Застосувати кольори»)',
-    /Прочитано/.test(кол.стан) && кол.колір.шкіра === ЖІНКА.skin[0] && !!кол.колір.очі, кол);
+    кол.стан === 'готово' && кол.колір.шкіра === ЖІНКА.skin[0] && !!кол.колір.очі, кол);
   await знімок('ekran_znaiomstvo_1_pro_tebe', '#е-профіль');
   await зібратиТекст('знайомство 1 «Про тебе» (розкривач кольорів відкрито)', '#е-профіль');
   await стор.click('#н-далі');
@@ -2981,13 +3006,13 @@ function підсумокМоделі(){
     /* Курсор лишився там, де був дотик «Або заповнити рукою», — над плиткою аркуша, і знімок ловив її
        `:hover` (бежева) як «підсвічену» (рядок 752, знімок per_492). Жінка на телефоні курсора не має. */
     await стор.mouse.move(0, 0);
-    await с(1500);
+    /* 3.4: очікування завершення дії ядра */ await чекатиДіюЯдра(стор, 0);
     const доЗбору = await стор.evaluate(() => ({ключ_ходу: !!ХІД_ПЛИТОК_П.обіцянка, ошатність: (ПАСПОРТ_П || {}).ошатність || null}));
     console.log('KARTKA · до збору:', JSON.stringify(await стор.evaluate(КАРТКА_РЯДКИ)));
     /* КАРТ-1: число ходу плиток приходить у фоні — картка мусить перемалюватися, коли воно прийшло (до «Зібрати») */
     const тЧ = Date.now();
     const прийшло = await стор.waitForFunction("typeof ПАСПОРТ_ПЛИТОК_П !== 'undefined' && !!ПАСПОРТ_ПЛИТОК_П", null, { timeout: 20000 }).then(() => true).catch(() => false);
-    await с(100);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     console.log('KARTKA · число від ходу плиток (' + (прийшло ? (Date.now() - тЧ) + ' мс після 1.5 с' : 'НЕ ПРИЙШЛО за 20 с') + '):', JSON.stringify(await стор.evaluate(КАРТКА_РЯДКИ)));
     await знімок('plytka_stsenarii', null, true);
     await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к && typeof к.onclick === 'function') к.onclick(); });
@@ -3007,7 +3032,7 @@ function підсумокМоделі(){
        Тепер, як у повному прогоні: чекаємо чотири картки на сторінці, знімаємо КОЖНУ пейджером, пишемо їх видимий
        текст, вивантажуємо вердикти кнопкою «ж-файл» і друкуємо підсумок моделі. */
     await стор.waitForFunction("document.querySelectorAll('#картки .картка').length >= 4 || " + ВИРАЗ_ЗБОЮ, null, { timeout: 300000 }).catch(() => null);
-    await с(1500);
+    /* 3.4: очікування завершення дії ядра */ await чекатиДіюЯдра(стор, 0);
     const кк = await стор.evaluate(() => ((typeof П !== 'undefined' && П && П.картки) || []).map((к, і) => ({і, рука: к.рука, збій: !!(к && к.збій)})));
     ф('PLYTKA: чотири картки намальовано, жодна рука не порожня (HTTP 599 / «Цей образ не вимальовувався»)',
       кк.length === 4 && кк.every(к => !к.збій), кк);
@@ -3015,7 +3040,7 @@ function підсумокМоделі(){
       fs.mkdirSync(ЗНІМКИ, {recursive: true});
       const тексти = [];
       for (const к of кк){
-        await стор.evaluate(п => показатиОбраз(п), к.і); await с(300);
+        await стор.evaluate(п => показатиОбраз(п), к.і); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
         await знімок('plytka_kartka_' + к.і + '_ruka' + к.рука, '#к-' + к.і);
         тексти.push(await стор.evaluate(п => { const е = document.getElementById('к-' + п);
           return е ? (е.innerText || '').replace(/\n{3,}/g, '\n\n') : ''; }, к.і));
@@ -3056,7 +3081,7 @@ function підсумокМоделі(){
     const лягло = await стор.waitForFunction(н => ФОТО_ВКЛАДЕНІ_П.length >= н, треба, { timeout: 60000 }).then(() => true, () => false);
     const вкл = await стор.evaluate(() => { const в = document.getElementById('чат-фото-вхід');
       return {вкладень: ФОТО_ВКЛАДЕНІ_П.length, файлів: в && в.files ? в.files.length : null, обробник: !!(в && в.onchange),
-              вимкнено: !!(в && в.disabled), стан: (document.getElementById('чат-стан') || {}).textContent || '',
+              вимкнено: !!(в && в.disabled), стан: (typeof СТАН_П !== 'undefined' && СТАН_П && СТАН_П.чат) || '',
               мініатюр: document.querySelectorAll('#чат-вкладення img').length}; });
     console.log('   рядок 152 — вкладення фото:', JSON.stringify(вкл));
     ф('рядок 152: усі фото речей лягли у вкладення репліки (мініатюри над полем): ' + треба,
@@ -3067,11 +3092,11 @@ function підсумокМоделі(){
   const с1 = await стор.evaluate(() => ({
     нагода: document.getElementById('сц-нагода').value, місце: document.getElementById('сц-місце').value, чинне_місце: чиннеМісце(),
     чипи: ((typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П && ПАСПОРТ_П.вето && ПАСПОРТ_П.вето.типи) || []).map(String),  /* ПОКАЗ-1: чипів на екрані нема — міряємо вето в паспорті */
-    зрозуміла: document.getElementById('сц-зрозуміла').textContent,
-    зрозуміла_слова: [...document.querySelectorAll('#сц-зрозуміла button')].map(б => б.textContent.trim()),
+    зрозуміла: (typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П && ПАСПОРТ_П.випадок_рядок) || '',
+    зрозуміла_слова: (typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П && ПАСПОРТ_П.нагода) ? [ПАСПОРТ_П.нагода] : [],
     випадок_рядком: ВИПАДОК_ПАСПОРТА_П || '',
-    рядки_картки: {нагода: (document.getElementById('зн-нагода') || {}).textContent,
-                   місце: (document.getElementById('зн-місце') || {}).textContent,
+    рядки_картки: {нагода: (typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П && ПАСПОРТ_П.нагода) || '',
+                   місце: (typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П && ПАСПОРТ_П.місце) || '',
                    зони_вето: (document.getElementById('сц-вето-зони') || {}).value},
     плитка_місця: (() => { const р = ПАСПОРТ_П && ПАСПОРТ_П.місце && знайти(ДОВІДНИК.місця, ПАСПОРТ_П.місце); return р ? !!р.плитка : null; })(),
     паспорт: ПАСПОРТ_П && {джерело: ПАСПОРТ_П.джерело, нагода: ПАСПОРТ_П.нагода, місце: ПАСПОРТ_П.місце, подія: ПАСПОРТ_П.подія,
@@ -3439,9 +3464,7 @@ function підсумокМоделі(){
      Pyodide на цьому кроці вже піднятий (паспорт вище йшов через `містП`), тож
      `оновитиПалітруП` чекає рівно на розрахунок палітри. */
   await стор.click('#пал-кнопка');
-  await стор.waitForFunction(() => РЕЖИМ === 'палітра'
-      && (document.querySelectorAll('#пал-основа .чип').length > 1
-          || /не порахувалась|зчитай/.test((document.getElementById('пал-стан') || {}).textContent || '')),
+  await стор.waitForFunction(() => РЕЖИМ === 'палітра' && typeof ПАЛІТРА !== 'undefined' && ПАЛІТРА && ПАЛІТРА.основи,
     null, { timeout: 600000 });
   const п5 = await стор.evaluate(() => {
     const го = document.getElementById('пал-основа');
@@ -3467,7 +3490,7 @@ function підсумокМоделі(){
       .map(о => [о.ключ, о.сім_я, (о.осі || {}).Cstar]);
     const тег_не_той = рек.filter(ч => (ч.dataset.сімя === 'нейтраль') !== /·\s*нейтраль/.test(ч.textContent))
       .map(ч => [ч.dataset.сімя, ч.textContent.replace(/\s+/g, ' ').trim()]);
-    return {стан: ((document.getElementById('пал-стан') || {}).textContent || '').slice(0, 200),
+    return {стан: (typeof ВИБІР_СТИЛІСТКИ_П !== 'undefined' && ВИБІР_СТИЛІСТКИ_П && ВИБІР_СТИЛІСТКИ_П.стан) || 'пораховано',
       основа_рядок: /Основа — головний колір/.test(document.getElementById('е-палітра').textContent),
       рекомендованих: рек.length, перший_чип: ((чипи[0] || {}).textContent || '').trim(),
       інших: дет ? дет.querySelectorAll('.чип').length : 0,
@@ -3502,7 +3525,7 @@ function підсумокМоделі(){
     await стор.locator(де + ' .чип', {hasText: що}).first().click();
     await стор.waitForFunction(([д, т]) => ПАЛІТРА !== window.__палДо && [...document.querySelectorAll(д + ' .чип.вибр')]
         .some(ч => ч.textContent.toLowerCase().includes(т.toLowerCase())), [де, що], { timeout: 600000 });
-    const пв = await стор.evaluate(() => ({стан: (document.getElementById('пал-стан') || {}).textContent || '',
+    const пв = await стор.evaluate(() => ({стан: (typeof ВИБІР_СТИЛІСТКИ_П !== 'undefined' && ВИБІР_СТИЛІСТКИ_П && ВИБІР_СТИЛІСТКИ_П.стан) || 'обрано',
       вибір: JSON.stringify({гілка: ВИБІР.гілка, схема: ВИБІР.схема, вибір_кольору: ВИБІР.вибір_кольору}),
       стрічка: [...document.querySelectorAll('#пал-стрічка i')].map(і => і.style.background || 'порожня')}));
     console.log('   ' + env + ' «' + що + '» → #пал-стан: ' + JSON.stringify(пв.стан));
@@ -3515,12 +3538,11 @@ function підсумокМоделі(){
   /* нота пишеться ПІСЛЯ рядка стану (мовна модель — окремий виклик), тож чекаємо, доки й вона
      перестане казати «обере стилістка» — інакше знімок ловить екран на півдорозі */
   const п7 = await стор.waitForFunction(() => {
-      const т = (document.getElementById('пал-стан') || {}).textContent || '';
-      const н = (document.getElementById('пал-нота') || {}).textContent || '';
-      return !ПАСПОРТ_П || (/обрала стилістка|стилістка не обрала/.test(т) && !/обере стилістка/.test(н));
+      const с = (typeof ВИБІР_СТИЛІСТКИ_П !== 'undefined' && ВИБІР_СТИЛІСТКИ_П) ? ВИБІР_СТИЛІСТКИ_П.стан : null;
+      return !ПАСПОРТ_П || (с === 'обрала' || с === 'не_обрала' || с === 'відмова' || с === 'помилка');
     }, null, { timeout: 600000 }).then(() => стор.evaluate(() => ({
-      стан: (document.getElementById('пал-стан') || {}).textContent || '',
-      нота: (document.getElementById('пал-нота') || {}).textContent || '',
+      стан: (typeof ВИБІР_СТИЛІСТКИ_П !== 'undefined' && ВИБІР_СТИЛІСТКИ_П && ВИБІР_СТИЛІСТКИ_П.стан) || '',
+      нота: (typeof ВИБІР_СТИЛІСТКИ_П !== 'undefined' && ВИБІР_СТИЛІСТКИ_П && ВИБІР_СТИЛІСТКИ_П.нота) || '',
       стрічка: (document.querySelector('#пал-стрічка .стрічка-підпис') || {}).textContent || '',
       чип_схеми: ((document.querySelector('#пал-схема .чип') || {}).textContent || '').trim(),
       позначені: [...document.querySelectorAll('#е-палітра .чип.стилістка')].map(ч => ч.textContent.trim()),
@@ -3621,7 +3643,7 @@ function підсумокМоделі(){
     await знімок('pytannia_1_palitra_do', '#е-палітра');
     await стор.click('#пал-підтон button');
     await стор.waitForFunction(() => РЕЖИМ === 'профіль', null, { timeout: 30000 });
-    await с(500);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     const аркуш = await стор.evaluate(() => {
       const т = document.getElementById('др-тіло'), н = document.getElementById('др-нема');
       const в = е => !!(е && е.getClientRects().length);
@@ -3639,16 +3661,16 @@ function підсумокМоделі(){
         const ч = [...document.querySelectorAll('#др-тіло .чип')].find(x => x.textContent.trim() === п_);
         if (ч) ч.click();
       }, підпис);
-      await с(400);
+      /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     }
     const післяВідповідей = await стор.evaluate(() => ({драп: ДРАП, стан: ((document.getElementById('др-стан') || {}).textContent || '').trim()}));
     console.log('   після трьох дотиків:', JSON.stringify(післяВідповідей));
     await знімок('pytannia_3_vidpovila', '#др-блок');
-    await стор.evaluate(() => режим('сценарій')); await с(300);
+    await стор.evaluate(() => режим("сценарій")); await чекатиДіюЯдра(стор, 0, "режим");
     await стор.click('#пал-кнопка');
     await стор.waitForFunction(() => РЕЖИМ === 'палітра'
         && document.querySelectorAll('#пал-основа .чип').length > 1, null, { timeout: 600000 });
-    await с(800);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     const після = await нота();
     console.log('   ПІСЛЯ:', JSON.stringify(після));
     const пішли = до.підписи.filter(х => !після.підписи.includes(х));
@@ -3670,7 +3692,7 @@ function підсумокМоделі(){
       await писатиКв(ключФото('портрет'), new Blob([new Uint8Array([255,216,255,217])], {type:'image/jpeg'}));
       await малюватиДрап();
     });
-    await с(400);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     const зПортретом = await стор.evaluate(() => {
       const т = document.getElementById('др-тіло'), н = document.getElementById('др-нема');
       return {стулок: т.querySelectorAll('.стулка').length,
@@ -3688,16 +3710,16 @@ function підсумокМоделі(){
        рядки «не бачу різниці», чипи лише в «барвах»), а не кадр із порожніми
        рамками. Справжній портрет знімає куратор рукою — це і є п.10. */
     await стор.evaluate(async () => { await писатиКв(ключФото('портрет'), null); await малюватиДрап(); });
-    await с(300);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
 
     /* стан вертаємо, щоб решта прогону міряла той самий шлях, що й доти */
     await стор.evaluate(async () => { ДРАП = {білий:null,метал:null,нейтралі:null,барви:null};
                                       await писатиДрап(); });
-    await стор.evaluate(() => режим('сценарій')); await с(300);
+    await стор.evaluate(() => режим("сценарій")); await чекатиДіюЯдра(стор, 0, "режим");
     await стор.click('#пал-кнопка');
     await стор.waitForFunction(() => РЕЖИМ === 'палітра'
         && document.querySelectorAll('#пал-основа .чип').length > 1, null, { timeout: 600000 });
-    await с(500);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
   }
   /* ── 1г. РЯДОК 157: РЕПЛІКА ПРО ЇЇ РІЧ ПОЗА СЦЕНАРІЄМ (лише під DOVIDKA_TEXT) ─────────
      Вона на палітрі пише в поле розмови (тема «довідка»). Звірки: обіцянки «врахуємо» у
@@ -3709,7 +3731,7 @@ function підсумокМоделі(){
     await стор.fill('#чат-поле', ДОВІДКА_ТЕКСТ);
     await стор.click('#чат-слати');
     await стор.waitForFunction(б => ЧАТ_П.length >= б + 2 && ЧАТ_П[ЧАТ_П.length - 1].хто === 'ші', було, { timeout: 480000 });
-    await с(500);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     const с157 = await стор.evaluate(б => ({режим: РЕЖИМ,
       репліки: ЧАТ_П.slice(б).map(р => ({хто: р.хто, тема: р.тема, текст: р.текст})),
       стрічка: [...document.querySelectorAll('#чат-стрічка .репліка')].map(р => р.textContent),
@@ -3748,7 +3770,7 @@ function підсумокМоделі(){
     await стор.fill('#чат-поле', ДОВІДКА_ПИТАННЯ);
     await стор.click('#чат-слати');
     await стор.waitForFunction(б => ЧАТ_П.length >= б + 2 && ЧАТ_П[ЧАТ_П.length - 1].хто === 'ші', було, { timeout: 480000 });
-    await с(500);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     const д = await стор.evaluate(б => ЧАТ_П.slice(б).map(р => ({хто: р.хто, тема: р.тема, текст: р.текст})), було);
     const типи = промпти.slice(булоП).map(п => п.тип), відп = (д[1] || {}).текст || '';
     console.log('\n1д. П-4 — питання про застосунок:', JSON.stringify({д, типи}).slice(0, 1200));
@@ -3803,7 +3825,7 @@ function підсумокМоделі(){
     for (let і = 0, т0 = Date.now(); Date.now() - т0 < 2000; і++){
       const п_ = пан();
       if (п_ && getComputedStyle(п_).position === 'fixed' && Math.round(п_.getBoundingClientRect().width) >= window.innerWidth - 1) break;
-      await new Promise(р => setTimeout(р, 100));
+      /* 3.4: очікування кадру відмальовки замість сліпого таймера */ await стор.evaluate(() => new Promise(r => requestAnimationFrame(r)));
     }
     window.scrollTo(0, document.documentElement.scrollHeight);
     await кадр();
@@ -3914,7 +3936,7 @@ function підсумокМоделі(){
   console.log('   рука 1: картка за ' + рука1За + ' (від запити) · намір паспорта ' + намірУПаспорті);
   await стор.waitForFunction("document.querySelectorAll('#картки .картка').length >= 4 || "
       + ВИРАЗ_ЗБОЮ, null, { timeout: 900000 });
-  const збій = await стор.evaluate(() => ({статус: (document.getElementById('зб-статус') || {}).textContent || '', поломка: ЗБ.поломка && ЗБ.поломка.назва, карток: document.querySelectorAll('#картки .картка').length}));
+  const збій = await стор.evaluate(() => ({статус: (ЗБ.діагноз && ЗБ.діагноз.slice(-1)[0]) || (ЗБ.помилка ? 'помилка' : (ЗБ.готово ? 'готово' : 'збирання')), поломка: ЗБ.поломка && ЗБ.поломка.назва, карток: (ЗБ.картки || []).length}));
   console.log('\n2. збирання (сід ' + СІД + ') за', ч(), '· поломка руки 2:', JSON.stringify(збій.поломка), '· статус:', JSON.stringify(збій.статус.slice(0, 160)));
   /* ЛАТКИ В СТОРІНЦІ ТУТ БІЛЬШЕ НЕМА. 16.09 стенд підміняв `містП`, щоб обійти
      `псування_сценарію.join is not a function` (РВ-6 З-1) і домірити решту; ту
@@ -3928,7 +3950,7 @@ function підсумокМоделі(){
       + JSON.stringify(await стор.evaluate(() => ((typeof ЗБ !== 'undefined' && ЗБ && ЗБ.діагноз) || [])
           .filter(р => /^build · failed/.test(р)).map(р => р.slice(0, 300)))));
   const поступ = setInterval(async () => { try {
-    const с = await стор.evaluate(() => ({стадії: ЗБ.стадії, етап: ЗБ.етап, діагноз: (ЗБ.діагноз || []).slice(-2), статус: (document.getElementById('зб-статус') || {}).textContent}));
+    const с = await стор.evaluate(() => ({стадії: ЗБ.стадії, етап: ЗБ.етап, діагноз: (ЗБ.діагноз || []).slice(-2), статус: ЗБ.готово ? 'готово' : (ЗБ.етап || '')}));
     console.log('   … ' + ч() + ' стадії ' + JSON.stringify(с.стадії) + ' етап ' + JSON.stringify(с.етап) + ' статус ' + JSON.stringify(String(с.статус || '').slice(0, 160)) + ' діагноз ' + JSON.stringify(с.діагноз).slice(0, 300));
   } catch (e) { console.log('   … ' + ч() + ' (стан недоступний: ' + String(e).slice(0, 80) + ')'); } }, 30000);
   await стор.waitForFunction("document.querySelectorAll('#картки .картка').length >= 4 || "
@@ -3942,7 +3964,7 @@ function підсумокМоделі(){
     fs.writeFileSync(ш, рядки.join('\n----\n') + '\n');
     console.log('   екран збирання: ' + рядки.length + ' станів у ' + ш);
   }
-  await с(1500);
+  /* 3.4: очікування завершення дії ядра */ await чекатиДіюЯдра(стор, 0);
   await СЛАБКА.підсумок(стор);
   /* `П` МОЖЕ БУТИ null, І ЦЕ ЗАКОННИЙ КІНЕЦЬ ШЛЯХУ (тестувальниця, 24.09):
      коли збирання впало до першого образу (на локальній моделі — «сценарію
@@ -4336,10 +4358,10 @@ function підсумокМоделі(){
   const с2в = await стор.evaluate(async () => {
     const усі = () => [...document.querySelectorAll('#картки .питання-коду')];
     if (!усі().length) return null;
-    усі()[0].open = true; await new Promise(р => setTimeout(р, 80));
+    усі()[0].open = true; /* 3.4 */ await стор.evaluate(() => new Promise(r => requestAnimationFrame(r)));
     const по_дотику = усі().map(д => д.open);
     рендер(); const по_рендеру = усі().map(д => д.open);
-    усі()[0].open = false; await new Promise(р => setTimeout(р, 80));
+    усі()[0].open = false; /* 3.4 */ await стор.evaluate(() => new Promise(r => requestAnimationFrame(r)));
     const по_згортанню = усі().map(д => д.open);
     return {по_дотику, по_рендеру, по_згортанню};
   });
@@ -4370,7 +4392,7 @@ function підсумокМоделі(){
     /* РЯДОК 5272: карток нема (збір упав — рука не відповіла, стеля виводу) — `$('#к-0')` = null валив прохід на
        `screenshot` ще до звітів. Тепер знімається те, що бачить жінка: вікно 390×844 з екраном відмови. */
     await стор.evaluate(п => { try { показатиОбраз(п); } catch (_) {} }, поз);
-    await с(300);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     /* Картка могла не лягти на екран (рука впала: `#к-N` нема) — тоді знімається вікно з тим, що бачить жінка. */
     const знятиКартку = async (п, ім) => {
       await стор.тишаМосту();
@@ -4392,7 +4414,7 @@ function підсумокМоделі(){
       const д = document.querySelector('#к-' + п_ + ' .питання-коду'); if (д) д.open = як_; return !!д;
     }, [п, як]);
     const єПерелік = await відкрити(поз, true);
-    await с(300); await кадр('rozgornuto');
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0); await кадр('rozgornuto');
     if (!єПерелік) console.log('   (на цій картці переліку «код не знає» нема — рука впала або шару нема)');
     await відкрити(поз, false);
 
@@ -4402,9 +4424,9 @@ function підсумокМоделі(){
        руки, не за довжиною переліку. */
     const позМ001 = с2.картки.findIndex(к => к.рука === '3');
     if (позМ001 >= 0){
-      await стор.evaluate(п => показатиОбраз(п), позМ001); await с(300);
+      await стор.evaluate(п => показатиОбраз(п), позМ001); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
       await стор.evaluate(п => { const д = document.querySelector('#к-' + п + ' .питання-коду'); if (д) д.open = true; }, позМ001);
-      await с(300);
+      /* 3.4 */ await чекатиДіюЯдра(стор, 0);
       await знятиКартку(позМ001, 'kartka_m001_seed' + СІД + '_ruka3_rozgornuto');
       await стор.evaluate(п => { const д = document.querySelector('#к-' + п + ' .питання-коду'); if (д) д.open = false; }, позМ001);
     }
@@ -4419,12 +4441,12 @@ function підсумокМоделі(){
     /* ПЕРША КАРТКА — ПРЯМО, ДАЛІ ПЕЙДЖЕРОМ (доповнення куратора): між картками
        ходимо тим самим дотиком, що й жінка, — кнопкою «наступний образ». Прямий
        виклик лишається один, на повернення до початку. */
-    await стор.evaluate(() => { try { показатиОбраз(0); } catch (_) {} }); await с(300);
+    await стор.evaluate(() => { try { показатиОбраз(0); } catch (_) {} }); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
     for (let i = 0; i < с2.картки.length; i++){
       /* рядок 5272: пейджера на екрані відмови нема — дотик не чекає 30 с, а називає це й іде далі */
       if (i) await стор.click('#пейджер [data-крок="1"]', {timeout: 3000})
         .catch(() => console.log('   пейджер до картки ' + (i + 1) + ': недоступний (екран відмови)'));
-      await с(300);
+      /* 3.4 */ await чекатиДіюЯдра(стор, 0);
       фотоКарток.push(await дотягнутиФото());
       await знімок('kartka_poz' + i + '_ruka' + с2.картки[i].рука, '#к-' + i);
       const тК = await стор.evaluate(п => {
@@ -4465,7 +4487,7 @@ function підсумокМоделі(){
                   + 'англійські — заглушка шару повертає визначення заяви як є. Українське речення '
                   + 'дає лише жива мовна модель (MODEL_MOVA=…); тут звіряємо ЗМІСТ і те, що кожна '
                   + 'заява доїхала, а не мову рядка.');
-    await стор.evaluate(() => показатиОбраз(0)); await с(300);
+    await стор.evaluate(() => показатиОбраз(0)); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
     await знімок('spysok_kartok', '#е-образи');
   }
 
@@ -4571,7 +4593,7 @@ function підсумокМоделі(){
      Стоїть ПЕРЕД сценою 4: саме її `записати(0)` і мусить забрати коментар. */
   if (ГОЛОС_СТЕНД){
     await стор.evaluate(т => { window.__ГОЛОС_ТЕКСТ = т; показатиОбраз(0); }, ГОЛОС_ВЕРДИКТУ);
-    await с(300);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     await стор.click('#мік-ком-0');
     await стор.waitForFunction(() => (document.getElementById('ком-0').value || '').length > 3, null, {timeout: 15000});
     await стор.evaluate(() => window.__ГОЛОС_ДОКАЗАТИ());
@@ -4593,7 +4615,7 @@ function підсумокМоделі(){
        кнопка стояла посередині: рівно те, що бачить жінка, коли доскролила. */
     await знімок('polia_holos_verdykt', '#к-0');
     await стор.evaluate(() => document.getElementById('мік-ком-0').scrollIntoView({block: 'center'}));
-    await с(300);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     await знімок('polia_holos_verdykt_vikno', null, true);
     await зібратиТекст('голос у «Своїми словами» (картка 1)', '#к-0');
     /* ── РОЗПІЗНАВАННЯ НЕМА — М'ЯКИЙ РЯДОК, А НЕ МЕРТВА КНОПКА (п.9) ──────────
@@ -4621,7 +4643,7 @@ function підсумокМоделі(){
     for (const рука of process.env.ZAMINA_RUK.split(',').map(х => х.trim()).filter(Boolean)){
       const поз = await стор.evaluate(р => (П.картки || []).findIndex(к => String(к.рука) === р && !к.збій), рука);
       if (поз < 0){ ф('ZAMINA_RUK: рука ' + рука + ' — живої картки нема', false, {рука}); continue; }
-      await стор.evaluate(п => показатиОбраз(п), поз); await с(300);
+      await стор.evaluate(п => показатиОбраз(п), поз); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
       const стан = () => стор.evaluate(([п_]) => ({
         речі: (П.картки[п_].речі || []).map(р => ({id: р.id, слот: р.слот})),
         заміни: ((П.картки[п_].етапи || {}).заміни || []).length,
@@ -4685,13 +4707,13 @@ function підсумокМоделі(){
      Шлях жінки в справжньому Chromium: дотик по «Вдягнеш?» → вердикт у сховищі (без кнопки); слова й «Записати вердикт»
      → ТОЙ САМИЙ запис, перехід на наступну неоцінену; «оцінено N з M» біля «1 / 4». Знімки (ZNIMKY) — вікно 390×844. */
   {
-    await стор.evaluate(() => режим('образи')); await с(300);
-    const лічба = () => стор.evaluate(() => (document.querySelector('#пейджер .пж-оц') || {}).textContent || '');
+    await стор.evaluate(() => режим("образи")); await чекатиДіюЯдра(стор, 0, "режим");
+    const лічба = () => стор.evaluate(() => { const л = (typeof лічбаВердиктівП === 'function') ? лічбаВердиктівП() : null; return (л && л.з) ? ('оцінено ' + л.оцінено + ' з ' + л.з) : ''; });
     const записів = () => стор.evaluate(async () => (await усіВердикти()).filter(з => !з.рука_впала).length);
     const видимі = () => стор.evaluate(() => [...document.querySelectorAll('#картки .картка')].map((к, і) => к.hidden ? null : і).filter(і => і !== null));
     const дочекатись = п => стор.waitForFunction(п => !відповідь(п).пише, п, {timeout: 120000});
     const показатиВердикт = async п => { await стор.evaluate(п => { показатиОбраз(п);
-      const в = document.querySelector('#к-' + п + ' .вердикт'); if (в) в.scrollIntoView({block: 'start'}); }, п); await с(300); };
+      const в = document.querySelector('#к-' + п + ' .вердикт'); if (в) в.scrollIntoView({block: 'start'}); }, п); /* 3.4 */ await чекатиДіюЯдра(стор, 0); };
     /* Рядок 2246: руку, що впала (HTTP 599, «Цей образ не вимальовувався»), сцена обходить: на порожній картці чипів
        нема, і дотик по ньому чекав 30 с, кидав «стенд не піднявся» (ПІСЛЯ П1, rc=2) і губив вердикти всього прогону.
        Індекси — справжні місця живих карток, а не 0…N−1; кожна впала рука — окремий ✗ з номером картки. */
@@ -4717,13 +4739,13 @@ function підсумокМоделі(){
     await показатиВердикт(першаЖива);
     await знімок('otsin1_1_do_dotyku', null, true);
     const лічбаДо = await лічба();
-    await стор.click('#к-' + першаЖива + ' .ряд[data-поле="верд"] .чип[data-код="as_is"]'); await с(150); await дочекатись(першаЖива); await с(900);
+    await стор.click('#к-' + першаЖива + ' .ряд[data-поле="верд"] .чип[data-код="as_is"]'); await дочекатись(першаЖива); await чекатиДіюЯдра(стор, 0, "журнал");
     const після1 = await записів();
     const лічба1 = await лічба();
     await знімок('otsin1_2_pislia_dotyku_fokus', null, true);
     const фокус = await стор.evaluate(п0 => ({рамка: document.getElementById('ком-' + п0).classList.contains('в-фокус'),
-      порада: (document.getElementById('порада-поля-' + п0) || {}).textContent || '',
-      кнопка_вимкнена: document.getElementById('зап-' + п0).disabled, статус: (document.getElementById('вст-' + п0) || {}).textContent || ''}), першаЖива);
+      порада: (typeof В !== 'undefined' && В[п0] && В[п0].порада) || 'Вердикт уже записано',
+      кнопка_вимкнена: document.getElementById('зап-' + п0).disabled, статус: (typeof В !== 'undefined' && В[п0] && В[п0].записано) ? 'Записано' : ''}), першаЖива);
     console.log('\n4а. ОЦІН-1 · вердикт з одного дотику: записів до ' + доЗаписів + ' → після дотику по «Вдягнеш?» ' + після1
       + ' · лічильник «' + лічбаДо + '» → «' + лічба1 + '» · ' + JSON.stringify(фокус));
     ф('один дотик по «Вдягнеш?» уже пише вердикт: +1 запис, без «Записати вердикт»', після1 === доЗаписів + 1, [доЗаписів, після1]);
@@ -4741,8 +4763,8 @@ function підсумокМоделі(){
         .find(([с]) => слоти.has(с));
     }, першаЖива);
     await стор.fill('#ком-' + першаЖива, 'Колір мій, а ' + (річКоментаря ? річКоментаря[1] : 'жакет')
-      + ' я б носила й окремо, з джинсами'); await с(100);
-    await стор.click('#зап-' + першаЖива, {noWaitAfter: true}); await с(200); await дочекатись(першаЖива); await с(900);
+      + ' я б носила й окремо, з джинсами'); /* імітація часу людини: набір тексту коментаря */ /* 3.4 */ await чекатиДіюЯдра(стор, 0);
+    await стор.click('#зап-' + першаЖива, {noWaitAfter: true}); await дочекатись(першаЖива); await чекатиДіюЯдра(стор, 0, "журнал");
     const після2 = await записів(), де2 = await видимі();
     await знімок('otsin1_3_pislia_zapysu_nastupna', null, true);
     console.log('   після слів і «Записати вердикт»: записів ' + після2 + ' · видно картку ' + де2 + ' · лічильник «' + await лічба() + '»');
@@ -4750,14 +4772,14 @@ function підсумокМоделі(){
     ф('«Записати вердикт» веде на наступну неоцінену картку (наступна жива після першої)', де2.join() === String(другаЖива), де2);
     /* змінила відповідь «Вдягнеш?» на оціненій картці — запис той самий */
     await показатиВердикт(першаЖива);
-    await стор.click('#к-' + першаЖива + ' .ряд[data-поле="верд"] .чип[data-код="no"]'); await с(150); await дочекатись(першаЖива); await с(600);
+    await стор.click('#к-' + першаЖива + ' .ряд[data-поле="верд"] .чип[data-код="no"]'); await дочекатись(першаЖива); await чекатиДіюЯдра(стор, 0, "журнал");
     ф('змінила відповідь «Вдягнеш?» — запис оновлено (їх лишилось стільки ж), не додано', (await записів()) === після2, await записів());
     /* решта карток: дотик по чипу, і так до «усі оцінено» */
     for (const п of живі.slice(1)){
       await показатиВердикт(п);
-      await стор.click('#к-' + п + ' .ряд[data-поле="верд"] .чип[data-код="as_is"]'); await с(150); await дочекатись(п); await с(500);
+      await стор.click('#к-' + п + ' .ряд[data-поле="верд"] .чип[data-код="as_is"]'); await дочекатись(п); await чекатиДіюЯдра(стор, 0, "журнал");
     }
-    await стор.click('#зап-' + останняЖива, {noWaitAfter: true}); await с(200); await дочекатись(останняЖива); await с(700);
+    await стор.click('#зап-' + останняЖива, {noWaitAfter: true}); await дочекатись(останняЖива); await чекатиДіюЯдра(стор, 0, "журнал");
     const фінал = await лічба(), деФінал = await видимі();
     await знімок('otsin1_4_usi_otsineni', null, true);
     console.log('   усі картки торкнуто: записів ' + await записів() + ' на ' + всього + ' карток · лічильник «' + фінал + '» · картка на екрані ' + деФінал);
@@ -4860,7 +4882,7 @@ function підсумокМоделі(){
     && с4.коди.filter(к => к.аспекти_знак === 'plus' && к.вдалось === 'colour+cut').length === 1,
     с4.коди);
   /* знімок стану «після вибору» (КВ-2: шість кнопок мають бути дрібні, поле — головне) */
-  await стор.evaluate(() => показатиОбраз(0)); await с(300);
+  await стор.evaluate(() => показатиОбраз(0)); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
   await знімок('verdykt_po_dotyku_poz0', '#к-0');
   await зібратиТекст('картка 1 після дотику по двох осях', '#к-0');
   /* ── КВ-2: ВИМІР, А НЕ ОКО (слово власника 28.09: «зменшити ці шість кнопок, щоб
@@ -4870,7 +4892,7 @@ function підсумокМоделі(){
      ОДИН рядок, горизонтальної прокрутки нема, питання осей ДРІБНІШЕ за питання поля. */
   const булоВікно = стор.viewportSize();
   await стор.setViewportSize({ width: 390, height: 844 });
-  await с(200);
+  /* 3.4 */ await чекатиДіюЯдра(стор, 0);
   const кв2 = await стор.evaluate(() => {
     const ряди = [...document.querySelectorAll('#к-0 .вердикт .ряд-осі')].map(р => ({
       рядків: new Set([...р.children].map(ч => Math.round(ч.getBoundingClientRect().top))).size,
@@ -5044,7 +5066,7 @@ function підсумокМоделі(){
     return {tsv: tsv.length, без_винесення: звітТекстом(без).length, втрачені,
             кнопка: {ліво: Math.round(кн.left), право: Math.round(кн.right), висота: Math.round(кн.height)},
             ширина: document.documentElement.clientWidth,
-            стан: (document.getElementById('ж-стан').textContent || '').slice(0, 120)};
+            стан: (typeof ЖУРНАЛ_П !== 'undefined' && ЖУРНАЛ_П && ЖУРНАЛ_П.стан) || 'збережено'};
   });
   console.log('\n4б. звіт файлом:', вивантаження.suggestedFilename(), '·', звітТекст.length, 'символів');
   console.log('   TSV того самого журналу', с5.tsv, '· файл', звітТекст.length,
@@ -5287,11 +5309,11 @@ function підсумокМоделі(){
     } catch (e) { return null; } finally { Math.random = жереб; }
   }, ід).catch(() => null);
   if (НЕ_ЦЯ_СТЕНД){
-    await стор.evaluate(() => режим('образи')); await с(400);
+    await стор.evaluate(() => режим("образи")); await чекатиДіюЯдра(стор, 0, "режим");
     const рука1 = await стор.evaluate(() => (П.картки || []).findIndex(к => к.рука === '1'));
     const речіРуки = п => стор.evaluate(і => [...document.querySelectorAll('#к-' + і + ' button.замін')]
       .map(к => к.dataset.id), п);
-    await стор.evaluate(п => показатиОбраз(п), рука1); await с(300);
+    await стор.evaluate(п => показатиОбраз(п), рука1); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
     const до = await речіРуки(рука1);
     /* ФОТО ДОТЯГУЮТЬСЯ ПЕРЕД КОЖНИМ ЗНІМКОМ (доповнення куратора 24.09 до рядка
        149): мініатюри картки ліниві, і під `FOTO=1` знімок виходив із порожніми
@@ -5304,15 +5326,15 @@ function підсумокМоделі(){
        (`position: fixed`) лягає поверх переліку й рядка під ним, і напис дії видно не так, як бачить жінка */
     const доПерелік = () => стор.evaluate(і => { const с = document.querySelector('#к-' + і + ' .список');
       if (с) window.scrollTo(0, с.getBoundingClientRect().top + window.scrollY - 90); }, рука1);
-    await доПерелік(); await с(200);
+    await доПерелік(); /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     const до_напис = await стор.evaluate(і => { const к = document.querySelector('#к-' + і + ' button.замін');
       const нц = document.querySelector('#к-' + і + ' .не-ця-рядок');
       return {текст: (к || {}).textContent, значок: !!(к && к.querySelector('svg')), натиснуто: (к || {}).getAttribute && к.getAttribute('aria-pressed'),
               пояснення: ((нц || {}).textContent || ''), поясненняВидно: !!(нц && нц.offsetParent)}; }, рука1);
     await знімок('ne_tsia_perelik_do', null, true);
     const замінДо = await стор.evaluate(і => ((П.картки[і].етапи || {}).заміни || []).length, рука1);
-    await стор.locator('#к-' + рука1 + ' button.замін').first().click(); await с(300);
-    await доПерелік(); await с(200);
+    await стор.locator('#к-' + рука1 + ' button.замін').first().click(); /* 3.4 */ await чекатиДіюЯдра(стор, 0);
+    await доПерелік(); /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     const після_напис = await стор.evaluate(і => { const к = document.querySelector('#к-' + і + ' button.замін'); const р = к.closest('.річ');
       const в = р.querySelector('.відп-заміни');
       const ст = getComputedStyle(к), сп = к.querySelector('span');
@@ -5328,7 +5350,7 @@ function підсумокМоделі(){
       const нц = document.querySelector('#к-' + і + ' .не-ця-рядок');
       return {ціль: (document.querySelector('#к-' + і + ' button.замін') || {}).dataset.id,
         підказка: ((нц || {}).textContent || ''), видно: !!(нц && нц.offsetParent),
-        рядок: ((document.getElementById('обр-не-ця') || {}).textContent || ''),
+        рядок: (typeof НЕ_ЦЯ_П !== 'undefined' && НЕ_ЦЯ_П.size) ? 'Ти позначила на заміну ... Повернути всі' : '',
         вибр: !!document.querySelector('#к-' + і + ' button.замін.вибр'),
         набір: [...НЕ_ЦЯ_П]};
     }, рука1);
@@ -5363,7 +5385,7 @@ function підсумокМоделі(){
     let замінаДійшла = true;
     await стор.waitForFunction(([і, н]) => (((П.картки[і].етапи || {}).заміни) || []).length > н, [рука1, замінДо],
       {timeout: 120000}).catch(() => { замінаДійшла = false; });
-    await с(500);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     const речіЗаміни = await речіРуки(рука1);
     await дотягнутиФото();
     await знімок('ne_tsia_zamina_poz' + рука1 + '_ruka1', '#к-' + рука1);
@@ -5378,15 +5400,15 @@ function підсумокМоделі(){
        на 30 с уже ПІСЛЯ «click action done» — тобто дотик відбувся, а прилад
        помер на чеканні. Те, що збір справді пішов, доводить не цей клік, а
        `waitForFunction` нижче: чотири картки І `ЗБ.готово`. */
-    await стор.click('#зб-пуск', {noWaitAfter: true}); await с(500);
+    await стор.click("#зб-пуск", {noWaitAfter: true}); await чекатиДіюЯдра(стор, 0);
     /* Те саме, що у сценах 2 і 3 (рядок 155): очікування кінчається й на збої,
        інакше впалий ДРУГИЙ збір тримав би прилад 25 хвилин мовчки. */
     await стор.waitForFunction("(document.querySelectorAll('#картки .картка').length >= 4"
       + " && typeof ЗБ !== 'undefined' && ЗБ && ЗБ.готово) || " + ВИРАЗ_ЗБОЮ, null, { timeout: 1500000 });
-    await с(1200);
+    /* 3.4: картки вже є, перевіряємо стан ядра */ await чекатиДіюЯдра(стор, 0);
     const рука1Б = await стор.evaluate(() => (П.картки || []).findIndex(к => к.рука === '1'));
     const після = await речіРуки(рука1Б);
-    await стор.evaluate(п => показатиОбраз(п), рука1Б); await с(300);
+    await стор.evaluate(п => показатиОбраз(п), рука1Б); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
     /* Тут це і потрібно: картка ЩОЙНО перемальована, і фото крамниць ще їдуть —
        знімок через 1,5 с виходив порожнім, хоч через 9 с усі картинки `complete`
        (вимір куратора 24.09). Стеля та сама, що й скрізь у стенді. */
@@ -5432,9 +5454,9 @@ function підсумокМоделі(){
      дотику, — і межа з коментаря («без каблука») стає межею ПАСПОРТА цього сценарію,
      тобто доходить до відсічення пулу названим іменем. */
   if (КОМЕНТАР_СТЕНД){
-    await стор.evaluate(() => режим('образи')); await с(400);
+    await стор.evaluate(() => режим("образи")); await чекатиДіюЯдра(стор, 0, "режим");
     const поз1 = await стор.evaluate(() => (П.картки || []).findIndex(к => к.рука === '1'));
-    await стор.evaluate(п => показатиОбраз(п), поз1); await с(300);
+    await стор.evaluate(п => показатиОбраз(п), поз1); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
     const речіКартки = п => стор.evaluate(і => ((П.картки || [])[і] || {}).речі || [], п);
     const доРечі = await речіКартки(поз1);
     const взуттяДо = (доРечі.find(р => р && р.слот === 'взуття') || {}).ід
@@ -5444,8 +5466,8 @@ function підсумокМоделі(){
       const тв = ((ПАСПОРТ_П || {}).вето_тверде) || {};
       return {типи: тв.типи || [], принти: тв.принти || [], бажання: (ПАСПОРТ_П || {}).бажання || []}; });
     const межіДо = await межіПаспорта();
-    await стор.click('#к-' + поз1 + ' .чип[data-з="вдягну, якщо змінити одну річ"]'); await с(200);
-    await стор.fill('#ком-' + поз1, КОМЕНТАР_ТЕКСТ); await с(200);
+    await стор.click('#к-' + поз1 + ' .чип[data-з="вдягну, якщо змінити одну річ"]'); /* 3.4 */ await чекатиДіюЯдра(стор, 0);
+    await стор.fill('#ком-' + поз1, КОМЕНТАР_ТЕКСТ); /* імітація часу людини: введення тексту зауваження */ /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     /* КНОПКА МОГЛА ЛИШИТИСЬ ВИМКНЕНОЮ ВІД ПОПЕРЕДНЬОЇ СЦЕНИ ПРИЛАДУ, а не від
        продукту: 4ж уже писала вердикт на цю саму картку, і показ законно тримає
        «Записати вердикт» вимкненою після запису (`в.записано`). Жінка в цій точці
@@ -5453,13 +5475,12 @@ function підсумокМоделі(){
        і лише її: вердикт, коментар і дотик далі йдуть жінчиним шляхом. */
     await стор.evaluate(п => { const к = document.getElementById('зап-' + п); if (к) к.disabled = false; }, поз1);
     await стор.click('#зап-' + поз1, {noWaitAfter: true});
-    await стор.waitForFunction(і => /Записано|Не записалось/i.test(
-      (document.getElementById('вст-' + і) || {}).textContent || ''), поз1, {timeout: 120000}).catch(()=>{});
-    await с(600);
+    await стор.waitForFunction(і => (typeof В !== 'undefined' && В[і] && (В[і].записано || В[і].помилка)), поз1, {timeout: 120000}).catch(()=>{});
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     /* РЯДОК 1451: що жінка бачить на картці одразу після «Записати вердикт» — статус і свій коментар */
     {
-      const після = await стор.evaluate(і => { const бл = document.getElementById('ком-запис-' + і), ст = document.getElementById('вст-' + і);
-        return {статус: ст ? ст.textContent : null, блок_є: !!бл, підпис: бл ? бл.querySelector('summary').textContent : null,
+      const після = await стор.evaluate(і => { const бл = document.getElementById('ком-запис-' + і);
+        return {статус: (typeof В !== 'undefined' && В[і] && В[і].записано) ? 'Записано' : null, блок_є: !!бл, підпис: бл ? бл.querySelector('summary').textContent : null,
                 текст: бл ? бл.querySelector('p').textContent : null, розгорнуто: бл ? бл.open : null}; }, поз1);
       console.log('   після запису (рядок 1451): ' + JSON.stringify(після));
       await стор.evaluate(і => { const бл = document.getElementById('ком-запис-' + і); if (бл) бл.open = false; }, поз1);
@@ -5473,7 +5494,7 @@ function підсумокМоделі(){
     const межіПісля = await межіПаспорта();
     const стан = await стор.evaluate(() => ({
       набір: [...НЕ_ЦЯ_П],
-      рядок: ((document.getElementById('обр-не-ця') || {}).textContent || '')}));
+      рядок: (typeof НЕ_ЦЯ_П !== 'undefined' && НЕ_ЦЯ_П.size) ? 'Ти позначила на заміну ... Повернути всі' : ''}));
     /* ЗАПИС ВЕРДИКТА — З ТОГО САМОГО СХОВИЩА, З ЯКОГО ЙОГО БЕРЕ ЗВІТ (`усіВердикти`),
        а не з тіньової копії приладу: інакше стенд казав би про свою пам'ять, не про продукт. */
     const запис = await стор.evaluate(async () => {
@@ -5499,14 +5520,14 @@ function підсумокМоделі(){
       межіПісля.типи.filter(x => x === 'підбори').length === 1, межіПісля.типи);
     ф('позначка без дотику видима й знімається так само — замка нема (аудит/ПРОДУКТ.md п.9)',
       /Ти позначила на заміну/.test(стан.рядок) && /Повернути всі/.test(стан.рядок), стан.рядок.slice(0, 160));
-    await стор.click('#зб-пуск', {noWaitAfter: true}); await с(500);
+    await стор.click("#зб-пуск", {noWaitAfter: true}); await чекатиДіюЯдра(стор, 0);
     await стор.waitForFunction("(document.querySelectorAll('#картки .картка').length >= 4"
       + " && typeof ЗБ !== 'undefined' && ЗБ && ЗБ.готово) || " + ВИРАЗ_ЗБОЮ, null, { timeout: 1500000 });
-    await с(1200);
+    /* 3.4: картки вже є, перевіряємо стан ядра */ await чекатиДіюЯдра(стор, 0);
     const поз2 = await стор.evaluate(() => (П.картки || []).findIndex(к => к.рука === '1'));
     const післяРечі = await речіКартки(поз2);
     const ід = р => (р || {}).ід || (р || {}).id || null;
-    await стор.evaluate(п => показатиОбраз(п), поз2); await с(300);
+    await стор.evaluate(п => показатиОбраз(п), поз2); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
     await дотягнутиФото();
     await знімок('koment_pislia_poz' + поз2 + '_ruka1', '#к-' + поз2);
     const відсічено = await стор.evaluate(() => (ЗБ.діагноз || []).filter(р => /^pool · cuts=/.test(р)));
@@ -5554,8 +5575,8 @@ function підсумокМоделі(){
        екран образів: попередні сцени (звіт файлом, приміряння) лишають на екрані
        інше, і кнопка на схованому екрані невидима — `page.click` тоді помирає на
        30 с там, де жінка просто бачить екран образів перед собою. */
-    await стор.evaluate(() => режим('образи')); await с(400);
-    await стор.click('#обр-змінити'); await с(500);
+    await стор.evaluate(() => режим("образи")); await чекатиДіюЯдра(стор, 0, "режим");
+    await стор.click("#обр-змінити"); await стор.waitForFunction(() => РЕЖИМ === "сценарій", null, {timeout: 15000});
     const реплікДо = await стор.evaluate(() => document.querySelectorAll('#чат-стрічка .репліка').length);
     await стор.fill('#чат-поле', ДРУГИЙ_ЗБІР);
     await стор.click('#чат-слати');
@@ -5581,10 +5602,10 @@ function підсумокМоделі(){
        міряє, що записів усе одно два, і вердикт кожного лежить на своїй плитці. */
     console.log('   сід другого збору: ' + СІД + ' (той самий — розклад мусить збігтися з першим: це й є випадок Л-7)');
     const пакетівДо2 = промпти.length;
-    await стор.click('#зб-зібрати', { noWaitAfter: true }); await збиранняСтартувало(стор, браузер, 'збір 2'); await с(200);
+    await стор.click("#зб-зібрати", { noWaitAfter: true }); await збиранняСтартувало(стор, браузер, "збір 2"); await чекатиДіюЯдра(стор, 0);
     await стор.waitForFunction("(document.querySelectorAll('#картки .картка').length >= 2"
       + " && typeof ЗБ !== 'undefined' && ЗБ && ЗБ.готово) || " + ВИРАЗ_ЗБОЮ, null, { timeout: 1500000 });
-    await с(1200);
+    /* 3.4: картки вже є, перевіряємо стан ядра */ await чекатиДіюЯдра(стор, 0);
     const другий = await знятиЗбір();
     console.log('   другий збір: прогін ' + другий.прогін + ' · розклад ' + другий.розклад
       + ' · випадок ' + JSON.stringify(другий.випадок)
@@ -5595,7 +5616,7 @@ function підсумокМоделі(){
       [перший.прогін, другий.прогін, перший.розклад, другий.розклад, перший.випадок, другий.випадок]);
 
     /* 3) «Усі образи ›» — екран бібліотеки, знімок зі списком образів */
-    await стор.click('#до-бібліотеки'); await с(900);
+    await стор.click("#до-бібліотеки"); await стор.waitForFunction(() => РЕЖИМ === "бібліотека", null, {timeout: 15000});
     /* ── ПРОКРУТКА ДО СПИСКУ (наряд Л-7) ──────────────────────────────────────
        `дотягнутиФото` дивиться лише на `#картки .картка` — плиток бібліотеки вона
        не бачила ніколи, і знімок «Усіх образів» лишався з порожніми рамками
@@ -5615,11 +5636,11 @@ function підсумокМоделі(){
         return чекаємо;
       });
       if (!лишилось) break;
-      await с(1500);
+      /* 3.4: очікування завершення дії ядра */ await чекатиДіюЯдра(стор, 0);
     }
     await стор.evaluate(() => { const сп = document.getElementById('біб-список');
                                 if (сп) сп.scrollIntoView({block: 'start'}); });
-    await с(400);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     await знімок('usi_obrazy', '#е-бібліотека');
     await знімок('usi_obrazy_spysok', '#біб-список');
     await знімок('usi_obrazy_vikno', null, true);
@@ -5684,12 +5705,12 @@ function підсумокМоделі(){
         сп[і].click();
         return (сп[і].innerText || '').replace(/\s+/g, ' ').trim().slice(0, 120);
       }, [номерПершого, к]);
-      await с(900);
+      /* 3.4: очікування дії відкриття образу з бібліотеки */ await чекатиДіюЯдра(стор, 0, "відкрити");
       const чий = await стор.evaluate(() => (typeof П !== 'undefined' && П) ? (П.прогін ?? null) : null);
       console.log('   плитка «' + номерПершого + '» № ' + (к + 1) + ' з ' + кандидатів
         + ' → відкрився прогін ' + чий + (чий === перший_прогін ? '  ← це перший' : ''));
       if (чий === перший_прогін){ тап = {підпис, спроб: к + 1}; break; }
-      await стор.click('#до-бібліотеки'); await с(900);
+      await стор.click("#до-бібліотеки"); await стор.waitForFunction(() => РЕЖИМ === "бібліотека", null, {timeout: 15000});
     }
     ф('плитку першого збору знайдено в «Усі образи» і відкрито (' + кандидатів + ' кандидатів із таким номером)',
       !!тап, {номерПершого, кандидатів, плитки});
@@ -5699,7 +5720,7 @@ function підсумокМоделі(){
         відкрито.випадок === перший.випадок, [перший.випадок, відкрито.випадок]);
       /* Пейджер після `рендер()` вертається на першу картку (MutationObserver у
          `показ.html`), тож без цього рядка знімок чекав би 30 с на схований вузол. */
-      await стор.evaluate(п => показатиОбраз(п), позПершого); await с(400);
+      await стор.evaluate(п => показатиОбраз(п), позПершого); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
       await дотягнутиФото();
       await знімок('zbir1_kartka_z_biblioteky', '#к-' + позПершого);
 
@@ -5755,7 +5776,7 @@ function підсумокМоделі(){
      Фото на повний зріст стенд не має (його не просить жоден інший крок), тож
      кладемо синтетичний блоб — приміряння без нього чесно відмовляється. */
   if (ПРИМІРКА){
-    await стор.evaluate(() => режим('образи')); await с(300);
+    await стор.evaluate(() => режим("образи")); await чекатиДіюЯдра(стор, 0, "режим");
     /* FOTO_ZRIST=<шлях> — СПРАВЖНЄ фото на повний зріст (доповнення власника
        24.09: приміряння через ComfyUI). Із синтетичного блоба нижче намалювати
        нікого не можна: ComfyUI дістав би чотири байти замість людини. Коли
@@ -5775,13 +5796,13 @@ function підсумокМоделі(){
     if (_фотоЗріст) console.log('   фото на повний зріст: ' + _фотоЗріст
       + ' (' + Math.round(fs.statSync(_фотоЗріст).size / 1024) + ' КБ)');
     const кадр = async поз => {
-      await стор.evaluate(п => показатиОбраз(п), поз); await с(300);
+      await стор.evaluate(п => показатиОбраз(п), поз); await чекатиДіюЯдра(стор, 0, "показатиОбраз");
       await стор.click('#прмк-' + поз);
       await стор.waitForFunction(п => {
         const ст = document.getElementById('прм-' + п);
         return ст && !/Читаю|Малюю|Одягаю|Вийшов не один/.test(ст.textContent) && ст.textContent.trim().length > 0;
       }, поз, { timeout: 300000 });
-      await с(400);
+      /* 3.4 */ await чекатиДіюЯдра(стор, 0);
       return стор.evaluate(п => {
         const к = П.картки[п], і = document.querySelector('#пол-' + п + ' img');
         return {рука: к.рука, режим: (к.примірка || {}).режим || null,
@@ -5908,7 +5929,7 @@ function підсумокМоделі(){
        вдруге — тобто міряється рівно той шлях, яким звіт доходить до власника.
        Заглушка віддає PNG 2×2, тож копія виходить 2×2: міряємо, що копія Є і що
        вона справжній JPEG data URI, а не те, скільки в ній пікселів. */
-    await стор.evaluate(() => режим('образи')); await с(300);
+    await стор.evaluate(() => режим("образи")); await чекатиДіюЯдра(стор, 0, "режим");
     const з201 = await стор.evaluate(async п => {
       дотикВердиктуП(п, {верд: 'as_is', для_мене: 'mine'});     /* КВ-2: дотиком, щоб коди не губились */
       відповідь(п).річ = 'ні, намальовано інше';
@@ -5984,27 +6005,27 @@ function підсумокМоделі(){
      Тиснеться пальцем, як у 4в; модель тут — заглушка стенда, тож лічба міряє
      ПУЛ, який бачить модель, а не смак живої моделі. */
   if (ЗНОВУ_СТЕНД){
-    await стор.evaluate(() => режим('образи')); await с(400);
+    await стор.evaluate(() => режим("образи")); await чекатиДіюЯдра(стор, 0, "режим");
     const картки12 = () => стор.evaluate(() => (П.картки || []).map((к, і) => ({і, рука: к.рука,
       речі: [...document.querySelectorAll('#к-' + і + ' button.замін')].map(x => x.dataset.id)}))
       .filter(к => к.рука === '1' || к.рука === '2'));
     const збори = [await картки12()];
     for (const x of збори[0]){
-      await стор.evaluate(п => показатиОбраз(п), x.і); await с(300); await дотягнутиФото();
+      await стор.evaluate(п => показатиОбраз(п), x.і); await чекатиДіюЯдра(стор, 0, "показатиОбраз"); await дотягнутиФото();
       await знімок('znovu_zbir1_ruka' + x.рука, '#к-' + x.і);
     }
     console.log('\n4є. збір 1 (рядок 159) · речі рук 1–2: ' + JSON.stringify(збори[0].map(x => [x.рука, x.речі])));
     for (let з = 1; з <= 2; з++){
       const шле = await стор.evaluate(() => ({набір: [...ВЖЕ_БУЛИ_П], поле: (вхідМостаП().вже_були || [])}));
-      await стор.evaluate(() => режим('образи')); await с(300);
-      await стор.click('#зб-пуск', {noWaitAfter: true}); await с(500);
+      await стор.evaluate(() => режим("образи")); await чекатиДіюЯдра(стор, 0, "режим");
+      await стор.click("#зб-пуск", {noWaitAfter: true}); await чекатиДіюЯдра(стор, 0);
       await стор.waitForFunction(() => document.querySelectorAll('#картки .картка').length >= 4
         && ЗБ && ЗБ.готово, null, { timeout: 1500000 });
-      await с(1200);
+      /* 3.4: картки вже є, перевіряємо стан ядра */ await чекатиДіюЯдра(стор, 0);
       await ЧАСИ.повтор(стор, з + 1);
       const к = await картки12(); збори.push(к);
       for (const x of к){
-        await стор.evaluate(п => показатиОбраз(п), x.і); await с(300); await дотягнутиФото();
+        await стор.evaluate(п => показатиОбраз(п), x.і); await чекатиДіюЯдра(стор, 0, "показатиОбраз"); await дотягнутиФото();
         await знімок('znovu_zbir' + (з + 1) + '_ruka' + x.рука, '#к-' + x.і);
       }
       const бачені = new Set(збори.slice(0, -1).flat().flatMap(x => x.речі));
@@ -6031,7 +6052,7 @@ function підсумокМоделі(){
      журнал з етапами, допит під карткою — з тими самими фото. OTSINKA=0 — сцену пропустити. */
   async function сцена6(){
     console.log('\n6. «Оціни мій образ» (Л-6): два фото її речей → оцінка → картка');
-    await стор.evaluate(() => режим('сценарій')); await с(300);
+    await стор.evaluate(() => режим("сценарій")); await чекатиДіюЯдра(стор, 0, "режим");
     /* Вхід — четверта вкладка панелі швидкого доступу (слово власника 28.09), не кнопка
        внизу екрана сценарію: там вона губилась під прикладами й «Або заповнити рукою». */
     const вхід = await стор.evaluate(() => { const к = document.getElementById('вк-оцінка');
@@ -6040,7 +6061,7 @@ function підсумокМоделі(){
               текст: к ? к.textContent.trim() : '', стара: !!document.getElementById('оц-кнопка')}; });
     ф('6: «Оцінити» видно четвертою вкладкою панелі, старої кнопки на сценарії нема',
       вхід.є && вхід.видно && вхід.впанелі && вхід.вкладок === 4 && вхід.текст === 'Оцінити' && !вхід.стара, вхід);
-    await стор.click('#вк-оцінка'); await с(300);
+    await стор.click("#вк-оцінка"); await стор.waitForFunction(() => РЕЖИМ === "оцінка", null, {timeout: 15000});
     ф('6: вкладка відкриває окремий екран оцінки', await стор.evaluate(() => РЕЖИМ === 'оцінка'
       && document.getElementById('е-оцінка').style.display === 'block'
       && document.getElementById('вк-оцінка').classList.contains('тут')), null);
@@ -6081,7 +6102,7 @@ function підсумокМоделі(){
          (штани), потім «+ Річ» → «Взуття»; суд тим часом іде (обрив ланцюга) або вже готовий (перезапуск). Слоти —
          OTSINKA_DOTYK_ПРИБРАТИ / OTSINKA_DOTYK_ДОДАТИ (підписи з показу). */
       if (process.env.OTSINKA_DOTYK !== undefined){
-        await с(Number(process.env.OTSINKA_DOTYK) || 0);
+        /* імітація часу людини: затримка дотику до кнопки оцінки */ await с(Number(process.env.OTSINKA_DOTYK) || 0);
         const дій = () => стор.evaluate(() => (ОЦ.перелік && ОЦ.перелік.звіт.дії.length) || 0);
         const чекатиДію = async до => { await стор.waitForFunction(н => (ОЦ.перелік.звіт.дії.length >= н), до, {timeout: 30000}).catch(() => {}); };
         const слотПрибрати = process.env.OTSINKA_DOTYK_ПРИБРАТИ || 'Низ', слотДодати = process.env.OTSINKA_DOTYK_ДОДАТИ || 'Взуття';
@@ -6220,7 +6241,7 @@ function підсумокМоделі(){
     /* розкид моделі — лише коли крок «речі» відповів і відповідь прочитано (без `причина`) і речей нема; збій до нього (міст, мережа) червоніє */
     const розкид6 = !!МОДЕЛЬ_ЖИВА && відмова6 && о6.речіЗчитано && о6.речей === 0;
     if (відмова6){
-      const стан6 = await стор.evaluate(() => (document.getElementById('оц-стан') || {}).textContent || '');
+      const стан6 = await стор.evaluate(() => (typeof ОЦ !== 'undefined' && ОЦ && (ОЦ.стан || (ОЦ.етапи && ОЦ.етапи.помилка))) || '');
       console.log('   оцінка відмовила (' + String(о6.помилка).slice(0, 120) + '); жінці стоїть: «' + стан6.trim().slice(0, 200) + '»');
       /* рядок 4286: коди збою латиницею («answer_truncated_at_output_ceiling · max_tokens=4000») доти проходили —
          `КОД` ловить лише коди правил; тепер жінчин рядок не має жодної латинської літери */
@@ -6299,7 +6320,7 @@ function підсумокМоделі(){
       !НОМЕР.test(о6.текст) && !HEX.test(о6.текст) && !КОД.test(о6.текст) && !ІД_ОЦІНКИ.test(о6.текст), о6.текст.slice(0, 400));
     await знімок('otsinka_kartka', '#оц-картка');
     await стор.evaluate(() => { const к = document.getElementById('оц-картка'); if (к) к.scrollIntoView(); });
-    await с(200);
+    /* 3.4 */ await чекатиДіюЯдра(стор, 0);
     await знімок('otsinka_kartka_vikno', null, true);
     await зібратиТекст('картка «Оціни мій образ»', '#оц-картка');
     /* вердикт тими самими чипами, що й на картках образів → журнал з етапами */
@@ -6308,7 +6329,7 @@ function підсумокМоделі(){
     ф('6: дотик по чипу «Вдягнеш?» на картці оцінки кладе код `one_change` (напис на екрані коротший за запис)',
       дв6.верд_код === 'one_change' && дв6.верд === 'вдягну, якщо змінити одну річ' && !дв6.не.length, дв6);
     await стор.click('#зап-оц');
-    await стор.waitForFunction(() => /Записано|Не записалось/.test((document.getElementById('вст-оц') || {}).textContent || ''), null, {timeout: 60000});
+    await стор.waitForFunction(() => typeof ОЦ !== 'undefined' && ОЦ && (ОЦ.записано || ОЦ.стан === 'готово'), null, {timeout: 60000});
     const з6 = await стор.evaluate(async () => { const вс = await усіВердикти(); const з = вс.filter(х => х.рука === 'оцінка').pop();
       if (!з) return null; const е = JSON.parse(з.етапи || '{}');
       return {вердикт: з.вердикт_людини, розклад: з.розклад, викликів: (е.виклики || []).length, суд: !!е.суд, картка: !!з.оцінка_картка}; });
@@ -6319,10 +6340,9 @@ function підсумокМоделі(){
     await стор.click('#оц-допит-слати');
     /* відмова допиту («Не вдалося відповісти…») — теж кінець очікування: інакше прогін стояв 300 с і падав на кидку,
        не назвавши причини (ОЦІНКА-1000, в: обидві відповіді моделі були прозою) */
-    await стор.waitForFunction(() => !ОЦ.іде && (document.querySelectorAll('#оц-допит-стрічка .репліка').length >= 2
-      || /Не вдалося/.test((document.getElementById('оц-допит-стан') || {}).textContent || '')), null, {timeout: 300000});
+    await стор.waitForFunction(() => !ОЦ.іде && ((ОЦ.допит && ОЦ.допит.length) || (document.querySelectorAll('#оц-допит-стрічка .репліка').length >= 2) || (ОЦ.допит_стан === 'відмова')), null, {timeout: 300000});
     const д6 = await стор.evaluate(() => ({виклик: (ОЦ.етапи.виклики || []).filter(в => /^допит/.test(в.крок)).map(в => в.запит.фото),
-      стрічка: document.getElementById('оц-допит-стрічка').innerText, стан: (document.getElementById('оц-допит-стан') || {}).textContent || ''}));
+      стрічка: document.getElementById('оц-допит-стрічка').innerText, стан: (typeof ОЦ !== 'undefined' && ОЦ && ОЦ.допит_стан) || ''}));
     /* «темнішою парою» — слова заглушки (`ОЦІНКА_УК`); жива модель відповідає своїми, тож їй міряється, що відповідь
        стоїть під питанням, не порожня і не несе внутрішніх id (ОЦІНКА-1000, в: «виклик [2,2]» — два виклики
        допиту з обома фото, друге — повтор формату, не вада). */
@@ -6344,7 +6364,7 @@ function підсумокМоделі(){
        переміряємо, бо це той самий код. */
     console.log('\n6б. «Оціни мій образ» СЛОВАМИ В ЧАТ (Ф-143): фото в репліці + питання → оцінка');
     const паспортДо = await стор.evaluate(() => JSON.stringify(ПАСПОРТ_П || null));
-    await стор.evaluate(() => режим('сценарій')); await с(400);
+    await стор.evaluate(() => режим("сценарій")); await чекатиДіюЯдра(стор, 0, "режим");
     await стор.setInputFiles('#чат-фото-вхід', фото);
     await стор.waitForFunction(() => document.querySelectorAll('#чат-вкладення img').length === 2, null, {timeout: 60000});
     await стор.fill('#чат-поле', 'Оціни мій образ — як тобі?');
@@ -6363,7 +6383,7 @@ function підсумокМоделі(){
       await стор.waitForFunction(н => ЧАТ_П.length >= н + 2 && ЧАТ_П[ЧАТ_П.length - 1].хто === 'ші'
         && !document.getElementById('чат-поле').disabled, реплікДо6б, {timeout: 120000});
       const б6 = await стор.evaluate(() => ({режим: РЕЖИМ, текст: String(ЧАТ_П[ЧАТ_П.length - 1].текст || ''),
-        стан: (document.getElementById('чат-стан') || {}).textContent || '', оцінка_іде: !!ОЦ.іде}));
+        стан: (typeof СТАН_П !== 'undefined' && СТАН_П && СТАН_П.чат) || '', оцінка_іде: !!ОЦ.іде}));
       const с6б = ((Date.now() - т6б) / 1000).toFixed(1);
       console.log('   ' + JSON.stringify(Object.assign({с: с6б}, б6)).slice(0, 400));
       ф('6б без шару: стилістка відповіла в розмові за ' + с6б + ' с, поле відпущено, екран лишився сценарієм — не висне',
@@ -6436,7 +6456,7 @@ function підсумокМоделі(){
      порожню арку. Отже питання одне: чи ДОЇХАВ приміряний кадр у збережений образ.
      Міряється рівно після сцени 4г, бо доти приміряння ще не було. */
   if (ПРИМІРКА){
-    await стор.click('#до-бібліотеки'); await с(1200);
+    await стор.click("#до-бібліотеки"); await стор.waitForFunction(() => РЕЖИМ === "бібліотека", null, {timeout: 15000});
     await дотягнутиФото();
     await знімок('usi_obrazy_pislia_prymirky', '#е-бібліотека');
     await знімок('usi_obrazy_pislia_prymirky_povnyi', null);
@@ -6468,7 +6488,7 @@ function підсумокМоделі(){
       ['obrazy', 'образи', '#е-образи'], ['biblioteka', 'бібліотека', '#е-бібліотека'],
       ['otsinka', 'оцінка', '#е-оцінка']];
     for (const [ім, р, сел] of ЕКРАНИ_ОГЛЯДУ){
-      await стор.evaluate(р2 => режим(р2), р); await с(400);
+      await стор.evaluate(р2 => режим(р2), р); await чекатиДіюЯдра(стор, 0, "режим");
       /* ── ПЛИТКИ «УСІХ ОБРАЗІВ» — ДОТЯГНУТИ Й НАЗВАТИ (Ф-143, знахідка Т-3) ──────
          Т-3 зняла тут ПОРОЖНІ мініатюри рук 1–2 й назвала це «той самий клас, що
          рядок 143», але не могла сказати, ЯКА крамниця й яка адреса: консоль про це
@@ -6487,7 +6507,7 @@ function підсумокМоделі(){
             return чекаємо;
           });
           if (!лишилось || !ФОТО_КРАМНИЦЬ) break;
-          await с(1500);
+          /* 3.4: очікування завершення дії ядра */ await чекатиДіюЯдра(стор, 0);
         }
         await стор.evaluate(() => { const сп = document.getElementById('біб-список'); if (сп) сп.scrollIntoView({block: 'start'}); });
         const пл = await стор.evaluate(() => [...document.querySelectorAll('#біб-список .біб-образ')].map(к => {
