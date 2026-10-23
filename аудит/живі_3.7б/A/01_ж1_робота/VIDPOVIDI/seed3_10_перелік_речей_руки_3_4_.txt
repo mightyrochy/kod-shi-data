@@ -1,0 +1,51 @@
+── ПРОМПТ (2713 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer with notched lapels, a tailored single-breasted cut hitting at the hip, charcoal grey (#36454F), woven fabric.\nA silk-blend blouse with a relaxed collar and subtle gathering at the waist, a fluid A-line silhouette falling just above the hips, soft cream (#FFFDD0), smooth woven silk.\nHigh-waisted wide-leg trousers with a gentle crease running down the leg, a straight but flowing fit from hip to ankle, deep navy blue (#000080), heavy cotton twill.\nMinimalist gold-plated hoop earrings and a simple pendant necklace on a fine chain.\nA structured leather tote bag in matching charcoal grey with gold hardware.\nLeather loafers with a slight architectural heel, pointed toe detailing, dark brown (#422733), smooth calfskin.\n\nThis ensemble captures the essence of a professional autumn workday by balancing structure with comfort. The wool blazer provides an appropriate layer for cooler fall temperatures while maintaining a polished silhouette that aligns with a \"neat\" dress code. The choice of wide-leg trousers and silk blouse introduces breathable textures suitable for an office environment without sacrificing elegance. Finally, the earthy color palette of charcoal, cream, and navy creates a sophisticated contrast that complements her warm skin tones, ensuring she feels confident and put-together throughout her day."}
+
+── ВІДПОВІДЬ (1323 симв., 216.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured wool-blend with notched lapels, tailored single-breasted cut hitting at the hip",
+      "slot": "outerwear",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "blouse",
+      "details": "silk-blend with relaxed collar and subtle gathering at the waist, fluid A-line silhouette falling just above the hips",
+      "slot": "top",
+      "color_hex": "#FFFDD0"
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg with a gentle crease running down the leg, straight but flowing fit from hip to ankle",
+      "slot": "bottom",
+      "color_hex": "#000080"
+    },
+    {
+      "name": "earrings",
+      "details": "minimalist gold-plated hoops",
+      "slot": "earrings",
+      "color_hex": null
+    },
+    {
+      "name": "necklace",
+      "details": "simple pendant on a fine chain",
+      "slot": "collar_necklace",
+      "color_hex": null
+    },
+    {
+      "name": "tote bag",
+      "details": "structured leather in matching charcoal grey with gold hardware",
+      "slot": "bag",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "loafers",
+      "details": "leather with slight architectural heel and pointed toe detailing",
+      "slot": "shoes",
+      "color_hex": "#422733"
+    }
+  ]
+}

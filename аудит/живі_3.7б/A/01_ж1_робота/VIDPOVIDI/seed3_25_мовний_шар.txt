@@ -1,0 +1,62 @@
+── ПРОМПТ (8272 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня міді бохо з крепу · kind code: dress_generic · colour code: olive · about it: text н=1
+2 — Шарф-палантин з квітковою вишивкою та бахромою · kind code: stole · colour code: green · about it: text н=2
+3 — LeBERDES Босоніжки коричневі · kind code: heeled_sandals · colour code: brown · about it: text н=3
+4 — Бант з костюмної тканини · kind code: bow · colour code: black · about it: text н=4
+5 — Шкіряна прямокутна сумка крос-боді · kind code: crossbody_bag · colour code: green · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; green — зелений; olive — оливковий.
+
+ТЕКСТИ:
+{
+"1": "A relaxed-fit olive green midi dress with a tiered skirt that flows elegantly from the waist down. Made of soft fabric, it gently drapes over your body, highlighting your defined waist and balancing your proportions.",
+"2": "A vibrant teal stole with delicate floral embroidery in pink, blue, and gold tones, finished with a fringe hem. Its lightweight fabric drapes beautifully over shoulders or can be wrapped around the neck for added warmth.",
+"3": "Comfortable brown heeled sandals with a wide platform sole and ankle strap, offering stability and style for extended wear throughout the day.",
+"4": "A sophisticated black bow accessory that doubles as both a hair tie and a neck embellishment. Its structured shape adds visual interest to your neckline while keeping your overall look refined.",
+"5": "A sleek green crossbody bag with top handles and an adjustable strap, crafted from smooth leather for durability and a modern edge that complements your outfit’s color palette.",
+"6": "Your olive green tiered midi dress anchors the look with its soft, relaxed silhouette, perfectly suited to your defined waist and hourglass shape. The floral embroidered stole brings a touch of gentle color against the dark tones of the coat you’ll layer over it in cooler autumn days. Your brown heeled sandals add height and comfort for long office hours while staying stylish enough for meetings. The black bow jewelry adds a sleek contrast that highlights your neckline without overpowering it. Finally, your green crossbody bag ties everything together with its clean lines and matching tone to the stole, creating a harmonious, polished workday ensemble.",
+"7": "Wear the scarf loosely around your neck or draped over one shoulder to add softness to your outfit's clean lines.",
+"8": "Tuck the front of your dress into the waistband of your coat if you choose to layer for warmth, accentuating your defined waist.",
+"9": "Keep your hair tied back with the black bow to maintain a tidy, professional look while adding a subtle touch of personality.",
+"10": "Сукня міді бохо з крепу — Retained this olive green midi dress as the base layer, ensuring it falls within the tonal scheme arc for the top slot.",
+"11": "Шарф-палантин з квітковою вишивкою та бахромою — Added this floral scarf to provide a second texture source and interest near the face, fixing the 'interest_sources_below_floor' finding.",
+"12": "LeBERDES Босоніжки коричневі — Added these brown heeled sandals to complete the outfit for the autumn season and fix the missing shoe slot.",
+"13": "Сукня міді бохо з крепу — The gate about the scheme arc is accepted because this outfit carries the tonal scheme on its large items (the dress and scarf) exactly as her palette requires, proving it serves her intent despite the code's warning.",
+"14": "LeBERDES Босоніжки коричневі — Added these brown heeled sandals to match the autumn season and provide warmth, replacing the missing shoe slot."
+}
+
+── ВІДПОВІДЬ (2633 симв., 96.5 с, HTTP 200) ──
+```json
+{
+"1": "Зручна оливково-зелена сукня міді вільного крою з багатошаровою спідницею, яка елегантно спадає від талії. Виготовлена з ніжної тканини, вона лагідно облягає твоє тіло, підкреслюючи твою виражену талію і гармонійно балансуючи пропорції.",
+"2": "Яскравий бірюзовий палантин з делікатною квітковою вишивкою в рожевих, блакитних і золотих тонах, оздоблений бахромою. Його легка тканина гарно драпірується на плечах або може бути обгорнута навколо шиї для додаткового тепла.",
+"3": "Зручні коричневі босоніжки на підборах з широкою платформенною підошвою та ремінцем на щиколотці, що забезпечують стійкість і стиль протягом усього дня.",
+"4": "Вишуканий чорний бант-аксесуар, який слугує як затискач для волосся, так і прикрасою до шиї. Його структурована форма додає візуального інтересу твоїй лінії шиї, зберігаючи загальний вигляд елегантним.",
+"5": "Стильна зелена сумка крос-боді з верхніми ручками та регульованим ремінцем, виконана зі шкіри для довговічності і сучасного акценту, що доповнює колірну гаму твого вбрання.",
+"6": "Твоя оливково-зелена багатошарова сукня міді є основою образу з її м’яким, розслабленим силуетом, ідеально підходячи для твоєї вираженої талії і фігури «пісочний годинник». Квітковий палантин додає ніжний колір на тлі темних тонів пальта, яке ти одягнеш у прохолодні осінні дні. Твої коричневі босоніжки на підборах додають висоти і комфорту для тривалих робочих годин, залишаючись при цьому досить стильними для зустрічей. Чорний бант-прикраса доповнює образ елегантним контрастом, що виділяє твою лінію шиї без перевантаження її. Нарешті, твоя зелена сумка крос-боді завершує все своїми чіткими лініями і відповідним тоном палантину, створюючи гармонійний, охайний робочий ансамбль.",
+"7": "Оберни шарф вільно навколо шиї або накинь його на одне плече, щоб додати м’якості чітким лініям твого вбрання.",
+"8": "Заправ передню частину сукні у пояс пальта, якщо ти вирішиш одягнути його для тепла, підкреслюючи свою виражену талію.",
+"9": "Збери волосся чорним бантом, щоб зберегти охайний і професійний вигляд, додавши при цьому ледь помітну родзинку особистості.",
+"10": "Сукня міді бохо з крепу",
+"11": "Шарф-палантин з квітковою вишивкою та бахромою",
+"12": "LeBERDES Босоніжки коричневі",
+"13": "Сукня міді бохо з крепу — Цей образ відповідає вимогам схеми, оскільки великі елементи (сукня і шарф) точно відображають твою колірну палітру, доводячи, що він слугує твоєму наміру попри попередження коду.",
+"14": "LeBERDES Босоніжки коричневі — Додала ці коричневі босоніжки на підборах, щоб відповідати осінньому сезону і забезпечити тепло, замінивши відсутній слот для взуття."
+}
+```
