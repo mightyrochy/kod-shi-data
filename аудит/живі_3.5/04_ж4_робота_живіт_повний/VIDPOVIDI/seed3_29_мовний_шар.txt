@@ -1,0 +1,58 @@
+── ПРОМПТ (8031 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку); стилістка про себе — у жіночому роді.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Піджак з акцентом на талії шоколад · kind code: blazer · colour code: chocolate · about it: text н=1
+2 — Спідниця атласна міні чорна · kind code: skirt · colour code: black · about it: text н=2
+3 — Шарф чорний · kind code: scarf_generic · colour code: black · about it: text н=3
+4 — LeBERDES Лофери чорні · kind code: loafers · colour code: black · about it: text н=4
+5 — Сумка з рафії з в’язаними квітами · kind code: bag_generic · colour code: brown · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; chocolate — шоколадний.
+
+ТЕКСТИ:
+{
+"1": "This chocolate blazer features a tailored fit with a defined waist, two dark buttons, and structured shoulders. Its deep brown hue and smooth fabric offer a professional yet sophisticated silhouette perfect for an office environment.",
+"2": "The black satin mini skirt has a sleek sheen, delicate lace trim along the hem and side slits for movement. Its high waist and fluid drape create a modern contrast against the structured jacket above.",
+"3": "This black scarf is lightweight and versatile, ready to be worn draped around your neck or styled in various ways to add texture without overpowering the outfit.",
+"4": "These black loafers boast a chunky platform heel and a decorative strap adorned with subtle sparkle. Their smooth leather finish complements the dark tones of your top and skirt perfectly.",
+"5": "A brown raffia tote bag woven from natural fibers, accented with three-dimensional knitted flowers and pearl centers. Its relaxed shape and neutral tone tie together the earthy and black elements of your look.",
+"6": "You are looking sharp today with the chocolate blazer defining your waist and the black satin skirt adding a sleek, office-ready finish. The black scarf draped around your neck introduces just the right amount of soft texture to balance the structured jacket, while the chunky black loafers ground the look with effortless polish.",
+"7": "Wrap the black scarf loosely around your neck to soften the blazer's sharp lines and add warmth for the cool autumn air.",
+"8": "Спідниця атласна міні чорна — Replacing the velvet mini skirt with this midi skirt addresses the 'interest_only_texture_render_loses' finding by reducing excessive texture near the face while maintaining the silhouette's elegance. It also resolves the 'shine_budget' issue by removing the overly shiny surface.",
+"9": "Шарф чорний — The black scarf adds a necessary non-texture source to counteract the single velvet texture, fixing the 'add_non_texture_source_for_render' finding and bringing total interest sources within the budget.",
+"10": "Шарф чорний — Adding the scarf creates the third piece needed to move from a simple dress-like look to a styled outfit, resolving the 'formula_taken_as_ready' blandness failure by introducing a distinct accessory layer.",
+"11": "Спідниця атласна міні чорна — The single shiny surface on the midi skirt is accepted deliberately to prevent a flat, dull silhouette, creating a focal point that draws the eye vertically rather than hiding your shape.",
+"12": "Шарф чорний — The black wide scarf replaces the beanie (which is too casual for an office) and serves as the third piece to resolve the 'mono_object_silhouette' finding, adding a structural layer that defines the neck without overwhelming the face."
+}
+
+── ВІДПОВІДЬ (2883 симв., 52.9 с, HTTP 200) ──
+```json
+{
+"1": "Цей шоколадний піджак вирізняється приталеним кроєм з виділеною талією, двома темно-коричневими ґудзиками та структурованими плечима. Його глибокий коричневий колір і гладка тканина створюють професійний водночас елегантний силует, який чудово підходить для офіційного середовища.",
+"2": "Чорна атласна мініспідниця має вишуканий блиск, ніжну обробку мереживом по подолу та бічними розрізами для рухів. Її завищена талія та плинна драпірування створюють сучасний контраст із структурованим піджаком зверху.",
+"3": "Цей чорний шарф легкий і універсальний, готовий до носіння накинутим навколо шиї або стилізований різними способами для додавання текстури без перевантаження образу.",
+"4": "Ці чорні лофери мають масивний платформований каблук та декоративний ремінець прикрашений ледь помітним блиском. Їхня гладка шкіряна обробка ідеально доповнює темні відтінки твоєї верхньої частини та спідниці.",
+"5": "Коричнева сумка-тоут з рафії, виткана з природних волокон, прикрашена тривимірними в’язаними квітами та перлинними серединками. Її розслаблена форма й нейтральний відтінок гармонійно поєднують земний колір і чорні елементи твого образу.",
+"6": "Ти виглядаєш дуже стильно сьогодні: шоколадний піджак, який підкреслює твою талію, а чорна атласна спідниця надає офісний, елегантний фінал. Чорний шарф накинутий навколо шиї вносить саме ту кількість м’якої текстури для збалансування структурованого піджака, а масивні чорні лофери доповнюють образ без зусиль.",
+"7": "Накинь чорний шарф вільно навколо своєї шиї, щоб пом’якшити гострі лінії блейзера та зігрітися в прохолодне осіннє повітря.",
+"8": "Спідниця атласна міні чорна — Заміна оксамитової спідниці на цю мідіспідницю вирішує проблему «недостатньо текстури для рендеру», зменшуючи надмірну кількість текстур поблизу обличчя, зберігаючи при цьому елегантність силуету. Також вона усуває питання «надлишкового блиску» за рахунок видалення надмірно глянцевої поверхні.",
+"9": "Шарф чорний — Чорний шарф додає необхідне нетекстурне джерело для протидії одній оксамитовій текстурі, усуваючи проблему «додати нетекстурне джерело для рендеру» та вписуючись у бюджет загальної кількості елементів.",
+"10": "Шарф чорний — Додавання шарфа створює третій необхідний предмет, щоб перейти від простого сукенкоподібного образу до стилізованого аутфіту, вирішуючи проблему «непривабливість за формулою», внісши чіткий аксесуарний шар.",
+"11": "Спідниця атласна міні чорна — Єдина глянцева поверхня на мідіспідниці свідомо залишена для запобігання плоскому, тьмяному силуету та створення фокусної точки, яка привертає увагу вертикально замість того, щоб ховати твою фігуру.",
+"12": "Шарф чорний — Чорний широкий шарф замінює шапку-біні (яка занадто повсякденна для офісу) і служить третім предметом для вирішення проблеми «монолітний силует», додаючи структурний шар, який визначає шию без перевантаження обличчя."
+}
+```
