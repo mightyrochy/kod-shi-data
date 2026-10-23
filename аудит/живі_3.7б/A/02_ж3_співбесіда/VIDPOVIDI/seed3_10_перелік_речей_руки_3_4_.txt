@@ -1,0 +1,51 @@
+── ПРОМПТ (2819 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Charcoal wool blazer with structured shoulders, single-button closure, long sleeves, color #36454F, heavy wool blend fabric.\nCrisp white silk-blend blouse with a pointed collar and button front, medium length hit at hip, color #FFFFFF, smooth silk and polyester mix fabric.\nTailored high-waisted charcoal trousers, straight leg cut, ankle length, color #36454F, refined wool and nylon stretch fabric.\nClassic black leather pumps with a 7 cm heel, almond toe shape, closed back, color #1A1A1A, smooth calfskin leather fabric.\nMinimalist gold-plated stud earrings in round shape, polished yellow gold metal finish, color #D4AF37, lightweight gold alloy and glass stone fabric.\nSlim silver chain necklace with a small geometric pendant, delicate link style, color #E8E8E8, oxidized sterling silver and cubic zirconia fabric.\n\nThis outfit strikes the precise balance required for an analytical role at a bank, projecting competence and intellectual clarity while remaining approachable. The monochromatic charcoal palette in wool suggests authority and seriousness appropriate for formal interviews, while the white blouse adds a necessary touch of professionalism and cleanliness. Subtle gold and silver accessories introduce just enough visual interest to demonstrate attention to detail without appearing flashy or distracting from your qualifications. The tailored fit ensures you appear poised and confident as you navigate the morning daylight of an autumn day."}
+
+── ВІДПОВІДЬ (1455 симв., 125.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Charcoal wool blazer",
+      "details": "structured shoulders, single-button closure, long sleeves, heavy wool blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "White silk-blend blouse",
+      "details": "pointed collar and button front, medium length hit at hip, smooth silk and polyester mix fabric",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "Charcoal trousers",
+      "details": "tailored high-waisted, straight leg cut, ankle length, refined wool and nylon stretch fabric",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Black leather pumps",
+      "details": "7 cm heel, almond toe shape, closed back, smooth calfskin leather fabric",
+      "slot": "shoes",
+      "color_hex": "#1A1A1A",
+      "worn": true
+    },
+    {
+      "name": "Gold-plated stud earrings",
+      "details": "round shape, polished yellow gold metal finish, lightweight gold alloy and glass stone fabric",
+      "slot": "earrings",
+      "color_hex": "#D4AF37",
+      "worn": true
+    },
+    {
+      "name": "Silver chain necklace",
+      "details": "slim, small geometric pendant, delicate link style, oxidized sterling silver and cubic zirconia fabric",
+      "slot": "necklace",
+      "color_hex": "#E8E8E8",
+      "worn": true
+    }
+  ]
+}

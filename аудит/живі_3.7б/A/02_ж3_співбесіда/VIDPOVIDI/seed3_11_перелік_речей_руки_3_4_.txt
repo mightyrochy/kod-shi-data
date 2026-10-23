@@ -1,0 +1,44 @@
+── ПРОМПТ (2392 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wool-blend suit jacket in deep charcoal gray (#2F3538), tailored with sharp shoulders and single-breasted closure. Matching straight-leg trousers in the same charcoal wool-blend, featuring a clean front with no pleats and a slight rise. A crisp white silk-poplin blouse with a point collar, cut classic-fitted to offer structure without stiffness. Heeled pumps in polished black leather (#000000), measuring three inches at the heel for professional height. A minimalist gold-plated watch with a slim metal band. The outfit works because the dark charcoal palette conveys serious competence appropriate for a bank interview while the structured wool fabric adheres to strict formal business codes. The white blouse adds a necessary visual break that keeps the ensemble looking fresh for a morning daylight setting, preventing the all-black or dark-gray look from appearing dull. This combination balances authority with approachability, ensuring she meets the high standards of an analytical role without sacrificing personal style."}
+
+── ВІДПОВІДЬ (1057 симв., 129.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend suit jacket",
+      "details": "structured single-breasted closure with sharp shoulders and tailored cut",
+      "slot": "outerwear",
+      "color_hex": "#2F3538",
+      "worn": true
+    },
+    {
+      "name": "straight-leg trousers",
+      "details": "clean front with no pleats, slight rise, same charcoal wool-blend fabric",
+      "slot": "bottom",
+      "color_hex": "#2F3538",
+      "worn": true
+    },
+    {
+      "name": "silk-poplin blouse",
+      "details": "classic-fitted cut offering structure without stiffness, point collar",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "heeled pumps",
+      "details": "polished leather construction with three-inch heel height",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "gold-plated watch",
+      "details": "minimalist design with slim metal band",
+      "slot": "watch",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
