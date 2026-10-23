@@ -3193,7 +3193,7 @@ def _умови_тем():
         # виглядати вищою (п.9, рядок 5211), як у `goal_extra`.
         "goal": ("whether at this outing she wants to draw attention or stay unnoticed, and whether a longer line "
                  "to look taller, comfort all day or strictness for the occasion matter to her", вечір),
-        # МАК-2 (рядок 258): та сама умова, що `face_contrast.порада_з_випадку` у судді тем
+        # МАК-2 (рядок 258): та сама умова, що `brief.порада_з_випадку` у судді тем
         "makeup": ("what make-up she plans and the lip colour",
                    "%s; or profile colouring.contrast is low and the occasion is dressy: occasion %s, place %s, "
                    "dress_code %s, or formality from %g up"

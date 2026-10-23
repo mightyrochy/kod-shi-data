@@ -167,8 +167,8 @@ def вхід(запис, d, п=None):
         return (True, None) if є else (False, "палітри.розвилка: no_accent_role")
     if ід == "R-MUA-02":
         # та сама функція, що вирішує рядок брифа руки 1 і тему розмови: вони не розходяться
-        import face_contrast as _KC
-        return (True, None) if _KC.порада_з_випадку(((п or {}).get("особа") or {}).get("рівень"), сцен) \
+        import brief as _БР
+        return (True, None) if _БР.порада_з_випадку(((п or {}).get("особа") or {}).get("рівень"), сцен) \
             else (False, "сценарій.макіяж: no_makeup_advice_applies")
     if ід == "K-MAT-03":
         return (True, None) if сцен.get("темп_c") is not None else (False, "сценарій.темп_c: none")
