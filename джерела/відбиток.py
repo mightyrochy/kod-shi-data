@@ -447,10 +447,11 @@ def правила(дерева):
                 continue
             f = вузол.func
             звідки = None
-            if isinstance(f, ast.Name) and f.id in ("_зн",):
+            # 3.3: визначник і обгортки реєстрів звуть помічник публічно — `зн`
+            if isinstance(f, ast.Name) and f.id in ("_зн", "зн"):
                 звідки = "_зн"
-            elif isinstance(f, ast.Attribute) and f.attr in ("_зн", "запис"):
-                звідки = f.attr
+            elif isinstance(f, ast.Attribute) and f.attr in ("_зн", "зн", "запис"):
+                звідки = "_зн" if f.attr == "зн" else f.attr
             elif isinstance(f, ast.Name) and f.id == "dict":
                 звідки = "dict"
             if not звідки:

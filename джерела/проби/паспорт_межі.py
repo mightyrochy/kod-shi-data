@@ -10,8 +10,8 @@ git = lambda *а: subprocess.run(["git", "-c", "core.quotepath=false", *а], cap
 кат = Ф.каталог_на_диску("каталог_повний.xml")
 def пул(п):
     вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), сід=4242, каталог=кат, паспорт=п)
-    МП._КЕШ_ПАКЕТА.clear(); B.виклик("запити", json.dumps(вх, ensure_ascii=False))
-    кан = [p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")][0]["кандидати"]
+    МП.КЕШ_ПАКЕТА.clear(); B.виклик("запити", json.dumps(вх, ensure_ascii=False))
+    кан = [p for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати")][0]["кандидати"]
     вз = кан.get("взуття") or []
     return "взуття %d: на каблуці %d, з візерунком %d" % (len(вз), sum(1 for r in вз if str(r.get("каблук")).startswith(
         "каблук: є")), sum(1 for r in вз if (r.get("візерунок") or "solid") != "solid"))

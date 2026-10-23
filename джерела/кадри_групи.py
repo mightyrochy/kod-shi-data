@@ -18,7 +18,7 @@ import argparse, collections, gzip, json, os, sys
 import verify as V
 from фід_збагачення import колір_збагачення
 from фід_кадр_колір import НЕ_СВІДКИ, КАДР_КАРТКИ, КАДРИ_ІМ, узгоджений
-from фід_фото import _файл_фото
+from фід_фото import файл_фото as _файл_фото
 
 ТУТ = os.path.dirname(os.path.abspath(__file__)) or "."
 ВИХІД = os.path.join(ТУТ, КАДРИ_ІМ + ".gz")

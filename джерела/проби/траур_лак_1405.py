@@ -7,7 +7,7 @@
 import collections, os, re, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import фід_каталог as ФК, траурний_регістр as ТР                               # noqa: E401,E402
-к = ФК._прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]
+к = ФК.прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]
 взуття = [r for r in к if r.get("слот") == "взуття"]
 r = next(x for x in взуття if x["id"] == "ж-09117@cultboutique.com.ua")
 тр = ТР.траур_випадку("траур", "похорон")

@@ -6,7 +6,7 @@ import json, gzip, glob, os, sys, collections as K
 sys.path.insert(0, "."); import colorspace as cs, palettes as P, палітра_схеми as ПСХ, внутрішня_мова as ВМ, суд_від_моделі as С, регістр_уваги as РУ, суд_ремесло as СР
 ЗОНА = {"ж4_робота_живіт": ["живіт"]}   # код `goal_zones`, який мовна модель ставить на «приховати живіт»
 на_мету = getattr(РУ, "на_мету", lambda *x: True)
-хр = lambda i: bool(i.get("hex")) and i.get("color") not in ("golden", "silvery", "pearly") and P._хроматична(cs.hx(i["hex"]))
+хр = lambda i: bool(i.get("hex")) and i.get("color") not in ("golden", "silvery", "pearly") and P.хроматична(cs.hx(i["hex"]))
 сл = lambda i: ВМ.ключ("slot", ВМ.СЛОТ_ТИПУ.get(i.get("type"), "jewelry")) or "прикраси"
 def дж(t):
     try: return json.JSONDecoder().raw_decode(t[t.index("{"):])[0]

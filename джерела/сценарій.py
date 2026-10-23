@@ -644,7 +644,7 @@ _КОДИ_ДНЯ = (("activity", "activity", "активність"), ("movement
              ("surface", "surface", "поверхня"), ("dress_code", "dress_code", "дрес_код"))
 
 
-def _частина_доби(г):
+def частина_доби(г):
     """Код частини доби (`внутрішня_мова` part_of_day) для години 0–23."""
     return "morning" if 5 <= г < 11 else "day" if 11 <= г < 17 else "evening" if 17 <= г < 22 else "night"
 
@@ -701,8 +701,8 @@ def день_кодами(сцен):
         г = int(float(с["година"])) % 24
         кінець = (г + float(с["тривалість_год"])) if с.get("тривалість_год") not in (None, "") else None
         # година пори — число коду (рядок 4020): моделям — лише пора кодом
-        д.update(part_of_day=_ВМ.код("part_of_day", с.get("пора")) or _частина_доби(г)) if с.get("година_з_пори") \
-            else д.update(start_hour=г, part_of_day=_частина_доби(г))
+        д.update(part_of_day=_ВМ.код("part_of_day", с.get("пора")) or частина_доби(г)) if с.get("година_з_пори") \
+            else д.update(start_hour=г, part_of_day=частина_доби(г))
         if кінець is not None and кінець >= 22:
             д["until_night"] = True
         світло = ("artificial" if (г >= 20 or г < 6 or (кінець or 0) >= 21)

@@ -8,7 +8,7 @@ import collections, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import feed as Ф, фід_фото as ФФ
 оф = Ф.читати_yml(Ф.каталог_на_диску("каталог_повний.xml"))[0]
-зб, сп, хо = Ф.читати_збагачення(), ФФ._спільні_фото(оф), ФФ._хости_крамниць(оф)
+зб, сп, хо = Ф.читати_збагачення(), ФФ.спільні_фото(оф), ФФ.хости_крамниць(оф)
 причини, крамниці, без = collections.Counter(), collections.Counter(), collections.Counter()
 for o in оф:
     з, м = зб.get(o["id"]), o.get("магазин")

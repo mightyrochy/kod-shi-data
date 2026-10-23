@@ -10,7 +10,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import verify as V, palettes as PS, colorspace as cs, bridge as B
 
 осн, порядок = B._ґратка_основ()
-найближче = [k for k in порядок if PS._назва(cs.hx(осн[k][0]))[1] == "найближче"]
+найближче = [k for k in порядок if PS.назва(cs.hx(осн[k][0]))[1] == "найближче"]
 print("слів у лексиконі: %d · сімей: %d" % (len(V.ЛЕКСИКОН), len(V.СІМ_Ї_СЛІВ)))
 print("чипів ґратки: %d · підписано словом ПОЗА його вікном: %d %s"
       % (len(порядок), len(найближче), найближче or ""))

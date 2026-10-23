@@ -6,11 +6,11 @@
 import collections, os, sys
 sys.path.insert(0, os.getcwd())
 import feed, фід_каталог as FK, composer as КМ, graph as ГР, дріт_моделі as Д
-К = FK._прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
+К = FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
 інші = [r for r in К if (r.get("кадр_кольору") or {}).get("стан") == "інший_колір"]
 lf = collections.Counter()
 for r in інші:
-    рч = КМ._у_річ(dict(r), r.get("слот") or "верх", None)
+    рч = КМ.у_річ(dict(r), r.get("слот") or "верх", None)
     lf[Д.осі(ГР.зона(рч), dict(рч, слот=r.get("слот"))).get("L_from")] += 1
 кадр = sum(1 for r in інші if (r.get("колір_не_вимір") or {}).get("фото"))
 print("ФАКТ · записів %d; «інший_колір» %d; L_from у них: %s; вікно кольору з кадром: %d"

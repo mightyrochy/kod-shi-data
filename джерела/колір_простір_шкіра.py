@@ -87,11 +87,11 @@ ITA_BANDS=[(55,1e9,"very light"),(41,55,"light"),(28,41,"intermediate"),
            (10,28,"tan"),(-30,10,"brown"),(-1e9,-30,"dark")]
 ITA_DOMAIN = REGISTRY["ita_domain"]["val"]   # область значень atan2(L*-50, b*) при b*>0
 
-def _норм_cdf(x):
+def норм_cdf(x):
     """Функція розподілу стандартної нормальної через erf."""
     return 0.5*(1.0+math.erf(x/math.sqrt(2.0)))
 
-def _σ_lab_з_σ_ita(lab, σ_ita):
+def σ_lab_з_σ_ita(lab, σ_ita):
     """ЯКОБІАН ita(): переводить σ по ITA° в σ по (L*, b*).
     ITA = atan2(L*−50, b*); при r = |(L*−50, b*)| похідна кута по будь-якому
     напрямку в площині (L*, b*) дорівнює 1/r рад на одиницю Lab, тож
@@ -108,13 +108,13 @@ def ita_band_mass(μ, σ):
     if μ != μ: return {ita_band(float("nan")): 1.0}
     if σ <= 0:  return {ita_band(μ): 1.0}
     низ, верх = ITA_DOMAIN
-    Z = _норм_cdf((верх-μ)/σ) - _норм_cdf((низ-μ)/σ)
+    Z = норм_cdf((верх-μ)/σ) - норм_cdf((низ-μ)/σ)
     if Z <= 0: return {ita_band(μ): 1.0}
     маси = {}
     for lo,hi,name in ITA_BANDS:
         a, b = max(lo, низ), min(hi, верх)
         if b <= a: continue
-        маси[name] = (_норм_cdf((b-μ)/σ) - _норм_cdf((a-μ)/σ)) / Z
+        маси[name] = (норм_cdf((b-μ)/σ) - норм_cdf((a-μ)/σ)) / Z
     return маси
 
 # ── ІНТЕГРАЛ ПО ЛОКУСУ — СІТКОЮ, А НЕ КИДКАМИ (28.09.2026, наряд КЛ-1 Н1) ───────
@@ -148,7 +148,7 @@ def skin_pos(lab, sigma=0.0, protocol=None):
     нелінійній формі локусу, тому беруться СІТКОЮ, не кидками (див. `_ВУЗЛИ_ШКІРИ`)."""
     if protocol: sigma = max(sigma, skin_photo_uncertainty(protocol)["ita_sigma"])
     μ_ita = ita(lab[0], lab[2])
-    σ_lab = _σ_lab_з_σ_ita(lab, sigma)
+    σ_lab = σ_lab_з_σ_ita(lab, sigma)
     вузли = [(dL, db) for dL in _ВУЗЛИ_ШКІРИ for db in _ВУЗЛИ_ШКІРИ] if σ_lab > 0 else [(0.0, 0.0)]
     loc=0.; olv=0.; n = len(вузли)
     for dL, db in вузли:

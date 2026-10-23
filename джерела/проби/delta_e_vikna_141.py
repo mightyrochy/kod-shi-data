@@ -12,7 +12,7 @@ os.chdir(Д); sys.path.insert(0, Д)
 import feed as Ф, bridge as B, стенд_знімок as СЗ
 ПР = ("K-ACC-10", "K-COL-05", "K-COL-06", "K-COL-02", "K-COL-01", "K-PAL-15", "K-PAL-05", "K-PAL-08", "K-PAL-12", "K-COMP-01", "K-COMP-04")
 зб = json.load(gzip.open("каталог_збагачення.json.gz", "rt", encoding="utf-8"))
-кат = {r["id"]: r for r in Ф._база_прогону(Ф.каталог_на_диску("каталог_повний.xml"), 0, "стенд_кеш_кольорів.json")["каталог"]}
+кат = {r["id"]: r for r in Ф.база_прогону(Ф.каталог_на_диску("каталог_повний.xml"), 0, "стенд_кеш_кольорів.json")["каталог"]}
 зч = lambda і: str((кат.get(і) or {}).get("колір_за_чим") or "")
 вікно = lambda і: (кат.get(і) or {}).get("колір_джерело") == "назва_вікно" or зч(і).startswith("фото: слово") or (
     зч(і).startswith("фото: hex") and ((зб.get(і) or {}).get("версія") or 1) < 2)

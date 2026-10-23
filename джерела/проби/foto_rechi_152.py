@@ -3,7 +3,7 @@
 (2) 10 закріплених речей × 3 сценарії, неслухняна модель руки 1: частка образів із річчю (має бути
 100 %) і образів із другою річчю в її слоті (має бути 0). Запуск із `джерела`: python3 проби/foto_rechi_152.py"""
 import json, base64, statistics as st, sys, itertools; sys.path.insert(0, '.'); from PIL import Image
-import colorspace as cs, palettes as ПЛ, bridge as B, річ_з_фото as Р; from міст_вхід import _збірка, _нормалізувати_вхід
+import colorspace as cs, palettes as ПЛ, bridge as B, річ_з_фото as Р; from міст_вхід import збірка as _збірка, нормалізувати_вхід as _нормалізувати_вхід
 В = [р for р in json.load(open('аудит/збагачення_v2_вибірка.json', encoding='utf-8'))['речі']
      if р.get('фото_показу') and (р.get('запис') or {}).get('колір_основний') and р['слот'] in Р.СЛОТИ_РЕЧІ]
 ряди = [list(г) for _, г in itertools.groupby(sorted(В, key=lambda р: р['слот']), key=lambda р: р['слот'])]

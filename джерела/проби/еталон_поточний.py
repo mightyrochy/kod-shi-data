@@ -13,7 +13,7 @@ for файл in (ТУТ + '/еталон_частки.py', ТУТ + '/../../ау
     exec(compile(ast.Module([в for в in дерево.body if isinstance(в, ast.FunctionDef) or 'НАЗАД' in ast.dump(в)[:60] or 'ДОВЖИНА' in ast.dump(в)[:60]], []), файл, 'exec'))
 розбір = json.load(open(sys.argv[1], encoding='utf-8')) if len(sys.argv) > 1 else json.loads(subprocess.check_output(['git', '-c', 'core.quotepath=off', 'show',
     'origin/claude/rz1-rozbir-zlyttia:аудит/розбір_каталогу/mamaylm-gemma-3-12b-it-v2.0_uk_povnyi/розбір.json'], cwd=Д))
-кат = {x['id']: x for x in ФК._прочитати_каталог('каталог_повний.xml', 0)['каталог']}; оф = {o['id']: o for o in F.читати_yml('каталог_повний.xml')[0]}; зб = F.читати_збагачення()
+кат = {x['id']: x for x in ФК.прочитати_каталог('каталог_повний.xml', 0)['каталог']}; оф = {o['id']: o for o in F.читати_yml('каталог_повний.xml')[0]}; зб = F.читати_збагачення()
 МАПА = ('item_type', 'cut', 'fabric', 'length', 'sleeve', 'pattern'); ЗАПОВНЮВАЧІ = {('cut', 'regular'), ('length', 'knee')}   # (д): заміна; (ж): рядок 2681
 КЛ = {'правильно': 'п', 'хибно': 'х', 'вигадано': 'в', 'невідомо': 'м', 'нема поля': 'м', 'не судиться': 'нс'}
 рах, за_групою, нема, зсув = C.defaultdict(C.Counter), C.defaultdict(C.Counter), [], C.Counter()

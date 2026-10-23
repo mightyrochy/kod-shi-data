@@ -5,7 +5,7 @@
 Запуск із `джерела`: python3 проби/шлях_оцінка_дві_фрази.py"""
 import sys, json, inspect, re; sys.path.insert(0, '.')
 import річ_з_фото as РФ, colorspace as cs
-from міст_вхід import _збірка, _нормалізувати_вхід
+from міст_вхід import збірка as _збірка, нормалізувати_вхід as _нормалізувати_вхід
 джерело = inspect.getsource(РФ._повідомлення_жінці)
 рядок0 = inspect.getsourcelines(РФ._повідомлення_жінці)[1]
 зріз = re.search(r'if x\]\[:(\d+)\]', джерело)

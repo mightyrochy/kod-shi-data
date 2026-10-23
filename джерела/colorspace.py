@@ -144,26 +144,26 @@ import math, random
 #       brief                            1669–1688 (20)
 #       feature_votes                    1690–1701 (12)
 from колір_простір_реєстр import (REGISTRY, registry_report, CONST, WIDTHS, tier)
-from колір_простір_перетворення import (SPACES, _f, _fi, to_lab, _inv, to_rgb, hex_з_lab, to_xyz,
-    from_xyz, _OK_M1, _OK_M2, to_oklab, d_ok, адаптувати, БІЛІ, _BRADFORD, _множ, _обернена_3x3,
-    _BRADFORD_ОБЕРНЕНА, адаптувати_освітлювач, lch, hx, de00, soft)
-from колір_простір_стеля import (_ГЛАДКІ, тканинна_пара, de00_тканина, _КЕШ_C_MAX, c_max,
-    _POINTER_ВУЗЛИ_C, _вузли_pointer_d65, _POINTER_ВУЗЛИ, _ФАНТОМНА_ЗОНА, c_max_поверхня,
-    у_фантомній_зоні, _ШКІРА_L_СВІТЛА, _ШКІРА_L_ТЕМНА, _ШКІРА_МНОЖНИК_ТЕМНОЇ,
+from колір_простір_перетворення import (SPACES, f as _f, fi as _fi, to_lab, inv as _inv, to_rgb, hex_з_lab, to_xyz,
+    from_xyz, OK_M1 as _OK_M1, OK_M2 as _OK_M2, to_oklab, d_ok, адаптувати, БІЛІ, BRADFORD as _BRADFORD, множ as _множ, обернена_3x3 as _обернена_3x3,
+    BRADFORD_ОБЕРНЕНА as _BRADFORD_ОБЕРНЕНА, адаптувати_освітлювач, lch, hx, de00, soft)
+from колір_простір_стеля import (ГЛАДКІ as _ГЛАДКІ, тканинна_пара, de00_тканина, КЕШ_C_MAX as _КЕШ_C_MAX, c_max,
+    POINTER_ВУЗЛИ_C as _POINTER_ВУЗЛИ_C, вузли_pointer_d65 as _вузли_pointer_d65, POINTER_ВУЗЛИ as _POINTER_ВУЗЛИ, ФАНТОМНА_ЗОНА as _ФАНТОМНА_ЗОНА, c_max_поверхня,
+    у_фантомній_зоні, ШКІРА_L_СВІТЛА as _ШКІРА_L_СВІТЛА, ШКІРА_L_ТЕМНА as _ШКІРА_L_ТЕМНА, ШКІРА_МНОЖНИК_ТЕМНОЇ as _ШКІРА_МНОЖНИК_ТЕМНОЇ,
     допуск_шкіри)
 from колір_простір_шкіра import (hair_photo_uncertainty, skin_photo_uncertainty, ita, ita_band,
-    ITA_BANDS, ITA_DOMAIN, _норм_cdf, _σ_lab_з_σ_ita, ita_band_mass, skin_pos, L_from_ht, ht_from_L,
+    ITA_BANDS, ITA_DOMAIN, норм_cdf as _норм_cdf, σ_lab_з_σ_ita as _σ_lab_з_σ_ita, ita_band_mass, skin_pos, L_from_ht, ht_from_L,
     ACHROMATIC_C, ЦЕНТР_ПІДТОНУ, РОЗКИД_ПІДТОНУ, КАСТ_ББ, ПОПУЛЯЦІЯ_ПІДТОНУ, МЕЖА_КЛАСУ_ПІДТОНУ,
     вісь_підтону_двостороння, HAIR_NEUTRAL_AB, achromatic, hair_cast, describe)
-from колір_простір_індукція import (_ПІК_ІНДУКЦІЇ, огинаюча_індукції, _КІРШМАН_ШИРИНА, тон,
+from колір_простір_індукція import (ПІК_ІНДУКЦІЇ, огинаюча_індукції, КІРШМАН_ШИРИНА as _КІРШМАН_ШИРИНА, тон,
     атенюація_L, тиск_тону)
-from колір_простір_надійність import (AXIS_RELIABILITY, MIN_TO_EMIT, reliability, _КОНТРАСТ_ШУМ_L,
-    _КОНТРАСТ_ШУМ_ЧАСТКА, похибка_контрасту, надійність_контрасту, gate_conclusions,
+from колір_простір_надійність import (AXIS_RELIABILITY, MIN_TO_EMIT, reliability, КОНТРАСТ_ШУМ_L as _КОНТРАСТ_ШУМ_L,
+    КОНТРАСТ_ШУМ_ЧАСТКА as _КОНТРАСТ_ШУМ_ЧАСТКА, похибка_контрасту, надійність_контрасту, gate_conclusions,
     extraction_sanity)
 from колір_простір_риси import (ЗОВНІШНІ_ВХОДИ, VALUE_REL, dominant_axis, density, підтон_риси,
-    поля_риси, features, _температура_шкіри, МАКІЯЖ_РИСИ, ПРЕФІКС_МАКІЯЖУ, додати_макіяж,
-    перерахувати_рису, RELATIONS, у_коло_художника, з_кола_художника, зсув_на_колі, доповнення, центри_відношення, дуга_кола, _arc, _in_arc, feature_spectrum, spectra_by_feature, _розсіяння,
-    _кут_розсіяння, регіони, _arc_overlap, resonance)
+    поля_риси, features, температура_шкіри as _температура_шкіри, МАКІЯЖ_РИСИ, ПРЕФІКС_МАКІЯЖУ, додати_макіяж,
+    перерахувати_рису, RELATIONS, у_коло_художника, з_кола_художника, зсув_на_колі, доповнення, центри_відношення, дуга_кола, arc, in_arc as _in_arc, feature_spectrum, spectra_by_feature, розсіяння,
+    кут_розсіяння as _кут_розсіяння, регіони, arc_overlap as _arc_overlap, resonance)
 
 if __name__=="__main__":
     import random

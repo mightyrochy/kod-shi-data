@@ -7,7 +7,7 @@
 import collections, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import feed as Ф, verify as V
-from фід_збагачення import _збагачення_придатне, ЗБАГАЧЕННЯ_ПОРІГ
+from фід_збагачення import збагачення_придатне as _збагачення_придатне, ЗБАГАЧЕННЯ_ПОРІГ
 оф = Ф.читати_yml(Ф.каталог_на_диску("каталог_повний.xml"))[0]
 зб = Ф.читати_збагачення()
 причини, крамниці = collections.Counter(), collections.Counter()

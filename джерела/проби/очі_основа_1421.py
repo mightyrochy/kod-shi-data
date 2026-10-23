@@ -9,7 +9,7 @@ import sys, pathlib, re, json, collections
 К = pathlib.Path(__file__).resolve().parent.parent; sys.path.insert(0, str(К))
 import міст_основи as МО, міст_вхід as МВ, вибір_палітри as ВП, внутрішня_мова as ВМ, palettes as ПЛ, colorspace as cs
 ГАМА = {"muted": "приглушені", "medium": "середні", "vivid": "насичені"}
-ґр, _ = МО._ґратка_основ()
+ґр, _ = МО.ґратка_основ()
 def основа(код, L, гама):
     for к, (hexx, назва) in ґр.items():
         ч = к.split("·")
@@ -18,7 +18,7 @@ def основа(код, L, гама):
             return dict(ахром=ах, hex=hexx, сім_я=None if ах else (ПЛ.сім_я_тону(cs.lch(cs.hx(hexx))[2]) or [None])[0])
 Т = dict(зріст=168, обхвати={"плечі": 98, "груди": 92, "талія": 74, "стегна": 99})
 жін = {ж: json.load(open(К.parent / ("аудит/проби/жінки/%s.json" % ж), encoding="utf-8")) for ж in ("ж%d" % i for i in range(1, 9))}
-F = {ж: МВ._features(dict(шкіра=д["skin"], волосся=д["hair"], очі=д["eyes"]))[0] for ж, д in жін.items()}
+F = {ж: МВ.features(dict(шкіра=д["skin"], волосся=д["hair"], очі=д["eyes"]))[0] for ж, д in жін.items()}
 РЯД = re.compile(r"^(ж\d)_(\S+).*\n.*\n.*\n\s+ОБРАЛА:.*основа=b\d+\(ранг \d+, (\S+) L(\d+) (\w+)\) \[([^\]]*)\]", re.M)
 Σ, зняті = collections.Counter(), []
 for ж, сц, код, L, гама, пр in РЯД.findall(open(К.parent / "аудит/перевірки/rozbir_0210/а2/вибір_палітри.out.txt", encoding="utf-8").read()):

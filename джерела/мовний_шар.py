@@ -217,7 +217,7 @@ def _код_кольору(hex_):
     """«059669» → код `color_name` (`palettes._назва` — те саме вікно, що підписує палітру) або None."""
     import palettes as _ПЛ
     import colorspace as _cs
-    к = _ВМ.код("color_name", _ПЛ._назва(_cs.hx("#" + hex_))[0])
+    к = _ВМ.код("color_name", _ПЛ.назва(_cs.hx("#" + hex_))[0])
     return к if к and not _ВМ.невідомо(к) else None
 
 
@@ -2111,7 +2111,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     _пора = _ВМ.ключ("part_of_day", в.get("part_of_day")) if в.get("hour") is None else None
     if _пора and є(об.get("година")):
         import сценарій as _СЦ
-        if _ВМ.ключ("part_of_day", _СЦ._частина_доби(int(об["година"]) % 24)) == _пора:
+        if _ВМ.ключ("part_of_day", _СЦ.частина_доби(int(об["година"]) % 24)) == _пора:
             об["пора"] = []
         else:
             об["година"] = об["хвилини"] = None
@@ -3105,8 +3105,8 @@ def _сцени_умов():
     """{назва сцени: коли вона є} — ті самі множини, що `паспорт_нагоди.порада_коду`."""
     import паспорт_нагоди as _ПН
     return {"an evening scene": "hour 18 or later, or occasion %s, or place %s, or activity photoshoot" % (
-                _коди_полем("occasion", _ПН._ВЕЧІРНІ_НАГОДИ), _коди_полем("place", _ПН._ВЕЧІРНІ_МІСЦЯ)),
-            "outdoors": "setting outdoor or mixed, or place %s" % _коди_полем("place", _ПН._ПРОСТО_НЕБА_МІСЦЯ)}
+                _коди_полем("occasion", _ПН.ВЕЧІРНІ_НАГОДИ), _коди_полем("place", _ПН.ВЕЧІРНІ_МІСЦЯ)),
+            "outdoors": "setting outdoor or mixed, or place %s" % _коди_полем("place", _ПН.ПРОСТО_НЕБА_МІСЦЯ)}
 
 
 # ТЕМИ ПОРАДИ З УМОВОЮ — тією самою, за якою код їх дозволяє (`паспорт_нагоди.порада_коду`), кодами
@@ -3134,7 +3134,7 @@ def _умови_тем():
                    % (вечір, коди("occasion", _ПН.НАГОДИ_ДІЛОВІ), коди("place", _ПН.МІСЦЯ_ДІЛОВІ),
                       коди("dress_code", _ФОРМ.ДРЕС_КОДИ_ДІЛОВІ), _KC.ОШАТНІСТЬ_ДЛЯ_ПОРАДИ_МАКІЯЖУ)),
         "movement": ("whether she will walk much and for how long",
-                     "%s, or occasion %s" % (надворі, коди("occasion", _ПН._ХОДИТИ_НАГОДИ))),
+                     "%s, or occasion %s" % (надворі, коди("occasion", _ПН.ХОДИТИ_НАГОДИ))),
         "temperature": ("how many degrees it will be", надворі),
         "jewelry": ("which jewellery she wants with THIS look: gold, silver, pearls, ethnic or none",
                     "the occasion is not sport"),
@@ -3836,10 +3836,10 @@ def профіль_кодами(вхід):
                 о["contrast"] = о["contrast"].get("level")
             вих["colouring"] = о
             її = пер.get("її") or {}
-            пал = {"scheme": _ДМ._СХЕМА.get(її.get("схема"), її.get("схема")) if її.get("схема") else "stylist_choice",
-                   "saturation": _ВП._ГАМА_КОД.get(її.get("гама"), її.get("гама")) if її.get("гама") else "stylist_choice"}
+            пал = {"scheme": _ДМ.СХЕМА.get(її.get("схема"), її.get("схема")) if її.get("схема") else "stylist_choice",
+                   "saturation": _ВП.ГАМА_КОД.get(її.get("гама"), її.get("гама")) if її.get("гама") else "stylist_choice"}
             if її.get("база"):
-                пал["base"] = _ВП._її_основа_дротом(її["база"])
+                пал["base"] = _ВП.її_основа_дротом(її["база"])
             вих["palette"] = пал
         else:
             бракує.append("colouring")
@@ -3878,7 +3878,7 @@ def теми_відкриті(паспорт, сценарій=None):
     п = паспорт if isinstance(паспорт, dict) else {}
     дані = set(п.get("поради_дані") or [])
     # поле вже знає паспорт — теми нема на жодному стані (умова кожної теми вимагає «не знає»)
-    ст = _ПН._стан_для_поради(сценарій or {}, п, "")
+    ст = _ПН.стан_для_поради(сценарій or {}, п, "")
     знає = {"goal": ст["мета_відома"], "makeup": ст["макіяж"], "movement": ст["рух"] or ст["тривалість"],
             "temperature": ст["темп_c"] not in (None, ""), "jewelry": ст["прикраси"], "register": ст["реєстр"],
             "occasion": ст["нагода"] or ст["місце"] or ст["подія"]}
@@ -3914,7 +3914,7 @@ def контраст_профілю(профіль):
         return None
     import міст_вхід as _МВ
     import outfit as _O
-    о = _O.контраст_особи(_МВ._features(профіль)[0])
+    о = _O.контраст_особи(_МВ.features(профіль)[0])
     return о.get("рівень") if о.get("доступно") else None
 
 
@@ -4167,7 +4167,7 @@ def _година_при_порі(оновлення):
     if (уривок is not None and re.search(r"\d", str(уривок))) or not 0 <= г <= 23:
         return оновлення, []
     import сценарій as _СЦ
-    return dict(без_години, part_of_day=_СЦ._частина_доби(г)), ["hour->part_of_day"]
+    return dict(без_години, part_of_day=_СЦ.частина_доби(г)), ["hour->part_of_day"]
 
 
 # СПИСОК НА ПОЛІ ОДНОГО ЗНАЧЕННЯ — ПЕРШЕ ЗНАЧЕННЯ (рядок 6457, ЖИВІ-1016-1). «Пробіжка зранку, потім обід з колегою» —

@@ -6,7 +6,7 @@
 import sys, json, pathlib, collections
 _К = pathlib.Path(__file__).resolve().parent.parent; sys.path.insert(0, str(_К))
 import feed as Ф, bridge as B, суд_від_моделі as СМ
-кат = {r["id"]: r for r in Ф._база_прогону(Ф.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]}
+кат = {r["id"]: r for r in Ф.база_прогону(Ф.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]}
 наб = [r for r in кат.values() if r.get("набір") is True]
 print("комплектів: %d · слоти: %s · типи: %s" % (len(наб), {r["слот"] for r in наб}, dict(collections.Counter(r.get("тип") for r in наб))))
 for і in ("ж-02299@stolyarchuk.com.ua", "ж-08427@sarahberlin.com", "ж-01661@alot.com.ua"):

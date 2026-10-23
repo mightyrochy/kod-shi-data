@@ -6,7 +6,7 @@
 import collections, os, re, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_каталог as FK
-К = FK._прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
+К = FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
 нв = [r for r in К if r.get("колір_не_вимір")]
 def причина(r):
     ч = r["колір_не_вимір"].get("чому", "")

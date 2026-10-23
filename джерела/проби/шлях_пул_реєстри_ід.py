@@ -13,7 +13,7 @@ import json, os, sys
 sys.path.insert(0, ТУТ)
 os.chdir(ТУТ)
 import реєстри as Р, пакет_моделі as ПМ
-from міст_вхід import _без_ід_глибоко
+from міст_вхід import без_ід_глибоко as _без_ід_глибоко
 ФАЙЛ = os.path.join(os.path.dirname(ТУТ), "аудит", "тести", "власник_2026-09-25",
                     "verdykty-0phxvk-2026-09-25-2012.json")
 пак = {}

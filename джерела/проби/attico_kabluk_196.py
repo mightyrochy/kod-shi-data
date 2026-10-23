@@ -9,8 +9,8 @@ import feed as Ф, фід_взуття as В, accessory as АР
 класи, було, стало, кандидати = collections.Counter(), collections.Counter(), collections.Counter(), collections.Counter()
 for c in взут:
     п = c.get('параметри') or {}
-    см_було = В._число_см(п.get('каблук_см'))
-    поля = В._взуттєві_поля(dict(c, параметри=п), п.get('тип'))
+    см_було = В.число_см(п.get('каблук_см'))
+    поля = В.взуттєві_поля(dict(c, параметри=п), п.get('тип'))
     смуга = поля.get('каблук_клас')
     if смуга is None:
         continue

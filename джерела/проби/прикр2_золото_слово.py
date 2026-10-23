@@ -9,10 +9,10 @@ import collections, glob, gzip, os, re, sys                                   # 
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ТУТ)
 import фід_каталог as ФК, palettes as П, палітра_схеми as ПСХ                                       # noqa: E401,E402
-за_ід = {r["id"]: r for r in ФК._прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]}
-слово_металу = {і for і, r in за_ід.items() if П._колір_невідомий(r)}
+за_ід = {r["id"]: r for r in ФК.прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]}
+слово_металу = {і for і, r in за_ід.items() if П.колір_невідомий(r)}
 print("каталог: прикрас, чий колір знає лише слово металу, %d; `_несе_колір` на них: %s" % (
-    len(слово_металу), dict(collections.Counter(П._несе_колір(за_ід[і]) for і in слово_металу))))
+    len(слово_металу), dict(collections.Counter(П.несе_колір(за_ід[і]) for і in слово_металу))))
 набори = set()
 for ф in glob.glob(os.path.join(ТУТ, "..", "аудит", "перевірки", "**", "вердикти*.gz"), recursive=True):
     for м in re.finditer(r'\\?"ід\\?": ?\[([^\]]*)\]', gzip.open(ф).read().decode()):

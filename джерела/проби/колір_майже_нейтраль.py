@@ -13,9 +13,9 @@ if sys.argv[1:2] == ["--знімок"]:
         z, п = зб.get(o["id"]) or {}, " ".join(str(o.get("колір_сирий") or "").lower().split())
         if п and len(FK._СЕП_КОЛЬОРУ.split(п)) == 1 and V.слово_крамниці(п) and (z.get("колір_основний") or {}).get("hex") \
                 and (z.get("версія") or 1) >= 2 and FZ.колір_збагачення(z)[2].startswith("hex"):
-            кр[o["id"]] = (V.слово_крамниці(п)["ім"], PS._назва(cs.hx(z["колір_основний"]["hex"]))[0], cs.lch(cs.hx(z["колір_основний"]["hex"]))[1], *cs.lch(cs.hx(z["колір_основний"]["hex"]))[::2])
-    кат = {r["id"]: r for r in FK._прочитати_каталог("каталог_повний.xml", 0)["каталог"]}
-    json.dump(dict(нт={L: (PS._назва(PS._lab(L, 8.0, 90))[0], PS._hex(PS._lab(L, 8.0, 90))) for L in (35.4, 40.1)}, коди={х: МШ._код_кольору(х[1:]) for х in hx}, ґратка=МО._ґратка_основ()[0], центри={ім: PS._назва(PS._центр(в))[0] for ім, в in V.ЛЕКСИКОН.items()}, крамниці=кр, каталог=кат),
+            кр[o["id"]] = (V.слово_крамниці(п)["ім"], PS.назва(cs.hx(z["колір_основний"]["hex"]))[0], cs.lch(cs.hx(z["колір_основний"]["hex"]))[1], *cs.lch(cs.hx(z["колір_основний"]["hex"]))[::2])
+    кат = {r["id"]: r for r in FK.прочитати_каталог("каталог_повний.xml", 0)["каталог"]}
+    json.dump(dict(нт={L: (PS.назва(PS.lab_з_lch(L, 8.0, 90))[0], PS.hex_з_lab(PS.lab_з_lch(L, 8.0, 90))) for L in (35.4, 40.1)}, коди={х: МШ._код_кольору(х[1:]) for х in hx}, ґратка=МО.ґратка_основ()[0], центри={ім: PS.назва(PS.центр(в))[0] for ім, в in V.ЛЕКСИКОН.items()}, крамниці=кр, каталог=кат),
               open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, default=str)
     sys.exit()
 база, т = (sys.argv[1:] or ["origin/main"])[0], tempfile.mkdtemp(); subprocess.run(["git", "worktree", "add", "-q", "--detach", т + "/б", база], check=True)

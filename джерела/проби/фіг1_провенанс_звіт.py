@@ -10,10 +10,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))));
 import bridge as B, feed as Ф, фід_каталог as ФК, pipeline as PL, стенд_знімок as СЗ
 СУД, _суд = [], PL.перевірити_від_моделі
 def _лічба(*a, **k):
-    в = _суд(*a, **k); СУД.extend(z for z in в.get("знахідки") or [] if z.get("діагностика") and not PL._питання_або_нуль(z)); return в
+    в = _суд(*a, **k); СУД.extend(z for z in в.get("знахідки") or [] if z.get("діагностика") and not PL.питання_або_нуль(z)); return в
 PL.перевірити_від_моделі = _лічба
 КАТ, База = Ф.каталог_на_диску("каталог_повний.xml"), json.load(open("стенд_вх.json", encoding="utf-8"))
-кат = ФК._прочитати_каталог(КАТ, ліміт_фото=0)["каталог"]
+кат = ФК.прочитати_каталог(КАТ, ліміт_фото=0)["каталог"]
 низи = [r["id"] for r in кат if r.get("слот") == "низ" and (r.get("еластан_%") or 0) >= 2
         and r.get("крій") in ("bodycon", "fitted", "skinny") and r.get("довжина_рівень")]
 суд, звіт, поле = collections.Counter(), collections.Counter(), collections.Counter()

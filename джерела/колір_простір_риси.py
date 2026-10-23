@@ -259,7 +259,7 @@ def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
         # замість двох окремих ліній. L* (глибина) ортогональна, лишається окремо (ITA/depth_band).
         # Один виклик замість вкладеного блоку: warm-cool/олива/clarity живуть у
         # _температура_шкіри(), тож profile.py може перерахувати їх після правки профілю.
-        F["шкіра"].update(_температура_шкіри(hair_parts.get("шкіра", lab_skin)))
+        F["шкіра"].update(температура_шкіри(hair_parts.get("шкіра", lab_skin)))
     if hair_unc:
         for k in F:
             if k.startswith("волосся"): F[k]["L_невизначеність"] = hair_unc
@@ -277,7 +277,7 @@ def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
                     tier=tier("hair_nat_L","olive"))
     return F
 
-def _температура_шкіри(lab):
+def температура_шкіри(lab):
     """ЄДИНЕ місце, де рахується warm-cool/олива/clarity шкіри. Винесено з features(),
     щоб profile.py міг ПЕРЕРАХУВАТИ похідні поля після правки (засмага, фарбування):
     доти L/a/b мінялись, а ITA, тепло_сила й undertone лишались від старого кольору,
@@ -411,7 +411,7 @@ def перерахувати_рису(F, риса, lab, kind=None, lex=None):
         sp = skin_pos(lab)
         нове.update(ITA=sp["ITA"], depth_band=list(sp["band_p"])[0],
                     band_p=sp["band_p"], p_olive=sp["p_olive"])
-        нове.update(_температура_шкіри(lab))
+        нове.update(температура_шкіри(lab))
     F[риса] = нове
     return F
 
@@ -507,10 +507,10 @@ def дуга_кола(h, пів):
     return (з_кола_художника(у_коло_художника(h) - float(пів)) % 360.0,
             з_кола_художника(у_коло_художника(h) + float(пів)) % 360.0)
 
-def _arc(c,half):
+def arc(c,half):
     """Дуга (c − half, c + half) по модулю 360."""
     return ((c-half)%360, (c+half)%360)
-def _in_arc(h,a):
+def in_arc(h,a):
     """Чи кут h лежить у дузі a, з переходом через 0°."""
     lo,hi=a; return (lo<=h<=hi) if lo<=hi else (h>=lo or h<=hi)
 
@@ -521,7 +521,7 @@ def feature_spectrum(f, intent):
     if not f.get("тон_визначений", True):
         hues=[]                       # сиве/нейтральне: голосує лише світлотою й хромою
     else:
-        hues=[_arc(c, w) for c in центри_відношення(f["h"], intent)]
+        hues=[arc(c, w) for c in центри_відношення(f["h"], intent)]
     # світлота: три легітимні відношення до риси, не одне
     Lr={k:(max(0,f["L"]-c-wd), min(100,f["L"]-c+wd)) for k,(c,wd) in VALUE_REL.items()}
     Lr.update({k+"+":(max(0,f["L"]+c-wd), min(100,f["L"]+c+wd)) for k,(c,wd) in VALUE_REL.items() if c})
@@ -538,7 +538,7 @@ def spectra_by_feature(F, intent):
         sp=feature_spectrum(f,intent); sp["риса"]=nm; out[nm]=sp
     return out
 
-def _розсіяння(vals, ваги=None):
+def розсіяння(vals, ваги=None):
     """НЕПЕРЕРВНЕ зважене розсіяння (СКВ) — замість max−min. Використовує ВСІ точки й ваги
     (площа/надійність), не дві крайні. Повертає (σ, μ)."""
     if not vals: return (None, None)
@@ -548,7 +548,7 @@ def _розсіяння(vals, ваги=None):
     σ = (sum(w*(x-μ)**2 for x, w in zip(vals, ваги)) / S) ** 0.5
     return (σ, μ)
 
-def _кут_розсіяння(hs_deg, ваги=None):
+def кут_розсіяння(hs_deg, ваги=None):
     """КРУГОВЕ зважене розсіяння тону (замість max-парного гепу). R=довжина результуючого
     вектора (1=зібрані, 0=розкидані); кутова СКВ = sqrt(-2·ln R). Неперервне, по всіх рисах."""
     if not hs_deg: return None
@@ -621,9 +621,9 @@ def регіони(F, source="uncontrolled"):
     відомі = any(pl for _, _, pl in хмара)
     домінанта = (max(хмара, key=lambda t: (t[2] or 0))[0] if відомі else "шкіра (за замовч. площею)")
     # РОЗСІЯННЯ — НЕПЕРЕРВНЕ зважене (СКВ / кругове), НЕ max−min: усі риси й ваги, не дві крайні.
-    σC, _ = _розсіяння(Cs, ваги)
-    σL, _ = _розсіяння(Ls, ваги)
-    hσ = _кут_розсіяння(hs, ваги)
+    σC, _ = розсіяння(Cs, ваги)
+    σL, _ = розсіяння(Ls, ваги)
+    hσ = кут_розсіяння(hs, ваги)
     # «ВПЕВНЕНІСТЬ» тут = СИЛА властивості (репрезентація для стиліста: НАСКІЛЬКИ тепла/контрастна
     # людина), НЕ надійність виміру. Неперервно, сигмоїдою (soft), 0..1; тепло — знакове.
     # Центри/ширини сигмоїд — T3 (орієнтир, де «слабко/помірно/сильно»), не калібровані.
@@ -653,12 +653,12 @@ def регіони(F, source="uncontrolled"):
     return dict(риси=риси, ансамбль=ансамбль,
                 примітка="ансамбль = ХМАРА трьох регіонів (НЕ перетин — він порожній), зважена площею")
 
-def _arc_overlap(a,b,step=2):
+def arc_overlap(a,b,step=2):
     """Перетин двох дуг. РАНІШЕ повертав (pts[0], pts[-1]) — і на перетині ЧЕРЕЗ 0°
     (напр. 345..15) віддавав (0, 358), тобто майже все коло замість вузької дуги.
     Перегук читався як «риси сходяться скрізь». Тепер шукається розрив у списку:
     якщо він є, дуга обгортається через нуль."""
-    pts=[h for h in range(0,360,step) if _in_arc(h,a) and _in_arc(h,b)]
+    pts=[h for h in range(0,360,step) if in_arc(h,a) and in_arc(h,b)]
     if not pts: return None
     if len(pts)==1: return (pts[0], pts[0])
     розриви=[i for i in range(1,len(pts)) if pts[i]-pts[i-1] > step]
@@ -684,7 +684,7 @@ def resonance(F, intent):
     for i in range(len(names)):
         for k in range(i+1,len(names)):
             n1,n2=names[i],names[k]
-            ov=[o for a in SP[n1]["тон"] for b in SP[n2]["тон"] if (o:=_arc_overlap(a,b))]
+            ov=[o for a in SP[n1]["тон"] for b in SP[n2]["тон"] if (o:=arc_overlap(a,b))]
             t1, t2 = SP[n1]["температура"], SP[n2]["температура"]
             dT = None if (t1 is None or t2 is None) else abs(t1-t2)
             if dT is None:
@@ -703,7 +703,7 @@ def resonance(F, intent):
     # зони, де сходяться ≥3 риси (не бал, а перелік учасників)
     conf={}
     for h in range(0,360,5):
-        who=[nm for nm,sp in SP.items() if any(_in_arc(h,a) for a in sp["тон"])]
+        who=[nm for nm,sp in SP.items() if any(in_arc(h,a) for a in sp["тон"])]
         base=sorted({nm.split("_")[0] for nm in who})      # фракції -> одна риса
         if len(base)>=3: conf.setdefault(tuple(base),[]).append(h)
     return dict(перегуки=echoes, напруги=tensions, без_температури=без_т,

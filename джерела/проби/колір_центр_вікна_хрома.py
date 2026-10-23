@@ -17,7 +17,7 @@ for r in кат:
     if нв is None and r.get("lab"): Т[с][0].append(cs.lch(tuple(r["lab"]))[1]); continue
     if нв and r.get("lab") and cs.lch(tuple(r["lab"]))[1] >= 40: ВІК[с] += 1
     if нв and (r.get("колір_спір") or {}).get("чому") == "згода свідків нижча за поріг" and з.get("версія") == 2:
-        lab = ФЗ._lab_з_hex(з["колір_основний"]["hex"])
+        lab = ФЗ.lab_з_hex(з["колір_основний"]["hex"])
         if lab and V.перевірити(lab, ім=с)["вердикт"] == "прийнято": Т[с][1].append(cs.lch(tuple(lab))[1])
 м = lambda x: S.median(x) if x else float("nan")
 print("слово          центр C* вікна | точки: n, медіана C* | відкинуті порогом у вікні: n, медіана C* | вікон «гучних»")

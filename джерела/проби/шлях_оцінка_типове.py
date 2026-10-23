@@ -5,7 +5,7 @@
 import sys, json, re; sys.path.insert(0, '.')
 import річ_з_фото as РФ, паспорт_нагоди as ПН, colorspace as cs
 import руки_без_коду as РБК
-from міст_вхід import _збірка, _нормалізувати_вхід
+from міст_вхід import збірка as _збірка, нормалізувати_вхід as _нормалізувати_вхід
 T_ = open('показ.html', encoding='utf-8').read()
 ряд = lambda взір: T_[:re.search(взір, T_).start()].count('\n') + 1
 print('типове в DOM: показ.html:%d — <input id="сц-темп" value="18">; показ.html:%d — %s'

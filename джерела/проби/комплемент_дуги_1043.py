@@ -10,9 +10,9 @@ import sys, pathlib, math, statistics as С
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import feed as F; F.каталог_на_диску('каталог_повний.xml')
 import фід_каталог as ФК, colorspace as cs, palettes as P
-кат = ФК._прочитати_каталог('каталог_повний.xml', 0)['каталог']
+кат = ФК.прочитати_каталог('каталог_повний.xml', 0)['каталог']
 ВЕЛ = {"верх", "низ", "сукня", "верхній_шар", "комплект"}
-лч = [cs.lch(tuple(r["lab"])) for r in кат if r.get("слот") in ВЕЛ and r.get("lab") and P._хроматична(tuple(r["lab"]))]
+лч = [cs.lch(tuple(r["lab"])) for r in кат if r.get("слот") in ВЕЛ and r.get("lab") and P.хроматична(tuple(r["lab"]))]
 ПАРИ = (("бордо", "#6e2a2c", "сосна", "#2e4a3a"), ("кемел", "#c19a6b", "темно-синій", "#1f2a44"),
         ("бірюза-тіл", "#2f7f80", "мідь", "#b87333"))
 h_ = lambda x: cs.lch(cs.hx(x))[2]

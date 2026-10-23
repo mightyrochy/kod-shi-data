@@ -8,7 +8,7 @@
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
 import мовний_шар as МШ, сценарій as СЦ, річ_з_фото as РФ, паспорт_нагоди as ПН, colorspace as cs
-from міст_вхід import _збірка, _нормалізувати_вхід
+from міст_вхід import збірка as _збірка, нормалізувати_вхід as _нормалізувати_вхід
 
 слова = "Збери образ під цю спідницю і чоботи для походу на концерт"
 print("промпт ходу розмови (рядок 6190): названу подію писати ще й кодом occasion чи place — %s"
