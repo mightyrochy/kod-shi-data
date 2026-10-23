@@ -97,10 +97,14 @@ _ПРИЧИН_МАКС = 3
 # ЩО ТЕПЕР. Код міряє відношення кожної основи переліку до очей двома ходами K-PAL-02 (повтор
 # кольору очей) і комплементу кола художника (K-COL-03 §4, п.18) — класами того самого кодування
 # відношень, що судить відлуння (`колір_річ.відношення`, вікна `колір_відношення`; рядок 3362): `echo` —
-# сім'я очей, як K-PAL-02/13 (`колір_річ.у_сім_ї_очей`: тон/підтон, хрома й світлота
-# спільного запису райдужки; нейтраль — до нейтральних очей), `set_off`
+# повтор кольору очей: та сама сім'я тону (`колір_річ.та_сама_сім_я`: сектор кола, буре — одна сім'я; та сама
+# лічба, що K-COMP-03 і K-PAL-07) і відлуння райдужки світлотою й хромою (`колір_річ.у_відлунні_очей`, як
+# K-PAL-02/13): сім'я тону сама світлоти не знає й темно-карим очам (коло 34°) дала б вишневий C67 і персиковий
+# (коло 5°); нейтраль — до нейтральних очей), `set_off`
 # — комплемент (`complementary`: від 150° кола). Доти `echo` — та сама сім'я розбиття `СІМ_Ї` (кути
-# CIELAB), `set_off` — ±30° CIELAB навколо `cs.доповнення`. Модель бачить
+# CIELAB), `set_off` — ±30° CIELAB навколо `cs.доповнення`; з 2.14-А до 2.14-В `echo` — відлуння райдужки
+# (`у_відлунні_очей`, аналогова дуга з тінтом): основа іншої сім'ї тону — 675 з 3015 echo на 315 персонах
+# (рядок 9400: зеленим очам блакитний, блакитним — бузковий), хоч поле каже «the same colour family». Модель бачить
 # це полем `eyes` основи, а суддя (`прийняти`) знімає `why_her_eyes` з основи без відношення —
 # у `відхилено` кодом. Сам вибір основи лишається її: знято лише неправдиву причину.
 # ДЕ ЛАМАЄТЬСЯ: темно-карі очі (ж4: C*16) — тон RO–O кола, тож їхній «повтор» — коричневий, коньячний
@@ -119,7 +123,7 @@ def _до_очей(о, F):
     очі = dict(lab=(float(р["L"]), float(р["C"]) * _м.cos(_м.radians(float(р["h"]))),
                     float(р["C"]) * _м.sin(_м.radians(float(р["h"])))))
     основа = dict(lab=_cs.hx(о["hex"]))
-    if _КР.у_сім_ї_очей(основа, _ПЛ.колір_очей(р)) == "так":
+    if _КР.і(_КР.та_сама_сім_я(основа, очі), _КР.у_відлунні_очей(основа, _ПЛ.колір_очей(р))) == "так":
         return "echo"
     return "set_off" if _КР.відношення(основа, очі, "complementary", певність=False) == "так" else None
 
@@ -149,8 +153,10 @@ def _до_очей(о, F):
         _ЗП.Поле("bases", "base colours (the main colour of the look) advised for her, in the code's "
                           "order: rank, id, colour code, family, temperature, lightness L*, saturation "
                           "band (any: a neutral fits every band), \"fit\" 0-1 — how the code scored it "
-                          "for her face; \"eyes\" — how the base relates to her eye colour: echo (the "
-                          "same colour family), set_off (opposite her eyes on the artist's colour wheel); "
+                          "for her face; \"eyes\" — how the base relates to her eye colour: echo (it repeats "
+                          "her eye colour: the same hue family — one sector of the artist's colour wheel, "
+                          "which the broader \"family\" name can cross — at a close lightness and chroma), "
+                          "set_off (opposite her eyes on the artist's colour wheel); "
                           "absent — no relation to her eyes; \"advised\": false — a rarer base outside "
                           "the code's advised row, listed for its relation to her eyes; \"clothing\" — "
                           "how many clothes (tops, bottoms, dresses, sets, outer layers) of today's "
