@@ -30,7 +30,6 @@
 <title>люстерко</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cpath%20d='M14%204h36l10%2010v46H4V14z'%20fill='%231B1A17'/%3E%3Cpath%20d='M14%2052h36'%20stroke='%23D6B45C'%20stroke-width='3'/%3E%3Ctext%20x='32'%20y='44'%20text-anchor='middle'%20font-family='Georgia,serif'%20font-size='32'%20fill='%23FBF9F4'%3E%D0%BB%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<script defer src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js" integrity="sha384-i3R37b3tF+HWudsUf1VSEOY2YxwSNMqY8DQa9Z0O3xh+NkJ9o+yjcGyIi5huj+nB" crossorigin="anonymous"></script>
 <style>
 /* ═══════════════════════════════════════════════════════════════════════════
    люстерко · інтерфейс v3 — «Полотно й нитка»; уночі — «Музейне золото».
@@ -1658,7 +1657,8 @@ label:has(input:focus-visible),.слот:has(input:focus-visible){
 <section id="е-очікування" class="екран">
   <div class="вступ">
     <h1>Тчеться<br>твій образ.</h1>
-    <p id="оч-текст">Перебираємо тисячі речей з українських крамниць. Дві-три хвилини, перший раз — довше.</p>
+    <p id="оч-текст">Перебираємо тисячі речей з українських крамниць.</p>
+    <p class="підказка" id="оч-зараз"></p>
   </div>
   <!-- ТКАЦЬКИЙ ВЕРСТАТ (v5): навій, нитки основи, човник на межі, полотно, що
        намотується донизу, з рушниковими смугами в кольорах обраної палітри. Усе
@@ -3899,6 +3899,8 @@ async function записатиЯдро(поз, авто){
   const запис = {
     дата: new Date().toISOString().slice(0,10),
     профіль: П.профіль || '(без профілю)',
+    /* ід тестувальниці — її підпис профілю; нема підпису — поля нема, а не пристрій замість нього */
+    тестувальниця: П.підпис || null,
     рука: к.рука || ('поз'+(поз+1)),
     /* ітерацій і пул пишуться в рядок, а не лише стоять у шапці: порожня
        колонка гірша за відсутню — вона виглядає як зібрані дані */
@@ -4618,7 +4620,7 @@ const ЗВІТ_ФОРМАТ = 'ВЕРДИКТИ-ПОКАЗ-ФАЙЛ-V3';
    поле, що випадково збіглося в чотирьох руках (скажімо `мова_спроб: 0`), не
    стає спільним — винесення такого поля читалось би як твердження про прогін.
    Виноситься лише те, що тут названо, і лише коли значення справді однакове. */
-const СПІЛЬНІ_ПОЛЯ = ['джерело','пристрій','збірка','каталог','розклад','прогін','профіль','дата','пул',
+const СПІЛЬНІ_ПОЛЯ = ['джерело','пристрій','збірка','каталог','розклад','прогін','профіль','тестувальниця','дата','пул',
   'пал_база','пал_база_обрана','пал_схема_обрана','пал_гілка','пал_гама',
   'паспорт','паспорт_джерело','випадок_моделі','чат','чат_повідомлень',
   'різних_правил','пул_спільних','знімка_прогону_нема',
@@ -6536,7 +6538,7 @@ async function застосуватиКольори(){
    збирач підставляє сюди на місце плейсхолдера (Т-08 крок 3, Н-outfit-2-093).
    Доти тут стояв рукописний літерал, і він розійшовся з кодом на шести межах:
    жінка читала «Візьмемо: ошатність — …» з копії, а суд ішов за `outfit`.
-   Тепер межі — ті самі `outfit.МІСЦЯ_ДІАПАЗОНИ`/`КОДИ_ДІАПАЗОНИ`, слова —
+   Тепер (наряд 3.7) смуги — лише щаблі драбини `формальність.ДРАБИНА`, слова —
    `pipeline.ДОВІДНИК_ПІДПИСИ`. Плитки, списки й слово ошатності беруть лише
    рядки з `плитка: true` (зріз для людини); повний перелік ключів лишається в
    таблиці, бо паспорт із чату може принести будь-який із них, і `знайти`
@@ -6753,7 +6755,7 @@ const ХІД_ПЛИТОК_П = {ключ: null, обіцянка: null, тайм
    «Зібрати образи». Живе рівно доти, доки плитки ті самі (`ключ` = `ключПлитокП()`). */
 let ПАСПОРТ_ПЛИТОК_П = null;
 let ЗАПИС_ПЛИТОК_П = null;
-const ПОЛЯ_ХОДУ_ПЛИТОК_П = ['formality', 'part_of_day', 'reserved_colour', 'open_zones'];
+const ПОЛЯ_ХОДУ_ПЛИТОК_П = ['formality', 'formality_branch', 'part_of_day', 'reserved_colour', 'open_zones'];
 let ВИПАДОК_ПІДТВЕРДЖЕНО_П = false;
 let ШІ_РОЗГОРНУТО = false;         // поза сценарієм: стрічка й поле розгорнуті з пілюлі
 let КАРТКА_РУКОЮ = false;          // людина попросила показати картку сценарію, поки в ній порожньо
@@ -6892,7 +6894,7 @@ ONBOARDING — three steps, once, while there is no profile yet. Step 1 {step_ab
 
 PROFILE (tab) — rows, each showing what is already there: {row_photo} (portrait and full length), {row_colours} (three swatches: skin, hair, eyes), {row_name} (and consent), {step_face} (her answers), {row_girths} (four numbers and height), {row_extra} (all optional: high hip, knee, calf and ankle refine the fit on the legs and hips; foot length in mm and head girth in cm check shoe and hat sizes), {row_people} ({whose_profile} switches between people and {new_profile} adds one: several people can use one phone, each with her own data). A tap on a row opens its editor as a sheet with the same fields as in onboarding. What is still missing for building is labelled in gold.
 
-CASE — the main screen; the one main thing on it is the chat. Before the chat starts, under the question {where_going} there is a letter sheet: she writes into it, as to a friend, where she is going, when, what the weather is, what she wants and does not want; below it are three example beads (a tap puts the example into the field without sending it) and {fill_by_hand} (shows an empty case card). From her words the stylist builds the case passport: event, occasion, place, formality, hour, temperature, precipitation, requirements and limits. The messages form a thread, and under the last answer lies the case card with rows: {row_occasion} ({occasions}), {row_place} ({places}), {row_formality} (a 1–10 scale: 1 home, 3 café, 5–7 office, 4–6 theatre by day, 7 evening out, 9 ceremony; a manual choice overrides occasion and place), {row_when} (hour, temperature, {precipitation}, wind, de-icing chemicals on the roads), {row_makeup} ({makeup_levels}; for the last two also a lip colour — noticeable makeup gives the outfit one more step of contrast near the face, bold makeup already holds the focus on the face; {stylist_chooses} hands this decision to the code on purpose; the lip colour is chosen from a ladder of shades split into those recommended for her and the rest, each with its reason, next to {own_shade} and {stylist_chooses} for the colour itself), {row_jewelry} ({jewelry} or {stylist_chooses}: the code matches gold and silver against the metal of the items and removes the opposite metal from the pick, no jewellery removes jewellery altogether, and pearls cannot be told from ethnic pieces because shops do not say so — the code says this in its report), {row_dont_want} ({zones} — a hard limit, not a wish: the code removes such items from the pick itself; limits the stylist heard in her words go here too — items, fabrics, prints, colours: the card row names only what the code actually holds, which is colours and what she refused in her own words, and the rest of what was heard is shown in the sheet, where a tap removes something heard by mistake) and {row_palette} (opens a separate screen). A tap on a row opens its editor as a sheet with tiles and lists; after a manual edit the passport is rebuilt from the whole chat before building. Grey values are defaults: she has not chosen there. The card also has the question {all_right} ({yes} confirms, {fix} returns to the field), the button {build} (it needs read colours, four girths and height, and an occasion or a description in her own words; the button says what is missing, and a hint with {to_profile} appears at the top of the screen) and {save_case} (into the library, with a name; an opened saved case can be updated with {update} or saved with {save_as_new}). When the stylist does not know something (for example, how formal), quick-answer beads from the reference tables appear above the field, and a tap sends the answer.
+CASE — the main screen; the one main thing on it is the chat. Before the chat starts, under the question {where_going} there is a letter sheet: she writes into it, as to a friend, where she is going, when, what the weather is, what she wants and does not want; below it are three example beads (a tap puts the example into the field without sending it) and {fill_by_hand} (shows an empty case card). From her words the stylist builds the case passport: event, occasion, place, formality, hour, temperature, precipitation, requirements and limits. The messages form a thread, and under the last answer lies the case card with rows: {row_occasion} ({occasions}), {row_place} ({places}), {row_formality} (the step of dress for this outing — home, everyday, neat, smart, strict, evening dress or ceremonial — set by whose standard holds there, not by the hour or the event's name; a dress code chosen by hand overrides it), {row_when} (hour, temperature, {precipitation}, wind, de-icing chemicals on the roads), {row_makeup} ({makeup_levels}; for the last two also a lip colour — noticeable makeup gives the outfit one more step of contrast near the face, bold makeup already holds the focus on the face; {stylist_chooses} hands this decision to the code on purpose; the lip colour is chosen from a ladder of shades split into those recommended for her and the rest, each with its reason, next to {own_shade} and {stylist_chooses} for the colour itself), {row_jewelry} ({jewelry} or {stylist_chooses}: the code matches gold and silver against the metal of the items and removes the opposite metal from the pick, no jewellery removes jewellery altogether, and pearls cannot be told from ethnic pieces because shops do not say so — the code says this in its report), {row_dont_want} ({zones} — a hard limit, not a wish: the code removes such items from the pick itself; limits the stylist heard in her words go here too — items, fabrics, prints, colours: the card row names only what the code actually holds, which is colours and what she refused in her own words, and the rest of what was heard is shown in the sheet, where a tap removes something heard by mistake) and {row_palette} (opens a separate screen). A tap on a row opens its editor as a sheet with tiles and lists; after a manual edit the passport is rebuilt from the whole chat before building. Grey values are defaults: she has not chosen there. The card also has the question {all_right} ({yes} confirms, {fix} returns to the field), the button {build} (it needs read colours, four girths and height, and an occasion or a description in her own words; the button says what is missing, and a hint with {to_profile} appears at the top of the screen) and {save_case} (into the library, with a name; an opened saved case can be updated with {update} or saved with {save_as_new}). When the stylist does not know something (for example, how formal), quick-answer beads from the reference tables appear above the field, and a tap sends the answer.
 ITEM PHOTOS: next to {send}, both in the letter sheet and in the chat field, there is a photo button — she can add one or several photos of an item (her own, or one she is thinking of buying) and ask whether it suits her and what to wear it with; a photo without words means exactly that question. The photo is shown as a thumbnail in her message; it stays on the phone with the case draft and is saved with the case in the library; a model receives it only within a call. The stylist names the item (what it is, colour, cut, length, fabric, whose it is), and the code measures its colour from the photo itself and decides whether the item suits her — it suits, it suits with a condition (for example, away from the face, with her neutral near the face), or another one would be better — and why; the stylist only retells this verdict. If she has not named an occasion, the item is judged for an ordinary day, and this is said. {build} puts the item from the photo into every outfit and picks the rest around it; on the card it stands with its photo and the mark {your_item} (or {item_from_photo}), without a shop or price, and {total} does not count it. An item that does not suit her can still be built with — the card says in one line what softens it.
 AN ITEM IN WORDS: she can also describe her own item without a photo; the stylist adds it to the case, and the code puts it into every outfit in the same way. Its colour then comes from her words, not from a measurement, and the card says so in the list of what the code does not know. Such a sentence, or a wish for an outfit with that item, written on any other screen, the code itself puts into the case chat and says it was added to the case; other questions outside the case do not go into building.
 VOICE: next to the photo button there is a microphone — here in the chat and on the outfit card under the verdict field. The first tap starts recording and the second stops it; while she speaks, the text appears in the field at once and is appended to what is already written, so she can correct it by hand. It goes nowhere by itself: {send} sends the message, {record_verdict} records the verdict. The voice is recognised not by Lyusterko but by the browser's service (Google in Chrome, Apple on iPhone), and the sound goes to it; only the text it returns lands in the field. Where recognition is unavailable or the microphone is blocked, the button says so and suggests the microphone on the phone's keyboard, which types into the same field. The owner's report shows that a comment or a message was dictated.
@@ -7059,8 +7061,8 @@ function малюватиКарткуСценарію(){
      над вечіркою в подруги), і рядок мовчить разом з іншими порожніми (нижче). */
   const деСл = мк.м && !(мк.типово && числоМоделіКартки()) ? словаМісцяП(мк.м) : null;
   пост('зн-місце', деСл ? деСл + (мк.типово ? ' — типово для нагоди' : '') : '', мк.типово);
-  /* ошатність: названий код і число моделі — без «за місцем»; без числа моделі — типове місце, сірим, як доти */
-  пост('зн-дрес', ош ? ош.слово + (ош.від === 'місце' ? ' — за місцем' : '') : 'не обрано', !ош || ош.від === 'місце' || ош.від === 'модель');
+  /* ошатність: названий код чи щабель числа моделі; без числа моделі — «не обрано» (наряд 3.7) */
+  пост('зн-дрес', ош ? ош.слово : 'не обрано', !ош || ош.від === 'модель');
   /* РЯДОК 2841: пілюля «Надворі» не каже +18 °C, коли паспорт каже «мороз»: типове число з неї знято, а відчуття стоїть
      підказкою (`placeholder`, слово те саме, що в рядку картки); рука впише число — воно її. Відчуття зникло —
      типове число повертається. Читачі поля бачать порожнє типове поле як «не називала» (`ТИПОВІ_НЕ_РУКОЮ_П`). */
@@ -7378,7 +7380,7 @@ function розмістити_поле(){
    довідник дає слова. Тап шле слово як репліку — тим самим шляхом, що й
    написане рукою, тож наступну відповідь і паспорт складає та сама модель. */
 const ШВИДКІ_ВІДПОВІДІ = {
-  'дрес_код': ()=>(ДОВІДНИК.коди||[]).filter(о=>о.плитка).sort((a,b)=>a.діапазон[0]-b.діапазон[0]).map(о=>о.підпис.toLowerCase()),
+  'дрес_код': ()=>(ДОВІДНИК.коди||[]).filter(о=>о.плитка).map(о=>о.підпис.toLowerCase()),
   'місце':    ()=>(ДОВІДНИК.місця||[]).filter(о=>о.плитка).map(о=>о.підпис.toLowerCase()),
   'нагода':   ()=>(ДОВІДНИК.нагоди||[]).filter(о=>о.плитка).map(о=>о.підпис.toLowerCase()),
   'опади':    ()=>['без опадів', 'дощ', 'сніг'],
@@ -8562,7 +8564,7 @@ function заповнитиСписки(){
   простийСписок($('сц-місце'), (ДОВІДНИК.місця||[]).filter(о=>о.плитка), 'типове для нагоди');
   const д = $('сц-дрес'); д.innerHTML = '';
   const п = ел('option'); п.value = ''; п.textContent = 'за місцем'; д.appendChild(п);
-  (ДОВІДНИК.коди||[]).filter(о=>о.плитка).sort((a,b)=>a.діапазон[0]-b.діапазон[0]).forEach(о=>{
+  (ДОВІДНИК.коди||[]).filter(о=>о.плитка).forEach(о=>{
     const т = ел('option'); т.value = о.ключ; т.textContent = о.підпис; д.appendChild(т);
   });
   /* ОБРОБНИК — `зберегтиВипадок`, А НЕ `оновитиДіапазон`. Тут стояв другий, а
@@ -8603,15 +8605,6 @@ function числоМоделіКартки(){
   if (!(Array.isArray(о) && о.length === 2 && о.every(x => typeof x === 'number'))) return null;
   return ((п.джерело_полів || {}).ошатність === ТИПОВЕ_ПОЛЕ_ФОРМИ_П) ? null : о;
 }
-/* Типове місце нагоди суперечить моделі, коли його середина ошатності лежить поза її числом або коли
-   воно саме вечірнє (`вечірнє` довідника), а частину дня вона зрозуміла не вечірньою й не з замовчування. */
-function типовеМісцеСуперечить(м){
-  const п = паспортКартки(); if (!п || !м) return false;
-  const чм = числоМоделіКартки(), с = ((м.діапазон || [0, 0])[0] + (м.діапазон || [0, 0])[1]) / 2;
-  if (чм && (с < чм[0] || с > чм[1])) return true;
-  const ч = (п.виміри || {}).part_of_day, дж = (п.звідки || {}).part_of_day;
-  return !!(м.вечірнє && ч && дж && дж !== 'default' && дж !== 'unknown' && ч !== 'evening' && ч !== 'night');
-}
 /* {м, типово}: місце, яке вона обрала чи назвала, або яке модель зрозуміла, — не типове; типове нагоди
    стоїть сірим, а коли суперечить моделі — м = null («не обрано»). */
 function місцеКартки(){
@@ -8621,16 +8614,14 @@ function місцеКартки(){
   const своє = п && знайти(ДОВІДНИК.місця, п.місце);
   if (своє && дж.місце && дж.місце !== ТИПОВЕ_ПОЛЕ_ФОРМИ_П) return {м: своє, типово: false};
   const т = знайти(ДОВІДНИК.місця, чиннеМісце());
-  return {м: (т && !типовеМісцеСуперечить(т)) ? т : null, типово: true};
+  /* наряд 3.7: типове місце більше не «суперечить» частині дня — місць, що самі несуть вечір, нема */
+  return {м: т || null, типово: true};
 }
-/* Порядок джерел: названий код ошатності важить над числом моделі, число моделі — над місцем, місце над
-   нагодою. {слово, від}: від = код | її (число з її слів) | модель (норма події) | місце. Слово — найближчий
-   код із підписом за серединою діапазону, бо слово йде жінці, а не в суд. */
+/* Порядок джерел: названий код ошатності важить над числом моделі. {слово, від}: від = код | її (число з її слів) |
+   модель (норма події). Слово числа — щабель драбини (`ДОВІДНИК.щаблі`, наряд 3.7), у смугу якого воно влучає; на межі
+   двох щаблів — обидва. Без числа моделі слова нема: щабель ставить драбина правилом мовної моделі, а не типове місце
+   плитки чи найближчий підпис ділової або світської гілки дрес-кодів (КАРТ-2, знято). */
 function ошатністьДжерело(){
-  const н = знайти(ДОВІДНИК.нагоди, $('сц-нагода').value);
-  /* РЯДОК 3166: місце, яке вона обрала чи назвала модель (ресторан під «вечіркою»), важить над типовим місцем
-     плитки нагоди — інакше діапазон ішов від «Урочистого залу» [5,7], а картка під рестораном казала «Охайно буденно». */
-  const мПаспорта = місцеКартки(), м = (!мПаспорта.типово && мПаспорта.м) || знайти(ДОВІДНИК.місця, чиннеМісце());
   const кл = знайти(ДОВІДНИК.коди, $('сц-дрес').value);
   const чм = числоМоделіКартки();
   /* ПОКАЗ-1 (рядок 891): смугу пулу ріже число ошатності (`ПАСПОРТ_П.ошатність`), тож слово, коли число є, —
@@ -8640,34 +8631,11 @@ function ошатністьДжерело(){
      плитці стоїть тим самим кодом, а слово картки не його: сірий, як типове поле, а не «названий код» */
   const типовийКод = !!(кодМоделі && кодМоделі === $('сц-дрес').value && ((паспортКартки() || {}).звідки || {}).dress_code === 'default');
   if (кл && !типовийКод && !(чм && кодМоделі && кодМоделі === $('сц-дрес').value)) return {слово: кл.підпис, від: 'код'};
-  const д = чм || (м && м.діапазон) || (н && н.діапазон) || ДОВІДНИК.дефолт_діапазон;
-  if (!д) return null;
-  const с = (д[0] + д[1]) / 2;
-  /* КАРТ-2: підписи кодів стоять у двох гілках однакових рівнів — діловій і світській (`гілка` довідника).
-     Слово від ЧИСЛА береться з гілки, що пасує нагоді: назване місце вирішує (корпоратив у ресторані — світська,
-     хоч нагода «робота»), без місця — ділова нагода. Спільний корінь шкали (`casual`) у обох. */
-  const мк = мПаспорта.м, нп = (паспортКартки() || {}).нагода;
-  const ключМісця = мк ? мк.ключ : null, ключНагоди = $('сц-нагода').value || нп;
-  const ділова = ключМісця ? (ДОВІДНИК.ділові_місця || []).includes(ключМісця)
-                           : (ДОВІДНИК.ділові_нагоди || []).includes(ключНагоди);
-  /* ШКАЛА-1070 (рядок 1070): відстань — від середини смуги до ДІАПАЗОНУ коду (0, коли вона всередині), а не до
-     його середини. Доти широкий «Охайно буденно» [4,6] мав середину 5, вузький «Коктейльне» [7,8] — 7.5, і смуга
-     [6,7] (щаблі 6 — блейзер, сукня-футляр; 7 — коктейльна сукня) читалась «Коктейльне». Середина смуги на межі
-     двох кодів — підпис називає обидва: смуга й підпис кажуть одне. */
-  const дал = о => Math.max(0, о.діапазон[0] - с, с - о.діапазон[1]);
-  const гілка = (ДОВІДНИК.коди||[]).filter(о=>о.плитка && (о.гілка === 'спільна' || о.гілка === (ділова ? 'ділова' : 'світська')))
-                                   .sort((a,b)=>дал(a) - дал(b) || a.діапазон[0] - b.діапазон[0]);
-  const бл = гілка[0];
-  if (!бл) return null;
-  /* ТИПОВЕ МІСЦЕ (рядок 3456): без числа моделі діапазон іде від місця чи нагоди, і слово називає ВЕСЬ цей діапазон
-     (коди гілки, що перетинають його і знизу заходять далі нижньої межі, а зверху — хоч до верхньої), а не код за серединою: «Урочистий зал» [5,7] казав
-     «Охайно буденно» і мовчав про 7. Число моделі й назване місце лишаються за серединою смуги (ПОКАЗ-1, ШКАЛА-1070). */
-  const весьДіапазон = !чм ? гілка.filter(о=>о.діапазон[0] <= д[1] && о.діапазон[1] > д[0]) : [];
-  const рівні = весьДіапазон.length ? весьДіапазон.sort((a,b)=>a.діапазон[0] - b.діапазон[0])
-                                    : гілка.filter(о=>дал(о) === дал(бл));
+  if (!чм) return null;
+  const щ = (ДОВІДНИК.щаблі||[]).filter(о=>о.діапазон[0] <= Math.max(чм[0], чм[1]) && о.діапазон[1] >= Math.min(чм[0], чм[1]));
+  if (!щ.length) return null;
   const її = ['розмова', 'рука'].includes(((паспортКартки() || {}).джерело_полів || {}).ошатність);
-  return {слово: рівні.length > 1 ? рівні[0].підпис + ' – ' + рівні[рівні.length - 1].підпис : бл.підпис,
-          від: чм ? (її ? 'її' : 'модель') : 'місце'};
+  return {слово: щ.length > 1 ? щ[0].підпис + ' – ' + щ[щ.length - 1].підпис : щ[0].підпис, від: її ? 'її' : 'модель'};
 }
 function ошатністьСловом(){ const о = ошатністьДжерело(); return о ? о.слово : null; }
 function оновитиДіапазон(){
@@ -8677,7 +8645,7 @@ function оновитиДіапазон(){
   const мСл = словаМісцяП(м);
   if (!$('сц-місце').value && мСл) рядки.push('середовище — ' + мСл.toLowerCase());
   const ош = ошатністьДжерело();
-  if (!кл && ош) рядки.push('ошатність — ' + ош.слово.toLowerCase() + ((м || ош.від !== 'місце') ? '' : ' (типово)'));
+  if (!кл && ош) рядки.push('ошатність — ' + ош.слово.toLowerCase());
   $('сц-діапазон').textContent = рядки.length ? 'Візьмемо: ' + рядки.join(', ') + '.' : '';
   малюватиКарткуСценарію();
 }
@@ -9689,8 +9657,19 @@ let МОДЕЛІ_ПРОГОНУ = new Set();
    кожна рука має свій слот, старти розведені на 400 мс, а 429/503/5xx і далі
    перечікуються з відступом 20 і 60 с (`модельП`, `модельП_блоки`): сплеск лікує
    повтор, а не черга на кожному виклику. Виміряно (сід 3, заглушка з часом за
-   типом виклику): збір 124.2 → 103.4 с, сумарно в черзі 75.4 → 1.3 с. */
-const ОДНОЧАСНО_П = 4;
+   типом виклику): збір 124.2 → 103.4 с, сумарно в черзі 75.4 → 1.3 с.
+   ── `#одночасно=N` (латиницею `odnochasno`, 1–8; наряд 4.4, Р21) ─────────────
+   Межа слотів — для A/B на ТИХ САМИХ промптах: обриви `HTTP 599 · read ECONNRESET`
+   мовного шару (рядок 2900) йдуть, коли в польоті разом руки й шар, а чи лікує їх
+   менша межа — гіпотеза, і міряє її ноутбук (LM Studio), а не цей коментар. Лише хеш
+   посилання, без сховища: межа одного прогону не має переходити в наступний. */
+const ОДНОЧАСНО_П = (function(){
+  try{
+    const h = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+    const n = parseInt(String(h.get('одночасно') || h.get('odnochasno') || '4'), 10);
+    return (n >= 1 && n <= 8) ? n : 4;
+  }catch(_){ return 4; }
+})();
 const ПАУЗА_МІЖ_П = 400;
 let _уПольоті = 0, _останнійСтарт = 0, _черга = [], _крокЧекає = false;
 /* ОДИН ЗАПЛАНОВАНИЙ КРОК НА РАЗ І ПАУЗА ПЕРЕД КОЖНИМ СТАРТОМ (Ш-1, 27.09.2026). Доти
@@ -9718,6 +9697,147 @@ function уЧергу(робота){
     _черга.push(()=>робота().then(рез, від).finally(()=>{ _уПольоті--; _чергаКрок(); }));
     _чергаКрок();
   });
+}
+
+/* ── ПЛАНУВАЛЬНИК МОДЕЛЬНИХ ВИКЛИКІВ: ЧЕРГА, ПОВТОР З ПРИЧИНОЮ, ЖУРНАЛ (наряд 4.4, Р21, корінь К-7) ──
+   ЩО БУЛО. Черга вище лише розводила старти; повтор на 429/5xx стояв двома копіями (`модельП`,
+   `модельП_блоки`); обрив з'єднання (599 стенда — `read ECONNRESET` LM Studio за 5–7 с, рядок 2900;
+   `TypeError: Failed to fetch` мережі) не повторювався й не рахувався ніде — його ховав повтор шару
+   (рядок 2812); а час і токени були одним числом на прогін (`ТОКЕНИ_П`): ні черги, ні стадій, ні
+   повного часу дії. Тож 142,6 і 290,2 с складання руки 1 (рядок 2676) не розкладались на «чекав
+   слота» і «рахувала модель», а 107,5 с до тексту картки оцінки (рядок 5245) — на виклики.
+   ЩО ТЕПЕР. Кожен виклик моделі йде `плануватиВикликП`: слот черги вище, повтор із НАЗВАНОЮ причиною
+   і запис КОЖНОЇ спроби в `ЖУРНАЛ_ВИКЛИКІВ_П` — стадія, модель, скільки чекав слота, скільки йшов
+   виклик, статус, бюджет виклику (символи входу проти стелі моста, стеля виводу), токени входу, кешу
+   й виходу, обрізання, спроби самого моста (`x-attempts`). `зведенняВикликівП(від)` складає записи
+   за стадіями й за всю дію: стінний час — від першої постановки в чергу до останньої відповіді.
+   Обрив пишеться ДО повтору: повтор його не ховає, а лічба обривів не залежить від того, чи
+   допоміг повтор. Промптів і вибірки планувальник не міняє — вхід моделі той самий.
+   СТАДІЯ — З САМОГО ПРОМПТА, А НЕ ВІД ВИКЛИКАЧА: кожна задача збирача несе `"answer": "<ім'я
+   задачі>"` (`протокол.ОБГОРТКА_ВІДПОВІДІ`), складання — ще й пул; виклик моделі шару — `мова`.
+   Тож новий виклик стадію має одразу, і п'ятнадцять місць виклику не правляться. */
+const ЖУРНАЛ_ВИКЛИКІВ_П = [];
+const ЖУРНАЛ_ВИКЛИКІВ_МАКС_П = 3000;   // повний прогін — 40–60 спроб; сторінка, відкрита днями, не росте без меж
+let _номерВикликуП = 0;
+/* ПОВТОР — ЗА ПРИЧИНОЮ (числа ті самі, що доти стояли в обох копіях; нове — лише обрив):
+   · 429 (квота) — 20 і 60 с; 503 (сплеск) — удвічі коротше; 502/504/524 — таймаут шлюзу на довгому
+     виклику (відкрите з 03.09) — як 429;
+   · обрив з'єднання (599, `TypeError` fetch) ШВИДШЕ за `ОБРИВ_ШВИДКИЙ_МС` — один повтор за 2–4 с:
+     так рветься з'єднання, якого сервер не взяв (ECONNRESET за 5–7 с у кожному повному прогоні
+     пачки 5), а наступний виклик тієї ж моделі проходить. Обрив після довгого виклику — таймаут
+     дороги, і повтор лише подвоїв би чекання: він кидається, як доти;
+   · обрив сторінкою (`сигнал`, AbortError) — не повторюється ніколи. */
+const ЗАТРИМКИ_ПОВТОРУ_П = [20000, 60000];
+const ОБРИВ_ШВИДКИЙ_МС = 30000;
+function _причинаПовторуП(з, відп, помилка, сигнал, було){
+  if ((сигнал && сигнал.aborted) || (помилка && помилка.name === 'AbortError')) return null;
+  if ((помилка && помилка instanceof TypeError) || (відп && відп.status === 599)){
+    з.обрив = true;
+    if (було.обрив || з.кінець - (з.старт == null ? з.кінець : з.старт) > ОБРИВ_ШВИДКИЙ_МС) return null;
+    було.обрив = 1;
+    return {причина: 'connection_reset', мс: 2000 + Math.random()*2000};
+  }
+  if (!відп || ![429, 503, 502, 504, 524].includes(відп.status)) return null;
+  const к = було.http || 0;
+  if (к >= ЗАТРИМКИ_ПОВТОРУ_П.length) return null;
+  було.http = к + 1;
+  return {причина: 'http_' + відп.status,
+          мс: (відп.status === 503 ? ЗАТРИМКИ_ПОВТОРУ_П[к] / 2 : ЗАТРИМКИ_ПОВТОРУ_П[к]) + Math.random()*4000};
+}
+function стадіяВикликуП(повідомлення, модель){
+  const ост = ((повідомлення || [])[(повідомлення || []).length - 1] || {}).content;
+  const т = Array.isArray(ост) ? ост.filter(б => б && б.type === 'text').map(б => б.text || '').join('\n')
+                               : String(ост == null ? '' : ост);
+  const м = /"(?:answer|відповідь)"\s*:\s*"([\p{Lu}\p{N}_]{3,40})"/u.exec(т);
+  let задача = м ? м[1] : null;
+  /* скелет наприкінці (рядок 5935): складання, ремонт, вибір і оцінка імені в «task» не мають — їх називає
+     перший ключ змісту останньої «answer_schema» (так само впізнає їх стенд, `аудит/проби/види_речей.js`) */
+  const сх = задача ? -1 : т.lastIndexOf('"answer_schema"');
+  if (сх >= 0){
+    /* від ключа до кінця — члени останнього обʼєкта повідомлення («answer_schema», за нею хіба «now»); ключі схеми —
+       за пріоритетом стенда: ремонт має й «chosen», і «outfits», а він — складання/ремонт */
+    let с = null;
+    try{ с = (JSON.parse('{' + т.slice(сх)) || {}).answer_schema; }catch(_){}
+    const є = к => !!(с && typeof с === 'object' && к in с);
+    задача = є('outfits') ? 'OUTFITS_V1' : є('chosen') ? 'CHOICE_V1' : є('verdict') ? 'OUTFIT_REVIEW_V1'
+           : 'answer_schema' + (с && typeof с === 'object' ? ' · ' + Object.keys(с).slice(0, 2).join(',') : '');
+  }
+  if ((модель && модель === МОДЕЛЬ_МОВИ_П) || /^Ти — перекладачка/.test(т)) return 'мова' + (задача ? ' · ' + задача : '');
+  return задача ? задача + (/"(?:pool|пул)"\s*:/.test(т) ? ' · пул' : '') : 'інше';
+}
+/* Один виклик моделі: {відп, запис}. `відп` — відповідь останньої спроби (не-ok кидає викликач, як доти);
+   виняток мережі після вичерпаних повторів летить як доти. */
+async function плануватиВикликП(повідомлення, модель, вибірка, стеля, сигнал){
+  const н = ++_номерВикликуП, стадія = стадіяВикликуП(повідомлення, модель);
+  const симв = JSON.stringify(повідомлення || []).length, було = {};
+  for (let спроба = 0; ; спроба++){
+    const з = {н, спроба, стадія, модель: модель || МОДЕЛЬ_П, поставлено: Date.now(), старт: null, кінець: null,
+               статус: null, симв, стеля_входу: СТЕЛЯ_ЗАПИТУ_П, стеля_виводу: стеля || МАКС_ТОКЕНІВ_П};
+    ЖУРНАЛ_ВИКЛИКІВ_П.push(з);
+    if (ЖУРНАЛ_ВИКЛИКІВ_П.length > ЖУРНАЛ_ВИКЛИКІВ_МАКС_П) ЖУРНАЛ_ВИКЛИКІВ_П.splice(0, ЖУРНАЛ_ВИКЛИКІВ_П.length - ЖУРНАЛ_ВИКЛИКІВ_МАКС_П);
+    let відп = null, помилка = null;
+    try{ відп = await уЧергу(()=>{ з.старт = Date.now(); return _дзвінокП(повідомлення, модель, вибірка, стеля, сигнал); }); }
+    catch(e){ помилка = e; }
+    з.кінець = Date.now();
+    з.статус = відп ? відп.status
+             : ((сигнал && сигнал.aborted) || (помилка && помилка.name === 'AbortError')) ? 'aborted' : 599;
+    if (помилка) з.помилка = String((помилка && помилка.message) || помилка).slice(0, 200);
+    const повтор = _причинаПовторуП(з, відп, помилка, сигнал, було);
+    if (!повтор){
+      if (помилка) throw помилка;
+      return {відп, запис: з};
+    }
+    з.причина = повтор.причина; з.пауза_мс = Math.round(повтор.мс);
+    console.warn('model · retry ' + повтор.причина + ' · stage=' + стадія + ' · attempt=' + (спроба + 1)
+      + (відп ? ' · ' + _межіП(відп) + ' · body=' + (відп.clone ? await відп.clone().text().catch(()=>'') : '').replace(/\s+/g,' ').slice(0, 1200)
+              : ' · ' + з.помилка));
+    await new Promise(р=>setTimeout(р, повтор.мс));
+  }
+}
+/* Токени виклику — у його запис і в лічбу прогону (`ТОКЕНИ_П`): одна точка замість двох копій */
+function врахуватиВикликП(з, дані, відп){
+  const u = (дані && дані.usage) || {};
+  з.кеш_т = u.cache_read_input_tokens || 0;
+  з.вхід_т = (u.input_tokens || 0) + з.кеш_т;
+  з.вихід_т = u.output_tokens || 0;
+  з.обрізано = !!(дані && дані.stop_reason === 'max_tokens');
+  const спр = відп && відп.headers && відп.headers.get ? відп.headers.get('x-attempts') : null;
+  if (спр) з.спроб_мосту = Number(спр) || спр;
+  ТОКЕНИ_П.вхід += з.вхід_т; ТОКЕНИ_П.кеш += з.кеш_т; ТОКЕНИ_П.вихід += з.вихід_т; ТОКЕНИ_П.викликів += 1;
+}
+/* Зведення спроб з `від` (мс епохи; без нього — уся сторінка): за стадіями й за всю дію. `викликів` —
+   різних викликів, `спроб` — разом із повторами; `пауза_с` — сума відступів перед повторами, `черга_с` —
+   сума чекання слота, `модель_с` — сума часу самих викликів, `стінний_с` — від першої постановки до
+   останньої відповіді. */
+function зведенняВикликівП(від){
+  const записи = ЖУРНАЛ_ВИКЛИКІВ_П.filter(з => з.поставлено >= (від || 0));
+  const нове = () => ({викликів: 0, спроб: 0, обривів: 0, повторів: {}, пауза_с: 0, черга_с: 0, модель_с: 0, найдовший_с: 0,
+                       вхід_т: 0, кеш_т: 0, вихід_т: 0, симв_макс: 0, стеля_виводу: 0, обрізано: 0, не_завершено: 0});
+  const дія = нове(), стадії = {}, тепер = Date.now();
+  const кругло = ч => Math.round(ч * 10) / 10;
+  for (const з of записи){
+    const с = стадії[з.стадія] = стадії[з.стадія] || нове();
+    const черга = ((з.старт || з.кінець || тепер) - з.поставлено) / 1000;
+    const виклик = з.старт ? ((з.кінець || тепер) - з.старт) / 1000 : 0;
+    for (const ц of [дія, с]){
+      ц.спроб += 1; if (!з.спроба) ц.викликів += 1;
+      if (з.обрив) ц.обривів += 1;
+      if (з.причина) ц.повторів[з.причина] = (ц.повторів[з.причина] || 0) + 1;
+      ц.пауза_с += (з.пауза_мс || 0) / 1000;
+      ц.черга_с += черга; ц.модель_с += виклик; ц.найдовший_с = Math.max(ц.найдовший_с, виклик);
+      ц.вхід_т += з.вхід_т || 0; ц.кеш_т += з.кеш_т || 0; ц.вихід_т += з.вихід_т || 0;
+      ц.симв_макс = Math.max(ц.симв_макс, з.симв || 0); ц.стеля_виводу = Math.max(ц.стеля_виводу, з.стеля_виводу || 0);
+      if (з.обрізано) ц.обрізано += 1;
+      if (!з.кінець) ц.не_завершено += 1;
+    }
+  }
+  for (const ц of [дія, ...Object.values(стадії)])
+    for (const к of ['пауза_с', 'черга_с', 'модель_с', 'найдовший_с']) ц[к] = кругло(ц[к]);
+  const перший = записи.length ? Math.min(...записи.map(з => з.поставлено)) : null;
+  const останній = записи.length ? Math.max(...записи.map(з => з.кінець || тепер)) : null;
+  дія.стінний_с = записи.length ? кругло((останній - перший) / 1000) : 0;
+  дія.одночасно = ОДНОЧАСНО_П;
+  return {дія, стадії};
 }
 
 /* `вибірка` — поля вибірки моделі в тіло виклику: своя від задачі (ендпойнт віддає її поруч
@@ -9797,23 +9917,13 @@ async function модельП_блоки(зміст, модель, історі�
   /* РОЗМІР ЗАПИТУ — ДО ВІДПРАВКИ, А НЕ ВІДМОВОЮ МОСТА (наряд Л-2): зменшує фото,
      поки запит не влізе в стелю моста; не влізло — виняток із числами. */
   await вмістити_запит_П(повідомлення, вміщВих);
-  let відп = await уЧергу(()=>_дзвінокП(повідомлення, модель, вибірка, undefined, сигнал));
-  const пауза = мс => new Promise(р=>setTimeout(р, мс));
-  for (const затримка of [20000, 60000]){
-    /* 524/502/504 — таймаут Cloudflare/шлюзу на довгому виклику: повторюємо так само, як 503 (відкрите з 03.09) */
-    if (![429, 503, 502, 504, 524].includes(відп.status)) break;
-    console.warn('http=' + відп.status + ' · ' + _межіП(відп));
-    await пауза((відп.status === 503 ? затримка / 2 : затримка) + Math.random()*4000);
-    відп = await уЧергу(()=>_дзвінокП(повідомлення, модель, вибірка, undefined, сигнал));
-  }
+  /* черга, повтор із причиною й запис спроби — `плануватиВикликП` (наряд 4.4) */
+  const {відп, запис} = await плануватиВикликП(повідомлення, модель, вибірка, undefined, сигнал);
   if (!відп.ok)
     throw new Error('model · http=' + відп.status + ' · ' + _межіП(відп) + ' · body='
                     + (await відп.text()).replace(/\s+/g,' ').slice(0, 1200));
-  const дані = await відп.json(), u = дані.usage || {};
-  ТОКЕНИ_П.вхід += (u.input_tokens || 0) + (u.cache_read_input_tokens || 0);
-  ТОКЕНИ_П.кеш += (u.cache_read_input_tokens || 0);
-  ТОКЕНИ_П.вихід += (u.output_tokens || 0);
-  ТОКЕНИ_П.викликів += 1;
+  const дані = await відп.json();
+  врахуватиВикликП(запис, дані, відп);
   const свої = {};
   відп.headers.forEach((з, і) => { if (/^x-(images-dropped|provider|thinking|runs-left|model|attempts|cached-tokens)$/i.test(і)) свої[і.toLowerCase()] = з; });
   ОСТАННІ_ЗАГОЛОВКИ_П = свої;
@@ -9842,25 +9952,13 @@ async function модельП(промпт, фото, історія, стан, 
   const повідомлення = [...(історія || []), {role:"user", content:зміст}];
   /* див. `модельП_блоки`: розмір запиту код знає ДО відправки (наряд Л-2) */
   await вмістити_запит_П(повідомлення, вміщВих);
-  let відп = await уЧергу(()=>_дзвінокП(повідомлення, undefined, вибірка, стеля, сигнал));
-  const пауза = мс => new Promise(р=>setTimeout(р, мс));
-  /* 429 — квота, 503 — сплеск попиту; обидва перечікуються, 503 — удвічі коротше */
-  for (const затримка of [20000, 60000]){
-    /* 524/502/504 — таймаут Cloudflare/шлюзу на довгому виклику: повторюємо так само, як 503 (відкрите з 03.09) */
-    if (![429, 503, 502, 504, 524].includes(відп.status)) break;
-    console.warn(відп.status + " назвав межу: " + _межіП(відп) + " · тіло: "
-                 + (await відп.clone().text()).replace(/\s+/g," ").slice(0, 1200));
-    await пауза((відп.status === 503 ? затримка / 2 : затримка) + Math.random()*4000);
-    відп = await уЧергу(()=>_дзвінокП(повідомлення, undefined, вибірка, стеля, сигнал));
-  }
+  /* 429 — квота, 503 — сплеск, 502/504/524 — таймаут шлюзу, швидкий обрив — один раз: `плануватиВикликП` */
+  const {відп, запис} = await плануватиВикликП(повідомлення, undefined, вибірка, стеля, сигнал);
   if (!відп.ok)
     throw new Error("model · http=" + відп.status + " · " + _межіП(відп) + " · body="
                     + (await відп.text()).replace(/\s+/g," ").slice(0, 1200));
-  const дані = await відп.json(), u = дані.usage || {};
-  ТОКЕНИ_П.вхід += (u.input_tokens || 0) + (u.cache_read_input_tokens || 0);
-  ТОКЕНИ_П.кеш += (u.cache_read_input_tokens || 0);
-  ТОКЕНИ_П.вихід += (u.output_tokens || 0);
-  ТОКЕНИ_П.викликів += 1;
+  const дані = await відп.json();
+  врахуватиВикликП(запис, дані, відп);
   ОСТАННІ_ЗАГОЛОВКИ_П = {};
   відп.headers.forEach((з, і) => { if (/^x-(images-dropped|provider|thinking|runs-left|model|attempts|cached-tokens)$/i.test(і)) ОСТАННІ_ЗАГОЛОВКИ_П[і.toLowerCase()] = з; });
   if (ОСТАННІ_ЗАГОЛОВКИ_П['x-model']) МОДЕЛІ_ПРОГОНУ.add(ОСТАННІ_ЗАГОЛОВКИ_П['x-model']);
@@ -11874,7 +11972,9 @@ document.addEventListener('visibilitychange', () => {
 const ГАМИ = ['приглушені', 'середні', 'насичені'];
 const ДЗЕРКАЛА_П = [['jsdelivr', 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/']];
 const СТОРОЖ_П = 150000;
-let pyodide_показу = null, ПАЛІТРА = null;
+/* Завантажувач Pyodide тягне воркер `fetch` з `integrity` — та сама перевірка, що доти стояла на тезі `<script>` */
+const ЦІЛІСНІСТЬ_PYODIDE_П = 'sha384-i3R37b3tF+HWudsUf1VSEOY2YxwSNMqY8DQa9Z0O3xh+NkJ9o+yjcGyIi5huj+nB';
+let ПАЛІТРА = null;
 /* `смуга` — що показано, `вибір_кольору.насиченість` — що обрано */
 /* `схема` — ІМ'Я обраної гілки поруч із номером (21.09.2026, рядок 117): номер
    адресує позицію в розвилці, а розвилка під різними намірами різна, тож
@@ -11885,47 +11985,128 @@ let ВИБІР = { гілка: null, схема: null, вибір_кольору
    їх діагностика (`рядкиШаруП`) і стенд; на екран вони не йдуть. */
 let ПАЛ_МОВА_ШАРУ = [];
 
-/* Сторож міряє тишу, не стіну часу. */
+/* ── PYTHON У ВОРКЕРІ (крок 4.1-Б-3; Р12 Д.1, корінь К-7) ─────────────────
+   ЩО БУЛО. Pyodide жив у головному потоці: збір — ≈ 52 с синхронного Python, і сторінка стояла ≈ 89 % збору (0.3,
+   #1391) — дотики, таймери, відповідь моделі однієї руки чекали кінця Python іншої. ЩО ТЕПЕР. Той самий Python, той
+   самий вантаж і той самий `bridge` живуть у Web Worker; головний потік лише шле вхід і читає рядок відповіді.
+   Тіло воркера — функція нижче: сторінка одна, окремого файлу нема, тож воркер піднімається з Blob її тексту.
+   Запасного шляху в головному потоці нема (звіт #1415: 0 виконань): воркер не піднявся — той самий `mirror_failed`.
+
+   Повідомлення сторінка → воркер:
+     {тип: 'підйом', indexURL, модулі: base64, кеш, перевірка, шов, цілісність}
+     {тип: 'виклик', н, ім, вхід: рядок JSON, асинх}     — дані аргументом функції, не кодом Python (Б-1)
+     {тип: 'прилад', н, файли: {шлях: текст}, код}       — лише стенд і проби (`приладМостуП`); продукт не шле
+   Воркер → сторінка:
+     {тип: 'рух', файлів, байтів}  — запити воркера: сторож тиші й рядок стану (обгортка `fetch` сторінки їх не бачить)
+     {тип: 'етап'}                  — середовище піднялось, далі вантаж і `import bridge` («Ще мить…»)
+     {тип: 'готово'} | {тип: 'збій', помилка}
+     {тип: 'відповідь', н, вих | помилка + вид, мс_python}
+   `н` воркер лише повертає: чия це відповідь і чи вона ще чинна (покоління, нижче), вирішує сторінка. */
+function тілоВоркераМостуП(){
+  let пд = null, виклик = null, виклик_а = null;
+  const опис = е => String((е && е.message) || е);
+  /* Сторож міряє тишу, не стіну часу: кожен запит воркера — рух; скільки вже прийшло — для рядка стану.
+     КЕШ: лише незмінні ресурси конкретної версії Pyodide беруться з кешу браузера; решта запитів — як є. */
+  function обгорнутиЗапити(кеш, база){
+    const _f = self.fetch;
+    let файлів = 0, байтів = 0;
+    self.fetch = function(вхід, умови){
+      postMessage({тип: 'рух', файлів, байтів});
+      if (кеш){
+        const адреса = String((вхід && вхід.url) || вхід);
+        const метод = (умови && умови.method) || (вхід && вхід.method) || 'GET';
+        if (метод === 'GET' && адреса.indexOf(база) === 0) умови = Object.assign({}, умови, {cache: 'force-cache'});
+      }
+      return _f.call(this, вхід, умови).then(в => {
+        файлів++;
+        байтів += (+(в.headers && в.headers.get('content-length')) || 0);
+        postMessage({тип: 'рух', файлів, байтів});
+        return в;
+      }, е => { postMessage({тип: 'рух', файлів, байтів}); throw е; });
+    };
+  }
+  async function підняти(п){
+    обгорнутиЗапити(п.кеш, п.indexURL);
+    /* `importScripts` перевірки цілісності не має — завантажувач іде `fetch` з `integrity`, як доти тег `<script>` */
+    let текст;
+    try{
+      const в = await fetch(п.indexURL + 'pyodide.js', {integrity: п.цілісність});
+      if (!в.ok) throw new Error('http ' + в.status);
+      текст = await в.text();
+      importScripts(URL.createObjectURL(new Blob([текст], {type: 'text/javascript'})));
+    }catch(е){ throw new Error('pyodide_loader_failed: ' + опис(е)); }
+    if (typeof loadPyodide !== 'function') throw new Error('pyodide_loader_failed');
+    пд = await loadPyodide({indexURL: п.indexURL});
+    postMessage({тип: 'етап'});
+    /* цикл, а не `Uint8Array.from(…, колбек)`: 20 мс проти 465 (рядок 8345) */
+    const рядок = atob(п.модулі), байти = new Uint8Array(рядок.length);
+    for (let і = 0; і < рядок.length; і++) байти[і] = рядок.charCodeAt(і);
+    пд.unpackArchive(байти.buffer, 'zip', {extractDir: '/показ'});
+    if (п.перевірка) await пд.runPythonAsync(п.перевірка);
+    await пд.runPythonAsync('import sys, os\nsys.path.insert(0, "/показ"); os.chdir("/показ")\nimport bridge\n' + п.шов);
+    виклик = пд.globals.get('_vyklyk');
+    виклик_а = пд.globals.get('_vyklyk_a');
+    postMessage({тип: 'готово'});
+  }
+  /* Кожне повідомлення — окреме продовження: синхронний `виклик` займає воркер до кінця, як доти займав головний
+     потік, а `виклик_а` поступається між частинами, і наступне повідомлення починається — порядок той самий. */
+  async function виконати(п){
+    const т0 = performance.now();
+    try{
+      let вих;
+      if (п.тип === 'прилад'){
+        for (const шлях of Object.keys(п.файли || {})) пд.FS.writeFile(шлях, п.файли[шлях]);
+        const р = await пд.runPythonAsync(п.код);
+        вих = р == null ? null : String(р);
+      }else вих = п.асинх ? await виклик_а(п.ім, п.вхід) : виклик(п.ім, п.вхід);
+      postMessage({тип: 'відповідь', н: п.н, вих, мс_python: performance.now() - т0});
+    }catch(е){
+      /* `вид` — щоб сторінка бачила `PythonError`, як доти (`ЗБІЙ_НЕ_ВІД_ПОВТОРУ`, діагноз збору) */
+      postMessage({тип: 'відповідь', н: п.н, помилка: опис(е), вид: (е && е.name) || 'Error',
+                   мс_python: performance.now() - т0});
+    }
+  }
+  onmessage = е => {
+    const п = е.data || {};
+    if (п.тип === 'підйом') підняти(п).catch(х => postMessage({тип: 'збій', помилка: опис(х)}));
+    else if (п.тип === 'виклик' || п.тип === 'прилад') виконати(п);
+  };
+}
+
 window.ОСТАННІЙ_РУХ_П = Date.now();
 window.ЗАВАНТАЖЕНО_П = {файлів: 0, байтів: 0};
-(function(){
-  const _f = window.fetch;
-  window.fetch = function(вхід, умови){ window.ОСТАННІЙ_РУХ_П = Date.now();
-    /* Лише незмінні ресурси конкретної версії Pyodide: решта запитів зберігає свої умови. */
-    if (КЕШ_PYODIDE_П){
-      const адреса = new URL(typeof вхід === 'string' || вхід instanceof URL ? вхід : вхід.url, location.href);
-      const метод = (умови && умови.method) || (вхід && вхід.method) || 'GET';
-      if (метод === 'GET' && ДЗЕРКАЛА_П.some(([, база]) => адреса.href.startsWith(база)))
-        умови = Object.assign({}, умови, {cache:'force-cache'});
-    }
-    return _f.call(this, вхід, умови).then(в=>{
-      /* скільки вже прийшло — для рядка стану під час підняття Pyodide */
-      try{ window.ЗАВАНТАЖЕНО_П.файлів++;
-           window.ЗАВАНТАЖЕНО_П.байтів += (+(в.headers && в.headers.get('content-length')) || 0); }catch(_){}
-      window.ОСТАННІЙ_РУХ_П = Date.now(); return в;
-    }, e=>{ window.ОСТАННІЙ_РУХ_П = Date.now(); throw e; }); };
-})();
 
-/* РЯДОК 5482: завантажувач — `defer`-скрипт; повідомлення на щойно відкритій сторінці (або повільній
-   мережі) приходить раніше за нього. Чекаємо його, а не падаємо з кодом жінці. */
-async function дочекатисьЗавантажувачаПП(мс){
-  const до = Date.now() + (мс || 60000);
-  if (!document.querySelector('script[src*="pyodide.js"]')) return;   // скрипта нема — чекати нічого
-  while (typeof loadPyodide !== 'function' && Date.now() < до) await new Promise(р => setTimeout(р, 100));
-}
-async function підняти_pyodide_показу(){
-  await дочекатисьЗавантажувачаПП();
-  if (typeof loadPyodide !== 'function')
-    throw new Error('pyodide_loader_failed');
+/* Підйом воркера з дзеркала: сторож тиші й рядок стану — до кінця завантаження середовища (`етап`), як доти до
+   кінця `loadPyodide`; вантаж і `import bridge` — уже без сторожа. Збій до `етапу` — наступне дзеркало. */
+async function піднятиВоркерМостуП(){
   const біди = [];
   for (const [ім, база] of ДЗЕРКАЛА_П){
     $('пал-стан').textContent = 'Готуємо палітру під твій колорит — перший раз це до хвилини.';
-    let крок = 0; const старт = Date.now();
+    let крок = 0, воркер = null, адреса = null; const старт = Date.now();
+    let готово = null;
     try{
-      return await Promise.race([
-        loadPyodide({indexURL: база}),
+      адреса = URL.createObjectURL(new Blob(['(' + тілоВоркераМостуП.toString() + ')()'], {type: 'text/javascript'}));
+      воркер = new Worker(адреса);
+      window.ОСТАННІЙ_РУХ_П = Date.now();
+      window.ЗАВАНТАЖЕНО_П = {файлів: 0, байтів: 0};
+      let середовище, ні, так2, ні2;
+      const піднялось = new Promise((т, н) => { середовище = т; ні = н; });
+      готово = new Promise((т, н) => { так2 = т; ні2 = н; });
+      готово.catch(()=>{});
+      const збій = х => { ні(х); ні2(х); };
+      воркер.onmessage = е => {
+        const в = даніВоркераП(е);
+        if (в.тип === 'рух'){ window.ОСТАННІЙ_РУХ_П = Date.now(); window.ЗАВАНТАЖЕНО_П = {файлів: в.файлів, байтів: в.байтів}; }
+        else if (в.тип === 'етап') середовище();
+        else if (в.тип === 'готово') так2();
+        else if (в.тип === 'збій') збій(new Error(в.помилка));
+      };
+      воркер.onerror = е => збій(new Error('worker: ' + ((е && е.message) || 'error')));
+      воркер.postMessage({тип: 'підйом', indexURL: база, модулі: МОДУЛІ_ПОКАЗУ, кеш: КЕШ_PYODIDE_П,
+                          перевірка: ПЕРЕВІРКА_БАЙТКОДУ_П, шов: КОД_ШВУ_МОСТА_П, цілісність: ЦІЛІСНІСТЬ_PYODIDE_П});
+      await Promise.race([
+        піднялось,
         new Promise((_, від)=>{
-          window.ОСТАННІЙ_РУХ_П = Date.now();
           крок = setInterval(()=>{
             const тиша = Date.now() - window.ОСТАННІЙ_РУХ_П, с = Math.round((Date.now() - старт)/1000);
             const з = window.ЗАВАНТАЖЕНО_П || {файлів:0, байтів:0};
@@ -11942,30 +12123,42 @@ async function підняти_pyodide_показу(){
           }, 5000);
         })
       ]);
-    }catch(e){ біди.push(ім + ' → ' + String(e).slice(0,140)); }
-    finally{ if (крок) clearInterval(крок); }
+    }catch(e){
+      біди.push(ім + ' → ' + String(e).slice(0,140));
+      if (воркер) воркер.terminate();
+      if (адреса) URL.revokeObjectURL(адреса);
+      continue;
+    }finally{ if (крок) clearInterval(крок); }
+    $('пал-стан').textContent = 'Ще мить…';
+    try{ await готово; }
+    catch(e){ воркер.terminate(); throw e; }
+    finally{ URL.revokeObjectURL(адреса); }
+    return воркер;
   }
   throw new Error('mirror_failed: ' + біди.join(' ;; '));
 }
+function даніВоркераП(е){ return (е && е.data) || {}; }
 
-/* РЯДОК 5481: підйом один на сторінку — паралельні виклики чекають той самий проміс, а `pyodide_показу`
-   віддається лише коли модулі вже розпаковано (раніше виклик у цьому вікні бачив міст без `bridge`). */
-let ПІДЙОМ_МОСТА_П = null;
+/* РЯДОК 5481: підйом один на сторінку — паралельні виклики чекають той самий проміс, а `МІСТ_ГОТОВИЙ_П` стає
+   true лише коли воркер уже імпортував `bridge` (раніше виклик у цьому вікні бачив міст без `bridge`).
+   `МІСТ_ГОТОВИЙ_П` читають стенд і проби: глобалі `pyodide_показу` в сторінці більше нема. */
+let ПІДЙОМ_МОСТА_П = null, ВОРКЕР_МОСТА_П = null, МІСТ_ГОТОВИЙ_П = false;
 function підняти_міст_показу(){
-  if (pyodide_показу) return Promise.resolve(pyodide_показу);
+  if (МІСТ_ГОТОВИЙ_П) return Promise.resolve(true);
   if (!ПІДЙОМ_МОСТА_П) ПІДЙОМ_МОСТА_П = (async ()=>{
-    const пд = await підняти_pyodide_показу();
-    $('пал-стан').textContent = 'Ще мить…';
-    const бін = Uint8Array.from(atob(МОДУЛІ_ПОКАЗУ), c=>c.charCodeAt(0));
-    пд.unpackArchive(бін.buffer, 'zip', {extractDir: '/показ'});
-    if (ПЕРЕВІРКА_БАЙТКОДУ_П) await пд.runPythonAsync(ПЕРЕВІРКА_БАЙТКОДУ_П);
-    await пд.runPythonAsync(
-      'import sys, os\n' +
-      'sys.path.insert(0, "/показ"); os.chdir("/показ")\n' +
-      'import bridge\n' + КОД_ШВУ_МОСТА_П);
-    ВИКЛИКИ_МОСТА_П = {синх: пд.globals.get('_vyklyk'), асинх: пд.globals.get('_vyklyk_a')};
-    pyodide_показу = пд;
-    return пд;
+    const воркер = await піднятиВоркерМостуП();
+    воркер.onmessage = відповідьВоркераМостуП;
+    /* воркер упав поза викликом: те, що чекає, відхиляється, а наступний виклик піднімає міст наново */
+    воркер.onerror = е => {
+      if (ВОРКЕР_МОСТА_П !== воркер) return;
+      ВОРКЕР_МОСТА_П = null; МІСТ_ГОТОВИЙ_П = false; воркер.terminate();
+      const х = 'worker: ' + ((е && е.message) || 'error');
+      for (const ч of ЧЕКАЮТЬ_МОСТА_П.values()) ч.відхилити(new Error(х));
+      ЧЕКАЮТЬ_МОСТА_П.clear();
+    };
+    ВОРКЕР_МОСТА_П = воркер;
+    МІСТ_ГОТОВИЙ_П = true;
+    return true;
   })().finally(()=>{ ПІДЙОМ_МОСТА_П = null; });
   return ПІДЙОМ_МОСТА_П;
 }
@@ -11974,7 +12167,8 @@ function підняти_міст_показу(){
    збирав рядок коду з літералом входу (за сцену 1,98 МБ коду, компільованого щоразу). Вхід — аргумент, спільної
    глобальної нема, тож чотири паралельні руки не бачать чужих даних (причина старого коментаря збережена).
    Функції шву — у глобалях Python під латинськими іменами: кириличні імена через проксі Pyodide крихкі між версіями.
-   Вихід — завжди рядок JSON: ендпойнт віддав не рядок — кладемо його в JSON тут же. */
+   Вихід — завжди рядок JSON: ендпойнт віддав не рядок — кладемо його в JSON тут же (PyProxy через межу потоку
+   не ходить). */
 const КОД_ШВУ_МОСТА_П =
   'import json\n' +
   'def _vyklyk(im, ryadok):\n' +
@@ -11983,12 +12177,44 @@ const КОД_ШВУ_МОСТА_П =
   'async def _vyklyk_a(im, ryadok):\n' +
   '    r = await bridge.виклик_а(im, json.loads(ryadok))\n' +
   '    return r if isinstance(r, str) else json.dumps(r, ensure_ascii=False)\n';
-let ВИКЛИКИ_МОСТА_П = null;
+/* `асинх` — поступливий виклик: стенд чекає лише синхронних, як доти чекав їх головний потік */
+const ЧЕКАЮТЬ_МОСТА_П = new Map();    // н → {ім, асинх, т0, прийняти, відхилити}
+let НОМЕР_ВИКЛИКУ_П = 0;
+/* Час кожного виклику: `мс_python` — чистий Python у воркері, `мс_обіг` — від відправки до відповіді, `т1` — мить
+   відповіді (мс епохи). Читають прилади (`часи_збору.js`); останні 500, щоб довга сесія не росла без меж. */
+const ЖУРНАЛ_МОСТА_П = [];
+function відповідьВоркераМостуП(е){
+  const в = даніВоркераП(е);
+  if (в.тип !== 'відповідь') return;
+  const ч = ЧЕКАЮТЬ_МОСТА_П.get(в.н);
+  if (!ч) return;
+  ЧЕКАЮТЬ_МОСТА_П.delete(в.н);
+  ЖУРНАЛ_МОСТА_П.push({н: в.н, ім: ч.ім, мс_python: в.мс_python, мс_обіг: performance.now() - ч.т0, т1: Date.now()});
+  if (ЖУРНАЛ_МОСТА_П.length > 500) ЖУРНАЛ_МОСТА_П.shift();
+  if (в.помилка == null) return ч.прийняти(в.вих);
+  const х = new Error(в.помилка);
+  х.name = в.вид || 'Error';
+  ч.відхилити(х);
+}
+function доВоркераМостуП(ім, повідомлення){
+  const н = ++НОМЕР_ВИКЛИКУ_П;
+  return new Promise((прийняти, відхилити) => {
+    /* спершу відправка: кинула (воркера вже нема) — у `ЧЕКАЮТЬ_МОСТА_П` не лишається запису, що ніколи не закінчиться */
+    ВОРКЕР_МОСТА_П.postMessage(Object.assign({н}, повідомлення));
+    ЧЕКАЮТЬ_МОСТА_П.set(н, {ім, асинх: !!повідомлення.асинх, т0: performance.now(), прийняти, відхилити});
+  });
+}
 /* Транспорт: `(ім, рядок JSON, асинх) → Promise<рядок JSON>`. Єдине місце, де сторінка торкається Python; його
-   підміняють `наскрізь.js` (міст по HTTP) і тест показу. Крок Б-3 замінить тіло на повідомлення воркеру. */
+   підміняє тест показу. */
 async function транспортМостуП(ім, рядок, асинх){
   await підняти_міст_показу();
-  return await (асинх ? ВИКЛИКИ_МОСТА_П.асинх : ВИКЛИКИ_МОСТА_П.синх)(ім, рядок);
+  return await доВоркераМостуП(ім, {тип: 'виклик', ім, вхід: рядок, асинх: !!асинх});
+}
+/* ПРИЛАД (стенд `ПРАВИЛО_РУКИ2`, рядок 152; проби): записати файли у ФС воркера й виконати код Python — те, що
+   доти робили `pyodide_показу.FS.writeFile` і `runPythonAsync`. Продукт цього не кличе. */
+async function приладМостуП(файли, код){
+  await підняти_міст_показу();
+  return await доВоркераМостуП('прилад', {тип: 'прилад', файли: файли || {}, код});
 }
 
 /* ПОКОЛІННЯ ВІДПОВІДІ (крок 4.1-Б-2; рядки 7311, 8410). Виклик із `{ключ}` робить усі попередні виклики з тим самим
@@ -12113,6 +12339,91 @@ function написСтадіїП(с){
   const н = с && НАПИС_СТАДІЇ_П[с.код];
   return н ? н(с) : '';
 }
+/* Текст екрана очікування: що робиться зараз, скільки вже минуло і скільки тривав попередній збір на цьому
+   телефоні. Обіцянки тривалості без виміру тут нема: збір повторює всю роботу на кожному образі, тож «уперше
+   довше» не мало б чим справдитись, а число з чужого пристрою чи стенда тут не діє. Сталі написи інтерфейсу:
+   код лише підставляє числа. */
+const НАПИС_ОЧІКУВАННЯ_П = {
+  речей: (н, мин) => 'Перебираємо ' + н + ' речей з українських крамниць.'
+    + (мин ? ' Минулого разу на цьому телефоні образи були готові за ' + тривалістьП(мин.с) + '.' : ''),
+  руки: (г, н) => 'образи тчуться: готово ' + г + ' з ' + н,
+  готово: (г, н) => 'готово ' + г + ' з ' + н,
+  минуло: с => 'минуло ' + тривалістьП(с)};
+/* Секунди → «45 с» / «2 хв 05 с». */
+function тривалістьП(с){
+  с = Math.max(0, Math.round(с));
+  return с < 60 ? с + ' с' : Math.floor(с / 60) + ' хв ' + String(с % 60).padStart(2, '0') + ' с';
+}
+/* Час останнього вдалого збору на цьому телефоні — лише зручність екрана: нема сховища — нема й числа. */
+const КЛЮЧ_ЧАСУ_ЗБОРУ_П = 'люстерко-час-збору';
+function минулийЗбірП(){
+  try{
+    const з = JSON.parse(localStorage.getItem(КЛЮЧ_ЧАСУ_ЗБОРУ_П) || 'null');
+    return (з && з.с > 0) ? з : null;
+  }catch(_){ return null; }
+}
+function запамʼятатиЗбірП(с){
+  try{ localStorage.setItem(КЛЮЧ_ЧАСУ_ЗБОРУ_П, JSON.stringify({с, коли: Date.now()})); }catch(_){}
+}
+/* Рядок «що зараз · минуло» під текстом очікування. До рук — спільна стадія (паспорт, схема, пул); під час рук —
+   лише скільки варіантів готово, без того, який саме: позиції рук сліпі. */
+function малюватиЗаразП(){
+  const е = $('оч-зараз'); if (!е) return;
+  if (!ЗБ || ЗБ.готово || !ЗБ.почато){ е.textContent = ''; return; }
+  const що = ЗБ.руки ? НАПИС_ОЧІКУВАННЯ_П.руки(ЗБ.картки.filter(Boolean).length, ЗБ.картки.length)
+                     : написСтадіїП(ЗБ.стадії[0]);
+  const т = (що ? що + ' · ' : '') + НАПИС_ОЧІКУВАННЯ_П.минуло((Date.now() - ЗБ.почато) / 1000);
+  if (е.textContent !== т) е.textContent = т;
+}
+/* Хід збору: кожна зміна коду стадії — [код, мс від початку]. До рук стадія спільна (у позиції 0), далі — своя в
+   кожного варіанта. Кличе `малюватиПоступП`, бо кожна зміна стадії його кличе. */
+function відмітитиХідП(){
+  if (!ЗБ.хід || !ЗБ.почато || ЗБ.готово) return;
+  const т = Date.now() - ЗБ.почато;
+  ЗБ.стадії.forEach((с, і) => {
+    const ряд = ЗБ.руки ? ЗБ.хід.варіанти[і] : (і === 0 ? ЗБ.хід.спільні : null);
+    if (!ряд || !с || !с.код) return;
+    if ((ряд[ряд.length - 1] || [])[0] !== с.код) ряд.push([с.код, т]);
+  });
+}
+/* Хід → «код секунди · …»: стадія триває до наступної, остання — до `кінець_мс`. */
+function рядокХодуП(ряд, кінець_мс){
+  return ряд.map(([к, т], і) => к + ' ' + (Math.round(((і + 1 < ряд.length ? ряд[і + 1][1] : кінець_мс) - т) / 100) / 10))
+    .join(' · ') || '—';
+}
+/* Час збору за стадіями — з журналу викликів моделі (`зведенняВикликівП`) і журналу Python моста: що чекало
+   модель, що рахував код, які повтори й скільки на них чекали, коли був готовий кожен варіант. */
+function часЗборуП(почато){
+  const зв = зведенняВикликівП(почато);
+  const код = ЖУРНАЛ_МОСТА_П.filter(з => з.т1 >= почато && з.ім !== 'прилад');
+  const с = мс => Math.round(мс / 100) / 10;
+  const хід = ЗБ.хід || {спільні: [], варіанти: []};
+  const рукиЗ = Math.min(...хід.варіанти.map(р => (р[0] || [])[1]).filter(т => т != null), Date.now() - почато);
+  return {усі_с: с(Date.now() - почато), варіанти_с: (ЗБ.готові_мс || []).map(мс => мс == null ? null : с(мс)),
+          до_рук: рядокХодуП(хід.спільні, рукиЗ),
+          хід_варіантів: хід.варіанти.map((р, і) => рядокХодуП(р, (ЗБ.готові_мс || [])[і] ?? (Date.now() - почато))),
+          модель: зв.дія, стадії: зв.стадії, код_с: с(код.reduce((а, з) => а + (з.мс_python || 0), 0)),
+          кроків_коду: код.length};
+}
+/* Рядки «Службового» з `часЗборуП`: власник і тестувальниця бачать розклад часу на самому телефоні. Руки — за
+   часом готовності, без позиції картки: позиції сліпі, а стадії й час руки з каталогом інші, ніж руки без нього. */
+function рядкиЧасуЗборуП(ч, діагнозів){
+  const д = ч.модель || {};
+  const пов = Object.entries(д.повторів || {}).map(([к, н]) => к + '×' + н).join(', ');
+  const стадії = Object.entries(ч.стадії || {}).sort((а, б) => б[1].модель_с - а[1].модель_с)
+    .map(([к, ц]) => к + ' ' + ц.модель_с + ' с ×' + ц.викликів).join(' · ');
+  return ['готово за ' + ч.усі_с + ' с · діагнозів: ' + діагнозів,
+          'до рук, с: ' + ч.до_рук,
+          'руки за готовністю:',
+          ...ч.варіанти_с.map((с, і) => [с, (ч.хід_варіантів || [])[і]])
+            .sort((а, б) => (а[0] == null ? Infinity : а[0]) - (б[0] == null ? Infinity : б[0]))
+            .map(([с, хід]) => '  ' + (с == null ? '?' : с) + ' с: ' + хід),
+          'модель: викликів ' + (д.викликів || 0) + (д.спроб > д.викликів ? ' (спроб ' + д.спроб + ')' : '')
+            + ' · у польоті ' + (д.модель_с || 0) + ' с · у черзі ' + (д.черга_с || 0) + ' с · повтори: '
+            + (пов ? пов + ', чекали ' + (д.пауза_с || 0) + ' с' : 'нема') + ' · обривів ' + (д.обривів || 0),
+          'код ядра: ' + ч.код_с + ' с за ' + ч.кроків_коду + ' кроків',
+          'стадії моделі: ' + (стадії || '—')].join('\n');
+}
 /* Передає поточний напис збирання в постійну область оголошень. */
 function оголоситиЗбиранняП(напис){
   const ог = $('зб-оголошення');
@@ -12125,6 +12436,7 @@ function оголоситиВідмовуЗбиранняП(напис){
 }
 function малюватиПоступП(){
   if (!ЗБ) return;
+  відмітитиХідП();
   const р = $('рамки');
   if (р){
     if (!р.children.length) for (let i = 0; i < 4; i++) р.appendChild(ел('div', 'рамка'));
@@ -12141,12 +12453,14 @@ function малюватиПоступП(){
     }
     const тк = $('ткання'); if (тк){ тк.classList.toggle('тихо', !!ЗБ.готово); тк.dataset.щабель = щабель; }
   }
+  /* Поступ без позиції картки: позиції рук сліпі, а рядок «варіант N: готово» чи його стадія видали б, яка картка
+     з каталогом. Тому — скільки готово і стадії решти, упорядковані за написом, а не за позицією. */
   const e = $('зб-поступ');
-  const поступ = ЗБ.стадії.map((с,i)=>{
-    const к = ЗБ.картки[i];
-    return 'варіант ' + (i+1) + ': ' + (к && !к.збій ? '✓ готово' : (написСтадіїП(с) || 'чекає…'));
-  }).join('\n');
-  if (e) e.textContent = поступ;
+  const поступ = [НАПИС_ОЧІКУВАННЯ_П.готово(ЗБ.картки.filter(Boolean).length, ЗБ.картки.length)]
+    .concat(ЗБ.стадії.filter((с, i) => !ЗБ.картки[i]).map(с => написСтадіїП(с) || 'чекає…')
+      .sort((а, б) => а.localeCompare(б, 'uk'))).join('\n');
+  if (e) e.textContent = поступ + (ЗБ.підсумок ? '\n' + ЗБ.підсумок : '');
+  малюватиЗаразП();
   const напис = ЗБ.готово
     ? (ЗБ.успіх ? $('стани').querySelector('span:last-child').textContent : $('зб-статус').textContent)
     : поступ;
@@ -12463,7 +12777,7 @@ let ОЦ = {фото: [], опади: '', іде: false, ід: null, етапи:
 function відкритиОцінкуП(){
   малюватиОцінкуП();
   /* Pyodide — у фоні: поки вона обирає фото, «Оцінити» перестає чекати холодного старту */
-  if (!pyodide_показу) підняти_міст_показу().catch(e=>console.warn('міст для оцінки не піднявся:', e));
+  if (!МІСТ_ГОТОВИЙ_П) підняти_міст_показу().catch(e=>console.warn('міст для оцінки не піднявся:', e));
 }
 function привʼязатиОцінкуП(){
   const ф = $('оц-файл'); if (ф) ф.onchange = додатиФотоОцінкиП;
@@ -12699,7 +13013,7 @@ async function невідомеОцінкиСловамиП(к, етапи){
    поля самі репліку в сценарій не ведуть — так само, як у гілці помічниці (`ходомРозмовиП(…, 'helper')`). */
 /* Норма події, яку мовна модель розуміє з паспорта без цитати (`мовний_шар._БЕЗ_ЦИТАТИ`): ті самі поля
    для обох гілок — помічниці (рядок 821) і питання про образ; `part_of_day` (НП-в5) — той самий клас. */
-const ПОЛЯ_НОРМИ_ПОДІЇ_П = ['formality', 'reserved_colour', 'open_zones', 'part_of_day'];
+const ПОЛЯ_НОРМИ_ПОДІЇ_П = ['formality', 'formality_branch', 'reserved_colour', 'open_zones', 'part_of_day'];
 const ПОЛЯ_ПИТАННЯ_ОБРАЗУ_П = ['question', 'question_about', 'quotes', 'own_items', 'mood', 'rest',
                                ...ПОЛЯ_НОРМИ_ПОДІЇ_П];
 /* М-5: той самий перелік для ходу розмови — тему питання там каже `need`, а не переклад */
@@ -13626,6 +13940,7 @@ async function зібратиОбразиП(){
   }
   кн.disabled = true; далі.disabled = true;
   ЗБ = {картки:[null,null,null,null], стадії:[null,null,null,null], етап:[0,0,0,0], діагноз:[], ключ:null, готово:false, успіх:false,
+        почато, готові_мс:[null,null,null,null], хід:{спільні:[], варіанти:[[],[],[],[]]},
         /* ── ЗНІМОК ВХОДУ ПРОГОНУ (рядок 134) ─────────────────────────────────
            ЩО ЦЕ МІНЯЄ В РІШЕННІ. Звіт мусить читатись БЕЗ доступу до телефона, а
            в ньому доти стояло слово `профіль` — саме лише ІМ'Я. Тобто діагност
@@ -13643,9 +13958,9 @@ async function зібратиОбразиП(){
   ст.textContent = '';
   /* число речей — зі збирача, не з рук: каталог міняється, сторінка ні */
   const _n = (КАТАЛОГ_ПІДПИС_П.match(/(\d+) речей/) || [])[1];
-  if (_n) $('оч-текст').textContent = 'Перебираємо ' + Number(_n).toLocaleString('uk-UA')
-    + ' речей з українських крамниць. Дві-три хвилини, перший раз — довше.';
+  if (_n) $('оч-текст').textContent = НАПИС_ОЧІКУВАННЯ_П.речей(Number(_n).toLocaleString('uk-UA'), минулийЗбірП());
   режим('очікування'); малюватиТкання(); малюватиМету('оч-мета'); малюватиПоступП();
+  const годинникП = setInterval(малюватиЗаразП, 1000);
   /* П-7, рядок 4520: ВИБІР СТИЛІСТКИ, ЯКИЙ ВОНА БАЧИЛА НА ЕКРАНІ «ПАЛІТРА», — знімком ДО перезбирання
      паспорта нижче, разом із ключем входу, на який стилістка відповідала. Чи він годиться образам,
      вирішує ключ ПІСЛЯ перезбирання (нижче, рядок 5911). */
@@ -13866,7 +14181,7 @@ async function зібратиОбразиП(){
     if (r.пул_чому) ЗБ.діагноз.push('pool · not_assembled: ' + r.пул_чому);
     малюватиДіагнозП();
 
-    ЗБ.стадії = [null,null,null,null]; малюватиПоступП();
+    ЗБ.стадії = [null,null,null,null]; ЗБ.руки = true; малюватиПоступП();
     const однаРука = async (поз) => {
       const рука = ЗБ.ключ[поз], донор = (рука === '2');
       let текст, в, ітерацій = 0, викликів = 0, підпис = null, збій = false;
@@ -15296,7 +15611,7 @@ async function зібратиОбразиП(){
           ЗБ.діагноз.push('hand_' + рука + ' · layer · latin_cut=' + Object.keys(картка.латиниця_знята).map(
             ключ => ключ + ':' + картка.латиниця_знята[ключ].join('|')).join(','));
       }
-      ЗБ.картки[поз] = картка;
+      ЗБ.картки[поз] = картка; ЗБ.готові_мс[поз] = Date.now() - почато;
       ЗБ.стадії[поз] = null; ЗБ.етап[поз] = 4; малюватиПоступП(); малюватиДіагнозП();
     };
     /* СТАРТИ РОЗНЕСЕНО НА 1.5 с. Паралельність лишається, але чотири однакові
@@ -15310,6 +15625,9 @@ async function зібратиОбразиП(){
        діставав фрагментом із чужого вікна. Далі — той самий `рендер`. */
     П = {в:'ПОКАЗ-V1', збірка:ЗБІРКА_ПОКАЗУ, каталог:КАТАЛОГ_ПІДПИС_П,
          профіль:((вх.імʼя||'безіменна')),
+         /* ПІДПИС ТЕСТУВАЛЬНИЦІ — ЛИШЕ ЯКЩО ВОНА ЇЇ ПОСТАВИЛА: `профіль` вище при порожньому імені несе
+            «безіменна», і від підпису його не відрізнити. Тут порожнє лишається порожнім — «невідомо». */
+         підпис:((вх.імʼя||'').trim() || null),
          розклад:(ЗБ.ключ||[]).join(''),
          /* ІД ЦЬОГО ПРОГОНУ — РАЗ І НАЗАВЖДИ (наряд Л-7, розбір біля
             `новийІдПрогону`). Ставиться ТУТ, на шві, разом із картками: далі він
@@ -15345,7 +15663,8 @@ async function зібратиОбразиП(){
        каталогу; наступне «Зібрати ще раз» пошле їх мосту як `вже_були`. */
     ЗБ.картки.filter(к => к && !к.збій && (к.рука === '1' || к.рука === '2'))
       .forEach(к => (к.речі || []).forEach(р => { if (р && р.id && !р.вигадана) ВЖЕ_БУЛИ_П.add(р.id); }));
-    const зп = $('зб-поступ'); if (зп) зп.textContent = 'готово за ' + секунд + ' с · діагнозів: ' + ЗБ.діагноз.length;
+    П.час_збору = часЗборуП(почато);
+    ЗБ.підсумок = рядкиЧасуЗборуП(П.час_збору, ЗБ.діагноз.length);
     /* ПЕРЕД викидом «жодна рука не дійшла»: прогін, у якому впали всі чотири
        руки, мусить лишити у файлі всі чотири записи — інакше найдорожчий для
        діагноста випадок і далі був би порожнім місцем у журналі. */
@@ -15355,6 +15674,7 @@ async function зібратиОбразиП(){
     рендер();
     /* Готово — лише після прийнятого результату й успішного показу карток. */
     ЗБ.успіх = true; ЗБ.готово = true; малюватиПоступП(); малюватиДіагнозП();
+    запамʼятатиЗбірП(секунд);
   }catch(e){
     console.error(e);
     режим('сценарій');
@@ -15379,7 +15699,7 @@ async function зібратиОбразиП(){
     if (ЗБ){ ЗБ.діагноз.push(...рядкиШаруП(м.записи)); малюватиДіагнозП(); }
     ст.textContent = м.тексти.відмова || '';
     оголоситиВідмовуЗбиранняП(ст.textContent);
-  }finally{ кн.disabled = false; далі.disabled = false; }
+  }finally{ clearInterval(годинникП); кн.disabled = false; далі.disabled = false; }
 }
 
 /* ── СХЕМУ Й ОСНОВУ, ЯКІ ВОНА ЛИШИЛА «ХАЙ ОБЕРЕ СТИЛІСТКА», ОБИРАЄ МОДЕЛЬ (П-7, 27.09.2026) ──

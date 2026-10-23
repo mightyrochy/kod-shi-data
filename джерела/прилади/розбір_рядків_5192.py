@@ -55,7 +55,6 @@ import statistics
 import sys
 import threading
 import time
-import urllib.request
 import xml.etree.ElementTree as XML
 
 ТУТ = os.path.dirname(os.path.abspath(__file__))
@@ -83,7 +82,9 @@ import збирач_промптів as ЗП                 # noqa: E402
 # Група — поля, про які пише ОДИН вид рядка картки (склад, мірки взуття, колір…). Модель обирає
 # групи ключа, а не 46 полів поодинці: так рішення коротке, а виклик рядка все одно вужчий за річ.
 ГРУПИ = {
-    "kind": ("slot", "item_type", "set_kind", "set_parts[].slot", "set_parts[].item_type"),
+    # `listing_kind` і `audience` (#1339) — до виду: що продають і для кого, пишуть ті самі рядки, що й вид речі; рядок
+    # лише про стать чи вік обере `kind` і дасть «невідомо» решті (рішення менеджера 22.10, рядок 8860)
+    "kind": ("slot", "item_type", "set_kind", "set_parts[].slot", "set_parts[].item_type", "listing_kind", "audience"),
     "fibre": ("fabric", "material", "fabric_kind", "texture", "elastane_pct", "wool_pct"),
     "fit": ("cut", "size_fit", "elastic_waist", "belt", "veto.oversize", "veto.tight"),
     "length": ("length", "length_cm", "shaft"),
@@ -95,6 +96,8 @@ import збирач_промптів as ЗП                 # noqa: E402
     "metal": ("metal", "metal_where", "chain_cm"),
     "colour": ("color_main", "color_extra[]", "color_why"),
     "surface": ("pattern", "decor[]", "veto.stripes", "veto.big_print", "veto.print", "veto.shine"),
+    # про мову назви пише лише сам рядок назви; код мови не визначає (п.12; рішення менеджера 22.10, рядок 8860)
+    "name": ("name_language",),
 }
 _ПИШЕ_МОДЕЛЬ = [ш for ш, _, _ in КР.ПОЛЯ if ш not in КР.ВИВЕДЕНІ]
 assert sorted(ш for г in ГРУПИ.values() for ш in г) == sorted(_ПИШЕ_МОДЕЛЬ), "кожне поле — в одній групі"
@@ -346,14 +349,10 @@ def sha_тіла(т):
     return hashlib.sha256(json.dumps(т, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
 
 
-def надіслати(т):
-    """(текст відповіді, секунд) від LM Studio (`П.АДРЕСА`, MODEL_URL); виняток — вгору, у журнал."""
-    запит = urllib.request.Request(П.АДРЕСА + "/chat/completions", data=json.dumps(т, ensure_ascii=False).encode("utf-8"),
-                                   headers={"Content-Type": "application/json"})
-    т0 = time.time()
-    with urllib.request.urlopen(запит, timeout=3600) as в:
-        дані = json.loads(в.read().decode("utf-8"))
-    return (((дані.get("choices") or [{}])[0].get("message") or {}).get("content") or ""), round(time.time() - т0, 1)
+def надіслати(т, годинник=None, вид="row"):
+    """(текст відповіді, секунд) від LM Studio (`П.АДРЕСА`, MODEL_URL) дорогою прогону А (`П.надіслати`, наряд 4.4):
+    швидкий обрив — один повтор із причиною, кожна спроба — у годинник прогону; решта винятків — вгору, у журнал."""
+    return П.надіслати(т, годинник, вид)
 
 
 def заглушка(т, цитата=""):
@@ -384,6 +383,7 @@ def _виклик(журнал, вид, ід, т, свідок, стоп, мір
         return журнал.готові[(ід, запит)]
     with мірка["лок"]:
         мірка["викликів"] += 1
+        мірка[вид] = мірка.get(вид, 0) + 1          # одиниці годинника (`П.Годинник.прогноз`)
         обрив = стоп is not None and мірка["викликів"] > стоп
     if обрив and мірка["викликів"] > стоп + 1:
         raise Обрив()                                 # решта черги після обриву — без сліду в журналі
@@ -394,7 +394,7 @@ def _виклик(журнал, вид, ід, т, свідок, стоп, мір
     try:
         for спроба in range(1 + П.ПОВТОРІВ_НА_НЕ_JSON):
             т_ = dict(т, seed=спроба) if спроба else т
-            відп, с = заглушка(т_, цитата) if мірка["заглушка"] else надіслати(т_)
+            відп, с = заглушка(т_, цитата) if мірка["заглушка"] else надіслати(т_, мірка["годинник"], вид)
             секунд += с
             if isinstance(ПР.розібрати_json(відп.replace(КР.ВСТАВКА, "")), dict):
                 break
@@ -418,7 +418,7 @@ def прогін(куди, ід_моделі, вибрані, рядки, пар
     """Ключі вибраних рядків → групи (моделлю або з `мапа`), далі кожен рядок з групами → модель; усе в журнал."""
     os.makedirs(куди, exist_ok=True)
     журнал = Журнал(куди)
-    мірка = dict(викликів=0, лок=threading.Lock(), заглушка=ід_моделі == "заглушка")
+    мірка = dict(викликів=0, лок=threading.Lock(), заглушка=ід_моделі == "заглушка", годинник=П.Годинник(паралельно))
     try:
         ключі = sorted({рядки[і][0] for і in вибрані})
         мапа = dict(мапа or {})
@@ -448,6 +448,9 @@ def прогін(куди, ід_моделі, вибрані, рядки, пар
                                                                       (time.time() - т0) / 60), flush=True)
     finally:
         журнал.закрити()
+    # Годинник прогону А (наряд 4.4): Б і А на виборі навантаження (6429, 6546) — однією лічбою стінного часу.
+    П._годинник_у_теку(куди, мірка["годинник"], {"key": (мірка.get("key", 0), len({к for к, _ in рядки.values()})),
+                                                    "row": (мірка.get("row", 0), len(рядки))})
     print("тека %s · ключів %d (без груп %d) · рядків %d, у модель %d · нових викликів %d · впало %d"
           % (куди, len(ключі), sum(1 for к in ключі if not мапа.get(к)), len(вибрані), len(роботи),
              мірка["викликів"], sum(1 for п in вийшло if п is None)))

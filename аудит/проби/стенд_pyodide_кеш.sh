@@ -19,8 +19,8 @@
 set -eu
 DIR="${1:-${PYODIDE_DIR:-/tmp/pyodide}}"
 BASE="https://cdn.jsdelivr.net/pyodide/v0.26.4/full"
-# Рівно ті п'ять файлів, які тягне сторінка показу: тег `<script defer …/pyodide.js>`
-# і далі сам `loadPyodide` за `indexURL` (`ДЗЕРКАЛА_П` у `показ.html`).
+# Рівно ті п'ять файлів, які тягне воркер моста показу (4.1-Б-3): `pyodide.js` — `fetch` з
+# `integrity`, і далі сам `loadPyodide` за `indexURL` (`ДЗЕРКАЛА_П` у `показ.html`).
 mkdir -p "$DIR"
 miss=0
 for f in pyodide.js pyodide.asm.js pyodide.asm.wasm python_stdlib.zip pyodide-lock.json; do

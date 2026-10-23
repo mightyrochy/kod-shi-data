@@ -955,7 +955,15 @@
        "const": "unknown"
       }
      ],
-     "description": "наскільки ошатний цей вихід, шкала 1–10: завжди — з її слів і події"
+     "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
+    },
+    "formality_branch": {
+     "description": "гілка щабля: ділова чи світська форма того самого щабля",
+     "enum": [
+      "business",
+      "social",
+      "unknown"
+     ]
     },
     "intent": {
      "description": "намір: comfort_first — зручність і свобода руху понад усе; context_optimal — доречність і рівень події понад усе; statement — хоче вразити, заявити про себе; conventional — нічого з цього",
@@ -2340,7 +2348,11 @@
        },
        {
         "const": "formality",
-        "description": "наскільки ошатний цей вихід, шкала 1–10: завжди — з її слів і події"
+        "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
+       },
+       {
+        "const": "formality_branch",
+        "description": "гілка щабля: ділова чи світська форма того самого щабля"
        },
        {
         "const": "intent",
@@ -4079,10 +4091,6 @@
           "description": "her answer about white does not say whether it is warm or cool, and the photo does not decide it either"
          },
          {
-          "const": "dress_code_level_depends_on_event",
-          "description": "the dressiness of this dress code depends on the type of event, and the type is not named (values: dress_code — dress code code)"
-         },
-         {
           "const": "item_type_unknown_dress_code_unchecked",
           "description": "the cards do not name the type of some items, so the code did not check the dress code for them (values: count — how many such items; dress_code — dress code code)"
          },
@@ -4828,7 +4836,7 @@
          },
          {
           "const": "open_zones_over_limit",
-          "description": "more zones of the body are open than the context asks for (values: zones — zone codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté or back; limit — the limit; evening — an evening context, where the limit is two; conservative — a reserved audience or a place of worship, where the limit is one lower)"
+          "description": "more zones of the body are open than the context asks for (values: zones — zone codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté or back; limit — the limit, two when the event names no stricter norm; conservative — a reserved audience or a place of worship, where the limit is one lower)"
          },
          {
           "const": "cover_open_zones",
@@ -6196,11 +6204,11 @@
          },
          {
           "const": "evening_outing",
-          "description": "an evening outing: fabrics with shine or a pronounced texture, colours deeper and richer than by day, more open skin allowed; a matt, light, fully closed outfit reads as daytime"
+          "description": "an outing in evening light: shine and a pronounced texture read well, colours can be deeper and richer than by day; the occasion's step stays the same"
          },
          {
           "const": "day_outing",
-          "description": "a daytime outing: matt fabrics, lighter, less open skin, more practical; shine and deep evening colours read as overdressing"
+          "description": "an outing in daylight: matt fabrics and lighter colours read best, shine looks harsher and deep evening colours heavier; the occasion's step stays the same"
          },
          {
           "const": "mourning_event",
@@ -6228,31 +6236,15 @@
          },
          {
           "const": "occasion_level",
-          "description": "the occasion's level of formality (values: level — its top step: home, everyday, neat, smart, formal, very_smart or ceremonial; rules_out — what this occasion rules out: near_white — white and colours that read as white on photos (cream, pale yellow, pale blue), bright_and_light — bright and light colours; loudness_max — no colour louder than this, loudness = chroma C* × L*/50: deep wine or terracotta ≈ 23–32, bright red, fuchsia, cobalt or mustard ≈ 62–87)"
+          "description": "the occasion's level of formality (values: level — its top step: home, everyday, neat, smart, formal, very_smart or ceremonial; form — business or social: the branch of that step this occasion takes; wear — the clothes of that step in this branch; rules_out — what this occasion rules out: near_white — white and colours that read as white on photos (cream, pale yellow, pale blue), bright_and_light — bright and light colours; loudness_max — no colour louder than this, loudness = chroma C* × L*/50: deep wine or terracotta ≈ 23–32, bright red, fuchsia, cobalt or mustard ≈ 62–87)"
          },
          {
           "const": "risk_direction",
           "description": "when the occasion's level cannot be hit exactly, miss it in this direction (values: posture — half_step_over: half a step overdressed, a sign of respect; half_step_under_plus_detail: half a step underdressed plus one quality detail)"
          },
          {
-          "const": "level_breakers_up_to_4",
-          "description": "the level is held by fabric, finish and shoes, not by the item's name; at this level nothing is ruled out"
-         },
-         {
-          "const": "level_breakers_up_to_6",
-          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: sports shoes, sports knit, acid-washed denim"
-         },
-         {
-          "const": "level_breakers_up_to_7",
-          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: sneakers, T-shirt, a kimono cardigan as the outer layer, mules and flip-flops, matt suede in shoes"
-         },
-         {
-          "const": "level_breakers_up_to_8",
-          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: knit cardigan, kimono, mules, a block sandal of everyday look, matt cotton and suede, an everyday bag"
-         },
-         {
-          "const": "level_breakers_up_to_10",
-          "description": "the level is held by fabric, finish and shoes, not by the item's name; out of this level: everything daytime — cotton, knit, suede, open everyday shoes, cardigans"
+          "const": "level_breakers",
+          "description": "the level is held by fabric, finish and shoes, not by the item's name (values: level — the step; out — what takes an outfit off this step; without out nothing is ruled out)"
          },
          {
           "const": "high_occasion_floor",
@@ -7730,6 +7722,10 @@
   },
   "reserved_colour": {
    "near_white": "near_white"
+  },
+  "formality_branch": {
+   "business": "business",
+   "social": "social"
   },
   "open_zones": {
    "none": "none",

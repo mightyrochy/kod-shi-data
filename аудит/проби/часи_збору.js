@@ -2,7 +2,7 @@
    ПОВЕРХ `рв6_стенд.js`. Продукт не чіпається: сторінці лише обгортаються глобальні функції
    (класичний <script>, тож виклик `містП(...)` зсередини руки йде через `window.містП`).
 
-   CHASY=1 — мітки: кожен крок коду (`містП` — Pyodide на головному потоці), кожен виклик
+   CHASY=1 — мітки: кожен крок коду (`містП` — Pyodide у воркері, 4.1-Б-3), кожен виклик
    моделі (поставлено в чергу → вийшов із черги → відповідь), зміни стадій рук. Після збору —
    рядок на подію, підсумок і JSON (CHASY_OUT=<файл>) для `джерела/проби/годинник_збору.py`.
    ZATRYMKA=<база_с>,<с_на_1000_симв_входу>,<с_на_1000_симв_виходу> — заглушка відповідає не
@@ -58,6 +58,10 @@ async function почекати(модель, вхідСимв, вихідСим
 async function обгорнути(стор){
   if (!УВІМКНЕНО) return;
   _почато = true;
+  /* CHASY_MYNULYI=<с> (наряд 4.6): час попереднього збору на «цьому телефоні» — число з виміру попереднього
+     прогону, щоб екран очікування першого ж збору стенда показав рядок «Минулого разу…» */
+  if (process.env.CHASY_MYNULYI) await стор.evaluate(с => { try { localStorage.setItem('люстерко-час-збору',
+    JSON.stringify({с, коли: Date.now()})); } catch (_) {} }, Number(process.env.CHASY_MYNULYI));
   await стор.evaluate(() => {
     const Ч = window.__ЧАСИ = {т0: Date.now(), події: [], поз: null};
     const П = Ч.події, тепер = () => Date.now();
@@ -158,20 +162,18 @@ async function обгорнути(стор){
         try { return await о.apply(this, arguments); } finally { з.т1 = тепер(); }
       };
     }
-    /* ЧИСТИЙ ЧАС PYTHON: інтервал `містП` включає чекання чужого Python (потік один), тож
-       сам `bridge.виклик` міряється зсередини — `time.time()` у Pyodide — це `Date.now()` */
-    if (typeof pyodide_показу !== 'undefined' && pyodide_показу) pyodide_показу.runPython(
-      'import bridge, time\n'
-      + 'if not hasattr(bridge, "_часи_о"):\n'
-      + '    bridge._часи_о = bridge.виклик\n'
-      + '    def _в(ім, вхід):\n'
-      + '        т0 = time.time()\n'
-      + '        try:\n'
-      + '            return bridge._часи_о(ім, вхід)\n'
-      + '        finally:\n'
-      + '            bridge._часи.append([ім, т0 * 1000, time.time() * 1000])\n'
-      + '    bridge.виклик = _в\n'
-      + 'bridge._часи = []\n');
+    /* ЧИСТИЙ ЧАС PYTHON: інтервал `містП` включає чекання чужого Python (потік один), тож чистий час
+       міряє сам воркер моста (4.1-Б-3) — `мс_python` у `ЖУРНАЛ_МОСТА_П` сторінки, без підміни `bridge.виклик` */
+    /* КАРТКИ НА ЕКРАНІ (наряд 4.6): мить, коли на сторінці стало N карток (`.картка`), — те, що
+       бачить жінка, а не кінець руки в стані */
+    const кк = document.getElementById('картки');
+    if (кк){
+      let було = 0;
+      new MutationObserver(() => {
+        const н = кк.querySelectorAll('.картка').length;
+        if (н !== було){ було = н; П.push({к: 'картки', т: тепер(), н}); }
+      }).observe(кк, {childList: true, subtree: true});
+    }
     const оФото = window.фотоДляЗапитуП;
     window.фотоДляЗапитуП = async function(){
       const з = {к: 'фото', т0: тепер(), поз: Ч.поз};
@@ -181,7 +183,24 @@ async function обгорнути(стор){
   });
 }
 
-let _pythonВід = 0;   // скільки викликів Python уже названо попереднім звітом
+/* CHASY_ZNIMOK=<файл.png> (наряд 4.6): знімок 390×844 на мить, коли готова ПЕРША рука (`ЗБ.етап[поз] === 4`), —
+   стан «перша картка готова, решта ткуться». Вікно повертається, яким було. Без змінної — нічого. */
+async function знімокПершої(стор){
+  if (!process.env.CHASY_ZNIMOK) return;
+  try {
+    await стор.waitForFunction(() => typeof ЗБ !== 'undefined' && ЗБ && (ЗБ.етап || []).some(е => е === 4), null,
+      {timeout: 900000, polling: 200});
+    await new Promise(р => setTimeout(р, 800));
+    const було = стор.viewportSize();
+    await стор.setViewportSize({width: 390, height: 844});
+    await new Promise(р => setTimeout(р, 400));
+    await стор.screenshot({path: process.env.CHASY_ZNIMOK});
+    if (було) await стор.setViewportSize(було);
+    console.log('   ЧАСИ: знімок першої руки → ' + process.env.CHASY_ZNIMOK);
+  } catch (е) { console.log('   ЧАСИ: знімок першої руки не вдався: ' + String(е).slice(0, 160)); }
+}
+
+let _pythonВід = 0;   // номер (`н`) останнього виклику Python, уже названого попереднім звітом
 
 /* python-виклики від попереднього звіту, згорнуті за іменем: «ім ×N = с (макс)» */
 function _заІменем(виклики){
@@ -191,15 +210,16 @@ function _заІменем(виклики){
   return Object.entries(п).sort((a, b) => b[1].с - a[1].с)
     .map(([к, x]) => к + ' ×' + x.раз + ' = ' + x.с.toFixed(1) + ' с (макс ' + x.макс.toFixed(1) + ')').join(' · ');
 }
-const _pythonСторінки = стор => стор.evaluate(() => { try { return JSON.parse(pyodide_показу.runPython(
-  'import json, bridge\njson.dumps(getattr(bridge, "_часи", []))')); } catch (e) { return []; } });
+/* [ім, т0, т1, н]: т1 — мить відповіді воркера, т0 = т1 − чистий Python (передача 0,2 % — §2 воркер_4.1.md) */
+const _pythonСторінки = стор => стор.evaluate(() => typeof ЖУРНАЛ_МОСТА_П === 'undefined' ? []
+  : ЖУРНАЛ_МОСТА_П.filter(з => з.ім !== 'прилад').map(з => [з.ім, з.т1 - з.мс_python, з.т1, з.н]));
 
 /* ПОВТОРНИЙ ЗБІР («Зібрати ще раз», сцена 4є): час зі сторінки і Python лише цього збору */
 async function повтор(стор, номер){
   if (!УВІМКНЕНО) return;
   const поступ = await стор.evaluate(() => (document.getElementById('зб-поступ') || {}).textContent || '');
-  const усі = await _pythonСторінки(стор), нові = усі.slice(_pythonВід);
-  _pythonВід = усі.length;
+  const нові = (await _pythonСторінки(стор)).filter(з => з[3] > _pythonВід);
+  _pythonВід = Math.max(_pythonВід, ...нові.map(з => з[3]));
   console.log('   ЧАСИ збору ' + номер + ': ' + поступ + ' · PYTHON: ' + _заІменем(нові));
 }
 
@@ -213,7 +233,7 @@ async function звіт(стор){
       кроки: ((к.етапи || {}).виклики || []).map(в => ({крок: в.крок || null, чого: ((в.запит || {}).чого) || null,
         симв: ((в.запит || {}).симв_разом) || (((в.запит || {}).текст) || '').length || null}))} : null)}));
   д.python = await _pythonСторінки(стор);
-  _pythonВід = д.python.length;
+  _pythonВід = Math.max(_pythonВід, ...д.python.map(з => з[3]));
   const с = мс => ((мс - д.т0) / 1000).toFixed(1);
   const рука = п => (п == null || п < 0) ? '?' : (д.ключ[п] || '?');
   const під = [];
@@ -236,6 +256,13 @@ async function звіт(стор){
   const моделі = д.події.filter(з => з.к === 'модель');
   const чекали = моделі.reduce((а, з) => а + (з.старт ? з.старт - з.т0 : 0), 0);
   const обслуг = моделі.reduce((а, з) => а + ((з.т1 || д.кінець) - (з.старт || з.т0)), 0);
+  const картки = д.події.filter(з => з.к === 'картки' && з.н > 0);
+  if (картки.length) console.log('  КАРТКИ НА ЕКРАНІ (с): перша ' + с(картки[0].т) + ' · усі ' + с(картки[картки.length - 1].т)
+    + ' · ' + картки.map(з => з.н + '@' + с(з.т)).join(' '));
+  /* те, що бачать на телефоні: «Службове» після збору і час, який екран очікування назве наступного разу */
+  const сл = await стор.evaluate(() => ({поступ: (document.getElementById('зб-поступ') || {}).textContent || '',
+    минулий: typeof минулийЗбірП === 'function' ? минулийЗбірП() : null}));
+  console.log('  СЛУЖБОВЕ:\n    ' + сл.поступ.split('\n').join('\n    ') + '\n  ЧАС ДЛЯ НАСТУПНОГО ЗБОРУ: ' + JSON.stringify(сл.минулий));
   const поРуках = {};
   д.події.filter(з => з.к === 'стадія' && з.текст === '').forEach(з => { поРуках[рука(з.поз)] = с(з.т); });
   console.log('  ПІДСУМОК: збір ' + с(д.кінець) + ' с · коду (Pyodide) ' + (коду / 1000).toFixed(1) + ' с у '
@@ -248,4 +275,4 @@ async function звіт(стор){
   return вих;
 }
 
-module.exports = {УВІМКНЕНО, затримкаМс, почекати, обгорнути, звіт, повтор};
+module.exports = {УВІМКНЕНО, затримкаМс, почекати, обгорнути, звіт, повтор, знімокПершої};
