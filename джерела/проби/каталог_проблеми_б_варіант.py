@@ -6,7 +6,7 @@
 import collections, os, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_каталог as FK, verify as V
-К = FK._прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
+К = FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
 def сім(сл):
     ім = (V.слово_крамниці(сл or "") or {}).get("ім")
     return V.сім_я_слова(ім) if ім else None

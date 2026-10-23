@@ -9,8 +9,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import feed as F
 import фід_кадр_колір as ФКК
-from фід_фото import _спільні_фото, чужий_кадр
-from фід_збагачення import _збагачення_придатне
+from фід_фото import спільні_фото as _спільні_фото, чужий_кадр
+from фід_збагачення import збагачення_придатне as _збагачення_придатне
 
 ХИБНІ = ("ж-01320@stolyarchuk.com.ua", "ж-01430@wearme.ua", "ж-03249@25union.com.ua",
          "ж-06159@andretan.ua", "ж-08271@25union.com.ua")

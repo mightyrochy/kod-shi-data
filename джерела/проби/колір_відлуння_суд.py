@@ -12,7 +12,7 @@ import bridge as B, fit as ПС, colorspace as cs, pipeline as PL, стенд_з
 T = ПС.тіло(float(вх0["зріст"]), {k: float(v) for k, v in вх0["обхвати"].items()}); F = cs.features(cs.hx(вх0["шкіра"]), cs.hx(вх0["волосся"][0]), cs.hx(вх0["очі"]))
 ПР = ("K-COL-05", "K-CRA-02", "K-COL-02", "K-COMP-03", "K-PAL-15", "K-ACC-01", "K-COMP-05", "K-PAL-05", "K-PAL-06", "K-PAL-12", "K-PAL-18", "R-COL-16", "K-ACC-10")
 СЛОТИ = ("верх", "низ", "сукня", "верхній_шар", "взуття", "сумка", "шарф", "сережки", "намисто"); Л = K.Counter(); Д = []
-гучна = lambda x: (АС._C_речі(x) or 0.0) >= 40
+гучна = lambda x: (АС.C_речі(x) or 0.0) >= 40
 for назва in ("офіс·18°C", "дощ·ресторан·вечір", "весілля·гість", "спека·парк"):
     сц = dict(СЗ.СЦЕНАРІЇ[назва])
     к = json.loads(B.виклик("запити", json.dumps(dict(вх0, сценарій=сц, випадок=назва), ensure_ascii=False)))["кандидати"]
@@ -34,6 +34,6 @@ for назва in ("офіс·18°C", "дощ·ресторан·вечір", "�
         оп = sorted("опора:%s" % o.get("правило") for o in в.get("опори") or [] if o.get("правило") in ПР)
         for x in зн + оп: Л[x] += 1
         Л["образів"] += 1
-        Д.append("%s#%02d %s | %s" % (назва[:6], i, " ".join(зн + оп), " · ".join("%s %s%s %s" % ((зі[x].get("назва") or "")[:26], зі[x].get("колір_ім") or "", "~" if КР.не_вимір(зі[x]) else "", PS._hex(зі[x]["lab"]) if зі[x].get("lab") else "—") for x in ід)))
+        Д.append("%s#%02d %s | %s" % (назва[:6], i, " ".join(зн + оп), " · ".join("%s %s%s %s" % ((зі[x].get("назва") or "")[:26], зі[x].get("колір_ім") or "", "~" if КР.не_вимір(зі[x]) else "", PS.hex_з_lab(зі[x]["lab"]) if зі[x].get("lab") else "—") for x in ід)))
 for к_, v in sorted(Л.items()): print("  %-28s %4d" % (к_, v))
 if "-д" in sys.argv: print("\n".join(Д))

@@ -34,7 +34,8 @@ for ф in sorted(glob.glob("../аудит/**/verdykty*.json*", recursive=True) +
 print("ПІДСУМОК: " + " · ".join("%s %d" % кв for кв in sorted(лік.items())))
 БВ = {"паспорт_нагоди": ("ВЕТО_СЛОВА", "_ЖІНЦІ_ЗАЙМЕННИКИ", "_ЖІНЦІ_ТВІЙ", "_ЖІНЦІ_ВАШ", "_ЖІНЦІ_ДІЄСЛОВА", "СІМʼЇ_НАГОД_ПІДПИСИ",
       "_НЕВІДОМО_СИНОНІМИ"), "profile": ("_СЛОВА_РЕЧІ", "СЕНСОРНІ"), "сценарій": ("_ОПАДИ_СИНОНІМИ",), "brief": ("ТЕМА_ЗА_КОДОМ",)}
-лишились = [ц.id for м, імена in БВ.items() for в in ast.parse(open(м + ".py", encoding="utf-8").read()).body
+ФАЙЛИ = {"паспорт_нагоди": ("паспорт_нагоди", "паспорт_основи")}   # 3.3: ВЕТО_СЛОВА переїхало в паспорт_основи
+лишились = [ц.id for м, імена in БВ.items() for ф in ФАЙЛИ.get(м, (м,)) for в in ast.parse(open(ф + ".py", encoding="utf-8").read()).body
             if isinstance(в, ast.Assign) for ц in в.targets if isinstance(ц, ast.Name) and ц.id in імена
             and not (ц.id == "СЕНСОРНІ" and isinstance(в.value.elts[0].elts[0], ast.Constant))]   # ключ-код, не кортеж слів
 print("Б/В шляху паспорта: %d із %d · лишились: %s" % (len(лишились), sum(map(len, БВ.values())), ", ".join(лишились)))

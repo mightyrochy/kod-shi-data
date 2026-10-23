@@ -36,8 +36,8 @@ import argparse, collections, gzip, hashlib, json, os, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor, wait as _чекати
 import feed as F
 import фід_кадр_колір as ФКК
-from фід_фото import кадри_речі, _файл_фото, _спільні_фото, _хости_крамниць, чужий_кадр
-from фід_збагачення import _збагачення_придатне
+from фід_фото import кадри_речі, файл_фото as _файл_фото, спільні_фото as _спільні_фото, хости_крамниць as _хости_крамниць, чужий_кадр
+from фід_збагачення import збагачення_придатне as _збагачення_придатне
 from жнива_фото import _скачати_фото, збільшити_url
 from жнива_реєстр import КЕШ
 from жнива_колір import виміряти_фото

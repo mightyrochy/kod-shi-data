@@ -32,7 +32,7 @@ for гт in ТЕКИ:
         дріт = (lambda x: json.loads(x) if isinstance(x, str) else x)(РВ.промпт_опису(об)).get("your_declared") or []
         після_є += len({x["item"] for x in дріт}); після_без += len({x["item"] for x in дріт if not x.get("statements")})
         if set((п.get("case") or {}).get("goal_zones") or []) & {"belly", "hips"}:
-            рядки = list(РВ._список(в.get("як_носити"))) + [в.get("текст") or ""] + [x.get("текст") or "" for x in в.get("про_речі") or []]
+            рядки = list(РВ.список(в.get("як_носити"))) + [в.get("текст") or ""] + [x.get("текст") or "" for x in в.get("про_речі") or []]
             заправ += sum(1 for р in рядки for _ in ЗАПРАВ.finditer(str(р)))
 print("карток %d · your_declared без знахідки в суді картки: записано %d (з них без коду ходу %d) → тепер %d; із знахідкою тепер %d"
       " · «tuck» при belly/hips у записаних відповідях %d" % (карток, до_без, до_без_коду, після_без, після_є - після_без, заправ))

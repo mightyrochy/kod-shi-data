@@ -6,7 +6,7 @@
 import collections, os, sys                                                   # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import аксесуари_край as АК, фід_каталог as ФК                                # noqa: E401,E402
-записи = ФК._прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]
+записи = ФК.прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]
 вирізи, ланцюги = collections.Counter(), collections.Counter()
 for r in записи:
     в = (r.get("параметри") or {}).get("виріз_тип") or r.get("виріз_тип")

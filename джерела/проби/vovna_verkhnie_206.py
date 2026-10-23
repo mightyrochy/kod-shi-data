@@ -13,7 +13,7 @@ import feed, фід_верхнє as ФВ, фід_слот as ФС
 до = після = бавовна = злиплі = інше = 0
 частки, зняті = collections.Counter(), []
 for o in оф:
-    т = текст(o); a, b = ГОЛИЙ.search(т), ФВ._ПРО_ВОВНУ.search(т)
+    т = текст(o); a, b = ГОЛИЙ.search(т), ФВ.ПРО_ВОВНУ.search(т)
     до += bool(a); після += bool(b)
     if a and b and float(a.group(1) or a.group(2)) != float(b.group(1) or b.group(2)): інше += 1
     if not a or b: continue
@@ -34,5 +34,5 @@ for ід, н, ч, ур in зняті:
 з_ч = [o for o in верх if (ФВ.верхні_атрибути(o) or {}).get("вовна_частка") is not None]
 print("ФАКТ · верхнього шару %d · частка названа в %d · із них ≥ 0.6 (смуга K-OUT-18): %d"
       % (len(верх), len(з_ч), sum(1 for o in з_ч if ФВ.верхні_атрибути(o)["вовна_частка"] >= 0.6)))
-ціла = sum(1 for o in оф if ФВ._ПРО_ВОВНУ.search(текст(o)) and re.search(r"(?<!ба)вовн|шерст|wool", текст(o)))
+ціла = sum(1 for o in оф if ФВ.ПРО_ВОВНУ.search(текст(o)) and re.search(r"(?<!ба)вовн|шерст|wool", текст(o)))
 print("ФАКТ · СПРАВЖНЯ ВОВНА НЕ ЗАЧЕПЛЕНА: усі %d, що лишились, мають слово вовни: %s" % (після, ціла == після))

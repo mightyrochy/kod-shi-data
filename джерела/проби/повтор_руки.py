@@ -17,7 +17,7 @@ print("СІЛЬ_РУКИ_2 = %d" % МР.СІЛЬ_РУКИ_2)
 for сід in (7, 4242, 31337):
     r = json.loads(B.виклик("запити", json.dumps(dict(вх, сід=сід), ensure_ascii=False)))
     пули = [{с: [x.get("id") for x in v] for с, v in p["кандидати"].items()}
-            for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")]
+            for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати")]
     if len(пули) < 2:
         print("сід %-6s каталогу в обидві руки не подано" % сід); continue
     a, b = пули[0], пули[1]

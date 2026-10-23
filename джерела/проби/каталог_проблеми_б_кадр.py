@@ -7,7 +7,7 @@
 import collections, os, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_каталог as FK
-К = FK._прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
+К = FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
 ст = collections.Counter((r.get("кадр_кольору") or {}).get("стан") for r in К if r.get("кадр_кольору"))
 крам = collections.Counter(r["магазин"] for r in К if (r.get("кадр_кольору") or {}).get("стан") == "інший_колір")
 пари = collections.Counter(((r["кадр_кольору"].get("слово"), r["кадр_кольору"].get("фото")))

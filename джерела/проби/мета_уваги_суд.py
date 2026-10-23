@@ -6,7 +6,7 @@
 Прогін: cd джерела && python3 проби/мета_уваги_суд.py"""
 import json, sys, pathlib; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import feed as Ф, bridge as B, pipeline as ПЛ, регістр_уваги as РУ
-from композитор_річ import _у_річ   # той самий будівник речі, що в композиторі
+from композитор_річ import у_річ as _у_річ   # той самий будівник речі, що в композиторі
 СЦ = dict(нагода="свято", місце="клуб", година=21, темп_c=20)
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 вх.update(каталог=Ф.каталог_на_диску("каталог_повний.xml"), гілка=0, сценарій=СЦ, випадок="вечірка",

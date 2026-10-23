@@ -20,7 +20,7 @@ import feed as Ф, bridge as B, міст_пакет as МП
 for сцена in СЦЕНИ:
     for сід in (7, 4242, 31337):
         json.loads(B.виклик("запити", json.dumps(dict(вх, сценарій=сцена, сід=сід), ensure_ascii=False)))
-        for п in [p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")]:
+        for п in [p for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати")]:
             пули.append({r.get("id") for v in п["кандидати"].values() for r in v})
             for с, v in п["кандидати"].items():
                 for r in v: слот_речі[r.get("id")] = с

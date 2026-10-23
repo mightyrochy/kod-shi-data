@@ -4,7 +4,7 @@
 Кращим: руки 3–4 і палітра мають `part_of_day`, `precipitation`, `season`; №12 з місяцем — `winter` усюди.
 Запуск: cd джерела && python3 проби/сезон_5260.py (гілки `claude/vlasnyk-1410-1551`, `claude/zhyvi-15`)."""
 import datetime, json, subprocess, sys
-sys.path.insert(0, "."); import сценарій as СЦ, руки_без_коду as Р, мовний_шар as М, вибір_палітри as ВП
+sys.path.insert(0, "."); import сценарій as СЦ, паспорт_нагоди as ПН, руки_без_коду as Р, мовний_шар as М, вибір_палітри as ВП
 git = lambda *а: subprocess.run(["git", "-c", "core.quotepath=false", *а], capture_output=True, text=True).stdout
 for г in ("claude/vlasnyk-1410-1551", "claude/zhyvi-15"):
     git("fetch", "-q", "origin", "%s:refs/remotes/origin/%s" % (г, г))
@@ -25,7 +25,7 @@ def паспорт12(т):
 for ім, п, сц, рядок, дата in СЦЕНИ:
     СЦ.сьогодні = lambda д=дата: datetime.date.fromisoformat(д)
     print("── %s, дата %s, паспорт місяць=%s" % (ім, дата, п.get("місяць")))
-    print("   руки 1–2 day:", {к: v for к, v in СЦ.день_кодами(СЦ.з_показу(сц, п)[0]).items() if к in ФАКТИ})
+    print("   руки 1–2 day:", {к: v for к, v in СЦ.день_кодами(ПН.з_показу(сц, п)[0]).items() if к in ФАКТИ})
     case = Р.випадок_кодами(п, рядок, сценарій=сц)
     print("   руки 3–4 case:", {к: v for к, v in case.items() if к in ФАКТИ})
     пал = ВП._випадок(dict(паспорт=п, сценарій=сц, випадок=рядок))

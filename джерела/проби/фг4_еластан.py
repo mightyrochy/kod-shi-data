@@ -8,7 +8,7 @@ import os, sys, collections
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_каталог as ФК, fit as ПС, силует_пропорції as СП, силует_крої as СК
 
-кат = ФК._прочитати_каталог(feed.каталог_на_диску(), ліміт_фото=0)["каталог"]
+кат = ФК.прочитати_каталог(feed.каталог_на_диску(), ліміт_фото=0)["каталог"]
 є = [r for r in кат if r.get("еластан_%") is not None]
 назв = [r for r in кат if r.get("еластан_%") is None and r.get("еластан_за_чим")]
 розп = collections.Counter(r["еластан_%"] for r in є)

@@ -39,7 +39,7 @@ import hashlib
 from collections import OrderedDict
 
 import trace as СЛ
-import поломки as _ПОЛ
+import поломки_ядро as _ПОЛ
 
 _УСІ = []     # лічильники всіх кешів — для проб і `скинути`
 _ЛИСТКИ = frozenset((type(None), bool, int, float, str, bytes))

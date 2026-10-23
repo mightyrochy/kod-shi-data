@@ -8,8 +8,8 @@ import collections, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import feed as F
 import фід_кадр_колір as ФКК
-from фід_фото import _спільні_фото, _файл_фото, чужий_кадр
-from фід_збагачення import _збагачення_придатне
+from фід_фото import спільні_фото as _спільні_фото, файл_фото as _файл_фото, чужий_кадр
+from фід_збагачення import збагачення_придатне as _збагачення_придатне
 
 offers = F.читати_yml(F.каталог_на_диску())[0]
 зб = F.читати_збагачення()

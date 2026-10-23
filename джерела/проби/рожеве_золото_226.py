@@ -5,7 +5,7 @@
 import collections, os, sys                                                   # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import colorspace as cs, palettes as ПЛ, фід_каталог as ФК, фід_збагачення as ФЗ  # noqa: E401,E402
-записи = ФК._прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]
+записи = ФК.прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]
 c, зб = collections.Counter(), ФЗ.читати_збагачення()
 for r in записи:
     сл, м, ч = r.get("слот"), r.get("метал"), r.get("частка_металу")

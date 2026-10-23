@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import feed as Ф, фід_фото as ФФ; N = int(sys.argv[1]) if len(sys.argv) > 1 else 6
 оф = Ф.читати_yml(Ф.каталог_на_диску("каталог_повний.xml"))[0]
-зб, крам, сп, хо = Ф.читати_збагачення(), collections.defaultdict(list), ФФ._спільні_фото, ФФ._хости_крамниць
+зб, крам, сп, хо = Ф.читати_збагачення(), collections.defaultdict(list), ФФ.спільні_фото, ФФ.хости_крамниць
 for o in sorted(оф, key=lambda x: x["id"]): крам[o.get("магазин")].append(o)
 сп, хо = сп(оф), хо(оф); вибір = [o for с_ in крам.values() for o in с_[:N]]
 жнив = {o["id"]: (зб.get(o["id"]) or {}).get("фото") for o in вибір}
@@ -30,8 +30,8 @@ def живий(u):
 адреси = sorted({u for р in ряд.values() for u in р})
 with ThreadPoolExecutor(24) as п: жив = dict(zip(адреси, п.map(живий, адреси)))
 чуж = lambda o, р: bool(р) and bool(ФФ.заглушка_кадру(р[0])
-    or ФФ.спільна_картинка(ФФ._файл_фото(р[0]), сп.get(o.get("магазин")) or {})
-    or (0 in ФФ._форма_меншини(р) and ФФ._файл_фото(р[0]) != ФФ._файл_фото(жнив[o["id"]] or "")))
+    or ФФ.спільна_картинка(ФФ.файл_фото(р[0]), сп.get(o.get("магазин")) or {})
+    or (0 in ФФ._форма_меншини(р) and ФФ.файл_фото(р[0]) != ФФ.файл_фото(жнив[o["id"]] or "")))
 с = collections.Counter()
 for o in вибір:
     м, р = o.get("магазин"), ряд[o["id"]]

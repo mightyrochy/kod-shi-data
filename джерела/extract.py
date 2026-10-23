@@ -13,6 +13,7 @@
 """
 import math, random
 from colorspace import lch
+import colorspace as _C
 
 # ── 2. ТИП ПІКСЕЛЯ: відкинути дзеркальні ─────────────────────────────────────
 MAX_ВІДКИД = 0.35      # T3: більше третини зони — це вже не блиск, а хибний поріг
@@ -62,8 +63,7 @@ def medoid(labs, probe=200, metric="de00"):
     cand = labs if len(labs)<=probe else _r.sample(labs, probe)
     ref  = labs if len(labs)<=probe else _r.sample(labs, probe)
     if metric == "de00":
-        from colorspace import de00 as _d
-        dist = lambda c,r: _d(c,r)
+        dist = lambda c,r: _C.de00(c,r)
     else:
         dist = lambda c,r: math.sqrt((c[0]-r[0])**2+(c[1]-r[1])**2+(c[2]-r[2])**2)
     best, bd = None, None
