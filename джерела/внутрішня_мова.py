@@ -939,8 +939,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "the brightness of her features; otherwise it stays muted",
     "triad_three_families_limit": "together with the metal of the jewellery this reaches the limit of three "
                                   "colour families, so the accessories can only repeat one of them",
-    "contrast_mismatch": "the outfit's contrast is deliberately not her own: the face stays in its window and "
-                         "the rest of the lightness ladder shifts; a \"clothes in focus\" move, not a "
+    # рядок 9404: «deliberately» без автора перекладачка брала за її вибір («Ти обрала навмисний контраст»)
+    "contrast_mismatch": "in this move the outfit's contrast differs from her own by design: the face stays in "
+                         "its window and the rest of the lightness ladder shifts; a \"clothes in focus\" move, not a "
                          "\"flatter the face\" one, hence rarer",
     "contrast_mismatch_levels": "the levels of this shift (values: look_level — the outfit's contrast, "
                                 "own_level — her own; codes low, medium, high)",
