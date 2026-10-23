@@ -3,7 +3,7 @@
 (quiet) слот знятої речі / без ремонту; R-CHEV-08 «собою»: слоти речей і чи лишається знахідка при зоні мети.
 Волосся — з профілю жінки (`аудит/проби/жінки/ж*.json`, L*C*h), як у живому суді. Запуск із джерела/: python3 проби/фокус3_зняття_кольору.py ../аудит/перевірки/fokus_2/ПІСЛЯ"""
 import json, gzip, glob, os, sys, collections as K
-sys.path.insert(0, "."); import colorspace as cs, palettes as P, внутрішня_мова as ВМ, суд_від_моделі as С, регістр_уваги as РУ, суд_ремесло as СР
+sys.path.insert(0, "."); import colorspace as cs, palettes as P, палітра_схеми as ПСХ, внутрішня_мова as ВМ, суд_від_моделі as С, регістр_уваги as РУ, суд_ремесло as СР
 ЗОНА = {"ж4_робота_живіт": ["живіт"]}   # код `goal_zones`, який мовна модель ставить на «приховати живіт»
 на_мету = getattr(РУ, "на_мету", lambda *x: True)
 хр = lambda i: bool(i.get("hex")) and i.get("color") not in ("golden", "silvery", "pearly") and P._хроматична(cs.hx(i["hex"]))
@@ -29,7 +29,7 @@ for f in sorted(glob.glob(sys.argv[1] + "/ж*_*/вердикти.txt.gz")):
             вол = {"волосся_%d" % k: dict(zip("LCh", cs.lch(cs.hx(x)))) for k, x in enumerate(json.load(open(
                 "../аудит/проби/жінки/%s.json" % f.split("/")[-2].split("_")[0]))["hair"])}
             for z in [z for z in С.бюджет_і_відлуння(речі, вол, None,
-                                                    sorted(сх) or None, **кв) if z["правило"] == "K-COL-02"] + P.обіцянка_схеми(речі, сп):
+                                                    sorted(сх) or None, **кв) if z["правило"] == "K-COL-02"] + ПСХ.обіцянка_схеми(речі, сп):
                 к, v = z["заяви"][0]["code"], z["заяви"][0]["values"]
                 Л[к + " стоїть (кольорових)"] += 1; Л[к + " стоїть (зн.)"] += bool(кз)
                 Л[к + " · зн.: лишає зняте"] += bool(кз & set(v.get("keep") or ())); Л[к + " · зн.: стишує зняте"] += bool(кз & set(v.get("quiet") or ()))

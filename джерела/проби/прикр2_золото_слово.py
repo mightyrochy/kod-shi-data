@@ -8,7 +8,7 @@
 import collections, glob, gzip, os, re, sys                                   # noqa: E401
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ТУТ)
-import фід_каталог as ФК, palettes as П                                       # noqa: E401,E402
+import фід_каталог as ФК, palettes as П, палітра_схеми as ПСХ                                       # noqa: E401,E402
 за_ід = {r["id"]: r for r in ФК._прочитати_каталог(ФК.каталог_на_диску(), ліміт_фото=0)["каталог"]}
 слово_металу = {і for і, r in за_ід.items() if П._колір_невідомий(r)}
 print("каталог: прикрас, чий колір знає лише слово металу, %d; `_несе_колір` на них: %s" % (
@@ -20,7 +20,7 @@ for ф in glob.glob(os.path.join(ТУТ, "..", "аудит", "перевірки
         if len(ід) >= 2 and all(і in за_ід for і in ід) and слово_металу & set(ід):
             набори.add(ід)
 спец = {"_схема": "нейтрали+акцент", "верх": {"роль": "акцент", "C": (20.0, 60.0)}}
-суд = lambda ід: sorted(z.get("ярлик") for z in П.обіцянка_схеми(
+суд = lambda ід: sorted(z.get("ярлик") for z in ПСХ.обіцянка_схеми(
     [dict(id=і, слот=за_ід[і]["слот"]) for і in ід], спец, за_ід))
 акцентом = [ід for ід in набори if суд(ід) != суд([і for і in ід if і not in слово_металу])]
 print("образів рук 1–2 з такою прикрасою: %d; K-COL-03 лічить її кольором: %d" % (len(набори), len(акцентом)))
