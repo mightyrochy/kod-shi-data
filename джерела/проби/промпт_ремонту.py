@@ -15,7 +15,7 @@ for ім, п in Ф.сирі("*ВЕРДИКТ_V1_ОБРАЗИ_V1*"):
     н = json.dumps(нв, ensure_ascii=False, separators=(",", ":"))
     бл = {о["your_outfit"].get("id"): {б.get("code") for б in (о.get("structure") or {}).get("blockers") or []}
           for о in нв["verdict"]}
-    без = (Ф.загублено(json.loads(п), н) + ["%s: %s" % (і, к) for і, к in пари if Д._БЛОКЕР[к] not in бл.get(і, ())]
+    без = (Ф.загублено(json.loads(п), н) + ["%s: %s" % (і, к) for і, к in пари if Д.БЛОКЕР[к] not in бл.get(і, ())]
            + ([розрив] if розрив and нв.get("break_kind") != Д.код("slot", розрив) else []))
     разом[0] += 1; разом[1] += len(без); разом[2] += len(пари) + bool(розрив)
     print("%-44s %-7s було %6d симв / %5s ток → стало %6d симв / %5s ток · з речень вимог полями %2d · загублено: %s"

@@ -16,7 +16,7 @@ def _лічба(*a, **k):
     в = _суд(*a, **k)
     зн = [z for z in РЕЄСТР.обмежити_вагу(copy.deepcopy(list(в.get("знахідки") or [])))
           if not z.pop("під_підлогою", False)]
-    СУД.append(len([z for z in зн if not PL._питання_або_нуль(z)]))
+    СУД.append(len([z for z in зн if not PL.питання_або_нуль(z)]))
     return в
 PL.перевірити_від_моделі = _лічба
 

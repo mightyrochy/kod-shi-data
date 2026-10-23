@@ -9,7 +9,7 @@ sys.path.insert(0, ".")
 import feed, фід_каталог as FK, фід_збагачення as FZ, фід_розбір as FR, verify as V, colorspace as cs
 СЛОВА = {"хакі": ("хакі",), "золотий": ("золотий", "золото"), "пудровий": ("пудровий", "powder")}
 зб, н = feed.читати_збагачення(), lambda s: " ".join(str(s or "").lower().split())
-кат = {r["id"]: r for r in FK._прочитати_каталог("каталог_повний.xml", 0)["каталог"]}
+кат = {r["id"]: r for r in FK.прочитати_каталог("каталог_повний.xml", 0)["каталог"]}
 для = {п: g for g, ss in СЛОВА.items() for п in ss}
 під = К.defaultdict(list)
 for o in FR.читати_yml("каталог_повний.xml")[0]:

@@ -34,7 +34,7 @@ for ф in sorted(x for x in os.listdir(".") if x.endswith(".py") and not x.start
     for ст in (x for x in ast.walk(ast.parse(io.open(ф, encoding="utf-8").read())) if isinstance(x, ast.stmt) and not isinstance(x, СКЛ)):
         вв = [в for в in ast.walk(ст) if isinstance(в, ast.Call)]
         є = any(k.arg in ("заяви", "ремонт_заяви") for в in вв for k in в.keywords)   # і в обгортці того ж рядка
-        for в in (в for в in вв if "_зн" in (getattr(в.func, "id", None), getattr(в.func, "attr", None)) or {"правило", "суть"} <= {k.arg for k in в.keywords}):
+        for в in (в for в in вв if {"_зн", "зн"} & {getattr(в.func, "id", None), getattr(в.func, "attr", None)} or {"правило", "суть"} <= {k.arg for k in в.keywords}):
             пит = any(isinstance(а, ast.Constant) and а.value in ("питання", "утримано") for а in в.args[1:2])
             С["питання/утримано (до дроту не їдуть)" if пит else "місць"] += 1; С["із заявами"] += є and not пит
 print("КОД: місць народження знахідки %(місць)d · із заявами %(із заявами)d · питання/утримано %(питання/утримано (до дроту не їдуть))d" % С)

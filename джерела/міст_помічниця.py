@@ -93,7 +93,7 @@ import дріт_моделі as _Д
         "Do not promise to remember or take into account anything she writes here, or to add it to "
         "an outfit: it does not go into building. If she describes her own item or a wish for her "
         "outfits, tell her to write it in the chat on the case screen.",
-        "Write in the language of \"language\", whatever language she writes or asks for.",
+        # мова відповіді — межа `для_неї` (договір людського виходу, `людський_вихід`, крок 3.6)
     ),
     вихід="APP_ANSWER",
     межі=("лише_вхід", "для_неї", "без_чисел_тіла", "без_чисел_шкал"),
@@ -150,7 +150,7 @@ def стан(с):
                     if к in _АКСЕСУАРНІ and _число(v)})
     вих["profile"] = {к: v for к, v in профіль.items() if v is not None}
     поля = dict(сц.get("поля") or {})
-    типові = [_Д._ПОЛЯ_ВИПАДКУ.get(к, к) for к in (поля.pop("типові_поля", None) or [])]
+    типові = [_Д.ПОЛЯ_ВИПАДКУ.get(к, к) for к in (поля.pop("типові_поля", None) or [])]
     випадок = {"name": сц.get("назва") or None, "saved": сц.get("збережений"),
                "unsaved_changes": сц.get("змінено"), "passport": сц.get("паспорт") or None,
                "confirmed": сц.get("підтверджено"), "fields": _Д.випадок(поля) or None,
@@ -158,7 +158,7 @@ def стан(с):
                "refused_zones": [_Д.код("zone", з) for з in сц.get("зони") or []] or None}
     вих["case"] = {к: v for к, v in випадок.items() if v is not None}
     палітра = {"base": _колір(пал.get("основа")),
-               "scheme": _Д._СХЕМА.get(пал.get("схема"), пал.get("схема")) or None,
+               "scheme": _Д.СХЕМА.get(пал.get("схема"), пал.get("схема")) or None,
                "gamut": _ГАМА.get(пал.get("гама"), пал.get("гама")) or None}
     вих["palette"] = {к: v for к, v in палітра.items() if v is not None}
     вих["missing_to_build"] = [_БРАКУЄ.get(к) or _обхват(к) for к in с.get("бракує") or []]

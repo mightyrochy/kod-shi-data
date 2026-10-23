@@ -2,6 +2,8 @@
 """ПЛ-1 (рядок 690): скільки образів стенда (руки 1–2) мають `джерело_площі` в усіх речей і що судять K-COL-02/05, K-COMP-03.
 Запуск: python3 проби/пл1_площі.py <ZVIT_OUT рв6_стенда.txt>   (профіль РВ-6: 168 см, 98/92/74/99; сценарій «дощ·ресторан·вечір»)"""
 import sys, os, json, collections
+if len(sys.argv) < 2:   # прилад над звітом стенда, не проба без входу: без звіту — «не виміряно», а не IndexError
+    sys.exit(print("НЕ ВИМІРЯНО: потрібен звіт стенда РВ-6 аргументом (ZVIT_OUT рв6_стенда.txt)"))
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import bridge as B, composer as КМ, fit as ПС, outfit as O, pipeline as PL, colorspace as cs, gate_площі as G
 B.виклик("запити", json.dumps(dict(json.load(open("стенд_вх.json")), сценарій=G.СЦЕНАРІЇ["офіс·18°C"], випадок="пл1")))
@@ -20,7 +22,7 @@ for в in json.load(open(sys.argv[1], encoding="utf-8"))["прогони"][0]["�
     if в["рука"] not in ("1", "2"): continue
     for к in в["етапи"]["виклики"]:
         for о in к.get("образи_кроку") or []:
-            речі = [КМ._у_річ(dict(кат[i]), о["слоти_н"][n], T) for i, n in zip(о["ід"], о["речі_н"])]
+            речі = [КМ.у_річ(dict(кат[i]), о["слоти_н"][n], T) for i, n in zip(о["ід"], о["речі_н"])]
             ч["образів"] += 1
             без_виміру.update((r["слот"], r.get("край_джерело")) for r in речі if not O.край_виміряний(r))
             вих = PL.перевірити_образ(F, речі, тіло=T, **G.СЦЕНАРІЇ["дощ·ресторан·вечір"])

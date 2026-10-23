@@ -4,7 +4,7 @@
 (`сценарій.сьогодні` підмінено). Кращим: `season` у всіх чотирьох, градусів нема ніде (`unknown` у рук 1–2).
 Запуск: cd джерела && python3 проби/сезон_3950.py (потрібні гілки `claude/vlasnyk-1410-1551`, `claude/zhyvi-15`)."""
 import datetime, json, subprocess, sys
-sys.path.insert(0, "."); import сценарій as СЦ, руки_без_коду as Р, мовний_шар as М
+sys.path.insert(0, "."); import сценарій as СЦ, паспорт_нагоди as ПН, руки_без_коду as Р, мовний_шар as М
 git = lambda *а: subprocess.run(["git", "-c", "core.quotepath=false", *а], capture_output=True, text=True).stdout
 for г in ("claude/vlasnyk-1410-1551", "claude/zhyvi-15"):
     git("fetch", "-q", "origin", "%s:refs/remotes/origin/%s" % (г, г))
@@ -22,7 +22,7 @@ for г in ("claude/vlasnyk-1410-1551", "claude/zhyvi-15"):
 ПОГОДА = ("season", "temperature_c", "weather_feel", "precipitation", "unknown")
 for ім, п, сц, рядок, дата in СЦЕНИ:
     СЦ.сьогодні = lambda д=дата: datetime.date.fromisoformat(д)
-    день = СЦ.день_кодами(СЦ.з_показу(сц, п)[0])
+    день = СЦ.день_кодами(ПН.з_показу(сц, п)[0])
     print("── %s, дата %s | паспорт темп_c=%s (%s)" % (ім, дата, п.get("темп_c"), (п.get("джерело_полів") or {}).get("темп_c")))
     print("   руки 1–2 day:", {к: день[к] for к in ПОГОДА if к in день})
     for рука in ("3", "4"):

@@ -3,7 +3,7 @@
 import sys, os, collections
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import feed, фід_каталог as ФК, формальність as ФН, суд_чеклісти as ЧК
-кат = ФК._прочитати_каталог(feed.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]
+кат = ФК.прочитати_каталог(feed.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]
 с = [r for r in кат if r.get("тип") == "сукня_без_уточнення"]
 шир = collections.Counter((lambda i: None if i[0] is None else int(i[1] - i[0]))(ФН.інтервал_формальності(r)) for r in с)
 print("суконь без уточнення %d · ширина смуги %s" % (len(с), dict(sorted(шир.items(), key=str))))

@@ -7,7 +7,7 @@
 import collections, os, re, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_каталог as FK, verify as V
-К = FK._прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
+К = FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
 ф = [r for r in К if r.get("колір_hex_фото")]
 рід = collections.Counter((r["колір_назва_джерело"], re.sub(r"«[^»]*»", "«…»", r.get("колір_назва_за_чим") or "")[:80]) for r in ф)
 print("ФАКТ · виміряних записів %d; як зведено слово крамниці з виміром:" % len(ф))

@@ -15,14 +15,14 @@ json.loads(B.виклик("запити", json.dumps(json.load(open("стенд_
 лік, прикл, всього = collections.defaultdict(collections.Counter), collections.defaultdict(list), collections.Counter()
 for o in offers:
     п = o.get("параметри") or {}
-    h = ФВ._число_см(п.get("каблук_см"))
+    h = ФВ.число_см(п.get("каблук_см"))
     к = кат.get(o["id"]) or {}
     if h is None or к.get("слот") != "взуття":
         continue
     всього[o["id"].split("@")[1]] += 1
     текст = " ".join([str(o.get("назва") or ""), str(o.get("опис") or "")]
                      + ["%s %s" % (k, v) for k, v in п.items() if k not in ("каблук_см", "~висота підборів")]).lower()
-    м = ФВ._ПРО_КАБЛУК.search(текст)
+    м = ФВ.ПРО_КАБЛУК.search(текст)
     кл = []
     if h >= 3 and any(x in текст for x in ПЛАСК) and "платформ" not in текст: кл.append("A")
     if h == 0 and any(x in текст for x in ПІДБ): кл.append("B")

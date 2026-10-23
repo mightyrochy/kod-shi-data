@@ -8,9 +8,9 @@ import feed, фід_каталог as FK, фід_збагачення as FZ, ver
 шлях = feed.каталог_на_диску()
 було = types.ModuleType("фід_збагачення_до"); було.__file__ = FZ.__file__
 exec(subprocess.run(["git", "show", "6374076:джерела/фід_збагачення.py"], capture_output=True, text=True, check=True).stdout, було.__dict__)
-після = {r["id"]: r for r in FK._прочитати_каталог(шлях, 0)["каталог"]}
+після = {r["id"]: r for r in FK.прочитати_каталог(шлях, 0)["каталог"]}
 FK.колір_спір, FK.накласти_збагачення = було.колір_спір, lambda r, зб, спір=None, крамниця=None: було.накласти_збагачення(r, зб, спір=спір)
-до = {r["id"]: r for r in FK._прочитати_каталог(шлях, 0)["каталог"]}
+до = {r["id"]: r for r in FK.прочитати_каталог(шлях, 0)["каталог"]}
 н = lambda s: str(s or "").strip().lower()
 спір = lambda к: sum(1 for r in к.values() if r.get("колір_спір"))
 print("ФАКТ · записів %d → %d; спорів %d → %d" % (len(до), len(після), спір(до), спір(після)))

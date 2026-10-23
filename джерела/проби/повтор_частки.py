@@ -18,9 +18,9 @@ import feed as Ф, bridge as B, міст_пакет as МП, семплер as �
 for сід in (1, 7, 42, 4242, 31337):
     json.loads(B.виклик("запити", json.dumps(dict(вх, сід=сід), ensure_ascii=False)))
     пули += [{r.get("id") for v in п["кандидати"].values() for r in v}
-             for п in МП._КЕШ_ПАКЕТА.values() if п.get("кандидати")]
+             for п in МП.КЕШ_ПАКЕТА.values() if п.get("кандидати")]
 СМ.вибрати = _вибрати
-квоти = {с: len(v) for с, v in [p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")][0]["кандидати"].items()}
+квоти = {с: len(v) for с, v in [p for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати")][0]["кандидати"].items()}
 лічба, тіснота, ранги = collections.Counter(i for п in пули for i in п), collections.defaultdict(list), collections.defaultdict(list)
 for с, речі in доступ["пул"].items():
     ч = квоти.get(с, 0) / len(речі)

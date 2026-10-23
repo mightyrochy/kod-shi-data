@@ -6,7 +6,7 @@ import os, sys, json
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import feed, фід_каталог as ФК, міст_опис as М
 шл = feed.каталог_на_диску()
-кат = {r["id"]: r for r in ФК._прочитати_каталог(шл, ліміт_фото=0)["каталог"]}
+кат = {r["id"]: r for r in ФК.прочитати_каталог(шл, ліміт_фото=0)["каталог"]}
 ідс = [i for i in (o["id"] for o in feed.читати_yml(шл)[0]) if i in кат]
 в = json.loads(М.показ({"каталог": шл, "речі": [{"id": i} for i in ідс]}))
 розб = [(к["id"], к.get("колір"), кат[к["id"]].get("колір_назва")) for к in в if (к.get("колір") or None) != (кат[к["id"]].get("колір_назва") or None)]

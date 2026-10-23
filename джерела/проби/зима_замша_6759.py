@@ -15,10 +15,10 @@ import feed as Ф, bridge as B, міст_пакет as МП, outfit as O, суд
 РУКАВИЦІ = {"cold_accessories_carry_no_colour", "move_colour_to_hat_scarf_gloves"}
 _ел = lambda рр: O.елементи([dict(r, hex=r.get("hex") or "#808080", площа=0.1, near=0.05) for r in рр], стан="надворі")
 for ім, сц in СЦЕНИ:
-    МП._КЕШ_ПАКЕТА.clear()
+    МП.КЕШ_ПАКЕТА.clear()
     B.виклик("запити", json.dumps(dict(вх0, сценарій=dict(вх0["сценарій"], **сц)), ensure_ascii=False))
     кат = {c["id"]: c for c in B.каталог_останнього_пакета()}
-    п = [p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")][-1]["кандидати"]
+    п = [p for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати")][-1]["кандидати"]
     пул = [кат.get(r["id"], r) for рч in п.values() for r in рч]
     т, о = сц["темп_c"], сц["опади"]; умова = lambda r: any(z["правило"] == "K-WEA-01" and z["суть"].startswith("замша")
                           for z in СП.погода(_ел([r]), темп_c=т, опади=о, стан="надворі")) \
@@ -28,7 +28,7 @@ for ім, сц in СЦЕНИ:
     print("%s: пул %d · замша/нубук/велюр %d · без умови %d %s" % (ім, len(пул), len(зам), len(без),
           [r["назва"][:28] for r in без[:3]]))
     безрук = [r for r in пул if r.get("слот") in ("верх", "сукня", "комплект") and r.get("рукав_слово") == "без рукавів"]
-    мовчить = [r for r in безрук if not any(z["правило"] == "K-KOH-10" for z in СВ._доповнення_судді([r], dict(сц, година=9)))]
+    мовчить = [r for r in безрук if not any(z["правило"] == "K-KOH-10" for z in СВ.доповнення_судді([r], dict(сц, година=9)))]
     print("   верхів «без рукавів» %d · K-KOH-10 мовчить при none: %s" % (len(безрук), len(мовчить) if сц.get("відкриті_зони") else "—"))
     холод, берет = [сл for сл in СП.АКСЕСУАРИ_ХОЛОДУ if п.get(сл)], кат["ж-07551@honchstudio.com"]
     кв = dict(холод_у_пулі=холод) if "холод_у_пулі" in inspect.signature(СП.погода).parameters else {}

@@ -12,7 +12,7 @@ import bridge as B, feed as Ф, outfit as O, пакет_моделі as П
 вх = json.load(open("стенд_вх.json", encoding="utf-8")); вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml"); вх["гілка"] = 0
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = B.каталог_останнього_пакета()
-дріт = lambda c: П._річ_пулу(c, {}).get("крій")
+дріт = lambda c: П.річ_пулу(c, {}).get("крій")
 for сл in ("fitted", "relaxed"):
     Z = collections.Counter((дріт(c), O.крій_речі(c)) for c in кат if c.get("слот") == "сукня"
                             and c.get("тип") != "комбінезон" and O._крій_слово(c) == сл)

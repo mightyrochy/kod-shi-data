@@ -278,7 +278,7 @@ def оголошення():
         if "Оголошення(" not in текст or м.startswith("тест_") or м == "збирач_промптів":
             continue
         мод = __import__(м)
-        if callable(getattr(мод, "_фото_речей", None)):     # ліниве оголошення `річ_з_фото`
+        if callable(getattr(мод, "фото_речей", None)):     # ліниве оголошення `річ_з_фото`
             мод._фото_речей()
         for ім, в in vars(мод).items():
             пари = [(ім, в)] if isinstance(в, ЗП.Оголошення) else (
@@ -504,7 +504,7 @@ for ф in sorted(glob.glob("*.py")):
     try:
         with contextlib.redirect_stdout(io.StringIO()):
             мод = __import__(м)
-            if callable(getattr(мод, "_фото_речей", None)): мод._фото_речей()
+            if callable(getattr(мод, "фото_речей", None)): мод.фото_речей()
     except Exception as e:
         continue
     for ім, в in vars(мод).items():

@@ -13,8 +13,8 @@ def промпт(коментар):
     вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), сід=4242, каталог=кат)
     п = {"перекладено_шаром": True, "вето": {}}
     вх["паспорт"] = МШ.паспорт_з_коментаря({"vetoes": коментар}, паспорт_досі=п)["паспорт"]
-    МП._КЕШ_ПАКЕТА.clear(); B.виклик("запити", json.dumps(вх, ensure_ascii=False))
-    пак = [p for p in МП._КЕШ_ПАКЕТА.values() if p.get("кандидати")][0]
+    МП.КЕШ_ПАКЕТА.clear(); B.виклик("запити", json.dumps(вх, ensure_ascii=False))
+    пак = [p for p in МП.КЕШ_ПАКЕТА.values() if p.get("кандидати")][0]
     return json.loads(ПМ.промпт_складання(пак["пакет"] if "пакет" in пак else пак))
 for назва, к in (("взуття без чорного", [{"slot": "shoes", "color_name": "black"}]),
                  ("взуття без принта", [{"slot": "shoes", "pattern": "print_generic"}]),

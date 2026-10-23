@@ -6,7 +6,7 @@
 import collections, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fit as ПС, outfit as O, feed, фід_каталог as ФК                       # noqa: E401,E402
-кат = ФК._прочитати_каталог(feed.каталог_на_диску(), ліміт_фото=0)["каталог"]
+кат = ФК.прочитати_каталог(feed.каталог_на_диску(), ліміт_фото=0)["каталог"]
 сл = collections.Counter(r.get("слот") for r in кат)
 print("каталог руки 1: %d речей · колготи %d · шкарпетки %d" % (len(кат), сл.get("колготи", 0), сл.get("шкарпетки", 0)))
 T = ПС.тіло(168, dict(плечі=98, груди=92, талія=74, стегна=99, високе_стегно=88))
