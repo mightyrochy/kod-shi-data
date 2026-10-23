@@ -709,18 +709,6 @@ def resonance(F, intent):
     return dict(перегуки=echoes, напруги=tensions, без_температури=без_т,
                 зони_збігу={",".join(k):(v[0],v[-1]) for k,v in conf.items()})
 
-def relation_coverage(F, step_h=2, step_L=8, rels=(0.15,0.35,0.55,0.75), min_votes=2):
-    """ДАНІ, не вердикт: яку частку gamut охоплює кожне відношення для цієї особи.
-    Без ok/PASS/FAIL — рішення ухвалює шар вище. Крок дрібний: дуги бувають вужчі
-    за грубу сітку (моя попередня сітка 20° давала хибний нуль на дузі 24°)."""
-    grid=[(L, c_max(L,h)*r*math.cos(math.radians(h)), c_max(L,h)*r*math.sin(math.radians(h)))
-          for L in range(15,95,step_L) for h in range(0,360,step_h) for r in rels]
-    out={}
-    for rel in RELATIONS:
-        n=sum(1 for lab in grid
-              if sum(1 for v in feature_votes(F,lab,rel).values() if v["тон"]=="так")>=min_votes)
-        out[rel]=round(n/len(grid),3)
-    return out
 
 # ── ДРУГИЙ ВХІД («фото → маски → зони → риси») ПЕРЕЇХАВ У ЛАБОРАТОРІЮ ────────
 # Н-small-data-107 крок 1 + Н-02-03, 13.09.2026. Питання наряду було не про
@@ -736,37 +724,4 @@ def relation_coverage(F, step_h=2, step_L=8, rels=(0.15,0.35,0.55,0.75), min_vot
 # живий шлях і ходить. Вантаж збірки від цього худне на споживача без входу,
 # а не на робочий код.
 
-def brief(F, intent, source="uncontrolled"):
-    """Структура для рішення: спектри по рисах + перегуки + напруги + ЯВНА діра."""
-    return dict(
-      інтент=intent,
-      спектри_рис={nm:dict(тон=sp["тон"],
-                           хрома=(round(sp["хрома"][0],2),round(sp["хрома"][1],2)),
-                           підтон=(sp["підтон"] if reliability(source)["undertone"]>=MIN_TO_EMIT
-                                   else "н/д (низька надійність джерела)"))
-                   for nm,sp in spectra_by_feature(F,intent).items()},
-      **{k:( [t for t in v if not (t.get("вісь")=="undertone"
-                                   and reliability(source)["undertone"]<MIN_TO_EMIT)]
-             if k=="напруги" else v)
-         for k,v in resonance(F,intent).items()},
-      покриття_відношень=relation_coverage(F),
-      гейт=gate_conclusions(source),
-      екстракція=extraction_sanity(F),
-      примітка=("код віддає ДАНІ: координати рис, спектри відношень, перегуки, напруги. "
-                "Вибір відношення й рішення — шар вище (інтент + сучасна практика стилістів). "
-                "Практика не закодована навмисно: Li 2025 показав, що правило-базована "
-                "гармонія розходиться зі сприйняттям."))
 
-def feature_votes(F, lab, intent):
-    """Як КОЖНА риса голосує за конкретний колір — окремо, без злиття."""
-    L,C,h=lch(lab); cm=c_max(L,h); rel=C/cm if cm>1e-6 else 0
-    from колір_відношення import сила_точки_в_дузі, КРАЙ_ДУГИ   # тон — тим самим вікном з силою, що суд і добір (рядок 4780)
-    SP=spectra_by_feature(F,intent); out={}
-    for nm,sp in SP.items():
-        in_h=(any(сила_точки_в_дузі(C,h,a)>=КРАЙ_ДУГИ for a in sp["тон"]) if sp["тон"] else None)
-        in_L=[k for k,(lo,hi) in sp["світлота"].items() if lo<=L<=hi]
-        in_C=sp["хрома"][0]<=rel<=sp["хрома"][1]
-        out[nm]=dict(тон=("н/д" if in_h is None else "так" if in_h else "ні"),
-                     світлота=(in_L[0] if in_L else "поза"),
-                     хрома="так" if in_C else ("вище" if rel>sp["хрома"][1] else "нижче"))
-    return out

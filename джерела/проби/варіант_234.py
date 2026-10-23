@@ -5,7 +5,8 @@
 import collections, gzip, os, sys, tempfile
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from фід_розбір import читати_yml
-from фід_варіант import _двоколірні_частини, сестри_варіантів, слово_варіанта
+from фід_варіант import _двоколірні_частини, сестри_варіантів
+from фід_кадр_колір import слово_варіанта
 from фід_збагачення import читати_збагачення, _збагачення_придатне
 
 ш = sys.argv[1] if len(sys.argv) > 1 else "../каталог_повний.xml.gz"

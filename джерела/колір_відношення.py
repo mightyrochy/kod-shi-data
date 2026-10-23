@@ -111,6 +111,9 @@ A1/A2 = V2·C2/(V1·C1)) — це відношення площ, а площі �
 import math
 from statistics import NormalDist
 from colorspace import RELATIONS, у_коло_художника
+# структура рис для рішення (`brief`) і голоси рис за колір (`relation_coverage`, `feature_votes`) — тут, а не в
+# `колір_простір_риси` (3.3, К-4): тон судиться силою в дузі цього модуля, а він вищий за риси
+from colorspace import lch, c_max, spectra_by_feature, resonance, reliability, MIN_TO_EMIT, gate_conclusions, extraction_sanity
 from реєстр_правил import C
 
 # ── СТАЛІ КОДУВАННЯ (провенанс — шапка модуля) ───────────────────────────────────────
@@ -667,3 +670,53 @@ def сила_сім_ї_очей(р, очі):
     барвне = _добуток(сім, барвний_тон, барвна_світлота,
                         tuple(_ф(хрома_очей - РЕЄСТР_ОЧЕЙ["chroma"]["val"], СІГМА_ΔH * math.sqrt(2.)) for хрома_очей in очі["C"]))
     return (max(м_яке[0], барвне[0]), max(м_яке[1], барвне[1]))
+
+
+def brief(F, intent, source="uncontrolled"):
+    """Структура для рішення: спектри по рисах + перегуки + напруги + ЯВНА діра."""
+    return dict(
+      інтент=intent,
+      спектри_рис={nm:dict(тон=sp["тон"],
+                           хрома=(round(sp["хрома"][0],2),round(sp["хрома"][1],2)),
+                           підтон=(sp["підтон"] if reliability(source)["undertone"]>=MIN_TO_EMIT
+                                   else "н/д (низька надійність джерела)"))
+                   for nm,sp in spectra_by_feature(F,intent).items()},
+      **{k:( [t for t in v if not (t.get("вісь")=="undertone"
+                                   and reliability(source)["undertone"]<MIN_TO_EMIT)]
+             if k=="напруги" else v)
+         for k,v in resonance(F,intent).items()},
+      покриття_відношень=relation_coverage(F),
+      гейт=gate_conclusions(source),
+      екстракція=extraction_sanity(F),
+      примітка=("код віддає ДАНІ: координати рис, спектри відношень, перегуки, напруги. "
+                "Вибір відношення й рішення — шар вище (інтент + сучасна практика стилістів). "
+                "Практика не закодована навмисно: Li 2025 показав, що правило-базована "
+                "гармонія розходиться зі сприйняттям."))
+
+
+def relation_coverage(F, step_h=2, step_L=8, rels=(0.15,0.35,0.55,0.75), min_votes=2):
+    """ДАНІ, не вердикт: яку частку gamut охоплює кожне відношення для цієї особи.
+    Без ok/PASS/FAIL — рішення ухвалює шар вище. Крок дрібний: дуги бувають вужчі
+    за грубу сітку (моя попередня сітка 20° давала хибний нуль на дузі 24°)."""
+    grid=[(L, c_max(L,h)*r*math.cos(math.radians(h)), c_max(L,h)*r*math.sin(math.radians(h)))
+          for L in range(15,95,step_L) for h in range(0,360,step_h) for r in rels]
+    out={}
+    for rel in RELATIONS:
+        n=sum(1 for lab in grid
+              if sum(1 for v in feature_votes(F,lab,rel).values() if v["тон"]=="так")>=min_votes)
+        out[rel]=round(n/len(grid),3)
+    return out
+
+
+def feature_votes(F, lab, intent):
+    """Як КОЖНА риса голосує за конкретний колір — окремо, без злиття."""
+    L,C,h=lch(lab); cm=c_max(L,h); rel=C/cm if cm>1e-6 else 0
+    SP=spectra_by_feature(F,intent); out={}
+    for nm,sp in SP.items():
+        in_h=(any(сила_точки_в_дузі(C,h,a)>=КРАЙ_ДУГИ for a in sp["тон"]) if sp["тон"] else None)
+        in_L=[k for k,(lo,hi) in sp["світлота"].items() if lo<=L<=hi]
+        in_C=sp["хрома"][0]<=rel<=sp["хрома"][1]
+        out[nm]=dict(тон=("н/д" if in_h is None else "так" if in_h else "ні"),
+                     світлота=(in_L[0] if in_L else "поза"),
+                     хрома="так" if in_C else ("вище" if rel>sp["хрома"][1] else "нижче"))
+    return out

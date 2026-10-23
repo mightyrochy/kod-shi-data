@@ -117,7 +117,7 @@ import math, random
 #       надійність_контрасту             1596–1611 (16)
 #       gate_conclusions                 1613–1635 (23)
 #       extraction_sanity                1637–1653 (17)
-#   колір_простір_риси.py — профіль F: ЗОВНІШНІ_ВХОДИ, `density`, `поля_риси`, `features`, `_температура_шкіри`, `додати_макіяж`, `перерахувати_рису`, RELATIONS (R-COL-05), `feature_spectrum` (R-MUN-03), `регіони` (R-COL-10), `resonance`, `relation_coverage`, `brief`, `feature_votes`
+#   колір_простір_риси.py — профіль F: ЗОВНІШНІ_ВХОДИ, `density`, `поля_риси`, `features`, `_температура_шкіри`, `додати_макіяж`, `перерахувати_рису`, RELATIONS (R-COL-05), `feature_spectrum` (R-MUN-03), `регіони` (R-COL-10), `resonance` (`relation_coverage`, `brief` і `feature_votes` — з 3.3 у `колір_відношення`)
 #       ЗОВНІШНІ_ВХОДИ                     17–20   (4)
 #       _розсіяння                        403–411  (9)
 #       _кут_розсіяння                    413–422  (10)
@@ -163,7 +163,7 @@ from колір_простір_надійність import (AXIS_RELIABILITY, MI
 from колір_простір_риси import (ЗОВНІШНІ_ВХОДИ, VALUE_REL, dominant_axis, density, підтон_риси,
     поля_риси, features, _температура_шкіри, МАКІЯЖ_РИСИ, ПРЕФІКС_МАКІЯЖУ, додати_макіяж,
     перерахувати_рису, RELATIONS, у_коло_художника, з_кола_художника, зсув_на_колі, доповнення, центри_відношення, дуга_кола, _arc, _in_arc, feature_spectrum, spectra_by_feature, _розсіяння,
-    _кут_розсіяння, регіони, _arc_overlap, resonance, relation_coverage, brief, feature_votes)
+    _кут_розсіяння, регіони, _arc_overlap, resonance)
 
 if __name__=="__main__":
     import random
@@ -194,5 +194,5 @@ if __name__=="__main__":
         if nm.startswith("_"): continue
         print(f"   {nm:16s} L*={f['L']:5.1f} h={f['h'] if f['h'] else 'н/д'}")
     print("   розподіли:", F.get("_розподіли"))
-    B=brief(F,"complementary",source="uncontrolled")
+    B=resonance(F,"complementary")   # зони збігу — ті самі, що в `колір_відношення.brief` (3.3)
     print("   зони збігу:", B["зони_збігу"] or "немає")
