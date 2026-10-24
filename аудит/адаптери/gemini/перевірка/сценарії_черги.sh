@@ -11,7 +11,7 @@ setup() { W="${TMPDIR:-/tmp}/gemini-obhortka/$1"; rm -rf "$W"; mkdir -p "$W"/{fa
   git clone -q "$W/origin.git" "$W/clone" 2>/dev/null; git -C "$W/clone" config user.name g; git -C "$W/clone" config user.email g@x
   export FAKE_STATE="$W/fake" FAKE_CLAUDE_LOG="$W/claude.log" FAKE_SCENARIO=abandon_then_done FAKE_ISOLATION= FAKE_CLAUDE_FAIL=; }
 gem() { "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_run.ps1" -ArgsJson "{\"RepoDir\":\"$W/clone\",\"RunsDir\":\"$W/runs\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"AgyExe\":\"$H/fake_agy.py\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}"; }
-pub() { "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_publish.ps1" -ArgsJson "{\"WorkDir\":\"$W/pub\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"ClaudeExe\":\"$H/fake_claude.py\",\"MaxSendAttempts\":2}"; }
+pub() { "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_publish.ps1" -ArgsJson "{\"WorkDir\":\"$W/pub\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"ClaudeExe\":\"$H/fake_claude.py\",\"MaxSendAttempts\":2,\"SendRetryDelaySeconds\":0}"; }
 mark() { git -C "$W/seed" push -q origin "${2:-main}:refs/heads/gemini-queue/$1" 2>/dev/null; }
 show() { echo "  wrapper: $(grep -cE 'наряд .*->' "$W/runs/wrapper.log" 2>/dev/null) прогонів; $(grep -E 'пропущено|ізоляція|origin' "$W/runs/wrapper.log" 2>/dev/null | sed 's/^20[0-9-]* [0-9:]* //' | tr '\n' '|')"
   echo "  claude: $(wc -l < "$W/claude.log" 2>/dev/null) рядків"; sed 's/^20[0-9-]* [0-9:]* /  pub: /' "$W/pub/publish.log" 2>/dev/null | cut -c1-230
@@ -41,7 +41,7 @@ echo "=== 9 спам: копії стану з іншими id на ту сам�
   pub; pub; show
 echo "=== 10 пуш відхилено: 2 тихі повтори, рядок, -Retry після виправлення"; setup r10; mark "$SLUG/$M/1"; gem
   printf '#!/bin/sh\nexit 1\n' > "$W/origin.git/hooks/pre-receive"; chmod +x "$W/origin.git/hooks/pre-receive"
-  P="{\"WorkDir\":\"$W/pub\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"ClaudeExe\":\"$H/fake_claude.py\",\"MaxPushRetries\":2"
+  P="{\"WorkDir\":\"$W/pub\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"ClaudeExe\":\"$H/fake_claude.py\",\"MaxPushRetries\":2,\"SendRetryDelaySeconds\":0"
   for i in 1 2 3 4; do "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_publish.ps1" -ArgsJson "$P}"; done
   echo "  claude після 4 проходів: $(wc -l < "$W/claude.log")"; rm "$W/origin.git/hooks/pre-receive"
   ID=$(basename $(ls "$W"/out/2*.json) .json); "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_publish.ps1" -ArgsJson "$P,\"Retry\":\"$ID\"}"; show

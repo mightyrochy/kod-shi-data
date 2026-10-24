@@ -12,7 +12,10 @@
      SHA, `git fetch` у карантинне посилання голого клону власника: без checkout, без хуків, без `safe.directory`.
   3. Пуш лише `gemini/<наряд>`, лише fast-forward і лише коли зміни до `main` (і в кожному коміті) без `.github/` і
      без файлів обгортки; інакше — не пушити, причина — кодом.
-  4. Рядок диспетчерові (`claude -p <рядок> --cloud <id з аудит/СТАН.md>`) — лише обчислене тут, жодного тексту агента.
+  4. Кінець прогону — рядок за шаблоном (`GEMINI ОБГОРТКА: ГОТОВО|ЗАБЛОКОВАНО <гілка> <SHA|КОД>`) кладеться в теку
+     вихідних; звідти ж, з рядками інших скриптів власника, його доставляє `Send-Line` (`claude -p --cloud <id з
+     аудит/СТАН.md>`) з повтором і станом «надіслано / спроби». Пересилається лише рядок, що повністю збігся з одним
+     із шаблонів; інший файл — у карантин, диспетчеру йде лише код причини.
 Налаштування — `НАЛАШТУВАННЯ.md` поруч.
 #>
 [CmdletBinding()]
@@ -25,7 +28,10 @@ param(
     [string]$GeminiUser = 'gemini',
     [string]$WrapperDir = 'аудит/адаптери/gemini/',
     [int]$MaxBundleMB = 512,
-    [int]$MaxSendAttempts = 12,
+    [string]$OutboxDir = '',
+    [int]$MaxSendAttempts = 60,
+    [int]$SendRetries = 3,
+    [int]$SendRetryDelaySeconds = 20,
     [int]$MaxPushRetries = 12,
     [string]$Retry = '',
     [switch]$DryRun
@@ -38,11 +44,13 @@ $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
 $script:IdPattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}$'
 $script:ShaPattern = '^[0-9a-f]{40}$'
+$script:Utf8Strict = New-Object System.Text.UTF8Encoding($false, $true)
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
 
 # Коди сторони gemini -> слова рядка. Інше значення — відмова, а не пересилання.
 $script:RunCodes = @{
+    QUOTA_ZERO = 'квота групи моделі 0 %, наряд не взято'
     DONE = 'звіт агента: ГОТОВО'; BLOCKED = 'звіт агента: ЗАБЛОКОВАНО'
     NO_REPORT = 'агент без звіту після всіх догонок'; TIMEOUT = 'межа часу прогону'
     AGY_ERROR = 'agy закінчився з помилкою'; MODEL_INVALID = 'agy не знає моделі з позначки'
@@ -262,12 +270,23 @@ function Get-Line([string]$Id) {
     $turns = Get-Int $s 'turns'; $minutes = Get-Int $s 'minutes'; $ahead = Get-Int $s 'ahead'
     # Лише слова цього файлу: поля стану поза переліками (зокрема `models`) у рядок не потрапляють.
     $reason = $script:RunCodes[$code]
-    if ($code -eq 'MODEL_INVALID') { $reason += " (перелік agy models — поле models у $OutDir\$Id.json, дані сторони gemini)" }
-    $run = "$reason; ходів $turns, хв $minutes; черга $queue"
+    $quotaLeft = [string](Get-Prop $s 'quota')
+    $quotaNote = $(if ($quotaLeft -match '^[0-9]{1,3}$') { "; залишок квоти групи моделі — $quotaLeft %" } else { '' })
+    $run = "$reason; ходів $turns, хв $minutes; черга $queue$quotaNote"
+    $branch = "gemini/$slug"
+    if ($code -eq 'QUOTA_ZERO') {
+        $g = [string](Get-Prop $s 'qgroup'); $r = [string](Get-Prop $s 'qreset')
+        if ($g -cnotmatch '^[A-Z0-9]{1,16}$' -or ($r -and $r -notmatch '^[0-9]{1,6}$')) { return Get-BadLine $Id 'не за форматом' }
+        $kod = 'QUOTA0_' + $g + $(if ($r) { '_M' + [int]$r } else { '' })
+        if (Test-Seen "$queue $marker $kod") { return $null }
+        Write-WrapperLog "кінець $Id — $run; група $g, скидання через $(if ($r) { "$r хв" } else { 'невідомо' })"
+        return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $kod" }
+    }
     if (-not (Get-Prop $s 'bundle')) {
         if (Test-Seen "$queue $marker $code") { return $null }
         $tail = $(if (Test-Path -LiteralPath (Join-Path $OutDir ($Id + '.tail.txt'))) { "; кінець виводу агента — $OutDir\$Id.tail.txt" } else { '' })
-        return "GEMINI ОБГОРТКА: НЕ ЗАВЕРШЕНО gemini/$slug — $run; комітів нема$tail."
+        Write-WrapperLog "кінець $Id — НЕ ЗАВЕРШЕНО $branch — $run; комітів нема$tail"
+        return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $code" }
     }
     $res = Publish-Bundle $s $Id
     $pc = $res[0]; $files = $res[1]
@@ -283,10 +302,14 @@ function Get-Line([string]$Id) {
     if ($pc -eq 'OK') {
         [void](Test-Seen "published $queue $marker")
         $what = $(if ($DryRun) { 'ПЕРЕВІРЕНО (без пушу)' } else { 'ОПУБЛІКОВАНО' })
-        return "GEMINI ОБГОРТКА: $what gemini/$slug $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run."
+        Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
+        # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
+        if ($code -eq 'DONE' -and $head) { return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ГОТОВО $branch $head" } }
+        return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $(if ($code -eq 'DONE') { 'NO_HEAD' } else { $code })_PUBLISHED" }
     }
     if (Test-Seen "$queue $marker refused $pc") { return $null }
-    "GEMINI ОБГОРТКА: НЕ ОПУБЛІКОВАНО gemini/$slug $head — $($script:PublishCodes[$pc]); $run; бандл $OutDir\$Id.bundle."
+    Write-WrapperLog "кінець $Id — НЕ ОПУБЛІКОВАНО $branch $head — $($script:PublishCodes[$pc]); $run; бандл $OutDir\$Id.bundle"
+    [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $pc" }
 }
 
 # Шлях до виконуваного: .NET із UseShellExecute=false дописує лише .exe, а CLI з npm — це .cmd.
@@ -312,6 +335,90 @@ function Reset-State([string]$Id) {
     Write-WrapperLog "стан $Id забуто рукою власника — повтор"
 }
 
+# --- тека вихідних -------------------------------------------------------------------------------------------------
+# Один файл — один рядок, UTF-8 без BOM, ім'я <yyyyMMdd-HHmmss>-<12 hex>.txt; пише будь-який скрипт власника атомарно
+# (тимчасове ім'я без .txt, потім перейменування). Обгортка пересилає лише рядок, що повністю збігся з шаблоном нижче.
+
+$script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
+$script:SlugCore = $script:SlugPattern.Trim('^', '$')
+$script:OutboxTemplates = @(
+    "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}\z"
+    "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:gemini|codex|claude)/$script:SlugCore [A-Z0-9_]{2,40}\z"
+    '\AСПОСТЕРІГАЧ КОМЕНТАР #[0-9]{1,12} [0-9]{1,20} (?:mightyrochy|chatgpt-codex-connector\[bot\]) (?:новий|змінено)\z'
+    '\AСПОСТЕРІГАЧ CI #[0-9]{1,12} [0-9a-f]{40} (?:success|failure|cancelled|timed_out|action_required|neutral|skipped|pending)\z'
+    "\AСПОСТЕРІГАЧ ПЕРЕНЕСЕНО (?<n>$script:SlugCore) codex/\k<n> [0-9a-f]{40} #[0-9]{1,12}\z"
+    "\AСПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО $script:SlugCore [A-Z0-9_]{2,40}\z"
+)
+$script:QuarantineCodes = @('BAD_SIZE', 'EMPTY', 'BOM', 'BAD_UTF8', 'NOT_ONE_LINE', 'BAD_CHARS', 'NO_TEMPLATE', 'UNREADABLE')
+
+# Порожній рядок — рядок збігся з шаблоном; інакше код причини.
+function Test-OutboxLine([string]$Line) {
+    if ($Line.Contains('..')) { return 'NO_TEMPLATE' }
+    foreach ($t in $script:OutboxTemplates) { if ($Line -cmatch $t) { return '' } }
+    'NO_TEMPLATE'
+}
+
+# [рядок, код]: код порожній — файл прийнято.
+function Read-OutboxFile([string]$Path) {
+    try {
+        $bytes = [System.IO.File]::ReadAllBytes($Path)
+        if ($bytes.Length -eq 0) { return @('', 'EMPTY') }
+        if ($bytes.Length -gt 1024) { return @('', 'BAD_SIZE') }
+        if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) { return @('', 'BOM') }
+        try { $text = $script:Utf8Strict.GetString($bytes) } catch { return @('', 'BAD_UTF8') }
+    } catch { return @('', 'UNREADABLE') }
+    if ($text.EndsWith("`r`n")) { $text = $text.Substring(0, $text.Length - 2) } elseif ($text.EndsWith("`n")) { $text = $text.Substring(0, $text.Length - 1) }
+    if ($text.Contains("`n") -or $text.Contains("`r")) { return @('', 'NOT_ONE_LINE') }
+    if ($text -cmatch '[\x00-\x1f\x7f]') { return @('', 'BAD_CHARS') }
+    $code = Test-OutboxLine $text
+    if ($code) { return @('', $code) }
+    @($text, '')
+}
+
+# Файл вихідних із заданим іменем: вдруге те саме ім'я не пишеться (стан прогону має ім'я = свій id).
+function Add-OutboxLine([string]$Name, [string]$Line) {
+    if ($Name -cnotmatch $script:OutboxNamePattern) { throw "ім'я файлу вихідних не за форматом: $Name" }
+    $path = Join-Path $OutboxDir $Name
+    if ((Test-Path -LiteralPath $path) -or (Test-Path -LiteralPath (Join-Path (Join-Path $OutboxDir 'done') $Name))) { return }
+    Write-FileAtomic $path ($Line + "`n")
+}
+
+function Move-Outbox([string]$Name, [string]$Sub) {
+    $dir = Join-Path $OutboxDir $Sub
+    [void](New-Item -ItemType Directory -Force -Path $dir)
+    Move-Item -LiteralPath (Join-Path $OutboxDir $Name) -Destination (Join-Path $dir $Name) -Force
+}
+
+# Файли вихідних -> стан <o-id>.json: рядок на відправлення або карантин із повідомленням лише кодом (не більше 3 на добу).
+function Receive-Outbox {
+    foreach ($f in @(Get-ChildItem -LiteralPath $OutboxDir -File -ErrorAction SilentlyContinue | Sort-Object Name)) {
+        if ($f.Name -cnotmatch $script:OutboxNamePattern) { continue }
+        $statePath = Join-Path (Join-Path $WorkDir 'state') ('o-' + $f.BaseName + '.json')
+        if (Test-Path -LiteralPath $statePath) { Move-Outbox $f.Name 'done'; continue }
+        $r = Read-OutboxFile $f.FullName
+        if ($r[1]) {
+            $notice = ''
+            foreach ($i in 1..3) {
+                if (-not (Test-Seen ('quarantine ' + (Get-Date -Format 'yyyyMMdd') + " $i"))) {
+                    $notice = "GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ $($f.BaseName) $($r[1]) — рядок не переслано (текст — лише в теці quarantine власника)."
+                    break
+                }
+            }
+            Write-WrapperLog "вихідні $($f.Name): карантин $($r[1])"
+            Write-FileAtomic $statePath (([ordered]@{ line = $notice; sent = ($notice -eq ''); attempts = 0 }) | ConvertTo-Json -Compress)
+            Move-Outbox $f.Name 'quarantine'
+            continue
+        }
+        Write-WrapperLog "вихідні $($f.Name): $($r[0])"
+        Write-FileAtomic $statePath (([ordered]@{ line = $r[0]; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
+        Move-Outbox $f.Name 'done'
+    }
+    # Прийняті файли старші за 30 діб — зайві; карантин лишається до руки власника.
+    foreach ($old in @(Get-ChildItem -LiteralPath (Join-Path $OutboxDir 'done') -File -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) })) {
+        Remove-Item -LiteralPath $old.FullName -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Get-DispatcherId {
     $r = Invoke-Git @('cat-file', 'blob', 'refs/remotes/origin/main:аудит/СТАН.md') -AllowFail
     if ($r.Code -ne 0) { return '' }
@@ -334,8 +441,20 @@ function Send-Line([string]$Line) {
     $ok
 }
 
+# До $SendRetries спроб за прохід (пауза між ними), не більше, ніж лишилось до $MaxSendAttempts; Tries іде в «спроби».
+function Send-LineRetry([string]$Line, [int]$Done) {
+    $tries = 0
+    while ($true) {
+        $tries++
+        if (Send-Line $Line) { return [pscustomobject]@{ Ok = $true; Tries = $tries } }
+        if ($tries -ge $SendRetries -or ($Done + $tries) -ge $MaxSendAttempts) { return [pscustomobject]@{ Ok = $false; Tries = $tries } }
+        if (-not $DryRun -and $SendRetryDelaySeconds -gt 0) { Start-Sleep -Seconds $SendRetryDelaySeconds }
+    }
+}
+
 function Main {
-    foreach ($d in @($WorkDir, (Join-Path $WorkDir 'state'), (Join-Path $WorkDir 'inbox'), (Join-Path $WorkDir 'seen'))) { [void](New-Item -ItemType Directory -Force -Path $d) }
+    if (-not $OutboxDir) { $script:OutboxDir = Join-Path (Split-Path -Parent $WorkDir) 'gemini-outbox' }
+    foreach ($d in @($WorkDir, (Join-Path $WorkDir 'state'), (Join-Path $WorkDir 'inbox'), (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void](New-Item -ItemType Directory -Force -Path $d) }
     if (-not (Test-OwnerUser)) { Write-WrapperLog "запуск під $GeminiUser — відмова"; return 1 }
     $script:Repo = Join-Path $WorkDir 'repo.git'
     $script:NoHooks = Join-Path ([System.IO.Path]::GetTempPath()) ('no-hooks-' + [guid]::NewGuid().ToString('N'))
@@ -360,7 +479,13 @@ function Main {
             if (Test-Path -LiteralPath $statePath) { continue }
             try { $line = Get-Line $id }
             catch { Write-WrapperLog "стан ${id}: $($_.Exception.Message)"; $line = Get-BadLine $id 'не обробився' }
-            if ($line -eq 'RETRY') { continue }
+            if ($line -is [string] -and $line -eq 'RETRY') { continue }
+            if ($line -isnot [string] -and $null -ne $line) {
+                # Кінець прогону: рядок — у теку вихідних під id стану; доставка — з неї, як для рядків інших скриптів.
+                Add-OutboxLine ($id + '.txt') $line.Outbox
+                Write-FileAtomic $statePath (([ordered]@{ line = ''; sent = $true; attempts = 0; outbox = ($id + '.txt') }) | ConvertTo-Json -Compress)
+                continue
+            }
             if ($null -eq $line) {
                 Write-WrapperLog "стан $id — повтор, рядка нема"
                 Write-FileAtomic $statePath (([ordered]@{ line = ''; sent = $true; attempts = 0 }) | ConvertTo-Json -Compress)
@@ -369,12 +494,15 @@ function Main {
             Write-WrapperLog $line
             Write-FileAtomic $statePath (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
         }
+        Receive-Outbox
         foreach ($sf in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File | Sort-Object Name)) {
             $st = [System.IO.File]::ReadAllText($sf.FullName, $script:Utf8) | ConvertFrom-Json
             if ($st.sent -or $st.attempts -ge $MaxSendAttempts) { continue }
-            $sent = Send-Line ([string]$st.line)
-            $new = [ordered]@{ line = [string]$st.line; sent = $sent; attempts = [int]$st.attempts + 1 }
+            $res = Send-LineRetry ([string]$st.line) ([int]$st.attempts)
+            $new = [ordered]@{ line = [string]$st.line; sent = $res.Ok; attempts = [int]$st.attempts + $res.Tries }
             Write-FileAtomic $sf.FullName ($new | ConvertTo-Json -Compress)
+            # Канал до диспетчера не працює — решта рядків чекає наступного проходу, а не множить паузи.
+            if (-not $res.Ok) { break }
         }
         0
     } catch {
