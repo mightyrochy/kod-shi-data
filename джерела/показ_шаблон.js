@@ -61,13 +61,47 @@ function прочитатиВибірку(джерело) {
   return _вибірка;
 }
 
+/* Збирає модульний шаблон показу в єдиний HTML (модулі з показ/ + показ.css). */
+function зібратиШаблонПоказу(шляхАбоHtml, джерело) {
+  const fs = require("fs");
+  const path = require("path");
+  const корінь = джерело || __dirname;
+  let р = шляхАбоHtml;
+  if (!р.includes("<html") && fs.existsSync(р)) {
+    р = fs.readFileSync(р, "utf8");
+  }
+  if (р.indexOf('<link rel="stylesheet" href="показ.css">') >= 0) {
+    const cssШлях = path.join(корінь, "показ.css");
+    if (fs.existsSync(cssШлях)) {
+      const css = fs.readFileSync(cssШлях, "utf8");
+      р = р.replace('<link rel="stylesheet" href="показ.css">', '<style>\n' + css + '\n</style>');
+    }
+  }
+  if (р.indexOf('<script src="показ/') >= 0) {
+    const модТека = path.join(корінь, "показ");
+    const reScript = /<script src="показ\/([^"]+)"><\/script>/g;
+    const імена = [];
+    let m;
+    while ((m = reScript.exec(р)) !== null) {
+      імена.push(m[1]);
+    }
+    if (імена.length > 0) {
+      const всіJS = імена.map(ім => fs.readFileSync(path.join(модТека, ім), "utf8")).join("\n\n");
+      const перший = р.indexOf('<script src="показ/');
+      const останній = р.lastIndexOf('</script>') + '</script>'.length;
+      р = р.slice(0, перший) + '<script>\n\'use strict\';\n' + всіJS + '\n</script>' + р.slice(останній);
+    }
+  }
+  return р;
+}
+
 /* Підставляє тестові значення в ШАБЛОН показ.html (не в зібраний продукт: для
    зібраного html — інший формат, регексом по оголошенню `const ФІД_П = "...";`
    — цю підстановку тест_показу.js веде сам). Кидає, якщо для якогось
    плейсхолдера зі списку значення не дали: краще впасти тут, ніж лишити
    непідставлений плейсхолдер у зібраній сторінці. */
 function підставитиШаблон(html, значення) {
-  let р = html;
+  let р = зібратиШаблонПоказу(html, __dirname);
   /* промпт кольору той самий у кожного викликача — його дає сам шаблон, коли не дали значення */
   if (!("__ПРОМПТ_КОЛІР_ПОКАЗУ__" in значення))
     значення = Object.assign({"__ПРОМПТ_КОЛІР_ПОКАЗУ__": прочитатиПромптКольору(__dirname)}, значення);
@@ -82,4 +116,4 @@ function підставитиШаблон(html, значення) {
 }
 
 module.exports = { ПЛЕЙСХОЛДЕРИ_ПОКАЗУ, прочитатиДовідникJSON, прочитатиПромптКольору,
-                   прочитатиВибірку, підставитиШаблон };
+                   прочитатиВибірку, підставитиШаблон, зібратиШаблонПоказу };
