@@ -84,7 +84,7 @@ const пауза = мс => new Promise(р => setTimeout(р, мс));
     await с.waitForFunction(() => window.__мова && window.__мова.length > 0, null, { timeout: 60000 }).catch(() => console.log('хід не дійшов до шва'));
     await пауза(3000);
   }
-  await с.waitForFunction(() => !ЧАТ_ЗАПИТ_П, null, { timeout: 180000 }).catch(() => console.log('хід не скінчився'));
+  await с.waitForFunction(() => !чиннаДіяП('чат'), null, { timeout: 180000 }).catch(() => console.log('хід не скінчився'));
   await пауза(+(process.env.PISLIA_MS || 1500));
   const стан = await с.evaluate(() => ({
     чат: ЧАТ_П.map(р => р.хто + ':' + String(р.текст).slice(0, 60)),
