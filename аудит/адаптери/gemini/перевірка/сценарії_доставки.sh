@@ -100,4 +100,9 @@ chk "рядок кінця пройшов теку вихідних: файл у
 echo "=== Д8 стенд одного прогону: рядок кінця перед сном/вимкненням сесії — вже в теці, сесії жити не треба"
 setup d8; mark "$SLUG/$M/1"; gem; pub; rm -f "$W/pub/publish.log"; pub
 chk "повторний запуск тихий" '[ "$(nlines)" = 1 ]'
+echo "=== Д9 SlugPattern закінчується на \\z, а не \$: slug із кінцевим \\n відкидається в обох файлах"
+for f in gemini_run gemini_publish; do
+  R=$("$PW" -NoProfile -Command "\$l = Select-String -Path '$SRC/$f.ps1' -Pattern '^\\\$script:SlugPattern =' | Select-Object -First 1; Invoke-Expression \$l.Line.Trim(); \$a = ('x' + [char]10) -cmatch \$script:SlugPattern; \$b = 'x' -cmatch \$script:SlugPattern; \"\$a \$b\"")
+  chk "$f: 'x\\n' -> False, 'x' -> True (дістали: $R)" '[ "$R" = "False True" ]'
+done
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD

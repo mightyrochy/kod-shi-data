@@ -39,7 +39,7 @@ $ErrorActionPreference = 'Stop'
 
 $script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
 $script:TaskDir = 'аудит/наряди/'
-$script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$'
+$script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)

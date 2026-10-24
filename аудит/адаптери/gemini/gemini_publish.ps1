@@ -40,7 +40,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$'
+$script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
 $script:IdPattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}$'
 $script:ShaPattern = '^[0-9a-f]{40}$'
@@ -340,7 +340,7 @@ function Reset-State([string]$Id) {
 # (тимчасове ім'я без .txt, потім перейменування). Обгортка пересилає лише рядок, що повністю збігся з шаблоном нижче.
 
 $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
-$script:SlugCore = $script:SlugPattern.Trim('^', '$')
+$script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}\z"
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:gemini|codex|claude)/$script:SlugCore [A-Z0-9_]{2,40}\z"
