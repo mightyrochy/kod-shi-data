@@ -667,7 +667,8 @@ def стан_для_показу(вхід):
     кольори = її.get("вибір_кольору") or {}
     автори = {к: _СТ.автор(v) for к, v in (виб.get("обрала") or {}).items()}
     свої = dict(base=кольори.get("база"), saturation=кольори.get("насиченість"),
-                scheme=next((г["схема"] for г in гілки if г.get("і") == її.get("гілка")), None))
+                scheme=(str(її.get("схема") or "").strip() or
+                        next((г["схема"] for г in гілки if г.get("і") == її.get("гілка")), None)))
     стилеві = dict(base=(виб.get("вибір_кольору") or {}).get("база"),
                   saturation=виб.get("гама"), scheme=виб.get("схема"))
     стан = []

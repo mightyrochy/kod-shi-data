@@ -18,6 +18,10 @@ assert not після['рідша.0']['statements'][0]['rank']['rare']
 її = П.стан_для_показу(dict(її={'гілка': 1}, стилістка=стил, гілки=гілки))
 assert її['рідша.1']['statements'][0]['choice'] == 'her'
 assert її['пал-стан']['statements'][1]['values']['value'] == 'аналогова'
+її_за_іменем = П.стан_для_показу(dict(її={'схема': 'аналогова', 'гілка': None},
+                                             стилістка=стил, гілки=гілки))
+assert її_за_іменем['пал-стан']['statements'][1]['values']['value'] == 'аналогова'
+assert її_за_іменем['пал-стан']['statements'][1]['choice'] == 'her'
 assert С.автор('рука') == С.автор('she_chose') == С.автор(True) == 'her'
 assert С.автор('вона обрала сама') == 'her'
 репліка = {'not_recorded': ['occasion_part', 'place']}
@@ -30,6 +34,6 @@ assert _для_всіх(В.повідомлення('card_unchecked', В.зая�
 т = Л.тон_тональної(речі, {'_схема': 'тональна'})
 р = т['предмети']['не_виміряно'][0]
 assert р['item_id'] == 'kimono' and р['slot'] == 'belt' and 'Кімоно' in р['name']['free_text']
-print('поточний стан: pending → stylist → her; альтернатива unselected; ранг чипа збережено')
+print('поточний стан: pending → stylist → her; схема читається за іменем; альтернатива unselected')
 print('адресат незалежний від values; кімоно: id=kimono, slot=belt, власна назва')
 print('перелік авторів один:', ','.join(sorted(С.АВТОРИ)))
