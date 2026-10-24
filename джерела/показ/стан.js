@@ -92,4 +92,21 @@ if (typeof window !== 'undefined'){
   window.ЯДРО_ДІЯ_П = ЯДРО_ДІЯ_П;
   window.ОСТАННЯ_ДІЯ_П = ОСТАННЯ_ДІЯ_П;
   window.завершитиДіюЯдра = завершитиДіюЯдра;
+  window.В = В;
+  try {
+    Object.defineProperty(window, 'П', {
+      get: () => П,
+      set: v => { П = v; },
+      configurable: true,
+      enumerable: true
+    });
+  } catch(_) { window.П = П; }
+  try {
+    Object.defineProperty(window, 'пристрій', {
+      get: () => пристрій,
+      set: v => { пристрій = v; },
+      configurable: true,
+      enumerable: true
+    });
+  } catch(_) { window.пристрій = пристрій; }
 }
