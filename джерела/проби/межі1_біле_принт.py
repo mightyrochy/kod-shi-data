@@ -5,7 +5,7 @@
 «без принта» за полем `візерунок` проти підрядка «принт» (`пакет_моделі.жорстке_відсічення`)."""
 import sys, pathlib, collections
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
-sys.path.append(str(pathlib.Path(__file__).resolve().parent))   # 3.3: ядро першим — проби/знання_дріт.py, проби/протокол.py тезки модулів ядра
+sys.path.append(str(pathlib.Path(__file__).resolve().parent))   # 3.3: ядро першим (тезку проби/знання_дріт.py перейменовано в 1.7)
 import формальність as Ф, пакет_моделі as ПМ, дріт_моделі as ДМ
 from колір_річ import SLOT_NEAR_FALLBACK as NEAR
 Ф.профіль_палітри = lambda *a, **k: "reserved_white"
