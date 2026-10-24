@@ -791,6 +791,7 @@ process.on('exit', () => {
     const куди = process.env.DOKAZ || (process.env.ZNIMKY ? path.join(process.env.ZNIMKY, 'доказ.json') : null);
     ДОКАЗ.записати(куди);
     console.log('\n' + ДОКАЗ.рядок() + (куди ? ' → ' + куди : ''));
+    console.log(підсумокВикликівЯдра());
   } catch (e) { console.log('\nДОКАЗ не записано: ' + e); }
 });
 /* `timeout` run.sh і Ctrl+C — сигнал, а не `exit`: без цього обірваний прогін не лишав би запису зовсім (6940) */
@@ -2962,7 +2963,6 @@ function підсумокМоделі(){
       fs.writeFileSync(process.env.ZVIT_OUT, fs.readFileSync(await вив.path(), 'utf8'));
       console.log('   вердикти → ' + process.env.ZVIT_OUT);
     }
-    console.log('\n' + підсумокВикликівЯдра());
   console.log('\n' + (провалів ? 'ВПАЛО ' + провалів : 'СЦЕНА 6: зелена') + ' · ' + ч());
     await браузер.close();
     кінецьПрогону('DO=otsinka: сцена 6', провалів ? 1 : 0);
