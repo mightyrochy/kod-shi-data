@@ -8,9 +8,9 @@ import bridge as B, pipeline as PL, composer as КМ
 
 def main():
     os.makedirs("траса", exist_ok=True)
-    # ВХІД — ТОЙ, ЩО Є (08.09.2026, крок A7). Тут стояло «вх.json», якого в
-    # репозиторії нема; у ньому лежить `стенд_вх.json` — той самий профіль, яким
-    # ходить стенд. Прилад падав FileNotFoundError на першому ж рядку.
+    # ВХІД: якщо «вх.json» нема, береться `стенд_вх.json` — профіль, яким
+    # ходить стенд.
+    #
     _ВХ = next((і for і in (sys.argv[1] if len(sys.argv) > 1 else None,
                             "вх.json", "стенд_вх.json") if і and os.path.exists(і)), None)
     if _ВХ is None:
