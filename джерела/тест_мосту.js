@@ -308,7 +308,7 @@ const пнг = байтів => {
   тест("x-images-dropped=1 і заголовок відкритий сторінці", в.headers.get("x-images-dropped") === "1"
        && /x-images-dropped/.test(в.headers.get("Access-Control-Expose-Headers")), в.headers.get("x-images-dropped"));
 
-  /* Рядок 5634: справжній декодований WebP 24×24 без MIME-заголовка.
+  /* Справжній декодований WebP 24×24 без MIME-заголовка.
      Anthropic завантажує URL сам: тут перевіряємо передачу URL і відмови,
      не приписуємо локальній заглушці перевірку байтів самим провайдером. */
   {

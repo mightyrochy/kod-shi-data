@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 
 import протокол as _ПР
 
-# Сталі фраз формату промпту. Фраза JSON-відповіді одна на всі форми (рядок 8711): поле в кожному записі реєстру
+# Сталі фраз формату промпту. Фраза JSON-відповіді одна на всі форми: поле в кожному записі реєстру
 # несло ту саму сталу й не мало кому відрізнятись.
 ФОРМА_JSON = "Відповідь — лише один JSON-обʼєкт за «схема_відповіді», без пояснень і без ```."
 ФОРМА_JSON_EN = "The answer is one JSON object following \"answer_schema\", without explanations and without ```."
@@ -69,7 +69,7 @@ def понад_просили(розбір, обрано, просили):
     """Образи розбору з `ід`, яких більше за `просили` → (розбір у межах `просили`, слід `_понад_просили`).
 
     Лишаються образи, названі у «chosen»; місця, яких вибір не заповнив, бере порядок відповіді. Це типова, і слід
-    її називає (рядок 8662): `за_порядком` — скільки образів узято порядком, а не вибором; `обрано_не_прочитано` —
+    її називає: `за_порядком` — скільки образів узято порядком, а не вибором; `обрано_не_прочитано` —
     записи «chosen», що не є обʼєктом з «id». Доти ремонт, що назвав вибір рядками, мовчки йшов за першими N."""
     з_ід = [р for р in розбір if р.get("ід")]
     ід_вибору, не_прочитано = вибір_образів(обрано)
@@ -127,7 +127,7 @@ def _розбір_outfit_review(відповідь):
 
 # ── РЕЄСТР УСІХ СХЕМ ВІДПОВІДІ ────────────────────────────────────────────────
 # Лише форми, які бере міст (`визначити_схему`, `схема_за_назвою`) чи оцінка образу. ITEM_LIST, PHOTO_ITEMS,
-# «картинка», ОЦІНКИ_V1, ТУРНІР_V1 і сторож ВИБІР_V1 тут стояли без жодного виклику (рядок 8711): фразу формату
+# «картинка», ОЦІНКИ_V1, ТУРНІР_V1 і сторож ВИБІР_V1 тут стояли без жодного виклику: фразу формату
 # їхні промпти беруть сталою (`фраза_формату`), розбір — свої модулі (`руки_без_коду`, `річ_з_фото`, `уважний_вибір`).
 
 СХЕМИ_ВІДПОВІДІ = {
@@ -230,3 +230,82 @@ def визначити_схему(d: Any) -> СхемаВідповіді:
     if відповідь in СХЕМИ_ВІДПОВІДІ:
         return СХЕМИ_ВІДПОВІДІ[відповідь]
     return СХЕМИ_ВІДПОВІДІ["ОБРАЗИ_V1"]
+
+
+def скелет_мовного_шару():
+    """Форма ходу для збирача промпта — поруч з формами функціональної моделі."""
+    import внутрішня_мова as мова
+    форма = форма_мовного_шару(визначення=False)
+    поля = форма["properties"]["update"]["properties"]
+    return {
+        "update": {
+            "formality": "the code of one step of the ladder, on every turn once the kind of outing is known",
+            "formality_reason": " | ".join(мова.ТАБЛИЦЯ["formality_reason"]) + "; the reason of that same ladder step",
+            "formality_branch": "business or social, on a step that has both branches",
+            "occasion_part": "with occasion: which activity this outfit is for; a time of day is not an activity",
+            "wants": [{"quote": "her exact words about this item",
+                       "<attribute>": "only named attributes from thing (" + ", ".join(мова.РІЧ_У_СЛОВАХ) + ")"}],
+            "<field>": "every other changed field from codes: a code or number as {quote: her exact words, value: its value}; "
+                       "reserved_colour and open_zones are event norms, without quote",
+        },
+        "need": " | ".join(форма["properties"]["need"]["enum"]),
+        "text": [{"about": ["update field codes (" + ", ".join(поля) + ") or her_question"],
+                  "says": "one sentence of your reply, never a lone word"}],
+        "invite_topics": ["advice topic codes, up to three"], "invite": "one soft invitation, or empty",
+        "ask_code": " | ".join(форма["properties"]["ask_code"]["enum"]), "ask": "one short question, or empty",
+        "header": {" | ".join(форма["properties"]["header"]["properties"]): "that value in a few Ukrainian words"},
+    }
+
+
+def форма_мовного_шару(визначення=True):
+    """Закритий договір ходу: ті самі поля та коди, що читають розбір і сторож."""
+    import внутрішня_мова as мова
+    import формальність as формальність
+    from copy import deepcopy
+    поля = {}
+    for опис in мова.ПОЛЯ_ПАСПОРТА.values():
+        поле = опис.get("поле")
+        if поле not in мова.СЦЕНАРІЙ or поле == "quotes":
+            continue
+        форма = deepcopy(мова.СЦЕНАРІЙ[поле])
+        if опис.get("цитата") == "пара":
+            форма = {"type": "object", "additionalProperties": False, "required": ["quote", "value"],
+                     "properties": {"quote": {"type": "string", "minLength": 1}, "value": форма}}
+        поля[поле] = форма
+    поля["formality"] = {"enum": [щ["код"] for щ in формальність.ДРАБИНА] + [мова.UNKNOWN]}
+    частини = {
+        "update": {"type": "object", "additionalProperties": False, "properties": поля},
+        "need": {"enum": list(мова.ПОТРЕБИ)},
+        "text": {"type": "array", "items": {"type": "object", "additionalProperties": False,
+            "required": ["about", "says"], "properties": {
+                "about": {"type": "array", "items": {"enum": list(поля) + ["her_question"]}},
+                "says": {"type": "string"}}}},
+        "invite_topics": {"type": "array", "items": {"enum": list(мова.ТЕМИ_ПОРАДИ)}},
+        "invite": {"type": "string"}, "ask_code": {"enum": list(мова.ОБОВʼЯЗКОВЕ) + [""]},
+        "ask": {"type": "string"},
+        "header": {"type": "object", "additionalProperties": False,
+                   "properties": {к: {"type": "string"} for к in ("hour", "temperature_c", "precipitation", "wants", "vetoes", "mood")}},
+    }
+    форма = {"type": "object", "additionalProperties": False, "required": ["update", "need", "text"],
+             "properties": частини}
+    if визначення:
+        форма["$defs"] = deepcopy(мова.схема()["$defs"])
+        форма["$defs"]["thing"]["required"] = ["quote"]
+    return форма
+
+
+def розбір_мовного_шару(текст):
+    """Читає хід тим самим читачем, який використовує живий міст."""
+    import мовний_шар as мова
+    return мова.прийняти_розмову(текст)
+
+
+def сторож_мовного_шару(оновлення, слова, виправлено=None):
+    """Звіряє нормалізовані поля договору з репліками людини."""
+    import мовний_шар as мова
+    дозволені = форма_мовного_шару(визначення=False)["properties"]["update"]["properties"]
+    return мова._тримається({к: в for к, в in оновлення.items() if к in дозволені or к == "quotes"}, слова, виправлено)
+
+
+СХЕМИ_ВІДПОВІДІ["МОВНИЙ_ХІД_V1"] = СхемаВідповіді(
+    ід="language_turn_v1", назва="МОВНИЙ_ХІД_V1", розбір=розбір_мовного_шару, сторож=сторож_мовного_шару)

@@ -8,10 +8,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import колір_образу as КО
 
+# речі wearme знято з каталогу знімком Shopify (#1310): їхні кадри — з `каталог_кадри.json.gz` до нього
+ЗНЯТІ = {"ж-00079@wearme.ua": ("#3a74a8", [47.2, -2.28, -33.26], "cb000030080_blue_2.jpg"),
+         "ж-01421@wearme.ua": ("#739cdb", [63.74, 2.78, -36.22], "cb000003535_______2.jpg"),
+         "ж-01503@wearme.ua": ("#da9b6c", [69.03, 18.22, 33.73], "cb000003211___1.jpg"),
+         "ж-01513@wearme.ua": ("#35a470", [60.42, -43.77, 18.48], "cb000003214___1.jpg"),
+         "ж-04550@wearme.ua": ("#154880", [30.36, 5.08, -36.2], "cb000029510_____2.jpg")}
+
 if __name__ == "__main__":
     шлях = Path(__file__).resolve().parents[1] / "каталог_кадри.json.gz"
     with gzip.open(шлях, "rt", encoding="utf-8") as файл:
         записи = json.load(файл)["записи"]
+    for і, (hx, lab, ф) in ЗНЯТІ.items():
+        записи.setdefault(і, [dict(hex=hx, lab=lab, файл=ф)])
     іди = ["ж-00079@wearme.ua", "ж-01421@wearme.ua", "ж-02631@sunwin-store.com",
            "ж-01503@wearme.ua", "ж-01513@wearme.ua"]
     елементи = {}

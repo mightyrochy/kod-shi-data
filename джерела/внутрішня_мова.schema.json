@@ -336,7 +336,10 @@
      "type": "string",
      "description": "дослівний уривок її слів про цю річ"
     }
-   }
+   },
+   "required": [
+    "quote"
+   ]
   },
   "own_item": {
    "type": "object",
@@ -659,6 +662,17 @@
    "description": "сценарій виходу з її слів цього ходу",
    "additionalProperties": false,
    "properties": {
+    "event": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/free_text"
+      },
+      {
+       "const": "unknown"
+      }
+     ],
+     "description": "подія коротко, її мовою"
+    },
     "occasion": {
      "description": "нагода — що це за подія",
      "enum": [
@@ -667,10 +681,8 @@
       "date",
       "celebration",
       "wedding_guest",
-      "wedding_day",
       "mourning",
-      "formal_evening",
-      "formal_day",
+      "formal_event",
       "walk",
       "theatre",
       "job_interview",
@@ -682,14 +694,6 @@
       "museum",
       "unknown"
      ]
-    },
-    "occasion_part": {
-     "enum": [
-      "sport",
-      "other",
-      "unknown"
-     ],
-     "description": "намір мовної моделі цього ходу: образ для спортивної чи іншої частини дня"
     },
     "place": {
      "description": "місце — де вона буде",
@@ -722,65 +726,8 @@
       "flight",
       "sport",
       "church_service",
-      "wedding_day",
-      "wedding_evening",
+      "wedding",
       "funeral",
-      "unknown"
-     ]
-    },
-    "dress_code": {
-     "description": "дрес-код, коли його названо",
-     "enum": [
-      "casual",
-      "smart_casual",
-      "dressy_casual",
-      "business_casual",
-      "semi_formal",
-      "festive",
-      "business_formal",
-      "cocktail",
-      "black_tie_optional",
-      "black_tie",
-      "creative_black_tie",
-      "white_tie",
-      "unknown"
-     ]
-    },
-    "event": {
-     "oneOf": [
-      {
-       "$ref": "#/$defs/free_text"
-      },
-      {
-       "const": "unknown"
-      }
-     ],
-     "description": "подія коротко, її мовою"
-    },
-    "place_words": {
-     "oneOf": [
-      {
-       "$ref": "#/$defs/free_text"
-      },
-      {
-       "const": "unknown"
-      }
-     ],
-     "description": "де вона буде, кількома словами для картки"
-    },
-    "reserved_colour": {
-     "description": "колір, що на цій події належить іншій особі",
-     "enum": [
-      "near_white",
-      "unknown"
-     ]
-    },
-    "open_zones": {
-     "description": "скільки зон тіла (декольте чи спина, ноги, плечі) доречно відкрити на цій події",
-     "enum": [
-      "none",
-      "one",
-      "two",
       "unknown"
      ]
     },
@@ -818,114 +765,33 @@
       "unknown"
      ]
     },
-    "activity": {
-     "description": "що робитиме: з дітьми, по нерівному ґрунту, прогулянка, багато пішки, фотосесія чи зйомка",
+    "dress_code": {
+     "description": "дрес-код, коли його названо",
      "enum": [
-      "children",
-      "rough_ground",
-      "stroll",
-      "walking",
-      "photoshoot",
+      "casual",
+      "smart_casual",
+      "dressy_casual",
+      "business_casual",
+      "semi_formal",
+      "festive",
+      "business_formal",
+      "cocktail",
+      "black_tie_optional",
+      "black_tie",
+      "creative_black_tie",
+      "white_tie",
       "unknown"
      ]
     },
-    "surface": {
-     "description": "що під ногами",
+    "palette": {
+     "description": "схема палітри, яку вона обрала",
      "enum": [
-      "cobblestones",
-      "asphalt",
-      "parquet",
-      "carpet",
-      "grass",
-      "stairs",
-      "unknown"
-     ]
-    },
-    "hour": {
-     "description": "година початку за 24-годинним годинником",
-     "oneOf": [
-      {
-       "type": "integer",
-       "minimum": 0,
-       "maximum": 23
-      },
-      {
-       "const": "unknown"
-      }
-     ]
-    },
-    "minute": {
-     "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
-     "oneOf": [
-      {
-       "type": "integer",
-       "minimum": 0,
-       "maximum": 59
-      },
-      {
-       "const": "unknown"
-      }
-     ]
-    },
-    "part_of_day": {
-     "description": "частина доби, коли години не названо",
-     "enum": [
-      "morning",
-      "day",
-      "evening",
-      "night",
-      "unknown"
-     ]
-    },
-    "month": {
-     "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця",
-     "enum": [
-      "january",
-      "february",
-      "march",
-      "april",
-      "may",
-      "june",
-      "july",
-      "august",
-      "september",
-      "october",
-      "november",
-      "december",
-      "unknown"
-     ]
-    },
-    "temperature_c": {
-     "description": "температура повітря, °C",
-     "oneOf": [
-      {
-       "type": "number"
-      },
-      {
-       "const": "unknown"
-      }
-     ]
-    },
-    "weather_feel": {
-     "description": "погода без числа градусів",
-     "enum": [
-      "frost",
-      "cold",
-      "cool",
-      "warm",
-      "hot",
-      "unknown"
-     ]
-    },
-    "precipitation": {
-     "description": "опади",
-     "enum": [
-      "none",
-      "possible_rain",
-      "rain",
-      "sleet",
-      "downpour",
-      "snow",
+      "neutrals_plus_accent",
+      "tonal",
+      "analogous",
+      "muted_complementary",
+      "triad",
+      "color_block",
       "unknown"
      ]
     },
@@ -957,11 +823,38 @@
      ],
      "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
     },
-    "formality_branch": {
-     "description": "гілка щабля: ділова чи світська форма того самого щабля",
+    "hour": {
+     "description": "година початку за 24-годинним годинником",
+     "oneOf": [
+      {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 23
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
+    "temperature_c": {
+     "description": "температура повітря, °C",
+     "oneOf": [
+      {
+       "type": "number"
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
+    "weather_feel": {
+     "description": "погода без числа градусів",
      "enum": [
-      "business",
-      "social",
+      "frost",
+      "cold",
+      "cool",
+      "warm",
+      "hot",
       "unknown"
      ]
     },
@@ -1097,20 +990,6 @@
       "$ref": "#/$defs/thing"
      }
     },
-    "retract": {
-     "description": "межі чи бажання, від яких вона в цих словах відмовилась",
-     "type": "array",
-     "items": {
-      "$ref": "#/$defs/thing"
-     }
-    },
-    "beliefs": {
-     "description": "її переконання: що, на її думку, їй не личить чи псує фігуру; з ним не сперечаються",
-     "type": "array",
-     "items": {
-      "$ref": "#/$defs/thing"
-     }
-    },
     "legs_above_cm": {
      "description": "вище скількох см від підлоги не відкривати ноги",
      "oneOf": [
@@ -1131,6 +1010,58 @@
      },
      "maxItems": 3
     },
+    "part_of_day": {
+     "description": "частина доби, коли години не названо",
+     "enum": [
+      "morning",
+      "day",
+      "evening",
+      "night",
+      "unknown"
+     ]
+    },
+    "month": {
+     "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця",
+     "enum": [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+      "unknown"
+     ]
+    },
+    "formality_branch": {
+     "description": "гілка щабля: ділова чи світська форма того самого щабля",
+     "enum": [
+      "business",
+      "social",
+      "unknown"
+     ]
+    },
+    "open_zones": {
+     "description": "скільки зон тіла (декольте чи спина, ноги, плечі) доречно відкрити на цій події",
+     "enum": [
+      "none",
+      "one",
+      "two",
+      "unknown"
+     ]
+    },
+    "reserved_colour": {
+     "description": "колір, що на цій події належить іншій особі",
+     "enum": [
+      "near_white",
+      "unknown"
+     ]
+    },
     "own_items": {
      "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\"",
      "type": "array",
@@ -1138,7 +1069,20 @@
       "$ref": "#/$defs/own_item"
      }
     },
-    "question": {
+    "minute": {
+     "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
+     "oneOf": [
+      {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 59
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
+    "place_words": {
      "oneOf": [
       {
        "$ref": "#/$defs/free_text"
@@ -1147,7 +1091,7 @@
        "const": "unknown"
       }
      ],
-     "description": "питання, яке вона ставить стилістці"
+     "description": "де вона буде, кількома словами для картки"
     },
     "rest": {
      "oneOf": [
@@ -1171,6 +1115,81 @@
      ],
      "description": "лише коли її слова про подію важко витлумачити без контексту (місцевий звичай, сленг, іронія, незвична подія): коротке пояснення для стилістки англійською, що вона має на увазі; інакше — невідомо"
     },
+    "quotes": {
+     "description": "для кожного поля з кодом чи числом — дослівний уривок її слів, на якому воно стоїть: {\"<поле>\": \"<уривок>\"}",
+     "type": "object",
+     "additionalProperties": {
+      "type": "string"
+     }
+    },
+    "occasion_part": {
+     "enum": [
+      "sport",
+      "other",
+      "unknown"
+     ],
+     "description": "намір мовної моделі цього ходу: образ для спортивної чи іншої частини дня"
+    },
+    "activity": {
+     "description": "що робитиме: з дітьми, по нерівному ґрунту, прогулянка, багато пішки, фотосесія чи зйомка",
+     "enum": [
+      "children",
+      "rough_ground",
+      "stroll",
+      "walking",
+      "photoshoot",
+      "unknown"
+     ]
+    },
+    "surface": {
+     "description": "що під ногами",
+     "enum": [
+      "cobblestones",
+      "asphalt",
+      "parquet",
+      "carpet",
+      "grass",
+      "stairs",
+      "unknown"
+     ]
+    },
+    "precipitation": {
+     "description": "опади",
+     "enum": [
+      "none",
+      "possible_rain",
+      "rain",
+      "sleet",
+      "downpour",
+      "snow",
+      "unknown"
+     ]
+    },
+    "retract": {
+     "description": "межі чи бажання, від яких вона в цих словах відмовилась",
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/thing"
+     }
+    },
+    "beliefs": {
+     "description": "її переконання: що, на її думку, їй не личить чи псує фігуру; з ним не сперечаються",
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/thing"
+     }
+    },
+    "question": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/free_text"
+      },
+      {
+       "const": "unknown"
+      }
+     ],
+     "description": "питання, яке вона ставить стилістці"
+    },
     "question_about": {
      "description": "про що її питання: app — про застосунок (екрани, кнопки, кроки, що робити далі); look — про її образ, речі, фото, стиль чи кольори",
      "enum": [
@@ -1179,12 +1198,16 @@
       "unknown"
      ]
     },
-    "quotes": {
-     "description": "для кожного поля з кодом чи числом — дослівний уривок її слів, на якому воно стоїть: {\"<поле>\": \"<уривок>\"}",
-     "type": "object",
-     "additionalProperties": {
-      "type": "string"
-     }
+    "formality_reason": {
+     "description": "причина щабля драбини",
+     "enum": [
+      "written",
+      "norm",
+      "evaluated",
+      "representing",
+      "her_words",
+      "unknown"
+     ]
     }
    }
   },
@@ -2267,36 +2290,16 @@
      "items": {
       "oneOf": [
        {
-        "const": "occasion",
-        "description": "нагода — що це за подія"
-       },
-       {
-        "const": "occasion_part",
-        "description": "намір мовної моделі цього ходу: образ для спортивної чи іншої частини дня"
-       },
-       {
-        "const": "place",
-        "description": "місце — де вона буде"
-       },
-       {
-        "const": "dress_code",
-        "description": "дрес-код, коли його названо"
-       },
-       {
         "const": "event",
         "description": "подія коротко, її мовою"
        },
        {
-        "const": "place_words",
-        "description": "де вона буде, кількома словами для картки"
+        "const": "occasion",
+        "description": "нагода — що це за подія"
        },
        {
-        "const": "reserved_colour",
-        "description": "колір, що на цій події належить іншій особі"
-       },
-       {
-        "const": "open_zones",
-        "description": "скільки зон тіла (декольте чи спина, ноги, плечі) доречно відкрити на цій події"
+        "const": "place",
+        "description": "місце — де вона буде"
        },
        {
         "const": "setting",
@@ -2311,28 +2314,20 @@
         "description": "сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, ставатиме на коліна чи займатиметься спортом"
        },
        {
-        "const": "activity",
-        "description": "що робитиме: з дітьми, по нерівному ґрунту, прогулянка, багато пішки, фотосесія чи зйомка"
+        "const": "dress_code",
+        "description": "дрес-код, коли його названо"
        },
        {
-        "const": "surface",
-        "description": "що під ногами"
+        "const": "palette",
+        "description": "схема палітри, яку вона обрала"
+       },
+       {
+        "const": "formality",
+        "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
        },
        {
         "const": "hour",
         "description": "година початку за 24-годинним годинником"
-       },
-       {
-        "const": "minute",
-        "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)"
-       },
-       {
-        "const": "part_of_day",
-        "description": "частина доби, коли години не названо"
-       },
-       {
-        "const": "month",
-        "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця"
        },
        {
         "const": "temperature_c",
@@ -2341,18 +2336,6 @@
        {
         "const": "weather_feel",
         "description": "погода без числа градусів"
-       },
-       {
-        "const": "precipitation",
-        "description": "опади"
-       },
-       {
-        "const": "formality",
-        "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
-       },
-       {
-        "const": "formality_branch",
-        "description": "гілка щабля: ділова чи світська форма того самого щабля"
        },
        {
         "const": "intent",
@@ -2391,14 +2374,6 @@
         "description": "чого вона не хоче: межі"
        },
        {
-        "const": "retract",
-        "description": "межі чи бажання, від яких вона в цих словах відмовилась"
-       },
-       {
-        "const": "beliefs",
-        "description": "її переконання: що, на її думку, їй не личить чи псує фігуру; з ним не сперечаються"
-       },
-       {
         "const": "legs_above_cm",
         "description": "вище скількох см від підлоги не відкривати ноги"
        },
@@ -2407,12 +2382,36 @@
         "description": "настрій образу її словами"
        },
        {
+        "const": "part_of_day",
+        "description": "частина доби, коли години не названо"
+       },
+       {
+        "const": "month",
+        "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця"
+       },
+       {
+        "const": "formality_branch",
+        "description": "гілка щабля: ділова чи світська форма того самого щабля"
+       },
+       {
+        "const": "open_zones",
+        "description": "скільки зон тіла (декольте чи спина, ноги, плечі) доречно відкрити на цій події"
+       },
+       {
+        "const": "reserved_colour",
+        "description": "колір, що на цій події належить іншій особі"
+       },
+       {
         "const": "own_items",
         "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\""
        },
        {
-        "const": "question",
-        "description": "питання, яке вона ставить стилістці"
+        "const": "minute",
+        "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)"
+       },
+       {
+        "const": "place_words",
+        "description": "де вона буде, кількома словами для картки"
        },
        {
         "const": "rest",
@@ -2423,12 +2422,44 @@
         "description": "лише коли її слова про подію важко витлумачити без контексту (місцевий звичай, сленг, іронія, незвична подія): коротке пояснення для стилістки англійською, що вона має на увазі; інакше — невідомо"
        },
        {
+        "const": "quotes",
+        "description": "для кожного поля з кодом чи числом — дослівний уривок її слів, на якому воно стоїть: {\"<поле>\": \"<уривок>\"}"
+       },
+       {
+        "const": "occasion_part",
+        "description": "намір мовної моделі цього ходу: образ для спортивної чи іншої частини дня"
+       },
+       {
+        "const": "activity",
+        "description": "що робитиме: з дітьми, по нерівному ґрунту, прогулянка, багато пішки, фотосесія чи зйомка"
+       },
+       {
+        "const": "surface",
+        "description": "що під ногами"
+       },
+       {
+        "const": "precipitation",
+        "description": "опади"
+       },
+       {
+        "const": "retract",
+        "description": "межі чи бажання, від яких вона в цих словах відмовилась"
+       },
+       {
+        "const": "beliefs",
+        "description": "її переконання: що, на її думку, їй не личить чи псує фігуру; з ним не сперечаються"
+       },
+       {
+        "const": "question",
+        "description": "питання, яке вона ставить стилістці"
+       },
+       {
         "const": "question_about",
         "description": "про що її питання: app — про застосунок (екрани, кнопки, кроки, що робити далі); look — про її образ, речі, фото, стиль чи кольори"
        },
        {
-        "const": "quotes",
-        "description": "для кожного поля з кодом чи числом — дослівний уривок її слів, на якому воно стоїть: {\"<поле>\": \"<уривок>\"}"
+        "const": "formality_reason",
+        "description": "причина щабля драбини"
        }
       ]
      },
@@ -2452,85 +2483,991 @@
   },
   "conversation_turn": {
    "type": "object",
-   "description": "хід розмови мовної моделі: що змінилось у паспорті, хто відповідає і що сказати їй",
    "additionalProperties": false,
+   "required": [
+    "update",
+    "need",
+    "text"
+   ],
    "properties": {
     "update": {
-     "$ref": "#/$defs/scenario",
-     "description": "що її нове повідомлення змінює в паспорті — лише змінене, поле за полем; кожне поле з кодом чи числом — парою {quote, value}"
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "event": {
+       "oneOf": [
+        {
+         "$ref": "#/$defs/free_text"
+        },
+        {
+         "const": "unknown"
+        }
+       ],
+       "description": "подія коротко, її мовою"
+      },
+      "occasion": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "нагода — що це за подія",
+         "enum": [
+          "everyday",
+          "work",
+          "date",
+          "celebration",
+          "wedding_guest",
+          "mourning",
+          "formal_event",
+          "walk",
+          "theatre",
+          "job_interview",
+          "sport",
+          "home",
+          "travel",
+          "church",
+          "school",
+          "museum",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "place": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "місце — де вона буде",
+         "enum": [
+          "home",
+          "park",
+          "walk",
+          "playground",
+          "cafe",
+          "bar",
+          "restaurant_casual",
+          "restaurant_upscale",
+          "fine_dining",
+          "club",
+          "house_party",
+          "festive_dinner",
+          "office",
+          "office_corporate",
+          "office_creative",
+          "job_interview",
+          "conference",
+          "presentation",
+          "theatre",
+          "opera_premiere",
+          "museum",
+          "vernissage",
+          "school_parents_meeting",
+          "hospital_visit",
+          "long_transit",
+          "flight",
+          "sport",
+          "church_service",
+          "wedding",
+          "funeral",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "setting": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "у приміщенні, просто неба чи змішано",
+         "enum": [
+          "indoor",
+          "outdoor",
+          "mixed",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "duration_h": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "скільки годин триває подія",
+         "oneOf": [
+          {
+           "type": "number",
+           "minimum": 0
+          },
+          {
+           "const": "unknown"
+          }
+         ]
+        }
+       }
+      },
+      "movement": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, ставатиме на коліна чи займатиметься спортом",
+         "enum": [
+          "sit",
+          "stand",
+          "walk",
+          "walk_a_lot",
+          "dance",
+          "kneel",
+          "sport",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "dress_code": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "дрес-код, коли його названо",
+         "enum": [
+          "casual",
+          "smart_casual",
+          "dressy_casual",
+          "business_casual",
+          "semi_formal",
+          "festive",
+          "business_formal",
+          "cocktail",
+          "black_tie_optional",
+          "black_tie",
+          "creative_black_tie",
+          "white_tie",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "palette": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "схема палітри, яку вона обрала",
+         "enum": [
+          "neutrals_plus_accent",
+          "tonal",
+          "analogous",
+          "muted_complementary",
+          "triad",
+          "color_block",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "formality": {
+       "enum": [
+        "home",
+        "everyday",
+        "neat",
+        "smart",
+        "formal",
+        "very_smart",
+        "ceremonial",
+        "unknown"
+       ]
+      },
+      "hour": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "година початку за 24-годинним годинником",
+         "oneOf": [
+          {
+           "type": "integer",
+           "minimum": 0,
+           "maximum": 23
+          },
+          {
+           "const": "unknown"
+          }
+         ]
+        }
+       }
+      },
+      "temperature_c": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "температура повітря, °C",
+         "oneOf": [
+          {
+           "type": "number"
+          },
+          {
+           "const": "unknown"
+          }
+         ]
+        }
+       }
+      },
+      "weather_feel": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "погода без числа градусів",
+         "enum": [
+          "frost",
+          "cold",
+          "cool",
+          "warm",
+          "hot",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "intent": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "намір: comfort_first — зручність і свобода руху понад усе; context_optimal — доречність і рівень події понад усе; statement — хоче вразити, заявити про себе; conventional — нічого з цього",
+         "enum": [
+          "conventional",
+          "fashion_forward",
+          "editorial",
+          "statement",
+          "comfort_first",
+          "context_optimal",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "goal": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "скільки уваги на цьому виході: conceal — тихо, не привертати уваги до образу; flatter — звично, щоб личило; express — помітно, щоб на неї дивились",
+         "enum": [
+          "flatter",
+          "conceal",
+          "express",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "goal_extra": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "що ще їй важливо в цьому образі, кілька разом: taller — довша лінія, здаватись вищою; comfort — зручно рухатись цілий день; strict — строго за нагодою",
+         "type": "array",
+         "items": {
+          "description": "що ще важливо",
+          "enum": [
+           "taller",
+           "comfort",
+           "strict",
+           "unknown"
+          ]
+         },
+         "maxItems": 3
+        }
+       }
+      },
+      "goal_zones": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "зони тіла, від яких вона хоче відвести погляд (сховати чи стрункішою зробити зону → її код), з будь-якою увагою (goal): ці зони тихі, решта образу — за goal",
+         "type": "array",
+         "items": {
+          "description": "зона тіла",
+          "enum": [
+           "belly",
+           "hips",
+           "bust",
+           "arms",
+           "legs",
+           "shoulders",
+           "neckline",
+           "back",
+           "unknown"
+          ]
+         },
+         "maxItems": 3
+        }
+       }
+      },
+      "makeup": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "макіяж на цей вихід",
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "level": {
+           "description": "рівень макіяжу",
+           "enum": [
+            "nude",
+            "noticeable",
+            "bold",
+            "unknown"
+           ]
+          },
+          "lips_hex": {
+           "oneOf": [
+            {
+             "type": "string",
+             "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            {
+             "const": "unknown"
+            }
+           ],
+           "description": "колір губ #rrggbb, коли вона його назвала"
+          }
+         }
+        }
+       }
+      },
+      "jewelry": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "прикраси, які вона хоче з цим образом; ethnic — дерево, кістка, бісер; other — без металу",
+         "enum": [
+          "gold",
+          "silver",
+          "pearls",
+          "ethnic",
+          "other",
+          "none",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "registers": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "реєстри стилю, якими вона сама себе описала",
+         "type": "array",
+         "items": {
+          "description": "реєстр стилю",
+          "enum": [
+           "classic",
+           "minimalism",
+           "preppy",
+           "streetwear",
+           "workwear",
+           "sport_chic",
+           "romantic",
+           "boho",
+           "rock",
+           "quiet_luxury",
+           "gorpcore",
+           "dramatic",
+           "ukrainian_ethnic",
+           "unknown"
+          ]
+         },
+         "maxItems": 2
+        }
+       }
+      },
+      "wants": {
+       "description": "чого вона хоче в образі — лише те, що вона просить; річ у питанні («а якщо…», «чи піде…») — не бажання, а question",
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/thing"
+       }
+      },
+      "vetoes": {
+       "description": "чого вона не хоче: межі",
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/thing"
+       }
+      },
+      "legs_above_cm": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "вище скількох см від підлоги не відкривати ноги",
+         "oneOf": [
+          {
+           "type": "number",
+           "minimum": 0
+          },
+          {
+           "const": "unknown"
+          }
+         ]
+        }
+       }
+      },
+      "mood": {
+       "description": "настрій образу її словами",
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/free_text"
+       },
+       "maxItems": 3
+      },
+      "part_of_day": {
+       "description": "частина доби, коли години не названо",
+       "enum": [
+        "morning",
+        "day",
+        "evening",
+        "night",
+        "unknown"
+       ]
+      },
+      "month": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця",
+         "enum": [
+          "january",
+          "february",
+          "march",
+          "april",
+          "may",
+          "june",
+          "july",
+          "august",
+          "september",
+          "october",
+          "november",
+          "december",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "formality_branch": {
+       "description": "гілка щабля: ділова чи світська форма того самого щабля",
+       "enum": [
+        "business",
+        "social",
+        "unknown"
+       ]
+      },
+      "open_zones": {
+       "description": "скільки зон тіла (декольте чи спина, ноги, плечі) доречно відкрити на цій події",
+       "enum": [
+        "none",
+        "one",
+        "two",
+        "unknown"
+       ]
+      },
+      "reserved_colour": {
+       "description": "колір, що на цій події належить іншій особі",
+       "enum": [
+        "near_white",
+        "unknown"
+       ]
+      },
+      "own_items": {
+       "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\"",
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/own_item"
+       }
+      },
+      "minute": {
+       "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
+       "oneOf": [
+        {
+         "type": "integer",
+         "minimum": 0,
+         "maximum": 59
+        },
+        {
+         "const": "unknown"
+        }
+       ]
+      },
+      "place_words": {
+       "oneOf": [
+        {
+         "$ref": "#/$defs/free_text"
+        },
+        {
+         "const": "unknown"
+        }
+       ],
+       "description": "де вона буде, кількома словами для картки"
+      },
+      "rest": {
+       "oneOf": [
+        {
+         "$ref": "#/$defs/free_text"
+        },
+        {
+         "const": "unknown"
+        }
+       ],
+       "description": "решта її слів цього ходу, що не лягла в жодне поле вище, — дослівно, її мовою"
+      },
+      "stylist_note": {
+       "oneOf": [
+        {
+         "$ref": "#/$defs/free_text"
+        },
+        {
+         "const": "unknown"
+        }
+       ],
+       "description": "лише коли її слова про подію важко витлумачити без контексту (місцевий звичай, сленг, іронія, незвична подія): коротке пояснення для стилістки англійською, що вона має на увазі; інакше — невідомо"
+      },
+      "occasion_part": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "enum": [
+          "sport",
+          "other",
+          "unknown"
+         ],
+         "description": "намір мовної моделі цього ходу: образ для спортивної чи іншої частини дня"
+        }
+       }
+      },
+      "activity": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "що робитиме: з дітьми, по нерівному ґрунту, прогулянка, багато пішки, фотосесія чи зйомка",
+         "enum": [
+          "children",
+          "rough_ground",
+          "stroll",
+          "walking",
+          "photoshoot",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "surface": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "що під ногами",
+         "enum": [
+          "cobblestones",
+          "asphalt",
+          "parquet",
+          "carpet",
+          "grass",
+          "stairs",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "precipitation": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "опади",
+         "enum": [
+          "none",
+          "possible_rain",
+          "rain",
+          "sleet",
+          "downpour",
+          "snow",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "retract": {
+       "description": "межі чи бажання, від яких вона в цих словах відмовилась",
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/thing"
+       }
+      },
+      "beliefs": {
+       "description": "її переконання: що, на її думку, їй не личить чи псує фігуру; з ним не сперечаються",
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/thing"
+       }
+      },
+      "question": {
+       "oneOf": [
+        {
+         "$ref": "#/$defs/free_text"
+        },
+        {
+         "const": "unknown"
+        }
+       ],
+       "description": "питання, яке вона ставить стилістці"
+      },
+      "question_about": {
+       "description": "про що її питання: app — про застосунок (екрани, кнопки, кроки, що робити далі); look — про її образ, речі, фото, стиль чи кольори",
+       "enum": [
+        "app",
+        "look",
+        "unknown"
+       ]
+      },
+      "formality_reason": {
+       "description": "причина щабля драбини",
+       "enum": [
+        "written",
+        "norm",
+        "evaluated",
+        "representing",
+        "her_words",
+        "unknown"
+       ]
+      }
+     }
     },
     "need": {
-     "description": "хто відповідає на цей хід (`ПОТРЕБИ`)",
      "enum": [
       "none",
       "app",
       "look",
-      "build",
-      "unknown"
+      "build"
      ]
     },
     "text": {
-     "type": "string",
-     "description": "відповідь мовної моделі їй: що зрозуміла й записала, і відповідь на її питання, коли need=none; без питань до неї"
-    },
-    "invite_topics": {
-     "description": "теми, до яких `invite` м'яко запрошує",
      "type": "array",
      "items": {
-      "oneOf": [
-       {
-        "const": "occasion",
-        "description": "куди вона збирається"
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "about",
+       "says"
+      ],
+      "properties": {
+       "about": {
+        "type": "array",
+        "items": {
+         "enum": [
+          "event",
+          "occasion",
+          "place",
+          "setting",
+          "duration_h",
+          "movement",
+          "dress_code",
+          "palette",
+          "formality",
+          "hour",
+          "temperature_c",
+          "weather_feel",
+          "intent",
+          "goal",
+          "goal_extra",
+          "goal_zones",
+          "makeup",
+          "jewelry",
+          "registers",
+          "wants",
+          "vetoes",
+          "legs_above_cm",
+          "mood",
+          "part_of_day",
+          "month",
+          "formality_branch",
+          "open_zones",
+          "reserved_colour",
+          "own_items",
+          "minute",
+          "place_words",
+          "rest",
+          "stylist_note",
+          "occasion_part",
+          "activity",
+          "surface",
+          "precipitation",
+          "retract",
+          "beliefs",
+          "question",
+          "question_about",
+          "formality_reason",
+          "her_question"
+         ]
+        }
        },
-       {
-        "const": "goal",
-        "description": "чи хоче вона на цьому виході привертати увагу чи лишитись непомітною"
-       },
-       {
-        "const": "makeup",
-        "description": "який макіяж і яку помаду вона планує"
-       },
-       {
-        "const": "movement",
-        "description": "чи багато вона ходитиме і як довго"
-       },
-       {
-        "const": "temperature",
-        "description": "скільки буде градусів"
-       },
-       {
-        "const": "jewelry",
-        "description": "які прикраси вона хоче з цим образом"
-       },
-       {
-        "const": "register",
-        "description": "у якому стилі вона хоче цей образ"
+       "says": {
+        "type": "string"
        }
+      }
+     }
+    },
+    "invite_topics": {
+     "type": "array",
+     "items": {
+      "enum": [
+       "occasion",
+       "goal",
+       "makeup",
+       "movement",
+       "temperature",
+       "jewelry",
+       "register"
       ]
-     },
-     "maxItems": 3,
-     "uniqueItems": true
+     }
     },
     "invite": {
-     "type": "string",
-     "description": "одне м'яке речення-запрошення розповісти про `invite_topics`: відповідати не мусить, образи зберуться й так"
+     "type": "string"
     },
     "ask_code": {
-     "description": "обовʼязкове питання, яке ставить `ask` (`ОБОВʼЯЗКОВЕ`)",
      "enum": [
       "occasion",
-      "event_place"
+      "event_place",
+      ""
      ]
     },
     "ask": {
-     "type": "string",
-     "description": "одне коротке пряме питання про `ask_code`"
+     "type": "string"
+    },
+    "header": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "hour": {
+       "type": "string"
+      },
+      "temperature_c": {
+       "type": "string"
+      },
+      "precipitation": {
+       "type": "string"
+      },
+      "wants": {
+       "type": "string"
+      },
+      "vetoes": {
+       "type": "string"
+      },
+      "mood": {
+       "type": "string"
+      }
+     }
     }
-   },
-   "required": [
-    "need",
-    "text"
-   ]
+   }
   },
   "screen_message": {
    "type": "object",
@@ -2832,7 +3769,7 @@
          },
          {
           "const": "contrast_mismatch",
-          "description": "the outfit's contrast is deliberately not her own: the face stays in its window and the rest of the lightness ladder shifts; a \"clothes in focus\" move, not a \"flatter the face\" one, hence rarer"
+          "description": "in this move the outfit's contrast differs from her own by design: the face stays in its window and the rest of the lightness ladder shifts; a \"clothes in focus\" move, not a \"flatter the face\" one, hence rarer"
          },
          {
           "const": "contrast_mismatch_levels",
@@ -7091,10 +8028,8 @@
    "date": "побачення",
    "celebration": "свято",
    "wedding_guest": "весілля_гість",
-   "wedding_day": "весілля_денне",
    "mourning": "траур",
-   "formal_evening": "формал_вечір",
-   "formal_day": "формал_день",
+   "formal_event": "офіційний_захід",
    "walk": "прогулянка",
    "theatre": "театр",
    "job_interview": "співбесіда",
@@ -7134,8 +8069,7 @@
    "flight": "подорож_переліт",
    "sport": "спорт",
    "church_service": "церква_служба",
-   "wedding_day": "весілля_денне",
-   "wedding_evening": "весілля_вечірнє",
+   "wedding": "весілля",
    "funeral": "похорон"
   },
   "dress_code": {
@@ -7736,6 +8670,13 @@
   },
   "reserved_colour": {
    "near_white": "near_white"
+  },
+  "formality_reason": {
+   "written": "written",
+   "norm": "norm",
+   "evaluated": "evaluated",
+   "representing": "representing",
+   "her_words": "her_words"
   },
   "formality_branch": {
    "business": "business",
