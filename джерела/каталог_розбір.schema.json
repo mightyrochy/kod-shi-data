@@ -338,6 +338,130 @@
    "tights",
    "watch"
   ],
+  "width_cm": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "shoes",
+   "socks",
+   "swimwear",
+   "tights",
+   "underwear",
+   "watch"
+  ],
+  "hood_detachable": [
+   "bag",
+   "belt",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "ring",
+   "scarf",
+   "shoes",
+   "socks",
+   "tights",
+   "watch"
+  ],
+  "insole_cm": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "shaft_cm": [
+   "bag",
+   "ballet_flats",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "dress_shoes",
+   "earrings",
+   "espadrilles",
+   "glasses",
+   "gloves",
+   "headwear",
+   "heeled_sandals",
+   "jewelry",
+   "loafers",
+   "moccasins",
+   "mules",
+   "necklace",
+   "outerwear",
+   "plimsolls",
+   "pumps",
+   "ring",
+   "sandals",
+   "scarf",
+   "set",
+   "sneakers",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "den": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "shoes",
+   "swimwear",
+   "top",
+   "underwear",
+   "watch"
+  ],
   "sleeve_cut": [
    "bag",
    "belt",
@@ -545,6 +669,56 @@
    "underwear",
    "watch"
   ],
+  "heel.min_cm": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
+  "heel.max_cm": [
+   "bag",
+   "belt",
+   "bottom",
+   "bracelet",
+   "brooch",
+   "collar_necklace",
+   "dress",
+   "earrings",
+   "glasses",
+   "gloves",
+   "headwear",
+   "jewelry",
+   "necklace",
+   "outerwear",
+   "ring",
+   "scarf",
+   "set",
+   "socks",
+   "swimwear",
+   "tights",
+   "top",
+   "underwear",
+   "watch"
+  ],
   "sole": [
    "bag",
    "belt",
@@ -711,7 +885,7 @@
   "metal": "фід_атрибути.метал (_МЕТАЛ_СЛОВНИК)",
   "metal_where": "коду нема",
   "color_main": "verify.назва_кольору (ЛЕКСИКОН, ФОРМИ)",
-  "color_extra": "фід_розбір._СЕП_КОЛЬОРУ (решта слів поля)",
+  "color_extra": "фід_розбір.СЕП_КОЛЬОРУ (решта слів поля)",
   "color_why": "коду нема",
   "color_from": "фід_розбір: param картки, інакше назва",
   "pattern": "verify.клас_мотиву",
@@ -904,6 +1078,7 @@
       "anorak",
       "bomber",
       "poncho",
+      "kimono",
       "beanie",
       "hat",
       "beret",
@@ -1059,6 +1234,7 @@
          "anorak",
          "bomber",
          "poncho",
+         "kimono",
          "beanie",
          "hat",
          "beret",
@@ -1097,6 +1273,7 @@
       "modal",
       "linen",
       "silk",
+      "taffeta",
       "polyester",
       "polyamide",
       "nylon",
@@ -1307,6 +1484,225 @@
       }
      ]
     },
+    "width_cm": {
+     "description": "width of a scarf or garment as a measure",
+     "x-стеля-см-чи-відсоток": 400,
+     "anyOf": [
+      {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "value": {
+         "type": "number",
+         "exclusiveMinimum": 0
+        },
+        "unit": {
+         "enum": [
+          "cm",
+          "mm",
+          "m",
+          "in"
+         ]
+        }
+       }
+      },
+      {
+       "enum": [
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     ]
+    },
+    "length_anchor": {
+     "description": "explicit starting point of the length measurement",
+     "enum": [
+      "shoulder",
+      "waist",
+      "inseam",
+      "unknown"
+     ]
+    },
+    "cut_details": {
+     "type": "array",
+     "items": {
+      "description": "explicit construction details",
+      "enum": [
+       "slit",
+       "corset",
+       "elastic",
+       "shirt",
+       "peplum",
+       "draped",
+       "wrap",
+       "none",
+       "unknown"
+      ]
+     }
+    },
+    "pattern_placement": {
+     "description": "placement of the motif",
+     "enum": [
+      "border",
+      "placed",
+      "all_over",
+      "unknown"
+     ]
+    },
+    "pattern_zone": {
+     "description": "body zone bearing the motif",
+     "enum": [
+      "chest",
+      "back",
+      "arms",
+      "shoulders",
+      "hips",
+      "waist",
+      "hem",
+      "unknown"
+     ]
+    },
+    "carry": {
+     "description": "stated way to carry the bag",
+     "enum": [
+      "hand",
+      "crossbody",
+      "shoulder",
+      "back",
+      "unknown"
+     ]
+    },
+    "hood_detachable": {
+     "description": "hood is detachable",
+     "enum": [
+      "yes",
+      "no",
+      "not_applicable",
+      "unknown"
+     ]
+    },
+    "insole_cm": {
+     "description": "insole length as a measure",
+     "x-стеля-см-чи-відсоток": 50,
+     "anyOf": [
+      {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "value": {
+         "type": "number",
+         "exclusiveMinimum": 0
+        },
+        "unit": {
+         "enum": [
+          "cm",
+          "mm",
+          "m",
+          "in"
+         ]
+        }
+       }
+      },
+      {
+       "enum": [
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     ]
+    },
+    "shaft_cm": {
+     "description": "boot shaft height as a measure",
+     "x-стеля-см-чи-відсоток": 100,
+     "anyOf": [
+      {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "value": {
+         "type": "number",
+         "exclusiveMinimum": 0
+        },
+        "unit": {
+         "enum": [
+          "cm",
+          "mm",
+          "m",
+          "in"
+         ]
+        }
+       }
+      },
+      {
+       "enum": [
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     ]
+    },
+    "den": {
+     "description": "hosiery density in denier",
+     "x-стеля-см-чи-відсоток": 1000,
+     "anyOf": [
+      {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "value": {
+         "type": "number",
+         "exclusiveMinimum": 0
+        },
+        "unit": {
+         "enum": [
+          "den"
+         ]
+        }
+       }
+      },
+      {
+       "enum": [
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     ]
+    },
+    "metal_variants": {
+     "type": "array",
+     "items": {
+      "description": "separately sold metal variants, only when explicitly stated",
+      "enum": [
+       "gold",
+       "rose_gold",
+       "white_gold",
+       "silver",
+       "steel",
+       "brass",
+       "bronze",
+       "copper",
+       "platinum",
+       "none",
+       "unknown"
+      ]
+     }
+    },
     "size_fit": {
      "description": "how the item runs against its size",
      "enum": [
@@ -1514,6 +1910,74 @@
         "unknown"
        ]
       },
+      "min_cm": {
+       "description": "explicit lower bound of the heel height range, not an exact height",
+       "x-стеля-см-чи-відсоток": 40,
+       "anyOf": [
+        {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "value",
+          "unit"
+         ],
+         "properties": {
+          "value": {
+           "type": "number",
+           "exclusiveMinimum": 0
+          },
+          "unit": {
+           "enum": [
+            "cm",
+            "mm",
+            "m",
+            "in"
+           ]
+          }
+         }
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
+      },
+      "max_cm": {
+       "description": "explicit upper bound of the heel height range, not an exact height",
+       "x-стеля-см-чи-відсоток": 40,
+       "anyOf": [
+        {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "value",
+          "unit"
+         ],
+         "properties": {
+          "value": {
+           "type": "number",
+           "exclusiveMinimum": 0
+          },
+          "unit": {
+           "enum": [
+            "cm",
+            "mm",
+            "m",
+            "in"
+           ]
+          }
+         }
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
+      },
       "height_cm": {
        "description": "heel height as a measure",
        "x-стеля-см-чи-відсоток": 40,
@@ -1549,6 +2013,14 @@
        ]
       }
      }
+    },
+    "quilt_orientation": {
+     "description": "orientation of quilting lines",
+     "enum": [
+      "horizontal",
+      "diagonal",
+      "unknown"
+     ]
     },
     "sole": {
      "description": "material or tread of the sole",
@@ -1940,6 +2412,31 @@
      "type": "string",
      "x-стеля-слів": 30,
      "description": "рядок англійською, до 30 слів: фрагменти моделі, чиї цитати тримаються, через кому, або unknown. Вільний текст для функціональної моделі; код його не читає і перевіряє лише форму (рядок, кількість слів, латиниця)"
+    },
+    "evidence": {
+     "type": "object",
+     "additionalProperties": {
+      "type": "object",
+      "required": [
+       "quote",
+       "sources"
+      ],
+      "additionalProperties": false,
+      "properties": {
+       "quote": {
+        "type": "string"
+       },
+       "sources": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
+       },
+       "derived_from": {
+        "type": "string"
+       }
+      }
+     }
     }
    }
   },
@@ -1963,6 +2460,17 @@
     "cut",
     "length",
     "length_cm",
+    "width_cm",
+    "length_anchor",
+    "cut_details",
+    "pattern_placement",
+    "pattern_zone",
+    "carry",
+    "hood_detachable",
+    "insole_cm",
+    "shaft_cm",
+    "den",
+    "metal_variants",
     "size_fit",
     "sleeve",
     "sleeve_cut",
@@ -1980,6 +2488,7 @@
     "vamp",
     "shaft",
     "heel",
+    "quilt_orientation",
     "sole",
     "shoe_width",
     "sole_attachment",
@@ -2209,6 +2718,7 @@
         "anorak",
         "bomber",
         "poncho",
+        "kimono",
         "beanie",
         "hat",
         "beret",
@@ -2407,6 +2917,7 @@
            "anorak",
            "bomber",
            "poncho",
+           "kimono",
            "beanie",
            "hat",
            "beret",
@@ -2458,6 +2969,7 @@
         "modal",
         "linen",
         "silk",
+        "taffeta",
         "polyester",
         "polyamide",
         "nylon",
@@ -2741,6 +3253,330 @@
         "in",
         "unknown"
        ]
+      }
+     }
+    },
+    "width_cm": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value",
+      "unit"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
+      },
+      "unit": {
+       "enum": [
+        "cm",
+        "mm",
+        "m",
+        "in",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "length_anchor": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "shoulder",
+        "waist",
+        "inseam",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "cut_details": {
+     "type": "array",
+     "maxItems": 7,
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "quote",
+       "value"
+      ],
+      "properties": {
+       "quote": {
+        "type": "string",
+        "maxLength": 120
+       },
+       "value": {
+        "enum": [
+         "slit",
+         "corset",
+         "elastic",
+         "shirt",
+         "peplum",
+         "draped",
+         "wrap",
+         "none",
+         "unknown"
+        ]
+       }
+      }
+     }
+    },
+    "pattern_placement": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "border",
+        "placed",
+        "all_over",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "pattern_zone": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "chest",
+        "back",
+        "arms",
+        "shoulders",
+        "hips",
+        "waist",
+        "hem",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "carry": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "hand",
+        "crossbody",
+        "shoulder",
+        "back",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "hood_detachable": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "yes",
+        "no",
+        "not_applicable",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "insole_cm": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value",
+      "unit"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
+      },
+      "unit": {
+       "enum": [
+        "cm",
+        "mm",
+        "m",
+        "in",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "shaft_cm": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value",
+      "unit"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
+      },
+      "unit": {
+       "enum": [
+        "cm",
+        "mm",
+        "m",
+        "in",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "den": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value",
+      "unit"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "enum": [
+          "not_applicable",
+          "unknown"
+         ]
+        }
+       ]
+      },
+      "unit": {
+       "enum": [
+        "den",
+        "unknown"
+       ]
+      }
+     }
+    },
+    "metal_variants": {
+     "type": "array",
+     "maxItems": 4,
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "quote",
+       "value"
+      ],
+      "properties": {
+       "quote": {
+        "type": "string",
+        "maxLength": 120
+       },
+       "value": {
+        "enum": [
+         "gold",
+         "rose_gold",
+         "white_gold",
+         "silver",
+         "steel",
+         "brass",
+         "bronze",
+         "copper",
+         "platinum",
+         "none",
+         "unknown"
+        ]
+       }
       }
      }
     },
@@ -3131,6 +3967,8 @@
       "present",
       "shape",
       "height",
+      "min_cm",
+      "max_cm",
       "height_cm"
      ],
      "properties": {
@@ -3204,6 +4042,80 @@
         }
        }
       },
+      "min_cm": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "anyOf": [
+          {
+           "type": "number"
+          },
+          {
+           "enum": [
+            "not_applicable",
+            "unknown"
+           ]
+          }
+         ]
+        },
+        "unit": {
+         "enum": [
+          "cm",
+          "mm",
+          "m",
+          "in",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "max_cm": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value",
+        "unit"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "maxLength": 120
+        },
+        "value": {
+         "anyOf": [
+          {
+           "type": "number"
+          },
+          {
+           "enum": [
+            "not_applicable",
+            "unknown"
+           ]
+          }
+         ]
+        },
+        "unit": {
+         "enum": [
+          "cm",
+          "mm",
+          "m",
+          "in",
+          "unknown"
+         ]
+        }
+       }
+      },
       "height_cm": {
        "type": "object",
        "additionalProperties": false,
@@ -3240,6 +4152,27 @@
          ]
         }
        }
+      }
+     }
+    },
+    "quilt_orientation": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "quote",
+      "value"
+     ],
+     "properties": {
+      "quote": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "value": {
+       "enum": [
+        "horizontal",
+        "diagonal",
+        "unknown"
+       ]
       }
      }
     },

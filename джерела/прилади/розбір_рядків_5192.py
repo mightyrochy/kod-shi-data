@@ -86,16 +86,16 @@ import збирач_промптів as ЗП                 # noqa: E402
     # лише про стать чи вік обере `kind` і дасть «невідомо» решті (рішення менеджера 22.10, рядок 8860)
     "kind": ("slot", "item_type", "set_kind", "set_parts[].slot", "set_parts[].item_type", "listing_kind", "audience"),
     "fibre": ("fabric", "material", "fabric_kind", "texture", "elastane_pct", "wool_pct"),
-    "fit": ("cut", "size_fit", "elastic_waist", "belt", "veto.oversize", "veto.tight"),
-    "length": ("length", "length_cm", "shaft"),
+    "fit": ("cut", "cut_details[]", "size_fit", "elastic_waist", "belt", "veto.oversize", "veto.tight"),
+    "length": ("length", "length_cm", "width_cm", "length_anchor", "shaft"),
     "sleeve_neck": ("sleeve", "sleeve_cut", "neckline", "collar"),
-    "outerwear": ("closure", "breasted", "hood", "fur_trim", "pile", "quilted", "filling"),
-    "shoe": ("vamp", "heel.present", "heel.shape", "heel.height", "heel.height_cm", "sole",
+    "outerwear": ("closure", "breasted", "hood", "hood_detachable", "fur_trim", "pile", "quilted", "quilt_orientation", "filling"),
+    "shoe": ("vamp", "heel.present", "heel.shape", "heel.height", "heel.height_cm", "heel.min_cm", "heel.max_cm", "insole_cm", "shaft_cm", "sole",
              "shoe_width", "sole_attachment"),
-    "bag": ("bag_size", "strap_cm"),
-    "metal": ("metal", "metal_where", "chain_cm"),
+    "bag": ("bag_size", "strap_cm", "carry"),
+    "metal": ("metal", "metal_where", "metal_variants[]", "chain_cm"),
     "colour": ("color_main", "color_extra[]", "color_why"),
-    "surface": ("pattern", "decor[]", "veto.stripes", "veto.big_print", "veto.print", "veto.shine"),
+    "surface": ("pattern", "pattern_placement", "pattern_zone", "decor[]", "den", "veto.stripes", "veto.big_print", "veto.print", "veto.shine"),
     # про мову назви пише лише сам рядок назви; код мови не визначає (п.12; рішення менеджера 22.10, рядок 8860)
     "name": ("name_language",),
 }
@@ -349,10 +349,10 @@ def sha_тіла(т):
     return hashlib.sha256(json.dumps(т, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
 
 
-def надіслати(т, годинник=None, вид="row"):
+def надіслати(т, годинник=None, вид="row", повтор=None):
     """(текст відповіді, секунд) від LM Studio (`П.АДРЕСА`, MODEL_URL) дорогою прогону А (`П.надіслати`, наряд 4.4):
     швидкий обрив — один повтор із причиною, кожна спроба — у годинник прогону; решта винятків — вгору, у журнал."""
-    return П.надіслати(т, годинник, вид)
+    return П.надіслати(т, годинник, вид, повтор=повтор)
 
 
 def заглушка(т, цитата=""):
@@ -383,7 +383,6 @@ def _виклик(журнал, вид, ід, т, свідок, стоп, мір
         return журнал.готові[(ід, запит)]
     with мірка["лок"]:
         мірка["викликів"] += 1
-        мірка[вид] = мірка.get(вид, 0) + 1          # одиниці годинника (`П.Годинник.прогноз`)
         обрив = стоп is not None and мірка["викликів"] > стоп
     if обрив and мірка["викликів"] > стоп + 1:
         raise Обрив()                                 # решта черги після обриву — без сліду в журналі
@@ -394,16 +393,28 @@ def _виклик(журнал, вид, ід, т, свідок, стоп, мір
     try:
         for спроба in range(1 + П.ПОВТОРІВ_НА_НЕ_JSON):
             т_ = dict(т, seed=спроба) if спроба else т
-            відп, с = заглушка(т_, цитата) if мірка["заглушка"] else надіслати(т_, мірка["годинник"], вид)
+            причина = "invalid_json" if спроба else None
+            if мірка["заглушка"]:
+                початок = time.time()
+                відп, с = заглушка(т_, цитата)
+                мірка["годинник"].записати(dict(стадія=вид, т0=початок, т1=time.time(),
+                                                причина=причина, заглушка=True))
+            else:
+                відп, с = надіслати(т_, мірка["годинник"], вид, повтор=причина)
             секунд += с
             if isinstance(ПР.розібрати_json(відп.replace(КР.ВСТАВКА, "")), dict):
                 break
+        else:
+            raise ValueError("invalid_json: відповіді не розібрано")
     except Exception as е:                            # noqa: BLE001 — впалий виклик названий у журналі
-        журнал.записати(dict(свідок, вид=вид, id=ід, запит=запит, стан="failed", помилка="%s: %s" % (type(е).__name__, е)))
+        журнал.записати(dict(свідок, вид=вид, id=ід, запит=запит, стан="failed", відповідь=відп,
+                            помилка="%s: %s" % (type(е).__name__, е)))
         return None
     подія = dict(свідок, вид=вид, id=ід, запит=запит, стан="done", відповідь=відп, секунд=round(секунд, 1),
                  знаків_запиту=len(т["messages"][0]["content"]), знаків_відповіді=len(відп))
     журнал.записати(подія)
+    with мірка["лок"]:
+        мірка.setdefault("успішних", {})[вид] = мірка.get("успішних", {}).get(вид, 0) + 1
     return подія
 
 
@@ -449,8 +460,9 @@ def прогін(куди, ід_моделі, вибрані, рядки, пар
     finally:
         журнал.закрити()
     # Годинник прогону А (наряд 4.4): Б і А на виборі навантаження (6429, 6546) — однією лічбою стінного часу.
-    П._годинник_у_теку(куди, мірка["годинник"], {"key": (мірка.get("key", 0), len({к for к, _ in рядки.values()})),
-                                                    "row": (мірка.get("row", 0), len(рядки))})
+    успішні = мірка.get("успішних", {})
+    П._годинник_у_теку(куди, мірка["годинник"], {"key": (успішні.get("key", 0), len({к for к, _ in рядки.values()})),
+                                                    "row": (успішні.get("row", 0), len(рядки))})
     print("тека %s · ключів %d (без груп %d) · рядків %d, у модель %d · нових викликів %d · впало %d"
           % (куди, len(ключі), sum(1 for к in ключі if not мапа.get(к)), len(вибрані), len(роботи),
              мірка["викликів"], sum(1 for п in вийшло if п is None)))
