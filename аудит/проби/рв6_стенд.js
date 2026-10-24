@@ -124,8 +124,9 @@ async function чекатиСтан(стор, назва, умова, арг, т
     throw new Error('ТАЙМАУТ очікування стану «' + назва + '» (' + таймаут + ' мс): ' + String(err.message).split('\n')[0]);
   }
 }
-/* елемент за вибірником видно на сторінці — умова для `чекатиСтан` замість окремого очікування елемента */
-const ВИДНО_ЕЛЕМЕНТ = в => { const е = document.querySelector(в); return !!е && е.getClientRects().length > 0; };
+/* елемент за вибірником видно, як у Playwright `visible`: ненульова рамка й `visibility` не `hidden` — умова для `чекатиСтан` замість окремого очікування елемента */
+const ВИДНО_ЕЛЕМЕНТ = в => { const е = document.querySelector(в); if (!е) return false; const р = е.getBoundingClientRect();
+  return р.width > 0 && р.height > 0 && getComputedStyle(е).visibility !== 'hidden'; };
 
 async function режимСтенд(стор, р, таймаут = 30000) {
   await діяІЧекати(стор, () => стор.evaluate(р2 => {
