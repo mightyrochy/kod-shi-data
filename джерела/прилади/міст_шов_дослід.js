@@ -13,7 +13,7 @@
 
    Після 4.1-Б-3 Python живе у воркері: `pyodide_показу` у сторінці нема, рядок береться з `транспортМостуП`, а
    `python_с` — з `ЖУРНАЛ_МОСТА_П` (`мс_python` воркера). Головний потік міряється в обох режимах: long tasks
-   (`PerformanceObserver`) і пульс — таймер 10 мс, проміжки понад 50 мс (рядок 8411: long tasks недолічують). */
+   (`PerformanceObserver`) і пульс — таймер 10 мс, проміжки понад 50 мс (long tasks недолічують). */
 const fs = require('fs'), path = require('path'), zlib = require('zlib'), http = require('http');
 const { chromium } = require('playwright');
 const [СТОРІНКА, ТЕКА_PYODIDE, ВХОДИ, ВИХІД, НАЗВА, ЛИШЕ] = process.argv.slice(2);
