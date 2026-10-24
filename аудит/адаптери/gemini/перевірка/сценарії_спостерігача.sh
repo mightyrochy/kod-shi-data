@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Стенд спостерігача М.9-Б без Windows (pwsh 7, git, python3): локальний «origin», підробний gh (fake_gh.py).
-# 9 сценаріїв: базова лінія, коментарі, CI, перенос, відмови переносу, ворожі назви, збій gh, ліміт рядків, формат теки.
+# 11 сценаріїв: базова лінія, коментарі, CI, перенос, відмови переносу, ворожі назви, збій gh, ліміт рядків, формат теки.
 # Кожен рядок теки перевіряється за шаблонами наряду. pwsh — змінна PWSH.
 H=$(cd "$(dirname "$0")" && pwd); PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 SLUG='М.9-проба-спостерігача'; R=mightyrochy/kod-shi-data; BOT='chatgpt-codex-connector[bot]'
@@ -39,7 +39,9 @@ c=[x for x in c if x['id']!=int(i)]+[{"id":int(i),"user":{"login":l},"created_at
 json.dump(c,open(p,'w'),ensure_ascii=False)
 P
 }
-body() { printf 'Ось diff:\n\n```diff\n' > "$1"; cat "$2" >> "$1"; printf '```\n' >> "$1"; }
+# body <файл> <diff> [нема]: відповідь бота з diff і блоком хешів повного результату ok.diff (з 3-м аргументом — без блоку)
+body() { printf 'Ось diff:\n\n```diff\n' > "$1"; cat "$2" >> "$1"; printf '```\n' >> "$1"
+  if [ -z "${3:-}" ]; then printf '\n```\n%s  a.txt\n%s  нове.txt\n```\n' "$(printf 'один\n2\nтри\n' | git hash-object --stdin)" "$(printf 'новий\n' | git hash-object --stdin)" >> "$1"; fi; }
 patches() { P="$W/patch"; mkdir -p "$P"
   printf 'diff --git a/a.txt b/a.txt\n--- a/a.txt\n+++ b/a.txt\n@@ -1,3 +1,3 @@\n один\n-два\n+2\n три\ndiff --git a/нове.txt b/нове.txt\nnew file mode 100644\n--- /dev/null\n+++ b/нове.txt\n@@ -0,0 +1 @@\n+новий\n' > "$P/ok.diff"
   sed 's/-два/-чотири/' "$P/ok.diff" > "$P/bad.diff"
@@ -101,6 +103,15 @@ step "вісім поганих diff"; body "$W/b.md" "$W/patch/ok.diff"; cmt 18
 printf 'Це лише відповідь без diff\n' > "$W/b.md"; cmt 1801 592 "$BOT" -10 "$W/b.md"; step "відповідь бота без diff: лише коментар"
 body "$W/b.md" "$W/patch/ok.diff"; sleep 1; cmt 1801 501 "$BOT" 0 "$W/b.md"; step "правка bad -> ok: переноситься"
 body "$W/b.md" "$W/patch/ok.diff"; cmt 1801 593 "$BOT" 1 "$W/b.md"; step "TOO_BIG" -MaxDiffKB 0
+echo "=== 5б хеші: обрізаний diff при хешах повного -> HASH_MISMATCH; без блоку хешів -> NO_HASHES"; setup w5b; step "базова лінія"
+head -8 "$W/patch/ok.diff" > "$W/patch/cut.diff"; body "$W/b.md" "$W/patch/cut.diff"; cmt 1801 520 "$BOT" -30 "$W/b.md"
+body "$W/b2.md" "$W/patch/ok.diff" без; cmt 1801 521 "$BOT" -30 "$W/b2.md"; step "обрізаний і без хешів"
+python3 - "$W/b.md" <<'P'
+import sys,re
+p=sys.argv[1]; s=open(p,encoding='utf-8').read(); s=re.sub(r'^[0-9a-f]{40}  нове.txt$','0'*40+'  нове.txt',s,flags=re.M); open(p,'w',encoding='utf-8').write(s)
+P
+sleep 1; body "$W/b.md" "$W/patch/ok.diff"; sed -i 's/^\([0-9a-f]\{40\}\)  a.txt$/'$(printf '0%.0s' $(seq 40))'  a.txt/' "$W/b.md"; sleep 1; cmt 1801 522 "$BOT" 0 "$W/b.md"; step "хеш файлу інший"
+[ "$(git -C "$W/origin.git" rev-parse "refs/heads/codex/$SLUG")" = "$HEAD0" ] && echo "  ✓ гілку не пересунуто" || echo "  ✗ гілка рухалась"
 echo "=== 6 ворожі назви гілок і PR: нічого, крім шаблонів"; setup w6; step "базова лінія"
 pulls "[1801,mightyrochy,$HEAD0,codex/$SLUG]" "[1810,mightyrochy,$(sha e),codex/..evil]" "[1811,mightyrochy,$(sha f),codex/a b]" "[1812,mightyrochy,$(sha g),codex/x;rm]" "[1813,stranger,$(sha h),codex/chuzha]"
 python3 - "$FAKE_GH_DIR/pulls.json" <<'P'
@@ -115,4 +126,4 @@ export FAKE_GH_FAIL=1; watch 2>&1 | grep -q "код виходу: 1" && echo "  
 echo "=== 8 ліміт рядків: 5 нових коментарів при MaxRows 2 -> 3 проходи, без дублів"; setup w8; step "базова лінія"
 for i in 1 2 3 4 5; do cmt 963 80$i mightyrochy -30; done; step "прохід 1" -MaxRows 2; step "прохід 2" -MaxRows 2; step "прохід 3" -MaxRows 2; step "прохід 4" -MaxRows 2
 echo "=== 9 формат теки вихідних для всього, що було у w2..w8"
-for s in w2 w3 w4 w5 w6 w7 w8; do W="${TMPDIR:-/tmp}/gemini-watch/$s"; printf '  %s: ' $s; check_format | tail -1; done
+for s in w2 w3 w4 w5 w5b w6 w7 w8; do W="${TMPDIR:-/tmp}/gemini-watch/$s"; printf '  %s: ' $s; check_format | tail -1; done

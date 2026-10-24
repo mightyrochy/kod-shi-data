@@ -232,8 +232,16 @@ function Get-Diff([string]$Body) {
     $text
 }
 
+# Хеші з відповіді бота: рядки `<40 hex>  <шлях>` поза блоками diff (`git hash-object` кожного зміненого файлу).
+function Get-Hashes([string]$Body) {
+    $t = [regex]::Replace($Body, '(?ms)^```diff[ \t]*\r?\n.*?^```[ \t]*\r?$', '')
+    $h = @{}
+    foreach ($m in [regex]::Matches($t, '(?m)^[ \t>*`-]*([0-9a-f]{40})[ \t]+`?([^\r\n`]+?)`?[ \t]*\r?$')) { $h[$m.Groups[2].Value.Trim()] = $m.Groups[1].Value }
+    $h
+}
+
 # Один diff -> гілка. Повертає код причини ('' — перенесено, рядок уже записано), 'RETRY' — спробувати наступного проходу.
-function Invoke-Transfer($Pr, [string]$CommentId, [string]$Diff, [int]$Tries) {
+function Invoke-Transfer($Pr, [string]$CommentId, [string]$Diff, $Hashes, [int]$Tries) {
     $n = [int]$Pr.Number; $slug = $Pr.Slug; $branch = "codex/$slug"
     $fail = {
         param($code)
@@ -245,6 +253,7 @@ function Invoke-Transfer($Pr, [string]$CommentId, [string]$Diff, [int]$Tries) {
     if ($Diff -notmatch '(?m)^diff --git ') { return (& $fail 'NO_DIFF') }
     if ($Diff -match '(?m)^(GIT binary patch|Binary files )') { return (& $fail 'BINARY') }
     if ($Diff -match '(?m)^(new file mode|old mode|new mode|deleted file mode|index [0-9a-f.]+\.\.[0-9a-f.]+) 1[26]0000') { return (& $fail 'SPECIAL_MODE') }
+    if ($Hashes.Count -eq 0) { return (& $fail 'NO_HASHES') }
     [void](Invoke-Git @('fetch', '-q', '--no-tags', 'origin', "+refs/heads/${branch}:refs/remotes/origin/$branch"))
     $base = Get-RefSha "refs/remotes/origin/$branch"
     if (-not $base) { return (& $fail 'NO_BRANCH') }
@@ -255,9 +264,9 @@ function Invoke-Transfer($Pr, [string]$CommentId, [string]$Diff, [int]$Tries) {
         [void](Invoke-Git @('worktree', 'add', '-q', '--detach', $wt, $base))
         $hasWt = $true
         $g = @('-c', "core.hooksPath=$script:NoHooks", '-c', 'core.autocrlf=false', '-c', 'core.safecrlf=false')
-        $chk = Invoke-Native $GitExe ($g + @('apply', '--check', '--whitespace=nowarn', '-')) $wt 3 $Diff
+        $chk = Invoke-Native $GitExe ($g + @('apply', '--check', '--recount', '--whitespace=nowarn', '-')) $wt 3 $Diff
         if ($chk.Code -ne 0) { Write-WatchLog "apply --check #$n коментар ${CommentId}: $($chk.Err.Trim())"; return (& $fail 'APPLY_FAILED') }
-        $ap = Invoke-Native $GitExe ($g + @('apply', '--whitespace=nowarn', '-')) $wt 3 $Diff
+        $ap = Invoke-Native $GitExe ($g + @('apply', '--recount', '--whitespace=nowarn', '-')) $wt 3 $Diff
         if ($ap.Code -ne 0) { Write-WatchLog "apply #$n коментар ${CommentId}: $($ap.Err.Trim())"; return (& $fail 'APPLY_FAILED') }
         $add = Invoke-Native $GitExe ($g + @('add', '-A')) $wt 3
         if ($add.Code -ne 0) { return (& $fail 'APPLY_FAILED') }
@@ -265,6 +274,15 @@ function Invoke-Transfer($Pr, [string]$CommentId, [string]$Diff, [int]$Tries) {
         if ($names.Count -eq 0) { return (& $fail 'EMPTY') }
         if (@($names | Where-Object { $_ -like '.github/*' -or $_ -like 'аудит/адаптери/*' }).Count -gt 0) { return (& $fail 'FORBIDDEN_PATH') }
         if (@($names | Where-Object { ($_ -split '/') -contains '.git' }).Count -gt 0) { return (& $fail 'FORBIDDEN_PATH') }
+        # Обрізаний diff проходить apply --check і лягає частково: звіряємо множину існуючих файлів і їхні хеші з відповіддю.
+        $got = @{}
+        foreach ($f in $names) {
+            if (-not (Test-Path -LiteralPath (Join-Path $wt $f) -PathType Leaf)) { continue }
+            $got[$f] = (Invoke-Native $GitExe ($g + @('hash-object', '--', $f)) $wt 1).Out.Trim()
+        }
+        $same = ($got.Count -eq $Hashes.Count)
+        foreach ($k in $got.Keys) { if (-not $Hashes.ContainsKey($k) -or $Hashes[$k] -ne $got[$k]) { $same = $false } }
+        if (-not $same) { Write-WatchLog "хеші #$n коментар ${CommentId}: файлів $($got.Count) проти $($Hashes.Count) у відповіді"; return (& $fail 'HASH_MISMATCH') }
         $msg = "Перенос diff Codex з коментаря $CommentId до PR #$n (спостерігач без моделі)"
         $cm = Invoke-Native $GitExe ($g + @('-c', 'user.name=Спостерігач Люстерка', '-c', 'user.email=watcher@users.noreply.github.com',
                 '-c', 'commit.gpgsign=false', 'commit', '-q', '--no-verify', '-m', $msg)) $wt 3
@@ -320,7 +338,7 @@ function Watch-Comments([int]$N, $Pr, [bool]$Baseline, [string]$Since) {
         }
         $diff = Get-Diff ([string](Get-Prop $c 'body'))
         if ($null -eq $diff) { $script:State[$xkey] = "$upd nodiff"; continue }
-        $res = Invoke-Transfer $Pr $id $diff $tries
+        $res = Invoke-Transfer $Pr $id $diff (Get-Hashes ([string](Get-Prop $c 'body'))) $tries
         if ($res -eq 'RETRY') { $script:State[$xkey] = "$upd retry $($tries + 1)" } else { $script:State[$xkey] = "$upd done" }
         Save-State
     }
