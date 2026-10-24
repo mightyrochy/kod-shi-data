@@ -233,8 +233,9 @@ function Get-Sha256Hex([string]$Text) {
 }
 
 function Get-BadLine([string]$Id, [string]$Why) {
+    Write-WrapperLog "стан $Id $Why — не опубліковано"
     if (Test-Seen ('bad ' + (Get-Date -Format 'yyyyMMdd'))) { return $null }
-    "GEMINI ОБГОРТКА: стан $Id $Why — не опубліковано (далі такі — лише в журналі до завтра)."
+    [pscustomobject]@{ Outbox = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID' }
 }
 
 # Один стан -> рядок диспетчерові. Усе в рядку — з переліків цього файлу, перевірених назв і чисел.
@@ -250,7 +251,8 @@ function Get-Line([string]$Id) {
         $check = [string](Get-Prop $s 'check')
         if (-not $script:IsolationChecks.ContainsKey($check)) { return Get-BadLine $Id 'з невідомою перевіркою ізоляції' }
         if (Test-Seen ('isolation ' + $check + ' ' + (Get-Date -Format 'yyyyMMdd'))) { return $null }
-        return "GEMINI ОБГОРТКА: ізоляція не пройшла перевірку ($check — $($script:IsolationChecks[$check])); прогони Gemini стоять, потрібна дія власника."
+        Write-WrapperLog "ізоляція не пройшла перевірку ($check — $($script:IsolationChecks[$check])); прогони Gemini стоять, потрібна дія власника"
+        return [pscustomobject]@{ Outbox = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо ISOLATION_FAILED' }
     }
     if (-not $script:RunCodes.ContainsKey($code)) { return Get-BadLine $Id 'з невідомим кодом' }
     $slug = [string](Get-Prop $s 'slug'); $model = [string](Get-Prop $s 'model'); $n = [string](Get-Prop $s 'n')
@@ -304,7 +306,12 @@ function Get-Line([string]$Id) {
         $what = $(if ($DryRun) { 'ПЕРЕВІРЕНО (без пушу)' } else { 'ОПУБЛІКОВАНО' })
         Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
         # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
-        if ($code -eq 'DONE' -and $head) { return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ГОТОВО $branch $head" } }
+        if ($code -eq 'DONE' -and $head) {
+            # Квота групи (рішення диспетчера 9611): суфікс лише коли стан має групу й відсоток 0–100.
+            $qg = [string](Get-Prop $s 'qgroup')
+            $qs = $(if ($quotaLeft -match '^(?:100|[1-9]?[0-9])$' -and $qg -cmatch '^[A-Z0-9]{2,16}$') { " КВОТА $qg $quotaLeft" } else { '' })
+            return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ГОТОВО $branch $head$qs" }
+        }
         return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $(if ($code -eq 'DONE') { 'NO_HEAD' } else { $code })_PUBLISHED" }
     }
     if (Test-Seen "$queue $marker refused $pc") { return $null }
@@ -342,7 +349,7 @@ function Reset-State([string]$Id) {
 $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
-    "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}\z"
+    "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?\z"
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:gemini|codex|claude)/$script:SlugCore [A-Z0-9_]{2,40}\z"
     '\AСПОСТЕРІГАЧ КОМЕНТАР #[0-9]{1,12} [0-9]{1,20} (?:mightyrochy|chatgpt-codex-connector\[bot\]) (?:новий|змінено)\z'
     '\AСПОСТЕРІГАЧ CI #[0-9]{1,12} [0-9a-f]{40} (?:success|failure|cancelled|timed_out|action_required|neutral|skipped|pending)\z'

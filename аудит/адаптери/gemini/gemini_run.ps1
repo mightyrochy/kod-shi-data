@@ -645,7 +645,7 @@ function Invoke-Task($M) {
         if ($res.Code -eq 'MODEL_INVALID') { $status.models = @(Get-AgyModels) }
         # Залишок квоти після прогону — для рядка кінця наряду.
         $qa = Get-Quota $M.Model
-        if ($qa.Known) { $status.quota = $qa.Left }
+        if ($qa.Known) { $status.quota = $qa.Left; $status.qgroup = $qa.Group }
     } catch {
         $status.code = 'CRASH'
         Write-WrapperLog "збій: $($_.Exception.Message)"

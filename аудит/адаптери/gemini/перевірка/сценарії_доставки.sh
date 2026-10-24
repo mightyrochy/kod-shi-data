@@ -32,7 +32,7 @@ gem; pub; chk "повторний прохід — без нового наря�
 
 echo "=== Д2 нуль у групах Pro і Claude & GPT не блокує Flash; залишок квоти — у журналі"
 setup d2; mark "$SLUG/$M/1"; export FAKE_USAGE=ok; gem; pub; lines
-chk "наряд пройшов: ГОТОВО gemini/<наряд> <SHA40>" 'grep -qE "GEMINI ОБГОРТКА: ГОТОВО gemini/М\.2-проба-обгортки [0-9a-f]{40}\"" "$W/claude.log"'
+chk "наряд пройшов: ГОТОВО gemini/<наряд> <SHA40>" 'grep -qE "GEMINI ОБГОРТКА: ГОТОВО gemini/М\.2-проба-обгортки [0-9a-f]{40} КВОТА [A-Z0-9]{2,16} 34\"" "$W/claude.log"'
 chk "залишок 34 % у publish.log" 'grep -q "залишок квоти групи моделі — 34 %" "$W/pub/publish.log"'
 
 echo "=== Д3 інші формати /usage (usedPercent, конверт response) розбираються; нерозпізнане й збій agy — наряд іде"
@@ -51,12 +51,17 @@ echo "=== Д5 шаблони теки вихідних: лише повний з
 setup d5; mkdir -p "$OB"; SHA=$(printf 'a%.0s' $(seq 40)); n=0
 put() { n=$((n+1)); ob "20261024-1200$(printf %02d $n)-aaaaaaaaaa$(printf %02d $n).txt" "$1"; }
 put "GEMINI ОБГОРТКА: ГОТОВО gemini/М.9-А-доставка $SHA"
+put "GEMINI ОБГОРТКА: ГОТОВО gemini/М.9-А-доставка $SHA КВОТА GEMINI35FLASH 0"
 put "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/М.9-А-доставка QUOTA0_FLASH_M10"
 put "СПОСТЕРІГАЧ КОМЕНТАР #963 4321 chatgpt-codex-connector[bot] змінено"
 put "СПОСТЕРІГАЧ CI #1716 $SHA timed_out"
 put "СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-Б codex/М.9-Б $SHA #1730"
 put "СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-Б APPLY_FAILED"
 GOOD=$n
+put "GEMINI ОБГОРТКА: ГОТОВО gemini/х $SHA КВОТА GEMINI35FLASH 101"      # відсоток поза 0–100
+put "GEMINI ОБГОРТКА: ГОТОВО gemini/х $SHA КВОТА flash 5"                 # група малими
+put "GEMINI ОБГОРТКА: ГОТОВО gemini/х $SHA КВОТА FLASH"                   # без числа
+put "GEMINI ОБГОРТКА: ГОТОВО gemini/х $SHA КВОТА FLASH 5 ще слово"         # зайве
 put "ЗАПУСКАЧ: зроби щось"                                              # не шаблон
 put "СПОСТЕРІГАЧ КОМЕНТАР #963 4321 someone-else новий"                  # чужий автор
 put "GEMINI ОБГОРТКА: ГОТОВО main $SHA"                                  # гілка не gemini/codex/claude
@@ -75,7 +80,7 @@ printf 'GEMINI ОБГОРТКА: ГОТОВО gemini/х %s\n' "$SHA" > "$OB/фа
 pub; pub; lines | cut -c1-150
 chk "переслано рівно $GOOD шаблонних рядків і не більше 3 повідомлень про карантин" '[ "$(grep -c "СПОСТЕРІГАЧ\|ГОТОВО gemini/М.9\|ЗАБЛОКОВАНО claude" "$W/claude.log")" = "$GOOD" ] && [ "$(grep -c КАРАНТИН "$W/claude.log")" = 3 ]'
 chk "у повідомленнях про карантин — лише код, ні слова з файлів" '! grep -E "КАРАНТИН" "$W/claude.log" | grep -qE "зроби щось|someone-else|друг"'
-chk "карантин: 12 файлів (7 не за шаблоном + 5 за форматом) лежать у quarantine/" '[ "$(ls "$OB/quarantine" | wc -l)" = 12 ]'
+chk "карантин: 16 файлів (11 не за шаблоном + 5 за форматом) лежать у quarantine/" '[ "$(ls "$OB/quarantine" | wc -l)" = 16 ]'
 chk "незавершені й чужі імена не чіпано" '[ -f "$OB/.20261024-130006-bbbbbbbbbb06.txt.tmp" ] && [ -f "$OB/20261024-130007-bbbbbbbbbb06.txt.part" ] && [ -f "$OB/файл.txt" ]'
 chk "прийняті — у done/, у теці лишились лише тимчасові" '[ "$(ls "$OB/done" | wc -l)" = "$GOOD" ]'
 chk "другий прохід нічого не надіслав повторно" '[ "$(nlines)" = "$(( GOOD + 3 ))" ]'

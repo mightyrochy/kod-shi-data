@@ -24,6 +24,7 @@ echo "=== 4 claude не приймає: 2 спроби й тиша"; setup r4; m
 echo "=== 5 доробка: старт від опублікованої gemini/<наряд>, спроба 2"; setup r5; mark "$SLUG/$M/1"; gem; pub
   mark "$SLUG/$M/2"; gem; pub; show; grep -o '"start":"[0-9a-f]*"' "$W"/out/*.json | cut -c1-110
 echo "=== 6 ізоляція ENV: один рядок на добу, прогону нема"; setup r6; mark "$SLUG/$M/1"; export FAKE_ISOLATION=ENV; gem; gem; pub; show
+  if grep -q 'stdin": "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо ISOLATION_FAILED"}' "$W/claude.log" 2>/dev/null && [ "$(wc -l < "$W/claude.log")" = 1 ]; then echo "  ✓ ізоляція — один закритий рядок з міткою, без вільного тексту"; else echo "  ✗ рядок ізоляції"; fi
 echo "=== 7 стара позначка, крива назва, не з main, нема файлу наряду"; setup r7
   (cd "$W/seed"; git checkout -q -b old; GIT_COMMITTER_DATE='2026-01-01T00:00:00' git commit -q --allow-empty -m old
    git checkout -q -b side main; git commit -q --allow-empty -m side; git checkout -q main
@@ -39,6 +40,7 @@ echo "=== 9 спам: копії стану з іншими id на ту сам�
     id=20991231-00000$k-aaaaaaaaaaa$k; sed "s/\"id\":\"[^\"]*\"/\"id\":\"$id\"/; s/\"bundle\":\"[^\"]*\"/\"bundle\":\"\"/" "$J" > "$W/out/$id.json"
     echo '{"v":1,"id":"x"}' > "$W/out/20991231-00010$k-bbbbbbbbbbb$k.json"; done
   pub; pub; show
+  if [ "$(grep -c 'ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID' "$W/claude.log")" = 1 ] && ! grep -q 'не за форматом' "$W/claude.log"; then echo "  ✓ криві стани — один закритий рядок STATE_INVALID на добу"; else echo "  ✗ рядок STATE_INVALID"; fi
 echo "=== 10 пуш відхилено: 2 тихі повтори, рядок, -Retry після виправлення"; setup r10; mark "$SLUG/$M/1"; gem
   printf '#!/bin/sh\nexit 1\n' > "$W/origin.git/hooks/pre-receive"; chmod +x "$W/origin.git/hooks/pre-receive"
   P="{\"WorkDir\":\"$W/pub\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"ClaudeExe\":\"$H/fake_claude.py\",\"MaxPushRetries\":2,\"SendRetryDelaySeconds\":0"
