@@ -783,6 +783,18 @@
       "unknown"
      ]
     },
+    "palette": {
+     "description": "схема палітри, яку вона обрала",
+     "enum": [
+      "neutrals_plus_accent",
+      "tonal",
+      "analogous",
+      "muted_complementary",
+      "triad",
+      "color_block",
+      "unknown"
+     ]
+    },
     "formality": {
      "oneOf": [
       {
@@ -2306,6 +2318,10 @@
         "description": "дрес-код, коли його названо"
        },
        {
+        "const": "palette",
+        "description": "схема палітри, яку вона обрала"
+       },
+       {
         "const": "formality",
         "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
        },
@@ -2678,6 +2694,32 @@
           "black_tie",
           "creative_black_tie",
           "white_tie",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "palette": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "схема палітри, яку вона обрала",
+         "enum": [
+          "neutrals_plus_accent",
+          "tonal",
+          "analogous",
+          "muted_complementary",
+          "triad",
+          "color_block",
           "unknown"
          ]
         }
@@ -3329,6 +3371,7 @@
           "duration_h",
           "movement",
           "dress_code",
+          "palette",
           "formality",
           "hour",
           "temperature_c",
