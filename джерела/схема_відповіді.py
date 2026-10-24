@@ -246,7 +246,9 @@ def скелет_мовного_шару():
             "wants": [{"quote": "her exact words about this item",
                        "<attribute>": "only named attributes from thing (" + ", ".join(мова.РІЧ_У_СЛОВАХ) + ")"}],
             "<field>": "every other changed field from codes: a code or number as {quote: her exact words, value: its value}; "
-                       "reserved_colour and open_zones are event norms, without quote",
+                       + "".join("%s also with \"%s\": \"%s\" when her words name it; " % ((о["поле"],) + о["названа"])
+                                 for о in мова.ПОЛЯ_ПАСПОРТА.values() if о.get("названа"))
+                       + "reserved_colour and open_zones are event norms, without quote",
         },
         "need": " | ".join(форма["properties"]["need"]["enum"]),
         "text": [{"about": ["update field codes (" + ", ".join(поля) + ") or her_question"],
@@ -271,6 +273,9 @@ def форма_мовного_шару(визначення=True):
         if опис.get("цитата") == "пара":
             форма = {"type": "object", "additionalProperties": False, "required": ["quote", "value"],
                      "properties": {"quote": {"type": "string", "minLength": 1}, "value": форма}}
+            if опис.get("названа"):
+                ключ, код = опис["названа"]
+                форма["properties"][ключ] = {"enum": [код]}
         поля[поле] = форма
     поля["formality"] = {"enum": [щ["код"] for щ in формальність.ДРАБИНА] + [мова.UNKNOWN]}
     частини = {
