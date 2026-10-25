@@ -44,8 +44,10 @@ if (-not (Test-Path 'C:\ProgramData\gemini-wrapper\gemini_run.ps1')) {
 # --- крок 0 ---
 Step 'Крок 0: клон і git config'
 if (-not (Test-Path "$env:USERPROFILE\kod-shi-data\.git")) {
-    git clone --depth 1 https://github.com/mightyrochy/kod-shi-data "$env:USERPROFILE\kod-shi-data"
+    # М.9-Г: частковий клон без дерева — розріджене дерево без даних крамниць пише сама обгортка (Initialize-Clone).
+    git clone --filter=blob:none --no-checkout https://github.com/mightyrochy/kod-shi-data "$env:USERPROFILE\kod-shi-data"
     if ($LASTEXITCODE -ne 0) { Stop-Here "git clone повернув код $LASTEXITCODE." }
+    git -C "$env:USERPROFILE\kod-shi-data" config gemini.m9g partial
 } else { Write-Host 'Клон уже є.' }
 if (-not (git config --global user.email)) { git config --global user.name 'gemini'; git config --global user.email "gemini@$env:COMPUTERNAME" }
 
