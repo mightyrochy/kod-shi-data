@@ -1,6 +1,7 @@
 /* Рядок 5810: дотик по фото міряє річ під пальцем, а не вікно; дотик у тло — виміру нема, причина кодом. Справжній Chromium 390×844 на
    зібраній сторінці, БЕЗ моделі: пікселі дотику `пікселіДотикуП` → міст «перелік» → вимір. Із джерела:  node проби/дотик_маска_5810.js <html> */
 const fs = require('fs'), { chromium } = require('playwright');
+const { чекатиСтан } = require('./очікування.js');
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined, args: ['--no-sandbox'] });
   try {
@@ -11,7 +12,7 @@ const fs = require('fs'), { chromium } = require('playwright');
       return u.hostname.endsWith('.invalid') ? r.abort() : r.continue(); });
     page.on('pageerror', e => console.log('PAGEERROR', e.message));
     await page.goto('https://probe.invalid/#model_mova=none');
-    await page.waitForFunction(() => typeof document.getElementById('оц-оцінити').onclick === 'function');
+    await чекатиСтан(page, 'кнопка оц-оцінити готова', () => typeof document.getElementById('оц-оцінити').onclick === 'function');
     const р = await page.evaluate(async () => {
       КОЛІР = { шкіра: '#f2d6c4', волосся: '#4a4644', очі: '#6b8cae', кільце: null, точки: null };
       for (const [і, v] of [['мр-зріст', 167], ['мр-плечі', 96], ['мр-груди', 92], ['мр-талія', 74], ['мр-стегна', 100]]) document.getElementById(і).value = v;

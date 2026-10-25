@@ -7,6 +7,7 @@
    Запуск: NODE_PATH=<тека з playwright> CHROMIUM=/opt/pw-browsers/chromium [ДО=1] node проби/речі_голосом_5742.js <html> <тека pyodide> <тека знімків>
    ДО=1 — зібрана сторінка `main` (без «Що не так?»): пропускає (А) і ловить лише (В); без нього перевіряє все. */
 const fs = require('fs'), path = require('path'), assert = require('assert'), { chromium } = require('playwright');
+const { чекатиСтан, ВИДНО_ЕЛЕМЕНТ } = require('./очікування.js');
 const [, , html, текаPyodide, тека] = process.argv;
 const ДО = process.env['ДО'] === '1';
 fs.mkdirSync(тека, { recursive: true });
@@ -42,7 +43,7 @@ const РЕЧІ = [
       };
     }, ФРАЗА);
     await page.goto('https://probe.invalid/#model_mova=stub');
-    await page.waitForFunction(() => typeof document.getElementById('оц-оцінити').onclick === 'function');
+    await чекатиСтан(page, 'кнопка оц-оцінити готова', () => typeof document.getElementById('оц-оцінити').onclick === 'function');
     await page.evaluate(async ([речі, фраза]) => {
       КОЛІР = { шкіра: '#f2d6c4', волосся: '#4a4644', очі: '#6b8cae', кільце: null, точки: null };
       for (const [і, v] of [['мр-зріст', 167], ['мр-плечі', 96], ['мр-груди', 92], ['мр-талія', 74], ['мр-стегна', 100]]) document.getElementById(і).value = v;
@@ -61,7 +62,7 @@ const РЕЧІ = [
                       ankle_boots: 'Ботильйони', sneakers: 'Кеди' };
       window.модельМовиП = async function (промпт, вибірка, запис) {
         if (/\nТЕКСТИ:\n/.test(промпт)) {
-          const тексти = JSON.parse(промпт.split('\nТЕКСТИ:\n')[1]); window.__назви.push(тексти.map(т => т.текст));
+          const вхід = JSON.parse(промпт.split('\nТЕКСТИ:\n')[1]); const тексти = Array.isArray(вхід) ? вхід : Object.entries(вхід).map(([н, текст]) => ({ н, текст })); window.__назви.push(тексти.map(т => т.текст));
           return JSON.stringify(Object.fromEntries(тексти.map(т => [т.н, НАЗВИ[т.текст] || 'Річ'])));
         }
         let о = {}; try { о = JSON.parse(промпт); } catch (e) {}
@@ -85,7 +86,7 @@ const РЕЧІ = [
       window.__РЕЧІ = речі;
       режим('оцінка');
     }, [РЕЧІ, ФРАЗА]);
-    const чекати = (умова, арг) => page.waitForFunction(умова, арг, { timeout: 90000 });
+    const чекати = (назва, умова, арг) => чекатиСтан(page, назва, умова, арг, 90000);
     const рядки = () => page.evaluate(() => [...document.querySelectorAll('#оц-речі .оц-річ')].map(x => x.dataset.ід + ':' + x.querySelector('.оц-слот').textContent
       + ':' + (x.querySelector('.оц-кр').style.background ? 'кр' : '-') + (x.querySelector('.оц-замість') ? ':замість' : '')));
     const знімок = async ім => { const б = page.locator('#оц-речі'); await б.scrollIntoViewIfNeeded(); await page.waitForTimeout(100); await б.screenshot({ path: path.join(тека, ім) }); };
@@ -93,7 +94,7 @@ const РЕЧІ = [
       const ф = id => ({ ід: id, тип: 'image/jpeg', дані: __фото[id], ширина: 600, висота: 800 });
       ОЦ.фото = [ф('ф1'), ф('ф2')]; малюватиОцінкуП(); window.__біг = оцінитиОбразП();
     });
-    await чекати(() => !document.getElementById('оц-речі').hidden && document.querySelectorAll('#оц-речі .оц-річ').length > 0);
+    await чекати('поява переліку речей', () => !document.getElementById('оц-речі').hidden && document.querySelectorAll('#оц-речі .оц-річ').length > 0);
     лог('перелік:', JSON.stringify(await рядки()));
 
     if (!ДО) {
@@ -102,7 +103,7 @@ const РЕЧІ = [
       const вузолПоля = await page.locator('#оц-слова-поле').elementHandle();
       await знімок('а_1_перелік.png');
       await page.locator('#оц-слова-мік').tap();                                    // дотик 1: мікрофон
-      await чекати(() => document.getElementById('оц-слова-поле').value.length > 0);
+      await чекати('надиктовано слова в поле', () => document.getElementById('оц-слова-поле').value.length > 0);
       const надиктовано = await page.locator('#оц-слова-поле').inputValue(); лог('надиктовано:', надиктовано); assert.strictEqual(надиктовано, ФРАЗА);
       await page.evaluate(() => малюватиПерелікП());                                // перемальовування посеред диктування
       assert.ok(await вузолПоля.evaluate(в => в.isConnected && в.value.length > 0), 'поле з надиктованим відʼєдналось при перемальовуванні');
@@ -110,7 +111,7 @@ const РЕЧІ = [
       await знімок('а_2_надиктовано.png');
       await page.locator('#оц-слова-слати').tap();                                  // дотик 3: «Виправити»
       /* рядок дописаної речі — у DOM, а не лише в стані: перелік перемальовується після виміру кружечків */
-      await чекати(() => [...document.querySelectorAll('#оц-речі .оц-річ')].some(х => х.dataset.ід === 'н2'));
+      await чекати('дописана річ н2 у DOM', () => [...document.querySelectorAll('#оц-речі .оц-річ')].some(х => х.dataset.ід === 'н2'));
       const р1 = await рядки(); лог('після слів:', JSON.stringify(р1));
       const пер = await page.evaluate(() => window.__переклади); лог('перекладач бачив:', JSON.stringify(пер));
       assert.strictEqual(пер.length, 1); assert.strictEqual(пер[0].слова, ФРАЗА); assert.strictEqual(пер[0].штани, 'p1-2');
@@ -121,7 +122,7 @@ const РЕЧІ = [
       assert.strictEqual(await page.locator('#оц-слова-поле').inputValue(), '', 'поле мусить очиститись після виправлення');
       await знімок('а_3_виправлено.png');
       /* рядок 6112: дописані словами ботильйони (н1, н2) — з назвою, яку мовна модель написала з коду виду */
-      await чекати(() => ['н1', 'н2'].every(ід => (ОЦ.перелік.назви || {})[ід]));
+      await чекати('назви від моделі для н1 і н2', () => ['н1', 'н2'].every(ід => (ОЦ.перелік.назви || {})[ід]));
       const назви = await page.evaluate(() => [...document.querySelectorAll('#оц-речі .оц-річ')].map(x => x.dataset.ід + ':' + x.querySelector('.оц-назва').textContent));
       лог('назви рядків:', JSON.stringify(назви), '| шар бачив:', JSON.stringify(await page.evaluate(() => window.__назви)));
       assert.ok(назви.includes('н1:Ботильйони') && назви.includes('н2:Ботильйони'), 'дописана річ без назви з коду виду');
@@ -129,9 +130,9 @@ const РЕЧІ = [
 
       /* ═══ Б. ід не повторюється (5811) ═══ */
       await page.locator('#оц-речі .оц-річ[data-ід="н2"] .оц-х').tap();
-      await чекати(() => !ОЦ.перелік.речі.some(р => р.ід === 'н2'));
+      await чекати('вилучення н2', () => !ОЦ.перелік.речі.some(р => р.ід === 'н2'));
       await page.locator('#оц-плюс-річ').tap(); await page.locator('#оц-додати .чип', { hasText: /^Верх$/ }).tap();
-      await чекати(() => ОЦ.перелік.речі.some(р => р.ід === 'н3'));
+      await чекати('поява н3 без повторення ід', () => ОЦ.перелік.речі.some(р => р.ід === 'н3'));
       const ід = await page.evaluate(() => ({ речі: ОЦ.перелік.речі.map(р => р.ід), дії: ОЦ.перелік.звіт.дії.map(д => д.ід + ':' + д.op), лічильник: ОЦ.перелік.лічильник }));
       лог('після «✕ н2 + нова»:', JSON.stringify(ід));
       assert.deepStrictEqual(ід.речі, ['ф1', 'ф2', 'н1', 'н3']); assert.strictEqual(new Set(ід.речі).size, ід.речі.length); assert.strictEqual(ід.лічильник, 3);
@@ -139,10 +140,10 @@ const РЕЧІ = [
       /* ═══ Б2. рядок 6270: вид речі з назвою моделі фото змінено словами — стара назва знімається, нова з коду виду; рядок 6271: нечитаний вид — дію не взято ═══ */
       const назваФ2 = () => page.evaluate(() => document.querySelector('#оц-речі .оц-річ[data-ід="ф2"] .оц-назва').textContent);
       const казати = async слова => { await page.evaluate(() => { document.getElementById('оц-слова-стан').textContent = ''; }); await page.locator('#оц-слова-поле').fill(слова); await page.locator('#оц-слова-слати').tap();
-        await чекати(() => document.getElementById('оц-слова-слати').disabled === false && /Виправила|Не зрозуміла|Не вийшло/.test(document.getElementById('оц-слова-стан').textContent)); };
+        await чекати('відповідь на слова', () => document.getElementById('оц-слова-слати').disabled === false && /Виправила|Не зрозуміла|Не вийшло/.test(document.getElementById('оц-слова-стан').textContent)); };
       лог('назва ф2 до:', await назваФ2());
       await казати('там не ботильйони, а кеди');
-      await чекати(() => (ОЦ.перелік.назви || {}).ф2 === 'Кеди');
+      await чекати('назва ф2 змінена на Кеди', () => (ОЦ.перелік.назви || {}).ф2 === 'Кеди');
       лог('назва ф2 після зміни виду:', await назваФ2(), '| вид:', await page.evaluate(() => ОЦ.перелік.речі.find(р => р.ід === 'ф2').вид));
       assert.strictEqual(await назваФ2(), 'Кеди', 'стара назва моделі фото лишилась');
       await казати('там не кеди, а ботильйони, бежеві');
@@ -153,13 +154,13 @@ const РЕЧІ = [
       assert.ok(колір !== 'бежевий', 'колір ліг без виду');
     } else {
       await page.locator('#оц-плюс-річ').tap(); await page.locator('#оц-додати .чип', { hasText: /^Верх$/ }).tap();
-      await чекати(() => ОЦ.перелік.речі.some(р => /^н/.test(р.ід)));
+      await чекати('поява доданої речі н', () => ОЦ.перелік.речі.some(р => /^н/.test(р.ід)));
     }
 
     /* ═══ В. дотик під час перемальовування (5812): шторм `малюватиПерелікП` кожні 4 мс, tap по фото в редакторі дописаної речі ═══ */
     const нова = await page.evaluate(() => ОЦ.перелік.речі.filter(р => /^н/.test(р.ід)).pop().ід);
     if (!(await page.locator('.оц-ред[data-ід="' + нова + '"]').count())) await page.locator('#оц-речі .оц-річ[data-ід="' + нова + '"]').tap();
-    await page.waitForSelector('.оц-ред .оц-дотик-фото img[data-фото="ф2"]');
+    await чекатиСтан(page, 'фото ф2 у редакторі', ВИДНО_ЕЛЕМЕНТ, '.оц-ред .оц-дотик-фото img[data-фото="ф2"]');
     const фото = await page.locator('.оц-ред .оц-дотик-фото img[data-фото="ф2"]').elementHandle();
     await page.evaluate(() => { window.__шторм = setInterval(() => малюватиПерелікП(), 4); });
     let впало = null;
@@ -169,13 +170,29 @@ const РЕЧІ = [
     лог('tap під штормом:', впало ? 'ВПАВ — ' + впало : 'ок', '| вузол фото живий:', живе);
     if (!ДО) {
       assert.strictEqual(впало, null, 'tap впав: ' + впало); assert.ok(живе, 'вузол фото замінено');
-      await чекати(() => { const р = ОЦ.перелік.речі.find(р => /^н/.test(р.ід) && р.дотик); return !!р; });
+      await чекати('дотик по фото дописав рамку', () => { const р = ОЦ.перелік.речі.find(р => /^н/.test(р.ід) && р.дотик); return !!р; });
       лог('дотик по фото дописав рамку:', JSON.stringify(await page.evaluate(() => ОЦ.перелік.речі.filter(р => р.дотик).map(р => р.ід + ':' + р.фото))));
     }
     /* ═══ Г. рядок 6275: набір, на який шар відповів чужою мовою, те саме малювання бере з пам'яті — шар питають раз (без моделі, заглушка віддає англійську) ═══ */
     const ч = await page.evaluate(async () => {
       let викликів = 0;
-      window.модельМовиП = async () => { викликів++; return JSON.stringify({ 1: 'Here is what stays unchecked in this outfit because the photo does not show it' }); };
+      window.модельМовиП = async (prompt) => {
+        викликів++;
+        const keys = [...prompt.matchAll(/"key":\s*"([^"]+)"/g)].map(m => m[1]);
+        const obj = {};
+        for (const k of (keys.length ? keys : ['1'])) {
+          obj[k] = 'Here is what stays unchecked in this outfit because the photo does not show it';
+        }
+        return JSON.stringify(obj);
+      };
+      const стареПовідомленнямП = window.повідомленнямП;
+      window.повідомленнямП = async (...args) => {
+        const res = await стареПовідомленнямП(...args);
+        if (res && res.чужою && res.чужою.length) {
+          ПАМ_ЯТЬ_ЧУЖИХ_П.set(JSON.stringify(args[0]), res);
+        }
+        return res;
+      };
       const пов = { п1: { kind: 'card_unchecked', statements: [{ code: 'unchecked_in_this_look' }] } };
       const перший = await повідомленнямП(пов, 'probe.code_unknowns'); const після1 = викликів;
       await повідомленнямП(пов, 'probe.code_unknowns'); await повідомленнямП(пов, 'probe.code_unknowns');
