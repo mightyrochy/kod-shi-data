@@ -44,9 +44,10 @@ $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
 # Імена моделей у рядку ПУЛИ (9740): родини gemini/claude/gpt, до 6 імен — вільного тексту з pools.json (пише gemini) нема.
 $script:PoolModelPattern = '^(gemini|claude|gpt)-[a-z0-9.-]{1,36}$'
-# Шляхи й вміст, яких у гілці gemini/* бути не може (9739); вміст — ERE для `git log -G` по кожному коміту.
+# Шляхи й вміст, яких у гілці gemini/* бути не може (9739); вміст — регулярний вираз .NET із урахуванням регістру
+# (-cmatch) по кожному об'єкту бандла (Test-SecretObjects). `sk-` — лише з лівою межею (9745): `task-…`, `risk-…` не токен.
 $script:SecretPathPattern = '(^|/)auth\.json$|(^|/)\.codex(/|$)|(^|/)\.config/gh(/|$)'
-$script:SecretContentPattern = 'eyJ[A-Za-z0-9_-]{10,}|sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|refresh_token|BEGIN [A-Z ]*PRIVATE KEY'
+$script:SecretContentPattern = 'eyJ[A-Za-z0-9_-]{10,}|(?<![A-Za-z0-9_-])sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|refresh_token|BEGIN [A-Z ]*PRIVATE KEY'
 $script:IdPattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}$'
 $script:ShaPattern = '^[0-9a-f]{40}$'
 $script:Utf8Strict = New-Object System.Text.UTF8Encoding($false, $true)
@@ -134,9 +135,9 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirector
     [pscustomobject]@{ Code = $p.ExitCode; Out = $out.Result; Err = $err.Result }
 }
 
-function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail) {
+function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail, [string]$StdIn = $null) {
     $all = @('--git-dir', $script:Repo, '-c', "core.hooksPath=$script:NoHooks", '-c', 'core.quotepath=false') + $GitArgs
-    $r = Invoke-Native $GitExe $all $WorkDir
+    $r = Invoke-Native $GitExe $all $WorkDir 10 $StdIn
     if ($r.Code -ne 0 -and -not $AllowFail) { throw "git $($GitArgs -join ' ') -> $($r.Code): $($r.Err.Trim())" }
     $r
 }
@@ -163,6 +164,19 @@ function Get-Paths([string[]]$GitArgs) {
 }
 
 # Бандл -> перевірки -> пуш. Повертає [код, число файлів]; код OK — опубліковано (чи DryRun).
+# Вміст усіх об'єктів, яких нема в main, — рівно те, що несе бандл у відкритий репозиторій: коміти (і злиття), їхні
+# повідомлення, тексти й двійкові файли. `git log -G` бачив лише текстові зміни не-злиттів (9744). Дерева — без
+# вмісту: шляхи перевіряє SecretPathPattern.
+function Test-SecretObjects([string]$Head, [string]$Main) {
+    $ids = (Invoke-Git @('rev-list', '--objects', '--no-object-names', $Head, '--not', $Main)).Out
+    if (-not $ids.Trim()) { return $false }
+    $kinds = (Invoke-Git @('cat-file', '--batch-check=%(objecttype) %(objectname)') -StdIn $ids).Out -split "`n"
+    $want = @($kinds | Where-Object { $_ -match '^(commit|blob|tag) ' } | ForEach-Object { ($_ -split ' ')[1] })
+    if ($want.Count -eq 0) { return $false }
+    $body = (Invoke-Git @('cat-file', '--batch') -StdIn (($want -join "`n") + "`n")).Out
+    $body -cmatch $script:SecretContentPattern
+}
+
 function Publish-Bundle($S, [string]$Id) {
     $src = Join-Path $OutDir ($Id + '.bundle')
     if ((Get-Prop $S 'bundle') -ne ($Id + '.bundle') -or -not (Test-Path -LiteralPath $src -PathType Leaf)) { return @('BUNDLE_MISSING', 0) }
@@ -192,7 +206,7 @@ function Publish-Bundle($S, [string]$Id) {
             if (@($all | Where-Object { $_.StartsWith($WrapperDir) }).Count -gt 0) { return @('WRAPPER_FILES', $net.Count) }
             # Секрети (9739): токен Codex/gh лежить у профілі gemini, модель його читає — у відкритий репозиторій він не йде.
             if (@($all | Where-Object { $_ -match $script:SecretPathPattern }).Count -gt 0) { return @('SECRET', $net.Count) }
-            if ((Invoke-Git @('log', '--no-merges', '--format=%H', '-G', $script:SecretContentPattern, "$main..$head")).Out.Trim()) { return @('SECRET', $net.Count) }
+            if (Test-SecretObjects $head $main) { return @('SECRET', $net.Count) }
             $remote = Get-RefSha "refs/remotes/origin/gemini/$slug"
             if ($remote -and (Invoke-Git @('merge-base', '--is-ancestor', $remote, $head) -AllowFail).Code -ne 0) { return @('NOT_FF', $net.Count) }
             if ($DryRun) { return @('OK', $net.Count) }

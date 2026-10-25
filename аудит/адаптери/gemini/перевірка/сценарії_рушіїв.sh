@@ -25,6 +25,11 @@ EXTRA='{"CodexFallbackModel":"gpt-6.1-sol-high"}' case_ codex-off-fallback "FAKE
 # секрети в гілці (9739): шлях і вміст
 case_ secret-path    "X=1" secret_path    gemini-3.5-flash 'ЗАБЛОКОВАНО gemini/М.2-проба-обгортки SECRET'
 case_ secret-content "X=1" secret_content gemini-3.5-flash 'ЗАБЛОКОВАНО gemini/М.2-проба-обгортки SECRET'
+# сканер бачить кожен об'єкт бандла (9744): двійковий файл, злиття, повідомлення; `task-`/`risk-` не токен (9745)
+case_ secret-binary  "X=1" secret_binary  gemini-3.5-flash 'ЗАБЛОКОВАНО gemini/М.2-проба-обгортки SECRET'
+case_ secret-merge   "X=1" secret_merge   gemini-3.5-flash 'ЗАБЛОКОВАНО gemini/М.2-проба-обгортки SECRET'
+case_ secret-message "X=1" secret_message gemini-3.5-flash 'ЗАБЛОКОВАНО gemini/М.2-проба-обгортки SECRET'
+case_ sk-word        "X=1" sk_word        gemini-3.5-flash 'ГОТОВО gemini/М.2-проба-обгортки'
 # каскад моделей за пулом (М.9-В, доповнення): код — flash → Codex; проєктування — pro → claude-opus-5-5-high → Codex
 case_ cascade-code-stays "X=1"                abandon_then_done gemini-3.5-flash     'МОДЕЛЬ gemini-3.5-flash'
 EXTRA='{"EnableCodex":true,"CodexFallbackModel":"gpt-6.1-sol-high"}' case_ cascade-design-claude "FAKE_USAGE=proclaude" abandon_then_done gemini-3.1-pro-high 'МОДЕЛЬ claude-opus-5-5-high'

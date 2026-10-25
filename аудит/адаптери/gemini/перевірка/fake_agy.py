@@ -82,6 +82,26 @@ def act(prompt):
         commit('.codex/auth.json', '{}'); return 'SUCCESS', done(), ''
     if SC == 'secret_content':
         commit('робота/нотатки.md', 'token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'); return 'SUCCESS', done(), ''
+    # 9744: токен там, де `git log -G` без --text і з --no-merges його не бачив; 9745: `task-…` — не токен
+    tok = 'gh' + 'p_' + 'A1b2C3d4E5f6G7h8I9j0K1l2'
+    if SC == 'secret_binary':
+        os.makedirs('робота', exist_ok=True)
+        open('робота/знімок.bin', 'wb').write(b'\x00\x01PNG\x00' + tok.encode() + b'\x00\xff')
+        git('add', 'робота/знімок.bin'); git('-c', 'user.name=g', '-c', 'user.email=g@x', 'commit', '-q', '-m', 'bin')
+        return 'SUCCESS', done(), ''
+    if SC == 'secret_merge':
+        base = git('rev-parse', 'HEAD'); commit('робота/ж.txt'); git('checkout', '-q', '-b', 'бік', base); commit('робота/з.txt')
+        br = git('rev-parse', 'HEAD'); git('checkout', '-q', '-'); git('branch', '-q', '-D', 'бік')
+        git('-c', 'user.name=g', '-c', 'user.email=g@x', 'merge', '-q', '--no-ff', '--no-commit', br)
+        open('робота/з.txt', 'a').write(tok + '\n'); git('add', 'робота/з.txt')
+        git('-c', 'user.name=g', '-c', 'user.email=g@x', 'commit', '-q', '-m', 'злиття')
+        return 'SUCCESS', done(), ''
+    if SC == 'secret_message':
+        os.makedirs('робота', exist_ok=True); open('робота/и.txt', 'w').write('x\n'); git('add', 'робота/и.txt')
+        git('-c', 'user.name=g', '-c', 'user.email=g@x', 'commit', '-q', '-m', 'крок\n\n' + tok)
+        return 'SUCCESS', done(), ''
+    if SC == 'sk_word':
+        commit('робота/і.md', 'task-' + 'abcdefghijklmnopqrstuvwxyz risk-' + 'ABCDEFGHIJKLMNOPQRST'); return 'SUCCESS', done(), ''
     if SC == 'github_renamed':
         commit('.github/workflows/z.yml'); git('mv', '.github/workflows/z.yml', 'z.yml')
         git('-c', 'user.name=g', '-c', 'user.email=g@x', 'commit', '-q', '-m', 'mv'); return 'SUCCESS', done(), ''
