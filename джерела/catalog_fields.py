@@ -18,10 +18,7 @@ def поля(річ):
     """Повертає повний розбір речі, зберігаючи unknown і not_applicable окремо."""
     розбір = річ.get("розбір")
     if not isinstance(розбір, dict):
-        ід = річ.get("id_жниварки") or річ.get("id")
-        розбір = КК.поля(ід)
-        if not розбір and "@" in str(ід or ""):
-            розбір = КК.поля(str(ід).split("@", 1)[0])
+        розбір = КК.поля(річ.get("id"))
     фото = фото_тип(річ)
     if фото and фото.get("status") == "classified" and розбір.get("item_type", НЕВІДОМО) == НЕВІДОМО:
         розбір = dict(розбір, item_type=фото["item_type"], slot=фото["slot"],
