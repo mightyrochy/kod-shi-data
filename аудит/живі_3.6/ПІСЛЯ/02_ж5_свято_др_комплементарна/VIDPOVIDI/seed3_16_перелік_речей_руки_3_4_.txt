@@ -1,0 +1,44 @@
+── ПРОМПТ (2288 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored wool-blend blazer in deep forest green with notched lapels, mid-thigh length, hex code #2E4A3D.\nSilk-cotton crepe blouse in cream with a subtle sheen, relaxed fit, hem at the hip, hex code #FFFDD0.\nHigh-waisted wool trousers in charcoal grey with a slight stretch, straight leg, cropped at the ankle, hex code #36454F.\nLeather loafers in oxblood red, suede finish, hex code #741122.\nGold-fill stud earrings and a matching leather belt to cinch the waist.\n\nThis outfit works perfectly for an autumn birthday celebration at 18°C as it adheres strictly to the \"smart\" dress code while remaining comfortable for daytime events. The forest green blazer adds warmth without being heavy, appropriate for the mild temperature where no outer layer is needed. The combination of structured tailoring and soft silk textures strikes the right balance between polished sophistication and relaxed ease suitable for a party with friends."}
+
+── ВІДПОВІДЬ (901 симв., 66.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Tailored blazer",
+      "details": "Wool-blend, notched lapels, mid-thigh length",
+      "slot": "outerwear",
+      "color_hex": "#2E4A3D",
+      "worn": true
+    },
+    {
+      "name": "Silk-cotton crepe blouse",
+      "details": "Subtle sheen, relaxed fit, hem at the hip",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "Wool trousers",
+      "details": "Slight stretch, straight leg, cropped at the ankle",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Leather loafers",
+      "details": "Suede finish",
+      "slot": "shoes",
+      "color_hex": "#741122",
+      "worn": true
+    },
+    {
+      "name": "Gold-fill stud earrings",
+      "details": null,
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
