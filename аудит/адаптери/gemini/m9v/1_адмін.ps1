@@ -25,16 +25,27 @@ $expected = Import-PowerShellDataFile (Join-Path $here 'хеші.psd1')
 $pubFile = "$env:USERPROFILE\gemini-publish\gemini_publish.ps1"
 foreach ($f in @(@('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('gemini_publish.ps1', $pubFile))) {
     if (-not (Test-Path $f[1])) { Stop-Here "нема $($f[1]): спершу 0_власник.ps1 (у цьому ж обліковому записі, не іншим адміністратором)." }
-    $got = (Get-FileHash $f[1] -Algorithm SHA256).Hash
-    if ($got -ne $expected[$f[0]]) { Stop-Here "хеш $($f[0]) не збігся з хеші.psd1: маємо $got. Запусти 0_власник.ps1 знову; не допомогло — диспетчерові." }
 }
 
 Step 'Крок 3: тека обгортки gemini лише для читання'
 $run = 'C:\ProgramData\gemini-wrapper'
 New-Item -ItemType Directory -Force $run | Out-Null
-Copy-Item "$env:TEMP\gemini_run.ps1" "$run\gemini_run.ps1" -Force
 icacls $run /inheritance:r /grant:r "*S-1-5-18:(OI)(CI)F" "*S-1-5-32-544:(OI)(CI)F" "${env:USERNAME}:(OI)(CI)F" "gemini:(OI)(CI)RX"
 if ($LASTEXITCODE -ne 0) { Stop-Here "icacls повернув код $LASTEXITCODE." }
+# Звірка без вікна підміни (9742): $env:TEMP пише звичайний користувач, тож «звірити файл, потім скопіювати» лишало вікно.
+# gemini_run.ps1 копіюємо в ProgramData (звичайний користувач туди не пише), хеш рахуємо вже з копії; розбіжність — копію
+# видаляємо й падаємо. gemini_publish.ps1 лишається у профілі власника (задача gemini-publish запускає його звідти): байти
+# читаємо раз, хеш — з пам'яті.
+$dst = Join-Path $run 'gemini_run.ps1'
+Copy-Item "$env:TEMP\gemini_run.ps1" "$run\gemini_run.ps1" -Force
+$got = (Get-FileHash $dst -Algorithm SHA256).Hash
+if ($got -ne $expected['gemini_run.ps1']) {
+    Remove-Item $dst -Force -ErrorAction SilentlyContinue
+    Stop-Here "хеш gemini_run.ps1 у ProgramData не збігся з хеші.psd1: маємо $got; файл видалено. Запусти 0_власник.ps1 знову; не допомогло — диспетчерові."
+}
+$sha = [System.Security.Cryptography.SHA256]::Create()
+$got = ([BitConverter]::ToString($sha.ComputeHash([System.IO.File]::ReadAllBytes($pubFile))) -replace '-', '')
+if ($got -ne $expected['gemini_publish.ps1']) { Stop-Here "хеш gemini_publish.ps1 не збігся з хеші.psd1: маємо $got. Запусти 0_власник.ps1 знову; не допомогло — диспетчерові." }
 
 Step 'Крок 5: дві задачі планувальника'
 $set = @{ MultipleInstances = 'IgnoreNew'; AllowStartIfOnBatteries = $true; DontStopIfGoingOnBatteries = $true; StartWhenAvailable = $true }

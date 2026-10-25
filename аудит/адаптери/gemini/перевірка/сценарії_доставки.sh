@@ -17,7 +17,8 @@ mark() { git -C "$W/seed" push -q origin "main:refs/heads/gemini-queue/$1" 2>/de
 lines() { python3 -c "import json,sys
 for l in open('$W/claude.log', encoding='utf-8'):
     print('  → ' + json.loads(l)['stdin'])" 2>/dev/null; }
-nlines() { [ -f "$W/claude.log" ] && wc -l < "$W/claude.log" || echo 0; }
+# рядок ПУЛИ (pools.json від gemini) іде окремо, раз на 3 год — у лічильник доставлених рядків не входить
+nlines() { [ -f "$W/claude.log" ] && { grep -vc "ПУЛИ" "$W/claude.log" || true; } || echo 0; }
 chk() { if eval "$2"; then echo "  ✓ $1"; else echo "  ✗ $1"; BAD=1; fi; }
 turns() { ls "$W/fake" 2>/dev/null | grep -c '^turns_'; }
 ob() { printf '%s\n' "$2" > "$OB/.$1.tmp"; mv "$OB/.$1.tmp" "$OB/$1"; }   # так пишуть скрипти власника: тимчасове ім'я, потім перейменування
@@ -32,7 +33,7 @@ gem; pub; chk "повторний прохід — без нового наря�
 
 echo "=== Д2 нуль у групах Pro і Claude & GPT не блокує Flash; залишок квоти — у журналі"
 setup d2; mark "$SLUG/$M/1"; export FAKE_USAGE=ok; gem; pub; lines
-chk "наряд пройшов: ГОТОВО gemini/<наряд> <SHA40>" 'grep -qE "GEMINI ОБГОРТКА: ГОТОВО gemini/М\.2-проба-обгортки [0-9a-f]{40} КВОТА [A-Z0-9]{2,16} 34\"" "$W/claude.log"'
+chk "наряд пройшов: ГОТОВО gemini/<наряд> <SHA40>" 'grep -qE "GEMINI ОБГОРТКА: ГОТОВО gemini/М\.2-проба-обгортки [0-9a-f]{40} КВОТА [A-Z0-9]{2,16} 34( МОДЕЛЬ [a-z0-9.-]+)?\"" "$W/claude.log"'
 chk "залишок 34 % у publish.log" 'grep -q "залишок квоти групи моделі — 34 %" "$W/pub/publish.log"'
 
 echo "=== Д3 інші формати /usage (usedPercent, конверт response) розбираються; нерозпізнане й збій agy — наряд іде"
@@ -104,7 +105,8 @@ chk "рядок кінця пройшов теку вихідних: файл у
 
 echo "=== Д8 стенд одного прогону: рядок кінця перед сном/вимкненням сесії — вже в теці, сесії жити не треба"
 setup d8; mark "$SLUG/$M/1"; gem; pub; rm -f "$W/pub/publish.log"; pub
-chk "повторний запуск тихий" '[ "$(nlines)" = 1 ]'
+# рядок ПУЛИ (pools.json від gemini) іде окремо й раз на 3 год — повтор його теж не дублює
+chk "повторний запуск тихий" '[ "$(nlines)" = 1 ] && [ "$(grep -c "ПУЛИ" "$W/claude.log")" = 1 ]'
 echo "=== Д9 SlugPattern закінчується на \\z, а не \$: slug із кінцевим \\n відкидається в обох файлах"
 for f in gemini_run gemini_publish; do
   R=$("$PW" -NoProfile -Command "\$l = Select-String -Path '$SRC/$f.ps1' -Pattern '^\\\$script:SlugPattern =' | Select-Object -First 1; Invoke-Expression \$l.Line.Trim(); \$a = ('x' + [char]10) -cmatch \$script:SlugPattern; \$b = 'x' -cmatch \$script:SlugPattern; \"\$a \$b\"")
