@@ -1,0 +1,60 @@
+── ПРОМПТ (8592 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Вʼязані сірі штани з віскозою · kind code: trousers · colour code: grey · about it: text н=1
+2 — Шапка Color — Blue/Green – ручне вʼязання · kind code: headwear · colour code: blue · about it: text н=2
+3 — Сережка Juste un Clou · kind code: jewelry_generic · colour code: black · about it: text н=3
+4 — Жакет двобортний в чорному кольорі · kind code: blazer · colour code: black · about it: text н=4
+5 — Туфлі жіночі чорні · kind code: dress_shoes · colour code: black · about it: text н=5
+6 — Фіолетова шкіряна сумка · kind code: bag_generic · colour code: purple · about it: text н=6
+7 — Пасок з пірʼям слива · kind code: belt · colour code: plum · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; blue — синій; grey — сірий; plum — сливовий; purple — фіолетовий.
+
+ТЕКСТИ:
+{
+"1": "These are grey knit trousers with a wide leg, cut from soft viscose for ease of movement. The relaxed fit offers comfort while the straight lines provide a clean, modern silhouette that elongates the legs.",
+"2": "This is a blue and green knit beanie with a ribbed cuff and a textured cable-knit pattern. It brings a cozy, handmade feel and adds a pop of color to balance the neutral tones below.",
+"3": "These are black sculptural earrings with an abstract, architectural shape. Their dark finish provides a striking contrast against your skin and complements the blazer's sharp lines.",
+"4": "This is a black double-breasted blazer with wide lapels and large buttons. Its structured shoulders and tailored fit add authority and polish, while the deep V-neck creates an elegant line on your torso.",
+"5": "These are black leather pumps featuring a square heel and a delicate strap across the instep. The sleek design adds height and sophistication, perfect for gliding through a night out.",
+"6": "This is a purple leather hobo bag with a slouchy silhouette and a signature metal logo detail. Its soft shape carries essentials comfortably while offering a bold splash of color against your dark top.",
+"7": "This is a plum-colored belt adorned with feathers that flow at the hip. It cinches the waist to highlight your figure and adds an organic, luxurious texture that elevates the outfit beyond simple formality.",
+"8": "I chose a grey knit trousers suit to create a comfortable yet refined base for your birthday party. Over it, I paired a black double-breasted blazer that adds a sharp, architectural touch and helps define the lines of your figure, while the deep plum belt at the waist gathers the silhouette to emphasize your X shape and mark your narrowest point. A blue-green knit beanie introduces a playful, textured contrast to the smooth fabrics, and I selected black earrings with a sculptural form for an artistic accent against your skin. Black heeled pumps elongate your legs and carry you through the evening in style, while a purple leather bag adds a splash of rich color that ties into the plum details without overwhelming your look.",
+"9": "Take off the blazer if you want to feel more relaxed or let your friends focus on the elegant suit beneath.",
+"10": "Let the wide-leg trousers fall naturally over your heels to show off their full, flowing silhouette as you move.",
+"11": "Шапка Color — Blue/Green – ручне вʼязання — The blue knitted hat replaces the black beanie to repeat the navy coat's hue on the headwear slot, ensuring the leading register stays classic and cool-toned rather than conflicting with streetwear. This repetition fixes the variety issue in the set.",
+"12": "Вʼязані сірі штани з віскозою — The grey wool trousers paired with this coat create a tonal column that elongates the silhouette. The coat's length extends past the knee, which is ideal for her height and shape code in cooler autumn weather."
+}
+
+── ВІДПОВІДЬ (2812 симв., 54.3 с, HTTP 200) ──
+```json
+{
+"1": "Це сірі вʼязані штани з широкою ногою, пошиті з мʼякої віскози для легкості рухів. Вільний крій забезпечує комфорт, а прямі лінії надають чистий і сучасний силует, який видовжує ноги.",
+"2": "Це блакитно-зелена вʼязана шапка з ребристим манжетом та текстурованою косою вʼязкою. Вона додає затишне відчуття ручної роботи й яскравий акцент кольору, щоб збалансувати нейтральні тони знизу.",
+"3": "Це чорні скульптурні сережки абстрактної архітектурної форми. Їхній темний колір створює вражаючий контраст зі шкірою та доповнює чіткі лінії жакета.",
+"4": "Це чорний двобортний жакет з широкими лацканами й великими гудзиками. Його структуровані плечі та приталений крій додають впевненості та елегантності, а глибокий V-подібний виріз створює витончену лінію на тулубі.",
+"5": "Це чорні шкіряні туфлі-човники з квадратним підбором і делікатною перемичкою над підйомом. Стрункий дизайн додає зросту та вишуканості, що чудово для вечірнього виходу.",
+"6": "Це фіолетова шкіряна сумка-хобо з мʼяким силуетом і характерною металевою деталлю логотипу. Її мʼяка форма зручно вміщує необхідні речі, а сміливий колір контрастує з темним верхом.",
+"7": "Це сливова стрічка, прикрашена пірʼям, що спадають на стегнах. Вона підкреслює талію, виділяючи фігуру, й додає органічну розкішну текстуру, яка робить образ більш елегантним.",
+"8": "Я обрала сірий вʼязаний брючний костюм, щоб створити комфортну, але водночас вишукану основу для твоєї вечірки. Зверху я поєднала чорний двобортний жакет, який додає чіткий архітектурний акцент і допомагає окреслити лінії твого тіла, а сливова стрічка на талії збирає силует, підкреслюючи X-подібну форму й відзначаючи найвужчу точку. Блакитно-зелена вʼязана шапка додає грайливий текстурний контраст до гладких тканин, а чорні скульптурні сережки створюють художній акцент на твоїй шкірі. Чорні туфлі на підборах видовжують ноги та дозволяють тобі елегантно провести вечір, а фіолетова шкіряна сумка додає яскравий колір, який гармонує зі сливовими деталями без перевантаження образу.",
+"9": "Зніми жакет, якщо хочеш почуватися більш розслаблено або щоб друзі звернули увагу на елегантний костюм під ним.",
+"10": "Дозволь широким штанам вільно спадати над пʼятами, щоб продемонструвати їхній повний і струмуючий силует у русі.",
+"11": "Шапка Color — Blue/Green – ручне вʼязання — Блакитна вʼязана шапка замінює чорну бейсболку, повторюючи колір синього пальта на головному аксесуарі. Це забезпечує класичний і прохолодний тон образу, а не конфліктує з вуличним стилем. Таке повторення вирішує проблему різноманітності в образі.",
+"12": "Вʼязані сірі штани з віскозою — Сірі вовняні брюки в поєднанні з цим пальтом створюють тональний стовп, який видовжує силует. Довжина пальта сягає трохи нижче коліна, що ідеально для твоєї статури та погоди прохолодної осені."
+}
+```

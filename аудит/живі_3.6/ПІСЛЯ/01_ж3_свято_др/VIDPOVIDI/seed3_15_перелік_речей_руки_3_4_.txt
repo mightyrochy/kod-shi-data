@@ -1,0 +1,37 @@
+── ПРОМПТ (2355 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured linen blazer, tailored cut, knee-length, charcoal gray (#36454F), crisp woven cotton-linen blend.\nHigh-neck silk blouse, relaxed fit to elbow, ivory white (#FFFFF0), smooth pure silk.\nStraight-leg wool-blend trousers, ankle length, forest green (#228B22), heavy textured weave.\nLeather ankle boots, pointed toe, almond shape, dark cognac brown (#6F4E37), soft calfskin.\nThis outfit perfectly balances the \"smart\" dress code with the relaxed autumn atmosphere of a birthday celebration, offering structure through the tailored blazer while keeping the silhouette comfortable for daytime mingling. The earthy charcoal and forest green palette harmonizes beautifully with the daylight setting without feeling too heavy for eighteen-degree weather, avoiding any outer layer since the temperature is mild. By pairing a refined silk top with durable wool trousers and practical ankle boots, the ensemble respects her wish for sophistication while ensuring she feels at ease throughout the event."}
+
+── ВІДПОВІДЬ (751 симв., 60.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored cut, knee-length, structured linen",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "high-neck, relaxed fit to elbow, smooth pure silk",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight-leg, ankle length, heavy textured weave",
+      "slot": "bottom",
+      "color_hex": "#228B22",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "pointed toe, almond shape, soft calfskin",
+      "slot": "shoes",
+      "color_hex": "#6F4E37",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+── ПРОМПТ (2524 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined knit top in charcoal grey (#36454F), relaxed but structured cut with long sleeves and a straight hem at the hip, soft wool blend fabric.\nTailored trousers in navy blue (#001f3f), a classic wide-leg silhouette that tapers slightly at the ankle to a length resting just above the heel, heavy cotton twill fabric.\nA textured blazer in cream beige (#F5F5DC), single-breasted with notched lapels and two front pockets, lightweight worsted wool fabric.\nPointed-toe ankle boots in polished black leather (#000000), a sleek low block heel for comfort during the evening, smooth calfskin material.\n\nThis ensemble strikes the perfect balance for a smart celebration on an autumn day with temperatures around 18°C, offering enough warmth through the blazer while maintaining elegance suitable for a birthday party. The neutral palette of charcoal, navy, cream, and black complements her skin tones in the #f0d6d2 to #ead0cc range while grounding her dark hair at #1f1c1f. The mix of textures—from the soft knit to the heavy twill trousers and polished leather boots—adds depth and sophistication appropriate for the occasion without feeling too formal for daylight hours."}
+
+── ВІДПОВІДЬ (835 симв., 59.6 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "knit top",
+"details": "relaxed but structured cut with long sleeves and a straight hem at the hip, soft wool blend fabric",
+"slot": "top",
+"color_hex": "#36454F",
+"worn": true
+},
+{
+"name": "tailored trousers",
+"details": "classic wide-leg silhouette tapering slightly at the ankle to a length resting just above the heel, heavy cotton twill fabric",
+"slot": "bottom",
+"color_hex": "#001f3f",
+"worn": true
+},
+{
+"name": "textured blazer",
+"details": "single-breasted with notched lapels and two front pockets, lightweight worsted wool fabric",
+"slot": "outerwear",
+"color_hex": "#F5F5DC",
+"worn": true
+},
+{
+"name": "pointed-toe ankle boots",
+"details": "sleek low block heel for comfort during the evening, smooth calfskin material",
+"slot": "shoes",
+"color_hex": "#000000",
+"worn": true
+}
+]
+}
