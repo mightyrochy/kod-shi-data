@@ -36,8 +36,8 @@ color_name, length, shaft), крій — із `силует_крої.КРОЇ`. 
 КОЖЕН КОД — З ЦИТАТОЮ (РЗ-К, рядок дошки 404; власник 01.10: «головне — правдиві коди без
 вигадок»). Перший повний розбір MamayLM вигадував, коли крамниця мовчить: ж-01232 «СУКНЯ №1081
 ШОКОЛАД» дістала «sundress, knee, sleeveless», а на сукнях і верхах ~30 % кодів рукава й вирізу
-не мали жодного слова в тексті. Тому модель відповідає на кожне поле парою {quote, value}:
-`quote` — дослівний уривок тексту ЦІЄЇ речі (назва, опис, поля картки), `value` — код.
+не мали жодного слова в тексті. Тому кожен код моделі має цитату — дослівний уривок тексту ЦІЄЇ
+речі (назва, опис, поля картки): у v3 — парою {quote, value}, у v4 — рядком `evidence` «поле=цитата».
 Код лишається, лише коли `мовний_шар.цитата_тримає` знаходить уривок підрядком (без словника — код
 слів не читає, п.12); інакше поле стає "unknown" і в причинах речі — рядок `invented`. Без цитати
 обходяться лише "unknown", `not_applicable` («поля в такої речі не буває» — лише там, де слот чи
@@ -86,8 +86,10 @@ import силует_крої as СК             # noqa: E402
 # мають, і `з_відповіді` каже про це причиною, а не мовчить.
 # v3 (01.10.2026, РЗ-К): кожне поле — пара {quote, value}, `features` — фрагменти з цитатами.
 # Відповіді v1/v2 (голі коди) `з_відповіді` читає як доти, коли тексту речі їй не дали.
-ВЕРСІЯ = "lyusterko-catalog-parse-v3"
-ЗАДАЧА = "CATALOG_PARSE_V3"
+# v4 (25.10.2026, 5.4-Г): три рядки за взірцем — `evidence`, `codes`, `features` (див. `ДОКАЗИ`);
+# відповіді v3 `з_відповіді` читає як доти.
+ВЕРСІЯ = "lyusterko-catalog-parse-v4"
+ЗАДАЧА = "CATALOG_PARSE_V4"
 UNKNOWN = ВМ.UNKNOWN
 # «Поля в такої речі не буває» (рукав у штанів, каблук у сумки) — не «невідомо»: перший повний
 # розбір писав тут «no», і 5 579 значень ставали unknown, невідмінним від «модель не знає»
@@ -95,10 +97,6 @@ UNKNOWN = ВМ.UNKNOWN
 # приймається лише там, де поля нема за таблицею слот/тип → поле (`НЕМА_ПОЛЯ`, рядки 2681–2682).
 НЕ_СТОСУЄТЬСЯ = "not_applicable"
 ЦИТАТА, ЗНАЧЕННЯ = "quote", "value"
-СТЕЛЯ_ЦИТАТИ = 120          # знаків; довша — переказ, а не уривок, і граматика її не пустить
-# 5.4-Г: стеля цитати стоїть на КОЖНОМУ з 81 місця цитати найдовшої відповіді (обов'язкові пари,
-# частини набору, списки, фрагменти), тож кожен її знак — до +81 токена межі: навіть 0 знаків
-# дають 1 473 токени при стелі виходу 1 600. Яку стелю брати — рішення менеджера (PR 5.4-Г).
 # Lapa вставляє «▁» (U+2581, SentencePiece) у власну відповідь і ламає нею JSON — знімається до
 # розбору (`з_відповіді`), щоб вимір мірив зміст відповіді, а не токенізатор (черга §0 25.09).
 ВСТАВКА = "▁"
@@ -358,16 +356,34 @@ assert all(к in ВМ.ТАБЛИЦЯ["slot"] or к in ВМ.ТАБЛИЦЯ["item_
 # речей при 15 словах і 226 при 30. Справжню довжину рядка за новим правилом міряє ноутбук.
 СТЕЛЯ_СЛІВ = 30
 ОПИС_ОСОБЛИВОСТЕЙ = "a nuance of this item in plain English"
-# СТЕЛІ СПИСКІВ ГРАМАТИКИ (5.4-Г) — найбільше, що дали 663 розібрані речі частини 1 розбору 5.4
-# (`каталог_розбір_коди.json.gz` на 2c1b3c6b): фрагментів features — p99 5, найбільше 6; кольорів,
-# оздоб і деталей крою — p99 1, найбільше 2; частин набору — 2 (у 3 речей), варіантів металу — 1.
-# Найбільше, а не p99: p99 частин набору — 0, і він заборонив би набори. Доти стелі 4–12 пускали
-# в найдовшу відповідь 15 439 токенів MamayLM при стелі виходу 1 600 (`МАКС_ТОКЕНІВ`), а
-# повтору пункту граматика не забороняє: `uniqueItems` конвертер llama.cpp не читає.
+# ── ФОРМА ВІДПОВІДІ V4 (5.4-Г): ТРИ РЯДКИ ЗА ВЗІРЦЕМ, А НЕ ДЕРЕВО ПАР ─────
+# ЧОМУ. Частина 1 розбору 5.4 обрізала стелею виходу (`МАКС_ТОКЕНІВ` 1 600) 587 речей з 1 250:
+# граматика v3 пускала відповідь, довшу за стелю. Звузити її межі мало: у дереві пар JSON має 949
+# місць пробілу, і на кожному граматика llama.cpp пускає до 22 токенів (`SPACE_RULE`, схема цього
+# не обмежує) — 20 878 токенів межі самими пробілами. V4 — три рядки за взірцем (`pattern`):
+# місць пробілу 7, а довжину рядків взірець тримає знаками. Межу відповіді й промпта рахує
+# `проби/межа_відповіді_54г.py`; стелю й контекст слота — `каталог_розбір_прогін.МАКС_ТОКЕНІВ`.
+# `evidence` — «поле=цитата» через «;», лише для кодів, що не unknown; `codes` — «ключ=код» через
+# «;» для всіх полів сталим порядком; `features` — «цитата=фрагмент» через «;». `_з_рядків`
+# переводить їх у пари v3, тож сторож цитат і решта читання не міняються.
+ДОКАЗИ, КОДИ = "evidence", "codes"
+# СТЕЛІ — з 663 розібраних речей частини 1 (`каталог_розбір_коди.json.gz` на 2c1b3c6b). Цитата
+# коду (4 403): p90 40 знаків, p95 53, p99 94, найдовша 120; довших за 50 — 243 (5,5 %). Стеля 50
+# не губить коду: обрізана граматикою цитата — початок тієї самої цитати, тож сторож її тримає
+# (підрядок підрядка); губиться лише число в хвості довгої цитати. Цитат коду на річ: p90 9, p99
+# 14, найбільше 17 — з ключовими (вада 9771), тож 14. Фрагментів features — p99 5, найбільше 6;
+# фрагмент (763) — p95 45 знаків, p99 70, найбільше 80, а правило — 2–6 слів: 50 знаків. Кольорів, оздоб, деталей крою — p99 1, найбільше 2;
+# частин набору — 2 (у 3 речей), варіантів металу — 1. Повтору граматика не забороняє:
+# `uniqueItems` конвертер llama.cpp не читає, а повтори зводить `_список`.
+СТЕЛЯ_ЦИТАТИ = 50           # знаків
+СТЕЛЯ_ДОКАЗІВ = 14
 СТЕЛЯ_ФРАГМЕНТІВ = 6
-СТЕЛЯ_ФРАГМЕНТА = 80        # знаків англійського фрагмента
-СТЕЛІ_СПИСКІВ = {"set_parts": 2, "color_extra": 2, "decor": 2, "cut_details": 2,
-                 "metal_variants": 1, ОСОБЛИВОСТІ: СТЕЛЯ_ФРАГМЕНТІВ}
+СТЕЛЯ_ФРАГМЕНТА = 50        # знаків англійського фрагмента
+СТЕЛІ_СПИСКІВ = {"set_parts": 2, "color_extra": 2, "decor": 2, "cut_details": 2, "metal_variants": 1}
+# Знаки цитати й фрагмента: без «"» і «\\» (втеча JSON), «;» і «=» (роздільники). Кожен — один
+# токен MamayLM, тож токенів у цитаті не більше, ніж знаків (`проби/межа_відповіді_54г.py`).
+ЗНАКИ_ЦИТАТИ = "a-zA-Z0-9а-яА-ЯЁёІіЇїЄєҐґ .,:%()'’ʼ«»№#!?&°×+/–—-"
+ЗНАКИ_ФРАГМЕНТА = "a-zA-Z0-9 .,:%()'/+-"
 
 ПЕРЕЛІКИ = {ш: к for ш, к, _ in ПОЛЯ}
 ОПИСИ = {ш: о for ш, _, о in ПОЛЯ}
@@ -413,58 +429,165 @@ def _листки():
 
 
 def скелет():
-    """Форма відповіді моделі, як її бачить промпт: кожне поле — {"quote": "<quote>", "value":
-    "a|b|unknown — опис"} (`збирач_промптів` кладе цей словник як є). Цитата стоїть ПЕРШОЮ:
-    модель спершу шукає слова в тексті, а вже тоді обирає код — без слів лишається "unknown".
-    Рядок особливостей — останнім, списком фрагментів тієї самої форми."""
-    с = {}
-    for шлях, коди, опис in _листки():
-        # Частини набору беруть ті самі переліки, що й річ: посилання замість другої копії
-        # (~1 300 знаків промпта); перелік у граматиці відповіді стоїть повний.
-        перелік = ("<a code from the \"%s\" list>" % _кроки(шлях)[-1][0]
-                   if шлях.startswith("set_parts[]") else "|".join(коди))
-        лист = {ЦИТАТА: "<%s>" % ЦИТАТА, ЗНАЧЕННЯ: "%s — %s" % (перелік, опис)}
-        if isinstance(коди, Мірка):
-            лист = {ЦИТАТА: "<%s>" % ЦИТАТА, ЗНАЧЕННЯ: "<number>|%s — %s" % ("|".join(коди), опис),
-                    ОДИНИЦЯ: "|".join(коди.одиниці + [UNKNOWN])}
-        вузол, кроки = с, _кроки(шлях)
-        for і, (ім, список) in enumerate(кроки):
-            if і == len(кроки) - 1:
-                вузол[ім] = [лист] if список else лист
-            elif список:
-                вузол = вузол.setdefault(ім, [{}])[0]
-            else:
-                вузол = вузол.setdefault(ім, {})
-    с[ОСОБЛИВОСТІ] = [{ЦИТАТА: "<%s>" % ЦИТАТА, ЗНАЧЕННЯ: "<%s>" % ОПИС_ОСОБЛИВОСТЕЙ}]
-    return с
+    """Форма відповіді V4, як її бачить промпт (`збирач_промптів` кладе словник як є): `evidence` —
+    першим (модель спершу шукає слова в тексті, а вже тоді обирає код), `codes` — словником ключ →
+    «перелік — опис» у тому порядку, у якому граматика (`схема_відповіді`) вимагає ключі в рядку,
+    `features` — останнім. Сам рядок `codes` («ключ=код;…») описує правило промпта."""
+    коди = {}
+    for шлях, перелік, опис in _листки():
+        if шлях.startswith("set_parts[]"):
+            # Частини набору беруть ті самі переліки, що й річ: посилання замість другої копії
+            # (~1 300 знаків промпта); у граматиці відповіді перелік стоїть повний.
+            зміст = "codes from the \"%s\" list, one per part, joined by \",\"" % _кроки(шлях)[-1][0]
+        elif isinstance(перелік, Мірка):
+            зміст = "<number> %s|%s" % ("|".join(перелік.одиниці), "|".join(перелік))
+        elif _кроки(шлях)[0][1]:
+            зміст = "codes joined by \",\", none when nothing: %s" % "|".join(_без_тиші(перелік))
+        else:
+            зміст = "|".join(перелік)
+        коди[_ключ_коду(шлях)] = "%s — %s" % (зміст, опис)
+    return {ДОКАЗИ: "<field>=<quote>;<field>=<quote>…", КОДИ: коди,
+            ОСОБЛИВОСТІ: "<quote>=<%s>;<quote>=<%s>…" % (ОПИС_ОСОБЛИВОСТЕЙ, ОПИС_ОСОБЛИВОСТЕЙ)}
 
 
-def _пара(значення):
-    """Схема однієї пари {quote, value}: цитата — рядок у стелі, значення — `значення`."""
-    return {"type": "object", "additionalProperties": False, "required": [ЦИТАТА, ЗНАЧЕННЯ],
-            "properties": {ЦИТАТА: {"type": "string", "maxLength": СТЕЛЯ_ЦИТАТИ},
-                           ЗНАЧЕННЯ: значення}}
+def _без_тиші(коди):
+    """Коди списку без "unknown" і `not_applicable`: тиша списку — порожній список."""
+    return [к for к in коди if к not in (UNKNOWN, НЕ_СТОСУЄТЬСЯ)]
 
 
-def _число_граматики(мірка):
-    """Число відповіді в межах стелі поля (5.4-Г): ціле до стелі в найдрібнішій одиниці поля або
-    половина до 100. `{"type": "number"}` граматика llama.cpp не обмежує нічим — до 16 цифр цілої
-    частини, 16 дробової й показник, ~50 токенів на поле; ціле з `maximum` вона будує з цифр стелі.
-    Половини — бо каблук «8,5 см» (єдине дробове серед 663 розібраних речей частини 1)."""
-    стеля = max(мірка.стеля / У_СТЕЛЮ[о] for о in мірка.одиниці)
-    return {"anyOf": [{"type": "integer", "minimum": 0, "maximum": math.ceil(стеля)},
-                      {"enum": [к + 0.5 for к in range(min(int(мірка.стеля), 100))]}]}
+def _ключ_коду(шлях):
+    """Шлях `ПОЛЯ` → ключ у рядку `codes`: «color_extra[]» → «color_extra», «set_parts[].slot» →
+    «set_parts.slot» (частини набору — паралельні списки), «heel.present» — як є."""
+    return шлях.replace("[]", "")
 
 
-def _лист_відповіді(коди):
-    """Схема листка відповіді: пара з кодом переліку; у `Мірка` — трійка {quote, value, unit}, де
-    value — число або рядкова форма (`not_applicable`, "unknown"), unit — одиниця поля."""
-    if not isinstance(коди, Мірка):
-        return _пара({"enum": коди})
-    лист = _пара({"anyOf": [_число_граматики(коди), {"enum": list(коди)}]})
-    лист["required"].append(ОДИНИЦЯ)
-    лист["properties"][ОДИНИЦЯ] = {"enum": коди.одиниці + [UNKNOWN]}
-    return лист
+def _буквально(т):
+    """Рядок → буквальний взірець, однаковий для `re` і конвертера llama.cpp (той знає лише ці втечі)."""
+    assert re.fullmatch(r"[a-z0-9_.\[\]-]+", т), т
+    return т.replace(".", "\\.").replace("[", "\\[").replace("]", "\\]")
+
+
+def _або(варіанти):
+    return "(%s)" % "|".join(_буквально(в) for в in варіанти)
+
+
+def шляхи_доказів():
+    """Шляхи, які підпирає рядок `evidence`: листки без слотів (слот — з типу таблицею, `_слот`);
+    список — кожен пункт окремо («color_extra[0]», «set_parts[1].item_type»), як їх кличе сторож."""
+    вих = []
+    for шлях, _, _ in _листки():
+        кроки = _кроки(шлях)
+        if кроки[-1][0] == "slot":
+            continue
+        вих += ([шлях.replace("[]", "[%d]" % і) for і in range(СТЕЛІ_СПИСКІВ[кроки[0][0]])]
+                if кроки[0][1] else [шлях])
+    return вих
+
+
+def цифр_мірки(мірка):
+    """Скільки цифр цілої частини пускає граматика: стеля поля в найдрібнішій його одиниці."""
+    return len(str(math.ceil(max(мірка.стеля / У_СТЕЛЮ[о] for о in мірка.одиниці))))
+
+
+def _взірець_коду(шлях, коди):
+    """Значення одного ключа `codes`: код переліку; число «8.5 cm» у `Мірка`; у списку — до
+    `СТЕЛІ_СПИСКІВ` кодів через кому або нічого."""
+    if isinstance(коди, Мірка):
+        return "([0-9]{1,%d}(\\.[0-9])? %s|%s)" % (цифр_мірки(коди), _або(коди.одиниці), _або(коди)[1:-1])
+    ім, список = _кроки(шлях)[0]
+    if not список:
+        return _або(коди)
+    # Частини набору — паралельні списки: невідомий тип однієї частини лишається "unknown" на її
+    # місці, щоб слот і тип решти не з'їхали (2 набори з 663 частини 1).
+    один, стеля = _або(_без_тиші(коди) + ([UNKNOWN] if ім == "set_parts" else [])), СТЕЛІ_СПИСКІВ[ім]
+    return "(%s(,%s){0,%d})?" % (один, один, стеля - 1) if стеля > 1 else "%s?" % один
+
+
+def _взірець_цитати():
+    return "[%s]{1,%d}" % (ЗНАКИ_ЦИТАТИ, СТЕЛЯ_ЦИТАТИ)
+
+
+def взірці():
+    """Три взірці відповіді V4 {ключ: взірець}. Пункти — через «;», поле від цитати — «=»: цих
+    знаків нема ні в цитаті, ні у фрагменті, тож рядок розбирається однозначно (`_з_рядків`)."""
+    доказ = "%s=%s" % (_або(шляхи_доказів()), _взірець_цитати())
+    фрагмент = "%s=[A-Za-z0-9][%s]{0,%d}" % (_взірець_цитати(), ЗНАКИ_ФРАГМЕНТА, СТЕЛЯ_ФРАГМЕНТА - 1)
+    коди = ";".join("%s=%s" % (_буквально(_ключ_коду(ш)), _взірець_коду(ш, к)) for ш, к, _ in _листки())
+    return {ДОКАЗИ: "^(%s(;%s){0,%d})?$" % (доказ, доказ, СТЕЛЯ_ДОКАЗІВ - 1),
+            КОДИ: "^%s$" % коди,
+            ОСОБЛИВОСТІ: "^(%s(;%s){0,%d})?$" % (фрагмент, фрагмент, СТЕЛЯ_ФРАГМЕНТІВ - 1)}
+
+
+def схема_відповіді():
+    """JSON Schema ВІДПОВІДІ МОДЕЛІ — `response_format` виклику LM Studio (прогін): три рядки за
+    взірцем (`взірці`). Граматика з неї не пускає ні переказу промпта замість відповіді, ні коду
+    поза переліком, ні ключа поза порядком, ні цитати довшої за `СТЕЛЯ_ЦИТАТИ`. Усі ключі `codes`
+    обов'язкові: пропуск поля — теж відповідь, і вона має бути "unknown"."""
+    return {"type": "object", "additionalProperties": False, "required": [ДОКАЗИ, КОДИ, ОСОБЛИВОСТІ],
+            "properties": {к: {"type": "string", "pattern": в} for к, в in взірці().items()}}
+
+
+def за_схемою(текст, вузол=None):
+    """Чи пустила б граматика `схема_відповіді` цей текст: строгий JSON і кожен вузол у її межах (5.4-Г).
+    Докат прогону бере готову відповідь лише так (`каталог_розбір_прогін._готова`): відповідь під
+    іншою граматикою, що в нову не влазить, іде в модель наново, а не в коди. Лише ті ключі схеми,
+    які `схема_відповіді` ставить."""
+    if вузол is None:
+        try:
+            return за_схемою(json.loads(текст), схема_відповіді())
+        except ValueError:
+            return False
+    x = текст
+    тип = вузол["type"]
+    if тип == "object":
+        return (isinstance(x, dict) and set(вузол["required"]) <= set(x) <= set(вузол["properties"])
+                and all(за_схемою(з, вузол["properties"][к]) for к, з in x.items()))
+    if тип == "string":
+        return isinstance(x, str) and re.fullmatch(вузол["pattern"], x) is not None
+    raise ValueError("вузол схеми поза `схема_відповіді`: %r" % вузол)
+
+
+def _з_рядків(об):
+    """Відповідь V4 (три рядки, `схема_відповіді`) → дерево пар v3 {quote, value[, unit]}, яке
+    читає решта розбору: сторож цитат, `_код`, `_число`, `_список`, `_фрагменти` — ті самі. Код,
+    якому `evidence` не дав рядка, дістає порожню цитату, і сторож робить його unknown («код без
+    опори»). Не V4 (пари v3, голі коди v1/v2 заглушки) — як є."""
+    if not (isinstance(об, dict) and isinstance(об.get(КОДИ), str)):
+        return об
+    докази, коди = {}, {}
+    for пункт in str(об.get(ДОКАЗИ) or "").split(";"):
+        шлях, _, цитата = пункт.partition("=")
+        докази.setdefault(шлях.strip(), цитата)
+    for пункт in об[КОДИ].split(";"):
+        ключ, _, код = пункт.partition("=")
+        коди.setdefault(ключ.strip(), код.strip())
+    вих = {}
+    for шлях, перелік, _ in _листки():
+        кроки, сире = _кроки(шлях), коди.get(_ключ_коду(шлях), UNKNOWN)
+        ім, список = кроки[0]
+        if isinstance(перелік, Мірка):
+            число, _, одиниця = сире.partition(" ")
+            лист = {ЦИТАТА: докази.get(шлях, ""), ЗНАЧЕННЯ: число if одиниця else сире,
+                    ОДИНИЦЯ: одиниця or UNKNOWN}
+        elif список:
+            пункти = [к for к in сире.split(",") if к] if сире != UNKNOWN else []
+            лист = [{ЦИТАТА: докази.get(шлях.replace("[]", "[%d]" % і), ""), ЗНАЧЕННЯ: к}
+                    for і, к in enumerate(пункти)]
+        else:
+            лист = {ЦИТАТА: докази.get(шлях, ""), ЗНАЧЕННЯ: сире}
+        if len(кроки) == 1:
+            вих[ім] = лист
+        elif список:                                   # set_parts[].<поле>: паралельні списки
+            набір = вих.setdefault(ім, [])
+            набір += [{} for _ in range(len(лист) - len(набір))]
+            for ч, пара in zip(набір, лист):
+                ч[кроки[1][0]] = пара
+        else:                                          # heel.<поле>, veto.<поле>
+            вих.setdefault(ім, {})[кроки[1][0]] = лист
+    фрагменти = [п.partition("=") for п in str(об.get(ОСОБЛИВОСТІ) or "").split(";") if п]
+    вих[ОСОБЛИВОСТІ] = [{ЦИТАТА: ц, ЗНАЧЕННЯ: з} for ц, _, з in фрагменти]
+    вих.update({к: з for к, з in об.items() if к not in (ДОКАЗИ, КОДИ, ОСОБЛИВОСТІ)})
+    return вих
 
 
 def _лист_розбору(коди, опис):
@@ -476,67 +599,6 @@ def _лист_розбору(коди, опис):
                             ОДИНИЦЯ: {"enum": коди.одиниці}}}
     return {"description": опис, "x-стеля-см-чи-відсоток": коди.стеля,
             "anyOf": [число, {"enum": list(коди)}]}
-
-
-def _обʼєкт():
-    return {"type": "object", "additionalProperties": False, "required": [], "properties": {}}
-
-
-def схема_відповіді():
-    """JSON Schema ВІДПОВІДІ МОДЕЛІ — `response_format` виклику LM Studio (прогін). Граматика з
-    неї не пускає ні переказу промпта замість відповіді, ні коду поза переліком, ні голого коду
-    без цитати. Усі поля обов'язкові: пропуск поля — теж відповідь, і вона має бути "unknown".
-    Без описів: їх несе скелет промпта, а граматиці вони ні до чого."""
-    корінь = _обʼєкт()
-    for шлях, коди, _ in _листки():
-        вузол, кроки = корінь, _кроки(шлях)
-        for і, (ім, список) in enumerate(кроки):
-            if ім not in вузол["required"]:
-                вузол["required"].append(ім)
-            if і == len(кроки) - 1:
-                лист = _лист_відповіді(коди)
-                вузол["properties"][ім] = ({"type": "array", "maxItems": СТЕЛІ_СПИСКІВ[ім],
-                                            "items": лист} if список else лист)
-                continue
-            if ім not in вузол["properties"]:
-                вузол["properties"][ім] = ({"type": "array", "maxItems": СТЕЛІ_СПИСКІВ[ім],
-                                            "items": _обʼєкт()} if список else _обʼєкт())
-            вузол = вузол["properties"][ім]
-            вузол = вузол["items"] if список else вузол
-    корінь["required"].append(ОСОБЛИВОСТІ)
-    корінь["properties"][ОСОБЛИВОСТІ] = {
-        "type": "array", "maxItems": СТЕЛЯ_ФРАГМЕНТІВ,
-        "items": _пара({"type": "string", "maxLength": СТЕЛЯ_ФРАГМЕНТА})}
-    return корінь
-
-
-def за_схемою(текст, вузол=None):
-    """Чи пустила б граматика `схема_відповіді` цей текст: строгий JSON і кожен вузол у її межах (5.4-Г).
-    Докат прогону бере готову відповідь лише так (`каталог_розбір_прогін._готова`): відповідь під
-    ширшою граматикою, що в нову не влазить, іде в модель наново, а не в коди. Лише ті ключі схеми,
-    які `схема_відповіді` ставить; число — тип у тип (`8.0` не ціле, `True` не 1)."""
-    if вузол is None:
-        try:
-            return за_схемою(json.loads(текст), схема_відповіді())
-        except ValueError:
-            return False
-    x = текст
-    if "anyOf" in вузол:
-        return any(за_схемою(x, в) for в in вузол["anyOf"])
-    if "enum" in вузол:
-        return any(type(x) is type(е) and x == е for е in вузол["enum"])
-    тип = вузол["type"]
-    if тип == "object":
-        return (isinstance(x, dict) and set(вузол["required"]) <= set(x) <= set(вузол["properties"])
-                and all(за_схемою(з, вузол["properties"][к]) for к, з in x.items()))
-    if тип == "array":
-        return (isinstance(x, list) and len(x) <= вузол["maxItems"]
-                and all(за_схемою(з, вузол["items"]) for з in x))
-    if тип == "string":
-        return isinstance(x, str) and len(x) <= вузол["maxLength"]
-    if тип == "integer":
-        return type(x) is int and вузол["minimum"] <= x <= вузол["maximum"]
-    raise ValueError("вузол схеми поза `схема_відповіді`: %r" % вузол)
 
 
 def схема():
@@ -581,7 +643,7 @@ def схема():
                             "закритих переліків, \"not_applicable\" (поля в такої речі не буває: "
                             "лише слоти й типи `x-поля-нема`) або "
                             "\"unknown\" (опори в тексті крамниці нема — вигадувати не можна). "
-                            "Модель відповідає парами {quote, value} (`model_answer`); код лишає "
+                            "Модель відповідає трьома рядками (`model_answer`): evidence «поле=цитата», codes «ключ=код», features «цитата=фрагмент»; код лишає "
                             "значення лише тоді, коли цитата стоїть у тексті речі. Переліки slot, "
                             "item_type, fabric, material, pattern, color_name, length, shaft — ті "
                             "самі, що в `внутрішня_мова.ТАБЛИЦЯ`; cut — `силует_крої.КРОЇ`. "
@@ -633,7 +695,7 @@ def _правило_поля_нема():
         опис = "any slot but " + "|".join(решта) if len(решта) < len(є) else "|".join(є)
         типи = [к for к in ВМ.ТАБЛИЦЯ["item_type"] if к in нема and к not in слоти]
         частини.append("%s: %s" % (", ".join(поля), опис + ("; item_type " + "|".join(типи) if типи else "")))
-    return ("\"not_applicable\": the field does not exist for this kind of item, quote \"\" (shoes, bags and "
+    return ("\"not_applicable\": the field does not exist for this kind of item, no evidence entry (shoes, bags and "
             "jewellery have no cut, length, sleeve or neckline). Only where the item's slot has no such field — %s; "
             "heel.shape, heel.height and heel.height_cm also when heel.present is \"no\". Anywhere else the field "
             "exists: no words about it, \"unknown\"." % "; ".join(частини))
@@ -642,11 +704,16 @@ def _правило_поля_нема():
 _ПРАВИЛА = (
     "Parse only the item named in \"name\". The description may also hold blocks about other "
     "items, delivery or payment: ignore them.",
-    "Every field is a pair. \"quote\": the shortest words of this item's name, description or "
-    "params that state the value, copied letter for letter in the shop's language, "
-    "not translated or retold. \"value\": one code from that field's list.",
-    "No words state this very feature: quote \"\" and value \"unknown\". Never infer a value from "
-    "what items of this type usually are, never put the most usual code of a list as a default.",
+    "The answer is three strings. \"evidence\" first: field=quote for each field whose code you "
+    "can back, entries joined by \";\", at most %d. The quote: the shortest words of this item's "
+    "name, description or params that state the value, copied letter for letter in the shop's "
+    "language, not translated or retold, at most %d characters, without \";\", \"=\" or double "
+    "quotes. A list takes one entry per code: color_extra[0], color_extra[1], "
+    "set_parts[0].item_type." % (СТЕЛЯ_ДОКАЗІВ, СТЕЛЯ_ЦИТАТИ),
+    "\"codes\" next: every key of the \"codes\" skeleton in its order as key=code, joined by "
+    "\";\". A code other than \"unknown\" needs its evidence entry. No words state this very "
+    "feature: \"unknown\" and no evidence entry. Never infer a value from what items of this type "
+    "usually are, never put the most usual code of a list as a default.",
     "The quote must state the chosen code itself, not a nearby one: how deep a neckline is does "
     "not state its shape, one kind of collar does not state another, a style or model name does "
     "not state a cut. Words that fit no code exactly: \"unknown\".",
@@ -655,22 +722,25 @@ _ПРАВИЛА = (
     _правило_поля_нема(),
     "\"item_type\": the quote must name this very type. A kind of dress, top or coat needs its own "
     "word in the quote: length, colour, fabric and fit words do not name a kind, so a dress with no "
-    "kind named is dress_generic. The words name a type that has no code in the list: value \"not_applicable\" with that quote, never the "
+    "kind named is dress_generic. The words name a type that has no code in the list: code \"not_applicable\" with that quote, never the "
     "nearest code. The words name no type: \"unknown\".",
-    "\"no\" and \"none\": the text says the feature is absent; they need a quote like any value.",
-    "A field with \"unit\" takes a number: \"value\" the number the text gives, \"unit\" its unit, "
-    "the quote holds that number in digits. A range or numbers per size: the first number.",
-    "\"set_parts\": only for an item sold as a set, one entry per part; otherwise [].",
+    "\"no\" and \"none\": the text says the feature is absent; they need a quote like any code.",
+    "A field with a unit takes the number the text gives and its unit, as \"8.5 cm\" or \"95 "
+    "percent\"; its quote holds that number in digits. A range or numbers per size: the first number.",
+    "\"set_parts.slot\" and \"set_parts.item_type\": only for an item sold as a set, one code per "
+    "part in the same order; otherwise nothing.",
     "\"color_main\": the colour of this item, not of other colour variants on sale; other colours "
     "the text names for this item go to \"color_extra\".",
     "\"metal_where\": the metal is the body of the item or only its hardware.",
     "\"veto\": about this item; \"yes\" when the feature is there, \"no\" when the text says it "
     "is not.",
-    "\"features\": the nuances the codes do not carry, one fragment each: shade as the shop names "
+    "\"features\" last: the nuances the codes do not carry, one fragment each: shade as the shop names "
     "it, texture and weave, fibre content and weight, fit, construction, fastenings, hardware, trim, "
-    "heel and sole. Each fragment: \"quote\" as above, \"value\" the same in plain English, 2-6 "
-    "words, no codes. Up to %d words in all. No marketing or judgement, brand or model name, price, "
-    "size or measurements; [] when the text gives nothing beyond the codes." % СТЕЛЯ_СЛІВ,
+    "heel and sole. Each one quote=fragment, entries joined by \";\", at most %d: the quote as "
+    "above, the fragment the same in plain English, 2-6 words, no codes, at most %d characters. Up "
+    "to %d words in all. No marketing or judgement, brand or model name, price, size or "
+    "measurements; empty when the text gives nothing beyond the codes."
+    % (СТЕЛЯ_ФРАГМЕНТІВ, СТЕЛЯ_ФРАГМЕНТА, СТЕЛЯ_СЛІВ),
 )
 _ВХІД = (
     ЗП.Поле("name", "the shop's name of the item", треба=True),
@@ -1161,7 +1231,7 @@ def з_відповіді(текст, дані=None):
     (`_поля_нема`). Без `дані` — читання відповідей v1/v2 як доти (голі
     коди без цитат: заглушка стенда, старі проби)."""
     причини = []
-    об = _ПР.розібрати_json((текст or "").replace(ВСТАВКА, ""))
+    об = _з_рядків(_ПР.розібрати_json((текст or "").replace(ВСТАВКА, "")))
     if not isinstance(об, dict):
         return None, ["не JSON"]
     частини = частини_тексту(дані) if дані is not None else None
