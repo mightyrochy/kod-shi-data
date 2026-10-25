@@ -75,6 +75,8 @@ else {
     Chk tmp TMP_OK "[IO.Path]::GetTempFileName() | Out-Null; 'TMP_OK'"
     $agy = (Get-Command agy -ErrorAction SilentlyContinue).Source
     if ($agy) { Say "МІРА agy у пісочниці m9g-agy: $((Box 'm9g-agy' "& '$agy' -p '/usage'; 'AGY_RC=' + `$LASTEXITCODE").Trim() -replace '\s+', ' ')" }
+    $mxc = & $Codex -c 'windows.sandbox=mxc' sandbox -P m9g -C $repo -- cmd.exe /d /c echo MXC_%OS% 2>&1 | Out-String
+    Say "МІРА mxc: $(if ($mxc -like '*MXC_Windows_NT*') { 'MXC_OK — бекенд mxc можливий без адміна' } else { 'нема (потрібна Win 11 24H2+)' })"
     [IO.File]::WriteAllText((Join-Path $ch 'config.toml'), $cfg)
     Remove-Item -Recurse -Force $repo -ErrorAction SilentlyContinue
 }
