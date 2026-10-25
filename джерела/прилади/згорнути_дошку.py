@@ -31,6 +31,7 @@
     python3 джерела/прилади/згорнути_дошку.py                    # згорнути й видалити файли
     python3 джерела/прилади/згорнути_дошку.py --лише-перевірити  # нічого не писати (перевірка PR)
 """
+import argparse
 import os
 import re
 import sys
@@ -188,10 +189,20 @@ def згорнути(лише_перевірити=False):
 
 
 if __name__ == '__main__':
+    парсер = argparse.ArgumentParser(
+        description='Згорнути файли гілок у спільну дошку.',
+        epilog=('python3 джерела/прилади/згорнути_дошку.py\n'
+                'python3 джерела/прилади/згорнути_дошку.py --лише-перевірити'),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    парсер.add_argument('--лише-перевірити', action='store_true', help='нічого не писати')
+    ключі, невідомі = парсер.parse_known_args()
+    if невідомі:
+        парсер.print_help(sys.stderr)
+        парсер.error('невідомі ключі: ' + ' '.join(невідомі))
     if not os.path.isdir(ТЕКА):
         print('аудит/дошка/ нема — нічого згортати')
         sys.exit(0)
-    звіт, помилки = згорнути('--лише-перевірити' in sys.argv)
+    звіт, помилки = згорнути(ключі.лише_перевірити)
     print(звіт)
     for п in помилки:
         print('ПОМИЛКА ' + п, file=sys.stderr)
