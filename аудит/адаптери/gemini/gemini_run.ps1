@@ -46,6 +46,11 @@ $script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
 $script:TaskDir = 'аудит/наряди/'
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
+# `agy -p "/usage"` без ходу моделі й без витрати квоти — з v1.1.11 (changelog agy, 7.08.2026): перелік у НАЛАШТУВАННЯ.md.
+$script:UsageMinVersion = [version]'1.1.11'
+# Каскад моделей «проєктування» (pro): наступна за пулом після самої моделі позначки; далі лише Codex (-CodexFallbackModel).
+$script:ClaudeCascadeModel = 'claude-opus-5-5-high'
+$script:AgyVersionDone = $false; $script:AgyVersion = $null; $script:Usage = $null; $script:AgyModels = $null
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
 
@@ -246,8 +251,8 @@ function Find-EngineExe([string]$Name) {
 
 # --- квота --------------------------------------------------------------------------------------------------------
 
-# `agy -p "/usage" --output-format json` — дані, а не хід моделі. Схему виводу документація agy не наводить, тож розбір
-# терпимий до назв полів; нерозпізнане — «невідомо»: наряд іде далі, як до цього (429 ловить Get-ErrorCode).
+# `agy -p "/usage"` — рядки з табами, дані без ходу моделі (agy ≥ 1.1.11). Колонок документація не наводить: розбір
+# за рядком-заголовком і терпимий до назв полів; нерозпізнане — «невідомо»: наряд іде далі (429 ловить Get-ErrorCode).
 function Get-FirstValue($Obj, [string[]]$Names) {
     foreach ($n in $Names) {
         foreach ($p in $Obj.PSObject.Properties) { if ($p.Name -ieq $n -and $null -ne $p.Value) { return $p.Value } }
@@ -317,57 +322,153 @@ function Get-NameTokens([string]$Name) {
     @(($Name.ToLowerInvariant() -split '[^a-z0-9]+') | Where-Object { $_ -and $_ -notmatch '^[0-9]+$' -and $stop -notcontains $_ })
 }
 
-# Known=$false — квоту не прочитано (наряд іде далі). Blocked — усі групи моделі на 0 %; Group — ASCII-ім'я для коду рядка.
-function Get-Quota([string]$Model) {
-    $none = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; Left = -1 }
+# Версія agy з `agy --version`; $null — не розпізнано. Одне читання на прогін.
+function Get-AgyVersion {
+    if ($script:AgyVersionDone) { return $script:AgyVersion }
+    $script:AgyVersionDone = $true
     try {
-        $r = Invoke-Native $script:Agy @('-p', '/usage', '--output-format', 'json') $RepoDir $QuotaMinutes
-        if ($r.TimedOut -or $r.Code -ne 0) { Write-WrapperLog "квота: agy /usage -> $($r.Code)"; return $none }
-        $text = $r.Out.Trim()
-        $doc = $null
-        try { $doc = $text | ConvertFrom-Json } catch {
-            $a = $text.IndexOf('{'); $b = $text.LastIndexOf('}')
-            if ($a -ge 0 -and $b -gt $a) { try { $doc = $text.Substring($a, $b - $a + 1) | ConvertFrom-Json } catch { $null = $_ } }
+        if ($script:Agy) {
+            $r = Invoke-Native $script:Agy @('--version') $RepoDir 1
+            if ($r.Code -eq 0 -and $r.Out -match '(?<![0-9.])([0-9]+(?:\.[0-9]+){1,3})(?![0-9.])') { $script:AgyVersion = [version]$Matches[1] }
+            else { Write-WrapperLog "agy --version не розпізнано (код $($r.Code))" }
         }
-        if ($null -ne $doc -and $doc.PSObject.Properties['response'] -and $doc.response -is [string]) {
-            try { $doc = $doc.response | ConvertFrom-Json } catch { $null = $_ }
-        }
-        $groups = New-Object System.Collections.ArrayList
-        if ($null -ne $doc) { Get-UsageGroups $doc $groups }
-        $mt = @(Get-NameTokens $Model)
-        $hit = @($groups | Where-Object { $g = $_; @(Get-NameTokens $g.Name | Where-Object { $mt -contains $_ }).Count -gt 0 })
-        if ($hit.Count -eq 0) {
-            Write-WrapperLog ('квота: групу моделі {0} не розпізнано; вивід /usage: {1}' -f $Model, $text.Substring(0, [Math]::Min(400, $text.Length)))
-            return $none
-        }
-        $zeros = @($hit | Where-Object { $_.Left -eq 0 })
-        $ref = $(if ($zeros.Count -eq $hit.Count) { $zeros[0] } else { @($hit | Sort-Object Left -Descending)[0] })
-        $g = ($ref.Name.ToUpperInvariant() -replace '[^A-Z0-9]', '')
-        if (-not $g) { $g = 'MODEL' }
-        [pscustomobject]@{ Known = $true; Blocked = ($ref.Left -eq 0); Group = $g.Substring(0, [Math]::Min(16, $g.Length)); ResetMin = $ref.ResetMin; Left = $ref.Left }
-    } catch {
-        Write-WrapperLog "квота: $($_.Exception.Message)"
-        $none
-    }
+    } catch { Write-WrapperLog "agy --version: $($_.Exception.Message)" }
+    $script:AgyVersion
 }
 
-# Рушій наряду за позначкою й квотою: Blocked — усі кандидати на 0 %; Exe $null — рушія нема на ноутбуці.
-function Select-Engine($M) {
-    $e = Get-Engine $M.Model
-    $q = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; Left = -1 }
-    if ($e.Name -eq 'agy') {
-        $q = Get-Quota $M.Model
-        if ($q.Blocked -and $CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') {
-            $cx = Find-EngineExe $CodexExe
-            if ($cx) {
-                Write-WrapperLog "рушій: agy на 0 % (група $($q.Group)) — Codex, модель $CodexFallbackModel"
-                return [pscustomobject]@{ Engine = (Get-Engine $CodexFallbackModel); Exe = $cx; Quota = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; Left = -1 } }
+# Таблиця з табами: перший рядок — заголовок (без цифр), далі записи. Інакше $null.
+function ConvertFrom-UsageTable([string]$Text) {
+    $lines = @($Text -split "`r?`n" | Where-Object { $_.Contains("`t") })
+    if ($lines.Count -lt 2 -or $lines[0] -match '[0-9]') { return $null }
+    $head = @($lines[0] -split "`t" | ForEach-Object { ($_.Trim().ToLowerInvariant() -replace '[^a-z0-9]+', '_').Trim('_') })
+    $rows = New-Object System.Collections.ArrayList
+    foreach ($l in $lines[1..($lines.Count - 1)]) {
+        $c = @($l -split "`t")
+        $o = [ordered]@{}
+        for ($i = 0; $i -lt [Math]::Min($c.Count, $head.Count); $i++) {
+            $k = $head[$i]; $v = $c[$i].Trim()
+            if (-not $k -or -not $v) { continue }
+            if ($k -match '^(?:remaining|left)' -and $v.EndsWith('%')) { $k = 'remaining_percent' }
+            elseif ($k -match '^(?:used|usage)' -and $v.EndsWith('%')) { $k = 'used_percent' }
+            elseif ($k -match '^resets?(?:_|$)') {
+                $k = 'reset_time'
+                if ($v -match '^(?:([0-9]+)\s*d)?\s*(?:([0-9]+)\s*h)?\s*(?:([0-9]+)\s*m)?$') {
+                    $k = 'reset_in_seconds'
+                    $v = [string](86400 * [int]('0' + $Matches[1]) + 3600 * [int]('0' + $Matches[2]) + 60 * [int]('0' + $Matches[3]))
+                }
+            }
+            $o[$k] = $v
+        }
+        [void]$rows.Add([pscustomobject]$o)
+    }
+    ,@($rows)
+}
+
+# Групи пулів із `/usage`: Known=$false — не читали (стара версія agy, збій чи нерозпізнаний вивід). Кеш на прогін;
+# -Fresh читає знову. Виклик лише на версії, яку джерело називає безпечною (UsageMinVersion).
+function Read-Usage([switch]$Fresh) {
+    if ($null -ne $script:Usage -and -not $Fresh) { return $script:Usage }
+    $u = [pscustomobject]@{ Known = $false; Groups = @(); Text = '' }
+    try {
+        $v = Get-AgyVersion
+        if ($null -eq $v -or $v -lt $script:UsageMinVersion) {
+            Write-WrapperLog "квота: agy $(if ($v) { $v } else { '?' }) < $($script:UsageMinVersion) — /usage не кличу"
+        } else {
+            $r = Invoke-Native $script:Agy @('-p', '/usage') $RepoDir $QuotaMinutes
+            if ($r.TimedOut -or $r.Code -ne 0) { Write-WrapperLog "квота: agy /usage -> $($r.Code)" }
+            else {
+                $text = $r.Out.Trim()
+                $doc = ConvertFrom-UsageTable $text
+                if ($null -eq $doc) {
+                    try { $doc = $text | ConvertFrom-Json } catch {
+                        $a = $text.IndexOf('{'); $b = $text.LastIndexOf('}')
+                        if ($a -ge 0 -and $b -gt $a) { try { $doc = $text.Substring($a, $b - $a + 1) | ConvertFrom-Json } catch { $null = $_ } }
+                    }
+                    if ($null -ne $doc -and $doc.PSObject.Properties['response'] -and $doc.response -is [string]) {
+                        try { $doc = $doc.response | ConvertFrom-Json } catch { $null = $_ }
+                    }
+                }
+                $groups = New-Object System.Collections.ArrayList
+                if ($null -ne $doc) { Get-UsageGroups $doc $groups }
+                $u = [pscustomobject]@{ Known = ($groups.Count -gt 0); Groups = @($groups); Text = $text.Substring(0, [Math]::Min(400, $text.Length)) }
+                if (-not $u.Known) { Write-WrapperLog ('квота: груп не розпізнано; вивід /usage: ' + $u.Text) }
             }
         }
-        return [pscustomobject]@{ Engine = $e; Exe = $script:Agy; Quota = $q }
+    } catch { Write-WrapperLog "квота: $($_.Exception.Message)" }
+    $script:Usage = $u
+    $u
+}
+
+# ASCII-код групи для рядка: назва → A-Z0-9, до 16 знаків.
+function ConvertTo-GroupCode([string]$Name) {
+    $g = ($Name.ToUpperInvariant() -replace '[^A-Z0-9]', '')
+    if (-not $g) { $g = 'MODEL' }
+    $g.Substring(0, [Math]::Min(16, $g.Length))
+}
+
+# Known=$false — квоту не прочитано (наряд іде далі). Blocked — усі групи моделі на 0 %; Group — ASCII-ім'я для коду рядка.
+function Get-Quota([string]$Model, [switch]$Fresh) {
+    $none = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; Left = -1 }
+    $u = Read-Usage -Fresh:$Fresh
+    if (-not $u.Known) { return $none }
+    $mt = @(Get-NameTokens $Model)
+    $hit = @($u.Groups | Where-Object { $g = $_; @(Get-NameTokens $g.Name | Where-Object { $mt -contains $_ }).Count -gt 0 })
+    if ($hit.Count -eq 0) {
+        Write-WrapperLog ('квота: групу моделі {0} не розпізнано; вивід /usage: {1}' -f $Model, $u.Text)
+        return $none
     }
-    # `codex exec` не має документованого способу прочитати залишок без ходу: квота невідома, 429 ловить Get-ErrorCode.
-    [pscustomobject]@{ Engine = $e; Exe = (Find-EngineExe $CodexExe); Quota = $q }
+    $zeros = @($hit | Where-Object { $_.Left -eq 0 })
+    $ref = $(if ($zeros.Count -eq $hit.Count) { $zeros[0] } else { @($hit | Sort-Object Left -Descending)[0] })
+    [pscustomobject]@{ Known = $true; Blocked = ($ref.Left -eq 0); Group = (ConvertTo-GroupCode $ref.Name); ResetMin = $ref.ResetMin; Left = $ref.Left }
+}
+
+# Клас моделі за назвою: код — flash, проєктування — pro; інше — без каскаду.
+function Get-ModelClass([string]$Model) {
+    $t = @(Get-NameTokens $Model)
+    if ($t -contains 'flash') { return 'code' }
+    if ($t -contains 'pro') { return 'design' }
+    ''
+}
+
+# Кандидати за порядком: модель позначки → [claude-opus-5-5-high для проєктування] → Codex (лише з -CodexFallbackModel).
+function Get-Cascade([string]$Model) {
+    $c = @($Model)
+    if ((Get-ModelClass $Model) -eq 'design') { $c += $script:ClaudeCascadeModel }
+    if ($CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') { $c += $CodexFallbackModel }
+    $c
+}
+
+# Рушій наряду за позначкою й квотою пулів. Model — фактична модель (каскад); Quota — пулу першого кандидата, якщо всі
+# на 0 % (Blocked); Exe $null — рушія нема на ноутбуці.
+function Select-Engine($M) {
+    $e = Get-Engine $M.Model
+    $unknown = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; Left = -1 }
+    if ($e.Name -ne 'agy') {
+        # `codex exec` не має документованого способу прочитати залишок без ходу: квота невідома, 429 ловить Get-ErrorCode.
+        return [pscustomobject]@{ Engine = $e; Exe = (Find-EngineExe $CodexExe); Quota = $unknown; Model = $M.Model }
+    }
+    $first = $null
+    foreach ($cand in (Get-Cascade $M.Model)) {
+        $ce = Get-Engine $cand
+        if ($ce.Name -eq 'codex') {
+            $cx = Find-EngineExe $CodexExe
+            if ($cx) {
+                Write-WrapperLog "рушій: пули agy на 0 % — Codex, модель $cand"
+                return [pscustomobject]@{ Engine = $ce; Exe = $cx; Quota = $unknown; Model = $cand }
+            }
+            continue
+        }
+        if ($cand -ne $M.Model -and $null -ne $script:AgyModels -and @($script:AgyModels) -notcontains $cand) {
+            Write-WrapperLog "каскад: $cand нема в agy models — пропущено"
+            continue
+        }
+        $q = Get-Quota $cand
+        if ($null -eq $first) { $first = $q }
+        if ($q.Blocked) { Write-WrapperLog "каскад: $cand на 0 % (група $($q.Group))"; continue }
+        if ($cand -ne $M.Model) { Write-WrapperLog "рушій: каскад $($M.Model) -> $cand" }
+        return [pscustomobject]@{ Engine = $ce; Exe = $script:Agy; Quota = $q; Model = $cand }
+    }
+    [pscustomobject]@{ Engine = $e; Exe = $script:Agy; Quota = $(if ($first) { $first } else { $unknown }); Model = $M.Model }
 }
 
 # --- прогін agy ---------------------------------------------------------------------------------------------------
@@ -622,6 +723,24 @@ function Get-AgyModels {
     @($names | Select-Object -Unique -First 20)
 }
 
+# Пули для диспетчера (pools.json у теці вихідних): версія agy, групи (ASCII-код, % залишку, хв до скидання), назви
+# `agy models` за ModelPattern. Лише числа й назви за шаблоном; рядок із них складає gemini_publish.ps1.
+function Write-Pools {
+    $v = Get-AgyVersion
+    $u = Read-Usage -Fresh
+    $seen = @{}; $groups = @()
+    foreach ($g in $u.Groups) {
+        $c = ConvertTo-GroupCode $g.Name
+        if ($seen.ContainsKey($c)) { continue }
+        $seen[$c] = 1
+        $groups += [ordered]@{ g = $c; left = [int]$g.Left; reset = [int]$g.ResetMin }
+    }
+    $models = @(Get-AgyModels)
+    $script:AgyModels = $(if ($models.Count -gt 0) { $models } else { $null })
+    $doc = [ordered]@{ v = 1; time = (Get-Date).ToString('s'); agy = $(if ($v) { [string]$v } else { '' }); groups = @($groups | Select-Object -First 6); models = @($models | Select-Object -First 10) }
+    Write-FileAtomic (Join-Path $OutDir 'pools.json') ($doc | ConvertTo-Json -Compress -Depth 4)
+}
+
 # --- один наряд ---------------------------------------------------------------------------------------------------
 
 function Reset-Clone {
@@ -697,6 +816,9 @@ function Invoke-Task($M) {
         $sel = Select-Engine $M
         $q = $sel.Quota
         $status.engine = $sel.Engine.Name
+        $status.actual = $sel.Model
+        $MA = $M | Select-Object *
+        $MA.Model = $sel.Model
         if (-not $sel.Exe) { $status.code = 'ENGINE_MISSING'; return }
         if ($q.Blocked) {
             $status.code = 'QUOTA_ZERO'; $status.quota = 0; $status.qgroup = $q.Group
@@ -711,16 +833,16 @@ function Invoke-Task($M) {
         $status.start = $start
         # Стан із початком гілки: перерваний прогін наступний запуск закриє й забандлить (Resume-Interrupted).
         Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
-        $prompt = Get-Prompt $M $taskText $sel.Engine.Name
+        $prompt = Get-Prompt $MA $taskText $sel.Engine.Name
         [System.IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
-        $res = Invoke-Agent $M $start $prompt $dir $sel
+        $res = Invoke-Agent $MA $start $prompt $dir $sel
         $tail = $res.Tail
         $status.code = $res.Code
         $status.report = $res.Report
         $status.turns = $res.Turns
         if ($res.Code -eq 'MODEL_INVALID') { $status.models = @(Get-AgyModels) }
         # Залишок квоти після прогону — для рядка кінця наряду.
-        $qa = $(if ($sel.Engine.Name -eq 'agy') { Get-Quota $M.Model } else { $q })
+        $qa = $(if ($sel.Engine.Name -eq 'agy') { Get-Quota $sel.Model -Fresh } else { $q })
         if ($qa.Known) { $status.quota = $qa.Left; $status.qgroup = $qa.Group }
     } catch {
         $status.code = 'CRASH'
@@ -773,8 +895,9 @@ function Main {
                 '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
         $m = Get-NextMarker
         Resume-Interrupted
-        if ($null -eq $m) { return 0 }
         $script:Agy = Find-EngineExe $AgyExe
+        if ($script:Agy) { try { Write-Pools } catch { Write-WrapperLog "пули: $($_.Exception.Message)" } }
+        if ($null -eq $m) { return 0 }
         Invoke-Task $m
         0
     } catch {

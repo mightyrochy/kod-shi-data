@@ -310,7 +310,10 @@ function Get-Line([string]$Id) {
             # Квота групи (рішення диспетчера 9611): суфікс лише коли стан має групу й відсоток 0–100.
             $qg = [string](Get-Prop $s 'qgroup')
             $qs = $(if ($quotaLeft -match '^(?:100|[1-9]?[0-9])$' -and $qg -cmatch '^[A-Z0-9]{2,16}$') { " КВОТА $qg $quotaLeft" } else { '' })
-            return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ГОТОВО $branch $head$qs" }
+            # Фактична модель (каскад за пулом може відрізнятися від моделі позначки): лише за ModelPattern.
+            $am = [string](Get-Prop $s 'actual')
+            $ms = $(if ($am -cmatch $script:ModelPattern) { " МОДЕЛЬ $am" } else { '' })
+            return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ГОТОВО $branch $head$qs$ms" }
         }
         return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $(if ($code -eq 'DONE') { 'NO_HEAD' } else { $code })_PUBLISHED" }
     }
@@ -349,7 +352,8 @@ function Reset-State([string]$Id) {
 $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
-    "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?\z"
+    "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
+    '\AGEMINI ОБГОРТКА: ПУЛИ V=(?:[0-9]+(?:\.[0-9]+){1,3}|-)(?: G=[A-Z0-9]{1,16}:(?:100|[1-9]?[0-9]):(?:[0-9]{1,6}|-)){0,6} M=(?:-|[a-z0-9][a-z0-9.-]{1,63}(?:,[a-z0-9][a-z0-9.-]{1,63}){0,9})\z'
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:gemini|codex|claude)/$script:SlugCore [A-Z0-9_]{2,40}\z"
     '\AСПОСТЕРІГАЧ КОМЕНТАР #[0-9]{1,12} [0-9]{1,20} (?:mightyrochy|chatgpt-codex-connector\[bot\]) (?:новий|змінено)\z'
     '\AСПОСТЕРІГАЧ CI #[0-9]{1,12} [0-9a-f]{40} (?:success|failure|cancelled|timed_out|action_required|neutral|skipped|pending)\z'
@@ -394,6 +398,34 @@ function Move-Outbox([string]$Name, [string]$Sub) {
     $dir = Join-Path $OutboxDir $Sub
     [void](New-Item -ItemType Directory -Force -Path $dir)
     Move-Item -LiteralPath (Join-Path $OutboxDir $Name) -Destination (Join-Path $dir $Name) -Force
+}
+
+# pools.json від gemini (версія agy, групи квоти, назви моделей) -> рядок ПУЛИ у вихідні. Недовірений файл: у рядок
+# іде лише те, що збіглося з шаблонами; не частіше за раз на 3 години й лише коли рядок змінився.
+function Add-PoolsLine {
+    $path = Join-Path $OutDir 'pools.json'
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { return }
+    if ((Get-Item -LiteralPath $path).Length -gt 8192) { Write-WrapperLog 'pools.json завеликий — пропущено'; return }
+    try { $p = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json }
+    catch { Write-WrapperLog 'pools.json не читається як JSON — пропущено'; return }
+    $ver = [string](Get-Prop $p 'agy')
+    $parts = @('V=' + $(if ($ver -cmatch '^[0-9]+(\.[0-9]+){1,3}$') { $ver } else { '-' }))
+    foreach ($g in @(@(Get-Prop $p 'groups') | Where-Object { $null -ne $_ } | Select-Object -First 6)) {
+        $c = [string](Get-Prop $g 'g'); $l = [string](Get-Prop $g 'left'); $r = [string](Get-Prop $g 'reset')
+        if ($c -cmatch '^[A-Z0-9]{1,16}$' -and $l -cmatch '^(?:100|[1-9]?[0-9])$') {
+            $parts += "G=${c}:${l}:" + $(if ($r -cmatch '^[0-9]{1,6}$') { $r } else { '-' })
+        }
+    }
+    $models = @(@(Get-Prop $p 'models') | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ } | Where-Object { $_ -cmatch $script:ModelPattern } | Select-Object -First 10)
+    $parts += 'M=' + $(if ($models.Count -gt 0) { $models -join ',' } else { '-' })
+    $line = 'GEMINI ОБГОРТКА: ПУЛИ ' + ($parts -join ' ')
+    if ((Test-OutboxLine $line) -ne '') { Write-WrapperLog 'рядок ПУЛИ не збігся з шаблоном — пропущено'; return }
+    $last = Join-Path $WorkDir 'pools_last.txt'
+    if ((Test-Path -LiteralPath $last) -and [System.IO.File]::ReadAllText($last, $script:Utf8) -eq $line) { return }
+    $now = Get-Date
+    if (Test-Seen ('pools ' + $now.ToString('yyyyMMdd') + '-' + [int][Math]::Floor($now.Hour / 3))) { return }
+    Write-FileAtomic $last $line
+    Add-OutboxLine ('{0:yyyyMMdd-HHmmss}-{1}.txt' -f $now, (Get-Sha256Hex $line).Substring(0, 12)) $line
 }
 
 # Файли вихідних -> стан <o-id>.json: рядок на відправлення або карантин із повідомленням лише кодом (не більше 3 на добу).
@@ -501,6 +533,7 @@ function Main {
             Write-WrapperLog $line
             Write-FileAtomic $statePath (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
         }
+        Add-PoolsLine
         Receive-Outbox
         foreach ($sf in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File | Sort-Object Name)) {
             $st = [System.IO.File]::ReadAllText($sf.FullName, $script:Utf8) | ConvertFrom-Json
