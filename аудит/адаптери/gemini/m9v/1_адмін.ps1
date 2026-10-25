@@ -7,8 +7,7 @@
 Крок 3: тека C:\ProgramData\gemini-wrapper (gemini лише читає). Крок 5: право «вхід як пакетне завдання»
 для gemini і задачі gemini-run (під gemini) та gemini-publish (під власником). Ідемпотентний.
 Пароль gemini — лише через Get-Credential (системне вікно); скрипт його не читає в змінну для виводу й не пише.
-Попередні умови: 0_власник.ps1 пройдено; gemini має пароль (Ctrl+Alt+Del у сеансі gemini); Node.js 20+ для 2_під_gemini.ps1.
-Node.js: https://nodejs.org/en/download ; winget: https://learn.microsoft.com/windows/package-manager/winget/
+Попередні умови: 0_власник.ps1 пройдено; gemini має пароль (той, що вже стоїть у задачі gemini-run; без пароля — Ctrl+Alt+Del у сеансі gemini).
 Команди кроків — дослівно з НАЛАШТУВАННЯ.md.
 #>
 $ErrorActionPreference = 'Stop'
@@ -28,17 +27,6 @@ foreach ($f in @(@('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('gemini_publ
     if (-not (Test-Path $f[1])) { Stop-Here "нема $($f[1]): спершу 0_власник.ps1 (у цьому ж обліковому записі, не іншим адміністратором)." }
     $got = (Get-FileHash $f[1] -Algorithm SHA256).Hash
     if ($got -ne $expected[$f[0]]) { Stop-Here "хеш $($f[0]) не збігся з хеші.psd1: маємо $got. Запусти 0_власник.ps1 знову; не допомогло — диспетчерові." }
-}
-
-# Node.js 20+ потрібен 2_під_gemini.ps1 (Gemini CLI); адміністраторське встановлення — для всіх користувачів
-Step 'Node.js 20+ (для Gemini CLI)'
-$nodeOk = $false
-try { $nv = (& node --version 2>$null); if ($nv -match '^v(\d+)\.' -and [int]$Matches[1] -ge 20) { $nodeOk = $true; Write-Host "node $nv — є." } } catch {}
-if (-not $nodeOk) {
-    if (Get-Command winget -ErrorAction SilentlyContinue) {
-        winget install --id OpenJS.NodeJS.LTS -e --silent --accept-package-agreements --accept-source-agreements
-        Write-Host 'Node.js встановлено (winget). Новий PowerShell під gemini побачить його.'
-    } else { Write-Host 'УВАГА: Node.js 20+ нема і winget нема. Постав LTS з https://nodejs.org/en/download (для всіх користувачів) до 2_під_gemini.ps1.' -ForegroundColor Yellow }
 }
 
 Step 'Крок 3: тека обгортки gemini лише для читання'
