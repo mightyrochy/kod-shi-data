@@ -1,0 +1,1156 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   люстерко · інтерфейс v3 — «Полотно й нитка»; уночі — «Музейне золото».
+   Система за посібником «Українська айдентика для UI Люстерка»:
+   · шрифти: Fixel Text (MacPaw, OFL) — весь текст інтерфейсу; Kyiv*Type Titling
+     (Растворцев, freeware) — лише заголовки; Kyiv*Type Serif — голос стиліста
+     в картці; Arsenal — запасний. Жодного псевдостарослов'янського.
+   · колір: небілене полотно, чорна нитка, ОДИН акцент — золото (≤ 10 % площі:
+     вузол поточного кроку, нитка під знаком, стан «вдягну як є», фокус,
+     головна кнопка вночі). Синьо-жовтої пари як палітри нема. За фото речі
+     жоден колір не стоїть.
+   · форма: трапецієподібне вікно Кричевського (скошені верхні кути) — константа
+     сітки: картки, фото-вікна, плитки, кнопки, вікно очікування.
+   · орнамент: лише лінійний і мікро. Мережка (5 px) — роздільник секцій;
+     «біле по білому» — фактура порожніх станів; витинанка — силует порожнього
+     стану; чипи — намистини. Орнамент ніколи не лягає під фото.
+   · рух: «нанизування» карток і речей, «затягування» мережки в лоадері,
+     нитка під знаком; усе вимикається за prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── ШРИФТИ ─────────────────────────────────────────────────────────────── */
+@font-face{font-family:"Fixel Text";font-style:normal;font-weight:400;font-display:swap;
+  src:local("Fixel Text"),local("FixelText-Regular"),
+  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelText-Regular.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-style:normal;font-weight:500;font-display:swap;
+  src:local("Fixel Text Medium"),local("FixelText-Medium"),
+  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelText-Medium.woff2") format("woff2")}
+@font-face{font-family:"Fixel Text";font-style:normal;font-weight:600;font-display:swap;
+  src:local("Fixel Text SemiBold"),local("FixelText-SemiBold"),
+  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelText-SemiBold.woff2") format("woff2")}
+@font-face{font-family:"Fixel Display";font-style:normal;font-weight:600;font-display:swap;
+  src:local("Fixel Display SemiBold"),local("FixelDisplay-SemiBold"),
+  url("https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelDisplay-SemiBold.woff2") format("woff2")}
+/* Kyiv*Type — незмінені файли автора (NoDerivates), лежать у `шрифти/` поруч
+   із index.html. Вісь ваги 0–1000: Regular = 350, Medium = 500, Bold = 700. */
+@font-face{font-family:"KyivType Titling";font-style:normal;font-weight:1 1000;font-display:swap;
+  src:url("шрифти/KyivTypeTitling-VarGX.ttf") format("truetype")}
+@font-face{font-family:"KyivType Serif";font-style:normal;font-weight:1 1000;font-display:swap;
+  src:url("шрифти/KyivTypeSerif-VarGX.ttf") format("truetype")}
+
+/* ── ТОКЕНИ ─────────────────────────────────────────────────────────────── */
+:root{
+  color-scheme:light;
+  --полотно:#F4F0E8;   /* небілене полотно — тло сторінки */
+  --аркуш:#FBF9F4;     /* поверхня карток */
+  --папір:#EDE7DA;     /* вершкове (кераміка Опішні) — вторинна поверхня */
+  --чорнило:#1B1A17;   /* чорна нитка */
+  --олівець:#6B665C;
+  --межа:#E0D9CB;
+  --межа-темна:#C4BBA6;
+  --золото:#846426;    /* удень золото матове, бронзове — щоб не «здешевити» */
+  --золото-2:#B79340;
+  --на-золоті:#FBF9F4;
+  --сигнал:#A6452F;    /* теракота — лише для відмов і помилок */
+  --фото-тло:#fff;     /* під фото речі — завжди біле, і вночі теж */
+  /* «біле по білому»: восьмикутна зірка полтавської лиштви, ледь помітна */
+  --фактура:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><g fill='none' stroke='%231B1A17' stroke-opacity='.06'><path d='M16 3l2.6 10.4L29 16l-10.4 2.6L16 29l-2.6-10.4L3 16l10.4-2.6z'/><path d='M0 16h3M29 16h3M16 0v3M16 29v3'/></g></svg>");
+  /* витинанка: вазон — стебло, три пари листків, зірка, горщик-трапеція;
+     симетрія від згину паперу — права половина є дзеркалом лівої */
+  --витинанка:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><g fill='%231B1A17' fill-opacity='.14'><rect x='78' y='44' width='4' height='104'/><path d='M54 148h52l-8 10H62z'/><g id='a'><path d='M79 130c-26-2-42-16-46-42 24 4 40 18 46 42z'/><path d='M79 102c-22-4-34-16-36-40 20 6 32 18 36 40z'/><path d='M79 76c-16-4-24-14-26-32 14 4 22 14 26 32z'/><circle cx='34' cy='56' r='4'/></g><use href='%23a' transform='matrix(-1 0 0 1 160 0)'/><path d='M80 6l5 13 13-5-5 13 13 5-13 5 5 13-13-5-5 13-5-13-13 5 5-13-13-5 13-5-5-13 13 5z'/></g></svg>");
+  --текст:"Fixel Text","Arsenal",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --дисплей:"KyivType Titling","Fixel Display","Arsenal",Georgia,serif;
+  --голос:"KyivType Serif","Source Serif 4",Georgia,"Times New Roman",serif;
+  --контраст:480;      /* вісь CONT для заголовків: «дорогий» контраст, не крик */
+  --ск:16px;           /* скіс вікна Кричевського — константа сітки */
+  --кнопка-тло:var(--чорнило);
+  --кнопка-текст:var(--полотно);
+  /* мережка: дві нитки й прутики між ними — 5 px, роздільник, не орнамент */
+  --мережка:linear-gradient(var(--межа-темна),var(--межа-темна)) 0 0/100% 1px no-repeat,
+            linear-gradient(var(--межа-темна),var(--межа-темна)) 0 100%/100% 1px no-repeat,
+            repeating-linear-gradient(90deg,var(--межа-темна) 0 1px,transparent 1px 5px) 0 50%/100% 3px no-repeat;
+}
+/* ніч — музейне золото на глибокому тлі; вмикається системою або кнопкою */
+@media (prefers-color-scheme:dark){
+  :root:not([data-тема="світла"]){
+    color-scheme:dark;
+    --полотно:#141517;--аркуш:#1D1F23;--папір:#25282D;--чорнило:#EDE6D6;--олівець:#A79F91;
+    --межа:#30343A;--межа-темна:#4A4F58;--золото:#D6B45C;--золото-2:#EAD18E;--на-золоті:#17181A;--сигнал:#E48C74;
+    --кнопка-тло:linear-gradient(160deg,var(--золото-2),var(--золото));--кнопка-текст:var(--на-золоті);
+    --фактура:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><g fill='none' stroke='%23EDE6D6' stroke-opacity='.055'><path d='M16 3l2.6 10.4L29 16l-10.4 2.6L16 29l-2.6-10.4L3 16l10.4-2.6z'/><path d='M0 16h3M29 16h3M16 0v3M16 29v3'/></g></svg>");
+    --витинанка:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><g fill='%23EDE6D6' fill-opacity='.13'><rect x='78' y='44' width='4' height='104'/><path d='M54 148h52l-8 10H62z'/><g id='a'><path d='M79 130c-26-2-42-16-46-42 24 4 40 18 46 42z'/><path d='M79 102c-22-4-34-16-36-40 20 6 32 18 36 40z'/><path d='M79 76c-16-4-24-14-26-32 14 4 22 14 26 32z'/><circle cx='34' cy='56' r='4'/></g><use href='%23a' transform='matrix(-1 0 0 1 160 0)'/><path d='M80 6l5 13 13-5-5 13 13 5-13 5 5 13-13-5-5 13-5-13-13 5 5-13-13-5 13-5-5-13 13 5z'/></g></svg>")}
+}
+:root[data-тема="темна"]{
+  color-scheme:dark;
+  --полотно:#141517;--аркуш:#1D1F23;--папір:#25282D;--чорнило:#EDE6D6;--олівець:#A79F91;
+  --межа:#30343A;--межа-темна:#4A4F58;--золото:#D6B45C;--золото-2:#EAD18E;--на-золоті:#17181A;--сигнал:#E48C74;
+  --кнопка-тло:linear-gradient(160deg,var(--золото-2),var(--золото));--кнопка-текст:var(--на-золоті);
+  --фактура:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><g fill='none' stroke='%23EDE6D6' stroke-opacity='.055'><path d='M16 3l2.6 10.4L29 16l-10.4 2.6L16 29l-2.6-10.4L3 16l10.4-2.6z'/><path d='M0 16h3M29 16h3M16 0v3M16 29v3'/></g></svg>");
+  --витинанка:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><g fill='%23EDE6D6' fill-opacity='.13'><rect x='78' y='44' width='4' height='104'/><path d='M54 148h52l-8 10H62z'/><g id='a'><path d='M79 130c-26-2-42-16-46-42 24 4 40 18 46 42z'/><path d='M79 102c-22-4-34-16-36-40 20 6 32 18 36 40z'/><path d='M79 76c-16-4-24-14-26-32 14 4 22 14 26 32z'/><circle cx='34' cy='56' r='4'/></g><use href='%23a' transform='matrix(-1 0 0 1 160 0)'/><path d='M80 6l5 13 13-5-5 13 13 5-13 5 5 13-13-5-5 13-5-13-13 5 5-13-13-5 13-5-5-13 13 5z'/></g></svg>")}
+
+/* ── ВІКНО КРИЧЕВСЬКОГО: скошені верхні кути + кайма в 1 px. ────────────
+   clip-path ріже й межу, тож кайма малюється окремо — кільцем (evenodd), яке
+   лягає над вмістом і не ловить дотиків. Без підтримки evenodd кільце просто
+   не малюється (@supports), а форма лишається. */
+.картка,.плитка,.заява,.біб-образ,.рамка,#пал-основа .чип:has(.зразки),button.тихо,.сцн-відкрити,.паспорт,.приклад,.репліка.ші{
+  --вікно:polygon(var(--ск) 0,calc(100% - var(--ск)) 0,100% var(--ск),100% 100%,0 100%,0 var(--ск));
+  --кайма:polygon(evenodd,var(--ск) 0,calc(100% - var(--ск)) 0,100% var(--ск),100% 100%,0 100%,0 var(--ск),
+    1px calc(var(--ск) + .4px),1px calc(100% - 1px),calc(100% - 1px) calc(100% - 1px),calc(100% - 1px) calc(var(--ск) + .4px),
+    calc(100% - var(--ск) - .4px) 1px,calc(var(--ск) + .4px) 1px);
+  position:relative;isolation:isolate;clip-path:var(--вікно)}
+.картка::after,.плитка::after,.заява::after,.біб-образ::after,.рамка::before,#пал-основа .чип:has(.зразки)::after,
+button.тихо::after,.сцн-відкрити::after,.паспорт::after,.приклад::after,.репліка.ші::after{
+  content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--кайма-колір,var(--межа))}
+@supports (clip-path:polygon(evenodd,0 0,1px 0,1px 1px)){
+  .картка::after,.плитка::after,.заява::after,.біб-образ::after,.рамка::before,#пал-основа .чип:has(.зразки)::after,
+  button.тихо::after,.сцн-відкрити::after,.паспорт::after,.приклад::after,.репліка.ші::after{clip-path:var(--кайма)}
+}
+@supports not (clip-path:polygon(evenodd,0 0,1px 0,1px 1px)){
+  .картка::after,.плитка::after,.заява::after,.біб-образ::after,.рамка::before,#пал-основа .чип:has(.зразки)::after,
+  button.тихо::after,.сцн-відкрити::after,.паспорт::after,.приклад::after,.репліка.ші::after{display:none}
+}
+
+/* ── БАЗА ───────────────────────────────────────────────────────────────── */
+*{box-sizing:border-box}
+/* `hidden` сильніший за будь-який клас із `display` (`.поле{display:block}` показувало схований «Колір губ»). */
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;background:var(--полотно)}
+body{margin:0;background:var(--полотно);color:var(--чорнило);
+  font:16px/1.55 var(--текст);-webkit-font-smoothing:antialiased;padding:0 0 184px;overflow-x:hidden}
+.колонка{max-width:680px;margin-inline:auto;padding:0 20px}
+h1,h2,h3{font-family:var(--дисплей);font-weight:500;margin:0;letter-spacing:0;
+  font-variation-settings:"CONT" var(--контраст);text-wrap:balance}
+h1{font-size:34px;line-height:1.1;letter-spacing:-.005em}
+h2{font-size:24px;line-height:1.2;--контраст:360}
+h3{font-size:19px;line-height:1.25;--контраст:260}
+p{margin:0}
+a{color:var(--чорнило);text-decoration-color:var(--межа-темна);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--золото);outline-offset:2px}
+::selection{background:var(--золото);color:var(--на-золоті)}
+/* іконки Українського інституту: геометричний контур, вузли квадратні, без заокруглень */
+svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:miter;flex:0 0 auto}
+
+/* ── ШАПКА: знак — саме слово титульним шрифтом, під ним золота нитка. ── */
+.шапка{display:flex;align-items:flex-end;justify-content:flex-start;gap:10px;padding:16px 0 10px}
+.знак{font:500 30px/1 var(--дисплей);font-variation-settings:"CONT" 600;letter-spacing:.01em;color:var(--чорнило);
+  background:none;border:0;padding:0 0 9px;cursor:pointer;position:relative}
+.знак::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--золото);
+  transform-origin:left;animation:нитка .9s cubic-bezier(.2,.7,.2,1) .15s both}
+@keyframes нитка{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+/* ── ТКАЦЬКИЙ ВЕРСТАТ (v5): поки збираються образи, тчеться полотно в кольорах
+      обраної палітри. Навій угорі, нитки основи, човник ходить по межі,
+      полотно намотується донизу, зі щаблями збирання його стає більше.
+      ЧОМУ ЛИШЕ transform. Головний потік на цьому екрані зайнятий Pyodide,
+      і все, що рахує він, завмирає (виміряно на телефоні власника). Chrome веде
+      transform-анімації на композиторі: човник, уток, бердо й полотно рухаються
+      transform-ом, кольори й довжина полотна міняються не частіше, ніж щаблі.
+      ЧВЕРТЬ НА ЩАБЕЛЬ (власник, 21.09.2026): смуга полотна — 96 % поля, зсув
+      падає на 25 % за щабель, тож «Ще туманно» тче чверть, «Проступають
+      обриси» — половину, «Вимальовується» — три чверті, готово — усе поле.
+      Доти смуга була 64 % і на «Вимальовується» уток ледь доходив до
+      половини, хоч образи вже майже зібрані. Верхні 4 % лишаються під навій
+      і човник: інакше `overflow:hidden` зрізав би їх на останньому щаблі. */
+.верстат{--нитка:var(--олівець);--акцент:var(--золото);position:relative;height:236px;margin:14px 0 4px;overflow:hidden;
+  background:repeating-linear-gradient(90deg,var(--межа-темна) 0 1px,transparent 1px 8px)}
+.верстат::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:var(--чорнило);opacity:.9}
+.верстат .полотно{position:absolute;left:0;right:0;bottom:0;height:96%;transform:translateY(var(--зсув,75%));
+  transition:transform 1.6s cubic-bezier(.2,.7,.2,1);will-change:transform}
+.верстат[data-щабель="0"] .полотно{--зсув:75%}
+.верстат[data-щабель="1"] .полотно{--зсув:50%}
+.верстат[data-щабель="2"] .полотно{--зсув:25%}
+.верстат[data-щабель="3"] .полотно{--зсув:0%}
+.верстат .бердо{position:absolute;left:-4px;right:-4px;top:-3px;height:3px;background:var(--чорнило);
+  animation:бити 1.15s ease-in-out infinite;will-change:transform}
+@keyframes бити{0%,42%{transform:translateY(0)}50%{transform:translateY(2px)}58%,92%{transform:translateY(0)}100%{transform:translateY(2px)}}
+.верстат .доріжка{position:absolute;left:0;top:-8px;width:calc(100% - 36px);height:12px;
+  animation:човник 1.15s ease-in-out infinite alternate;will-change:transform}
+@keyframes човник{to{transform:translateX(100%)}}
+.верстат .човник{position:absolute;left:0;top:0;width:36px;height:12px;background:var(--акцент);
+  clip-path:polygon(0 50%,14% 0,86% 0,100% 50%,86% 100%,14% 100%)}
+.верстат .човник::after{content:"";position:absolute;left:14px;right:14px;top:4px;height:4px;background:var(--чорнило);opacity:.8}
+.верстат .уток{position:absolute;left:0;right:0;top:-2px;height:2px;background:var(--нитка);will-change:transform}
+.верстат .уток.л{transform-origin:left;animation:уток-л 2.3s linear infinite}
+.верстат .уток.п{transform-origin:right;animation:уток-п 2.3s linear infinite}
+@keyframes уток-л{0%{transform:scaleX(0)}50%{transform:scaleX(1)}50.01%,100%{transform:scaleX(0)}}
+@keyframes уток-п{0%,50%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+.верстат .вікно{position:absolute;inset:0;overflow:hidden}
+.верстат .тканина{position:absolute;left:0;right:0;top:0;height:200%;will-change:transform;
+  animation:намотувати 46s linear infinite;
+  /* полотняне переплетення: шашечки по нитках основи, між рядами утоку — нитка полотна */
+  background:
+    repeating-linear-gradient(0deg,transparent 0 7px,var(--полотно) 7px 8px),
+    repeating-conic-gradient(var(--нитка) 0 25%,transparent 0 50%) 0 0/8px 8px}
+@keyframes намотувати{from{transform:translateY(-50%)}to{transform:translateY(0)}}
+/* рушникові смуги: чорна нитка з решіткою акценту, тонкі — самим акцентом */
+.верстат .смуга{position:absolute;left:0;right:0;height:14px;background:var(--чорнило)}
+.верстат .смуга::before{content:"";position:absolute;inset:2px 0;background:
+  repeating-linear-gradient(45deg,var(--акцент) 0 1.5px,transparent 1.5px 9px),
+  repeating-linear-gradient(-45deg,var(--акцент) 0 1.5px,transparent 1.5px 9px)}
+.верстат .смуга.тонка{height:4px}.верстат .смуга.тонка::before{display:none}
+.верстат .смуга.акцентна{background:var(--акцент);height:3px}.верстат .смуга.акцентна::before{display:none}
+.верстат.тихо .доріжка,.верстат.тихо .уток,.верстат.тихо .бердо,.верстат.тихо .тканина{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){.верстат *{animation:none!important}}
+
+
+/* ── НИТКА ПОСТУПУ: намисто. Пройдене — чорна намистина, поточне — золота. ─ */
+.поступ{margin:8px 0 2px}
+.лічба{font:400 13px/1 var(--текст);font-variant-numeric:tabular-nums;color:var(--олівець);margin-bottom:12px}
+.нитка{display:grid;grid-template-columns:repeat(3,1fr);position:relative}
+.нитка::before{content:"";position:absolute;left:5px;right:calc(33.4% - 5px);top:5px;height:1px;background:var(--межа-темна)}
+.нитка button{min-height:44px;background:none;border:0;padding:0;text-align:left;cursor:pointer;color:var(--олівець);
+  font:400 12.5px/1.3 var(--текст);position:relative;clip-path:none}
+.нитка button i{display:block;width:11px;height:11px;border-radius:50%;border:1px solid var(--межа-темна);
+  background:var(--полотно);margin:0 0 10px 0}
+.нитка button.є i{background:var(--чорнило);border-color:var(--чорнило)}
+.нитка button.тут{color:var(--чорнило);font-weight:500}
+.нитка button.тут i{background:var(--золото);border-color:var(--золото);box-shadow:0 0 0 3px var(--полотно),0 0 0 4px var(--золото)}
+
+/* ── ЕКРАН ────────────────────────────────────────────────────────────── */
+.екран{display:none;animation:зʼява .18s ease-out both}
+@keyframes зʼява{from{opacity:0}to{opacity:1}}
+.вступ{padding:24px 0 10px}
+.вступ h1 em{font-style:normal;color:var(--золото)}
+.вступ p{color:var(--олівець);font-size:15px;margin-top:10px;max-width:30em}
+/* розділ починається з мережки — і це весь його орнамент */
+.розділ{position:relative;padding:26px 0 6px;margin-top:16px}
+.розділ::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--мережка);opacity:.9}
+.розділ h2{margin-bottom:4px}
+.підказка{color:var(--олівець);font-size:14px;line-height:1.5;margin-top:6px}
+.статус{color:var(--олівець);font-size:13.5px;line-height:1.5;margin-top:8px;white-space:pre-line}
+.ком-запис{margin-top:6px;font-size:13.5px;line-height:1.5;color:var(--олівець)}
+.ком-запис summary{cursor:pointer;min-height:32px;display:flex;align-items:center}
+.ком-запис-текст{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.статус:empty{display:none}
+.ряд{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+#сц-мета-зони-плитки[hidden]{display:none}
+.мітка{font:500 20px/1.25 var(--дисплей);font-variation-settings:"CONT" 260;margin:22px 0 8px}
+
+/* ── ВКЛАДКИ ВНИЗУ: чотири розділи під великим пальцем; поточна — «ї». ───── */
+.вкладки{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:8px;padding:8px 0 10px;position:relative}
+.вкладки::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--межа)}
+.вкладки button{min-height:44px;background:none;border:0;clip-path:none;padding:6px 4px 2px;color:var(--олівець);
+  display:flex;flex-direction:column;align-items:center;gap:4px;font:500 11.5px/1.2 var(--текст);position:relative}
+.вкладки button svg.і{width:22px;height:22px;stroke-width:1.4}
+.вкладки button i{width:22px;height:22px;border-radius:50%;background:var(--олівець);color:var(--полотно);
+  font:600 9px/22px var(--текст);font-style:normal;letter-spacing:.04em;text-align:center;text-transform:uppercase}
+.вкладки button.тут{color:var(--чорнило)}
+.вкладки button.тут i{background:var(--чорнило)}
+.вкладки button.тут::after{content:"";position:absolute;left:50%;bottom:-7px;width:4px;height:4px;border-radius:50%;
+  margin-left:-7px;background:var(--золото);box-shadow:6px 0 0 var(--золото)}
+#смуга-профілів{display:contents}
+#тема-кнопка{display:inline-flex;align-items:center;gap:8px}
+#тема-кнопка svg.і{width:18px;height:18px}
+
+/* ── ШАПКА: дії бібліотеки сценаріїв — словами, лише на сценарії ────────────── */
+.шапка{justify-content:space-between}
+.шапка-дії{display:flex;gap:16px;padding-bottom:9px}
+.шапка-дії[hidden]{display:none}
+.шапка-дії button.текст{font-size:13.5px;padding:4px 0}
+.шапка-дії button[hidden]{display:none}
+/* ── ТЕМА — КРУЖОК У ШАПЦІ НА КОЖНОМУ ЕКРАНІ (власник, 22.09.2026) ──────────
+      У v5 перемикач сховався в «Налаштування» профілю — і власник його не
+      знайшов («пропала кнопка»): два тапи вглиб і підпис, який читався як щось
+      про профілі. Повернуто туди, де він був до v5: праворуч у шапці, поруч із
+      діями сценарію. Вузол лишається ОДИН (`#тема-кнопка`), тож рейка ноутбука
+      (`#бік-тема`) і далі клацає саме його, а не другу копію з власним станом. */
+.шапка-право{display:flex;align-items:flex-end;gap:14px}
+.тема{width:44px;height:44px;border-radius:50%;padding:0;background:none;border:1px solid var(--межа-темна);color:var(--чорнило);
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:4px;clip-path:none;flex:0 0 auto}
+.тема svg.і{width:18px;height:18px}
+/* підпис «Ніч»/«День» лишається для читача екрана й для рейки ноутбука */
+.тихо-слово{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+
+/* ── ПОЛЕ РОЗМОВИ (v5): головний елемент. На порожньому сценарії — аркуш листа
+      посеред екрана (`#сц-лист`); далі й на решті екранів — вікно в панелі. Поле
+      одне (`#чат-ввід`), його переносить `розмістити_поле`. ──────────────────── */
+.ші{position:relative}
+.пілюля-ші{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--аркуш);border:1px solid var(--межа-темна);
+  border-radius:999px;clip-path:none;padding:11px 16px;color:var(--олівець);font:400 14px/1.35 var(--текст);min-height:44px}
+.пілюля-ші[hidden]{display:none}
+.пілюля-ші i{flex:0 0 auto;width:4px;height:4px;border-radius:50%;background:var(--золото);box-shadow:6px 0 0 var(--золото);margin-right:6px}
+.пілюля-ші span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#ші-аркуш[hidden]{display:none}
+.ші-аркуш-верх{justify-content:flex-end;margin:0 0 4px}
+.ші-аркуш-верх button{padding:4px 0;font-size:12.5px}
+#ші-стрічка{max-height:46vh;overflow:auto;margin:0 0 8px;padding:2px 0;overscroll-behavior:contain}
+#чат-стрічка{display:flex;flex-direction:column;gap:8px}
+#чат-стрічка:empty{display:none}
+.репліка{max-width:88%;padding:11px 14px;font-size:15px;line-height:1.5;white-space:pre-line}
+.репліка.вона{align-self:flex-end;background:var(--чорнило);color:var(--полотно);
+  clip-path:polygon(0 0,100% 0,100% 100%,10px 100%,0 calc(100% - 10px))}
+.репліка.ші{--ск:10px;align-self:flex-start;background:var(--аркуш);max-width:92%}
+.репліка .порада-нота{display:block;margin-top:6px;font-size:12.5px;color:var(--олівець)}
+/* вікно Кричевського з каймою-кільцем — та сама техніка, що в картках */
+.вікно-розмови,.аркуш-письма{position:relative;isolation:isolate;
+  clip-path:polygon(var(--ск) 0,calc(100% - var(--ск)) 0,100% var(--ск),100% 100%,0 100%,0 var(--ск))}
+.вікно-розмови::after,.аркуш-письма::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--межа-темна);
+  clip-path:polygon(evenodd,var(--ск) 0,calc(100% - var(--ск)) 0,100% var(--ск),100% 100%,0 100%,0 var(--ск),
+    1px calc(var(--ск) + .4px),1px calc(100% - 1px),calc(100% - 1px) calc(100% - 1px),calc(100% - 1px) calc(var(--ск) + .4px),
+    calc(100% - var(--ск) - .4px) 1px,calc(var(--ск) + .4px) 1px)}
+.чат-ввід{display:flex;gap:8px;align-items:flex-end}
+.чат-ввід[hidden]{display:none}
+.чат-ввід textarea{flex:1;margin:0;padding:10px 0;border:0;background:none;font:400 17px/1.4 var(--текст);color:var(--чорнило);
+  resize:none;min-height:56px;max-height:160px;outline:none;box-shadow:none}
+.чат-ввід textarea:focus{border:0;box-shadow:none}
+.чат-ввід textarea::placeholder{color:var(--олівець);opacity:1;font-size:17px}
+.чат-низ{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex:0 0 auto}
+.слати{width:48px;height:48px;padding:0;border-radius:50%;clip-path:none;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--чорнило);color:var(--полотно);flex:0 0 auto;border:1px solid var(--чорнило)}
+.слати svg.і{width:22px;height:22px;stroke-width:1.8}
+.слати.порожньо{background:none;border-color:var(--межа-темна);color:var(--олівець)}
+/* ── МІКРОФОН (слово власника 24.09): голос у двох полях — розмова й «Своїми
+      словами». Кнопка НЕ ховається там, де розпізнавання нема (аудит/ПРОДУКТ.md п.9):
+      вона стоїть поруч із рештою, клікабельна, і на дотик каже м'яким рядком,
+      чому тут не вмикається. Активний запис видно: кнопка залита, і навколо неї
+      дихає кільце. Кільце — `box-shadow`, а не окремий вузол: на телефоні це
+      малює композитор, без перерахунку розкладки. */
+.мікрофон{width:44px;height:44px;padding:0;border-radius:50%;clip-path:none;display:inline-flex;align-items:center;justify-content:center;
+  background:none;color:var(--чорнило);flex:0 0 auto;border:1px solid var(--межа-темна)}
+.мікрофон svg.і{width:21px;height:21px;stroke-width:1.8}
+.мікрофон.слухає{background:var(--чорнило);color:var(--полотно);border-color:var(--чорнило);animation:мік-дихання 1.6s ease-in-out infinite}
+@keyframes мік-дихання{0%,100%{box-shadow:0 0 0 0 var(--межа-темна)}50%{box-shadow:0 0 0 6px var(--межа)}}
+@media (prefers-reduced-motion:reduce){.мікрофон.слухає{animation:none;box-shadow:0 0 0 4px var(--межа)}}
+/* у рядку розмови мікрофон рівний «Надіслати» — два однакові дотики поруч */
+.чат-низ .мікрофон{width:48px;height:48px}
+.чат-низ .мікрофон svg.і{width:22px;height:22px}
+.аркуш-письма .мікрофон{width:54px;height:54px}
+.аркуш-письма .мікрофон svg.і{width:24px;height:24px}
+/* рядок голосу під полем: чесність, «слухаю», і причина, коли не вмикається */
+.голос-ряд{display:flex;align-items:center;gap:12px;margin:10px 0 0}
+.голос-ряд .підпис-голосу{font-size:13.5px;color:var(--олівець);line-height:1.4}
+/* ФОТО РЕЧІ (рядок 152): кругла кнопка того ж розміру, що «надіслати», але тиха —
+   головна дія лишається одна. Файловий вхід схований у ній самій. */
+.фото-речі{width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--межа-темна);color:var(--олівець);cursor:pointer;flex:0 0 auto;position:relative}
+.фото-речі svg.і{width:22px;height:22px;stroke-width:1.6}
+.фото-речі input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.фото-речі[hidden]{display:none}
+.аркуш-письма .фото-речі{width:54px;height:54px}
+.чат-вкладення{display:flex;gap:8px;flex-wrap:wrap}
+.чат-вкладення:empty{display:none}
+.вкладення{position:relative;width:64px;height:64px;flex:0 0 auto}
+.вкладення img{width:64px;height:64px;object-fit:cover;display:block;border-radius:6px}
+.вкладення button{position:absolute;top:-8px;right:-8px;width:26px;height:26px;padding:0;border-radius:50%;clip-path:none;
+  background:var(--чорнило);color:var(--полотно);border:0;display:inline-flex;align-items:center;justify-content:center}
+.вкладення button svg.і{width:14px;height:14px}
+.панель .чат-ввід:has(.чат-вкладення:not(:empty)){flex-wrap:wrap}
+.панель .чат-ввід .чат-вкладення{flex:1 0 100%}
+/* фото в її репліці: мініатюри над словами; без слів — лише фото */
+/* ── «ОЦІНИ МІЙ ОБРАЗ» (Л-6): вхід — вкладка панелі, фото з «+», картка тим самим візерунком ── */
+.оц-фото{display:flex;flex-wrap:wrap;gap:14px;margin-top:4px}
+.оц-плюс{width:64px;height:64px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--межа-темна);
+  border-radius:6px;font:300 30px/1 var(--текст);color:var(--олівець);background:var(--аркуш);cursor:pointer}
+.оц-необов{font:400 12.5px var(--текст);color:var(--олівець);margin-left:6px}
+.оц-поле .поле{margin-top:4px}
+.оц-опади{margin-top:10px;gap:8px}
+.оц-дія{padding:18px 0 0}
+.оц-речі{margin-top:14px}
+.оц-речі h3{font:600 16px var(--текст);margin:0 0 6px}
+.оц-річ{display:flex;align-items:center;gap:10px;min-height:56px;padding:6px 0;border-top:1px solid var(--межа-темна)}
+.оц-річ img{width:44px;height:44px;object-fit:cover;border-radius:6px;flex:0 0 auto}
+.оц-річ .оц-слот{flex:0 0 auto;font-size:13px;color:var(--олівець);min-width:76px}
+.оц-річ .оц-кр{width:16px;height:16px;border-radius:50%;border:1px solid var(--межа-темна);flex:0 0 auto}
+.оц-річ .оц-назва{flex:1 1 auto;min-width:0;font-size:14px;line-height:1.3;overflow-wrap:anywhere}
+.оц-річ .оц-замість{flex:0 0 auto;font-size:12px;color:var(--олівець)}
+/* Рядок 5771: кнопка не тікає під нижню панель — липне над нею, поки в переліку є що гортати (висоту панелі пише `відступПідПанель`) */
+.оц-речі{scroll-margin-top:8px}
+.оц-речі .оц-так{margin-top:12px;width:100%;position:sticky;bottom:calc(var(--під-панеллю, 0px) + 10px)}
+.оц-річ{cursor:pointer;position:relative}
+.оц-річ.відкр{background:var(--полотно-2,transparent)}
+.оц-мін{width:44px;height:44px;border-radius:6px;flex:0 0 auto;border:1px dashed var(--межа-темна)}
+.оц-х{flex:0 0 auto;width:44px;height:44px;margin-right:-8px;border:0;background:transparent;color:var(--олівець);font-size:18px;line-height:1;cursor:pointer}
+.оц-плюс-річ{display:block;width:100%;min-height:44px;margin-top:8px;border:1px dashed var(--межа-темна);border-radius:10px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.оц-ред{padding:4px 0 12px}
+.оц-ред-мітка{font-size:12px;color:var(--олівець);margin:8px 0 4px}
+.оц-чипи{display:flex;flex-wrap:wrap;gap:6px}
+.оц-слова{margin-top:14px}
+.оц-слова textarea{width:100%;box-sizing:border-box;min-height:64px;font-size:16px}
+.оц-слова .голос-ряд .мікрофон{width:48px;height:48px}
+.оц-слова .голос-ряд .мікрофон svg.і{width:22px;height:22px}
+.оц-кола{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.оц-коло{width:36px;height:36px;border-radius:50%;border:1px solid var(--межа-темна);padding:0;cursor:pointer}
+.оц-коло.вибр{outline:2px solid var(--чорнило);outline-offset:2px}
+.оц-дотик{display:flex;flex-wrap:wrap;gap:8px}
+.оц-дотик-фото{position:relative;line-height:0}
+.оц-дотик-фото img{max-height:140px;max-width:100%;border-radius:6px;cursor:crosshair}
+.оц-мітка-дотику{position:absolute;border:2px solid var(--чорнило);box-shadow:0 0 0 1px #fff;border-radius:3px;pointer-events:none}
+.оц-картка .оц-відповідь{font-size:17.5px}
+/* Рядок 3321: рядки «Що змінити» з'являються разом із карткою, без виїзду з нуля (спільний `.річ` без анімації — рядок 3463;
+   до нього `нанизати` лишав блок блідим: виміряно .79 і .62 на двох рядках за ~200 мс, а решта картки вже темна). */
+/* 5200: порада й назва заміни читаються повністю; спільний clamp назв речей тут не діє. */
+.оц-зміни .річ .н .назва,.оц-зміни .річ .н a{display:block;overflow:visible;
+  -webkit-line-clamp:unset;overflow-wrap:anywhere}
+.оц-зміни .річ a{display:block;font-size:12.5px;color:var(--олівець);margin-top:3px}
+.оц-не-знаю .задум{margin-top:8px}
+.оц-допит{margin:10px 18px 0;padding-top:4px}
+.оц-допит .репліка{margin:8px 0}
+.оц-допит textarea{margin-top:6px}
+.фото-репліки{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 6px}
+.фото-репліки:last-child{margin:0}
+.фото-репліки img{width:84px;height:84px;object-fit:cover;display:block;border-radius:6px}
+/* у панелі поле — вікно на два рядки */
+.панель .чат-ввід{--ск:14px;background:var(--аркуш);padding:12px 8px 8px 16px;min-height:88px}
+/* в аркуші листа — велике: вікно — сам аркуш, поле стовпчиком, нота ліворуч від кнопки */
+.аркуш-письма{--ск:18px;background:var(--аркуш) var(--фактура);margin-top:20px;padding:18px 18px 12px;min-height:250px;display:flex;flex-direction:column}
+.аркуш-письма[hidden]{display:none}
+#сц-лист-місце{display:flex;flex-direction:column;flex:1}
+.аркуш-письма .чат-ввід{flex-direction:column;align-items:stretch;flex:1;gap:8px}
+.аркуш-письма .чат-ввід textarea{font-size:18px;line-height:1.5;min-height:160px;max-height:none;padding:0}
+.аркуш-письма .чат-ввід textarea::placeholder{font-size:18px}
+.аркуш-письма .чат-низ{justify-content:flex-end}
+.аркуш-письма .слати{width:54px;height:54px}
+.аркуш-письма .слати svg.і{width:24px;height:24px}
+#чат-стан{margin:6px 0 0}
+/* швидкі відповіді над полем: намистини одним рядом, прокрутка вбік */
+.швидкі{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 20px 10px;margin:0 -20px}
+.швидкі::-webkit-scrollbar{display:none}
+.швидкі:empty{display:none}
+.швидкі .чип{flex:0 0 auto;font-size:14px;padding:9px 14px;background:var(--полотно)}
+.пс-питання{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 4px;padding:12px 16px 4px;border-top:1px solid var(--межа);
+  font-size:13.5px;color:var(--олівець)}
+.пс-питання button{padding:2px 0;margin-left:14px}
+
+/* ── СЦЕНАРІЙ: розмова, картка в стрічці, приклади під аркушем ─────────────── */
+.вступ#сц-вступ{padding-bottom:0}
+html.широко .вступ#сц-вступ,html.широко #е-огляд .профіль-шапка{padding-top:0}
+.вступ#сц-вступ h1{font-size:44px;line-height:1.05}
+.розмова{margin-top:14px}
+.розмова #чат-стрічка{gap:10px}
+.розмова:empty{display:none}
+/* приклади — живі речення, якими вона б і написала; без напису над ними */
+#сц-приклади{display:flex;flex-direction:column;gap:8px;margin-top:20px}
+#сц-приклади:empty{display:none}
+.приклад{--ск:10px;display:block;width:100%;text-align:left;background:var(--аркуш);color:var(--чорнило);border:0;
+  padding:13px 16px;font:400 15px/1.4 var(--текст);cursor:pointer}
+.увага{display:flex;gap:12px;align-items:flex-start;background:var(--папір);padding:14px 16px;margin-top:14px;font-size:14px;line-height:1.5;
+  clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%,0 12px)}
+.увага[hidden]{display:none}
+.увага svg.і{color:var(--золото);margin-top:2px}
+.увага button.текст{padding:2px 0;margin-left:6px}
+.паспорт{--ск:14px;background:var(--аркуш);margin-top:10px;padding:0 0 14px}
+.паспорт[hidden]{display:none}
+.пс-шапка{display:flex;flex-direction:column;gap:3px;padding:14px 16px 10px;background:var(--мережка);background-position:0 100%,0 100%,0 calc(100% - 2px)}
+.пс-шапка b{font:500 19px/1.25 var(--дисплей);font-variation-settings:"CONT" 260}
+.пс-шапка small{font-size:13px;color:var(--олівець);min-height:1em}
+.ряд-паспорта{display:grid;grid-template-columns:104px 1fr auto;gap:10px;align-items:baseline;width:100%;text-align:left;
+  background:none;border:0;border-top:1px solid var(--межа);clip-path:none;padding:11px 16px;color:var(--чорнило);font:400 15px/1.4 var(--текст)}
+.ряд-паспорта>span{font-size:13px;color:var(--олівець)}
+.ряд-паспорта>b{font-weight:500;min-width:0;overflow-wrap:anywhere}
+.ряд-паспорта>b.типово,.ряд-паспорта>b>span.типово{font-weight:400;color:var(--олівець)}
+.ряд-паспорта::after{content:"›";color:var(--олівець);font-size:18px;line-height:1;justify-self:end}
+.ряд-паспорта.відкрито{background:var(--папір)}
+.ряд-паспорта[hidden]{display:none}
+.пс-шапка+.ряд-паспорта{border-top:0}
+/* редактори живуть у картці схованими; на час правки їх переносить аркуш */
+.редактор[hidden]{display:none}
+.редактор .плитки{margin-top:12px}
+.редактор .умови{margin-top:8px}
+.редактор .дрібні{margin-top:12px}
+.редактор .поле:has(>select){margin-top:8px}
+.пс-дія{padding:14px 16px 0}
+.пс-дія button.головна{width:100%;margin:0;padding:15px 20px;font-size:15.5px;background:var(--кнопка-тло);color:var(--кнопка-текст);
+  clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%,0 10px)}
+.пс-дрібні{display:flex;justify-content:center;gap:18px;padding-top:10px}
+.пс-дрібні button.текст{font-size:13px;padding:4px 0}
+#сц-рукою-ряд{margin:12px 0 0}
+.сц-збер .поле{margin-top:0}
+.сц-збер[hidden]{display:none}
+button.назад{padding:14px 0 0;font-size:14px}
+.сцн{display:grid;grid-template-columns:1fr auto;gap:0 10px;align-items:center;margin-top:8px}
+.сцн-відкрити{--ск:12px;display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;background:var(--аркуш);border:0;
+  padding:12px 14px;color:var(--чорнило);font:400 14px/1.35 var(--текст);cursor:pointer}
+.сцн-відкрити b{font:500 18px/1.25 var(--дисплей);font-variation-settings:"CONT" 260}
+.сцн-відкрити small{font-size:12px;color:var(--олівець)}
+.сцн-відкрити.тут{--кайма-колір:var(--золото)}
+.сцн-геть{padding:8px 0;font-size:12.5px;color:var(--олівець);text-decoration-color:var(--межа-темна);white-space:nowrap}
+#біб-назад-ряд[hidden]{display:none}
+
+/* ── АРКУШ ЗНИЗУ: вікно Кричевського, що підіймається над екраном ─────────── */
+.заслона{position:fixed;inset:0;background:rgba(27,26,23,.38);z-index:40}
+.заслона[hidden]{display:none}
+:root[data-тема="темна"] .заслона{background:rgba(0,0,0,.55)}
+.аркуш{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--аркуш);
+  clip-path:polygon(16px 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%,0 16px);
+  padding:0 20px calc(16px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;overscroll-behavior:contain;
+  animation:підняти .22s cubic-bezier(.2,.7,.2,1) both}
+.аркуш[hidden]{display:none}
+@keyframes підняти{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.аркуш .ручка{width:36px;height:3px;background:var(--межа-темна);margin:10px auto 0}
+.аркуш-шапка{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:16px 0 6px}
+.аркуш-шапка h2{font-size:24px;line-height:1.15}
+.аркуш-шапка button.текст{font-size:14px;padding:4px 0}
+.аркуш-шапка button[hidden]{display:none}
+.аркуш .готово{margin-top:18px;width:100%;padding:15px 20px;font-size:15.5px}
+.аркуш .готово[hidden]{display:none}
+#аркуш-тіло>.редактор{padding:0}
+#аркуш-тіло .умови{grid-template-columns:1fr 1fr}
+#аркуш-тіло .пілюля{min-width:0;padding:10px 10px;gap:8px}
+#аркуш-тіло .пілюля label{min-width:0}
+#аркуш-тіло .пілюля input{width:44px}
+#аркуш-тіло .сцена .площина{right:0}
+#аркуш-тіло>details{margin-top:0}
+#аркуш-тіло>details>summary{display:none}
+#аркуш-тіло .розділ{padding-top:0;margin-top:0}
+#аркуш-тіло .розділ::before{display:none}
+#аркуш-тіло .розділ>h2{display:none}
+#аркуш-тіло .сцена{margin-top:4px}
+/* Поля аркуша не гублять клавіатурний фокус під загальним outline:none. */
+#аркуш :focus-visible{outline:2px solid var(--золото);outline-offset:2px}
+#аркуш button:focus-visible{outline-offset:-3px}
+html.аркуш-відкрито{overflow:hidden}
+
+/* ── ПРОФІЛЬ РЯДКАМИ: список із прев'ю, кожен рядок — свій аркуш ──────────── */
+.профіль-шапка{display:flex;align-items:center;gap:14px;padding:22px 0 4px}
+.профіль-шапка .ініціали{flex:0 0 auto;width:56px;height:56px;border-radius:50%;background:var(--чорнило);color:var(--полотно);
+  font:600 16px/56px var(--текст);text-align:center;letter-spacing:.06em;text-transform:uppercase}
+.профіль-шапка h1{font-size:34px;line-height:1.05}
+.профіль-шапка .статус{margin-top:4px}
+#е-огляд .мітка{margin:22px 0 8px}
+.список{--ск:14px;background:var(--аркуш);padding:2px 0;position:relative;isolation:isolate;
+  clip-path:polygon(var(--ск) 0,calc(100% - var(--ск)) 0,100% var(--ск),100% 100%,0 100%,0 var(--ск))}
+.список::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--межа);
+  clip-path:polygon(evenodd,var(--ск) 0,calc(100% - var(--ск)) 0,100% var(--ск),100% 100%,0 100%,0 var(--ск),
+    1px calc(var(--ск) + .4px),1px calc(100% - 1px),calc(100% - 1px) calc(100% - 1px),calc(100% - 1px) calc(var(--ск) + .4px),
+    calc(100% - var(--ск) - .4px) 1px,calc(var(--ск) + .4px) 1px)}
+.рядок{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;text-align:left;
+  background:none;border:0;border-top:1px solid var(--межа);clip-path:none;padding:14px 16px;color:var(--чорнило);font:400 15px/1.35 var(--текст)}
+.список .рядок:first-child{border-top:0}
+.рядок .н{display:flex;flex-direction:column;gap:3px;min-width:0}
+.рядок .н b{font-weight:500;font-size:15.5px}
+.рядок .н small{font-size:13px;color:var(--олівець)}
+.рядок::after{content:"›";color:var(--олівець);font-size:20px;line-height:1}
+.рядок .прев{font:400 14px/1.3 var(--текст);color:var(--олівець);text-align:right;justify-self:end;min-width:0;overflow-wrap:anywhere}
+.рядок .прев.число{font-weight:500;color:var(--чорнило);font-variant-numeric:tabular-nums;letter-spacing:.02em;white-space:nowrap}
+.рядок .прев.число small{color:var(--олівець);font-weight:400;margin-left:6px;font-size:13px}
+.рядок .прев.брак{color:var(--золото);font-weight:500;font-size:13px}
+.рядок .прев .зразки{display:inline-flex}
+.рядок .прев .зразки i{display:inline-block;width:22px;height:22px;border:1px solid rgba(0,0,0,.12)}
+.рядок .прев .зразки i+i{border-left:0}
+.рядок .прев.фото{display:inline-flex;gap:4px}
+.рядок .прев.фото i{display:inline-block;width:26px;height:34px;background:var(--папір) var(--фактура);clip-path:polygon(6px 0,100% 0,100% 100%,0 100%,0 6px)}
+.рядок .прев.фото i.є{background:var(--папір) var(--фактура) center/cover no-repeat}
+
+
+
+/* ── РОЗШИРЕНІ НАЛАШТУВАННЯ ПРОФІЛЮ: сітка необовʼязкових вимірів ──────────── */
+.розширені{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;margin-top:14px}
+.розширені label{display:grid;grid-template-columns:auto auto 1fr;align-items:baseline;gap:0 8px}
+.розширені span{font:400 13px var(--текст);color:var(--олівець)}
+.розширені input{width:60px;padding:3px 0;font:500 17px/1.2 var(--текст);font-variant-numeric:tabular-nums;text-align:right;
+  border-bottom:1px solid var(--межа-темна)}
+.розширені b{font:400 11px var(--текст);color:var(--олівець)}
+.розширені i{grid-column:1/-1;font:400 11px/1.4 var(--текст);font-style:normal;color:var(--олівець);opacity:.8;margin-top:2px}
+#мр-розширені{margin-top:18px}
+#мр-розширені[hidden]{display:none}
+#мр-розширені>summary{font-size:15px}
+#мр-розширені>.розділ{margin-top:12px}
+
+/* ── ЩО ВИДНО В ЯКОМУ РЕЖИМІ: знайомство (два кроки) проти екрана профілю ─── */
+html[data-режим="старт"] .лише-профіль{display:none}
+html:not([data-режим="старт"]) .лише-старт{display:none}
+
+/* ── СЦЕНА ПЕРШОГО ЕКРАНА: площина полотна й два вікна Кричевського. ────
+   Площина — одна, пласка, з фактурою «біле по білому»; фото стоять у вікнах,
+   вужчих угорі. Жодної тіні (площинність Бойчука). ─────────────────────── */
+.сцена{position:relative;aspect-ratio:1/1.06;margin:8px 0 0}
+.сцена .площина{position:absolute;right:-20px;top:6%;width:60%;height:46%;z-index:0;
+  background:var(--фактура),var(--папір);clip-path:polygon(9% 0,91% 0,100% 12%,100% 100%,0 100%,0 12%)}
+.сцена .слот-портрет{position:absolute;right:6%;top:0;width:56%;z-index:2}
+.сцена .слот-зріст{position:absolute;left:0;bottom:0;width:43%;z-index:3}
+.слот{position:relative;isolation:isolate;display:block;width:100%;overflow:hidden;cursor:pointer;
+  background:var(--фактура),var(--аркуш);clip-path:var(--вікно)}
+.слот::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--межа-темна);clip-path:var(--кайма)}
+/* «арка» — портрет: широке вікно; «полароїд» — повний зріст: високе вікно.
+   Імена класів лишаються з v2 — їх ставить код, а форма тепер інша. */
+.слот.арка{aspect-ratio:3/4.1;
+  --вікно:polygon(17% 0,83% 0,100% 15%,100% 100%,0 100%,0 15%);
+  --кайма:polygon(evenodd,17% 0,83% 0,100% 15%,100% 100%,0 100%,0 15%,
+    1px calc(15% + .5px),1px calc(100% - 1px),calc(100% - 1px) calc(100% - 1px),calc(100% - 1px) calc(15% + .5px),
+    calc(83% - .6px) 1px,calc(17% + .6px) 1px)}
+.слот.полароїд{aspect-ratio:3/4.8;
+  --вікно:polygon(15% 0,85% 0,100% 7%,100% 100%,0 100%,0 7%);
+  --кайма:polygon(evenodd,15% 0,85% 0,100% 7%,100% 100%,0 100%,0 7%,
+    1px calc(7% + .5px),1px calc(100% - 1px),calc(100% - 1px) calc(100% - 1px),calc(100% - 1px) calc(7% + .5px),
+    calc(85% - .6px) 1px,calc(15% + .6px) 1px)}
+.слот img{width:100%;height:100%;object-fit:cover;display:block}
+.слот.полароїд img{object-fit:contain;background:var(--папір)}
+.слот .порожньо{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;text-align:center;color:var(--олівець);font:500 13px/1.35 var(--текст);padding:14px}
+.слот .порожньо b{display:flex;width:36px;height:36px;border-radius:50%;border:1px solid var(--межа-темна);
+  align-items:center;justify-content:center;color:var(--чорнило);background:var(--аркуш)}
+.слот input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.слот .геть{position:absolute;right:10px;bottom:10px;width:28px;height:28px;border-radius:50%;padding:0;clip-path:none;
+  background:var(--аркуш);border:1px solid var(--межа-темна);color:var(--олівець);display:flex;align-items:center;justify-content:center;z-index:2}
+.слот.полароїд .геть{right:auto;left:8px;bottom:8px;width:24px;height:24px}
+.слот .геть svg{width:14px;height:14px}
+.підпис-фото{display:flex;justify-content:space-between;font:400 13px/1.35 var(--текст);color:var(--олівець);margin-top:10px}
+
+/* ── ПОЛЯ: рядок на полотні — підкреслені. Фокус — золота нитка. ───────── */
+.поле{display:block;margin:16px 0 0}
+.поле>span{display:block;font:400 13px/1.35 var(--текст);color:var(--олівець);margin:0 0 4px}
+.поле-назва{display:block;font:500 18px/1.25 var(--дисплей);font-variation-settings:"CONT" 260;color:var(--чорнило);margin:0 0 8px}
+input[type=text],input[type=number],select,textarea{
+  width:100%;background:transparent;color:var(--чорнило);border:0;border-bottom:1px solid var(--межа-темна);
+  border-radius:0;padding:10px 0;font:17px/1.4 var(--текст);-webkit-appearance:none;appearance:none}
+input[type=file]{min-height:24px}
+input[type=number]{font-variant-numeric:tabular-nums}
+input::placeholder,textarea::placeholder{color:var(--олівець);opacity:1}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--олівець) 50%),
+  linear-gradient(135deg,var(--олівець) 50%,transparent 50%);
+  background-position:calc(100% - 12px) 55%,calc(100% - 7px) 55%;
+  background-size:5px 5px;background-repeat:no-repeat;padding-right:28px}
+select option{color:var(--чорнило);background:var(--аркуш)}
+textarea{min-height:72px;resize:vertical;line-height:1.5}
+textarea[readonly]{color:var(--олівець);font-size:13px;background:var(--аркуш);border:1px solid var(--межа);padding:10px}
+textarea:not([readonly]).коробка{background:var(--аркуш);border:1px solid var(--межа);padding:12px}
+input:focus,select:focus,textarea:focus{outline:none;border-bottom-color:var(--золото);box-shadow:0 1px 0 var(--золото)}
+textarea.коробка:focus{border-color:var(--золото);box-shadow:none}
+.згода{display:flex;gap:10px;align-items:flex-start;margin-top:18px;font-size:14.5px;line-height:1.45}
+.згода input{width:24px;height:24px;flex:0 0 auto;margin:2px 0 0;accent-color:var(--чорнило)}
+.пара{display:flex;gap:16px}
+.пара>*{flex:1;min-width:0}
+/* список — аркуш поля: підпис усередині, значення більшим кеглем */
+.поле:has(>select){background:var(--аркуш);border:1px solid var(--межа);padding:10px 14px 6px;margin-top:12px}
+.поле:has(>select)>span{margin-bottom:0}
+.поле>select{border-bottom:0;padding:4px 28px 6px 0;font:500 17px/1.3 var(--текст)}
+.дрібні .поле:has(>select){margin-top:0}
+
+/* ── КНОПКИ: чорнило на полотні, кути вікна. Головна — вночі золота. ───── */
+button{font:500 15px/1 var(--текст);border:1px solid transparent;padding:14px 20px;
+  background:var(--чорнило);color:var(--полотно);cursor:pointer;border-radius:0;
+  clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%,0 8px)}
+button:active{opacity:1}
+button:focus-visible{outline-offset:-3px}
+button.тихо{min-height:44px;--ск:8px;background:transparent;color:var(--чорнило);border:0;padding:12px 16px;font-size:14px;--кайма-колір:var(--межа-темна)}
+button.текст{min-height:44px;background:none;border:0;color:var(--чорнило);padding:8px 0;font-size:14px;clip-path:none;
+  text-decoration:underline;text-decoration-color:var(--золото);text-decoration-thickness:1px;text-underline-offset:4px}
+button.мал{min-height:44px;padding:10px 14px;font-size:14px}
+button:disabled{opacity:.45;cursor:default}
+button.зі-стрілкою{display:inline-flex;align-items:center;justify-content:center;gap:10px}
+details.розкривач{margin-top:14px}
+summary{min-height:24px}
+details.розкривач summary{cursor:pointer;font-size:14px;color:var(--чорнило);list-style:none;
+  text-decoration:underline;text-decoration-color:var(--золото);text-underline-offset:4px}
+details.розкривач summary::-webkit-details-marker{display:none}
+details.розкривач summary::after{content:" ▾";color:var(--олівець);text-decoration:none}
+details.розкривач[open] summary::after{content:" ▴"}
+
+/* ── ЧИПИ — НАМИСТО: круглі намистини на невидимій нитці; вибрана — чорна
+      з двома крапками «ї». Тло сусідніх не міняється, щоб не зсувати зразок
+      кольору поруч. ───────────────────────────────────────────────────── */
+.чип{min-height:44px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--межа-темна);border-radius:999px;
+  padding:9px 14px;font-size:14px;line-height:1.3;background:var(--аркуш);cursor:pointer;user-select:none;
+  color:var(--чорнило);position:relative;transition:background .15s,color .15s,border-color .15s}
+.чип.вибр{border-color:var(--чорнило);background:var(--чорнило);color:var(--полотно);padding-left:24px}
+.чип.вибр::before{content:"";position:absolute;left:11px;top:50%;margin-top:-2px;width:4px;height:4px;
+  border-radius:50%;background:currentColor;box-shadow:6px 0 0 currentColor}
+/* «вдягну як є» — обраний образ: єдина золота намистина в оцінці */
+.чип.ок.вибр{background:var(--золото);border-color:var(--золото);color:var(--на-золоті)}
+.чип .зразки{display:inline-flex}
+.чип .зразки i{display:inline-block;width:14px;height:14px;border:1px solid rgba(0,0,0,.15)}
+.чип .зразки i+i{border-left:0}
+
+/* ── ВІДТІНКИ ПОМАДИ (21.09.2026, R-MUA-03): пляшечка кольору і слово, без hex
+      і без кодів. «Решта» йде РЯДКАМИ, а не сіткою: на кожен відтінок лягає
+      рядок причини, і в намистині для нього місця нема. Усе під `#сц-губи-блок`,
+      щоб розкладка решти екранів лишилась як є. ─────────────────────────── */
+#сц-губи-блок .чип .зразки i{width:20px;height:20px;border-radius:50%}
+#сц-губи-блок .помада-рядок{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:8px 0}
+#сц-губи-блок .помада-причина{font-size:12px;color:var(--олівець);flex:1 1 100%;margin:0 0 0 4px}
+button.як-слово{min-height:24px;background:none;border:0;padding:0;font:inherit;color:var(--олівець);
+  text-decoration:underline;cursor:pointer}
+
+/* ── ПЛИТКИ (сценарії, погода): малі вікна; вибране — чорнило з «ї». ──── */
+.плитки{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.плитка{--ск:10px;background:var(--аркуш);border:0;padding:16px 8px 12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;text-align:center;
+  min-height:100px;cursor:pointer;color:var(--чорнило);font:400 13px/1.25 var(--текст);transition:background .15s,color .15s}
+.плитка svg.і{width:24px;height:24px;stroke-width:1.4}
+/* рядок 3251: плитки відчуття без значків — вужчі, щоб п'ять слів не займали пів редактора */
+#сц-відчуття-плитки .плитка{padding:11px 6px 9px;min-height:0}
+.плитка .н{font:500 13px/1.25 var(--текст)}
+.плитка small{display:block;font:400 11px/1.3 var(--текст);color:var(--олівець);margin-top:-4px}
+.плитка.вибр{background:var(--чорнило);color:var(--полотно);--кайма-колір:var(--чорнило)}
+.плитка.вибр small{color:inherit;opacity:.7}
+.плитка.вибр::before{content:"";position:absolute;left:10px;top:12px;width:4px;height:4px;border-radius:50%;
+  background:currentColor;box-shadow:6px 0 0 currentColor;z-index:2}
+.умови{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.пілюля{display:flex;align-items:center;gap:10px;background:var(--аркуш);border:1px solid var(--межа);padding:10px 12px}
+.пілюля svg.і{color:var(--олівець)}
+.пілюля label{flex:1;font:400 13px var(--текст);color:var(--олівець)}
+.пілюля input{width:58px;border:0;padding:2px 0;font:500 19px/1.2 var(--текст);font-variant-numeric:tabular-nums;text-align:right;background:none}
+.пілюля b{font:400 13px var(--текст);color:var(--олівець)}
+.дрібні{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+.візьмемо{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:13.5px;color:var(--олівець)}
+.візьмемо::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--золото);box-shadow:7px 0 0 var(--золото);
+  margin:9px 8px 0 0;flex:0 0 auto}
+
+/* ── СВОТЧІ ───────────────────────────────────────────────────────────── */
+.св-група{display:grid;grid-template-columns:104px 1fr;gap:12px;align-items:center;margin-top:10px}
+.св-назва{font-size:13px;color:var(--олівець);line-height:1.3}
+.св-ряд{display:flex;gap:5px}
+.св{flex:1;min-width:0}
+.св i{display:block;height:42px;border:1px solid rgba(0,0,0,.1)}
+
+/* ── ВИТИНАНКА ОБМІРІВ: аркуш, у якому вирізано людину в її ж пропорціях.
+      Кольори бере з токенів (JS підставляє var(--…)). ───────────────────── */
+.крокі{position:relative;margin-top:6px}
+.крокі svg{width:100%;height:auto;display:block}
+/* анотації лягають лише на висоту витинанки (360×380), а не на блок стопи й голови під нею */
+.анотації{position:absolute;left:56%;top:0;width:44%;aspect-ratio:.44/1.0556}
+.ан{position:absolute;left:0;right:14px;display:flex;align-items:baseline;gap:8px;transform:translateY(-50%)}
+.ан span{font:400 13px var(--текст);color:var(--олівець);width:52px;flex:0 0 auto}
+.ан input{width:66px;flex:0 0 auto;padding:3px 0;font:500 19px/1.2 var(--текст);font-variant-numeric:tabular-nums;text-align:right;
+  border-bottom:1px solid var(--межа-темна)}
+.ан b{font:400 11px var(--текст);color:var(--олівець)}
+
+
+
+
+/* ── ДИПТИХ ДРАПІРОВКИ: обличчя у вікні між двома полями. ─────────────── */
+.диптих{display:flex;overflow:hidden;border:1px solid var(--межа);margin-top:10px}
+.стулка{flex:1;position:relative;cursor:pointer;padding:0;background:none;border:0;border-radius:0;display:block;color:inherit;clip-path:none}
+.стулка .поле-тло{height:200px;display:flex;align-items:center;justify-content:center}
+.стулка .вікно{width:132px;height:150px;overflow:hidden;display:block;
+  clip-path:polygon(18% 0,82% 0,100% 16%,100% 100%,0 100%,0 16%)}
+.стулка .вікно img{width:100%;height:100%;object-fit:cover;display:block}
+.стулка .назва{display:block;text-align:center;padding:11px 6px;font:500 14px/1.3 var(--текст);
+  color:var(--чорнило);background:var(--аркуш);border-top:1px solid var(--межа)}
+.стулка[aria-pressed="true"] .назва{background:var(--чорнило);color:var(--полотно)}
+.диптих .стулка+.стулка{border-left:1px solid var(--межа)}
+.однаково{display:block;width:100%;text-align:center;margin-top:2px}
+.кадр{display:flex;gap:12px;align-items:center;margin:8px 0}
+.кадр span{font-size:12.5px;color:var(--олівець);min-width:78px}
+.кадр input[type=range]{flex:1;accent-color:var(--чорнило);height:22px;border:0}
+/* порожній стан: аркуш «біле по білому» з витинанкою праворуч */
+.порожньо-текст,#біб-стан:not(:empty){padding:20px 100px 20px 16px;color:var(--олівець);font-size:14px;line-height:1.5;margin-top:12px;
+  background:var(--витинанка) right 14px center/78px no-repeat,var(--фактура),var(--папір);
+  clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%,0 12px);min-height:96px}
+
+/* ── ПАЛІТРА: стрічка обраного ────────────────────────────────────────── */
+.стрічка{display:flex;gap:4px;height:16px;margin:14px 0 4px}
+.стрічка i{flex:1;border:1px solid rgba(0,0,0,.08)}
+.стрічка i.база{flex:2.4}
+.стрічка i.порожня{border:1px dashed var(--межа-темна);background:none}
+.стрічка-підпис{font-size:13px;color:var(--олівець)}
+/* основа — віяло вікон: зразок великий, назва під ним */
+#пал-основа,#пал-основа details>.ряд{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 0}
+#пал-основа details{grid-column:1/-1;width:100%;margin-top:6px}
+#пал-основа details>summary{font-size:14px;color:var(--чорнило);cursor:pointer;list-style:none;padding:8px 0;
+  text-decoration:underline;text-decoration-color:var(--золото);text-underline-offset:4px}
+#пал-основа details>summary::-webkit-details-marker{display:none}
+#пал-основа details>summary::after{content:" ▾";color:var(--олівець)}
+#пал-основа details[open]>summary::after{content:" ▴"}
+#пал-основа .чип:not(:has(.зразки)){grid-column:1/-1;justify-content:center;padding:12px}
+#пал-основа .чип:has(.зразки){--ск:10px;display:flex;flex-direction:column;align-items:stretch;gap:0;padding:0 10px 9px;border-radius:0;border:0;
+  background:var(--аркуш);color:var(--чорнило);font-size:12.5px;line-height:1.25;text-align:left;overflow:hidden}
+#пал-основа .чип:has(.зразки) .зразки{display:flex;flex-direction:column;width:calc(100% + 20px);margin:0 -10px 8px}
+#пал-основа .чип:has(.зразки) .зразки i{display:block;width:100%;height:64px;border:0}
+#пал-основа .чип.вибр:has(.зразки){background:var(--аркуш);color:var(--чорнило);padding-left:10px;--кайма-колір:var(--чорнило)}
+#пал-основа .чип.вибр:has(.зразки)::before{left:auto;right:9px;top:9px;margin:0;z-index:2;background:var(--аркуш);box-shadow:6px 0 0 var(--аркуш)}
+/* не рекомендований розділ — тихіше не словом, а нижчим зразком: підпис
+   «не радимо, але можна» лишається той самий. Заголовків сімей тут НЕМА
+   свідомо (поправка власника 19.09): вони рвали сітку й лишали порожні
+   клітинки — сім'я стоїть купно самим порядком чипів. */
+#пал-основа details>.ряд .чип:has(.зразки) .зразки i{height:48px}
+#пал-схема{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 0}
+#пал-схема .чип:not(:has(.зразки)){grid-column:1/-1;justify-content:center;padding:12px}
+#пал-схема .чип:has(.зразки){display:flex;flex-direction:column;align-items:stretch;gap:0;padding:0 10px 9px;border-radius:0;font-size:12.5px;line-height:1.25;overflow:hidden}
+#пал-схема .чип:has(.зразки) .зразки{display:flex;width:calc(100% + 20px);margin:0 -10px 8px}
+#пал-схема .чип:has(.зразки) .зразки i{flex:1;height:40px;border:0}
+#пал-схема .чип:has(.зразки) .зразки i+i{border-left:1px solid rgba(0,0,0,.1)}
+#пал-схема .чип.вибр:has(.зразки){background:var(--аркуш);color:var(--чорнило);border-color:var(--чорнило);box-shadow:inset 0 0 0 1px var(--чорнило);padding-left:10px}
+#пал-схема .чип.вибр:has(.зразки)::before{left:auto;right:9px;top:9px;margin:0;z-index:1;background:var(--чорнило);box-shadow:6px 0 0 var(--чорнило)}
+/* ── РІДШІ СХЕМИ: ТАКІ САМІ ПЛИТКИ, ЛИШЕ СТРИМАНІШІ (21.09.2026, рядок 117) ──
+   Слово власника: «Все можливе має бути доступне людині для вибору, можна просто
+   м'яко написати причину, чому вони менш "ходові"». Тому рідша схема — ЗВИЧАЙНИЙ
+   чип у тому самому ряду: та сама розмітка, той самий дотик, той самий вибір.
+   Стриманість тут — рівно одне: світліша рамка. Ні пунктиру, ні приглушеного
+   тексту, ні знятого дотику. КОЛІР ТУТ НЕ ЧІПАЄТЬСЯ НАВМИСНО: `.чип.вибр` ставить
+   темне тло й світлий текст, а правило з `#пал-схема` специфічніше за нього —
+   перефарбувавши текст тут, ми дали б обраній рідшій схемі темне на темному.
+   Обрана рідша має виглядати як будь-яка інша обрана. Причина стоїть рядком під
+   рядом плиток — порадою, не умовою. */
+#пал-схема .чип.рідший{border-color:var(--межа)}
+#пал-схема .чип.рідший.вибр{border-color:var(--чорнило)}
+/* П-7: те, що обрала стилістка (схему, основу, гаму, які вона лишила їй), — чорнильне кільце без
+   зсуву розкладки: внутрішня тінь, а не товща рамка. Її власний вибір (`.вибр`) його перекриває. */
+.чип.стилістка{border-color:var(--чорнило);box-shadow:inset 0 0 0 1px var(--чорнило)}
+.чип.стилістка.вибр{box-shadow:none}
+/* плашка основи малює рамку не бордюром, а кільцем `clip-path` (`--кайма-колір`): тінь там обрізана */
+#пал-основа .чип.стилістка:has(.зразки){--кайма-колір:var(--чорнило)}
+#пал-рідші{margin:10px 0 0;display:flex;flex-direction:column;gap:6px}
+#пал-рідші:empty{display:none}
+#пал-рідші .рідший-рядок{color:var(--олівець);font-size:13px;line-height:1.45}
+#пал-рідші .рідший-рядок b{color:var(--чорнило);font-weight:500}
+#пал-гама .ряд{gap:6px}
+
+/* ── ВИМАЛЬОВУЄТЬСЯ: чотири вікна під туманом і мережка, що затягується. ─
+      Вікна стоять від початку у фінальному розмірі; туман сходить від верху,
+      нерівно. Мережка внизу — лоадер: нитки основи стоять, прутики
+      затягуються ряд за рядом зі щаблями збирання. ────────────────────── */
+@property --чисто{syntax:"<percentage>";inherits:false;initial-value:0%}
+#рамки{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 6px}
+.рамка{--ск:12px;aspect-ratio:3/4.2;background:var(--фактура),var(--аркуш);overflow:hidden}
+.рамка span{display:none}
+.рамка::after{content:"";position:absolute;inset:-4px;z-index:2;pointer-events:none;
+  background-color:var(--полотно);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='т'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='table' tableValues='0 .5'/></feComponentTransfer></filter><rect width='160' height='160' filter='url(%23т)'/></svg>");
+  --чисто:0%;opacity:.96;
+  -webkit-mask-image:radial-gradient(circle at 50% 8%,transparent var(--чисто),#000 calc(var(--чисто) + 40%));
+  mask-image:radial-gradient(circle at 50% 8%,transparent var(--чисто),#000 calc(var(--чисто) + 40%));
+  transition:opacity .9s ease-out,--чисто 1.4s ease-out}
+#рамки[data-щабель="1"] .рамка::after{--чисто:34%;opacity:.9}
+#рамки[data-щабель="2"] .рамка::after{--чисто:72%;opacity:.8}
+#рамки[data-щабель="3"] .рамка::after{--чисто:120%;opacity:0}
+
+.стани{display:grid;grid-template-columns:auto 1fr;gap:9px 18px;align-items:center;margin:6px 0 16px}
+.стани i{width:11px;height:11px;border-radius:50%;border:1px solid var(--межа-темна);background:var(--полотно)}
+.стани span{font-size:13px;color:var(--олівець)}
+.стани i.було{background:var(--чорнило);border-color:var(--чорнило)}
+.стани i.тут{background:var(--золото);border-color:var(--золото);box-shadow:0 0 0 3px var(--полотно),0 0 0 4px var(--золото)}
+.стани span.тут{color:var(--чорнило);font-weight:500}
+.мета{display:flex;gap:6px;justify-content:space-between;padding:14px 0;position:relative}
+.мета::before,.мета::after{content:"";position:absolute;left:0;right:0;height:5px;background:var(--мережка);opacity:.9}
+.мета::before{top:0}.мета::after{bottom:0}
+.мета div{display:flex;flex-direction:column;align-items:center;gap:6px;font:400 12.5px/1.3 var(--текст);color:var(--олівець);text-align:center;flex:1;min-width:0}
+.мета b{font-weight:500;color:var(--чорнило);font-size:12.5px}
+.мета svg.і{color:var(--чорнило)}
+
+/* ── КАРТКА ОБРАЗУ: вікно Кричевського. Колаж — плаский аркуш із вирізаним
+      краєм (витинанка), без нахилу й тіні. Колір біля фото — лише лінією. ─ */
+#картки{display:block;margin:0;padding:0}
+.картка{--ск:18px;background:var(--аркуш);margin:14px 0 6px;padding:0 0 18px;overflow:hidden}
+#картки .картка[hidden]{display:none}
+#картки .картка:not([hidden]){animation:нанизати .34s cubic-bezier(.2,.7,.2,1) both}
+@keyframes нанизати{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.к-шапка{padding:22px 18px 4px}
+.к-шапка h2{font-size:28px;--контраст:480}
+.мета-рядок{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:6px;font:400 12px var(--текст);color:var(--олівець)}
+.мета-рядок span{display:inline-flex;align-items:center;gap:5px}
+.мета-рядок svg.і{width:14px;height:14px}
+.колаж-поле{padding:12px 16px 6px}
+.колаж{position:relative;background:var(--папір);padding:18px 12px 24px;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 7px),96.875% 100%,93.75% calc(100% - 7px),90.625% 100%,87.5% calc(100% - 7px),
+    84.375% 100%,81.25% calc(100% - 7px),78.125% 100%,75% calc(100% - 7px),71.875% 100%,68.75% calc(100% - 7px),
+    65.625% 100%,62.5% calc(100% - 7px),59.375% 100%,56.25% calc(100% - 7px),53.125% 100%,50% calc(100% - 7px),
+    46.875% 100%,43.75% calc(100% - 7px),40.625% 100%,37.5% calc(100% - 7px),34.375% 100%,31.25% calc(100% - 7px),
+    28.125% 100%,25% calc(100% - 7px),21.875% 100%,18.75% calc(100% - 7px),15.625% 100%,12.5% calc(100% - 7px),
+    9.375% 100%,6.25% calc(100% - 7px),3.125% 100%,0 calc(100% - 7px))}
+.колаж-вн{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:10px 8px}
+.ф{flex:0 0 auto;width:28%;display:flex;justify-content:center}
+.ф.велика{width:58%}
+.ф img{max-width:100%;max-height:250px;width:auto;height:auto;display:block;background:var(--фото-тло);border:1px solid rgba(0,0,0,.08)}
+.ф.замінити img{outline:2px solid var(--чорнило);outline-offset:-2px}
+.список{padding:8px 18px 0}
+/* Рядок 3463: рядки речей стоять одразу, без виїзду з нуля й черги по 50 мс (п.21 — картки з'являються всі разом):
+   `нанизати` на кожному рядку лишав їх напівпрозорими ще ~0,7 с після малювання, а сама картка вже була темна. */
+.річ{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--межа)}
+.річ:first-child{border-top:0}
+.річ .мініатюра{width:48px;height:60px;object-fit:contain;background:var(--фото-тло);border:1px solid var(--межа);display:block}
+/* СИЛУЕТ НА МІСЦІ ЗНІМКА (Ф-143): той самий обрис, що в плитці бібліотеки за битою
+   мініатюрою (`.біб-мін .арка`, Л-8), у розмір самої мініатюри — щоб рядок не стрибав,
+   коли кадр не відкрився, і щоб порожнє місце не читалось як «ще вантажиться». */
+.річ .арка,.змп-річ .арка{display:block;width:48px;height:60px;background:var(--папір);border:1px solid var(--межа);
+  clip-path:polygon(20% 0,80% 0,100% 18%,100% 100%,0 100%,0 18%)}
+/* У колажі тло САМЕ папероване, тож силует тут — у тоні, який у колажі стоїть під
+   фото (`--фото-тло`), інакше він зливається з аркушем і місця речі не видно. Розмір
+   ТВЕРДИЙ, а не у відсотках плитки: силует лежить усередині `<a>` (рядковий елемент),
+   і `width:100%` дало б нуль — плитка виходила порожньою. */
+.ф .арка{display:block;width:84px;height:112px;background:var(--фото-тло);
+  border:1px solid var(--межа-темна);clip-path:polygon(20% 0,80% 0,100% 18%,100% 100%,0 100%,0 18%)}
+.річ .н{min-width:0}
+.річ .н a{min-height:24px}
+.річ .н a,.річ .н .назва{color:var(--чорнило);text-decoration:none;font-size:13.5px;line-height:1.3;display:block;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.річ .н .назва.без-назви{color:var(--олівець);font-style:italic}
+.річ .під{font-size:12px;color:var(--олівець);margin-top:2px}
+.річ .під .ціна{font-variant-numeric:tabular-nums;color:var(--чорнило)}
+.річ .тьм{font-size:11.5px;color:var(--сигнал);line-height:1.35;margin-top:3px}
+/* дія «замінити» біля речі (10.10, слово власника): дієслово з іконкою, а не безіменна намистина.
+   Відпочатку — контур («замінити»), після дотику — залита мітка («на заміну»): стан видно без пояснень, а ширина кнопки
+   майже та сама, тож рядок не стрибає. */
+.річ .замін{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--межа-темна);
+  border-radius:999px;color:var(--олівець);font-size:12.5px;line-height:1.2;padding:6px 10px;white-space:nowrap;clip-path:none}
+/* ціль дотику ≥44 px невидимо (рядок 4122): видима кнопка ~29 px, висота й ритм рядків не міняються */
+.річ .замін{position:relative}
+.річ .замін::after{content:"";position:absolute;left:-6px;right:-6px;top:50%;height:44px;transform:translateY(-50%)}
+.річ .замін svg{width:14px;height:14px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.річ.замінити .замін{background:var(--чорнило);border-color:var(--чорнило);color:var(--полотно);font-weight:600}
+/* смужка збоку — псевдоелементом, а не відступом рядка: мініатюра при позначенні не зсувається */
+.річ{position:relative}
+.річ.замінити::before{content:"";position:absolute;left:-10px;top:6px;bottom:6px;width:3px;border-radius:2px;background:var(--чорнило)}
+/* відповідь біля самої речі: видна лише коли річ позначена */
+.річ .заміни-нема{font-size:12px;line-height:1.35;color:var(--чорнило);margin-top:4px}
+.річ .відп-заміни{display:none;font-size:11.5px;line-height:1.35;color:var(--чорнило);margin-top:3px}
+.річ.замінити .відп-заміни{display:block}
+.разом{display:flex;justify-content:flex-end;align-items:baseline;gap:10px;padding:12px 18px 0;font-size:13px;color:var(--олівець)}
+.разом b{font:500 16px var(--текст);font-variant-numeric:tabular-nums;color:var(--чорнило)}
+/* рядок «Позначено речей…» стоїть у ТІЙ САМІЙ колонці, що список речей і «Разом»
+   (18 px): ручний огляд куратора 24.09 на знімку 390×844 показав, що без цього він
+   прилипає до лівого краю екрана, поки вся картка має відступ. Ні кольору, ні
+   елемента це не додає — лише відступ сусіда. */
+.не-ця-рядок{padding:0 18px}
+.чому-не-ця{padding:0 18px 4px}
+.чому-не-ця .мітка-тиха{margin:12px 0 0}
+.к-текст{padding:4px 18px 0}
+.к-текст h3{margin:20px 0 6px;font-size:20px}
+/* голос стиліста — Kyiv*Type Serif; текст, не інтерфейс */
+.текст-образу{white-space:pre-wrap;font:400 16.5px/1.6 var(--голос);font-variation-settings:"CONT" 140;color:var(--чорнило)}
+.колаж .текст-образу{padding:6px 8px 4px}
+.к-текст .текст-образу{padding:2px 0 4px}
+.задум{margin-top:6px}
+/* «На фото нема …» картки оцінки (рядки 6555, 8112, п.9) — шрифтом і кеглем тексту картки («Що вдало»), а не рубленим
+   16 px; повний перелік у видимому тексті, на вузькому екрані переноситься на кілька рядків і не обрізається */
+.оц-нема-на-фото{font:400 15.5px/1.55 var(--голос);font-variation-settings:"CONT" 140;overflow-wrap:anywhere}
+.задум div{position:relative;padding-left:18px;font:400 15.5px/1.55 var(--голос);font-variation-settings:"CONT" 140;margin-top:4px}
+.задум div::before{content:"";position:absolute;left:0;top:11px;width:4px;height:4px;border-radius:50%;
+  background:var(--чорнило);box-shadow:6px 0 0 var(--чорнило)}
+.вердикт{margin:22px 18px 0;padding-top:22px;position:relative}
+.вердикт::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--мережка);opacity:.9}
+.вердикт .мітка{margin-top:8px;font-size:21px}
+.вердикт textarea{margin-top:4px}
+/* ── ПОЛЕ — ГОЛОВНЕ, АСПЕКТИ — ТИХІ (прототип КВ-1, слово власника 28.09) ─────────────
+   Питання над полем — тим самим шрифтом, що «Вдягнеш?»: це третє питання картки, а не
+   підпис. Поле велике від початку (п'ять рядків) і росте з текстом. Аспекти — дрібніші за
+   чипи осей і під тихою міткою: «або коротко», допоміжне. */
+/* ── ШІСТЬ КНОПОК — ДРІБНІ, ПОЛЕ — ГОЛОВНЕ (КВ-2, слово власника 28.09: «Спершу
+      зменшити ці шість кнопок, щоб поле було головним») ─────────────────────────
+   ДО: питання двох осей стояли тим САМИМ 21-піксельним шрифтом, що питання поля, а
+   три чипи «Вдягнеш?» на 390 px не влазили в ряд («вдягну, якщо змінити одну річ» —
+   29 знаків) і ламались у два-три рядки: блок дотиків займав більше висоти, ніж саме
+   поле, хоч він допоміжний.
+   ПІСЛЯ: питання осей — 14,5 px (дрібніші за 22 px питання поля), чипи — 13,5 px і в
+   ОДИН ряд на кожне питання; напис середнього чипа скорочено (`коротко`, запис
+   лишився повним). `flex-wrap` НЕ знімається навмисно: на вужчому екрані ряд
+   переноситься, а не виїжджає горизонтальною прокруткою. Поле й голос — головні:
+   питання 22 px, поле 5 рядків, мікрофон більший за звичайний.
+   ПОПРАВКА 01.10 (ГТ-1, рядок 491): `.вердикт` на 390 px — НЕ 354, а 314 px (`#колонка` 20 px
+   з кожного боку + 18 px поля вердикту), тож чипи 13 px / 9 px (333 px + проміжки 10) у ряд не
+   влазили й ламались у два рядки (виміряно стендом: 2 рядки, 70,8 px). Тепер 12 px / 7 px: ряд
+   «Вдягнеш?» — один рядок. Розкладку не змінено. */
+.вердикт .мітка.мітка-дотику{font-size:14.5px;margin:16px 0 6px}
+.вердикт .ряд-осі{gap:5px;margin:0}
+.вердикт .ряд-осі .чип{padding:8px 7px;font-size:12px;justify-content:center;text-align:center;flex:0 1 auto;min-width:0}
+.вердикт .ряд-осі .чип.вибр{padding-left:7px}
+.вердикт .ряд-осі .чип.вибр::before{content:none}
+.вердикт .питання-поля{display:block;margin-top:24px;font-size:22px}
+.вердикт .порада-поля{margin:0 0 2px}
+.вердикт textarea.поле-вердикту{min-height:136px;margin-top:10px;font-size:17px}
+/* ОЦІН-1 (02.10.2026): після дотику «Вдягнеш?» поле — фокус: помітна рамка (без червоного, без анімації,
+   що мигає) і відступ згори, щоб питання й поле лягли в екран при прокрутці. Рамка гасне, щойно вона торкнулась поля. */
+.вердикт .питання-поля{scroll-margin-top:84px}
+.вердикт textarea.поле-вердикту.в-фокус{border-color:var(--золото);box-shadow:0 0 0 3px color-mix(in srgb,var(--золото) 38%,transparent)}
+.вердикт .голос-ряд{margin-top:12px}
+.вердикт .голос-ряд .мікрофон{width:52px;height:52px}
+.вердикт .голос-ряд .мікрофон svg.і{width:24px;height:24px}
+.вердикт .голос-ряд .підпис-голосу{font-size:15px;color:var(--чорнило)}
+.мітка-тиха{font-size:14px;line-height:1.4;color:var(--олівець);margin:18px 0 0}
+.аспекти-вердикту .ряд{gap:6px;margin:8px 0 4px}
+.чип.дрібний{padding:6px 11px;font-size:13.5px}
+.чип.дрібний.вибр{padding-left:21px}
+.чип.дрібний.вибр::before{left:8px}
+.полотно{padding:0 18px}
+img.образ{max-width:100%;border:1px solid var(--межа);display:block}
+.полотно img.образ{cursor:zoom-in}
+.полотно .перегляд-відкрити{display:block;max-width:100%;padding:0;border:0;background:none;clip-path:none;cursor:zoom-in}
+.полотно .перегляд-відкрити::after{display:none}
+.не-вийшло{padding:6px 18px 0;color:var(--олівець);font-size:15px;line-height:1.5}
+/* змінна пара під ціною каблука (рядок 181): вигляд рядка речі, але окремим блоком —
+   не в образі, не в «Разом», не в колажі, без «не ця» */
+.змінна-пара{padding:2px 18px 0}
+.змінна-пара .змп-підпис{color:var(--олівець);font-size:15px;line-height:1.5;margin:0}
+.змп-річ{display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:center;padding:8px 0 2px}
+.змп-річ .мініатюра{width:48px;height:60px;object-fit:contain;background:var(--фото-тло);border:1px solid var(--межа);display:block}
+.змп-річ .н{min-width:0}
+.змп-річ .н a,.змп-річ .н .назва{color:var(--чорнило);text-decoration:none;font-size:13.5px;line-height:1.3;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.змп-річ .під{font-size:12px;color:var(--олівець);margin-top:2px}
+.змп-річ .під .ціна{font-variant-numeric:tabular-nums;color:var(--чорнило)}
+.дії-образів{display:flex;gap:18px;margin-top:10px}
+/* туман на примірянні — те саме вікно замість майбутньої картинки */
+.полотно .туман-примірки{width:min(64%,240px);margin:10px auto 4px;--чисто:0%}
+.полотно .туман-примірки::after{opacity:.96;animation:дихає 3.6s ease-in-out infinite}
+@keyframes дихає{0%,100%{--чисто:0%}50%{--чисто:30%}}
+/* один образ на екран: гортання, лічба, стрілки */
+.пейджер{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 4px}
+.пейджер[hidden]{display:none}
+.пейджер button{min-height:44px;width:auto;height:auto;padding:10px 14px;font:500 14px/1 var(--текст)}
+.пейджер button:disabled{opacity:.3}
+.пейджер span{font:500 13px var(--текст);font-variant-numeric:tabular-nums;color:var(--олівець);min-width:44px;text-align:center}
+.пейджер .пж-лічба{display:flex;flex-direction:column;align-items:center;gap:3px}
+.пейджер .пж-лічба span{min-width:0}
+.пейджер .пж-оц{font-size:12px;color:var(--олівець)}
+.пейджер .пж-оц:empty{display:none}
+#пейджер button{width:44px;height:44px;padding:0;font:400 24px/1 var(--дисплей);border-radius:50%;clip-path:none;
+  border:1px solid var(--межа-темна);--кайма-колір:transparent}
+#пейджер button::after{display:none}
+#пейджер-низ{margin:4px 0 24px}
+
+/* ── БІБЛІОТЕКА: ряд малих вікон ──────────────────────────────────────── */
+.біб-група{margin-top:22px}
+.біб-група h2{font-size:22px;margin-bottom:8px;padding-bottom:12px;background:var(--мережка);background-position:0 100%,0 100%,0 calc(100% - 2px)}
+.біб-образ{--ск:12px;display:grid;grid-template-columns:56px 1fr;gap:14px;align-items:center;width:100%;text-align:left;
+  background:var(--аркуш);border:0;padding:10px 12px;margin-top:8px;color:var(--чорнило);font:400 14px/1.35 var(--текст);cursor:pointer}
+.біб-мін{width:56px;height:70px;background:var(--фото-тло);border:1px solid var(--межа);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.біб-мін img{width:100%;height:100%;object-fit:contain;display:block}
+/* Приміряний кадр — фігура на повний зріст (типово 207×512). У плитці 56×70
+   «contain» дає смужку 28 px завширшки, на якій образу не видно; тому кадр
+   підрізається. Точка — трохи нижче верху: у 56×70 це плечі й верх образу, тобто
+   те, чим один образ відрізняється від сусіднього (саме голова їх не розрізняє).
+   Фото речі лишається `contain`, як доти: річ мусить бути видна цілою. */
+.біб-мін img.приміряно{object-fit:cover;object-position:50% 22%}
+/* ── ВИБІР ВИВАНТАЖЕННЯ: ТРИ РІВНІ ОДНИМ СПИСКОМ (ділянка 6/8) ──────────────
+   Не нова розкладка: той самий аркуш журналу, рядки з полем позначки під палець
+   (мінімум 44 px висоти на телефоні), другий рівень — відступом, не рамкою. */
+#ж-вибір{margin-top:14px}
+#ж-вибір summary{cursor:pointer;font-size:15px}
+.жв-день{margin-top:12px}
+.жв-прогін{margin-left:14px}
+.жв-шапка,.жв-образ{display:flex;align-items:center;gap:10px;min-height:44px;
+  font-size:14px;line-height:1.3;cursor:pointer}
+.жв-шапка{font-weight:600}
+.жв-друга{font-weight:400;opacity:.85}
+.жв-образ{margin-left:28px;opacity:.95}
+.жв-шапка input,.жв-образ input{flex:0 0 auto;width:20px;height:20px;
+  /* тим самим чорнилом, що й решта полів вибору (`.згода`, повзунки кадру):
+     типова синя пташка браузера — єдина холодна пляма на теплому аркуші */
+  accent-color:var(--чорнило)}
+.біб-мін .арка{display:block;width:26px;height:36px;background:var(--папір);border:1px solid var(--межа-темна);
+  clip-path:polygon(20% 0,80% 0,100% 18%,100% 100%,0 100%,0 18%)}
+.біб-текст{display:flex;flex-direction:column;gap:2px;min-width:0}
+.біб-текст b{font:500 18px/1.25 var(--дисплей);font-variation-settings:"CONT" 260}
+.біб-текст small{font-size:12px;color:var(--олівець)}
+.біб-текст em{font-style:normal;font-size:13px;color:var(--золото)}
+#е-бібліотека .заява{margin-top:32px}
+
+/* ── ЖУРНАЛ ВЕРДИКТІВ: вікно з мережкою під заголовком. Без гасел. ────── */
+.заява{--ск:18px;background:var(--аркуш);color:var(--чорнило);padding:22px 20px 18px;margin-top:36px}
+.заява summary{cursor:pointer;list-style:none;padding-bottom:14px;margin-bottom:6px;
+  background:var(--мережка);background-position:0 100%,0 100%,0 calc(100% - 2px)}
+.заява summary::-webkit-details-marker{display:none}
+.заява h3{font-size:22px;line-height:1.25;margin:0 0 6px;--контраст:360}
+.заява h3 span{font-family:var(--текст);font-weight:500;font-size:14px;color:var(--олівець);margin-left:6px;font-variation-settings:normal}
+.заява p{color:var(--олівець);font-size:14px;line-height:1.5}
+pre{background:var(--аркуш);border:1px solid var(--межа);padding:12px;
+  font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto}
+#нова-версія{position:sticky;top:0;z-index:50;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;padding:8px 16px;background:var(--папір);border-bottom:1px solid var(--межа);color:var(--чорнило);font-size:14px}
+#нова-версія[hidden]{display:none}
+#нова-версія button{padding:6px 14px;font-size:14px}
+#службове{display:none;border-top:1px solid var(--межа);margin-top:20px;padding-top:12px;font-size:13px;color:var(--олівець)}
+#службове.видно{display:block}
+#службове summary{cursor:pointer}
+
+/* ── ПАНЕЛЬ УНИЗУ: поле розмови (або пілюля), дії знайомства, вкладки. ────── */
+.панель{position:fixed;left:0;right:0;bottom:0;background:var(--полотно);z-index:20}
+.панель::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--мережка);opacity:.9}
+.панель .колонка{padding-top:12px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+.панель .дії{display:flex;align-items:center;gap:12px;margin-top:10px}
+.панель button.далі{flex:1;padding:15px 20px;background:var(--кнопка-тло);color:var(--кнопка-текст);
+  clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%,0 10px)}
+
+/* ── ПЕРЕГЛЯД НА ВЕСЬ ЕКРАН ────────────────────────────────────────────── */
+.перегляд{position:fixed;inset:0;z-index:60;background:#111;display:flex;align-items:center;justify-content:center;padding:0}
+.перегляд[hidden]{display:none}
+.перегляд img{max-width:100vw;max-height:100vh;object-fit:contain;display:block}
+.перегляд button{position:absolute;top:calc(12px + env(safe-area-inset-top));right:16px;width:44px;height:44px;padding:0;clip-path:none;
+  border-radius:50%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.5);color:#fff;font:400 26px/1 var(--дисплей)}
+.перегляд button::after{display:none}
+
+/* ── НАВЕДЕННЯ — лише там, де є курсор ─────────────────────────────────── */
+@media (hover:hover){
+  .плитка:hover:not(.вибр){background:var(--папір)}
+  .чип:hover:not(.вибр){border-color:var(--чорнило)}
+  .стулка:hover .назва{background:var(--папір)}
+  button.тихо:hover{--кайма-колір:var(--чорнило)}
+  button:not(.тихо):not(.текст):not(.далі):hover{opacity:1}
+  /* лише не позначена: залита кнопка під курсором (і ПІСЛЯ дотику на телефоні, де наведення липне) лишає світлий напис —
+     інакше чорний текст на чорному тлі, і стану «на заміну» не видно (стенд 10.10, рядок 4120) */
+  .річ .замін:not(.вибр):hover{color:var(--чорнило);border-color:var(--чорнило)}
+  .біб-образ:hover{--кайма-колір:var(--чорнило)}
+  .тема:hover{border-color:var(--чорнило)}
+}
+@media (min-width:600px){
+  h1{font-size:44px}
+  .плитки{grid-template-columns:repeat(4,1fr)}
+  .сцена{aspect-ratio:1/.9}
+  .колонка{padding:0 24px}
+}
+
+/* ── НОУТБУК (v5.2): три колонки замість вузької мобільної з порожніми боками.
+      ≥ 900 px — рейка розділів ліворуч (ті самі вкладки, «Новий сценарій»,
+      «Збережені» і список збережених) і центральна колонка, у якій поле стоїть
+      під розмовою, а не смугою на всю ширину; ≥ 1180 px — ще права панель, куди
+      переїжджає картка сценарію (на профілі — фото). Вузли переносить
+      `розмістити_розкладку`; тут лише те, де вони стоять. ─────────────────── */
+.бік,.правий{display:none}
+.лише-широко{display:none}
+@media (min-width:900px){
+  html.широко .лише-широко{display:inline}
+  body{display:grid;grid-template-columns:232px minmax(0,720px);justify-content:center;column-gap:44px;padding:0 32px;min-height:100vh}
+  body>.колонка{grid-column:2;max-width:none;width:100%;padding:26px 0 0;display:flex;flex-direction:column;min-height:100vh;box-sizing:border-box}
+  body>.колонка>*{flex:0 0 auto}
+  header.шапка{display:none}
+  #нова-версія{grid-column:1/-1;grid-row:1}
+  .бік{display:flex;flex-direction:column;grid-column:1;position:sticky;top:0;height:100vh;box-sizing:border-box;padding:26px 0 22px}
+  .бік-знак{font:500 28px/1 var(--дисплей);font-variation-settings:"CONT" 600;letter-spacing:.01em;color:var(--чорнило);background:none;border:0;
+    padding:0 12px 9px;text-align:left;position:relative;clip-path:none;align-self:flex-start;cursor:pointer}
+  .бік-знак::after{content:"";position:absolute;left:12px;right:0;bottom:0;height:2px;background:var(--золото)}
+  .бік .вкладки{display:flex;flex-direction:column;gap:2px;margin:28px 0 0;padding:0}
+  .бік .вкладки::before{display:none}
+  .бік .вкладки button{flex-direction:row;justify-content:flex-start;gap:12px;padding:10px 12px;font:500 15px/1.2 var(--текст);color:var(--олівець);
+    clip-path:polygon(8px 0,100% 0,100% 100%,0 100%,0 8px);width:100%;text-align:left;letter-spacing:0}
+  .бік .вкладки button svg.і{width:20px;height:20px}
+  .бік .вкладки button i{width:20px;height:20px;font-size:8px;line-height:20px}
+  .бік .вкладки button.тут{background:var(--аркуш);color:var(--чорнило)}
+  .бік .вкладки button.тут::after{position:static;margin-left:auto;bottom:auto;left:auto}
+  .бік .шапка-дії{flex-direction:column;align-items:flex-start;gap:0;padding:18px 12px 0}
+  .бік .шапка-дії button.текст{font-size:14px;padding:6px 0}
+  .бік-розділ{padding:22px 12px 0;min-height:0;overflow:auto}
+  .бік-розділ[hidden]{display:none}
+  .бік-назва{font:400 13px/1.3 var(--текст);color:var(--олівець);margin-bottom:6px}
+  .бік-сцн{display:block;width:100%;text-align:left;background:none;border:0;clip-path:none;padding:7px 0;color:var(--чорнило);
+    font:400 14.5px/1.3 var(--текст);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+  .бік-сцн.тут{font-weight:500;text-decoration:underline;text-decoration-color:var(--золото);text-underline-offset:4px}
+  .бік-низ{margin-top:auto;padding:12px 12px 0;display:flex;align-items:center;justify-content:space-between}
+  .бік-низ button.текст{font-size:13.5px}
+  /* поле — під розмовою в самій колонці, а не смугою на всю ширину */
+  body>.колонка>.панель{position:sticky;bottom:0;left:auto;right:auto;margin-top:auto;z-index:20}
+  .панель>.колонка{min-height:0;display:block;padding:12px 0 16px;max-width:none}
+  .панель .вкладки{display:none}
+  /* аркуш — вікно посеред екрана, не смуга знизу */
+  .аркуш{left:50%;right:auto;bottom:auto;top:50%;transform:translate(-50%,-50%);width:min(600px,92vw);max-height:86vh;padding:0 28px 26px;
+    clip-path:polygon(16px 0,calc(100% - 16px) 0,100% 16px,100% calc(100% - 16px),calc(100% - 16px) 100%,16px 100%,0 calc(100% - 16px),0 16px);
+    animation:зʼява .18s ease-out both}
+  .аркуш .ручка{display:none}
+  .аркуш-шапка{padding-top:26px}
+  .сцена{max-width:520px}
+  #рамки{gap:14px}
+  #біб-список{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  /* картка образу — колаж ліворуч, речі й слово стилістки праворуч */
+  .картка{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:8px;align-items:start}
+  .картка>*{grid-column:2}
+  .картка>.к-шапка,.картка>.не-вийшло,.картка>.змінна-пара,.картка>.полотно{grid-column:1/-1}
+  .картка>.колаж-поле{grid-column:1;grid-row:2/span 40}
+}
+@media (min-width:1180px){
+  body{grid-template-columns:232px minmax(0,680px) 320px}
+  .правий{display:block;grid-column:3;position:sticky;top:24px;align-self:start;max-height:calc(100vh - 48px);overflow:auto;padding-top:26px}
+  .правий[hidden]{display:none}
+  .правий .паспорт{margin-top:0}
+  .правий .увага{margin:0 0 12px}
+  .правий #ф-блок .сцена{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+/* Вибір драпіровки лишається видимим, коли система замінює кольори (4944). */
+@media (forced-colors:active){
+  #др-блок .чип[aria-pressed="true"]{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+}
+/* Фокус поля й прихованого файлового входу видно на самій дії (4944). */
+input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--золото);outline-offset:2px}
+label:has(input:focus-visible),.слот:has(input:focus-visible){
+  outline:2px solid var(--золото);outline-offset:-3px}
+.лише-читач{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}

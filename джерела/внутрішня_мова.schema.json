@@ -143,6 +143,7 @@
       "anorak",
       "bomber",
       "poncho",
+      "kimono",
       "beanie",
       "hat",
       "beret",
@@ -178,6 +179,7 @@
       "modal",
       "linen",
       "silk",
+      "taffeta",
       "polyester",
       "polyamide",
       "nylon",
@@ -475,6 +477,7 @@
       "anorak",
       "bomber",
       "poncho",
+      "kimono",
       "beanie",
       "hat",
       "beret",
@@ -510,6 +513,7 @@
       "modal",
       "linen",
       "silk",
+      "taffeta",
       "polyester",
       "polyamide",
       "nylon",
@@ -780,6 +784,18 @@
       "black_tie",
       "creative_black_tie",
       "white_tie",
+      "unknown"
+     ]
+    },
+    "palette": {
+     "description": "схема палітри, яку вона обрала",
+     "enum": [
+      "neutrals_plus_accent",
+      "tonal",
+      "analogous",
+      "muted_complementary",
+      "triad",
+      "color_block",
       "unknown"
      ]
     },
@@ -1511,6 +1527,7 @@
          "anorak",
          "bomber",
          "poncho",
+         "kimono",
          "beanie",
          "hat",
          "beret",
@@ -1711,6 +1728,7 @@
       "anorak",
       "bomber",
       "poncho",
+      "kimono",
       "beanie",
       "hat",
       "beret",
@@ -1760,6 +1778,7 @@
       "modal",
       "linen",
       "silk",
+      "taffeta",
       "polyester",
       "polyamide",
       "nylon",
@@ -2162,6 +2181,7 @@
          "anorak",
          "bomber",
          "poncho",
+         "kimono",
          "beanie",
          "hat",
          "beret",
@@ -2304,6 +2324,10 @@
        {
         "const": "dress_code",
         "description": "дрес-код, коли його названо"
+       },
+       {
+        "const": "palette",
+        "description": "схема палітри, яку вона обрала"
        },
        {
         "const": "formality",
@@ -2683,6 +2707,32 @@
         }
        }
       },
+      "palette": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "схема палітри, яку вона обрала",
+         "enum": [
+          "neutrals_plus_accent",
+          "tonal",
+          "analogous",
+          "muted_complementary",
+          "triad",
+          "color_block",
+          "unknown"
+         ]
+        }
+       }
+      },
       "formality": {
        "enum": [
         "home",
@@ -2718,6 +2768,11 @@
           {
            "const": "unknown"
           }
+         ]
+        },
+        "named": {
+         "enum": [
+          "clock_time"
          ]
         }
        }
@@ -3329,6 +3384,7 @@
           "duration_h",
           "movement",
           "dress_code",
+          "palette",
           "formality",
           "hour",
           "temperature_c",
@@ -8300,6 +8356,7 @@
    "anorak": "анорак",
    "bomber": "бомбер",
    "poncho": "пончо",
+   "kimono": "кімоно",
    "beanie": "шапка",
    "hat": "капелюх",
    "beret": "берет",
@@ -8331,6 +8388,7 @@
    "modal": "модал",
    "linen": "льон",
    "silk": "шовк",
+   "taffeta": "тафта",
    "polyester": "поліестер",
    "polyamide": "поліамід",
    "nylon": "нейлон",
