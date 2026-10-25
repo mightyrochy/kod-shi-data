@@ -9,7 +9,10 @@
 Пароль gemini — лише через Get-Credential (системне вікно); скрипт його не читає в змінну для виводу й не пише.
 Попередні умови: 0_власник.ps1 пройдено; gemini має пароль (той, що вже стоїть у задачі gemini-run; без пароля — Ctrl+Alt+Del у сеансі gemini).
 Команди кроків — дослівно з НАЛАШТУВАННЯ.md.
+З -EnableCodex задача gemini-run дістає ключ `-EnableCodex` в аргументах (рушій Codex ввімкнено; рішення власника 25.10, 9738);
+без ключа — аргументи, як були, Codex не кличеться. Повторний запуск з іншим значенням перереєстровує задачу (-Force).
 #>
+param([switch]$EnableCodex)
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 function Stop-Here([string]$m) { Write-Host "СТОП: $m" -ForegroundColor Red; Write-Host 'Напиши диспетчерові: ЗАБЛОКОВАНО + цей текст.'; exit 1 }
@@ -63,6 +66,7 @@ if ($LASTEXITCODE -ne 0) { Stop-Here "secedit повернув код $LASTEXITC
 
 # під gemini: раз на 15 хв, до 4 год (сама обгортка зупиняє прогін на 3 год)
 $a = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\ProgramData\gemini-wrapper\gemini_run.ps1'
+if ($EnableCodex) { $a.Arguments += ' -EnableCodex' }   # рішення власника 25.10 (9738): ключ рушія Codex у gemini_run.ps1
 $t = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(2) -RepetitionInterval (New-TimeSpan -Minutes 15)
 $s = New-ScheduledTaskSettingsSet @set -ExecutionTimeLimit (New-TimeSpan -Hours 4)
 $c = Get-Credential -UserName "$env:COMPUTERNAME\gemini" -Message 'Пароль користувача gemini'
@@ -86,4 +90,5 @@ foreach ($task in (Get-ScheduledTask gemini-run, gemini-publish)) {
     if ($task.Triggers[0].Repetition.Duration) { $bad += $task.TaskName }
 }
 if ($bad) { Write-Host "УВАГА: у $($bad -join ', ') тривалість повторення не порожня — Планувальник завдань → задача → Тригери → Змінити → «протягом: Безстроково»." -ForegroundColor Yellow }
+Write-Host "Codex у gemini-run: $(if ($EnableCodex) { 'ВВІМКНЕНО (-EnableCodex)' } else { 'вимкнено' })"
 Write-Host "`nГОТОВО: кроки 3 і 5. Далі — ЩО_НАТИСНУТИ.md: повернися в сеанс gemini і запусти 2_під_gemini.ps1 ще раз." -ForegroundColor Green

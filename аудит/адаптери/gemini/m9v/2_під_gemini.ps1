@@ -6,12 +6,13 @@
 .DESCRIPTION
 Запускається один раз, ПІСЛЯ 1_адмін.ps1 (обгортка в C:\ProgramData\gemini-wrapper уже стоїть); повторний запуск безпечний.
 Паролів і токенів не читає й не виводить: про вхід судить лише наявність файлу чи код `codex login status`.
-Codex за замовчуванням ВИМКНЕНИЙ (9738: акаунт ChatGPT для користувача gemini власник ще не вибрав; токен лежить у
-`~/.codex/auth.json` профілю gemini — секрет у межі цього користувача, у репозиторій не йде, 9739). Без `-WithCodex` скрипт
-Codex не ставить і не входить. З `-WithCodex` (лише після рішення власника про акаунт):
-  Codex CLI  — інсталятор https://chatgpt.com/codex/install.ps1 (без Node.js, https://github.com/openai/codex) качається у
-               файл, sha256 звіряється з `CodexInstaller` у хеші.psd1 і лише тоді виконується (9741); хеш порожній чи інший —
-               СТОП, інсталятор не виконується;
+Codex без `-WithCodex` скрипт не ставить і не входить. Рішення власника 25.10 (9738): Codex під gemini вмикається з основним
+акаунтом ChatGPT власника, ризик прийнято (токен лежить у `~/.codex/auth.json` профілю gemini — секрет у межі цього
+користувача, у репозиторій не йде, 9739; ізоляцію рушіїв веде М.9-Г). З `-WithCodex`:
+  Codex CLI  — інсталятор закріплено за релізом (без Node.js, https://github.com/openai/codex): файл
+               https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1 качається у файл, sha256 звіряється з
+               `CodexInstaller` у хеші.psd1 і лише тоді виконується з `-Release <CodexRelease>` (9741); хеш порожній чи інший —
+               СТОП, інсталятор не виконується (сам інсталятор несе блок підпису Authenticode — не перевірено — і звіряє SHA256SUMS пакета);
                вхід — `codex login --device-auth` (код на сторінці, без браузера на цьому ноутбуці):
                https://learn.chatgpt.com/docs/developer-commands?surface=cli
 Gemini CLI не ставимо (рішення диспетчера 25.10: для Google One його замінено Antigravity CLI з 18.06.2026, README google-gemini/gemini-cli); другий рушій Gemini — наявний agy.
@@ -50,19 +51,22 @@ if (-not (git config --global user.email)) { git config --global user.name 'gemi
 
 # --- Codex CLI (лише -WithCodex, після рішення власника про акаунт, 9738) ---
 if (-not $WithCodex) {
-    Write-Host "`nCodex пропущено: за замовчуванням вимкнений до рішення власника про акаунт (9738)." -ForegroundColor Yellow
+    Write-Host "`nCodex пропущено: без -WithCodex не ставиться й не входить (рішення власника 25.10, 9738: вмикати з -WithCodex)." -ForegroundColor Yellow
 } else {
     Step 'Codex CLI'
     if (-not (Has codex)) {
         $expected = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'хеші.psd1') -ErrorAction SilentlyContinue
         $want = $(if ($expected -and $expected.ContainsKey('CodexInstaller')) { [string]$expected['CodexInstaller'] } else { '' })
+        $rel = $(if ($expected -and $expected.ContainsKey('CodexRelease')) { [string]$expected['CodexRelease'] } else { '' })
+        if ($rel -notmatch '^\d+\.\d+\.\d+$') { Stop-Here "CodexRelease у хеші.psd1 порожній чи не виду x.y.z ('$rel'). Інсталятор не виконано." }
         $inst = "$env:TEMP\codex_install.ps1"
-        Invoke-WebRequest 'https://chatgpt.com/codex/install.ps1' -OutFile $inst -UseBasicParsing
+        Invoke-WebRequest "https://releases.openai.com/codex/releases/$rel/install.ps1" -OutFile $inst -UseBasicParsing
         $got = (Get-FileHash $inst -Algorithm SHA256).Hash
         Write-Host "sha256 інсталятора: $got"
         if (-not $want) { Stop-Here "хеш інсталятора Codex не зафіксовано в хеші.psd1 (CodexInstaller). Звір sha256 вище з офіційним джерелом, запиши його PR-ом; інсталятор не виконано." }
         if ($got -ne $want) { Stop-Here "sha256 інсталятора не збігся з хеші.psd1 (чекав $want). Інсталятор не виконано." }
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $inst
+        $env:CODEX_NON_INTERACTIVE = '1'
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $inst -Release $rel
         Update-Path
         if (-not (Has codex)) { Stop-Here 'codex не знайдено після установки; відкрий нове вікно PowerShell і запусти скрипт знову.' }
     }
@@ -72,12 +76,12 @@ if (-not $WithCodex) {
     & codex login status *> $null
     if ($LASTEXITCODE -eq 0) { Write-Host 'Вхід ChatGPT вже є.' }
     else {
-        Write-Host 'Відкрий показану сторінку на будь-якому пристрої й введи код. Акаунт — той, що вибрав власник (9738).' -ForegroundColor Yellow
+        Write-Host 'Відкрий показану адресу на телефоні, введи код і увійди основним акаунтом ChatGPT (рішення власника 25.10, 9738).' -ForegroundColor Yellow
         & codex login --device-auth
         & codex login status *> $null
-        if ($LASTEXITCODE -ne 0) { Stop-Here 'codex login status: входу нема.' }
+        if ($LASTEXITCODE -ne 0) { Stop-Here 'вхід Codex не вдався (код не введено чи сплив): запусти цей самий рядок ще раз.' }
     }
-    Write-Host 'Рушій Codex у задачі gemini-run вмикається окремо: -EnableCodex (НАЛАШТУВАННЯ.md, «Пули й каскад»).'
+    Write-Host 'Рушій Codex у задачі gemini-run вмикає 1_адмін.ps1 -EnableCodex (НАЛАШТУВАННЯ.md, «Пули й каскад»).'
 }
 
 # --- крок 4 ---
