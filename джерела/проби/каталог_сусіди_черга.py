@@ -29,8 +29,8 @@ def _порожня(в):
     return [] if isinstance(в, list) else в
 
 
-ПОВНА = json.dumps(_порожня(КР.скелет()), ensure_ascii=False)
-КОЛІР = json.dumps({к: _порожня(КР.скелет()[к]) for к in С.КОЛІРНІ_ПОЛЯ}, ensure_ascii=False)
+ПОВНА = json.dumps({КР.КОДИ: "item_type=unknown", КР.ОСОБЛИВОСТІ: "item=plain item"}, ensure_ascii=False)
+КОЛІР = json.dumps({КР.КОДИ: "color_main=black=чорний"}, ensure_ascii=False)
 виклики = collections.Counter()
 
 

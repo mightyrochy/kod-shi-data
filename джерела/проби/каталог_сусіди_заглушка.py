@@ -68,17 +68,16 @@ def головна():
             викликів["колір"] += 1
             колір = дані["params"]
             значення = next(iter(колір.values()))
-            return json.dumps(dict(color_main={"quote": значення, "value": "blue"}, color_extra=[],
-                                   color_why={"quote": "", "value": "unknown"}), ensure_ascii=False), 0.1
+            return json.dumps({КР.КОДИ: "color_main=blue=%s" % значення}, ensure_ascii=False), 0.1
         викликів["повний"] += 1
         # Представник: колір з першого поля кольору його ж картки.
         o = next(x for x in речі if x["назва"] in промпт)
         if o["id"] in падіння:
             raise ConnectionError("заглушка: сервер не відповів")
-        відп = _порожня(КР.скелет())
+        відп = {КР.КОДИ: "item_type=unknown", КР.ОСОБЛИВОСТІ: "item=plain item"}
         колір = С.розбити(o)[1]
         if колір:
-            відп["color_main"] = {"quote": next(iter(колір.values())), "value": "red"}
+            відп[КР.КОДИ] += ";color_main=red=%s" % next(iter(колір.values()))
         return json.dumps(відп, ensure_ascii=False), 0.1
 
     ПР.модель = заглушка
@@ -106,7 +105,9 @@ def головна():
                 запит, _, відп = текст.partition("\n\n── ВІДПОВІДЬ\n")
                 o = next(x for x in речі if x["id"] == р["id"])
                 assert запит == "── ЗАПИТ\n" + json.dumps(КР.промпт(o), ensure_ascii=False)
-                assert json.loads(відп)["color_main"]["quote"] in С.розбити(o)[1].values()
+                пункт = next(п for п in json.loads(відп)[КР.КОДИ].split(";")
+                              if п.startswith("color_main="))
+                assert пункт.partition("=")[2].partition("=")[2] in С.розбити(o)[1].values()
             розбір = json.load(open(ПР.зібрати(з_), encoding="utf-8"))
             for р in сусідів:
                 assert розбір[р["id"]]["color_main"] != KR_UNKNOWN(), р["id"]
