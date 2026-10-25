@@ -1,0 +1,37 @@
+── ПРОМПТ (2486 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Oxford button-down shirt in crisp white cotton poplin, regular fit with a classic collar, color #FFFFFF, woven cotton. Tailored wool-blend trousers in a charcoal grey herringbone pattern, straight leg cut hitting just above the ankle, color #36454F, 100% virgin wool. Leather loafers with a penny slot, sleek silhouette and flat sole, color #708090, smooth calfskin leather. A thin gold bar necklace adds a touch of subtle refinement without overwhelming the professional setting, color #FFD700, solid 14k gold.\n\nThis outfit works perfectly for an autumn workday at 18 degrees Celsius because it adheres to the \"neat\" dress code while providing appropriate warmth through a wool-blend trouser rather than a heavy coat, which would be unnecessary below +20 °C. The crisp white shirt offers a clean, authoritative look suitable for an office environment, paired with dark grey trousers that maintain professionalism without appearing too rigid. The leather loafers provide comfort for a full day of walking and standing, while the gold necklace introduces a small element of personal style to break up the monochrome palette elegantly."}
+
+── ВІДПОВІДЬ (756 симв., 44.5 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "Oxford button-down shirt",
+"details": "regular fit with a classic collar, crisp white cotton poplin woven fabric",
+"slot": "top",
+"color_hex": "#FFFFFF",
+"worn": true
+},
+{
+"name": "Tailored wool-blend trousers",
+"details": "charcoal grey herringbone pattern, straight leg cut hitting just above the ankle, 100% virgin wool",
+"slot": "bottom",
+"color_hex": "#36454F",
+"worn": true
+},
+{
+"name": "Leather loafers",
+"details": "sleek silhouette and flat sole with a penny slot, smooth calfskin leather",
+"slot": "shoes",
+"color_hex": "#708090",
+"worn": true
+},
+{
+"name": "gold bar necklace",
+"details": "thin solid 14k gold providing subtle refinement",
+"slot": "necklace",
+"color_hex": "#FFD700",
+"worn": true
+}
+]
+}

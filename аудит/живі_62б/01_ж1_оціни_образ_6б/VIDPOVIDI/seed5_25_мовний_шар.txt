@@ -1,0 +1,56 @@
+── ПРОМПТ (7629 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Джинси WIDE LEG блакитний-вінтажний · kind code: jeans · colour code: light_blue · about it: text н=1
+2 — Светр Повітря какао · kind code: sweater · colour code: cocoa · about it: text н=2
+3 — Обруч Габріелла зі стразами м'ятний · kind code: headband · colour code: mint · about it: text н=3
+4 — Білі кеди на середній платформі · kind code: plimsolls · colour code: white · about it: text н=4
+5 — Жіноча сумка Welfare бежева · kind code: bag_generic · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; cocoa — какао; light_blue — блакитний; mint — м'ятний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "These wide-leg jeans are crafted in a light vintage blue shade, offering a relaxed yet stylish fit that flows gracefully from the waist to the hem.",
+"2": "The cocoa-colored sweater features a soft knit texture and a slightly cropped silhouette, providing both comfort and warmth for your everyday wear.",
+"3": "This mint green headband is adorned with sparkling crystals and pearls, adding a delicate touch of elegance to complement your outfit's neutral tones.",
+"4": "Your white plimsolls offer a sleek and comfortable design, featuring a subtle platform sole that adds height without compromising ease.",
+"5": "The beige shoulder bag is made of textured leather with a secure flap closure, providing practicality and sophistication for carrying your essentials.",
+"6": "Your day starts with the cozy warmth of a cocoa-colored sweater, perfectly balancing the light vintage blue of your wide-leg jeans. I chose this mint green headband to add a touch of elegance and a fresh accent to your look, while the beige shoulder bag complements your neutral palette without overwhelming the outfit. Your white plimsolls provide a comfortable yet stylish base for an office setting, ensuring you feel at ease throughout your day.",
+"7": "Tuck the front of your sweater slightly into the waistband of your jeans to define your silhouette and keep it neat while you move.",
+"8": "Wear the headband with a soft, effortless hairstyle to highlight the sparkle without adding extra bulk to your look.",
+"9": "Джинси WIDE LEG блакитний-вінтажний — I chose these light blue jeans to anchor the cool palette of the mint headband and create a harmonious tonal base for the office setting.",
+"10": "Обруч Габріелла зі стразами м'ятний — The mint beret adds a pop of cool color that complements the blue jeans without clashing with the warm beige sweater.",
+"11": "Джинси WIDE LEG блакитний-вінтажний, Светр Повітря какао — The remark about the tonal scheme on large items is accepted because the mint headband intentionally breaks the monochrome flow to serve your intent of adding freshness and personality to a 'neat' office look, while the overall palette remains cohesive."
+}
+
+── ВІДПОВІДЬ (2130 симв., 44.6 с, HTTP 200) ──
+```json
+{
+"1": "Ці джинси вільного крою виготовлені у світлому відтінку блакитного кольору з ефектом старовини. Вони мають розслаблений і водночас стильний крій, який елегантно спадає від талії до подолу.",
+"2": "Светр какао-кольору має м’яку в’язану текстуру й трохи укорочений силует, забезпечуючи комфорт і тепло для повсякденного носіння.",
+"3": "Цей м’ятно-зелений обруч прикрашений блискучими кристалами та перлинами, додаючи ніжний штрих елегантності до твого образу в нейтральних тонах.",
+"4": "Твої білі кеди мають стильний і зручний дизайн з непомітною платформою, яка додає висоти без шкоди для комфорту.",
+"5": "Бежева сумка на плече виготовлена зі структурованої шкіри та має безпечну застібку-клапан. Вона практична й елегантна, щоб носити з собою необхідні речі.",
+"6": "Твій день починається з теплого светра какао-кольору, який ідеально поєднується зі світлим блакитним відтінком твоїх джинсів вільного крою. Я обрала м’ятний обруч, щоб додати штрих елегантності та свіжий акцент твоєму образу, а бежева сумка на плече гармонійно доповнює нейтральну палітру без перевантаження вбрання. Твої білі кеди забезпечують зручну й стильну основу для офісного середовища, гарантуючи тобі комфорт протягом усього дня.",
+"7": "Злегка заправ перед светра всередину пояса джинсів, щоб підкреслити твою фігуру та зберегти охайний вигляд під час руху.",
+"8": "Одягни обруч з легкою й невимушеною зачіскою, щоб підкреслити блиск без зайвого об’єму в образі.",
+"9": "Джинси WIDE LEG блакитний-вінтажний — Я обрала ці світло-блакитні джинси, щоб створити прохолодну палітру м’ятного обруча та забезпечити гармонійну тональну основу для офісного середовища.",
+"10": "Обруч Габріелла зі стразами м’ятний — М’ятний берет додає яскравий колір, який доповнює блакитні джинси без конфлікту з теплим бежевим светром.",
+"11": "Джинси WIDE LEG блакитний-вінтажний, Светр Повітря какао — Зауваження щодо тональної схеми великих речей прийнято, адже м’ятний обруч навмисно порушує монохромну течію, щоб відповідати твоєму наміру додати свіжість і індивідуальність «охайному» офісному образу, а загальна палітра залишається гармонійною."
+}
+```

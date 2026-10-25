@@ -1,0 +1,39 @@
+── ПРОМПТ (2570 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Refined knit top in a soft oatmeal tone (#e2ba9f), tailored with a straight cut and long length to drape elegantly over the hips; charcoal grey trousers featuring a high-waisted silhouette, slim but relaxed fit through the leg, and a cropped hemline at mid-calf.\nThe ensemble is grounded by sleek ankle boots in deep espresso brown leather (#4b3f32), designed with a low block heel and a rounded toe for all-day comfort.\nA delicate gold pendant necklace with a small circle charm (#ffd700) adds a subtle touch of sophistication without overpowering the professional aesthetic; a structured taupe blazer in wool blend serves as an optional outer layer to add warmth against the cool autumn air while maintaining a polished silhouette.\nThis outfit perfectly balances the requirements for a neat business dress code with the comfort needed for an active workday, utilizing a neutral yet warm color palette that complements her skin tones; the mix of soft knits and structured trousers creates an effortless yet put-together look suitable for an office environment; the choice of ankle boots ensures practicality on fall streets while the optional blazer allows easy adjustment to changing temperatures throughout the day."}
+
+── ВІДПОВІДЬ (856 симв., 45.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "top",
+      "details": "refined knit, straight cut, long length",
+      "color_hex": "#e2ba9f",
+      "worn": true
+    },
+    {
+      "name": "bottom",
+      "details": "tailored trousers, high-waisted silhouette, slim but relaxed fit through the leg, cropped hemline at mid-calf",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "shoes",
+      "details": "sleek ankle boots with low block heel and rounded toe",
+      "color_hex": "#4b3f32",
+      "worn": true
+    },
+    {
+      "name": "jewelry",
+      "details": "delicate pendant necklace with small circle charm",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "outerwear",
+      "details": "structured blazer, wool blend",
+      "color_hex": "#4b3f32",
+      "worn": false
+    }
+  ]
+}
