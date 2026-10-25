@@ -24,10 +24,10 @@ git add -A; git commit -q -m init; git push -q origin main
 git push -q origin "main:refs/heads/gemini-queue/$SLUG/$MODEL/1"
 cd "$W"; git clone -q origin.git clone; git -C clone config user.name g; git -C clone config user.email g@x
 export FAKE_SCENARIO=$SC FAKE_STATE="$W/fake" FAKE_CLAUDE_LOG="$W/claude.log"
-GA=$(python3 -c "import json,sys;print(json.dumps(dict(RepoDir='$W/clone',RunsDir='$W/runs',OutDir='$W/out',RepoUrl='$W/origin.git',AgyExe='$H/fake_agy.py',Mode='$MODE',TurnMinutes=0.05,TotalMinutes=0.5,MaxNudges=3)))")
+GA=$(python3 -c "import json,os;print(json.dumps({**dict(RepoDir='$W/clone',RunsDir='$W/runs',OutDir='$W/out',RepoUrl='$W/origin.git',AgyExe='$H/fake_agy.py',CodexExe='$H/fake_codex.py',Mode='$MODE',TurnMinutes=0.05,TotalMinutes=0.5,MaxNudges=3),**json.loads(os.environ.get('EXTRA','{}'))}))")
 "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_run.ps1" -ArgsJson "$GA"; echo "gemini exit=$?"
 [ -n "$HOOK" ] && (cd "$W" && eval "$HOOK")
-PA=$(python3 -c "import json;print(json.dumps(dict(WorkDir='$W/pub',OutDir='$W/out',RepoUrl='$W/origin.git',ClaudeExe='$H/fake_claude.py')))")
+PA=$(python3 -c "import json;print(json.dumps(dict(WorkDir='$W/pub',OutDir='$W/out',RepoUrl='$W/origin.git',ClaudeExe='$H/fake_claude.py',SendRetryDelaySeconds=0)))")
 "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_publish.ps1" -ArgsJson "$PA"; echo "publish exit=$?"
 echo "--- out:"; ls "$W/out"; cat "$W"/out/*.json 2>/dev/null | grep -v heartbeat; echo
 echo "--- wrapper.log:"; cat "$W/runs/wrapper.log"

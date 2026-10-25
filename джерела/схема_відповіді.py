@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
 import протокол as _ПР
+import внутрішня_мова as мова
+import формальність
 
 # Сталі фраз формату промпту. Фраза JSON-відповіді одна на всі форми: поле в кожному записі реєстру
 # несло ту саму сталу й не мало кому відрізнятись.
@@ -234,7 +236,6 @@ def визначити_схему(d: Any) -> СхемаВідповіді:
 
 def скелет_мовного_шару():
     """Форма ходу для збирача промпта — поруч з формами функціональної моделі."""
-    import внутрішня_мова as мова
     форма = форма_мовного_шару(визначення=False)
     поля = форма["properties"]["update"]["properties"]
     return {
@@ -246,7 +247,9 @@ def скелет_мовного_шару():
             "wants": [{"quote": "her exact words about this item",
                        "<attribute>": "only named attributes from thing (" + ", ".join(мова.РІЧ_У_СЛОВАХ) + ")"}],
             "<field>": "every other changed field from codes: a code or number as {quote: her exact words, value: its value}; "
-                       "reserved_colour and open_zones are event norms, without quote",
+                       + "".join("%s also with \"%s\": \"%s\" when her words name it; " % ((о["поле"],) + о["названа"])
+                                 for о in мова.ПОЛЯ_ПАСПОРТА.values() if о.get("названа"))
+                       + "reserved_colour and open_zones are event norms, without quote",
         },
         "need": " | ".join(форма["properties"]["need"]["enum"]),
         "text": [{"about": ["update field codes (" + ", ".join(поля) + ") or her_question"],
@@ -259,8 +262,6 @@ def скелет_мовного_шару():
 
 def форма_мовного_шару(визначення=True):
     """Закритий договір ходу: ті самі поля та коди, що читають розбір і сторож."""
-    import внутрішня_мова as мова
-    import формальність as формальність
     from copy import deepcopy
     поля = {}
     for опис in мова.ПОЛЯ_ПАСПОРТА.values():
@@ -271,6 +272,9 @@ def форма_мовного_шару(визначення=True):
         if опис.get("цитата") == "пара":
             форма = {"type": "object", "additionalProperties": False, "required": ["quote", "value"],
                      "properties": {"quote": {"type": "string", "minLength": 1}, "value": форма}}
+            if опис.get("названа"):
+                ключ, код = опис["названа"]
+                форма["properties"][ключ] = {"enum": [код]}
         поля[поле] = форма
     поля["formality"] = {"enum": [щ["код"] for щ in формальність.ДРАБИНА] + [мова.UNKNOWN]}
     частини = {
@@ -294,18 +298,4 @@ def форма_мовного_шару(визначення=True):
     return форма
 
 
-def розбір_мовного_шару(текст):
-    """Читає хід тим самим читачем, який використовує живий міст."""
-    import мовний_шар as мова
-    return мова.прийняти_розмову(текст)
-
-
-def сторож_мовного_шару(оновлення, слова, виправлено=None):
-    """Звіряє нормалізовані поля договору з репліками людини."""
-    import мовний_шар as мова
-    дозволені = форма_мовного_шару(визначення=False)["properties"]["update"]["properties"]
-    return мова._тримається({к: в for к, в in оновлення.items() if к in дозволені or к == "quotes"}, слова, виправлено)
-
-
-СХЕМИ_ВІДПОВІДІ["МОВНИЙ_ХІД_V1"] = СхемаВідповіді(
-    ід="language_turn_v1", назва="МОВНИЙ_ХІД_V1", розбір=розбір_мовного_шару, сторож=сторож_мовного_шару)
+СХЕМИ_ВІДПОВІДІ["МОВНИЙ_ХІД_V1"] = СхемаВідповіді(ід="language_turn_v1", назва="МОВНИЙ_ХІД_V1")
