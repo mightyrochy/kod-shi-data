@@ -27,7 +27,7 @@ export FAKE_SCENARIO=$SC FAKE_STATE="$W/fake" FAKE_CLAUDE_LOG="$W/claude.log"
 GA=$(python3 -c "import json,sys;print(json.dumps(dict(RepoDir='$W/clone',RunsDir='$W/runs',OutDir='$W/out',RepoUrl='$W/origin.git',AgyExe='$H/fake_agy.py',Mode='$MODE',TurnMinutes=0.05,TotalMinutes=0.5,MaxNudges=3)))")
 "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_run.ps1" -ArgsJson "$GA"; echo "gemini exit=$?"
 [ -n "$HOOK" ] && (cd "$W" && eval "$HOOK")
-PA=$(python3 -c "import json;print(json.dumps(dict(WorkDir='$W/pub',OutDir='$W/out',RepoUrl='$W/origin.git',ClaudeExe='$H/fake_claude.py')))")
+PA=$(python3 -c "import json;print(json.dumps(dict(WorkDir='$W/pub',OutDir='$W/out',RepoUrl='$W/origin.git',ClaudeExe='$H/fake_claude.py',SendRetryDelaySeconds=0)))")
 "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_publish.ps1" -ArgsJson "$PA"; echo "publish exit=$?"
 echo "--- out:"; ls "$W/out"; cat "$W"/out/*.json 2>/dev/null | grep -v heartbeat; echo
 echo "--- wrapper.log:"; cat "$W/runs/wrapper.log"

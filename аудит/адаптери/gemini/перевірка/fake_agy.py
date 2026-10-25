@@ -14,6 +14,27 @@ def opt(name):
 if args[:1] == ['models']:
     print('gemini-3.8-flash-high Gemini 3.8 Flash (High)\nclaude-opus-5-5-high Claude Opus 5.5 (High)\nBad Line')
     sys.exit(0)
+if args[:2] == ['-p', '/usage']:
+    # Квота як дані (0 ходів): FAKE_USAGE — ok | flash0 | claude0 | all0 | used | envelope | garbage | fail; FAKE_RESET — хв до скидання.
+    import datetime
+    mode = os.environ.get('FAKE_USAGE', 'ok')
+    reset = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=int(os.environ.get('FAKE_RESET', '137')))).strftime('%Y-%m-%dT%H:%M:%SZ')
+    left = {'Gemini 3.5 Flash': 34, 'Gemini 3.1 Pro': 0, 'Claude & GPT': 0}
+    if mode in ('flash0', 'all0'):
+        left['Gemini 3.5 Flash'] = 0
+    if mode == 'claude0':
+        left['Claude & GPT'] = 0
+    if mode == 'fail':
+        sys.exit(1)
+    if mode == 'garbage':
+        print('Model quotas: Flash 34% remaining'); sys.exit(0)
+    if mode == 'used':
+        doc = {'quotas': [{'model_group': k, 'usedPercent': 100 - v, 'resetsAt': reset} for k, v in left.items()]}
+    else:
+        doc = {'model_quotas': [{'name': k, 'remaining_percent': v, 'reset_time': reset} for k, v in left.items()]}
+    if mode == 'envelope':
+        doc = {'conversation_id': 'u', 'status': 'SUCCESS', 'response': json.dumps(doc)}
+    print(json.dumps(doc)); sys.exit(0)
 conv = opt('--conversation') or str(uuid.uuid4())
 model = opt('--model')
 stream = opt('--input-format') == 'stream-json'
@@ -73,6 +94,8 @@ def act(prompt):
         if n == 1:
             commit('робота/е.txt'); sys.exit(3)
         return 'SUCCESS', done(), ''
+    if SC == 'quota429':
+        return 'ERROR', '', '429 RESOURCE_EXHAUSTED: quota exceeded'
     if SC == 'nothing':
         return 'SUCCESS', 'ЗАБЛОКОВАНО: нема доступу', ''
     raise SystemExit('невідомий сценарій ' + SC)

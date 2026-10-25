@@ -9,6 +9,7 @@
   1. перевірка ізоляції за `GEMINI.md` (whoami, `net session`, чужі профілі й диски, змінні з ключами);
   2. `git fetch` без входу: `main`, `gemini/*` і позначки черги `gemini-queue/<наряд>/<модель>/<спроба>`, які ставить
      лише диспетчер; позначка має вказувати на коміт із `main`, текст наряду — лише `аудит/наряди/<наряд>.md` з нього;
+  2а. квота як дані (`agy -p "/usage" --output-format json`, 0 ходів): група моделі з 0 % — наряд не береться, код `QUOTA_ZERO`;
   3. гілка `gemini/<наряд>` від свіжого `main` (чи від уже опублікованої `gemini/<наряд>` — доробка);
   4. один прогін `agy` з межею часу; хід без звіту чи звіт, що не збігся з гілкою, — догонка тієї самої розмови;
   5. бандл гілки й стан (лише коди й числа) у теці обміну; публікує їх окрема задача власника `gemini_publish.ps1`.
@@ -28,6 +29,7 @@ param(
     [double]$TurnMinutes = 120,
     [double]$TotalMinutes = 180,
     [int]$MaxNudges = 4,
+    [double]$QuotaMinutes = 2,
     [int]$MarkerMaxAgeDays = 7,
     [switch]$NoPrintTimeoutFlag
 )
@@ -37,7 +39,7 @@ $ErrorActionPreference = 'Stop'
 
 $script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
 $script:TaskDir = 'аудит/наряди/'
-$script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$'
+$script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
@@ -218,6 +220,113 @@ function Get-NextMarker {
         return $m
     }
     $null
+}
+
+# --- квота --------------------------------------------------------------------------------------------------------
+
+# `agy -p "/usage" --output-format json` — дані, а не хід моделі. Схему виводу документація agy не наводить, тож розбір
+# терпимий до назв полів; нерозпізнане — «невідомо»: наряд іде далі, як до цього (429 ловить Get-ErrorCode).
+function Get-FirstValue($Obj, [string[]]$Names) {
+    foreach ($n in $Names) {
+        foreach ($p in $Obj.PSObject.Properties) { if ($p.Name -ieq $n -and $null -ne $p.Value) { return $p.Value } }
+    }
+    $null
+}
+
+function ConvertTo-Number($Value) {
+    if ($Value -is [string]) {
+        $d = 0.0
+        if ([double]::TryParse($Value.Trim().TrimEnd('%'), [System.Globalization.NumberStyles]::Float, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$d)) { return $d }
+        return $null
+    }
+    if ($Value -is [ValueType] -and $Value -isnot [bool] -and $Value -isnot [datetime]) { return [double]$Value }
+    $null
+}
+
+# Хвилини до скидання; -1 — невідомо.
+function Get-ResetMinutes($Node) {
+    $now = [DateTimeOffset]::UtcNow
+    $sec = ConvertTo-Number (Get-FirstValue $Node @('reset_in_seconds', 'resetInSeconds', 'seconds_until_reset', 'secondsUntilReset'))
+    if ($null -ne $sec) { return [int][Math]::Ceiling([Math]::Max(0, $sec) / 60) }
+    $at = Get-FirstValue $Node @('reset_time', 'resetTime', 'resets_at', 'resetsAt', 'reset_at', 'resetAt', 'reset')
+    $when = $null
+    if ($at -is [datetime]) { $when = [DateTimeOffset]$at.ToUniversalTime() }
+    elseif ($at -is [string]) {
+        $dt = [DateTimeOffset]::MinValue
+        if ([DateTimeOffset]::TryParse($at, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::AssumeUniversal, [ref]$dt)) { $when = $dt }
+    } else {
+        $n = ConvertTo-Number $at
+        if ($null -ne $n -and $n -gt 1e9) { $when = [DateTimeOffset]::FromUnixTimeSeconds([long]$(if ($n -gt 1e11) { $n / 1000 } else { $n })) }
+    }
+    if ($null -eq $when) { return -1 }
+    [int][Math]::Ceiling([Math]::Max(0, ($when - $now).TotalMinutes))
+}
+
+function Get-UsageGroups($Node, $Acc, [int]$Depth = 0) {
+    if ($null -eq $Node -or $Node -is [string] -or $Node -is [ValueType] -or $Depth -gt 8) { return }
+    if ($Node -is [System.Collections.IEnumerable]) { foreach ($i in $Node) { Get-UsageGroups $i $Acc ($Depth + 1) }; return }
+    $name = Get-FirstValue $Node @('name', 'group', 'group_name', 'groupName', 'model_group', 'modelGroup', 'model', 'model_name', 'modelName', 'display_name', 'displayName', 'title', 'label', 'id')
+    if ($name -is [string] -and $name.Trim()) {
+        $left = ConvertTo-Number (Get-FirstValue $Node @('remaining_percent', 'remainingPercent', 'percent_remaining', 'percentRemaining', 'remaining_pct', 'remainingPct', 'percent_left', 'percentLeft'))
+        if ($null -eq $left) {
+            $frac = ConvertTo-Number (Get-FirstValue $Node @('remaining_fraction', 'remainingFraction'))
+            if ($null -ne $frac) { $left = $frac * 100 }
+        }
+        if ($null -eq $left) {
+            $used = ConvertTo-Number (Get-FirstValue $Node @('used_percent', 'usedPercent', 'percent_used', 'percentUsed', 'used_pct', 'usedPct'))
+            if ($null -ne $used) { $left = 100 - $used }
+        }
+        if ($null -eq $left) {
+            $rem = ConvertTo-Number (Get-FirstValue $Node @('remaining', 'remaining_requests', 'remainingRequests', 'remaining_tokens', 'remainingTokens'))
+            $lim = ConvertTo-Number (Get-FirstValue $Node @('limit', 'total', 'quota', 'max'))
+            if ($null -ne $rem -and $null -ne $lim -and $lim -gt 0) { $left = $rem / $lim * 100 }
+            elseif ($null -ne $rem -and $rem -le 0) { $left = 0 }
+        }
+        if ($null -ne $left) {
+            [void]$Acc.Add([pscustomobject]@{ Name = $name.Trim(); Left = [int][Math]::Max(0, [Math]::Min(100, [Math]::Round($left))); ResetMin = (Get-ResetMinutes $Node) })
+        }
+    }
+    foreach ($p in $Node.PSObject.Properties) { Get-UsageGroups $p.Value $Acc ($Depth + 1) }
+}
+
+# Слова назви без чисел і службових слів: група «Gemini 3.5 Flash» ↔ модель gemini-3.8-flash-high — спільне «flash».
+function Get-NameTokens([string]$Name) {
+    $stop = @('gemini', 'high', 'medium', 'low', 'preview', 'latest', 'thinking', 'exp', 'and', 'the', 'models', 'model')
+    @(($Name.ToLowerInvariant() -split '[^a-z0-9]+') | Where-Object { $_ -and $_ -notmatch '^[0-9]+$' -and $stop -notcontains $_ })
+}
+
+# Known=$false — квоту не прочитано (наряд іде далі). Blocked — усі групи моделі на 0 %; Group — ASCII-ім'я для коду рядка.
+function Get-Quota([string]$Model) {
+    $none = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; Left = -1 }
+    try {
+        $r = Invoke-Native $script:Agy @('-p', '/usage', '--output-format', 'json') $RepoDir $QuotaMinutes
+        if ($r.TimedOut -or $r.Code -ne 0) { Write-WrapperLog "квота: agy /usage -> $($r.Code)"; return $none }
+        $text = $r.Out.Trim()
+        $doc = $null
+        try { $doc = $text | ConvertFrom-Json } catch {
+            $a = $text.IndexOf('{'); $b = $text.LastIndexOf('}')
+            if ($a -ge 0 -and $b -gt $a) { try { $doc = $text.Substring($a, $b - $a + 1) | ConvertFrom-Json } catch { $null = $_ } }
+        }
+        if ($null -ne $doc -and $doc.PSObject.Properties['response'] -and $doc.response -is [string]) {
+            try { $doc = $doc.response | ConvertFrom-Json } catch { $null = $_ }
+        }
+        $groups = New-Object System.Collections.ArrayList
+        if ($null -ne $doc) { Get-UsageGroups $doc $groups }
+        $mt = @(Get-NameTokens $Model)
+        $hit = @($groups | Where-Object { $g = $_; @(Get-NameTokens $g.Name | Where-Object { $mt -contains $_ }).Count -gt 0 })
+        if ($hit.Count -eq 0) {
+            Write-WrapperLog ('квота: групу моделі {0} не розпізнано; вивід /usage: {1}' -f $Model, $text.Substring(0, [Math]::Min(400, $text.Length)))
+            return $none
+        }
+        $zeros = @($hit | Where-Object { $_.Left -eq 0 })
+        $ref = $(if ($zeros.Count -eq $hit.Count) { $zeros[0] } else { @($hit | Sort-Object Left -Descending)[0] })
+        $g = ($ref.Name.ToUpperInvariant() -replace '[^A-Z0-9]', '')
+        if (-not $g) { $g = 'MODEL' }
+        [pscustomobject]@{ Known = $true; Blocked = ($ref.Left -eq 0); Group = $g.Substring(0, [Math]::Min(16, $g.Length)); ResetMin = $ref.ResetMin; Left = $ref.Left }
+    } catch {
+        Write-WrapperLog "квота: $($_.Exception.Message)"
+        $none
+    }
 }
 
 # --- прогін agy ---------------------------------------------------------------------------------------------------
@@ -511,6 +620,14 @@ function Invoke-Task($M) {
         if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
         $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
         if ($taskText.Length -gt 30000) { $status.code = 'TASK_TOO_LONG'; return }
+        # Квота до наряду: група моделі з 0 % — наряд не береться (марно палить спробу й дає 429 посеред прогону).
+        $q = Get-Quota $M.Model
+        if ($q.Blocked) {
+            $status.code = 'QUOTA_ZERO'; $status.quota = 0; $status.qgroup = $q.Group
+            if ($q.ResetMin -ge 0) { $status.qreset = $q.ResetMin }
+            Write-WrapperLog "квота: група $($q.Group) на 0 %, скидання через $($q.ResetMin) хв — наряд не береться"
+            return
+        }
         $start = Get-RefSha "refs/remotes/origin/gemini/$($M.Slug)"
         if (-not $start) { $start = $main }
         Reset-Clone
@@ -526,6 +643,9 @@ function Invoke-Task($M) {
         $status.report = $res.Report
         $status.turns = $res.Turns
         if ($res.Code -eq 'MODEL_INVALID') { $status.models = @(Get-AgyModels) }
+        # Залишок квоти після прогону — для рядка кінця наряду.
+        $qa = Get-Quota $M.Model
+        if ($qa.Known) { $status.quota = $qa.Left; $status.qgroup = $qa.Group }
     } catch {
         $status.code = 'CRASH'
         Write-WrapperLog "збій: $($_.Exception.Message)"
