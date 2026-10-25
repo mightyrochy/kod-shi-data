@@ -3,7 +3,8 @@
 # «поле=код=цитата» обирає з переліку цього поля (або unknown) код, який стверджує САМА цитата; ширша чи інша цитата за код розбору
 # («В'язана шапка» → не `knitwear`, а те, що вона каже) дає інший код чи unknown. Граматика на пункт — enum переліку поля + unknown.
 # Результат — копія теки з виправленими кодами (далі звичайні `--зібрати` і суд `еталон_частки.py`). Словника й слів-запасу нема.
-#   python3 проби/вибір_коду_54г.py <тека розбору> <НОВА тека> --модель <ід> [--паралельно 2]
+#   python3 проби/вибір_коду_54г.py <тека розбору> <НОВА тека> --модель <ід> [--паралельно 2] [--поля item_type,sleeve,neckline,cut]
+# --поля (5.4-Г вузький вибір): крок лише над названими полями — решта пунктів лишається як у розборі, GPU не витрачається.
 import argparse, concurrent.futures, json, os, shutil, sys, time
 ТУТ = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(ТУТ))
@@ -43,7 +44,7 @@ def схема(поля):
                            for i, п in enumerate(поля)}}
 
 
-def одна(файл, звідки, куди, модель, годинник):
+def одна(файл, звідки, куди, модель, годинник, поля=None):
     текст = open(os.path.join(звідки, файл), encoding="utf-8").read()
     дані, відп = П.розділити(текст)
     try:
@@ -52,7 +53,7 @@ def одна(файл, звідки, куди, модель, годинник):
     except (ValueError, KeyError):
         shutil.copy(os.path.join(звідки, файл), os.path.join(куди, файл))
         return файл, 0, 0.0
-    суд = [(і, п) for і, п in enumerate(усі) if п[2] and п[0] in ПЕРЕЛІК]
+    суд = [(і, п) for і, п in enumerate(усі) if п[2] and п[0] in ПЕРЕЛІК and (поля is None or п[0] in поля)]
     if not суд:
         shutil.copy(os.path.join(звідки, файл), os.path.join(куди, файл))
         return файл, 0, 0.0
@@ -88,7 +89,9 @@ def main():
     р = argparse.ArgumentParser()
     р.add_argument("звідки"); р.add_argument("куди")
     р.add_argument("--модель", required=True); р.add_argument("--паралельно", type=int, default=2)
+    р.add_argument("--поля", default=None, help="поля через кому; решта пунктів не міняється")
     а = р.parse_args()
+    поля = set(а.поля.split(",")) if а.поля else None
     os.makedirs(а.куди, exist_ok=True)
     for ф in os.listdir(а.звідки):
         if not ф.endswith(".txt"):
@@ -97,7 +100,7 @@ def main():
     годинник = П.Годинник(а.паралельно)
     т0 = time.time()
     with concurrent.futures.ThreadPoolExecutor(а.паралельно) as пул:
-        рез = list(пул.map(lambda ф: одна(ф, а.звідки, а.куди, а.модель, годинник), файли))
+        рез = list(пул.map(lambda ф: одна(ф, а.звідки, а.куди, а.модель, годинник, поля), файли))
     стіна = time.time() - т0
     print("вибір коду: речей %d · викликів %d · змін %d · стіною %.1f с (%.1f с/річ) · %s" % (
         len(файли), sum(1 for _, _, с in рез if с), sum(к for _, к, _ in рез), стіна, стіна / max(1, len(файли)),
