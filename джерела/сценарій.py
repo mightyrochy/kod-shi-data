@@ -529,6 +529,9 @@ def день_кодами(сцен):
     _о = с.get("_ошатність") or с.get("ошатність")
     if isinstance(_о, (list, tuple)) and len(_о) == 2:
         д["formality"] = {"from": число(_о[0]), "to": число(_о[1])}
+    from occasion import потреба_події, виміри_на_дріт
+    if с:
+        д["occasion_requirements"] = виміри_на_дріт(потреба_події(с))
     if невідоме:
         д["unknown"] = невідоме
     return д
