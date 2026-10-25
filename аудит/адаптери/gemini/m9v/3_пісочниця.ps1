@@ -23,7 +23,9 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 if ($env:USERNAME -eq 'gemini') { Stop-Here 'це вікно відкрито під gemini; відкрий від свого облікового запису.' }
 $g = 'C:\Users\gemini'; $wrap = 'C:\ProgramData\gemini-wrapper'; $out = 'C:\Users\Public\gemini\out\m9g_proba.txt'
 if (-not (Test-Path "$wrap\gemini_run.ps1")) { Stop-Here "нема $wrap\gemini_run.ps1: спершу кроки 1–2." }
-$codex = Get-ChildItem "$g\AppData\Local", "$g\.codex" -Recurse -Filter codex.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+# Шлях інсталятора (НАЛАШТУВАННЯ.md, «Тільки на ноутбуці», п.6); нема — пошук у профілі gemini.
+$codex = Get-Item "$g\AppData\Local\Programs\OpenAI\Codex\bin\codex.exe" -ErrorAction SilentlyContinue
+if (-not $codex) { $codex = Get-ChildItem "$g\AppData\Local" -Recurse -Filter codex.exe -ErrorAction SilentlyContinue | Select-Object -First 1 }
 if (-not $codex) { Stop-Here "codex.exe у профілі gemini не знайдено: спершу крок 3 (2_під_gemini.ps1 -WithCodex)." }
 $codex = $codex.FullName
 Write-Host "codex: $codex"
