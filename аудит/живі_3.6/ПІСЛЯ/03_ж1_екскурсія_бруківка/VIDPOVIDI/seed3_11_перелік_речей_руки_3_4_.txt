@@ -1,0 +1,44 @@
+── ПРОМПТ (2479 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Light grey wool blend tailored trousers, relaxed but structured cut, mid-calf length, #B0C4DE fabric with a subtle matte finish.\nCream silk crepe blouse, soft flowing cut reaching the high hip, pale ivory color #FFFDD0, lightweight draping material.\nOxford cloth button-down shirt in classic navy blue worn underneath as an optional layer for cooler moments, regular fit, medium weight cotton #000080.\nNude leather ankle boots with a low block heel, sleek cut around the ankle, bone color #E5D3A9, smooth supple leather that grips cobblestones.\nA small tan leather crossbody bag with minimal hardware in earthy cognac #8B4513 to carry essentials hands-free.\n\nThis outfit perfectly balances the request for a \"neat\" look while preparing for a full day of walking on uneven cobblestone streets. The structured trousers and block heel provide necessary stability and comfort compared to stilettos, allowing her to explore freely without fatigue. Layering possibilities with the Oxford shirt offer flexibility against the cool autumn air, ensuring warmth without sacrificing style as temperatures fluctuate throughout the day."}
+
+── ВІДПОВІДЬ (1128 симв., 61.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "tailored trousers",
+      "details": "wool blend fabric with a subtle matte finish, relaxed but structured cut, mid-calf length",
+      "slot": "bottom",
+      "color_hex": "#B0C4DE",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "silk crepe fabric with lightweight draping material, soft flowing cut reaching the high hip",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "Oxford cloth button-down shirt",
+      "details": "medium weight cotton, regular fit, optional layer for cooler moments",
+      "slot": "top",
+      "color_hex": "#000080",
+      "worn": false
+    },
+    {
+      "name": "ankle boots",
+      "details": "smooth supple leather that grips cobblestones, sleek cut around the ankle, low block heel",
+      "slot": "shoes",
+      "color_hex": "#E5D3A9",
+      "worn": true
+    },
+    {
+      "name": "crossbody bag",
+      "details": "minimal hardware in earthy cognac tone, small tan leather",
+      "slot": "bag",
+      "color_hex": "#8B4513",
+      "worn": true
+    }
+  ]
+}
