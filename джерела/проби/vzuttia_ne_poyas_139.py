@@ -1,7 +1,7 @@
 # Рядок 139: слот ставився за ПЕРШИМ словом-ключем у тексті, тож слово деталі або
 # супутника перемагало слово самої речі. Тут — оголошений слот проти нового, на
 # СИРОМУ каталозі з .gz (без чистки: чистка вже виправляє частину того самого).
-import sys, os, gzip, collections
+import sys, os, gzip, collections, tempfile
 ТУТ = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ТУТ, ".."))
 import feed, фід_слот as FS
@@ -16,7 +16,7 @@ import feed, фід_слот as FS
  "ж-08406": "сумка", "ж-07858": "сумка", "ж-07624": "пояс", "ж-07610": "пояс",
  "ж-07573": "прикраси", "ж-12170": None, "ж-12171": None,   # білизна слота не має
 }
-сирий = "/tmp/_139_сирий.xml"
+сирий = os.path.join(tempfile.gettempdir(), "_139_сирий.xml")
 if not os.path.exists(сирий):
     with gzip.open(os.path.join(ТУТ, "..", "..", "каталог_повний.xml.gz"), "rb") as вх:
         open(сирий, "wb").write(вх.read())

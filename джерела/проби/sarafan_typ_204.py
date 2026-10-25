@@ -1,11 +1,11 @@
 # Рядок 204 (питання власника «як тоді розглядаються сарафани, якщо це не сукні?»):
 # 60 із 86 сарафанів не мали типу ЗОВСІМ — шар формальності мовчав, і лляний сарафан
 # ішов у весільні 7–9 нарівні з вечірньою. Тепер це форма сукні зі смугою 4–6.
-import sys, os, collections, importlib.util
+import sys, os, collections, importlib.util, tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import feed, фід_каталог as ФК, фід_слот as НОВ, формальність as ФН
 def _до(зм, імя):
-    сп = importlib.util.spec_from_file_location("до_" + імя, os.environ.get(зм, "/tmp/204/до_%s.py" % імя))
+    сп = importlib.util.spec_from_file_location("до_" + імя, os.environ.get(зм, os.path.join(tempfile.gettempdir(), "204", "до_%s.py" % імя)))
     м = importlib.util.module_from_spec(сп); сп.loader.exec_module(м); return м
 СТАР, ФД = _до("DO_FID_SLOT", "фід_слот"), _до("DO_FORM", "формальність")
 кат = ФК.прочитати_каталог(feed.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]
