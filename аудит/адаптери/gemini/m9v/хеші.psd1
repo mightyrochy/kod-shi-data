@@ -1,7 +1,9 @@
 ﻿# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
 # у ../НАЛАШТУВАННЯ.md (стенд `перевірка/сценарії_m9v.sh` звіряє). Міняється разом із таблицею (PR, що чіпає обгортку).
 @{
-    'gemini_run.ps1'     = '0D0DD73D70C98093989B0E2262CED7E72ABA502D9EF0E9A1E5E3ECA209F287BC'
-    'gemini_publish.ps1' = '2F713DDE089CB4C856082E77BD88A36E85E36090DC162C86EF7BE2259977071D'
+    'gemini_run.ps1'     = '7E5C22422AEF0658968A26205D79E913E816499F54B75D09E4B67CA7046F6456'
+    'gemini_publish.ps1' = 'D5A2B3BF9E6C8F2BD5BF8E510BFC7F6FD545D71D81A9817176CAA6A1B826E646'
+    # SHA-256 офіційного інсталятора Codex (9741): порожній — 2_під_gemini.ps1 -WithCodex інсталятор не виконує. Записує PR після живої звірки з джерелом.
+    CodexInstaller       = ''
     'gemini_watch.ps1'   = 'CEBCDD8FFEAFCDF29D9B4F5F624F00E8C8AE9A3811B49E87D3EB6B9B992C24ED'
 }

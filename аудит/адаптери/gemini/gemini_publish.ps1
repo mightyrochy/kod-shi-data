@@ -42,6 +42,11 @@ $ErrorActionPreference = 'Stop'
 
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
+# Імена моделей у рядку ПУЛИ (9740): родини gemini/claude/gpt, до 6 імен — вільного тексту з pools.json (пише gemini) нема.
+$script:PoolModelPattern = '^(gemini|claude|gpt)-[a-z0-9.-]{1,36}$'
+# Шляхи й вміст, яких у гілці gemini/* бути не може (9739); вміст — ERE для `git log -G` по кожному коміту.
+$script:SecretPathPattern = '(^|/)auth\.json$|(^|/)\.codex(/|$)|(^|/)\.config/gh(/|$)'
+$script:SecretContentPattern = 'eyJ[A-Za-z0-9_-]{10,}|sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|refresh_token|BEGIN [A-Z ]*PRIVATE KEY'
 $script:IdPattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}$'
 $script:ShaPattern = '^[0-9a-f]{40}$'
 $script:Utf8Strict = New-Object System.Text.UTF8Encoding($false, $true)
@@ -56,7 +61,7 @@ $script:RunCodes = @{
     AGY_ERROR = 'agy закінчився з помилкою'; MODEL_INVALID = 'agy не знає моделі з позначки'
     QUOTA = 'квота моделі (429)'; AUTH = 'agy під gemini без входу'
     NOT_ON_MAIN = 'коміт позначки не з main'; NO_TASK_FILE = 'нема файлу наряду на коміті позначки'
-    TASK_TOO_LONG = 'наряд довший за 30 тис. знаків'; CRASH = 'збій обгортки gemini'
+    TASK_TOO_LONG = 'наряд довший за 30 тис. знаків'; ENGINE_MISSING = 'рушія моделі нема на ноутбуці'; CRASH = 'збій обгортки gemini'
     INTERRUPTED = 'прогін перервано (вимкнення чи сон ноутбука)'
 }
 $script:IsolationChecks = @{
@@ -185,6 +190,9 @@ function Publish-Bundle($S, [string]$Id) {
             $all = @($net) + @($each)
             if (@($all | Where-Object { $_ -like '.github/*' -or $_ -like '.github' }).Count -gt 0) { return @('GITHUB_DIR', $net.Count) }
             if (@($all | Where-Object { $_.StartsWith($WrapperDir) }).Count -gt 0) { return @('WRAPPER_FILES', $net.Count) }
+            # Секрети (9739): токен Codex/gh лежить у профілі gemini, модель його читає — у відкритий репозиторій він не йде.
+            if (@($all | Where-Object { $_ -match $script:SecretPathPattern }).Count -gt 0) { return @('SECRET', $net.Count) }
+            if ((Invoke-Git @('log', '--no-merges', '--format=%H', '-G', $script:SecretContentPattern, "$main..$head")).Out.Trim()) { return @('SECRET', $net.Count) }
             $remote = Get-RefSha "refs/remotes/origin/gemini/$slug"
             if ($remote -and (Invoke-Git @('merge-base', '--is-ancestor', $remote, $head) -AllowFail).Code -ne 0) { return @('NOT_FF', $net.Count) }
             if ($DryRun) { return @('OK', $net.Count) }
@@ -204,7 +212,7 @@ function Publish-Bundle($S, [string]$Id) {
 $script:PublishCodes = @{
     BUNDLE_MISSING = 'бандла нема'; BUNDLE_TOO_BIG = 'бандл більший за межу'; BUNDLE_INVALID = 'бандл не проходить git bundle verify'
     REF_MISMATCH = 'гілка чи SHA бандла не ті, що в стані'; EMPTY = 'нових комітів до main нема'; NO_BASE = 'нема спільної бази з main'
-    GITHUB_DIR = 'зміни в .github/'; WRAPPER_FILES = 'зміни у файлах обгортки'; NOT_FF = 'не fast-forward до опублікованої гілки'
+    SECRET = 'шлях чи вміст схожі на токен/секрет (auth.json, .codex/, .config/gh/, eyJ…, sk-, ghp_, refresh_token)'; GITHUB_DIR = 'зміни в .github/'; WRAPPER_FILES = 'зміни у файлах обгортки'; NOT_FF = 'не fast-forward до опублікованої гілки'
     PUSH_FAILED = 'пуш не вдавався годину (журнал publish.log; після входу git — gemini_publish.ps1 -Retry <id>)'
 }
 
@@ -310,7 +318,10 @@ function Get-Line([string]$Id) {
             # Квота групи (рішення диспетчера 9611): суфікс лише коли стан має групу й відсоток 0–100.
             $qg = [string](Get-Prop $s 'qgroup')
             $qs = $(if ($quotaLeft -match '^(?:100|[1-9]?[0-9])$' -and $qg -cmatch '^[A-Z0-9]{2,16}$') { " КВОТА $qg $quotaLeft" } else { '' })
-            return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ГОТОВО $branch $head$qs" }
+            # Фактична модель (каскад за пулом може відрізнятися від моделі позначки): лише за ModelPattern.
+            $am = [string](Get-Prop $s 'actual')
+            $ms = $(if ($am -cmatch $script:ModelPattern) { " МОДЕЛЬ $am" } else { '' })
+            return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ГОТОВО $branch $head$qs$ms" }
         }
         return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $(if ($code -eq 'DONE') { 'NO_HEAD' } else { $code })_PUBLISHED" }
     }
@@ -349,7 +360,8 @@ function Reset-State([string]$Id) {
 $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
-    "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?\z"
+    "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
+    '\AGEMINI ОБГОРТКА: ПУЛИ V=(?:[0-9]+(?:\.[0-9]+){1,3}|-)(?: G=[A-Z0-9]{1,16}:(?:100|[1-9]?[0-9]):(?:[0-9]{1,6}|-)){0,6}(?: Q=\?)? M=(?:-|(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}(?:,(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}){0,5})\z'
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:gemini|codex|claude)/$script:SlugCore [A-Z0-9_]{2,40}\z"
     '\AСПОСТЕРІГАЧ КОМЕНТАР #[0-9]{1,12} [0-9]{1,20} (?:mightyrochy|chatgpt-codex-connector\[bot\]) (?:новий|змінено)\z'
     '\AСПОСТЕРІГАЧ CI #[0-9]{1,12} [0-9a-f]{40} (?:success|failure|cancelled|timed_out|action_required|neutral|skipped|pending)\z'
@@ -394,6 +406,36 @@ function Move-Outbox([string]$Name, [string]$Sub) {
     $dir = Join-Path $OutboxDir $Sub
     [void](New-Item -ItemType Directory -Force -Path $dir)
     Move-Item -LiteralPath (Join-Path $OutboxDir $Name) -Destination (Join-Path $dir $Name) -Force
+}
+
+# pools.json від gemini (версія agy, групи квоти, назви моделей) -> рядок ПУЛИ у вихідні. Недовірений файл: у рядок
+# іде лише те, що збіглося з шаблонами; не частіше за раз на 3 години й лише коли рядок змінився.
+function Add-PoolsLine {
+    $path = Join-Path $OutDir 'pools.json'
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { return }
+    if ((Get-Item -LiteralPath $path).Length -gt 8192) { Write-WrapperLog 'pools.json завеликий — пропущено'; return }
+    try { $p = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json }
+    catch { Write-WrapperLog 'pools.json не читається як JSON — пропущено'; return }
+    $ver = [string](Get-Prop $p 'agy')
+    $parts = @('V=' + $(if ($ver -cmatch '^[0-9]+(\.[0-9]+){1,3}$') { $ver } else { '-' }))
+    foreach ($g in @(@(Get-Prop $p 'groups') | Where-Object { $null -ne $_ } | Select-Object -First 6)) {
+        $c = [string](Get-Prop $g 'g'); $l = [string](Get-Prop $g 'left'); $r = [string](Get-Prop $g 'reset')
+        if ($c -cmatch '^[A-Z0-9]{1,16}$' -and $l -cmatch '^(?:100|[1-9]?[0-9])$') {
+            $parts += "G=${c}:${l}:" + $(if ($r -cmatch '^[0-9]{1,6}$') { $r } else { '-' })
+        }
+    }
+    $models = @(@(Get-Prop $p 'models') | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ } | Where-Object { $_ -cmatch $script:PoolModelPattern } | Select-Object -First 6)
+    if ((Get-Prop $p 'unknown') -eq $true) { $parts += 'Q=?' }
+    $parts += 'M=' + $(if ($models.Count -gt 0) { $models -join ',' } else { '-' })
+    $line = 'GEMINI ОБГОРТКА: ПУЛИ ' + ($parts -join ' ')
+    if ($line.Length -gt 300) { Write-WrapperLog 'рядок ПУЛИ довший за 300 знаків — пропущено'; return }
+    if ((Test-OutboxLine $line) -ne '') { Write-WrapperLog 'рядок ПУЛИ не збігся з шаблоном — пропущено'; return }
+    $last = Join-Path $WorkDir 'pools_last.txt'
+    if ((Test-Path -LiteralPath $last) -and [System.IO.File]::ReadAllText($last, $script:Utf8) -eq $line) { return }
+    $now = Get-Date
+    if (Test-Seen ('pools ' + $now.ToString('yyyyMMdd') + '-' + [int][Math]::Floor($now.Hour / 3))) { return }
+    Write-FileAtomic $last $line
+    Add-OutboxLine ('{0:yyyyMMdd-HHmmss}-{1}.txt' -f $now, (Get-Sha256Hex $line).Substring(0, 12)) $line
 }
 
 # Файли вихідних -> стан <o-id>.json: рядок на відправлення або карантин із повідомленням лише кодом (не більше 3 на добу).
@@ -501,6 +543,7 @@ function Main {
             Write-WrapperLog $line
             Write-FileAtomic $statePath (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
         }
+        Add-PoolsLine
         Receive-Outbox
         foreach ($sf in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File | Sort-Object Name)) {
             $st = [System.IO.File]::ReadAllText($sf.FullName, $script:Utf8) | ConvertFrom-Json
