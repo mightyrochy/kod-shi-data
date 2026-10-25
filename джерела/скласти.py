@@ -17,7 +17,7 @@
 `node --check`. Помилка цього класу тепер червона на складанні, а не на
 телефоні.
 """
-import os, re, subprocess, sys, tempfile
+import json, os, re, subprocess, sys, tempfile
 
 ТУТ = os.path.dirname(os.path.abspath(__file__))
 
@@ -96,31 +96,36 @@ def перевірити(шлях="worker.js"):
 
     # Чернетка живе в тимчасовій теці, не в дереві: раніше вона лежала в git, хоч
     # збирач сам її пише й видаляє, і кожен прогін показував «D джерела/_добути.mjs».
-    добув = os.path.join(tempfile.gettempdir(), "_добути.mjs")
+    тимчасова = tempfile.gettempdir()
+    добув = os.path.join(тимчасова, "_добути.mjs")
+    модуль = os.path.join(тимчасова, "_мод.mjs")
+    сторінка = os.path.join(тимчасова, "_стор.html")
+    скрипт = os.path.join(тимчасова, "_стор.js")
     open(добув, "w", encoding="utf-8").write(
         "import fs from 'fs';\n"
-        "const сир = fs.readFileSync(%r,'utf-8')\n" % п +
+        "import {pathToFileURL} from 'url';\n"
+        "const сир = fs.readFileSync(%s,'utf-8')\n" % json.dumps(п) +
         "  .replace(/export\\s*\\{\\s*worker_default as default\\s*\\}\\s*;?/, 'const М = worker_default;')\n"
         "  .replace(/^export default/m, 'const М =');\n"
-        "fs.writeFileSync('/tmp/_мод.mjs', сир + '\\nexport {М};');\n"
-        "const {М} = await import('/tmp/_мод.mjs');\n"
+        "fs.writeFileSync(%s, сир + '\\nexport {М};');\n" % json.dumps(модуль) +
+        "const {М} = await import(pathToFileURL(%s).href);\n" % json.dumps(модуль) +
         "const в = await М.fetch(new Request('https://w.workers.dev/', {method:'GET'}), {});\n"
         "if (в.status !== 200) throw new Error('GET віддав ' + в.status);\n"
-        "fs.writeFileSync('/tmp/_стор.html', await в.text());\n")
+        "fs.writeFileSync(%s, await в.text());\n" % json.dumps(сторінка))
     r = subprocess.run(["node", добув], capture_output=True, text=True, cwd=ТУТ)
     os.remove(добув)
     if r.returncode:
         raise SystemExit("GET не віддав сторінку:\n" + r.stderr[-600:])
 
-    стор = open("/tmp/_стор.html", encoding="utf-8").read()
+    стор = open(сторінка, encoding="utf-8").read()
     if "Перевірити міст" not in стор:
         raise SystemExit("у виданій сторінці нема кнопки — проба не доїхала")
     js = "\n".join(m.group(1) for m in
                    re.finditer(r"<script[^>]*>(.*?)</script>", стор, re.S))
     if not js.strip():
         raise SystemExit("у виданій сторінці нема скрипта")
-    open("/tmp/_стор.js", "w", encoding="utf-8").write(js)
-    r = subprocess.run(["node", "--check", "/tmp/_стор.js"], capture_output=True, text=True)
+    open(скрипт, "w", encoding="utf-8").write(js)
+    r = subprocess.run(["node", "--check", скрипт], capture_output=True, text=True)
     if r.returncode:
         raise SystemExit("JS ВИДАНОЇ СТОРІНКИ НЕ ПАРСИТЬСЯ — кнопка була б мертва:\n"
                          + r.stderr[-600:])
@@ -147,13 +152,15 @@ def прогін(стиснення=True):
     """
     скласти()
     с, j = перевірити()
-    сторінка_читабельного = open("/tmp/_стор.html", encoding="utf-8").read()
+    сторінка_читабельного = open(
+        os.path.join(tempfile.gettempdir(), "_стор.html"), encoding="utf-8").read()
     вислід = dict(сторінка=с, скрипт=j, стиснутий=None, рядків_стиснутого=None)
     if not стиснення or not стиснути():
         return вислід
     с2, j2 = перевірити("worker.min.js")
     # Те, що віддає стиснутий, мусить дорівнювати тому, що віддає читабельний.
-    if (с2, j2) != (с, j) or open("/tmp/_стор.html", encoding="utf-8").read() != сторінка_читабельного:
+    if (с2, j2) != (с, j) or open(os.path.join(tempfile.gettempdir(), "_стор.html"),
+                                      encoding="utf-8").read() != сторінка_читабельного:
         raise SystemExit("worker.min.js віддає іншу сторінку: %d/%d проти %d/%d" % (с2, j2, с, j))
     вислід["стиснутий"] = (с2, j2)
     вислід["рядків_стиснутого"] = open(
