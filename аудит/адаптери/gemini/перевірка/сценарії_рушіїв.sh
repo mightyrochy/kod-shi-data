@@ -58,5 +58,13 @@ got=$(env FAKE_USAGE=tsv EXTRA='{"EnableCodex":true}' "$H/сценарії_пр�
 case_ pools-line "FAKE_USAGE=tsv" abandon_then_done gemini-3.5-flash 'ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high'
 # аргументи рушіїв: прапори й зусилля дослівно
 a=$(cat "${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-done/fake/codex.argv.log" 2>/dev/null | head -1)
-[[ "$a" == *'"-m", "gpt-6.1-sol"'* && "$a" == *'model_reasoning_effort=high'* && "$a" == *'--dangerously-bypass-approvals-and-sandbox'* ]] && echo "ok   codex-argv" || { echo "FAIL codex-argv: $a"; bad=1; }
+[[ "$a" == *'"-m", "gpt-6.1-sol"'* && "$a" == *'model_reasoning_effort=high'* && "$a" == *'default_permissions=m9g'* && "$a" != *'dangerously'* ]] && echo "ok   codex-argv" || { echo "FAIL codex-argv: $a"; bad=1; }
+# профіль Codex (М.9-Г): обгортка записала config.toml без мережі й без читання токена
+D="${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-done"; c="$D/home/.codex/config.toml"
+grep -qx 'enabled = false' "$c" && grep -qx '"~/.codex/auth.json" = "deny"' "$c" && grep -qx 'default_permissions = "m9g"' "$c" \
+  && echo "ok   codex-profile" || { echo "FAIL codex-profile: $(cat "$c" 2>&1 | head -3)"; bad=1; }
+# робоча тека рушія без даних крамниць (М.9-Г): ні файлів у дереві, ні блобів у .git; код і правила аудиту — є
+n=$(find "$D/clone" -path "$D/clone/.git" -prune -o -type f -print | grep -cE 'каталог_повний|фід.jsonl|сирі.txt')
+m=$(git -C "$D/clone" rev-list --objects --missing=print --all 2>/dev/null | grep -c '^?')
+[[ $n == 0 && $m -ge 3 && -f "$D/clone/аудит/проби/проба.py" && -f "$D/clone/аудит/СТАН.md" ]] && echo "ok   no-shop-data" || { echo "FAIL no-shop-data: файлів $n, блобів поза клоном $m"; bad=1; }
 exit $bad

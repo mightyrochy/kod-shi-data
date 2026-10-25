@@ -1,7 +1,7 @@
 ﻿# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
 # у ../НАЛАШТУВАННЯ.md (стенд `перевірка/сценарії_m9v.sh` звіряє). Міняється разом із таблицею (PR, що чіпає обгортку).
 @{
-    'gemini_run.ps1'     = '7E5C22422AEF0658968A26205D79E913E816499F54B75D09E4B67CA7046F6456'
+    'gemini_run.ps1'     = 'F20393C164339B8A8D9208F9FC81721271FF94BCCA10AA0109675A2B1E43C952'
     'gemini_publish.ps1' = 'AEC7429E11F99B8BA63D93704091A3A416782E62ECA19521BFAA575C90F4E978'
     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз

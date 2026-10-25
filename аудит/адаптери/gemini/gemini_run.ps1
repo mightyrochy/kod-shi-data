@@ -56,6 +56,45 @@ $script:ClaudeCascadeModel = 'claude-opus-5-5-high'
 $script:AgyVersionDone = $false; $script:AgyVersion = $null; $script:Usage = $null; $script:AgyModels = $null
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
+# М.9-Г: у робочій теці рушія нема текстів крамниць. Клон частковий (`--filter=blob:none`: блоби тягнуться лише для
+# дерева нижче) і розріджений за цим шаблоном (`.git/info/sparse-checkout`, не cone): без каталогів, фідів, жнив і сирих
+# даних проб; код, правила й Markdown аудиту лишаються. Шаблон тут, у хешованому файлі, а не в репозиторії: наряд чи
+# рушій його не змінять — обгортка пише його перед кожним прогоном.
+$script:SparsePatterns = @(
+    '/*', '!/index.html', '!*.gz', '!*.jsonl', '!*.xml',
+    '!/zhnyvarka/жнива_*/', '!/zhnyvarka/розвідка/', '!/zhnyvarka/фікстури/',
+    '!/джерела/дані_*/', '!/джерела/проби/дані_*', '!/джерела/аудит/*.json', '!/джерела/траса/*.txt',
+    '!/аудит/**', '/аудит/**/*.md', '/аудит/**/*.py', '/аудит/**/*.sh', '/аудит/**/*.ps1', '/аудит/**/*.psd1',
+    '/аудит/правила_ролей/') -join "`n"
+# М.9-Г: профіль дозволів Codex замість обходу пісочниці. Обгортка пише цей текст у `~/.codex/config.toml` перед кожним
+# `codex exec`: команди сеансу без мережі (вихід лише в самого рушія — його процес поза пісочницею), читання без токена
+# Codex і входу agy, запис — лише робоча тека й `.git` (крім `config` і `hooks`: їх виконала б обгортка поза пісочницею).
+# Бекенд Windows — `elevated` (налаштовує адмін-крок `m9v/3_пісочниця.ps1`). Джерело формату:
+# https://developers.openai.com/codex/config-reference (permissions, windows.sandbox); перевірено на Codex 0.164.0
+# стендом `перевірка/сценарії_пісочниці.sh`.
+$script:CodexConfig = @'
+# Записує gemini_run.ps1 перед кожним `codex exec` (М.9-Г); правки тут буде перезаписано.
+default_permissions = "m9g"
+approval_policy = "never"
+
+[windows]
+sandbox = "elevated"
+
+[permissions.m9g.network]
+enabled = false
+
+[permissions.m9g.filesystem]
+":root" = "read"
+":tmpdir" = "write"
+"~/.codex/auth.json" = "deny"
+"~/.gemini" = "deny"
+
+[permissions.m9g.filesystem.":workspace_roots"]
+"." = "write"
+".git" = "write"
+".git/config" = "read"
+".git/hooks" = "read"
+'@
 
 # --- дрібні помічники ---------------------------------------------------------------------------------------------
 
@@ -499,6 +538,8 @@ function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy') {
 - Наряд — ``$($script:TaskDir)$($M.Slug).md`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
 - Гілку ``$branch`` уже вибрано: працюй і коміть лише в ній. Не пуш і не створюй бандла — це робить обгортка.
   Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.
+- Робоча тека — без даних крамниць (каталоги, фіди, жнива; розріджений клон, М.9-Г): не відновлюй їх
+  (``sparse-checkout``, ``git show`` чи завантаження); проба, якій вони потрібні, — у CI, а в звіті назви її.
 - Кожну команду виконуй на передньому плані й чекай її завершення: фонове завдання зупиняється разом із ходом, а
   звіт без результату — кинутий прогін.
 - Коміть після кожного завершеного кроку; звіт ролі (що зроблено, ДО -> ПІСЛЯ, вади поза мірилом) — тілом
@@ -617,21 +658,26 @@ function Close-StreamRun($Run) {
 
 # Рушій без розмови (Codex): кожен хід — окремий процес; текст ходу — у файлі, аргумент без лапок і
 # метасимволів cmd. Догонка несе повний наряд, бо нової розмови рушій не пам'ятає, а стан роботи — у гілці.
-# Прапори Codex `exec` -C/-m/-c/--json/-o/--dangerously-bypass-approvals-and-sandbox
-# (https://learn.chatgpt.com/docs/developer-commands?surface=cli): обхід пісочниці Codex — лише тому, що ізоляція ОС
-# (користувач gemini без прав і входів) уже стоїть, як вимагає документація («only inside an isolated runner»).
+# Прапори Codex `exec` -C/-m/-c/--json/-o (https://learn.chatgpt.com/docs/developer-commands?surface=cli). Пісочниця —
+# профіль `m9g` з `$script:CodexConfig` (М.9-Г): обходу нема, бо поряд вхід власника й тексти крамниць. Копія ходу — у
+# `.git` клону: її читає пісочниця будь-якого бекенда, а тека прогонів поза робочою текою.
 function Invoke-OneShotTurn($M, $Run, [string]$Text, [datetime]$Deadline) {
     $Run.Turn++
     $file = Join-Path $Run.Dir ('turn{0}.md' -f $Run.Turn)
     $body = $(if ($Run.Turn -gt 1) { $Run.BasePrompt + "`n`n----- ПРОДОВЖЕННЯ -----`n" + $Text } else { $Text })
     [System.IO.File]::WriteAllText($file, $body, $script:Utf8)
-    $short = "Прочитай файл $file і виконай його повністю"
+    $inRepo = Join-Path $RepoDir '.git/gemini-turn.md'
+    [System.IO.File]::WriteAllText($inRepo, $body, $script:Utf8)
+    $short = "Прочитай файл $inRepo і виконай його повністю"
     $minutes = ($Deadline - (Get-Date)).TotalMinutes
     if ($minutes -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
     $outFile = Join-Path $Run.Dir ('turn{0}.out.md' -f $Run.Turn)
-    $a = @('exec', '-C', $RepoDir, '-m', $Run.Engine.Model)
+    $codexHome = Join-Path $HOME '.codex'
+    [void](New-Item -ItemType Directory -Force -Path $codexHome)
+    Write-FileAtomic (Join-Path $codexHome 'config.toml') $script:CodexConfig
+    $a = @('exec', '-C', $RepoDir, '-m', $Run.Engine.Model, '-c', 'default_permissions=m9g')
     if ($Run.Engine.Effort) { $a += @('-c', "model_reasoning_effort=$($Run.Engine.Effort)") }
-    $a += @('--json', '-o', $outFile, '--dangerously-bypass-approvals-and-sandbox', $short)
+    $a += @('--json', '-o', $outFile, $short)
     $r = Invoke-Native $Run.Exe $a $RepoDir $minutes
     [System.IO.File]::AppendAllText($Run.Log, $r.Out + "`n", $script:Utf8)
     [System.IO.File]::AppendAllText($Run.ErrLog, $r.Err, $script:Utf8)
@@ -759,6 +805,39 @@ function Write-Pools {
 }
 
 # --- один наряд ---------------------------------------------------------------------------------------------------
+
+# М.9-Г: клон без текстів крамниць. Повний клон (крок 0 до М.9-Г) обгортка один раз сама замінює частковим: уся
+# історія комітів і дерев (позначкам потрібен merge-base), блоби — лише для розрідженого дерева. Сервер без фільтра дасть
+# повний клон: тоді блоби в `.git` лишаються (запис у журнал), а розріджене дерево — однаково. Шаблон — щоразу.
+function Initialize-Clone {
+    $fresh = $false
+    if ((Invoke-Git @('config', '--get', 'gemini.m9g') -AllowFail).Out.Trim() -ne 'partial') {
+        $new = "$RepoDir.m9g"
+        if (Test-Path -LiteralPath $new) { Remove-Item -LiteralPath $new -Recurse -Force }
+        $r = Invoke-Native $GitExe @('-c', 'credential.helper=', 'clone', '-q', '--filter=blob:none', '--no-checkout', $RepoUrl, $new) '' 30
+        if ($r.Code -ne 0) { throw "частковий клон -> $($r.Code): $($r.Err.Trim())" }
+        $old = "$RepoDir.old"
+        if (Test-Path -LiteralPath $old) { Remove-Item -LiteralPath $old -Recurse -Force }
+        Move-Item -LiteralPath $RepoDir -Destination $old
+        Move-Item -LiteralPath $new -Destination $RepoDir
+        Remove-Item -LiteralPath $old -Recurse -Force
+        [void](Invoke-Git @('config', 'gemini.m9g', 'partial'))
+        $promisor = (Invoke-Git @('config', '--get', 'remote.origin.promisor') -AllowFail).Out.Trim()
+        Write-WrapperLog "клон замінено частковим (М.9-Г)$(if ($promisor -ne 'true') { ': сервер не дав фільтра — блоби в .git є' })"
+        $fresh = $true
+    }
+    Write-FileAtomic (Join-Path $RepoDir '.git/info/sparse-checkout') ($script:SparsePatterns + "`n")
+    [void](Invoke-Git @('config', 'core.sparseCheckout', 'true'))
+    [void](Invoke-Git @('config', 'core.sparseCheckoutCone', 'false'))
+    $fresh
+}
+
+function Update-Refs {
+    [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
+            '+refs/heads/main:refs/remotes/origin/main',
+            '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
+            '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+}
 
 function Reset-Clone {
     foreach ($op in @('merge', 'rebase', 'cherry-pick', 'revert')) { [void](Invoke-Git @($op, '--abort') -AllowFail) }
@@ -897,6 +976,9 @@ function Main {
     try { $lockFile = [System.IO.File]::Open((Join-Path $RunsDir 'lock'), 'OpenOrCreate', 'ReadWrite', 'None') }
     catch { return 0 }
     try {
+        # Заміну клону перервано між двома перейменуваннями (М.9-Г) — повернути старий.
+        if (-not (Test-Path -LiteralPath (Join-Path $RepoDir '.git')) -and (Test-Path -LiteralPath (Join-Path "$RepoDir.old" '.git'))) {
+            Move-Item -LiteralPath "$RepoDir.old" -Destination $RepoDir }
         $iso = Test-Isolation
         $hb = [ordered]@{ time = (Get-Date).ToString('s'); isolation = $(if ($iso) { $iso } else { 'OK' }) }
         Write-FileAtomic (Join-Path $OutDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress)
@@ -906,12 +988,11 @@ function Main {
             Write-WrapperLog "origin клону ($origin) не $RepoUrl — прогонів нема"
             return 1
         }
-        [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
-                '+refs/heads/main:refs/remotes/origin/main',
-                '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
-                '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+        Update-Refs
         $m = Get-NextMarker
         Resume-Interrupted
+        # Перерваний старий клон бандлено вище; далі — клон без даних крамниць (М.9-Г).
+        if (Initialize-Clone) { Update-Refs }
         $script:Agy = Find-EngineExe $AgyExe
         if ($script:Agy) { try { Write-Pools } catch { Write-WrapperLog "пули: $($_.Exception.Message)" } }
         if ($null -eq $m) { return 0 }
