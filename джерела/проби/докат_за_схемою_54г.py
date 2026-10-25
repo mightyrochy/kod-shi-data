@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import каталог_розбір as КР, каталог_розбір_прогін as П, фід_каталог as ФК, фід_розбір as ФР
 
-мін = {"codes": "item_type=unknown", "features": ""}
+мін = {"codes": "item_type=unknown", "features": "knit=ribbed knit"}   # features без фрагмента граматика не пускає (5.4-Г опора)
 зайвий = dict(мін, codes=мін["codes"] + ";decor=sequins=пайетки" * КР.СТЕЛЯ_ПУНКТІВ)
 довга = dict(мін, codes="item_type=dress_generic=" + "сукня" * 11)
 v3 = {"item_type": {"quote": "", "value": КР.UNKNOWN}}
