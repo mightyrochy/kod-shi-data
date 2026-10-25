@@ -15,6 +15,8 @@ ATR (`open-source-stylist`, ONNX локально) і SAM (локальний Co
 """
 import argparse, json, os, subprocess, sys, tempfile
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
+sys.path.insert(0, os.path.join(ТУТ, "проби"))
+from поверхня_212 import писати
 КОРІНЬ = os.path.dirname(ТУТ)
 ВЕРДИКТИ = os.path.join(КОРІНЬ, "аудит", "проби", "темні_5661_вердикти.json")
 ВИХІД = os.path.join(КОРІНЬ, "аудит", "проби", "поверхня_212")
@@ -32,18 +34,18 @@ def зберегти(ключ, шлях, м, арр):
     """Кадр ≤ 512 (JPEG 95), маска й мітки ATR того самого розміру (PNG, найближчий сусід)."""
     import cv2, numpy as np
     from жнива_колір import ДОВГА_СТОРОНА
-    bgr = cv2.imread(шлях)
+    bgr = cv2.imread(шлях)        # тимчасовий файл, ім'я латиницею (див. `одна`)
     h, w = bgr.shape[:2]
     к = min(1.0, ДОВГА_СТОРОНА / float(max(h, w)))
     розм = (max(1, int(round(w * к))), max(1, int(round(h * к))))
     мала = cv2.resize(bgr, розм, interpolation=cv2.INTER_AREA) if к < 1.0 else bgr
-    cv2.imwrite(os.path.join(ВИХІД, ключ + ".jpg"), мала, [cv2.IMWRITE_JPEG_QUALITY, 95])
+    писати(os.path.join(ВИХІД, ключ + ".jpg"), мала, [cv2.IMWRITE_JPEG_QUALITY, 95])
     if м is not None:
         мм = cv2.resize(((м > 127) * 255).astype("uint8"), розм, interpolation=cv2.INTER_NEAREST)
-        cv2.imwrite(os.path.join(ВИХІД, ключ + ".маска.png"), мм)
+        писати(os.path.join(ВИХІД, ключ + ".маска.png"), мм)
     if арр is not None:
-        cv2.imwrite(os.path.join(ВИХІД, ключ + ".atr.png"),
-                    cv2.resize(np.asarray(арр, "uint8"), розм, interpolation=cv2.INTER_NEAREST))
+        писати(os.path.join(ВИХІД, ключ + ".atr.png"),
+               cv2.resize(np.asarray(арр, "uint8"), розм, interpolation=cv2.INTER_NEAREST))
 
 
 def одна(ключ, ід, url, слот, слова, тека):
@@ -60,7 +62,9 @@ def одна(ключ, ід, url, слот, слова, тека):
     except Exception as e:
         зап["помилка"] = "кадр: %s" % str(e)[:120]
         return зап
-    шлях = os.path.join(тека, ключ + ".jpg")
+    # ІМ'Я ЛАТИНИЦЕЮ: `cv2.imread` на Windows відкриває файл ANSI-викликом і кириличного шляху не бачить
+    # («к00.jpg» → None на ноутбуці), а маска й старий вимір читають файл самі — прийом `жнива_фото.взяти_фото`.
+    шлях = os.path.join(тека, "kadr-%s.jpg" % ключ.replace("к", "k"))
     im.save(шлях, "JPEG", quality=95)
     м, dom, чому, джерело = маска_речі(шлях, слот)
     try:

@@ -19,17 +19,30 @@ import argparse, json, os, sys
 ВИСОТА = 220
 
 
+def читати(шлях, прапор=None):
+    """`cv2.imread` через байти: тека `аудит/проби/…` кирилична, а imread на Windows її не бачить (→ None)."""
+    import cv2, numpy as np
+    if not os.path.exists(шлях):
+        return None
+    return cv2.imdecode(np.fromfile(шлях, np.uint8), cv2.IMREAD_COLOR if прапор is None else прапор)
+
+
+def писати(шлях, зобр, параметри=()):
+    """`cv2.imwrite` через байти — та сама причина, що в `читати`."""
+    import cv2
+    cv2.imencode(os.path.splitext(шлях)[1], зобр, list(параметри))[1].tofile(шлях)
+
+
 def після(тека, зап):
     """ПІСЛЯ з тих самих файлів: поверхня придатна → сегменти й основний; ні → колір за словом крамниці."""
     import cv2
     from жнива_колір import виміряти_поверхню, звести_колір, стиснути_поверхню
     к = зап["ключ"]
-    bgr = cv2.imread(os.path.join(тека, к + ".jpg"))
-    м = cv2.imread(os.path.join(тека, к + ".маска.png"), cv2.IMREAD_GRAYSCALE)
+    bgr = читати(os.path.join(тека, к + ".jpg"))
+    м = читати(os.path.join(тека, к + ".маска.png"), cv2.IMREAD_GRAYSCALE)
     if bgr is None or м is None:
         return None
-    ш_atr = os.path.join(тека, к + ".atr.png")
-    арр = cv2.imread(ш_atr, cv2.IMREAD_GRAYSCALE) if os.path.exists(ш_atr) else None
+    арр = читати(os.path.join(тека, к + ".atr.png"), cv2.IMREAD_GRAYSCALE)
     п = виміряти_поверхню(bgr, м, арр)
     осн = звести_колір(п["сегменти"], None, зап.get("слова_крамниці"))[0] if п["придатна"] else None
     return dict(стиснути_поверхню(п), основний=осн and [осн["слово"], осн["hex"], осн["частка"]])
@@ -53,9 +66,9 @@ def рядок(тека, зап, п, підпис, Ш):
     д = ImageDraw.Draw(полотно)
     ф, фм = шрифт(15), шрифт(13)
     x = 5
-    bgr = cv2.imread(os.path.join(тека, зап["ключ"] + ".jpg"))
+    bgr = читати(os.path.join(тека, зап["ключ"] + ".jpg"))
     if bgr is not None:
-        м = cv2.imread(os.path.join(тека, зап["ключ"] + ".маска.png"), cv2.IMREAD_GRAYSCALE)
+        м = читати(os.path.join(тека, зап["ключ"] + ".маска.png"), cv2.IMREAD_GRAYSCALE)
         накл = bgr.copy()
         if м is not None:
             накл[м > 127] = (0.55 * накл[м > 127] + 0.45 * np.array((255, 0, 255))).astype("uint8")
@@ -111,7 +124,7 @@ def аркуш(тека, ім, ключі, записи, пп, підписи):
     for р in рядки:
         а.paste(р, (0, y))
         y += р.size[1]
-    а.save(os.path.join(тека, "аркуш_%s.jpg" % ім), "JPEG", quality=85)
+    а.save(os.path.join(тека, "аркуш_%s.jpg" % ім), "JPEG", quality=85)      # PIL пише юнікодний шлях сам
 
 
 def main():
