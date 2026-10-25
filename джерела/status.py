@@ -192,7 +192,7 @@
     "outer", "outfit", "palette", "palettes", "personal_palette",
     "pipeline", "profile", "silhouette", "status",
     "statements", "trace", "verify", "знахідка", "каблук", "реєстри",
-    "семплер", "сценарій",
+    "семплер", "сценарій", "selection_policy",
     # `ід_правил` — модуль одного шаблону ID на весь проєкт. `bridge` тягне його
     # через `outfit`, `корпус` і `gate_reach`, тому він належить до вантажу телефона.
     "ід_правил",
