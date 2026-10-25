@@ -560,6 +560,7 @@ def промпт_вибору(образи, випадок=None, без_фото
     задача="вибір",
     роль="You are the stylist. From the outfits you put together, you choose one for her.",
     вхід=(
+        _ЗП.ПОЛЕ_ВІДБОРУ,
         _ЗП.Поле("case", "her case: the occasion and event, her «intent» and «goal», her words, wishes, mood "
                          "and refusals",
                  як="this is what she wants; the choice answers it"),

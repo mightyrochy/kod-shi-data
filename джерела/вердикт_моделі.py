@@ -28,6 +28,7 @@ import дріт_моделі as _Д
 import colorspace as _cs
 import реєстр_константи as _РК
 import реєстр_намір as _РН
+import selection_policy as _ПВ
 import регістр_уваги as _РУ
 import silhouette as _СЛ
 import coordination as _КО
@@ -161,6 +162,7 @@ _БЕЗ_ГЕЙТІВ = {
         _ЗП.Поле("case", "her case: the occasion and event, her «intent» and «goal», her words, wishes, mood "
                          "and refusals",
                  як="this is what she wants; which outfits you keep and how you improve them answer it"),
+        _ЗП.ПОЛЕ_ВІДБОРУ,
         *[п for п in _ВИБІР.вхід if п.шлях.startswith("case.")],
         _ЗП.Поле("day", "her day as facts",
                  як="think each outfit through against her day item by item: replace an item that will not "
@@ -1884,6 +1886,8 @@ def вердикт_v1(образи, варіантів=2, випадок=None, �
             зап["описи"] = [dict(о["описи_н"].get(н) or {"н": н, "назва": ""}) for н in зап["речі"]]
         if о.get("підпис"):
             зап["підпис"] = str(о["підпис"])
+        if о.get("полюс"):
+            зап["полюс"] = о["полюс"]
         # її слова про день цього образу вертаються в ремонт і вибір.
         # КРІМ ОБРАЗУ, СКЛАД ЯКОГО НЕ ТОЙ, ПРО ЯКИЙ МОДЕЛЬ ПИСАЛА (Л-4): вона
         # оголосила хід над річчю поза складом («Убір додасть свіжості» при образі без убору)
@@ -1974,6 +1978,7 @@ def вердикт_v1(образи, варіантів=2, випадок=None, �
                                         слоти_мети=_РУ.слоти_ремонту(образи))
     м = мова_вердикту(мова)
     в = {"версія": _ПР.ВЕРСІЯ, "ітерація": 2 if _іт >= 2 else 1}
+    в["політика_відбору"] = _ПВ.на_дріт(_ПВ.опис(намір))
     if випадок:
         в["випадок"] = str(випадок)
     в["образи"] = обр

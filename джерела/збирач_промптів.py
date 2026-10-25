@@ -345,6 +345,16 @@ class Поле:
     треба: bool = False
 
 
+ПОЛЕ_ВІДБОРУ = Поле(
+    "selection_policy", "the shared selection constraints and goals",
+    як="Gates and vetoes remain required. Item «selection_doses» records independent slot pool doses "
+        "(edge, below_band, shine), not a quota for each outfit or a ranking of outfits. "
+        "Edge is inside her palette. Judge the whole outfit against her intent and occasion; "
+        "neither position nor the number of remarks is quality. Preserve each candidate's id, "
+        "pole and declared moves with their finding id and reason when repairing it; "
+        "a local change keeps the other items and candidates.")
+
+
 @dataclass(frozen=True)
 class Оголошення:
     """Задача моделі даними: роль, вхід, правила, вихід (схема протоколу), межі."""
