@@ -376,9 +376,10 @@ def завершити(к):
 class ЗаглушкаБраузер:
     def __init__(self, режим):
         self.режим = режим
+        self.домен = ""
 
     async def new_context(self, **kw):
-        return ЗаглушкаКонтекст(self.режим, kw.get("домен", ""))
+        return ЗаглушкаКонтекст(self.режим, self.домен)
 
     async def close(self):
         pass
@@ -467,7 +468,9 @@ class Виконавець:
                     nonlocal контекст
                     if getattr(self.a, "заглушка", None) == "контекст" and "hang" in домен:
                         await asyncio.sleep(9999)
-                    контекст = await браузер.new_context(домен=домен, user_agent=UA, locale="uk-UA", timezone_id="Europe/Kyiv", viewport={"width": 1366, "height": 900},
+                    if isinstance(браузер, ЗаглушкаБраузер):
+                        браузер.домен = домен
+                    контекст = await браузер.new_context(user_agent=UA, locale="uk-UA", timezone_id="Europe/Kyiv", viewport={"width": 1366, "height": 900},
                                                          ignore_https_errors=True, extra_http_headers={"Accept-Language": "uk-UA,uk;q=0.9,en;q=0.7"})
                     if getattr(self.a, "заглушка", None):
                         await self._заглушка_жнива(контекст, р, л)
@@ -520,6 +523,12 @@ class Виконавець:
                 time.sleep(9999)
             elif режим == "закриття":
                 pass
+            elif режим == "контекст":
+                pass
+            else:
+                ш, _ = self._журнал(домен)
+                self._пиши(ш, {"url": f"https://{домен}/p1", "стан": "картка", "бал": 10, "картка": {"назва": "Тест"}})
+                л.update(картка=1, відкрито=1, адрес=1, нотатка="успіх")
         else:
             ш, _ = self._журнал(домен)
             зап = {"url": f"https://{домен}/p1", "стан": "картка", "бал": 10, "картка": {"назва": "Тест"}}

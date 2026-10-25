@@ -10,6 +10,7 @@ import csv
 import json
 import os
 from pathlib import Path
+import signal
 import sqlite3
 import subprocess
 import sys
@@ -95,7 +96,7 @@ def вбити_процес(proc):
             subprocess.call(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
-            proc.kill()
+            os.killpg(proc.pid, signal.SIGKILL)
     except Exception:
         pass
     try:
@@ -142,7 +143,7 @@ def main(argv=None):
 
     магазини = перелік_крамниць(а)
     if стани:
-        магазини = [д for д in магазини if д not in стани or (стани[д]["лишилось"] > 0 and стани[д]["стан_код"] != "WAIT")]
+        магазини = [д for д in магазини if д not in стани or стани[д]["лишилось"] > 0]
 
     for цикл in range(1, а.циклів + 1):
         if not магазини:
@@ -158,7 +159,7 @@ def main(argv=None):
 
         код = 0
         таймаут_вийшов = False
-        proc = subprocess.Popen(cmd)
+        proc = subprocess.Popen(cmd, start_new_session=sys.platform != "win32")
         try:
             код = proc.wait(timeout=таймаут_циклу)
         except subprocess.TimeoutExpired:
@@ -180,11 +181,12 @@ def main(argv=None):
                 ч = черга(а.журнал, д)
                 адрес = ч[0] if ч else (стани[д]["адрес"] if д in стани else 0)
                 готово = ч[1] if ч else (стани[д]["готово"] if д in стани else 0)
-                лишилось = (ч[0] - ч[1]) if ч else (стани[д]["лишилось"] if д in стани else 0)
+                лишилось = (ч[0] - ч[1]) if ч else (стани[д]["лишилось"] if д in стани else 1)
                 причина_код = "TIMEOUT" if таймаут_вийшов else "збій"
                 підстава = "таймаут циклу обходу (виконавця зупинено)" if таймаут_вийшов else "виконавець не повернув рядка зведення"
-                с = dict(домен=д, стан_код="WAIT",
-                         причина_код=причина(причина_код),
+                був_у_каталозі = д in стани and стани[д]["стан_код"] == "CATALOG"
+                с = dict(домен=д, стан_код="CATALOG" if був_у_каталозі else "WAIT",
+                         причина_код="" if був_у_каталозі else причина(причина_код),
                          адрес=адрес, готово=готово, лишилось=лишилось,
                          цикл=цикл, підстава=підстава)
             було = стани.get(д)

@@ -18,6 +18,11 @@ def перевірити(місце):
         env = dict(os.environ, PYTHONIOENCODING="utf-8")
         вивід = subprocess.check_output(cmd, text=True, encoding="utf-8", env=env)
         assert "крамниць 2" in вивід and "hang.com" in вивід
+        if місце == "контекст":
+            обхід.main(["--журнал", ж, "--магазини", "hang.com", "--секунд-на-магазин", "1",
+                        "--секунд-на-цикл", "2", "--циклів", "1", "--заглушка", "успіх"])
+            повтор = {р["домен"]: р for р in csv.DictReader(open(Path(ж) / "обхід_стан.tsv", encoding="utf-8"), delimiter="\t")}
+            assert повтор["hang.com"]["стан_код"] == "CATALOG"
         return f"{місце}: hang.com=WAIT/{рядки['hang.com']['причина_код']}, ok.com=CATALOG"
 
 
