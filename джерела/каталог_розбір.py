@@ -731,7 +731,7 @@ _КОЛІР = {"milk": "milky", "pearl": "pearly", "ivory": "cream", "vanilla": 
           "cornflower": "light_blue", "sky": "light_blue", "electric": "electric_blue",
           "wine": "burgundy", "maroon": "burgundy", "marsala": "burgundy", "violet": "purple",
           "lavender": "lilac", "powdery": "powder", "gray": "grey", "silver": "silvery",
-          "lime": "green", "pistachio": "green", "sage": "olive"}
+          "lime": "green", "pistachio": "green", **ВМ._СК.ПРОДУКТ_ЗАМІСТЬ}
 _СИНОНІМИ = {
     "color_main": _КОЛІР, "color_extra[]": _КОЛІР,
     "color_why": {"print": "print_colors"},
