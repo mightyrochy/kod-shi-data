@@ -1,7 +1,7 @@
 """Мірило потреби події: світло, K-OCC-01 і код тафти з цитатою; без моделі."""
 import json, pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-import occasion as П, формальність as Ф, catalog_fields as К, каталог_розбір as Р
+import occasion as П, формальність as Ф
 from батарея_входи import НАГОДИ
 
 
@@ -21,9 +21,14 @@ def головна():
             є = any(х["правило"] == "K-OCC-01" and х["регістр"] == "гейт" for х in з)
             хибні += є and not очікується; пропуски += очікується and not є
             print("K-OCC-01", сц["місце"], L, "гейт", є, "очікується", очікується)
-    о = dict(назва="Сукня з тафти", опис="Тафта", параметри={})
-    розбір, _ = Р.з_відповіді(json.dumps(dict(fabric=dict(value="taffeta", quote="тафти"))), Р.вхід(о))
-    print("тафта з цитатою", К.тканина(dict(о, розбір=розбір)))
+    try:  # код тканини — розбір 5.4; без нього блиск тафти кодом не доходить (8761)
+        import catalog_fields as К, каталог_розбір as Р
+    except ImportError:
+        print("тафта з цитатою: нема розбору 5.4 (catalog_fields) — не перевірено")
+    else:
+        о = dict(назва="Сукня з тафти", опис="Тафта", параметри={})
+        розбір, _ = Р.з_відповіді(json.dumps(dict(fabric=dict(value="taffeta", quote="тафти"))), Р.вхід(о))
+        print("тафта з цитатою", К.тканина(dict(о, розбір=розбір)))
     print("хибних спрацювань", хибні, "пропусків", пропуски)
     raise SystemExit(bool(хибні or пропуски))
 
