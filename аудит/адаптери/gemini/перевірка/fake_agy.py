@@ -15,7 +15,7 @@ if args[:1] == ['models']:
     print('gemini-3.8-flash-high Gemini 3.8 Flash (High)\nclaude-opus-5-5-high Claude Opus 5.5 (High)\nBad Line')
     sys.exit(0)
 if args[:1] == ['--version']:
-    print('agy ' + os.environ.get('FAKE_VERSION', '1.1.11')); sys.exit(0)
+    print(os.environ.get('FAKE_VERSION_OUT') or ('agy ' + os.environ.get('FAKE_VERSION', '1.1.11'))); sys.exit(0)
 if args[:2] == ['-p', '/usage']:
     # Квота як дані (0 ходів): FAKE_USAGE — tsv | tsv_nohdr | proclaude | ok | flash0 | claude0 | all0 | used | envelope | garbage | fail; FAKE_RESET — хв до скидання.
     import datetime
@@ -78,6 +78,10 @@ def act(prompt):
         return 'SUCCESS', done(), ''
     if SC == 'github':
         commit('.github/workflows/evil.yml'); return 'SUCCESS', done(), ''
+    if SC == 'secret_path':
+        commit('.codex/auth.json', '{}'); return 'SUCCESS', done(), ''
+    if SC == 'secret_content':
+        commit('робота/нотатки.md', 'token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'); return 'SUCCESS', done(), ''
     if SC == 'github_renamed':
         commit('.github/workflows/z.yml'); git('mv', '.github/workflows/z.yml', 'z.yml')
         git('-c', 'user.name=g', '-c', 'user.email=g@x', 'commit', '-q', '-m', 'mv'); return 'SUCCESS', done(), ''

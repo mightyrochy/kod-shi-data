@@ -29,6 +29,7 @@ param(
     [string]$AgyExe = 'agy',
     [string]$CodexExe = 'codex',
     [string]$CodexFallbackModel = '',
+    [switch]$EnableCodex,
     [ValidateSet('stream', 'print')]
     [string]$Mode = 'stream',
     [double]$TurnMinutes = 120,
@@ -46,6 +47,8 @@ $script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
 $script:TaskDir = 'аудит/наряди/'
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
+# Імена моделей для рядка ПУЛИ (9740): лише родини gemini/claude/gpt; той самий шаблон у gemini_publish.ps1.
+$script:PoolModelPattern = '^(gemini|claude|gpt)-[a-z0-9.-]{1,36}$'
 # `agy -p "/usage"` без ходу моделі й без витрати квоти — з v1.1.11 (changelog agy, 7.08.2026): перелік у НАЛАШТУВАННЯ.md.
 $script:UsageMinVersion = [version]'1.1.11'
 # Каскад моделей «проєктування» (pro): наступна за пулом після самої моделі позначки; далі лише Codex (-CodexFallbackModel).
@@ -244,6 +247,13 @@ function Get-Engine([string]$Model) {
     [pscustomobject]@{ Name = 'agy'; Model = $Model; Effort = '' }
 }
 
+# Codex за замовчуванням вимкнений (9738: акаунт ChatGPT для користувача gemini ще не вибрано): рушій вмикає лише явний
+# -EnableCodex у задачі gemini-run; без нього Codex не кличеться ні за позначкою gpt-*, ні каскадом.
+function Find-CodexExe {
+    if (-not $EnableCodex) { Write-WrapperLog 'рушій: Codex вимкнено (без -EnableCodex, 9738) — не кличу'; return $null }
+    Find-EngineExe $CodexExe
+}
+
 # Шлях до виконуваного рушія; нема в PATH — $null (рушій недоступний), не збій обгортки.
 function Find-EngineExe([string]$Name) {
     try { Resolve-Exe $Name } catch { Write-WrapperLog "рушій: $($_.Exception.Message)"; $null }
@@ -329,7 +339,9 @@ function Get-AgyVersion {
     try {
         if ($script:Agy) {
             $r = Invoke-Native $script:Agy @('--version') $RepoDir 1
-            if ($r.Code -eq 0 -and $r.Out -match '(?<![0-9.])([0-9]+(?:\.[0-9]+){1,3})(?![0-9.])') { $script:AgyVersion = [version]$Matches[1] }
+            # Версія — лише з рядка з назвою agy («agy 1.1.11», «agy version v1.1.11 (збірка …)»); число з іншого місця
+            # (дата, збірка) не береться, нерозпізнане — версія невідома і /usage не кличеться (9743).
+            if ($r.Code -eq 0 -and $r.Out -match '\bagy\b[^0-9\r\n]*v?([0-9]+(?:\.[0-9]+){1,3})(?![0-9.])') { $script:AgyVersion = [version]$Matches[1] }
             else { Write-WrapperLog "agy --version не розпізнано (код $($r.Code))" }
         }
     } catch { Write-WrapperLog "agy --version: $($_.Exception.Message)" }
@@ -379,6 +391,10 @@ function Read-Usage([switch]$Fresh) {
             else {
                 $text = $r.Out.Trim()
                 $doc = ConvertFrom-UsageTable $text
+                if ($null -eq $doc -and $text.Contains("`t")) {
+                    # Табличний вивід без заголовка (чи заголовок із цифрами): колонок не знаємо — квота невідома, не вгадуємо.
+                    Write-WrapperLog 'квота: /usage — таблиця без розпізнаного заголовка; квота НЕВІДОМА, каскад за пулом не вмикаю'
+                }
                 if ($null -eq $doc) {
                     try { $doc = $text | ConvertFrom-Json } catch {
                         $a = $text.IndexOf('{'); $b = $text.LastIndexOf('}')
@@ -434,7 +450,7 @@ function Get-ModelClass([string]$Model) {
 function Get-Cascade([string]$Model) {
     $c = @($Model)
     if ((Get-ModelClass $Model) -eq 'design') { $c += $script:ClaudeCascadeModel }
-    if ($CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') { $c += $CodexFallbackModel }
+    if ($EnableCodex -and $CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') { $c += $CodexFallbackModel }
     $c
 }
 
@@ -445,13 +461,13 @@ function Select-Engine($M) {
     $unknown = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; Left = -1 }
     if ($e.Name -ne 'agy') {
         # `codex exec` не має документованого способу прочитати залишок без ходу: квота невідома, 429 ловить Get-ErrorCode.
-        return [pscustomobject]@{ Engine = $e; Exe = (Find-EngineExe $CodexExe); Quota = $unknown; Model = $M.Model }
+        return [pscustomobject]@{ Engine = $e; Exe = (Find-CodexExe); Quota = $unknown; Model = $M.Model }
     }
     $first = $null
     foreach ($cand in (Get-Cascade $M.Model)) {
         $ce = Get-Engine $cand
         if ($ce.Name -eq 'codex') {
-            $cx = Find-EngineExe $CodexExe
+            $cx = Find-CodexExe
             if ($cx) {
                 Write-WrapperLog "рушій: пули agy на 0 % — Codex, модель $cand"
                 return [pscustomobject]@{ Engine = $ce; Exe = $cx; Quota = $unknown; Model = $cand }
@@ -737,7 +753,8 @@ function Write-Pools {
     }
     $models = @(Get-AgyModels)
     $script:AgyModels = $(if ($models.Count -gt 0) { $models } else { $null })
-    $doc = [ordered]@{ v = 1; time = (Get-Date).ToString('s'); agy = $(if ($v) { [string]$v } else { '' }); groups = @($groups | Select-Object -First 6); models = @($models | Select-Object -First 10) }
+    $pm = @($models | Where-Object { $_ -cmatch $script:PoolModelPattern } | Select-Object -First 6)
+    $doc = [ordered]@{ v = 1; time = (Get-Date).ToString('s'); agy = $(if ($v) { [string]$v } else { '' }); groups = @($groups | Select-Object -First 6); models = $pm; unknown = (-not $u.Known) }
     Write-FileAtomic (Join-Path $OutDir 'pools.json') ($doc | ConvertTo-Json -Compress -Depth 4)
 }
 

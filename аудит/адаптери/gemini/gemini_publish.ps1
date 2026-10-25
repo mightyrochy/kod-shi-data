@@ -42,6 +42,11 @@ $ErrorActionPreference = 'Stop'
 
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
+# Імена моделей у рядку ПУЛИ (9740): родини gemini/claude/gpt, до 6 імен — вільного тексту з pools.json (пише gemini) нема.
+$script:PoolModelPattern = '^(gemini|claude|gpt)-[a-z0-9.-]{1,36}$'
+# Шляхи й вміст, яких у гілці gemini/* бути не може (9739); вміст — ERE для `git log -G` по кожному коміту.
+$script:SecretPathPattern = '(^|/)auth\.json$|(^|/)\.codex(/|$)|(^|/)\.config/gh(/|$)'
+$script:SecretContentPattern = 'eyJ[A-Za-z0-9_-]{10,}|sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|refresh_token|BEGIN [A-Z ]*PRIVATE KEY'
 $script:IdPattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}$'
 $script:ShaPattern = '^[0-9a-f]{40}$'
 $script:Utf8Strict = New-Object System.Text.UTF8Encoding($false, $true)
@@ -185,6 +190,9 @@ function Publish-Bundle($S, [string]$Id) {
             $all = @($net) + @($each)
             if (@($all | Where-Object { $_ -like '.github/*' -or $_ -like '.github' }).Count -gt 0) { return @('GITHUB_DIR', $net.Count) }
             if (@($all | Where-Object { $_.StartsWith($WrapperDir) }).Count -gt 0) { return @('WRAPPER_FILES', $net.Count) }
+            # Секрети (9739): токен Codex/gh лежить у профілі gemini, модель його читає — у відкритий репозиторій він не йде.
+            if (@($all | Where-Object { $_ -match $script:SecretPathPattern }).Count -gt 0) { return @('SECRET', $net.Count) }
+            if ((Invoke-Git @('log', '--no-merges', '--format=%H', '-G', $script:SecretContentPattern, "$main..$head")).Out.Trim()) { return @('SECRET', $net.Count) }
             $remote = Get-RefSha "refs/remotes/origin/gemini/$slug"
             if ($remote -and (Invoke-Git @('merge-base', '--is-ancestor', $remote, $head) -AllowFail).Code -ne 0) { return @('NOT_FF', $net.Count) }
             if ($DryRun) { return @('OK', $net.Count) }
@@ -204,7 +212,7 @@ function Publish-Bundle($S, [string]$Id) {
 $script:PublishCodes = @{
     BUNDLE_MISSING = 'бандла нема'; BUNDLE_TOO_BIG = 'бандл більший за межу'; BUNDLE_INVALID = 'бандл не проходить git bundle verify'
     REF_MISMATCH = 'гілка чи SHA бандла не ті, що в стані'; EMPTY = 'нових комітів до main нема'; NO_BASE = 'нема спільної бази з main'
-    GITHUB_DIR = 'зміни в .github/'; WRAPPER_FILES = 'зміни у файлах обгортки'; NOT_FF = 'не fast-forward до опублікованої гілки'
+    SECRET = 'шлях чи вміст схожі на токен/секрет (auth.json, .codex/, .config/gh/, eyJ…, sk-, ghp_, refresh_token)'; GITHUB_DIR = 'зміни в .github/'; WRAPPER_FILES = 'зміни у файлах обгортки'; NOT_FF = 'не fast-forward до опублікованої гілки'
     PUSH_FAILED = 'пуш не вдавався годину (журнал publish.log; після входу git — gemini_publish.ps1 -Retry <id>)'
 }
 
@@ -353,7 +361,7 @@ $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
-    '\AGEMINI ОБГОРТКА: ПУЛИ V=(?:[0-9]+(?:\.[0-9]+){1,3}|-)(?: G=[A-Z0-9]{1,16}:(?:100|[1-9]?[0-9]):(?:[0-9]{1,6}|-)){0,6} M=(?:-|[a-z0-9][a-z0-9.-]{1,63}(?:,[a-z0-9][a-z0-9.-]{1,63}){0,9})\z'
+    '\AGEMINI ОБГОРТКА: ПУЛИ V=(?:[0-9]+(?:\.[0-9]+){1,3}|-)(?: G=[A-Z0-9]{1,16}:(?:100|[1-9]?[0-9]):(?:[0-9]{1,6}|-)){0,6}(?: Q=\?)? M=(?:-|(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}(?:,(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}){0,5})\z'
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:gemini|codex|claude)/$script:SlugCore [A-Z0-9_]{2,40}\z"
     '\AСПОСТЕРІГАЧ КОМЕНТАР #[0-9]{1,12} [0-9]{1,20} (?:mightyrochy|chatgpt-codex-connector\[bot\]) (?:новий|змінено)\z'
     '\AСПОСТЕРІГАЧ CI #[0-9]{1,12} [0-9a-f]{40} (?:success|failure|cancelled|timed_out|action_required|neutral|skipped|pending)\z'
@@ -416,9 +424,11 @@ function Add-PoolsLine {
             $parts += "G=${c}:${l}:" + $(if ($r -cmatch '^[0-9]{1,6}$') { $r } else { '-' })
         }
     }
-    $models = @(@(Get-Prop $p 'models') | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ } | Where-Object { $_ -cmatch $script:ModelPattern } | Select-Object -First 10)
+    $models = @(@(Get-Prop $p 'models') | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ } | Where-Object { $_ -cmatch $script:PoolModelPattern } | Select-Object -First 6)
+    if ((Get-Prop $p 'unknown') -eq $true) { $parts += 'Q=?' }
     $parts += 'M=' + $(if ($models.Count -gt 0) { $models -join ',' } else { '-' })
     $line = 'GEMINI ОБГОРТКА: ПУЛИ ' + ($parts -join ' ')
+    if ($line.Length -gt 300) { Write-WrapperLog 'рядок ПУЛИ довший за 300 знаків — пропущено'; return }
     if ((Test-OutboxLine $line) -ne '') { Write-WrapperLog 'рядок ПУЛИ не збігся з шаблоном — пропущено'; return }
     $last = Join-Path $WorkDir 'pools_last.txt'
     if ((Test-Path -LiteralPath $last) -and [System.IO.File]::ReadAllText($last, $script:Utf8) -eq $line) { return }
