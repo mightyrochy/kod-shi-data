@@ -11,6 +11,6 @@ import мовний_шар as М
          "міняються": {"goal": "statement", "intent": "conceal", "quotes": {"goal": "без претензій", "intent": "головне"}}}
 for назва, відп in ФОРМИ.items():
     р = М.прийняти_вхід("scenario", json.dumps(відп, ensure_ascii=False))
-    лишено, _ = М._тримається(р["внутрішня"], СЛОВА)
+    лишено, _ = М.тримається(р["внутрішня"], СЛОВА)
     print("%-12s перенесено %-22s внутрішня %s | після сторожа %s" % (назва, р["перенесено"],
           json.dumps(р["внутрішня"], ensure_ascii=False), json.dumps(лишено, ensure_ascii=False)))

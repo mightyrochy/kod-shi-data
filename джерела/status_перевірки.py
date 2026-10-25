@@ -122,6 +122,30 @@ def _поля_без_постачальника():
             return s
         return "\n".join("" if н in мертві else р.split("#")[0]
                           for н, р in enumerate(рядки, 1))
+    # ── П'ЯТА СЛІПА ПЛЯМА: `ім'я=` РАХУВАЛОСЬ ПИСАЧЕМ І В АРГУМЕНТІ ВИКЛИКУ ─────────
+    # Регулярка `\w+=` бачила `відмовляє_у_волозі(dict(матеріал=…))` — тимчасовий словник для
+    # допоміжної функції — як писача поля речі і мовчки прибирала сироту `матеріал`. Писачем
+    # рахується присвоєння (ім'я, атрибут), `dict(поле=…)` і `.update(поле=…)` — теж; аргумент іншого виклику — ні.
+    def _імена_запису(s):
+        імена = set()
+        try:
+            дерево = ast.parse(s)
+        except SyntaxError:
+            return set(re.findall(r'(\w+)\s*=', s))
+        for в in ast.walk(дерево):
+            цілі = (в.targets if isinstance(в, ast.Assign)
+                    else [в.target] if isinstance(в, (ast.AnnAssign, ast.AugAssign, ast.NamedExpr)) else [])
+            for ціль in цілі:
+                for т in ast.walk(ціль):
+                    if isinstance(т, ast.Name):
+                        імена.add(т.id)
+                    elif isinstance(т, ast.Attribute):
+                        імена.add(т.attr)
+            if isinstance(в, ast.Call) and (
+                    (isinstance(в.func, ast.Name) and в.func.id == "dict")
+                    or (isinstance(в.func, ast.Attribute) and в.func.attr == "update")):
+                імена |= {к.arg for к in в.keywords if к.arg}     # dict(поле=…), r.update(поле=…)
+        return імена
     # ── ПОДІЛ accessory, outer І feed ──────────────────────────────────────────
     # Писачі аксесуарної гілки стоять тепер у `аксесуари_*.py`, верхнього шару —
     # у `верхнє_*.py`, полів речі з фіду — у `фід_*.py`, а `accessory`/`outer`/
@@ -153,7 +177,7 @@ def _поля_без_постачальника():
     виробляє = set()
     for м in (*база, *реекспортовані):
         s = _лише_виконуване(inspect.getsource(м))
-        виробляє |= set(re.findall(r'(\w+)\s*=', s))                  # поле=значення
+        виробляє |= _імена_запису(s)                                   # поле=значення, {"поле": …}
         виробляє |= set(re.findall(r'\[\s*"([^"]+)"\s*\]\s*=', s))     # r["поле"] =
         виробляє |= set(re.findall(r'setdefault\(\s*"([^"]+)"', s))    # setdefault("поле"
     сироти = sorted(п for п in споживає - виробляє
