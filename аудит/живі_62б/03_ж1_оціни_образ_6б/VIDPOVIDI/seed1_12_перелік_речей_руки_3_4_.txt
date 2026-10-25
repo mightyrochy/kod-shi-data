@@ -1,0 +1,51 @@
+── ПРОМПТ (2289 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer in a soft camel hue (#E0B69C), featuring a single-breasted cut and notch lapels.\nTailored tapered trousers made of heavy twill in charcoal gray (#36454F) with a mid-thigh length.\nA silk-blend blouse in ivory white (#FFFFF0) with a relaxed collar and a dropped shoulder design.\nRound-toe leather loafers in cognac brown (#8B4513) with minimal hardware.\nMatte gold hoop earrings and a thin silver chain necklace to add subtle polish.\n\nThis outfit strikes the perfect balance for an autumn office day at 18 °C by providing necessary warmth through the blazer without sacrificing breathability. The camel and charcoal palette feels professional yet approachable, adhering strictly to the neat dress code while reflecting her desire for a refined workwear aesthetic. Soft fabrics like silk and wool-blend ensure comfort throughout the daylight hours, making it suitable for both desk work and brief meetings."}
+
+── ВІДПОВІДЬ (1064 симв., 50.7 с, HTTP 200) ──
+{
+  "is_outfit": true,
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured wool-blend with single-breasted cut and notch lapels",
+      "slot": "outerwear",
+      "color_hex": "#E0B69C",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "tailored tapered heavy twill mid-thigh length",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "silk-blend with relaxed collar and dropped shoulder design",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "round-toe leather with minimal hardware",
+      "slot": "shoes",
+      "color_hex": "#8B4513",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "matte gold hoops",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "thin silver chain",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
