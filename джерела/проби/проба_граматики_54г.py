@@ -1,5 +1,6 @@
 """ПРОБА ГРАМАТИКИ 5.4 (5.4-Г) на теці нового прогону: обрізаних серед 50 обрізаних частини 1 (мірило ≤1 %), чи
-ті самі коди в 50 розібраних (проти `каталог_розбір_коди.json.gz`, без evidence і features), с/річ стіною.
+ті самі коди в 50 розібраних (проти `каталог_розбір_коди.json.gz`, без evidence і features; старим кодам
+not_applicable за таблицею ставить той самий `_нема_за_таблицею`, що й V5), с/річ стіною.
 python3 проби/проба_граматики_54г.py <тека> аудит/виконання_5.4/проба_граматики_розібрані50.txt <обрізані50.txt>"""
 import collections, gzip, json, statistics, sys
 from pathlib import Path
@@ -9,6 +10,7 @@ import каталог_розбір_прогін as П
 речі = {р["id"]: р for р in json.load(open(Path(тека) / "прогін.json", encoding="utf-8"))["речі"]}
 нові = json.load(open(П.зібрати(тека), encoding="utf-8"))
 старі = json.load(gzip.open(Path(__file__).resolve().parents[1] / "каталог_розбір_коди.json.gz", "rt"))
+[П.КР._нема_за_таблицею(п) for п in старі.values()]
 нема = [і for і in розібрані + обрізані if і not in речі]
 assert not нема, "у теці нема речей: %s" % нема[:5]
 не_json = lambda і: str(речі[і].get("впало") or "").startswith("invalid_json")
