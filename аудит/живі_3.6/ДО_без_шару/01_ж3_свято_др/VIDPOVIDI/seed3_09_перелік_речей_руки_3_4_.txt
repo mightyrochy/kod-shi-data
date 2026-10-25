@@ -1,0 +1,30 @@
+── ПРОМПТ (2366 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "Ukrainian", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Блузка оверсайз з асиметричним вирізом та глибоким декольте, кольору піск (#e6dac8), тканина — шовк із легкими металічними вставками для ефектного блиску під діючі світильники.\nШляхерна спідниця мідного відтінку (#b87333) прямого крою з високим розрізом спереду, що дозволяє безперешкодно танцювати, долина до колін, матеріал — матовий атлас.\nТуфлі на платформі та стабілізованій підплатці, червоних (#a31f24), з тонкими ремінцями на кінчиків пальців та бліскучою підошвою для ідеальної рівноваги під час руху.\nЦей образ ідеально поєднує елегантність вечірнього вбрання з динамікою танцюального заходу: світлі тони шкіри та волосся гармонійно доповнюються теплим металічним відтінком одягу, а відкритий силует не переборщує при температурі 18°C. Спідниця з високим розрізом забезпечує свободу пересування на танцполі, тоді як туфлі з платформою гарантують стабільність та стиль навіть під час активних рухів. Металеві деталі блузки додають необхідного святкового блиску для вечірнього заходу без зайвої важкості."}
+
+── ВІДПОВІДЬ (618 симв., 49.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Блузка оверсайз",
+      "details": "асиметричний виріз, глибоке декольте",
+      "slot": "top",
+      "color_hex": "#e6dac8",
+      "worn": true
+    },
+    {
+      "name": "Шляхерна спідниця",
+      "details": "прямого крою, високий розріз спереду, довжина до колін",
+      "slot": "bottom",
+      "color_hex": "#b87333",
+      "worn": true
+    },
+    {
+      "name": "Туфлі на платформі",
+      "details": "стабілізована підплатка, тонкі ремінці на п'ятах, бліскуча підошва",
+      "slot": "shoes",
+      "color_hex": "#a31f24",
+      "worn": true
+    }
+  ]
+}
