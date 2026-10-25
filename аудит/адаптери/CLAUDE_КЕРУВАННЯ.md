@@ -31,6 +31,8 @@
 - Голова PR: `git fetch origin pull/N/head`; відмовлено — `pull_request_read(method="get_status")`.
   Чернетка перед дозволеним злиттям — `update_pull_request(draft=false)`, інакше 405; злиття — з `expectedHeadSha`.
   Застарілий прогін — `cancel_workflow_run`. Стан доступу, наприклад 403 пушу, — з фактичної відповіді GitHub.
+- Злиття диспетчера: рядки складника пачки — `git -c core.quotepath=false diff -U0 $(git merge-base H origin/main) H`;
+  спільні файли двох голів — `git merge-tree --write-tree --name-only <голова> <інша голова>`.
 
 ## Ноутбук
 
@@ -39,9 +41,9 @@
 - `elevated_session_untrusted_device` — дозволений власником запасний шлях запускача на самому ноутбуці:
   `Agent(subagent_type="general-purpose", model=<haiku|sonnet|opus>, effort=<рівень>, run_in_background=true,
   description=<назва>, prompt=<наряд>)`. Цей виняток не надає хмарній сесії права відкривати віддалений доступ.
-- Пробудження запускача — `send_later` за його договором (працює, 23.10). Інструмент листа для ноутбучної
-  сесії — ToolSearch `send_message`.
+- Пробудження запускача — `CronCreate` (ToolSearch «select:CronCreate»), коли `CronList` його не показує (живе в
+  пам'яті сесії до 7 діб); нема — `/loop 60m` з тим самим текстом.
 - Картка довіри «комп'ютери й інші сесії» (`confirm_repository_trust`) відкриває хмарній сесії ноутбук, але глушить
   її саму: тригери (пульс, нагадування, листи) — `ROUTINE_RUN_FAILURE_REASON_ACCESS_DENIED`, `send_message` інших
-  сесій — `elevated_session_untrusted_device`; доходять лише чат власника й події PR за підпискою (ДИСПЕТЧЕР-7,
-  23.10). Менеджер і диспетчер її не просять; роботу ноутбукові — «Черга ноутбука» `аудит/СТАН.md`.
+  сесій — `elevated_session_untrusted_device`; доходять лише чат власника й події PR за підпискою. Менеджер і
+  диспетчер її не просять; роботу ноутбукові — «Черга ноутбука» `аудит/СТАН.md`.
