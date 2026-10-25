@@ -1,0 +1,37 @@
+── ПРОМПТ (2236 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined wool-blend knit tunic in camel, straight cut falling to the hip, color #C19A6B.\nHigh-waisted wide-leg trousers in heavy twill fabric, tapered length hitting just above the ankle, color #3E3F42.\nLoafers made of smooth leather with a slight sheen, low block heel for comfort during the day, color #8D7B68.\nA thin silk scarf tied loosely at the neckline in autumnal orange, color #E85D04.\n\nThis outfit works because the camel knit adds warmth and texture suitable for an 18 °C autumn day without being too heavy for daylight hours. The wide-leg trousers maintain a professional yet comfortable silhouette appropriate for a neat office dress code while allowing ease of movement throughout the workday. Completing the look with leather loafers grounds the ensemble in polished simplicity, avoiding any outer layer since the temperature remains mild enough to stay comfortable."}
+
+── ВІДПОВІДЬ (674 симв., 55.1 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "knit tunic",
+"details": "refined wool-blend knit, straight cut falling to the hip",
+"slot": "top",
+"color_hex": "#C19A6B",
+"worn": true
+},
+{
+"name": "wide-leg trousers",
+"details": "high-waisted, heavy twill fabric, tapered length hitting just above the ankle",
+"slot": "bottom",
+"color_hex": "#3E3F42",
+"worn": true
+},
+{
+"name": "loafers",
+"details": "smooth leather with a slight sheen, low block heel for comfort",
+"slot": "shoes",
+"color_hex": "#8D7B68",
+"worn": true
+},
+{
+"name": "silk scarf",
+"details": "thin, tied loosely at the neckline in autumnal orange",
+"slot": "accessory",
+"color_hex": "#E85D04",
+"worn": true
+}
+]
+}
