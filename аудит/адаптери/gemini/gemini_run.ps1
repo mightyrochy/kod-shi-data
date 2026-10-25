@@ -10,9 +10,9 @@
   2. `git fetch` без входу: `main`, `gemini/*` і позначки черги `gemini-queue/<наряд>/<модель>/<спроба>`, які ставить
      лише диспетчер; позначка має вказувати на коміт із `main`, текст наряду — лише `аудит/наряди/<наряд>.md` з нього;
   2а. рушій за назвою моделі в позначці (М.9-В): `gpt-<модель>[-low|-medium|-high|-xhigh]` — локальний Codex (`codex exec`),
-      `gcli-<модель>` — Gemini CLI (`gemini -p`), інша — `agy`; квота як дані (`agy -p "/usage" --output-format json`
-      чи `gemini -p "/stats model"`, 0 ходів): група моделі з 0 % — наряд не береться (код `QUOTA_ZERO`), а коли задано
-      `-GeminiFallbackModel`, `agy` на 0 % замінює Gemini CLI з цією моделлю, якщо його квота не нуль;
+      інша — `agy`; квота `agy` як дані (`agy -p "/usage" --output-format json`, 0 ходів): група моделі з 0 % — наряд не
+      береться (код `QUOTA_ZERO`), а коли задано `-CodexFallbackModel`, `agy` на 0 % замінює Codex з цією моделлю
+      (квоту Codex без ходу не прочитати: його 429 ловить обгортка, код `QUOTA`);
   3. гілка `gemini/<наряд>` від свіжого `main` (чи від уже опублікованої `gemini/<наряд>` — доробка);
   4. один прогін `agy` з межею часу; хід без звіту чи звіт, що не збігся з гілкою, — догонка тієї самої розмови;
   5. бандл гілки й стан (лише коди й числа) у теці обміну; публікує їх окрема задача власника `gemini_publish.ps1`.
@@ -27,9 +27,8 @@ param(
     [string]$ExpectedUser = 'gemini',
     [string]$GitExe = 'git',
     [string]$AgyExe = 'agy',
-    [string]$GeminiExe = 'gemini',
     [string]$CodexExe = 'codex',
-    [string]$GeminiFallbackModel = '',
+    [string]$CodexFallbackModel = '',
     [ValidateSet('stream', 'print')]
     [string]$Mode = 'stream',
     [double]$TurnMinutes = 120,
@@ -230,14 +229,13 @@ function Get-NextMarker {
 
 # --- рушії (М.9-В) ------------------------------------------------------------------------------------------------
 
-# Рушій за назвою моделі з позначки: gpt-* -> Codex (зусилля — суфікс назви), gcli-* -> Gemini CLI, інакше agy.
+# Рушій за назвою моделі з позначки: gpt-* -> Codex (зусилля — суфікс назви), інакше agy.
 function Get-Engine([string]$Model) {
     if ($Model -cmatch '^gpt-(.+)$') {
         $name = $Model; $effort = ''
         if ($Model -cmatch '^(.+)-(low|medium|high|xhigh)$') { $name = $Matches[1]; $effort = $Matches[2] }
         return [pscustomobject]@{ Name = 'codex'; Model = $name; Effort = $effort }
     }
-    if ($Model -cmatch '^gcli-(.+)$') { return [pscustomobject]@{ Name = 'gcli'; Model = $Matches[1]; Effort = '' } }
     [pscustomobject]@{ Name = 'agy'; Model = $Model; Effort = '' }
 }
 
@@ -353,63 +351,23 @@ function Get-Quota([string]$Model) {
     }
 }
 
-# Gemini CLI: `gemini -p "/stats model"` (команда /stats model з https://www.geminicli.com/docs/reference/commands показує
-# «квоту»; формат виводу документація не наводить). Розбір терпимий: рядок зі словом remaining/left і відсотком, що
-# називає модель; нерозпізнане — «невідомо», наряд іде далі (429 ловить Get-ErrorCode).
-function Get-QuotaGcli([string]$Model) {
-    $none = [pscustomobject]@{ Known = $false; Blocked = $false; Group = 'GEMINICLI'; ResetMin = -1; Left = -1 }
-    if (-not $script:GCli) { return $none }
-    try {
-        $r = Invoke-Native $script:GCli @('-p', '/stats model', '--output-format', 'json') $RepoDir $QuotaMinutes
-        $text = ($r.Out + "`n" + $r.Err).Trim()
-        if ($r.TimedOut -or ($r.Code -ne 0 -and -not $text)) { Write-WrapperLog "квота: gemini /stats -> $($r.Code)"; return $none }
-        $mt = @(Get-NameTokens $Model)
-        $left = @()
-        foreach ($line in ($text -replace '\\n', "`n" -split "`r?`n")) {
-            if ($line -notmatch '(?i)remain|left') { continue }
-            if ($line -notmatch '(\d{1,3}(?:\.\d+)?)\s*%') { continue }
-            $pct = [double]::Parse($Matches[1], [System.Globalization.CultureInfo]::InvariantCulture)
-            if (@(Get-NameTokens $line | Where-Object { $mt -contains $_ }).Count -gt 0) { $left += [int][Math]::Min(100, [Math]::Round($pct)) }
-        }
-        if ($left.Count -eq 0) {
-            Write-WrapperLog ('квота: Gemini CLI, модель {0} не розпізнано; вивід /stats: {1}' -f $Model, $text.Substring(0, [Math]::Min(400, $text.Length)))
-            return $none
-        }
-        $max = ($left | Measure-Object -Maximum).Maximum
-        [pscustomobject]@{ Known = $true; Blocked = ($max -eq 0); Group = 'GEMINICLI'; ResetMin = -1; Left = $max }
-    } catch {
-        Write-WrapperLog "квота gemini: $($_.Exception.Message)"
-        $none
-    }
-}
-
 # Рушій наряду за позначкою й квотою: Blocked — усі кандидати на 0 %; Exe $null — рушія нема на ноутбуці.
 function Select-Engine($M) {
     $e = Get-Engine $M.Model
     $q = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; Left = -1 }
-    $exe = $null
     if ($e.Name -eq 'agy') {
-        $exe = $script:Agy
         $q = Get-Quota $M.Model
-        if ($q.Blocked -and $GeminiFallbackModel) {
-            $script:GCli = Find-EngineExe $GeminiExe
-            if ($script:GCli) {
-                $qg = Get-QuotaGcli $GeminiFallbackModel
-                if (-not $qg.Blocked) {
-                    Write-WrapperLog "рушій: agy на 0 % (група $($q.Group)) — Gemini CLI, модель $GeminiFallbackModel"
-                    return [pscustomobject]@{ Engine = [pscustomobject]@{ Name = 'gcli'; Model = $GeminiFallbackModel; Effort = '' }; Exe = $script:GCli; Quota = $qg }
-                }
+        if ($q.Blocked -and $CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') {
+            $cx = Find-EngineExe $CodexExe
+            if ($cx) {
+                Write-WrapperLog "рушій: agy на 0 % (група $($q.Group)) — Codex, модель $CodexFallbackModel"
+                return [pscustomobject]@{ Engine = (Get-Engine $CodexFallbackModel); Exe = $cx; Quota = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; Left = -1 } }
             }
         }
-    } elseif ($e.Name -eq 'gcli') {
-        $exe = Find-EngineExe $GeminiExe
-        $script:GCli = $exe
-        if ($exe) { $q = Get-QuotaGcli $e.Model }
-    } else {
-        # `codex exec` не має документованого способу прочитати залишок без ходу: квота невідома, 429 ловить Get-ErrorCode.
-        $exe = Find-EngineExe $CodexExe
+        return [pscustomobject]@{ Engine = $e; Exe = $script:Agy; Quota = $q }
     }
-    [pscustomobject]@{ Engine = $e; Exe = $exe; Quota = $q }
+    # `codex exec` не має документованого способу прочитати залишок без ходу: квота невідома, 429 ловить Get-ErrorCode.
+    [pscustomobject]@{ Engine = $e; Exe = (Find-EngineExe $CodexExe); Quota = $q }
 }
 
 # --- прогін agy ---------------------------------------------------------------------------------------------------
@@ -540,10 +498,9 @@ function Close-StreamRun($Run) {
     $Run.Proc = $null
 }
 
-# Рушії без розмови (Gemini CLI, Codex): кожен хід — окремий процес; текст ходу — у файлі, аргумент без лапок і
+# Рушій без розмови (Codex): кожен хід — окремий процес; текст ходу — у файлі, аргумент без лапок і
 # метасимволів cmd. Догонка несе повний наряд, бо нової розмови рушій не пам'ятає, а стан роботи — у гілці.
-# Прапори: Gemini CLI -m/-p/--approval-mode/--skip-trust/--output-format (https://www.geminicli.com/docs/cli/cli-reference,
-# JSON `response`/`error`: .../docs/cli/headless); Codex `exec` -C/-m/-c/--json/-o/--dangerously-bypass-approvals-and-sandbox
+# Прапори Codex `exec` -C/-m/-c/--json/-o/--dangerously-bypass-approvals-and-sandbox
 # (https://learn.chatgpt.com/docs/developer-commands?surface=cli): обхід пісочниці Codex — лише тому, що ізоляція ОС
 # (користувач gemini без прав і входів) уже стоїть, як вимагає документація («only inside an isolated runner»).
 function Invoke-OneShotTurn($M, $Run, [string]$Text, [datetime]$Deadline) {
@@ -555,30 +512,16 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text, [datetime]$Deadline) {
     $minutes = ($Deadline - (Get-Date)).TotalMinutes
     if ($minutes -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
     $outFile = Join-Path $Run.Dir ('turn{0}.out.md' -f $Run.Turn)
-    if ($Run.Engine.Name -eq 'codex') {
-        $a = @('exec', '-C', $RepoDir, '-m', $Run.Engine.Model)
-        if ($Run.Engine.Effort) { $a += @('-c', "model_reasoning_effort=$($Run.Engine.Effort)") }
-        $a += @('--json', '-o', $outFile, '--dangerously-bypass-approvals-and-sandbox', $short)
-    } else {
-        $a = @('-m', $Run.Engine.Model, '-p', $short, '--approval-mode', 'yolo', '--skip-trust', '--output-format', 'json')
-    }
+    $a = @('exec', '-C', $RepoDir, '-m', $Run.Engine.Model)
+    if ($Run.Engine.Effort) { $a += @('-c', "model_reasoning_effort=$($Run.Engine.Effort)") }
+    $a += @('--json', '-o', $outFile, '--dangerously-bypass-approvals-and-sandbox', $short)
     $r = Invoke-Native $Run.Exe $a $RepoDir $minutes
     [System.IO.File]::AppendAllText($Run.Log, $r.Out + "`n", $script:Utf8)
     [System.IO.File]::AppendAllText($Run.ErrLog, $r.Err, $script:Utf8)
     if ($r.TimedOut) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
     $resp = ''; $err = ''
-    if ($Run.Engine.Name -eq 'codex') {
-        if (Test-Path -LiteralPath $outFile) { $resp = [System.IO.File]::ReadAllText($outFile, $script:Utf8) }
-        if ($r.Code -ne 0) { $err = ($r.Err + "`n" + $r.Out.Substring([Math]::Max(0, $r.Out.Length - 2000))).Trim() }
-    } else {
-        $a1 = $r.Out.IndexOf('{'); $b1 = $r.Out.LastIndexOf('}')
-        $doc = $null
-        if ($a1 -ge 0 -and $b1 -gt $a1) { try { $doc = $r.Out.Substring($a1, $b1 - $a1 + 1) | ConvertFrom-Json } catch { $null = $_ } }
-        if ($null -ne $doc -and $doc.PSObject.Properties['response'] -and $doc.response) { $resp = [string]$doc.response }
-        if ($null -ne $doc -and $doc.PSObject.Properties['error'] -and $doc.error) { $err = ($doc.error | ConvertTo-Json -Compress -Depth 4) }
-        if ($r.Code -ne 0 -and -not $err) { $err = ($r.Err + "`n" + $r.Out).Trim() }
-        if ($null -eq $doc -and $r.Code -eq 0) { return [pscustomobject]@{ Kind = 'eof'; Result = $null } }
-    }
+    if (Test-Path -LiteralPath $outFile) { $resp = [System.IO.File]::ReadAllText($outFile, $script:Utf8) }
+    if ($r.Code -ne 0) { $err = ($r.Err + "`n" + $r.Out.Substring([Math]::Max(0, $r.Out.Length - 2000))).Trim() }
     if ($r.Code -ne 0 -and -not $err) { $err = "код виходу $($r.Code)" }
     $res = [pscustomobject]@{ status = $(if ($err) { 'ERROR' } else { 'SUCCESS' }); response = $resp; error = $err }
     [pscustomobject]@{ Kind = 'result'; Result = $res }
@@ -777,7 +720,7 @@ function Invoke-Task($M) {
         $status.turns = $res.Turns
         if ($res.Code -eq 'MODEL_INVALID') { $status.models = @(Get-AgyModels) }
         # Залишок квоти після прогону — для рядка кінця наряду.
-        $qa = $(if ($sel.Engine.Name -eq 'agy') { Get-Quota $M.Model } elseif ($sel.Engine.Name -eq 'gcli') { Get-QuotaGcli $sel.Engine.Model } else { $q })
+        $qa = $(if ($sel.Engine.Name -eq 'agy') { Get-Quota $M.Model } else { $q })
         if ($qa.Known) { $status.quota = $qa.Left; $status.qgroup = $qa.Group }
     } catch {
         $status.code = 'CRASH'

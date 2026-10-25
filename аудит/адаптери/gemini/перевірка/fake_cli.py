@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Фальшиві `gemini` і `codex` (рушії М.9-В) для стенду обгортки: сценарій — FAKE_SCENARIO, вид — FAKE_KIND.
-Формат Gemini CLI: `-p` + `--output-format json` -> {"response","stats"} чи {"error"} (https://www.geminicli.com/docs/cli/headless);
+"""Фальшивий `codex` (рушій М.9-В) для стенду обгортки: сценарій — FAKE_SCENARIO, вид — FAKE_KIND=codex.
 Codex: `exec ... --json -o <файл> <промпт>` -> відповідь у файлі -o, події JSONL у stdout."""
 import json, os, re, subprocess, sys
 
@@ -23,18 +22,7 @@ def commit(path):
     git('add', path)
     git('-c', 'user.name=g', '-c', 'user.email=g@x', 'commit', '-q', '-m', 'крок: ' + path)
 
-if KIND == 'gemini' and opt('-p') == '/stats model':
-    # FAKE_STATS: ok | zero | garbage | fail. Формат виводу документація не наводить — розбір терпимий до рядків із %.
-    mode = os.environ.get('FAKE_STATS', 'ok')
-    if mode == 'fail':
-        sys.exit(1)
-    if mode == 'garbage':
-        print('Model usage: ok'); sys.exit(0)
-    pct = 0 if mode == 'zero' else 71
-    print(json.dumps({'response': 'gemini-3.5-flash: %d%% remaining\ngemini-3.1-pro: 12%% remaining' % pct}))
-    sys.exit(0)
-
-prompt_arg = opt('-p') if KIND == 'gemini' else args[-1]
+prompt_arg = args[-1]
 path = re.search(r'файл (\S+) ', prompt_arg).group(1)
 content = open(path, encoding='utf-8').read()
 open(os.path.join(STATE, KIND + '.prompts.log'), 'a').write(content + '\n=====\n')
@@ -61,10 +49,6 @@ elif SC == 'blocked':
 else:
     raise SystemExit('невідомий сценарій ' + SC)
 
-if KIND == 'gemini':
-    if err:
-        print(json.dumps({'error': {'type': 'ApiError', 'message': err, 'code': 1}})); sys.exit(1)
-    print(json.dumps({'response': resp, 'stats': {}}, ensure_ascii=False)); sys.exit(0)
 print(json.dumps({'type': 'turn.started'}))
 if err:
     print(json.dumps({'type': 'error', 'message': err})); sys.exit(1)
