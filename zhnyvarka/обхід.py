@@ -8,6 +8,7 @@ import argparse
 import collections
 import csv
 import json
+import os
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -85,8 +86,30 @@ def записати(журнал, стани):
         п.writerows(стани[д] for д in sorted(стани))
 
 
+def вбити_процес(proc):
+    """Примусово завершує дерево процесів."""
+    if proc.poll() is not None:
+        return
+    try:
+        if sys.platform == "win32":
+            subprocess.call(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        else:
+            proc.kill()
+    except Exception:
+        pass
+    try:
+        proc.kill()
+    except Exception:
+        pass
+
+
 def main(argv=None):
     """Крутить цикли виконавця; крамницю з 0 прогресу за цикл зупиняє зі станом WAIT і причиною."""
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
     ап = argparse.ArgumentParser(description=__doc__)
     ап.add_argument("--журнал", required=True)
     ап.add_argument("--магазини", default="усі")
@@ -95,27 +118,78 @@ def main(argv=None):
     ап.add_argument("--стеля", type=int, default=300)
     ап.add_argument("--секунд-на-магазин", type=int, default=900)
     ап.add_argument("--паралельно", type=int, default=2)
+    ап.add_argument("--секунд-на-цикл", type=int, default=None)
+    ап.add_argument("--заглушка", default=os.environ.get("ZHNYVARKA_ЗАГЛУШКА", None))
     а = ап.parse_args(argv)
     Path(а.журнал).mkdir(parents=True, exist_ok=True)
     зведення = Path(а.журнал) / "зведення_жнив.tsv"
     ряд0 = len(зведення.read_text(encoding="utf-8").splitlines()) - 1 if зведення.is_file() else 0
-    стани, магазини = {}, перелік_крамниць(а)
+
+    стан_файл = Path(а.журнал) / "обхід_стан.tsv"
+    стани = {}
+    if стан_файл.is_file():
+        for р in csv.DictReader(open(стан_файл, encoding="utf-8"), delimiter="\t"):
+            стани[р["домен"]] = {
+                "домен": р["домен"],
+                "стан_код": р["стан_код"],
+                "причина_код": р["причина_код"],
+                "адрес": int(р["адрес"]),
+                "готово": int(р["готово"]),
+                "лишилось": int(р["лишилось"]),
+                "цикл": int(р["цикл"]),
+                "підстава": р["підстава"],
+            }
+
+    магазини = перелік_крамниць(а)
+    if стани:
+        магазини = [д for д in магазини if д not in стани or (стани[д]["лишилось"] > 0 and стани[д]["стан_код"] != "WAIT")]
+
     for цикл in range(1, а.циклів + 1):
         if not магазини:
             break
-        код = subprocess.call([sys.executable, str(ТЕКА / "виконавець.py"), "--журнал", а.журнал, "--без-огляду",
-                               "--рецепти", str(ТЕКА / "рецепти.tsv"), "--магазини", ",".join(магазини),
-                               "--транспорт", а.транспорт, "--стеля", str(а.стеля),
-                               "--секунд-на-магазин", str(а.секунд_на_магазин), "--паралельно", str(а.паралельно)])
+        партій = (len(магазини) + max(а.паралельно, 1) - 1) // max(а.паралельно, 1)
+        таймаут_циклу = а.секунд_на_цикл if а.секунд_на_цикл is not None else (партій * а.секунд_на_магазин + 60)
+        cmd = [sys.executable, str(ТЕКА / "виконавець.py"), "--журнал", а.журнал, "--без-огляду",
+               "--рецепти", str(ТЕКА / "рецепти.tsv"), "--магазини", ",".join(магазини),
+               "--транспорт", а.транспорт, "--стеля", str(а.стеля),
+               "--секунд-на-магазин", str(а.секунд_на_магазин), "--паралельно", str(а.паралельно)]
+        if а.заглушка:
+            cmd += ["--заглушка", а.заглушка]
+
+        код = 0
+        таймаут_вийшов = False
+        proc = subprocess.Popen(cmd)
+        try:
+            код = proc.wait(timeout=таймаут_циклу)
+        except subprocess.TimeoutExpired:
+            таймаут_вийшов = True
+            вбити_процес(proc)
+            try:
+                proc.wait(timeout=5)
+            except Exception:
+                pass
+            код = -1
+
         ряди, ряд0 = останні_рядки(зведення, ряд0) if зведення.is_file() else ({}, 0)
         наступні = []
         for д in магазини:
-            if д not in ряди:
-                continue
-            с = стан_рядка(д, ряди[д], цикл, а.журнал)
+            if д in ряди:
+                с = стан_рядка(д, ряди[д], цикл, а.журнал)
+            else:
+                # Крамниця без рядка у зведенні: таймаут циклу або аварійне завершення
+                ч = черга(а.журнал, д)
+                адрес = ч[0] if ч else (стани[д]["адрес"] if д in стани else 0)
+                готово = ч[1] if ч else (стани[д]["готово"] if д in стани else 0)
+                лишилось = (ч[0] - ч[1]) if ч else (стани[д]["лишилось"] if д in стани else 0)
+                причина_код = "TIMEOUT" if таймаут_вийшов else "збій"
+                підстава = "таймаут циклу обходу (виконавця зупинено)" if таймаут_вийшов else "виконавець не повернув рядка зведення"
+                с = dict(домен=д, стан_код="WAIT",
+                         причина_код=причина(причина_код),
+                         адрес=адрес, готово=готово, лишилось=лишилось,
+                         цикл=цикл, підстава=підстава)
             було = стани.get(д)
             стани[д] = с
-            if с["лишилось"] and (не_стоїть(було, с)):
+            if с["стан_код"] != "WAIT" and с["лишилось"] and не_стоїть(було, с):
                 наступні.append(д)
         записати(а.журнал, стани)
         print("цикл %d: код %d · крамниць %d → лишилось продовжувати %d" % (цикл, код, len(магазини), len(наступні)), flush=True)
@@ -132,7 +206,9 @@ def перелік_крамниць(а):
 
 def не_стоїть(було, є):
     """Крамниця без нових виконаних адрес за цикл не продовжується — це знак заслону, не повільності."""
-    return not було or є["готово"] > було["готово"]
+    if not було:
+        return є["готово"] > 0
+    return є["готово"] > було["готово"]
 
 
 if __name__ == "__main__":
