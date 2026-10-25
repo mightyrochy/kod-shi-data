@@ -1,0 +1,41 @@
+── ПРОМПТ (5844 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+ТЕКСТИ:
+{
+"1": "A silk-mussel dress in ivory with a subtle sheen, midi length falling just above the knee, color, smooth fluid fabric.\nStrappy heeled sandals in gold leather, cut narrow at the toe with an ankle strap, length 10cm heel, color, polished calfskin.\nPearl drop earrings and a thin gold chain necklace to add refined details without overwhelming the neckline.\n\nThis outfit strikes the perfect balance for a summer wedding that transitions from an outdoor ceremony to an upscale restaurant. The silk-mussel dress offers an elegant yet breathable silhouette suitable for August daylight temperatures around 18°C, while the midi length remains modest yet chic for the occasion. Metallic gold shoes and delicate pearl jewelry elevate the look to meet the formal dress code without feeling overdressed for a daytime event.",
+"2": "dress",
+"3": "sandals",
+"4": "earrings",
+"5": "necklace"
+}
+
+── ВІДПОВІДЬ (987 симв., 52.9 с, HTTP 200) ──
+```json
+{
+  "1": "Оксамитова шовкова сукня кольору слонової кістки з ледь помітним блиском, міді довжини, що закінчується трохи вище коліна. Тканина — гладка та струмуюча.\nРемінні босоніжки на підборах із золотистої шкіри, вузький носок і ремінець на щиколотці, висота каблука 10 см. Шкіра — полірована теляча.\nПерлинні сережки-краплі та тоненький ланцюжок з жовтого золота для витончених деталей без перевантаження зони декольте.\n\nЦей образ ідеально поєднує в собі елегантність і комфорт для літнього весілля, яке проходить від церемонії на відкритому повітрі до ресторану високої кухні. Шовкова оксамитова сукня пропонує витончений силует, який дихає та підходить для серпневої погоди близько 18°C, а міді довжина залишається скромною і водночас стильною.\nЗолотисті босоніжки на підборах і ніжні перлинні прикраси доповнюють образ відповідно до формального дрес-коду без надмірності для денної події.",
+  "2": "сукня",
+  "3": "босоніжки",
+  "4": "сережки",
+  "5": "ланцюжок"
+}
+```

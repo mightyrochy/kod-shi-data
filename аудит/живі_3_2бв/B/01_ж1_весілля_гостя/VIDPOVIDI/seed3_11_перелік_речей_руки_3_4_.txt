@@ -1,0 +1,37 @@
+── ПРОМПТ (2118 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk sheath dress with a high neckline, knee length, hex #D4AF37 (champagne gold), woven silk charmeuse.\nStrappy suede sandals with a 9 cm heel, hex #F5F5DC (tan), soft nappa leather.\nDiamond stud earrings and a delicate pearl choker necklace.\n\nThis outfit perfectly balances the semi-formal requirements of an August wedding with the comfort needed for an outdoor ceremony at 18 °C followed by an upscale restaurant dinner. The champagne gold hue reflects the summer daylight and complements a typical autumn-winter or late summer color palette without being overly bright in the evening. While no outer layer is necessary given the warm temperature, the elegant silhouette and refined fabrics ensure you feel polished yet approachable for both family and friends."}
+
+── ВІДПОВІДЬ (772 симв., 37.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Sheath dress",
+      "details": "High neckline, knee length, woven silk charmeuse fabric",
+      "slot": "dress",
+      "color_hex": "#D4AF37",
+      "worn": true
+    },
+    {
+      "name": "Strappy sandals",
+      "details": "Suede material with a 9 cm heel, soft nappa leather construction",
+      "slot": "shoes",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "Diamond stud earrings",
+      "details": "Stud style earring item",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Pearl choker necklace",
+      "details": "Delicate pearl choker design",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
