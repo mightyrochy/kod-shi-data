@@ -809,6 +809,15 @@ function Resume-Interrupted {
     }
 }
 
+# Відкликання — це окремий непорожній рядок, який після пробілів і маркерів Markdown `*` починається
+# з «ВІДКЛИКАНО». Так працюють і перший рядок, і окремий `**ВІДКЛИКАНО…**` після шапки.
+function Test-TaskRecalled([string]$Text) {
+    foreach ($line in ($Text -split "`r?`n")) {
+        if ($line.TrimStart().TrimStart('*').StartsWith('ВІДКЛИКАНО', [System.StringComparison]::Ordinal)) { return $true }
+    }
+    return $false
+}
+
 function Invoke-Task($M) {
     $key = "$($M.Ref) $($M.Sha)"
     $id = '{0:yyyyMMdd-HHmmss}-{1}' -f (Get-Date), (Get-Sha256Hex $key).Substring(0, 12)
@@ -826,8 +835,10 @@ function Invoke-Task($M) {
         $anc = Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail
         $taskPath = $script:TaskDir + $M.Slug + '.md'
         if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
-        if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
-        $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
+        $task = Invoke-Git @('cat-file', 'blob', "${main}:$taskPath") -AllowFail
+        if ($task.Code -ne 0) { $status.code = 'RECALLED'; return }
+        $taskText = $task.Out
+        if (Test-TaskRecalled $taskText) { $status.code = 'RECALLED'; return }
         if ($taskText.Length -gt 30000) { $status.code = 'TASK_TOO_LONG'; return }
         # Квота до наряду: група моделі з 0 % — наряд не береться (марно палить спробу й дає 429 посеред прогону).
         $sel = Select-Engine $M

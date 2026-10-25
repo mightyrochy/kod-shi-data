@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Стенд обгортки М.2, 11 сценаріїв черги й публікації: повтор, позначка зникла, не ff, збій claude, доробка, ізоляція,
+# Стенд обгортки М.2, 15 сценаріїв черги й публікації: повтор, позначка зникла, не ff, збій claude, доробка, ізоляція,
 # стара й крива позначка, перерваний прогін, засипання станами, відхилений пуш, підроблений стан (8940). pwsh — PWSH.
 H=$(cd "$(dirname "$0")" && pwd); PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 SLUG='М.2-проба-обгортки'; M=gemini-3.8-flash-high
@@ -55,3 +55,18 @@ echo "=== 11 підроблений стан (8940): ранній id на ту �
   pub; show
   if grep -q -E 'vlasnyk|ignore-rules' "$W/claude.log"; then echo "  ✗ слово зі стану в рядку"; else echo "  ✓ у рядках нема жодного слова зі стану"; fi
   if git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini/$SLUG" >/dev/null; then echo "  ✓ справжній результат опубліковано"; else echo "  ✗ справжню публікацію забрано"; fi
+recalled() { grep -q '"code":"RECALLED"' "$W"/out/*.json 2>/dev/null &&
+  ! git -C "$W/clone" show-ref --verify --quiet "refs/heads/gemini/$SLUG" &&
+  [ ! -s "$W/fake/prompts.log" ]; }
+echo "=== 12 відкликано на першому рядку: RECALLED, агента й гілки нема"; setup r12
+  (cd "$W/seed"; printf 'ВІДКЛИКАНО: вже виконано\n' > "аудит/наряди/$SLUG.md"; git commit -qam recalled; git push -q origin main 2>/dev/null)
+  mark "$SLUG/$M/1"; gem; if recalled; then echo "  ✓ RECALLED з першого рядка"; else echo "  ✗ відкликаний наряд запущено"; fi
+echo "=== 13 **ВІДКЛИКАНО** після шапки: RECALLED"; setup r13
+  (cd "$W/seed"; printf '# Шапка\n\n**ВІДКЛИКАНО: вже виконано.**\n' > "аудит/наряди/$SLUG.md"; git commit -qam recalled; git push -q origin main 2>/dev/null)
+  mark "$SLUG/$M/1"; gem; if recalled; then echo "  ✓ RECALLED після шапки"; else echo "  ✗ markdown-відкликання не побачено"; fi
+echo "=== 14 файл є на позначці, але видалений з main: RECALLED"; setup r14; mark "$SLUG/$M/1"
+  (cd "$W/seed"; git rm -q "аудит/наряди/$SLUG.md"; git commit -qm deleted; git push -q origin main 2>/dev/null)
+  gem; if recalled; then echo "  ✓ видалення з main — RECALLED"; else echo "  ✗ видалення з main не відкликало наряд"; fi
+echo "=== 15 наряд змінено після позначки: prompt містить текст з main"; setup r15; mark "$SLUG/$M/1"
+  (cd "$W/seed"; printf 'новий текст з main\n' > "аудит/наряди/$SLUG.md"; git commit -qam changed; git push -q origin main 2>/dev/null)
+  gem; if grep -q 'новий текст з main' "$W"/runs/*/prompt.md && ! grep -q '^\s*н\s*$' "$W"/runs/*/prompt.md; then echo "  ✓ prompt з origin/main"; else echo "  ✗ prompt не з origin/main"; fi
