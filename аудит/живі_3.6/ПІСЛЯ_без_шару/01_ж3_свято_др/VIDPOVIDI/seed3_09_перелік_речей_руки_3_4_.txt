@@ -1,0 +1,37 @@
+── ПРОМПТ (2269 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "Ukrainian", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Велике чорне шовкове сукня midi-довжини з глибоким V-подібним вирізом та асиметричним кроєм на бік, кольору #1A1A1A, 100% натуральний шовк.\nЧоловічі шкіряні лофери з підборами в стилі мідні, чорного відтінку #0F0F0F, гладка глибока замша.\nМаленькі золотисті сусідські сережки-гіпюр у формі кульок та мінімалістичний шкіряний ремінець через плече в тон до взуття.\nЦей образ ідеально підходить для вечірці на день народження, створюючи баланс між елеганцією та комфортом у прохолодну осінню погоду: шовкова тканина додає світіння під денним світлом, а чорний колір є універсальним вибором для святкового заходу. Взуття без каблука дозволяє довго танцювати та розважатися без втоми, тоді як мінімалістичні прикраси акцентують увагу на фасоні сукня не перевантажуючи вигляд. Відповідно до ваших побажань, цей ансамбль підходить для суботи ввечері та температури 18 °C, створюючи святковий настрій без зайвої складності."}
+
+── ВІДПОВІДЬ (814 симв., 41.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Шовкова сукня",
+      "details": "велика, midi-довжина, глибокий V-подібний виріз, асиметричний крой на бік",
+      "slot": "dress",
+      "color_hex": "#1A1A1A",
+      "worn": true
+    },
+    {
+      "name": "Лофери",
+      "details": "чоловічі шкіряні, з підборами в стилі мідні, гладка глибока замша",
+      "slot": "shoes",
+      "color_hex": "#0F0F0F",
+      "worn": true
+    },
+    {
+      "name": "Сережки",
+      "details": "маленькі золотисті, сусідські, у формі кульок з гіпюру",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "Ремінець через плече",
+      "details": "мінімалістичний шкіряний, чорний",
+      "slot": "accessory",
+      "color_hex": "#0F0F0F",
+      "worn": true
+    }
+  ]
+}
