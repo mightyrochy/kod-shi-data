@@ -26,7 +26,7 @@
   `list_*` — фільтри й `limit` ≤ 10, `list_events` — `kinds`; не тягти весь список у контекст.
 - Недоставлені листи: `list_triggers(recurring=false, include_completed=true, limit=6)`, звірити `last_run`.
   Прямий патч між сесіями — `send_message`, доставка — `updated_at`; звичайний лист — `CLAUDE.md`, «Лист».
-- Нагляд PR — `subscribe_pr_activity`; правки коментарів не сповіщають — їх бачить пульс. Останній коментар —
+- Нагляд PR — такт пульсу; підписок не ставлять (файли ролей). Останній коментар —
   `get_comments(perPage=1, page=<кількість>)`. Архів/повернення — `archive_session` / `unarchive_session`.
 - Голова PR: `git fetch origin pull/N/head`; відмовлено — `pull_request_read(method="get_status")`.
   Чернетка перед дозволеним злиттям — `update_pull_request(draft=false)`, інакше 405; злиття — з `expectedHeadSha`.
@@ -36,14 +36,14 @@
 
 ## Ноутбук
 
-- Міст DESKTOP-6N11SA4 шукається через `list_environments` лише вперше чи після відмови запуску. `create_session`
-  з його `environment_id`, моделлю, `/effort` і дослівним нарядом; потім `send_message("Почни")`.
 - `elevated_session_untrusted_device` — дозволений власником запасний шлях запускача на самому ноутбуці:
   `Agent(subagent_type="general-purpose", model=<haiku|sonnet|opus>, effort=<рівень>, run_in_background=true,
   description=<назва>, prompt=<наряд>)`. Цей виняток не надає хмарній сесії права відкривати віддалений доступ.
 - Пробудження запускача — `CronCreate` (ToolSearch «select:CronCreate»), коли `CronList` його не показує (живе в
   пам'яті сесії до 7 діб); нема — `/loop 60m` з тим самим текстом.
-- Картка довіри «комп'ютери й інші сесії» (`confirm_repository_trust`) відкриває хмарній сесії ноутбук, але глушить
-  її саму: тригери (пульс, нагадування, листи) — `ROUTINE_RUN_FAILURE_REASON_ACCESS_DENIED`, `send_message` інших
-  сесій — `elevated_session_untrusted_device`; доходять лише чат власника й події PR за підпискою. Менеджер і
-  диспетчер її не просять; роботу ноутбукові — «Черга ноутбука» `аудит/СТАН.md`.
+- Картка довіри «комп'ютери й інші сесії» (`confirm_repository_trust`) відкриває хмарній сесії ноутбук, але глушить її
+  саму: тригери (пульс, нагадування, листи) — `ROUTINE_RUN_FAILURE_REASON_ACCESS_DENIED`, `send_message` інших сесій —
+  `elevated_session_untrusted_device`; доходять лише чат власника й події PR за підпискою. Менеджер і диспетчер її не
+  просять; роботу ноутбукові — «Черга ноутбука» `аудит/СТАН.md`.  Міст — Remote Control у застосунку власника
+  (перемикачі ввімкнено 26.10: ноутбук без сну, сесії ноутбука власник запускає й бачить з телефона): `create_session`
+  на міст з хмари без картки — відмова `elevated_session_untrusted_device` (проба 26.10), не повторюють.
