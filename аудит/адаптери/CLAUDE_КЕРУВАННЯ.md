@@ -36,8 +36,6 @@
 
 ## Ноутбук
 
-- Міст DESKTOP-6N11SA4 шукається через `list_environments` лише вперше чи після відмови запуску. `create_session`
-  з його `environment_id`, моделлю, `/effort` і дослівним нарядом; потім `send_message("Почни")`.
 - `elevated_session_untrusted_device` — дозволений власником запасний шлях запускача на самому ноутбуці:
   `Agent(subagent_type="general-purpose", model=<haiku|sonnet|opus>, effort=<рівень>, run_in_background=true,
   description=<назва>, prompt=<наряд>)`. Цей виняток не надає хмарній сесії права відкривати віддалений доступ.
