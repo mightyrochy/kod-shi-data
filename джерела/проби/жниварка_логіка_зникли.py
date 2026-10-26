@@ -2,7 +2,7 @@
 """Рядок 5617, перший вимір: частка речей каталогу, що зникли з сайтів від жнив (07.09 — 38 днів, 18.09 — 27). Вибірка порівну з крамниць (500, сід 17), потік на хост, 2 с
 перед запитом. Зникла — 404/410, порожня, переадресація без товару, сторінка без товару в крамниці, що розмічує товар (≥ 3 з Product/og); розпродана — лише OutOfStock;
 403/5xx/збій/JS-перевірка (не обходимо) — невідомо. Зважено речами крамниці, 95 % Вілсона з ефективним n; пише /tmp/жниварка_зникли.json. Мережа, ~2 хв; аргумент — N."""
-import collections as C, concurrent.futures as КФ, json, math, os, random, re, sys, time, urllib.parse as У, urllib.request as Р  # noqa: E401
+import collections as C, concurrent.futures as КФ, json, math, os, random, re, sys, tempfile, time, urllib.parse as У, urllib.request as Р  # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); import feed as Ф  # noqa: E402
 прод, за = {str(р['id']).split('@')[0] for р in Ф._прочитати_каталог(Ф.каталог_на_диску('каталог_повний.xml'), ліміт_фото=0)['каталог']}, C.defaultdict(list)
 for о in Ф.читати_yml(Ф.каталог_на_диску())[0]:
@@ -27,7 +27,7 @@ def крамниця(м):
     return м, [(р[0], причина(*р)) for р in сирі]
 with КФ.ThreadPoolExecutor(len(вибірка)) as пул: рез = dict(пул.map(крамниця, вибірка))
 ЗНИКЛА, РОЗПР, ЖИВА = {'HTTP 404', 'HTTP 410', 'порожня сторінка', 'переадресація без товару', 'сторінка без товару'}, {'OutOfStock'}, {'InStock', 'товар без наявності', 'без розмітки', 'переадресація на товар'}
-ВИЗН, все = ЗНИКЛА | РОЗПР | ЖИВА, [(о, п) for р in рез.values() for о, п in р]; json.dump({о['id']: п for о, п in все}, open('/tmp/жниварка_зникли.json', 'w'), ensure_ascii=False)
+ВИЗН, все = ЗНИКЛА | РОЗПР | ЖИВА, [(о, п) for р in рез.values() for о, п in р]; json.dump({о['id']: п for о, п in все}, open(os.path.join(tempfile.gettempdir(), 'жниварка_зникли.json'), 'w'), ensure_ascii=False)
 def частка(клас, умова=lambda о: True):
     """Зважена речами крамниці частка класу серед визначених, 95 % Вілсона з ефективним n (Korn–Graubard), покриття каталогу."""
     стр = {м: в for м, в in ((м, [п in клас for о, п in р if п in ВИЗН and умова(о)]) for м, р in рез.items()) if в}; Ч = sum(len(за[м]) for м in стр); n = sum(map(len, стр.values()))

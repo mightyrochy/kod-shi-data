@@ -2,13 +2,15 @@
    До правки маршрут `gemini-` будував тіло нанову й це поле губив мовчки (grep на
    `temperature` у worker.js — 0 збігів), тобто модель шару відповідала з температурою
    провайдера за замовчуванням. Запуск: `cd джерела && node проби/темп_у_запиті.js`. */
-const fs = require("fs"), path = require("path");
+const fs = require("fs"), path = require("path"), os = require("os");
+const {pathToFileURL} = require("url");
 (async () => {
   const сир = fs.readFileSync(path.join(__dirname, "..", "worker.js"), "utf-8")
     .replace(/export\s*\{\s*worker_default as default\s*\}\s*;?/, "const М = worker_default;")
     .replace(/^export default/m, "const М =");
-  fs.writeFileSync("/tmp/_темп_проба.mjs", сир + "\nexport {М};");
-  const {М} = await import("/tmp/_темп_проба.mjs");
+  const тимчасовийМодуль = path.join(os.tmpdir(), "_темп_проба.mjs");
+  fs.writeFileSync(тимчасовийМодуль, сир + "\nexport {М};");
+  const {М} = await import(pathToFileURL(тимчасовийМодуль).href);
   const пішло = [];
   globalThis.fetch = async (url, opts) => { пішло.push({url:String(url), тіло:JSON.parse(opts.body)});
     return new Response(JSON.stringify({content:[{type:"text",text:"ок"}], stop_reason:"end_turn",

@@ -2,11 +2,11 @@
 # замшеві капці. Правило погоди не мало ЗА ЩО зачепитись: «уги» з одним «г» не
 # збігалось із жодним ключем, тип виходив None, а без типу мовчать і формальність,
 # і K-WEA-07, і регістр. Скільки взуття без типу й чи заговорила погода.
-import sys, os, importlib.util
+import sys, os, importlib.util, tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import feed, фід_каталог as ФК, фід_слот as НОВ, аксесуари_погода as АП
 _сп = importlib.util.spec_from_file_location(
-    "до_фід_слот", os.environ.get("DO_FID_SLOT", "/tmp/206/до_фід_слот.py"))
+    "до_фід_слот", os.environ.get("DO_FID_SLOT", os.path.join(tempfile.gettempdir(), "206", "до_фід_слот.py")))
 СТАР = importlib.util.module_from_spec(_сп); _сп.loader.exec_module(СТАР)
 кат = ФК.прочитати_каталог(feed.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]
 взуття = [r for r in кат if r.get("слот") == "взуття"]

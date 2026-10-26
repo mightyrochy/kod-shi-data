@@ -6,7 +6,8 @@
 import hashlib, json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bridge as B, протокол as P
-вх0 = dict(json.load(open("стенд_вх.json", encoding="utf-8")), варіантів=10, ремонт_варіантів=5, бюджет_символів=120000, без_фото=1)
+вх0 = dict(json.load(open("стенд_вх.json", encoding="utf-8")), варіантів=10, ремонт_варіантів=5,
+           бюджет_символів=120000, без_фото=1, пакети=1)
 for сід in (4242, 4242, 13, 7):
     вх = dict(вх0, сід=сід)
     пул = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["пакети"]["1"]["пул"]

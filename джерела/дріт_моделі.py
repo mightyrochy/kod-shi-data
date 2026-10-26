@@ -39,6 +39,7 @@ import colorspace as _cs
 import verify as _V
 import реєстри as _РЕ
 import протокол as _ПР
+import selection_policy as _ПВ
 import колір_образу as _КО
 import знання_речі as _ЗН
 
@@ -554,6 +555,8 @@ def річ(r, короткий=False, пул=False, слот=None):
                     ("also_in", [колір_код(x)[0] or x for x in (r.get("є_також_у") or [])])):
         if v not in (None, "", [], ()):
             о[ключ] = v
+    if r.get("дози_відбору"):
+        о["selection_doses"] = _ПВ.дози_на_дріт({"_дози": r["дози_відбору"]})
     # ЇЇ РІЧ З ФОТО: її поля — тими самими фактами, кодами, де код є
     if r.get("власна"):
         о["hers"] = True
@@ -1287,6 +1290,8 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
         вих["case"] = в["випадок"]
     if в.get("день"):
         вих["day"] = день_на_дріт(в["день"])
+    if в.get("політика_відбору"):
+        вих["selection_policy"] = в["політика_відбору"]
     вих["verdict"] = []
     ремарки = {}
     _позиція = {r.get("н"): і for і, r in enumerate(r for рр in (в.get("вітрина") or {}).values()
@@ -1302,6 +1307,8 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
                                                  ("items", [_легше(річ(x, пул=True)) if isinstance(x, dict) else x
                                                             for x in (т.get("речі") or [])]),
                                                  ("day", день_на_дріт(т.get("день")))) if v not in (None, "", [])}}
+        if т.get("полюс"):
+            о["your_outfit"]["pole"] = _ПР.ЗНАЧЕННЯ_ВІДПОВІДІ_EN["полюс"].get(т["полюс"], т["полюс"])
         ст = с.get("структура")
         if isinstance(ст, dict):
             о["structure"] = {"ok": ст.get("ок")}
@@ -1616,6 +1623,9 @@ def пакет(п):
     вих = {}
     if п.get("випадок"):
         вих["case"] = випадок(п["випадок"], день)
+    вих["selection_policy"] = _ПВ.на_дріт(_ПВ.опис(
+        (п.get("випадок") or {}).get("намір"),
+        (п.get("випадок") or {}).get("мета_важливо")))
     if день:
         вих["day"] = день_на_дріт(день, невідоме=True)
     if п.get("людина"):
