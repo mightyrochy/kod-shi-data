@@ -51,15 +51,17 @@ n = int(open(p).read()) + 1 if os.path.exists(p) else 1
 open(p, 'w').write(str(n))
 m = re.search(r'ГОТОВО gemini/(\S+) <', content)
 slug = m.group(1) if m else '?'
-done = 'Готово.\nНОУТБУК ГОТОВО gemini/%s %s' % (slug, git('rev-parse', 'HEAD'))
+def done():
+    # SHA беруть після коміту сценарію: звіт з попереднім SHA обгортка відхиляє як mismatch
+    return 'Готово.\nНОУТБУК ГОТОВО gemini/%s %s' % (slug, git('rev-parse', 'HEAD'))
 err = ''
 if SC == 'abandon_then_done':
     if n == 1:
         commit('робота/а.txt'); resp = 'Запустив фонове завдання, чекаю результату.'
     else:
-        resp = done
+        resp = done()
 elif SC == 'github':
-    commit('.github/workflows/evil.yml'); resp = done
+    commit('.github/workflows/evil.yml'); resp = done()
 elif SC == 'quota429':
     resp, err = '', '429 RESOURCE_EXHAUSTED: quota exceeded'
 elif SC == 'auth':
@@ -68,7 +70,7 @@ elif SC == 'blocked':
     commit('робота/б.txt'); resp = 'ЗАБЛОКОВАНО: чекаю рішення'
 elif SC == 'slow_done':
     # довгий прогін із подіями щосекунди: довший за TotalMinutes обгортки, але без завислості
-    commit('робота/а.txt'); resp = done
+    commit('робота/а.txt'); resp = done()
     print(json.dumps({'type': 'turn.started'}), flush=True)
     for i in range(int(os.environ.get('FAKE_SLOW_SECONDS', '40'))):
         time.sleep(1); print(json.dumps({'type': 'item.completed', 'n': i}), flush=True)

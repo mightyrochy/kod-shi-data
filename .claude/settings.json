@@ -1,3 +1,31 @@
 {
-  "autoCompactWindow": 250000
+  "autoCompactWindow": 332500,
+  "enableArtifact": false,
+  "skillOverrides": {
+    "update-config": "user-invocable-only"
+  },
+  "permissions": {
+    "deny": [
+      "Workflow",
+      "ScheduleWakeup",
+      "ShowOnboardingRolePicker",
+      "SearchPlugins",
+      "SuggestPluginInstall",
+      "SuggestSkills",
+      "mcp__ccd_session__*"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/хуки/слова_власника.py\""
+          }
+        ]
+      }
+    ]
+  }
 }
