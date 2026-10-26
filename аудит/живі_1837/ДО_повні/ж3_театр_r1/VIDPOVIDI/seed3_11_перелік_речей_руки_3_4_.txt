@@ -1,0 +1,37 @@
+── ПРОМПТ (2235 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A navy blue sheath dress with a subtle satin finish at the neckline and a structured waist, falling to mid-calf in length.\nBlack pointed-toe pumps with a 7 cm heel.\nGold drop earrings and a delicate pearl necklace to add elegance without overpowering the evening gown look.\n\nThis outfit works perfectly for a formal theatre performance because the sheath silhouette offers a refined and timeless aesthetic suitable for an autumn evening, while the navy hue provides a sophisticated contrast that complements warm skin tones like #f0d6d2. The mid-calf length strikes the right balance between modesty and drama required for a gala or opera house setting, ensuring comfort during long seated acts without looking too casual. Adding metallic gold jewelry introduces just enough sparkle to elevate the ensemble to the necessary formal level without violating any dress code constraints."}
+
+── ВІДПОВІДЬ (581 симв., 60.8 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "sheath dress",
+"details": "navy blue with a subtle satin finish at the neckline and a structured waist, falling to mid-calf in length",
+"slot": "dress",
+"color_hex": "#000080",
+"worn": true
+},
+{
+"name": "pumps",
+"details": "black pointed-toe with a 7 cm heel",
+"slot": "shoes",
+"color_hex": "#000000",
+"worn": true
+},
+{
+"name": "drop earrings",
+"details": "gold",
+"slot": "earrings",
+"color_hex": "#FFD700",
+"worn": true
+},
+{
+"name": "pearl necklace",
+"details": "delicate",
+"slot": "necklace",
+"color_hex": "#FFFFFF",
+"worn": true
+}
+]
+}

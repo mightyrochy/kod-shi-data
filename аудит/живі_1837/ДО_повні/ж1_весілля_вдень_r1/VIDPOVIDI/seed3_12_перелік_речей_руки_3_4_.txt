@@ -1,0 +1,30 @@
+── ПРОМПТ (2453 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk crepe evening gown in a deep emerald green, cut with a high neck and long sleeves for modest elegance, falling to the floor in an A-line silhouette, color hex #046307.\nDelicate gold-toned opera-length gloves reaching the mid-upper arm, crafted from soft satin to match the formal attire.\nHeeled sandals featuring a slender stiletto and crystal embellishments along the strap, finished in polished metallic silver with a length appropriate for evening wear, color hex #C0C0C0.\n\nThis ensemble perfectly balances the requirement for very smart attire at an autumn wedding while respecting the specific request to avoid overly flashy or casual elements. The emerald green silk provides a rich, sophisticated tone suitable for both the morning ceremony and the subsequent lunch in the restaurant, ensuring you look polished without overwhelming the bridal party. The addition of the elegant gold gloves adds a layer of traditional formality appropriate for an evening gown, while the silver heels offer a subtle contrast that grounds the look without drawing excessive attention away from the couple."}
+
+── ВІДПОВІДЬ (684 симв., 59.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk crepe evening gown",
+      "details": "High neck, long sleeves, A-line silhouette falling to the floor",
+      "slot": "dress",
+      "color_hex": "#046307",
+      "worn": true
+    },
+    {
+      "name": "Opera-length gloves",
+      "details": "Gold-toned, crafted from soft satin reaching the mid-upper arm",
+      "slot": "gloves",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Heeled sandals",
+      "details": "Slender stiletto heel, crystal embellishments along the strap, polished metallic silver finish",
+      "slot": "shoes",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}

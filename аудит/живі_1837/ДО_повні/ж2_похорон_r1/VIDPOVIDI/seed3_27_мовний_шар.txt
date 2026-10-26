@@ -1,0 +1,62 @@
+── ПРОМПТ (8751 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Піджак класичний подовжений жіночий демісезонний · kind code: blazer · colour code: grey · about it: text н=1
+2 — Блуза на запах шоколад · kind code: blouse · colour code: chocolate · about it: text н=2
+3 — Спідниця міді чорна · kind code: skirt · colour code: black · about it: text н=3
+4 — Туфлі човники, ATTICO, замша, колір темно-коричневий · kind code: pumps · colour code: brown · about it: text н=4
+5 — Сумка жіноча Sack · kind code: bag_generic · colour code: grey · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; chocolate — шоколадний; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "You have selected a classic, elongated women's blazer in dark grey. It features a tailored fit with structured shoulders, a notched lapel, and a matching belt at the waist that cinches the silhouette for a defined shape.",
+"2": "This is a chocolate-colored blouse made from a smooth satin fabric. It has a deep V-neckline, an elegant wrap front with a tie belt, voluminous sleeves that end in gathered ruffles at the cuffs, and a peplum hem that adds gentle volume.",
+"3": "You have chosen a black midi-length skirt with a straight cut and subtle side seams. It features two front pockets on the hips and is tailored to fall just below the knee.",
+"4": "These are dark brown suede pumps, designed with a classic pointed toe and a sleek silhouette to complement the formal nature of the outfit.",
+"5": "This is the Sack Bag by Marc Jacobs, featuring a soft grey canvas body with contrasting black leather trim on the straps and bottom corners. The front displays bold, embroidered lettering that adds a graphic touch to the piece.",
+"6": "This ensemble is a thoughtful choice for your grandfather's funeral. The dark grey blazer provides the necessary structure and formality to meet the occasion's expectations, while the chocolate satin blouse adds a touch of richness and warmth without being overpowering. The black midi skirt grounds the outfit in classic elegance, creating a cohesive color palette with the shoes. The bag's neutral tone blends seamlessly with the darker shades, offering practicality alongside its understated style. Together, these pieces honor the solemnity of the day while ensuring you look polished and composed throughout the service.",
+"7": "Tuck the blouse into the skirt to define your waist, allowing the blazer's belt to accentuate your X-shape silhouette.",
+"8": "Keep the blouse untucked from under the blazer if you prefer a more streamlined look, letting the jacket's clean lines dominate your upper half.",
+"9": "Піджак класичний подовжений жіночий демісезонний — I kept this blazer but added a third piece and shoes to reach formal formality and balance the volume with a defined waist.",
+"10": "Спідниця міді чорна — I kept this black midi skirt because its low cut and dark tone continue the leg line, solving the high-cut contrast issue.",
+"11": "Туфлі човники, ATTICO, замша, колір темно-коричневий — I replaced the sneakers with these brown heeled loafers to match the skirt's hem and continue the leg line under the midi.",
+"12": "Сумка жіноча Sack — I added this grey bag to complete the outfit structure, adding a necessary third piece for a formal look.",
+"13": "Піджак класичний подовжений жіночий демісезонний, Спідниця міді чорна — I accept this gate regarding the formality register of the blazer and skirt because they define the necessary solemn tone for a funeral, overriding their casual 'neat' tags as the specific context demands formal respect.",
+"14": "Піджак класичний подовжений жіночий демісезонний, Блуза на запах шоколад, Спідниця міді чорна, Туфлі човники, ATTICO, замша, колір темно-коричневий — I accept this observation about the outfit's level being slightly below the target strictness because the dark palette and classic silhouettes provide enough visual gravity to meet the intent without needing more intense colors."
+}
+
+── ВІДПОВІДЬ (3238 симв., 59.7 с, HTTP 200) ──
+```json
+{
+"1": "Ти обрала класичний подовжений жіночий демісезонний піджак темно-сірого кольору. Він має приталений крій з чітко окресленими плечима, лацканом і поясом у тон на талії, який підкреслює силует.",
+"2": "Це шоколадна блуза з гладкої сатинової тканини. Вона має глибокий V-подібний виріз, елегантну застібку спереду з бантом і пишні рукави, що закінчуються зібраними рюшами на манжетах, а також воланом по низу.",
+"3": "Ти обрала чорну міді-спідницю прямого крою та ледь помітними бічними швами. Вона має дві кишені спереду на стегнах і розроблена так, щоб закінчуватися трохи нижче коліна.",
+"4": "Це темно-коричневі замшеві туфлі-човники з класичним загостреним носком та елегантною формою, що доповнює офіційний характер образу.",
+"5": "Це сумка Sack від Marc Jacobs. Вона має сіре полотняне тіло з чорною шкіряною обробкою на ремінцях і кутах знизу. Спереду вишиті великими літерами слова, що додають графічного акценту до сумки.",
+"6": "Цей ансамбль — продуманий вибір для похорону твого дідуся. Темно-сірий піджак надає необхідної структури та офіційності, щоб відповідати очікуванням події, а шоколадна сатинова блуза додає нотку багатства й тепла без надмірності. Чорна міді-спідниця завершує образ класичною елегантністю, створюючи гармонійну колірну палітру з взуттям. Нейтральний тон сумки плавно поєднується з темнішими відтінками, пропонуючи практичність разом зі стриманим стилем. Разом ці речі шанують урочистість дня та гарантують, що ти виглядатимеш охайно й впевнено протягом усієї церемонії.",
+"7": "Заправ блузу у спідницю, щоб підкреслити твою талію, дозволяючи поясу на піджаку акцентувати силует «пісочний годинник».",
+"8": "Не заправляй блузу в спідницю, якщо ти віддаєш перевагу більш стрункому вигляду, давши чистим лініям піджака домінувати у верхній частині твого тіла.",
+"9": "Піджак класичний подовжений жіночий демісезонний — Я залишила цей піджак, але додала третій предмет і взуття, щоб досягти офіційної формальності та збалансувати об’єм за допомогою чітко окресленої талії.",
+"10": "Спідниця міді чорна — Я залишила цю чорну міді-спідницю, тому що її низький крій і темний тон продовжують лінію ніг, вирішуючи проблему контрасту з високим розрізом.",
+"11": "Туфлі човники, ATTICO, замша, колір темно-коричневий — Я замінила кросівки цими коричневими лоферами на підборах, щоб вони поєднувалися з подолом спідниці та продовжували лінію ніг під міді.",
+"12": "Сумка жіноча Sack — Я додала цю сіру сумку, щоб завершити структуру образу, доповнивши його необхідним третім предметом для офіційного вигляду.",
+"13": "Піджак класичний подовжений жіночий демісезонний, Спідниця міді чорна — Я приймаю цю думку щодо формального рівня вбрання, оскільки піджак і спідниця визначають необхідний урочистий тон для похорону, перекриваючи їхні неформальні «охайні» позначки, як цього вимагає конкретний контекст.",
+"14": "Піджак класичний подовжений жіночий демісезонний, Блуза на запах шоколад, Спідниця міді чорна, Туфлі човники, ATTICO, замша, колір темно-коричневий — Я приймаю це зауваження про те, що рівень образу трохи нижчий від цільової суворості, оскільки темна палітра та класичні силуети надають достатньо візуальної ваги для відповідності наміру без потреби в більш насичених кольорах."
+}
+```

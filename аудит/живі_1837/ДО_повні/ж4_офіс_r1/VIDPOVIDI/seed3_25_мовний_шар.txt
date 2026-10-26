@@ -1,0 +1,58 @@
+── ПРОМПТ (8135 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня максі вязана базова · kind code: dress_generic · colour code: beige · about it: text н=1
+2 — Топ бандо подовженого крою мей шоколад · kind code: t_shirt · colour code: chocolate · about it: text н=2
+3 — Намисто-трансформер Робін з перлин сріблясте · kind code: jewelry_generic · about it: text н=3
+4 — LeBERDES Туфлі коричневі · kind code: dress_shoes · colour code: brown · about it: text н=4
+5 — Сумка жіноча Soli basket · kind code: bag_generic · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; chocolate — шоколадний.
+
+ТЕКСТИ:
+{
+"1": "This is a beige, midi-length knit dress with long sleeves and a relaxed fit that drapes softly over the body. Its simple silhouette makes it ideal for layering and creates a calm, professional foundation for your day.",
+"2": "A ribbed chocolate-colored bandeau-style top with long sleeves that adds structured warmth to the neckline. Its fitted form complements the flow of the dress while maintaining an elegant profile.",
+"3": "A silver pearl necklace featuring delicate bow charms that drape gracefully around your neck. The metallic sheen adds subtle sparkle without overpowering your look.",
+"4": "Woven brown leather pump heels with a pointed toe and slender heel bring texture and height to your ensemble. Their earthy tone ties together the palette naturally.",
+"5": "A large, hand-woven straw tote with black leather handles and a signature Jacquemus plaque. Its open weave breathes well in autumn light and adds a casual, coastal touch to your office attire.",
+"6": "I chose a look that feels effortless yet put-together for your workday, where comfort meets sophistication. The beige knit dress sets the base with its soft texture and clean line, while the chocolate ribbed bandeau top adds structure and a touch of warmth over it. The silver pearl necklace brings elegance without overwhelming, and the woven brown heels ground the ensemble with quiet intention. The straw bag offers a light, natural counterpoint that keeps your silhouette balanced throughout the day.",
+"7": "Wear the black sleeveless top under the beige dress — it creates a layered effect that’s both modern and office-appropriate without being too casual.",
+"8": "Let the silver pearl necklace rest naturally against your collarbone; avoid pulling or adjusting it mid-day to keep your movements smooth and confident.",
+"9": "Carry the straw tote by the handles in one hand, allowing your other arm to swing freely — this keeps the bag accessible and the look relaxed.",
+"10": "Топ бандо подовженого крою мей шоколад — The chocolate-colored top sits slightly below the neckline but its warm tone complements the cool navy blazer, creating a harmonious transition rather than hiding the waist.",
+"11": "Намисто-трансформер Робін з перлин сріблясте — Silver pearl jewelry provides the necessary metallic accent and elegance, fitting the classic register of the office occasion while avoiding a high-low formality clash.",
+"12": "LeBERDES Туфлі коричневі — The brown shoe acts as an anchor of earthy elegance within the neutral palette; its darker tone provides a stable visual weight at the bottom, which is essential for the 'neat' office target even if it falls slightly outside the strictest scheme arc."
+}
+
+── ВІДПОВІДЬ (2624 симв., 45.5 с, HTTP 200) ──
+```json
+{
+"1": "Це бежева в’язана сукня міді з довгими рукавами та вільною посадкою, яка ніжно драпірується по тілу. Її простий силует ідеальний для багатошаровості й створює спокійний, професійний фундамент твого дня.",
+"2": "Ребристий топ бандо шоколадного кольору з довгими рукавами додає структурованого тепла зоні шиї. Його приталена форма доповнює силует сукні та зберігає елегантний профіль.",
+"3": "Сріблясте перлове намисто з ніжними бантиками, які витончено спадають на твою шию. Металевий блиск додає ледь помітного сяйва без перевантаження образу.",
+"4": "Плетені коричневі шкіряні туфлі-човники зі загостреним носком і тонким підбором привносять текстуру та висоту в твій ансамбль. Їхній землистий відтінок природно поєднує палітру.",
+"5": "Велика плетінка з соломки з чорними шкіряними ручками й фірмовою табличкою Jacquemus. Відкрите переплетення добре пропускає осіннє світло та додає образу невимушеного, прибережного шарму до твого офісного вбрання.",
+"6": "Я підібрала образ, який поєднує безтурботність і вишуканість для твого робочого дня. Бежева в’язана сукня створює основу з м’якою текстурою та чітким силуетом, а шоколадний топ бандо додає структури й тепла. Сріблясте перлове намисто привносить елегантність без надмірності, а коричневі плетені туфлі гармонійно завершують ансамбль. Солом’яна сумка пропонує легкий природний контраст і зберігає збалансовану силует протягом дня.",
+"7": "Одягни чорний топ без рукавів під бежеву сукню — це створить багатошаровий ефект, який буде сучасним і доречним для офісу, не будучи надто повсякденним.",
+"8": "Дай сріблястому перловому намисту вільно лежати на ключиці; уникай потягування чи регулювання його протягом дня, щоб твої рухи були плавними та впевненими.",
+"9": "Носи солом’яну сумку за ручки в одній руці, дозволяючи іншій руці вільно розмахуватися — це робить сумку доступною, а образ невимушеним.",
+"10": "Топ бандо подовженого крою мей шоколад — Шоколадний топ трохи нижче лінії шиї, але його теплий відтінок гармонійно доповнює холодну темно-синю куртку, створюючи злагоджений перехід замість того, щоб приховувати талію.",
+"11": "Намисто-трансформер Робін з перлин сріблясте — Сріблясті перли надають необхідний металевий акцент і елегантність, відповідаючи класичному стилю офіційного заходу й уникаючи надмірного контрасту між формальністю та повсякденністю.",
+"12": "LeBERDES Туфлі коричневі — Коричневе взуття слугує земним елементом вишуканості у нейтральній палітрі; його темніший відтінок забезпечує стабільну візуальну вагу знизу, що є важливим для охайного офісного образу навіть якщо він трохи виходить за межі суворого стилю."
+}
+```

@@ -1,0 +1,51 @@
+── ПРОМПТ (2918 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored charcoal wool suit jacket with a classic two-button closure and notched lapels, cut with structured shoulders and a straight back for a polished silhouette, color #36454F, fabric: heavy worsted wool.\nMatching high-waisted wide-leg trousers in the same charcoal wool, falling straight from the hip to a full ankle hem, color #2F3A42, fabric: heavy worsted wool.\nA crisp white silk-blend blouse with a relaxed collar and subtle pleat detailing at the yoke, cut for easy movement yet maintaining a refined look, color #FFFFFF, fabric: silk-twill blend.\nConservative gold-toned stud earrings set in small brass hoops, color #D4AF37, metal: 18k gold plate brass.\nA structured leather clutch with a gold-tone clasp and a detachable wrist strap, color #2C2C2C, material: calfskin leather.\nClassic black leather Oxford shoes with a low stacked heel and almond toe, color #000000, material: smooth calfskin leather.\n\nThis outfit honors the solemnity of a funeral by adhering strictly to the formal dress code requested, offering deep respect through traditional tailoring and neutral tones. The charcoal wool suit provides appropriate warmth for the cool autumn morning while the relaxed collar of the silk blouse allows for comfort during long periods of standing or sitting. Subtle gold accents in the jewelry and shoes add a touch of dignity without drawing unnecessary attention, perfectly balancing mourning etiquette with personal style. The full-length hem on the trousers ensures modesty and grace as one moves through the cemetery grounds in daylight."}
+
+── ВІДПОВІДЬ (1383 симв., 59.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "charcoal wool suit jacket",
+      "details": "tailored with a classic two-button closure and notched lapels, cut with structured shoulders and a straight back for a polished silhouette",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "charcoal wool trousers",
+      "details": "matching high-waisted wide-leg cut, falling straight from the hip to a full ankle hem",
+      "slot": "bottom",
+      "color_hex": "#2F3A42",
+      "worn": true
+    },
+    {
+      "name": "white silk-blend blouse",
+      "details": "crisp with a relaxed collar and subtle pleat detailing at the yoke, cut for easy movement yet maintaining a refined look",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "gold-toned stud earrings",
+      "details": "set in small brass hoops",
+      "slot": "earrings",
+      "color_hex": "#D4AF37",
+      "worn": true
+    },
+    {
+      "name": "leather clutch",
+      "details": "structured with a gold-tone clasp and a detachable wrist strap",
+      "slot": "bag",
+      "color_hex": "#2C2C2C",
+      "worn": true
+    },
+    {
+      "name": "black leather Oxford shoes",
+      "details": "low stacked heel and almond toe",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

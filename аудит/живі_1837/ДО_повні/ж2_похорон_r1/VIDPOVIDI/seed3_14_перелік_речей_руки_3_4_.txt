@@ -1,0 +1,44 @@
+── ПРОМПТ (2698 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored charcoal grey suit jacket with sharp lapels, cut in a structured silhouette with elbow-length sleeves, color #36454F, wool and mohair blend fabric. Matching charcoal grey trousers with a clean front crease and flat ankle hem, cut for a polished drape from hip to ankle, color #36454F, same wool and mohair blend fabric. A crisp white silk blouse with a classic pointed collar and French cuffs, cut in an elegant fit-and-flare style ending at the waistline, color #FFFFFF, 100% mulberry silk fabric. Black leather pumps with a moderate 7cm heel and a closed toe, cut in a sleek almond shape for formal elegance, color #000000, smooth calfskin leather fabric. A simple black satin clutch with gold-tone hardware, cut small to hold essentials only, color #000000, lustrous satin fabric. This outfit works because the traditional grey suit and white shirt are the definitive standard for formal funeral attire in many cultures, ensuring respect for the solemn occasion of burying one's grandfather. The charcoal tone is somber yet refined, avoiding stark black which can sometimes appear too harsh for an autumn day with daylight at 18 degrees Celsius. The tailored fit conveys dignity and attention to detail, while the silk blouse adds a necessary layer of elegance appropriate for a \"formal\" dress code without being overly ostentatious."}
+
+── ВІДПОВІДЬ (1069 симв., 60.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "suit jacket",
+      "details": "tailored structured silhouette with sharp lapels and elbow-length sleeves",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "clean front crease, flat ankle hem, polished drape from hip to ankle",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "classic pointed collar, French cuffs, elegant fit-and-flare style ending at the waistline",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "moderate 7cm heel, closed toe, sleek almond shape for formal elegance",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "clutch",
+      "details": "simple design with gold-tone hardware, cut small to hold essentials only",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

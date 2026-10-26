@@ -1,0 +1,44 @@
+── ПРОМПТ (2132 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined knit top in deep emerald green, relaxed fit with a subtle V-neckline reaching mid-thigh length, crafted from soft cashmere blend; tapered trousers in charcoal grey wool crepe, ankle-length cut with a slim but comfortable leg opening. Black leather ankle boots with a low stacked heel. A gold-plated delicate chain necklace and matching stud earrings. This outfit works because the rich emerald green knits bring warmth and sophistication to an 18°C autumn office day without requiring a heavy jacket. The charcoal wool trousers provide professional structure while maintaining comfort, aligning perfectly with the neat dress code. The dark neutral palette complements her warm skin tones and creates a polished yet approachable look suitable for a full workday in daylight."}
+
+── ВІДПОВІДЬ (972 симв., 71.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "knit top",
+      "details": "refined knit with relaxed fit, subtle V-neckline reaching mid-thigh length",
+      "slot": "top",
+      "color_hex": "#046b3f",
+      "worn": true
+    },
+    {
+      "name": "tapered trousers",
+      "details": "charcoal grey wool crepe, ankle-length cut with a slim but comfortable leg opening",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "black leather with a low stacked heel",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "chain necklace",
+      "details": "gold-plated delicate chain",
+      "slot": "jewelry",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "stud earrings",
+      "details": "gold-plated matching studs",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}

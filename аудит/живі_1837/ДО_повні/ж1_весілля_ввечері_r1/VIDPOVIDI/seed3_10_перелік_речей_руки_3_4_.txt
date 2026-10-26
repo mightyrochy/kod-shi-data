@@ -1,0 +1,37 @@
+── ПРОМПТ (2395 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet sheath dress in deep emerald green (#0a3d3e), knee-length silhouette, draped neckline.\nSilk-blend fabric for a luxurious drape and rich texture under candlelight.\nPointed-toe pumps in patent black leather (#000000), mid-height heel for elegance and comfort.\nClutch bag in metallic gold foil (#daaa68) with a slender chain strap to add glamour without weight.\nDrop earrings in oxidized silver with dangling freshwater pearls (#c0c0c0) that catch the restaurant's artificial light.\nThis ensemble works because the deep emerald velvet commands attention as a wedding guest, offering the warmth and richness befitting an autumn evening while remaining sophisticated enough for an upscale venue. The sharp contrast of the black patent pumps anchors the softness of the dress, ensuring a poised silhouette that respects formal etiquette without looking stiff. Gold accents provide a festive nod to the celebration, balancing the dark tones with celebratory sparkle, while the pearl details add a timeless touch of grace suitable for dinner."}
+
+── ВІДПОВІДЬ (802 симв., 62.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Velvet sheath dress",
+      "details": "Knee-length silhouette, draped neckline, made of velvet silk-blend fabric",
+      "slot": "dress",
+      "color_hex": "#0a3d3e",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe pumps",
+      "details": "Mid-height heel, made of patent leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Clutch bag",
+      "details": "Slender chain strap, metallic gold foil finish",
+      "slot": "bag",
+      "color_hex": "#daaa68",
+      "worn": true
+    },
+    {
+      "name": "Drop earrings",
+      "details": "Oxidized silver with dangling freshwater pearls",
+      "slot": "earrings",
+      "color_hex": "#c0c0c0",
+      "worn": true
+    }
+  ]
+}
