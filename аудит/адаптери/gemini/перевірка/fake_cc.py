@@ -66,7 +66,8 @@ if sc == 'effort':
 if sc == 'auth':
     result('Not logged in · Please run /login', True, 1)
 if sc == 'quota':
-    result('Claude AI usage limit reached|1793024400', True, 1)
+    # ліміт зі скиданням через 10 хв (формат «…|<unix>» давніх claude; новіші — подія rate_limit_event)
+    result('Claude AI usage limit reached|%d' % (int(time.time()) + 600), True, 1)
 if sc == 'bad_model':
     result("There's an issue with the selected model (x). It may not exist or you may not have access to it.", True, 1)
 if sc == 'child_holds_stdout':

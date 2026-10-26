@@ -41,9 +41,10 @@ if ($LASTEXITCODE -ne 0) { Stop-Here "icacls повернув код $LASTEXITCO
 # видаляємо й падаємо. gemini_publish.ps1 лишається у профілі власника (задача gemini-publish запускає його звідти): байти
 # читаємо раз, хеш — з пам'яті.
 # queue_lanes.ps1 — спільний модуль смуг (М.9-Е): gemini_run.ps1 підвантажує його з тієї самої теки.
+Copy-Item "$env:TEMP\gemini_run.ps1" "$run\gemini_run.ps1" -Force
+Copy-Item "$env:TEMP\queue_lanes.ps1" "$run\queue_lanes.ps1" -Force
 foreach ($name in @('gemini_run.ps1', 'queue_lanes.ps1')) {
     $dst = Join-Path $run $name
-    Copy-Item "$env:TEMP\$name" $dst -Force
     $got = (Get-FileHash $dst -Algorithm SHA256).Hash
     if ($got -ne $expected[$name]) {
         Remove-Item $dst -Force -ErrorAction SilentlyContinue

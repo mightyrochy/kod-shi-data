@@ -57,7 +57,8 @@ code k3f hang "$M" HANG
 chk "завислий claude зупинено" '! alive "$W/cc.log.pid"'
 code k3g effort cc-claude-sonnet-5-5-ultra EFFORT_INVALID
 code k3h auth "$M" AUTH
-code k3i quota "$M" QUOTA
+code k3i quota "$M" QUOTA0_CLAUDE_M10
+chk "ліміт: позначка чекає скидання (WAIT), спроба не спалена" 'grep -q "^WAIT " "$W"/cr/state/*.txt'
 code k3j bad_model cc-claude-sonnet-9 MODEL_INVALID
 code k3k done "$M" ENGINE_MISSING "{\"ClaudeExe\":\"$(wp "$W")/нема/claude\"}"
 setup k3l; mark "нема-наряду/$M/1"; cr; chk "нема файлу наряду → NO_TASK_FILE" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/нема-наряду NO_TASK_FILE" ]'
