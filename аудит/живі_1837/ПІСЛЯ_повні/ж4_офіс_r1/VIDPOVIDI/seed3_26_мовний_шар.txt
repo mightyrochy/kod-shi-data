@@ -1,0 +1,68 @@
+── ПРОМПТ (9166 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Обʼємний светр BAY із вовни альпаки · kind code: sweater · colour code: graphite · about it: text н=1
+2 — Вовняна спідниця міді зі складами Френкі · kind code: skirt · colour code: black · about it: text н=2
+3 — Прикраса · kind code: jewelry_generic · about it: text н=3
+4 — LeBERDES Лофери бежеві · kind code: loafers · colour code: beige · about it: text н=4
+5 — Шопер “Triangle mini” чорний · kind code: tote · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; graphite — графіт.
+
+ТЕКСТИ:
+{
+"1": "This is an oversized sweater in graphite, crafted from the soft, fuzzy texture of alpaca wool. Its generous fit provides a comfortable and relaxed layer for your office day.",
+"2": "A structured midi skirt with deep pleats in black fabric. The high waistband sits firmly at your natural waist, creating clean vertical lines that extend your figure.",
+"3": "This piece of jewelry combines classic white pearls with a central chain of gold-toned crystals. It offers an elegant contrast to your dark outfit without being overpowering.",
+"4": "These are comfortable loafers in a soft beige suede finish, featuring a classic tassel detail. Their low profile keeps the overall look casual yet refined.",
+"5": "A sleek black tote bag with a simple rectangular shape and long straps. Its smooth leather surface provides a minimalist touch that complements your monochrome palette.",
+"6": "Your ensemble is grounded in rich, tactile textures that work beautifully for your autumn office day. The graphite alpaca sweater and the pleated black midi skirt create a sophisticated silhouette that feels both substantial and polished. I included the gold-and-silver pearl jewelry to introduce a touch of classic elegance without adding too much shine, letting it act as a focal point against the dark tones. The beige loafers add a necessary softness to the lower half of your look, balancing the sleekness of the skirt and the weight of the sweater.",
+"7": "Tuck the ends of the sweater sleeves into your jacket cuffs if you plan to wear a blazer over this outfit.",
+"8": "Обʼємний светр BAY із вовни альпаки — I kept this relaxed-fit graphite alpaca-blend sweater because its soft drape is comfortable for all-day wear and fits the 'neat' occasion band when paired with tailored pieces.",
+"9": "Вовняна спідниця міді зі складами Френкі — I kept this black wool midi skirt because its vertical line continues the tonal theme. Although the code flagged a waistline issue, the high rise is manageable with tights, and it fits the 'smart' formality required.",
+"10": "Прикраса — I kept this gold jewelry to add a touch of elegance near your face, breaking up the neutral palette without introducing loud patterns.",
+"11": "LeBERDES Лофери бежеві — I kept these beige suede loafers instead to ensure the shoe edge matches your skin tone or tights perfectly, continuing the leg line from the skirt hem to the floor as requested by the findings.",
+"12": "Шопер “Triangle mini” чорний — I added this black leather shopper bag to meet the mandatory accessory requirement for the occasion.",
+"13": "Вовняна спідниця міді зі складами Френкі, Обʼємний светр BAY із вовни альпаки — I accept this finding because the high rise of the skirt combined with tights effectively manages the waistline definition issue, allowing the outfit to maintain its intended smart formality without compromising on comfort or warmth.",
+"14": "Вовняна спідниця міді зі складами Френкі — I swapped the black lace mini for this wool midi skirt because the code found it cut your leg line and was too casual for a neat office occasion. This one matches your boots' tone perfectly.",
+"15": "LeBERDES Лофери бежеві — I kept these beige suede loafers to ground the outfit; they are comfortable for walking on the office ground while maintaining a neat formality level, replacing the heels which might be too formal or uncomfortable.",
+"16": "LeBERDES Лофери бежеві — I kept these beige suede loafers to ground the outfit; they are comfortable for walking on the office ground while maintaining a neat formality level.",
+"17": "LeBERDES Лофери бежеві — I kept these beige suede loafers to ground the outfit in a neutral tone that works well with both the grey knit and black trousers, ensuring continuity of the leg line."
+}
+
+── ВІДПОВІДЬ (3580 симв., 62.0 с, HTTP 200) ──
+```json
+{
+"1": "Це обʼємний светр BAY з вовни альпаки. Він має м’яку пухнасту текстуру і вільний крій, який забезпечує комфортний та розслаблений шар для твого робочого дня.",
+"2": "Структурована спідниця-міді зі складками у чорній тканині. Висока талія зручно сидить на лінії твоєї природної талії, створюючи чисті вертикальні лінії, які візуально видовжують твою фігуру.",
+"3": "Ця прикраса поєднує класичні білі перли з центральним ланцюжком із золотистих кристалів. Вона пропонує елегантний контраст до твого темного образу, не будучи надмірною.",
+"4": "Це зручні лофери у м’якій бежевій замші з класичною деталізацією пензликів. Їх низький профіль зберігає загальний вигляд невимушеним та водночас елегантним.",
+"5": "Стильна чорна сумка-шопер простої прямокутної форми з довгими ручками. Її гладка шкіряна поверхня додає мінімалістичний штрих, який доповнює твою монохромну палітру.",
+"6": "Твій образ заснований на багатих тактильних текстурах, які чудово підходять для твоєї осінньої робочої днини. Обʼємний светр BAY з альпаки та чорна спідниця-міді зі складками створюють вишуканий силует, який відчувається одночасно суттєвим і елегантним. Я додала золотисто-срібну перлову прикрасу, щоб додати штрих класичної елегантності біля твого обличчя без зайвого блиску, дозволяючи їй стати акцентною деталлю на фоні темних тонів. Бежеві лофери додають необхідної м’якості нижній частині образу, збалансовуючи гладкість спідниці та вагу светра.",
+"7": "Якщо ти плануєш одягнути піджак поверх цього вбрання, заправ кінці рукавів светра у манжети піджака.",
+"8": "Я залишила цей обʼємний светр BAY з альпаки, адже його м’який драпірування зручне для цілоденного носіння і пасує до офіційного заходу «охайний», коли поєднується зі стильними речами.",
+"9": "Я залишила цю чорну вовняну спідницю-міді, адже її вертикальна лінія продовжує тональну тему. Хоча код виявив проблему з талією, висока посадка легко вирішується за допомогою колготок і відповідає необхідному рівню «розумної» офіційності.",
+"10": "Я залишила цю золотисту прикрасу, щоб додати штрих елегантності біля твого обличчя, розбиваючи нейтральну палітру без зайвих візерунків.",
+"11": "Я обрала ці бежеві замшеві лофери замість підборів, адже вони ідеально поєднуються з тоном твоєї шкіри або колготок, продовжуючи лінію ноги від подолу спідниці до підлоги, як ти просила.",
+"12": "Я додала цю чорну шкіряну сумку-шопер, щоб виконати обов’язкову вимогу щодо аксесуару для заходу.",
+"13": "Чорна вовняна спідниця-міді зі складками та обʼємний светр BAY з альпаки — я погоджуюсь із цим висновком, адже висока посадка спідниці у поєднанні з колготками ефективно вирішує проблему визначення лінії талії, дозволяючи образу зберігати свій намір «розумно» офіційного вигляду без шкоди для комфорту чи тепла.",
+"14": "Я замінила чорну мереживну міні-спідницю цією вовняною міді-спідницею, адже код виявив, що вона обрізає лінію твоєї ноги і занадто неформальна для охайного офіційного заходу. Ця спідниця чудово поєднується з тоном твоїх черевиків.",
+"15": "Я обрала ці бежеві замшеві лофери, щоб завершити образ; вони зручні для ходьби на підлозі в офісі та зберігають рівень охайної формальності, замінюючи підбори, які можуть бути занадто формальними або незручними.",
+"16": "Я обрала ці бежеві замшеві лофери, щоб завершити образ; вони зручні для ходьби на підлозі в офісі та зберігають рівень охайної формальності.",
+"17": "Я обрала ці бежеві замшеві лофери, щоб завершити образ у нейтральному тоні, який добре поєднується як із сірим трикотажем, так і з чорними штанами, забезпечуючи безперервність лінії ноги."
+}
+```

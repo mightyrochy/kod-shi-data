@@ -1,0 +1,50 @@
+── ПРОМПТ (7664 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня шифонова в чорному кольорі · kind code: dress_generic · colour code: black · about it: text н=1
+2 — Броги шкіряні з фурнітурою золотистого кольору (Other Brand) · kind code: shoes · colour code: brown · about it: text н=2
+3 — ШОПЕР TOTE ECO-LEATHER чорний · kind code: tote · colour code: black · about it: text н=3
+4 — Жіноче вовняне двобортне пальто з поясом для осені та весни Stella Polare (чорний, 42) · kind code: coat · colour code: black · about it: text н=4
+5 — Пасок Базовий смарагд · kind code: belt · colour code: emerald · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; emerald — смарагд.
+
+ТЕКСТИ:
+{
+"1": "This black dress features a deep V-neckline and long sheer sleeves that add a touch of mystery while maintaining an elegant silhouette. The flowing skirt enhances your movement, making it perfect for gliding through the theatre halls with grace.",
+"2": "These brown loafers are crafted with smooth leather and adorned with a gold-tone metal detail that adds a luxurious touch. The chunky sole provides comfort for walking long distances, while the sock pairing keeps the look modern and chic.",
+"3": "This black tote bag is made of eco-leather with a minimalist design that complements any outfit. Its spacious interior holds all your essentials effortlessly, making it both stylish and practical for carrying your belongings.",
+"4": "This black wool coat boasts a classic double-breasted design with sharp lapels and functional pockets that add structure to your ensemble. The tailored fit flatters your figure while providing warmth as you transition between seasons.",
+"5": "This emerald belt features a sleek buckle and is designed to cinch at the waist for a flattering silhouette. Its vibrant hue stands out beautifully against darker outfits, adding depth and sophistication to your look.",
+"6": "This look is built for a theatrical evening, where you can step into the role with confidence. The black dress anchors your silhouette with a deep V-neckline that adds elegance without being revealing, and the flowing skirt lets you move freely through the theatre halls. I chose these brown loafers to soften the monochrome palette and bring warmth to your look—perfect for walking from day to night seamlessly. The emerald belt acts as a striking focal point, cinching your waist to emphasize your hourglass figure while adding a touch of regal color against the black fabric.",
+"7": "Drape the coat open or button it at the waist depending on the temperature outside—either way, let its lapels frame your V-neck dress for a balanced silhouette.",
+"8": "Carry the tote bag in one hand or slung over the shoulder; its large size makes it practical for carrying your evening essentials, and its sleek shape complements the structured lines of your coat."
+}
+
+── ВІДПОВІДЬ (2136 симв., 89.5 с, HTTP 200) ──
+```json
+{
+"1": "Ця чорна сукня має глибокий V-подібний виріз і довгі прозорі рукави, які додають нотку загадковості, зберігаючи при цьому елегантний силует. Легка спідниця підкреслює твої рухи, роблячи її ідеальною для граціозного пересування театральними залами.",
+"2": "Ці коричневі лофери виготовлені з гладенької шкіри та оздоблені золотистою металевою деталлю, яка додає розкоші. Масивна підошва забезпечує комфорт під час тривалих прогулянок, а шкарпетки роблять образ сучасним і стильним.",
+"3": "Ця чорна сумка-шопер виготовлена з екошкіри та має мінімалістичний дизайн, який доповнює будь-який твій наряд. Її просторий внутрішній простір легко вміщує всі необхідні речі, роблячи її одночасно стильною і практичною для носіння.",
+"4": "Це чорне вовняне двобортне пальто має класичний дизайн з чіткими лацканами та функціональними кишенями, які додають структури твоєму ансамблю. Пошитий силует підкреслює твою фігуру і зігріває тебе в перехідні сезони.",
+"5": "Цей смарагдовий пасок має елегантну пряжку та призначений для того, щоб затягнути на талії, створюючи привабливий силует. Його яскравий відтінок чудово виділяється на темніших вбраннях, додаючи глибини і вишуканості твоєму образу.",
+"6": "Цей образ створений для театрального вечора, де ти можеш увійти в роль з упевненістю. Чорна сукня підкреслює твій силует глибоким V-подібним вирізом, який додає елегантності без зайвої відвертості, а легка спідниця дозволяє тобі вільно рухатися театральними залами. Я обрала ці коричневі лофери, щоб пом’якшити монохромну палітру і додати тепла твоєму образу — ідеальний варіант для безперешкодного переходу від дня до ночі. Смарагдовий пасок виступає як яскрава акцентна деталь, підкреслюючи твою талію і додаючи королівський колір на чорній тканині.",
+"7": "Одягни пальто розстебнутим або застебни його в талії залежно від температури — у будь-якому випадку дозволь лацканам обрамляти твою сукню з V-подібним вирізом для збалансованого силуету.",
+"8": "Носи сумку-шопер в одній руці або через плече; її великий розмір робить її практичною для носіння вечірніх речей, а елегантна форма доповнює чіткі лінії твого пальто."
+}
+```

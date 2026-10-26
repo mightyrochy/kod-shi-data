@@ -1,0 +1,51 @@
+── ПРОМПТ (2760 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Heavy wool blend blazer in slate blue (#4a5568), tailored fit with notched lapels and single-button closure, knee-length, cotton-polyester blend.\nWide-leg trousers in charcoal gray (#374151), relaxed silhouette with a high waist and ankle-grazing hem, 98% wool 2% elastane.\nSilk-blend blouse in cream white (#f5f5f0), loose drape cut with a cowl neck and three-quarter sleeves, mid-thigh length, pure silk.\n\nLeather loafers in black (#1c1917), classic cap-toe design with a low block heel, smooth calfskin leather.\nMinimalist silver stud earrings in polished sterling silver, small gauge post-backs, metal construction.\nA simple pendant necklace in brushed gold, featuring a 12mm oval stone, attached to a delicate chain.\n\nThis outfit works perfectly for an autumn office day at 18°C by providing just enough warmth through the structured wool blazer without overheating indoors. The slate blue and charcoal palette feels professional yet relaxed under the daylight, while the cream blouse softens the look with organic texture. Wide-leg trousers allow for comfortable movement throughout a busy work schedule, and the leather loafers offer the necessary polish for business-casual standards. Every element respects her desire for neatness without leaning into strict formalities, striking an ideal balance between polished professionalism and understated elegance suitable for her complexion and build."}
+
+── ВІДПОВІДЬ (1261 симв., 110.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "Heavy wool blend, tailored fit with notched lapels and single-button closure, knee-length",
+      "slot": "outerwear",
+      "color_hex": "#4a5568",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "Wide-leg, relaxed silhouette with high waist and ankle-grazing hem",
+      "slot": "bottom",
+      "color_hex": "#374151",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "Silk-blend, loose drape cut with cowl neck and three-quarter sleeves, mid-thigh length",
+      "slot": "top",
+      "color_hex": "#f5f5f0",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "Leather, classic cap-toe design with low block heel, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#1c1917",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "Minimalist silver studs, polished sterling silver",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "Simple pendant with 12mm oval stone on a delicate chain, brushed gold",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

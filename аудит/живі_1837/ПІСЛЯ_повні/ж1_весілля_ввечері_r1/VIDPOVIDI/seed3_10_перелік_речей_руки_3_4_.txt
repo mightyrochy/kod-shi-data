@@ -1,0 +1,30 @@
+── ПРОМПТ (2452 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Elegant sheath dress in deep emerald green (#053B2C), floor-length cut with a subtle A-line silhouette that flows gracefully to the ankles, fabric composed of heavy silk crepe for structure and drape. Satin finish adds a luminous quality under warm artificial evening lighting, while the rich hue complements skin tones ranging from #deb295 to #e2ba9f without overwhelming them.\n\nHeeled pumps in polished black leather (#000000), classic pointed-toe shape with a 8cm stiletto heel to elongate the leg line. Small round diamond stud earrings in white gold (#F0F0F0) featuring stones of approximate 4mm diameter to catch candlelight without appearing excessive.\n\nThis outfit works because it strikes the perfect balance between celebratory elegance and respectful modesty required for a wedding guest setting. The floor-length sheath design adheres strictly to the formal dress code while avoiding anything too revealing or casual. Deep emerald green offers sophistication under restaurant lighting, allowing the natural skin tones to shine through without competition from lighter or clashing colors."}
+
+── ВІДПОВІДЬ (832 симв., 69.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "floor-length cut with a subtle A-line silhouette that flows gracefully to the ankles, fabric composed of heavy silk crepe for structure and drape with a satin finish",
+      "slot": "dress",
+      "color_hex": "#053B2C",
+      "worn": true
+    },
+    {
+      "name": "heels",
+      "details": "polished black leather classic pointed-toe shape with an 8cm stiletto heel to elongate the leg line",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "small round diamond stud earrings featuring stones of approximate 4mm diameter to catch candlelight without appearing excessive",
+      "slot": "earrings",
+      "color_hex": "#F0F0F0",
+      "worn": true
+    }
+  ]
+}
