@@ -1,0 +1,51 @@
+── ПРОМПТ (2509 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A silk-blend blouse in deep forest green (#2e4f3f), tailored with a slightly dropped shoulder and a relaxed boxy fit, paired with wide-leg trousers in midnight blue (#0a1128) cut from soft wool crepe that fall to the ankle. A structured blazer in charcoal grey (#36454f), featuring notched lapels and single-button closure, made of fine worsted wool for warmth during an autumn evening. Leather loafers in polished black (#0e0e0e) with a subtle block heel for comfort on restaurant floors. Gold-toned hoop earrings in brushed finish and a slim leather belt matching the blouse color to define the waist without adding bulk. This outfit works because the rich jewel tones of the green blouse complement her warm skin undertones while the dark trousers ground the look for an evening setting at 19:30. The blazer provides the necessary outer layer against autumn chill but maintains a sleek silhouette appropriate for a restaurant date rather than overpowering the ensemble. It balances neat business styling with relaxed elements like the wide-leg cut and loafers, ensuring she feels confident and elegant without appearing overly stiff for a romantic occasion."}
+
+── ВІДПОВІДЬ (1143 симв., 57.5 с, HTTP 200) ──
+{
+  "is_outfit": true,
+  "items": [
+    {
+      "name": "blouse",
+      "details": "silk-blend with dropped shoulder and relaxed boxy fit",
+      "slot": "top",
+      "color_hex": "#2e4f3f",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "wide-leg cut from soft wool crepe falling to the ankle",
+      "slot": "bottom",
+      "color_hex": "#0a1128",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "structured with notched lapels and single-button closure made of fine worsted wool",
+      "slot": "outerwear",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "polished leather with subtle block heel",
+      "slot": "shoes",
+      "color_hex": "#0e0e0e",
+      "worn": true
+    },
+    {
+      "name": "belt",
+      "details": "slim leather matching the blouse color to define the waist",
+      "slot": "belt",
+      "color_hex": "#2e4f3f",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "gold-toned hoops in brushed finish",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
