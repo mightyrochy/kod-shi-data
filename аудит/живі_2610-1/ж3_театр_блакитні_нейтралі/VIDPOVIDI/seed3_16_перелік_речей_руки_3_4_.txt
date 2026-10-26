@@ -1,0 +1,30 @@
+── ПРОМПТ (2379 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A deep blue velvet dress with a knee-length hemline and a draped bodice cut that flows softly from the waist, designed for evening elegance without feeling too heavy for autumn temperatures.\nSilver strappy sandals with a low block heel to ensure comfort during long hours of sitting in the theatre while maintaining an air of refined casual style.\nA single drop earring in oxidized silver that catches the artificial stage lighting, adding just enough sparkle to complement the deep blue fabric without overwhelming the look.\nThis outfit works perfectly because the velvet material provides warmth for the autumn season and evening setting while adhering strictly to her wish for a blue ensemble and bare feet. The smart dress code is respected through the refined silhouette and elegant accessories, ensuring she feels confident and stylish at the theatre. The neutral silver tones of the footwear and jewelry harmonize beautifully with her skin and hair colors, creating a balanced and cohesive look for the special occasion."}
+
+── ВІДПОВІДЬ (594 симв., 68.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Dress",
+      "details": "deep blue velvet with knee-length hemline, draped bodice cut flowing softly from the waist",
+      "slot": "dress",
+      "color_hex": "#00008B",
+      "worn": true
+    },
+    {
+      "name": "Sandals",
+      "details": "silver strappy low block heel",
+      "slot": "shoes",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "Drop earring",
+      "details": "single oxidized silver drop earring",
+      "slot": "earrings",
+      "color_hex": "#708090",
+      "worn": true
+    }
+  ]
+}
