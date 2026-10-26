@@ -3,11 +3,11 @@
 # за бажанням і в суді дрес-коду. Слово, що доти БУЛО типом, тримало казуальність речі,
 # тож міряємо ще й СТЕЛЮ формальності: без перетину з модифікатором вона піднімалась у
 # 346 речей на ≥ 2, і весілля 7–9 переставало бачити джинсову сукню як «рівень нижче».
-import sys, os, importlib.util
+import sys, os, importlib.util, tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import feed, фід_каталог as ФК, фід_слот as НОВ, формальність as ФОРМ
 _сп = importlib.util.spec_from_file_location(
-    "до_фід_слот", os.environ.get("DO_FID_SLOT", "/tmp/184/до_фід_слот.py"))
+    "до_фід_слот", os.environ.get("DO_FID_SLOT", os.path.join(tempfile.gettempdir(), "184", "до_фід_слот.py")))
 СТАР = importlib.util.module_from_spec(_сп); _сп.loader.exec_module(СТАР)
 кат = ФК.прочитати_каталог(feed.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]
 оф = lambda r: {"назва": r.get("назва"), "категорія": r.get("категорія"),

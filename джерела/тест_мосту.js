@@ -8,6 +8,8 @@
    (тестується СКЛАДЕНИЙ worker.js — те, що деплоїться, а не джерело). */
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
+const {pathToFileURL} = require("url");
 
 let провалів = 0;
 const тест = (н, у, що) => { if (у) console.log("  ✓ " + н);
@@ -32,8 +34,9 @@ const пнг = байтів => {
   const сир = fs.readFileSync(path.join(тут, "worker.js"), "utf-8")
     .replace(/export\s*\{\s*worker_default as default\s*\}\s*;?/, "const М = worker_default;")
     .replace(/^export default/m, "const М =");
-  fs.writeFileSync("/tmp/_міст_тест.mjs", сир + "\nexport {М};");
-  const {М} = await import("/tmp/_міст_тест.mjs");
+  const тимчасовийМодуль = path.join(os.tmpdir(), "_міст_тест.mjs");
+  fs.writeFileSync(тимчасовийМодуль, сир + "\nexport {М};");
+  const {М} = await import(pathToFileURL(тимчасовийМодуль).href);
 
   /* заглушка провайдера: пам'ятає кожен вихідний виклик */
   const вихідні = [];

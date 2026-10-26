@@ -4,7 +4,7 @@
 (Sitemap:) або /sitemap.xml, вкладені — до 20 файлів (спершу товарні), без мап зображень; 2 с між запитами хоста. Друкує: крамниць
 із мапою й <lastmod>; «нема в мапі» для крамниць за JS-перевіркою; і, коли поруч /tmp/жниварка_зникли.json (пише проба «зникли»),
 звірку мапи зі сторінкою речі. Запуск: cd джерела && python3 проби/жниварка_логіка_мапа.py [N]   (мережа до крамниць, ~3 хв)"""
-import collections as C, concurrent.futures as КФ, gzip, json, os, random, re, sys, time, urllib.parse as У, urllib.request as Р  # noqa: E401
+import collections as C, concurrent.futures as КФ, gzip, json, os, random, re, sys, tempfile, time, urllib.parse as У, urllib.request as Р  # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import feed as Ф  # noqa: E402
 прод, за = {str(р['id']).split('@')[0] for р in Ф._прочитати_каталог(Ф.каталог_на_диску('каталог_повний.xml'), ліміт_фото=0)['каталог']}, C.defaultdict(list)
@@ -31,8 +31,9 @@ def мапа(м):
 with КФ.ThreadPoolExecutor(len(вибірка)) as пул: мапи = {м: (ш, л, ф) for м, ш, л, ф in пул.map(мапа, вибірка)}
 нема = {о['id']: шлях(о['url']) not in мапи[м][0] for м, л in вибірка.items() if мапи[м][0] for о in л}
 print('крамниць %d · з мапою %d (з <lastmod> %d) · файлів мап %d · речей вибірки в крамницях з мапою %d, нема в мапі %d' % (len(мапи), sum(bool(ш) for ш, _, _ in мапи.values()), sum(bool(ш) and л for ш, л, _ in мапи.values()), sum(ф for _, _, ф in мапи.values()), len(нема), sum(нема.values())) + ' · без мапи: %s' % [м for м, (ш, _, _) in мапи.items() if not ш])
-if os.path.exists('/tmp/жниварка_зникли.json'):
-    прич = C.defaultdict(lambda: 'невідомо', json.load(open('/tmp/жниварка_зникли.json', encoding='utf-8'))); ЗНИКЛА = {'HTTP 404', 'HTTP 410', 'порожня сторінка', 'переадресація без товару', 'сторінка без товару'}
+файл_причин = os.path.join(tempfile.gettempdir(), 'жниварка_зникли.json')
+if os.path.exists(файл_причин):
+    прич = C.defaultdict(lambda: 'невідомо', json.load(open(файл_причин, encoding='utf-8'))); ЗНИКЛА = {'HTTP 404', 'HTTP 410', 'порожня сторінка', 'переадресація без товару', 'сторінка без товару'}
     кл = lambda п: 'зникла' if п in ЗНИКЛА else 'розпродана' if п == 'OutOfStock' else 'невідомо' if п.startswith(('HTTP', 'JS', 'невідомо')) else 'жива'  # noqa: E731
     таб = C.Counter((кл(прич[і]), н) for і, н in нема.items() if і in прич)
     print('сторінка → нема в мапі: ' + ' · '.join('%s %d/%d' % (с, таб[(с, True)], таб[(с, True)] + таб[(с, False)]) for с in ('зникла', 'розпродана', 'жива', 'невідомо')))
