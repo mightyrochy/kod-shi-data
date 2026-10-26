@@ -1,23 +1,29 @@
 ﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
-Обгортка Gemini (наряд М.2), сторона `gemini`: наряд із публічної черги -> прогін `agy` -> бандл гілки `gemini/<наряд>`.
+Обгортка Gemini (наряди М.2, М.9-Е), сторона `gemini`: планувальник смуг Codex і `agy` — позначки черги -> прогони
+водночас (до N у смузі) -> бандл гілки `gemini/<наряд>` на кожен.
 
 .DESCRIPTION
-Задача планувальника під користувачем Windows `gemini` (ізоляція ОС; входу в GitHub і Claude нема, ключів нема).
-Один запуск — щонайбільше один наряд:
+Задача планувальника під користувачем Windows `gemini` (ізоляція ОС; входу в GitHub і Claude нема, ключів нема), раз на
+5 хв, без межі часу задачі. Запуск — планувальник: живе, доки йде хоч один його наряд, і опитує чергу раз на
+`poll_minutes`; без нарядів — виходить (наступний запуск — за 5 хв). Наряд — окремий процес того самого скрипта
+(`-WorkerFile`) зі своїм слотом, текою запуску й робочою копією (git worktree клону). Спільне з `claude_run.ps1` —
+`queue_lanes.ps1` (позначки, порядок, смуги, слоти, межі з `смуги.json` на `origin/main`, чекання квоти, замок GPU).
   1. перевірка ізоляції за `GEMINI.md` (whoami, `net session`, чужі профілі й диски, змінні з ключами);
-  2. `git fetch` без входу: `main`, `gemini/*` і позначки черги `gemini-queue/<наряд>/<модель>/<спроба>`, які ставить
-     лише диспетчер; позначка має вказувати на коміт із `main`, текст наряду — лише `аудит/наряди/<наряд>.md` з нього;
-  2а. рушій за назвою моделі в позначці (М.9-В): `gpt-<модель>[-<зусилля>]` — локальний Codex (`codex exec`; зусилля —
-      none|minimal|low|medium|high|xhigh|max|ultra, відмову `codex exec` обгортка віддає кодом EFFORT_INVALID, без підміни),
-      інша — `agy`; квота `agy` як дані (`agy -p "/usage" --output-format json`, 0 ходів): група моделі з 0 % — наряд не
-      береться (код `QUOTA_ZERO`), а коли задано `-CodexFallbackModel`, `agy` на 0 % замінює Codex з цією моделлю
-      (квоту Codex без ходу не прочитати: його 429 ловить обгортка, код `QUOTA`);
-  3. гілка `gemini/<наряд>` від свіжого `main` (чи від уже опублікованої `gemini/<наряд>` — доробка);
-  4. один прогін `agy` з межею часу; хід без звіту чи звіт, що не збігся з гілкою, — догонка тієї самої розмови;
-     Codex межі часу прогону не має: його зупиняє лише завислість (нема нових подій `--json` довше за -CodexStallMinutes);
-  5. бандл гілки й стан (лише коди й числа) у теці обміну; публікує їх окрема задача власника `gemini_publish.ps1`.
+  2. `git fetch` без входу: `main`, `gemini/*` і позначки черги `gemini-queue/<наряд>/<модель>/<спроба>[/<умови>]`, які
+     ставить лише диспетчер; позначка має вказувати на коміт із `main`, текст наряду — лише `аудит/наряди/<наряд>.md` з нього;
+  2а. смуга за назвою моделі: `gpt-<модель>[-<зусилля>]` — Codex (`codex exec`; зусилля — none|minimal|low|medium|high|
+      xhigh|max|ultra, відмову `codex exec` обгортка віддає кодом EFFORT_INVALID, без підміни), інша — `agy`; квота `agy`
+      як дані (`agy -p "/usage"`, 0 ходів, не частіше за `usage_minutes`): група моделі з 0 % — позначка чекає скидання
+      (рядок QUOTA0 диспетчерові раз), після скидання її бере та сама смуга; відмова за квотою посеред прогону (429) —
+      так само, до MaxRetakes разів; коли задано `-CodexFallbackModel`, `agy` на 0 % замінює Codex з цією моделлю;
+  3. гілка `gemini/<наряд>` від свіжого `main` (чи від уже опублікованої `gemini/<наряд>` — доробка; чи від голови
+     прогону, зупиненого квотою);
+  4. прогін `agy` з межею часу; хід без звіту чи звіт, що не збігся з гілкою, — догонка тієї самої розмови;
+     Codex межі часу прогону не має: його зупиняє лише завислість (нема нових подій `--json` довше за поріг);
+  5. бандл гілки й стан (лише коди й числа) у теці обміну; публікує їх окрема задача власника `gemini_publish.ps1`;
+     heartbeat.json — смуги, слоти, квота груп моделей із часом скидання в UTC (для стану ноутбука в `claude_run.ps1`).
 Нічого не пушить; ізоляцію не створює й не змінює. Налаштування — `НАЛАШТУВАННЯ.md` поруч.
 #>
 [CmdletBinding()]
@@ -25,6 +31,7 @@ param(
     [string]$RepoDir = (Join-Path $env:USERPROFILE 'kod-shi-data'),
     [string]$RunsDir = (Join-Path $env:USERPROFILE 'gemini-runs'),
     [string]$OutDir = 'C:\Users\Public\gemini\out',
+    [string]$LaneDir = 'C:\Users\Public\gemini\lanes',
     [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data',
     [string]$ExpectedUser = 'gemini',
     [string]$GitExe = 'git',
@@ -37,19 +44,31 @@ param(
     [double]$TurnMinutes = 120,
     [double]$TotalMinutes = 180,
     [double]$CodexStallMinutes = 60,
+    [double]$PollMinutes = 2,
+    [double]$UsageMinutes = 15,
+    [double]$QuotaWaitMinutes = 60,
     [int]$MaxNudges = 4,
     [double]$QuotaMinutes = 2,
     [int]$MarkerMaxAgeDays = 7,
-    [switch]$NoPrintTimeoutFlag
+    [switch]$NoPrintTimeoutFlag,
+    [string]$WorkerFile = ''
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
-$script:TaskDir = 'аудит/наряди/'
-$script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
-$script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
+# Явно задані параметри (задача планувальника, стенд) — процесу наряду ті самі; вони сильніші за файл даних.
+$script:Bound = @{}
+foreach ($k in $PSBoundParameters.Keys) {
+    if ($k -eq 'WorkerFile') { continue }
+    $v = $PSBoundParameters[$k]
+    $script:Bound[$k] = $(if ($v -is [System.Management.Automation.SwitchParameter]) { $v.IsPresent } else { $v })
+}
+$script:SelfPath = $PSCommandPath
+. (Join-Path $PSScriptRoot 'queue_lanes.ps1')
+
+# Смуги цього планувальника; Claude — `claude_run.ps1` під власником.
+$script:Lanes = @('codex', 'agy')
 # Імена моделей для рядка ПУЛИ (9740): лише родини gemini/claude/gpt; той самий шаблон у gemini_publish.ps1.
 $script:PoolModelPattern = '^(gemini|claude|gpt)-[a-z0-9.-]{1,36}$'
 # `agy -p "/usage"` без ходу моделі й без витрати квоти — з v1.1.11 (changelog agy, 7.08.2026): перелік у НАЛАШТУВАННЯ.md.
@@ -58,50 +77,21 @@ $script:UsageMinVersion = [version]'1.1.11'
 $script:ClaudeCascadeModel = 'claude-opus-5-5-high'
 # Суфікс-зусилля позначки gpt-*: що `codex exec` не приймає, то відмова (EFFORT_INVALID), а не тиха підміна.
 $script:CodexEfforts = 'none|minimal|low|medium|high|xhigh|max|ultra'
-$script:AgyVersionDone = $false; $script:AgyVersion = $null; $script:Usage = $null; $script:AgyModels = $null
-$script:Utf8 = New-Object System.Text.UTF8Encoding($false)
-$script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
+# Родини моделей: група /usage без власних слів («Gemini Models», «Claude and GPT models») — спільна для родини.
+$script:Families = @('gemini', 'claude', 'gpt')
+$script:AgyVersionDone = $false; $script:AgyVersion = $null; $script:AgyModels = $null
+$script:Limits = $null
 
 # --- дрібні помічники ---------------------------------------------------------------------------------------------
 
-function Write-WrapperLog([string]$Text) {
-    $line = '{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $Text
-    [System.IO.File]::AppendAllText((Join-Path $RunsDir 'wrapper.log'), $line + "`n", $script:Utf8)
-}
-
-function Get-Sha256Hex([string]$Text) {
-    $sha = [System.Security.Cryptography.SHA256]::Create()
-    try { $bytes = $sha.ComputeHash($script:Utf8.GetBytes($Text)) } finally { $sha.Dispose() }
-    -join ($bytes | ForEach-Object { $_.ToString('x2') })
-}
-
-function Write-FileAtomic([string]$Path, [string]$Text) {
-    $tmp = $Path + '.part'
-    [System.IO.File]::WriteAllText($tmp, $Text, $script:Utf8)
-    if (Test-Path -LiteralPath $Path) { Remove-Item -LiteralPath $Path -Force }
-    Move-Item -LiteralPath $tmp -Destination $Path
-}
-
-# Рядок аргументів за правилами CommandLineToArgvW: .NET Framework не має ArgumentList, а вбудований виклик
-# PowerShell 5.1 губить лапки всередині аргументів.
-function ConvertTo-ArgString([string[]]$Items) {
-    $parts = foreach ($a in $Items) {
-        if ($a -eq '') { '""'; continue }
-        if ($a -notmatch '[\s"]') { $a; continue }
-        $sb = New-Object System.Text.StringBuilder
-        [void]$sb.Append('"')
-        $bs = 0
-        foreach ($ch in $a.ToCharArray()) {
-            if ($ch -eq '\') { $bs++; continue }
-            if ($ch -eq '"') { [void]$sb.Append('\' * ($bs * 2 + 1)); [void]$sb.Append('"'); $bs = 0; continue }
-            if ($bs -gt 0) { [void]$sb.Append('\' * $bs); $bs = 0 }
-            [void]$sb.Append($ch)
-        }
-        [void]$sb.Append('\' * ($bs * 2))
-        [void]$sb.Append('"')
-        $sb.ToString()
+function Write-Log([string]$Text) {
+    <# Рядок у wrapper.log. Пишуть водночас планувальник і процеси нарядів: зайнятий файл — кілька спроб, потім рядок
+    губиться, а не валить наряд. #>
+    $tag = $(if ($WorkerFile) { "[$PID] " } else { '' })
+    $line = '{0:yyyy-MM-dd HH:mm:ss} {1}{2}' -f (Get-Date), $tag, $Text
+    for ($i = 0; $i -lt 20; $i++) {
+        try { [System.IO.File]::AppendAllText((Join-Path $RunsDir 'wrapper.log'), $line + "`n", $script:Utf8); return } catch { Start-Sleep -Milliseconds 50 }
     }
-    $parts -join ' '
 }
 
 # JSON-рядок лише з ASCII: stdin процесу в .NET Framework кодується кодовою сторінкою консолі.
@@ -117,44 +107,6 @@ function ConvertTo-JsonString([string]$Text) {
     }
     [void]$sb.Append('"')
     $sb.ToString()
-}
-
-function New-StartInfo([string]$Exe, [string[]]$Arguments, [string]$WorkDir) {
-    $psi = New-Object System.Diagnostics.ProcessStartInfo
-    $psi.FileName = $Exe
-    $psi.Arguments = ConvertTo-ArgString $Arguments
-    $psi.UseShellExecute = $false
-    $psi.CreateNoWindow = $true
-    $psi.RedirectStandardOutput = $true
-    $psi.RedirectStandardError = $true
-    $psi.StandardOutputEncoding = $script:Utf8
-    $psi.StandardErrorEncoding = $script:Utf8
-    if ($WorkDir) { $psi.WorkingDirectory = $WorkDir }
-    $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'
-    $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
-    $psi
-}
-
-function Stop-Tree($Proc) {
-    if ($null -eq $Proc) { return }
-    try {
-        if (-not $Proc.HasExited) {
-            if ($script:OnWindows) { & taskkill.exe /PID $Proc.Id /T /F *> $null }
-            else { $Proc.Kill($true) }
-        }
-        [void]$Proc.WaitForExit(15000)
-    } catch { Write-WrapperLog "зупинка процесу: $($_.Exception.Message)" }
-}
-
-# Запуск із межею часу; по межі — зупинка всього дерева процесів.
-function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDir = '', [double]$TimeoutMinutes = 10) {
-    $psi = New-StartInfo $Exe $Arguments $WorkDir
-    $p = [System.Diagnostics.Process]::Start($psi)
-    $out = $p.StandardOutput.ReadToEndAsync()
-    $err = $p.StandardError.ReadToEndAsync()
-    $timedOut = -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $TimeoutMinutes * 60000))
-    if ($timedOut) { Stop-Tree $p } else { $p.WaitForExit() }
-    [pscustomobject]@{ Code = $(if ($timedOut) { -1 } else { $p.ExitCode }); TimedOut = $timedOut; Out = $out.Result; Err = $err.Result }
 }
 
 # Запуск без межі часу (Codex): процес зупиняє лише завислість — жодного нового рядка stdout (події `--json`) довше за
@@ -193,19 +145,6 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
     [pscustomobject]@{ Code = $(if ($stalled) { -1 } else { $p.ExitCode }); Stalled = $stalled; Out = $out.ToString(); Err = $errText }
 }
 
-function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail) {
-    $all = @('-C', $RepoDir, '-c', "core.hooksPath=$script:NoHooks", '-c', 'credential.helper=', '-c', 'core.quotepath=false') + $GitArgs
-    $r = Invoke-Native $GitExe $all
-    if ($r.Code -ne 0 -and -not $AllowFail) { throw "git $($GitArgs -join ' ') -> $($r.Code): $($r.Err.Trim())" }
-    $r
-}
-
-function Get-RefSha([string]$Ref) {
-    $r = Invoke-Git @('rev-parse', '-q', '--verify', "$Ref^{commit}") -AllowFail
-    if ($r.Code -ne 0) { return '' }
-    $r.Out.Trim()
-}
-
 # --- ізоляція (GEMINI.md) -----------------------------------------------------------------------------------------
 
 # Порожній рядок — ізоляція на місці; інакше код перевірки, що не пройшла.
@@ -233,51 +172,6 @@ function Test-Isolation {
     ''
 }
 
-# --- черга --------------------------------------------------------------------------------------------------------
-
-function Get-StatePath([string]$Key) { Join-Path (Join-Path $RunsDir 'state') ((Get-Sha256Hex $Key) + '.txt') }
-
-function Get-Markers {
-    $fmt = '%(refname)%09%(objectname)%09%(committerdate:unix)'
-    $r = Invoke-Git @('for-each-ref', "--format=$fmt", $script:QueuePrefix)
-    $list = foreach ($line in ($r.Out -split "`n")) {
-        if (-not $line.Trim()) { continue }
-        $f = $line.Trim() -split "`t"
-        $rest = $f[0].Substring($script:QueuePrefix.Length)
-        $parts = $rest -split '/'
-        $m = [pscustomobject]@{ Ref = $f[0]; Name = 'gemini-queue/' + $rest; Sha = $f[1]; Time = [long]$f[2]
-            Slug = ''; Model = ''; N = ''; Valid = $false }
-        if ($parts.Count -eq 3 -and $parts[0] -match $script:SlugPattern -and -not $parts[0].Contains('..') -and
-            -not $parts[0].EndsWith('.lock') -and $parts[1] -match $script:ModelPattern -and $parts[2] -match '^[1-9][0-9]{0,2}$') {
-            $m.Slug = $parts[0]; $m.Model = $parts[1]; $m.N = $parts[2]; $m.Valid = $true
-        }
-        $m
-    }
-    @($list | Sort-Object Time, Name)
-}
-
-function Get-NextMarker {
-    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    foreach ($m in Get-Markers) {
-        $state = Get-StatePath "$($m.Ref) $($m.Sha)"
-        if (Test-Path -LiteralPath $state) { continue }
-        # Позначки `cc-` — рушій Claude під власником (claude_run.ps1): gemini-run їх не бере й узятими не позначає.
-        if ($m.Valid -and $m.Model.StartsWith('cc-')) { continue }
-        if (-not $m.Valid) {
-            Write-WrapperLog "позначка $($m.Name): назва не за форматом gemini-queue/<наряд>/<модель>/<спроба> — пропущено"
-            Write-FileAtomic $state 'INVALID_NAME'
-            continue
-        }
-        if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
-            Write-WrapperLog "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
-            Write-FileAtomic $state 'STALE'
-            continue
-        }
-        return $m
-    }
-    $null
-}
-
 # --- рушії (М.9-В) ------------------------------------------------------------------------------------------------
 
 # Рушій за назвою моделі з позначки: gpt-* -> Codex (зусилля — суфікс назви), інакше agy.
@@ -293,19 +187,20 @@ function Get-Engine([string]$Model) {
 # Codex за замовчуванням вимкнений (9738: акаунт ChatGPT для користувача gemini ще не вибрано): рушій вмикає лише явний
 # -EnableCodex у задачі gemini-run; без нього Codex не кличеться ні за позначкою gpt-*, ні каскадом.
 function Find-CodexExe {
-    if (-not $EnableCodex) { Write-WrapperLog 'рушій: Codex вимкнено (без -EnableCodex, 9738) — не кличу'; return $null }
+    if (-not $EnableCodex) { Write-Log 'рушій: Codex вимкнено (без -EnableCodex, 9738) — не кличу'; return $null }
     Find-EngineExe $CodexExe
 }
 
 # Шлях до виконуваного рушія; нема в PATH — $null (рушій недоступний), не збій обгортки.
 function Find-EngineExe([string]$Name) {
-    try { Resolve-Exe $Name } catch { Write-WrapperLog "рушій: $($_.Exception.Message)"; $null }
+    try { Resolve-Exe $Name } catch { Write-Log "рушій: $($_.Exception.Message)"; $null }
 }
 
 # --- квота --------------------------------------------------------------------------------------------------------
 
-# `agy -p "/usage"` — рядки з табами, дані без ходу моделі (agy ≥ 1.1.11). Колонок документація не наводить: розбір
-# за рядком-заголовком і терпимий до назв полів; нерозпізнане — «невідомо»: наряд іде далі (429 ловить Get-ErrorCode).
+# `agy -p "/usage"` — рядки з табами, дані без ходу моделі (agy ≥ 1.1.11). Живий вивід 1.4.7 (26.10) — без заголовка:
+# «група ⇥ вікно ⇥ NN% ⇥ скидання ISO UTC», по рядку на вікно (тиждень, 5 год); давніший розбір — за рядком-заголовком
+# і JSON, терпимий до назв полів. Нерозпізнане — «невідомо»: наряд іде далі (429 ловить Get-ErrorCode).
 function Get-FirstValue($Obj, [string[]]$Names) {
     foreach ($n in $Names) {
         foreach ($p in $Obj.PSObject.Properties) { if ($p.Name -ieq $n -and $null -ne $p.Value) { return $p.Value } }
@@ -323,23 +218,20 @@ function ConvertTo-Number($Value) {
     $null
 }
 
-# Хвилини до скидання; -1 — невідомо.
-function Get-ResetMinutes($Node) {
-    $now = [DateTimeOffset]::UtcNow
+# Час скидання вікна (DateTimeOffset UTC) або $null — невідомо. Відносні секунди — від часу зчитування /usage.
+function Get-ResetTime($Node) {
     $sec = ConvertTo-Number (Get-FirstValue $Node @('reset_in_seconds', 'resetInSeconds', 'seconds_until_reset', 'secondsUntilReset'))
-    if ($null -ne $sec) { return [int][Math]::Ceiling([Math]::Max(0, $sec) / 60) }
+    if ($null -ne $sec) { return $script:UsageReadTime.AddSeconds([Math]::Max(0, $sec)) }
     $at = Get-FirstValue $Node @('reset_time', 'resetTime', 'resets_at', 'resetsAt', 'reset_at', 'resetAt', 'reset')
-    $when = $null
-    if ($at -is [datetime]) { $when = [DateTimeOffset]$at.ToUniversalTime() }
-    elseif ($at -is [string]) {
+    if ($at -is [datetime]) { return [DateTimeOffset]$at.ToUniversalTime() }
+    if ($at -is [string]) {
         $dt = [DateTimeOffset]::MinValue
-        if ([DateTimeOffset]::TryParse($at, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::AssumeUniversal, [ref]$dt)) { $when = $dt }
-    } else {
-        $n = ConvertTo-Number $at
-        if ($null -ne $n -and $n -gt 1e9) { $when = [DateTimeOffset]::FromUnixTimeSeconds([long]$(if ($n -gt 1e11) { $n / 1000 } else { $n })) }
+        if ([DateTimeOffset]::TryParse($at, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::AssumeUniversal, [ref]$dt)) { return $dt.ToUniversalTime() }
+        return $null
     }
-    if ($null -eq $when) { return -1 }
-    [int][Math]::Ceiling([Math]::Max(0, ($when - $now).TotalMinutes))
+    $n = ConvertTo-Number $at
+    if ($null -ne $n -and $n -gt 1e9) { return [DateTimeOffset]::FromUnixTimeSeconds([long]$(if ($n -gt 1e11) { $n / 1000 } else { $n })) }
+    $null
 }
 
 function Get-UsageGroups($Node, $Acc, [int]$Depth = 0) {
@@ -363,10 +255,20 @@ function Get-UsageGroups($Node, $Acc, [int]$Depth = 0) {
             elseif ($null -ne $rem -and $rem -le 0) { $left = 0 }
         }
         if ($null -ne $left) {
-            [void]$Acc.Add([pscustomobject]@{ Name = $name.Trim(); Left = [int][Math]::Max(0, [Math]::Min(100, [Math]::Round($left))); ResetMin = (Get-ResetMinutes $Node) })
+            $win = [string](Get-FirstValue $Node @('window', 'period', 'limit_name', 'limitName'))
+            [void]$Acc.Add([pscustomobject]@{ Name = $name.Trim(); Window = (ConvertTo-WindowCode $win)
+                Left = [int][Math]::Max(0, [Math]::Min(100, [Math]::Round($left))); Reset = (Get-ResetTime $Node) })
         }
     }
     foreach ($p in $Node.PSObject.Properties) { Get-UsageGroups $p.Value $Acc ($Depth + 1) }
+}
+
+# Вікно квоти — закритий перелік (текст /usage від agy в стан не йде): тиждень, 5 год, доба, інше.
+function ConvertTo-WindowCode([string]$Text) {
+    if ($Text -match '(?i)week') { return 'WEEK' }
+    if ($Text -match '(?i)five.?hour|5.?h') { return '5H' }
+    if ($Text -match '(?i)\bday|daily') { return 'DAY' }
+    $(if ($Text) { 'OTHER' } else { '' })
 }
 
 # Слова назви без чисел і службових слів: група «Gemini 3.5 Flash» ↔ модель gemini-3.8-flash-high — спільне «flash».
@@ -375,26 +277,46 @@ function Get-NameTokens([string]$Name) {
     @(($Name.ToLowerInvariant() -split '[^a-z0-9]+') | Where-Object { $_ -and $_ -notmatch '^[0-9]+$' -and $stop -notcontains $_ })
 }
 
-# Версія agy з `agy --version`; $null — не розпізнано. Одне читання на прогін.
+# Власні слова назви — без назв родин (gemini, claude, gpt): «Gemini 4 Argon» -> argon, «Claude and GPT models» -> нічого.
+function Get-SpecificTokens([string]$Name) { @(Get-NameTokens $Name | Where-Object { $script:Families -notcontains $_ }) }
+
+# Версія agy з `agy --version`; $null — не розпізнано. Одне читання на процес.
 function Get-AgyVersion {
     if ($script:AgyVersionDone) { return $script:AgyVersion }
     $script:AgyVersionDone = $true
     try {
         if ($script:Agy) {
             $r = Invoke-Native $script:Agy @('--version') $RepoDir 1
-            # Версія — лише з рядка з назвою agy («agy 1.1.11», «agy version v1.1.11 (збірка …)»); число з іншого місця
-            # (дата, збірка) не береться, нерозпізнане — версія невідома і /usage не кличеться (9743).
+            # Версія — з рядка з назвою agy («agy 1.1.11», «agy version v1.1.11 (збірка …)») або весь вивід — одна версія
+            # x.y.z (живий agy 1.4.7 друкує лише «1.4.7»). Дата (рік із чотирьох цифр) чи число з іншого місця версією не
+            # стає: нерозпізнане — версія невідома і /usage не кличеться (9743).
             if ($r.Code -eq 0 -and $r.Out -match '\bagy\b[^0-9\r\n]*v?([0-9]+(?:\.[0-9]+){1,3})(?![0-9.])') { $script:AgyVersion = [version]$Matches[1] }
-            else { Write-WrapperLog "agy --version не розпізнано (код $($r.Code))" }
+            elseif ($r.Code -eq 0 -and $r.Out.Trim() -match '^v?([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,4})$') { $script:AgyVersion = [version]$Matches[1] }
+            else { Write-Log "agy --version не розпізнано (код $($r.Code))" }
         }
-    } catch { Write-WrapperLog "agy --version: $($_.Exception.Message)" }
+    } catch { Write-Log "agy --version: $($_.Exception.Message)" }
     $script:AgyVersion
 }
 
-# Таблиця з табами: перший рядок — заголовок (без цифр), далі записи. Інакше $null.
+# Таблиця з табами: з рядком-заголовком (без цифр) або без нього у форматі agy 1.4.7 (група, [вікно,] NN%, ISO-час). Інакше $null.
 function ConvertFrom-UsageTable([string]$Text) {
     $lines = @($Text -split "`r?`n" | Where-Object { $_.Contains("`t") })
-    if ($lines.Count -lt 2 -or $lines[0] -match '[0-9]') { return $null }
+    if ($lines.Count -lt 1) { return $null }
+    if ($lines[0] -match '[0-9]') {
+        # Без заголовка — лише коли КОЖЕН рядок: перша колонка — назва, передостання — відсоток, остання — ISO-час.
+        $rows = New-Object System.Collections.ArrayList
+        foreach ($l in $lines) {
+            $c = @($l -split "`t" | ForEach-Object { $_.Trim() })
+            $dt = [DateTimeOffset]::MinValue
+            if ($c.Count -lt 3 -or $c[0] -notmatch '[A-Za-z]' -or $c[-2] -notmatch '^[0-9]{1,3}%$' -or
+                $c[-1] -notmatch '^\d{4}-\d\d-\d\dT' -or -not [DateTimeOffset]::TryParse($c[-1], [cultureinfo]::InvariantCulture, 'AssumeUniversal', [ref]$dt)) { return $null }
+            $o = [ordered]@{ name = $c[0]; remaining_percent = $c[-2]; reset_time = $c[-1] }
+            if ($c.Count -ge 4) { $o.window = $c[1] }
+            [void]$rows.Add([pscustomobject]$o)
+        }
+        return ,@($rows)
+    }
+    if ($lines.Count -lt 2) { return $null }
     $head = @($lines[0] -split "`t" | ForEach-Object { ($_.Trim().ToLowerInvariant() -replace '[^a-z0-9]+', '_').Trim('_') })
     $rows = New-Object System.Collections.ArrayList
     foreach ($l in $lines[1..($lines.Count - 1)]) {
@@ -419,43 +341,81 @@ function ConvertFrom-UsageTable([string]$Text) {
     ,@($rows)
 }
 
-# Групи пулів із `/usage`: Known=$false — не читали (стара версія agy, збій чи нерозпізнаний вивід). Кеш на прогін;
-# -Fresh читає знову. Виклик лише на версії, яку джерело називає безпечною (UsageMinVersion).
-function Read-Usage([switch]$Fresh) {
-    if ($null -ne $script:Usage -and -not $Fresh) { return $script:Usage }
-    $u = [pscustomobject]@{ Known = $false; Groups = @(); Text = '' }
+# Вивід /usage -> вікна квоти (Name, Window, Left, Reset); Known=$false — не розпізнано.
+function ConvertFrom-UsageText([string]$Text, [long]$ReadUnix) {
+    $script:UsageReadTime = [DateTimeOffset]::FromUnixTimeSeconds($ReadUnix)
+    $u = [pscustomobject]@{ Known = $false; Windows = @(); Text = ''; Read = $script:UsageReadTime }
+    $text = $Text.Trim()
+    if (-not $text) { return $u }
+    $doc = ConvertFrom-UsageTable $text
+    if ($null -eq $doc -and $text.Contains("`t")) {
+        # Табличний вивід без розпізнаного заголовка: колонок не знаємо — квота невідома, не вгадуємо.
+        Write-Log 'квота: /usage — таблиця без розпізнаного заголовка; квота НЕВІДОМА, каскад за пулом не вмикаю'
+    }
+    if ($null -eq $doc) {
+        try { $doc = $text | ConvertFrom-Json } catch {
+            $a = $text.IndexOf('{'); $b = $text.LastIndexOf('}')
+            if ($a -ge 0 -and $b -gt $a) { try { $doc = $text.Substring($a, $b - $a + 1) | ConvertFrom-Json } catch { $null = $_ } }
+        }
+        if ($null -ne $doc -and $doc.PSObject.Properties['response'] -and $doc.response -is [string]) {
+            try { $doc = $doc.response | ConvertFrom-Json } catch { $null = $_ }
+        }
+    }
+    $acc = New-Object System.Collections.ArrayList
+    if ($null -ne $doc) { Get-UsageGroups $doc $acc }
+    $u.Known = ($acc.Count -gt 0); $u.Windows = @($acc); $u.Text = $text.Substring(0, [Math]::Min(400, $text.Length))
+    if (-not $u.Known) { Write-Log ('квота: груп не розпізнано; вивід /usage: ' + $u.Text) }
+    $u
+}
+
+# Групи з вікон: залишок — найменший серед вікон групи; скидання — того вікна, що на нулі (кількох — найпізніше), інакше
+# найменшого. Ім'я групи — як у /usage.
+function Merge-UsageWindows($Windows) {
+    $now = [DateTimeOffset]::UtcNow
+    foreach ($grp in @($Windows | Group-Object Name)) {
+        $w = @($grp.Group)
+        $min = ($w | Measure-Object Left -Minimum).Minimum
+        $at = @($w | Where-Object { $_.Left -eq $min })
+        $reset = $null
+        foreach ($x in $at) { if ($null -ne $x.Reset -and ($null -eq $reset -or $x.Reset -gt $reset)) { $reset = $x.Reset } }
+        $mins = $(if ($null -eq $reset) { -1 } else { [int][Math]::Ceiling([Math]::Max(0, ($reset - $now).TotalMinutes)) })
+        [pscustomobject]@{ Name = $grp.Name; Left = [int]$min; ResetMin = $mins; Reset = $reset }
+    }
+}
+
+# Кеш /usage і `agy models` (usage.json): agy питаємо не частіше за usage_minutes (не щопроходу) — і щоразу, коли
+# позначка чекає скидання, що вже минуло. Заодно — pools.json для рядка ПУЛИ (gemini_publish.ps1).
+function Update-UsageCache {
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $c = [ordered]@{ time = $now; text = ''; models = @() }
     try {
         $v = Get-AgyVersion
         if ($null -eq $v -or $v -lt $script:UsageMinVersion) {
-            Write-WrapperLog "квота: agy $(if ($v) { $v } else { '?' }) < $($script:UsageMinVersion) — /usage не кличу"
+            Write-Log "квота: agy $(if ($v) { $v } else { '?' }) < $($script:UsageMinVersion) — /usage не кличу"
         } else {
             $r = Invoke-Native $script:Agy @('-p', '/usage') $RepoDir $QuotaMinutes
-            if ($r.TimedOut -or $r.Code -ne 0) { Write-WrapperLog "квота: agy /usage -> $($r.Code)" }
-            else {
-                $text = $r.Out.Trim()
-                $doc = ConvertFrom-UsageTable $text
-                if ($null -eq $doc -and $text.Contains("`t")) {
-                    # Табличний вивід без заголовка (чи заголовок із цифрами): колонок не знаємо — квота невідома, не вгадуємо.
-                    Write-WrapperLog 'квота: /usage — таблиця без розпізнаного заголовка; квота НЕВІДОМА, каскад за пулом не вмикаю'
-                }
-                if ($null -eq $doc) {
-                    try { $doc = $text | ConvertFrom-Json } catch {
-                        $a = $text.IndexOf('{'); $b = $text.LastIndexOf('}')
-                        if ($a -ge 0 -and $b -gt $a) { try { $doc = $text.Substring($a, $b - $a + 1) | ConvertFrom-Json } catch { $null = $_ } }
-                    }
-                    if ($null -ne $doc -and $doc.PSObject.Properties['response'] -and $doc.response -is [string]) {
-                        try { $doc = $doc.response | ConvertFrom-Json } catch { $null = $_ }
-                    }
-                }
-                $groups = New-Object System.Collections.ArrayList
-                if ($null -ne $doc) { Get-UsageGroups $doc $groups }
-                $u = [pscustomobject]@{ Known = ($groups.Count -gt 0); Groups = @($groups); Text = $text.Substring(0, [Math]::Min(400, $text.Length)) }
-                if (-not $u.Known) { Write-WrapperLog ('квота: груп не розпізнано; вивід /usage: ' + $u.Text) }
-            }
+            if ($r.TimedOut -or $r.Code -ne 0) { Write-Log "квота: agy /usage -> $($r.Code)" } else { $c.text = $r.Out }
         }
-    } catch { Write-WrapperLog "квота: $($_.Exception.Message)" }
-    $script:Usage = $u
-    $u
+        $c.models = @(Get-AgyModels)
+    } catch { Write-Log "квота: $($_.Exception.Message)" }
+    try { Write-FileAtomic (Join-Path $RunsDir 'usage.json') ($c | ConvertTo-Json -Compress -Depth 3) } catch { Write-Log "кеш квоти: $($_.Exception.Message)" }
+    $u = ConvertFrom-UsageText $c.text $now
+    try { Write-Pools $v $u $c.models } catch { Write-Log "пули: $($_.Exception.Message)" }
+    [pscustomobject]$c
+}
+
+# Вікна квоти з кешу; -Fresh чи кеш старший за usage_minutes чи за -After (unix) — agy питаємо знову.
+function Read-Usage([switch]$Fresh, [long]$After = 0) {
+    $c = $null
+    try { $c = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'usage.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $age = (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes') * 60
+    if ($Fresh -or $null -eq $c -or [long]$c.time -lt $After -or ($now - [long]$c.time) -ge $age) {
+        if (-not $script:Agy) { return [pscustomobject]@{ Known = $false; Windows = @(); Text = ''; Read = [DateTimeOffset]::UtcNow } }
+        $c = Update-UsageCache
+    }
+    $script:AgyModels = $(if (@($c.models).Count -gt 0) { @($c.models) } else { $null })
+    ConvertFrom-UsageText ([string]$c.text) ([long]$c.time)
 }
 
 # ASCII-код групи для рядка: назва → A-Z0-9, до 16 знаків.
@@ -465,20 +425,30 @@ function ConvertTo-GroupCode([string]$Name) {
     $g.Substring(0, [Math]::Min(16, $g.Length))
 }
 
+# Групи моделі: за власними словами («argon», «flash»); нема — група родини без власних слів («Gemini Models»).
+function Get-ModelGroups([string]$Model, $Groups) {
+    $mt = @(Get-SpecificTokens $Model)
+    $hit = @($Groups | Where-Object { $g = $_; @(Get-SpecificTokens $g.Name | Where-Object { $mt -contains $_ }).Count -gt 0 })
+    if ($hit.Count -gt 0) { return $hit }
+    $fam = ($Model.ToLowerInvariant() -split '-')[0]
+    if ($script:Families -notcontains $fam) { return @() }
+    @($Groups | Where-Object { @(Get-SpecificTokens $_.Name).Count -eq 0 -and @($_.Name.ToLowerInvariant() -split '[^a-z0-9]+') -contains $fam })
+}
+
 # Known=$false — квоту не прочитано (наряд іде далі). Blocked — усі групи моделі на 0 %; Group — ASCII-ім'я для коду рядка.
-function Get-Quota([string]$Model, [switch]$Fresh) {
-    $none = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; Left = -1 }
-    $u = Read-Usage -Fresh:$Fresh
+function Get-Quota([string]$Model, [switch]$Fresh, [long]$After = 0) {
+    $none = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; ResetAt = 0L; Left = -1 }
+    $u = Read-Usage -Fresh:$Fresh -After $After
     if (-not $u.Known) { return $none }
-    $mt = @(Get-NameTokens $Model)
-    $hit = @($u.Groups | Where-Object { $g = $_; @(Get-NameTokens $g.Name | Where-Object { $mt -contains $_ }).Count -gt 0 })
+    $hit = @(Get-ModelGroups $Model @(Merge-UsageWindows $u.Windows))
     if ($hit.Count -eq 0) {
-        Write-WrapperLog ('квота: групу моделі {0} не розпізнано; вивід /usage: {1}' -f $Model, $u.Text)
+        Write-Log ('квота: групу моделі {0} не розпізнано; вивід /usage: {1}' -f $Model, $u.Text)
         return $none
     }
     $zeros = @($hit | Where-Object { $_.Left -eq 0 })
     $ref = $(if ($zeros.Count -eq $hit.Count) { $zeros[0] } else { @($hit | Sort-Object Left -Descending)[0] })
-    [pscustomobject]@{ Known = $true; Blocked = ($ref.Left -eq 0); Group = (ConvertTo-GroupCode $ref.Name); ResetMin = $ref.ResetMin; Left = $ref.Left }
+    [pscustomobject]@{ Known = $true; Blocked = ($ref.Left -eq 0); Group = (ConvertTo-GroupCode $ref.Name); ResetMin = $ref.ResetMin
+        ResetAt = $(if ($null -ne $ref.Reset) { $ref.Reset.ToUnixTimeSeconds() } else { 0L }); Left = $ref.Left }
 }
 
 # Клас моделі за назвою: код — flash, проєктування — pro; інше — без каскаду.
@@ -498,10 +468,11 @@ function Get-Cascade([string]$Model) {
 }
 
 # Рушій наряду за позначкою й квотою пулів. Model — фактична модель (каскад); Quota — пулу першого кандидата, якщо всі
-# на 0 % (Blocked); Exe $null — рушія нема на ноутбуці.
-function Select-Engine($M) {
+# на 0 % (Blocked); Exe $null — рушія нема на ноутбуці. -After — позначка чекала скидання до цього часу (unix): квоту
+# читаємо, зчитану не раніше.
+function Select-Engine($M, [long]$After = 0) {
     $e = Get-Engine $M.Model
-    $unknown = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; Left = -1 }
+    $unknown = [pscustomobject]@{ Known = $false; Blocked = $false; Group = ''; ResetMin = -1; ResetAt = 0L; Left = -1 }
     if ($e.Name -ne 'agy') {
         # `codex exec` не має документованого способу прочитати залишок без ходу: квота невідома, 429 ловить Get-ErrorCode.
         return [pscustomobject]@{ Engine = $e; Exe = (Find-CodexExe); Quota = $unknown; Model = $M.Model }
@@ -512,22 +483,39 @@ function Select-Engine($M) {
         if ($ce.Name -eq 'codex') {
             $cx = Find-CodexExe
             if ($cx) {
-                Write-WrapperLog "рушій: пули agy на 0 % — Codex, модель $cand"
+                Write-Log "рушій: пули agy на 0 % — Codex, модель $cand"
                 return [pscustomobject]@{ Engine = $ce; Exe = $cx; Quota = $unknown; Model = $cand }
             }
             continue
         }
+        $q = Get-Quota $cand -After $After
         if ($cand -ne $M.Model -and $null -ne $script:AgyModels -and @($script:AgyModels) -notcontains $cand) {
-            Write-WrapperLog "каскад: $cand нема в agy models — пропущено"
+            Write-Log "каскад: $cand нема в agy models — пропущено"
             continue
         }
-        $q = Get-Quota $cand
         if ($null -eq $first) { $first = $q }
-        if ($q.Blocked) { Write-WrapperLog "каскад: $cand на 0 % (група $($q.Group))"; continue }
-        if ($cand -ne $M.Model) { Write-WrapperLog "рушій: каскад $($M.Model) -> $cand" }
+        if ($q.Blocked) { Write-Log "каскад: $cand на 0 % (група $($q.Group))"; continue }
+        if ($cand -ne $M.Model) { Write-Log "рушій: каскад $($M.Model) -> $cand" }
         return [pscustomobject]@{ Engine = $ce; Exe = $script:Agy; Quota = $q; Model = $cand }
     }
     [pscustomobject]@{ Engine = $e; Exe = $script:Agy; Quota = $(if ($first) { $first } else { $unknown }); Model = $M.Model }
+}
+
+# Скидання квоти Codex з тексту відмови (unix) або 0 — CLI його не дав. Розпізнає «try again in 2 days 3 hours 5 minutes»,
+# «resets_in_seconds: N» і «resets_at: <unix>»; «try again at 3:42 PM» (місцевий час без дати) — ні, бо неоднозначно.
+function Get-CodexReset([string]$Text) {
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $t = Expand-JsonEscapes $Text
+    if ($t -match '(?i)resets?_in_seconds"?\s*[:=]\s*([0-9]{1,9})') { return $now + [long]$Matches[1] }
+    if ($t -match '(?i)resets?_at"?\s*[:=]\s*([0-9]{10})\b') { return [long]$Matches[1] }
+    if ($t -match '(?i)try again in ((?:[0-9]+\s*(?:days?|hours?|hrs?|minutes?|mins?|seconds?|secs?)[\s,and]*)+)') {
+        $sec = 0L
+        foreach ($p in [regex]::Matches($Matches[1], '(?i)([0-9]+)\s*(d|h|m|s)')) {
+            $sec += [long]$p.Groups[1].Value * @{ d = 86400; h = 3600; m = 60; s = 1 }[$p.Groups[2].Value.ToLowerInvariant()]
+        }
+        if ($sec -gt 0) { return $now + $sec }
+    }
+    0
 }
 
 # --- прогін agy ---------------------------------------------------------------------------------------------------
@@ -689,7 +677,7 @@ function Close-StreamRun($Run) {
     if ($null -eq $Run.Proc) { return }
     # Дерево — разом із фоновими завданнями агента: інакше вони тримають файли клону до наступного прогону.
     Stop-Tree $Run.Proc
-    try { [System.IO.File]::AppendAllText($Run.ErrLog, $Run.Stderr.Result, $script:Utf8) } catch { Write-WrapperLog "stderr agy: $($_.Exception.Message)" }
+    try { [System.IO.File]::AppendAllText($Run.ErrLog, $Run.Stderr.Result, $script:Utf8) } catch { Write-Log "stderr agy: $($_.Exception.Message)" }
     $Run.Proc = $null
 }
 
@@ -712,7 +700,7 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $CodexStallMinutes $Run.Log (Join-Path $Run.Dir 'codex.events.tsv')
     [System.IO.File]::AppendAllText($Run.ErrLog, $r.Err, $script:Utf8)
     if ($r.Stalled) {
-        Write-WrapperLog "codex: нових подій нема понад $CodexStallMinutes хв — завислість, зупинено"
+        Write-Log "codex: нових подій нема понад $CodexStallMinutes хв — завислість, зупинено"
         return [pscustomobject]@{ Kind = 'stall'; Result = $null }
     }
     $resp = ''; $err = ''
@@ -788,7 +776,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                     $err = ''
                     if ($r.Result.PSObject.Properties['error']) { $err = [string]$r.Result.error }
                     $code = Get-ErrorCode $err $run.Engine.Name $run.Engine.Effort
-                    Write-WrapperLog "agy: статус $status ($code)"
+                    Write-Log "agy: статус $status ($code)"
                     break
                 }
                 $check = Test-Report $M $Start $resp
@@ -798,14 +786,14 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
             # Без id розмови догонка пішла б у нову розмову без наряду.
             if ($r.Kind -ne 'result' -and -not $run.Conversation) {
                 $code = $(if ($r.Kind -eq 'timeout') { 'TIMEOUT' } else { 'AGY_ERROR' })
-                Write-WrapperLog "agy: $($r.Kind) без id розмови — догонки нема"
+                Write-Log "agy: $($r.Kind) без id розмови — догонки нема"
                 break
             }
             if ((Get-Date) -ge $deadline) { $code = 'TIMEOUT'; break }
             if ($nudges -ge $MaxNudges) { $code = 'NO_REPORT'; break }
             $nudges++
             $text = Get-Nudge $M (Test-Report $M $Start '') $why
-            Write-WrapperLog "догонка $nudges ($why)"
+            Write-Log "догонка $nudges ($why)"
         }
     } finally {
         Close-StreamRun $run
@@ -826,32 +814,20 @@ function Get-AgyModels {
 
 # Пули для диспетчера (pools.json у теці вихідних): версія agy, групи (ASCII-код, % залишку, хв до скидання), назви
 # `agy models` за ModelPattern. Лише числа й назви за шаблоном; рядок із них складає gemini_publish.ps1.
-function Write-Pools {
-    $v = Get-AgyVersion
-    $u = Read-Usage -Fresh
+function Write-Pools($Version, $Usage, $Models) {
     $seen = @{}; $groups = @()
-    foreach ($g in $u.Groups) {
+    foreach ($g in @(Merge-UsageWindows $Usage.Windows)) {
         $c = ConvertTo-GroupCode $g.Name
         if ($seen.ContainsKey($c)) { continue }
         $seen[$c] = 1
         $groups += [ordered]@{ g = $c; left = [int]$g.Left; reset = [int]$g.ResetMin }
     }
-    $models = @(Get-AgyModels)
-    $script:AgyModels = $(if ($models.Count -gt 0) { $models } else { $null })
-    $pm = @($models | Where-Object { $_ -cmatch $script:PoolModelPattern } | Select-Object -First 6)
-    $doc = [ordered]@{ v = 1; time = (Get-Date).ToString('s'); agy = $(if ($v) { [string]$v } else { '' }); groups = @($groups | Select-Object -First 6); models = $pm; unknown = (-not $u.Known) }
+    $pm = @($Models | Where-Object { $_ -cmatch $script:PoolModelPattern } | Select-Object -First 6)
+    $doc = [ordered]@{ v = 1; time = (Get-Date).ToString('s'); agy = $(if ($Version) { [string]$Version } else { '' }); groups = @($groups | Select-Object -First 6); models = $pm; unknown = (-not $Usage.Known) }
     Write-FileAtomic (Join-Path $OutDir 'pools.json') ($doc | ConvertTo-Json -Compress -Depth 4)
 }
 
 # --- один наряд ---------------------------------------------------------------------------------------------------
-
-function Reset-Clone {
-    foreach ($op in @('merge', 'rebase', 'cherry-pick', 'revert')) { [void](Invoke-Git @($op, '--abort') -AllowFail) }
-    $lock = Join-Path $RepoDir '.git\index.lock'
-    if (Test-Path -LiteralPath $lock) { Remove-Item -LiteralPath $lock -Force }
-    [void](Invoke-Git @('reset', '-q', '--hard'))
-    [void](Invoke-Git @('clean', '-q', '-ffd'))
-}
 
 # Кінець прогону: факти гілки, бандл (коли є нові коміти), стан у теці обміну. Спільне для звичайного кінця й
 # для прогону, перерваного вимкненням чи сном ноутбука (тоді стан — `STARTED` із JSON).
@@ -871,41 +847,59 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
             }
         }
     } catch {
-        Write-WrapperLog "бандл: $($_.Exception.Message)"
+        Write-Log "бандл: $($_.Exception.Message)"
         if ($Status.code -in @('DONE', 'BLOCKED', '')) { $Status.code = 'CRASH' }
     }
     if ($T0 -ne [datetime]::MinValue) { $Status.minutes = [int][Math]::Round(((Get-Date) - $T0).TotalMinutes) }
     if ($Tail) { [System.IO.File]::WriteAllText((Join-Path $OutDir ($Status.id + '.tail.txt')), $Tail, $script:Utf8) }
     Write-FileAtomic (Join-Path $OutDir ($Status.id + '.json')) ($Status | ConvertTo-Json -Compress)
     Write-FileAtomic $StatePath "DONE $($Status.id) $($Status.code)"
-    Write-WrapperLog "наряд $($Status.slug) [$($Status.id)]: $($Status.code), ходів $($Status.turns), комітів $($Status.ahead)"
+    Remove-Claim $StatePath
+    Write-Log "наряд $($Status.slug) [$($Status.id)]: $($Status.code), ходів $($Status.turns), комітів $($Status.ahead)"
 }
 
+# Рядок диспетчерові «чекає скидання квоти» (QUOTA0_<група>_M<хв>, gemini_publish.ps1): стан без бандла, позначка — у
+# чеканні (Set-MarkerWait), не виконана.
+function Write-QuotaStatus($M, [string]$Id, [string]$Group, [long]$Until, [hashtable]$Extra) {
+    $mins = [int][Math]::Ceiling([Math]::Max(0, $Until - [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) / 60)
+    $s = [ordered]@{ v = 1; id = $Id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond
+        start = ''; head = ''; code = 'QUOTA_ZERO'; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; quota = 0; qgroup = $Group; qreset = $mins }
+    foreach ($k in $Extra.Keys) { $s[$k] = $Extra[$k] }
+    Write-FileAtomic (Join-Path $OutDir ($Id + '.json')) ($s | ConvertTo-Json -Compress)
+    Write-Log "квота: $($M.Name) — група $Group на 0 %, чекає до $(Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($Until).UtcDateTime))"
+}
+
+function New-RunId([string]$Key) { '{0:yyyyMMdd-HHmmss}-{1}' -f (Get-Date), (Get-Sha256Hex ($Key + [guid]::NewGuid())).Substring(0, 12) }
+
+# Прогони, що не йдуть: стан STARTED без живого процесу наряду (замок його слота вільний) — закрити й забандлити.
 function Resume-Interrupted {
-    foreach ($sf in @(Get-ChildItem -LiteralPath (Join-Path $RunsDir 'state') -Filter '*.txt' -File)) {
+    foreach ($sf in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.txt' -File)) {
         $text = [System.IO.File]::ReadAllText($sf.FullName, $script:Utf8)
         if (-not $text.StartsWith('STARTED {')) { continue }
         $j = $text.Substring(8) | ConvertFrom-Json
+        $slot = [string](Get-JsonProp $j 'slot')
+        if ($slot -match '^[a-z]+-[0-9]$' -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
         $status = [ordered]@{}
         foreach ($p in $j.PSObject.Properties) { $status[$p.Name] = $p.Value }
         $status.code = 'INTERRUPTED'
-        Write-WrapperLog "прогін $($status.id) перервано — закриваю"
+        Write-Log "прогін $($status.id) перервано — закриваю"
         Complete-Status $status $sf.FullName '' ([datetime]::MinValue)
     }
 }
 
-function Invoke-Task($M) {
-    $key = "$($M.Ref) $($M.Sha)"
-    $id = '{0:yyyyMMdd-HHmmss}-{1}' -f (Get-Date), (Get-Sha256Hex $key).Substring(0, 12)
+# Наряд у процесі наряду: робоча копія слота вже вибрана ($RepoDir), рушій вибрав планувальник ($Job.sel).
+function Invoke-Task($M, $Job) {
+    $key = Get-MarkerKey $M
+    $id = [string]$Job.id
     $statePath = Get-StatePath $key
-    $status = [ordered]@{ v = 1; id = $id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha
+    $status = [ordered]@{ v = 1; id = $id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = [string]$Job.slot
         start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy' }
     Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
-    $dir = Join-Path $RunsDir $id
-    [void](New-Item -ItemType Directory -Force -Path $dir)
+    $dir = [string]$Job.dir
     $t0 = Get-Date
     $tail = ''
-    Write-WrapperLog "наряд $($M.Name) $($M.Sha) -> $id"
+    $waiting = $false
+    Write-Log "наряд $($M.Name) $($M.Sha) -> $id (слот $($Job.slot))"
     try {
         $main = Get-RefSha 'refs/remotes/origin/main'
         $anc = Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail
@@ -913,9 +907,12 @@ function Invoke-Task($M) {
         if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
         if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
         $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
-        # Квота до наряду: група моделі з 0 % — наряд не береться (марно палить спробу й дає 429 посеред прогону).
-        $sel = Select-Engine $M
-        $q = $sel.Quota
+        $js = $Job.sel
+        $eng = [pscustomobject]@{ Name = [string]$js.engine; Model = [string]$js.emodel; Effort = [string]$js.effort }
+        $exe = $(if ($eng.Name -eq 'codex') { Find-CodexExe } else { Find-EngineExe $AgyExe })
+        $q = [pscustomobject]@{ Known = [bool]$js.qknown; Blocked = $false; Group = [string]$js.qgroup; ResetMin = -1; Left = [int]$js.qleft }
+        $sel = [pscustomobject]@{ Engine = $eng; Exe = $exe; Quota = $q; Model = [string]$js.model }
+        $script:Agy = Find-EngineExe $AgyExe
         $status.engine = $sel.Engine.Name
         $status.actual = $sel.Model
         # Межа розміру наряду — для agy (як було); Codex читає наряд з файлу `turnN.md`, розмір не обмежено (власник 26.10).
@@ -923,16 +920,13 @@ function Invoke-Task($M) {
         $MA = $M | Select-Object *
         $MA.Model = $sel.Model
         if (-not $sel.Exe) { $status.code = 'ENGINE_MISSING'; return }
-        if ($q.Blocked) {
-            $status.code = 'QUOTA_ZERO'; $status.quota = 0; $status.qgroup = $q.Group
-            if ($q.ResetMin -ge 0) { $status.qreset = $q.ResetMin }
-            Write-WrapperLog "квота: група $($q.Group) на 0 %, скидання через $($q.ResetMin) хв — наряд не береться"
-            return
-        }
         $start = Get-RefSha "refs/remotes/origin/gemini/$($M.Slug)"
+        # Повтор після відмови за квотою: від голови того прогону, якщо опублікована гілка — її предок (інакше NOT_FF).
+        $wh = [string]$Job.head
+        if ($wh -match '^[0-9a-f]{40}$' -and (Get-RefSha $wh) -and (-not $start -or (Invoke-Git @('merge-base', '--is-ancestor', $start, $wh) -AllowFail).Code -eq 0)) { $start = $wh }
         if (-not $start) { $start = $main }
-        Reset-Clone
-        [void](Invoke-Git @('checkout', '-q', '-f', '-B', "gemini/$($M.Slug)", $start))
+        Reset-WorkTree $RepoDir
+        [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))
         $status.start = $start
         # Стан із початком гілки: перерваний прогін наступний запуск закриє й забандлить (Resume-Interrupted).
         Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
@@ -944,15 +938,43 @@ function Invoke-Task($M) {
         $status.report = $res.Report
         $status.turns = $res.Turns
         if ($res.Code -eq 'MODEL_INVALID') { $status.models = @(Get-AgyModels) }
+        if ($res.Code -eq 'QUOTA') { $waiting = Enter-RunQuotaWait $M $sel $status $res $dir }
         # Залишок квоти після прогону — для рядка кінця наряду.
-        $qa = $(if ($sel.Engine.Name -eq 'agy') { Get-Quota $sel.Model -Fresh } else { $q })
+        $qa = $(if ($sel.Engine.Name -eq 'agy' -and -not $waiting) { Get-Quota $sel.Model -Fresh } else { $q })
         if ($qa.Known) { $status.quota = $qa.Left; $status.qgroup = $qa.Group }
     } catch {
         $status.code = 'CRASH'
-        Write-WrapperLog "збій: $($_.Exception.Message)"
+        Write-Log "збій: $($_.Exception.Message)"
     } finally {
-        Complete-Status $status $statePath $tail $t0
+        if (-not $waiting) { Complete-Status $status $statePath $tail $t0 }
+        [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail)
     }
+}
+
+# Відмова за квотою посеред прогону (429): позначка повертається в чергу до скидання (agy — з /usage, Codex — з тексту
+# відмови, нема — quota_wait_minutes), зроблене лишається в гілці, повтор почне з її голови. Понад MaxRetakes — кінець
+# із кодом QUOTA, як до смуг. $true — позначка чекає.
+function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $until = 0L; $group = 'CODEX'
+    if ($Sel.Engine.Name -eq 'agy') {
+        $q = Get-Quota $Sel.Model -Fresh
+        $group = $(if ($q.Group) { $q.Group } else { 'AGY' })
+        if ($q.Known -and $q.ResetAt -gt $now) { $until = [long]$q.ResetAt }
+    } else {
+        $err = ''
+        try { $err = [System.IO.File]::ReadAllText((Join-Path $Dir 'agy.stderr.txt'), $script:Utf8) } catch { $null = $_ }
+        $until = Get-CodexReset ($Res.Tail + "`n" + $err)
+        $cq = [ordered]@{ refused = (Get-UtcStamp (Get-Date)); reset = $(if ($until -gt 0) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($until).UtcDateTime) } else { '' }) }
+        try { Write-FileAtomic (Join-Path $RunsDir 'quota-codex.json') ($cq | ConvertTo-Json -Compress) } catch { $null = $_ }
+    }
+    $known = $until -gt 0
+    if (-not $known) { $until = $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) }
+    $f = Get-Facts $M $Status.start
+    $n = Set-MarkerWait $M $until @{ retake = $true; group = $group; head = $(if ($f.Ahead -gt 0) { $f.Head } else { '' }) }
+    if ($null -eq $n) { Write-Log "квота: $($M.Name) — повернень у чергу понад $script:MaxRetakes, кінець QUOTA"; return $false }
+    Write-QuotaStatus $M (New-RunId (Get-MarkerKey $M)) $group $until @{ engine = $Sel.Engine.Name; turns = $Status.turns; retake = $n }
+    $true
 }
 
 function Write-IsolationStatus([string]$Check) {
@@ -976,43 +998,189 @@ function Resolve-Exe([string]$Name) {
     throw "$Name не знайдено в PATH"
 }
 
-function Main {
-    foreach ($d in @($RunsDir, (Join-Path $RunsDir 'state'), $OutDir)) { [void](New-Item -ItemType Directory -Force -Path $d) }
-    $script:NoHooks = Join-Path ([System.IO.Path]::GetTempPath()) ('no-hooks-' + [guid]::NewGuid().ToString('N'))
-    $lockFile = $null
-    try { $lockFile = [System.IO.File]::Open((Join-Path $RunsDir 'lock'), 'OpenOrCreate', 'ReadWrite', 'None') }
-    catch { return 0 }
-    try {
-        $iso = Test-Isolation
-        $hb = [ordered]@{ time = (Get-Date).ToString('s'); isolation = $(if ($iso) { $iso } else { 'OK' }) }
-        Write-FileAtomic (Join-Path $OutDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress)
-        if ($iso) { Write-WrapperLog "ізоляція: $iso — прогонів нема"; Write-IsolationStatus $iso; return 0 }
-        $origin = (Invoke-Git @('remote', 'get-url', 'origin')).Out.Trim()
-        if (($origin.TrimEnd('/') -replace '\.git$', '') -ne ($RepoUrl.TrimEnd('/') -replace '\.git$', '')) {
-            Write-WrapperLog "origin клону ($origin) не $RepoUrl — прогонів нема"
-            return 1
+# --- планувальник --------------------------------------------------------------------------------------------------
+
+# GPU вільна для нового наряду: свого живого GPU-наряду нема й замок відеокарти (спільний з claude-run) не тримає ніхто.
+function Test-GpuFree($Workers) {
+    if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { return $false }
+    Test-LockFree (Get-GpuLockPath)
+}
+
+# Позначка agy на нульовій квоті до старту: чекає скидання (спроба не спалена); рядок диспетчерові — раз, коли позначка
+# входить у чекання вперше.
+function Enter-StartQuotaWait($M, $Q, $State) {
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    # Скидання — час із /usage; минув, а група ще на нулі, чи невідомий — quota_wait_minutes.
+    $until = $(if ($Q.ResetAt -gt $now) { [long]$Q.ResetAt } else { $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) })
+    $head = $(if ($State.Kind -eq 'WAIT') { [string](Get-JsonProp $State.Wait 'head') } else { '' })
+    [void](Set-MarkerWait $M $until @{ group = $Q.Group; head = $head })
+    if ($State.Kind -eq 'NEW') { Write-QuotaStatus $M (New-RunId (Get-MarkerKey $M)) $Q.Group $until @{} }
+}
+
+# Один прохід: позначки смуг codex і agy за порядком черги — у вільні слоти, кожна окремим процесом. Повертає число
+# запущених.
+function Start-Markers($Workers) {
+    $started = 0
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $all = @(Get-Markers)
+    foreach ($m in @($all | Where-Object { -not $_.Valid })) {
+        $state = Get-StatePath (Get-MarkerKey $m)
+        if (Test-Path -LiteralPath $state) { continue }
+        Write-Log "позначка $($m.Name): назва не за форматом gemini-queue/<наряд>/<модель>/<спроба>[/<умови>] — пропущено"
+        Write-FileAtomic $state 'INVALID_NAME'
+    }
+    $mine = @($all | Where-Object { $_.Valid -and $script:Lanes -contains $_.Lane })
+    if ($mine.Count -eq 0) { return 0 }
+    foreach ($m in (Get-OrderedMarkers $mine)) {
+        $st = Get-MarkerState $m
+        if (-not (Test-MarkerReady $st)) { continue }
+        if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
+            Write-Log "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
+            Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
+            continue
         }
-        [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
-                '+refs/heads/main:refs/remotes/origin/main',
-                '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
-                '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
-        $m = Get-NextMarker
-        Resume-Interrupted
-        $script:Agy = Find-EngineExe $AgyExe
-        if ($script:Agy) { try { Write-Pools } catch { Write-WrapperLog "пули: $($_.Exception.Message)" } }
-        if ($null -eq $m) { return 0 }
-        # Узята позначка — в heartbeat, поки наряд іде: її бачать стан ноутбука й вимкнення (claude_run.ps1).
-        $hb.marker = $m.Name; $hb.engine = (Get-Engine $m.Model).Name; $hb.model = $m.Model; $hb.since = (Get-Date).ToString('s')
-        Write-FileAtomic (Join-Path $OutDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress)
-        try { Invoke-Task $m }
-        finally {
-            foreach ($k in @('marker', 'engine', 'model', 'since')) { $hb.Remove($k) }
-            $hb.time = (Get-Date).ToString('s')
-            Write-FileAtomic (Join-Path $OutDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress)
+        $slot = Get-FreeSlot $m.Lane ([int]$script:Limits.slots[$m.Lane]) $Workers
+        if (-not $slot) { continue }
+        if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug $script:Lanes)) { continue }
+        if ($m.Gpu -and -not (Test-GpuFree $Workers)) { continue }
+        $after = $(if ($st.Kind -eq 'WAIT') { [long]$st.Wait.until } else { 0L })
+        $sel = Select-Engine $m $after
+        if ($sel.Quota.Blocked) { Enter-StartQuotaWait $m $sel.Quota $st; continue }
+        $id = New-RunId (Get-MarkerKey $m)
+        if (-not (New-Claim $m $id)) { continue }
+        $dir = Join-Path $RunsDir $id
+        [void](New-Item -ItemType Directory -Force -Path $dir)
+        $job = @{ id = $id; dir = $dir; slot = $slot; lane = $m.Lane; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
+            slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
+            head = $(if ($st.Kind -eq 'WAIT') { [string](Get-JsonProp $st.Wait 'head') } else { '' })
+            sel = @{ engine = $sel.Engine.Name; emodel = $sel.Engine.Model; effort = $sel.Engine.Effort; model = $sel.Model
+                qknown = $sel.Quota.Known; qleft = $sel.Quota.Left; qgroup = $sel.Quota.Group }
+            limits = $script:Limits }
+        [void]$Workers.Add((Start-Worker $job $dir))
+        Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
+        $started++
+    }
+    $started
+}
+
+# heartbeat.json для стану ноутбука (claude_run.ps1 читає, перевіряючи кожне поле): смуги й слоти, квота груп моделей
+# (вікна, % залишку, скидання UTC, коли зчитано), остання відмова Codex, позначки в чеканні квоти. Лише назви й числа.
+function Write-Heartbeat([string]$Iso) {
+    $hb = [ordered]@{ time = (Get-Date).ToString('s'); isolation = $(if ($Iso) { $Iso } else { 'OK' }) }
+    if (-not $Iso -and $null -ne $script:Limits) {
+        $lanes = @(); $first = $null
+        foreach ($ln in $script:Lanes) {
+            $busy = @(foreach ($s in @(Read-SlotInfo $ln)) {
+                [ordered]@{ slot = [string]$s.slot; marker = [string]$s.marker; model = [string]$s.model; since = [string]$s.since; gpu = [bool]$s.gpu }
+            })
+            if ($null -eq $first -and $busy.Count -gt 0) { $first = $busy[0] }
+            $lanes += [ordered]@{ lane = $ln; n = [int]$script:Limits.slots[$ln]; busy = $busy }
+        }
+        $hb.lanes = $lanes
+        $hb.limits = $script:Limits.source
+        # Старі копії claude_run.ps1 читають одну узяту позначку: перша зайнята.
+        if ($null -ne $first) {
+            $hb.marker = $first.marker; $hb.engine = $(if ($first.slot -like 'codex-*') { 'codex' } else { 'agy' }); $hb.model = $first.model
+            try { $hb.since = ([datetime]::ParseExact($first.since, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, 'AssumeUniversal,AdjustToUniversal')).ToLocalTime().ToString('s') } catch { $null = $_ }
+        }
+        try {
+            $c = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'usage.json'), $script:Utf8) | ConvertFrom-Json
+            $u = ConvertFrom-UsageText ([string]$c.text) ([long]$c.time)
+            $hb.quota = [ordered]@{ read = (Get-UtcStamp $u.Read.UtcDateTime); known = $u.Known
+                windows = @(foreach ($w in @($u.Windows | Select-Object -First 12)) {
+                    [ordered]@{ g = (ConvertTo-GroupCode $w.Name); w = $w.Window; left = $w.Left; reset = $(if ($null -ne $w.Reset) { Get-UtcStamp $w.Reset.UtcDateTime } else { '' }) }
+                }) }
+        } catch { $null = $_ }
+        try { $hb.codex = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+        $hb.wait = @(foreach ($w in @(Get-WaitingMarkers | Select-Object -First 12)) { [ordered]@{ marker = $w.Marker; until = $w.Until; g = $w.Group } })
+    }
+    try { Write-FileAtomic (Join-Path $OutDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress -Depth 6) } catch { Write-Log "heartbeat: $($_.Exception.Message)" }
+}
+
+# Процес наряду: слот (замок на весь прогін), GPU (замок, спільний з claude-run), робоча копія слота, прогін.
+function Invoke-Worker {
+    $job = $script:Job
+    $lim = @{ slots = @{} }
+    foreach ($p in $job.limits.PSObject.Properties) { $lim[$p.Name] = $p.Value }
+    $script:Limits = $lim
+    if (-not $script:Bound.ContainsKey('TurnMinutes')) { $script:TurnMinutes = [double]$lim['agy_turn_minutes'] }
+    if (-not $script:Bound.ContainsKey('TotalMinutes')) { $script:TotalMinutes = [double]$lim['agy_total_minutes'] }
+    if (-not $script:Bound.ContainsKey('CodexStallMinutes')) { $script:CodexStallMinutes = [double]$lim['codex_stall_minutes'] }
+    $statePath = Get-StatePath "$($job.ref) $($job.sha)"
+    $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
+    if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
+    $gpu = $null
+    $info = Join-Path $script:SlotDir "$($job.slot).json"
+    try {
+        if ($job.gpu) {
+            $gpu = Open-Lock (Get-GpuLockPath)
+            if ($null -eq $gpu) { Remove-Claim $statePath; Write-Log "GPU зайнята — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
+        }
+        Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
+                    since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID }) | ConvertTo-Json -Compress)
+        $M = [pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Time = [long]$job.time; Slug = $job.slug; Model = $job.model
+            N = [string]$job.n; Cond = [string]$job.cond; Prio = $job.prio; Deadline = $job.deadline; Gpu = [bool]$job.gpu; Lane = $job.lane }
+        $wt = Enter-WorkTree (Join-Path (Join-Path $RunsDir 'w') $job.slot) 'refs/remotes/origin/main'
+        Set-Variable -Scope Script -Name RepoDir -Value $wt
+        Invoke-Task $M $job
+        0
+    } catch {
+        Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
+        1
+    } finally {
+        Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
+        if ($null -ne $gpu) { $gpu.Dispose() }
+        $slotLock.Dispose()
+    }
+}
+
+function Main {
+    if ($WorkerFile) { $script:Job = Read-WorkerJob $WorkerFile }
+    $script:StateDir = Join-Path $RunsDir 'state'
+    $script:SlotDir = Join-Path $RunsDir 'slots'
+    foreach ($d in @($RunsDir, $script:StateDir, $script:SlotDir, $OutDir, $LaneDir)) { [void](New-Item -ItemType Directory -Force -Path $d) }
+    $script:NoHooks = Join-Path ([System.IO.Path]::GetTempPath()) ('no-hooks-' + [guid]::NewGuid().ToString('N'))
+    if ($WorkerFile) { return (Invoke-Worker) }
+    $lockFile = Open-Lock (Join-Path $RunsDir 'lock')
+    if ($null -eq $lockFile) { return 0 }
+    try {
+        $workers = New-Object System.Collections.ArrayList
+        $first = $true
+        while ($true) {
+            $iso = Test-Isolation
+            if ($iso) {
+                Write-Log "ізоляція: $iso — нових прогонів нема"; Write-IsolationStatus $iso; Write-Heartbeat $iso
+                if (@($workers | Where-Object { -not $_.Proc.HasExited }).Count -eq 0) { return 0 }
+                Wait-Workers $workers 1; continue
+            }
+            if ($first) {
+                $origin = (Invoke-Git @('remote', 'get-url', 'origin')).Out.Trim()
+                if (($origin.TrimEnd('/') -replace '\.git$', '') -ne ($RepoUrl.TrimEnd('/') -replace '\.git$', '')) {
+                    Write-Log "origin клону ($origin) не $RepoUrl — прогонів нема"
+                    return 1
+                }
+            }
+            $started = 0
+            try {
+                [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
+                        '+refs/heads/main:refs/remotes/origin/main',
+                        '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
+                        '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+                $script:Limits = Get-Limits
+                if ($first) { Resume-Interrupted }
+                $script:Agy = Find-EngineExe $AgyExe
+                if ($script:Agy) { [void](Read-Usage) }
+                $started = Start-Markers $workers
+            } catch { Write-Log "прохід: $($_.Exception.Message)" }
+            $first = $false
+            foreach ($w in @($workers | Where-Object { $_.Proc.HasExited })) { $workers.Remove($w) }
+            Write-Heartbeat ''
+            if ($workers.Count -eq 0 -and $started -eq 0) { break }
+            Wait-Workers $workers (Get-Limit $script:Limits 'PollMinutes' 'poll_minutes')
         }
         0
     } catch {
-        Write-WrapperLog "збій обгортки: $($_.Exception.Message)"
+        Write-Log "збій обгортки: $($_.Exception.Message)"
         1
     } finally {
         $lockFile.Dispose()

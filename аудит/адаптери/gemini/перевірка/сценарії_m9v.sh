@@ -14,7 +14,7 @@ psd=dict(re.findall(r"'([\w.]+\.ps1)'\s*=\s*'([0-9A-F]{64})'",open(g+'/m9v/хе�
 tab=dict(re.findall(r"\| `([\w.]+\.ps1)` \| `([0-9A-F]{64})` \|",open(g+'/НАЛАШТУВАННЯ.md',encoding='utf-8').read()))
 bad=0
 for n,h in psd.items():
-    d=hashlib.sha256(open(f'{g}/{n}','rb').read()).hexdigest().upper()
+    d=hashlib.sha256(open(f'{g}/{n}','rb').read().replace(b'\r\n',b'\n')).hexdigest().upper()  # як блоб git (LF), що віддає raw.githubusercontent
     if not (h==tab.get(n)==d): print('ПОМИЛКА',n,h,tab.get(n),d); bad=1
 if set(psd)!=set(tab) or len(psd)<3: print('ПОМИЛКА набір файлів',psd.keys(),tab.keys()); bad=1
 sys.exit(bad)

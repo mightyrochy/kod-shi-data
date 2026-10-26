@@ -42,6 +42,8 @@ $ErrorActionPreference = 'Stop'
 
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
+# Умови позначки — той самий шаблон, що в queue_lanes.ps1 (публікація підвантажує лише себе).
+$script:CondPattern = '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gpu)){0,2}$'
 # Імена моделей у рядку ПУЛИ (9740): родини gemini/claude/gpt, до 6 імен — вільного тексту з pools.json (пише gemini) нема.
 $script:PoolModelPattern = '^(gemini|claude|gpt)-[a-z0-9.-]{1,36}$'
 # Шляхи й вміст, яких у гілці gemini/* бути не може (9739); вміст — ERE для `git log -G` по кожному коміту.
@@ -55,7 +57,7 @@ $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variab
 
 # Коди сторони gemini -> слова рядка. Інше значення — відмова, а не пересилання.
 $script:RunCodes = @{
-    QUOTA_ZERO = 'квота групи моделі 0 %, наряд не взято'
+    QUOTA_ZERO = 'квота групи моделі 0 %: позначка чекає скидання, ту саму візьме та сама смуга'
     DONE = 'звіт агента: ГОТОВО'; BLOCKED = 'звіт агента: ЗАБЛОКОВАНО'
     NO_REPORT = 'агент без звіту після всіх догонок'; TIMEOUT = 'межа часу прогону'
     AGY_ERROR = 'agy закінчився з помилкою'; MODEL_INVALID = 'agy не знає моделі з позначки'
@@ -265,12 +267,14 @@ function Get-Line([string]$Id) {
     }
     if (-not $script:RunCodes.ContainsKey($code)) { return Get-BadLine $Id 'з невідомим кодом' }
     $slug = [string](Get-Prop $s 'slug'); $model = [string](Get-Prop $s 'model'); $n = [string](Get-Prop $s 'n')
-    $marker = [string](Get-Prop $s 'marker'); $head = [string](Get-Prop $s 'head')
+    $marker = [string](Get-Prop $s 'marker'); $head = [string](Get-Prop $s 'head'); $cond = [string](Get-Prop $s 'cond')
     if ($slug -notmatch $script:SlugPattern -or $slug.Contains('..') -or $model -notmatch $script:ModelPattern -or
-        $n -notmatch '^[1-9][0-9]{0,2}$' -or $marker -notmatch $script:ShaPattern -or ($head -and $head -notmatch $script:ShaPattern)) {
+        $n -notmatch '^[1-9][0-9]{0,2}$' -or $marker -notmatch $script:ShaPattern -or ($head -and $head -notmatch $script:ShaPattern) -or
+        ($cond -and $cond -cnotmatch $script:CondPattern)) {
         return Get-BadLine $Id 'не за форматом'
     }
-    $queue = "gemini-queue/$slug/$model/$n"
+    # Умови позначки (пріоритет, строк, gpu) — четвертий сегмент назви; без нього назва як до смуг.
+    $queue = "gemini-queue/$slug/$model/$n$(if ($cond) { '/' + $cond })"
     # Назву гілки дає лише позначка диспетчера на GitHub, а не стан з теки gemini.
     if ((Get-RefSha "refs/remotes/origin/$queue") -ne $marker) {
         return Get-BadLine $Id 'не відповідає жодній позначці черги на GitHub'
@@ -347,7 +351,8 @@ function Reset-State([string]$Id) {
     if ($Id -notmatch $script:IdPattern) { throw "не id стану: $Id" }
     Remove-Item -LiteralPath (Join-Path (Join-Path $WorkDir 'state') ($Id + '.json')) -Force -ErrorAction SilentlyContinue
     $s = [System.IO.File]::ReadAllText((Join-Path $OutDir ($Id + '.json')), $script:Utf8) | ConvertFrom-Json
-    $key = "gemini-queue/$(Get-Prop $s 'slug')/$(Get-Prop $s 'model')/$(Get-Prop $s 'n') $(Get-Prop $s 'marker')"
+    $cond = [string](Get-Prop $s 'cond')
+    $key = "gemini-queue/$(Get-Prop $s 'slug')/$(Get-Prop $s 'model')/$(Get-Prop $s 'n')$(if ($cond -cmatch $script:CondPattern) { '/' + $cond }) $(Get-Prop $s 'marker')"
     foreach ($k in @("retry $key", "$key refused PUSH_FAILED")) {
         Remove-Item -LiteralPath (Join-Path (Join-Path $WorkDir 'seen') ((Get-Sha256Hex $k) + '.txt')) -Force -ErrorAction SilentlyContinue
     }

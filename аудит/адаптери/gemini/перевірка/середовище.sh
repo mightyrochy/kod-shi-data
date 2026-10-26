@@ -12,3 +12,7 @@ STUBS="${TMPDIR:-/tmp}/gemini-stubs"
 stub() { if [ -n "$WIN" ]; then mkdir -p "$STUBS"; cp "$H"/fake_*.py "$STUBS/"
   printf '@"%s" "%s" %%*\r\n' "$PYX" "$(wp "$STUBS/$1.py")" > "$STUBS/$1.cmd"; wp "$STUBS/$1.cmd"
   else printf '%s' "$H/$1.py"; fi; }
+# Windows PowerShell на ноутбуці не виконує `-File` без -ExecutionPolicy Bypass (політика «скрипти вимкнено»): без PWSH —
+# обгортка в $STUBS, що дописує ключ; TMPDIR — лише ASCII (кирилиця в шляху ламає .cmd заглушок).
+if [ -n "$WIN" ] && [ -z "${PWSH:-}" ]; then mkdir -p "$STUBS"; printf '#!/bin/sh\nexec powershell -ExecutionPolicy Bypass "$@"\n' > "$STUBS/pwb"
+  chmod +x "$STUBS/pwb"; export PWSH="$STUBS/pwb"; fi
