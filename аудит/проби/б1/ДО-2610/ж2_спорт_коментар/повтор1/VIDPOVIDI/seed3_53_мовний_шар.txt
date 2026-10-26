@@ -1,0 +1,53 @@
+── ПРОМПТ (7433 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Об’ємний укорочений джемпер з вовни ягнят полин · kind code: sweater · colour code: green · about it: text н=1
+2 — Довга спідниця з вовни ягнят полин · kind code: skirt · colour code: green · about it: text н=2
+3 — Кросівки жіночі Tamaris · kind code: sneakers · colour code: beige · about it: text н=3
+4 — Жилет-корсет Ліон-2 сірий · kind code: vest · colour code: grey · about it: text н=4
+5 — Рюкзак жіночий Welfare чорний · kind code: backpack · colour code: black · about it: text н=5
+6 — Шовкова хустка в синій принт · kind code: kerchief · colour code: blue · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; blue — синій; green — зелений; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This is an oversized, cropped knit sweater in a deep olive green with a high ribbed turtleneck and relaxed sleeves that fall just above your hips.",
+"2": "A long, flowing midi skirt made from soft wool in the same green tone, featuring an asymmetrical hemline and a subtle side slit for movement.",
+"3": "These are chunky, retro-style sneakers in a neutral beige leather mix with a thick brown rubber sole and matching laces.",
+"4": "A structured grey knit vest with a square neckline and thin vertical white stripes, cut to sit neatly over sweaters or tees.",
+"5": "A sleek black pebbled-leather backpack with a top handle, front zip pocket, and silver hardware for secure everyday carry.",
+"6": "A square silk kerchief printed with an intricate navy blue botanical design featuring leaves, birds, and flowers against a cream background.",
+"7": "I have put together a layered look in soft greens and greys, anchored by the comfortable wide-leg skirt that balances your wider hip zone with a clean vertical line. The chunky beige sneakers ground the outfit for all-day wear on your feet, while the black backpack handles your essentials hands-free. I chose the grey vest as an outer layer to add just enough structure over the knits without hiding your figure's natural shape, and the silk scarf adds a delicate pop of blue print near your collarbone to break up the solid tones.",
+"8": "Tuck the green sweater slightly into the skirt waistband to define your narrowest point before adding the grey vest over both.",
+"9": "Об’ємний укорочений джемпер з вовни ягнят полин, Довга спідниця з вовни ягнят полин — I accept this remark because it highlights the complementary nature of the warm olive skirt against the neutral sweater, showing how the outfit navigates your palette scheme even if the chroma logic is complex, ultimately serving your goal of a cohesive, grounded look."
+}
+
+── ВІДПОВІДЬ (2066 симв., 39.4 с, HTTP 200) ──
+```json
+{
+"1": "Це об’ємний укорочений в'язаний светр глибокого оливково-зеленого кольору з високим ребристим коміром і розслабленими рукавами, які закінчуються трохи вище твоїх стегон.",
+"2": "Довга спідниця міді вільного крою з м'якої вовни в такому ж зеленому тоні, має асиметричний поділ і ледь помітний бічний розріз для зручності рухів.",
+"3": "Це масивні ретро-кросівки нейтрального бежевого кольору зі шкіряної суміші з товстою коричневою гумовою підошвою та шнурками в колір.",
+"4": "Структурований сірий трикотажний жилет із квадратним вирізом і вузькими вертикальними білими смужками, пошитий так, щоб він акуратно сидів поверх светрів або футболок.",
+"5": "Стильний чорний рюкзак зі штучної шкіри з тисненням, має верхню ручку та передню кишеню на блискавці й срібну фурнітуру для безпечного щоденного використання.",
+"6": "Квадратна шовкова хустка з вишуканим темно-синім рослинним принтом із листям, птахами та квітами на кремовому тлі.",
+"7": "Я підібрала багатошаровий образ у м'яких зелених і сірих тонах, який базується на зручній спідниці з широкими штанинами, що врівноважує твою більш виражену зону стегон чистою вертикальною лінією. Масивні бежеві кросівки роблять образ придатним для носіння цілий день, а чорний рюкзак дозволяє носити необхідні речі без зайвих рук. Я обрала сірий жилет як верхній шар, щоб додати достатньо структури поверх трикотажу, не ховаючи природну форму твоєї фігури, і шовкова хустка додає ніжний акцент темно-синього кольору біля ключиці, розбавляючи однотонні тони.",
+"8": "Злегка заправ светр зеленого кольору в пояс спідниці, щоб підкреслити твою найвужчу частину тіла перед тим, як одягнути сірий жилет поверх обох речей.",
+"9": "Об’ємний укорочений джемпер з вовни ягнят полин, Довга спідниця з вовни ягнят полин — Я приймаю цей коментар, оскільки він підкреслює доповнюючу природу теплої оливкової спідниці на тлі нейтрального светра, показуючи, як образ відповідає твоїй палітрі кольорів навіть якщо логіка насиченості складна, і зрештою служить твоїй меті створити гармонійний та збалансований вигляд."
+}
+```
