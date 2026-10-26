@@ -1,6 +1,7 @@
 /* 5200: запис Ж12 Б/08 без змін → зібрана сторінка, Chromium 390×844.
    Із джерела: node проби/повний_текст_5200.js <html> <тека доказів> <ДО|ПІСЛЯ|ДО955>. */
 const fs=require('fs'),path=require('path'),os=require('os'),assert=require('assert'),{chromium}=require('playwright');
+const { чекатиСтан } = require('./очікування.js');
 const root=path.resolve(__dirname,'../..'),dir=process.argv[3],stage=process.argv[4];
 const scene='аудит/живі_12/Б/08_ж1_оціни_образ_6б/вердикти.txt';
 const data=JSON.parse(fs.readFileSync(path.join(root,scene),'utf8'));
@@ -15,7 +16,7 @@ try{const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:t
    u.hostname==='cdn.jsdelivr.net'&&u.pathname.endsWith('.woff2')?path.join(os.tmpdir(),'956-fonts',path.basename(u.pathname)):'';
   return f&&fs.existsSync(f)?r.fulfill({path:f}):r.abort();});
  await page.goto('https://probe.invalid/#model_mova=none');
- await page.waitForFunction(()=>typeof document.getElementById('оц-оцінити').onclick==='function');
+ await чекатиСтан(page, 'кнопка оц-оцінити готова', () => typeof document.getElementById('оц-оцінити').onclick === 'function');
  await page.evaluate(raw=>{ОЦ.перелік={так:true}; ОЦ.результат={картка:raw.картка,суд:raw.суд,сценарій:raw.сценарій_екрана};
   ОЦ.фото=[];ОЦ.етапи=raw;режим('оцінка');малюватиКарткуОцінкиП();},raw);
  await page.evaluate(()=>document.fonts.ready);
