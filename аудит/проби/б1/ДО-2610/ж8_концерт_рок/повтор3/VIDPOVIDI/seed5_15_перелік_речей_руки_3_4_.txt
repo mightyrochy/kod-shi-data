@@ -1,0 +1,37 @@
+── ПРОМПТ (2261 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black fitted bodysuit with a subtle stretch-knit texture, cropped hemline, deep charcoal gray (#2a2a2a), jersey knit blend.\nOversized structured blazer in matte finish, shoulder-to-hip length, obsidian black (#000000), wool-tweed mix for warmth against the 18°C autumn chill.\nHigh-top chunky sneakers with a glossy patent leather finish, ankle height, electric blue (#00bfff), canvas and rubber sole.\nDelicate silver chain necklace in oxidized sterling silver, medium length, brushed metal, lightweight chain link.\n\nThis ensemble balances the rock concert's edgy vibe with a smart dress code through the oversized blazer layered over a sleek bodysuit. The chunky sneakers ensure comfort for standing in crowds all evening while adding a bold pop of electric blue to the monochrome palette. Despite the cool 18°C weather, the wool-tweed jacket provides necessary warmth without sacrificing style or mobility."}
+
+── ВІДПОВІДЬ (915 симв., 57.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Black fitted bodysuit",
+      "details": "subtle stretch-knit texture, cropped hemline, jersey knit blend",
+      "slot": "underwear",
+      "color_hex": "#2a2a2a",
+      "worn": true
+    },
+    {
+      "name": "Oversized structured blazer",
+      "details": "matte finish, shoulder-to-hip length, wool-tweed mix for warmth",
+      "slot": "outerwear",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "High-top chunky sneakers",
+      "details": "glossy patent leather finish, ankle height, canvas and rubber sole",
+      "slot": "shoes",
+      "color_hex": "#00bfff",
+      "worn": true
+    },
+    {
+      "name": "Delicate silver chain necklace",
+      "details": "oxidized sterling silver, medium length, brushed metal, lightweight chain link",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

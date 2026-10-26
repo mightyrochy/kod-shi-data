@@ -1,0 +1,37 @@
+── ПРОМПТ (2295 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk evening gown in deep burgundy #4a0e15, floor-length A-line silhouette with a high neckline and long sleeves for modesty during church service, smooth liquid satin fabric that catches soft daylight. Leather ankle boots in oxblood #6d1e23 with a modest block heel, chosen to transition gracefully from the church sanctuary to the family lunch table without breaking protocol. Gold vermeil necklace with a small crucifix pendant and matching drop earrings to honor the occasion's sacred nature while adding subtle personal flair. This outfit respects her wish for very high formality by offering a luxurious evening gown suitable for church attendance, yet remains practical enough for the subsequent family gathering in one cohesive statement. The rich color honors the autumn season while the modest cut aligns with traditional expectations for Sunday service, ensuring she feels both reverent and elegantly dressed throughout the entire day."}
+
+── ВІДПОВІДЬ (734 симв., 46.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Evening gown",
+      "details": "floor-length A-line silhouette with a high neckline and long sleeves made of smooth liquid satin fabric",
+      "slot": "dress",
+      "color_hex": "#4a0e15",
+      "worn": true
+    },
+    {
+      "name": "Ankle boots",
+      "details": "modest block heel",
+      "slot": "shoes",
+      "color_hex": "#6d1e23",
+      "worn": true
+    },
+    {
+      "name": "Necklace",
+      "details": "small crucifix pendant",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Earrings",
+      "details": "drop earrings",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

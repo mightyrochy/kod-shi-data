@@ -1,0 +1,30 @@
+── ПРОМПТ (2476 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Elegant sheath dress, floor-length silhouette with a subtle A-line flare from the knee down, color: Deep Midnight Blue (#0B1026), fabric: lightweight crepe de Chine.\nStrappy satin sandals, delicate ankle strap with a slender heel, color: Silver Grey (#C0C0C0), fabric: smooth polished satin.\nPearl drop earrings, classic round shape with 8mm diameter, color: Lustrous White (#F5F5F5), fabric: cultured freshwater pearl and sterling silver setting.\n\nThis ensemble is perfect for a summer wedding transition from garden to restaurant, as the floor-length crepe dress offers modesty and elegance suitable for a \"very smart\" evening gown requirement without being overly heavy for 18°C weather. The deep midnight blue provides a sophisticated contrast to typical bright summer hues while remaining respectful for a sister's special day, ensuring you look polished yet comfortable during the outdoor ceremony. Completing the look with silver sandals and pearl earrings strikes the ideal balance between timeless refinement and modern chic, honoring both the formal dress code and your wish for an exquisite evening appearance."}
+
+── ВІДПОВІДЬ (742 симв., 59.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Elegant sheath dress",
+      "details": "floor-length silhouette with a subtle A-line flare from the knee down, lightweight crepe de Chine fabric",
+      "slot": "dress",
+      "color_hex": "#0B1026",
+      "worn": true
+    },
+    {
+      "name": "Strappy satin sandals",
+      "details": "delicate ankle strap with a slender heel, smooth polished satin fabric",
+      "slot": "shoes",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "Pearl drop earrings",
+      "details": "classic round shape with 8mm diameter, cultured freshwater pearl and sterling silver setting",
+      "slot": "earrings",
+      "color_hex": "#F5F5F5",
+      "worn": true
+    }
+  ]
+}

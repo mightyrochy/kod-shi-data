@@ -1,0 +1,56 @@
+── ПРОМПТ (7784 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Чорний піджак by Mugler x H&M · kind code: blazer · colour code: black · about it: text н=1
+2 — Ремінь жіночий Welfare чорний · kind code: belt · colour code: black · about it: text н=2
+3 — Спідниця міні CAPRI кориця · kind code: skirt · colour code: camel · about it: text н=3
+4 — Сумка зі шкіри Sylvie · kind code: bag_generic · colour code: camel · about it: text н=4
+5 — Кросівки темно-сірі з натурального спилку-замші та нейлонової сітки · kind code: sneakers · colour code: grey · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; camel — кемел; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This black blazer by Mugler x H&M has a structured, tailored fit with clean lapels and slim sleeves that define your shoulders. The deep black hue adds instant sophistication, and the sharp cut highlights your waist while giving you an edge perfect for a night out.",
+"2": "A sleek black leather belt with a polished silver buckle sits flat against your waist. Its smooth finish matches the blazer’s tone and keeps everything aligned, adding just enough structure without breaking up the silhouette.",
+"3": "This camel-colored knit mini skirt from CAPRI features a soft ribbed waistband and a tight, body-skimming fit. The warm neutral tone contrasts beautifully with your black top and adds gentle warmth to your cool-toned outfit.",
+"4": "The Sylvie bag is crafted in white leather with a distinctive navy stripe and gold chain hardware. Its compact shape holds just enough for essentials, and the mix of textures adds visual interest without overwhelming your look.",
+"5": "These dark grey sneakers blend suede and mesh panels with a chunky white sole and rugged tread. Their relaxed silhouette balances the formality of your blazer while giving you all-day comfort for dancing or walking through the venue.",
+"6": "I chose this sharp black blazer to give you an instant edge for the club, paired with a fitted camel mini skirt that keeps your lines clean and vertical. The simple black belt defines your waist without adding bulk, while the grey sneakers ground the look so you can stand comfortably in the crowd all night. The white-and-camel bag echoes the skirt’s warmth, creating a balanced mix of smart structure and casual comfort.",
+"7": "Take off the blazer at the end of the set if you want to feel more relaxed without losing your polished look.",
+"8": "Lean into the rock vibe by letting your hair down and wearing the sneakers with confidence—they're built for long nights.",
+"9": "Ремінь жіночий Welfare чорний — I kept the black belt to anchor the dark tones and define the waist against the crowd.",
+"10": "Спідниця міні CAPRI кориця — I replaced the grey mini skirt with an olive midi pleated skirt to introduce the missing pine green family required by the scheme and elevate the formality.",
+"11": "Сумка зі шкіри Sylvie — I added a camel leather bag to echo the edge warmth and ensure she has a carry-all for the event."
+}
+
+── ВІДПОВІДЬ (2406 симв., 47.5 с, HTTP 200) ──
+```json
+{
+"1": "Цей чорний піджак від Mugler x H&M має структурований, приталений крій з чистими лацканами та вузькими рукавами, які окреслюють твої плечі. Глибокий чорний колір миттєво додає вишуканості, а чіткий крій підкреслює твою талію і дарує тобі образ, який чудово пасуватиме для вечора.",
+"2": "Стильний чорний шкіряний ремінь з полірованою срібною пряжкою щільно прилягає до твоєї талії. Його гладка поверхня гармонійно поєднується з тоном піджака і тримає все в рівновазі, додаючи достатньо структури без порушення силуету.",
+"3": "Ця міні-спідниця кольору кемел від CAPRI має м’який ребристий пояс та щільний крій, що облягає фігуру. Теплий нейтральний тон чудово контрастує з твоїм чорним верхом і додає ніжного тепла твоєму прохолодному образу.",
+"4": "Сумка Sylvie виготовлена зі шкіри кольору слонової кістки з характерною темно-синьою смужкою та золотою ланцюговою фурнітурою. Її компактна форма вміщує лише найнеобхідніше, а поєднання фактур додає візуального інтересу без перевантаження образу.",
+"5": "Ці темно-сірі кросівки поєднують замшеві та сітчасті панелі з масивною білою підошвою і рельєфним протектором. Їхній невимушений силует врівноважує офіційність піджака, даруючи тобі комфорт на цілий день для танців або прогулянок по закладу.",
+"6": "Я обрала цей елегантний чорний піджак, щоб миттєво додати твоєму образу зухвалості, у парі з приталеною міні-спідницею кольору кемел, яка зберігає твої лінії чистими та вертикальними. Простий чорний ремінь окреслює твою талію без зайвого об’єму, а сірі кросівки завершують образ, щоб ти могла впевнено стояти у натовпі всю ніч. Біло-кемелова сумка відлунює теплоту спідниці, створюючи збалансоване поєднання розумної структури та невимушеного комфорту.",
+"7": "Зніми піджак після завершення виступу, якщо хочеш відчути себе більш розслаблено без втрати елегантності.",
+"8": "Підкресли рок-настрій, відпустивши волосся і впевнено одягнувши кросівки — вони створені для довгих ночей.",
+"9": "Ремінь жіночий Welfare чорний — Я залишила чорний ремінь, щоб закріпити темні тони та окреслити твою талію на фоні натовпу.",
+"10": "Спідниця міні CAPRI кориця — Я замінила сіру міні-спідницю оливковою міді-спідницею з плісе, щоб додати відсутній зелений колір і підвищити офіційність образу.",
+"11": "Сумка зі шкіри Sylvie — Я додала кемелову шкіряну сумку, щоб підкреслити теплоту кольору та забезпечити тобі місце для речей на заході."
+}
+```

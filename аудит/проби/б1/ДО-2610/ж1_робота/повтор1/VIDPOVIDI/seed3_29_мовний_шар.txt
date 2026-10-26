@@ -1,0 +1,50 @@
+── ПРОМПТ (8726 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані. Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки. До неї — напряму, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); що сказала вона, стилістка каже їй у другій особі. Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Кожен об'єкт — окрема заява. Відповідь — JSON-об'єкт {key: текст}: скопіюй кожен key дослівно й напиши його власне речення. Ключі не нумеруй, заяв не об'єднуй. Не перенось дію, річ, вибір чи ранг з одного key на інший.
+item_ids — предмети заяви, назви — лише підписи цих предметів. Слот не визначає вид речі. recipient: woman — звертання до жінки на ти; stylist — доручення стилістці; journal — факт для журналу, не прохання до жінки. source: catalogue — каталог, photo — фото, model — модель, default — типове рішення, unknown — джерело невідоме. Коди шкал не є словами крамниці.
+choice — автор саме цього вибору: her — її дотик; conversation — її слова; stylist — стилістка; code_rank, form_default, item_default — типове; pending — вибору ще нема; unselected — ця альтернатива не обрана; unknown — автор невідомий. «Ти обрала» — лише в заяві з choice her чи conversation, «не обрана» — лише з unselected; в іншій заяві про її вибір не кажи нічого: пояснення схеми — властивість ходу, а не її вибір. part називає частину вибору; ранг стосується лише неї. rank.weight — вага чипа (core — найходовіша, usual — звичайна, edge — на межі, statement — помітна); rank.position — місце у переліку; rank.rare — чи справді хід рідший. Не називай хід рідшим, коли rare=false, і не обіцяй майбутнього вибору після прийнятого.
+Нема опори в заяві — нічого не додавай. Числа, коди й key не переписуй у людський текст.
+
+КОДИ У ЗНАЧЕННЯХ:
+- belt — пасок / пояс.
+- bottom — низ.
+- crossbody — кросбоді.
+- hand — рука.
+- jewelry — прикраси.
+- shoulder — плече.
+- top — верх.
+- uk — українська.
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти», «тобі», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+ЗАЯВИ:
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_look_follows_her_combinations — so the code cannot tell whether the outfit's colours follow the logic of her combinations.
+- cannot_tell_accent_echoed — so the code cannot tell whether the accent colour repeats elsewhere in the outfit.
+- cannot_tell_item_off_palette — so the code cannot tell whether the item's colour lies outside her palette.
+- cannot_tell_accessory_spends_chroma — so the code cannot tell whether a loud accessory spends the budget of loud colours next to another loud item.
+- cannot_tell_face_contrast_matches_hers — so the code cannot tell whether the jump of lightness near her face matches her own contrast.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- cut_from_shop_photo_differs — the cut was taken from the shop's word, and the photo shows another one (values: items — the items: slot — slot code, shop — the cut by the shop, photo — the cut from the photo; the cut names are in English, retell them in her language).
+ПОВІДОМЛЕННЯ:
+[{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Лофери бежеві ROOT", "lang": "uk"}, "item_id": "ж-09923@emmeliedelage.com"}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-09923@emmeliedelage.com"], "key": "s_abee65048c516c0af552b44d"}, {"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-13202@honchstudio.com", "slot": "jewelry", "colour": "червоний", "name": {"free_text": "Прикраса", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-13202@honchstudio.com"], "key": "s_23ff63164ffe339556d518db"}, {"code": "cannot_tell_face_contrast_matches_hers", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_15ad924aff9f7791396d4c85"}, {"code": "cannot_tell_item_holds_scheme_hue", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_b9f97d98e5cadd388315972b"}, {"code": "cannot_tell_item_off_palette", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_b19ee9d1785e964012e3bb54"}, {"code": "cannot_tell_look_follows_her_combinations", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_ba86b69ff5e199abce953ca9"}, {"code": "cannot_tell_accent_echoed", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_16c40bbfe17fb274195d3769"}, {"code": "cannot_tell_accessory_spends_chroma", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_579faeea808af077bc2863a4"}, {"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "top", "range": "S–XL"}, {"slot": "bottom", "range": "42–54"}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_f03491d8e8269797b1fd6d64"}, {"code": "cut_from_shop_photo_differs", "values": {"items": [{"item_id": "ж-04612@honchstudio.com", "slot": "top", "shop": "straight", "photo": "bodycon", "name": {"free_text": "Котонова сорочка без рукавів з корсетною шнурівкою персикова", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-04612@honchstudio.com"], "key": "s_8083dca237e582df1f32002f"}, {"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-08457@likeangel.com.ua", "slot": "belt", "colour": "бежевий", "name": {"free_text": "Пасок з пір’ям декольте беж", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-08457@likeangel.com.ua"], "key": "s_51ca8aa665d985aee78efac8"}, {"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Сумка Марсала абстракція", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"], "item_id": "ж-07916@yakfaino.com"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["ж-07916@yakfaino.com"], "key": "s_93b1b4aa33e6d85d31a6565d"}]
+
+── ВІДПОВІДЬ (1308 симв., 31.3 с, HTTP 200) ──
+```json
+{
+  "s_abee65048c516c0af552b44d": "Я не знаю розмір лоферів бежевих ROOT, який підійде твоїй нозі.",
+  "s_23ff63164ffe339556d518db": "Колір прикраси червоний — так кажуть у магазині.",
+  "s_15ad924aff9f7791396d4c85": "Я не можу сказати, чи контраст біля твого обличчя підходить тобі.",
+  "s_b9f97d98e5cadd388315972b": "Не знаю, чи колір цієї речі відповідає обраній тобою палітрі.",
+  "s_b19ee9d1785e964012e3bb54": "Я не можу сказати, чи ця річ лежить поза твоєю палітрою кольорів.",
+  "s_ba86b69ff5e199abce953ca9": "Не знаю, чи обраний тобою образ дотримується логіки твоїх поєднань кольорів.",
+  "s_16c40bbfe17fb274195d3769": "Я не можу сказати, чи акцент повторюється десь ще в образі.",
+  "s_579faeea808af077bc2863a4": "Не знаю, чи яскрава сумка витрачає бюджет яскравих кольорів поруч з іншою такою річчю.",
+  "s_f03491d8e8269797b1fd6d64": "Розміри S–XL для верху, 42–54 для низу — це лише позначення магазину. Я не знаю, як вони сядуть на тебе.",
+  "s_8083dca237e582df1f32002f": "Магазин каже, що сорочка прямого крою, але фото показує облягаючий крій. Зверни увагу на це.",
+  "s_51ca8aa665d985aee78efac8": "Пасок з пір’ям бежевий — так кажуть у магазині.",
+  "s_93b1b4aa33e6d85d31a6565d": "Ти ще не обрала, як носити сумку Марсала абстракція: в руці, на плечі чи через тіло. Ти вирішуй."
+}
+```

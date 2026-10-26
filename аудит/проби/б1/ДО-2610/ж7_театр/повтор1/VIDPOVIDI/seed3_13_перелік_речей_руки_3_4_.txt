@@ -1,0 +1,44 @@
+── ПРОМПТ (2188 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Midi silk gown in midnight blue with a subtle metallic sheen (#191A24), floor-length cut with an empire waist and soft pleats, fluid silk satin fabric.\nHeeled pumps in black patent leather, stiletto silhouette reaching the ankle, sleek polished finish.\nPearl drop earrings on delicate gold wire hooks, a thin velvet clutch in charcoal grey, and a fine gold necklace resting against the collarbone.\nThis ensemble elevates her presence for the 7 PM theatre evening by blending deep, sophisticated tones with luxurious textures appropriate for autumn's cool 18°C air. The midi length and metallic accent add a touch of artistic flair fitting for a performance setting without overpowering the venue's atmosphere. Each piece respects her desire to feel confident and elegant while adhering strictly to formal dress codes for an evening out."}
+
+── ВІДПОВІДЬ (888 симв., 28.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Midi silk gown",
+      "details": "Floor-length cut with empire waist, soft pleats, fluid silk satin fabric",
+      "slot": "dress",
+      "color_hex": "#191A24",
+      "worn": true
+    },
+    {
+      "name": "Heeled pumps",
+      "details": "Stiletto silhouette reaching the ankle, sleek polished finish",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Pearl drop earrings",
+      "details": "Delicate gold wire hooks",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Thin velvet clutch",
+      "details": "",
+      "slot": "bag",
+      "color_hex": "#36393F",
+      "worn": true
+    },
+    {
+      "name": "Fine gold necklace",
+      "details": "",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+── ПРОМПТ (2489 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend skirt suit in charcoal grey (#3a3d40), tailored with a slim fit jacket and high-waisted trousers.  \nMatte leather ankle boots in black (#000000) with a low block heel for stability on salted snowy pavement.  \nA cashmere turtleneck sweater in forest green (#2f4f2f) as an inner layer to add warmth without bulk.  \nTwill overcoat in navy blue (#0a1e39) reaching mid-thigh, featuring a double-breasted front and a warm lined interior for the -10°C weather.  \nLeather gloves in dark brown (#3b2f2f) to keep hands warm during the 20-minute walk.  \nThis outfit works because the heavy wool and cashmere materials provide essential insulation against freezing temperatures and snow, while the structured suit silhouette maintains a professional appearance suitable for a workday commute. The ankle boots offer a necessary low heel for safety on icy, salted roads without sacrificing style, and the layered approach allows her to adjust warmth as she reaches her destination. Dark neutral tones like charcoal and navy blend seamlessly with any skin tone and ensure visibility and elegance in wintry daylight conditions."}
+
+── ВІДПОВІДЬ (1083 симв., 78.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool-blend skirt suit",
+      "details": "Tailored with a slim fit jacket and high-waisted trousers in charcoal grey",
+      "slot": "set",
+      "color_hex": "#3a3d40",
+      "worn": true
+    },
+    {
+      "name": "Matte leather ankle boots",
+      "details": "Low block heel for stability on salted snowy pavement in black",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Cashmere turtleneck sweater",
+      "details": "Inner layer adding warmth without bulk in forest green",
+      "slot": "top",
+      "color_hex": "#2f4f2f",
+      "worn": true
+    },
+    {
+      "name": "Twill overcoat",
+      "details": "Double-breasted front with warm lined interior reaching mid-thigh in navy blue",
+      "slot": "outerwear",
+      "color_hex": "#0a1e39",
+      "worn": true
+    },
+    {
+      "name": "Leather gloves",
+      "details": "Dark brown for keeping hands warm during the walk",
+      "slot": "accessory",
+      "color_hex": "#3b2f2f",
+      "worn": true
+    }
+  ]
+}

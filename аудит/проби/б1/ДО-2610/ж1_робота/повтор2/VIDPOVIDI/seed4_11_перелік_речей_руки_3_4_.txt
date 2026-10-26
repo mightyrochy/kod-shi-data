@@ -1,0 +1,37 @@
+── ПРОМПТ (2246 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined silk blouse in soft blush (#f5e6dc), loose fit with a relaxed collar, knee length, woven silk.\nTailored wool-blend trousers in charcoal grey (#3b423f), straight cut, full ankle length, heavy worsted wool.\nA structured tweed blazer in warm brown (#8c6b51), single-breasted with notched lapels, hip length, medium-weight wool blend.\nLow-block leather ankle boots in dark cognac (#6d4f3e), rounded toe, mid-calf height, smooth calf leather.\nThis ensemble balances professional polish with autumnal warmth through a layered approach using structured wool and textured tweed suitable for an 18-degree day. The neutral palette of charcoal, warm brown, and soft blush complements the skin tones while maintaining a refined yet approachable workplace aesthetic. The loose collar and straight cut trousers offer comfort for a full workday without sacrificing the neat dress code requirements."}
+
+── ВІДПОВІДЬ (740 симв., 65.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "silk blouse",
+      "details": "loose fit with a relaxed collar, knee length",
+      "slot": "top",
+      "color_hex": "#f5e6dc",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight cut, full ankle length",
+      "slot": "bottom",
+      "color_hex": "#3b423f",
+      "worn": true
+    },
+    {
+      "name": "tweed blazer",
+      "details": "single-breasted with notched lapels, hip length",
+      "slot": "outerwear",
+      "color_hex": "#8c6b51",
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "rounded toe, mid-calf height",
+      "slot": "shoes",
+      "color_hex": "#6d4f3e",
+      "worn": true
+    }
+  ]
+}
