@@ -185,14 +185,6 @@ const РЕЧІ = [
         }
         return JSON.stringify(obj);
       };
-      const стареПовідомленнямП = window.повідомленнямП;
-      window.повідомленнямП = async (...args) => {
-        const res = await стареПовідомленнямП(...args);
-        if (res && res.чужою && res.чужою.length) {
-          ПАМ_ЯТЬ_ЧУЖИХ_П.set(JSON.stringify(args[0]), res);
-        }
-        return res;
-      };
       const пов = { п1: { kind: 'card_unchecked', statements: [{ code: 'unchecked_in_this_look' }] } };
       const перший = await повідомленнямП(пов, 'probe.code_unknowns'); const після1 = викликів;
       await повідомленнямП(пов, 'probe.code_unknowns'); await повідомленнямП(пов, 'probe.code_unknowns');
