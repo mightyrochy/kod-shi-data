@@ -1,0 +1,30 @@
+── ПРОМПТ (2384 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black leather biker jacket, cropped boxy cut hitting just above the waist, deep black #000000, heavy grained synthetic leather for wind resistance and durability.\nHigh-waisted straight-leg black jeans, mid-thigh to ankle length with a clean hem, black #1C1C1C, rigid cotton twill that holds its shape through movement without stretching.\nChunky black platform combat boots, ankle height with aggressive lug soles, matte black #0A0A0A, durable rubber and synthetic upper designed for standing in crowds and walking on concrete.\n\nThis outfit works perfectly because the leather jacket provides necessary warmth against the 18°C autumn air while maintaining an edgy aesthetic that fits a rock concert atmosphere. The rigid black jeans ensure durability and comfort as you stand or move through the crowd, avoiding any clingy fabrics that might be impractical. The chunky platform boots offer essential traction for navigating a busy club environment while adding height and a cool, rebellious touch that aligns with your style wishes."}
+
+── ВІДПОВІДЬ (877 симв., 67.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Black leather biker jacket",
+      "details": "cropped boxy cut hitting just above the waist, heavy grained synthetic leather for wind resistance and durability",
+      "slot": "outerwear",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "High-waisted straight-leg black jeans",
+      "details": "mid-thigh to ankle length with a clean hem, rigid cotton twill that holds its shape through movement without stretching",
+      "slot": "bottom",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    },
+    {
+      "name": "Chunky black platform combat boots",
+      "details": "ankle height with aggressive lug soles, durable rubber and synthetic upper designed for standing in crowds and walking on concrete",
+      "slot": "shoes",
+      "color_hex": "#0A0A0A",
+      "worn": true
+    }
+  ]
+}
